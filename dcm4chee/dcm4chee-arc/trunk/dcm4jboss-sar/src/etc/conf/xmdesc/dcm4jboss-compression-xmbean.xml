@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>Compression Service</description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.archive.mbean.CompressionService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>CompressionService</name>
+   </constructor>
+
+   <!-- Attributes -->
+   &defaultAttributes;
+
+   <attribute access="read-write"
+      getMethod="getDelayedCompressionInterval"
+      setMethod="setDelayedCompressionInterval">
+      <description>Interval in which images are checked for delayed compression
+          Format: {time}!{start}-{end}
+          time: ##s (in seconds), ##m (in minutes), ##h (in hours).NEVER (= no delayed compression).
+          start and end is start and end hour (0-23) when no compression should be performed.
+      </description>
+      <name>DelayedCompressionInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="10m!18-6" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getCompressAfter"
+      setMethod="setCompressAfter">
+      <description>List of AETs with max age of image before delayed compression should be performed.
+      	Format: [aet={AET list}/{age}]{type}
+      	{AET list}: AET seperated with '|'. e.g. AET1|AET2
+      </description>
+      <name>CompressAfter</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="[aet=PACS_TIANI/10d]JPEG_LS" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getMaxFiles"
+      setMethod="setMaxFiles">
+      <description>Max. number of files that are compressed in a single step.
+      </description>
+      <name>MaxFiles</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50" />
+      </descriptors>
+   </attribute>
+
+   <!-- Operations -->
+   &defaultOperations;
+  
+</mbean>
+    
