@@ -42,7 +42,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
 
     private static final String _SORT = ".sort";
 
-    private boolean cleanFilesDisabled = false;
+    private boolean keepSpoolFiles = false;
     
     private int isoLevel = 1;
 
@@ -53,6 +53,8 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
     private boolean udf = false;
     
     private boolean volsetInfoEnabled = false;
+    
+    private boolean padding = false;    
 
     private boolean logEnabled = false;
 
@@ -84,12 +86,12 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         logFile = new File(logdir, "mkisofs.log");
     }
 
-    public final boolean isCleanFilesDisabled() {
-        return cleanFilesDisabled;
+    public final boolean isKeepSpoolFiles() {
+        return keepSpoolFiles;
     }
 
-    public final void setCleanFilesDisabled(boolean cleanFilesDisabled) {
-        this.cleanFilesDisabled = cleanFilesDisabled;
+    public final void setKeepSpoolFiles(boolean keepSpoolFiles) {
+        this.keepSpoolFiles = keepSpoolFiles;
     }
 
     public final boolean isVolsetInfoEnabled() {
@@ -124,6 +126,14 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         this.udf = udf;
     }
     
+    public final boolean isPadding() {
+        return padding;
+    }
+
+    public final void setPadding(boolean padding) {
+        this.padding = padding;
+    }
+
     public final boolean isLogEnabled() {
         return logEnabled;
     }
@@ -187,6 +197,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
                 cmd.add("-sort");
                 cmd.add(tmpSortFile.getAbsolutePath());
             }
+            cmd.add(padding ? "-pad" : "-no-pad");
             cmd.add("-o");
             cmd.add(isoImageFile.getAbsolutePath());
             cmd.add(srcDir.getAbsolutePath());
@@ -325,7 +336,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
                 }
             }
         } finally {
-            if (cleanup) rq.cleanFiles(log);
+            if (cleanup && !keepSpoolFiles) rq.cleanFiles(log);
         }
     }
 

@@ -11,8 +11,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="SpoolDirScheduler.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -24,6 +22,7 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getSchedulableMBean"
       setMethod="setSchedulableMBean">
@@ -90,8 +89,7 @@
          <value value="-1" />
       </descriptors>
    </attribute>
-   &defattr;
    
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
 </mbean>

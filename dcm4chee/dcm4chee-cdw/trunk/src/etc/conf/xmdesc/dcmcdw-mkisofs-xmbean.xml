@@ -15,8 +15,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="MakeIsoImage.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -28,12 +26,13 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
    <attribute access="read-write"
-      getMethod="isCleanFilesDisabled"
-      setMethod="setCleanFilesDisabled">
-      <description>No cleanup of generated fileset and ISO image in failure case.
+      getMethod="isKeepSpoolFiles"
+      setMethod="setKeepSpoolFiles">
+      <description>Keep spool files (for debugging) in failure case.
       </description>
-      <name>CleanFilesDisabled</name>
+      <name>KeepSpoolFiles</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -42,7 +41,7 @@
    <attribute access="read-write"
       getMethod="getIsoLevel"
       setMethod="setIsoLevel">
-      <description>Description not yet written.
+      <description>ISO 9660 conformance level (1..3) or 4 for ISO9660 version 2.
       </description>
       <name>IsoLevel</name>
       <type>int</type>      
@@ -53,7 +52,7 @@
    <attribute access="read-write"
       getMethod="isRockRidge"
       setMethod="setRockRidge">
-      <description>Description not yet written.
+      <description>Generate rationalized Rock Ridge directory information.
       </description>
       <name>RockRidge</name>
       <type>boolean</type>      
@@ -64,7 +63,7 @@
    <attribute access="read-write"
       getMethod="isJoliet"
       setMethod="setJoliet">
-      <description>Description not yet written.
+      <description>Generate Joliet directory information.
       </description>
       <name>Joliet</name>
       <type>boolean</type>      
@@ -75,7 +74,7 @@
    <attribute access="read-write"
       getMethod="isUdf"
       setMethod="setUdf">
-      <description>Description not yet written.
+      <description>Generate UDF file system.
       </description>
       <name>Udf</name>
       <type>boolean</type>      
@@ -86,7 +85,7 @@
    <attribute access="read-write"
       getMethod="isVolsetInfoEnabled"
       setMethod="setVolsetInfoEnabled">
-      <description>Description not yet written.
+      <description>Set Volumne set ID, size and sequence number.
       </description>
       <name>VolsetInfoEnabled</name>
       <type>boolean</type>      
@@ -95,9 +94,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isPadding"
+      setMethod="setPadding">
+      <description>Pad output to a multiple of 32k.
+      </description>
+      <name>Padding</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isLogEnabled"
       setMethod="setLogEnabled">
-      <description>Description not yet written.
+      <description>Log to server/dcmcdw/log/mkisofs.log.
       </description>
       <name>LogEnabled</name>
       <type>boolean</type>      
@@ -108,7 +118,8 @@
    <attribute access="read-write"
       getMethod="isSortEnabled"
       setMethod="setSortEnabled">
-      <description>Description not yet written.
+      <description>Sort file content locations according to rules in
+      server/dcmcdw/conf/mkisofs.sort.
       </description>
       <name>SortEnabled</name>
       <type>boolean</type>      
@@ -116,8 +127,7 @@
          <value value="true" />
       </descriptors>
    </attribute>
-   &defattr;
    
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
 </mbean>

@@ -16,8 +16,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="CDRecordService.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -29,19 +27,112 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
    <attribute access="read-write"
-      getMethod="isCleanFilesDisabled"
-      setMethod="setCleanFilesDisabled">
-      <description>Keep Fileset and ISO image after writing on media.
+      getMethod="isKeepSpoolFiles"
+      setMethod="setKeepSpoolFiles">
+      <description>Keep spool files (for debugging).
       </description>
-      <name>CleanFilesDisabled</name>
+      <name>KeepSpoolFiles</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
       </descriptors>
    </attribute>
-   &defattr;
+   <attribute access="read-write"
+      getMethod="getDevice"
+      setMethod="setDevice">
+      <description>SCSI address of the CD/DVD-Recorder.
+      Syntax: scsibus,target,lun or target,lun.
+      Run cdrecord -scanbus to list SCSI addresses of all
+      SCSI devices on all SCSI busses.
+      </description>
+      <name>Device</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="0,0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getWriteSpeed"
+      setMethod="setWriteSpeed">
+      <description>Speed factor of the writing process.
+      </description>
+      <name>WriteSpeed</name>
+      <type>int</type>
+      <descriptors>
+         <value value="24" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getWriteMode"
+      setMethod="setWriteMode">
+      <description>Write Mode: (tao|dao|sao|raw|raw96r|raw96p|raw16).
+      Run cdrecord -help for description.
+      </description>
+      <name>WriteMode</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="tao" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTrackType"
+      setMethod="setTrackType">
+      <description>Track Type: (data|mode2|xa|xa1|xa2|xamix).
+      Run cdrecord -help for description.
+      </description>
+      <name>TrackType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="data" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isMultiSession"
+      setMethod="setMultiSession">
+      <description>Generate a TOC that allows multi session.
+      </description>
+      <name>MultiSession</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isPadding"
+      setMethod="setPadding">
+      <description>Pad data track with 15 zeroed sectors.
+      </description>
+      <name>Padding</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSimulate"
+      setMethod="setSimulate">
+      <description>Only simulate write process (laser is turned off).
+      </description>
+      <name>Simulate</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogEnabled"
+      setMethod="setLogEnabled">
+      <description>Log to server/dcmcdw/log/cdrecord.log.
+      </description>
+      <name>LogEnabled</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
 </mbean>

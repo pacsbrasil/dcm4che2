@@ -27,7 +27,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
 
-    protected boolean cleanFilesDisabled = false;
+    protected boolean keepSpoolFiles = false;
 
     private final MessageListener listener = new MessageListener() {
 
@@ -43,12 +43,12 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
 
     };
 
-    public final boolean isCleanFilesDisabled() {
-        return cleanFilesDisabled;
+    public final boolean isKeepSpoolFiles() {
+        return keepSpoolFiles;
     }
 
-    public final void setCleanFilesDisabled(boolean cleanFilesDisabled) {
-        this.cleanFilesDisabled = cleanFilesDisabled;
+    public final void setKeepSpoolFiles(boolean keepSpoolFiles) {
+        this.keepSpoolFiles = keepSpoolFiles;
     }
 
     protected void startService() throws Exception {
@@ -104,7 +104,7 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
         } catch (IOException e) {
             // error already logged
         } finally {
-            if (!cleanFilesDisabled) rq.cleanFiles(log);
+            if (!keepSpoolFiles) rq.cleanFiles(log);
         }
 
     }

@@ -3,11 +3,11 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 
-    <property name="version" value="0.1"/>
+    <property name="version" value="0.2"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
 
     <!-- Override with your JBoss server bundle dist location -->
-    <property name="jboss.home" value="${user.home}/jboss-3.2.3"/>
+    <property name="jboss.home" value="${user.home}/jboss-3.2.5"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>
@@ -116,11 +116,12 @@
 				<include name="deploy/hsqldb-ds.xml"/>
 				<include name="deploy/jboss-jca.sar"/>
 				<include name="deploy/jboss-local-jdbc.rar"/>
-				<include name="deploy/jbossweb-tomcat41.sar/**"/>
+				<include name="deploy/jbossweb-tomcat50.sar/**"/>
 				<include name="deploy/jms/hsqldb-jdbc2-service.xml"/>
 				<include name="deploy/jms/jvm-il-service.xml"/>
         		<include name="deploy/jmx-invoker-adaptor-server.sar/**"/>
 				<include name="deploy/jmx-console.war/**"/>
+				<exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
 				<exclude name="deploy/jmx-console.war/WEB-INF/web.xml"/>
 				<exclude name="deploy/jmx-console.war/WEB-INF/jboss-web.xml"/>
 				<include name="deploy/transaction-service.xml"/>

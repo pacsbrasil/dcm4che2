@@ -11,8 +11,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="DcmServerService.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -24,6 +22,7 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getPort"
       setMethod="setPort">
@@ -32,7 +31,6 @@
       <name>Port</name>
       <type>int</type>
       <descriptors>
-         <state-action-on-update value="restart"/>
          <value value="10104" />
       </descriptors>
    </attribute>
@@ -120,10 +118,9 @@
       <name>NumClients</name>
       <type>int</type>
    </attribute>
-   &defattr;
 
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
    <operation impact="INFO">
       <description>Get DICOM Handler</description>
       <name>getDcmHandler</name>

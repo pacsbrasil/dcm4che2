@@ -14,8 +14,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="SpoolDirService.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -27,6 +25,7 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getDirectoryPath"
       setMethod="setDirectoryPath">
@@ -75,10 +74,9 @@
          <value value="1h" />
       </descriptors>
    </attribute>
-   &defattr;
    
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
    <operation impact="INFO">
       <description>Get Instance File</description>
       <name>getInstanceFile</name>

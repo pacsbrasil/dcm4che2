@@ -15,8 +15,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="MediaComposer.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -28,6 +26,7 @@
    </constructor>
 
    <!-- Attributes -->
+	&defaultAttributes;
    <attribute access="read-write"
       getMethod="getSpoolDirName"
       setMethod="setSpoolDirName">
@@ -40,12 +39,11 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isCleanFilesDisabled"
-      setMethod="setCleanFilesDisabled">
-      <description>No cleanup of generated fileset and referenced objects
-      in failure case.
+      getMethod="isKeepSpoolFiles"
+      setMethod="setKeepSpoolFiles">
+      <description>Keep spool files (for debugging) in failure case.
       </description>
-      <name>CleanFilesDisabled</name>
+      <name>KeepSpoolFiles</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -95,8 +93,7 @@
          <value value="true" />
       </descriptors>
    </attribute>
-   &defattr;
    
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
 </mbean>
