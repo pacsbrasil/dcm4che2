@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>Spool Directory</description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"
+         persistPeriod="10"
+         persistLocation="${jboss.server.data.dir}"
+         persistName="SpoolDirService.ser"/>
+      <currencyTimeLimit value="0"/>
+      <state-action-on-update value="keep-running"/>
+      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.dcmcdw.SpoolDirService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>SpoolDirService</name>
+   </constructor>
+
+   <!-- Attributes -->
+   <attribute access="read-write"
+      getMethod="getDirectoryPath"
+      setMethod="setDirectoryPath">
+      <description>Spool Directory Path Name. Relative path names will be
+      resolved against directory $DCMCDW_HOME/server/dcmcdw/data/."
+      </description>
+      <name>DirectoryPath</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="cdwspool" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDeleteMediaCreationRequestsAfter"
+      setMethod="setDeleteMediaCreationRequestsAfter">
+      <description>Persistence duration for Media Creation Requests
+      in days (##d), hours (##h) or minutes (##m). 0 = Infinite Persistenz.
+      </description>
+      <name>DeleteMediaCreationRequestsAfter</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="1d" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDeletePreservedInstancesAfter"
+      setMethod="setDeletePreservedInstancesAfter">
+      <description>Persistence duration for preserved Instances
+      in days (##d), hours (##h) or minutes (##m). 0 = Infinite Persistenz.
+      </description>
+      <name>DeletePreservedInstancesAfter</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="1d" />
+      </descriptors>
+   </attribute>
+   &defattr;
+   
+   <!-- Operations -->
+   &defops;
+   <operation impact="INFO">
+      <description>Get Instance File</description>
+      <name>getInstanceFile</name>
+      <parameter>
+         <description>SOP Instance UID</description>
+         <name>iuid</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.io.File</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Get Media Creation Request File</description>
+      <name>getMediaCreationRequestFile</name>
+      <parameter>
+         <description>SOP Instance UID</description>
+         <name>iuid</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.io.File</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Get Media Layouts Root Directory</description>
+      <name>getMediaLayoutsRoot</name>
+      <parameter>
+         <description>Media Creation Mgt Instance UID</description>
+         <name>iuid</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.io.File</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Delete Expired Media Creation Requests and
+      Preserved Instances</description>
+      <name>deleteExpiredFiles</name>
+   </operation>
+   <operation impact="ACTION">
+      <description>Delete Expired Media Creation Requests</description>
+      <name>deleteExpiredMediaCreationRequests</name>
+   </operation>
+   <operation impact="ACTION">
+      <description>Delete Expired Preserved Instances</description>
+      <name>deleteExpiredPreservedInstances</name>
+   </operation>
+
+</mbean>

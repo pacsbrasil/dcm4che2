@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>DICOM Media Creation Management SCP</description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"
+         persistPeriod="10"
+         persistLocation="${jboss.server.data.dir}"
+         persistName="MediaCreationMgtScpService.ser"/>
+      <currencyTimeLimit value="0"/>
+      <state-action-on-update value="keep-running"/>
+      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.dcmcdw.MediaCreationMgtScpService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>MediaCreationMgtScpService</name>
+   </constructor>
+
+   <!-- Attributes -->
+   <attribute access="read-write"
+      getMethod="getDcmServerName"
+      setMethod="setDcmServerName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>DcmServerName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="dcmcdw:service=DcmServer" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSpoolDirName"
+      setMethod="setSpoolDirName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>SpoolDirName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="dcmcdw:service=SpoolDir" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptExplicitVRLE"
+      setMethod="setAcceptExplicitVRLE">
+      <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
+      </description>
+      <name>AcceptExplicitVRLE</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   &defattr;
+   
+   <!-- Operations -->
+   &defops;
+</mbean>
