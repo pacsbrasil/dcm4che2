@@ -45,6 +45,11 @@ class FilmSession
 {
 
     // Constants -----------------------------------------------------
+    private static final String[] PRIORITY = {
+        "MED",
+        "LOW",
+        "HIGH"
+    };
 
     // Attributes ----------------------------------------------------
     private final PrintScpService scp;
@@ -263,7 +268,7 @@ class FilmSession
         if (curFilmBox == null) {
             throw new IllegalStateException();
         }
-        curFilmBox.updateAttributes(filmbox, pluts, session);
+        curFilmBox.updateAttributes(filmbox, pluts, session, rspCmd);
     }
 
 
@@ -284,89 +289,17 @@ class FilmSession
         throws DcmServiceException
     {
         try {
-            checkPriority(ds, rsp);
-            checkMediumType(ds, rsp);
-            checkNumberOfCopies(ds, rsp);
-            checkMemoryAllocation(ds, rsp);
-            checkSessionLabel(ds, rsp);
+            scp.checkAttribute(ds, Tags.Priority, PRIORITY, rsp);
+            scp.checkAttribute(ds, Tags.MediumType,
+                aet, "isSupportsMediumType", rsp);
+            scp.checkNumberOfCopies(ds, aet, rsp);
+            scp.ignoreAttribute(ds, Tags.MemoryAllocation, rsp,
+                Status.MemoryAllocationNotSupported);
+            scp.checkAttributeLen(ds, Tags.FilmSessionLabel, 64, rsp);
         } catch (Exception e) {
             log.error("Processing Failure:", e);
             throw new DcmServiceException(Status.ProcessingFailure);
         }
-    }
-
-
-    private void checkPriority(Dataset ds, Command rsp)
-    {
-        String s = ds.getString(Tags.PrintPriority);
-        if (s == null) {
-            return;
-        }
-        if ("MED".equals(s)
-                 || "HIGH".equals(s)
-                 || "LOW".equals(s)) {
-            return;
-        }
-        log.warn("Priority Value Out Of Range: " + s);
-        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
-        ds.remove(Tags.PrintPriority);
-    }
-
-
-    private void checkMediumType(Dataset ds, Command rsp)
-        throws Exception
-    {
-        String s = ds.getString(Tags.MediumType);
-        if (s == null) {
-            return;
-        }
-        if (scp.isPrinter(aet, "isSupportsMediumType", s)) {
-            return;
-        }
-        log.warn("Medium Type Value Out Of Range: " + s);
-        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
-        ds.remove(Tags.MediumType);
-    }
-
-
-    private void checkNumberOfCopies(Dataset ds, Command rsp)
-        throws Exception
-    {
-        Integer copies = ds.getInteger(Tags.NumberOfCopies);
-        if (copies == null) {
-            return;
-        }
-        int i = copies.intValue();
-        if (i > 0 && i <= scp.getIntPrinterAttribute(aet, "MaxNumberOfCopies")) {
-            return;
-        }
-        log.warn("Number Of Copies Value Out Of Range: " + i);
-        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
-        ds.remove(Tags.NumberOfCopies);
-    }
-
-
-    private void checkMemoryAllocation(Dataset ds, Command rsp)
-    {
-        if (ds.vm(Tags.MemoryAllocation) > 0) {
-            log.warn("Memory Allocation Not Supported");
-            rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
-            ds.remove(Tags.MemoryAllocation);
-        }
-    }
-
-    private void checkSessionLabel(Dataset ds, Command rsp)
-    {
-        String s = ds.getString(Tags.FilmSessionLabel);
-        if (s == null) {
-            return;
-        }
-        if (s.length() <= 64) {
-            return;
-        }
-        log.warn("Session Label Value Out Of Range: " + s);
-        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
-        ds.remove(Tags.FilmSessionLabel);
     }
 }
 

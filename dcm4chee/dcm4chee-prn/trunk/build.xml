@@ -344,7 +344,7 @@
     <ant target="fail_unless_docbook_xsl_present"/>
   </target>
    
-  <target name="doc" if="fop_classpath_id">
+  <target name="doc" depends="init" if="fop_classpath_id">
     <uptodate property="cs_pdf_uptodate"
             srcfile="${doc.xml}/jprint-cs.xml"
             targetfile="${build.doc.dir}/jprint-cs.pdf"/>

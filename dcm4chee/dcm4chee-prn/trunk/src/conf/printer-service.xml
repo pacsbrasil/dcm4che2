@@ -14,7 +14,7 @@
 
   <mbean code="com.tiani.prnscp.print.PrinterService" 
          name="dcm4chex:service=Printer,calledAET=TIANI_PRINT">
-    <depends optional-attribute-name="PrintSCP">dcm4chex:service=jPrint</depends>
+    <depends optional-attribute-name="PrintSCP">dcm4chex:service=PrintSCP</depends>
          
     <!--
     Specifies name of the printer used by the system.
@@ -187,18 +187,6 @@
     -->
     <attribute name="TrimBoxDensity">BLACK</attribute>
     
-    <!--
-    Defines the default min density that is used when the Print SCU does not 
-    specify min density.
-    -->
-    <attribute name="MinDensity">0</attribute>
-   
-    <!--
-    Defines the default max density that is used when the Print SCU does not 
-    specify max density.
-    -->
-    <attribute name="MaxDensity">160</attribute>
-
     <!--
     Defines the default illumination that is used when the Print SCU does not 
     specify an illumination value for applying the presentation LUT.

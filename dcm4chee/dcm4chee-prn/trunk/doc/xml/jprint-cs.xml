@@ -52,7 +52,7 @@
 
       <para><revhistory><revision><revnumber>0.1</revnumber><date>18 Feb 2003</date><authorinitials>gz</authorinitials><revremark>Initial
       draft</revremark></revision><revision><revnumber>0.2</revnumber><date>1
-      Mar 2003, gz, minimal corrections</date></revision></revhistory></para>
+      Mar 2003</date><authorinitials>gz</authorinitials><revremark>update</revremark></revision></revhistory></para>
     </section>
 
     <section>
@@ -1009,7 +1009,7 @@
                     Value</para><para>if not sent by SCU or invalid value
                     received</para></entry><entry><para>Response to Invalid
                     Value</para></entry></row></thead><tbody><row><entry>Image
-                    Display</entry><entry>(2010,0010)</entry><entry><para>Orientation
+                    Display Format</entry><entry>(2010,0010)</entry><entry><para>Orientation
                     PORTRAIT:<simplelist type="vert"><member>STANDARD\1,1</member><member>STANDARD\1,2</member><member>STANDARD\2,2</member><member>STANDARD\2,3</member><member>STANDARD\3,3</member><member>STANDARD\3,4</member><member>STANDARD\3,5</member><member>STANDARD\4,4</member><member>STANDARD\4,5</member><member>STANDARD\4,6</member><member>STANDARD\5,5</member><member>STANDARD\5,6</member><member>STANDARD\6,6</member></simplelist></para><para>Orientation
                     LANDSCAPE:<simplelist type="vert"><member>STANDARD\1,1</member><member>STANDARD\2,1</member><member>STANDARD\2,2</member><member>STANDARD\3,2</member><member>STANDARD\3,3</member><member>STANDARD\4,3</member><member>STANDARD\5,3</member><member>STANDARD\4,4</member><member>STANDARD\5,4</member><member>STANDARD\6,4</member><member>STANDARD\5,5</member><member>STANDARD\6,5</member><member>STANDARD\6,6</member></simplelist></para>(Configurable)</entry><entry>Mandatory,
                     no default</entry><entry>Failure (0106H)</entry></row><row><entry>Annotation
@@ -1024,16 +1024,19 @@
                     (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Magnification
                     Type</entry><entry>(2010,0060)</entry><entry><simplelist
                     type="vert"><member>REPLICATE</member><member>BILINEAR</member><member>NONE</member></simplelist>(Configurable)</entry><entry>BILINEAR
-                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Border
-                    Density</entry><entry>(2010,0100)</entry><entry><simplelist
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Smoothing
+                    Type</entry><entry>(2010,0080)</entry><entry>Not supported</entry><entry>Empty</entry><entry>Warning
+                    (0107H)</entry></row><row><entry>Border Density</entry><entry>(2010,0100)</entry><entry><simplelist
                     type="vert"><member>BLACK</member><member>WHITE</member></simplelist></entry><entry>WHITE
-                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Min
-                    Density</entry><entry>(2010,0120)</entry><entry>100x
-                    Measured Printer Min Density - Max Density (2010,0130)</entry><entry>0
-                    (Configurable)</entry><entry>Warning (B605H)</entry></row><row><entry>Max
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Empty
+                    Image Density</entry><entry>(2010,0110)</entry><entry>Not
+                    Supported</entry><entry>Empty</entry><entry>Warning
+                    (0107H)</entry></row><row><entry>Min Density</entry><entry>(2010,0120)</entry><entry>Min
+                    Printer Density - Max Density (2010,0130)</entry><entry>Min
+                    Printer Density</entry><entry>Warning (B605H)</entry></row><row><entry>Max
                     Density</entry><entry>(2010,0130)</entry><entry>Min
-                    Density (2010,0120) - 100x Measured Printer Max Density</entry><entry>160
-                    (Configurable)</entry><entry>Warning (B605H)</entry></row><row><entry>Trim</entry><entry>(2010,0140)</entry><entry><simplelist
+                    Density (2010,0120) - Max Printer Density</entry><entry>Max
+                    Printer Density</entry><entry>Warning (B605H)</entry></row><row><entry>Trim</entry><entry>(2010,0140)</entry><entry><simplelist
                     type="vert"><member>YES</member><member>NO</member></simplelist></entry><entry>NO
                     (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Configuration
                     Information</entry><entry>(2010,0150)</entry><entry><simplelist
@@ -1065,14 +1068,25 @@
                     <para>jPrint defines two Annotation Display Formats in the
                     default configuration:<table id="t-adf"><title>Predefined
                     Annotation Display Formats</title><tgroup align="left"
-                    cols="3"><colspec colwidth="60" /><colspec align="center"
-                    colwidth="40" /><thead><row><entry>ID</entry><entry>#
-                    Boxes</entry><entry>Layout</entry></row></thead><tbody><row><entry>TITLE</entry><entry>5</entry><entry>Prints
-                    a centered text string in a larger font at the top, and
-                    four text strings in smaller fonts at the corners of the
-                    page.</entry></row><row><entry>NO_TITLE</entry><entry>4</entry><entry>Prints
-                    only the four text strings in smaller fonts at the corners
-                    of the page.</entry></row></tbody></tgroup></table></para>
+                    cols="4"><colspec colwidth="60" /><colspec colwidth="" /><colspec
+                    colwidth="70" /><colspec colwidth="120" /><thead><row><entry>ID</entry><entry>Layout</entry><entry>Annotation
+                    Position</entry><entry>Default Content</entry></row></thead><tbody><row><entry
+                    morerows="4">TITLE</entry><entry morerows="4">Prints a
+                    centered text string in a larger font at the top, and four
+                    text strings in smaller fonts at the corners of the page.</entry><entry>1:
+                    Top Center</entry><entry>Default Title</entry></row><row><entry>2:
+                    Top Left</entry><entry>$SESSION_LABEL$</entry></row><row><entry>3:
+                    Top Right</entry><entry>printed at $DATE$ $TIME$</entry></row><row><entry>4:
+                    Bottom Left</entry><entry>$LICENSE_CN$\nvalid until
+                    $LICENSE_ENDDATE$</entry></row><row><entry>5: Bottom Right</entry><entry>$PAGE$
+                    of $PAGES$</entry></row><row><entry morerows="3">NO_TITLE</entry><entry
+                    morerows="3">Prints only the four text strings in smaller
+                    fonts at the corners of the page.</entry><entry>1: Top
+                    Left</entry><entry>$SESSION_LABEL$</entry></row><row><entry>2:
+                    Top Right</entry><entry>printed at $DATE$ $TIME$</entry></row><row><entry>3:
+                    Bottom Left</entry><entry>$LICENSE_CN$\nvalid until
+                    $LICENSE_ENDDATE$</entry></row><row><entry>4: Bottom Right</entry><entry>$PAGE$
+                    of $PAGES$</entry></row></tbody></tgroup></table></para>
 
                     <para>The annotation display format also defines default
                     contents for the created Annotation Boxes, which is
@@ -1085,7 +1099,7 @@
                     Formats may be defined by jPrint configuration files as
                     well.</para>
 
-                    <para>In the default configuration, jPrint defines four
+                    <para>In the default configuration, jPrint defines five
                     local P-LUTs, which a Print SCU with no support of the
                     Presentation LUT SOP Class can select by Configuration
                     Information values:</para>
@@ -1100,7 +1114,7 @@
                           <row>
                             <entry>Configuration Information</entry>
 
-                            <entry valign="middle">Apply local P-LUT</entry>
+                            <entry valign="middle">Behavior</entry>
                           </row>
                         </thead>
 
@@ -1112,6 +1126,14 @@
                             and perform gray scaling according the DICOM
                             Grayscale Standard Standard Display Function
                             (GSDF).</entry>
+                          </row>
+
+                          <row>
+                            <entry>LINOD</entry>
+
+                            <entry>Apply Presentation LUT with linear optical
+                            density over the range of Min Density (2010,0120)
+                            and Max Density (2010,1030).</entry>
                           </row>
 
                           <row>
@@ -1184,6 +1206,9 @@
                     valign="middle"><entry>Service Status</entry><entry>Further
                     Meaning</entry><entry>Error Code</entry><entry>Behavior</entry></row></thead><tbody><row><entry>Success</entry><entry>Success</entry><entry>0000H</entry><entry>Film
                     box is successfully created.</entry></row><row><entry>Warning</entry><entry>Attribute
+                    list error</entry><entry>0107H</entry><entry>The N-CREATE
+                    operation is considered successful but the status meaning
+                    is logged.</entry></row><row><entry>Warning</entry><entry>Attribute
                     Value Out of Range</entry><entry>0116H</entry><entry>The
                     N-CREATE operation is considered successful but the status
                     meaning is logged.</entry></row><row><entry>Warning</entry><entry>Min/Max
@@ -1268,10 +1293,10 @@
 
                             <entry>(2010,0120)</entry>
 
-                            <entry>100x Measured Printer Min Density - Max
-                            Density (2010,0130)</entry>
+                            <entry>Min Printer Density - Max Density
+                            (2010,0130)</entry>
 
-                            <entry>0 (Configurable)</entry>
+                            <entry>Min Printer Density</entry>
 
                             <entry>Warning (B605H)</entry>
                           </row>
@@ -1281,10 +1306,10 @@
 
                             <entry>(2010,0130)</entry>
 
-                            <entry>Min Density (2010,0120) - 100x Measured
-                            Printer Max Density</entry>
+                            <entry>Min Density (2010,0120) - Max Printer
+                            Density</entry>
 
-                            <entry>160 (Configurable)</entry>
+                            <entry>Max Printer Density</entry>
 
                             <entry>Warning (B605H)</entry>
                           </row>
@@ -1431,12 +1456,12 @@
                           <row>
                             <entry>Warning</entry>
 
-                            <entry>Illegal Attribute</entry>
+                            <entry>Attribute list error</entry>
 
                             <entry>0107H</entry>
 
-                            <entry>Attributes not recognized within the
-                            context of this SOP class.</entry>
+                            <entry>The N-SET operation is considered
+                            successful but the status meaning is logged.</entry>
                           </row>
 
                           <row>
@@ -1680,10 +1705,9 @@
 
                           <entry>(2010,0120)</entry>
 
-                          <entry>100x Measured Printer Min Density - Max
-                          Density (2010,0130)</entry>
+                          <entry>Min Printer Density - Max Density (2010,0130)</entry>
 
-                          <entry>0 (Configurable)</entry>
+                          <entry>Min Printer Density</entry>
 
                           <entry>Warning (B605H)</entry>
                         </row>
@@ -1693,10 +1717,9 @@
 
                           <entry>(2010,0130)</entry>
 
-                          <entry>Min Density (2010,0120) - 100x Measured
-                          Printer Max Density</entry>
+                          <entry>Min Density (2010,0120) - Max Printer Density</entry>
 
-                          <entry>160 (Configurable)</entry>
+                          <entry>Max Printer Density</entry>
 
                           <entry>Warning (B605H)</entry>
                         </row>
@@ -3256,9 +3279,7 @@
         type="vert"><member>BILINEAR</member><member>REPLICATE</member><member>NONE</member></simplelist></entry></row><row><entry>Decimate
         Crop Behavior (if not specified by Print SCU)</entry><entry>Yes</entry><entry>DECIMATE</entry></row><row><entry>Border
         Density (if not specified by Print SCU)</entry><entry>Yes</entry><entry>WHITE</entry></row><row><entry>Trim
-        (if not specified by Print SCU)</entry><entry>Yes</entry><entry>true</entry></row><row><entry>Min
-        Density (if not specified by Print SCU)</entry><entry>Yes</entry><entry>0</entry></row><row><entry>Max
-        Density (if not specified by Print SCU)</entry><entry>Yes</entry><entry>160</entry></row><row><entry>Illumination
+        (if not specified by Print SCU)</entry><entry>Yes</entry><entry>true</entry></row><row><entry>Illumination
         (if not specified by Print SCU)</entry><entry>Yes</entry><entry>150</entry></row><row><entry>Reflected
         Ambient Light (if not specified by Print SCU)</entry><entry>Yes</entry><entry>0</entry></row><row><entry>Configuration
         Information (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called

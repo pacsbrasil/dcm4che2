@@ -100,7 +100,7 @@ class FilmBoxService extends DcmServiceBase
             if (session.containsFilmBox(uid)) {
                 throw new DcmServiceException(Status.DuplicateSOPInstance);
             }
-            session.addFilmBox(uid, new FilmBox(scp, aet, uid, ds, pluts, session));
+            session.addFilmBox(uid, new FilmBox(scp, aet, uid, ds, pluts, session, rspCmd));
             scp.getLog().info("Created Film Box[uid=" + uid + "]");
             return ds;
         } catch (DcmServiceException e) {
@@ -154,7 +154,7 @@ class FilmBoxService extends DcmServiceBase
                 throw new DcmServiceException(Status.NoSuchObjectInstance);
             }
             FilmBox film = session.getCurrentFilmBox();
-            film.updateAttributes(ds, pluts, session.getAttributes());
+            film.updateAttributes(ds, pluts, session.getAttributes(), rspCmd);
             return null;
         } catch (DcmServiceException e) {
             scp.getLog().warn("Failed to update Basic Film Box SOP Instance", e);

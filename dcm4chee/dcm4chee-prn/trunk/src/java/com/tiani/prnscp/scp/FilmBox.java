@@ -34,6 +34,8 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.util.UIDGenerator;
 
+import org.jboss.logging.Logger;
+
 /**
  *  <description>
  *
@@ -44,11 +46,30 @@ import org.dcm4che.util.UIDGenerator;
 class FilmBox
 {
 
-    // Constants -----------------------------------------------------
-    private final static boolean TYPE1 = true;
+    // Constants -----------------------------------------------------    
+    private static final String[] FILM_ORIENTATION = {
+        "PORTRAIT",
+        "LANDSCAPE"
+    };
 
+    private static final String[] BLACK_WHITE = {
+        "BLACK",
+        "WHITE"
+    };
+
+    private static final String[] YES_NO = {
+        "YES",
+        "NO"
+    };
+    
+    private static final String[] DECIMATE_CROP = {
+        "DECIMATE",
+        "CROP"
+    };
+    
     // Attributes ----------------------------------------------------
     private final PrintScpService scp;
+    private final Logger log;
     private final String aet;
     private final String uid;
     private final Dataset dataset;
@@ -74,14 +95,15 @@ class FilmBox
      * @exception  DcmServiceException Description of the Exception
      */
     public FilmBox(PrintScpService scp, String aet, String uid, Dataset dataset,
-            HashMap pluts, FilmSession session)
+            HashMap pluts, FilmSession session, Command rspCmd)
         throws DcmServiceException
     {
         this.scp = scp;
+        this.log = scp.getLog();;
         this.aet = aet;
         this.uid = uid;
         this.dataset = dataset;
-        checkCreateData(dataset);
+        checkCreateAttributes(dataset, rspCmd);
         addRefImageBox(dataset, session.getImageBoxCUID());
         addRefAnnotationBox(dataset);
         addPLUT(dataset, pluts);
@@ -89,7 +111,64 @@ class FilmBox
                 dataset.getString(Tags.RequestedResolutionID));
     }
 
+    private void checkCreateAttributes(Dataset ds, Command rsp)
+        throws DcmServiceException
+    {
+        try {
+            scp.checkImageDisplayFormat(ds, aet, rsp);
+            scp.checkAttribute(ds, Tags.AnnotationDisplayFormatID,
+                aet, "isAnnotationDisplayFormatID", rsp);
+            scp.checkAttribute(ds, Tags.FilmSizeID,
+                aet, "isSupportsFilmSizeID", rsp);
+            scp.checkAttribute(ds, Tags.FilmOrientation, FILM_ORIENTATION, rsp);
+            checkAttributes(ds, rsp);
+        } catch (DcmServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Processing Failure:", e);
+            throw new DcmServiceException(Status.ProcessingFailure);
+        }
+    }
 
+    private void checkSetAttributes(Dataset ds, Command rsp)
+        throws DcmServiceException
+    {
+        try {
+            scp.ignoreAttribute(ds, Tags.ImageDisplayFormat, rsp);
+            scp.ignoreAttribute(ds, Tags.AnnotationDisplayFormatID, rsp);
+            scp.ignoreAttribute(ds, Tags.FilmSizeID, rsp);
+            scp.ignoreAttribute(ds, Tags.FilmOrientation, rsp);
+            checkAttributes(ds, rsp);
+        } catch (Exception e) {
+            log.error("Processing Failure:", e);
+            throw new DcmServiceException(Status.ProcessingFailure);
+        }
+    }
+
+    private void checkAttributes(Dataset ds, Command rsp)
+    throws Exception
+    {
+        scp.checkAttribute(ds, Tags.BorderDensity, BLACK_WHITE, rsp);
+        scp.ignoreAttribute(ds, Tags.EmptyImageDensity, rsp);
+//            checkIllumination(ds, rsp);
+//            checkReflectedAmbientLight(ds, rsp);
+        scp.checkAttribute(ds, Tags.RequestedResolutionID,
+            aet, "isSupportsRequestedResolutionID", rsp);
+        checkImageBoxAttributes(ds, rsp);
+    }
+    
+    private void checkImageBoxAttributes(Dataset ds, Command rsp)
+    throws Exception
+    {
+        scp.checkAttribute(ds, Tags.MagnificationType,
+            aet, "isSupportsMagnificationType", rsp);
+        scp.ignoreAttribute(ds, Tags.SmoothingType, rsp);
+        scp.checkMinMaxDensity(ds, aet, rsp);
+        scp.checkAttribute(ds, Tags.Trim, YES_NO, rsp);
+        scp.checkAttribute(ds, Tags.ConfigurationInformation,
+            aet, "isSupportsConfigurationInformation", rsp);
+    }
+    
     private int countImageBoxes(String imageDisplayFormat)
     {
         StringTokenizer tok = new StringTokenizer(imageDisplayFormat, ",\\");
@@ -177,12 +256,11 @@ class FilmBox
      * @param  sessionAttr Description of the Parameter
      * @exception  DcmServiceException Description of the Exception
      */
-    public void updateAttributes(Dataset modification,
-            HashMap pluts, Dataset sessionAttr)
+    public void updateAttributes(Dataset modification, HashMap pluts,
+            Dataset sessionAttr, Command rspCmd)
         throws DcmServiceException
     {
-// TODO!
-//      check(modification);
+        checkSetAttributes(modification, rspCmd);
         addPLUT(modification, pluts);
         dataset.putAll(modification);
         sessionAttr.putCS(Tags.RequestedResolutionID,
@@ -198,14 +276,23 @@ class FilmBox
      * @param  pluts The new imageBox value
      * @exception  DcmServiceException Description of the Exception
      */
-    public void setImageBox(String imageBoxUID, Dataset imageBox, HashMap pluts)
+    public void setImageBox(String imageBoxUID, Dataset imageBox,
+            HashMap pluts, Command rsp)
         throws DcmServiceException
     {
-        checkDecimateCropBehavior(
-                imageBox.getString(Tags.RequestedDecimateCropBehavior));
-        addPLUT(imageBox, pluts);
-        imageBoxes.remove(imageBoxUID);
-        imageBoxes.put(imageBoxUID, imageBox);
+        try {
+            checkImageBoxAttributes(imageBox, rsp);
+            scp.checkAttribute(imageBox, Tags.RequestedDecimateCropBehavior,
+                DECIMATE_CROP, rsp);
+            addPLUT(imageBox, pluts);
+            imageBoxes.remove(imageBoxUID);
+            imageBoxes.put(imageBoxUID, imageBox);
+        } catch (DcmServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Processing Failure:", e);
+            throw new DcmServiceException(Status.ProcessingFailure);
+        }
     }
 
 
@@ -232,7 +319,7 @@ class FilmBox
      */
     public Dataset createStoredPrint(FilmSession session)
     {
-        boolean debug = scp.getLog().isDebugEnabled();
+        boolean debug = log.isDebugEnabled();
 
         Dataset result = dof.newDataset();
         String cuid = UIDs.StoredPrintStorage;
@@ -331,37 +418,26 @@ class FilmBox
         }
         String cuid = ref.getString(Tags.RefSOPClassUID);
         if (cuid == null) {
+            log.error("Missing SOP Class UID in Ref Presentation LUT Seq Item");
             throw new DcmServiceException(Status.MissingAttributeValue);
         }
         if (!UIDs.PresentationLUT.equals(cuid)) {
+            log.error("Unrecognized SOP Class UID in Ref Presentation LUT Seq Item - " + cuid);
             throw new DcmServiceException(Status.InvalidAttributeValue);
         }
         String iuid = ref.getString(Tags.RefSOPInstanceUID);
         if (iuid == null) {
+            log.error("Missing SOP Instance UID in Ref Presentation LUT Seq Item");
             throw new DcmServiceException(Status.MissingAttributeValue);
         }
         Dataset plut = (Dataset) pluts.get(iuid);
         if (plut == null) {
+            log.error("No Presentation LUT with referenced uid - " + iuid);
             throw new DcmServiceException(Status.InvalidAttributeValue,
                     "No such Presentation LUT");
         }
         this.pluts.put(iuid, plut);
     }
-
-
-    private String checkFilmOrientation(String val)
-        throws DcmServiceException
-    {
-        if (val == null) {
-            return null;
-        }
-        if (!val.equals("PORTRAIT")
-                 && !val.equals("LANDSCAPE")) {
-            throw new DcmServiceException(Status.InvalidAttributeValue);
-        }
-        return val;
-    }
-
 
     private String checkDecimateCropBehavior(String val)
         throws DcmServiceException
@@ -375,44 +451,6 @@ class FilmBox
             throw new DcmServiceException(Status.InvalidAttributeValue);
         }
         return val;
-    }
-
-
-    private String checkDensity(String val)
-        throws DcmServiceException
-    {
-        if (val == null) {
-            return null;
-        }
-        if (!val.equals("WHITE")
-                 && !val.equals("BLACK")) {
-            try {
-                Integer.parseInt(val);
-            } catch (NumberFormatException e) {
-                throw new DcmServiceException(Status.InvalidAttributeValue);
-            }
-        }
-        return val;
-    }
-
-
-    private void checkCreateData(Dataset ds)
-        throws DcmServiceException
-    {
-        scp.checkImageDisplayFormat(aet, ds.getString(Tags.ImageDisplayFormat),
-                checkFilmOrientation(ds.getString(Tags.FilmOrientation)));
-        scp.checkAttributeValue(aet, "isSupportsAnnotationDisplayFormatID",
-                ds, Tags.AnnotationDisplayFormatID, !TYPE1);
-        scp.checkAttributeValue(aet, "isSupportsFilmSizeID",
-                ds, Tags.FilmSizeID, !TYPE1);
-        scp.checkAttributeValue(aet, "isSupportsMagnificationType",
-                ds, Tags.MagnificationType, !TYPE1);
-        scp.checkAttributeValue(aet, "isSupportsSmoothingType",
-                ds, Tags.SmoothingType, !TYPE1);
-        checkDensity(ds.getString(Tags.BorderDensity));
-        checkDensity(ds.getString(Tags.EmptyImageDensity));
-        scp.checkAttributeValue(aet, "isSupportsResolutionID",
-                ds, Tags.RequestedResolutionID, !TYPE1);
     }
 }
 

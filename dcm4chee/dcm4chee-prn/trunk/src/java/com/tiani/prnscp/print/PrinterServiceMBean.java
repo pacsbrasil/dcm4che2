@@ -515,27 +515,11 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Setter for property minDensity.
-     *
-     * @param  minDensity New value of property minDensity.
-     */
-    public void setMinDensity(int minDensity);
-
-
-    /**
      *  Getter for property maxDensity.
      *
      * @return  Value of property maxDensity.
      */
     public int getMaxDensity();
-
-
-    /**
-     *  Setter for property maxDensity.
-     *
-     * @param  maxDensity New value of property maxDensity.
-     */
-    public void setMaxDensity(int maxDensity);
 
 
     /**

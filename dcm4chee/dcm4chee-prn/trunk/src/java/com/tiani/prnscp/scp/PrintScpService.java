@@ -362,64 +362,6 @@ public class PrintScpService
 
 
     // Package protected ---------------------------------------------
-
-    String checkAttributeValue(String aet, String test, Dataset ds, int tag,
-            boolean type1)
-        throws DcmServiceException
-    {
-        String val = ds.getString(tag);
-        if (val == null) {
-            if (type1) {
-                log.warn("Missing attribute " + Tags.toString(tag));
-                throw new DcmServiceException(Status.MissingAttributeValue);
-            }
-            return null;
-        }
-        try {
-            if (isPrinter(aet, test,
-                    new Object[]{val},
-                    new String[]{String.class.getName()})) {
-                return val;
-            }
-        } catch (Exception e) {
-            log.error("Failed to checkAttributeValue " + test, e);
-            throw new DcmServiceException(Status.ProcessingFailure);
-        }
-        if (type1) {
-            log.warn("Invalid attribute value " + ds.get(tag));
-            throw new DcmServiceException(Status.InvalidAttributeValue);
-        } else {
-            log.warn("Ignore invalid attribute value " + ds.get(tag));
-            ds.remove(tag);
-            return null;
-        }
-    }
-
-
-    String checkImageDisplayFormat(String aet, String val, String orientation)
-        throws DcmServiceException
-    {
-        if (val == null) {
-            throw new DcmServiceException(Status.MissingAttributeValue);
-        }
-        try {
-            if (orientation == null) {
-                orientation =
-                        (String) getPrinterAttribute(aet, "DefaultFilmOrientation");
-            }
-            if (isPrinter(aet, "isSupportsDisplayFormat",
-                    new Object[]{val, orientation},
-                    new String[]{String.class.getName(), String.class.getName()})) {
-                return val;
-            }
-        } catch (Exception e) {
-            log.error("Failed to checkImageDisplayFormat:", e);
-            throw new DcmServiceException(Status.ProcessingFailure);
-        }
-        throw new DcmServiceException(Status.InvalidAttributeValue);
-    }
-
-
     private ObjectName makePrinterName(String aet)
         throws MalformedObjectNameException
     {
@@ -476,6 +418,134 @@ public class PrintScpService
         Boolean b = (Boolean)
                 server.invoke(makePrinterName(aet), methode, arg, type);
         return b.booleanValue();
+    }
+
+
+    void checkAttribute(Dataset ds, int tag, String aet, String test, Command rsp)
+    throws Exception
+    {
+        String s = ds.getString(tag);
+        if (s == null) {
+            return;
+        }
+        if (isPrinter(aet, test, s)) {
+            return;
+        }
+        log.warn("Attribute Value Out Of Range: " + ds.get(tag));
+        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        ds.remove(tag);
+    }
+
+
+    void checkAttribute(Dataset ds, int tag, String[] enum, Command rsp)
+    {
+        String s = ds.getString(tag);
+        if (s == null) {
+            return;
+        }
+        for (int i = 0; i < enum.length; ++i) {
+            if (enum[i].equals(s)) {
+                return;
+            }
+        }
+        log.warn("Attribute Value Out Of Range: " + ds.get(tag));
+        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        ds.remove(tag);
+    }
+
+
+    void ignoreAttribute(Dataset ds, int tag, Command rsp)
+    {
+        ignoreAttribute(ds, tag, rsp, Status.AttributeListError);
+    }
+
+
+    void ignoreAttribute(Dataset ds, int tag, Command rsp, int errcode)
+    {
+        DcmElement e = ds.get(tag);
+        if (e == null) {
+            return;
+        }
+        log.warn("Attribute not supported: " + e);
+        rsp.putUS(Tags.Status, errcode);
+        ds.remove(tag);
+    }
+
+
+    void checkAttributeLen(Dataset ds, int tag, int maxlen, Command rsp)
+    {
+        String s = ds.getString(tag);
+        if (s == null) {
+            return;
+        }
+        if (s.length() <= maxlen) {
+            return;
+        }
+        log.warn("Value Out Of Range: " + ds.get(tag));
+        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        ds.remove(tag);
+    }
+
+
+    void checkNumberOfCopies(Dataset ds, String aet, Command rsp)
+        throws Exception
+    {
+        Integer copies = ds.getInteger(Tags.NumberOfCopies);
+        if (copies == null) {
+            return;
+        }
+        int i = copies.intValue();
+        if (i > 0 && i <= getIntPrinterAttribute(aet, "MaxNumberOfCopies")) {
+            return;
+        }
+        log.warn("Number Of Copies Value Out Of Range: " + i);
+        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        ds.remove(Tags.NumberOfCopies);
+    }
+
+
+    void checkMinMaxDensity(Dataset ds, String aet, Command rsp)
+        throws Exception
+    {
+        int minDensityPrinter = getIntPrinterAttribute(aet, "MinDensity");
+        int minDensity = ds.getInt(Tags.MinDensity, minDensityPrinter);
+        if (minDensity < minDensityPrinter) {
+            log.warn("Min Density Value: " + minDensity
+                +" < Min Density Printer: " + minDensityPrinter);
+            rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            ds.putUS(Tags.MinDensity, minDensity = minDensityPrinter);
+        }
+        int maxDensityPrinter = getIntPrinterAttribute(aet, "MaxDensity");
+        int maxDensity = ds.getInt(Tags.MaxDensity, maxDensityPrinter);
+        if (maxDensity > maxDensityPrinter) {
+            log.warn("Max Density Value: " + maxDensity
+                +" > Max Density Printer: " + maxDensityPrinter);
+            rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            ds.putUS(Tags.MaxDensity, maxDensity = maxDensityPrinter);
+        }
+        if (minDensity > maxDensity) {
+            log.warn("Min Density Value: " + minDensity
+                +" < Max Density Value: " + maxDensity);
+            rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            ds.putUS(Tags.MinDensity, minDensityPrinter);
+            ds.putUS(Tags.MaxDensity, maxDensityPrinter);
+        }
+    }
+    
+    void checkImageDisplayFormat(Dataset ds, String aet, Command rsp)
+        throws Exception
+    {
+        String s = ds.getString(Tags.ImageDisplayFormat);
+        if (s == null) {
+            log.error("Missing Image Display Format");
+            throw new DcmServiceException(Status.MissingAttribute);
+        }
+        if (isPrinter(aet, "isSupportsDisplayFormat",
+                s, ds.getString(Tags.FilmOrientation))) {
+            return;
+        }
+        log.error("Invalid Image Display Format Value: " + s);
+        throw new DcmServiceException(Status.InvalidAttributeValue);
     }
 
 

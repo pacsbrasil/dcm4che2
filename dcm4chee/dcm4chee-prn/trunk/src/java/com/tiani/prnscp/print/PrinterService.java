@@ -183,12 +183,6 @@ public class PrinterService
     /**  Holds value of property maxQueuedJobCount. */
     private int maxQueuedJobCount = 10;
 
-    /**  Holds value of property minDensity. */
-    private int minDensity = 0;
-
-    /**  Holds value of property maxDensity. */
-    private int maxDensity = 200;
-
     /**  Holds value of property pageMargin. */
     private float[] pageMargin;
 
@@ -980,7 +974,9 @@ public class PrinterService
         if (!displayFormat.startsWith("STANDARD\\")) {
             return false;
         }
-        if (filmOrientation.equals("PORTRAIT")) {
+        if (filmOrientation != null
+                 ? filmOrientation.equals("PORTRAIT")
+                 : defaultPortrait) {
             return contains(this.displayFormat, displayFormat.substring(9));
         }
         int pos = displayFormat.lastIndexOf(',');
@@ -1403,18 +1399,8 @@ public class PrinterService
      */
     public int getMinDensity()
     {
-        return this.minDensity;
-    }
-
-
-    /**
-     *  Setter for property minDensity.
-     *
-     * @param  minDensity New value of property minDensity.
-     */
-    public void setMinDensity(int minDensity)
-    {
-        this.minDensity = minDensity;
+        float[] od = getGrayscaleODs();
+        return (int) (od[0] * 100);
     }
 
 
@@ -1425,18 +1411,8 @@ public class PrinterService
      */
     public int getMaxDensity()
     {
-        return this.maxDensity;
-    }
-
-
-    /**
-     *  Setter for property maxDensity.
-     *
-     * @param  maxDensity New value of property maxDensity.
-     */
-    public void setMaxDensity(int maxDensity)
-    {
-        this.maxDensity = maxDensity;
+        float[] od = getGrayscaleODs();
+        return (int) (od[od.length-1] * 100);
     }
 
 
@@ -1594,8 +1570,8 @@ public class PrinterService
             throw new IllegalArgumentException("fname:" + fname);
         }
         int extPos = fname.length() - ADF_FILE_EXT.length();
-        int numPos = fname.lastIndexOf('.', extPos-1);
-        return Integer.parseInt(fname.substring(numPos+1, extPos));
+        int numPos = fname.lastIndexOf('.', extPos - 1);
+        return Integer.parseInt(fname.substring(numPos + 1, extPos));
     }
 
 
@@ -1607,7 +1583,7 @@ public class PrinterService
                 try {
                     return parseAnnotationBoxCount(name) >= 0;
                 } catch (RuntimeException e) {
-                    log.warn("Illegal ADF Filename - " +  name);
+                    log.warn("Illegal ADF Filename - " + name);
                     return false;
                 }
             }
@@ -1633,9 +1609,10 @@ public class PrinterService
         File dir = toFile(annotationDir);
         String[] fnames = dir.list(ADF_FILENAME_FILTER);
         for (int i = 0; i < fnames.length; ++i) {
-            int extPos = fnames[i].length() - ADF_FILE_EXT.length();
-            int numPos = fname.lastIndexOf('.', extPos-1);
-            fnames[i] = fnames[i].substring(0, numPos);
+            String fname = fnames[i];
+            int extPos = fname.length() - ADF_FILE_EXT.length();
+            int numPos = fname.lastIndexOf('.', extPos - 1);
+            fnames[i] = fname.substring(0, numPos);
         }
         return fnames;
     }
@@ -1656,13 +1633,15 @@ public class PrinterService
 
         return parseAnnotationBoxCount(f.getName());
     }
-    
-    File getAnnotationFile(String annotationID) {
+
+
+    File getAnnotationFile(String annotationID)
+    {
         File dir = toFile(annotationDir);
-        File[] files =  dir.listFiles(ADF_FILENAME_FILTER);
+        File[] files = dir.listFiles(ADF_FILENAME_FILTER);
         for (int i = 0; i < files.length; ++i) {
             if (files[i].getName().startsWith(annotationID)) {
-                return  files[i];
+                return files[i];
             }
         }
         return null;
@@ -2277,8 +2256,9 @@ public class PrinterService
         throws PrintException, IOException
     {
         log.info("Printing grayscale [GSDF]");
+        float[] od = getGrayscaleODs();
         print(new Grayscale(this, calibration.getPValToDDLwGSDF(8,
-                minDensity / 100.f, maxDensity / 100.f,
+                od[0], od[od.length-1],
                 illumination, reflectedAmbientLight),
                 printerName + "[GSDF]"), null, false);
         log.info("Printed grayscale [GSDF]");
@@ -2295,8 +2275,9 @@ public class PrinterService
         throws PrintException, IOException
     {
         log.info("Printing grayscale [LIN OD]");
+        float[] od = getGrayscaleODs();
         print(new Grayscale(this, calibration.getPValToDDLwLinOD(8,
-                minDensity / 100.f, maxDensity / 100.f),
+                od[0], od[od.length-1]),
                 printerName + "[LIN OD]"), null, false);
         log.info("Printed grayscale [LIN OD]");
     }

@@ -156,7 +156,7 @@ class ImageBoxService extends DcmServiceBase
                 parser.setDcmHandler(box.getDcmHandler());
             }
             parser.parseDataset(tuid, -1);
-            session.getCurrentFilmBox().setImageBox(boxuid, box, pluts);
+            session.getCurrentFilmBox().setImageBox(boxuid, box, pluts, rspCmd);
             return null;
         } catch (DcmServiceException e) {
             scp.getLog().warn("Failed to set Image Box SOP Instance", e);
