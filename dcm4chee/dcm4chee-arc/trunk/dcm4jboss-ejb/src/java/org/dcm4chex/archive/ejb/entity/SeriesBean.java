@@ -325,10 +325,24 @@ public abstract class SeriesBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, StudyLocal study)
         throws CreateException {
+        updateMpps();
         setStudy(study);
         study.addModalityInStudy(getModality());
         study.incNumberOfStudyRelatedSeries(1);
         log.info("Created " + prompt());
+    }
+
+    private void updateMpps() {
+        final String ppsiuid = getPpsIuid();
+        MPPSLocal mpps = null;
+        if (ppsiuid != null)
+        try {
+            mpps = mppsHome.findBySopIuid(ppsiuid);
+        } catch (ObjectNotFoundException ignore) {
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        setMpps(mpps);
     }
 
     public void ejbRemove() throws RemoveException {
@@ -358,13 +372,6 @@ public abstract class SeriesBean implements EntityBean {
         if (refPPS != null) {
             final String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
             setPpsIuid(ppsUID);
-            try {
-                MPPSLocal mpps = mppsHome.findBySopIuid(ppsUID);
-                setMpps(mpps);            
-            } catch (ObjectNotFoundException ignore) {
-            } catch (FinderException e) {
-                throw new EJBException(e);
-            }
         }
     }
 

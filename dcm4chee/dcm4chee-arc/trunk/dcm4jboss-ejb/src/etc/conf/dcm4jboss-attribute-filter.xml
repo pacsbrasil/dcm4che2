@@ -48,6 +48,8 @@
     <attr tag="(0008,0060)"/>
 <!-- Series Description -->
     <attr tag="(0008,103E)"/>
+<!-- Referenced Performed Procedure Step Sequence -->
+    <attr tag="(0008,1111)"/>
 <!-- Body Part Examined -->
     <attr tag="(0018,0015)"/>
 <!-- Series Instance UID -->

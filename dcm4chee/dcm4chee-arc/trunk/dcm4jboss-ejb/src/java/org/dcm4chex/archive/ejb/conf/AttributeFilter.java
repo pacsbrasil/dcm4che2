@@ -19,10 +19,11 @@
  */
 package org.dcm4chex.archive.ejb.conf;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import javax.xml.parsers.SAXParserFactory;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -36,15 +37,13 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public final class AttributeFilter {
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
-    private Dataset patientFilter = dof.newDataset();
-    private Dataset studyFilter = dof.newDataset();
-    private Dataset seriesFilter = dof.newDataset();
-    private Dataset instanceFilter = dof.newDataset();
+    private int[] patientFilter;
+    private int[] studyFilter;
+    private int[] seriesFilter;
+    private int[] instanceFilter;
 
     private class MyHandler extends DefaultHandler {
-        private Dataset filter = null;
+        private ArrayList list = new ArrayList();
 
         public void startElement(
             String uri,
@@ -53,18 +52,32 @@ public final class AttributeFilter {
             Attributes attributes)
             throws SAXException {
             if (qName.equals("attr")) {
-                filter.putXX(Tags.valueOf(attributes.getValue("tag")));
-            } else if (qName.equals("patient")) {
-                filter = patientFilter;
-            } else if (qName.equals("study")) {
-                filter = studyFilter;
-            } else if (qName.equals("series")) {
-                filter = seriesFilter;
-            } else if (qName.equals("instance")) {
-                filter = instanceFilter;
+                list.add(attributes.getValue("tag"));
             }
         }
 
+        private int[] tags() {
+            int[] array = new int[list.size()];
+            for (int i = 0; i < array.length; i++) {
+	            array[i] = Tags.valueOf((String) list.get(i));
+            }
+            Arrays.sort(array);
+            list.clear();
+            return array;
+        }
+
+        public void endElement(String uri, String localName, String qName)
+                throws SAXException {
+            if (qName.equals("patient")) {
+                patientFilter = tags();
+            } else if (qName.equals("study")) {
+                studyFilter = tags();
+            } else if (qName.equals("series")) {
+                seriesFilter = tags();
+            } else if (qName.equals("instance")) {
+                instanceFilter = tags();
+            }
+        }
     }
 
     public AttributeFilter(String uri) throws ConfigurationException {
@@ -82,28 +95,28 @@ public final class AttributeFilter {
     /**
      * @return
      */
-    public final Dataset getPatientFilter() {
+    public final int[] getPatientFilter() {
         return patientFilter;
     }
 
     /**
      * @return
      */
-    public final Dataset getStudyFilter() {
+    public final int[] getStudyFilter() {
         return studyFilter;
     }
 
     /**
      * @return
      */
-    public final Dataset getSeriesFilter() {
+    public final int[] getSeriesFilter() {
         return seriesFilter;
     }
 
     /**
      * @return
      */
-    public final Dataset getInstanceFilter() {
+    public final int[] getInstanceFilter() {
         return instanceFilter;
     }
 
