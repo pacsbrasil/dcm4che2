@@ -135,7 +135,7 @@ public class PrintSCU {
 	private void updatePLUTPresContext() {
 		if (negotiatePLUT) {
 			if (pcidPLUT == 0) {
-				requestor.addPresContext( 
+                pcidPLUT = requestor.addPresContext( 
 						UIDs.PresentationLUT, tsuids);				
 			}
 		} else {
