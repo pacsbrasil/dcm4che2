@@ -47,8 +47,8 @@ public class DirBuilderTest extends TestCase {
    private static final File OUT_FILE = new File("data/TMP_TEST");
    private static final String[] FILE_IDs = {
       "data/6AF8_10",
-      "data/6AF8_30",
       "data/MRABDO",
+      "data/6AF8_30",
       "data/MRABDOR",
    };
    
