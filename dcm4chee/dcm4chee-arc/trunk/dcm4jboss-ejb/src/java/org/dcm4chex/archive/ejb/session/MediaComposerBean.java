@@ -488,6 +488,7 @@ public abstract class MediaComposerBean implements SessionBean {
      */
     public void setMediaStatus(int pk, int status, String info)
     		throws FinderException {
+    	log.info("setMediaStatus: pk="+pk+", status:"+status+", info"+info);
         MediaLocal media = mediaHome.findByPrimaryKey(new Integer(pk));
         media.setMediaStatus(status);
         media.setMediaStatusInfo(info);
