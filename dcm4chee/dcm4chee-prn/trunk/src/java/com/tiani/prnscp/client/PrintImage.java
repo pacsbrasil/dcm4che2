@@ -38,16 +38,18 @@ public class PrintImage
 {
     private final static String USAGE =
             "Usage: java -jar print-image.jar [OPTIONS] FILE\n\n" +
-            "Print DICOM image FILE\n\n" +
+            "Print DICOM image in FILE\n\n" +
             "Options:\n" +
             " -a, --aet=AET   print on printer bound to specified AET. Default: TIANI_PRINT\n" +
-            " -c, --cfg=INFO  print image with specified Configuration Information\n" +
+            " -k, --cfg=INFO  print image with specified Configuration Information\n" +
+            " -c, --color     print image in color print mode (default grayscale)\n" +
             " -h, --help      show this help and exit\n";
 
     private final static String NAME_PREFIX = "dcm4chex:service=Printer,calledAET=";
 
     private String aet = "TIANI_PRINT";
     private String cfg = "";
+    private boolean color = false;
 
 
     /**
@@ -73,6 +75,17 @@ public class PrintImage
 
 
     /**
+     *  Sets the color attribute of the PrintImage object
+     *
+     * @param  color  The new color value
+     */
+    public void setColor(boolean color)
+    {
+        this.color = color;
+    }
+
+
+    /**
      *  Description of the Method
      *
      * @param  file           Description of the Parameter
@@ -90,11 +103,13 @@ public class PrintImage
         server.invoke(new ObjectName(NAME_PREFIX + aet), "printImage",
                 new Object[]{
                 file.getCanonicalPath(),
-                cfg
+                cfg,
+                new Boolean(color)
                 },
                 new String[]{
                 String.class.getName(),
                 String.class.getName(),
+                Boolean.class.getName(),
                 });
     }
 
@@ -110,11 +125,12 @@ public class PrintImage
     {
         LongOpt[] longopts = {
                 new LongOpt("aet", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
-                new LongOpt("cfg", LongOpt.REQUIRED_ARGUMENT, null, 'c'),
+                new LongOpt("cfg", LongOpt.REQUIRED_ARGUMENT, null, 'k'),
+                new LongOpt("color", LongOpt.NO_ARGUMENT, null, 'c'),
                 new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h')
                 };
 
-        Getopt g = new Getopt("plut.jar", args, "a:c:h", longopts, true);
+        Getopt g = new Getopt("plut.jar", args, "a:k:ch", longopts, true);
         PrintImage inst = new PrintImage();
         int c;
         while ((c = g.getopt()) != -1) {
@@ -122,8 +138,11 @@ public class PrintImage
                 case 'a':
                     inst.setAET(g.getOptarg());
                     break;
-                case 'c':
+                case 'k':
                     inst.setConfigInfo(g.getOptarg());
+                    break;
+                case 'c':
+                    inst.setColor(true);
                     break;
                 case 'h':
                 case '?':

@@ -26,19 +26,17 @@ import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.print.attribute.standard.Chromaticity;
 import org.dcm4che.data.Dataset;
-
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
-
 import org.jboss.logging.Logger;
 
 /**
@@ -60,16 +58,18 @@ class PrintableFilmBox implements Printable
     private final PageFormat pageFormat;
     private final Annotation annotation;
     private final int totPages;
+    private final Dataset filmbox;
     private final PrintableImageBox[] imageBoxes;
     private final int rows;
     private final int columns;
+    private String cfgInfo;
 
 
     // Static --------------------------------------------------------
 
     // Constructors --------------------------------------------------
     /**
-     *  Constructor for the PrintableFilmBox object
+     *Constructor for the PrintableFilmBox object
      *
      * @param  service          Description of the Parameter
      * @param  hcDir            Description of the Parameter
@@ -77,10 +77,15 @@ class PrintableFilmBox implements Printable
      * @param  totPages         Description of the Parameter
      * @param  session          Description of the Parameter
      * @param  callingAET       Description of the Parameter
+     * @param  defConfigInfo    Description of the Parameter
+     * @param  defAdfID         Description of the Parameter
+     * @param  chromaticity     Description of the Parameter
      * @exception  IOException  Description of the Exception
      */
     public PrintableFilmBox(PrinterService service, File hcDir, File spFile,
-            int totPages, Dataset session, String callingAET)
+            int totPages, Dataset session, String callingAET,
+            String defConfigInfo, String defAdfID,
+            Chromaticity chromaticity)
         throws IOException
     {
         this.service = service;
@@ -95,11 +100,10 @@ class PrintableFilmBox implements Printable
                 in.close();
             } catch (IOException ignore) {}
         }
-        Dataset filmbox = storedPrint.getItem(Tags.FilmBoxContentSeq);
+        filmbox = storedPrint.getItem(Tags.FilmBoxContentSeq);
         // set Filmbox Configuration Information if not provided.
         if (filmbox.getString(Tags.ConfigurationInformation) == null) {
-            filmbox.putLO(Tags.ConfigurationInformation,
-                    service.getConfigurationInformationForCallingAET(callingAET));
+            filmbox.putLO(Tags.ConfigurationInformation, defConfigInfo);
         }
         this.pageFormat = toPageFormat(filmbox);
         // parse ImageDisplayFormat
@@ -118,11 +122,11 @@ class PrintableFilmBox implements Printable
                     filmbox,
                     imageBox,
                     storedPrint,
-                    hcFile);
+                    hcFile,
+                    chromaticity);
         }
 
-        String adfID = filmbox.getString(Tags.AnnotationDisplayFormatID,
-                service.getAnnotationForCallingAET(callingAET));
+        String adfID = filmbox.getString(Tags.AnnotationDisplayFormatID, defAdfID);
         annotation = new Annotation(service, adfID, totPages);
         annotation.setSession(session);
         annotation.setCallingAET(callingAET);
@@ -132,23 +136,35 @@ class PrintableFilmBox implements Printable
 
 
     /**
+     *  Gets the attributes attribute of the PrintableFilmBox object
+     *
+     * @return    The attributes value
+     */
+    public Dataset getAttributes()
+    {
+        return filmbox;
+    }
+
+
+    /**
      *Constructor for the PrintableFilmBox object
      *
      * @param  service          Description of the Parameter
      * @param  hcFile           Description of the Parameter
      * @param  config           Description of the Parameter
-     * @param  session          Description of the Parameter
+     * @param  chromaticity     Description of the Parameter
      * @exception  IOException  Description of the Exception
      */
-    public PrintableFilmBox(PrinterService service, File hcFile, String config)
+    public PrintableFilmBox(PrinterService service, File hcFile, String config,
+            Chromaticity chromaticity, String sessionLabel)
         throws IOException
     {
         this.service = service;
         this.log = service.getLog();
         this.totPages = 1;
         Dataset session = dof.newDataset();
-        session.putLO(Tags.FilmSessionLabel, hcFile.getName() + "[" + config + "]");
-        Dataset filmbox = dof.newDataset();
+        session.putLO(Tags.FilmSessionLabel, sessionLabel);
+        filmbox = dof.newDataset();
         filmbox.putLO(Tags.ConfigurationInformation, config);
         this.pageFormat = toPageFormat(filmbox);
         this.rows = 1;
@@ -159,7 +175,8 @@ class PrintableFilmBox implements Printable
                 filmbox,
                 filmbox,
                 null,
-                hcFile);
+                hcFile,
+                chromaticity);
 
         String adfID = service.getAnnotationForPrintImage();
         annotation = new Annotation(service, adfID, totPages);

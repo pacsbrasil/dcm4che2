@@ -31,17 +31,17 @@
     <!--
     Specifies name of the printer used by the system.
     -->
-    <attribute name="PrinterName">MINOLTA</attribute>
+    <attribute name="PrinterName">myprinter</attribute>
     
     <!--
     Specifies Manufacturer of the printer.
     -->
-    <attribute name="Manufacturer">Minolta</attribute>
+    <attribute name="Manufacturer"></attribute>
 
     <!--
     Specifies Manufacturer's model number of the printer.
     -->
-    <attribute name="ManufacturerModelName">CF 9001</attribute>
+    <attribute name="ManufacturerModelName"></attribute>
 
     <!--
     Specifies Manufacturer's serial number of the printer.
@@ -51,7 +51,7 @@
     <!--
     Specifies Manufacturer's designation of software version of the printer.
     -->
-    <attribute name="SoftwareVersion">EFI Fiery X3e</attribute>
+    <attribute name="SoftwareVersion"></attribute>
 
     <!--
     Specifies maximal number of jobs in printer job queue. Printer Jobs will
@@ -83,6 +83,12 @@
     printing of monochrome (=grayscale) images.
     -->
     <attribute name="PrintGrayAsColor">false</attribute>
+    
+    <!--
+    Specifies if gray content of color images shall be treated as P-values,
+    so P-LUTs can be applied/configured.
+    -->
+    <attribute name="PrintColorWithPLUT">true</attribute>
     
     <!--
     Activate support for the Presentation LUT SOP Class.
@@ -211,11 +217,19 @@
     if the calling Print SCU does whether provide a PLUT using the PLUT SOP class,
     nor specifies itselfs a value of Film Box attribute
     (2010,0150) Configuration Information.
+    
     Multiple entires must be separated by  '\' characters or line breaks.
-    If no entry match the calling AET, the Configuration Information specified
-    in the first entry will be used.
-    At least, one entry must be configured!
-    Format: <calling-aet>:<Configuration Information Value>
+    
+    Format: <calling-aet>[.grayscale|.color]:<Configuration Information Value>
+    
+    The optional [.grayscale|.color] suffix allows to associate different
+    Configuration Information values for Grayscale and Color Print to a Calling AET.
+    
+    If no entry match the calling AET, the Configuration Information specified by
+    .grayscale:<Default Configuration Information Value for Grayscale Print>
+    .color:<Default Configuration Information Value for Color Print>
+    will be used. These two entries  must be configured!
+    
     Configuration Information Syntax:
         shape=IDENTITY
         shape=LIN_OD
@@ -225,7 +239,8 @@
         center=<c>,slope=<s>,gamma=<g>
     -->
     <attribute name="ConfigurationInformationForCallingAET">
-      AET:shape=IDENTITY
+      .grayscale:shape=IDENTITY
+      .color:shape=IDENTITY
     </attribute>
 
     <!--
@@ -309,45 +324,43 @@
         
     <!--
     Specifies directory, containing calibration related configuration files:
-    DSI256.ods        - measured (256) OD values of reference DSI256 pattern
-                        [Required for semi-automatic calibration]
-    DSI256.jpg        - scanned reference DSI256 pattern
-                        [Required for semi-automatic calibration]
-    <calledAET>/*.jpg - scanned DSI256 pattern printouts
-                        [Required for semi-automatic calibration]
-    <calledAET>.ods   - Used for inital calibration (=before first semi-automatic calibration).
-                        Automatic updated after successful semi-automatic calibration,
-                        if BackupCalibration=true.
+    DSI256.jpg
+      scanned reference DSI256 pattern
+    DSI256.ods
+      measured (256) OD values of reference DSI256 pattern
+    <calledAET>.monochrome/*.jpg 
+      scanned DSI256 pattern printed in monochrome mode
+    <calledAET>.monochrome.ods
+      (256) OD values in monochrome mode. Calculated from most recent <calledAET>.monochrome/*.jpg
+    <calledAET>.color/*.jpg 
+      scanned DSI256 pattern printed in monochrome mode
+    <calledAET>.color.ods
+      (256) OD values in color mode. Calculated from most recent <calledAET>.monochrome/*.jpg
     -->    
     <attribute name="CalibrationDir">conf/calibration</attribute>
     
-    
-    <!--
-    Activates automatic check for new scanned DSI 256 pattern print out in 
-    calibration from scanned in calibration directoy
-    (s. attribute "CalibrationDir") - and performing a new calibration, if
-    a new scan file is found - immediately before each print.
-    -->    
-    <attribute name="AutoCalibration">true</attribute>
-
-    <!--
-    Activates backup of last successful auto calibration.
-    -->    
-    <attribute name="BackupCalibration">true</attribute>
-    
+        
     <!--
     Specifies threshold in device driving levels, used for Border Detection by
-    semi-automatic calibration from scanned DSI256 pattern printout.
+    printer OD calculation from scanned DSI256 pattern printout.
     Usually, you need not change the default value 200.
     -->    
     <attribute name="ScanThreshold">200</attribute>
     
     <!--
     Specifies extension of measurement area in % of step height,
-    used by semi-automatic calibration from scanned gray step printout.
+    used by printer OD calculation from scanned gray step printout.
     Usually, you need not change the default value 50.
     -->
     <attribute name="ScanPointExtension">50</attribute>
+    
+    <!--
+    Specifies if printer ODs calculated from scanned DSI256 pattern printout
+    shall be adjusted to min OD = 0, to decrease derivation from actual
+    ODs caused by limited gray resolution of scanned printout.
+    Usually, you need not change the default value true.
+     -->
+    <attribute name="AssumeZeroMinOD">true</attribute>
     
     <!--
     Activates redirection of all printing into a postscript file.

@@ -44,10 +44,10 @@ class ScheduledJob implements Pageable
     // Constants -----------------------------------------------------
 
     // Attributes ----------------------------------------------------
-    private final String job;
+    private final String path;
     private final String jobID;
     private final Dataset session;
-    private final boolean color;
+    private final Boolean color;
     private String callingAET;
     private File hcDir;
     private File[] spFiles;
@@ -60,16 +60,16 @@ class ScheduledJob implements Pageable
     /**
      *  Constructor for the ScheduledJob object
      *
-     * @param  job      Description of the Parameter
+     * @param  path     Description of the Parameter
      * @param  session  Description of the Parameter
      * @param  color    Description of the Parameter
      */
-    public ScheduledJob(String job, Dataset session, boolean color)
+    public ScheduledJob(String path, Dataset session, Boolean color)
     {
-        this.job = job;
+        this.path = path;
         this.session = session;
         this.color = color;
-        File jobDir = new File(job);
+        File jobDir = new File(path);
         this.jobID = jobDir.getName();
         File rootDir = jobDir.getParentFile().getParentFile();
         this.hcDir = new File(rootDir, "HC");
@@ -94,7 +94,7 @@ class ScheduledJob implements Pageable
      *
      * @return    The color value
      */
-    public boolean isColor()
+    public Boolean isColor()
     {
         return color;
     }
@@ -123,13 +123,13 @@ class ScheduledJob implements Pageable
 
 
     /**
-     *  Gets the job attribute of the ScheduledJob object
+     *  Gets the path attribute of the ScheduledJob object
      *
-     * @return    The job value
+     * @return    The path value
      */
-    public String getJob()
+    public String getPath()
     {
-        return job;
+        return path;
     }
 
 
@@ -153,10 +153,14 @@ class ScheduledJob implements Pageable
     public void initFilmBoxes(PrinterService service)
         throws IOException
     {
+        String defConfig = service.getConfigurationInformationForCallingAET(
+                callingAET, color);
+        String defADF = service.getAnnotationForCallingAET(callingAET);
         this.filmBoxes = new PrintableFilmBox[spFiles.length];
         for (int i = 0; i < filmBoxes.length; ++i) {
-            filmBoxes[i] = new PrintableFilmBox(service, hcDir,
-                    spFiles[i], spFiles.length, session, callingAET);
+            filmBoxes[i] = new PrintableFilmBox(service, hcDir, spFiles[i],
+                    spFiles.length, session, callingAET, defConfig, defADF,
+                    service.toChromaticity(color));
         }
     }
 
@@ -168,9 +172,10 @@ class ScheduledJob implements Pageable
      */
     public String getRequestedResolutionID()
     {
-        return session != null
-                 ? session.getString(Tags.RequestedResolutionID)
-                 : null;
+        if (filmBoxes == null || filmBoxes.length == 0) {
+            throw new IllegalStateException("filmbox not  yet initalized");
+        }
+        return filmBoxes[0].getAttributes().getString(Tags.RequestedResolutionID);
     }
 
 

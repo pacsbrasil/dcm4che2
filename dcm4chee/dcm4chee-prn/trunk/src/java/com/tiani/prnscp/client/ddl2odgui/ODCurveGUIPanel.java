@@ -243,17 +243,15 @@ public class ODCurveGUIPanel extends JPanel
     void loadScannedImageCurve(File file)
         throws IOException, CalibrationException
     {
-        File dirFile = file.getParentFile();
-        
         //when setting the scan directory, make sure that the referenced OD is
         // the same, otherwise reset by removing all curves and reload a new
         // reference curve before adding this one
-        sc.setScanDir(dirFile);
+        sc.setCalibrationDir(file.getParentFile().getParentFile());
         if (refCurveFile != null && !refCurveFile.equals(sc.getRefODsFile())) {
             reset();
         }
         
-        float[] calcOds = sc.calculateGrayscaleODs();
+        float[] calcOds = sc.interpolate(sc.analyse(file));
         
         //create a curve...
         Color color = COLOR_POOL[(nextColor++) % COLOR_POOL.length];

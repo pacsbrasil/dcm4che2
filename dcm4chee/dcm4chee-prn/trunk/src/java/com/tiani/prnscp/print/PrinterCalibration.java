@@ -20,12 +20,9 @@
 package com.tiani.prnscp.print;
 
 import java.util.Arrays;
-import java.util.Date;
-
+import javax.print.attribute.standard.Chromaticity;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.DAFormat;
-import org.dcm4che.util.TMFormat;
 
 /**
  *  <description>
@@ -39,25 +36,25 @@ public class PrinterCalibration
     // Constants -----------------------------------------------------
 
     // Attributes ----------------------------------------------------
-    private long calibrationTime = 0L;
-
-    private float[] printerODs = new float[256];
+    private float[] monochromeODs = new float[256];
+    private float[] colorODs = new float[256];
 
     // Static --------------------------------------------------------
 
     // Constructors --------------------------------------------------
 
     // Public --------------------------------------------------------
-
     /**
-     *  Returns Device Driving Level to print specified Optical Density
+     *  Description of the Method
      *
-     * @param  od  Optical Density to print
-     * @return     corresponding Device Driving Level
+     * @param  chromaticity  Description of the Parameter
+     * @param  od            Description of the Parameter
+     * @return               Description of the Return Value
      */
-    public int toDDL(float od)
+    public int toDDL(Chromaticity chromaticity, float od)
     {
-        int i = Arrays.binarySearch(printerODs, od);
+        float[] ddl2od = odsFor(chromaticity);
+        int i = Arrays.binarySearch(ddl2od, od);
         if (i >= 0) {
             return 255 - i;
         }
@@ -68,23 +65,17 @@ public class PrinterCalibration
         if (i > 255) {
             return 0;
         }
-        float diff1 = printerODs[i] - od;
-        float diff2 = od - printerODs[i - 1];
+        float diff1 = ddl2od[i] - od;
+        float diff2 = od - ddl2od[i - 1];
         return 255 - (diff1 < diff2 ? i : i - 1);
     }
 
 
-    /**
-     *  Returns Device Driving Levels to print specified Optical Density values
-     *
-     * @param  od  Optical Density values
-     * @return     corresponding Device Driving Levels
-     */
-    public byte[] toDDL(float[] od)
+    private byte[] toDDL(Chromaticity chromaticity, float[] od)
     {
         byte[] ddl = new byte[od.length];
         for (int pv = 0; pv < ddl.length; ++pv) {
-            ddl[pv] = (byte) toDDL(od[pv]);
+            ddl[pv] = (byte) toDDL(chromaticity, od[pv]);
         }
         return ddl;
     }
@@ -106,17 +97,18 @@ public class PrinterCalibration
 
 
     /**
-     *  Returns Device Driving Levels for P-Values interpreted as
-     *  normalized density values for given density range.
+     *  Gets the pValToDDLwLinOD attribute of the PrinterCalibration object
      *
-     * @param  n     p-value bit size
-     * @param  dmin  minimal optical density
-     * @param  dmax  maximum optical density
-     * @return       Device Driving Levels for P-Values
+     * @param  chromaticity  Description of the Parameter
+     * @param  n             Description of the Parameter
+     * @param  dmin          Description of the Parameter
+     * @param  dmax          Description of the Parameter
+     * @return               The pValToDDLwLinOD value
      */
-    public byte[] getPValToDDLwLinOD(int n, float dmin, float dmax)
+    public byte[] getPValToDDLwLinOD(Chromaticity chromaticity,
+            int n, float dmin, float dmax)
     {
-        return toDDL(getPValToLinOD(n, dmin, dmax));
+        return toDDL(chromaticity, getPValToLinOD(n, dmin, dmax));
     }
 
 
@@ -150,17 +142,18 @@ public class PrinterCalibration
      *  Returns Device Driving Levels for P-Values according DICOM GSDF
      *  for given density range and illumination conditions.
      *
-     * @param  n     p-value bit size
-     * @param  dmin  minimal optical density
-     * @param  dmax  maximum optical density
-     * @param  l0    illumination in cd/m*m
-     * @param  la    reflected ambient light in cd/m*m
-     * @return       Device Driving Levels for P-Values
+     * @param  n             p-value bit size
+     * @param  dmin          minimal optical density
+     * @param  dmax          maximum optical density
+     * @param  l0            illumination in cd/m*m
+     * @param  la            reflected ambient light in cd/m*m
+     * @param  chromaticity  Description of the Parameter
+     * @return               Device Driving Levels for P-Values
      */
-    public byte[] getPValToDDLwGSDF(int n, float dmin, float dmax,
-            float l0, float la)
+    public byte[] getPValToDDLwGSDF(Chromaticity chromaticity,
+            int n, float dmin, float dmax, float l0, float la)
     {
-        return toDDL(getPValToGsdfOD(n, dmin, dmax, l0, la));
+        return toDDL(chromaticity, getPValToGsdfOD(n, dmin, dmax, l0, la));
     }
 
 
@@ -206,16 +199,17 @@ public class PrinterCalibration
      *  Returns Optical Densities for P-Values evaluating the given
      *  Presentation LUT, the density range and illumination conditions.
      *
-     * @param  n     p-value bit size
-     * @param  dmin  minimal optical density
-     * @param  dmax  maximum optical density
-     * @param  l0    illumination in cd/m*m
-     * @param  la    reflected ambient light in cd/m*m
-     * @param  plut  Presentation LUT
-     * @return       Device Driving Levels for P-Values
+     * @param  n             p-value bit size
+     * @param  dmin          minimal optical density
+     * @param  dmax          maximum optical density
+     * @param  l0            illumination in cd/m*m
+     * @param  la            reflected ambient light in cd/m*m
+     * @param  plut          Presentation LUT
+     * @param  chromaticity  Description of the Parameter
+     * @return               Device Driving Levels for P-Values
      */
-    public byte[] getPValToDDL(int n, float dmin, float dmax,
-            float l0, float la, Dataset plut)
+    public byte[] getPValToDDL(Chromaticity chromaticity,
+            int n, float dmin, float dmax, float l0, float la, Dataset plut)
     {
         if (plut == null) {
             return getIdentityPValToDDL();
@@ -223,10 +217,10 @@ public class PrinterCalibration
         String shape = plut.getString(Tags.PresentationLUTShape);
         if (shape != null) {
             if ("IDENTITY".equals(shape)) {
-                return getPValToDDLwGSDF(n, dmin, dmax, l0, la);
+                return getPValToDDLwGSDF(chromaticity, n, dmin, dmax, l0, la);
             }
             if ("LIN OD".equals(shape)) {
-                return getPValToDDLwLinOD(n, dmin, dmax);
+                return getPValToDDLwLinOD(chromaticity, n, dmin, dmax);
             }
             throw new IllegalArgumentException("LUTShape: " + shape);
         }
@@ -252,7 +246,7 @@ public class PrinterCalibration
             throw new IllegalArgumentException("LUT Data Lenth: " + src.length
                      + " does not match 1.value of LUT Descriptor: " + desc[0]);
         }
-        byte[] lut = getPValToDDLwGSDF(desc[2], dmin, dmax, l0, la);
+        byte[] lut = getPValToDDLwGSDF(chromaticity, desc[2], dmin, dmax, l0, la);
         byte[] dst = new byte[src.length];
         for (int i = 0; i < src.length; ++i) {
             dst[i] = lut[src[i]];
@@ -262,22 +256,23 @@ public class PrinterCalibration
 
 
     /**
-     *  Sets Optical Density values for Device Driving Levels of the printer.
+     *  Sets the oDs attribute of the PrinterCalibration object
      *
-     * @param  ods  Optical Density values for 256 DDLs
+     * @param  chromaticity  The new oDs value
+     * @param  src           The new oDs value
      */
-    public void setPrinterODs(float[] ods)
+    public void setODs(Chromaticity chromaticity, float[] src)
     {
-        if (ods.length != 256) {
-            throw new IllegalArgumentException("ods.length:" + ods.length);
+        if (src.length != 256) {
+            throw new IllegalArgumentException("src.length:" + src.length);
         }
         // ensure monoton increasing
         int iMax = 0;
         int iMin = 0;
-        float max = ods[0];
-        float min = ods[0];
+        float max = src[0];
+        float min = src[0];
         for (int i = 1; i < 256; ++i) {
-            final float od = ods[i];
+            final float od = src[i];
             if (od < min) {
                 iMin = i;
                 min = od;
@@ -290,83 +285,46 @@ public class PrinterCalibration
         if (iMin >= iMax) {
             throw new IllegalArgumentException("iMin:" + iMin + ", iMax:" + iMax);
         }
-        System.arraycopy(ods, iMin, printerODs, iMin, iMax - iMin);
-        Arrays.fill(printerODs, 0, iMin, min);
-        Arrays.fill(printerODs, iMax, 256, max);
-        Arrays.sort(printerODs, iMin, iMax);
+
+        float[] dst = odsFor(chromaticity);
+        System.arraycopy(src, iMin, dst, iMin, iMax - iMin);
+        Arrays.fill(dst, 0, iMin, min);
+        Arrays.fill(dst, iMax, 256, max);
+        Arrays.sort(dst, iMin, iMax);
+    }
+
+
+    private float[] odsFor(Chromaticity chromaticity)
+    {
+        return Chromaticity.COLOR.equals(chromaticity)
+                 ? colorODs
+                 : monochromeODs;
     }
 
 
     /**
      *  Gets the minDensity attribute of the PrinterCalibration object
      *
-     * @return    The minDensity value
+     * @param  chromaticity  Description of the Parameter
+     * @return               The minDensity value
      */
-    public int getMinDensity()
+    public int getMinDensity(Chromaticity chromaticity)
     {
-        if (printerODs == null) {
-            throw new IllegalStateException("Printer ODs not yet iitialized");
-        }
-        return (int) (printerODs[0] * 100);
+        return (int) (odsFor(chromaticity)[0] * 100);
     }
 
 
     /**
      *  Gets the maxDensity attribute of the PrinterCalibration object
      *
-     * @return    The maxDensity value
+     * @param  chromaticity  Description of the Parameter
+     * @return               The maxDensity value
      */
-    public int getMaxDensity()
+    public int getMaxDensity(Chromaticity chromaticity)
     {
-        if (printerODs == null) {
-            throw new IllegalStateException("Printer ODs not yet iitialized");
-        }
-        return (int) (printerODs[printerODs.length - 1] * 100);
+        return (int) (odsFor(chromaticity)[255] * 100);
     }
 
-
-    /**
-     *  Sets the oDsTS attribute of the PrinterCalibration object
-     *
-     * @param  calibrationTime  The new setCalibrationTime value
-     */
-    public void setCalibrationTime(long calibrationTime)
-    {
-        this.calibrationTime = calibrationTime;
-    }
-
-
-    /**
-     *  Gets the calibrationTime attribute of the PrinterCalibration object
-     *
-     * @return    The calibrationTime value
-     */
-    public long getCalibrationTime()
-    {
-        return this.calibrationTime;
-    }
-
-
-    /**
-     *  Gets the dateOfLastCalibration attribute of the PrinterCalibration object
-     *
-     * @return    The dateOfLastCalibration value
-     */
-    public String getDateOfLastCalibration()
-    {
-        return new DAFormat().format(new Date(calibrationTime));
-    }
-
-
-    /**
-     *  Gets the timeOfLastCalibration attribute of the PrinterCalibration object
-     *
-     * @return    The timeOfLastCalibration value
-     */
-    public String getTimeOfLastCalibration()
-    {
-        return new TMFormat().format(new Date(calibrationTime));
-    }
 
     // Private -------------------------------------------------------
 

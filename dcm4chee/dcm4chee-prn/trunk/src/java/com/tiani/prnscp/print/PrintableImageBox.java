@@ -20,35 +20,34 @@
 package com.tiani.prnscp.print;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
+import java.awt.Graphics2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.print.PrinterException;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-
+import javax.print.attribute.standard.Chromaticity;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.imageio.plugins.DcmImageReadParam;
-
 import org.jboss.logging.Logger;
 
 /**
@@ -92,6 +91,7 @@ class PrintableImageBox
     private final boolean crop;
     private final int magnificationType;
     private final double reqImageSize;
+    private final byte[] pValToDDL;
 
     private final ImageReader reader;
     private final DcmImageReadParam readParam;
@@ -127,7 +127,8 @@ class PrintableImageBox
      * @exception  IOException Description of the Exception
      */
     public PrintableImageBox(PrinterService service, Dataset filmbox,
-            Dataset imageBox, Dataset storedPrint, File hcFile)
+            Dataset imageBox, Dataset storedPrint, File hcFile,
+            Chromaticity chromaticity)
         throws IOException
     {
         this.log = service.getLog();
@@ -156,34 +157,21 @@ class PrintableImageBox
                 ? (borderDensityColor == Color.BLACK ? Color.WHITE : Color.BLACK)
                 : null;
 
-        if (debug) {
-            log.debug("ImageBox #" + pos
-                     + ": Init\n\thcFile: " + hcFile
-                     + "\n\tcrop: " + crop
-                     + "\n\tmagnificationType: " + MAGNIFICATION_TYPES[magnificationType]
-                     + "\n\treqImageSize: " + reqImageSize
-                     + "\n\tborderDensityColor: " + borderDensityColor
-                     + "\n\ttrimColor: " + trimColor);
-        }
-
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         this.reader = (ImageReader) iter.next();
         this.readParam = (DcmImageReadParam) reader.getDefaultReadParam();
-        initReadParam(filmbox, imageBox, storedPrint);
-    }
-
-
-    private void initReadParam(Dataset filmbox, Dataset imageBox, Dataset storedPrint)
-        throws IOException
-    {
-        int minDensity = filmbox.getInt(Tags.MinDensity, service.getMinDensity());
-        int maxDensity = filmbox.getInt(Tags.MaxDensity, service.getMaxDensity());
-        int illumination =
+        
+        final int minDensity =
+                filmbox.getInt(Tags.MinDensity, service.getMinDensity(chromaticity));
+        final int maxDensity =
+                filmbox.getInt(Tags.MaxDensity, service.getMaxDensity(chromaticity));
+        final int illumination =
                 filmbox.getInt(Tags.Illumination, service.getIllumination());
-        int reflectedAmbientLight =
+        final int reflectedAmbientLight =
                 filmbox.getInt(Tags.ReflectedAmbientLight, service.getReflectedAmbientLight());
 
-        byte[] pValToDDL = service.getPValToDDL(
+        this.pValToDDL = service.getPValToDDL(
+                chromaticity,
                 12,
                 minDensity / 100.f,
                 maxDensity / 100.f,
@@ -201,7 +189,13 @@ class PrintableImageBox
         readParam.setPValToDDL(pValToDDL);
         if (debug) {
             log.debug("ImageBox #" + pos
-                     + " Init ReadParam:\n\tminDensity: " + minDensity
+                     + ": Init\n\thcFile: " + hcFile
+                     + "\n\tcrop: " + crop
+                     + "\n\tmagnificationType: " + MAGNIFICATION_TYPES[magnificationType]
+                     + "\n\treqImageSize: " + reqImageSize
+                     + "\n\tborderDensityColor: " + borderDensityColor
+                     + "\n\ttrimColor: " + trimColor
+                     + "\n\tminDensity: " + minDensity
                      + "\n\tmaxDensity: " + maxDensity
                      + "\n\tillumination: " + illumination
                      + "\n\treflectedAmbientLight: " + reflectedAmbientLight);
@@ -238,6 +232,8 @@ class PrintableImageBox
         String configInfo = imageBox.getString(Tags.ConfigurationInformation,
                 filmbox.getString(Tags.ConfigurationInformation));        
         if (configInfo == null) {
+            log.debug("ImageBox #" + pos
+                             + ": Use Pixel Values as DDLs");
             return null;
         }
         PLutBuilder plutBuilder = new PLutBuilder(configInfo, service.getLUTDir());
@@ -455,7 +451,10 @@ class PrintableImageBox
                          + "ppx");
             }
             readParam.setSourceRegion(chunkRect);
-            BufferedImage bi = ensureScaleable(reader.read(0, readParam));
+            BufferedImage bi = reader.read(0, readParam);
+            if (!(bi.getColorModel() instanceof IndexColorModel)) {
+                bi = rgbPVtoDDL(bi);
+            }
             if (scaleBi) {
                 dest = scaleOp.filter(bi, dest);
                 final int x1 = (int) (mm[2] * y);
@@ -467,7 +466,31 @@ class PrintableImageBox
             logMemoryUsage();
         }
     }
-
+    
+    private BufferedImage rgbPVtoDDL(BufferedImage bi) {
+        final int w = bi.getWidth();
+        final int h = bi.getHeight();
+        final int[] data = bi.getRGB(0, 0, w, h, null, 0, w);
+        if (service.isPrintColorWithPLUT()) {
+            int count = 0;
+            for (int rgb, b, i = 0; i < data.length; ++i) {
+                b = (rgb = data[i]) & 0xff;
+                if (((rgb >> 8) & 0xff) == b && ((rgb >> 16) & 0xff) == b) {
+                    b = pValToDDL[b];
+                    data[i] = b | (b << 8) | (b << 16);
+                    ++count;
+                }
+            }
+            if (debug) {
+                log.debug("Apply P-LUT to " + (count*100.f/(w*h)) + "% [= "
+                    + count + " px] of RGB image");
+            }
+        }
+        BufferedImage newbi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        newbi.setRGB(0, 0, w, h, data, 0, w);
+        return newbi;
+    }
+    
 
     private long toDestWxH(AffineTransform tx, Rectangle clippedSrcRect)
     {
@@ -490,28 +513,15 @@ class PrintableImageBox
         }
     }
 
-
-    private BufferedImage ensureScaleable(BufferedImage bi)
-    {
-        if (bi.getColorModel() instanceof IndexColorModel) {
-            return bi;
-        }
-        int w = bi.getWidth();
-        int h = bi.getHeight();
-        int[] b = bi.getRGB(0, 0, w, h, null, 0, w);
-        BufferedImage newbi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        newbi.setRGB(0, 0, w, h, b, 0, w);
-        return newbi;
-    }
-
-
     private void logMemoryUsage()
     {
-        Runtime rt = Runtime.getRuntime();
-        log.debug("Memory: max=" + (rt.maxMemory() / (float) MEGA_BYTE)
-                 + "MB, total=" + (rt.totalMemory() / (float) MEGA_BYTE)
-                 + "MB, free=" + (rt.freeMemory() / (float) MEGA_BYTE)
-                 + "MB");
+        if (debug) {
+            Runtime rt = Runtime.getRuntime();
+            log.debug("Memory: max=" + (rt.maxMemory() / (float) MEGA_BYTE)
+                     + "MB, total=" + (rt.totalMemory() / (float) MEGA_BYTE)
+                     + "MB, free=" + (rt.freeMemory() / (float) MEGA_BYTE)
+                     + "MB");
+        }
     }
 }
 

@@ -95,6 +95,42 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
+     *  Gets the status attribute of the PrinterServiceMBean object
+     *
+     * @param  color  Description of the Parameter
+     * @return        The status value
+     */
+    public PrinterStatus getStatus(Boolean color);
+
+
+    /**
+     *  Gets the statusInfo attribute of the PrinterServiceMBean object
+     *
+     * @param  color  Description of the Parameter
+     * @return        The statusInfo value
+     */
+    public PrinterStatusInfo getStatusInfo(Boolean color);
+
+
+    /**
+     *  Gets the dateOfLastCalibration attribute of the PrinterServiceMBean object
+     *
+     * @param  color  Description of the Parameter
+     * @return        The dateOfLastCalibration value
+     */
+    public String getDateOfLastCalibration(Boolean color);
+
+
+    /**
+     *  Gets the timeOfLastCalibration attribute of the PrinterServiceMBean object
+     *
+     * @param  color  Description of the Parameter
+     * @return        The timeOfLastCalibration value
+     */
+    public String getTimeOfLastCalibration(Boolean color);
+
+
+    /**
      *  Getter for property manufacturer.
      *
      * @return    Value of property manufacturer.
@@ -492,17 +528,19 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property minDensity.
      *
-     * @return    Value of property minDensity.
+     * @param  color  Description of the Parameter
+     * @return        Value of property minDensity.
      */
-    public int getMinDensity();
+    public int getMinDensity(Boolean color);
 
 
     /**
      *  Getter for property maxDensity.
      *
-     * @return    Value of property maxDensity.
+     * @param  color  Description of the Parameter
+     * @return        Value of property maxDensity.
      */
-    public int getMaxDensity();
+    public int getMaxDensity(Boolean color);
 
 
     /**
@@ -595,22 +633,6 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for code string for property status.
-     *
-     * @return    String value of property status.
-     */
-    PrinterStatus getStatus();
-
-
-    /**
-     *  Getter for property statusInfo.
-     *
-     * @return    Value of property statusInfo.
-     */
-    PrinterStatusInfo getStatusInfo();
-
-
-    /**
      *  Gets the calibrationDir attribute of the PrinterServiceMBean object
      *
      * @return    The calibrationDir value
@@ -622,10 +644,8 @@ public interface PrinterServiceMBean extends ServiceMBean
      *  Sets the calibrationDir attribute of the PrinterServiceMBean object
      *
      * @param  scanGrayscaleDir  The new calibrationDir value
-     * @exception  IOException   Description of the Exception
      */
-    public void setCalibrationDir(String scanGrayscaleDir)
-        throws IOException;
+    public void setCalibrationDir(String scanGrayscaleDir);
 
 
     /**
@@ -658,6 +678,22 @@ public interface PrinterServiceMBean extends ServiceMBean
      * @param  threshold  The new scanThreshold value
      */
     public void setScanThreshold(int threshold);
+
+
+    /**
+     *  Gets the assumeZeroMinOD attribute of the PrinterService object
+     *
+     * @return    The assumeZeroMinOD value
+     */
+    public boolean isAssumeZeroMinOD();
+
+
+    /**
+     *  Sets the assumeZeroMinOD attribute of the PrinterService object
+     *
+     * @param  assumeZeroMinOD  The new assumeZeroMinOD value
+     */
+    public void setAssumeZeroMinOD(boolean assumeZeroMinOD);
 
 
     /**
@@ -827,54 +863,6 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property dateOfLastCalibration.
-     *
-     * @return    Value of property dateOfLastCalibration.
-     */
-    public String getDateOfLastCalibration();
-
-
-    /**
-     *  Getter for property timeOfLastCalibration.
-     *
-     * @return    Value of property timeOfLastCalibration.
-     */
-    public String getTimeOfLastCalibration();
-
-
-    /**
-     *  Getter for property autoCalibration.
-     *
-     * @return    Value of property autoCalibration.
-     */
-    public boolean isAutoCalibration();
-
-
-    /**
-     *  Setter for property autoCalibration.
-     *
-     * @param  autoCalibration  New value of property autoCalibration.
-     */
-    public void setAutoCalibration(boolean autoCalibration);
-
-
-    /**
-     *  Gets the backupCalibration attribute of the PrinterServiceMBean object
-     *
-     * @return    The backupCalibration value
-     */
-    public boolean isBackupCalibration();
-
-
-    /**
-     *  Sets the backupCalibration attribute of the PrinterServiceMBean object
-     *
-     * @param  backupCalibration  The new backupCalibration value
-     */
-    public void setBackupCalibration(boolean backupCalibration);
-
-
-    /**
      *  Getter for property printGrayAsColor.
      *
      * @return    Value of property printGrayAsColor.
@@ -888,6 +876,22 @@ public interface PrinterServiceMBean extends ServiceMBean
      * @param  printGrayAsColor  New value of property printGrayAsColor.
      */
     public void setPrintGrayAsColor(boolean printGrayAsColor);
+
+
+    /**
+     *  Gets the printColorWithPLUT attribute of the PrinterServiceMBean object
+     *
+     * @return    The printColorWithPLUT value
+     */
+    public boolean isPrintColorWithPLUT();
+
+
+    /**
+     *  Sets the printColorWithPLUT attribute of the PrinterServiceMBean object
+     *
+     * @param  printColorWithPLUT  The new printColorWithPLUT value
+     */
+    public void setPrintColorWithPLUT(boolean printColorWithPLUT);
 
 
     /**
@@ -991,33 +995,23 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @param  force                     Description of the Parameter
-     * @exception  CalibrationException  Description of the Exception
-     * @exception  IOException           Description of the Exception
-     */
-    public void calibrate(boolean force)
-        throws CalibrationException, IOException;
-
-
-    /**
-     *  Description of the Method
-     *
      * @param  fname               Description of the Parameter
      * @param  configInfo          Description of the Parameter
+     * @param  color               Description of the Parameter
      * @exception  IOException     Description of the Exception
      * @exception  PrintException  Description of the Exception
      */
-    public void printImage(String fname, String configInfo)
+    public void printImage(String fname, String configInfo, Boolean color)
         throws IOException, PrintException;
 
 
     /**
      *  Description of the Method
      *
-     * @param  color        Description of the Parameter
-     * @param  job          Description of the Parameter
-     * @param  sessionAttr  Description of the Parameter
+     * @param  job      Description of the Parameter
+     * @param  session  Description of the Parameter
+     * @param  color    Description of the Parameter
      */
-    public void scheduleJob(Boolean color, String job, Dataset sessionAttr);
+    public void scheduleJob(String job, Dataset session, Boolean color);
 }
 

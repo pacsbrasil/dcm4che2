@@ -19,13 +19,13 @@
  *                                                                           *
  */
 package com.tiani.prnscp.print;
-import java.awt.print.PageFormat;
-
 import java.awt.print.Pageable;
+import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import javax.print.attribute.standard.Chromaticity;
 
 /**
  *  <description>
@@ -37,9 +37,8 @@ import java.io.IOException;
 class PrintImageJob implements Pageable
 {
     // Variables -----------------------------------------------------
-    private final File f;
-    private final String config;
     private final PrintableFilmBox filmBox;
+    private final String name;
 
     // Constructors --------------------------------------------------
     /**
@@ -50,15 +49,16 @@ class PrintImageJob implements Pageable
      * @param  config           Description of the Parameter
      * @exception  IOException  Description of the Exception
      */
-    public PrintImageJob(PrinterService service, File f, String config)
+    public PrintImageJob(PrinterService service, File f, String config,
+            Chromaticity chromaticity)
         throws IOException
     {
         if (!f.isFile()) {
             throw new FileNotFoundException("Could not find " + f);
         }
-        this.f = f;
-        this.config = config;
-        this.filmBox = new PrintableFilmBox(service, f, config);
+        this.name = f.getName() + "[" + chromaticity + "/" +
+            (config.length() == 0 ? "not calibrated" : config) + "]";
+        this.filmBox = new PrintableFilmBox(service, f, config, chromaticity, name);
     }
 
 
@@ -70,7 +70,7 @@ class PrintImageJob implements Pageable
      */
     public String getName()
     {
-        return f.getName() + "[" + config + "]";
+        return name;
     }
 
     // Pageable implementation ---------------------------------------

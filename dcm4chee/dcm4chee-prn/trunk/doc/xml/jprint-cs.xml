@@ -2416,12 +2416,10 @@
 
                 <note>
                   <para>Currently, there is no Standard Display Function for
-                  Hard- or Softcopies of Color Images defined by DICOM. There
-                  is also no proprietary mechanism to calibrate jPrint for
-                  Color Printing. Hence quality and consistency of color
-                  prints cannot be guaranteed by the usage of jPrint, but are
-                  dependent on the characteristic of the connected color
-                  printer(s).</para>
+                  Hard- or Softcopies of Color Images defined by DICOM. Hence
+                  quality and consistency of color prints cannot be guaranteed
+                  by the usage of jPrint, but are dependent on the
+                  characteristic of the connected color printer(s).</para>
                 </note>
 
                 <section>
@@ -3179,10 +3177,14 @@
                   GSDF curve in detail.</para>
 
                   <note>
-                    <para>Presentation LUT SOP class can only be used for
-                    Grayscale Print Management. Currently, there is no
-                    definition/support for color print consistency/calibration
-                    provided by either DICOM or jPrint.</para>
+                    <para>DICOM defines the usage of Presentation LUT SOP
+                    class only for Grayscale Print Management. jPrint supports
+                    usage of the Presentation LUT SOP Class also for Color
+                    Print Management: In the case of RGB image data, jPrint
+                    treat RGB pixel values with R=G=B like image pixels value
+                    in the MONCHROME case; but pass pixel values with
+                    different RGB sample values verbatim (=without applying
+                    P-LUT and/or GSDF) to the print driver.</para>
                   </note>
                 </section>
               </section>

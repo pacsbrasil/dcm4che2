@@ -67,6 +67,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.util.DAFormat;
+import org.dcm4che.util.TMFormat;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -75,7 +77,7 @@ import org.jboss.system.server.ServerConfigLocator;
  *
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @since      November 3, 2003
- * @version    $Revision$ <b>Revisions:</b> <p>
+ * @version    $Revision$ $Date$
  */
 public class PrinterService
          extends ServiceMBeanSupport
@@ -98,6 +100,8 @@ public class PrinterService
 
     final static double PTS_PER_MM = 72 / 25.4;
     final static String ADF_FILE_EXT = ".adf";
+    private final static String COLOR = ".color";
+    private final static String GRAYSCALE = ".grayscale";
     private final static String[] LITTLE_ENDIAN_TS = {
             UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian
@@ -126,6 +130,10 @@ public class PrinterService
 
     private String softwareVersion;
 
+    private long colorCalibrationTime = 0L;
+
+    private long monochromeCalibrationTime = 0L;
+
     private boolean ignorePrinterIsAcceptingJobs;
 
     private String printToFilePath;
@@ -152,6 +160,8 @@ public class PrinterService
 
     private boolean printGrayAsColor;
 
+    private boolean printColorWithPLUT;
+
     private int maxQueuedJobCount = 10;
 
     private float[] pageMargin;
@@ -174,17 +184,11 @@ public class PrinterService
 
     private String decimateCropBehavior = DECIMATE;
 
-    private boolean autoCalibration = false;
-
-    private boolean backupCalibration = false;
-
     private boolean printToFile = false;
 
     private String annotationDir;
 
     private String lutDir;
-
-    private File odFile;
 
     private boolean supportsAnnotationBox = false;
 
@@ -251,18 +255,36 @@ public class PrinterService
     }
 
 
+    private long getCalibrationTime(Boolean color)
+    {
+        return (printGrayAsColor || color.booleanValue())
+                 ? colorCalibrationTime
+                 : monochromeCalibrationTime;
+    }
+
+
+    Chromaticity toChromaticity(Boolean color)
+    {
+        return (printGrayAsColor || color.booleanValue())
+                 ? Chromaticity.COLOR
+                 : Chromaticity.MONOCHROME;
+    }
+
+
     /**
-     *  Getter for string value for property status.
+     *  Gets the status attribute of the PrinterService object
      *
-     * @return    String value of property status.
+     * @param  color  Description of the Parameter
+     * @return        The status value
      */
-    public PrinterStatus getStatus()
+    public PrinterStatus getStatus(Boolean color)
     {
         try {
             if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
                 return PrinterStatus.FAILURE;
             }
-            if (getQueuedJobCount() > 0 || calibration.getCalibrationTime() == 0L) {
+            if (getQueuedJobCount() > 0
+                     || getCalibrationTime(color) == 0L) {
                 return PrinterStatus.WARNING;
             }
             return PrinterStatus.NORMAL;
@@ -273,11 +295,12 @@ public class PrinterService
 
 
     /**
-     *  Getter for property statusInfo.
+     *  Gets the statusInfo attribute of the PrinterService object
      *
-     * @return    Value of property statusInfo.
+     * @param  color  Description of the Parameter
+     * @return        The statusInfo value
      */
-    public PrinterStatusInfo getStatusInfo()
+    public PrinterStatusInfo getStatusInfo(Boolean color)
     {
         try {
             getPrintService();
@@ -287,7 +310,7 @@ public class PrinterService
             if (getQueuedJobCount() > 0) {
                 return PrinterStatusInfo.QUEUED;
             }
-            if (calibration.getCalibrationTime() == 0L) {
+            if (getCalibrationTime(color) == 0L) {
                 return PrinterStatusInfo.CALIBRATION_ERR;
             }
             return PrinterStatusInfo.NORMAL;
@@ -1289,22 +1312,36 @@ public class PrinterService
     /**
      *  Gets the minDensity attribute of the PrinterService object
      *
-     * @return    The minDensity value
+     * @param  color  Description of the Parameter
+     * @return        The minDensity value
      */
-    public int getMinDensity()
+    public int getMinDensity(Boolean color)
     {
-        return calibration.getMinDensity();
+        return calibration.getMinDensity(toChromaticity(color));
+    }
+
+
+    int getMinDensity(Chromaticity chromaticity)
+    {
+        return calibration.getMinDensity(chromaticity);
+    }
+
+
+    int getMaxDensity(Chromaticity chromaticity)
+    {
+        return calibration.getMaxDensity(chromaticity);
     }
 
 
     /**
      *  Gets the maxDensity attribute of the PrinterService object
      *
-     * @return    The maxDensity value
+     * @param  color  Description of the Parameter
+     * @return        The maxDensity value
      */
-    public int getMaxDensity()
+    public int getMaxDensity(Boolean color)
     {
-        return calibration.getMaxDensity();
+        return calibration.getMaxDensity(toChromaticity(color));
     }
 
 
@@ -1623,16 +1660,21 @@ public class PrinterService
     }
 
 
-    String getConfigurationInformationForCallingAET(String callingAET)
+    String getConfigurationInformationForCallingAET(String aet, Boolean color)
     {
-        if (cfgInfoForAETMap.isEmpty()) {
-            log.error("Configuration Error: missing attribute ConfigurationInformationForCallingAET value!");
-            return null;
+        String mode = color.booleanValue() ? COLOR : GRAYSCALE;
+        String info = (String) cfgInfoForAETMap.get(aet + mode);
+        if (info == null) {
+            info = (String) cfgInfoForAETMap.get(aet);
+            if (info == null) {
+                info = (String) cfgInfoForAETMap.get(mode);
+                if (info == null) {
+                    throw new RuntimeException(
+                            "No configuration information associated with " + mode);
+                }
+            }
         }
-        String cfgInfo = (String) cfgInfoForAETMap.get(callingAET);
-        return cfgInfo != null
-                 ? cfgInfo
-                 : (String) cfgInfoForAETMap.values().iterator().next();
+        return info;
     }
 
 
@@ -1735,24 +1777,28 @@ public class PrinterService
 
 
     /**
-     *  Getter for property dateOfLastCalibration.
+     *  Gets the dateOfLastCalibration attribute of the PrinterService object
      *
-     * @return    Value of property dateOfLastCalibration.
+     * @param  color  Description of the Parameter
+     * @return        The dateOfLastCalibration value
      */
-    public String getDateOfLastCalibration()
+    public String getDateOfLastCalibration(Boolean color)
     {
-        return calibration.getDateOfLastCalibration();
+        long time = getCalibrationTime(color);
+        return time != 0L ? new DAFormat().format(new Date(time)) : null;
     }
 
 
     /**
-     *  Getter for property timeOfLastCalibration.
+     *  Gets the timeOfLastCalibration attribute of the PrinterService object
      *
-     * @return    Value of property timeOfLastCalibration.
+     * @param  color  Description of the Parameter
+     * @return        The timeOfLastCalibration value
      */
-    public String getTimeOfLastCalibration()
+    public String getTimeOfLastCalibration(Boolean color)
     {
-        return calibration.getTimeOfLastCalibration();
+        long time = getCalibrationTime(color);
+        return time != 0L ? new TMFormat().format(new Date(time)) : null;
     }
 
 
@@ -1796,32 +1842,18 @@ public class PrinterService
      */
     public String getCalibrationDir()
     {
-        return scanner.getScanDir().getParentFile().getAbsolutePath();
+        return scanner.getCalibrationDir().getAbsolutePath();
     }
 
 
     /**
      *  Sets the calibrationDir attribute of the PrinterService object
      *
-     * @param  dir              The new calibrationDir value
-     * @exception  IOException  Description of the Exception
+     * @param  dir  The new calibrationDir value
      */
     public void setCalibrationDir(String dir)
-        throws IOException
     {
-        File scanDir = new File(toFile(dir), calledAET);
-        if (!scanDir.isDirectory()) {
-            if (scanDir.mkdir()) {
-                log.warn("Scan Directory " + scanDir + " did not exits. Created new one.");
-            } else {
-                throw new IOException("Failed to create new Scan Directory " + scanDir);
-            }
-        }
-        if (scanDir.list().length == 0) {
-            log.warn("No scans in directory " + scanDir);
-        }
-        scanner.setScanDir(scanDir);
-        calibration.setPrinterODs(scanner.readODs(scanner.getRefODsFile()));
+        scanner.setCalibrationDir(toFile(dir));
     }
 
 
@@ -1870,46 +1902,24 @@ public class PrinterService
 
 
     /**
-     *  Gets the autoCalibration attribute of the PrinterService object
+     *  Gets the assumeZeroMinOD attribute of the PrinterService object
      *
-     * @return    The autoCalibration value
+     * @return    The assumeZeroMinOD value
      */
-    public boolean isAutoCalibration()
+    public boolean isAssumeZeroMinOD()
     {
-        return this.autoCalibration;
+        return scanner.isAssumeZeroMinOD();
     }
 
 
     /**
-     *  Sets the autoCalibration attribute of the PrinterService object
+     *  Sets the assumeZeroMinOD attribute of the PrinterService object
      *
-     * @param  autoCalibration  The new autoCalibration value
+     * @param  assumeZeroMinOD  The new assumeZeroMinOD value
      */
-    public void setAutoCalibration(boolean autoCalibration)
+    public void setAssumeZeroMinOD(boolean assumeZeroMinOD)
     {
-        this.autoCalibration = autoCalibration;
-    }
-
-
-    /**
-     *  Gets the backupCalibration attribute of the PrinterServiceMBean object
-     *
-     * @return    The backupCalibration value
-     */
-    public boolean isBackupCalibration()
-    {
-        return backupCalibration;
-    }
-
-
-    /**
-     *  Sets the backupCalibration attribute of the PrinterServiceMBean object
-     *
-     * @param  backupCalibration  The new backupCalibration value
-     */
-    public void setBackupCalibration(boolean backupCalibration)
-    {
-        this.backupCalibration = backupCalibration;
+        scanner.setAssumeZeroMinOD(assumeZeroMinOD);
     }
 
 
@@ -1936,6 +1946,28 @@ public class PrinterService
 
 
     /**
+     *  Gets the printColorWithPLUT attribute of the PrinterService object
+     *
+     * @return    The printColorWithPLUT value
+     */
+    public boolean isPrintColorWithPLUT()
+    {
+        return this.printColorWithPLUT;
+    }
+
+
+    /**
+     *  Sets the printColorWithPLUT attribute of the PrinterService object
+     *
+     * @param  printColorWithPLUT  The new printColorWithPLUT value
+     */
+    public void setPrintColorWithPLUT(boolean printColorWithPLUT)
+    {
+        this.printColorWithPLUT = printColorWithPLUT;
+    }
+
+
+    /**
      *  Gets the maxQueuedJobCount attribute of the PrinterService object
      *
      * @return    The maxQueuedJobCount value
@@ -1956,7 +1988,7 @@ public class PrinterService
         this.maxQueuedJobCount = maxQueuedJobCount;
     }
 
-    
+
     /**
      *  Gets the license attribute of the PrinterService object
      *
@@ -1995,77 +2027,61 @@ public class PrinterService
     }
 
 
-    /*
-    protected PrinterCalibration getPrinterCalibration()
+    private void logActorConfig(String desc, String type)
     {
-        return calibration;
-    }
-*/
-    /**
-     *  Gets the pValToDDL attribute of the PrinterService object
-     *
-     * @param  n     Description of the Parameter
-     * @param  dmin  Description of the Parameter
-     * @param  dmax  Description of the Parameter
-     * @param  l0    Description of the Parameter
-     * @param  la    Description of the Parameter
-     * @param  plut  Description of the Parameter
-     * @return       The pValToDDL value
-     */
-    public byte[] getPValToDDL(int n, float dmin, float dmax,
-            float l0, float la, Dataset plut)
-    {
-        return calibration.getPValToDDL(n, dmin, dmax, l0, la, plut);
-    }
-
-    private void logActorConfig(String desc, String type) {
         try {
             server.invoke(auditLogName, "logActorConfig",
-            new Object[] {
-                desc,
-                type,
-            },
-            new String[] {
-                String.class.getName(),
-                String.class.getName(),
-            });
+                    new Object[]{
+                    desc,
+                    type,
+                    },
+                    new String[]{
+                    String.class.getName(),
+                    String.class.getName(),
+                    });
         } catch (Exception e) {
             log.warn("Failed to log ActorConfig:", e);
         }
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @param  force                     Description of the Parameter
-     * @exception  CalibrationException  Description of the Exception
-     * @exception  IOException           Description of the Exception
-     */
-    public void calibrate(boolean force)
-        throws CalibrationException, IOException
-    {
-        File scanFile = scanner.getMostRecentScanFile();
-        long scanFileLastModified = scanFile.lastModified();
 
-        if (!force && scanFileLastModified <= calibration.getCalibrationTime()) {
-            log.debug("Calibration uptodate");
-            return;
-        }
-        log.info("Calibrating Printer: " + calledAET + "/" + printerName);
-        float[] ods = scanner.calculateGrayscaleODs();
-        calibration.setPrinterODs(ods);
-        calibration.setCalibrationTime(scanFileLastModified);
-        String prompt = "Calibrated Printer: " + calledAET + "/" + printerName;
-        log.info(prompt);
-        logActorConfig(prompt, "PrinterCalibration");
-        if (backupCalibration) {
-            try {
-                File f = scanner.getBackupODsFile();
-                scanner.writeODs(f, ods);
-                f.setLastModified(scanFileLastModified);
-            } catch (IOException e) {
-                log.warn("Failed to backup calibration:" + e);
+    byte[] getPValToDDL(Chromaticity chromaticity,
+            int n, float dmin, float dmax, float l0, float la, Dataset plut)
+    {
+        return calibration.getPValToDDL(chromaticity, n, dmin, dmax, l0, la, plut);
+    }
+
+
+    private void calibrate(Chromaticity chromaticity)
+    {
+        try {
+            String scanDirName = toScanDirName(chromaticity);
+
+            File scanFile = scanner.getMostRecentScanFile(scanDirName);
+            long scanFileLastModified = scanFile.lastModified();
+
+            if (scanFileLastModified <=
+                    (Chromaticity.COLOR.equals(chromaticity)
+                     ? colorCalibrationTime
+                     : monochromeCalibrationTime)) {
+                log.debug("Calibration of Printer " + calledAET
+                         + ", chromaticity=" + chromaticity + " is uptodate");
+                return;
             }
+
+            File odFile = scanner.getODsFile(scanDirName);
+            long odFileLastModified = odFile.lastModified();
+
+            log.info("Calibrating Printer " + calledAET + ", chromaticity=" + chromaticity);
+            float[] ods = scanner.interpolate(scanner.analyse(scanFile));
+            scanner.writeODs(odFile, ods);
+            odFile.setLastModified(scanFileLastModified);
+            calibration.setODs(chromaticity, ods);
+            log.info("Calibrating Printer " + calledAET + ", chromaticity=" + chromaticity);
+            logActorConfig(
+                    "Calibrating Printer " + calledAET + ", chromaticity=" + chromaticity, "PrinterCalibration");
+        } catch (Exception e) {
+            log.warn("Failed to calibrate Printer " + calledAET + ", chromaticity=" + chromaticity);
         }
     }
 
@@ -2075,25 +2091,28 @@ public class PrinterService
      *
      * @param  fname               Description of the Parameter
      * @param  configInfo          Description of the Parameter
+     * @param  color               Description of the Parameter
      * @exception  IOException     Description of the Exception
      * @exception  PrintException  Description of the Exception
      */
-    public void printImage(String fname, String configInfo)
+    public void printImage(String fname, String configInfo, Boolean color)
         throws IOException, PrintException
     {
-        PrintImageJob job = new PrintImageJob(this, new File(fname), configInfo);
+        Chromaticity chromaticity = color.booleanValue()
+                 ? Chromaticity.COLOR
+                 : Chromaticity.MONOCHROME;
+        PrintImageJob job =
+                new PrintImageJob(this, new File(fname), configInfo, chromaticity);
         PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
         PrintService ps = getPrintService();
         setPrintRequestAttribute(ps, getDefaultPrinterResolution(), aset);
-        setPrintRequestAttribute(ps,
-                printGrayAsColor
-                 ? Chromaticity.COLOR
-                 : Chromaticity.MONOCHROME,
-                aset);
+        setPrintRequestAttribute(ps, chromaticity, aset);
+        setPrintRequestAttribute(ps, new JobName(job.getName(), null), aset);
         log.info("Printing " + fname);
-        setPrintRequestAttribute(ps,
-                new JobName(job.getName(), null), aset);
-        print(job, aset, autoCalibration && configInfo.length() > 0);
+        if (configInfo.length() > 0) {
+            calibrate(chromaticity);
+        }
+        print(job, aset);
         log.info("Printed " + fname);
     }
 
@@ -2125,16 +2144,35 @@ public class PrinterService
     public void startService()
         throws Exception
     {
-        try {
-            File odFile = scanner.getBackupODsFile();
-            calibration.setPrinterODs(scanner.readODs(odFile));
-            calibration.setCalibrationTime(odFile.lastModified());
-        } catch (IOException e) {
-            log.warn("Initial Calibration failed: " + e);
-        }
+        float[] refODs = scanner.readODs(scanner.getRefODsFile());
+        monochromeCalibrationTime = initCalibration(Chromaticity.MONOCHROME, refODs);
+        colorCalibrationTime = initCalibration(Chromaticity.COLOR, refODs);
         scheduler = new Thread(this);
         scheduler.start();
         putAcceptorPolicy(getAcceptorPolicy());
+    }
+
+
+    private String toScanDirName(Chromaticity chromaticity)
+    {
+        return calledAET + "." + chromaticity;
+    }
+
+
+    private long initCalibration(Chromaticity chromaticity, float[] refODs)
+    {
+        String scanDirName = toScanDirName(chromaticity);
+        File odFile = scanner.getODsFile(scanDirName);
+        scanner.initScanDir(scanDirName);
+        try {
+            calibration.setODs(chromaticity, scanner.readODs(odFile));
+            return odFile.lastModified();
+        } catch (IOException e) {
+            log.warn("Failed to calibrate Printer " + calledAET
+                     + ", chromaticity=" + chromaticity + ": " + e);
+            calibration.setODs(chromaticity, refODs);
+            return 0L;
+        }
     }
 
 
@@ -2199,21 +2237,21 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     * @param  color        Description of the Parameter
-     * @param  job          Description of the Parameter
-     * @param  sessionAttr  Description of the Parameter
+     * @param  job      Description of the Parameter
+     * @param  session  Description of the Parameter
+     * @param  color    Description of the Parameter
      */
-    public void scheduleJob(Boolean color, String job, Dataset sessionAttr)
+    public void scheduleJob(String job, Dataset session, Boolean color)
     {
         ScheduledJob pageableJob =
-                new ScheduledJob(job, sessionAttr, color.booleanValue());
+                new ScheduledJob(job, session, color);
         log.info("Scheduling job - " + pageableJob.getJobID());
-        String sessionLabel = sessionAttr.getString(Tags.FilmSessionLabel);
+        String sessionLabel = session.getString(Tags.FilmSessionLabel);
         if (sessionLabel == null) {
-            sessionAttr.putLO(Tags.FilmSessionLabel,
+            session.putLO(Tags.FilmSessionLabel,
                     Annotation.makeDefaultSessionLabel(this, pageableJob.getCallingAET()));
         }
-        String prior = sessionAttr.getString(Tags.PrintPriority);
+        String prior = session.getString(Tags.PrintPriority);
         synchronized (queueMonitor) {
             if ("MED".equals(prior)) {
                 medPriorQueue.add(pageableJob);
@@ -2298,7 +2336,7 @@ public class PrinterService
                     printerMonitor.wait();
                 }
             }
-            invokeOnPrintSCPName("onJobStartPrinting", scheduledJob.getJob());
+            invokeOnPrintSCPName("onJobStartPrinting", scheduledJob.getPath());
             scheduledJob.initFilmBoxes(this);
             PrintService ps = getPrintService();
             PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
@@ -2308,11 +2346,6 @@ public class PrinterService
                      ? (PrinterResolution) this.resolutionIDMap.get(resId)
                      : getDefaultPrinterResolution(),
                     aset);
-            setPrintRequestAttribute(ps,
-                    scheduledJob.isColor() || printGrayAsColor
-                     ? Chromaticity.COLOR
-                     : Chromaticity.MONOCHROME,
-                    aset);
             int copies = scheduledJob.getCopies();
             if (copies > 1) {
                 setPrintRequestAttribute(ps, new Copies(copies), aset);
@@ -2320,15 +2353,18 @@ public class PrinterService
             }
             setPrintRequestAttribute(ps,
                     new JobName(scheduledJob.getName(), null), aset);
-            print(scheduledJob, aset, autoCalibration);
+            Chromaticity chromaticity = toChromaticity(scheduledJob.isColor());
+            setPrintRequestAttribute(ps, chromaticity, aset);
+            calibrate(chromaticity);
+            print(scheduledJob, aset);
             log.info("Finished processing job - " + scheduledJob.getJobID());
             try {
-                invokeOnPrintSCPName("onJobDone", scheduledJob.getJob());
+                invokeOnPrintSCPName("onJobDone", scheduledJob.getPath());
             } catch (Exception ignore) {}
         } catch (Throwable e) {
             log.error("Failed processing job - " + scheduledJob.getJobID(), e);
             try {
-                invokeOnPrintSCPName("onJobFailed", scheduledJob.getJob());
+                invokeOnPrintSCPName("onJobFailed", scheduledJob.getPath());
             } catch (Throwable ignore) {}
         }
     }
@@ -2487,19 +2523,10 @@ public class PrinterService
     }
 
 
-    private void print(Pageable printData, PrintRequestAttributeSet aset,
-            boolean calibrate)
+    private void print(Pageable printData, PrintRequestAttributeSet aset)
         throws PrintException
     {
         PrintService ps = getPrintService();
-        if (calibrate) {
-            try {
-                calibrate(false);
-            } catch (Exception e) {
-                log.warn("Calibration fails, continue printing", e);
-            }
-        }
-
         if (printToFile) {
             setPrintRequestAttribute(ps,
                     new Destination(toFile(printToFilePath).toURI()), aset);

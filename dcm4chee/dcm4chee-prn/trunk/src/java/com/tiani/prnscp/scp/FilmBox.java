@@ -73,13 +73,14 @@ class FilmBox
     private final String aet;
     private final String uid;
     private final Dataset dataset;
+    private final boolean color;
     private final LinkedHashMap imageBoxes = new LinkedHashMap();
     private final LinkedHashMap annotationBoxes = new LinkedHashMap();
     private final HashMap pluts = new HashMap();
 
     // Static --------------------------------------------------------
-    private final static DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    private final static UIDGenerator uidgen = UIDGenerator.getInstance();
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    private static final UIDGenerator uidgen = UIDGenerator.getInstance();
 
 
     // Constructors --------------------------------------------------
@@ -103,12 +104,11 @@ class FilmBox
         this.aet = aet;
         this.uid = uid;
         this.dataset = dataset;
+        this.color = session.isColor();
         checkCreateAttributes(dataset, rspCmd);
         addRefImageBox(dataset, session.getImageBoxCUID());
         addRefAnnotationBox(dataset);
         addPLUT(dataset, pluts);
-        session.getAttributes().putCS(Tags.RequestedResolutionID,
-                dataset.getString(Tags.RequestedResolutionID));
     }
 
     private void checkCreateAttributes(Dataset ds, Command rsp)
@@ -154,6 +154,7 @@ class FilmBox
 //            checkReflectedAmbientLight(ds, rsp);
         scp.checkAttribute(ds, Tags.RequestedResolutionID,
             aet, "isSupportsResolutionID", rsp);
+        scp.checkMinMaxDensity(ds, aet, color, rsp);
         checkImageBoxAttributes(ds, rsp);
     }
     
@@ -163,7 +164,6 @@ class FilmBox
         scp.checkAttribute(ds, Tags.MagnificationType,
             aet, "isSupportsMagnificationType", rsp);
         scp.ignoreAttribute(ds, Tags.SmoothingType, rsp);
-        scp.checkMinMaxDensity(ds, aet, rsp);
         scp.checkAttribute(ds, Tags.Trim, YES_NO, rsp);
         scp.checkAttribute(ds, Tags.ConfigurationInformation,
             aet, "isSupportsConfigurationInformation", rsp);
@@ -263,8 +263,6 @@ class FilmBox
         checkSetAttributes(modification, rspCmd);
         addPLUT(modification, pluts);
         dataset.putAll(modification);
-        sessionAttr.putCS(Tags.RequestedResolutionID,
-                dataset.getString(Tags.RequestedResolutionID));
     }
 
 

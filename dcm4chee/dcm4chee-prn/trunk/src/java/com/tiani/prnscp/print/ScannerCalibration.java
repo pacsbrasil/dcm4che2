@@ -74,7 +74,9 @@ public class ScannerCalibration
 
     private int borderThreshold = 200;
 
-    private File scanDir;
+    private boolean assumeZeroMinOD = true;
+
+    private File calDir;
 
     private float[] refODs;
 
@@ -167,24 +169,42 @@ public class ScannerCalibration
 
 
     /**
-     *  Gets the scanDir attribute of the ScannerCalibration object
+     *  Gets the calibrationDir attribute of the ScannerCalibration object
      *
-     * @return    The scanDir value
+     * @return    The calibrationDir value
      */
-    public File getScanDir()
+    public File getCalibrationDir()
     {
-        return this.scanDir;
+        return this.calDir;
     }
 
 
     /**
-     *  Sets the scanDir attribute of the ScannerCalibration object
+     *  Sets the calibrationDir attribute of the ScannerCalibration object
      *
-     * @param  scanDir          The new scanDir value
+     * @param  calDir  The new calibrationDir value
      */
-    public void setScanDir(File scanDir)
+    public void setCalibrationDir(File calDir)
     {
-        this.scanDir = scanDir;
+        this.calDir = calDir;
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  scanDirName  Description of the Parameter
+     */
+    public void initScanDir(String scanDirName)
+    {
+        checkCalDir();
+        File scanDir = new File(calDir, scanDirName);
+        if (scanDir.mkdir()) {
+            log.warn("Scan Directory " + scanDir + " did not exits. Created new one.");
+        }
+        if (scanDir.list().length == 0) {
+            log.warn("No scans in directory " + scanDir);
+        }
     }
 
 
@@ -239,17 +259,39 @@ public class ScannerCalibration
 
 
     /**
+     *  Gets the assumeZeroMinOD attribute of the ScannerCalibration object
+     *
+     * @return    The assumeZeroMinOD value
+     */
+    public boolean isAssumeZeroMinOD()
+    {
+        return assumeZeroMinOD;
+    }
+
+
+    /**
+     *  Sets the assumeZeroMinOD attribute of the ScannerCalibration object
+     *
+     * @param  assumeZeroMinOD  The new assumeZeroMinOD value
+     */
+    public void setAssumeZeroMinOD(boolean assumeZeroMinOD)
+    {
+        this.assumeZeroMinOD = assumeZeroMinOD;
+    }
+
+
+    /**
      *  Gets the mostRecentScanFile attribute of the ScannerCalibration object
      *
+     * @param  scanDirName      Description of the Parameter
      * @return                  The mostRecentScanFile value
      * @exception  IOException  Description of the Exception
      */
-    public File getMostRecentScanFile()
+    public File getMostRecentScanFile(String scanDirName)
         throws IOException
     {
-        if (scanDir == null) {
-            throw new IllegalStateException("Scan Dir not initialized!");
-        }
+        checkCalDir();
+        File scanDir = new File(calDir, scanDirName);
         if (!scanDir.isDirectory()) {
             throw new FileNotFoundException(
                     "Could not find directory " + scanDir);
@@ -271,28 +313,22 @@ public class ScannerCalibration
         return scanFiles[0];
     }
 
+
+    /**
+     *  Gets the refODs attribute of the ScannerCalibration object
+     *
+     * @return    The refODs value
+     */
     public float[] getRefODs()
     {
         return refODs;
     }
 
-    /**
-     *  Description of the Method
-     *
-     * @return                           Description of the Return Value
-     * @exception  CalibrationException  Description of the Exception
-     */
-    public float[] calculateGrayscaleODs()
-        throws CalibrationException, IOException
-    {
-        return interpolate(analyse(getMostRecentScanFile()));
-    }
 
-
-    private void checkScanDir()
+    private void checkCalDir()
     {
-        if (scanDir == null) {
-            throw new IllegalStateException("scanDir not intialized");
+        if (calDir == null) {
+            throw new IllegalStateException("CalDir not intialized");
         }
     }
 
@@ -304,20 +340,21 @@ public class ScannerCalibration
      */
     public File getRefODsFile()
     {
-        checkScanDir();
-        return new File(scanDir.getParent(), DSI256_ODS);
+        checkCalDir();
+        return new File(calDir, DSI256_ODS);
     }
 
 
     /**
-     *  Gets the backupODsFile attribute of the ScannerCalibration object
+     *  Gets the oDsFile attribute of the ScannerCalibration object
      *
-     * @return    The backupODsFile value
+     * @param  scanDirName  Description of the Parameter
+     * @return              The oDsFile value
      */
-    public File getBackupODsFile()
+    public File getODsFile(String scanDirName)
     {
-        checkScanDir();
-        return new File(scanDir.getParent(), scanDir.getName() + ODS_EXT);
+        checkCalDir();
+        return new File(calDir, scanDirName + ODS_EXT);
     }
 
 
@@ -328,12 +365,20 @@ public class ScannerCalibration
      */
     public File getRefDSI256File()
     {
-        checkScanDir();
-        return new File(scanDir.getParent(), DSI256_JPG);
+        checkCalDir();
+        return new File(calDir, DSI256_JPG);
     }
 
 
-    private float[] interpolate(float[] invPx)
+    /**
+     *  Description of the Method
+     *
+     * @param  invPx                     Description of the Parameter
+     * @return                           Description of the Return Value
+     * @exception  CalibrationException  Description of the Exception
+     * @exception  IOException           Description of the Exception
+     */
+    public float[] interpolate(float[] invPx)
         throws CalibrationException, IOException
     {
         if (invRefPx == null) {
@@ -364,6 +409,16 @@ public class ScannerCalibration
                          + (refODs[index] - refODs[index - 1])
                          * (invPx[i] - invRefPx[index - 1])
                          / (invRefPx[index] - invRefPx[index - 1]);
+            }
+        }
+        if (assumeZeroMinOD) {
+            for (int i = 1; i < result.length; ++i) {
+                if (result[i] > result[0]) {
+                    for (int j = i - 1; j >= 0; --j) {
+                        result[j] = result[i] * j / i;
+                    }
+                    break;
+                }
             }
         }
         if (log.isDebugEnabled()) {
@@ -408,7 +463,15 @@ public class ScannerCalibration
     }
 
 
-    private float[] analyse(File f)
+    /**
+     *  Description of the Method
+     *
+     * @param  f                         Description of the Parameter
+     * @return                           Description of the Return Value
+     * @exception  CalibrationException  Description of the Exception
+     * @exception  IOException           Description of the Exception
+     */
+    public float[] analyse(File f)
         throws CalibrationException, IOException
     {
         // TODO eliminate some of the 27(!) temporary variables used in this method [GZ]
@@ -431,25 +494,25 @@ public class ScannerCalibration
             int[] tb = findBorder(vline);
             final int wOuter = lr[1] - lr[0];
             final int hOuter = tb[1] - tb[0];
-            
+
             boolean portrait = true;
             boolean upSideDown = false;
-            
+
             //find orientation scanned in portrait/landscape and if up-side-down
             float sample = -1;
             boolean foundOrient = false;
-            for (int side = 0; side<4; side++) {
+            for (int side = 0; side < 4; side++) {
                 switch (side) {
-                    case 0: //left
+                    case 0://left
                         sample = average(hline, w, lr[0] + (wOuter * 80) / (2 * 512), 0, 5, 1);
                         break;
-                    case 1: //right
+                    case 1://right
                         sample = average(hline, w, lr[1] - (wOuter * 80) / (2 * 512), 0, 5, 1);
                         break;
-                    case 2: //top
+                    case 2://top
                         sample = average(vline, 1, 0, tb[0] + (hOuter * 80) / (2 * 512), 1, 5);
                         break;
-                    case 3: //bottom
+                    case 3://bottom
                         sample = average(vline, 1, 0, tb[1] - (hOuter * 80) / (2 * 512), 1, 5);
                         break;
                 }
@@ -461,8 +524,9 @@ public class ScannerCalibration
                 }
             }
             //precondition check
-            if (!foundOrient)
+            if (!foundOrient) {
                 throw new CalibrationException("Can not determine pattern orientation");
+            }
 
             //calc (predicted) actual dimensions in pixels
             final int absPatternSpacingX = (wOuter * 16) / 512;
@@ -473,24 +537,22 @@ public class ScannerCalibration
             final int patternTop = tb[0] + (hOuter * 136) / 512;
             final int stepSizeX = absPatternBoxSizeX + absPatternSpacingX;
             final int stepSizeY = absPatternBoxSizeY + absPatternSpacingY;
-            
+
             float[] px;
             float[] samples;
             int[] box;
-            
+
             // debug
             if (log.isDebugEnabled()) {
-                log.debug("total image width = " + w + ", total image height = " + h);
-                log.debug("left/right = " + lr[0] + "," + lr[1]);
-                log.debug("top/bottom = " + tb[0] + "," + tb[1]);
-                log.debug("w outer = " + wOuter);
-                log.debug("h outer = " + hOuter);
-                log.debug("absPatternSpacingX = " + absPatternSpacingX);
-                log.debug("absPatternBoxSizeX = " + absPatternBoxSizeX);
-                log.debug("absPatternSpacingY = " + absPatternSpacingY);
-                log.debug("absPatternBoxSizeY = " + absPatternSpacingY);
+                log.debug("Analysing " + f + ":\n\timage[w=" + w + ",h=" + h
+                         + "]\n\tborder[left=" + lr[0] + ",right=" + lr[1]
+                         + ",top=" + tb[0] + ",bottom=" + tb[1]
+                         + "]\n\tpattern[w=" + wOuter + ",h=" + hOuter
+                         + "]\n\tboxes[w=" + absPatternBoxSizeX + ",h=" + absPatternBoxSizeY
+                         + "]\n\tgap[dx=" + absPatternSpacingX + ",dy=" + absPatternSpacingY
+                         + "]");
             }
-            
+
             //allocate array to hold values for each pattern sample
             px = new float[NUM_BOXES_X * NUM_BOXES_Y *
                     NUM_INNER_BOXES_X * NUM_INNER_BOXES_Y];
@@ -553,8 +615,10 @@ public class ScannerCalibration
             final int nx, final int ny,
             final boolean portrait, final boolean upSideDown)
     {
-        final int xstep = width / nx, sampleXStep = (width * scanPointExtension) / (nx * 100);
-        final int ystep = height / ny, sampleYStep = (height * scanPointExtension) / (ny * 100);
+        final int xstep = width / nx;
+        final int sampleXStep = (width * scanPointExtension) / (nx * 100);
+        final int ystep = height / ny;
+        final int sampleYStep = (height * scanPointExtension) / (ny * 100);
         final float[] samples = new float[nx * ny];
         int left = xstep / 2;
         int top = ystep / 2;
@@ -570,7 +634,7 @@ public class ScannerCalibration
                     x - sampleXStep / 2,
                     y - sampleYStep / 2,
                     sampleXStep,
-                    sampleYStep); //(pixels[x+y*width] & 0xff) ^ 0xff;
+                    sampleYStep);//(pixels[x+y*width] & 0xff) ^ 0xff;
         }
         return samples;
     }
@@ -591,7 +655,7 @@ public class ScannerCalibration
     private int[] findBorder(int[] rgb)
         throws CalibrationException
     {
-        int[] b = { (int)(rgb.length*0.03), (int)(rgb.length*(1-0.03)) };
+        int[] b = {(int) (rgb.length * 0.03), (int) (rgb.length * (1 - 0.03))};
         while (b[0] < b[1] && (rgb[b[0]] & 0xff) > borderThreshold) {
             ++b[0];
         }
