@@ -522,8 +522,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     void logMemoryUsage() {
         Runtime rt = Runtime.getRuntime();
-        log.debug("Memory total:" + (rt.totalMemory()/1000000L)
-                + "MB, free:" + (rt.freeMemory()/1000000L)
+        final long total = rt.totalMemory();
+        final long free = rt.freeMemory();
+        log.debug("Memory total:" + (total/1000000L)
+                + "MB, free:" + (free/1000000L)
+                + "MB, used:" + ((total - free)/1000000L)
                 + "MB");
     }
 }
