@@ -94,7 +94,7 @@ class IHEYr4 {
             String host, long millis) {
         return new IHEYr4(
             new RnodeWithInstanceActionDescription("InstancesSent",
-                rnode, action, "Rnode"), host, millis);
+                rnode, action, "RNode"), host, millis);
     }
     
     public static IHEYr4 newActorStartStop(
