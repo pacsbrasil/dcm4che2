@@ -88,7 +88,7 @@
       setMethod="setArchiveDiskUsageRefreshInterval">
       <description>Interval between (re)calculating of ArchiveDiskUsage
       in days (##d), hours (##h) or minutes (##m). Corrects possible
-      inaccuracy of incremental calculation.
+      inaccuracy of incremental updates of ArchiveDiskUsage.
       </description>
       <name>ArchiveDiskUsageRefreshInterval</name>
       <type>java.lang.String</type>      
@@ -144,7 +144,7 @@
       - ~ 2x capacity of media; in case of media splitting even higher - than
       this value, because the current FilesetDiskUsage must EXCEED the 
       configured HighWaterMark, to cause DICOM Media Creation Mgt SCP to reject
-      further N-ACTION RQs.
+      further Media Creation Initiation requests.
       </description>
       <name>FilesetHighWaterMark</name>
       <type>java.lang.String</type>      
@@ -164,7 +164,7 @@
       setMethod="setFilesetDiskUsageRefreshInterval">
       <description>Interval between (re)calculating of FilesetDiskUsage
       in days (##d), hours (##h) or minutes (##m). Corrects possible
-      inaccuracy of incremental calculation.
+      inaccuracy of incremental updates of FilesetDiskUsage.
       </description>
       <name>FilesetDiskUsageRefreshInterval</name>
       <type>java.lang.String</type>      
