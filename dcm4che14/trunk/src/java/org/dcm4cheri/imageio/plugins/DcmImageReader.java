@@ -208,10 +208,6 @@ public class DcmImageReader extends javax.imageio.ImageReader {
          throw new IOException(
          "Encapsulate Pixel Data not supported by this version!");
       }
-      if (rLen % frameStartPos.length != 0) {
-         throw new DcmValueException("Invalid Length of Pixel Data: "
-         + rLen);
-      }
       int frameLength = rLen / frameStartPos.length;
       frameStartPos[0] = theParser.getStreamPosition();
       for (int i = 1; i < frameStartPos.length; ++i) {
@@ -228,21 +224,16 @@ public class DcmImageReader extends javax.imageio.ImageReader {
          if (alloc == 16) {
             throw new IOException("RGB 16 Bits allocated not supported!");
          }
-         if (frameLength != 3 * width * height) {
+         if (frameLength < 3 * width * height) {
             throw new DcmValueException("Invalid Length of Pixel Data: "
             + rLen);
          }
          return;
       }
       
-      int delta = frameLength - width * height * (alloc >> 3);
-      if (delta != 0) {
-         if (delta < 0) {
-            throw new DcmValueException("Invalid Length of Pixel Data: "
-            + rLen);
-         }
-         System.err.println(
-         "Warning: Pixel Data too long. Try to read anyway");
+      if (frameLength < width * height * (alloc >> 3)) {
+          throw new DcmValueException("Invalid Length of Pixel Data: "
+          + rLen);
       }
    }
    
