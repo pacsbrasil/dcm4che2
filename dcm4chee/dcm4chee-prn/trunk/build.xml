@@ -247,7 +247,8 @@
     <fixcrlf srcdir="${dist.dir}/bin" eol="lf" includes="*.sh"/>
     <chmod dir="${dist.dir}/bin" perm="ugo+rx" includes="*.sh"/>
     <zip destfile="${build.dir}/${dist.name}.zip"
-         basedir="${dist.dir}"
+         basedir="${build.dir}"
+         includes="${dist.name}/**"
     />
   </target>
        
