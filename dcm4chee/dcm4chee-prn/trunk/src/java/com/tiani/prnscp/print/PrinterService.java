@@ -29,14 +29,17 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.TMFormat;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
-import javax.management.Notification;
-import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.management.MalformedObjectNameException;
+import javax.management.MBeanServer;
 import org.jboss.logging.Logger;
 
 import java.awt.print.Pageable;
@@ -103,7 +106,7 @@ import java.util.TimerTask;
  */
 public class PrinterService
    extends ServiceMBeanSupport
-   implements PrinterServiceMBean, NotificationListener, Runnable,
+   implements PrinterServiceMBean, Runnable,
       PrintServiceAttributeListener, PrintJobAttributeListener, PrintJobListener
 {
     static {
@@ -122,7 +125,23 @@ public class PrinterService
    static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1";
    static final int SHUTDOWN_DELAY_MINUTES = 10;
    
+   private static final String[] LITTLE_ENDIAN_TS = {
+        UIDs.ExplicitVRLittleEndian,
+        UIDs.ImplicitVRLittleEndian
+   };
+   private static final String[] ONLY_DEFAULT_TS = {
+        UIDs.ImplicitVRLittleEndian
+   };
    // Attributes ----------------------------------------------------
+   private String[] ts_uids = LITTLE_ENDIAN_TS;
+   private final static AssociationFactory asf = 
+      AssociationFactory.getInstance();
+   
+   private String aet;
+   
+   /** Holds value of property printSCP. */
+   private ObjectName printSCP;
+
    /** Holds value of property license. */
    private X509Certificate license;
    
@@ -245,21 +264,6 @@ public class PrinterService
    /** Holds value of property printGrayscaleAtStartup. */
    private boolean printGrayscaleAtStartup;
    
-   private int status = NORMAL;
-   private String statusInfo = "NORMAL";
-
-   private final PrinterCalibration calibration = new PrinterCalibration();
-   private final ScannerCalibration scanner = new ScannerCalibration(log);
-   
-   private long notifCount = 0;
-   private LinkedList highPriorQueue = new LinkedList();
-   private LinkedList medPriorQueue = new LinkedList();
-   private LinkedList lowPriorQueue = new LinkedList();
-   private Object queueMonitor = new Object();
-   private Object printerMonitor = new Object();
-   private Thread scheduler;
-   private PrintService printService;
-   
    /** Holds value of property printToFile. */
    private boolean printToFile;
    
@@ -280,6 +284,21 @@ public class PrinterService
    
    /** Holds value of property grayscaleAnnotation. */
    private String grayscaleAnnotation;
+   
+   private int status = NORMAL;
+   private String statusInfo = "NORMAL";
+
+   private final PrinterCalibration calibration = new PrinterCalibration();
+   private final ScannerCalibration scanner = new ScannerCalibration(log);
+   
+   private long notifCount = 0;
+   private LinkedList highPriorQueue = new LinkedList();
+   private LinkedList medPriorQueue = new LinkedList();
+   private LinkedList lowPriorQueue = new LinkedList();
+   private Object queueMonitor = new Object();
+   private Object printerMonitor = new Object();
+   private Thread scheduler;
+   private PrintService printService;
    
    // Static --------------------------------------------------------
    
@@ -310,6 +329,20 @@ public class PrinterService
       return CODE_STRING[status];
    }
    
+   /** Getter for property printSCP.
+    * @return Value of property printSCP.
+    */
+   public ObjectName getPrintSCP() {
+      return this.printSCP;
+   }
+   
+   /** Setter for property printSCP.
+    * @param printSCP New value of property printSCP.
+    */
+   public void setPrintSCP(ObjectName printSCP) {
+      this.printSCP = printSCP;
+   }
+   
    /** Getter for property printerName.
     * @return Value of property printerName.
     */
@@ -333,10 +366,6 @@ public class PrinterService
 
    int[] getPuzzleScalePackSize(){
       return puzzleScalePackageSize;
-   }
-   
-   protected Logger getLogger(){
-      return log;
    }
    
    private PrintService getPrintService() throws PrintException {
@@ -1361,6 +1390,16 @@ public class PrinterService
    }
    
    // ServiceMBeanSupport overrides ------------------------------------
+   protected ObjectName getObjectName(MBeanServer server, ObjectName name)
+      throws MalformedObjectNameException
+   {
+      aet = name.getKeyProperty("aet");
+      if (!new ObjectName(OBJECT_NAME_PREFIX + aet).equals(name)) {
+         throw new MalformedObjectNameException("name: " + name);
+      }
+      return name;
+   }
+   
    public void startService()
    throws Exception {
       checkLicense();
@@ -1372,7 +1411,36 @@ public class PrinterService
       }
       if (printGrayscaleAtStartup) {
          printGrayscaleWithLinDDL();
-      }      
+      }
+      server.invoke(printSCP, "registerPrinter",
+         new Object[] { 
+            aet,
+            getServiceName(),
+            getAcceptorPolicy()
+         },
+         new String[] { 
+            String.class.getName(),
+            ObjectName.class.getName(),
+            AcceptorPolicy.class.getName()
+         });
+   }
+   
+   private AcceptorPolicy getAcceptorPolicy()
+   {
+      AcceptorPolicy policy = asf.newAcceptorPolicy();
+      if (supportsGrayscale) {
+         policy.putPresContext(UIDs.BasicGrayscalePrintManagement, ts_uids);
+         if (supportsPresentationLUT) {
+            policy.putPresContext(UIDs.PresentationLUT, ts_uids);
+         }
+      }
+      if (supportsColor) {
+         policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
+      }
+//      if (getBooleanPrinterAttribute(aet, "SupportsAnnotationBox")) {
+//         policy.putPresContext(UIDs.BasicAnnotationBox, ts_uids);
+//      }
+      return policy;
    }
    
    private void checkLicense() {
@@ -1400,23 +1468,31 @@ public class PrinterService
    
    public void stopService()
    throws Exception {
+      invokeOnPrintSCP("unregisterPrinter", aet);
       Thread tmp = scheduler;
       scheduler = null;
       tmp.interrupt();
    }
    
-   // NotificationListener implementation -----------------------------------
-   public void handleNotification(Notification notif, Object obj) {
-      log.info("Scheduling job - " + new File(notif.getMessage()).getName());
-      Dataset sessionAttr = (Dataset)notif.getUserData();
+   private void invokeOnPrintSCP(String methode, String arg)
+      throws Exception
+   {
+      server.invoke(printSCP, methode,
+         new Object[] { arg },
+         new String[] { String.class.getName() });
+   }
+   
+   public void scheduleJob(Boolean color, String job, Dataset sessionAttr) {
+      log.info("Scheduling job - " + new File(job).getName());
       String prior = sessionAttr.getString(Tags.PrintPriority);
+      Object[] jobAttr = { color, job, sessionAttr };
       synchronized (queueMonitor) {
          if ("LOW".equals(prior)) {
-            lowPriorQueue.add(notif);
+            lowPriorQueue.add(jobAttr);
          } else if ("HIGH".equals(prior)) {
-            highPriorQueue.add(notif);
+            highPriorQueue.add(jobAttr);
          } else {
-            medPriorQueue.add(notif);
+            medPriorQueue.add(jobAttr);
          }
          queueMonitor.notify();
       }
@@ -1427,13 +1503,13 @@ public class PrinterService
       log.info("Scheduler Started");
       while (scheduler != null) {
          try {
-            Notification notif;
+            Object[] jobAttr;
             synchronized (queueMonitor) {
-               while ((notif = nextNotification()) == null) {
+               while ((jobAttr = nextJobFromQueue()) == null) {
                   queueMonitor.wait();
                }
             }
-            processNotification(notif);
+            processJob(jobAttr);
          } catch (InterruptedException ignore) {
          }
       }
@@ -1449,24 +1525,24 @@ public class PrinterService
        return qjc.getValue();
    }
    
-   private Notification nextNotification() {
+   private Object[] nextJobFromQueue() {
       if (!highPriorQueue.isEmpty()) {
-         return (Notification) highPriorQueue.removeFirst();
+         return (Object[]) highPriorQueue.removeFirst();
       }
       if (!medPriorQueue.isEmpty()) {
-         return (Notification) medPriorQueue.removeFirst();
+         return (Object[]) medPriorQueue.removeFirst();
       }
       if (!lowPriorQueue.isEmpty()) {
-         return (Notification) lowPriorQueue.removeFirst();
+         return (Object[]) lowPriorQueue.removeFirst();
       }
       return null;
    }
    
-   private void processNotification(Notification notif) {
-      String job = notif.getMessage();
+   private void processJob(Object[] jobAttr) {
+      String job = (String) jobAttr[1];
       File jobDir = new File(job);
       String jobID = new File(job).getName();
-      Dataset sessionAttr = (Dataset)notif.getUserData();
+      Dataset sessionAttr = (Dataset) jobAttr[2];
       try {
         synchronized (printerMonitor) {
            while (getQueuedJobCount() > maxQueuedJobCount) {
@@ -1475,20 +1551,23 @@ public class PrinterService
               printerMonitor.wait();
            }
         }
-          log.info("Start processing job - " + jobID);
-          sendNotification(
-             new Notification(NOTIF_PRINTING, this, ++notifCount, job));
+         log.info("Start processing job - " + jobID);
+         invokeOnPrintSCP("onJobStartPrinting", job);
          long mil = System.currentTimeMillis();
-         boolean color = notif.getType().equals(NOTIF_SCHEDULE_COLOR);
-         print(new Films(this, jobDir, sessionAttr), sessionAttr, color);
+         Boolean color = (Boolean) jobAttr[0];
+         print(new Films(this, jobDir, sessionAttr),
+            sessionAttr,
+            color.booleanValue());
          log.info("Finished processing job - " + jobID);
          log.info("Finished processing job in "+(System.currentTimeMillis()-mil));
-         sendNotification(
-            new Notification(NOTIF_DONE, this, ++notifCount, job));
+         try {
+            invokeOnPrintSCP("onJobDone", job);
+         } catch (Exception ignore) {}            
       } catch (Exception e) {
          log.error("Failed processing job - " + jobID, e);
-         sendNotification(
-            new Notification(NOTIF_FAILURE, this, ++notifCount, job));
+         try {
+            invokeOnPrintSCP("onJobFailed", job);
+         } catch (Exception ignore) {}            
       }
    }
    
@@ -1626,7 +1705,6 @@ public class PrinterService
    
    /** Getter for property trimBoxThickness.
     * @return Value of property trimBoxThickness.
-    *
     */
    public float getTrimBoxThickness() {
        return this.trimBoxThickness;
@@ -1634,7 +1712,6 @@ public class PrinterService
    
    /** Setter for property trimBoxThickness.
     * @param trimBoxThickness New value of property trimBoxThickness.
-    *
     */
    public void setTrimBoxThickness(float trimBoxThickness) {
        this.trimBoxThickness = trimBoxThickness;
@@ -1642,7 +1719,6 @@ public class PrinterService
    
    /** Getter for property colorVis.
     * @return Value of property colorVis.
-    *
     */
    public String getColorVis() {
        return this.colorVis;
@@ -1650,7 +1726,6 @@ public class PrinterService
    
    /** Setter for property colorVis.
     * @param colorVis New value of property colorVis.
-    *
     */
    public void setColorVis(String colorVis) {
        this.colorVis = colorVis;
@@ -1658,7 +1733,6 @@ public class PrinterService
    
    /** Getter for property colorAllOfPage.
     * @return Value of property colorAllOfPage.
-    *
     */
    public String getColorAllOfPage() {
        return this.colorAllOfPage;
@@ -1666,7 +1740,6 @@ public class PrinterService
    
    /** Setter for property colorAllOfPage.
     * @param colorAllOfPage New value of property colorAllOfPage.
-    *
     */
    public void setColorAllOfPage(String colorAllOfPage) {
        this.colorAllOfPage = colorAllOfPage;
@@ -1674,7 +1747,6 @@ public class PrinterService
    
    /** Getter for property colorTrimBox.
     * @return Value of property colorTrimBox.
-    *
     */
    public String getColorTrimBox() {
        return this.colorTrimBox;
@@ -1682,7 +1754,6 @@ public class PrinterService
    
    /** Setter for property colorTrimBox.
     * @param colorTrimBox New value of property colorTrimBox.
-    *
     */
    public void setColorTrimBox(String colorTrimBox) {
        this.colorTrimBox = colorTrimBox;
@@ -1690,7 +1761,6 @@ public class PrinterService
    
    /** Getter for property spaceBetweenVisW.
     * @return Value of property spaceBetweenVisW.
-    *
     */
    public float getSpaceBetweenVisW() {
        return this.spaceBetweenVisW;
@@ -1698,7 +1768,6 @@ public class PrinterService
    
    /** Setter for property spaceBetweenVisW.
     * @param spaceBetweenVisW New value of property spaceBetweenVisW.
-    *
     */
    public void setSpaceBetweenVisW(float spaceBetweenVisW) {
        this.spaceBetweenVisW = spaceBetweenVisW;
@@ -1706,7 +1775,6 @@ public class PrinterService
    
    /** Getter for property spaceBetweenVisH.
     * @return Value of property spaceBetweenVisH.
-    *
     */
    public float getSpaceBetweenVisH() {
        return this.spaceBetweenVisH;
@@ -1714,7 +1782,6 @@ public class PrinterService
    
    /** Setter for property spaceBetweenVisH.
     * @param spaceBetweenVisH New value of property spaceBetweenVisH.
-    *
     */
    public void setSpaceBetweenVisH(float spaceBetweenVisH) {
        this.spaceBetweenVisH = spaceBetweenVisH;
@@ -1722,7 +1789,6 @@ public class PrinterService
    
    /** Getter for property useBorderDensForGrid.
     * @return Value of property useBorderDensForGrid.
-    *
     */
    public boolean isUseBorderDensForGrid() {
        return this.useBorderDensForGrid;
@@ -1730,7 +1796,6 @@ public class PrinterService
    
    /** Setter for property useBorderDensForGrid.
     * @param useBorderDensForGrid New value of property useBorderDensForGrid.
-    *
     */
    public void setUseBorderDensForGrid(boolean useBorderDensForGrid) {
        this.useBorderDensForGrid = useBorderDensForGrid;
@@ -1738,7 +1803,6 @@ public class PrinterService
    
    /** Getter for property puzzleScaleStartSize.
     * @return Value of property puzzleScaleStartSize.
-    *
     */
    public int getPuzzleScaleStartSize() {
        return this.puzzleScaleStartSize;
@@ -1746,7 +1810,6 @@ public class PrinterService
    
    /** Setter for property puzzleScaleStartSize.
     * @param puzzleScaleStartSize New value of property puzzleScaleStartSize.
-    *
     */
    public void setPuzzleScaleStartSize(int puzzleScaleStartSize) {
        this.puzzleScaleStartSize = puzzleScaleStartSize;
@@ -1754,7 +1817,6 @@ public class PrinterService
    
    /** Getter for property puzzleScalePackageSize.
     * @return Value of property puzzleScalePackageSize.
-    *
     */
    public String getPuzzleScalePackageSize() {
        return "" 
@@ -1781,7 +1843,6 @@ public class PrinterService
    
    /** Getter for property printGrayAsColor.
     * @return Value of property printGrayAsColor.
-    *
     */
    public boolean isPrintGrayAsColor() {
       return this.printGrayAsColor;
@@ -1789,7 +1850,6 @@ public class PrinterService
    
    /** Setter for property printGrayAsColor.
     * @param printGrayAsColor New value of property printGrayAsColor.
-    *
     */
    public void setPrintGrayAsColor(boolean printGrayAsColor) {
       this.printGrayAsColor = printGrayAsColor;

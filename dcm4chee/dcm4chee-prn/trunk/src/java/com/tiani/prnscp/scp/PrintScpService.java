@@ -86,15 +86,6 @@ public class PrintScpService
    implements PrintScpServiceMBean {
    
    // Constants -----------------------------------------------------   
-   private final String[] LITTLE_ENDIAN_TS = {
-        UIDs.ExplicitVRLittleEndian,
-        UIDs.ImplicitVRLittleEndian
-   };
-   private final String[] ONLY_DEFAULT_TS = {
-        UIDs.ImplicitVRLittleEndian
-   };
-   private static final String SERVER_DELEGATE =
-      "JMImplementation:type=MBeanServerDelegate";
    
    // Attributes ----------------------------------------------------
    private String spoolDirectory;
@@ -107,7 +98,6 @@ public class PrintScpService
    private HashMap printerMap = new HashMap();
    private ObjectName dcmServer;
    private DcmHandler dcmHandler;
-   private String[] ts_uids = LITTLE_ENDIAN_TS;
    private int numCreatedJobs = 0;
    private int numStoredPrints = 0;
             
@@ -120,7 +110,17 @@ public class PrintScpService
    // Public --------------------------------------------------------
    
    // PrintScpMBean implementation ----------------------------------
-   
+   public void onJobStartPrinting(String job) {
+   }
+      
+   public void onJobFailed(String job) {
+      deleteJob(new File(job));
+   }
+
+   public void onJobDone(String job) {
+      deleteJob(new File(job));
+   }
+  
    /** Getter for property dcmServer.
     * @return Value of property dcmServer.
     */
@@ -177,102 +177,20 @@ public class PrintScpService
       return numStoredPrints;
    }
       
-   // NotificationListener implementation -----------------------------
-   private final NotificationListener onMBeanRegistered =
-      new NotificationListener() {
-         public void handleNotification(Notification notif, Object obj) {
-            MBeanServerNotification mbsNotif = (MBeanServerNotification) notif;
-            ObjectName name = mbsNotif.getMBeanName();
-            try {
-               enableDcmService(name);
-            } catch (Exception e) {
-               log.error("Failed to enable " + name);
-            }
-         }
-      };
-   
-   private final NotificationListener onMBeanUnregistered =
-      new NotificationListener() {
-         public void handleNotification(Notification notif, Object obj) {
-            MBeanServerNotification mbsNotif = (MBeanServerNotification) notif;
-            ObjectName name = mbsNotif.getMBeanName();
-            try {
-               disableDcmService(name);
-            } catch (Exception e) {
-               log.error("Failed to disable " + name);
-            }
-         }
-      };
-   
-   
-   private final NotificationListener printingListener =
-      new NotificationListener() {
-         public void handleNotification(Notification n, Object handback) {
-         }
-      };
-      
-   private final NotificationListener doneListener =
-      new NotificationListener() {
-         public void handleNotification(Notification n, Object handback) {
-           deleteJob(new File(n.getMessage()));
-         }
-      };
-
-   private final NotificationListener failureListener =
-      new NotificationListener() {
-         public void handleNotification(Notification n, Object handback) {
-           deleteJob(new File(n.getMessage()));
-         }
-      };
-   
-   private static class TypeNotifFilter 
-      extends NotificationFilterSupport
+   public void registerPrinter(String aet, ObjectName printer,
+         AcceptorPolicy policy)
    {
-      public TypeNotifFilter(String type) {
-         enableType(type);
-      }
-
-      public TypeNotifFilter(String type1, String type2) {
-         enableType(type1);
-         enableType(type2);
-      }
+      printerMap.put(aet, printer);
+      dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aet, policy);
+      log.info("Registered Printer with AET: " + aet);
    }
-   
-   private static final NotificationFilter SCHEDULE_NOTIF_FILTER =
-      new TypeNotifFilter(PrinterServiceMBean.NOTIF_SCHEDULE_COLOR,
-                          PrinterServiceMBean.NOTIF_SCHEDULE_GRAY); 
 
-   private static final NotificationFilter PRINTING_NOTIF_FILTER =
-      new TypeNotifFilter(PrinterServiceMBean.NOTIF_PRINTING);
-   
-   private static final NotificationFilter DONE_NOTIF_FILTER =
-      new TypeNotifFilter(PrinterServiceMBean.NOTIF_DONE);
-
-   private static final NotificationFilter FAILURE_NOTIF_FILTER =
-      new TypeNotifFilter(PrinterServiceMBean.NOTIF_FAILURE);   
-    
-   private static class RegPrinterNotifFilter 
-      extends NotificationFilterSupport
+   public void unregisterPrinter(String aet)
    {
-      public RegPrinterNotifFilter(String type) {
-         enableType(type);
-      }
-         
-      public boolean isNotificationEnabled(Notification notif) {
-         if (!super.isNotificationEnabled(notif)) {
-            return false;
-         }
-         MBeanServerNotification mbsNotif = (MBeanServerNotification) notif;
-         ObjectName name = mbsNotif.getMBeanName();
-         return "dcm4chex".equals(name.getDomain())
-            && "Printer".equals(name.getKeyProperty("service"));
-      }
+      dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aet, null);
+      printerMap.remove(aet);
+      log.info("Unregistered Printer with AET: " + aet);
    }
-   
-   private static final NotificationFilter REG_NOTIF_FILTER =
-      new RegPrinterNotifFilter(MBeanServerNotification.REGISTRATION_NOTIFICATION); 
-   private static final NotificationFilter UNREG_NOTIF_FILTER =
-      new RegPrinterNotifFilter(MBeanServerNotification.UNREGISTRATION_NOTIFICATION); 
    
    // ServiceMBeanSupport overrides -----------------------------------
    public void startService()
@@ -292,129 +210,19 @@ public class PrintScpService
       }
       cleardir(spoolDir);
       dcmHandler = (DcmHandler)server.getAttribute(dcmServer, "DcmHandler");
-      try {
-         bindDcmServices();
-         enableDcmServices();
-      } catch (Exception e) {
-         try { stopService(); } catch (Exception ignore) {} 
-         throw e;
-      }      
+      bindDcmServices();
    }
    
    public void stopService()
       throws Exception
    {
-      disableDcmServices();
       unbindDcmServices();
       dcmHandler = null;
       if (!keepSpoolFiles) {
          cleardir(spoolDir);
       }
    }
-   
-   private void enableDcmServices() throws Exception
-   {
-      printerMap.clear();
-      Set printerNames = server.queryNames(
-         new ObjectName("dcm4chex:service=Printer,*"), null);
-      for (Iterator it = printerNames.iterator(); it.hasNext();) {
-         enableDcmService((ObjectName) it.next());
-      }
-      ObjectName SERVER_DELEGATE_NAME = new ObjectName(SERVER_DELEGATE);
-      server.addNotificationListener(SERVER_DELEGATE_NAME,
-         onMBeanRegistered, REG_NOTIF_FILTER, null);
-      server.addNotificationListener(SERVER_DELEGATE_NAME,
-         onMBeanUnregistered,  UNREG_NOTIF_FILTER, null);
-   }
-
-   private void disableDcmServices() throws Exception {
-      ObjectName SERVER_DELEGATE_NAME = new ObjectName(SERVER_DELEGATE);
-      server.removeNotificationListener(SERVER_DELEGATE_NAME,
-         onMBeanUnregistered); 
-      server.removeNotificationListener(SERVER_DELEGATE_NAME,
-         onMBeanRegistered);
-      Collection aets = new ArrayList(printerMap.values());
-      for (Iterator it = aets.iterator(); it.hasNext();) {
-         disableDcmService((ObjectName) it.next());
-      }
-   }
-   
-   private void enableDcmService(ObjectName printer) throws Exception
-   {
-      String aet = printer.getKeyProperty("aet");
-      if (aet == null || aet.length() == 0) {
-         throw new IllegalArgumentException(
-            "Missing aet property in printer object name - " + printer);
-      }
-      if (printerMap.containsKey(aet)) {
-         throw new IllegalArgumentException(
-            "Duplicate printer aet - " + aet);
-      }
-      printerMap.put(aet, printer);
-      addNotificationListeners(printer);
-      AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
-      policy.putPolicyForCalledAET(aet, makeAcceptorPolicy(aet));
-      log.info("Enabled DICOM Print Service with AET: " + aet);
-   }
-
-   private void disableDcmService(ObjectName printer) throws Exception 
-   {
-      String aet = printer.getKeyProperty("aet");
-      if (aet == null || aet.length() == 0) {
-         throw new IllegalArgumentException(
-            "Missing aet property in printer object name - " + printer);
-      }
-      removeNotificationListeners(printer);      
-      if (printerMap.remove(aet) == null) {
-         log.warn("No enabled Print Service with AET: " + aet);
-         return;
-      }
-      AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
-      policy.putPolicyForCalledAET(aet, null);
-      log.info("Disabled Print Service with AET: " + aet);
-   }   
-   
-   private AcceptorPolicy makeAcceptorPolicy(String aet)
-      throws Exception
-   {
-      AcceptorPolicy policy = asf.newAcceptorPolicy();
-      if (getBooleanPrinterAttribute(aet, "SupportsGrayscale")) {
-         policy.putPresContext(UIDs.BasicGrayscalePrintManagement, ts_uids);
-         if (getBooleanPrinterAttribute(aet, "SupportsPresentationLUT")) {
-            policy.putPresContext(UIDs.PresentationLUT, ts_uids);
-         }
-      }
-      if (getBooleanPrinterAttribute(aet, "SupportsColor")) {
-         policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
-      }
-//      if (getBooleanPrinterAttribute(aet, "SupportsAnnotationBox")) {
-//         policy.putPresContext(UIDs.BasicAnnotationBox, ts_uids);
-//      }
-      return policy;
-   }
-
-   private void addNotificationListeners(ObjectName printer)
-      throws Exception
-   {
-      server.addNotificationListener(getServiceName(),
-         printer, SCHEDULE_NOTIF_FILTER, null);
-      server.addNotificationListener(printer,
-         printingListener, PRINTING_NOTIF_FILTER, null);
-      server.addNotificationListener(printer,
-         doneListener, DONE_NOTIF_FILTER, null);
-      server.addNotificationListener(printer,
-         failureListener, FAILURE_NOTIF_FILTER, null);
-   }
-
-   private void removeNotificationListeners(ObjectName printer)
-      throws Exception
-   {
-      server.removeNotificationListener(getServiceName(), printer);
-      server.removeNotificationListener(printer, printingListener);
-      server.removeNotificationListener(printer, doneListener);
-      server.removeNotificationListener(printer, failureListener);
-   }
-   
+      
    private void bindDcmServices() {
       DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
       services.bind(UIDs.BasicFilmSession, filmSessionService);
@@ -512,14 +320,21 @@ public class PrintScpService
          Object[] arg, String[] type)
       throws Exception
    {
+      Boolean b = (Boolean) invokeOnPrinter(aet, methode, arg, type);
+      return b.booleanValue();
+   }
+
+   Object invokeOnPrinter(String aet, String methode,
+         Object[] arg, String[] type)
+      throws Exception
+   {
       ObjectName printer = (ObjectName) printerMap.get(aet);
       if (printer == null) {
          throw new IllegalArgumentException("No printer with aet: " + aet);
       }
-      Boolean b = (Boolean) server.invoke(printer, methode, arg, type);
-      return b.booleanValue();
+      return server.invoke(printer, methode, arg, type);
    }
-       
+   
    FilmSession getFilmSession(ActiveAssociation as) {
       return (FilmSession) as.getAssociation().getProperty("FilmSession");
    }
@@ -593,7 +408,7 @@ public class PrintScpService
       return dir.delete();
    }
 
-   void createPrintJob(FilmSession session, boolean all)
+   void createPrintJob(String aet, FilmSession session, boolean all)
       throws DcmServiceException
    {
       String jobID = "J-" + ++numCreatedJobs;
@@ -612,15 +427,23 @@ public class PrintScpService
          } else {
             storePrint(jobdir, session, session.getCurrentFilmBox());
          }
-         Notification notif = new Notification(
-            session.isColor()
-               ? PrinterServiceMBean.NOTIF_SCHEDULE_COLOR
-               : PrinterServiceMBean.NOTIF_SCHEDULE_GRAY, 
-               this, numCreatedJobs, jobdir.getPath());
          Dataset sessionAttr = dof.newDataset();
          sessionAttr.putAll(session.getAttributes());
-         notif.setUserData(sessionAttr);
-         sendNotification(notif);
+         try {
+            invokeOnPrinter(aet, "scheduleJob",
+               new Object[] {
+                  new Boolean(session.isColor()),
+                  jobdir.getPath(),
+                  sessionAttr
+               },
+               new String[] {
+                  Boolean.class.getName(),
+                  String.class.getName(),
+                  Dataset.class.getName()
+               });
+         } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+         }
       } catch (DcmServiceException e) {
          deltree(jobdir);
          throw e;

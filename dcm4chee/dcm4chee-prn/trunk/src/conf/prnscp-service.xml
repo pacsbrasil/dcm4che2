@@ -14,12 +14,12 @@
 
   <mbean code="com.tiani.prnscp.scp.PrintScpService" 
          name="dcm4chex:service=PrintSCP">
+    <depends optional-attribute-name="DcmServer">dcm4chex:service=DcmServer</depends>
     <!--
     Specifies spool directory used for buffering print jobs, before they can be
     forwarded to the printer.
     -->
     <attribute name="SpoolDirectory">tmp/spool</attribute>
-    <depends optional-attribute-name="DcmServer">dcm4chex:service=DcmServer</depends>
   </mbean>
      
 </server>

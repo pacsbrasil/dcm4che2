@@ -159,7 +159,8 @@ class FilmSessionService
          if (session == null || !uid.equals(session.uid())) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
          }
-         scp.createPrintJob(session, true);
+         String aet = as.getAssociation().getCalledAET();
+         scp.createPrintJob(aet, session, true);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to print Basic Film Session SOP Instance", e);

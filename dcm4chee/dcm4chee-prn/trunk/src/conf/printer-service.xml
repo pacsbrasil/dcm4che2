@@ -14,6 +14,7 @@
 
   <mbean code="com.tiani.prnscp.print.PrinterService" 
          name="dcm4chex:service=Printer,aet=PRINTER_AET">
+    <depends optional-attribute-name="PrintSCP">dcm4chex:service=PrintSCP</depends>
          
     <!--
     Specifies name of the printer used by the system.

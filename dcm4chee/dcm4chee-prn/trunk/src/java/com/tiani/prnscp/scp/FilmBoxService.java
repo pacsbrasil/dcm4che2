@@ -187,7 +187,8 @@ class FilmBoxService extends DcmServiceBase
          if (session == null || !uid.equals(session.getCurrentFilmBoxUID())) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
          }
-         scp.createPrintJob(session, false);
+         String aet = as.getAssociation().getCalledAET();
+         scp.createPrintJob(aet, session, false);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to print Basic Film Box SOP Instance", e);

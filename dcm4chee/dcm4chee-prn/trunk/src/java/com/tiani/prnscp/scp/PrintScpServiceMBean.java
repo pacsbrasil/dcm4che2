@@ -22,8 +22,8 @@
 
 package com.tiani.prnscp.scp;
 
+import org.dcm4che.net.AcceptorPolicy;
 import org.jboss.system.ServiceMBean;
-
 import javax.management.ObjectName;
 
 /**
@@ -90,4 +90,14 @@ public interface PrintScpServiceMBean extends ServiceMBean {
     */
    public int getNumStoredPrints();
    
+   public void registerPrinter(String aet, ObjectName printer,
+         AcceptorPolicy policy);
+   
+   public void unregisterPrinter(String aet);
+
+   public void onJobStartPrinting(String job);
+      
+   public void onJobFailed(String job);
+
+   public void onJobDone(String job);
 }

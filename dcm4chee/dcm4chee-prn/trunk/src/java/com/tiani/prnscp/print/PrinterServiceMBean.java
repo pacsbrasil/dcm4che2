@@ -48,16 +48,22 @@ import java.io.IOException;
  */
 public interface PrinterServiceMBean extends ServiceMBean {
    
-   String NOTIF_SCHEDULE_COLOR = "tiani.prnscp.schedule.color";
-   String NOTIF_SCHEDULE_GRAY = "tiani.prnscp.schedule.gray";
-   String NOTIF_PRINTING = "tiani.prnscp.printing";
-   String NOTIF_DONE = "tiani.prnscp.done";
-   String NOTIF_FAILURE = "tiani.prnscp.failure";
+   String OBJECT_NAME_PREFIX = "dcm4chex:service=Printer,aet=";
    
    int NORMAL  = 1;
    int WARNING = 2;
    int FAILURE = 3;
       
+   /** Getter for property printSCP.
+    * @return Value of property printSCP.
+    */
+   public ObjectName getPrintSCP();
+   
+   /** Setter for property printSCP.
+    * @param printSCP New value of property printSCP.
+    */
+   public void setPrintSCP(ObjectName printSCP);
+   
    /** Getter for property availableDestinations.
     * @return Value of property availableDestinations.
     */
@@ -743,5 +749,7 @@ public interface PrinterServiceMBean extends ServiceMBean {
     *
     */
    public void setSupportsGrayscale(boolean supportsMonochrome);
+   
+   public void scheduleJob(Boolean color, String job, Dataset sessionAttr);
    
 }
