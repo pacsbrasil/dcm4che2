@@ -58,14 +58,14 @@ class AuditLoggerImpl implements AuditLogger {
     // Variables -----------------------------------------------------
     private final SyslogWriter writer = new SyslogWriter();
     
-    private boolean actorStartStopEnabled = true;
-    private boolean instancesStoredEnabled = true;
-    private boolean beginStoringInstancesEnabled = true;
-    private boolean instancesSentEnabled = true;
-    private boolean dicomQueryEnabled = true;
-    private boolean securityAlertEnabled = true;
-    private boolean userAuthenticatedEnabled = true;
-    private boolean actorConfigEnabled = true;
+    private boolean actorStartStop = true;
+    private boolean instancesStored = true;
+    private boolean beginStoringInstances = true;
+    private boolean instancesSent = true;
+    private boolean dicomQuery = true;
+    private boolean securityAlert = true;
+    private boolean userAuthenticated = true;
+    private boolean actorConfig = true;
     
     // Constructors --------------------------------------------------
     
@@ -95,7 +95,7 @@ class AuditLoggerImpl implements AuditLogger {
     }
 
     public void logActorStartStop(String actorName, String action, User user) {
-        if (!actorStartStopEnabled) {
+        if (!actorStartStop) {
             return;
         }
         try {
@@ -111,7 +111,7 @@ class AuditLoggerImpl implements AuditLogger {
 
     public void logInstancesStored(RemoteNode rnode,
             InstancesAction instanceActionDescription) {
-        if (!instancesStoredEnabled) {
+        if (!instancesStored) {
             return;
         }
         try {
@@ -127,7 +127,7 @@ class AuditLoggerImpl implements AuditLogger {
     
     public void logBeginStoringInstances(RemoteNode rnode,
             InstancesAction instanceActionDescription) {
-        if (!beginStoringInstancesEnabled) {
+        if (!beginStoringInstances) {
             return;
         }
         try {
@@ -143,7 +143,7 @@ class AuditLoggerImpl implements AuditLogger {
 
     public void logInstancesSent(RemoteNode rnode,
             InstancesAction instanceActionDescription) {
-        if (!instancesSentEnabled) {
+        if (!instancesSent) {
             return;
         }
         try {
@@ -158,7 +158,7 @@ class AuditLoggerImpl implements AuditLogger {
     }
     
     public void logDicomQuery(Dataset keys, RemoteNode requestor, String cuid) {
-        if (!dicomQueryEnabled) {
+        if (!dicomQuery) {
             return;
         }
         try {
@@ -174,7 +174,7 @@ class AuditLoggerImpl implements AuditLogger {
 
     public void logSecurityAlert(String alertType, User user,
             String description) {
-        if (!securityAlertEnabled) {
+        if (!securityAlert) {
             return;
         }
         try {
@@ -189,7 +189,7 @@ class AuditLoggerImpl implements AuditLogger {
     }
 
     public void logUserAuthenticated(String localUserName, String action) {
-        if (!userAuthenticatedEnabled) {
+        if (!userAuthenticated) {
             return;
         }
         try {
@@ -205,7 +205,7 @@ class AuditLoggerImpl implements AuditLogger {
     
     public void logActorConfig(String description, User user,
             String configType) {
-        if (!actorConfigEnabled) {
+        if (!actorConfig) {
             return;
         }
         try {
@@ -219,116 +219,116 @@ class AuditLoggerImpl implements AuditLogger {
         }
     }    
     
-    /** Getter for property actorStartStopEnabled.
-     * @return Value of property actorStartStopEnabled.
+    /** Getter for property actorStartStop.
+     * @return Value of property actorStartStop.
      */
-    public boolean isActorStartStopEnabled() {
-        return actorStartStopEnabled;
+    public boolean isLogActorStartStop() {
+        return actorStartStop;
     }
     
-    /** Setter for property actorStartStopEnabled.
-     * @param actorStartStopEnabled New value of property actorStartStopEnabled.
+    /** Setter for property actorStartStop.
+     * @param actorStartStop New value of property actorStartStop.
      */
-    public void setActorStartStopEnabled(boolean actorStartStopEnabled) {
-        this.actorStartStopEnabled = actorStartStopEnabled;
+    public void setLogActorStartStop(boolean actorStartStop) {
+        this.actorStartStop = actorStartStop;
     }
     
-    /** Getter for property instancesStoredEnabled.
-     * @return Value of property instancesStoredEnabled.
+    /** Getter for property instancesStored.
+     * @return Value of property instancesStored.
      */
-    public boolean isInstancesStoredEnabled() {
-        return instancesStoredEnabled;
+    public boolean isLogInstancesStored() {
+        return instancesStored;
     }
     
-    /** Setter for property instancesStoredEnabled.
-     * @param instancesStoredEnabled New value of property instancesStoredEnabled.
+    /** setLogter for property instancesStored.
+     * @param instancesStored New value of property instancesStored.
      */
-    public void setInstancesStoredEnabled(boolean instancesStoredEnabled) {
-        this.instancesStoredEnabled = instancesStoredEnabled;
+    public void setLogInstancesStored(boolean instancesStored) {
+        this.instancesStored = instancesStored;
     }
     
-    /** Getter for property beginStoringInstancesEnabled.
-     * @return Value of property beginStoringInstancesEnabled.
+    /** Getter for property beginStoringInstances.
+     * @return Value of property beginStoringInstances.
      */
-    public boolean isBeginStoringInstancesEnabled() {
-        return beginStoringInstancesEnabled;
+    public boolean isLogBeginStoringInstances() {
+        return beginStoringInstances;
     }
     
-    /** Setter for property beginStoringInstancesEnabled.
-     * @param beginStoringInstancesEnabled New value of property beginStoringInstancesEnabled.
+    /** Setter for property beginStoringInstances.
+     * @param beginStoringInstances New value of property beginStoringInstances.
      */
-    public void setBeginStoringInstancesEnabled(boolean beginStoringInstancesEnabled) {
-        this.beginStoringInstancesEnabled = beginStoringInstancesEnabled;
+    public void setLogBeginStoringInstances(boolean beginStoringInstances) {
+        this.beginStoringInstances = beginStoringInstances;
     }
     
-    /** Getter for property instancesSentEnabled.
-     * @return Value of property instancesSentEnabled.
+    /** Getter for property instancesSent.
+     * @return Value of property instancesSent.
      */
-    public boolean isInstancesSentEnabled() {
-        return instancesSentEnabled;
+    public boolean isLogInstancesSent() {
+        return instancesSent;
     }
     
-    /** Setter for property instancesSentEnabled.
-     * @param instancesSentEnabled New value of property instancesSentEnabled.
+    /** Setter for property instancesSent.
+     * @param instancesSent New value of property instancesSent.
      */
-    public void setInstancesSentEnabled(boolean instancesSentEnabled) {
-        this.instancesSentEnabled = instancesSentEnabled;
+    public void setLogInstancesSent(boolean instancesSent) {
+        this.instancesSent = instancesSent;
     }
     
-    /** Getter for property dicomQueryEnabled.
-     * @return Value of property dicomQueryEnabled.
+    /** Getter for property dicomQuery.
+     * @return Value of property dicomQuery.
      */
-    public boolean isDicomQueryEnabled() {
-        return dicomQueryEnabled;
+    public boolean isLogDicomQuery() {
+        return dicomQuery;
     }
     
-    /** Setter for property dicomQueryEnabled.
-     * @param dicomQueryEnabled New value of property dicomQueryEnabled.
+    /** Setter for property dicomQuery.
+     * @param dicomQuery New value of property dicomQuery.
      */
-    public void setDicomQueryEnabled(boolean dicomQueryEnabled) {
-        this.dicomQueryEnabled = dicomQueryEnabled;
+    public void setLogDicomQuery(boolean dicomQuery) {
+        this.dicomQuery = dicomQuery;
     }
     
-    /** Getter for property securityAlertEnabled.
-     * @return Value of property securityAlertEnabled.
+    /** Getter for property securityAlert.
+     * @return Value of property securityAlert.
      */
-    public boolean isSecurityAlertEnabled() {
-        return securityAlertEnabled;
+    public boolean isLogSecurityAlert() {
+        return securityAlert;
     }
     
-    /** Setter for property securityAlertEnabled.
-     * @param securityAlertEnabled New value of property securityAlertEnabled.
+    /** Setter for property securityAlert.
+     * @param securityAlert New value of property securityAlert.
      */
-    public void setSecurityAlertEnabled(boolean securityAlertEnabled) {
-        this.securityAlertEnabled = securityAlertEnabled;
+    public void setLogSecurityAlert(boolean securityAlert) {
+        this.securityAlert = securityAlert;
     }
     
-    /** Getter for property userAuthenticatedEnabled.
-     * @return Value of property userAuthenticatedEnabled.
+    /** Getter for property userAuthenticated.
+     * @return Value of property userAuthenticated.
      */
-    public boolean isUserAuthenticatedEnabled() {
-        return userAuthenticatedEnabled;
+    public boolean isLogUserAuthenticated() {
+        return userAuthenticated;
     }
     
-    /** Setter for property userAuthenticatedEnabled.
-     * @param userAuthenticatedEnabled New value of property userAuthenticatedEnabled.
+    /** Setter for property userAuthenticated.
+     * @param userAuthenticated New value of property userAuthenticated.
      */
-    public void setUserAuthenticatedEnabled(boolean userAuthenticatedEnabled) {
-        this.userAuthenticatedEnabled = userAuthenticatedEnabled;
+    public void setLogUserAuthenticated(boolean userAuthenticated) {
+        this.userAuthenticated = userAuthenticated;
     }
     
-    /** Getter for property actorConfigEnabled.
-     * @return Value of property actorConfigEnabled.
+    /** Getter for property actorConfig.
+     * @return Value of property actorConfig.
      */
-    public boolean isActorConfigEnabled() {
-        return actorConfigEnabled;
+    public boolean isLogActorConfig() {
+        return actorConfig;
     }
     
-    /** Setter for property actorConfigEnabled.
-     * @param actorConfigEnabled New value of property actorConfigEnabled.
+    /** Setter for property actorConfig.
+     * @param actorConfig New value of property actorConfig.
      */
-    public void setActorConfigEnabled(boolean actorConfigEnabled) {
-        this.actorConfigEnabled = actorConfigEnabled;
+    public void setLogActorConfig(boolean actorConfig) {
+        this.actorConfig = actorConfig;
     }
     
 }

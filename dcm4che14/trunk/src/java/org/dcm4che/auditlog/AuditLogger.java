@@ -58,37 +58,37 @@ public interface AuditLogger {
     
     void setFacility(String facility);
     
-    boolean isActorStartStopEnabled();
+    boolean isLogActorStartStop();
 
-    void setActorStartStopEnabled(boolean enable);
+    void setLogActorStartStop(boolean enable);
     
-    boolean isInstancesStoredEnabled();
+    boolean isLogInstancesStored();
     
-    void setInstancesStoredEnabled(boolean enable);
+    void setLogInstancesStored(boolean enable);
     
-    boolean isBeginStoringInstancesEnabled();
+    boolean isLogBeginStoringInstances();
 
-    void setBeginStoringInstancesEnabled(boolean enable);
+    void setLogBeginStoringInstances(boolean enable);
     
-    boolean isInstancesSentEnabled();
+    boolean isLogInstancesSent();
     
-    void setInstancesSentEnabled(boolean enable);
+    void setLogInstancesSent(boolean enable);
     
-    boolean isDicomQueryEnabled();
+    boolean isLogDicomQuery();
 
-    void setDicomQueryEnabled(boolean enable);
+    void setLogDicomQuery(boolean enable);
     
-    boolean isSecurityAlertEnabled();
+    boolean isLogSecurityAlert();
     
-    void setSecurityAlertEnabled(boolean enable);
+    void setLogSecurityAlert(boolean enable);
     
-    boolean isUserAuthenticatedEnabled();
+    boolean isLogUserAuthenticated();
     
-    void setUserAuthenticatedEnabled(boolean enable);
+    void setLogUserAuthenticated(boolean enable);
     
-    boolean isActorConfigEnabled();
+    boolean isLogActorConfig();
     
-    void setActorConfigEnabled(boolean enable);
+    void setLogActorConfig(boolean enable);
     
     void logActorStartStop(String actorName, String action, User user);
 
