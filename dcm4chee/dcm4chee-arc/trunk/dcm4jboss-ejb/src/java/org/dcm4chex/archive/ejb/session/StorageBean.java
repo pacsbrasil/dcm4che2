@@ -159,7 +159,7 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(java.lang.String callingAET,
             java.lang.String calledAET, org.dcm4che.data.Dataset ds,
-            java.lang.String retrieveAETs, java.lang.String basedir,
+            java.lang.String[] retrieveAETs, java.lang.String basedir,
             java.lang.String fileid, int size, byte[] md5)
             throws DcmServiceException, DuplicateStorageException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
@@ -211,7 +211,7 @@ public abstract class StorageBean implements SessionBean {
      * @param instance
      * @param retrieveAETs
      */
-    private void updateRetrieveAETs(InstanceLocal instance, String retrieveAETs) {
+    private void updateRetrieveAETs(InstanceLocal instance, String[] retrieveAETs) {
         if (instance.addRetrieveAETs(retrieveAETs)) {
             SeriesLocal series = instance.getSeries();
             if (series.updateRetrieveAETs()) {

@@ -80,8 +80,11 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *
  */
 public abstract class InstanceBean implements EntityBean {
+
     private static final Logger log = Logger.getLogger(InstanceBean.class);
+
     private CodeLocalHome codeHome;
+
     private Set retrieveAETSet;
 
     public void setEntityContext(EntityContext ctx) {
@@ -95,7 +98,8 @@ public abstract class InstanceBean implements EntityBean {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();
-                } catch (NamingException ignore) {}
+                } catch (NamingException ignore) {
+                }
             }
         }
     }
@@ -262,6 +266,7 @@ public abstract class InstanceBean implements EntityBean {
      * @return all files of this instance
      */
     public abstract java.util.Collection getFiles();
+
     public abstract void setFiles(java.util.Collection files);
 
     /**
@@ -297,19 +302,17 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, SeriesLocal series)
-        throws CreateException {
+            throws CreateException {
         retrieveAETSet = null;
         setAttributes(ds);
         return null;
     }
 
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
-        throws CreateException {
+            throws CreateException {
         try {
-            setSrCode(
-                CodeBean.valueOf(
-                    codeHome,
-                    ds.getItem(Tags.ConceptNameCodeSeq)));
+            setSrCode(CodeBean.valueOf(codeHome, ds
+                    .getItem(Tags.ConceptNameCodeSeq)));
         } catch (CreateException e) {
             throw new CreateException(e.getMessage());
         } catch (FinderException e) {
@@ -343,9 +346,8 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        return DatasetUtils.fromByteArray(
-            getEncodedAttributes(),
-            DcmDecodeParam.EVR_LE);
+        return DatasetUtils.fromByteArray(getEncodedAttributes(),
+                DcmDecodeParam.EVR_LE);
     }
 
     /**
@@ -358,8 +360,8 @@ public abstract class InstanceBean implements EntityBean {
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
-        setEncodedAttributes(
-            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+        setEncodedAttributes(DatasetUtils
+                .toByteArray(ds, DcmDecodeParam.EVR_LE));
     }
 
     /**
@@ -373,10 +375,9 @@ public abstract class InstanceBean implements EntityBean {
         if (retrieveAETSet == null) {
             retrieveAETSet = new HashSet();
             String aets = getRetrieveAETs();
-            if (aets != null) {
-                retrieveAETSet.addAll(
-                    Arrays.asList(StringUtils.split(aets, '\\')));
-            }
+            if (aets != null)
+                retrieveAETSet.addAll(Arrays.asList(StringUtils.split(aets,
+                        '\\')));
         }
         return retrieveAETSet;
     }
@@ -384,16 +385,10 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean addRetrieveAETs(String aets) {
-        if (!retrieveAETSet()
-            .addAll(Arrays.asList(StringUtils.split(aets, '\\')))) {
-            return false;
-        }
-        setRetrieveAETs(
-            StringUtils.toString(
-                (String[]) retrieveAETSet().toArray(
-                    new String[retrieveAETSet.size()]),
-                '\\'));
+    public boolean addRetrieveAETs(String[] aets) {
+        if (!retrieveAETSet().addAll(Arrays.asList(aets))) return false;
+        setRetrieveAETs(StringUtils.toString((String[]) retrieveAETSet()
+                .toArray(new String[retrieveAETSet.size()]), '\\'));
         return true;
     }
 
@@ -406,14 +401,7 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     private String prompt() {
-        return "Instance[pk="
-            + getPk()
-            + ", iuid="
-            + getSopIuid()
-            + ", cuid="
-            + getSopCuid()
-            + ", series->"
-            + getSeries()
-            + "]";
+        return "Instance[pk=" + getPk() + ", iuid=" + getSopIuid() + ", cuid="
+                + getSopCuid() + ", series->" + getSeries() + "]";
     }
 }

@@ -43,7 +43,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
  *
  */
 public class FileBeanTest extends ServletTestCase {
-    public static final String RETRIEVE_AETS = "QR_SCP";
+    public static final String[] RETRIEVE_AETS = {"QR_SCP" };
     public static final String BASEDIR = "/var/local/archive";
     public static final String FILEID = "2003/07/11/12345678/9ABCDEF0";
     public static final String TSUID = "1.2.40.0.13.1.1.9999.3";

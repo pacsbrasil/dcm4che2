@@ -47,7 +47,7 @@ public class StorageBeanTest extends TestCase {
 
     public static final String CALLING_AET = "STORE_SCU";
     public static final String CALLED_AET = "STORE_SCP";
-    public static final String RETRIEVE_AETS = "QR_SCP";
+    public static final String[] RETRIEVE_AETS = { "QR_SCP" };
     public static final String DIR = "storage";
     public static final String AET = "StorageBeanTest";
     public static final DcmObjectFactory objFact =

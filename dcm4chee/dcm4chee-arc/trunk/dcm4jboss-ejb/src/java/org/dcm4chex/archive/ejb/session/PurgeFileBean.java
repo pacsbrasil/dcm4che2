@@ -101,14 +101,13 @@ public abstract class PurgeFileBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public FileDTO[] findDereferencedFiles(String retrieveAETs)
+    public FileDTO[] findDereferencedFiles(String[] retrieveAETs)
         throws FinderException {
         Collection c = fileHome.findDereferenced();
         if (c.isEmpty()) {
             return new FileDTO[0];
         }
-        Collection retrieveAETList =
-            Arrays.asList(StringUtils.split(retrieveAETs, '\\'));
+        Collection retrieveAETList = Arrays.asList(retrieveAETs);
         Collection retval = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
             FileLocal file = (FileLocal) it.next();

@@ -25,6 +25,7 @@ import javax.ejb.EntityBean;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 
@@ -250,7 +251,7 @@ public abstract class FileBean implements EntityBean
 	 * @ejb.create-method
 	 */
     public Integer ejbCreate(
-        String aets,
+        String[] aets,
         String basedir,
         String path,
         String tsuid,
@@ -259,7 +260,7 @@ public abstract class FileBean implements EntityBean
         InstanceLocal instance)
         throws CreateException
     {
-		setRetrieveAETs(aets);      
+		setRetrieveAETs(StringUtils.toString(aets, '\\'));      
 		setDirectoryPath(basedir);      
         setFilePath(path);
         setFileTsuid(tsuid);
@@ -269,7 +270,7 @@ public abstract class FileBean implements EntityBean
     }
 
     public void ejbPostCreate(
-        String aets,
+        String[] aets,
         String basedir,
         String path,
         String tsuid,
