@@ -92,7 +92,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private final Logger log;
     private final DataSourceFactory dsf;
-    private String ejbHostName;
+    private String ejbProviderURL;
     private int forwardPriority = Command.LOW;
     private String retrieveAETs;
     private String forwardAETs;
@@ -104,12 +104,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.dsf = dsf;
     }
 
-    public String getEjbHostName() {
-        return ejbHostName;
+    public String getEjbProviderURL() {
+        return ejbProviderURL;
     }
 
-    public void setEjbHostName(String ejbHostName) {
-        this.ejbHostName = ejbHostName;
+    public void setEjbProviderURL(String ejbProviderURL) {
+        this.ejbProviderURL = ejbProviderURL;
     }
 
     public final String getRetrieveAETs() {
@@ -310,8 +310,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             env.put(
                 "java.naming.factory.url.pkgs",
                 "org.jboss.naming:org.jnp.interfaces");
-            if (ejbHostName != null && ejbHostName.length() > 0) {
-                env.put("java.naming.provider", ejbHostName);
+            if (ejbProviderURL != null && ejbProviderURL.length() > 0) {
+                env.put("java.naming.provider.url", ejbProviderURL);
             }
             Context jndiCtx = new InitialContext(env);
             try {

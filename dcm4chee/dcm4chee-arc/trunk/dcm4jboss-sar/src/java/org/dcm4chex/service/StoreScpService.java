@@ -257,15 +257,15 @@ public class StoreScpService
     /**
      * @jmx.managed-attribute
      */
-    public String getEjbHostName() {
-        return scp.getEjbHostName();
+    public String getEjbProviderURL() {
+        return scp.getEjbProviderURL();
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public void setEjbHostName(String ejbHostName) {
-        scp.setEjbHostName(ejbHostName);
+    public void setEjbProviderURL(String ejbProviderURL) {
+        scp.setEjbProviderURL(ejbProviderURL);
     }
 
     /**

@@ -100,7 +100,7 @@
     in the same jboss instance as the Storage EJB. Otherwise
     in VM calls to go over RMI!
         
-    <attribute name="EjbHostName">localhost</attribute>
+    <attribute name="EjbProviderURL">jnp://localhost:1099</attribute>
     -->
 
     <attribute name="DataSource">java:/PostgresDS</attribute>    
