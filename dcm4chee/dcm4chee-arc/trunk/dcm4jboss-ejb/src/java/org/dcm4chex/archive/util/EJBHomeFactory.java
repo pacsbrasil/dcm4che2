@@ -34,10 +34,15 @@ import javax.rmi.PortableRemoteObject;
  * @since 16.12.2003
  */
 public class EJBHomeFactory {
+
+    private static final String LOCAL = "LOCAL";
+
     private static EJBHomeFactory factory;
+
     private static String ejbProviderURL;
 
     private Hashtable homes = new Hashtable();
+
     private Context ctx;
 
     public static String getEjbProviderURL() {
@@ -61,27 +66,24 @@ public class EJBHomeFactory {
 
     private EJBHomeFactory() throws NamingException {
         Hashtable env = new Hashtable();
-        env.put(
-            "java.naming.factory.initial",
-            "org.jnp.interfaces.NamingContextFactory");
-        env.put(
-            "java.naming.factory.url.pkgs",
-            "org.jboss.naming:org.jnp.interfaces");
-        if (ejbProviderURL != null && ejbProviderURL.length() > 0) {
+        env.put("java.naming.factory.initial",
+                "org.jnp.interfaces.NamingContextFactory");
+        env.put("java.naming.factory.url.pkgs",
+                "org.jboss.naming:org.jnp.interfaces");
+        if (ejbProviderURL != null && ejbProviderURL.length() > 0
+                && !LOCAL.equalsIgnoreCase(ejbProviderURL)) {
             env.put("java.naming.provider.url", ejbProviderURL);
         }
         ctx = new InitialContext(env);
     }
 
     public EJBHome lookup(Class homeClass, String jndiName)
-        throws HomeFactoryException {
+            throws HomeFactoryException {
         EJBHome home = (EJBHome) homes.get(homeClass);
         if (home == null) {
             try {
-                home =
-                    (EJBHome) PortableRemoteObject.narrow(
-                        ctx.lookup(jndiName),
-                        homeClass);
+                home = (EJBHome) PortableRemoteObject.narrow(ctx
+                        .lookup(jndiName), homeClass);
             } catch (ClassCastException e) {
                 throw new HomeFactoryException(e);
             } catch (NamingException e) {
