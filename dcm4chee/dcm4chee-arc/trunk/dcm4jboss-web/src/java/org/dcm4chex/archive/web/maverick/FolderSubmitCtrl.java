@@ -86,7 +86,13 @@ public class FolderSubmitCtrl extends FolderCtrl {
 
         try {
             FolderForm folderForm = (FolderForm) getForm();
-            StudyFilterModel filter = folderForm.getStudyFilter();
+            StudyFilterModel filter;
+            try {
+            	filter = folderForm.getStudyFilter();
+            } catch ( NumberFormatException x ) {
+            	folderForm.setErrorCode( ERROR_PARSE_DATE );
+            	return FOLDER;
+            }
             if (newQuery) {
                 folderForm.setTotal(cm.countStudies(filter.toDataset()));
                 folderForm.setAets(lookupAEManager().getAes());

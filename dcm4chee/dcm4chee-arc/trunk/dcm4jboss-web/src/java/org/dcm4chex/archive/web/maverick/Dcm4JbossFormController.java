@@ -23,6 +23,10 @@ import org.infohazard.maverick.ctl.Throwaway2;
  */
 public class Dcm4JbossFormController extends Throwaway2
 {
+	public static final String ERROR_PARSE_DATE = "parseError_date";
+	public static final String ERROR_PARSE_TIME = "parseError_time";
+	public static final String ERROR_PARSE_DATETIME = "parseError_datetime";
+	
 	/**
 	 * The form bean gets set here
 	 */
