@@ -49,9 +49,9 @@ CREATE TABLE study (
 	fileset_iuid	VARCHAR(250) BINARY,
 	fileset_id		VARCHAR(250) BINARY,
 	availability	INTEGER,
-	checked_time	TIMESTAMP NULL DEFAULT NULL,
-	updated_time	TIMESTAMP NULL DEFAULT NULL,
-	created_time	TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	checked_time	DATETIME,
+	updated_time	DATETIME,
+	created_time	DATETIME,
 	study_attrs		BLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
@@ -69,7 +69,7 @@ CREATE TABLE mpps (
 	patient_fk      	INTEGER,
 	drcode_fk			INTEGER,
 	mpps_iuid			VARCHAR(250) BINARY NOT NULL,
-	pps_start			TIMESTAMP,
+	pps_start			DATETIME,
 	station_aet			VARCHAR(250) BINARY,
 	modality	    	VARCHAR(250) BINARY,
 	accession_no		VARCHAR(250) BINARY,
@@ -102,8 +102,8 @@ CREATE TABLE series (
 	fileset_id		VARCHAR(250) BINARY,
 	availability	INTEGER,
 	hidden			TINYINT,
-	created_time	TIMESTAMP,
-	updated_time	TIMESTAMP,
+	created_time	DATETIME,
+	updated_time	DATETIME,
 	series_attrs	BLOB,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
@@ -118,6 +118,17 @@ CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_src_aet ON series (src_aet);
 CREATE INDEX series_created ON series(created_time);
 
+CREATE TABLE series_req (
+	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	series_fk       INTEGER,
+	req_proc_id     VARCHAR(250) BINARY,
+	sps_id          VARCHAR(250) BINARY,
+FOREIGN KEY (series_fk) REFERENCES series(pk)
+);
+CREATE INDEX ser_req_series_fk ON series_req(series_fk);
+CREATE INDEX ser_req_proc_id ON series_req(req_proc_id);
+CREATE INDEX ser_req_sps_id ON series_req(sps_id);	
+
 CREATE TABLE media (
 	pk          		INTEGER AUTO_INCREMENT PRIMARY KEY,
 	fileset_iuid		VARCHAR(250) BINARY NOT NULL,
@@ -126,8 +137,8 @@ CREATE TABLE media (
 	media_status		INTEGER NOT NULL,
 	media_status_info	VARCHAR(250) BINARY,
 	media_usage			BIGINT NOT NULL,
-	created_time		TIMESTAMP,
-	updated_time		TIMESTAMP
+	created_time		DATETIME,
+	updated_time		DATETIME
 );
 CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
 CREATE INDEX media_status ON media(media_status);
@@ -179,8 +190,8 @@ CREATE TABLE files (
 	file_md5        VARCHAR(250) BINARY,
 	file_size       INTEGER,
 	file_status     INTEGER,
-	md5_check_time	TIMESTAMP,
-	created_time	TIMESTAMP,
+	md5_check_time	DATETIME,
+	created_time	DATETIME,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
@@ -195,7 +206,7 @@ CREATE TABLE study_on_fs (
 	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
 	study_fk		INTEGER,
 	filesystem_fk	INTEGER,
-	access_time		TIMESTAMP NOT NULL,
+	access_time		DATETIME NOT NULL,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 );
@@ -223,21 +234,13 @@ CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 
-CREATE TABLE ref_request (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
-	req_proc_id		VARCHAR(250) BINARY NOT NULL,
-	accession_no	VARCHAR(250) BINARY
-);
-CREATE UNIQUE INDEX req_proc_id ON ref_request (req_proc_id);
-CREATE INDEX req_accession_no ON ref_request (accession_no);	
-
 CREATE TABLE gpsps (
 	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
 	patient_fk      INTEGER,
 	workitemcode_fk INTEGER,
 	gpsps_iuid      VARCHAR(250) BINARY NOT NULL,
-	start_datetime  TIMESTAMP NOT NULL,
-	end_datetime    TIMESTAMP,
+	start_datetime  DATETIME NOT NULL,
+	end_datetime    DATETIME,
 	gpsps_status    INTEGER,
 	gpsps_prior     INTEGER,
 	in_availability INTEGER,
@@ -290,23 +293,28 @@ FOREIGN KEY (devloc_fk) REFERENCES code(pk)
 CREATE INDEX devloc_gpsps_fk ON rel_gpsps_devloc(gpsps_fk);
 CREATE INDEX gpsps_devloc_fk ON rel_gpsps_devloc(devloc_fk);
 
-CREATE TABLE rel_gpsps_human (
-	gpsps_fk       INTEGER,
-	human_fk       INTEGER,
+CREATE TABLE gpsps_perf (
+	pk                 INTEGER AUTO_INCREMENT PRIMARY KEY,
+	gpsps_fk           INTEGER,
+	code_fk            INTEGER,
+	human_perf_name    VARCHAR(250),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (human_fk) REFERENCES code(pk)
+FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
-CREATE INDEX human_gpsps_fk ON rel_gpsps_human(gpsps_fk);
-CREATE INDEX gpsps_human_fk ON rel_gpsps_human(human_fk);
+CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
+CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
+CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name);
 
-CREATE TABLE rel_gpsps_request (
-	gpsps_fk       INTEGER,
-	request_fk     INTEGER,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (request_fk) REFERENCES ref_request(pk)
+CREATE TABLE gpsps_req (
+	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	gpsps_fk        INTEGER,
+	req_proc_id		VARCHAR(250) BINARY,
+	accession_no	VARCHAR(250) BINARY,
+FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
 );
-CREATE INDEX request_gpsps_fk ON rel_gpsps_request(gpsps_fk);
-CREATE INDEX gpsps_request_fk ON rel_gpsps_request(request_fk);
+CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
+CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
+CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
 
 CREATE TABLE device (
 	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,

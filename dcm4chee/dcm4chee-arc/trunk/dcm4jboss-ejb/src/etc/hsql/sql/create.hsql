@@ -118,6 +118,17 @@ CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_src_aet ON series (src_aet);
 CREATE INDEX series_created ON series(created_time);
 
+CREATE TABLE series_req (
+	pk              IDENTITY PRIMARY KEY,
+	series_fk       INTEGER,
+	req_proc_id     VARCHAR(256),
+	sps_id          VARCHAR(256),
+FOREIGN KEY (series_fk) REFERENCES series(pk)
+);
+CREATE INDEX ser_req_series_fk ON series_req(series_fk);
+CREATE INDEX ser_req_proc_id ON series_req(req_proc_id);
+CREATE INDEX ser_req_sps_id ON series_req(sps_id);	
+
 CREATE TABLE media (
 	pk          		IDENTITY PRIMARY KEY,
 	fileset_iuid		VARCHAR(256) NOT NULL,
@@ -223,14 +234,6 @@ CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 
-CREATE TABLE ref_request (
-	pk          	IDENTITY PRIMARY KEY,
-	req_proc_id		VARCHAR(256) NOT NULL,
-	accession_no	VARCHAR(256)
-);
-CREATE UNIQUE INDEX req_proc_id ON ref_request (req_proc_id);
-CREATE INDEX req_accession_no ON ref_request (accession_no);	
-
 CREATE TABLE gpsps (
 	pk              IDENTITY PRIMARY KEY,
 	patient_fk      INTEGER,
@@ -290,23 +293,28 @@ FOREIGN KEY (devloc_fk) REFERENCES code(pk)
 CREATE INDEX devloc_gpsps_fk ON rel_gpsps_devloc(gpsps_fk);
 CREATE INDEX gpsps_devloc_fk ON rel_gpsps_devloc(devloc_fk);
 
-CREATE TABLE rel_gpsps_human (
-	gpsps_fk       INTEGER,
-	human_fk       INTEGER,
+CREATE TABLE gpsps_perf (
+	pk          	IDENTITY PRIMARY KEY,
+	gpsps_fk        INTEGER,
+	code_fk         INTEGER,
+	human_perf_name VARCHAR_IGNORECASE(256),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (human_fk) REFERENCES code(pk)
+FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
-CREATE INDEX human_gpsps_fk ON rel_gpsps_human(gpsps_fk);
-CREATE INDEX gpsps_human_fk ON rel_gpsps_human(human_fk);
+CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
+CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
+CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name);
 
-CREATE TABLE rel_gpsps_request (
-	gpsps_fk       INTEGER,
-	request_fk     INTEGER,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (request_fk) REFERENCES ref_request(pk)
+CREATE TABLE gpsps_req (
+	pk          	IDENTITY PRIMARY KEY,
+	gpsps_fk        INTEGER,
+	req_proc_id		VARCHAR(256),
+	accession_no	VARCHAR(256),
+FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
 );
-CREATE INDEX request_gpsps_fk ON rel_gpsps_request(gpsps_fk);
-CREATE INDEX gpsps_request_fk ON rel_gpsps_request(request_fk);
+CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
+CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
+CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
 
 CREATE TABLE device (
 	pk          	IDENTITY PRIMARY KEY,

@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -33,6 +35,8 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
@@ -78,6 +82,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
  * 
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS"
+ * @ejb.ejb-ref ejb-name="SeriesRequest" view-type="local" ref-name="ejb/Request"
  * 
  */
 public abstract class SeriesBean implements EntityBean {
@@ -88,15 +93,19 @@ public abstract class SeriesBean implements EntityBean {
             Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances,
             Tags.StorageMediaFileSetID, Tags.StorageMediaFileSetUID};
 
-//    private Set retrieveAETSet;
-
+    private EntityContext ejbctx;
     private MPPSLocalHome mppsHome;
+    private SeriesRequestLocalHome reqHome;
 
     public void setEntityContext(EntityContext ctx) {
+        ejbctx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            mppsHome = (MPPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/MPPS");
+            mppsHome = (MPPSLocalHome) 
+                    jndiCtx.lookup("java:comp/env/ejb/MPPS");
+            reqHome = (SeriesRequestLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/Request");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -111,6 +120,8 @@ public abstract class SeriesBean implements EntityBean {
 
     public void unsetEntityContext() {
         mppsHome = null;
+        reqHome = null;
+        ejbctx = null;
     }
 
     /**
@@ -304,54 +315,35 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setHidden(boolean hidden);
 
     /**
-     * @ejb.relation name="study-series"
-     *               role-name="series-of-study"
+     * @ejb.interface-method
+     * @ejb.relation name="study-series" role-name="series-of-study"
      *               cascade-delete="yes"
-     *
-     * @jboss.relation fk-column="study_fk"
-     *                 related-pk-field="pk"
-     * 
-     * @param study study of this series
+     * @jboss.relation fk-column="study_fk" related-pk-field="pk"
      */
+    public abstract StudyLocal getStudy();
     public abstract void setStudy(StudyLocal study);
 
     /**
-     * @ejb.interface-method view-type="local"
-     * 
-     * @return study of this series
+     * @ejb.relation name="mpps-series" role-name="series-of-mpps"
+     * @jboss.relation fk-column="mpps_fk" related-pk-field="pk"
      */
-    public abstract StudyLocal getStudy();
-
-    /**
-     * @ejb.relation name="mpps-series"
-     *               role-name="series-of-mpps"
-     * @jboss.relation fk-column="mpps_fk"
-     *                 related-pk-field="pk"
-     * 
-     * @param study study of this series
-     */
+    public abstract MPPSLocal getMpps();
     public abstract void setMpps(MPPSLocal mpps);
 
     /**
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method
+     * @ejb.relation name="series-request-attributes"
+     *               role-name="series-has-request-attributes"
      */
-    public abstract MPPSLocal getMpps();
+    public abstract java.util.Collection getRequestAttributes();
+    public abstract void setRequestAttributes(java.util.Collection series);
 
     /**
-     * @ejb.interface-method view-type="local"
-     *
-     * @param series all instances of this series
-     */
-    public abstract void setInstances(java.util.Collection series);
-
-    /**
-     * @ejb.interface-method view-type="local"
-     * @ejb.relation name="series-instance"
-     *               role-name="series-has-instance"
-     *    
-     * @return all instances of this series
+     * @ejb.interface-method
+     * @ejb.relation name="series-instance" role-name="series-has-instance"
      */
     public abstract java.util.Collection getInstances();
+    public abstract void setInstances(java.util.Collection insts);
 
 
     /**
@@ -369,9 +361,20 @@ public abstract class SeriesBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, StudyLocal study)
             throws CreateException {
+        createRequestAttributes(ds.get(Tags.RequestAttributesSeq));
         updateMpps();
         setStudy(study);
         log.info("Created " + prompt());
+    }
+
+    private void createRequestAttributes(DcmElement sq) throws CreateException {
+        if (sq == null) return;
+        Collection c = getRequestAttributes();
+        SeriesLocal series = (SeriesLocal) ejbctx.getEJBLocalObject();
+        for (int i = 0, n = sq.vm(); i < n; i++) {
+            c.add(reqHome.create(sq.getItem(i), series));
+        }
+        
     }
 
     /**

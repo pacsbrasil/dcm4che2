@@ -31,8 +31,10 @@ import org.dcm4chex.archive.common.GPSPSStatus;
 import org.dcm4chex.archive.common.InputAvailabilityFlag;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
+import org.dcm4chex.archive.ejb.interfaces.GPSPSPerformerLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.GPSPSRequestLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
-import org.dcm4chex.archive.ejb.interfaces.RefRequestLocalHome;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -45,7 +47,8 @@ import org.dcm4chex.archive.ejb.interfaces.RefRequestLocalHome;
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
- * @ejb.ejb-ref ejb-name="RefRequest" view-type="local" ref-name="ejb/RefRequest"
+ * @ejb.ejb-ref ejb-name="GPSPSRequest" view-type="local" ref-name="ejb/Request"
+ * @ejb.ejb-ref ejb-name="GPSPSPerformer" view-type="local" ref-name="ejb/Performer"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.GPSPSLocal findBySopIuid(java.lang.String uid)"
  *             query="SELECT OBJECT(s) FROM GPSPS AS s WHERE s.sopIuid = ?1"
@@ -60,15 +63,22 @@ public abstract class GPSPSBean implements EntityBean {
         return date != null ? new java.sql.Timestamp(date.getTime()) : null;
     }
     
+    private EntityContext ejbctx;
     private CodeLocalHome codeHome;
-    private RefRequestLocalHome rqHome;
+    private GPSPSRequestLocalHome rqHome;
+    private GPSPSPerformerLocalHome performerHome;
 
     public void setEntityContext(EntityContext ctx) {
+        ejbctx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
-            rqHome = (RefRequestLocalHome) jndiCtx.lookup("java:comp/env/ejb/RefRequest");
+            codeHome = (CodeLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/Code");
+            rqHome = (GPSPSRequestLocalHome) 
+                    jndiCtx.lookup("java:comp/env/ejb/RefRequest");
+            performerHome = (GPSPSPerformerLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/Performer");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -84,6 +94,8 @@ public abstract class GPSPSBean implements EntityBean {
     public void unsetEntityContext() {
         codeHome = null;
         rqHome = null;
+        performerHome = null;
+        ejbctx = null;
     }
     
     /**
@@ -101,18 +113,17 @@ public abstract class GPSPSBean implements EntityBean {
         try {
             setScheduledWorkItemCode(CodeBean.valueOf(codeHome, ds
                     .getItem(Tags.ScheduledWorkitemCodeSeq)));
-            copyCodes(ds.get(Tags.ScheduledProcessingApplicationsCodeSeq),
+            initCodes(ds.get(Tags.ScheduledProcessingApplicationsCodeSeq),
                     getScheduledProcessingApplicationsCodes());
-            copyCodes(ds.get(Tags.ScheduledStationNameCodeSeq),
+            initCodes(ds.get(Tags.ScheduledStationNameCodeSeq),
                     getScheduledStationNameCodes());
-            copyCodes(ds.get(Tags.ScheduledStationClassCodeSeq),
+            initCodes(ds.get(Tags.ScheduledStationClassCodeSeq),
                     getScheduledStationClassCodes());
-            copyCodes(ds.get(Tags.ScheduledStationGeographicLocationCodeSeq),
+            initCodes(ds.get(Tags.ScheduledStationGeographicLocationCodeSeq),
                     getScheduledStationGeographicLocationCodes());
-            copyCodes(ds.get(Tags.ScheduledHumanPerformersSeq),
-                    getScheduledHumanPerformerCodes());
-            copyRefRequests(ds.get(Tags.RefRequestSeq),
-                    getRefRequests());            
+            createScheduledHumanPerformers(
+                    ds.get(Tags.ScheduledHumanPerformersSeq));
+            createRefRequests(ds.get(Tags.RefRequestSeq));            
         } catch (CreateException e) {
             throw new CreateException(e.getMessage());
         } catch (FinderException e) {
@@ -121,15 +132,28 @@ public abstract class GPSPSBean implements EntityBean {
         log.info("Created " + toString());
     }
 
-    private void copyRefRequests(DcmElement sq, Collection c)
-            throws CreateException, FinderException {
+    private void createScheduledHumanPerformers(DcmElement sq)
+            throws CreateException {
+        if (sq == null)
+            return;
+        Collection c = getScheduledHumanPerformers();
+        GPSPSLocal gpsps = (GPSPSLocal) ejbctx.getEJBLocalObject();
         for (int i = 0, n = sq.vm(); i < n; i++) {
-            c.add(RefRequestBean.valueOf(rqHome, sq.getItem(i)));
+            c.add(performerHome.create(sq.getItem(i), gpsps));
+        }
+    }
+    private void createRefRequests(DcmElement sq) throws CreateException {
+        if (sq == null) return;
+        Collection c = getRefRequests();
+        GPSPSLocal gpsps = (GPSPSLocal) ejbctx.getEJBLocalObject();
+        for (int i = 0, n = sq.vm(); i < n; i++) {
+            c.add(rqHome.create(sq.getItem(i), gpsps));
         }
     }
 
-    private void copyCodes(DcmElement sq, Collection c) throws CreateException,
+    private void initCodes(DcmElement sq, Collection c) throws CreateException,
             FinderException {
+        if (sq == null) return;
         for (int i = 0, n = sq.vm(); i < n; i++) {
             c.add(CodeBean.valueOf(codeHome, sq.getItem(i)));
         }
@@ -302,23 +326,13 @@ public abstract class GPSPSBean implements EntityBean {
     public abstract void setScheduledStationGeographicLocationCodes(java.util.Collection codes);
 
     /**
-     * @ejb.relation name="gpsps-performercode" role-name="gpsps-with-performercodes"
-     *               target-ejb="Code" target-role-name="performercode-for-gpspss"
-     *               target-multiple="yes"
-     * @jboss.relation-table table-name="rel_gpsps_human"
-     * @jboss.relation fk-column="human_fk" related-pk-field="pk"     
-     * @jboss.target-relation fk-column="gpsps_fk" related-pk-field="pk"     
+     * @ejb.relation name="gpsps-human-performer" role-name="gpsps-for-human-performers"
      */    
-    public abstract java.util.Collection getScheduledHumanPerformerCodes();
-    public abstract void setScheduledHumanPerformerCodes(java.util.Collection codes);
+    public abstract java.util.Collection getScheduledHumanPerformers();
+    public abstract void setScheduledHumanPerformers(java.util.Collection humanPerformers);
     
     /**
      * @ejb.relation name="gpsps-request" role-name="gpsps-for-requests"
-     *               target-ejb="Code" target-role-name="request-of-gpspss"
-     *               target-multiple="yes"
-     * @jboss.relation-table table-name="rel_gpsps_request"
-     * @jboss.relation fk-column="request_fk" related-pk-field="pk"     
-     * @jboss.target-relation fk-column="gpsps_fk" related-pk-field="pk"     
      */    
     public abstract java.util.Collection getRefRequests();
     public abstract void setRefRequests(java.util.Collection refRequests);

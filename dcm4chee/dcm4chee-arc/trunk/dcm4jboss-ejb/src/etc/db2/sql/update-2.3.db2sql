@@ -6,14 +6,17 @@ SET CURRENT SCHEMA TIANI;
 ALTER TABLE study ADD COLUMN checked_time	TIMESTAMP;
 CREATE INDEX study_checked ON study(checked_time);
 
-CREATE SEQUENCE ref_request_pk_seq;
-CREATE TABLE ref_request (
-	pk          	INTEGER PRIMARY KEY NOT NULL,
-	req_proc_id		VARCHAR(254) NOT NULL,
-	accession_no	VARCHAR(254)
+CREATE SEQUENCE series_req_pk_seq;
+CREATE TABLE series_req (
+	pk              INTEGER PRIMARY KEY NOT NULL,
+	series_fk       INTEGER,
+	req_proc_id     VARCHAR(254),
+	sps_id          VARCHAR(254),
+FOREIGN KEY (series_fk) REFERENCES series(pk)
 );
-CREATE UNIQUE INDEX req_proc_id ON ref_request (req_proc_id);
-CREATE INDEX req_accession_no ON ref_request (accession_no);	
+CREATE INDEX ser_req_series_fk ON series_req(series_fk);
+CREATE INDEX ser_req_proc_id ON series_req(req_proc_id);
+CREATE INDEX ser_req_sps_id ON series_req(sps_id);	
 
 CREATE SEQUENCE gpsps_pk_seq;
 CREATE TABLE gpsps (
@@ -75,33 +78,44 @@ FOREIGN KEY (devloc_fk) REFERENCES code(pk)
 CREATE INDEX devloc_gpsps_fk ON rel_gpsps_devloc(gpsps_fk);
 CREATE INDEX gpsps_devloc_fk ON rel_gpsps_devloc(devloc_fk);
 
-CREATE TABLE rel_gpsps_human (
-	gpsps_fk       INTEGER,
-	human_fk       INTEGER,
+CREATE SEQUENCE gpsps_perf_pk_seq;
+CREATE TABLE gpsps_perf (
+	pk                 INTEGER PRIMARY KEY NOT NULL,
+	gpsps_fk           INTEGER,
+	code_fk            INTEGER,
+	human_perf_name    VARCHAR(254),
+	human_perf_name_up GENERATED ALWAYS AS (UPPER(human_perf_name)),	
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (human_fk) REFERENCES code(pk)
+FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
-CREATE INDEX human_gpsps_fk ON rel_gpsps_human(gpsps_fk);
-CREATE INDEX gpsps_human_fk ON rel_gpsps_human(human_fk);
+CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
+CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
+CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name_up);
 
-CREATE TABLE rel_gpsps_request (
-	gpsps_fk       INTEGER,
-	request_fk     INTEGER,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (request_fk) REFERENCES ref_request(pk)
+CREATE SEQUENCE gpsps_req_pk_seq;
+CREATE TABLE gpsps_req (
+	pk          	INTEGER PRIMARY KEY NOT NULL,
+	gpsps_fk        INTEGER,
+	req_proc_id		VARCHAR(254),
+	accession_no	VARCHAR(254),
+FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
 );
-CREATE INDEX request_gpsps_fk ON rel_gpsps_request(gpsps_fk);
-CREATE INDEX gpsps_request_fk ON rel_gpsps_request(request_fk);
+CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
+CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
+CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
 
-GRANT ALL PRIVILEGES ON TABLE ref_request TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE series_req TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE gpsps TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE rel_gpsps_appcode TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE rel_gpsps_devname TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE rel_gpsps_devclass TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE rel_gpsps_devloc TO USER tiani;
-GRANT ALL PRIVILEGES ON TABLE rel_gpsps_human TO USER tiani;
-GRANT ALL PRIVILEGES ON TABLE rel_gpsps_request TO USER tiani;
-GRANT USAGE ON SEQUENCE ref_request_pk_seq TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE gpsps_perf TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE gpsps_req TO USER tiani;
+GRANT USAGE ON SEQUENCE series_req_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE gpsps_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE gpsps_perf_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE gpsps_req_pk_seq TO USER tiani;
+
 
 TERMINATE;
