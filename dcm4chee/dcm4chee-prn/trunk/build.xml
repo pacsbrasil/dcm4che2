@@ -6,7 +6,7 @@
   <property file="build.properties" />
 
   <property name="name" value="jprint"/>
-  <property name="version" value="1.2.3"/>
+  <property name="version" value="1.2.4"/>
   <property name="javac.debug" value="on"/>
   <property name="javac.optimize" value="off"/>
 
@@ -28,7 +28,7 @@
   
   
   <!-- Override with your JBoss/Web server bundle dist location -->
-  <property name="jboss.home" value="${user.home}/jboss-3.2.2"/>
+  <property name="jboss.home" value="${user.home}/jboss-3.2.3"/>
   <property name="jboss.bin" value="${jboss.home}/bin"/>
   <property name="jboss.lib" value="${jboss.home}/lib"/>
   <property name="jboss.client" value="${jboss.home}/client"/>
@@ -209,7 +209,7 @@
             />
             <attribute
                 name="Class-Path"
-                value="../lib/getopt.jar ../client/jnp-client.jar ../client/jmx-rmi-connector-client.jar ../lib/jboss-common.jar ../lib/jboss-jmx.jar ../server/default/lib/log4j.jar"
+                value="../lib/getopt.jar ../lib/jboss-jmx.jar ../client/jbossall-client.jar ../server/default/lib/log4j.jar"
             />
         </manifest>
         <fileset
@@ -244,7 +244,7 @@
             />
             <attribute
                 name="Class-Path"
-                value="../server/default/lib/dcm4che.jar ../lib/getopt.jar ../client/jnp-client.jar ../client/jmx-rmi-connector-client.jar ../lib/jboss-common.jar ../lib/jboss-jmx.jar ../server/default/lib/log4j.jar"
+                value="../server/default/lib/dcm4che.jar ../lib/getopt.jar ../lib/jboss-jmx.jar ../client/jbossall-client.jar"
             />
         </manifest>
         <fileset dir="${build.classes.dir}">
@@ -445,13 +445,12 @@
     </java>
   </target>
   
-  <target name="release" depends="release-without-jaudit, release-with-jaudit"/>
-  <target name="release-without-jaudit" depends="build, doc">
+  <!--target name="release" depends="release-without-jaudit, release-with-jaudit"/-->
+  <target name="release" depends="build, doc">
     <copy todir="${dist.dir}">
       <fileset dir="${jboss.home}">
         <include name="bin/run.jar"/>
-        <include name="client/jnp-client.jar"/>
-        <include name="client/jmx-rmi-connector-client.jar"/>
+        <include name="client/jbossall-client.jar"/>
         <include name="lib/concurrent.jar"/>
         <include name="lib/getopt.jar"/>
         <include name="lib/gnu-regexp.jar"/>
@@ -459,11 +458,15 @@
         <include name="lib/jboss-common.jar"/>
         <include name="lib/jboss-jmx.jar"/>
         <include name="lib/jboss-system.jar"/>
+        <include name="lib/jdom.jar"/>
         <include name="lib/log4j-boot.jar"/>
         <include name="server/default/conf/jndi.properties"/>
-        <include name="server/default/deploy/jmx-rmi-adaptor.sar/**"/>
+        <include name="server/default/conf/xmdesc/*"/>
+        <include name="server/default/deploy/jmx-invoker-adaptor-server.sar/**"/>
         <include name="server/default/lib/jmx-adaptor-plugin.jar"/>
+        <include name="server/default/lib/jboss-j2ee.jar"/>
         <include name="server/default/lib/jboss-management.jar"/>
+        <include name="server/default/lib/jboss-transaction.jar"/>
         <include name="server/default/lib/jboss.jar"/>
         <include name="server/default/lib/jnpserver.jar"/>
         <include name="server/default/lib/log4j.jar"/>
@@ -481,8 +484,6 @@
       </fileset>
     </copy>
     <copy file="${check-license.jar}" todir="${dist.dir}/bin"/>
-    <copy file="${jboss.home}/server/default/conf/jboss-minimal.xml"
-        tofile="${dist.dir}/server/default/conf/jboss-service.xml"/>
     <copy todir="${dist.dir}">
       <filterset>
         <filter token="SERVICE" value="${dist.name}"/>
@@ -505,10 +506,12 @@
         </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>
+        <include name="conf/annotation/*.jpg"/>
         <include name="conf/calibration/DSI256.ods"/>
         <include name="conf/lut/*.lut"/>
         <include name="conf/cacerts.jks"/>
         <include name="conf/log4j.xml"/>
+        <include name="conf/jboss-service.xml"/>
       </fileset>
       <fileset dir="${build.dir}">
         <include name="lib/*"/>
@@ -535,8 +538,7 @@
       <fileset dir="${jboss.home}">
         <include name="bin/run.*"/>
         <include name="bin/jboss_init_redhat.sh"/>
-        <include name="client/jnp-client.jar"/>
-        <include name="client/jmx-rmi-connector-client.jar"/>
+        <include name="client/jbossall-client.jar"/>
       </fileset>
       <fileset dir="${basedir}">
         <include name="bin/JavaService.exe"/>
