@@ -153,7 +153,7 @@ public abstract class CodeBean implements EntityBean {
         log.info("Deleting " + prompt());
     }
 
-    static CodeLocal valueOf(CodeLocalHome codeHome, Dataset item)
+    public static CodeLocal valueOf(CodeLocalHome codeHome, Dataset item)
             throws CreateException, FinderException {
         if (item == null) return null;
 
