@@ -174,9 +174,9 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.persistence
      *  column-name="pps_start"
      */
-    public abstract java.util.Date getPpsStartDateTime();
+    public abstract java.sql.Timestamp getPpsStartDateTime();
 
-    public abstract void setPpsStartDateTime(java.util.Date datetime);
+    public abstract void setPpsStartDateTime(java.sql.Timestamp datetime);
 
     /**
      * PPS Instance UID
@@ -379,8 +379,7 @@ public abstract class SeriesBean implements EntityBean {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
-        setPpsStartDateTime(
-            ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
+        setPpsStartDateTime(ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
         setEncodedAttributes(
             DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
@@ -390,6 +389,13 @@ public abstract class SeriesBean implements EntityBean {
         }
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public void setPpsStartDateTime(java.util.Date date) {
+        setPpsStartDateTime(date != null ? new java.sql.Timestamp(date.getTime()) : null);
+    }
+    
     /**
      * @ejb.interface-method
      */

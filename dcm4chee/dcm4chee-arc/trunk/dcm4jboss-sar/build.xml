@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.8.1"/>
+	<property name="version" value="0.8.2"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="bin.dir" value="${basedir}/bin"/>
@@ -40,7 +40,7 @@
 	<property name="dcm4jboss-hl7.home" value="../dcm4jboss-hl7"/>		
 
     <!-- Override with your hapi ZIP location -->
-	<property name="hapi.zip" value="../hapi/dist/hapi-0.4.1.zip"/>		
+	<property name="hapi.zip" value="../hapi/dist/hapi-0.4.2.zip"/>		
 
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-3.2.5"/>		
@@ -123,6 +123,7 @@
    				<include name="common/**"/>
    				<include name="hsql/**"/>
    				<include name="psql/**"/>
+   				<include name="mysql/**"/>
    				<include name="oracle/**"/>
    				<include name="db2/**"/>
    				<exclude name="**/test.war"/>
@@ -136,6 +137,7 @@
    				<include name="common/**"/>
    				<include name="hsql/**"/>
    				<include name="psql/**"/>
+   				<include name="mysql/**"/>
    				<include name="oracle/**"/>
    				<include name="db2/**"/>
    			</fileset>
@@ -194,6 +196,9 @@
       		<param name="db.name" value="psql"/>
     	</antcall>
    		<antcall target="standalone-dist">
+      		<param name="db.name" value="mysql"/>
+    	</antcall>
+   		<antcall target="standalone-dist">
       		<param name="db.name" value="oracle"/>
     	</antcall>
    		<antcall target="standalone-dist">
@@ -229,7 +234,6 @@
 				<include name="conf/**"/>
 				<exclude name="conf/log4j.xml"/>
 				<exclude name="conf/login-config.xml"/>
-				<exclude name="conf/standardjbosscmp-jdbc.xml"/>
 				<include name="deploy/jbossweb-tomcat50.sar/**"/>
 				<include name="deploy/jmx-console.war/**"/>
 				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>

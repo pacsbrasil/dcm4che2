@@ -119,9 +119,9 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence
      *  column-name="study_datetime"
      */
-    public abstract java.util.Date getStudyDateTime();
+    public abstract java.sql.Timestamp getStudyDateTime();
 
-    public abstract void setStudyDateTime(java.util.Date dateTime);
+    public abstract void setStudyDateTime(java.sql.Timestamp dateTime);
 
     /**
      * Accession Number
@@ -300,6 +300,13 @@ public abstract class StudyBean implements EntityBean {
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
         setEncodedAttributes(
             DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void setStudyDateTime(java.util.Date date) {
+        setStudyDateTime(date != null ? new java.sql.Timestamp(date.getTime()) : null);
     }
 
     /**

@@ -135,6 +135,7 @@ class SqlBuilder {
         switch (getDatabase()) {
         case JdbcProperties.DB2 :
         case JdbcProperties.ORACLE :
+        case JdbcProperties.MYSQL :
             return value ? " != 0" : " = 0";
         default:
             return value ? " = true" : " = false";
@@ -216,10 +217,11 @@ class SqlBuilder {
         if (limit > 0 || offset > 0) {
             switch (getDatabase()) {
                 case JdbcProperties.PSQL :
-                    sb.append(" OFFSET ");
-                    sb.append(offset);
+                case JdbcProperties.MYSQL :
                     sb.append(" LIMIT ");
                     sb.append(limit);
+                    sb.append(" OFFSET ");
+                    sb.append(offset);
                     break;
                 case JdbcProperties.DB2 :
                     sb.append(" ) AS foo WHERE rownum > ");

@@ -131,13 +131,13 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence
      *  column-name="pat_birthdate"
      */
-    public abstract java.util.Date getPatientBirthDate();
+    public abstract java.sql.Timestamp getPatientBirthDate();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setPatientBirthDate(java.util.Date date);
-
+    public abstract void setPatientBirthDate(java.sql.Timestamp date);
+    
     /**
      * Patient Sex
      *
@@ -257,6 +257,13 @@ public abstract class PatientBean implements EntityBean {
         setPatientSex(ds.getString(Tags.PatientSex));
         setEncodedAttributes(
             DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void setPatientBirthDate(java.util.Date date) {
+        setPatientBirthDate(date != null ? new java.sql.Timestamp(date.getTime()) : null);
     }
 
     /**

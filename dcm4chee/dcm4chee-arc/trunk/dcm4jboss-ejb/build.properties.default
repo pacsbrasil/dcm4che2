@@ -8,4 +8,4 @@ xdoclet.home=${user.home}/xdoclet-1.2
 cactus.home=${user.home}/jakarta-cactus-13-1.5
 
 #Override with your JBoss dist location
-jboss.home=${user.home}/jboss-3.2.3		
+jboss.home=${user.home}/jboss-3.2.5		

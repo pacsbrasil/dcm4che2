@@ -32,11 +32,13 @@ public class JdbcProperties extends Properties {
 
     public static final int HSQL = 0;
     public static final int PSQL = 1;
-    public static final int DB2 = 2;
-    public static final int ORACLE = 3;
+    public static final int MYSQL = 2;
+    public static final int DB2 = 3;
+    public static final int ORACLE = 4;
 
     private static final String HSQL_VAL = "Hypersonic SQL";
     private static final String PSQL_VAL = "PostgreSQL 7.2";
+    private static final String MYSQL_VAL = "mySQL";
     private static final String DB2_VAL = "DB2";
     private static final String ORACLE_VAL = "Oracle9i";
     private static final String DS_MAPPING_KEY = "datasource-mapping";
@@ -84,6 +86,9 @@ public class JdbcProperties extends Properties {
         }
         if (PSQL_VAL.equals(mapping)) {
             return PSQL;
+        }
+        if (MYSQL_VAL.equals(mapping)) {
+            return MYSQL;
         }
         if (DB2_VAL.equals(mapping)) {
             return DB2;

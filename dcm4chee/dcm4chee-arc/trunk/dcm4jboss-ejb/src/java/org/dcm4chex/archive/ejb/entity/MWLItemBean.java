@@ -21,7 +21,6 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -128,9 +127,9 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.persistence
      *  column-name="start_datetime"
      */
-    public abstract java.util.Date getSpsStartDateTime();
+    public abstract java.sql.Timestamp getSpsStartDateTime();
 
-    public abstract void setSpsStartDateTime(java.util.Date dateTime);
+    public abstract void setSpsStartDateTime(java.sql.Timestamp dateTime);
 
     /**
      * Station AET
@@ -281,6 +280,13 @@ public abstract class MWLItemBean implements EntityBean {
     }
 
     /**
+     * @ejb.interface-method
+     */
+    public void setSpsStartDateTime(java.util.Date date) {
+        setSpsStartDateTime(date != null ? new java.sql.Timestamp(date.getTime()) : null);
+    }
+
+    /**
      * 
      * @ejb.interface-method
      */
@@ -289,7 +295,7 @@ public abstract class MWLItemBean implements EntityBean {
     }
 
     private String prompt() {
-        Date spsDT = getSpsStartDateTime();
+        java.sql.Timestamp spsDT = getSpsStartDateTime();
         return "MWLItem[pk="
             + getPk()
             + ", spsId="

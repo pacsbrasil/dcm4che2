@@ -3,7 +3,8 @@ BUILD INSTRUCTIONS FOR DCM4JBOSS-SAR:
 
 In order to build dcm4jboss-sar you have to download and install:
 
-- jai_imageio-1_0_01-beta (from http://java.sun.com/products/java-media/jai)
+- jai_imageio-1_0_01-beta
+  (from http://java.sun.com/developer/earlyAccess/jai_imageio/)
 
 - Ant 1.6.x (from http://ant.apache.org)
 
@@ -14,9 +15,9 @@ In order to build dcm4jboss-sar you have to download and install:
 
 - XDoclet 1.2 [http://xdoclet.sourceforge.net]
 
-- JBoss 3.2.3 [http://jboss.org]
+- JBoss 3.2.5 [http://jboss.org]
 
-- Maverick 2.2.0 + Domify 2.0.2 [http://mav.sourceforge.net]
+- Maverick 2.2.2 + Domify 2.0.3 [http://mav.sourceforge.net]
 
 Create an environment variable pointing to the Ant home directory (ANT_HOME)
 and add the $ANT_HOME/bin directory to your PATH.
@@ -64,7 +65,7 @@ components required for building dcm4jboss-ejb:
 <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.5"/>
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-3.2.3"/>		
+<property name="jboss.home" value="${user.home}/jboss-3.2.5"/>		
 
 Instead of modifying the build script directly, you may adjust these values
 to your build environment by renaming file build.properties.default to
@@ -90,7 +91,7 @@ The default build script (build.xml) assumes following locations of
 components required for building dcm4jboss-web:
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.dir" value="${user.home}/jboss-3.2.3" />
+<property name="jboss.dir" value="${user.home}/jboss-3.2.5" />
 
 <!-- Override with your Maverick dist location -->
 <property name="maverick.dir" value="../maverick" />
@@ -136,7 +137,7 @@ components required for building dcm4jboss-sar:
 <property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-3.2.3"/>		
+<property name="jboss.home" value="${user.home}/jboss-3.2.5"/>		
 
 Instead of modifying the build script directly, you may adjust these values
 to your build environment by renaming file build.properties.default to
