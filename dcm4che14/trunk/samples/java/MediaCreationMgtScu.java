@@ -244,7 +244,7 @@ public class MediaCreationMgtScu {
                 item.putUI(Tags.RefSOPInstanceUID, iuid);
                 item.putUI(Tags.RefSOPClassUID, cuid);
                 if (profile != null)
-                        item.putCS(Tags.RequestedMediaApplicationProfile,
+                        item.putLO(Tags.RequestedMediaApplicationProfile,
                                 profile);
             } else {
                 log.warn("Missing CUID and/or IUID in DICOM object read from "
@@ -401,7 +401,7 @@ public class MediaCreationMgtScu {
     }
 
     private boolean checkPC(int pcid, String msgid) {
-        if (assoc.getAssociation().getAcceptedTransferSyntaxUID(PCID_ECHO) != null)
+        if (assoc.getAssociation().getAcceptedTransferSyntaxUID(pcid) != null)
                 return true;
 
         log.error(messages.getString(msgid));

@@ -1,5 +1,5 @@
 /*                                                                           *
- *  Copyright (c) 2002, 2003 by TIANI MEDGRAPH AG                            *
+ *  Copyright (c) 2002-4 by TIANI MEDGRAPH AG                                *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -20,8 +20,10 @@
 
 import java.io.BufferedOutputStream;
 
+import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +46,7 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.FileFormat;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
@@ -53,6 +56,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceBase;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.server.DcmHandler;
@@ -72,6 +76,7 @@ public class DcmRcv extends DcmServiceBase
 {
     // Constants -----------------------------------------------------
     final static Logger log = Logger.getLogger(DcmRcv.class);
+    final static boolean DEBUG = log.isDebugEnabled();
 
     // Attributes ----------------------------------------------------
     private static ResourceBundle messages = ResourceBundle.getBundle(
@@ -549,6 +554,160 @@ public class DcmRcv extends DcmServiceBase
         } catch (Exception ex) {
             throw new RuntimeException("Could not initalize TLS configuration: ", ex);
         }
+    }
+
+    protected Dataset doNCreate(
+        ActiveAssociation assoc,
+        Dimse rq,
+        Command rspCmd)
+        throws IOException, DcmServiceException {
+        Command rqCmd = rq.getCommand();
+        String cuid = rqCmd.getAffectedSOPClassUID();
+        String iuid = rspCmd.getAffectedSOPInstanceUID();
+        Dataset ds = rq.getDataset(); // read out dataset
+        if (DEBUG)
+            log.debug("Dataset:\n" + ds);
+        if (dir != null && dir.isDirectory()) {            
+            File f = new File(dir, iuid);
+            if (f.exists()) {
+                throw new DcmServiceException(Status.DuplicateSOPInstance);
+            }
+            ds.putUI(Tags.SOPInstanceUID, iuid);
+            ds.putUI(Tags.SOPClassUID, cuid);
+            ds.setFileMetaInfo(oFact.newFileMetaInfo(cuid, iuid, UIDs.ExplicitVRLittleEndian));
+            log.info("M-WRITE " + f);
+            writeFile(f, ds);
+        }
+        return ds;
+    }
+
+    private void writeFile(File f, Dataset ds) throws DcmServiceException {
+        OutputStream out = null;
+        try {
+            out = new BufferedOutputStream(new FileOutputStream(f));
+            ds.writeFile(out, null);
+        } catch (IOException e) {
+            throw new DcmServiceException(Status.ProcessingFailure);
+        } finally {
+            try { if (out != null) out.close(); } catch (IOException ignore) {};
+        }        
+    }
+
+
+    protected Dataset doNDelete(
+        ActiveAssociation assoc,
+        Dimse rq,
+        Command rspCmd)
+        throws IOException, DcmServiceException {
+        rq.getDataset(); // read out dataset (should be NULL!)
+        Command rqCmd = rq.getCommand();
+        String cuid = rqCmd.getRequestedSOPClassUID();
+        String iuid = rqCmd.getRequestedSOPInstanceUID();
+        if (dir != null && dir.isDirectory()) {            
+            File f = new File(dir, iuid);
+            if (!f.exists())
+                throw new DcmServiceException(Status.NoSuchObjectInstance);
+
+            log.info("M-DELETE " + f);
+            if (!f.delete()) 
+                throw new DcmServiceException(Status.ProcessingFailure);
+        }
+        return null;
+    }
+
+    protected Dataset doNGet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
+    throws IOException, DcmServiceException {
+        rq.getDataset(); // read out dataset (should be NULL!)
+        Dataset ds = oFact.newDataset();
+        Command rqCmd = rq.getCommand();
+        String cuid = rqCmd.getRequestedSOPClassUID();
+        String iuid = rqCmd.getRequestedSOPInstanceUID();
+        if (dir != null && dir.isDirectory()) {            
+            File f = new File(dir, iuid);
+            if (!f.exists())
+                throw new DcmServiceException(Status.NoSuchObjectInstance);
+
+            log.info("M-READ " + f);
+            readFile(f, ds);
+        }
+        int[] tags = rqCmd.getTags(Tags.AttributeIdentifierList);
+        if (tags != null)
+            ds = ds.subSet(tags);
+        if (DEBUG)
+            log.debug("Dataset in N-GET RSP:\n" + ds);
+        return ds;
+    }
+
+    private void readFile(File f, Dataset ds) throws DcmServiceException {
+        InputStream in = null;
+        try {
+            in = new BufferedInputStream(new FileInputStream(f));
+            ds.readFile(in, FileFormat.DICOM_FILE, -1);
+        } catch (IOException e) {
+            throw new DcmServiceException(Status.ProcessingFailure);
+        } finally {
+            try { if (in != null) in.close(); } catch (IOException ignore) {};
+        }        
+    }
+    
+    protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
+    throws IOException, DcmServiceException {
+        Dataset modify = rq.getDataset(); // read out dataset
+        if (DEBUG)
+            log.debug("Dataset:\n" + modify);
+        Command rqCmd = rq.getCommand();
+        String cuid = rqCmd.getRequestedSOPClassUID();
+        String iuid = rqCmd.getRequestedSOPInstanceUID();
+        if (dir != null && dir.isDirectory()) {            
+            File f = new File(dir, iuid);
+            if (!f.exists())
+                throw new DcmServiceException(Status.NoSuchObjectInstance);
+
+            Dataset ds = oFact.newDataset();
+            log.info("M-UPDATE " + f);
+            readFile(f, ds);
+            ds.putAll(modify);
+            writeFile(f, ds);
+        }
+        return modify;
+    }
+
+    protected Dataset doNAction(
+            ActiveAssociation assoc,
+            Dimse rq,
+            Command rspCmd)
+    throws IOException, DcmServiceException {
+        Dataset ds = rq.getDataset(); // read out dataset
+        if (DEBUG)
+            log.debug("Dataset:\n" + ds);
+        Command rqCmd = rq.getCommand();
+        String cuid = rqCmd.getRequestedSOPClassUID();
+        String iuid = rqCmd.getRequestedSOPInstanceUID();
+        if (dir != null && dir.isDirectory()) {            
+            File f = new File(dir, iuid);
+            if (!f.exists())
+                throw new DcmServiceException(Status.NoSuchObjectInstance);
+        }
+        return null;
+    }
+
+    protected Dataset doNEventReport(
+        ActiveAssociation assoc,
+        Dimse rq,
+        Command rspCmd)
+        throws IOException, DcmServiceException {
+        Dataset ds = rq.getDataset(); // read out dataset
+        if (DEBUG)
+            log.debug("Dataset:\n" + ds);
+        Command rqCmd = rq.getCommand();
+        String cuid = rqCmd.getRequestedSOPClassUID();
+        String iuid = rqCmd.getRequestedSOPInstanceUID();
+        if (dir != null && dir.isDirectory()) {            
+            File f = new File(dir, iuid);
+            if (!f.exists())
+                throw new DcmServiceException(Status.NoSuchObjectInstance);
+        }
+        return ds;
     }
 }
 
