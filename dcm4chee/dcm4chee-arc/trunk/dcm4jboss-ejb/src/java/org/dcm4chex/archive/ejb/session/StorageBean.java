@@ -99,16 +99,6 @@ import org.jboss.system.server.ServerConfigLocator;
  *  view-type="local"
  *  ref-name="ejb/File" 
  * 
- * @ejb.env-entry
- *  name="attributeFilter"
- *  type="java.lang.String"
- *  value="dcm4jboss-attribute-filter.xml"
- * 
- * @ejb.env-entry
- *  name="attributeCoercions"
- *  type="java.lang.String"
- *  value="dcm4jboss-attribute-coercions.xml"
- * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  *
@@ -116,15 +106,19 @@ import org.jboss.system.server.ServerConfigLocator;
 public abstract class StorageBean implements SessionBean {
     private static Logger log = Logger.getLogger(StorageBean.class);
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    private static final String serverConfigURL =
+        ServerConfigLocator.locate().getServerConfigURL().toString();
+    private static final AttributeFilter attrFilter =
+        new AttributeFilter(serverConfigURL + "dcm4jboss-attribute-filter.xml");
+    private static final AttributeCoercions attrCoercions =
+        new AttributeCoercions(
+            serverConfigURL + "dcm4jboss-attribute-coercions.xml");
 
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instHome;
     private FileLocalHome fileHome;
-
-    private AttributeFilter attrFilter;
-    private AttributeCoercions attrCoercions;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
@@ -140,20 +134,6 @@ public abstract class StorageBean implements SessionBean {
                 (InstanceLocalHome) jndiCtx.lookup(
                     "java:comp/env/ejb/Instance");
             fileHome = (FileLocalHome) jndiCtx.lookup("java:comp/env/ejb/File");
-
-            String serverConfigURL =
-                ServerConfigLocator.locate().getServerConfigURL().toString();
-            attrFilter =
-                new AttributeFilter(
-                    serverConfigURL
-                        + (String) jndiCtx.lookup(
-                            "java:comp/env/attributeFilter"));
-            attrCoercions =
-                new AttributeCoercions(
-                    serverConfigURL
-                        + (String) jndiCtx.lookup(
-                            "java:comp/env/attributeCoercions"));
-
         } catch (NamingException e) {
             throw new EJBException(e);
         } catch (ConfigurationException e) {

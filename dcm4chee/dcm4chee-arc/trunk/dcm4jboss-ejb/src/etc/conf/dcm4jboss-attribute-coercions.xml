@@ -36,7 +36,7 @@
   <if>
     <param name="called-aet">STORE_SCP</param>
 <!-- Manufacturer -->
-    <attr tag="(0010,0010)">GE MEDICAL SYSTEMS</attr>
+    <attr tag="(0008,0070)">GE MEDICAL SYSTEMS</attr>
 <!-- Manufacturer's Model Name -->
     <attr tag="(0008,1090)">RHAPSODE</attr>
   </if>

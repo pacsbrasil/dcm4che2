@@ -23,7 +23,9 @@ package org.dcm4chex.archive.ejb.conf;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 
@@ -33,7 +35,7 @@ import org.dcm4cheri.util.StringUtils;
  * @since 28.12.2003
  */
 public class AttributeCoercion {
-
+    private static Logger log = Logger.getLogger(AttributeCoercion.class);
     ArrayList list = new ArrayList();
     Hashtable params = new Hashtable();
     private static abstract class Coerce {
@@ -41,7 +43,13 @@ public class AttributeCoercion {
         Coerce(int tag) {
             this.tag = tag;
         }
-        abstract void coerce(Dataset ds);
+        void coerce(Dataset ds, Dataset coercedElements) {
+            DcmElement oldEl = ds.get(tag);
+            DcmElement newEl = ds.putXX(tag, value(ds));            
+            log.info("Coerce " + oldEl + " to " + newEl);
+            coercedElements.putXX(tag, newEl.getByteBuffer());
+        }
+        protected abstract String[] value(Dataset ds);
     }
 
     private static class LiteralCoerce extends Coerce {
@@ -50,8 +58,8 @@ public class AttributeCoercion {
             super(tag);
             this.value = value != null ? StringUtils.split(value, '\\') : null;
         }
-        void coerce(Dataset ds) {
-            ds.putXX(tag, value);
+        protected String[] value(Dataset ds) {
+            return value;
         }
     }
 
@@ -61,8 +69,8 @@ public class AttributeCoercion {
             super(tag);
             this.srcTag = Tags.valueOf(value.substring(1));
         }
-        void coerce(Dataset ds) {
-            ds.putXX(tag, ds.getStrings(srcTag));
+        protected String[] value(Dataset ds) {
+            return ds.getStrings(srcTag);
         }
     }
 
@@ -92,11 +100,11 @@ public class AttributeCoercion {
                 String tk = (String) tokens.get(i + 1);
                 srcTags[i] = Tags.valueOf(tk.substring(1, 12));
 				int startLiteral = 12;
-				 if (tk.length() > 14 && tk.charAt(12) == '[') {
+				if (tk.length() > 14 && tk.charAt(12) == '[') {
 					 int last = tk.indexOf(']', 14);
 					 if (last != -1) {
 						 try {
-							 int tmp = Integer.parseInt(tk.substring(13, pos));
+							 int tmp = Integer.parseInt(tk.substring(13, last));
 							 if (tmp >= 0) {
 								 srcIndex[i] = tmp;
 								 startLiteral = last + 1;
@@ -114,11 +122,11 @@ public class AttributeCoercion {
 						 startLiteral = last + 1;
 					 }
 				 }
-                 literals[i] = tk.substring(startLiteral);
+                 literals[i+1] = tk.substring(startLiteral);
             }
         }
 
-        void coerce(Dataset ds) {
+        protected String[] value(Dataset ds) {
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < srcTags.length; ++i) {
                 sb.append(literals[i]);
@@ -126,7 +134,7 @@ public class AttributeCoercion {
                 sb.append(luts[i] != null ? (String) luts[i].get(val) : val);
             }
             sb.append(literals[srcTags.length]);
-            ds.putXX(tag, StringUtils.split(sb.toString(), '\\'));
+            return StringUtils.split(sb.toString(), '\\');
         }
     }
 
@@ -147,9 +155,7 @@ public class AttributeCoercion {
 
     public void coerce(Dataset ds, Dataset coercedElements) {
         for (int i = 0, n = list.size(); i < n; ++i) {
-            Coerce coerce = (Coerce) list.get(i);
-            coerce.coerce(ds);
-            coercedElements.putXX(coerce.tag);
+            ((Coerce) list.get(i)).coerce(ds, coercedElements);
         }
     }
 }

@@ -25,7 +25,7 @@ package org.dcm4chex.archive.ejb.conf;
  * @version $Revision$ $Date$
  * @since 28.12.2003
  */
-public class ConfigurationException extends Exception {
+public class ConfigurationException extends RuntimeException {
 
     /**
      * 
