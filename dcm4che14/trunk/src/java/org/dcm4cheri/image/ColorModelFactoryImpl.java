@@ -73,7 +73,7 @@ public class ColorModelFactoryImpl extends ColorModelFactory {
       }
       String pLUTShape = ds.getString(Tags.PresentationLUTShape);
       return new MonochromeParam(ds,
-         pLUTShape == null ? mono1 : !"INVERSE".equals(pLUTShape),
+         pLUTShape == null ? mono1 : "INVERSE".equals(pLUTShape),
          pv2dll == null ? P2D_IDENTITY : pv2dll);
    }
    
