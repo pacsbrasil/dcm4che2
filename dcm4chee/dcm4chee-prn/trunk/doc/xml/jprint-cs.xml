@@ -9,7 +9,7 @@
   <articleinfo>
     <corpauthor><ulink url="http://www.tiani.com">TIANI MEDGRAPH AG</ulink></corpauthor>
 
-    <date>18 Feb 2003</date>
+    <pubdate>6 April 2003</pubdate>
   </articleinfo>
 
   <abstract>
@@ -52,7 +52,9 @@
 
       <para><revhistory><revision><revnumber>0.1</revnumber><date>18 Feb 2003</date><authorinitials>gz</authorinitials><revremark>Initial
       draft</revremark></revision><revision><revnumber>0.2</revnumber><date>1
-      Mar 2003</date><authorinitials>gz</authorinitials><revremark>update</revremark></revision></revhistory></para>
+      Mar 2003</date><authorinitials>gz</authorinitials><revremark>Update</revremark></revision><revision><revnumber>0.3</revnumber><date>6
+      Apr 2003</date><authorinitials>gz</authorinitials><revremark>Update
+      Configuration Information Syntax</revremark></revision></revhistory></para>
     </section>
 
     <section>
@@ -877,9 +879,8 @@
                     (Configurable)</entry><entry>PAPER (Configurable)</entry><entry>Warning
                     (0116H)</entry></row><row><entry>Film Session Label</entry><entry>(2000,0050)</entry><entry>Up
                     to 64 characters</entry><entry>&#34;print job for
-                    CALLING_AET created DATE TIME&#34; (Configurable);
-                    truncate if &#62; 64 characters</entry><entry>Warning
-                    (0116H)</entry></row></tbody></tgroup></table></para>
+                    CALLING_AET&#34; (Configurable); truncate if &#62; 64
+                    characters</entry><entry>Warning (0116H)</entry></row></tbody></tgroup></table></para>
 
                     <para>jPrint behavior and the specific status codes sent
                     for the N-CREATE of a specific Film Session is described
@@ -1040,7 +1041,7 @@
                     type="vert"><member>YES</member><member>NO</member></simplelist></entry><entry>NO
                     (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Configuration
                     Information</entry><entry>(2010,0150)</entry><entry><simplelist
-                    type="vert"><member>IDENTITY</member><member>LINOD</member><member>MIDTONE2</member><member>LIGHTEN1</member><member>LIGHTEN2</member><member>LIGHTEN3</member><member>LIGHTEN4</member><member>LIGHTEN5</member><member>DARKEN9</member><member>DARKEN8</member></simplelist>(Configurable)</entry><entry>IDENTITY
+                    type="vert"><member>shape=IDENTITY</member><member>shape=LIN_OD</member><member>shape=&#60;plut-name&#62;</member><member>gamma=&#60;g&#62;</member><member>center=&#60;c&#62;,slope=&#60;s&#62;</member><member>center=&#60;c&#62;,slope=&#60;s&#62;,gamma=&#60;g&#62;</member></simplelist></entry><entry>shape=IDENTITY
                     (Different configurable for different Calling AETs)</entry><entry>Warning
                     (0116H)</entry></row><row><entry>Illumination</entry><entry>(2010,015E)</entry><entry>Any
                     valid value in the unit of cd/m^2</entry><entry>150
@@ -1099,13 +1100,12 @@
                     Formats may be defined by jPrint configuration files as
                     well.</para>
 
-                    <para>In the default configuration, jPrint defines five
-                    local P-LUTs, which a Print SCU with no support of the
-                    Presentation LUT SOP Class can select by Configuration
-                    Information values:</para>
+                    <para>A Print SCU can control which Presentation LUT is
+                    applied by jPrint for Printing via the Configuration
+                    Information value:</para>
 
                     <table id="t-config-info">
-                      <title>Predefined Configuration Information Values</title>
+                      <title>Configuration Information Syntax</title>
 
                       <tgroup align="left" cols="2">
                         <colspec colwidth="70" />
@@ -1120,7 +1120,7 @@
 
                         <tbody>
                           <row>
-                            <entry>IDENTITY</entry>
+                            <entry>shape=IDENTITY</entry>
 
                             <entry>Treats received pixel values as P-Values
                             and perform gray scaling according the DICOM
@@ -1129,7 +1129,7 @@
                           </row>
 
                           <row>
-                            <entry>LINOD</entry>
+                            <entry>shape=LIN_OD</entry>
 
                             <entry>Apply Presentation LUT with linear optical
                             density over the range of Min Density (2010,0120)
@@ -1137,56 +1137,57 @@
                           </row>
 
                           <row>
-                            <entry>MIDTONE2</entry>
+                            <entry>shape=&#60;plut-name&#62;</entry>
 
-                            <entry>Applies a S-shaped P-LUT, which increases
-                            the contrast in the middle range of gray shades.</entry>
+                            <entry>Apply pre-configured P-LUT loaded from
+                            <filename>conf/lut/&#60;plut-name&#62;.lut</filename>
+                            . As example, a Philips Standard LUT
+                            <filename>conf/lut/PHILIPS.lut</filename> is
+                            provided by the default configuration. Additional
+                            local P-LUTs may be defined by additonal P-LUT
+                            configuration files in <filename>conf/lut/</filename>.</entry>
                           </row>
 
                           <row>
-                            <entry>LIGHTEN1</entry>
+                            <entry>gamma=&#60;g&#62;</entry>
 
-                            <entry morerows="4">Applies a gamma-shaped P-LUT
-                            with gamma &#62; 1 (LIGHTENx: gamma=1.x), which
-                            increases the contrast for dark gray shades and
-                            lightens the image as a whole.</entry>
+                            <entry>Apply gamma-shaped P-LUT with
+                            gamma=&#60;g&#62;. Gamma &#62; 1 increase the
+                            contrast in the dark and brighten the image as a
+                            whole. Gamma &#60; 1 increase the contrast for
+                            bright pixel values and darken the image as a
+                            whole.</entry>
                           </row>
 
                           <row>
-                            <entry>LIGHTEN2</entry>
+                            <entry>center=&#60;c&#62;,slope=&#60;s&#62;</entry>
+
+                            <entry>Apply S-shape LUT which enhances the
+                            contrast around a specified center=&#60;c&#62;.
+                            E.g., center=0.5 specifies the center of contrast
+                            enhancement in the middle, center=0.25 at 25%,
+                            center=0.75 at 75% of the pixel value range.
+                            slope=&#60;s&#62; specifies the grade of
+                            enhancement: E.g, slope=2 approximately double,
+                            slope=3 triple, the contrast aorund the specified
+                            center; slope=1 only minimal enhances the
+                            contrast, and slope=0 generates a linear LUT,
+                            independent of center=XX.</entry>
                           </row>
 
                           <row>
-                            <entry>LIGHTEN3</entry>
-                          </row>
+                            <entry>center=&#60;c&#62;,slope=&#60;s&#62;,gamma=&#60;g&#62;</entry>
 
-                          <row>
-                            <entry>LIGHTEN4</entry>
-                          </row>
-
-                          <row>
-                            <entry>LIGHTEN5</entry>
-                          </row>
-
-                          <row>
-                            <entry>DARKEN9</entry>
-
-                            <entry morerows="1">Applies a gamma-shaped P-LUT
-                            with gamma &#60; 1 (DARKENx: gamma=0.x), which
-                            increases the contrast for light gray shades and
-                            darkens the image as a whole.</entry>
-                          </row>
-
-                          <row>
-                            <entry>DARKEN8</entry>
+                            <entry>Apply S-shape LUT with additional gamma
+                            characteristic. gamma=1 applies the same LUT as
+                            with pure
+                            &#34;center=&#60;c&#62;,slope=&#60;s&#62;&#34;;
+                            slope=&#60;0&#62; applies the same LUT as with
+                            pure &#34;gamma=&#60;g&#62;&#34;.</entry>
                           </row>
                         </tbody>
                       </tgroup>
                     </table>
-
-                    <para>Additional local P-LUTs associated to particular
-                    Configuration Information values may be defined by jPrint
-                    configuration files.</para>
 
                     <note>
                       <para>The selection of (jPrint) local P-LUTs via the
@@ -1353,9 +1354,10 @@
 
                             <entry>(2010,0150)</entry>
 
-                            <entry><simplelist type="vert"><member>IDENTITY</member><member>MIDTONE2</member><member>LIGHTEN1</member><member>LIGHTEN2</member><member>LIGHTEN3</member><member>LIGHTEN4</member><member>LIGHTEN5</member><member>DARKEN9</member><member>DARKEN8</member></simplelist>(Configurable)</entry>
+                            <entry><simplelist type="vert"><member>shape=IDENTITY</member><member>shape=LIN_OD</member><member>shape=&#60;plut-name&#62;</member><member>gamma=&#60;g&#62;</member><member>center=&#60;c&#62;,slope=&#60;s&#62;</member><member>center=&#60;c&#62;,slope=&#60;s&#62;,gamma=&#60;g&#62;</member></simplelist></entry>
 
-                            <entry>IDENTITY (Configurable)</entry>
+                            <entry>shape=IDENTITY (Different configurable for
+                            different Calling AETs)</entry>
 
                             <entry>Warning (0116H)</entry>
                           </row>
@@ -1747,14 +1749,13 @@
                         </row>
 
                         <row>
-                          <entry>Configuration Information<footnoteref
-                          linkend="fn-configinfo" /></entry>
+                          <entry>Configuration Information</entry>
 
                           <entry>(2010,0150)</entry>
 
-                          <entry><simplelist type="vert"><member>IDENTITY</member><member>MIDTONE2</member><member>LIGHTEN1</member><member>LIGHTEN2</member><member>LIGHTEN3</member><member>LIGHTEN4</member><member>LIGHTEN5</member><member>DARKEN9</member><member>DARKEN8</member></simplelist>(Configurable)</entry>
+                          <entry><simplelist type="vert"><member>shape=IDENTITY</member><member>shape=LIN_OD</member><member>shape=&#60;plut-name&#62;</member><member>gamma=&#60;g&#62;</member><member>center=&#60;c&#62;,slope=&#60;s&#62;</member><member>center=&#60;c&#62;,slope=&#60;s&#62;,gamma=&#60;g&#62;</member></simplelist></entry>
 
-                          <entry>IDENTITY (Configurable)</entry>
+                          <entry>Not set</entry>
 
                           <entry>Warning (0116H)</entry>
                         </row>
@@ -2249,7 +2250,7 @@
 
                             <entry>DA</entry>
 
-                            <entry>Date of most recent scanned grayscale
+                            <entry>Date of most recent scanned DSI 256 pattern
                             print-out in calibration folder, if semiautomatic
                             calibration mode is activated</entry>
                           </row>
@@ -2261,7 +2262,7 @@
 
                             <entry>TM</entry>
 
-                            <entry>Time of most recent scanned grayscale
+                            <entry>Time of most recent scanned DSI 256 pattern
                             print-out in calibration folder, if semiautomatic
                             calibration mode is activated</entry>
                           </row>
@@ -3171,8 +3172,8 @@
                   <para>jPrint supports calibration by manual measurements
                   using a grayscale densitometer or semi-automatic
                   calibration, that only requires the user to scan a current
-                  grayscale print-out from the printer and a reference
-                  grayscale page and put the resulting JPEG files into a
+                  DSI 256 pattern print-out from the printer and a reference
+                  DSI 256 pattern page and put the resulting JPEG files into a
                   configuration folder. The jPrint Service Manual describes
                   the jPrint calibration of connected Printers to the DICOM
                   GSDF curve in detail.</para>
@@ -3272,7 +3273,13 @@
         number of simultaneous Associations</entry><entry>Yes</entry><entry>10</entry></row><row><entry>Supported
         Transfer Syntaxes</entry><entry>No</entry><entry><simplelist
         type="vert"><member>Implicit VR Little Endian</member><member>Explicit
-        VR Little Endian</member></simplelist></entry></row><row><entry
+        VR Little Endian</member></simplelist></entry></row><row><entry>Support
+        for the Basic TLS Secure Transport Connection Profile</entry><entry>Yes</entry><entry>off</entry></row><row><entry>Supported
+        TLS ciphersuites</entry><entry>Yes</entry><entry><simplelist
+        type="vert"><member>RSA_WITH_NULL_SHA RSA_WITH_3DES_EDE_CBC_SHA</member></simplelist></entry></row><row><entry>Certificates
+        of trusted Certification Authorities</entry><entry>Yes</entry><entry>Tiani
+        License CA</entry></row><row><entry>Certificate and private key for
+        TLS authentication</entry><entry>Yes</entry><entry>= User License</entry></row><row><entry
         spanname="c1-c3">Printer specific Parameters - may differ for
         connected Printers</entry></row><row><entry>Called AET associated with
         this Printer</entry><entry>Yes</entry><entry>TIANI_PRINT</entry></row><row><entry>Printer
@@ -3289,8 +3296,8 @@
         Type (if not specified by Print SCU)</entry><entry>Yes</entry><entry>PAPER</entry></row><row><entry>Supported
         Medium Types</entry><entry>Yes</entry><entry>PAPER</entry></row><row><entry>Session
         Label (if not specified by Print SCU)</entry><entry>Yes</entry><entry>print
-        job for CALLING_AET created DATE TIME</entry></row><row><entry>Orientation
-        (if not specified by Print SCU)</entry><entry>Yes</entry><entry>PORTRAIT</entry></row><row><entry>Supported
+        job for CALLING_AET</entry></row><row><entry>Orientation (if not
+        specified by Print SCU)</entry><entry>Yes</entry><entry>PORTRAIT</entry></row><row><entry>Supported
         Display Formats</entry><entry>Yes</entry><entry><para>Orientation
         PORTRAIT:<simplelist type="vert"><member>STANDARD\1,1</member><member>STANDARD\1,2</member><member>STANDARD\2,2</member><member>STANDARD\2,3</member><member>STANDARD\3,3</member><member>STANDARD\3,4</member><member>STANDARD\3,5</member><member>STANDARD\4,4</member><member>STANDARD\4,5</member><member>STANDARD\4,6</member><member>STANDARD\5,5</member><member>STANDARD\5,6</member><member>STANDARD\6,6</member></simplelist></para><para>Orientation
         LANDSCAPE:<simplelist type="vert"><member>STANDARD\1,1</member><member>STANDARD\2,1</member><member>STANDARD\2,2</member><member>STANDARD\3,2</member><member>STANDARD\3,3</member><member>STANDARD\4,3</member><member>STANDARD\5,3</member><member>STANDARD\4,4</member><member>STANDARD\5,4</member><member>STANDARD\6,4</member><member>STANDARD\5,5</member><member>STANDARD\6,5</member><member>STANDARD\6,6</member></simplelist></para></entry></row><row><entry>Film
@@ -3304,23 +3311,14 @@
         (if not specified by Print SCU)</entry><entry>Yes</entry><entry>true</entry></row><row><entry>Illumination
         (if not specified by Print SCU)</entry><entry>Yes</entry><entry>150</entry></row><row><entry>Reflected
         Ambient Light (if not specified by Print SCU)</entry><entry>Yes</entry><entry>0</entry></row><row><entry>Configuration
-        Information (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called
-        AET&#62; or IDENTITY</entry></row><row><entry>Supported Configuration
-        Information (= IDs of local P-LUTs)</entry><entry>Yes</entry><entry><simplelist
-        type="vert"><member>IDENTITY</member><member>MIDTONE2</member><member>LIGHTEN1</member><member>LIGHTEN2</member><member>LIGHTEN3</member><member>LIGHTEN4</member><member>LIGHTEN5</member><member>DARKEN9</member><member>DARKEN8</member></simplelist></entry></row><row><entry>Annotation
-        Display Format (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called
-        AET&#62; or TITLE</entry></row><row><entry>Supported Annotation
-        Display Format IDs</entry><entry>Yes</entry><entry><simplelist
-        type="vert"><member>TITLE</member><member>NO_TITLE</member></simplelist></entry></row><row><entry>Minimal
-        spacing between Image Boxes on the page</entry><entry>Yes</entry><entry>2
-        mm</entry></row><row><entry>Resolution ID (if not specified by Print
-        SCU)</entry><entry>Yes</entry><entry>STANDARD</entry></row><row><entry>Supported
-        Resolution IDs</entry><entry>Yes</entry><entry><simplelist type="vert"><member>STANDARD:600x600dpi</member><member>HIGH:1200x1200dpi</member></simplelist></entry></row><row><entry>Semi-automatic
-        Calibration by evaluating scanned gray scale print out in calibration
-        folder</entry><entry>Yes</entry><entry>on</entry></row><row><entry>Density
-        measurements of the printed gray scale pattern. Only used for the case
-        of manually density measurement using a grayscale densitometer.</entry><entry>Yes</entry><entry>Must
-        be configured, if semi-automatic Calibration is not used.</entry></row></tbody></tgroup></table></para>
+        Information (if not specified by Print SCU)</entry><entry>Yes</entry><entry>shape=IDENTITY</entry></row><row><entry>Supported
+        Configuration Information</entry><entry>Yes</entry><entry><simplelist
+        type="vert"><member>shape=IDENTITY</member><member>shape=LIN_OD</member><member>shape=PHILIPS</member><member>gamma=&#60;g&#62;</member><member>center=&#60;c&#62;,slope=&#60;s&#62;</member><member>center=&#60;c&#62;,slope=&#60;s&#62;,gamma=&#60;g&#62;</member></simplelist></entry></row><row><entry>Annotation
+        Display Format (if not specified by Print SCU)</entry><entry>Yes</entry><entry>TITLE</entry></row><row><entry>Supported
+        Annotation Display Format IDs</entry><entry>Yes</entry><entry><simplelist
+        type="vert"><member>TITLE</member><member>NO_TITLE</member></simplelist></entry></row><row><entry>Resolution
+        ID (if not specified by Print SCU)</entry><entry>Yes</entry><entry>STANDARD</entry></row><row><entry>Supported
+        Resolution IDs</entry><entry>Yes</entry><entry><simplelist type="vert"><member>STANDARD:600x600dpi</member><member>HIGH:1200x1200dpi</member></simplelist></entry></row></tbody></tgroup></table></para>
       </section>
     </section>
   </section>

@@ -14,6 +14,11 @@
   <property name="dcm4che.home" value="../dcm4che14/build"/>
   <property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>
   
+  <!-- Override with your dcm4jboss dist location -->
+  <property name="dcm4jboss.home" value="../dcm4jboss/build"/>
+  <property name="dcmsrv.jar" value="${dcm4jboss.home}/lib/dcmsrv.jar"/>
+  <property name="auditlog.jar" value="${dcm4jboss.home}/lib/auditlog.jar"/>
+  
   <!-- Override with your JBoss/Web server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-3.0.6"/>
   <property name="jboss.bin" value="${jboss.home}/bin"/>
@@ -73,6 +78,8 @@
   <target name="check-env">
     <available property="dcm4che.present" file="${dcm4che.jar}" />
     <antcall target="fail_if_no_dcm4che"/>
+    <available property="dcm4jboss.present" file="${dcmsrv.jar}" />
+    <antcall target="fail_if_no_dcm4jboss"/>
     <available property="jboss.present" file="${jboss.lib}/jboss-system.jar" />
     <antcall target="fail_if_no_jboss"/>
     <available property="fop.present" file="${fop.jar}" />
@@ -87,6 +94,10 @@
     <fail message="dcm4che.home=${dcm4che.home} is not a valid dcm4che dist directory"/>
   </target>
   
+  <target name="fail_if_no_dcm4jboss" unless="dcm4jboss.present">
+    <fail message="dcm4jboss.home=${dcm4jboss.home} is not a valid dcm4jboss dist directory"/>
+  </target>
+  
   <target name="fail_if_no_jboss" unless="jboss.present">
     <fail message="jboss.home=${jboss.home} is not a valid JBoss dist directory"/>
   </target>
@@ -95,6 +106,8 @@
     <echo message="user.home = ${user.home}"/>
     <echo message="java.home = ${java.home}"/>
     <echo message="ant.home = ${ant.home}"/>
+    <echo message="dcm4che.home = ${dcm4che.home}"/>
+    <echo message="dcm4jboss.home = ${dcm4jboss.home}"/>
     <echo message="jboss.home = ${jboss.home}"/>
     <echo message="fop.home = ${fop.home}"/>
     <echo message="docbook-xsl.dist = ${docbook-xsl.dist}"/>
@@ -115,46 +128,8 @@
     </javac>
   </target>
 
-  <target name="sar" depends="auditlog-sar,dcmsrv-sar,prnscp-sar,printer-sar"/>
+  <target name="sar" depends="prnscp-sar,printer-sar"/>
   
-  <target name="auditlog-sar" depends="compile">
-    <mkdir dir="${build.dir}/auditlog"/>
-    <copy file="${src.conf}/auditlog-service.xml" 
-          tofile="${build.dir}/auditlog/jboss-service.xml">
-      <filterset>
-        <filter token="ARCHIVES" value="dcm4che.jar"/>
-      </filterset>
-    </copy>  
-    <mkdir dir="${build.deploy.dir}"/>
-    <jar jarfile="${build.deploy.dir}/auditlog.sar">
-      <metainf dir="${build.dir}/auditlog"
-               includes="jboss-service.xml"
-      />
-      <fileset dir="${build.classes.dir}"
-               includes="org/dcm4chex/service/Audit*"
-      />
-    </jar>
-  </target>   
-
-  <target name="dcmsrv-sar" depends="compile">
-    <mkdir dir="${build.dir}/dcmsrv"/>
-    <copy file="${src.conf}/dcmsrv-service.xml" 
-          tofile="${build.dir}/dcmsrv/jboss-service.xml">
-      <filterset>
-        <filter token="ARCHIVES" value="dcm4che.jar"/>
-      </filterset>
-    </copy>  
-    <mkdir dir="${build.deploy.dir}"/>
-    <jar jarfile="${build.deploy.dir}/dcmsrv.sar">
-      <metainf dir="${build.dir}/dcmsrv"
-               includes="jboss-service.xml"
-      />
-      <fileset dir="${build.classes.dir}"
-               includes="org/dcm4chex/service/DcmServer*"
-      />
-    </jar>
-  </target>   
-
   <target name="prnscp-sar" depends="compile">
     <mkdir dir="${build.dir}/prnscp"/>
     <copy file="${src.conf}/prnscp-service.xml" 
@@ -193,17 +168,8 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, eval-scan-jar, view-plut-jar, check-license-jar"/>
+  <target name="jar" depends="prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, eval-scan-jar, view-plut-jar, check-license-jar"/>
   
-  <target name="dcmsrv-jar" depends="compile">
-    <mkdir dir="${build.lib.dir}"/>
-    <jar jarfile="${build.lib.dir}/dcmsrv.jar">
-      <fileset dir="${build.classes.dir}"
-               includes="org/dcm4chex/service/*"
-      />
-    </jar>
-  </target>   
-
   <target name="prnscp-jar" depends="compile" unless="dasho.jar">
     <mkdir dir="${build.lib.dir}"/>
     <jar jarfile="${build.lib.dir}/prnscp.jar">
@@ -351,16 +317,16 @@
     
   <target name="service-xml">
     <mkdir dir="${build.deploy.dir}"/>
-    <copy file="${src.dir}/conf/auditlog-service.xml" 
+    <copy file="${src.conf}/dcmsrv-service.xml" 
           todir="${build.deploy.dir}">
       <filterset>
         <filter token="ARCHIVES" value="dcm4che.jar,dcmsrv.jar"/>
       </filterset>
     </copy>
-    <copy file="${src.dir}/conf/dcmsrv-service.xml" 
+    <copy file="${src.conf}/auditlog-service.xml" 
           todir="${build.deploy.dir}">
       <filterset>
-        <filter token="ARCHIVES" value="dcm4che.jar,dcmsrv.jar"/>
+        <filter token="ARCHIVES" value="dcm4che.jar,auditlog.jar"/>
       </filterset>
     </copy>
     <copy file="${src.conf}/prnscp-service.xml" 
@@ -381,35 +347,37 @@
 
   <target name="deploy" depends="build">
     <copy todir="${jboss.server}">
+        <fileset dir="${dcm4che.home}">
+            <include name="lib/dcm4che.jar"/>
+        </fileset>
+        <fileset dir="${dcm4jboss.home}">
+            <include name="lib/auditlog.jar"/>
+            <include name="lib/dcmsrv.jar"/>
+        </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>
         <include name="conf/calibration/DSI256.ods"/>
         <include name="conf/lut/*.lut"/>
         <include name="conf/cacerts.jks"/>
       </fileset>
+        <fileset dir="${build.dir}">
+            <include name="deploy/auditlog-service.xml"/>
+            <include name="deploy/dcmsrv-service.xml"/>
+            <include name="deploy/prnscp.sar"/>
+            <include name="deploy/printer.sar"/>
+        </fileset>
     </copy>
-
-    <copy file="${dcm4che.jar}"
-        todir="${jboss.server.lib}" />
-        
-    <copy file="${build.deploy.dir}/auditlog.sar"
-        todir="${jboss.server.deploy}" />
-        
-    <copy file="${build.deploy.dir}/dcmsrv.sar"
-        todir="${jboss.server.deploy}" />
-        
-    <copy file="${build.deploy.dir}/prnscp.sar"
-        todir="${jboss.server.deploy}" />
-        
-    <copy file="${build.deploy.dir}/printer.sar"
-        todir="${jboss.server.deploy}" />
   </target>           
 
   <target name="undeploy">
-    <delete file="${jboss.server.deploy}/printer.sar" />
-    <delete file="${jboss.server.deploy}/prnscp.sar" />
-    <delete file="${jboss.server.deploy}/dcmsrv.sar" />
-    <delete file="${jboss.server.deploy}/auditlog.sar" />
+    <delete>
+        <fileset dir="${jboss.server}">
+            <include name="deploy/auditlog-service.xml"/>
+            <include name="deploy/dcmsrv-service.xml"/>
+            <include name="deploy/prnscp.sar"/>
+            <include name="deploy/printer.sar"/>
+        </fileset>
+    </delete>
   </target>           
     
   <target name="fail_if_no_docbook_xsl" unless="docbook-xsl.present">
@@ -491,8 +459,14 @@
         <include name="bin/*.bat"/>
       </fileset>
     </copy>
-    <copy file="${dcm4che.jar}" todir="${dist.dir}/server/default/lib"/>
     <copy todir="${dist.dir}/server/default">
+        <fileset dir="${dcm4che.home}">
+            <include name="lib/dcm4che.jar"/>
+        </fileset>
+        <fileset dir="${dcm4jboss.home}">
+            <include name="lib/auditlog.jar"/>
+            <include name="lib/dcmsrv.jar"/>
+        </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>
         <include name="conf/calibration/DSI256.ods"/>
