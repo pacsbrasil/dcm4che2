@@ -703,6 +703,9 @@ public class PrintScpService
     void checkMinMaxDensity(Dataset ds, String aet, boolean color, Command rsp)
         throws Exception
     {
+        if (getBooleanPrinterAttribute(aet, "IgnoreMinDensity")) {
+	    ds.putUS(Tags.MinDensity);
+	}
         int minDensityPrinter = getIntPrinterAttribute(aet, "getMinDensity", color);
         int minDensity = ds.getInt(Tags.MinDensity, minDensityPrinter);
         if (minDensity < minDensityPrinter) {

@@ -89,7 +89,8 @@
     so P-LUTs can be applied/configured.
     -->
     <attribute name="PrintColorWithPLUT">true</attribute>
-    
+    <attribute name="IgnoreMinDensity">true</attribute>
+    <attribute name="GrayMaxDiffRGB">2</attribute>
     <!--
     Activate support for the Presentation LUT SOP Class.
     -->

@@ -83,21 +83,18 @@ public class PLutBuilder
                 throw new IllegalArgumentException("shape:" + shape);
             }
         }
-        String tmp;
-        if ((tmp = get("center=", configInfo)) != null) {
-            setCenter(Float.parseFloat(tmp));
+        String c,s,g;
+        if ((c = get("center=", configInfo)) != null) {
+            setCenter(Float.parseFloat(c));
         }
-        if ((tmp = get("slope=", configInfo)) != null) {
-            setSlope(Float.parseFloat(tmp));
+        if ((s = get("slope=", configInfo)) != null) {
+            setSlope(Float.parseFloat(s));
         }
-        if ((tmp = get("gamma=", configInfo)) != null) {
-            setGamma(Float.parseFloat(tmp));
+        if ((g = get("gamma=", configInfo)) != null) {
+            setGamma(Float.parseFloat(g));
         }
-        if ((tmp = get("length=", configInfo)) != null) {
-            setLength(Integer.parseInt(tmp));
-        }
-        if ((tmp = get("bits=", configInfo)) != null) {
-            setBits(Integer.parseInt(tmp));
+        if (shape == null && c == null && s == null && g == null) {
+            throw new IllegalArgumentException(configInfo);
         }
     }
 

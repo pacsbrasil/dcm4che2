@@ -483,7 +483,7 @@ class PrintableImageBox
             int shift = pValToDDL.length == 4096 ? 4 : 0;
             for (int rgb, b, i = 0; i < data.length; ++i) {
                 b = (rgb = data[i]) & 0xff;
-                if (((rgb >> 8) & 0xff) == b && ((rgb >> 16) & 0xff) == b) {
+                if (service.isGray(rgb)) {
                     b = (pValToDDL[b << shift] & 0xff);
                     data[i] = b | (b << 8) | (b << 16);
                     ++count;

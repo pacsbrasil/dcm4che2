@@ -137,6 +137,8 @@ public class PrinterService
 
     private boolean ignorePrinterIsAcceptingJobs;
 
+    private boolean ignoreMinDensity = true;
+
     private String printToFilePath;
 
     private boolean supportsColor;
@@ -162,6 +164,8 @@ public class PrinterService
     private boolean printGrayAsColor;
 
     private boolean printColorWithPLUT;
+
+    private int grayMaxDiffRGB = 2;
 
     private int maxQueuedJobCount = 10;
 
@@ -501,6 +505,17 @@ public class PrinterService
     public void setIgnorePrinterIsAcceptingJobs(boolean ignorePrinterIsAcceptingJobs)
     {
         this.ignorePrinterIsAcceptingJobs = ignorePrinterIsAcceptingJobs;
+    }
+
+    public boolean isIgnoreMinDensity()
+    {
+        return this.ignoreMinDensity;
+    }
+
+
+    public void setIgnoreMinDensity(boolean ignoreMinDensity)
+    {
+        this.ignoreMinDensity = ignoreMinDensity;
     }
 
 
@@ -2143,6 +2158,25 @@ public class PrinterService
         this.maxQueuedJobCount = maxQueuedJobCount;
     }
 
+    public int getGrayMaxDiffRGB()
+    {
+        return this.grayMaxDiffRGB;
+    }
+
+
+    public void setGrayMaxDiffRGB(int grayMaxDiffRGB)
+    {
+        this.grayMaxDiffRGB = grayMaxDiffRGB;
+    }
+
+    boolean isGray(int rgb) {
+        int b = rgb & 0xff;
+        int g = (rgb >> 8) & 0xff;
+        int r = (rgb >> 16) & 0xff;
+        return Math.abs(b-g) <= grayMaxDiffRGB
+	    && Math.abs(g-r) <= grayMaxDiffRGB
+	    && Math.abs(r-b) <= grayMaxDiffRGB;
+    }
 
     /**
      *  Gets the license attribute of the PrinterService object

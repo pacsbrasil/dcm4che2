@@ -909,6 +909,13 @@ public interface PrinterServiceMBean extends ServiceMBean
      */
     public void setPrintColorWithPLUT(boolean printColorWithPLUT);
 
+    public int getGrayMaxDiffRGB();
+
+    public void setGrayMaxDiffRGB(int grayMaxDiffRGB);
+
+    public boolean isIgnoreMinDensity();
+
+    public void setIgnoreMinDensity(boolean ignoreMinDensity);
 
     /**
      *  Getter for property maxQueuedJobCount.
