@@ -112,7 +112,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	private boolean useInstanceInfo = false;
 	
 	/** Holds type of none DICOM objects that should be stored on media. Default is NONE */
-	private String includeNonDICOMObj = "NONE";
+	private String includeNonDICOMObj = "NO";
 	
 	/** DICOM priority. Used for move and media creation action. */
 	private int priority = 0;
@@ -662,7 +662,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	private Dataset getMediaCreationReqDS( MediaDTO mediaDTO ) throws RemoteException, FinderException, HomeFactoryException, CreateException {
 		Dataset ds = lookupMediaComposer().prepareMediaCreationRequest( mediaDTO.getPk() );
 		ds.putCS(Tags.LabelUsingInformationExtractedFromInstances, this.isUseInstanceInfo() ? "YES" : "NO");
-		ds.putCS(Tags.IncludeNonDICOMObjects, "NONE".equals( includeNonDICOMObj ) ? "YES" : "NO" );
+		ds.putCS(Tags.IncludeNonDICOMObjects, includeNonDICOMObj);
 		return ds;
 	}
 
