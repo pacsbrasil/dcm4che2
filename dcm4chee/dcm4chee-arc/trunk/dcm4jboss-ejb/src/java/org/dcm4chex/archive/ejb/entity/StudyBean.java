@@ -25,6 +25,8 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
@@ -64,7 +66,12 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 public abstract class StudyBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(StudyBean.class);
+
+    private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
+            Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances};
+
     private Set retrieveAETSet;
+
     private Set modalitySet;
 
     /**
@@ -221,7 +228,7 @@ public abstract class StudyBean implements EntityBean {
     }
 
     public abstract void setAvailability(int availability);
-    
+
     /**
      * @ejb.interface-method view-type="local"
      * 
@@ -261,7 +268,7 @@ public abstract class StudyBean implements EntityBean {
      * @return all series of this study
      */
     public abstract java.util.Collection getSeries();
-    
+
     public void ejbLoad() {
         retrieveAETSet = null;
         modalitySet = null;
@@ -273,7 +280,7 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient)
-        throws CreateException {
+            throws CreateException {
         retrieveAETSet = null;
         modalitySet = null;
         setAttributes(ds);
@@ -281,7 +288,7 @@ public abstract class StudyBean implements EntityBean {
     }
 
     public void ejbPostCreate(Dataset ds, PatientLocal patient)
-        throws CreateException {
+            throws CreateException {
         setPatient(patient);
         log.info("Created " + prompt());
     }
@@ -293,10 +300,25 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset getAttributes() {
-        return DatasetUtils.fromByteArray(
-            getEncodedAttributes(),
-            DcmDecodeParam.EVR_LE);
+    public Dataset getAttributes(boolean supplement) {
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
+                DcmDecodeParam.EVR_LE,
+                null);
+        if (supplement) {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putUL(PrivateTags.StudyPk, getPk().intValue());
+            ds.putCS(Tags.ModalitiesInStudy, StringUtils
+                    .split(getModalitiesInStudy(), '\\'));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries,
+                    getNumberOfStudyRelatedSeries());
+            ds.putIS(Tags.NumberOfStudyRelatedInstances,
+                    getNumberOfStudyRelatedInstances());
+            ds.putAE(Tags.RetrieveAET, StringUtils.split(getRetrieveAETs(),
+                    '\\'));
+            ds.putCS(Tags.InstanceAvailability, Availability
+                    .toString(getAvailabilitySafe()));
+        }
+        return ds;
     }
 
     /**
@@ -308,15 +330,17 @@ public abstract class StudyBean implements EntityBean {
         setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
-        setEncodedAttributes(
-            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+        Dataset tmp = ds.exclude(SUPPL_TAGS).excludePrivate();
+        setEncodedAttributes(DatasetUtils.toByteArray(tmp,
+                DcmDecodeParam.EVR_LE));
     }
 
     /**
      * @ejb.interface-method
      */
     public void setStudyDateTime(java.util.Date date) {
-        setStudyDateTime(date != null ? new java.sql.Timestamp(date.getTime()) : null);
+        setStudyDateTime(date != null ? new java.sql.Timestamp(date.getTime())
+                : null);
     }
 
     /**
@@ -330,8 +354,8 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public void incNumberOfStudyRelatedInstances(int inc) {
-        setNumberOfStudyRelatedInstances(
-            getNumberOfStudyRelatedInstances() + inc);
+        setNumberOfStudyRelatedInstances(getNumberOfStudyRelatedInstances()
+                + inc);
     }
 
     /**
@@ -346,8 +370,8 @@ public abstract class StudyBean implements EntityBean {
             retrieveAETSet = new HashSet();
             String aets = getRetrieveAETs();
             if (aets != null) {
-                retrieveAETSet.addAll(
-                    Arrays.asList(StringUtils.split(aets, '\\')));
+                retrieveAETSet.addAll(Arrays.asList(StringUtils.split(aets,
+                        '\\')));
             }
         }
         return retrieveAETSet;
@@ -374,19 +398,14 @@ public abstract class StudyBean implements EntityBean {
         if (newAETSet == null) {
             newAETSet = new HashSet();
         }
-        if (retrieveAETSet().equals(newAETSet)) {
-            return false;
-        }
+        if (retrieveAETSet().equals(newAETSet)) { return false; }
         retrieveAETSet = newAETSet;
-        String newAETs =
-            StringUtils.toString(
-                    (String[]) retrieveAETSet().toArray(
-                            new String[retrieveAETSet.size()]),
-            '\\');
+        String newAETs = StringUtils.toString((String[]) retrieveAETSet()
+                .toArray(new String[retrieveAETSet.size()]), '\\');
         setRetrieveAETs(newAETs);
         return true;
     }
-    
+
     /**
      * 
      * @ejb.interface-method
@@ -396,7 +415,7 @@ public abstract class StudyBean implements EntityBean {
         int availability = 0;
         for (Iterator it = c.iterator(); it.hasNext();) {
             SeriesLocal series = (SeriesLocal) it.next();
-            availability = Math.max(availability, series.getAvailabilitySafe());            
+            availability = Math.max(availability, series.getAvailabilitySafe());
         }
         if (availability != getAvailabilitySafe()) {
             setAvailability(availability);
@@ -405,6 +424,32 @@ public abstract class StudyBean implements EntityBean {
         return false;
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateModalitiesInStudy() {
+        Collection c = getSeries();
+        HashSet newModalitySet = new HashSet();
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            SeriesLocal series = (SeriesLocal) it.next();
+            if (!series.getHiddenSafe())
+                newModalitySet.add(series.getModality());
+        }
+        if (!newModalitySet.equals(getModalitySet())) {
+            StringBuffer sb = new StringBuffer();
+            Iterator it = newModalitySet.iterator();
+            if (it.hasNext()) {
+                sb.append(it.next());
+                while (it.hasNext())
+                    sb.append('\\').append(it.next());
+            }
+            setModalitiesInStudy(sb.toString());
+            modalitySet = newModalitySet;
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Modalities In Study
      *
@@ -434,9 +479,7 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean addModalityInStudy(String md) {
-        if (getModalitySet().contains(md)) {
-            return false;
-        }
+        if (getModalitySet().contains(md)) { return false; }
         modalitySet.add(md);
         String prev = getModalitiesInStudy();
         if (prev == null || prev.length() == 0) {
@@ -456,12 +499,7 @@ public abstract class StudyBean implements EntityBean {
     }
 
     private String prompt() {
-        return "Study[pk="
-            + getPk()
-            + ", uid="
-            + getStudyIuid()
-            + ", patient->"
-            + getPatient()
-            + "]";
+        return "Study[pk=" + getPk() + ", uid=" + getStudyIuid()
+                + ", patient->" + getPatient() + "]";
     }
 }

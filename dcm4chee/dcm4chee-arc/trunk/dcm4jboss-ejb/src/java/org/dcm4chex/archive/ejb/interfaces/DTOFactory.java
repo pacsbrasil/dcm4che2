@@ -23,10 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
-import org.dcm4cheri.util.StringUtils;
 
 /**
  * 
@@ -51,7 +48,7 @@ public final class DTOFactory {
         pat.setPatientSex(ds.getString(Tags.PatientSex, ""));
         return pat;
     }
-
+/*
     public static StudyDTO newStudyDTO(
         int pk,
         Dataset ds,
@@ -263,6 +260,7 @@ public final class DTOFactory {
         }
         return count;
     }
+    */
 
     private static String format(Date date, String pattern) {
         return date != null ? new SimpleDateFormat(pattern).format(date) : "";

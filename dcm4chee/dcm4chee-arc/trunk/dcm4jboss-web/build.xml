@@ -22,6 +22,10 @@
 	<property name="opt-domify.dist.dir" value="${opt-domify.dir}/dist"/>
 	<property name="opt-domify.lib.dir" value="${opt-domify.dir}/lib"/>
 
+    <!-- Override with your dcm4che dist location -->
+	<property name="dcm4che.home" value="../dcm4che14/build"/>		
+	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
+
 	<!-- Override with your dcm4jboss-ejb working directory -->
 	<property name="dcm4jboss-ejb.dir" value="../dcm4jboss-ejb/target" />
 	<property name="dcm4jboss-ejb-client.jar" value="${dcm4jboss-ejb.dir}/common/lib/dcm4jboss-ejb-client.jar" />
@@ -47,6 +51,7 @@
 		<pathelement location="${log4j.jar}"/>
 		<pathelement location="${maverick.jar}"/>
 		<pathelement location="${commons-beanutils.jar}"/>
+		<pathelement location="${dcm4che.jar}"/>
 		<pathelement location="${dcm4jboss-ejb-client.jar}"/>
 		<pathelement location="${dcm4jboss.jar}"/>
 	<!-- TODO dependence should be eliminated -->

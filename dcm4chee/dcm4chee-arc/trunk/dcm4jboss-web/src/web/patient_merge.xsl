@@ -41,7 +41,7 @@
 	</form>
 </xsl:template>
 
-<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.PatientDTO']">
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.PatientModel']">
 	<xsl:if test="/model/stickyPatients/item = pk">
 		<center>
 			<input type="hidden" name="toBeMerged" value="{pk}"/>

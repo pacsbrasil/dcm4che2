@@ -1,49 +1,36 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
 
-import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
 
 /**
  * @author umberto.cappellini@tiani.com
+ * @author gunter.zeilinger@tiani.com
+ * @version $Revision$ $Date$
  */
 public class PatientEditCtrl extends Dcm4JbossController
 {
 	private int pk;
 	
-	/**
-	 * @param pk The pk to set.
-	 */
 	public final void setPk(int pk)
 	{
 		this.pk = pk;
 	}
 	
-	public PatientDTO getPatient() {
+	public PatientModel getPatient() {
 		return pk == -1 ? newPatient() : FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(pk);
 	}
 
-    private PatientDTO newPatient() {
-        PatientDTO pat = new PatientDTO();
-        pat.setPk(-1);
+    private PatientModel newPatient() {
+        PatientModel pat = new PatientModel();
         pat.setSpecificCharacterSet("ISO_IR 100");
         return pat;
     }

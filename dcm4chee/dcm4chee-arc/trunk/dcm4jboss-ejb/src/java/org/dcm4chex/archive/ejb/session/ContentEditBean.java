@@ -1,28 +1,14 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -35,10 +21,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.interfaces.DTO2Dataset;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -87,24 +72,26 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 public abstract class ContentEditBean implements SessionBean {
 
     private PatientLocalHome patHome;
+
     private StudyLocalHome studyHome;
+
     private SeriesLocalHome seriesHome;
+
     private InstanceLocalHome instHome;
 
-    public void setSessionContext(SessionContext arg0)
-        throws EJBException, RemoteException {
+    public void setSessionContext(SessionContext arg0) throws EJBException,
+            RemoteException {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            patHome =
-                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
-            studyHome =
-                (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
-            seriesHome =
-                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
-            instHome =
-                (InstanceLocalHome) jndiCtx.lookup(
-                    "java:comp/env/ejb/Instance");
+            patHome = (PatientLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Patient");
+            studyHome = (StudyLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Study");
+            seriesHome = (SeriesLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Series");
+            instHome = (InstanceLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Instance");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -128,73 +115,72 @@ public abstract class ContentEditBean implements SessionBean {
      * @throws CreateException
      * @ejb.interface-method
      */
-    public void createPatient(PatientDTO pat) throws CreateException {
-        patHome.create(DTO2Dataset.toDataset(pat));
+    public void createPatient(Dataset ds) throws CreateException {
+        patHome.create(ds);
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public void updatePatient(PatientDTO to_update) {
+    public void updatePatient(Dataset ds) {
 
         try {
-            boolean modified = false;
-            PatientLocal patientLocal =
-                patHome.findByPrimaryKey(new Integer(to_update.getPk()));
-
-            if (!equals(to_update.getPatientName(),
-                patientLocal.getPatientName())) {
-                patientLocal.setPatientName(to_update.getPatientName());
-                modified = true;
-            }
-
-            if (!equals(to_update.getPatientSex(),
-                patientLocal.getPatientSex())) {
-                patientLocal.setPatientSex(to_update.getPatientSex());
-                modified = true;
-            }
-            Date date_to_update = null;
-            if (to_update.getPatientBirthDate() != null) {
-                try {
-                    date_to_update =
-                        new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
-                            to_update.getPatientBirthDate());
-                    if (!equals(date_to_update,
-                        patientLocal.getPatientBirthDate())) {
-                        patientLocal.setPatientBirthDate(date_to_update);
-                        modified = true;
-                    }
-                } catch (ParseException e) {
-                } //do nothing
-            } else if (patientLocal.getPatientBirthDate() != null) {
-                patientLocal.setPatientBirthDate(null);
-                modified = true;
-            }
-
-            if (modified = true) {
-                Dataset oldPat = patientLocal.getAttributes();
-                DTO2Dataset.updateDataset(oldPat, to_update);
-                patientLocal.setAttributes(oldPat);
-            }
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            final int pk = ds.getInt(PrivateTags.PatientPk, -1);
+            PatientLocal patient = patHome
+                    .findByPrimaryKey(new Integer(pk));
+            patient.setAttributes(ds);
         } catch (FinderException e) {
             throw new EJBException(e);
         }
     }
 
-    private boolean equals(Object a, Object b) {
-        return a == null ? b == null : a.equals(b);
-    }
+    /**
+     * @ejb.interface-method
+     */
+    public void updateStudy(Dataset ds) {
 
+        try {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            final int pk = ds.getInt(PrivateTags.StudyPk, -1);
+            StudyLocal study = studyHome
+                    .findByPrimaryKey(new Integer(pk));
+            study.setAttributes(ds);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updateSeries(Dataset ds) {
+
+        try {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            final int pk = ds.getInt(PrivateTags.SeriesPk, -1);
+            SeriesLocal series = seriesHome
+                    .findByPrimaryKey(new Integer(pk));
+            series.setAttributes(ds);
+            StudyLocal study = series.getStudy();
+            study.updateModalitiesInStudy();
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+    
     /**
      * @ejb.interface-method
      */
     public void deleteSeries(int series_pk) throws RemoteException {
         try {
-            SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(series_pk));
+            SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(
+                    series_pk));
             StudyLocal study = series.getStudy();
             series.remove();
             study.updateRetrieveAETs();
             study.updateAvailability();
+            study.updateModalitiesInStudy();
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
@@ -235,7 +221,8 @@ public abstract class ContentEditBean implements SessionBean {
      */
     public void deleteInstance(int instance_pk) throws RemoteException {
         try {
-            InstanceLocal instance = instHome.findByPrimaryKey(new Integer(instance_pk));
+            InstanceLocal instance = instHome.findByPrimaryKey(new Integer(
+                    instance_pk));
             SeriesLocal series = instance.getSeries();
             instance.remove();
             if (series.updateRetrieveAETs()) {

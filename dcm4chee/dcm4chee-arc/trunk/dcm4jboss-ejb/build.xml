@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.9"/>
+	<property name="version" value="0.9.1"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
@@ -371,6 +371,7 @@
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
           	</manifest>	
         	<fileset dir="${target.classes}">
+                <include name="**/common/*"/>
                 <include name="**/util/*"/>
                 <include name="**/interfaces/*"/>
             </fileset>
@@ -401,6 +402,7 @@
 	    	</manifest>
 	        	
         	<fileset dir="${target.classes}">
+                <exclude name="**/common/*"/>
                 <exclude name="**/*Test.class"/>
                 <exclude name="**/jdbc/**"/>
                 <exclude name="**/tools/**"/>

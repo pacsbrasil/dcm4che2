@@ -154,12 +154,11 @@
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<colgroup>
 			<col width="5%"/>
-			<col width="25%"/>
-			<col width="15%"/>
-			<col width="24%"/>
-			<col width="5%"/>
-			<col width="23%"/>
-			<col width="3%"/>
+			<col width="22%"/>
+			<col width="10%"/>
+			<col width="12%"/>
+			<col width="47%"/>
+			<col width="4%"/>
 		</colgroup>
 		<tr bgcolor="eeeeee">
 			<td bgcolor="cccccc">
@@ -172,7 +171,7 @@
 			</td>
     	<td>
 				<font size="1" color="ff0000">
-					ID:</font>
+					Patient ID:</font>
     	</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -182,8 +181,6 @@
 				<font size="1" color="ff0000">
 					Sex:</font>
     	</td>
-			<td>
-			</td>
 			<td bgcolor="cccccc">
 			</td>
 			</tr>
@@ -192,17 +189,16 @@
 	<table border="0" cellspacing="0" cellpadding="0" width="100%">
 		<colgroup>
 			<col width="5%"/>
+			<col width="11%"/>
 			<col width="12%"/>
-			<col width="15%"/>
-			<col width="8%"/>
-			<col width="25%"/>
-			<col width="14%"/>
 			<col width="10%"/>
-			<col width="4%"/>
-			<col width="4%"/>
+			<col width="26%"/>
+			<col width="9%"/>
+			<col width="16%"/>
 			<col width="3%"/>
-
-</colgroup>
+			<col width="4%"/>
+			<col width="4%"/>
+		</colgroup>
 		<tr bgcolor="eeeeee">
 			<td bgcolor="ccccff">
 				<font size="1">
@@ -214,7 +210,7 @@
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					ID:</font>
+					Study ID:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -222,15 +218,15 @@
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					Description:</font>
-			</td>
-			<td>
-				<font size="1" color="ff0000">
-					Ref. Physican:</font>
+					Study Description:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
 					Acc.Nr.:</font>
+			</td>
+			<td>
+				<font size="1" color="ff0000">
+					Ref. Physican:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -248,13 +244,14 @@
 	<table border="0" cellspacing="0" cellpadding="0" width="100%">
 		<colgroup>
 			<col width="5%"/>
-			<col width="15%"/>
 			<col width="12%"/>
-			<col width="8%"/>
-			<col width="34%"/>
-			<col width="19%"/>
+			<col width="12%"/>
+			<col width="10%"/>
+			<col width="35%"/>
+			<col width="18%"/>
 			<col width="4%"/>
-			<col width="3%"/>
+			<col width="4%"/>
+			<col width="4%"/>
 		</colgroup>
 		<tr bgcolor="eeeeee">
 			<td bgcolor="ccffcc">
@@ -267,7 +264,7 @@
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					No:</font>
+					Series No:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -275,7 +272,7 @@
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					Description/Body Part:</font>
+					Series Description/Body Part:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -285,7 +282,7 @@
 				<font size="1" color="ff0000">
 					NoI:</font>
 			</td>
-			<td bgcolor="ccffcc"> 
+			<td bgcolor="ccffcc">
 			</td>
 		</tr>
 	</table>
@@ -293,17 +290,16 @@
 </xsl:template>
 
 
-<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.PatientDTO']">
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.PatientModel']">
 	<tr>
       <table width="100%" callpadding="1" callspacing="1" border="0">
 		<colgroup>
 			<col width="1%"/>
-			<col width="29%"/>
-			<col width="15%"/>
-			<col width="25%"/>
-			<col width="5%"/>
-			<col width="20%"/>
-			<col width="3%"/>
+			<col width="26%"/>
+			<col width="10%"/>
+			<col width="12%"/>
+			<col width="47%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
@@ -341,9 +337,7 @@
             <xsl:value-of select="patientSex"/>
 				</strong>
       </td>
-      <td>
-      </td>
-			<td align="right">
+			<td align="right" bgcolor="cccccc">
 				<a href="patientEdit.m?pk={pk}">
 					<img src="images/edit.gif" alt="Edit Patient" border="0" title="Edit Patient Attributes"/>		
 				</a>
@@ -362,21 +356,21 @@
 			</xsl:apply-templates>
 </xsl:template>
 
-<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.StudyDTO']">
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.StudyModel']">
 <tr>
 	<table width="100%" callpadding="0" callspacing="0" border="0">
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		<colgroup>
 			<col width="2%"/>
 			<col width="14%"/>
-			<col width="14%"/>
-			<col width="8%"/>
-			<col width="24%"/>
-			<col width="15%"/>
+			<col width="12%"/>
 			<col width="10%"/>
+			<col width="26%"/>
+			<col width="9%"/>
+			<col width="17%"/>
+			<col width="2%"/>
 			<col width="4%"/>
-			<col width="4%"/>
-			<col width="3%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 			<td align="right" bgcolor="ccccff" rowspan="{$rowspan}">
@@ -405,11 +399,11 @@
       <td title="Study Description">
 				<xsl:value-of select="studyDescription"/>
 			</td>
-      <td title="Referring Physican">
-				<xsl:value-of select="referringPhysician"/>
-			</td>
 			<td title="Accession Number">
 				<xsl:value-of select="accessionNumber"/>
+			</td>
+      <td title="Referring Physican">
+				<xsl:value-of select="referringPhysician"/>
 			</td>
       <td title="Number of Series">
 				<xsl:value-of select="numberOfSeries"/>
@@ -417,7 +411,7 @@
       <td title="Number of Instances">
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
-			<td align="right">
+			<td align="right" bgcolor="ccccff">
 				<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
 					<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
 				</a>
@@ -436,17 +430,18 @@
 	</xsl:apply-templates>
 </xsl:template>
 
-<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.SeriesDTO']">
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.SeriesModel']">
 	<tr>
 <table width="100%" callpadding="0" callspacing="0" border="0">	  
 		<colgroup>
 			<col width="3%"/>
-			<col width="17%"/>
+			<col width="14%"/>
 			<col width="12%"/>
-			<col width="8%"/>
-			<col width="34%"/>
-			<col width="20%"/>
+			<col width="10%"/>
+			<col width="35%"/>
+			<col width="18%"/>
 			<col width="4%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
@@ -485,6 +480,11 @@
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
 			<td align="right" bgcolor="ccffcc">
+				<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
+					<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Series Attributes"/>		
+				</a>
+			</td>
+			<td align="right" bgcolor="ccffcc">
 				<input type="checkbox" name="stickySeries" value="{pk}">
 					<xsl:if test="/model/stickySeries/item = pk">
 						<xsl:attribute name="checked"/>
@@ -498,7 +498,7 @@
 		</xsl:apply-templates>
 </xsl:template>
 
-<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.ImageDTO']">
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.ImageModel']">
 	<tr>
 <table width="100%" callpadding="0" callspacing="0" border="0">
 		<colgroup>
@@ -546,7 +546,7 @@
 	</tr>
 </xsl:template>
 
-<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.PresentationStateDTO']">
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.PresentationStateModel']">
 	<tr>
 <table width="100%" callpadding="0" callspacing="0" border="0">	
 		<colgroup>
@@ -594,7 +594,7 @@
 	</tr>
 </xsl:template>
 
-<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.StructuredReportDTO']">
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.StructuredReportModel']">
 	<tr>
 <table width="100%" callpadding="1" callspacing="0" border="0">		 
 		<colgroup>

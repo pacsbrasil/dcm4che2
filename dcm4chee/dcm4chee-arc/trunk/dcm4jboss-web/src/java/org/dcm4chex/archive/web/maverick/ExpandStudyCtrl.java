@@ -1,27 +1,20 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.List;
+
+import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 
 /**
  * 
@@ -52,8 +45,10 @@ public class ExpandStudyCtrl extends Dcm4JbossController {
         ContentManager cm = home.create();
         try {
             FolderForm folderForm = FolderForm.getFolderForm(getCtx().getRequest());
-            folderForm.getStudyByPk(patPk, studyPk).setSeries(
-                cm.listSeriesOfStudy(studyPk));
+            List series = cm.listSeriesOfStudy(studyPk);
+            for (int i = 0, n = series.size(); i < n; i++)
+                series.set(i, new SeriesModel((Dataset) series.get(i)));
+            folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
         } finally {
             try {
                 cm.remove();

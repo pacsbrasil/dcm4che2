@@ -10,11 +10,7 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.StringTokenizer;
-
-import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -319,87 +315,5 @@ class SqlBuilder {
             whereOrAnd = AND;
             ((Match) matches.get(i)).appendTo(sb);
         }
-    }
-
-    public void setStudyFilterMatch(StudyFilterDTO filter) {
-        addWildCardMatch(
-            "Patient.patientId",
-            SqlBuilder.TYPE2,
-            filter.getPatientID(),
-            false);
-        addWildCardMatch(
-            "Patient.patientName",
-            SqlBuilder.TYPE2,
-            filter.getPatientName(),
-            true);
-        addWildCardMatch(
-            "Study.studyId",
-            SqlBuilder.TYPE2,
-            filter.getStudyID(),
-            false);
-        addRangeMatch(
-            "Study.studyDateTime",
-            SqlBuilder.TYPE2,
-            toDateTimeRange(filter.getStudyDateRange()));
-        addWildCardMatch(
-            "Study.accessionNumber",
-            SqlBuilder.TYPE2,
-            filter.getAccessionNumber(),
-            false);
-        addModalitiesInStudyMatch(filter.getModality());
-    }
-
-    private static final long MS_PER_DAY = 24 * 3600000L;
-
-    private static Date[] toDateTimeRange(String s) {
-        if (s == null || s.length() == 0) {
-            return null;
-        }
-        try {
-            Date[] retval = new Date[2];
-            if (s.length() < 4) {
-                retval[0] =
-                    new Date(
-                        (System.currentTimeMillis() / MS_PER_DAY
-                            - Integer.parseInt(s))
-                            * MS_PER_DAY);
-            } else {
-                Calendar cal = Calendar.getInstance();
-                final int hypen = s.indexOf('-');
-                int field = 0;
-                if (hypen != 0) {
-                    field =
-                        setCalendar(
-                            cal,
-                            hypen != -1 ? s.substring(0, hypen) : s);
-                    retval[0] = cal.getTime();
-                }
-                if (hypen != s.length() - 1) {
-                    if (hypen != -1) {
-                        field = setCalendar(cal, s.substring(hypen + 1));
-                    }
-                    cal.add(field, 1);
-                    retval[1] = cal.getTime();
-                }
-            }
-            return retval;
-        } catch (Exception e) {
-            throw new IllegalArgumentException(s);
-        }
-    }
-
-    private static int setCalendar(Calendar cal, String s) {
-        StringTokenizer stk = new StringTokenizer(s, "/");
-        cal.clear();
-        cal.set(Calendar.YEAR, Integer.parseInt(stk.nextToken()));
-        if (!stk.hasMoreElements()) {
-            return Calendar.YEAR;
-        }
-        cal.set(Calendar.MONTH, Integer.parseInt(stk.nextToken()) - 1);
-        if (!stk.hasMoreElements()) {
-            return Calendar.MONTH;
-        }
-        cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(stk.nextToken()));
-        return Calendar.DAY_OF_MONTH;
     }
 }

@@ -193,6 +193,16 @@
       <priority value="INFO"/>
    </category>
 
+   <!-- Limit the org.apache.catalina category to INFO -->
+   <category name="org.apache.catalina">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.apache.coyote category to INFO -->
+   <category name="org.apache.coyote">
+      <priority value="INFO"/>
+   </category>
+   
    <!-- Limit JBoss categories to INFO
         Modify INFO to FATAL to hide error messages from jboss components --> 
    <category name="org.jboss">

@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Arrays;
@@ -40,6 +29,8 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -83,6 +74,8 @@ public abstract class InstanceBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(InstanceBean.class);
 
+    private static final int[] SUPPL_TAGS = { Tags.RetrieveAET, Tags.InstanceAvailability };
+        
     private CodeLocalHome codeHome;
 
     private Set retrieveAETSet;
@@ -365,9 +358,18 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset getAttributes() {
-        return DatasetUtils.fromByteArray(getEncodedAttributes(),
-                DcmDecodeParam.EVR_LE);
+    public Dataset getAttributes(boolean supplement) {
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
+                DcmDecodeParam.EVR_LE,
+                null);
+        if (supplement) {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putUL(PrivateTags.InstancePk, getPk().intValue());
+            ds.putAE(Tags.RetrieveAET, StringUtils.split(getRetrieveAETs(),'\\'));
+            ds.putCS(Tags.InstanceAvailability, Availability
+                    .toString(getAvailabilitySafe()));
+        }
+        return ds;
     }
 
     /**
@@ -380,8 +382,9 @@ public abstract class InstanceBean implements EntityBean {
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
+        Dataset tmp = ds.exclude(SUPPL_TAGS).excludePrivate();
         setEncodedAttributes(DatasetUtils
-                .toByteArray(ds, DcmDecodeParam.EVR_LE));
+                .toByteArray(tmp, DcmDecodeParam.EVR_LE));
     }
 
     /**

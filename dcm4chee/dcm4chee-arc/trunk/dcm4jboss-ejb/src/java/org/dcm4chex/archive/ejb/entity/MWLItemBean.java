@@ -241,7 +241,7 @@ public abstract class MWLItemBean implements EntityBean {
     public Dataset getAttributes() {
         return DatasetUtils.fromByteArray(
             getEncodedAttributes(),
-            DcmDecodeParam.EVR_LE);
+            DcmDecodeParam.EVR_LE, null);
     }
 
     /**

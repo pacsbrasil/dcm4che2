@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
 import java.util.ArrayList;
@@ -27,6 +16,7 @@ import java.util.Set;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.dcm.movescu.MoveOrder;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
@@ -34,13 +24,13 @@ import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.InstanceDTO;
-import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
-import org.dcm4chex.archive.ejb.interfaces.SeriesDTO;
-import org.dcm4chex.archive.ejb.interfaces.StudyDTO;
-import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.JMSDelegate;
+import org.dcm4chex.archive.web.maverick.model.InstanceModel;
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
+import org.dcm4chex.archive.web.maverick.model.SeriesModel;
+import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
+import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
  * 
@@ -87,13 +77,28 @@ public class FolderSubmitCtrl extends FolderCtrl {
 
         try {
             FolderForm folderForm = (FolderForm) getForm();
-            StudyFilterDTO filter = folderForm.getStudyFilter();
+            StudyFilterModel filter = folderForm.getStudyFilter();
             if (newQuery) {
-                folderForm.setTotal(cm.countStudies(filter));
+                folderForm.setTotal(cm.countStudies(filter.toDataset()));
                 folderForm.setAets(lookupAEManager().getAes());
             }
-            folderForm.updatePatients(cm.listPatients(filter, folderForm
-                    .getOffset(), folderForm.getLimit()));
+            List studyList = cm.listStudies(filter.toDataset(), folderForm
+                    .getOffset(), folderForm.getLimit());
+            List patList = new ArrayList();
+            PatientModel curPat = null;
+            for (int i = 0, n = studyList.size(); i < n; i++) {
+                Dataset ds = (Dataset) studyList.get(i);
+                PatientModel pat = new PatientModel(ds);
+                if (!pat.equals(curPat)) {
+                    patList.add(curPat = pat);
+                }
+                StudyModel study = new StudyModel(ds);
+                if (study.getPk() != -1) {
+                    curPat.getStudies().add(study);
+                }
+            }
+
+            folderForm.updatePatients(patList);
         } finally {
             try {
                 cm.remove();
@@ -107,7 +112,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         FolderForm folderForm = (FolderForm) getForm();
         List patients = folderForm.getPatients();
         for (int i = 0, n = patients.size(); i < n; i++) {
-            PatientDTO pat = (PatientDTO) patients.get(i);
+            PatientModel pat = (PatientModel) patients.get(i);
             scheduleMoveStudies(pat.getStudies(), folderForm.isSticky(pat));
         }
         return FOLDER;
@@ -117,7 +122,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         FolderForm folderForm = (FolderForm) getForm();
         ArrayList uids = new ArrayList();
         for (int i = 0, n = studies.size(); i < n; i++) {
-            final StudyDTO study = (StudyDTO) studies.get(i);
+            final StudyModel study = (StudyModel) studies.get(i);
             final String studyIUID = study.getStudyIUID();
             if (stickyPat || folderForm.isSticky(study))
                 uids.add(studyIUID);
@@ -135,7 +140,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         FolderForm folderForm = (FolderForm) getForm();
         ArrayList uids = new ArrayList();
         for (int i = 0, n = series.size(); i < n; i++) {
-            final SeriesDTO serie = (SeriesDTO) series.get(i);
+            final SeriesModel serie = (SeriesModel) series.get(i);
             final String seriesIUID = serie.getSeriesIUID();
             if (folderForm.isSticky(serie))
                 uids.add(seriesIUID);
@@ -154,7 +159,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         FolderForm folderForm = (FolderForm) getForm();
         ArrayList uids = new ArrayList();
         for (int i = 0, n = instances.size(); i < n; i++) {
-            final InstanceDTO inst = (InstanceDTO) instances.get(i);
+            final InstanceModel inst = (InstanceModel) instances.get(i);
             if (folderForm.isSticky(inst)) uids.add(inst.getSopIUID());
         }
         if (!uids.isEmpty()) {
@@ -191,7 +196,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = patients.size(); i < n; i++) {
-            PatientDTO pat = (PatientDTO) patients.get(i);
+            PatientModel pat = (PatientModel) patients.get(i);
             if (folderForm.isSticky(pat))
                 edit.deletePatient(pat.getPk());
             else
@@ -202,7 +207,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private void deleteStudies(ContentEdit edit, List studies) throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = studies.size(); i < n; i++) {
-            StudyDTO study = (StudyDTO) studies.get(i);
+            StudyModel study = (StudyModel) studies.get(i);
             if (folderForm.isSticky(study))
                 edit.deleteStudy(study.getPk());
             else
@@ -213,7 +218,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private void deleteSeries(ContentEdit edit, List series) throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
-            SeriesDTO serie = (SeriesDTO) series.get(i);
+            SeriesModel serie = (SeriesModel) series.get(i);
             if (folderForm.isSticky(serie))
                 edit.deleteSeries(serie.getPk());
             else
@@ -225,7 +230,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = instances.size(); i < n; i++) {
-            InstanceDTO instance = (InstanceDTO) instances.get(i);
+            InstanceModel instance = (InstanceModel) instances.get(i);
             if (folderForm.isSticky(instance))
                     edit.deleteInstance(instance.getPk());
         }

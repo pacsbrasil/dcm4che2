@@ -8,18 +8,21 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
-import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
- * @since 5.10.2004
+ * @since 7.10.2004
  *
  */
-public class StudyEditCtrl extends Dcm4JbossController {
+public class SeriesEditCtrl extends Dcm4JbossController {
+
     private int patPk;
 
     private int studyPk;
+
+    private int seriesPk;
 
     public final int getPatPk() {
         return patPk;
@@ -37,9 +40,17 @@ public class StudyEditCtrl extends Dcm4JbossController {
         this.studyPk = pk;
     }
 
-    public StudyModel getStudy() {
-        return FolderForm.getFolderForm(getCtx().getRequest()).getStudyByPk(
-                patPk, studyPk);
+    public final int getSeriesPk() {
+        return seriesPk;
+    }
+
+    public final void setSeriesPk(int seriesPk) {
+        this.seriesPk = seriesPk;
+    }
+
+    public SeriesModel getSeries() {
+        return FolderForm.getFolderForm(getCtx().getRequest())
+                .getSeriesByPk(patPk, studyPk, seriesPk);
     }
 
 }

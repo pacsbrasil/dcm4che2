@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  *
  */
 public abstract class BaseCmd {
-    private static final Logger log = Logger.getLogger(BaseCmd.class);
+    protected static final Logger log = Logger.getLogger(BaseCmd.class);
 
     protected Connection con;
     protected Statement stmt;

@@ -103,6 +103,18 @@ default-transform-type="xslt">
 	    <view type="redirect" path="folder.m" name="success"/>
      </command>
 
+    <command name="seriesEdit">
+        <controller class="org.dcm4chex.archive.web.maverick.SeriesEditCtrl" />    
+	    <view name="success">
+    	  <transform path="series_edit.xsl" />
+	    </view>
+     </command>
+
+    <command name="seriesUpdate">
+        <controller class="org.dcm4chex.archive.web.maverick.SeriesUpdateCtrl" />    
+	    <view type="redirect" path="folder.m" name="success"/>
+     </command>
+
 	<!-- ****** AE related commands ******-->
 
     <command name="ae">

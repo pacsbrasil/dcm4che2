@@ -10,8 +10,8 @@ package org.dcm4chex.archive.web.maverick;
 
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
-import org.dcm4chex.archive.ejb.interfaces.StudyDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -81,7 +81,7 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
 
     private void executeUpdate() {
         try {
-            StudyDTO study = FolderForm.getFolderForm(getCtx().getRequest())
+            StudyModel study = FolderForm.getFolderForm(getCtx().getRequest())
                     .getStudyByPk(patPk, studyPk);
             //updating data model
             study.setAccessionNumber(accessionNumber);
@@ -90,7 +90,7 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
             study.setStudyDescription(studyDescription);
             study.setStudyID(studyID);
             ContentEdit ce = lookupContentEdit();
-            //            ce.updateStudy(study);
+            ce.updateStudy(study.toDataset());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

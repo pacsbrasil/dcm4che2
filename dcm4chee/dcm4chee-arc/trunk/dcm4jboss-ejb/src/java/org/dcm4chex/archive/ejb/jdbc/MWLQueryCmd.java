@@ -105,11 +105,11 @@ public class MWLQueryCmd extends BaseCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = dof.newDataset();
-        ds.putAll(DatasetUtils.fromByteArray(rs.getBytes(1),
-                DcmDecodeParam.EVR_LE).subSet(keys));
-        ds.putAll(DatasetUtils.fromByteArray(rs.getBytes(2),
-                DcmDecodeParam.EVR_LE).subSet(keys));
+        DatasetUtils.fromByteArray(rs.getBytes(1),
+                DcmDecodeParam.EVR_LE, ds);
+        DatasetUtils.fromByteArray(rs.getBytes(2),
+                DcmDecodeParam.EVR_LE, ds);
         QueryCmd.adjustDataset(ds, keys);
-        return ds;
+        return ds.subSet(keys);
     }
 }

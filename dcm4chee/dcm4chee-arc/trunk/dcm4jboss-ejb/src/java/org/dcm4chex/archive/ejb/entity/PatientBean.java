@@ -17,6 +17,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
@@ -126,7 +127,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setPatientBirthDate(java.sql.Timestamp date);
-    
+
     /**
      * Patient Sex
      *
@@ -176,7 +177,7 @@ public abstract class PatientBean implements EntityBean {
      *
      * @ejb:interface-method
      */
-    public abstract void setMergedWith( PatientLocal mergedWith );
+    public abstract void setMergedWith(PatientLocal mergedWith);
 
     /**
      * @ejb.interface-method view-type="local"
@@ -220,12 +221,12 @@ public abstract class PatientBean implements EntityBean {
      *  role-name="patient-has-mpps"
      */
     public abstract java.util.Collection getMpps();
-    
+
     /**
-      * Create patient.
-      *
-      * @ejb.create-method
-      */
+     * Create patient.
+     *
+     * @ejb.create-method
+     */
     public Integer ejbCreate(Dataset ds) throws CreateException {
         setAttributes(ds);
         return null;
@@ -242,10 +243,15 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset getAttributes() {
-        return DatasetUtils.fromByteArray(
-            getEncodedAttributes(),
-            DcmDecodeParam.EVR_LE);
+    public Dataset getAttributes(boolean supplement) {
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
+                DcmDecodeParam.EVR_LE,
+                null);
+        if (supplement) {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putUL(PrivateTags.PatientPk, getPk().intValue());
+        }
+        return ds;
     }
 
     /**
@@ -257,15 +263,17 @@ public abstract class PatientBean implements EntityBean {
         setPatientName(ds.getString(Tags.PatientName));
         setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
         setPatientSex(ds.getString(Tags.PatientSex));
-        setEncodedAttributes(
-            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+        Dataset tmp = ds.excludePrivate();
+        setEncodedAttributes(DatasetUtils.toByteArray(tmp,
+                DcmDecodeParam.EVR_LE));
     }
 
     /**
      * @ejb.interface-method
      */
     public void setPatientBirthDate(java.util.Date date) {
-        setPatientBirthDate(date != null ? new java.sql.Timestamp(date.getTime()) : null);
+        setPatientBirthDate(date != null ? new java.sql.Timestamp(date
+                .getTime()) : null);
     }
 
     /**
@@ -277,12 +285,7 @@ public abstract class PatientBean implements EntityBean {
     }
 
     private String prompt() {
-        return "Patient[pk="
-            + getPk()
-            + ", pid="
-            + getPatientId()
-            + ", name="
-            + getPatientName()
-            + "]";
+        return "Patient[pk=" + getPk() + ", pid=" + getPatientId() + ", name="
+                + getPatientName() + "]";
     }
 }

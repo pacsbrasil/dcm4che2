@@ -162,7 +162,8 @@
    <attribute access="read-write"
       getMethod="isAcceptJPEGLossless"
       setMethod="setAcceptJPEGLossless">
-      <description>Accept DICOM images encoded in JPEG Lossless Transfer Syntax.
+      <description>Accept DICOM images encoded in JPEG Lossless (Process 14) 
+      First-Order Prediction Transfer Syntax. (DICOM JPEG Lossless default TS)
       </description>
       <name>AcceptJPEGLossless</name>
       <type>boolean</type>
@@ -171,11 +172,11 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEGLosslessFOP"
-      setMethod="setAcceptJPEGLosslessFOP">
-      <description>Accept DICOM images encoded in JPEG Lossless First-Order Prediction Transfer Syntax.
+      getMethod="isAcceptJPEGLossless14"
+      setMethod="setAcceptJPEGLossless14">
+      <description>Accept DICOM images encoded in JPEG Lossless (Process 14) Transfer Syntax.
       </description>
-      <name>AcceptJPEGLosslessFOP</name>
+      <name>AcceptJPEGLossless14</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />

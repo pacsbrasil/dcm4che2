@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
@@ -25,12 +14,14 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
-import org.dcm4chex.archive.ejb.interfaces.DTOFactory;
-import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
-import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
+import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.PrivateTags;
 
 /**
  * 
@@ -46,53 +37,85 @@ public class QueryStudiesCmd extends BaseCmd {
             "Patient.encodedAttributes", "Study.pk", "Study.encodedAttributes",
             "Study.modalitiesInStudy", "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
-            "Study.availability" };
+            "Study.availability"};
 
-    private static final String[] ENTITY = { "Patient" };
+    private static final String[] ENTITY = { "Patient"};
 
     private static final String[] LEFT_JOIN = { "Study", "Patient.pk",
-            "Study.patient_fk", };
+            "Study.patient_fk",};
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
-
-    public QueryStudiesCmd(DataSource ds, StudyFilterDTO filter, int offset,
-            int limit) throws SQLException {
+    
+    public QueryStudiesCmd(DataSource ds, Dataset filter)
+            throws SQLException {
         super(ds);
-        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
         sqlBuilder.addLiteralMatch("Patient.merge_fk", false, "IS NULL");
-        sqlBuilder.setStudyFilterMatch(filter);
+        sqlBuilder.addWildCardMatch("Patient.patientId",
+                SqlBuilder.TYPE2,
+                filter.getString(Tags.PatientID),
+                false);
+        sqlBuilder.addWildCardMatch("Patient.patientName",
+                SqlBuilder.TYPE2,
+                filter.getString(Tags.PatientName),
+                true);
+        sqlBuilder.addWildCardMatch("Study.studyId", SqlBuilder.TYPE2, filter
+                .getString(Tags.StudyID), false);
+        sqlBuilder.addRangeMatch("Study.studyDateTime",
+                SqlBuilder.TYPE2,
+                filter.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
+        sqlBuilder.addWildCardMatch("Study.accessionNumber",
+                SqlBuilder.TYPE2,
+                filter.getString(Tags.AccessionNumber),
+                false);
+        sqlBuilder.addModalitiesInStudyMatch(filter
+                .getString(Tags.ModalitiesInStudy));
+    }
+
+    public int count() throws SQLException {
+        try {
+            sqlBuilder.setSelectCount();
+            execute(sqlBuilder.getSql());
+            next();
+            return rs.getInt(1);
+        } finally {
+            close();
+        }
+    }
+
+    public List list(int offset, int limit) throws SQLException {
+        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Patient.pk", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Study.studyDateTime", SqlBuilder.ASC);
         sqlBuilder.setOffset(offset);
         sqlBuilder.setLimit(limit);
-    }
-
-    public List execute() throws SQLException {
         try {
             execute(sqlBuilder.getSql());
             ArrayList result = new ArrayList();
-            PatientDTO pat = null;
             while (next()) {
-                int patPk = rs.getInt(1);
-                if (pat == null || pat.getPk() != patPk) {
-                    byte[] patAttrs = rs.getBytes(2);
-
-                    result.add(pat = DTOFactory.newPatientDTO(patPk,
-                            DatasetUtils.fromByteArray(patAttrs,
-                                    DcmDecodeParam.EVR_LE)));
-                }
-                byte[] styAttrs = rs.getBytes(4);
+                final byte[] patAttrs = rs.getBytes(2);
+                final byte[] styAttrs = rs.getBytes(4);
+                Dataset ds = dof.newDataset();
+                ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                ds.putUL(PrivateTags.PatientPk, rs.getInt(1));
+                DatasetUtils.fromByteArray(patAttrs, DcmDecodeParam.EVR_LE, ds);
                 if (styAttrs != null) {
-                    pat.getStudies().add(
-                            DTOFactory.newStudyDTO(rs.getInt(3), DatasetUtils
-                                    .fromByteArray(styAttrs,
-                                            DcmDecodeParam.EVR_LE), rs
-                                    .getString(5), rs.getInt(6), rs.getInt(7),
-                                    rs.getString(8), rs.getInt(9)));
+                    ds.putUL(PrivateTags.StudyPk, rs.getInt(3));
+                    DatasetUtils.fromByteArray(styAttrs,
+                            DcmDecodeParam.EVR_LE,
+                            ds);
+                    ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs
+                            .getString(5), '\\'));
+                    ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(6));
+                    ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(7));
+                    ds.putAE(Tags.RetrieveAET, StringUtils.split(rs
+                            .getString(8), '\\'));
+                    ds.putCS(Tags.InstanceAvailability, Availability
+                            .toString(rs.getInt(9)));
                 }
+                result.add(ds);
             }
             return result;
         } finally {

@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
@@ -35,15 +24,14 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.dcm4chex.archive.ejb.interfaces.DTOFactory;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.jdbc.CountStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 
 /**
@@ -95,6 +83,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  */
 public abstract class ContentManagerBean implements SessionBean {
 
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     private DataSource ds;
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
@@ -133,9 +122,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int countStudies(StudyFilterDTO filter) {
+    public int countStudies(Dataset filter) {
         try {
-            return new CountStudiesCmd(ds, filter).execute();
+            return new QueryStudiesCmd(ds, filter).count();
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -144,9 +133,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List listPatients(StudyFilterDTO filter, int offset, int limit) {
+    public List listStudies(Dataset filter, int offset, int limit) {
         try {
-            return new QueryStudiesCmd(ds, filter, offset, limit).execute();
+            return new QueryStudiesCmd(ds, filter).list(offset, limit);
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -162,15 +151,7 @@ public abstract class ContentManagerBean implements SessionBean {
         List result = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
             StudyLocal study = (StudyLocal) it.next();
-            result.add(
-                DTOFactory.newStudyDTO(
-                    study.getPk().intValue(),
-                    study.getAttributes(),
-                    study.getModalitiesInStudy(),
-                    study.getNumberOfStudyRelatedSeries(),
-                    study.getNumberOfStudyRelatedInstances(),
-                    study.getRetrieveAETs(),
-                    study.getAvailabilitySafe()));
+            result.add(study.getAttributes(true));
         }
         return result;
     }
@@ -185,13 +166,7 @@ public abstract class ContentManagerBean implements SessionBean {
         List result = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
             SeriesLocal series = (SeriesLocal) it.next();
-            result.add(
-                DTOFactory.newSeriesDTO(
-                    series.getPk().intValue(),
-                    series.getAttributes(),
-                    series.getNumberOfSeriesRelatedInstances(),
-                    series.getRetrieveAETs(),
-                    series.getAvailabilitySafe()));
+            result.add(series.getAttributes(true));
         }
         return result;
     }
@@ -206,14 +181,7 @@ public abstract class ContentManagerBean implements SessionBean {
         List result = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
             InstanceLocal inst = (InstanceLocal) it.next();
-            result.add(
-                DTOFactory.newInstanceDTO(
-                    inst.getPk().intValue(),
-                    inst.getAttributes(),
-                    inst.getRetrieveAETs(),
-                    inst.getFiles().size(),
-                    inst.getAvailabilitySafe(),
-                    inst.getCommitmentSafe()));
+            result.add(inst.getAttributes(true));
         }
         return result;
     }

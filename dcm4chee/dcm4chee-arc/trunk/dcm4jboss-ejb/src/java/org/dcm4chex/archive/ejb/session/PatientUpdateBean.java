@@ -24,6 +24,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.DTO2Dataset;
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -56,20 +57,21 @@ public abstract class PatientUpdateBean implements SessionBean {
 
     private PatientLocalHome patHome;
 
-    public void setSessionContext(SessionContext arg0)
-        throws EJBException, RemoteException {
+    public void setSessionContext(SessionContext arg0) throws EJBException,
+            RemoteException {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            patHome =
-                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+            patHome = (PatientLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Patient");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();
-                } catch (NamingException ignore) {}
+                } catch (NamingException ignore) {
+                }
             }
         }
     }
@@ -85,13 +87,28 @@ public abstract class PatientUpdateBean implements SessionBean {
 
         PatientLocal dominantPat = updateOrCreate(dominantDTO);
         PatientLocal priorPat;
-        for (int i=0; i<priorDTOs.length;i++)
-        {
-        	priorPat= updateOrCreate(priorDTOs[i]);
-        	dominantPat.getStudies().addAll(priorPat.getStudies());
-        	dominantPat.getMpps().addAll(priorPat.getMpps());
-        	dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
-        	priorPat.setMergedWith(dominantPat);
+        for (int i = 0; i < priorDTOs.length; i++) {
+            priorPat = updateOrCreate(priorDTOs[i]);
+            dominantPat.getStudies().addAll(priorPat.getStudies());
+            dominantPat.getMpps().addAll(priorPat.getMpps());
+            dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
+            priorPat.setMergedWith(dominantPat);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void mergePatient(Dataset dominant, Dataset[] priors) {
+
+        PatientLocal dominantPat = updateOrCreate(dominant);
+        PatientLocal priorPat;
+        for (int i = 0; i < priors.length; i++) {
+            priorPat = updateOrCreate(priors[i]);
+            dominantPat.getStudies().addAll(priorPat.getStudies());
+            dominantPat.getMpps().addAll(priorPat.getMpps());
+            dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
+            priorPat.setMergedWith(dominantPat);
         }
     }
 
@@ -99,28 +116,27 @@ public abstract class PatientUpdateBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updatePatient(PatientDTO dto) {
-    	updateOrCreate(dto);
+        updateOrCreate(dto);
     }
-    
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updatePatient(Dataset attrs) {
+        updateOrCreate(attrs);
+    }
+
     private PatientLocal updateOrCreate(PatientDTO dto) {
         try {
-            Collection c =
-                isNullOrEmpty(dto.getIssuerOfPatientID())
-                    ? patHome.findByPatientId(dto.getPatientID())
-                    : patHome.findByPatientIdWithIssuer(
-                        dto.getPatientID(),
-                        dto.getIssuerOfPatientID());
-            if (c.isEmpty()) {
-                return patHome.create(DTO2Dataset.toDataset(dto));
-            }
-            if (c.size() > 1) {
-                throw new FinderException(
-                    "Patient ID[id="
-                        + dto.getPatientID()
-                        + ",issuer="
-                        + dto.getIssuerOfPatientID()
-                        + " ambiguous");
-            }
+            Collection c = isNullOrEmpty(dto.getIssuerOfPatientID()) ? patHome
+                    .findByPatientId(dto.getPatientID()) : patHome
+                    .findByPatientIdWithIssuer(dto.getPatientID(), dto
+                            .getIssuerOfPatientID());
+            if (c.isEmpty()) { return patHome
+                    .create(DTO2Dataset.toDataset(dto)); }
+            if (c.size() > 1) { throw new FinderException("Patient ID[id="
+                    + dto.getPatientID() + ",issuer="
+                    + dto.getIssuerOfPatientID() + " ambiguous"); }
             PatientLocal pat = (PatientLocal) c.iterator().next();
             update(pat, dto);
             return pat;
@@ -129,6 +145,31 @@ public abstract class PatientUpdateBean implements SessionBean {
         } catch (CreateException e) {
             throw new EJBException(e);
         }
+    }
+
+    private PatientLocal updateOrCreate(Dataset ds) {
+        try {
+            String pid = ds.getString(Tags.PatientID);
+            String issuer = ds.getString(Tags.IssuerOfPatientID);
+            Collection c = issuer == null ? patHome.findByPatientId(pid)
+                    : patHome.findByPatientIdWithIssuer(pid, issuer);
+            if (c.isEmpty()) { return patHome.create(ds); }
+            if (c.size() > 1) { throw new FinderException("Patient ID[id="
+                    + pid + ",issuer=" + issuer + " ambiguous"); }
+            PatientLocal pat = (PatientLocal) c.iterator().next();
+            update(pat, ds);
+            return pat;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    private void update(PatientLocal pat, Dataset attrs) {
+        Dataset ds = pat.getAttributes(false);
+        ds.putAll(attrs);
+        pat.setAttributes(ds);
     }
 
     private void update(PatientLocal pat, PatientDTO dto) {
@@ -152,37 +193,36 @@ public abstract class PatientUpdateBean implements SessionBean {
             Date oldDate = pat.getPatientBirthDate();
             if (newBirthDate.length() != 0) {
                 try {
-                    Date newDate =
-                        new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
-                            dto.getPatientBirthDate());
+                    Date newDate = new SimpleDateFormat(PatientDTO.DATE_FORMAT)
+                            .parse(dto.getPatientBirthDate());
                     if (!newDate.equals(oldDate)) {
                         pat.setPatientBirthDate(newDate);
                         modified = true;
                     }
-                } catch (ParseException e) {} //do nothing
+                } catch (ParseException e) {
+                } //do nothing
             } else if (oldDate != null) {
                 pat.setPatientBirthDate(null);
                 modified = true;
             }
         }
         if (modified = true) {
-            Dataset oldPat = pat.getAttributes();
+            Dataset oldPat = pat.getAttributes(false);
             DTO2Dataset.updateDataset(oldPat, dto);
             pat.setAttributes(oldPat);
         }
     }
 
     static boolean needUpdate(String toUpdate, String newVal) {
-    	if (newVal == null) { // no update
-    		return false;
-    	}
-    	if (toUpdate == null) {
-    		return newVal.length() != 0;
-    	}
+        if (newVal == null) { // no update
+            return false;
+        }
+        if (toUpdate == null) { return newVal.length() != 0; }
         return !toUpdate.equals(newVal);
     }
 
     static boolean isNullOrEmpty(String s) {
         return s == null || s.length() == 0;
     }
+
 }

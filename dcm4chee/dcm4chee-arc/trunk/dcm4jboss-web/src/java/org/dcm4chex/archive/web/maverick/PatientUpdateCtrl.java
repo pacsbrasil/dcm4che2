@@ -18,8 +18,8 @@ package org.dcm4chex.archive.web.maverick;
 
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
-import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -52,7 +52,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 
     private void executeCreate() {
         try {
-	        PatientDTO pat = new PatientDTO();
+	        PatientModel pat = new PatientModel();
 	        pat.setPk(-1);
 	        pat.setSpecificCharacterSet("ISO_IR 100");        
 	        pat.setPatientID(patientID);
@@ -61,7 +61,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	        pat.setPatientName(patientName);
 	        pat.setPatientBirthDate(patientBirthDate);
 	        ContentEdit ce = lookupContentEdit();
-	        ce.createPatient(pat);        
+	        ce.createPatient(pat.toDataset());        
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -76,15 +76,15 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 
     private void executeUpdate() {
         try {
-            PatientDTO to_update = FolderForm.getFolderForm(
+            PatientModel pat = FolderForm.getFolderForm(
                     getCtx().getRequest()).getPatientByPk(pk);
-            to_update.setPatientSex(patientSex);
-            to_update.setPatientName(patientName);
+            pat.setPatientSex(patientSex);
+            pat.setPatientName(patientName);
 
-            to_update.setPatientBirthDate(patientBirthDate);
+            pat.setPatientBirthDate(patientBirthDate);
             //updating data model
             ContentEdit ce = lookupContentEdit();
-            ce.updatePatient(to_update);
+            ce.updatePatient(pat.toDataset());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

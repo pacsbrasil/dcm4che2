@@ -311,25 +311,25 @@ public abstract class StorageBean implements SessionBean {
 
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) {
-        coerceIdentity(patient.getAttributes(), ds, coercedElements);
+        coerceIdentity(patient.getAttributes(false), ds, coercedElements);
     }
 
     private void coerceStudyIdentity(StudyLocal study, Dataset ds,
             Dataset coercedElements) {
         coercePatientIdentity(study.getPatient(), ds, coercedElements);
-        coerceIdentity(study.getAttributes(), ds, coercedElements);
+        coerceIdentity(study.getAttributes(false), ds, coercedElements);
     }
 
     private void coerceSeriesIdentity(SeriesLocal series, Dataset ds,
             Dataset coercedElements) {
         coerceStudyIdentity(series.getStudy(), ds, coercedElements);
-        coerceIdentity(series.getAttributes(), ds, coercedElements);
+        coerceIdentity(series.getAttributes(false), ds, coercedElements);
     }
 
     private void coerceInstanceIdentity(InstanceLocal instance, Dataset ds,
             Dataset coercedElements) {
         coerceSeriesIdentity(instance.getSeries(), ds, coercedElements);
-        coerceIdentity(instance.getAttributes(), ds, coercedElements);
+        coerceIdentity(instance.getAttributes(false), ds, coercedElements);
     }
 
     private boolean coerceIdentity(Dataset ref, Dataset ds,
