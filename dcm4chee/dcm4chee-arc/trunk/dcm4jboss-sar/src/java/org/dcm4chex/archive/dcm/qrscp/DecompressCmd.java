@@ -263,6 +263,8 @@ class DecompressCmd implements StreamSegmentMapper {
 
     private Item nextItem() {
         try {
+            if (!items.isEmpty())
+                iis.seek(lastItem().nextItemPos());
             parser.parseHeader();
             if (log.isDebugEnabled())
                 log.debug("Read "+ Tags.toString(parser.getReadTag())
