@@ -405,9 +405,9 @@
             targetfile="${build.doc.dir}/jprint-cs.pdf"/>
     <ant target="gen_cs_pdf"/>
     <uptodate property="sm_pdf_uptodate"
-            srcfile="${doc.xml}/jprint-sm.xml"
-            targetfile="${build.doc.dir}/jprint-sm.pdf"/>
-    <ant target="gen_sm_pdf"/>
+            srcfile="${doc.xml}/jprint-ug.xml"
+            targetfile="${build.doc.dir}/jprint-ug.pdf"/>
+    <ant target="gen_ug_pdf"/>
   </target>
 
   <target name="gen_cs_pdf" depends="check_docbook_xsl" unless="cs_pdf_uptodate">
@@ -427,10 +427,10 @@
     </java>
   </target>
 
-  <target name="gen_sm_pdf" depends="check_docbook_xsl" unless="sm_pdf_uptodate">
+  <target name="gen_ug_pdf" depends="check_docbook_xsl" unless="sm_pdf_uptodate">
     <mkdir dir="${build.doc.dir}"/>
     <copy file="${doc.img}/draft.gif" todir="${docbook-xsl.fo.dir}"/>
-    <copy file="${doc.xsl}/fo/jprint-sm.xsl" todir="${docbook-xsl.fo.dir}">
+    <copy file="${doc.xsl}/fo/jprint-ug.xsl" todir="${docbook-xsl.fo.dir}">
         <filterset>
           <filter token="DRAFT_IMG_URI" value="file://${docbook-xsl.fo.dir}/draft.gif"/>
         </filterset>
@@ -438,9 +438,9 @@
     <java classname="org.apache.fop.apps.Fop"
         classpathref="fop.path"
         fork="yes">
-        <arg line="-xml ${doc.xml}/jprint-sm.xml"/>
-        <arg line="-xsl ${docbook-xsl.fo.dir}/jprint-sm.xsl"/>
-        <arg line="-pdf ${build.doc.dir}/jprint-sm.pdf"/>
+        <arg line="-xml ${doc.xml}/jprint-ug.xml"/>
+        <arg line="-xsl ${docbook-xsl.fo.dir}/jprint-ug.xsl"/>
+        <arg line="-pdf ${build.doc.dir}/jprint-ug.pdf"/>
     </java>
   </target>
   
