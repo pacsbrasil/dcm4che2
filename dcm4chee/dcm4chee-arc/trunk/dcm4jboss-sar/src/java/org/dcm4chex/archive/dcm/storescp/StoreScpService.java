@@ -238,7 +238,7 @@ public class StoreScpService extends AbstractScpService {
 
     public void setAcceptStorageCommitment(boolean accept) {
         this.acceptStorageCommitment = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptJPEG2000Lossless() {
@@ -247,7 +247,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEG2000Lossless(boolean accept) {
         this.acceptJPEG2000Lossless = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptJPEG2000Lossy() {
@@ -256,7 +256,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEG2000Lossy(boolean accept) {
         this.acceptJPEG2000Lossy = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptJPEGBaseline() {
@@ -265,7 +265,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGBaseline(boolean accept) {
         this.acceptJPEGBaseline = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptJPEGExtended() {
@@ -274,7 +274,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGExtended(boolean accept) {
         this.acceptJPEGExtended = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptJPEGLossless14() {
@@ -283,7 +283,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLossless14(boolean accept) {
         this.acceptJPEGLossless14 = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptJPEGLossless() {
@@ -292,7 +292,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLossless(boolean accept) {
         this.acceptJPEGLossless = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptJPEGLSLossless() {
@@ -301,7 +301,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLSLossless(boolean accept) {
         this.acceptJPEGLSLossless = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptJPEGLSLossy() {
@@ -310,7 +310,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLSLossy(boolean accept) {
         this.acceptJPEGLSLossy = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptRLELossless() {
@@ -319,7 +319,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptRLELossless(boolean accept) {
         this.acceptRLELossless = accept;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final int getBufferSize() {
@@ -392,12 +392,17 @@ public class StoreScpService extends AbstractScpService {
         return (String[]) list.toArray(new String[list.size()]);
     }
 
-    protected void initPresContexts(AcceptorPolicy policy) {
-        addPresContexts(policy, IMAGE_CUIDS, getImageTS());
-        addPresContexts(policy, OTHER_CUIDS, getTransferSyntaxUIDs());
-        if (acceptStorageCommitment)
-                policy.putPresContext(UIDs.StorageCommitmentPushModel,
-                        getTransferSyntaxUIDs());
+    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+        putPresContexts(policy, IMAGE_CUIDS, enable ? getImageTS() : null);
+        putPresContexts(policy, OTHER_CUIDS, enable ? getTransferSyntaxUIDs() : null);
+        policy.putPresContext(UIDs.StorageCommitmentPushModel,
+                enable && acceptStorageCommitment ? getTransferSyntaxUIDs() : null);
+    }
+
+    private void putPresContexts(AcceptorPolicy policy, String[] asuids, String[] tsuids) {
+        for (int i = 0; i < asuids.length; i++) {
+            policy.putPresContext(asuids[i], tsuids);
+        }
     }
 
     void sendReleaseNotification(Association assoc) {

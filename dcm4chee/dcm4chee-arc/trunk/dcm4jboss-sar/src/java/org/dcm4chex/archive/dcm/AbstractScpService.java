@@ -55,9 +55,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     
     protected DcmHandler dcmHandler;
 
-    protected String calledAETs;
+    protected String[] calledAETs;
 
-    protected String callingAETs;
+    protected String[] callingAETs;
     
     protected boolean acceptExplicitVRLE = true;
         
@@ -78,28 +78,62 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final String getCalledAETs() {
-        return calledAETs;
+        return StringUtils.toString(calledAETs, '\\');
     }
     
     public final void setCalledAETs(String calledAETs) {
         if (getState() == STARTED)
-            updatePolicy(null);
-        this.calledAETs = calledAETs;
-        updatePolicy();
+            disableService();
+        this.calledAETs = StringUtils.split(calledAETs, '\\');
+        if (getState() == STARTED)
+            enableService();
     }
 
-    protected void updatePolicy() {
-        if (getState() == STARTED)
-            updatePolicy(makeAcceptorPolicy());
+    protected void enableService() {
+        AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
+        for (int i = 0; i < calledAETs.length; ++i) {
+            AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
+            if (policy1 == null) {
+                policy1 = asf.newAcceptorPolicy();
+                policy1.setCallingAETs(callingAETs);
+                policy.putPolicyForCalledAET(calledAETs[i], policy1);                
+            } else {
+                if (policy1.getCallingAETs().length > 0) {
+                    if (callingAETs == null) {
+                        policy1.setCallingAETs(null);
+                    } else {
+                        for (int j = 0; j < callingAETs.length; j++) {
+                            policy1.addCallingAET(callingAETs[j]);
+                        }
+                    }
+                }
+            }
+            updatePresContexts(policy1, true);
+        }
+    }
+
+    private void disableService() {
+        AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
+        for (int i = 0; i < calledAETs.length; ++i) {
+            AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
+            if (policy1 != null) {
+                updatePresContexts(policy1, false);
+                if (policy1.listPresContext().isEmpty()) {
+                    policy.putPolicyForCalledAET(calledAETs[i], null);
+                }
+            }
+        }
     }
 
     public final String getCallingAETs() {
-        return callingAETs != null ? callingAETs : ANY;
+        return callingAETs != null ? StringUtils.toString(callingAETs, '\\') : ANY;
     }
 
     public final void setCallingAETs(String callingAETs) {
-        this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null : callingAETs;
-        updatePolicy();
+        this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null 
+                : StringUtils.split(callingAETs, '\\');
+        if (getState() == STARTED)
+            enableService();
     }
     
     public final boolean isAcceptExplicitVRLE() {
@@ -108,28 +142,19 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public final void setAcceptExplicitVRLE(boolean acceptExplicitVRLE) {
         this.acceptExplicitVRLE = acceptExplicitVRLE;
-        updatePolicy();
+        if (getState() == STARTED)
+            enableService();
     }
     
     protected void startService() throws Exception {
-//        auditLogger = (AuditLogger) server.invoke(dcmServerName,
-//                "getAuditLogger", null, null);
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "getDcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
-        updatePolicy(makeAcceptorPolicy());
-    }
-
-    protected void updatePolicy(AcceptorPolicy policy) {
-        String[] aets = StringUtils.split(calledAETs, '\\');
-        for (int i = 0; i < aets.length; ++i) {
-            dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aets[i],
-                    policy);
-        }
+        enableService();
     }
 
     protected void stopService() throws Exception {
-        updatePolicy(null);
+        disableService();
         unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
     }
@@ -138,23 +163,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected abstract void unbindDcmServices(DcmServiceRegistry services);
 
-    protected abstract void initPresContexts(AcceptorPolicy policy);
+    protected abstract void updatePresContexts(AcceptorPolicy policy, 
+            boolean enable);
     
-    protected AcceptorPolicy makeAcceptorPolicy() {
-        AcceptorPolicy policy = asf.newAcceptorPolicy();
-        policy.setCallingAETs(callingAETs != null ? StringUtils.split(callingAETs,'\\') : null);
-        initPresContexts(policy);
-        return policy;        
-    }
-
     protected String[] getTransferSyntaxUIDs() {
         return acceptExplicitVRLE ? NATIVE_LE_TS : ONLY_DEFAULT_TS;
     }
-    
-    protected static void addPresContexts(AcceptorPolicy policy, String[] asuids, String[] tsuids) {
-        for (int i = 0; i < asuids.length; i++)
-	        policy.putPresContext(asuids[i], tsuids);
-    }        
     
     public void logDataset(String prompt, Dataset ds) {
         if (!log.isDebugEnabled()) { return; }

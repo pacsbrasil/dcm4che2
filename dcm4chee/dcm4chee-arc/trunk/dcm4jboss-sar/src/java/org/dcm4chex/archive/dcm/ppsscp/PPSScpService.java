@@ -21,9 +21,6 @@ import org.dcm4chex.archive.dcm.AbstractScpService;
  */
 public class PPSScpService extends AbstractScpService {
 
-    private static final String[] AS_UIDS = { 
-        UIDs.GeneralPurposePerformedProcedureStepSOPClass};
-
     private PPSScp mppsScp = new PPSScp(this);
     
     protected void bindDcmServices(DcmServiceRegistry services) {
@@ -34,7 +31,9 @@ public class PPSScpService extends AbstractScpService {
         services.unbind(UIDs.GeneralPurposePerformedProcedureStepSOPClass);
     }
 
-    protected void initPresContexts(AcceptorPolicy policy) {
-        addPresContexts(policy, AS_UIDS, getTransferSyntaxUIDs());
+    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+        policy.putPresContext(UIDs.GeneralPurposePerformedProcedureStepSOPClass,
+                enable ? getTransferSyntaxUIDs() : null);
     }
+
 }

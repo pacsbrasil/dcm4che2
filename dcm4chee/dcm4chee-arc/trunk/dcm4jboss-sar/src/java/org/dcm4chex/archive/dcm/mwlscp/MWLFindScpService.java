@@ -36,8 +36,6 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 public class MWLFindScpService extends AbstractScpService
 	implements NotificationListener {
 
-    private static final String[] AS_UIDS = { UIDs.ModalityWorklistInformationModelFIND};
-
     private ObjectName mppsScpServiceName;
 
     private MWLFindScp mwlFindScp = new MWLFindScp(this);
@@ -82,8 +80,9 @@ public class MWLFindScpService extends AbstractScpService
         services.unbind(UIDs.ModalityWorklistInformationModelFIND);
     }
 
-    protected void initPresContexts(AcceptorPolicy policy) {
-        addPresContexts(policy, AS_UIDS, getTransferSyntaxUIDs());
+    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+        policy.putPresContext(UIDs.ModalityWorklistInformationModelFIND,
+                enable ? getTransferSyntaxUIDs() : null);
     }
 
     private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {

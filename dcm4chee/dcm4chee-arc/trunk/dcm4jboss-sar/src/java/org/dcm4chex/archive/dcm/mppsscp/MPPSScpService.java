@@ -35,8 +35,6 @@ public class MPPSScpService extends AbstractScpService {
         }
     };
 
-    private static final String[] AS_UIDS = { UIDs.ModalityPerformedProcedureStep};
-
     private MPPSScp mppsScp = new MPPSScp(this);
     
     public String getEjbProviderURL() {
@@ -55,8 +53,9 @@ public class MPPSScpService extends AbstractScpService {
         services.unbind(UIDs.ModalityPerformedProcedureStep);
     }
 
-    protected void initPresContexts(AcceptorPolicy policy) {
-        addPresContexts(policy, AS_UIDS, getTransferSyntaxUIDs());
+    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+        policy.putPresContext(UIDs.ModalityPerformedProcedureStep,
+                enable ? getTransferSyntaxUIDs() : null);
     }
 
     void sendMPPSNotification(Dataset ds) {

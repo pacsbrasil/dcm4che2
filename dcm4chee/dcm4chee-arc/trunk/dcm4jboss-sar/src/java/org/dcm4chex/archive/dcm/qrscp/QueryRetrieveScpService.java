@@ -159,9 +159,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptPatientRootFind(boolean patientRootFind) {
         this.patientRootFind = patientRootFind;
-        if (getState() == STARTED) {
-            updatePolicy(makeAcceptorPolicy());
-        }
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptPatientRootMove() {
@@ -170,7 +168,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptPatientRootMove(boolean patientRootMove) {
         this.patientRootMove = patientRootMove;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptPatientStudyOnlyFind() {
@@ -179,7 +177,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptPatientStudyOnlyFind(boolean patientStudyOnlyFind) {
         this.patientStudyOnlyFind = patientStudyOnlyFind;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptPatientStudyOnlyMove() {
@@ -188,7 +186,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptPatientStudyOnlyMove(boolean patientStudyOnlyMove) {
         this.patientStudyOnlyMove = patientStudyOnlyMove;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptStudyRootFind() {
@@ -197,7 +195,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptStudyRootFind(boolean studyRootFind) {
         this.studyRootFind = studyRootFind;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final boolean isAcceptStudyRootMove() {
@@ -206,7 +204,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptStudyRootMove(boolean studyRootMove) {
         this.studyRootMove = studyRootMove;
-        updatePolicy();
+        if (getState() == STARTED) enableService();
     }
 
     public final int getAcTimeout() {
@@ -308,37 +306,30 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
     }
 
-    private String[] getAbstractSyntaxUIDs() {
-        ArrayList asuids = new ArrayList(6);
-        if (patientRootFind)
-                asuids.add(UIDs.PatientRootQueryRetrieveInformationModelFIND);
-        if (studyRootFind)
-                asuids.add(UIDs.StudyRootQueryRetrieveInformationModelFIND);
-        if (patientStudyOnlyFind)
-                asuids.add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
-        if (patientRootMove)
-                asuids.add(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
-        if (studyRootMove)
-                asuids.add(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
-        if (patientStudyOnlyMove)
-                asuids
-                        .add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
-        return (String[]) asuids.toArray(new String[asuids.size()]);
-    }
-    
     private static final ExtNegotiator ECHO_EXT_NEG = new ExtNegotiator() {
         public byte[] negotiate(byte[] offered) {
             return offered;
         }
     };
 
-
-
-    protected void initPresContexts(AcceptorPolicy policy) {
-        String[] asuids = getAbstractSyntaxUIDs();
-        addPresContexts(policy, asuids, getTransferSyntaxUIDs());
-        for (int i = 0; i < asuids.length; i++)
-            policy.putExtNegPolicy(asuids[i], ECHO_EXT_NEG);
+    protected void updatePC(AcceptorPolicy policy, String cuid, boolean enable) {
+        policy.putPresContext(cuid, enable ? getTransferSyntaxUIDs() : null);
+        policy.putExtNegPolicy(cuid, enable ? ECHO_EXT_NEG : null);
+    }
+    
+    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+        updatePC(policy, UIDs.PatientRootQueryRetrieveInformationModelFIND,
+                enable && patientRootFind);
+        updatePC(policy, UIDs.StudyRootQueryRetrieveInformationModelFIND,
+                enable && studyRootFind);
+        updatePC(policy, UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND,
+                enable && patientStudyOnlyFind);
+        updatePC(policy, UIDs.PatientRootQueryRetrieveInformationModelMOVE,
+                enable && patientRootMove);
+        updatePC(policy, UIDs.StudyRootQueryRetrieveInformationModelMOVE,
+                enable && studyRootMove);
+        updatePC(policy, UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE,
+                enable && patientStudyOnlyMove);
     }
 
     public AEData queryAEData(String aet) throws SQLException,
