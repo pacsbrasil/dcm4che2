@@ -122,6 +122,22 @@ public abstract class ContentManagerBean implements SessionBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getStudy(int studyPk) throws FinderException {
+        return studyHome.findByPrimaryKey(new Integer(studyPk)).getAttributes(true);
+    }
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getSeries(int seriesPk) throws FinderException {
+        return seriesHome.findByPrimaryKey(new Integer(seriesPk)).getAttributes(true);
+    }
+    
+    /**
+     * @ejb.interface-method
      */
     public int countStudies(Dataset filter) {
         try {
