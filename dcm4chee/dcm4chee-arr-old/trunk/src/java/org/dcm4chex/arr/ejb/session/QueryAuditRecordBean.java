@@ -22,6 +22,8 @@ package org.dcm4chex.arr.ejb.session;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.Hashtable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -235,7 +237,13 @@ public abstract class QueryAuditRecordBean implements SessionBean {
     }
 
     private final static String COLUMNS = "pk, msg_type, host_name, time_stamp, aet, user_name, patient_name, patient_id";
-
+    private final static Hashtable TO_COLUMN = new Hashtable();
+    static {
+    	TO_COLUMN.put("type", "msg_type");
+    	TO_COLUMN.put("host", "host_name");
+    	TO_COLUMN.put("timestamp", "time_stamp");
+    }
+	
     private String buildCountSQL(String[] type, String host, String from,
             String to, String aet, String userName, String patientName,
             String patientId) {
@@ -310,7 +318,8 @@ public abstract class QueryAuditRecordBean implements SessionBean {
             String[] orderDir) {
         if (orderBy != null) {
             for (int i = 0; i < orderBy.length; i++) {
-                sb.append(i == 0 ? "ORDER BY " : ", ").append(orderBy[i])
+                sb.append(i == 0 ? " ORDER BY " : ", ")
+						.append(TO_COLUMN.get(orderBy[i]))
                         .append(" ").append(orderDir[i]);
             }
         }
@@ -327,7 +336,7 @@ public abstract class QueryAuditRecordBean implements SessionBean {
                 sb.append(" audit_record.msg_type='").append(
                         type[i].replaceAll("'", "''")).append("' OR");
             }
-            sb.setLength(sb.length() - 4);
+            sb.setLength(sb.length() - 3);
             sb.append(") AND");
         }
         if (host.length() != 0) {
@@ -407,13 +416,16 @@ public abstract class QueryAuditRecordBean implements SessionBean {
                         orderDirTimestamp);
         int n = 0; //to count number of records in this fetch
         StringBuffer sbRecs = new StringBuffer();
-        DateFormat df = new SimpleDateFormat(DATE_FORMAT);
+        DateFormat df = new SimpleDateFormat(DATE_FORMAT);        
         while (rs.next()) {
             sbRecs.append("\n<record pk=\"").append(rs.getInt(1));
             sbRecs.append("\" type=\"").append(maskNull(rs.getString(2)));
-            sbRecs.append("\" host=\"").append(maskNull(rs.getString(3)));
-            sbRecs.append("\" timestamp=\"").append(
-                    maskNull(df.format(rs.getTimestamp(4))));
+            sbRecs.append("\" host=\"").append(maskNull(rs.getString(3)));            
+            sbRecs.append("\" timestamp=\"");
+            Date ts = rs.getTimestamp(4);
+            if (ts != null) {
+            	sbRecs.append(df.format(ts));
+            }
             sbRecs.append("\" aet=\"").append(maskNull(rs.getString(5)));
             sbRecs.append("\" username=\"").append(maskNull(rs.getString(6)));
             sbRecs.append("\" patientname=\"")

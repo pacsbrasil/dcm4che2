@@ -76,7 +76,7 @@ public class ARRServer extends ServiceMBeanSupport implements
     // process() method)
     private UDPServer udpsrv = sf.newUDPServer(sf.newSyslogHandler(this));
 
-    private StoreAuditRecordLocal store = null;
+    private StoreAuditRecordLocalHome storeHome = null;
 
     private String actorName;
 
@@ -101,10 +101,28 @@ public class ARRServer extends ServiceMBeanSupport implements
      *            Description of the Parameter
      */
     public void process(Date date, String host, String content) {
-        getStoreAuditRecord().store(content);
+        store(content);
     }
 
-    /**
+	private void store(String content) {
+		StoreAuditRecordLocal bean;
+		try {
+			bean = getStoreAuditRecordHome().create();
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
+		try {
+			bean.store(content);
+		} finally {
+			try {
+				bean.remove();
+			} catch (Exception ignore) {
+			}
+		}
+		
+	}
+
+	/**
      * @jmx.managed-attribute
      */
     public int getPort() {
@@ -141,8 +159,9 @@ public class ARRServer extends ServiceMBeanSupport implements
 
     // ServiceMBeanSupport overrides ---------------------------------
     public void startService() throws Exception {
+    	storeHome = null;
         udpsrv.start();
-        getStoreAuditRecord().store(buildActorStartStopAuditMessage(START));
+        store(buildActorStartStopAuditMessage(START));
     }
 
     public String getCurrentPrincipalName() {
@@ -158,19 +177,17 @@ public class ARRServer extends ServiceMBeanSupport implements
 
     public void stopService() throws Exception {
         udpsrv.stop();
-        getStoreAuditRecord().store(buildActorStartStopAuditMessage(STOP));
+        store(buildActorStartStopAuditMessage(STOP));
     }
 
-    private StoreAuditRecordLocal getStoreAuditRecord() {
-        if (store != null) { return store; }
+    private StoreAuditRecordLocalHome getStoreAuditRecordHome() {
+        if (storeHome != null) { return storeHome; }
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
             StoreAuditRecordLocalHome home = (StoreAuditRecordLocalHome) jndiCtx
                     .lookup(StoreAuditRecordLocalHome.JNDI_NAME);
-            return (store = home.create());
-        } catch (CreateException e) {
-            throw new EJBException(e);
+            return home;
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {

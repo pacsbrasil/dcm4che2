@@ -218,7 +218,7 @@ public class AuditRepServlet extends HttpServlet
         final int MIN_START = 0;        //starting entry to display, zero-based
         final int MIN_PAGESIZE = -1;    //-1 displays all records at once, 0 displays none, x>0 displays at most x record entries
         int start = 0;
-        int pageSize = 0;
+        int pageSize = 30;
         
         //parse start
         if (rq.getParameter("start") != null) {
