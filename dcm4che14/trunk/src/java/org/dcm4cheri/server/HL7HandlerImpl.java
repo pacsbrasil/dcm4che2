@@ -154,7 +154,8 @@ public class HL7HandlerImpl implements HL7Handler {
         s.setSoTimeout(soTimeout);
         MLLPInputStream in = new MLLPInputStream(
             new BufferedInputStream(s.getInputStream()));
-        MLLPOutputStream out = new MLLPOutputStream(s.getOutputStream());
+        MLLPOutputStream out = new MLLPOutputStream(
+            new BufferedOutputStream(s.getOutputStream()));
         try {
             byte[] data;
             while ((data = in.readMessage()) != null) {
@@ -163,6 +164,7 @@ public class HL7HandlerImpl implements HL7Handler {
                 byte[] res = execute(msg.header(), data);
                 log.info("SND: " + hl7Fact.parse(res));
                 out.writeMessage(res);
+                out.flush();
             }
         } catch (HL7Exception e) {
             log.error("Could not understand: ", e);
