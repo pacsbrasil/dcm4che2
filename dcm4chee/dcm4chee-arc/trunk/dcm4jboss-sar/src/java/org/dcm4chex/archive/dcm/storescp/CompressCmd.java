@@ -236,6 +236,7 @@ abstract class CompressCmd {
         ImageWriter w = null;
         Semaphore codecSemaphore = service.getCodecSemaphore();
         boolean codecSemaphoreAquired = false;
+        long end = 0;
         try {
             log.debug("acquire codec semaphore");
             codecSemaphore.acquire();
@@ -275,7 +276,7 @@ abstract class CompressCmd {
                 }
                 w.setOutput(ios);
                 w.write(null, new IIOImage(bi, null, null), wParam);
-                long end = ios.getStreamPosition();
+                end = ios.getStreamPosition();
                 if ((end & 1) != 0) {
                     ios.write(0);
                     ++end;
@@ -293,8 +294,10 @@ abstract class CompressCmd {
             }
         }
         long t2 = System.currentTimeMillis();
-        log.info("finished compression in " + (t2 - t1) + "ms.");
-        return frameLength * frames;
+        int pixelDataLength = frameLength * frames;
+        log.info("finished compression " + ((float) pixelDataLength / end)
+                + " : 1 in " + (t2 - t1) + "ms.");
+        return pixelDataLength;
     }
 
     private void read(ByteOrder byteOrder, InputStream in, short[][] data)

@@ -257,7 +257,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private File toStorageDir(String location) {
         File dir = new File(location);
         return dir.isAbsolute() ? dir : new File(ServerConfigLocator.locate()
-                .getServerBaseDir(), location);
+                .getServerHomeDir(), location);
     }
 
     private void deleteFailedStorage(File file) {

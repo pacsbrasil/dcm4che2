@@ -93,8 +93,10 @@ class FileDataSource implements DataSource {
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
                 try {
 	                cmd.decompress(enc.byteOrder, out);
+				} catch (IOException e) {
+				    throw e;
 				} catch (Throwable e) {
-					throw new IOException("" + e);
+				    throw new RuntimeException("Decompression failed:", e);
 				}
 				if ((len&1)!=0)
                     out.write(0);
