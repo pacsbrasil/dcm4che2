@@ -127,7 +127,7 @@
          <srcfiles dir="${src.etc.dir}" includes="dictionary.xml"/>
       </uptodate>
       <antcall target="compile-res"/>
-      <filter token="VERSIONNAME" value="DCM4CHE-${version}"/>
+      <filter token="VERSIONNAME" value="dcm4che-${version}"/>
       <filter token="VERSION" value="${version}"/>
       <filter token="TODAY" value="${TODAY}"/>
       <copy todir="${build.res.dir}" filtering="true">

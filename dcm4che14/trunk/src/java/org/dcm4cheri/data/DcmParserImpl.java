@@ -442,6 +442,12 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         return doParse(stopTag, length);
     }
 */
+    public long parseDataset(String tuid, int stopTag)
+      throws IOException
+    {
+        return parseDataset(DcmDecodeParam.valueOf(tuid), stopTag);
+    }
+               
     public long parseDataset(DcmDecodeParam param, int stopTag)
             throws IOException {
         setDcmDecodeParam(param);

@@ -70,6 +70,9 @@ public interface DcmParser {
     
     long parseCommand() throws IOException;
     
+    long parseDataset(String tuid, int stopTag)
+            throws IOException;
+
     long parseDataset(DcmDecodeParam param, int stopTag)
             throws IOException;
 

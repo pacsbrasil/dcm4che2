@@ -2,6 +2,21 @@ Revision History
 =================
 
 -------------------------------------------------------------------------------
+dcm4che 1.0.6 -  - Changes since dcm4che 1.0.5
+-------------------------------------------------------------------------------
+BUG FIXES:
+
+ENHANCEMENTS:
++ class org.dcm4che.data.DcmParser: add method
+  long parseDataset(String tsUID, int stopTag) throws IOException
+
+CHANGES:
++ change schema of Implementation Version Name in META-INF/MANIFEST.MF and
+  A-ASSOCIATE-RQ/AC to dcm4che-1.x.y (from DCM4CHEyyyymmdd)
++ add properties port and serverSocketFactory to org.dcm4che.server.Server
+  
+
+-------------------------------------------------------------------------------
 dcm4che 1.0.5 -  - Changes since dcm4che 1.0.4
 -------------------------------------------------------------------------------
 BUG FIXES:
