@@ -1,3 +1,0 @@
-Main-Class: org.dcm4che.tools.printscu.PrintSCUFrame
-Class-Path: ./ getopt.jar ../lib/dcm4che.jar ../lib/log4j.jar
-

@@ -1,3 +1,0 @@
-Main-Class: Acr2Dcm
-Class-Path: ./ ../lib/dcm4che.jar getopt.jar
-

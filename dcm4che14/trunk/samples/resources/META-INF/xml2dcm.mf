@@ -1,3 +1,0 @@
-Main-Class: Xml2Dcm
-Class-Path: ./ ../lib/dcm4che.jar getopt.jar
-

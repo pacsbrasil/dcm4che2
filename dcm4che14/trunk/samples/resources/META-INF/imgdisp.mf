@@ -1,3 +1,0 @@
-Main-Class: ImageDisplay
-Class-Path: ./ ../lib/dcm4che.jar
-

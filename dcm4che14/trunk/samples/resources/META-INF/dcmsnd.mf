@@ -1,3 +1,0 @@
-Main-Class: DcmSnd
-Class-Path: ./ ../lib/dcm4che.jar getopt.jar
-
