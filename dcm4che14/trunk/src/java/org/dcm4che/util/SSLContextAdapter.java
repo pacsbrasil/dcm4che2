@@ -89,7 +89,7 @@ public abstract class SSLContextAdapter {
     
     public abstract void seedRandom(long seed);
     
-    public abstract KeyStore loadKeyStore(InputStream in, char[] password)
+    public abstract KeyStore loadKeyStore(InputStream in, char[] password, String type)
     throws GeneralSecurityException, IOException;
     
     public abstract KeyStore loadKeyStore(File file, char[] password)

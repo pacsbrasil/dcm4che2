@@ -87,9 +87,11 @@ public interface ContainerContent extends Content {
      * @param frameNumbers  the references frame numbers of a multiframe image.
      * @param refPresentationSOP  the SOP instance reference of the
      *                            referenced presentation state.
+     * @param iconImage <i>Icon Image</i> or <code>null</code>.
      */
     public void insertImageContent(Code name, SOPInstanceRef refSOP,
-                       int[] frameNumbers,  SOPInstanceRef refPresentationSOP);
+        int[] frameNumbers, SOPInstanceRef refPresentationSOP,
+        IconImage iconImage);
 
     /**
      * Convenient method to insert a new <i>Waveform Conten Item</i> into

@@ -41,20 +41,22 @@ class ImageContentImpl extends CompositeContentImpl implements ImageContent {
     // Attributes ----------------------------------------------------
     protected int[] frameNumbers;
     protected RefSOP refPresentationSOP;
+    protected IconImage iconImage;
 
     // Constructors --------------------------------------------------
     ImageContentImpl(KeyObject owner, Date obsDateTime, Template template,
             Code name, RefSOP refSOP, int[] frameNumbers,
-            RefSOP refPresentationSOP) {
+            RefSOP refPresentationSOP, IconImage iconImage) {
         super(owner, obsDateTime, template, name, refSOP);
         setFrameNumbers(frameNumbers);
         this.refPresentationSOP = refPresentationSOP;
+        this.iconImage = iconImage;
     }
     
     Content clone(KeyObject newOwner,  boolean inheritObsDateTime) {
         return new ImageContentImpl(newOwner,
-                getObservationDateTime(inheritObsDateTime),
-                template, name, refSOP, frameNumbers, refPresentationSOP);
+                getObservationDateTime(inheritObsDateTime), template,
+                name, refSOP, frameNumbers, refPresentationSOP, iconImage);
     }
 
     // Methodes --------------------------------------------------------
@@ -90,6 +92,14 @@ class ImageContentImpl extends CompositeContentImpl implements ImageContent {
         this.refPresentationSOP = refPresentationSOP;
     }
     
+    public final IconImage getIconImage() {
+        return iconImage;
+    }
+    
+    public final void setIconImage(IconImage iconImage) {
+        this.iconImage = iconImage;
+    }
+    
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
         if (frameNumbers.length == 0 && refPresentationSOP == null) {
@@ -105,5 +115,11 @@ class ImageContentImpl extends CompositeContentImpl implements ImageContent {
             refPresentationSOP.toDataset(
                     sop.putSQ(Tags.RefSOPSeq).addNewItem());
         }
+
+        if (iconImage != null) {
+            iconImage.toDataset(
+                    sop.putSQ(Tags.IconImageSeq).addNewItem());
+        }
     }
+    
 }

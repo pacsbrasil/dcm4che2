@@ -262,10 +262,16 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
         return sb;
     }
     
+    private String toKeyStoreType(String fname) {
+        return fname.endsWith(".p12") 
+            || fname.endsWith(".P12") 
+            ? "PKCS12" : "JKS";
+    }
+    
     public KeyStore loadKeyStore(URL url, char[] password) throws GeneralSecurityException, IOException {
         InputStream in = url.openStream();
         try {
-            return loadKeyStore(in, password);
+            return loadKeyStore(in, password, toKeyStoreType(url.getFile()));
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }
@@ -275,15 +281,15 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
     throws GeneralSecurityException, IOException {
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
-            return loadKeyStore(in, password);
+            return loadKeyStore(in, password, toKeyStoreType(file.getName()));
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }
     }
     
-    public KeyStore loadKeyStore(InputStream in, char[] password)
+    public KeyStore loadKeyStore(InputStream in, char[] password, String type)
     throws GeneralSecurityException, IOException {
-        KeyStore key = KeyStore.getInstance(KeyStore.getDefaultType());
+        KeyStore key = KeyStore.getInstance(type);
         key.load(in, password);
         return key;
     }

@@ -83,10 +83,11 @@ class ContainerContentImpl extends NamedContentImpl
     }
 
     public void insertImageContent(Code name, SOPInstanceRef refSOP,
-            int[] frameNumbers,  SOPInstanceRef refPresentationSOP) {
+            int[] frameNumbers,  SOPInstanceRef refPresentationSOP,
+            IconImage iconImage) {
         appendChild(Content.RelationType.CONTAINS,
                     owner.createImageContent(null, null, name, refSOP,
-                            frameNumbers, refPresentationSOP));
+                            frameNumbers, refPresentationSOP, iconImage));
         owner.addCurrentEvidence(refSOP);        
         if (refPresentationSOP != null) {
             owner.addCurrentEvidence(refPresentationSOP);

@@ -108,4 +108,8 @@ public interface ImageContent extends CompositeContent {
 
     public void setRefPresentationSOP(RefSOP refPresentationSOP);
     
+    public IconImage getIconImage();
+
+    public void setIconImage(IconImage iconImage);
+    
 }//end interface ImageContent

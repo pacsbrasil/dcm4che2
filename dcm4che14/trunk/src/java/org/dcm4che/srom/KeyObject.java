@@ -563,16 +563,19 @@ public interface KeyObject extends ContainerContent {
      *   <code>null</code>.
      * @param refPresentationSOP <i>Softcopy Presentation State Reference</i>
      *   or <code>null</code>.
+     * @param iconImage <i>Icon Image</i> or <code>null</code>.
      * @return created <code>ImageContent</code> object.
      * @throws NullPointerException if <code>refSOP</code> is <code>null</code>.
      *
      * @see SRDocumentFactory#newCode
      * @see SRDocumentFactory#newTemplate
      * @see SRDocumentFactory#newRefSOP
+     * @see SRDocumentFactory#newIconImage
      */    
     public ImageContent createImageContent(
             Date obsDateTime, Template template, Code name,
-            RefSOP refSOP, int[] frameNumbers, RefSOP refPresentationSOP);
+            RefSOP refSOP, int[] frameNumbers,
+            RefSOP refPresentationSOP, IconImage iconImage);
 
     /**
      * Creates new <code>WaveformContent</code> with specified properties.

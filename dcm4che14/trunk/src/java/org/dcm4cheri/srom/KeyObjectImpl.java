@@ -451,11 +451,11 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
                 refSOP);
     }
 
-    public ImageContent createImageContent(
-            Date obsDateTime, Template template, Code name,
-            RefSOP refSOP, int[] frameNumbers, RefSOP refPresentationSOP) {
+    public ImageContent createImageContent(Date obsDateTime, Template template,
+            Code name, RefSOP refSOP, int[] frameNumbers,
+            RefSOP refPresentationSOP, IconImage iconImage) {
         return new ImageContentImpl(this, obsDateTime, template, name,
-                refSOP, frameNumbers, refPresentationSOP);
+                refSOP, frameNumbers, refPresentationSOP, iconImage);
     }
 
     public WaveformContent createWaveformContent(

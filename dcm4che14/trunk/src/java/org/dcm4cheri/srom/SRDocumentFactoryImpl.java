@@ -52,6 +52,10 @@ public class SRDocumentFactoryImpl extends SRDocumentFactory
         return new RefSOPImpl(refSOPClassUID, refSOPInstanceUID);
     }
 
+    public IconImage newIconImage(int rows, int columns, byte[] pixelData) {
+        return new IconImageImpl(rows, columns, pixelData);
+    }
+        
     public Patient newPatient(String patientID, String patientName,
             Patient.Sex patientSex, Date patientBirthDate) {
         return new PatientImpl(patientID, patientName, patientSex,
@@ -198,4 +202,9 @@ public class SRDocumentFactoryImpl extends SRDocumentFactory
     public KeyObject newKeyObject(Dataset ds) throws DcmValueException {
         return KeyObjectImpl.newKeyObject(ds);
     }
+    
+    public IconImage newIconImage(Dataset ds) throws DcmValueException {
+        return IconImageImpl.newIconImage(ds);
+    }
+    
 }

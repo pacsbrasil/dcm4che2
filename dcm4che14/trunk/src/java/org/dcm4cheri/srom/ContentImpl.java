@@ -121,10 +121,12 @@ abstract class ContentImpl implements org.dcm4che.srom.Content {
         if ("IMAGE".equals(type)) {
             Dataset sop = ds.getItem(Tags.RefSOPSeq);
             Dataset pr = sop.getItem(Tags.RefSOPSeq);
+            Dataset icon = sop.getItem(Tags.IconImageSeq);
             return new ImageContentImpl(owner, obsDateTime, template, name,
                     RefSOPImpl.newRefSOP(sop),
                     sop.getInts(Tags.RefFrameNumber),
-                    RefSOPImpl.newRefSOP(pr));
+                    RefSOPImpl.newRefSOP(pr),
+                    IconImageImpl.newIconImage(icon));
         }
         if ("WAVEFORM".equals(type)) {
             Dataset sop = ds.getItem(Tags.RefSOPSeq);

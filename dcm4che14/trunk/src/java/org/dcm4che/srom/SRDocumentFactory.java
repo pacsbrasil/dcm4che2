@@ -258,6 +258,9 @@ public abstract class SRDocumentFactory {
             String seriesInstanceUID,
             String studyInstanceUID);
     
+    public abstract IconImage newIconImage(int rows, int columns,
+            byte[] pixelData);
+    
     /**
      * Creates a new <code>srom</code> TCOORD Sample Position.
      *
@@ -350,6 +353,8 @@ public abstract class SRDocumentFactory {
     public abstract Code newCode(Dataset ds) throws DcmValueException;
     
     public abstract RefSOP newRefSOP(Dataset ds) throws DcmValueException;
+    
+    public abstract IconImage newIconImage(Dataset ds) throws DcmValueException;
     
     public abstract Template newTemplate(Dataset ds) throws DcmValueException;
     
