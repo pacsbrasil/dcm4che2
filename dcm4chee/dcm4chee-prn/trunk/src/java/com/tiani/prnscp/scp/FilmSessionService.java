@@ -79,7 +79,7 @@ class FilmSessionService
    public void close(Association as) {
       FilmSession session = (FilmSession) as.getProperty("FilmSession");
       if (session != null) {
-         scp.unlockSessionSpoolDir(session.dir());
+         scp.purgeSessionSpoolDir(session.dir(), true);
       }
    }
    
@@ -114,7 +114,7 @@ class FilmSessionService
             throw new DcmServiceException(Status.ProcessingFailure,
                "Only support one Basic Film Session SOP Instance on an Association.");
          }
-         File dir = scp.getSessionSpoolDir(uid);
+         File dir = scp.getSessionSpoolDir(a.getCallingAET(), uid);
          if (dir.exists()) {
             throw new DcmServiceException(Status.DuplicateSOPInstance);
          }         
@@ -174,7 +174,7 @@ class FilmSessionService
          if (session == null || !uid.equals(session.uid())) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
          }
-         scp.unlockSessionSpoolDir(session.dir());
+         scp.purgeSessionSpoolDir(session.dir(), true);
          Association a = as.getAssociation();
          a.putProperty("FilmSession", null);
          a.removeAssociationListener(this);

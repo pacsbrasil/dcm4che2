@@ -22,7 +22,7 @@
 
 package com.tiani.prnscp.scp;
 
-import com.tiani.prnscp.print.PrintJobNotification;
+import com.tiani.prnscp.print.PrinterServiceMBean;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -44,20 +44,11 @@ import org.dcm4che.server.DcmHandler;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
-import javax.jms.QueueSender;
-import javax.jms.TextMessage;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
+import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -88,7 +79,7 @@ import java.util.Iterator;
  */
 public class PrintScpService
    extends ServiceMBeanSupport
-   implements PrintScpServiceMBean, NotificationListener {
+   implements PrintScpServiceMBean {
    
    // Constants -----------------------------------------------------   
    private final String[] LITTLE_ENDIAN_TS = {
@@ -98,17 +89,8 @@ public class PrintScpService
    private final String[] ONLY_DEFAULT_TS = {
         UIDs.ImplicitVRLittleEndian
    };
-   public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
-      public boolean isNotificationEnabled(Notification n) {
-         return n.getType().equals(PrintJobNotification.TYPE);
-      }
-   };
    
    // Attributes ----------------------------------------------------
-   private QueueConnection queueConn;
-   private QueueSession queueSession;
-   private QueueSender queueSend;
-   private String queueName;
    private String spoolDirectory;
    private File spoolDir;
    private boolean keepSpoolFiles = false;
@@ -125,7 +107,7 @@ public class PrintScpService
    private String[] ts_uids = LITTLE_ENDIAN_TS;
    private int numCreatedJobs = 0;
    private int numStoredPrints = 0;
-   
+            
    // Static --------------------------------------------------------
    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
    
@@ -188,23 +170,6 @@ public class PrintScpService
       this.printerConfiguration = printerConfiguration;
    }
    
-   /** Getter for property queueName.
-    * @return Value of property queueName.
-    */
-   public String getQueueName() {
-      return queueName;
-   }
-   
-   /** Setter for property queueName.
-    * @param queueName New value of property queueName.
-    */
-   public void setQueueName(String queueName) {
-      if (queueName.length() == 0) {
-         throw new IllegalArgumentException();
-      }
-      this.queueName = queueName;
-   }
-
    /** Getter for property spoolDirPath.
     * @return Value of property spoolDirPath.
     */
@@ -248,14 +213,30 @@ public class PrintScpService
    }
       
    // NotificationListener implementation -----------------------------
-   public void handleNotification(Notification n, Object handback) {
-      PrintJobNotification pjn = (PrintJobNotification) n;
-      switch (pjn.getEventID()) {
-         case PrintJobNotification.FAILURE:
-         case PrintJobNotification.DONE:
-            deleteJob(new File(pjn.getMessage()));
-            break;
-      }
+   private final NotificationListener printingListener =
+      new NotificationListener() {
+         public void handleNotification(Notification n, Object handback) {
+         }
+      };
+      
+   private final NotificationListener doneListener =
+      new NotificationListener() {
+         public void handleNotification(Notification n, Object handback) {
+           deleteJob(new File(n.getMessage()));
+         }
+      };
+
+   private final NotificationListener failureListener =
+      new NotificationListener() {
+         public void handleNotification(Notification n, Object handback) {
+           deleteJob(new File(n.getMessage()));
+         }
+      };
+   
+   private NotificationFilter makeNotificationFilter(String type) {
+      NotificationFilterSupport filter = new NotificationFilterSupport();
+      filter.enableType(type);
+      return filter;
    }
 
    // ServiceMBeanSupport overrides -----------------------------------
@@ -276,18 +257,15 @@ public class PrintScpService
       }
       cleardir(spoolDir);
       
-      server.addNotificationListener(printer, this, NOTIF_FILTER, null);
+      server.addNotificationListener(getServiceName(), printer,
+         makeNotificationFilter(PrinterServiceMBean.NOTIF_PENDING), null);
+      server.addNotificationListener(printer, printingListener, 
+         makeNotificationFilter(PrinterServiceMBean.NOTIF_PRINTING), null);
+      server.addNotificationListener(printer, doneListener, 
+         makeNotificationFilter(PrinterServiceMBean.NOTIF_DONE), null);
+      server.addNotificationListener(printer, failureListener, 
+         makeNotificationFilter(PrinterServiceMBean.NOTIF_FAILURE), null);
       
-      Context iniCtx = new InitialContext();
-      QueueConnectionFactory qcf = 
-         (QueueConnectionFactory) iniCtx.lookup("ConnectionFactory");
-      queueConn = qcf.createQueueConnection();
-      queueSession = 
-         queueConn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);      
-      Queue que = (Queue) iniCtx.lookup("queue/" + queueName);
-      queueSend = queueSession.createSender(que);
-      queueConn.start();
-
       dcmHandler = (DcmHandler)server.getAttribute(dcmServer, "DcmHandler");
       services = dcmHandler.getDcmServiceRegistry();
       services.bind(UIDs.BasicFilmSession, filmSessionService);
@@ -321,7 +299,7 @@ public class PrintScpService
       services.unbind(UIDs.PresentationLUT);
       services = null;
       dcmHandler = null;
-
+/*
       queueSend.close();
       queueSend = null;
       queueConn.stop();
@@ -329,8 +307,11 @@ public class PrintScpService
       queueSession = null;
       queueConn.close();
       queueConn = null;
-      
-      server.removeNotificationListener(printer, this);
+  */    
+      server.removeNotificationListener(getServiceName(), printer);
+      server.removeNotificationListener(printer, printingListener);
+      server.removeNotificationListener(printer, doneListener);
+      server.removeNotificationListener(printer, failureListener);
       
       if (!keepSpoolFiles) {
          cleardir(spoolDir);
@@ -448,12 +429,14 @@ public class PrintScpService
       return result;
    }
    
-   File getSessionSpoolDir(String uid) {
-      return new File(spoolDir, uid);
+   File getSessionSpoolDir(String aet, String uid) {
+      return new File(new File(spoolDir, aet), uid);
    }
    
    void initSessionSpoolDir(File dir) throws DcmServiceException {
-      if (!dir.mkdir() || !lockSessionSpoolDir(dir)
+      log.info("Create Spool Directory for Film Session[uid="
+         + dir.getName() + "]");
+      if (!dir.mkdirs() || !lockSessionSpoolDir(dir)
          || !new File(dir, SPOOL_HARDCOPY_DIR_SUFFIX).mkdir()
          || !new File(dir, SPOOL_JOB_DIR_SUFFIX).mkdir())
       {
@@ -472,24 +455,20 @@ public class PrintScpService
       }
    }
 
-   void unlockSessionSpoolDir(File dir) {
-      new File(dir, SPOOL_SESSION_LOCK_SUFFIX).delete();
-      if (!keepSpoolFiles && countJobsInSession(dir) == 0) {
-         deltree(dir);
-      }
-   }
-
-   private boolean isSessionSpoolDirLocked(File dir) {
-      return new File(dir, SPOOL_SESSION_LOCK_SUFFIX).exists();
-   }
-
    private int countJobsInSession(File dir) {
       return new File(dir, SPOOL_JOB_DIR_SUFFIX).list().length;
    }
    
-   private void purgeSessionSpoolDir(File dir) {
-      if (!keepSpoolFiles && !isSessionSpoolDirLocked(dir)
-                        && countJobsInSession(dir) == 0) {
+   void purgeSessionSpoolDir(File dir, boolean unlock) {
+      File lock = new File(dir, SPOOL_SESSION_LOCK_SUFFIX);
+      if (unlock) {
+         lock.delete();
+      } else if (lock.exists()) {
+         return;
+      }
+      if (!keepSpoolFiles && countJobsInSession(dir) == 0) {
+         log.info("Delete Spool Directory for Film Session[uid="
+            + dir.getName() + "]");
          deltree(dir);
       }
    }
@@ -527,35 +506,19 @@ public class PrintScpService
          } else {
             storePrint(jobdir, session, session.getCurrentFilmBox());
          }
-         try {
-            Dataset ds = session.getAttributes();
-            TextMessage msg = queueSession.createTextMessage(jobdir.getPath());
-            msg.setIntProperty("NumberOfCopies", ds.getInt(Tags.NumberOfCopies, 1));  
-            msg.setStringProperty("MediumType", ds.getString(Tags.MediumType)); 
-            msg.setStringProperty("FilmDestination", ds.getString(Tags.FilmDestination)); 
-            queueSend.send(msg,
-               Message.DEFAULT_DELIVERY_MODE,
-               toPriority(ds.getString(Tags.PrintPriority)), 
-               Message.DEFAULT_TIME_TO_LIVE);
-         } catch (JMSException e) {
-            throw new DcmServiceException(Status.ProcessingFailure, e);
-         }
+         Notification notif = new Notification(
+               PrinterServiceMBean.NOTIF_PENDING, 
+               this, numCreatedJobs, jobdir.getPath());
+         Dataset sessionAttr = dof.newDataset();
+         sessionAttr.putAll(session.getAttributes());
+         notif.setUserData(sessionAttr);
+         sendNotification(notif);
       } catch (DcmServiceException e) {
          deltree(jobdir);
          throw e;
       }
    }
    
-   private int toPriority(String prior) {
-      if ("LOW".equals(prior)) {
-         return Message.DEFAULT_PRIORITY - 1;
-      }
-      if ("HIGH".equals(prior)) {
-         return Message.DEFAULT_PRIORITY + 1;
-      }
-      return Message.DEFAULT_PRIORITY;
-   }
-
    void deleteJob(File job) {
       log.info("Deleting job - " + job.getName());
       if (!job.exists()) {
@@ -568,7 +531,7 @@ public class PrintScpService
       if (!deltree(job)) {
          log.warn("Failed to delete job - " + job.getName());
       }
-      purgeSessionSpoolDir(job.getParentFile().getParentFile());
+      purgeSessionSpoolDir(job.getParentFile().getParentFile(), false);
    }
    
       

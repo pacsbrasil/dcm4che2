@@ -29,31 +29,17 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfigLocator;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
-import javax.jms.QueueReceiver;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.TextMessage;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.StringTokenizer;
-import java.util.NoSuchElementException;
+import java.util.LinkedList;
 
 /**
  * <description>
@@ -73,24 +59,26 @@ import java.util.NoSuchElementException;
  */
 public class PrinterService
    extends ServiceMBeanSupport
-   implements MessageListener, PrinterServiceMBean {
+   implements PrinterServiceMBean, NotificationListener, Runnable {
    
    // Constants -----------------------------------------------------
    private static final String[] CODE_STRING = {
       null, "NORMAL", "WARNING", "FAILURE"
    };
    
-   // Attributes ----------------------------------------------------   
+   // Attributes ----------------------------------------------------
    private ObjectName printerCalibration;
    private ObjectName printerConfiguration;
    private PrinterCalibrationService calibrationService;
    private PrinterConfigurationService configurationService;
-   private QueueConnection conn;
-   private QueueSession session;
-   private String queueName;
-   private long notifCount = 0;
    
-   private String printerConfigurationFile = "conf/prncfg.xml";
+   private long notifCount = 0;
+   private LinkedList highPriorQueue = new LinkedList();
+   private LinkedList medPriorQueue = new LinkedList();
+   private LinkedList lowPriorQueue = new LinkedList();
+   private Object queueMonitor = new Object();
+   private Thread scheduler;
+   
    private int status = NORMAL;
    private String statusInfo = "NORMAL";
    
@@ -109,11 +97,11 @@ public class PrinterService
    public String getName() {
       return "Printer";
    }
-      
+   
    public PrinterCalibrationService getCalibrationService() {
       return calibrationService;
    }
-
+   
    public PrinterConfigurationService getConfigurationService() {
       return configurationService;
    }
@@ -133,7 +121,7 @@ public class PrinterService
    public void setPrinterCalibration(ObjectName printerCalibration) {
       this.printerCalibration = printerCalibration;
    }
-
+   
    /** Getter for property printerConfiguration.
     * @return Value of property printerConfiguration.
     */
@@ -169,132 +157,120 @@ public class PrinterService
       return CODE_STRING[status];
    }
    
-   /** Getter for property queueName.
-    * @return Value of property queueName.
-    */
-   public String getQueueName() {
-      return queueName;
-   }
-   
-   /** Setter for property queueName.
-    * @param queueName New value of property queueName.
-    */
-   public void setQueueName(String queueName) {
-      if (queueName.length() == 0) {
-         throw new IllegalArgumentException();
-      }
-      this.queueName = queueName;
-   }
-      
-   // MessageListener implementation -----------------------------------
-   
-   public void onMessage(Message msg) {
-      String job;
-      int numberOfCopies;
-      String mediumType;
-      String filmDestination;
-      try {
-         job = ((TextMessage) msg).getText();
-         numberOfCopies = msg.getIntProperty("NumberOfCopies"); 
-         mediumType = msg.getStringProperty("MediumType"); 
-         filmDestination = msg.getStringProperty("FilmDestination");          
-     } catch (JMSException e) {
-         log.error("Failed to read JMS messsage:", e);
-         return;
-      }
-      
-      log.info("Start processing job - " + job);
-      sendNotification(
-         new PrintJobNotification(this, ++notifCount, job,
-            PrintJobNotification.PRINTING));
-      try {
-         File jobDir = new File(job);
-         if (!jobDir.exists()) {
-            throw new RuntimeException("Missing job dir - " + job);
-         }
-         File rootDir = jobDir.getParentFile().getParentFile();
-         File hcDir = new File(rootDir, "HC");
-         if (!hcDir.exists()) {
-            throw new RuntimeException("Missing hardcopy dir - " + hcDir);
-         }
-         
-         
-         File[] spFiles = jobDir.listFiles();
-         Arrays.sort(spFiles,
-            new Comparator() {
-               public int compare(Object o1, Object o2) {
-                  return (int)(((File)o1).lastModified()
-                             - ((File)o2).lastModified());
-               }
-            });
-         printing = true;
-         // TO DO
-         
-         // simulate Print Process
-         new Thread(new Runnable() {
-             public void run() {
-                 try {
-                    Thread.sleep(10000);
-                 } catch (InterruptedException ignore) {}
-                 setPrinting(false);
-             }
-         }).start();
-         
-         // wait until setPrinting(false) by PrintJobListener
-         synchronized (this) {
-             while (printing) {
-                 wait();             
-             }
-         }
-         
-         log.info("Finished processing job - " + job);
-         sendNotification(
-            new PrintJobNotification(this, ++notifCount, job,
-               PrintJobNotification.DONE));
-      } catch (Exception e) {
-         log.error("Failed processing job - " + job, e);
-         sendNotification(
-            new PrintJobNotification(this, ++notifCount, job,
-               PrintJobNotification.FAILURE));
-      }
-      printing = false;
-   }
-
-   private boolean printing = false;
-   private synchronized void setPrinting(boolean printing) {
-       this.printing = printing;
-       notify();
-   }
    
    // ServiceMBeanSupport overrides ------------------------------------
    public void startService()
-      throws Exception
-   {
+   throws Exception {
       calibrationService = (PrinterCalibrationService)
          server.getAttribute(printerCalibration, "Service");
       configurationService = (PrinterConfigurationService)
          server.getAttribute(printerConfiguration, "Service");
-      Context iniCtx = new InitialContext();
-      QueueConnectionFactory qcf = 
-         (QueueConnectionFactory) iniCtx.lookup("ConnectionFactory");
-      conn = qcf.createQueueConnection();
-      session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);      
-      Queue que = (Queue) iniCtx.lookup("queue/" + queueName);
-      QueueReceiver rcv = session.createReceiver(que);
-      rcv.setMessageListener(this);
-      conn.start();
-   }
 
+      scheduler = new Thread(this);
+      scheduler.start();
+   }
+   
    public void stopService()
+   throws Exception {
+      Thread tmp = scheduler;
+      scheduler = null;
+      tmp.interrupt();
+   }
+   
+   // NotificationListener implementation -----------------------------------
+   public void handleNotification(Notification notif, Object obj) {
+      log.info("Scheduling job - " + new File(notif.getMessage()).getName());
+      Dataset sessionAttr = (Dataset)notif.getUserData();
+      String prior = sessionAttr.getString(Tags.PrintPriority);
+      synchronized (queueMonitor) {
+         if ("LOW".equals(prior)) {
+            lowPriorQueue.add(notif);
+         } else if ("HIGH".equals(prior)) {
+            highPriorQueue.add(notif);
+         } else {
+            medPriorQueue.add(notif);
+         }
+         queueMonitor.notify();
+      }
+   }
+   
+   // Runnable implementation -----------------------------------
+   public void run() {
+      log.info("Scheduler Started");
+      while (scheduler != null) {
+         try {
+            Notification notif;
+            synchronized (queueMonitor) {
+               while ((notif = nextNotification()) == null) {
+                  queueMonitor.wait();
+               }
+            }
+            processNotification(notif);
+         } catch (InterruptedException ignore) {
+         }
+      }
+      log.info("Scheduler Stopped");
+   }
+   
+   private Notification nextNotification() {
+      if (!highPriorQueue.isEmpty()) {
+         return (Notification) highPriorQueue.removeFirst();
+      }
+      if (!medPriorQueue.isEmpty()) {
+         return (Notification) medPriorQueue.removeFirst();
+      }
+      if (!lowPriorQueue.isEmpty()) {
+         return (Notification) lowPriorQueue.removeFirst();
+      }
+      return null;
+   }
+   
+   private void processNotification(Notification notif) {
+      String job = notif.getMessage();
+      File jobDir = new File(job);
+      String jobID = new File(job).getName();
+      log.info("Start processing job - " + jobID);
+      sendNotification(
+         new Notification(NOTIF_PRINTING, this, ++notifCount, job));
+      Dataset sessionAttr = (Dataset)notif.getUserData();
+      try {
+         doPrint(jobDir, (Dataset)notif.getUserData());
+         log.info("Finished processing job - " + jobID);
+         sendNotification(
+            new Notification(NOTIF_DONE, this, ++notifCount, job));
+      } catch (Exception e) {
+         log.error("Failed processing job - " + jobID, e);
+         sendNotification(
+            new Notification(NOTIF_FAILURE, this, ++notifCount, job));
+      }
+   }
+   
+   private void doPrint(File jobDir, Dataset sessionAttr)
       throws Exception
    {
-      conn.stop();
-      session.close();
-      session = null;
-      conn.close();
-      conn = null; 
+      if (!jobDir.exists()) {
+         throw new RuntimeException("Missing job dir - " + jobDir);
+      }
+      File rootDir = jobDir.getParentFile().getParentFile();
+      File hcDir = new File(rootDir, "HC");
+      if (!hcDir.exists()) {
+         throw new RuntimeException("Missing hardcopy dir - " + hcDir);
+      }
+
+      File[] spFiles = jobDir.listFiles();
+      Arrays.sort(spFiles,
+         new Comparator() {
+            public int compare(Object o1, Object o2) {
+               return (int)(((File)o1).lastModified()
+                          - ((File)o2).lastModified());
+            }
+         });
+      // simulate Print Process
+      try {
+         Thread.sleep(10000);
+      } catch (InterruptedException ignore) {}
    }
-      
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

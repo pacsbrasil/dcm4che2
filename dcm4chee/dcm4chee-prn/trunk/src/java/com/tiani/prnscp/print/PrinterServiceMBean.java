@@ -45,6 +45,11 @@ import javax.management.ObjectName;
  */
 public interface PrinterServiceMBean extends ServiceMBean {
    
+   String NOTIF_PENDING = "tiani.prnscp.pending";
+   String NOTIF_PRINTING = "tiani.prnscp.printing";
+   String NOTIF_DONE = "tiani.prnscp.done";
+   String NOTIF_FAILURE = "tiani.prnscp.failure";
+   
    int NORMAL  = 1;
    int WARNING = 2;
    int FAILURE = 3;
@@ -84,13 +89,4 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    String getStatusInfo();
    
-   /** Getter for property queueName.
-    * @return Value of property queueName.
-    */
-   String getQueueName();
-   
-   /** Setter for property queueName.
-    * @param queueName New value of property queueName.
-    */
-   void setQueueName(String queueName);
 }
