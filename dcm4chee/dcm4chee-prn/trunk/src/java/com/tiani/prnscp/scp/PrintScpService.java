@@ -259,10 +259,47 @@ public class PrintScpService
    }
 
    // ServiceMBeanSupport overrides -----------------------------------
-   private boolean isConfigured(String attribute) throws Exception {
+   private boolean isSupported(String attribute) throws Exception {
       Boolean b = (Boolean)
          server.getAttribute(printerConfiguration, attribute);
       return b.booleanValue();
+   }
+
+   String getStringConfigParam(String attribute) throws DcmServiceException {
+      try {
+         return (String) server.getAttribute(printerConfiguration, attribute);
+      } catch (Exception e) {
+         log.error("Failed to access attribute " + attribute
+            + " of " + printerConfiguration, e);
+         throw new DcmServiceException(Status.ProcessingFailure, 
+            "Internal JMX Access Error");
+      }
+   }
+
+   int getIntConfigParam(String attribute) throws DcmServiceException {
+      try {
+         Integer i =
+            (Integer) server.getAttribute(printerConfiguration, attribute);
+         return i.intValue();
+      } catch (Exception e) {
+         log.error("Failed to access attribute " + attribute
+            + " of " + printerConfiguration, e);
+         throw new DcmServiceException(Status.ProcessingFailure, 
+            "Internal JMX Access Error");
+      }
+   }
+   
+   boolean check(String methode, String attribute) throws DcmServiceException {
+      try {
+         Boolean flag = (Boolean) server.invoke(printerConfiguration, methode, 
+            new Object[]{ attribute }, new String[]{ "java.lang.String" });
+         return flag.booleanValue();
+      } catch (Exception e) {
+         log.error("Failed to access attribute " + attribute
+            + " of " + printerConfiguration, e);
+         throw new DcmServiceException(Status.ProcessingFailure, 
+            "Internal JMX Access Error");
+      }
    }
    
    public void startService()
@@ -304,10 +341,10 @@ public class PrintScpService
       services.bind(UIDs.PresentationLUT, plutService);
       policy = dcmHandler.getAcceptorPolicy();
       policy.putPresContext(UIDs.BasicGrayscalePrintManagement, ts_uids);
-      if (isConfigured("SupportsColor")) {
+      if (isSupported("SupportsColor")) {
          policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
       }
-      if (isConfigured("SupportsPresentationLUT")) {
+      if (isSupported("SupportsPresentationLUT")) {
          policy.putPresContext(UIDs.PresentationLUT, ts_uids);
       }
    }

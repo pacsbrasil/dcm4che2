@@ -22,6 +22,7 @@
 
 package com.tiani.prnscp.scp;
 
+import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -68,12 +69,13 @@ class FilmBox {
    
    // Constructors --------------------------------------------------
    public FilmBox(PrintScpService scp, String uid, Dataset dataset,
-         HashMap pluts)
+         Command rspCmd, HashMap pluts)
       throws DcmServiceException
    {
       this.scp = scp;
       this.uid = uid;
       this.dataset = dataset;
+      check(dataset, rspCmd);
       addPLUT(dataset, pluts);
    }
    
@@ -86,9 +88,10 @@ class FilmBox {
       return dataset;
    }
 
-   public void updateAttributes(Dataset modification, HashMap pluts)
+   public void updateAttributes(Dataset modification, Command rspCmd, HashMap pluts)
       throws DcmServiceException
    {
+      check(modification, rspCmd);
       addPLUT(modification, pluts);
       dataset.putAll(modification);
    }
@@ -192,4 +195,24 @@ class FilmBox {
       this.pluts.put(iuid, plut);
    }
    
+   private void check(Dataset ds, Command rsp)
+      throws DcmServiceException
+   {
+      Integer illumination = ds.getInteger(Tags.Illumination);
+      if (illumination == null) {
+         ds.putUS(Tags.MediumType, scp.getIntConfigParam("Illumination"));
+      }
+      Integer ambientLight = ds.getInteger(Tags.ReflectedAmbientLight);
+      if (ambientLight == null) {
+         ds.putUS(Tags.MediumType, scp.getIntConfigParam("ReflectedAmbientLight"));
+      }
+      Integer minDensity = ds.getInteger(Tags.MinDensity);
+      if (minDensity == null) {
+         ds.putUS(Tags.MinDensity, scp.getIntConfigParam("MinDensity"));
+      }
+      Integer maxDensity = ds.getInteger(Tags.MaxDensity);
+      if (maxDensity == null) {
+         ds.putUS(Tags.MaxDensity, scp.getIntConfigParam("MaxDensity"));
+      }
+   }
 }

@@ -153,13 +153,13 @@ class FilmSession {
       return filmBoxes.containsKey(uid);
    }   
    
-   public void setFilmBox(Dataset filmbox, HashMap pluts)
+   public void setFilmBox(Dataset filmbox, Command rspCmd, HashMap pluts)
       throws DcmServiceException
    {
       if (curFilmBox == null) {
          throw new IllegalStateException();
       }
-      curFilmBox.updateAttributes(filmbox, pluts);
+      curFilmBox.updateAttributes(filmbox, rspCmd, pluts);
    }
    
    public void deleteFilmBox() {
@@ -178,7 +178,15 @@ class FilmSession {
       if (!checkPrintPriority(ds.getString(Tags.PrintPriority))) {
          rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
       }
-//      checkMediumType(ds.getString(Tags.MediumType));
+      String mediumType = ds.getString(Tags.MediumType);
+      if (mediumType == null) {
+         ds.putCS(Tags.MediumType, scp.getStringConfigParam("DefaultMediumType"));
+      } else {
+         if (!scp.check("isSupportsMediumType", mediumType)) {
+            scp.getLog().warn("Unsupported Medium Type: " + mediumType);
+            throw new DcmServiceException(Status.AttributeValueOutOfRange);
+         }
+      }
       if (ds.getInt(Tags.MemoryAllocation, 0) != 0) {
          rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
       }      
@@ -190,20 +198,5 @@ class FilmSession {
          || "LOW".equals(val)
          || "MED".equals(val);
    }
-/*   
-   private void checkMediumType(String val)
-      throws DcmServiceException
-   {
-      if (val != null && prnCfgItem != null) {
-         DcmElement sq = prnCfgItem.get(Tags.MediaInstalledSeq);
-         for (int i = 0, n = sq.vm(); i < n; ++i) {
-            if (val.equals(sq.getItem(i).getString(Tags.MediumType))) {
-               return;
-            }
-         }
-         scp.getLog().warn("Requested Media Type: " + val + " is not installed");
-         throw new DcmServiceException(Status.InvalidAttributeValue);
-      }
-   }
-*/         
+   
 }
