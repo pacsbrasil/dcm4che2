@@ -5,5 +5,11 @@
   <mbean code="org.dcm4chex.archive.dcm.mcmscu.MCMScuService" 
          name="dcm4chex:service=MCMScu"
          xmbean-dd="xmdesc/dcm4jboss-mcmscu-xmbean.xml">
+    <depends>
+      dcm4chex:service=Queue,name=MCMScu
+    </depends>
+    <depends>
+      jboss.mq:service=InvocationLayer,type=JVM
+    </depends>
   </mbean>
 </server>

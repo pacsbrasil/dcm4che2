@@ -20,7 +20,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.jms.QueueSession;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -117,8 +116,6 @@ public class IANScuService extends ServiceMBeanSupport implements
     private boolean offerStudyContentNotification = true;
 
     private int scnPriority = 0;
-
-    private QueueSession jmsSession;
 
     private String[] notifiedAETs = EMPTY;
 

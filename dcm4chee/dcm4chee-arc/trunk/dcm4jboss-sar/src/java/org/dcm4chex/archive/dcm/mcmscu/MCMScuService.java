@@ -6,9 +6,16 @@
  */
 package org.dcm4chex.archive.dcm.mcmscu;
 
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
+
 import org.dcm4chex.archive.ejb.interfaces.MediaComposer;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposerHome;
+import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -17,7 +24,8 @@ import org.jboss.system.ServiceMBeanSupport;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class MCMScuService extends ServiceMBeanSupport {
+public class MCMScuService extends ServiceMBeanSupport
+	implements MessageListener {
 	
 	private long maxMediaUsage;
 	
@@ -28,7 +36,9 @@ public class MCMScuService extends ServiceMBeanSupport {
 	private static final long ONE_DAY_IN_MILLIS = 86400000;// one day has 86400000 milli seconds
 
 	private static final long MEGA_BYTE = 1000000L;
-	
+
+    private static final String QUEUE = "MCMScu";
+
 	/**
 	 * Returns the prefix for FileSetID creation.
 	 * 
@@ -114,4 +124,30 @@ public class MCMScuService extends ServiceMBeanSupport {
 		return System.currentTimeMillis() - ( getDaysBefore() * ONE_DAY_IN_MILLIS );
 	}
 	
+    protected void startService() throws Exception {
+        JMSDelegate.startListening(QUEUE, this);
+    }
+
+    protected void stopService() throws Exception {
+        JMSDelegate.stopListening(QUEUE);
+    }
+
+    public void onMessage(Message message) {
+        ObjectMessage om = (ObjectMessage) message;
+        try {
+            MediaDTO mediaDTO = (MediaDTO) om.getObject();
+            log.info("Start processing " + mediaDTO);
+            process(mediaDTO);
+        } catch (JMSException e) {
+            log.error("jms error during processing message: " + message, e);
+        } catch (Throwable e) {
+            log.error("unexpected error during processing message: " + message,
+                    e);
+        }
+    }
+
+    private void process(MediaDTO mediaDTO) {
+        // TODO Auto-generated method stub
+        
+    }
 }
