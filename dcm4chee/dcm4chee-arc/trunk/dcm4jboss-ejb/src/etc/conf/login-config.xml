@@ -120,7 +120,7 @@ $Revision$
        </authentication>
     </application-policy>
 
-    <application-policy name = "jaudit">
+    <application-policy name = "dcm4jboss-arr">
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >

@@ -7,7 +7,7 @@ CREATE TABLE mpps (
 	patient_fk		INTEGER,
 	drcode_fk		INTEGER,
 	mpps_iuid		VARCHAR(254) NOT NULL,
-	mpps_status		VARCHAR(254),
+	mpps_status		INTEGER,
 	mpps_attrs		BLOB(64000),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
@@ -51,7 +51,7 @@ CREATE INDEX arr_user_name ON audit_record(user_name);
 CREATE INDEX arr_patient_name ON audit_record(patient_name_up);
 CREATE INDEX arr_patient_id ON audit_record(patient_id);
 
-INSERT INTO roles VALUES('admin','jaudit-user');
+INSERT INTO roles VALUES('admin','arr-user');
 
 GRANT ALL PRIVILEGES ON TABLE audit_record USER tiani;
 GRANT USAGE ON SEQUENCE audit_record_pk_seq TO USER tiani;

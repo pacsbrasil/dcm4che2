@@ -19,6 +19,8 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Arrays;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
@@ -81,7 +83,12 @@ public abstract class MPPSBean implements EntityBean {
     private EntityContext ctx;
     private SeriesLocalHome seriesHome;
     private CodeLocalHome codeHome;
-
+    private static final String[] STATUS =
+        { "IN PROGRESS", "COMPLETED", "DISCONTINUED" };
+    private static final int IN_PROGRESS = 0;
+    private static final int COMPLETED = 0;
+    private static final int DISCONTINUED = 0;
+    
     public void setEntityContext(EntityContext ctx) {
         this.ctx = ctx;
         Context jndiCtx = null;
@@ -140,13 +147,10 @@ public abstract class MPPSBean implements EntityBean {
      *
      * @ejb.persistence
      *  column-name="mpps_status"
-     * 
-     * @ejb.interface-method
-     *
      */
-    public abstract String getPpsStatus();
+    public abstract int getPpsStatusAsInt();
 
-    public abstract void setPpsStatus(String status);
+    public abstract void setPpsStatusAsInt(int status);
 
     /**
      * MPPS DICOM Attributes
@@ -236,6 +240,42 @@ public abstract class MPPSBean implements EntityBean {
         log.info("Deleting " + prompt());
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isInProgress() {
+        return getPpsStatusAsInt() == IN_PROGRESS;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isCompleted() {
+        return getPpsStatusAsInt() == COMPLETED;
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isDiscontinued() {
+        return getPpsStatusAsInt() == DISCONTINUED;
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public String getPpsStatus() {
+        return STATUS[getPpsStatusAsInt()];
+    }
+
+    public void setPpsStatus(String status) {
+        int index = Arrays.asList(STATUS).indexOf(status);
+        if (index == -1) {
+            throw new IllegalArgumentException("status:" + status);
+        }
+        setPpsStatusAsInt(index);
+    }
+    
     private String prompt() {
         return "MPPS[pk="
             + getPk()
