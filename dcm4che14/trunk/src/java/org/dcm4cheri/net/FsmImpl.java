@@ -439,10 +439,10 @@ final class FsmImpl
         if (this.state != state) {
             State prev = this.state;
             this.state = state;
-            state.entry();
             if (log.isDebugEnabled()) {
                 log.debug(state.toString());
             }
+            state.entry();
         }
     }
 
