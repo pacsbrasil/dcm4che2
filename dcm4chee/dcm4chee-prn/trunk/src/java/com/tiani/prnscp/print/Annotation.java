@@ -230,7 +230,7 @@ class Annotation
 
     private String getText(int index)
     {
-        return props.getProperty("" + index);
+        return props.getProperty("" + index, "");
     }
 
 
@@ -243,9 +243,6 @@ class Annotation
     public void setText(int index, String text)
     {
         String key = "" + index;
-        if (props.getProperty(key) == null) {
-            throw new IndexOutOfBoundsException("index: " + index);
-        }
         props.setProperty(key, text);
     }
 
