@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.2.0"/>
+	<property name="version" value="0.3.0"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
@@ -199,6 +199,9 @@
    		<copy todir="${dist.dir}/common">
    			<fileset dir="${dcm4che.home}">
    				<include name="lib/dcm4che.jar"/>
+   			</fileset>
+  			<fileset dir="${dcm4jboss-ejb.src}/etc">
+   				<include name="conf/*.xml"/>
    			</fileset>
    			<fileset dir="${target.dir}">
    				<include name="lib/*"/>
