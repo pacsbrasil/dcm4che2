@@ -376,7 +376,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     throw new DcmServiceException(Status.MissingAttribute,
                             "Missing Referenced SOP Class UID");
             if (item.vm(Tags.RequestedMediaApplicationProfile) <= 0)
-                    item.putCS(Tags.RequestedMediaApplicationProfile,
+                    item.putLO(Tags.RequestedMediaApplicationProfile,
                             defaultMediaApplicationProfile);
         }
     }
