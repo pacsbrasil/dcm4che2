@@ -48,7 +48,7 @@ public class PixelDataTest
         System.out.println("writing " + outFile + "...");
         PixelDataWriter pdWriter = pdFact.newWriter(pdReader.getPixelDataArray(), false, ds, out,
             dcmParser.getDcmDecodeParam().byteOrder, dcmParser.getReadVR());
-        pdWriter.writePixelData(out, true);
+        pdWriter.writePixelData();
         out.flush();
         out.close();
         System.out.println("done!");
