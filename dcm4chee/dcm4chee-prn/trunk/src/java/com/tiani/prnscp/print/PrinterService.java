@@ -52,7 +52,10 @@ import javax.print.attribute.AttributeSet;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Chromaticity;
+import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.PrinterResolution;
+import javax.print.attribute.standard.QueuedJobCount;
+import javax.print.attribute.standard.SheetCollate;
 import javax.print.event.PrintJobAttributeEvent;
 import javax.print.event.PrintJobAttributeListener;
 import javax.print.event.PrintJobListener;
@@ -206,6 +209,7 @@ public class PrinterService
    private LinkedList medPriorQueue = new LinkedList();
    private LinkedList lowPriorQueue = new LinkedList();
    private Object queueMonitor = new Object();
+   private Object printerMonitor = new Object();
    private Thread scheduler;
    private PrintService printService;
    
@@ -280,6 +284,8 @@ public class PrinterService
       }
    }
 
+   protected int[] getPuzzleScalePackSize(){return PuzzleScalePackageSize;}
+   
    protected Logger getLogger(){return log;}
    
    private PrintService getPrintService() throws PrintException {
@@ -991,42 +997,14 @@ public class PrinterService
       
       /** Holds value of property puzzleScaleStartSize. */
       private int puzzleScaleStartSize;
-      
-      /** Holds value of property puzzleScalePackageSizeMin. */
-      private int puzzleScalePackageSizeMin;
-      
-      /** Holds value of property puzzleScalePackageSize1000. */
-      private int puzzleScalePackageSize1000;
-      
-      /** Holds value of property puzzleScalePackageSize2000. */
-      private int puzzleScalePackageSize2000;
-      
-      /** Holds value of property puzzleScalePackageSize3000. */
-      private int puzzleScalePackageSize3000;
-      
-      /** Holds value of property puzzleScalePackageSize4000. */
-      private int puzzleScalePackageSize4000;
-      
-      /** Holds value of property puzzleScalePackageSize5000. */
-      private int puzzleScalePackageSize5000;
-      
-      /** Holds value of property puzzleScalePackageSize6000. */
-      private int puzzleScalePackageSize6000;
-      
-      /** Holds value of property puzzleScalePackageSize7000. */
-      private int puzzleScalePackageSize7000;
-      
-      /** Holds value of property puzzleScalePackageSize8000. */
-      private int puzzleScalePackageSize8000;
-      
-      /** Holds value of property puzzleScalePackageSize9000. */
-      private int puzzleScalePackageSize9000;
-      
-      /** Holds value of property puzzleScalePackageSize10000. */
-      private int puzzleScalePackageSize10000;
+
+      private int[] PuzzleScalePackageSize = new int[11];
       
       /** Holds value of property printGrayAsColor. */
       private boolean printGrayAsColor;
+      
+      /** Holds value of property maxQueuedJobCount. */
+      private int maxQueuedJobCount;
       
    /** Getter for property LUTs.
     * @return Value of property LUTs.
@@ -1400,6 +1378,15 @@ public class PrinterService
       log.info("Scheduler Stopped");
    }
    
+   private int getQueuedJobCount() throws PrintException {
+       PrintService ps = getPrintService();
+       QueuedJobCount qjc = (QueuedJobCount) ps.getAttribute(QueuedJobCount.class);
+       if (qjc == null) {
+           return 0;
+       }
+       return qjc.getValue();
+   }
+   
    private Notification nextNotification() {
       if (!highPriorQueue.isEmpty()) {
          return (Notification) highPriorQueue.removeFirst();
@@ -1417,11 +1404,18 @@ public class PrinterService
       String job = notif.getMessage();
       File jobDir = new File(job);
       String jobID = new File(job).getName();
-      log.info("Start processing job - " + jobID);
-      sendNotification(
-         new Notification(NOTIF_PRINTING, this, ++notifCount, job));
       Dataset sessionAttr = (Dataset)notif.getUserData();
       try {
+        synchronized (printerMonitor) {
+           while (getQueuedJobCount() > maxQueuedJobCount) {
+              log.info("Maximal number of Printer Job reached - " 
+                + getQueuedJobCount() + " > " + maxQueuedJobCount);
+              printerMonitor.wait();
+           }
+        }
+          log.info("Start processing job - " + jobID);
+          sendNotification(
+             new Notification(NOTIF_PRINTING, this, ++notifCount, job));
          long mil = System.currentTimeMillis();
          boolean color = notif.getType().equals(NOTIF_SCHEDULE_COLOR);
          print(new Films(this, jobDir, sessionAttr), sessionAttr, color);
@@ -1448,6 +1442,9 @@ public class PrinterService
    public void attributeUpdate(PrintServiceAttributeEvent psae) {
       if (log.isDebugEnabled())
          log.debug(toMsg("printServiceAttributeUpdate: ", psae.getAttributes()));
+      synchronized (printerMonitor) {
+          printerMonitor.notify();
+      }
    }
    
    // PrintJobAttributeListener implementation -------------------------   
@@ -1520,9 +1517,6 @@ public class PrinterService
       throws PrintException
    {
       PrintService ps = getPrintService();
-      if (ps == null) {
-         throw new PrintException("Failed to access Printer " + printerName);
-      }
       if (autoCalibration) {
          try {
             calibrate(false);
@@ -1548,6 +1542,11 @@ public class PrinterService
             ? Chromaticity.COLOR
             : Chromaticity.MONOCHROME,
          aset);
+      int copies = sessionAttr == null ? 1 : sessionAttr.getInt(Tags.NumberOfCopies, 1);
+      if (copies > 1) {
+        setPrintRequestAttribute(ps, new Copies(copies), aset);
+        setPrintRequestAttribute(ps, SheetCollate.COLLATED, aset);
+      }
          
       DocPrintJob pj = ps.createPrintJob();         
       Doc doc = new SimpleDoc(printData, 
@@ -1691,180 +1690,25 @@ public class PrinterService
        this.puzzleScaleStartSize = puzzleScaleStartSize;
    }
    
-   /** Getter for property puzzleScalePackageSizeMin.
-    * @return Value of property puzzleScalePackageSizeMin.
+   /** Getter for property puzzleScalePackageSize.
+    * @return Value of property puzzleScalePackageSize.
     *
     */
-   public int getPuzzleScalePackageSizeMin() {
-       return this.puzzleScalePackageSizeMin;
+   public String getPuzzleScalePackageSize() {
+       return "" + PuzzleScalePackageSize[0] + ","+PuzzleScalePackageSize[1] + ","+PuzzleScalePackageSize[2]
+                 + ","+PuzzleScalePackageSize[3] + ","+PuzzleScalePackageSize[4] + ","+PuzzleScalePackageSize[5]
+                 + ","+PuzzleScalePackageSize[6] + ","+PuzzleScalePackageSize[7] + ","+PuzzleScalePackageSize[8]
+                 + ","+PuzzleScalePackageSize[9] + ","+PuzzleScalePackageSize[10];
    }
    
-   /** Setter for property puzzleScalePackageSizeMin.
-    * @param puzzleScalePackageSizeMin New value of property puzzleScalePackageSizeMin.
-    *
-    */
-   public void setPuzzleScalePackageSizeMin(int puzzleScalePackageSizeMin) {
-       this.puzzleScalePackageSizeMin = puzzleScalePackageSizeMin;
-   }
-   
-   /** Getter for property puzzleScalePackageSize1000.
-    * @return Value of property puzzleScalePackageSize1000.
-    *
-    */
-   public int getPuzzleScalePackageSize1000() {
-       return this.puzzleScalePackageSize1000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize1000.
-    * @param puzzleScalePackageSize1000 New value of property puzzleScalePackageSize1000.
-    *
-    */
-   public void setPuzzleScalePackageSize1000(int puzzleScalePackageSize1000) {
-       this.puzzleScalePackageSize1000 = puzzleScalePackageSize1000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize2000.
-    * @return Value of property puzzleScalePackageSize2000.
-    *
-    */
-   public int getPuzzleScalePackageSize2000() {
-       return this.puzzleScalePackageSize2000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize2000.
-    * @param puzzleScalePackageSize2000 New value of property puzzleScalePackageSize2000.
-    *
-    */
-   public void setPuzzleScalePackageSize2000(int puzzleScalePackageSize2000) {
-       this.puzzleScalePackageSize2000 = puzzleScalePackageSize2000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize3000.
-    * @return Value of property puzzleScalePackageSize3000.
-    *
-    */
-   public int getPuzzleScalePackageSize3000() {
-       return this.puzzleScalePackageSize3000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize3000.
-    * @param puzzleScalePackageSize3000 New value of property puzzleScalePackageSize3000.
-    *
-    */
-   public void setPuzzleScalePackageSize3000(int puzzleScalePackageSize3000) {
-       this.puzzleScalePackageSize3000 = puzzleScalePackageSize3000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize4000.
-    * @return Value of property puzzleScalePackageSize4000.
-    *
-    */
-   public int getPuzzleScalePackageSize4000() {
-       return this.puzzleScalePackageSize4000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize4000.
-    * @param puzzleScalePackageSize4000 New value of property puzzleScalePackageSize4000.
-    *
-    */
-   public void setPuzzleScalePackageSize4000(int puzzleScalePackageSize4000) {
-       this.puzzleScalePackageSize4000 = puzzleScalePackageSize4000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize5000.
-    * @return Value of property puzzleScalePackageSize5000.
-    *
-    */
-   public int getPuzzleScalePackageSize5000() {
-       return this.puzzleScalePackageSize5000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize5000.
-    * @param puzzleScalePackageSize5000 New value of property puzzleScalePackageSize5000.
-    *
-    */
-   public void setPuzzleScalePackageSize5000(int puzzleScalePackageSize5000) {
-       this.puzzleScalePackageSize5000 = puzzleScalePackageSize5000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize6000.
-    * @return Value of property puzzleScalePackageSize6000.
-    *
-    */
-   public int getPuzzleScalePackageSize6000() {
-       return this.puzzleScalePackageSize6000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize6000.
-    * @param puzzleScalePackageSize6000 New value of property puzzleScalePackageSize6000.
-    *
-    */
-   public void setPuzzleScalePackageSize6000(int puzzleScalePackageSize6000) {
-       this.puzzleScalePackageSize6000 = puzzleScalePackageSize6000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize7000.
-    * @return Value of property puzzleScalePackageSize7000.
-    *
-    */
-   public int getPuzzleScalePackageSize7000() {
-       return this.puzzleScalePackageSize7000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize7000.
-    * @param puzzleScalePackageSize7000 New value of property puzzleScalePackageSize7000.
-    *
-    */
-   public void setPuzzleScalePackageSize7000(int puzzleScalePackageSize7000) {
-       this.puzzleScalePackageSize7000 = puzzleScalePackageSize7000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize8000.
-    * @return Value of property puzzleScalePackageSize8000.
-    *
-    */
-   public int getPuzzleScalePackageSize8000() {
-       return this.puzzleScalePackageSize8000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize8000.
-    * @param puzzleScalePackageSize8000 New value of property puzzleScalePackageSize8000.
-    *
-    */
-   public void setPuzzleScalePackageSize8000(int puzzleScalePackageSize8000) {
-       this.puzzleScalePackageSize8000 = puzzleScalePackageSize8000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize9000.
-    * @return Value of property puzzleScalePackageSize9000.
-    *
-    */
-   public int getPuzzleScalePackageSize9000() {
-       return this.puzzleScalePackageSize9000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize9000.
-    * @param puzzleScalePackageSize9000 New value of property puzzleScalePackageSize9000.
-    *
-    */
-   public void setPuzzleScalePackageSize9000(int puzzleScalePackageSize9000) {
-       this.puzzleScalePackageSize9000 = puzzleScalePackageSize9000;
-   }
-   
-   /** Getter for property puzzleScalePackageSize10000.
-    * @return Value of property puzzleScalePackageSize10000.
-    *
-    */
-   public int getPuzzleScalePackageSize10000() {
-       return this.puzzleScalePackageSize10000;
-   }
-   
-   /** Setter for property puzzleScalePackageSize10000.
-    * @param puzzleScalePackageSize10000 New value of property puzzleScalePackageSize10000.
-    *
-    */
-   public void setPuzzleScalePackageSize10000(int puzzleScalePackageSize10000) {
-       this.puzzleScalePackageSize10000 = puzzleScalePackageSize10000;
+   public void setPuzzleScalePackageSize(String str) {
+      StringTokenizer tk = new StringTokenizer(str, "\\");
+      if (tk.countTokens() != 11) {
+         throw new IllegalArgumentException("PuzzleScalePackageSize: (need 11 values)" + str);
+      }
+      for(int i=0;i<11;i++){
+          PuzzleScalePackageSize[i] = Integer.parseInt(tk.nextToken().toString());
+      }
    }
    
    /** Getter for property printGrayAsColor.
@@ -1881,6 +1725,22 @@ public class PrinterService
     */
    public void setPrintGrayAsColor(boolean printGrayAsColor) {
       this.printGrayAsColor = printGrayAsColor;
+   }
+   
+   /** Getter for property maxQueuedJobCount.
+    * @return Value of property maxQueuedJobCount.
+    *
+    */
+   public int getMaxQueuedJobCount() {
+       return this.maxQueuedJobCount;
+   }
+   
+   /** Setter for property maxQueuedJobCount.
+    * @param maxQueuedJobCount New value of property maxQueuedJobCount.
+    *
+    */
+   public void setMaxQueuedJobCount(int maxQueuedJobCount) {
+       this.maxQueuedJobCount = maxQueuedJobCount;
    }
    
    // Inner classes -------------------------------------------------

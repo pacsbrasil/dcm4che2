@@ -700,133 +700,11 @@ public interface PrinterServiceMBean extends ServiceMBean {
     * @return Value of property puzzleScalePackageSizeMin.
     *
     */
-   public int getPuzzleScalePackageSizeMin();
+
    
-   /** Setter for property puzzleScalePackageSizeMin.
-    * @param puzzleScalePackageSizeMin New value of property puzzleScalePackageSizeMin.
-    *
-    */
-   public void setPuzzleScalePackageSizeMin(int puzzleScalePackageSizeMin);
+   public String getPuzzleScalePackageSize();
    
-   /** Getter for property puzzleScalePackageSize1000.
-    * @return Value of property puzzleScalePackageSize1000.
-    *
-    */
-   public int getPuzzleScalePackageSize1000();
-   
-   /** Setter for property puzzleScalePackageSize1000.
-    * @param puzzleScalePackageSize1000 New value of property puzzleScalePackageSize1000.
-    *
-    */
-   public void setPuzzleScalePackageSize1000(int puzzleScalePackageSize1000);
-   
-   /** Getter for property puzzleScalePackageSize2000.
-    * @return Value of property puzzleScalePackageSize2000.
-    *
-    */
-   public int getPuzzleScalePackageSize2000();
-   
-   /** Setter for property puzzleScalePackageSize2000.
-    * @param puzzleScalePackageSize2000 New value of property puzzleScalePackageSize2000.
-    *
-    */
-   public void setPuzzleScalePackageSize2000(int puzzleScalePackageSize2000);
-   
-   /** Getter for property puzzleScalePackageSize3000.
-    * @return Value of property puzzleScalePackageSize3000.
-    *
-    */
-   public int getPuzzleScalePackageSize3000();
-   
-   /** Setter for property puzzleScalePackageSize3000.
-    * @param puzzleScalePackageSize3000 New value of property puzzleScalePackageSize3000.
-    *
-    */
-   public void setPuzzleScalePackageSize3000(int puzzleScalePackageSize3000);
-   
-   /** Getter for property puzzleScalePackageSize4000.
-    * @return Value of property puzzleScalePackageSize4000.
-    *
-    */
-   public int getPuzzleScalePackageSize4000();
-   
-   /** Setter for property puzzleScalePackageSize4000.
-    * @param puzzleScalePackageSize4000 New value of property puzzleScalePackageSize4000.
-    *
-    */
-   public void setPuzzleScalePackageSize4000(int puzzleScalePackageSize4000);
-   
-   /** Getter for property puzzleScalePackageSize5000.
-    * @return Value of property puzzleScalePackageSize5000.
-    *
-    */
-   public int getPuzzleScalePackageSize5000();
-   
-   /** Setter for property puzzleScalePackageSize5000.
-    * @param puzzleScalePackageSize5000 New value of property puzzleScalePackageSize5000.
-    *
-    */
-   public void setPuzzleScalePackageSize5000(int puzzleScalePackageSize5000);
-   
-   /** Getter for property puzzleScalePackageSize6000.
-    * @return Value of property puzzleScalePackageSize6000.
-    *
-    */
-   public int getPuzzleScalePackageSize6000();
-   
-   /** Setter for property puzzleScalePackageSize6000.
-    * @param puzzleScalePackageSize6000 New value of property puzzleScalePackageSize6000.
-    *
-    */
-   public void setPuzzleScalePackageSize6000(int puzzleScalePackageSize6000);
-   
-   /** Getter for property puzzleScalePackageSize7000.
-    * @return Value of property puzzleScalePackageSize7000.
-    *
-    */
-   public int getPuzzleScalePackageSize7000();
-   
-   /** Setter for property puzzleScalePackageSize7000.
-    * @param puzzleScalePackageSize7000 New value of property puzzleScalePackageSize7000.
-    *
-    */
-   public void setPuzzleScalePackageSize7000(int puzzleScalePackageSize7000);
-   
-   /** Getter for property puzzleScalePackageSize8000.
-    * @return Value of property puzzleScalePackageSize8000.
-    *
-    */
-   public int getPuzzleScalePackageSize8000();
-   
-   /** Setter for property puzzleScalePackageSize8000.
-    * @param puzzleScalePackageSize8000 New value of property puzzleScalePackageSize8000.
-    *
-    */
-   public void setPuzzleScalePackageSize8000(int puzzleScalePackageSize8000);
-   
-   /** Getter for property puzzleScalePackageSize9000.
-    * @return Value of property puzzleScalePackageSize9000.
-    *
-    */
-   public int getPuzzleScalePackageSize9000();
-   
-   /** Setter for property puzzleScalePackageSize9000.
-    * @param puzzleScalePackageSize9000 New value of property puzzleScalePackageSize9000.
-    *
-    */
-   public void setPuzzleScalePackageSize9000(int puzzleScalePackageSize9000);
-   
-   /** Getter for property puzzleScalePackageSize10000.
-    * @return Value of property puzzleScalePackageSize10000.
-    *
-    */
-   public int getPuzzleScalePackageSize10000();
-   
-   /** Setter for property puzzleScalePackageSize10000.
-    * @param puzzleScalePackageSize10000 New value of property puzzleScalePackageSize10000.
-    *
-    */
-   public void setPuzzleScalePackageSize10000(int puzzleScalePackageSize10000);
+   public void setPuzzleScalePackageSize(String s);
    
    /** Getter for property printGrayAsColor.
     * @return Value of property printGrayAsColor.
@@ -839,5 +717,17 @@ public interface PrinterServiceMBean extends ServiceMBean {
     *
     */
    public void setPrintGrayAsColor(boolean printGrayAsColor);
+   
+   /** Getter for property maxQueuedJobCount.
+    * @return Value of property maxQueuedJobCount.
+    *
+    */
+   public int getMaxQueuedJobCount();
+   
+   /** Setter for property maxQueuedJobCount.
+    * @param maxQueuedJobCount New value of property maxQueuedJobCount.
+    *
+    */
+   public void setMaxQueuedJobCount(int maxQueuedJobCount);
    
 }

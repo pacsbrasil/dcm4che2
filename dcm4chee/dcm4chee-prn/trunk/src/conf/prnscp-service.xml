@@ -212,76 +212,23 @@
 
     <!--
     Defines the start size for scale BufferedImg in pieces
-    size is BufferedImgH * scaleH
+    size is BufferedImgH * scaleH * AspectRatio
     -->
     <attribute name="PuzzleScaleStartSize">500</attribute>
+    
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH * AspectRatio> puzzleScaleStartSize)
+    < 1000 use 5 pieces
+    > 1000 use 10 pieces
+    > 2000 use 10 pieces
+    > 3000 use 20 pieces
+    > 4000 use 20 pieces
+    > 5000 use 30 pieces
+    ........
+    -->
+    
+    <attribute name="PuzzleScalePackageSize">5\10\10\20\20\30\30\40\40\50\50</attribute>
 
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH < 1000
-    -->
-    <attribute name="PuzzleScalePackageSizeMin">5</attribute>
-    
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 1000
-    -->
-    <attribute name="PuzzleScalePackageSize1000">10</attribute>
-    
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 2000
-    -->
-    <attribute name="PuzzleScalePackageSize2000">10</attribute>
-
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 3000
-    -->
-    <attribute name="PuzzleScalePackageSize3000">20</attribute>
-
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 4000
-    -->
-    <attribute name="PuzzleScalePackageSize4000">20</attribute>
-    
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 5000
-    -->
-    <attribute name="PuzzleScalePackageSize5000">30</attribute>
-
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 6000
-    -->
-    <attribute name="PuzzleScalePackageSize6000">30</attribute>
-
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 7000
-    -->
-    <attribute name="PuzzleScalePackageSize7000">40</attribute>
-    
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 8000
-    -->
-    <attribute name="PuzzleScalePackageSize8000">40</attribute>
-    
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 9000
-    -->
-    <attribute name="PuzzleScalePackageSize9000">50</attribute>
-    
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
-    and BufferedImgH * scaleH > 10000
-    -->
-    <attribute name="PuzzleScalePackageSize10000">50</attribute>
-            
     <!--
     Requested Resolution ID identifiers supported by the printer for the
     Basic Film Box. Multiple values can be specified, must be separated by 
