@@ -22,6 +22,7 @@ package org.dcm4chex.archive.web.maverick;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.infohazard.maverick.ctl.ThrowawayBean2;
 
 /**
  * 
@@ -29,8 +30,27 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandSeriesCtrl extends FolderCtrl {
+public class ExpandSeriesCtrl extends ThrowawayBean2 {
 
+    private int patPk;
+    private int studyPk;
+    private int seriesPk;
+    
+    public final void setPatPk(int patPk)
+    {
+        this.patPk = patPk;
+    }
+
+    public final void setSeriesPk(int seriesPk)
+    {
+        this.seriesPk = seriesPk;
+    }
+
+    public final void setStudyPk(int studyPk)
+    {
+        this.studyPk = studyPk;
+    }
+    
     protected String perform() throws Exception {
         ContentManagerHome home =
             (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
@@ -38,16 +58,16 @@ public class ExpandSeriesCtrl extends FolderCtrl {
                 ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
-            FolderForm folderForm = (FolderForm) getForm();
-            folderForm.lookupSeries().setInstances(
-                cm.listInstancesOfSeries(folderForm.getSeriesPk()));
+            FolderForm folderForm = FolderForm.getFolderForm(getCtx().getRequest());
+            folderForm.getSeriesByPk(patPk, studyPk, seriesPk).setInstances(
+                cm.listInstancesOfSeries(seriesPk));
         } finally {
             try {
                 cm.remove();
             } catch (Exception e) {
             }
         }
-        return FOLDER;
+        return SUCCESS;
     }
 
 }

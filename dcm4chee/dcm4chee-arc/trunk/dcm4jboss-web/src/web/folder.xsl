@@ -25,7 +25,7 @@
 	</xsl:template>
 	
 	<xsl:template match="model">
-			<form action="folder.m" method="post">
+			<form action="foldersubmit.m" method="post">
 			<table border="0" cellspacing="0" cellpadding="0" width="100%">
 				<tr>
 					<td valign="top" width="1%">

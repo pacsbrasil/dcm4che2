@@ -22,6 +22,7 @@ package org.dcm4chex.archive.web.maverick;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.infohazard.maverick.ctl.ThrowawayBean2;
 
 /**
  * 
@@ -29,7 +30,20 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandStudyCtrl extends FolderCtrl {
+public class ExpandStudyCtrl extends ThrowawayBean2 {
+
+    private int patPk;
+    private int studyPk;
+
+    public final void setPatPk(int patPk)
+    {
+        this.patPk = patPk;
+    }
+
+    public final void setStudyPk(int studyPk)
+    {
+        this.studyPk = studyPk;
+    }
 
     protected String perform() throws Exception {
         ContentManagerHome home =
@@ -38,16 +52,16 @@ public class ExpandStudyCtrl extends FolderCtrl {
                 ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
-            FolderForm folderForm = (FolderForm) getForm();
-            folderForm.lookupStudy().setSeries(
-                cm.listSeriesOfStudy(folderForm.getStudyPk()));
+            FolderForm folderForm = FolderForm.getFolderForm(getCtx().getRequest());
+            folderForm.getStudyByPk(patPk, studyPk).setSeries(
+                cm.listSeriesOfStudy(studyPk));
         } finally {
             try {
                 cm.remove();
             } catch (Exception e) {
             }
         }
-        return FOLDER;
+        return SUCCESS;
     }
 
 }

@@ -23,44 +23,51 @@ default-transform-type="xslt">
       <view ref="folder" />
     </command>
 
+    <command name="foldersubmit">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.FolderSubmitCtrl" />
+
+      <view ref="folder" />
+    </command>
+
     <command name="expandPat">
       <controller
       class="org.dcm4chex.archive.web.maverick.ExpandPatientCtrl" />
 
-      <view ref="folder" />
+	  <view name="success" type="redirect" path="folder.m"/>
     </command>
 
     <command name="collapsePat">
       <controller
       class="org.dcm4chex.archive.web.maverick.CollapsePatientCtrl" />
 
-      <view ref="folder" />
+	  <view name="success" type="redirect" path="folder.m"/>
     </command>
 
     <command name="expandStudy">
       <controller
       class="org.dcm4chex.archive.web.maverick.ExpandStudyCtrl" />
 
-      <view ref="folder" />
+	  <view name="success" type="redirect" path="folder.m"/>
     </command>
 
     <command name="collapseStudy">
       <controller
       class="org.dcm4chex.archive.web.maverick.CollapseStudyCtrl" />
 
-      <view ref="folder" />
+	  <view name="success" type="redirect" path="folder.m"/>
     </command>
 
     <command name="expandSeries">
       <controller
       class="org.dcm4chex.archive.web.maverick.ExpandSeriesCtrl" />
 
-      <view ref="folder" />
+	  <view name="success" type="redirect" path="folder.m"/>
     </command>
 
     <command name="collapseSeries">
       <controller class="org.dcm4chex.archive.web.maverick.CollapseSeriesCtrl" />
-      <view ref="folder" />
+	  <view name="success" type="redirect" path="folder.m"/>
     </command>
     
     <command name="patientEdit">

@@ -3,4 +3,4 @@
 	$Source$
 --%>
 
-<jsp:forward page="folder.m?filter="/>
+<jsp:forward page="foldersubmit.m?filter="/>

@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.dcm4chex.archive.ejb.interfaces.InstanceDTO;
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.ejb.interfaces.SeriesDTO;
@@ -34,16 +36,19 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
  */
 public class FolderForm
 {
+    static final String FOLDER_ATTRNAME = "folderFrom";
+    static FolderForm getFolderForm(HttpServletRequest request) {
+        FolderForm form =
+            (FolderForm) request.getSession().getAttribute(
+                FOLDER_ATTRNAME);
+        if (form == null) {
+            form = new FolderForm();
+            request.getSession().setAttribute(FOLDER_ATTRNAME, form);
+        }
+        return form;
+    }
 
 	public static final int LIMIT = 10;
-
-	public static final int NEW_QUERY = 0;
-	public static final int QUERY_AGAIN = 1;
-	public static final int DELETE = 2;
-	public static final int MERGE = 3;
-	public static final int MOVE = 4;
-	public static final int SEND = 4;
-	public static final int UPDATE = 5;
 
 	private String patientID;
 	private String patientName;
@@ -61,44 +66,9 @@ public class FolderForm
 	private int offset;
 	private int total;
 
-	private int cmd;
-	private int patPk;
-	private int studyPk;
-	private int seriesPk;
-
 	public final int getLimit()
 	{
 		return LIMIT;
-	}
-
-	public final int getPatPk()
-	{
-		return patPk;
-	}
-
-	public final void setPatPk(int patPk)
-	{
-		this.patPk = patPk;
-	}
-
-	public final int getSeriesPk()
-	{
-		return seriesPk;
-	}
-
-	public final void setSeriesPk(int seriesPk)
-	{
-		this.seriesPk = seriesPk;
-	}
-
-	public final int getStudyPk()
-	{
-		return studyPk;
-	}
-
-	public final void setStudyPk(int studyPk)
-	{
-		this.studyPk = studyPk;
 	}
 
 	public final String getAccessionNumber()
@@ -196,7 +166,24 @@ public class FolderForm
 		return patients;
 	}
 
-	public final StudyFilterDTO getStudyFilter()
+    public final void setFilter(String filter)
+    {
+        offset = 0;
+        total = -1;
+        studyFilter = null;
+    }
+
+    public final void setNext(String next)
+    {
+        offset += LIMIT;
+    }
+
+    public final void setPrev(String prev)
+    {
+        offset = Math.max(0, offset - LIMIT);
+    }
+
+    public final StudyFilterDTO getStudyFilter()
 	{
 		if (studyFilter == null)
 		{
@@ -214,56 +201,6 @@ public class FolderForm
 	public final int getTotal()
 	{
 		return total;
-	}
-
-	public final void setFilter(String filter)
-	{
-		cmd = NEW_QUERY;
-		offset = 0;
-		total = -1;
-		studyFilter = null;
-	}
-
-	public final void setNext(String next)
-	{
-		cmd = QUERY_AGAIN;
-		offset += LIMIT;
-	}
-
-	public final void setPrev(String prev)
-	{
-		cmd = QUERY_AGAIN;
-		offset = Math.max(0, offset - LIMIT);
-	}
-
-	public final void setDel(String del)
-	{
-		cmd = DELETE;
-	}
-
-	public final void setMove(String move)
-	{
-		cmd = MOVE;
-	}
-
-	public final void setMerge(String merge)
-	{
-		cmd = MERGE;
-	}
-
-	public final void setSend(String send)
-	{
-		cmd = SEND;
-	}
-
-	public final void setUpdate(String update)
-	{
-		cmd = UPDATE;
-	}
-
-	final int cmd()
-	{
-		return cmd;
 	}
 
 	public void updatePatients(List newPatients)
@@ -406,7 +343,7 @@ public class FolderForm
 		return stickyInstances.contains("" + instanceDTO.getPk());
 	}
 
-	public PatientDTO lookupPatient()
+	public PatientDTO getPatientByPk(int patPk)
 	{
 		for (int i = 0, n = patients.size(); i < n; i++)
 		{
@@ -419,12 +356,12 @@ public class FolderForm
 		return null;
 	}
 
-	public StudyDTO lookupStudy()
+	public StudyDTO getStudyByPk(int patPk, int studyPk)
 	{
-		return lookupStudy(lookupPatient());
+		return getStudyByPk(getPatientByPk(patPk), studyPk);
 	}
 
-	public StudyDTO lookupStudy(PatientDTO patient)
+	public StudyDTO getStudyByPk(PatientDTO patient, int studyPk)
 	{
 		if (patient == null)
 		{
@@ -442,12 +379,12 @@ public class FolderForm
 		return null;
 	}
 
-	public SeriesDTO lookupSeries()
+	public SeriesDTO getSeriesByPk(int patPk, int studyPk, int seriesPk)
 	{
-		return lookupSeries(lookupStudy());
+		return getSeriesByPk(getStudyByPk(patPk, studyPk), seriesPk);
 	}
 
-	public SeriesDTO lookupSeries(StudyDTO study)
+	public SeriesDTO getSeriesByPk(StudyDTO study, int seriesPk)
 	{
 		if (study == null)
 		{
@@ -463,22 +400,6 @@ public class FolderForm
 			}
 		}
 		return null;
-	}
-
-	public PatientDTO getPatientByPk(int pk)
-	{
-		PatientDTO ret = null; 
-		
-		for (int i = patients.size(); --i >= 0;)
-		{
-			PatientDTO pat = (PatientDTO) patients.get(i);
-			if (pat.getPk() == pk)
-			{
-				ret=pat;
-				break;
-			}
-		}
-		return ret;
 	}
 }
 

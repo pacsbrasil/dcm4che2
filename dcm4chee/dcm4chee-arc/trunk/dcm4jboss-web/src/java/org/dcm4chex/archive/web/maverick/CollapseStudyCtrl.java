@@ -19,18 +19,33 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
+import org.infohazard.maverick.ctl.ThrowawayBean2;
+
 /**
  * 
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class CollapseStudyCtrl extends FolderCtrl {
+public class CollapseStudyCtrl extends ThrowawayBean2 {
+
+    private int patPk;
+    private int studyPk;
+
+    public final void setPatPk(int patPk)
+    {
+        this.patPk = patPk;
+    }
+
+    public final void setStudyPk(int studyPk)
+    {
+        this.studyPk = studyPk;
+    }
 
     protected String perform() throws Exception {
-        FolderForm folderForm = (FolderForm) getForm();
-        folderForm.lookupStudy().getSeries().clear();
-        return FOLDER;
+        FolderForm folderForm = FolderForm.getFolderForm(getCtx().getRequest());
+        folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
+        return SUCCESS;
     }
 
 }

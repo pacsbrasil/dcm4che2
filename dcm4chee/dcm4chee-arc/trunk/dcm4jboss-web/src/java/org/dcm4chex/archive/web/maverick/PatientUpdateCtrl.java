@@ -35,7 +35,7 @@ public class PatientUpdateCtrl extends ThrowawayFormBeanUser
 	
 	protected Object makeFormBean()
 	{
-		FolderForm form =	(FolderForm) getCtx().getRequest().getSession().getAttribute(FolderCtrl.FOLDER_ATTRNAME);
+		FolderForm form =	(FolderForm) getCtx().getRequest().getSession().getAttribute(FolderForm.FOLDER_ATTRNAME);
 		int pk =  getCtx().getRequest().getParameter(PATIENT_PK_PARAMETER)!=null ? Integer.parseInt(getCtx().getRequest().getParameter(PATIENT_PK_PARAMETER)):-1;
 		return form.getPatientByPk(pk);
 	}
@@ -43,7 +43,6 @@ public class PatientUpdateCtrl extends ThrowawayFormBeanUser
 	protected String perform() throws Exception
 	{
 		executeUpdate();
-		((FolderForm) getCtx().getRequest().getSession().getAttribute(FolderCtrl.FOLDER_ATTRNAME)).setUpdate("update");
 		return PATIENT_UPDATE;
 	}
 

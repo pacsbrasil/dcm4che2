@@ -19,13 +19,6 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.infohazard.maverick.ctl.ThrowawayFormBeanUser;
 
 /**
@@ -37,79 +30,13 @@ import org.infohazard.maverick.ctl.ThrowawayFormBeanUser;
 public class FolderCtrl extends ThrowawayFormBeanUser {
 
     public static final String FOLDER = "folder";
-    public static final String FOLDER_ATTRNAME = "folderFrom";
 
     protected Object makeFormBean() {
-        FolderForm form =
-            (FolderForm) getCtx().getRequest().getSession().getAttribute(
-                FOLDER_ATTRNAME);
-        if (form == null) {
-            form = new FolderForm();
-            getCtx().getRequest().getSession().setAttribute(FOLDER_ATTRNAME, form);
-        }
-        return form;
+        return FolderForm.getFolderForm(getCtx().getRequest());
     }
 
     protected String perform() throws Exception {
-        try {
-            FolderForm folderForm = (FolderForm) getForm();
-            setSticky(folderForm.getStickyPatients(), "stickyPat");
-            setSticky(folderForm.getStickyStudies(), "stickyStudy");
-            setSticky(folderForm.getStickySeries(), "stickySeries");
-            setSticky(folderForm.getStickyInstances(), "stickyInst");
-            int cmd = folderForm.cmd();
-            switch (cmd) {
-                case FolderForm.NEW_QUERY :
-                    return query(true);
-                case FolderForm.QUERY_AGAIN :
-                    return query(false);
-                case FolderForm.DELETE :
-                    return FOLDER;
-                case FolderForm.MERGE :
-                    return FOLDER;
-                case FolderForm.MOVE :
-                    return FOLDER;
-                case FolderForm.UPDATE :
-                	return FOLDER;
-            }
-            throw new RuntimeException("cmd=" + cmd);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
-    private String query(boolean newQuery) throws Exception {
-        ContentManagerHome home =
-            (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
-                ContentManagerHome.class,
-                ContentManagerHome.JNDI_NAME);
-        ContentManager cm = home.create();
-        try {
-            FolderForm folderForm = (FolderForm) getForm();
-            StudyFilterDTO filter = folderForm.getStudyFilter();
-            if (newQuery) {
-                folderForm.setTotal(cm.countStudies(filter));
-            }
-            folderForm.updatePatients(
-                cm.listPatients(
-                    filter,
-                    folderForm.getOffset(),
-                    folderForm.getLimit()));
-        } finally {
-            try {
-                cm.remove();
-            } catch (Exception e) {
-            }
-        }
         return FOLDER;
     }
 
-    private void setSticky(Set stickySet, String attr) {
-        stickySet.clear();
-        String[] newValue = getCtx().getRequest().getParameterValues(attr);
-        if (newValue != null) {
-            stickySet.addAll(Arrays.asList(newValue));
-        }
-    }
 }

@@ -22,6 +22,7 @@ package org.dcm4chex.archive.web.maverick;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.infohazard.maverick.ctl.ThrowawayBean2;
 
 /**
  * 
@@ -29,8 +30,15 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandPatientCtrl extends FolderCtrl {
+public class ExpandPatientCtrl extends ThrowawayBean2 {
 
+    private int patPk;
+
+    public final void setPatPk(int patPk)
+    {
+        this.patPk = patPk;
+    }
+    
     protected String perform() throws Exception {
         ContentManagerHome home =
             (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
@@ -38,16 +46,16 @@ public class ExpandPatientCtrl extends FolderCtrl {
                 ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
-            FolderForm folderForm = (FolderForm) getForm();
-            folderForm.lookupPatient().setStudies(
-                cm.listStudiesOfPatient(folderForm.getPatPk()));
+            FolderForm folderForm = FolderForm.getFolderForm(getCtx().getRequest());
+            folderForm.getPatientByPk(patPk).setStudies(
+                cm.listStudiesOfPatient(patPk));
         } finally {
             try {
                 cm.remove();
             } catch (Exception e) {
             }
         }
-        return FOLDER;
+        return SUCCESS;
     }
 
 }
