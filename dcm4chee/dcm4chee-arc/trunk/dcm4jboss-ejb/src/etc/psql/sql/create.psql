@@ -138,7 +138,8 @@ CREATE TABLE files (
 	file_tsuid      TEXT NOT NULL,
 	file_md5        TEXT,
 	file_size       INTEGER,
-FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
+FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
+FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
