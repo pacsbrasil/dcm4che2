@@ -9,6 +9,7 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,9 +18,14 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 import org.dcm4che.data.Command;
-import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmParser;
 import org.dcm4che.dict.Status;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.dict.VRs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceBase;
@@ -33,6 +39,9 @@ import org.dcm4che.net.Dimse;
  *
  */
 public class StoreScpService extends AbstractScpService {
+
+    private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
+            Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID,};
 
     private static final String[] IMAGE_CUIDS = {
             UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
@@ -188,7 +197,7 @@ public class StoreScpService extends AbstractScpService {
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
-    
+
     private String[] getImageTransferSyntaxes() {
         ArrayList list = new ArrayList();
         if (acceptJPEGBaseline) {
@@ -253,15 +262,46 @@ public class StoreScpService extends AbstractScpService {
             String cuid = rqCmd.getAffectedSOPClassUID();
             String iuid = rqCmd.getAffectedSOPInstanceUID();
             String tsuid = rq.getTransferSyntaxUID();
-            FileMetaInfo fmi = dof.newFileMetaInfo(cuid, iuid, tsuid);
+            DcmDecodeParam decParam = DcmDecodeParam.valueOf(tsuid);
+            String fileTS = decParam.encapsulated ? tsuid : UIDs.ExplicitVRLittleEndian;
+            DcmEncodeParam encParam = DcmEncodeParam.valueOf(fileTS);
+            Dataset ds = dof.newDataset();
+            DcmParser parser = pf.newDcmParser(in);
+            parser.setDcmHandler(ds.getDcmHandler());
+            parser.parseDataset(decParam, Tags.PixelData);
+            checkDataset(rqCmd, ds);
+            ds.setFileMetaInfo(dof.newFileMetaInfo(cuid, iuid, fileTS));
             File f = spoolDir.getInstanceFile(iuid);
             log.info("M-WRITE " + f);
             OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
             try {
-                fmi.write(out);
-                copy(in, out);
+                ds.writeFile(out, encParam);
+                if (parser.getReadTag() != Tags.PixelData) return;
+                int len = parser.getReadLength();
+                byte[] buffer = new byte[bufferSize];
+                if (decParam.encapsulated) {
+                    ds.writeHeader(out, encParam, Tags.PixelData, VRs.OB, -1);
+                    parser.parseHeader();
+                    while (parser.getReadTag() == Tags.Item) {
+                        len = parser.getReadLength();
+                        ds.writeHeader(out, encParam, Tags.Item, VRs.NONE, len);
+                        copy(in, out, len, buffer);
+                        parser.parseHeader();
+                    }
+                    ds.writeHeader(out, encParam, Tags.SeqDelimitationItem,
+                            VRs.NONE, 0);
+                } else {
+                    ds.writeHeader(out, encParam, Tags.PixelData, parser
+                            .getReadVR(), len);
+                    copy(in, out, len, buffer);
+                }
+                parser.parseDataset(decParam, -1);
+                ds.subSet(Tags.PixelData, -1).writeDataset(out, encParam);
             } finally {
-                try { out.close(); } catch (IOException ignore) {};
+                try {
+                    out.close();
+                } catch (IOException ignore) {
+                }
             }
         } catch (Throwable t) {
             throw new DcmServiceException(Status.ProcessingFailure, t);
@@ -270,10 +310,29 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    private void copy(InputStream in, OutputStream out) throws IOException {
-        byte[] b = new byte[bufferSize];
-        int len;
-        while ((len = in.read(b)) != -1)
-            out.write(b, 0, len);
+    private void checkDataset(Command rqCmd, Dataset ds)
+            throws DcmServiceException {
+        for (int i = 0; i < TYPE1_ATTR.length; ++i) {
+            if (ds.vm(TYPE1_ATTR[i]) <= 0) { throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i])); }
+        }
+        if (!rqCmd.getAffectedSOPInstanceUID().equals(ds
+                .getString(Tags.SOPInstanceUID))) { throw new DcmServiceException(
+                Status.DataSetDoesNotMatchSOPClassError,
+                "SOP Instance UID in Dataset differs from Affected SOP Instance UID"); }
+        if (!rqCmd.getAffectedSOPClassUID().equals(ds
+                .getString(Tags.SOPClassUID))) { throw new DcmServiceException(
+                Status.DataSetDoesNotMatchSOPClassError,
+                "SOP Class UID in Dataset differs from Affected SOP Class UID"); }
+    }
+
+    private void copy(InputStream in, OutputStream out, int totLen,
+            byte[] buffer) throws IOException {
+        for (int len, toRead = totLen; toRead > 0; toRead -= len) {
+            len = in.read(buffer, 0, Math.min(toRead, buffer.length));
+            if (len == -1) { throw new EOFException(); }
+            out.write(buffer, 0, len);
+        }
     }
 }

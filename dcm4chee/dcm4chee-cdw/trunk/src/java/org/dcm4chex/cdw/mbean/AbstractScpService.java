@@ -11,6 +11,7 @@ package org.dcm4chex.cdw.mbean;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
@@ -29,6 +30,8 @@ import org.jboss.system.ServiceMBeanSupport;
 public abstract class AbstractScpService extends ServiceMBeanSupport {
         
     protected static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+
+    protected static final DcmParserFactory pf = DcmParserFactory.getInstance();
     
     private static final String GET_DCM_HANDLER = "getDcmHandler";
 
