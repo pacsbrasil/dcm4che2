@@ -1,13 +1,3 @@
-
-import java.io.IOException;
-import java.util.Locale;
-
-import java.util.ResourceBundle;
-
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
-
-import org.apache.log4j.Logger;
 /*                                                                           *
  *  Copyright (c) 2002, 2003 by TIANI MEDGRAPH AG                            *
  *                                                                           *
@@ -28,6 +18,14 @@ import org.apache.log4j.Logger;
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  *                                                                           *
  *****************************************************************************/
+import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
+
+import org.apache.log4j.Logger;
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Factory;
 import org.dcm4che.hl7.HL7Message;
@@ -52,6 +50,7 @@ public class Hl7Rcv implements HL7Service
     private final static LongOpt[] LONG_OPTS = new LongOpt[]{
             new LongOpt("max-clients", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("so-timeout", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("ack-delay", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("receiving-apps", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("sending-apps", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("mllp-tls", LongOpt.NO_ARGUMENT, null, 4),
@@ -75,6 +74,7 @@ public class Hl7Rcv implements HL7Service
 
     private final HL7Handler handler = sf.newHL7Handler();
     private final Server server = sf.newServer(handler);
+    private int ackDelay = 0;
 
     private SSLContextAdapter tls = null;
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
@@ -85,7 +85,6 @@ public class Hl7Rcv implements HL7Service
         initServer(cfg);
         initTLS(cfg);
     }
-
 
     private void initServer(Configuration cfg)
     {
@@ -99,10 +98,11 @@ public class Hl7Rcv implements HL7Service
                 cfg.getProperty("receiving-apps", null, "<any>", null)));
         handler.setSendingApps(cfg.tokenize(
                 cfg.getProperty("sending-apps", null, "<any>", null)));
-
+        ackDelay = Integer.parseInt(cfg.getProperty("ack-delay", "0"));
         handler.putService("ADT", this);
         handler.putService("ORM", this);
         handler.putService("ORU", this);
+        
     }
 
 
@@ -158,6 +158,11 @@ public class Hl7Rcv implements HL7Service
         HL7Message hl7 = hl7f.parse(msg);
         if (log.isDebugEnabled()) {
             log.debug("Received:\n" + hl7.toVerboseString());
+        }
+        if (ackDelay > 0) {
+            try {
+                Thread.sleep(ackDelay);
+            } catch (InterruptedException e) {}
         }
         byte[] ack = hl7.header().makeACK_AA();
         if (log.isDebugEnabled()) {
