@@ -114,6 +114,12 @@ class PrintableImageBox {
    }
       
    // Static --------------------------------------------------------
+   // workaround for ImageIO.scanForPlugins() do not find DICOM Plugin!
+   static {
+      javax.imageio.spi.IIORegistry.getDefaultInstance().registerServiceProvider(
+      new org.dcm4cheri.imageio.plugins.DcmImageReaderSpi());
+   }
+   
    
    // Constructors --------------------------------------------------
    public PrintableImageBox(PrinterService service, Dataset filmbox,
@@ -184,7 +190,7 @@ class PrintableImageBox {
             pValToDDL[j] = tmp;
          }
       }
-      readParam.setPValToDLL(pValToDDL);      
+      readParam.setPValToDDL(pValToDDL);      
       if (debug) {
          log.debug("ImageBox #" + pos
             + " Init ReadParam:\n\tminDensity: " + minDensity

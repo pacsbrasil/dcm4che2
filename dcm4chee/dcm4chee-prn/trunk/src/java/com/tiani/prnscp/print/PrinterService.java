@@ -108,11 +108,6 @@ public class PrinterService
    implements PrinterServiceMBean, Runnable,
       PrintServiceAttributeListener, PrintJobAttributeListener, PrintJobListener {
          
-   static {
-      javax.imageio.spi.IIORegistry.getDefaultInstance().registerServiceProvider(
-      new org.dcm4cheri.imageio.plugins.DcmImageReaderSpi());
-   }
-   
    // Constants -----------------------------------------------------
    static final String WHITE = "WHITE";
    static final String BLACK = "BLACK";
