@@ -186,7 +186,9 @@ public final class ISO8601DateFormat extends org.apache.log4j.helpers.ISO8601Dat
 		}
 		//return
 		Calendar cal = new GregorianCalendar(year,month-1,day,hour,min,sec);
-		cal.setTimeZone(new SimpleTimeZone(off,"zone-id"));
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(Calendar.ZONE_OFFSET,off);
 		return cal.getTime();
 	}
 }
+
