@@ -52,7 +52,7 @@ class IHEYr4
     }
 
     // Constants -----------------------------------------------------
-    private final static String ISO8601_FORMAT = "yyyy-MM-dd'T'hh:mm:ssZ";
+    private final static String ISO8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
     // Variables -----------------------------------------------------
     private static String localHostName;
