@@ -2277,7 +2277,8 @@ public class PrinterService
             logActorConfig(
                     "Calibrated Printer " + calledAET + ", chromaticity=" + chromaticity, "PrinterCalibration");
         } catch (Exception e) {
-            log.warn("Failed to calibrate Printer " + calledAET + ", chromaticity=" + chromaticity);
+            log.warn("Failed to calibrate Printer " + calledAET
+                + ", chromaticity=" + chromaticity + ": " + e);
         }
     }
 

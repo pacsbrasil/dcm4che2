@@ -480,10 +480,11 @@ class PrintableImageBox
         final int[] data = bi.getRGB(0, 0, w, h, null, 0, w);
         if (service.isPrintColorWithPLUT()) {
             int count = 0;
+            int shift = pValToDDL.length == 4096 ? 4 : 0;
             for (int rgb, b, i = 0; i < data.length; ++i) {
                 b = (rgb = data[i]) & 0xff;
                 if (((rgb >> 8) & 0xff) == b && ((rgb >> 16) & 0xff) == b) {
-                    b = (pValToDDL[b] & 0xff);
+                    b = (pValToDDL[b << shift] & 0xff);
                     data[i] = b | (b << 8) | (b << 16);
                     ++count;
                 }

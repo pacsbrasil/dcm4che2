@@ -367,7 +367,7 @@
     Specifies tolerable loss (in %) of print dynamic (max OD) to avoid use of DDL 
     values in non monotonic parts of the printer characteristic
      -->
-    <attribute name="SkipNonMonotonicODs">10</attribute>
+    <attribute name="SkipNonMonotonicODs">5</attribute>
 
     <!--
     Activates redirection of all printing into a postscript file.

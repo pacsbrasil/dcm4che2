@@ -316,7 +316,6 @@ public class PrinterCalibration
         
         // ensure monoton increasing
         float max = ddl2od[255];
-        float min = max;
         float minMax = max * (100 - skipNonMonotonicODs) / 100;
         int minUsed = 255;
         int maxUsed = 255;
@@ -326,18 +325,17 @@ public class PrinterCalibration
                 max = val;
                 minMax = max * (100 - skipNonMonotonicODs) / 100;
             }
-            if (val < min) {
-                min = val;
+            if (val < ddl2od[minUsed]) {
                 minUsed = i;
             }
-            if (val > minMax && (val - min) > monotonicTolerance) {
-                min = val;
+            if (val > minMax && (val - ddl2od[minUsed]) > monotonicTolerance) {
                 minUsed = maxUsed = i;
             }
         }
         Arrays.sort(ddl2od, minUsed, maxUsed+1);
         Arrays.fill(ddl2od, maxUsed+1, 256, Float.POSITIVE_INFINITY);
         Arrays.fill(ddl2od, 0, minUsed, Float.NEGATIVE_INFINITY);
+/*        
         for (int ddl1 = minUsed, ddl2 = minUsed; ddl1 < maxUsed; ddl1 = ddl2) {
             final float od1 = ddl2od[ddl1];
             float dOD;
@@ -347,6 +345,7 @@ public class PrinterCalibration
                 ddl2od[ddl1+i] = od1 + dOD * i / n;
             }
         }
+        */
         if (Chromaticity.COLOR.equals(chromaticity)) {
             colorMinDensity = (int) (ddl2od[minUsed] * 100);
             colorMaxDensity = (int) (ddl2od[maxUsed] * 100);
@@ -364,7 +363,7 @@ public class PrinterCalibration
             log.debug(prompt.toString());
         }
         log.info("Printer OD range [" + chromaticity
-            + "]: total=" + min + "-" + max
+            + "]: total=" + ddl2od[minUsed] + "-" + max
             + ", used=" + ddl2od[minUsed] + "-" + ddl2od[maxUsed]
             + ", DDL=" + (255-minUsed) + "-" + (255-maxUsed));
     }
