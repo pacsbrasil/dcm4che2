@@ -24,6 +24,7 @@ import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
+import org.dcm4chex.cdw.common.FileUtils;
 import org.dcm4chex.cdw.common.Flag;
 import org.dcm4chex.cdw.common.JMSDelegate;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
@@ -161,10 +162,6 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     private void buildFileset(Dataset attrs, File rootDir) throws IOException {
-        File dicomDir = new File(rootDir, "DICOM");
-        if (!dicomDir.mkdirs())
-                throw new IOException("Failed to mkdir " + dicomDir);
-
         makeSymLink(readmeFile, new File(rootDir, "README.TXT"));
         final boolean preserve = Flag.isYes(attrs
                 .getString(Tags.PreserveCompositeInstancesAfterMediaCreation));
@@ -173,7 +170,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
             Dataset item = refSOPs.getItem(i);
             String iuid = item.getString(Tags.RefSOPInstanceUID);
             File src = spoolDir.getInstanceFile(iuid);
-            File dest = new File(dicomDir, toHex(iuid.hashCode()));
+            Dataset ds = FileUtils.readDataset(src, log);            
+            String[] fileIDs = makeFileIDs(ds);
+            File dest = new File(rootDir, StringUtils.toString(fileIDs, File.separatorChar));
+            File parent = dest.getParentFile();            
+            if (!parent.exists() && !parent.mkdirs()) throw new IOException("Failed to mkdirs " + parent);            
             if (preserve)
                 makeSymLink(src, dest);
             else
@@ -182,6 +183,15 @@ public class MediaComposerService extends ServiceMBeanSupport {
         if (Flag.isYes(attrs.getString(Tags.IncludeDisplayApplication))) {
             makeSymLink(viewerDir, new File(rootDir, viewerDirOnMedia));
         }
+    }
+
+    private String[] makeFileIDs(Dataset ds) {
+        return new String[]{"DICOM",
+                toHex(ds.getString(Tags.PatientID, "").hashCode()),
+                toHex(ds.getString(Tags.StudyInstanceUID, "").hashCode()),
+                toHex(ds.getString(Tags.SeriesInstanceUID, "").hashCode()),
+                toHex(ds.getString(Tags.SOPInstanceUID, "").hashCode()),
+        };
     }
 
     // only for Tests
@@ -197,26 +207,26 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     private void move(File src, File dst) throws IOException {
-        if (log.isDebugEnabled()) log.debug("mv " + src + " " + dst);
+        if (log.isDebugEnabled()) log.debug("M-MOVE " + src + " => " + dst);
         if (!src.renameTo(dst))
-                throw new IOException("mv " + src + " " + dst + " failed!");
+                throw new IOException("M-MOVE " + src + " => " + dst
+                        + " failed!");
     }
 
     private void makeSymLink(File src, File dst) throws IOException {
         String[] cmd = new String[] { "ln", "-s", src.getAbsolutePath(),
                 dst.getAbsolutePath()};
-        if (log.isDebugEnabled()) log.debug(StringUtils.toString(cmd, ' '));
+        if (log.isDebugEnabled()) log.debug("M-LINK " + src + " => " + dst);
         int exitCode;
         try {
             Process p = Runtime.getRuntime().exec(cmd);
             exitCode = p.waitFor();
         } catch (Exception e) {
-            throw new IOException(StringUtils.toString(cmd, ' ') + " failed!"
+            throw new IOException("M-LINK " + src + " => " + dst + " failed!"
                     + e);
         }
-        if (exitCode != 0) { throw new IOException(StringUtils.toString(cmd,
-                ' ')
-                + " failed! Exit Code: " + exitCode); }
+        if (exitCode != 0) { throw new IOException("M-LINK " + src + " => "
+                + dst + " failed!" + " failed! Exit Code: " + exitCode); }
     }
 
 }

@@ -14,6 +14,7 @@ import java.io.IOException;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
+import org.dcm4che.dict.Tags;
 import org.jboss.logging.Logger;
 
 /**
@@ -30,7 +31,7 @@ public class FileUtils {
             log.debug("M-READ " + f);
         Dataset ds = dof.newDataset();
         try {
-            ds.readFile(f, FileFormat.DICOM_FILE, -1);
+            ds.readFile(f, FileFormat.DICOM_FILE, Tags.PixelData);
         } catch (IOException e) {
             log.error("Failed: M-READ " + f, e);
             throw e;
