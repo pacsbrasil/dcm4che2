@@ -44,7 +44,7 @@ public class DirReaderTest extends TestCase
 
 
     private final static DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    private final static String DICOMDIR_ID = "/home/gunter/work/dcm4che14/test/conf/data/DICOMDIR";
+    private final static String DICOMDIR_ID = "data/DICOMDIR";
     private final static String CLASS_UID = "1.2.840.10008.1.3.10";
 
 
