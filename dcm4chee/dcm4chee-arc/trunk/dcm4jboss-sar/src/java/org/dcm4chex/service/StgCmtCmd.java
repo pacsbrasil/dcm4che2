@@ -31,6 +31,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.dcm4che.data.Command;
@@ -54,6 +55,7 @@ import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.net.RoleSelection;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -211,11 +213,18 @@ class StgCmtCmd {
     }
 
     private boolean isLocal(FileInfo info) {
-        Set aets = info.getRetrieveAETSet();
+        if (info.fileRetrieveAETs == null)
+            return false;
+        
+        Set aets = toHashSet(info.fileRetrieveAETs);
         aets.retainAll(service.getRetrieveAETSet());
         return !aets.isEmpty();
     }
-
+    
+    private HashSet toHashSet(String aets) {
+        return new HashSet(Arrays.asList(StringUtils.split(aets, '\\')));
+    }
+    
     private void checkFile(FileInfo info) throws IOException {
         File file = info.toFile();
         service.getLog().info("M-READ file:" + file);

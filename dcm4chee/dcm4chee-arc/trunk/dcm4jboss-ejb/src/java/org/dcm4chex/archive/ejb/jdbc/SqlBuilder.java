@@ -40,6 +40,8 @@ class SqlBuilder {
     public static final boolean TYPE2 = true;
     public static final String DESC = " DESC";
     public static final String ASC = " ASC";
+    public static final String WHERE = " WHERE ";
+    public static final String AND = " AND ";
     public static final String[] SELECT_COUNT = { "count(*)" };
     private String[] select;
     private String[] from;
@@ -49,6 +51,7 @@ class SqlBuilder {
     private ArrayList orderby = new ArrayList();
     private int limit = 0;
     private int offset = 0;
+    private String whereOrAnd = WHERE;
 
     private static int getDatabase() {
         return JdbcProperties.getInstance().getDatabase();
@@ -199,18 +202,11 @@ class SqlBuilder {
         }
         sb.append(" FROM ");
         appendTo(sb, from);
-        if (leftJoin != null) {
-            appendLeftJoinTo(sb);
-        }
-        if (relations != null || !matches.isEmpty()) {
-            sb.append(" WHERE ");
-            if (relations != null) {
-                appendRelationsTo(sb);
-                if (!matches.isEmpty())
-                    sb.append(" AND ");
-            }
-            appendMatchesTo(sb);
-        }
+        appendLeftJoinToFrom(sb);
+        whereOrAnd = WHERE;
+        appendLeftJoinToWhere(sb);
+        appendRelationsTo(sb);
+        appendMatchesTo(sb);
         if (!orderby.isEmpty()) {
             sb.append(" ORDER BY ");
             appendTo(
@@ -250,20 +246,37 @@ class SqlBuilder {
         }
     }
 
-    private void appendLeftJoinTo(StringBuffer sb) {
-        sb.append(" LEFT JOIN ");
-        sb.append(leftJoin[0]);
-        sb.append(" ON (");
+    private void appendLeftJoinToFrom(StringBuffer sb) {
+        if (leftJoin == null) return;
+        if (getDatabase() == JdbcProperties.ORACLE) {
+            sb.append(", ");
+            sb.append(leftJoin[0]);            
+        } else {
+	        sb.append(" LEFT JOIN ");
+	        sb.append(leftJoin[0]);
+	        sb.append(" ON (");
+	        sb.append(leftJoin[1]);
+	        sb.append(" = ");
+	        sb.append(leftJoin[2]);
+	        sb.append(")");
+        }
+    }
+
+    private void appendLeftJoinToWhere(StringBuffer sb) {
+        if (leftJoin == null || getDatabase() != JdbcProperties.ORACLE) return;
+        sb.append(whereOrAnd);
+        whereOrAnd = AND;
         sb.append(leftJoin[1]);
         sb.append(" = ");
         sb.append(leftJoin[2]);
-        sb.append(")");
+        sb.append("(+)");
     }
-
+    
     private void appendRelationsTo(StringBuffer sb) {
+        if (relations == null) return;
         for (int i = 0; i < relations.length; i++, i++) {
-            if (i > 0)
-                sb.append(" AND ");
+            sb.append(whereOrAnd);
+            whereOrAnd = AND;
             sb.append(relations[i]);
             sb.append(" = ");
             sb.append(relations[i + 1]);
@@ -271,9 +284,10 @@ class SqlBuilder {
     }
 
     private void appendMatchesTo(StringBuffer sb) {
+        if (matches == null) return;
         for (int i = 0; i < matches.size(); i++) {
-            if (i > 0)
-                sb.append(" AND ");
+            sb.append(whereOrAnd);
+            whereOrAnd = AND;
             ((Match) matches.get(i)).appendTo(sb);
         }
     }

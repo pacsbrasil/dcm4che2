@@ -407,7 +407,7 @@ public abstract class QueryCmd extends BaseCmd {
 
         protected String[] getLeftJoin() {
             return isMatchSrCode()
-                ? new String[] { "Code", "Code.pk", "Instance.srcode_fk" }
+                ? new String[] { "Code", "Instance.srcode_fk", "Code.pk" }
             : null;
         }
 

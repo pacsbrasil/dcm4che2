@@ -22,12 +22,7 @@ package org.dcm4chex.archive.ejb.jdbc;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.dcm4cheri.util.StringUtils;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
@@ -69,7 +64,9 @@ public class FileInfo {
 
     public final String sopCUID;
 
-    public final String retrieveAETs;
+    public final String instRetrieveAETs;
+    
+    public final String fileRetrieveAETs;
 
     public final String basedir;
 
@@ -84,8 +81,8 @@ public class FileInfo {
     public FileInfo(int pk, String patID, String patName, byte[] patAttrs,
             String studyIUID, byte[] studyAttrs, byte[] seriesAttrs,
             byte[] instAttrs, String sopIUID, String sopCUID,
-            String retrieveAETs, String basedir, String fileID, String tsUID,
-            String md5, int size) {
+            String instRetrieveAETs, String fileRetrieveAETs, String basedir,
+            String fileID, String tsUID, String md5, int size) {
         this.pk = pk;
         this.patID = patID;
         this.patName = patName;
@@ -96,7 +93,8 @@ public class FileInfo {
         this.instAttrs = instAttrs;
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
-        this.retrieveAETs = retrieveAETs;
+        this.instRetrieveAETs = instRetrieveAETs;
+        this.fileRetrieveAETs = fileRetrieveAETs;
         this.basedir = basedir;
         this.fileID = fileID;
         this.tsUID = tsUID;
@@ -106,8 +104,9 @@ public class FileInfo {
 
     public String toString() {
         return "FileInfo[pk=" + pk + "iuid=" + sopIUID + ", cuid=" + sopCUID
-                + ", retrieveAETs=" + retrieveAETs + ", basedir=" + basedir
-                + ", fileid=" + fileID + ", tsuid=" + tsUID;
+                + ", instRetrieveAETs=" + instRetrieveAETs
+                + ", fileRetrieveAETs=" + fileRetrieveAETs + ", basedir="
+                + basedir + ", fileid=" + fileID + ", tsuid=" + tsUID;
     }
 
     public File toFile() {
@@ -117,10 +116,6 @@ public class FileInfo {
         } catch (URISyntaxException e) {
             throw new RuntimeException(uri, e);
         }
-    }
-
-    public Set getRetrieveAETSet() {
-        return new HashSet(Arrays.asList(StringUtils.split(retrieveAETs, '\\')));
     }
 
     public byte[] getFileMd5() {

@@ -53,6 +53,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
@@ -122,6 +123,10 @@ class MoveTask implements Runnable {
     private final ArrayList toRetrieve = new ArrayList();
 
     private final ArrayList toForward = new ArrayList();
+
+    private final ArrayList toExternalForward = new ArrayList();
+    
+    private final HashSet externalAETs = new HashSet();
 
     private MoveForwardCmd moveForwardCmd;
 
@@ -220,67 +225,73 @@ class MoveTask implements Runnable {
         }
         for (int i = 0, n = toForward.size(); !canceled && i < n; ++i) {
             Map.Entry entry = (Entry) toForward.get(i);
-            final String retrieveAET = (String) entry.getKey();
-            final Set iuids = (Set) entry.getValue();
-            final int size = iuids.size();
-            remaining -= iuids.size();
-            DimseListener fwdmoveRspListener = new DimseListener() {
-
-                public void dimseReceived(Association assoc, Dimse dimse) {
-                    try {
-                        final Command fwdMoveRspCmd = dimse.getCommand();
-                        final Dataset ds = dimse.getDataset();
-                        final int status = fwdMoveRspCmd.getStatus();
-                        switch (status) {
-                        case Status.Pending:
-                            if (fwdMoveRspCmd.getInt(
-                                    Tags.NumberOfRemainingSubOperations, 0) < size) {
-                                notifyMovePending(fwdMoveRspCmd);
-                            }
-                            break;
-                        case Status.Cancel:
-                            remaining += fwdMoveRspCmd.getInt(
-                                    Tags.NumberOfRemainingSubOperations, 0);
-                        case Status.Success:
-                        case Status.SubOpsOneOrMoreFailures:
-                            completed += fwdMoveRspCmd.getInt(
-                                    Tags.NumberOfCompletedSubOperations, 0);
-                            warnings += fwdMoveRspCmd.getInt(
-                                    Tags.NumberOfWarningSubOperations, 0);
-                            if (ds != null) {
-                                failedIUIDs
-                                        .addAll(Arrays
-                                                .asList(ds
-                                                        .getStrings(Tags.FailedSOPInstanceUIDList)));
-                            }
-                            break;
-                        default:
-                            // General error
-                            service.getLog().error(
-                                    "Forwarded MOVE RQ to " + retrieveAET
-                                            + " failed: " + fwdMoveRspCmd);
-                            failedIUIDs.addAll(iuids);
-                        }
-                    } catch (IOException e) {
-                        service.getLog().error(
-                                "Failure during receive of C-MOVE_RSP:", e);
-                    }
-                }
-            };
-            try {
-                moveForwardCmd = new MoveForwardCmd(service, service
-                        .isForwardAsMoveOriginator() ? moveOriginatorAET
-                        : service.getAET(), retrieveAET, moveRqCmd.getInt(
-                        Tags.Priority, 0), moveDest, (String[]) iuids
-                        .toArray(new String[iuids.size()]));
-                moveForwardCmd.execute(fwdmoveRspListener);
-            } catch (Exception e) {
-                service.getLog().error(
-                        "Failed to forward MOVE RQ to " + retrieveAET, e);
-                failedIUIDs.addAll(iuids);
-            }
+            forwardMove((String) entry.getKey(), (Set) entry.getValue());
+        }
+        for (int i = 0, n = toExternalForward.size(); !canceled && i < n; ++i) {
+            Map.Entry entry = (Entry) toExternalForward.get(i);
+            forwardMove((String) entry.getKey(), (Set) entry.getValue());
         }
         notifyMoveFinished();
+    }
+
+    private void forwardMove(final String retrieveAET, final Set iuids) {
+        final int size = iuids.size();
+        remaining -= size;
+        DimseListener fwdmoveRspListener = new DimseListener() {
+
+            public void dimseReceived(Association assoc, Dimse dimse) {
+                try {
+                    final Command fwdMoveRspCmd = dimse.getCommand();
+                    final Dataset ds = dimse.getDataset();
+                    final int status = fwdMoveRspCmd.getStatus();
+                    switch (status) {
+                    case Status.Pending:
+                        if (fwdMoveRspCmd.getInt(
+                                Tags.NumberOfRemainingSubOperations, 0) < size) {
+                            notifyMovePending(fwdMoveRspCmd);
+                        }
+                        break;
+                    case Status.Cancel:
+                        remaining += fwdMoveRspCmd.getInt(
+                                Tags.NumberOfRemainingSubOperations, 0);
+                    case Status.Success:
+                    case Status.SubOpsOneOrMoreFailures:
+                        completed += fwdMoveRspCmd.getInt(
+                                Tags.NumberOfCompletedSubOperations, 0);
+                        warnings += fwdMoveRspCmd.getInt(
+                                Tags.NumberOfWarningSubOperations, 0);
+                        if (ds != null) {
+                            failedIUIDs
+                                    .addAll(Arrays
+                                            .asList(ds
+                                                    .getStrings(Tags.FailedSOPInstanceUIDList)));
+                        }
+                        break;
+                    default:
+                        // General error
+                        service.getLog().error(
+                                "Forwarded MOVE RQ to " + retrieveAET
+                                        + " failed: " + fwdMoveRspCmd);
+                        failedIUIDs.addAll(iuids);
+                    }
+                } catch (IOException e) {
+                    service.getLog().error(
+                            "Failure during receive of C-MOVE_RSP:", e);
+                }
+            }
+        };
+        try {
+            moveForwardCmd = new MoveForwardCmd(service, service
+                    .isForwardAsMoveOriginator() ? moveOriginatorAET
+                    : service.getAET(), retrieveAET, moveRqCmd.getInt(
+                    Tags.Priority, 0), moveDest, (String[]) iuids
+                    .toArray(new String[size]));
+            moveForwardCmd.execute(fwdmoveRspListener);
+        } catch (Exception e) {
+            service.getLog().error(
+                    "Failed to forward MOVE RQ to " + retrieveAET, e);
+            failedIUIDs.addAll(iuids);
+        }
     }
 
     private void retrieveLocal() {
@@ -432,7 +443,7 @@ class MoveTask implements Runnable {
     private Set getRemoteRetrieveAETs(FileInfo[] instFiles) {
         Set aets = new HashSet();
         for (int i = 0; i < instFiles.length; ++i) {
-            Set tmp = instFiles[i].getRetrieveAETSet();
+            Set tmp = getRemoteRetrieveAETSet(instFiles[i]);
             if (tmp.contains(service.getAET())) { // local accessable
                 toRetrieve.add(instFiles[i]);
                 return null;
@@ -440,6 +451,19 @@ class MoveTask implements Runnable {
             aets.addAll(tmp);
         }
         return aets;
+    }
+    
+    private Set getRemoteRetrieveAETSet(FileInfo info) {
+        if (info.fileRetrieveAETs != null)
+            return toHashSet(info.fileRetrieveAETs);
+        // fall back to (external) retrieve AE
+        Set aets = toHashSet(info.instRetrieveAETs);
+        externalAETs.addAll(aets);
+        return aets;
+    }
+
+    private HashSet toHashSet(String aets) {
+        return new HashSet(Arrays.asList(StringUtils.split(aets, '\\')));
     }
 
     private void prepareRetrieveInfo(FileInfo[][] fileInfo) {
@@ -464,14 +488,18 @@ class MoveTask implements Runnable {
             Iterator it = iuidsAtAE.entrySet().iterator();
             Map.Entry select = (Map.Entry) it.next();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
+                Map.Entry entry = (Map.Entry) it.next();                
                 if (((Set) select.getValue()).size() < ((Set) entry.getValue())
                         .size()) {
                     select = entry;
                 }
             }
             // mark to forward
-            toForward.add(select);
+            if (externalAETs.contains(select.getKey())) {
+                toExternalForward.add(select);
+            } else {
+                toForward.add(select);
+            }
             // update iuidsAtAE
             iuidsAtAE.remove(select.getKey());
             for (Iterator it2 = iuidsAtAE.values().iterator(); it2.hasNext();) {

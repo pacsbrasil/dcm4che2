@@ -42,21 +42,24 @@ public abstract class RetrieveCmd extends BaseCmd {
     private static final String[] QRLEVEL = { "PATIENT", "STUDY", "SERIES",
             "IMAGE"};
 
-    private static final String[] ENTITY = { "Patient", "Study", "Series",
-            "Instance", "File"};
-
     private static final String[] SELECT_ATTRIBUTE = { "File.pk",
             "Patient.patientId", "Patient.patientName",
             "Patient.encodedAttributes", "Study.studyIuid",
             "Study.encodedAttributes", "Series.encodedAttributes",
             "Instance.encodedAttributes", "Instance.sopIuid",
-            "Instance.sopCuid", "File.retrieveAETs", "File.directoryPath",
-            "File.filePath", "File.fileTsuid", "File.fileMd5Field",
-            "File.fileSize"};
+            "Instance.sopCuid", "Instance.retrieveAETs", "File.retrieveAETs",
+            "File.directoryPath", "File.filePath", "File.fileTsuid",
+            "File.fileMd5Field", "File.fileSize"};
 
+    private static final String[] ENTITY = { "Patient", "Study", "Series",
+            "Instance"};
+
+    private static final String[] LEFT_JOIN = { "File", "Instance.pk",
+    		"File.instance_fk" };
+    
     private static final String[] RELATIONS = { "Patient.pk",
             "Study.patient_fk", "Study.pk", "Series.study_fk", "Series.pk",
-            "Instance.series_fk", "Instance.pk", "File.instance_fk",};
+            "Instance.series_fk"};
 
     public static RetrieveCmd create(DataSource ds, Dataset keys)
             throws SQLException {
@@ -86,6 +89,7 @@ public abstract class RetrieveCmd extends BaseCmd {
         super(ds);
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
+        sqlBuilder.setLeftJoin(LEFT_JOIN);
         sqlBuilder.setRelations(RELATIONS);
     }
 
@@ -119,7 +123,7 @@ public abstract class RetrieveCmd extends BaseCmd {
                     .getBytes(6), rs.getBytes(7), rs.getBytes(8), rs
                     .getString(9), rs.getString(10), rs.getString(11), rs
                     .getString(12), rs.getString(13), rs.getString(14), rs
-                    .getString(15), rs.getInt(16));
+                    .getString(15), rs.getString(16), rs.getInt(17));
             list = (ArrayList) result.get(info.sopIUID);
             if (list == null) {
                 result.put(info.sopIUID, list = new ArrayList());
