@@ -197,12 +197,12 @@ public class InstanceCollector {
 	 * 
 	 * @return The file size of the instance.
 	 */
-	public int getInstanceSize(InstanceLocal instance) {
+	public long getInstanceSize(InstanceLocal instance) {
 		Collection col = instance.getFiles();
 		if ( col.size() == 1 ) { FileLocal l;
 			return ( (FileLocal) col.iterator().next() ).getFileSize();
 		} else {
-			int size = 0;
+			long size = 0;
 			int pk = Integer.MIN_VALUE;
 			Iterator iter = col.iterator();
 			FileLocal file;

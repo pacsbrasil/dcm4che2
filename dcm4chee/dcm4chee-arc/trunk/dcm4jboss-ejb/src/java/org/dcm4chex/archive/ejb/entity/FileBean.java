@@ -121,29 +121,22 @@ public abstract class FileBean implements EntityBean
 	 * File Size
 	 * 
 	 * @ejb.interface-method
-	 * @ejb.persistence
-	 * 	column-name="file_size"
+	 * @ejb.persistence column-name="file_size"
 	 */
-    public abstract int getFileSize();
-    public abstract void setFileSize(int size);
+    public abstract long getFileSize();
+    public abstract void setFileSize(long size);
 
     /**
-	 * @ejb.relation
-	 * 	name="instance-files"
-	 * 	role-name="files-of-instance"
-	 * 
-	 * @jboss:relation
-	 * 	fk-column="instance_fk"
-	 * 	related-pk-field="pk"
-	 * 
-	 * @ejb.interface-method
-	 * 	view-type="local"
+     * @ejb.interface-method
+	 * @ejb.relation name="instance-files"
+	 * 	             role-name="files-of-instance"
+	 * @jboss:relation fk-column="instance_fk"
+	 * 	               related-pk-field="pk"
 	 */
     public abstract void setInstance(InstanceLocal inst);
 
     /**
 	 * @ejb.interface-method
-	 * 	view-type="local"
 	 */
     public abstract InstanceLocal getInstance();
 
@@ -220,7 +213,7 @@ public abstract class FileBean implements EntityBean
     public Integer ejbCreate(
         String path,
         String tsuid,
-        int size,
+        long size,
         byte[] md5,
         InstanceLocal instance,
         FileSystemLocal filesystem)
@@ -236,7 +229,7 @@ public abstract class FileBean implements EntityBean
     public void ejbPostCreate(
         String path,
         String tsuid,
-        int size,
+        long size,
         byte[] md5,
         InstanceLocal instance,
         FileSystemLocal filesystem)

@@ -1,133 +1,71 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2004-12-30 18:29:21.000000000 +0100
-+++ target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	2004-12-30 18:29:22.000000000 +0100
-@@ -3,8 +3,8 @@
- 
- <jbosscmp-jdbc>
-    <defaults>
--     <datasource>java:/DefaultDS</datasource>
--     <datasource-mapping>Hypersonic SQL</datasource-mapping>
-+     <datasource>java:/OracleDS</datasource>
-+     <datasource-mapping>Oracle9i</datasource-mapping>
-      <create-table>false</create-table>
-    </defaults>
- 
-@@ -68,7 +68,8 @@
- 
-         </cmp-field>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">mwl_item_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -150,7 +151,8 @@
- 			</read-ahead>
- 	     </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">instance_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -201,7 +203,8 @@
- 			</read-ahead>
- 	     </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">ae_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -229,7 +232,8 @@
- 
-         </cmp-field>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">device_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -291,7 +295,8 @@
- 			</read-ahead>
- 	     </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">patient_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -450,7 +455,8 @@
- 
- 	     </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">study_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -602,7 +608,8 @@
- 
- 	     </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">series_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -722,7 +729,8 @@
- 
- 	     </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">media_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -777,7 +785,8 @@
- 			</read-ahead>
- 	     </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">mpps_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -829,7 +838,8 @@
- 			</read-ahead>
- 	     </query>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">files_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -867,7 +877,8 @@
- 
-         </cmp-field>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">code_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
-@@ -895,7 +906,8 @@
- 
-         </cmp-field>
- 
--	<entity-command name="hsqldb-fetch-key">
-+	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-+	     <attribute name="sequence">filesystem_pk_seq</attribute>
- 	</entity-command>
- <!-- jboss 3.2 features -->
- <!-- optimistic locking does not express the exclusions needed -->
+6,7c6,7
+<      <datasource>java:/DefaultDS</datasource>
+<      <datasource-mapping>Hypersonic SQL</datasource-mapping>
+---
+>      <datasource>java:/OracleDS</datasource>
+>      <datasource-mapping>Oracle9i</datasource-mapping>
+71c71,72
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">mwl_item_pk_seq</attribute>
+153c154,155
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">instance_pk_seq</attribute>
+204c206,207
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">ae_pk_seq</attribute>
+232c235,236
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">device_pk_seq</attribute>
+294c298,299
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">patient_pk_seq</attribute>
+463c468,469
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">study_pk_seq</attribute>
+615c621,622
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">series_pk_seq</attribute>
+668c675,676
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">study_on_filesystem_pk_seq</attribute>
+780c788,789
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">media_pk_seq</attribute>
+835c844,845
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">mpps_pk_seq</attribute>
+887c897,898
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">files_pk_seq</attribute>
+925c936,937
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">code_pk_seq</attribute>
+953c965,966
+< 	<entity-command name="hsqldb-fetch-key">
+---
+> 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+> 	     <attribute name="sequence">filesystem_pk_seq</attribute>

@@ -37,78 +37,57 @@ import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
- * @ejb.bean
- *  name="Series"
- *  type="CMP"
- *  view-type="local"
- *  primkey-field="pk"
- *  local-jndi-name="ejb/Series"
- * 
- * @ejb.transaction 
- *  type="Required"
- * 
- * @ejb.persistence
- *  table-name="series"
- * 
- * @jboss.entity-command
- *  name="hsqldb-fetch-key"
- * 
- * @ejb.finder
- *  signature="java.util.Collection findAll()"
- *  query="SELECT OBJECT(a) FROM Series AS a"
- *  transaction-type="Supports"
+ * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
- * * @ejb.finder
- *  signature="java.util.Collection findSeriesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
- *  query="SELECT DISTINCT OBJECT(s) FROM Series s, IN(s.instances) i WHERE i.media = ?1"
- *  transaction-type="Supports"
- *
- * @ejb.finder
- *  signature="org.dcm4chex.archive.ejb.interfaces.SeriesLocal findBySeriesIuid(java.lang.String uid)"
- *  query="SELECT OBJECT(a) FROM Series AS a WHERE a.seriesIuid = ?1"
- *  transaction-type="Supports"
- *
- * @jboss.query
- *  signature="org.dcm4chex.archive.ejb.interfaces.SeriesLocal findBySeriesIuid(java.lang.String uid)"
- *  strategy="on-find"
- *  eager-load-group="*"
- * 
- * @ejb.finder
- *  signature="java.util.Collection findByPpsIuid(java.lang.String uid)"
- *  query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid = ?1"
- *  transaction-type="Supports"
- * 
- * @ejb.finder
- *  signature="java.util.Collection findWithNoPpsIuid()"
- *  query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid IS NULL"
- *  transaction-type="Supports"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
- *  query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
- *  query="SELECT COUNT(i) FROM Series s, IN(s.instances) i WHERE s.pk = ?1 AND i.media.mediaStatus = ?2"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
- * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectAvailability(java.lang.Integer pk)"
- * 	query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
- * 
+ * @ejb.bean name="Series"
+ *           type="CMP"
+ *           view-type="local"
+ *           primkey-field="pk"
+ *           local-jndi-name="ejb/Series"
+ * @ejb.transaction type="Required"
+ * @ejb.persistence table-name="series"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
- * @ejb.ejb-ref
- *  ejb-name="MPPS" 
- *  view-type="local"
- *  ref-name="ejb/MPPS"
+ * @ejb.finder signature="java.util.Collection findAll()"
+ *             query="SELECT OBJECT(a) FROM Series AS a"
+ *             transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findSeriesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
+ *             query="SELECT DISTINCT OBJECT(s) FROM Series s, IN(s.instances) i WHERE i.media = ?1"
+ *             transaction-type="Supports"
+ *             
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.SeriesLocal findBySeriesIuid(java.lang.String uid)"
+ *             query="SELECT OBJECT(a) FROM Series AS a WHERE a.seriesIuid = ?1"
+ *             transaction-type="Supports"
+ * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.SeriesLocal findBySeriesIuid(java.lang.String uid)"
+ *              strategy="on-find"
+ *              eager-load-group="*"
+ *              
+ * @ejb.finder signature="java.util.Collection findByPpsIuid(java.lang.String uid)"
+ *             query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid = ?1"
+ *             transaction-type="Supports"
  * 
- * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- *
+ * @ejb.finder signature="java.util.Collection findWithNoPpsIuid()"
+ *             query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid IS NULL"
+ *             transaction-type="Supports"
+ * 
+ * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
+ * 
+ * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
+ *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1 AND i.media.mediaStatus = ?2"
+ * 
+ * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
+ * 
+ * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
+ * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
+ * 
+ * @ejb.ejb-ref ejb-name="MPPS" 
+ *              view-type="local"
+ *              ref-name="ejb/MPPS"
+ * 
  */
 public abstract class SeriesBean implements EntityBean {
 

@@ -167,6 +167,18 @@ CREATE TABLE filesystem (
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
 CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);
 
+CREATE SEQUENCE study_on_filesystem_pk_seq;
+CREATE TABLE study_on_filesystem (
+	pk              INTEGER PRIMARY KEY NOT NULL,
+	study_fk		INTEGER,
+	filesystem_fk	INTEGER,
+	access_time		TIMESTAMP NOT NULL,
+FOREIGN KEY (study_fk) REFERENCES study(pk),
+FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
+);
+CREATE INDEX sof_study_fk ON study_on_filesystem(study_fk);
+CREATE INDEX sof_filesystem_fk ON study_on_filesystem(filesystem_fk);
+
 CREATE SEQUENCE files_pk_seq;
 CREATE TABLE files (
 	pk              INTEGER PRIMARY KEY  NOT NULL,
@@ -175,7 +187,7 @@ CREATE TABLE files (
 	filepath		VARCHAR(254) NOT NULL,
 	file_tsuid      VARCHAR(254) NOT NULL,
 	file_md5        VARCHAR(254),
-	file_size       INTEGER,
+	file_size       BIGINT,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
@@ -273,6 +285,7 @@ GRANT ALL PRIVILEGES ON TABLE mpps TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE series TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE instance TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE filesystem TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE study_on_filesystem TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE files TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE media TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE rel_instance_aet TO USER tiani;
@@ -292,6 +305,7 @@ GRANT USAGE ON SEQUENCE mpps_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE series_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE instance_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE filesystem_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE study_on_filesystem_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE files_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE media_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE mwl_item_pk_seq TO USER tiani;

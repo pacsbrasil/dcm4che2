@@ -167,12 +167,24 @@ CREATE TABLE files (
 	filepath		VARCHAR2(255) NOT NULL,
 	file_tsuid      VARCHAR2(255) NOT NULL,
 	file_md5        VARCHAR2(255),
-	file_size       INTEGER,
+	file_size       INTEGER(19),
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
+
+CREATE SEQUENCE study_on_filesystem_pk_seq;
+CREATE TABLE study_on_filesystem (
+	pk              NUMBER PRIMARY KEY,
+	study_fk		INTEGER,
+	filesystem_fk	INTEGER,
+	access_time		TIMESTAMP NOT NULL,
+FOREIGN KEY (study_fk) REFERENCES study(pk),
+FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
+);
+CREATE INDEX sof_study_fk ON study_on_filesystem(study_fk);
+CREATE INDEX sof_filesystem_fk ON study_on_filesystem(filesystem_fk);
 
 CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (

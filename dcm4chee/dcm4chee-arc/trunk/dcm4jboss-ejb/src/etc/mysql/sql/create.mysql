@@ -157,19 +157,23 @@ CREATE TABLE files (
 	filepath		VARCHAR(250) BINARY NOT NULL,
 	file_tsuid      VARCHAR(250) BINARY NOT NULL,
 	file_md5        VARCHAR(250) BINARY,
-	file_size       INTEGER,
+	file_size       BIGINT,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
 
-CREATE TABLE retrieve_aet (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
-	aet          	VARCHAR(250) BINARY NOT NULL,
-	availability	INTEGER NOT NULL
+CREATE TABLE study_on_filesystem (
+	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
+	study_fk		INTEGER,
+	filesystem_fk	INTEGER,
+	access_time		TIMESTAMP NOT NULL,
+FOREIGN KEY (study_fk) REFERENCES study(pk),
+FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 );
-CREATE UNIQUE INDEX retrieve_aet_aet ON retrieve_aet(aet);
+CREATE INDEX sof_study_fk ON study_on_filesystem(study_fk);
+CREATE INDEX sof_filesystem_fk ON study_on_filesystem(filesystem_fk);
 
 CREATE TABLE mwl_item (
 	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,

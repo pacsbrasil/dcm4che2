@@ -1,0 +1,158 @@
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
+package org.dcm4chex.archive.ejb.entity;
+
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+
+import javax.ejb.CreateException;
+import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
+
+import org.apache.log4j.Logger;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+
+/**
+ * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$ $Date$
+ * @since 01.01.2005
+ * 
+ * @ejb.bean name="StudyOnFileSystem"
+ *          type="CMP"
+ *          view-type="local"
+ *          local-jndi-name="ejb/StudyOnFileSystem"
+ *          primkey-field="pk"
+ * @ejb.transaction type="Required"
+ * @ejb.persistence table-name="study_on_filesystem"
+ * @jboss.entity-command name="hsqldb-fetch-key"
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
+ * 	           query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study.studyIuid=?1 AND sof.fileSystem.directoryPath=?2"
+ *             transaction-type="Supports"
+ * @jboss.query signature="long ejbSelectStudySize(java.lang.Integer pk)"
+ *              query="SELECT SUM(f.fileSize) FROM StudyOnFileSystem sof, File f WHERE sof.pk = ?1 AND f.fileSystem = sof.fileSystem AND f.instance.series.study = sof.study"
+ * @jboss.query signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
+ *              dynamic="true"
+ */
+public abstract class StudyOnFileSystemBean implements EntityBean {
+
+    private static final Logger log = Logger
+            .getLogger(StudyOnFileSystemBean.class);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.pk-field
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
+     */
+    public abstract Integer getPk();
+
+    public abstract void setPk(Integer pk);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="access_time"
+     */
+    public abstract java.sql.Timestamp getAccessTime();
+
+    public abstract void setAccessTime(java.sql.Timestamp time);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.relation name="study-sof"
+     *               role-name="sof-of-study"
+     *               cascade-delete="yes"
+     *               target-ejb="Study"
+     *               target-role-name="study-of-sof"
+     *               target-multiple="yes" 
+     * @jboss:relation fk-column="study_fk" related-pk-field="pk"
+     */
+    public abstract StudyLocal getStudy();
+
+    public abstract void setStudy(StudyLocal study);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.relation name="filesystem-sof"
+     *               role-name="sof-of-filesystem"
+     *               cascade-delete="yes" 
+     * 	             target-ejb="FileSystem"
+     *               target-role-name="filesystem-of-sof"
+     *               target-multiple="yes"
+     * @jboss:relation fk-column="filesystem_fk" 
+     *                 related-pk-field="pk"
+     */
+    public abstract FileSystemLocal getFileSystem();
+
+    public abstract void setFileSystem(FileSystemLocal fs);
+
+    /**
+     * @ejb.create-method
+     */
+    public Integer ejbCreate(StudyLocal study, FileSystemLocal fs)
+            throws CreateException {
+        setAccessTime(new Timestamp(System.currentTimeMillis()));
+        return null;
+    }
+
+    public void ejbPostCreate(StudyLocal study, FileSystemLocal fs)
+            throws CreateException {
+        setStudy(study);
+        setFileSystem(fs);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void touch() {
+        setAccessTime(new Timestamp(System.currentTimeMillis()));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public long getStudySize() throws FinderException {
+        return ejbSelectStudySize(getPk());
+    }
+
+    /**    
+     * @ejb.home-method
+     */
+    public java.util.Collection ejbHomeListOnFileSystems(Set dirPaths)
+            throws FinderException {
+        if (dirPaths.isEmpty())
+            return Collections.EMPTY_LIST;
+        Object[] args = dirPaths.toArray();
+        StringBuffer jbossQl = new StringBuffer(
+                "SELECT OBJECT(s) FROM StudyOnFileSystem s WHERE s.fileSystem.directoryPath IN (?1");
+        for (int i = 2; i <= args.length; ++i)
+            jbossQl.append(", ?").append(i);
+        jbossQl.append(") ORDER BY accessTime ASC");
+        if (log.isDebugEnabled())
+            log.debug("Execute JBossQL: " + jbossQl);
+        // call dynamic-ql query
+        return ejbSelectGeneric(jbossQl.toString(), args);
+    }
+
+    /**
+     * @ejb.select query=""
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     *             transaction-type="Supports"
+     */
+    public abstract long ejbSelectStudySize(Integer pk) throws FinderException;
+
+}

@@ -29,62 +29,42 @@ import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
- * @ejb.bean
- *  name="Study"
- *  type="CMP"
- *  view-type="local"
- *  primkey-field="pk"
- *  local-jndi-name="ejb/Study"
+ * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * 
- * @ejb.transaction 
- *  type="Required"
- * 
- * @ejb.persistence
- *  table-name="study"
- * 
- * @jboss.entity-command
- *  name="hsqldb-fetch-key"
- * 
- * @ejb.finder
- *  signature="java.util.Collection findStudiesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
- *  query="SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media = ?1"
- *  transaction-type="Supports"
- *
- * @ejb.finder
- *  signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
- *  query="SELECT OBJECT(a) FROM Study AS a WHERE a.studyIuid = ?1"
- *  transaction-type="Supports"
- *
- * @jboss.query
- *  signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
- *  strategy="on-find"
- *  eager-load-group="*"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
- *  query="SELECT COUNT(DISTINCT i) FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
- * 	query="SELECT COUNT(s) FROM Series s WHERE s.hidden = FALSE AND s.study.pk = ?1"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
- * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
- *  query="SELECT COUNT(i) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND i.media.mediaStatus = ?2"
- * 
- * @jboss.query 
- * 	signature="int ejbSelectAvailability(java.lang.Integer pk)"
- * 	query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
- * 
- * 
+ * @ejb.bean name="Study" 
+ *           type="CMP" 
+ *           view-type="local"
+ *           local-jndi-name="ejb/Study" 
+ *           primkey-field="pk"
+ * @ejb.persistence table-name="study"
+ * @ejb.transaction type="Required"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
+ *
+ * @ejb.finder transaction-type="Supports"
+ *             signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
+ *             query="SELECT OBJECT(a) FROM Study AS a WHERE a.studyIuid = ?1"
+ * @ejb.finder signature="java.util.Collection findStudiesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
+ *             query="SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media = ?1"
+ *             transaction-type="Supports"
+ *  
+ * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
+ *              strategy="on-find"
+ *              eager-load-group="*"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
+ * 	            query="SELECT COUNT(s) FROM Series s WHERE s.hidden = FALSE AND s.study.pk = ?1"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1" AND f.fileSystem.retrieveAET = ?2"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
+ *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesWithNoExternalRetrieveAET(java.lang.Integer pk)"
+ *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.externalRetrieveAET IS NULL"
+ * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
+ * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
  * 
- * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
 public abstract class StudyBean implements EntityBean {
@@ -92,17 +72,15 @@ public abstract class StudyBean implements EntityBean {
     private static final Logger log = Logger.getLogger(StudyBean.class);
 
     private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
-            Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances};
+            Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances };
 
     /**
      * Auto-generated Primary Key
      *
      * @ejb.interface-method
      * @ejb.pk-field
-     * @ejb.persistence
-     *  column-name="pk"
-     * @jboss.persistence
-     *  auto-increment="true"
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
      *
      */
     public abstract Integer getPk();
@@ -111,8 +89,7 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="created_time"
+     * @ejb.persistence column-name="created_time"
      */
     public abstract java.sql.Timestamp getCreatedTime();
 
@@ -120,8 +97,7 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="updated_time"
+     * @ejb.persistence column-name="updated_time"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
 
@@ -131,8 +107,7 @@ public abstract class StudyBean implements EntityBean {
      * Study Instance UID
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="study_iuid"
+     * @ejb.persistence column-name="study_iuid"
      */
     public abstract String getStudyIuid();
 
@@ -142,8 +117,7 @@ public abstract class StudyBean implements EntityBean {
      * Study ID
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="study_id"
+     * @ejb.persistence column-name="study_id"
      */
     public abstract String getStudyId();
 
@@ -153,8 +127,7 @@ public abstract class StudyBean implements EntityBean {
      * Study Datetime
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="study_datetime"
+     * @ejb.persistence column-name="study_datetime"
      */
     public abstract java.sql.Timestamp getStudyDateTime();
 
@@ -164,8 +137,7 @@ public abstract class StudyBean implements EntityBean {
      * Accession Number
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="accession_no"
+     * @ejb.persistence column-name="accession_no"
      */
     public abstract String getAccessionNumber();
 
@@ -175,8 +147,7 @@ public abstract class StudyBean implements EntityBean {
      * Referring Physician
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="ref_physician"
+     * @ejb.persistence column-name="ref_physician"
      */
     public abstract String getReferringPhysicianName();
 
@@ -186,8 +157,7 @@ public abstract class StudyBean implements EntityBean {
      * Number Of Study Related Series
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="num_series"
+     * @ejb.persistence column-name="num_series"
      * 
      */
     public abstract int getNumberOfStudyRelatedSeries();
@@ -198,8 +168,7 @@ public abstract class StudyBean implements EntityBean {
      * Number Of Study Related Instances
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="num_instances"
+     * @ejb.persistence column-name="num_instances"
      * 
      */
     public abstract int getNumberOfStudyRelatedInstances();
@@ -209,14 +178,12 @@ public abstract class StudyBean implements EntityBean {
     /**
      * Study DICOM Attributes
      *
-     * @ejb.persistence
-     *  column-name="study_attrs"
+     * @ejb.persistence column-name="study_attrs"
      * 
      */
     public abstract byte[] getEncodedAttributes();
 
     public abstract void setEncodedAttributes(byte[] bytes);
-
 
     /**
      * @ejb.interface-method
@@ -233,13 +200,12 @@ public abstract class StudyBean implements EntityBean {
     public abstract String getFilesetId();
 
     public abstract void setFilesetId(String id);
-    
+
     /**
      * Retrieve AETs
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="retrieve_aets"
+     * @ejb.persistence column-name="retrieve_aets"
      */
     public abstract String getRetrieveAETs();
 
@@ -248,8 +214,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * Instance Availability
      *
-     * @ejb.persistence
-     *  column-name="availability"
+     * @ejb.persistence column-name="availability"
      */
     public abstract int getAvailability();
 
@@ -270,49 +235,44 @@ public abstract class StudyBean implements EntityBean {
      * Modalities In Study
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="mods_in_study"
+     * @ejb.persistence column-name="mods_in_study"
      */
     public abstract String getModalitiesInStudy();
 
     public abstract void setModalitiesInStudy(String mds);
 
-
     /**
      * @ejb.interface-method view-type="local"
      * 
-     * @ejb.relation
-     *  name="patient-study"
-     *  role-name="study-of-patient"
-     *  cascade-delete="yes"
+     * @ejb.relation name="patient-study"
+     *               role-name="study-of-patient"
+     *               cascade-delete="yes"
      *
-     * @jboss:relation
-     *  fk-column="patient_fk"
-     *  related-pk-field="pk"
+     * @jboss:relation fk-column="patient_fk"
+     *                 related-pk-field="pk"
      * 
      * @param patient patient of this study
      */
     public abstract void setPatient(PatientLocal patient);
 
     /**
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method
      * 
      * @return patient of this study
      */
     public abstract PatientLocal getPatient();
 
     /**
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method
      *
      * @param series all series of this study
      */
     public abstract void setSeries(java.util.Collection series);
 
     /**
-     * @ejb.interface-method view-type="local"
-     * @ejb.relation
-     *  name="study-series"
-     *  role-name="study-has-series"
+     * @ejb.interface-method
+     * @ejb.relation name="study-series"
+     *               role-name="study-has-series"
      *    
      * @return all series of this study
      */
@@ -341,49 +301,64 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE"
-     */ 
-    public abstract Set ejbSelectInternalRetrieveAETs(Integer pk) throws FinderException;
-    
+     */
+    public abstract Set ejbSelectInternalRetrieveAETs(Integer pk)
+            throws FinderException;
+
     /**
      * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND s.hidden = FALSE"
-     */ 
-    public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk) throws FinderException;
-    
+     */
+    public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk)
+            throws FinderException;
+
     /**
      * @ejb.select query="SELECT DISTINCT i.media FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND i.media.mediaStatus = ?2"
-     */ 
-    public abstract java.util.Set ejbSelectMediaWithStatus(Integer pk, int status) throws FinderException;
+     */
+    public abstract java.util.Set ejbSelectMediaWithStatus(Integer pk,
+            int status) throws FinderException;
 
     /**
      * @ejb.select query="SELECT DISTINCT s.modality FROM Study st, IN(st.series) s WHERE s.hidden = FALSE AND st.pk = ?1"
-     */ 
-    public abstract Set ejbSelectModalityInStudies(Integer pk) throws FinderException;
+     */
+    public abstract Set ejbSelectModalityInStudies(Integer pk)
+            throws FinderException;
 
     /**
      * @ejb.select query=""
-     */ 
-    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(Integer pk, int status) throws FinderException;
-    
-    /**
-     * @ejb.select query=""
-     */ 
-    public abstract int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
+     */
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(
+            Integer pk, int status) throws FinderException;
 
     /**
      * @ejb.select query=""
-     */ 
-    public abstract int ejbSelectNumberOfStudyRelatedInstances(Integer pk) throws FinderException;
+     */
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(
+            Integer pk, String retrieveAET) throws FinderException;
 
     /**
      * @ejb.select query=""
-     */ 
-    public abstract int ejbSelectNumberOfStudyRelatedSeries(Integer pk) throws FinderException;
+     */
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesWithNoExternalRetrieveAET(
+            Integer pk) throws FinderException;
 
     /**
      * @ejb.select query=""
-     */ 
-    public abstract int ejbSelectAvailability(Integer pk) throws FinderException;
-    
+     */
+    public abstract int ejbSelectNumberOfStudyRelatedInstances(Integer pk)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */
+    public abstract int ejbSelectNumberOfStudyRelatedSeries(Integer pk)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */
+    public abstract int ejbSelectAvailability(Integer pk)
+            throws FinderException;
+
     /**
      * @ejb.interface-method
      */
@@ -400,8 +375,8 @@ public abstract class StudyBean implements EntityBean {
         if (numS > 0) {
             Set c = ejbSelectModalityInStudies(pk);
             if (c.remove(null))
-	            log.warn("Study[iuid=" + getStudyIuid()
-	                    + "] contains Series with unspecified Modality");
+                log.warn("Study[iuid=" + getStudyIuid()
+                        + "] contains Series with unspecified Modality");
             if (!c.isEmpty()) {
                 Iterator it = c.iterator();
                 StringBuffer sb = new StringBuffer((String) it.next());
@@ -418,8 +393,10 @@ public abstract class StudyBean implements EntityBean {
             StringBuffer sb = new StringBuffer();
             Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
             if (iAetSet.remove(null))
-                log.warn("Study[iuid=" + getStudyIuid()
-                        + "] contains Instance(s) with unspecified Retrieve AET");
+                log
+                        .warn("Study[iuid="
+                                + getStudyIuid()
+                                + "] contains Instance(s) with unspecified Retrieve AET");
             for (Iterator it = iAetSet.iterator(); it.hasNext();) {
                 final String aet = (String) it.next();
                 if (ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(
@@ -453,15 +430,32 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
+    public boolean isStudyAvailableOnMedia() throws FinderException {
+        String fsuid = getFilesetIuid();
+        return (fsuid != null && fsuid.length() != 0)
+                || ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(
+                        getPk(), MediaDTO.COMPLETED) == getNumberOfStudyRelatedInstances();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isStudyAvailableOnExternalRetrieveAET()
+            throws FinderException {
+        return ejbSelectNumberOfStudyRelatedInstancesWithNoExternalRetrieveAET(getPk()) == 0;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public Dataset getAttributes(boolean supplement) {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes(),
-                DcmDecodeParam.EVR_LE,
-                null);
+                DcmDecodeParam.EVR_LE, null);
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.StudyPk, getPk().intValue());
-            ds.putCS(Tags.ModalitiesInStudy, StringUtils
-                    .split(getModalitiesInStudy(), '\\'));
+            ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(
+                    getModalitiesInStudy(), '\\'));
             ds.putIS(Tags.NumberOfStudyRelatedSeries,
                     getNumberOfStudyRelatedSeries());
             ds.putIS(Tags.NumberOfStudyRelatedInstances,
@@ -481,10 +475,10 @@ public abstract class StudyBean implements EntityBean {
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setStudyId(ds.getString(Tags.StudyID));
         try {
-	        setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
-	    } catch (IllegalArgumentException e) {
-	        log.warn("Illegal Study Date/Time format: " + e.getMessage());
-	    }
+            setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
+        } catch (IllegalArgumentException e) {
+            log.warn("Illegal Study Date/Time format: " + e.getMessage());
+        }
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
         Dataset tmp = ds.exclude(SUPPL_TAGS).excludePrivate();

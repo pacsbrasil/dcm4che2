@@ -4,6 +4,7 @@ DROP TABLE audit_record;
 DROP TABLE rel_device_protocol;
 DROP TABLE device;
 DROP TABLE mwl_item;
+DROP TABLE study_on_filesystem;
 DROP TABLE files;
 DROP TABLE filesystem;
 DROP TABLE instance;

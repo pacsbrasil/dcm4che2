@@ -317,12 +317,12 @@ public abstract class MediaComposerBean implements SessionBean {
 	 * 
 	 * @return The file size of the instance.
 	 */
-	private int getInstanceSize(InstanceLocal instance) {
+	private long getInstanceSize(InstanceLocal instance) {
 		Collection col = instance.getFiles();
 		if ( col.size() == 1 ) { FileLocal l;
 			return ( (FileLocal) col.iterator().next() ).getFileSize();
 		} else {
-			int size = 0;
+			long size = 0;
 			int pk = Integer.MIN_VALUE;
 			Iterator iter = col.iterator();
 			FileLocal file;
