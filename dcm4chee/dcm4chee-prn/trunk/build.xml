@@ -6,7 +6,7 @@
   <property file="build.properties" />
 
   <property name="name" value="jprint"/>
-  <property name="version" value="1.2.3"/>
+  <property name="version" value="1.2.4"/>
   <property name="javac.debug" value="on"/>
   <property name="javac.optimize" value="off"/>
 
