@@ -211,6 +211,7 @@ public class MWLModel {
 			if ( ds != null )
 				mwlEntries.add( new MWLEntry( ds ) );
 		}
+		total = mwlEntries.size(); // the real total (without null entries!)
 	}
 
 	/**
