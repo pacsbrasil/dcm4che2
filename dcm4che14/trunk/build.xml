@@ -51,18 +51,21 @@
       <mkdir dir="${reports}"/>
    </target>
 
-   <target name="fetch">
+   <target name="fetch"
+           description="Get the latest source from the CVS tree">
      <cvs command="update -APd"/>
    </target>
    
    <target name="clean"
-           description="clean up" >
+           description="Clean out the output directories" >
       <delete dir="${out}"/>
    </target>
 
-   <target name="main" depends="package"/>
+   <target name="main" depends="package"
+           description="Compile and build JAR files (default target)"/>
 
-   <target name="all" depends="clean,publish"/>
+   <target name="all" depends="clean,publish"
+           description="Clean and rebuild all"/>
 
    <!-- Generate java source from XML via XSLT -->
    <target name="xml2java" depends="init">
@@ -111,7 +114,7 @@
       
    <target name="prepare-res" depends="init">
       <uptodate property="uptodate-res"
-	             targetfile="${src.res}/org/dcm4cheri/dict/TagDictionary.ser">
+	        targetfile="${src.res}/org/dcm4cheri/dict/TagDictionary.ser">
          <srcfiles dir="${src.etc}" includes="dictionary.xml"/>
       </uptodate>
       <antcall target="compile-res"/>
@@ -132,7 +135,8 @@
       </copy>
    </target>
    
-   <target name="test" depends="compile,prepare-res">
+   <target name="test" depends="compile,prepare-res"
+           description="Run the junit tests">
       <junit printsummary="true" fork="yes" dir="${test.conf}">
          <classpath refid="test.classpath"/>
          <formatter type="xml" />
@@ -246,13 +250,15 @@
       </uptodate>
    </target>
 
-   <target name="doc" depends="check-javadoc" unless="uptodate-javadoc">
+   <target name="doc" depends="check-javadoc" unless="uptodate-javadoc"
+           description="Generate javadoc for dcm4che API">
       <javadoc destdir="${javadoc}" sourcepath="${src.java}">
          <package name="org.dcm4che.*"/>
       </javadoc>     
    </target>
    
-   <target name="publish" depends="package,doc">           
+   <target name="publish" depends="package,doc"
+           description="Build destribution ZIP file">           
       <copy todir="${dist}">
          <fileset dir="${doc}" excludes="**/.nbattrs"/>
       </copy>
