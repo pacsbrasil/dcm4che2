@@ -46,6 +46,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
@@ -55,7 +56,6 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
 
@@ -233,8 +233,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             final int baseDirPathLength = baseDir.getPath().length();
             final String filePath = file.getPath().substring(
                     baseDirPathLength + 1).replace(File.separatorChar, '/');
-            Dataset coercedElements = updateDB(assoc, ds, fsInfo, filePath,
-                    file, md5sum);
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
+            ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
+            ds.putAE(Tags.RetrieveAET, fsInfo.getRetrieveAET());
+            Dataset coercedElements = updateDB(ds, fsInfo, filePath, file, 
+            		md5sum);
             if (coercedElements.isEmpty()
                     || !coerceWarnCallingAETs.contains(assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
@@ -296,8 +300,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             seriesDir.getParentFile().delete();
     }
 
-    private Dataset updateDB(Association assoc, Dataset ds,
-            FileSystemInfo fsInfo, String filePath, File file, byte[] md5)
+    private Dataset updateDB(Dataset ds, FileSystemInfo fsInfo, String filePath,
+    		File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             IOException {
         Storage storage = getStorageHome().create();
@@ -306,9 +310,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             for (;;) {
                 try {
                     synchronized (this) {
-                        return storage.store(assoc.getCallingAET(), assoc
-                                .getCalledAET(), ds, fsInfo.getRetrieveAET(),
-                                fsInfo.getPath(), filePath,
+                        return storage.store(ds, fsInfo.getPath(), filePath,
                                 (int) file.length(), md5);
                     }
                 } catch (Exception e) {
