@@ -20,9 +20,17 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che;
+package org.dcm4che.util;
 
-import java.util.ResourceBundle;
+import org.dcm4che.Implementation;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import javax.net.SocketFactory;
+import javax.net.ServerSocketFactory;
 
 /**
  * <description> 
@@ -39,43 +47,60 @@ import java.util.ResourceBundle;
  *            beyond the cvs commit message
  * </ul>
  */
-public class Dcm4che
+public abstract class SSLContextAdapter
 {
    // Constants -----------------------------------------------------
-   
+   public static final int ENCRYPT_NONE   = 0;
+   public static final int ENCRYPT_FORCE  = 1;
+   public static final int ENCRYPT_ENABLE = 2;
+  
    // Attributes ----------------------------------------------------
    
    // Static --------------------------------------------------------
-   private final static ResourceBundle rb =
-      ResourceBundle.getBundle("org/dcm4che/Dcm4che");
-   
-   public static String getImplementationClassUID() {
-      return rb.getString("dcm4che.ImplementationClassUID");
-   }
-   
-   public static String getImplementationVersionName() {
-      return rb.getString("dcm4che.ImplementationVersionName");
-   }
-   
-   public static Object findFactory(String key) {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = rb.getString(key);
-        try {
-            return loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
+   public static SSLContextAdapter getInstance() {
+      return (SSLContextAdapter)Implementation.findFactory(
+            "dcm4che.util.SSLContextAdapter");
    }
 
    // Constructors --------------------------------------------------
-   private Dcm4che(){
-   }
    
    // Public --------------------------------------------------------
+   public abstract void setEnabledCipherSuites(int encyption);
+
+   public abstract void setEnabledCipherSuites(String[] cipherSuites);
+
+   public abstract String[] getEnabledCipherSuites();
+
+   public abstract String[] getSupportedCipherSuites()
+   throws GeneralSecurityException;
+
+   public abstract void setNeedClientAuth(boolean needClientAuth);
+   
+   public abstract void setStartHandshake(boolean startHandshake);
+
+   public abstract void seedRandom(long seed)
+   throws GeneralSecurityException;
+ 
+   public abstract KeyStore loadKeyStore(InputStream in, char[] password)
+   throws GeneralSecurityException, IOException;
+   
+   public abstract KeyStore loadKeyStore(File file, char[] password)
+   throws GeneralSecurityException, IOException;
+   
+   public abstract KeyStore loadKeyStore(String systemId, char[] password)
+   throws GeneralSecurityException, IOException;
+
+   public abstract void setKey(KeyStore key, char[] password)
+   throws GeneralSecurityException;
+
+   public abstract void setTrust(KeyStore cacerts)
+   throws GeneralSecurityException;
+
+   public abstract SocketFactory getSocketFactory()
+   throws GeneralSecurityException;
+
+   public abstract ServerSocketFactory getServerSocketFactory()
+   throws GeneralSecurityException;
       
    // Z implementation ----------------------------------------------
    
@@ -88,9 +113,4 @@ public class Dcm4che
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
 }

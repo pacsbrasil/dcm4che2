@@ -20,17 +20,9 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.server;
+package org.dcm4che;
 
-import org.dcm4che.server.Server;
-
-import org.dcm4cheri.util.LF_ThreadPool;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.ServerSocket;
-import javax.net.ServerSocketFactory;
+import java.util.ResourceBundle;
 
 /**
  * <description> 
@@ -47,86 +39,46 @@ import javax.net.ServerSocketFactory;
  *            beyond the cvs commit message
  * </ul>
  */
-class ServerImpl implements LF_ThreadPool.Handler, Server
+public class Implementation
 {
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   private final Handler handler;
-   private final LF_ThreadPool threadPool = new LF_ThreadPool(this);
-   private ServerSocket ss;
-   private int port = 104;
-      
-   // Static --------------------------------------------------------
    
-   // Constructors --------------------------------------------------
-   public ServerImpl(Handler handler) {
-      if (handler == null)
-         throw new NullPointerException();
-      
-      if (handler == null)
-         throw new NullPointerException();
+   // Static --------------------------------------------------------
+   private final static ResourceBundle rb =
+      ResourceBundle.getBundle("org/dcm4che/Implementation");
+   
+   public static String getClassUID() {
+      return rb.getString("dcm4che.ImplementationClassUID");
+   }
+   
+   public static String getVersionName() {
+      return rb.getString("dcm4che.ImplementationVersionName");
+   }
+   
+   public static Object findFactory(String key) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        String name = rb.getString(key);
+        try {
+            return loader.loadClass(name).newInstance();
+        } catch (ClassNotFoundException ex) {
+            throw new ConfigurationError("class not found: " + name, ex); 
+        } catch (InstantiationException ex) {
+            throw new ConfigurationError("could not instantiate: " + name, ex); 
+        } catch (IllegalAccessException ex) {
+            throw new ConfigurationError("could not instantiate: " + name, ex); 
+        }
+   }
 
-      this.handler = handler;
+   // Constructors --------------------------------------------------
+   private Implementation(){
    }
    
    // Public --------------------------------------------------------
       
-   // Server implementation -----------------------------------------
-   public void setMaxClients(int max) {
-      threadPool.setMaxRunning(max);
-   }
-
-   public void start(int port) throws IOException {
-      start(port, ServerSocketFactory.getDefault());
-   }
+   // Z implementation ----------------------------------------------
    
-   public void start(int port, ServerSocketFactory ssf) throws IOException {
-      checkNotRunning();
-      
-      ss = ssf.createServerSocket(port);
-      new Thread(new Runnable() {
-         public void run() { threadPool.join(); }
-      }).start();
-   }
-
-   public void stop() {
-      if (ss == null)
-         return;
-      
-      InetAddress ia = ss.getInetAddress();
-      int port = ss.getLocalPort();
-      try {
-         ss.close();
-      } catch (IOException ignore) {}
-      
-      // try to connect to server port to ensure to leave blocking accept 
-      try {
-         new Socket(ia, port).close();
-      } catch (IOException ignore) {}
-      ss = null;
-      threadPool.shutdown();      
-   }
-
-   // LF_ThreadPool.Handler implementation --------------------------
-   public void run(LF_ThreadPool pool)
-   {
-      if (ss == null)
-         return;
-      
-      Socket s = null;
-      try {
-         s = ss.accept();
-         pool.promoteNewLeader();
-         handler.handle(s);
-      } catch (IOException ioe) {
-         ioe.printStackTrace();
-      } finally {
-         if (s != null)
-            try { s.close(); } catch (IOException ignore) {}
-      }
-   }
-      
    // Y overrides ---------------------------------------------------
    
    // Package protected ---------------------------------------------
@@ -134,12 +86,11 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   private void checkNotRunning()
-   {
-      if (ss != null) {
-         throw new IllegalStateException("Already Running - " + threadPool);
-      }
-   }
-
+   
    // Inner classes -------------------------------------------------
+    static class ConfigurationError extends Error {
+        ConfigurationError(String msg, Exception x) {
+            super(msg,x);
+        }
+    }
 }

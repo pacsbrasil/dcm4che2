@@ -24,6 +24,7 @@ package org.dcm4che.server;
 
 import java.io.IOException;
 import java.net.Socket;
+import javax.net.ServerSocketFactory;
 
 /**
  * <description> 
@@ -51,6 +52,8 @@ public interface Server
    public void setMaxClients(int max);
 
    public void start(int port) throws IOException;
+   
+   public void start(int port, ServerSocketFactory ssf) throws IOException;
 
    public void stop();
 }

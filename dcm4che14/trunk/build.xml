@@ -539,6 +539,13 @@
          <include name="*.jar"/>
       </fileset>
     </copy>
+    <copy todir="${release.demo}" filtering="no">
+      <fileset dir="${source.demo}/net">
+         <include name="*.tls"/>
+         <include name="*.key"/>
+         <include name="cacerts"/>
+      </fileset>
+    </copy>
 
     <!-- Copy example source -->
     <copy todir="${release.demo}" filtering="no">

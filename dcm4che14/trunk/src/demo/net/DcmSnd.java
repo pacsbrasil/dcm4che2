@@ -24,12 +24,17 @@
 import org.dcm4che.net.*;
 import org.dcm4che.data.*;
 import org.dcm4che.dict.*;
+import org.dcm4che.util.SSLContextAdapter;
 import org.dcm4che.util.DcmURL;
 
 import java.io.*;
 import java.nio.ByteOrder;
 import java.net.*;
-import java.util.*;
+import java.util.ResourceBundle;
+import java.util.PropertyResourceBundle;
+import java.util.StringTokenizer;
+import java.security.GeneralSecurityException;
+
 import gnu.getopt.*;
 
 /**
@@ -137,6 +142,7 @@ public class DcmSnd {
     private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
     private int bufferSize = 2048;
     private byte[] buffer = null;
+    private SSLContextAdapter tls = null;
 
     /** Creates a new instance of DcmDir */
     public DcmSnd() {
@@ -148,7 +154,7 @@ public class DcmSnd {
         assocRQ.setCalledAET(url.getCalledAET());
     }        
     
-    public void echo() throws IOException {
+    public void echo() throws IOException, GeneralSecurityException {
         final int pcid = 1;
         assocRQ.addPresContext(
             aFact.newPresContext(pcid, UIDs.Verification, DEF_TS));
@@ -156,7 +162,7 @@ public class DcmSnd {
         int count = 0;
         for (int i = 0; i < repeatWhole; ++i) {
             Association assoc = aFact.newRequestor(
-                    new Socket(url.getHost(), url.getPort()));
+                    newSocket(url.getHost(), url.getPort()));
             PDU assocAC = assoc.connect(assocRQ, assocTO);
             if (assocAC instanceof AAssociateAC) {
                 if (assoc.getAcceptedTransferSyntaxUID(pcid) == null) {
@@ -176,7 +182,8 @@ public class DcmSnd {
                               + dt + "ms.");
     }
 
-    public void send(String[] args, int offset) throws IOException {
+    public void send(String[] args, int offset)
+    throws IOException, GeneralSecurityException {
         if (bufferSize > 0) {
             buffer = new byte[bufferSize];
         }
@@ -206,7 +213,7 @@ public class DcmSnd {
         Result res = new Result();
         for (int i = 0; i < repeatWhole; ++i) {
             Association assoc = aFact.newRequestor(
-                    new Socket(url.getHost(), url.getPort()));
+                    newSocket(url.getHost(), url.getPort()));
             PDU assocAC = assoc.connect(assocRQ, assocTO);
             if (assocAC instanceof AAssociateAC) {
                 for (int k = offset; k < args.length; ++k) {
@@ -460,13 +467,18 @@ public class DcmSnd {
     * @param args the command line arguments
     */
     public static void main (String args[]) throws Exception {
-        LongOpt[] longopts = new LongOpt[0];
+        LongOpt[] longopts = {
+          new LongOpt("tls", LongOpt.NO_ARGUMENT, null, 's'),
+        };
         Getopt g = new Getopt("dcmsnd.jar", args, "L:b:P:r:R:", longopts, true);
         
         DcmSnd dcmsnd = new DcmSnd();
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {                
+               case 's':
+                 dcmsnd.initTLS();
+                 break;
                 case 'L':
                     dcmsnd.assocRQ.setMaxLength(Integer.parseInt(g.getOptarg()));
                     break;
@@ -517,6 +529,43 @@ public class DcmSnd {
         System.err.println(USAGE);
         System.exit(1);
     }
+    
+    private Socket newSocket(String host, int port)
+    throws IOException, GeneralSecurityException {
+       if (tls != null) {
+          return tls.getSocketFactory().createSocket(host, port);
+       } else {
+          return new Socket(host, port);
+       }
+    }
+
+    private void initTLS() throws GeneralSecurityException, IOException {
+       InputStream in = DcmSnd.class.getResourceAsStream("dcmsnd.tls");
+       ResourceBundle rb;
+       try {
+         rb = new PropertyResourceBundle(in);
+       } finally {
+         try { in.close(); } catch (IOException ignore) {}
+       }
+       tls = SSLContextAdapter.getInstance();
+       tls.setEnabledCipherSuites(tokenize(rb.getString("tls.cipher")));
+       char[] keypasswd = rb.getString("tls.key.passwd").toCharArray();
+       tls.setKey(tls.loadKeyStore(
+            DcmSnd.class.getResource(rb.getString("tls.key")).toString(),
+            keypasswd),
+            keypasswd);
+       tls.setTrust(tls.loadKeyStore(
+            DcmSnd.class.getResource(rb.getString("tls.cacerts")).toString(),
+            rb.getString("tls.cacerts.passwd").toCharArray()));
+    }
+    
+    private String[] tokenize(String s) {
+       StringTokenizer stk = new StringTokenizer(s, ", ");
+       String[] retval = new String[stk.countTokens()];
+       for (int i = 0; i < retval.length; ++i)
+          retval[i] = stk.nextToken();
+       return retval;
+    }
 
     private static final String USAGE = 
 "Usage: java -jar dcmsnd.jar [options] dicom-url\n" +
@@ -543,8 +592,8 @@ public class DcmSnd {
 " -R repeat     Set number of times to repeat whole operation [default=1],\n" +
 "\n" +
 "Example:\n" +
-"java -jar dcmsnd.jar dicom://DCMRCV:DCMSND@localhost:2350 /cdrom/DICOM/\n" +
+"java -jar dcmsnd.jar dicom://DcmSnd:DCMSND@localhost:2350 /cdrom/DICOM/\n" +
 "=> Opens association to local server, listening on port 2350, with\n" +
-"   Calling AET = DCMSND and Called AET = DCMRCV; and sends DICOM instances\n" +
+"   Calling AET = DCMSND and Called AET = DcmSnd; and sends DICOM instances\n" +
 "   in DICOM files in directory (and sub directories of) /cdrom/DICOM/\n";
 }

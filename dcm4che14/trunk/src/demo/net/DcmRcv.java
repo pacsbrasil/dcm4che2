@@ -34,6 +34,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.server.Server;
 import org.dcm4che.server.ServerFactory;
+import org.dcm4che.util.SSLContextAdapter;
 
 import java.io.File;
 import java.io.InputStream;
@@ -42,10 +43,13 @@ import java.io.OutputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.PropertyResourceBundle;
 import java.util.Date;
+import java.util.StringTokenizer;
+import java.security.GeneralSecurityException;
 
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
@@ -162,6 +166,7 @@ public class DcmRcv extends DcmServiceBase {
    private static ServerFactory srvFact = ServerFactory.getInstance();
    private static Factory fact = Factory.getInstance();
    
+   private SSLContextAdapter tls = null;
    private AcceptorPolicy policy = fact.newAcceptorPolicy();
    private DcmServiceRegistry services = fact.newDcmServiceRegistry();
    private DcmHandler handler = srvFact.newDcmHandler(policy, services);
@@ -175,6 +180,7 @@ public class DcmRcv extends DcmServiceBase {
    // Static --------------------------------------------------------
    public static void main(String args[]) throws Exception {
       LongOpt[] longopts = new LongOpt[] {
+         new LongOpt("tls", LongOpt.NO_ARGUMENT, null, 's'),
          new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 'b'),
          new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 'L'),
          new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
@@ -187,6 +193,9 @@ public class DcmRcv extends DcmServiceBase {
       int c;
       while ((c = g.getopt()) != -1) {
          switch (c) {
+            case 's':
+              dcmrcv.initTLS();
+              break;
             case 'L':
               dcmrcv.policy.setReceivedPDUMaxLength(
                   Integer.parseInt(g.getOptarg()));
@@ -237,14 +246,20 @@ public class DcmRcv extends DcmServiceBase {
       }
    }
 
-   public void start() throws IOException
+   public void start() throws GeneralSecurityException, IOException
    {
       if (bufferSize > 0) {
          buffer = new byte[bufferSize];
       }
       System.out.println(MessageFormat.format(messages.getString("start"),
          new Object[]{ new Date(), "" + port }));
-      server.start(port);
+      if (tls != null) {
+         System.out.println(MessageFormat.format(messages.getString("tls"),
+            new Object[] { Arrays.asList(tls.getEnabledCipherSuites()) }));
+         server.start(port, tls.getServerSocketFactory());
+      } else {
+         server.start(port);
+      }      
    }
       
    // DcmServiceBase overrides --------------------------------------
@@ -301,6 +316,34 @@ public class DcmRcv extends DcmServiceBase {
           }
        }
     }
+    
+    private void initTLS() throws GeneralSecurityException, IOException {
+       InputStream in = DcmRcv.class.getResourceAsStream("dcmrcv.tls");
+       ResourceBundle rb;
+       try {
+         rb = new PropertyResourceBundle(in);
+       } finally {
+         try { in.close(); } catch (IOException ignore) {}
+       }
+       tls = SSLContextAdapter.getInstance();
+       tls.setEnabledCipherSuites(tokenize(rb.getString("tls.cipher")));
+       char[] keypasswd = rb.getString("tls.key.passwd").toCharArray();
+       tls.setKey(tls.loadKeyStore(
+            DcmRcv.class.getResource(rb.getString("tls.key")).toString(),
+            keypasswd),
+            keypasswd);
+       tls.setTrust(tls.loadKeyStore(
+            DcmRcv.class.getResource(rb.getString("tls.cacerts")).toString(),
+            rb.getString("tls.cacerts.passwd").toCharArray()));
+    }
+    
+    private String[] tokenize(String s) {
+       StringTokenizer stk = new StringTokenizer(s, ", ");
+       String[] retval = new String[stk.countTokens()];
+       for (int i = 0; i < retval.length; ++i)
+          retval[i] = stk.nextToken();
+       return retval;
+    } 
     
     // Inner classes -------------------------------------------------
 }
