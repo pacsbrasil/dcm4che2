@@ -57,13 +57,13 @@ class FileDataSource implements DataSource
 
     private final FileInfo fileInfo;
     private final byte[] buffer;
-    private final float compressionRatio;
+    private final float encodingRate;
 
-    public FileDataSource(FileInfo fileInfo, byte[] buffer, float compressionRatio)
+    public FileDataSource(FileInfo fileInfo, byte[] buffer, float encodingRate)
     {
         this.fileInfo = fileInfo;
         this.buffer = buffer;
-        this.compressionRatio = compressionRatio;
+        this.encodingRate = encodingRate;
     }
 
     public void writeTo(OutputStream out, String tsUID) throws IOException
@@ -75,7 +75,7 @@ class FileDataSource implements DataSource
             file = File.createTempFile("dcm4jboss", "dcm");
             Transcoder t = new Transcoder();
             t.setTransferSyntax(tsUID);
-            t.setCompressionRatio(compressionRatio);
+            t.setEncodingRate(encodingRate);
             t.transcode(fileInfo.toFile(), file);
         } else
         {

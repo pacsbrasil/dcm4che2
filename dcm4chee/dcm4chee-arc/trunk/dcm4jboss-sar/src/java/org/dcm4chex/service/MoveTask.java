@@ -380,7 +380,7 @@ class MoveTask implements Runnable
             moveRqCmd.getMessageID());
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         DataSource ds =
-            new FileDataSource(info, buffer, scp.getCompressionRatio());
+            new FileDataSource(info, buffer, scp.getEncodingRate());
         return af.newDimse(presCtx.pcid(), storeRqCmd, ds);
     }
 
