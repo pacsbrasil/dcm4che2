@@ -60,9 +60,10 @@ import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.OrientationRequested;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.File;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -103,6 +104,8 @@ public class PrinterService
    static String orientationAsString(int orientation) {
       return ORIENTATION[orientation];
    }
+   private static final String ADF_FILE_EXT = ".adf";
+   private static final String PLUT_FILE_EXT = ".lut";      
    
    // Attributes ----------------------------------------------------
    /** Holds value of property printerName. */
@@ -208,6 +211,9 @@ public class PrinterService
    
    /** Holds value of property defaultAnnotation. */
    private String defaultAnnotation;
+   
+   /** Holds value of property grayStepAnnotation. */
+   private String grayStepAnnotation;
    
    // Static --------------------------------------------------------
    
@@ -820,17 +826,51 @@ public class PrinterService
       this.annotationDir = toFile(annotationDir).getAbsolutePath();
    }
    
+   private static int parseAnnotationBoxCount(String id) {
+      return Integer.parseInt(id.substring(id.lastIndexOf('_') + 1));
+   }
+   
+   private static final FilenameFilter ADF_FILENAME_FILTER = 
+      new FilenameFilter() {
+         public boolean accept(File dir, String name) {
+            if (!name.endsWith(ADF_FILE_EXT)) {
+               return false;
+            }
+            String id = name.substring(0, name.length()-ADF_FILE_EXT.length());
+            try {
+               return parseAnnotationBoxCount(id) > 0;
+            } catch (RuntimeException e) {
+              return false;
+            }
+         }
+      };
+   
+   private static void skipFileExt(String[] fnames, String ext) {
+      int extlen = ext.length();
+      for (int i = 0; i < fnames.length; ++i) {
+         fnames[i] = fnames[i].substring(0, fnames[i].length() - extlen);
+      }
+   }
+   
    /** Getter for property annotationDisplayFormatIDs.
     * @return Value of property annotationDisplayFormatIDs.
     */
    public String[] getAnnotationDisplayFormatIDs() {
       File dir = toFile(annotationDir);
-      return  dir.isDirectory() ? dir.list() : new String[]{};
+      if (!dir.isDirectory()) {
+         return new String[]{};
+      }
+      String[] fnames = dir.list(ADF_FILENAME_FILTER);
+      skipFileExt(fnames, ADF_FILE_EXT);
+      return  fnames;
    }
    
-   public boolean isSupportsAnnotationDisplayFormatID(String annotationID) {
-      String[] ids = getAnnotationDisplayFormatIDs();
-      return Arrays.asList(ids).indexOf(annotationID) != -1;
+   public int countAnnotationBoxes(String annotationID) {
+      String[] ids = getPLUTs();
+      if (Arrays.asList(ids).indexOf(annotationID) == -1) {
+         return -1;
+      }
+      return parseAnnotationBoxCount(annotationID);
    }
    
    /** Getter for property pLUTDir.
@@ -846,13 +886,25 @@ public class PrinterService
    public void setPLUTDir(String pLUTDir) {
       this.pLUTDir = toFile(pLUTDir).getAbsolutePath();
    }
-      
+   
+   private static final FilenameFilter PLUT_FILENAME_FILTER =
+      new FilenameFilter() {
+         public boolean accept(File dir, String name) {
+            return name.endsWith(PLUT_FILE_EXT);
+         }
+      };
+   
    /** Getter for property pLUTs.
     * @return Value of property pLUTs.
     */
    public String[] getPLUTs() {
       File dir = toFile(pLUTDir);
-      return  dir.isDirectory() ? dir.list() : new String[]{};
+      if (!dir.isDirectory()) {
+         return new String[]{};
+      }
+      String[] fnames = dir.list(PLUT_FILENAME_FILTER);
+      skipFileExt(fnames, PLUT_FILE_EXT);
+      return  fnames;
    }
    
    public boolean isSupportsConfigurationInformation(String configInfo) {
@@ -900,6 +952,20 @@ public class PrinterService
     */
    public void setDefaultAnnotation(String defaultAnnotation) {
       this.defaultAnnotation = defaultAnnotation;
+   }
+   
+   /** Getter for property grayStepAnnotation.
+    * @return Value of property grayStepAnnotation.
+    */
+   public String getGrayStepAnnotation() {
+      return this.grayStepAnnotation;
+   }
+   
+   /** Setter for property grayStepAnnotation.
+    * @param grayStepAnnotation New value of property grayStepAnnotation.
+    */
+   public void setGrayStepAnnotation(String grayStepAnnotation) {
+      this.grayStepAnnotation = grayStepAnnotation;
    }
    
    /** Getter for property grayStepODs.
@@ -964,21 +1030,6 @@ public class PrinterService
       this.grayStepGap = grayStepGap;
    }
    
-   /** Getter for property refGrayStepFile.
-    * @return Value of property refGrayStepFile.
-    */
-   public String getRefGrayStepFile() {
-      File f = scanner.getRefGrayStepFile();
-      return f != null ? f.getAbsolutePath() : "";
-   }
-   
-   /** Setter for property refGrayStepFile.
-    * @param refGrayStepFile New value of property refGrayStepFile.
-    */
-   public void setRefGrayStepFile(String refGrayStepFile) {      
-      scanner.setRefGrayStepFile(toFile(refGrayStepFile));
-   }
-   
    /** Getter for property refGrayStepODs.
     * @return Value of property refGrayStepODs.
     */
@@ -1003,15 +1054,15 @@ public class PrinterService
    /** Getter for property scanGrayStepDir.
     * @return Value of property scanGrayStepDir.
     */
-   public String getScanGrayStepDir() {
-      return scanner.getScanGrayStepDir().getAbsolutePath();
+   public String getCalibrationDir() {
+      return scanner.getCalibrationDir().getAbsolutePath();
    }
    
    /** Setter for property scanGrayStepDir.
     * @param scanGrayStepDir New value of property scanGrayStepDir.
     */
-   public void setScanGrayStepDir(String scanGrayStepDir) {
-      scanner.setScanGrayStepDir(toFile(scanGrayStepDir));
+   public void setCalibrationDir(String scanGrayStepDir) {
+      scanner.setCalibrationDir(toFile(scanGrayStepDir));
    }
    
    /** Getter for property scanArea.
@@ -1058,9 +1109,9 @@ public class PrinterService
    }
    
    public void calibrate(boolean force) throws CalibrationException {
-      log.info("Calibrating...");
-      setGrayStepODs(scanner.calculateGrayStepODs(force));
-      log.info("Calibrated");
+      log.info("Calibrating " + printerName);
+      setGrayStepODs(scanner.calculateGrayStepODs(printerName, force));
+      log.info("Calibrated " + printerName);
    }
    
    // ServiceMBeanSupport overrides ------------------------------------
@@ -1239,73 +1290,6 @@ public class PrinterService
    
    // Private -------------------------------------------------------
    
-   /*
-   static OrientationRequested toOrientationRequested(String orientation) {
-      if ("PORTRAIT".equals(orientation)) {
-         return  OrientationRequested.PORTRAIT;
-      }
-      if ("LANDSCAPE".equals(orientation)) {
-         return  OrientationRequested.LANDSCAPE;
-      }
-      throw new IllegalArgumentException("orientation: " + orientation);
-   }
-
-   static MediaSizeName toMediaSizeName(String sizeID) {
-      if ("A4".equals(sizeID)) {
-         return  MediaSizeName.ISO_A4;
-      }
-      if ("A3".equals(sizeID)) {
-         return  MediaSizeName.ISO_A3;
-      }
-      throw new IllegalArgumentException("sizeID: " + sizeID);
-   }   
-   
-   private PrintRequestAttributeSet toPrintRequestAttributeSet(
-      String orientation, String sizeId)
-   {
-      PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
-      OrientationRequested or = toOrientationRequested(orientation);
-      MediaSizeName media = toMediaSizeName(sizeId);
-      MediaSize mediaSize = MediaSize.getMediaSizeForName(media);
-      aset.add(or);
-      aset.add(media);
-      float x1, y1, x2, y2;
-      if (or == OrientationRequested.PORTRAIT) {
-         x1 = pageMargin[0];
-         y1 = pageMargin[1];
-         x2 = pageMargin[2];
-         y2 = pageMargin[3];
-      } else {
-         y2 = pageMargin[0];
-         x1 = pageMargin[1];
-         y1 = pageMargin[2];
-         x2 = pageMargin[3];
-      }
-         
-      aset.add(
-         new MediaPrintableArea(
-            x1, y1,
-            mediaSize.getX(MediaSize.MM) - (x1 + x2), 
-            mediaSize.getY(MediaSize.MM)- (y1 + y2),
-            MediaPrintableArea.MM));
-      if (printToFile) {
-         aset.add(new Destination(toFile(printToFilePath).toURI()));
-      }
-      return aset;
-   }
-   
-   private float getPageWidth(OrientationRequested or, MediaSize mediaSize) {
-      return or == OrientationRequested.PORTRAIT
-         ? mediaSize.getX(MediaSize.MM)
-         : mediaSize.getY(MediaSize.MM);
-   }
-         
-   private float getPageHeight(OrientationRequested or, MediaSize mediaSize) {
-      return or == OrientationRequested.PORTRAIT
-         ? mediaSize.getY(MediaSize.MM)
-         : mediaSize.getX(MediaSize.MM);
-   }
-   */
    private void print(Pageable printData)
       throws PrintException
    {

@@ -57,15 +57,13 @@ class ScannerCalibration {
    private static final int FIND_STEP_NUM_MIN = 3;
    private static final float FIND_STEP_ERR_MAX = 0.2f;
    private static final int BORDER_MIN = 50;
+   private static final String REF_FILENAME = "refgraystep.jpg";
    
    // Attributes ----------------------------------------------------
    private Logger log;
    
-   /** Holds value of property scanGrayStepDir. */
-   private File scanGrayStepDir;
-   
-   /** Holds value of property refGrayStepFile. */
-   private File refGrayStepFile;
+   /** Holds value of property calibrationDir. */
+   private File calibrationDir;
    
    /** Holds value of property refGrayStepODs. */
    private float[] refGrayStepODs;
@@ -79,11 +77,15 @@ class ScannerCalibration {
    /** Holds value of property whiteThreshold. */
    private int whiteThreshold = 220;
    
-   private File lastRefGrayStepFile;
+   private File lastRefFile;
 
+   private long lastRefFileModified;
+   
    private float[] cachedRefData;
 
-   private File lastScanGrayStepFile;
+   private File lastScanFile;
+
+   private long lastScanFileModified;
    
    private float[] cachedScanData;
 
@@ -98,32 +100,18 @@ class ScannerCalibration {
    
    // Public --------------------------------------------------------
       
-   /** Getter for property refGrayStepFile.
-    * @return Value of property refGrayStepFile.
-    */
-   public File getRefGrayStepFile() {
-      return this.refGrayStepFile;
-   }
-   
-   /** Setter for property refGrayStepFile.
-    * @param refGrayStepFile New value of property refGrayStepFile.
-    */
-   public void setRefGrayStepFile(File refGrayStepFile) {
-      this.refGrayStepFile = refGrayStepFile;
-   }
-   
    /** Getter for property scanGrayStepDir.
     * @return Value of property scanGrayStepDir.
     */
-   public File getScanGrayStepDir() {
-      return this.scanGrayStepDir;
+   public File getCalibrationDir() {
+      return this.calibrationDir;
    }
    
    /** Setter for property scanGrayStepDir.
     * @param scanGrayStepDir New value of property scanGrayStepDir.
     */
-   public void setScanGrayStepDir(File scanGrayStepDir) {
-      this.scanGrayStepDir = scanGrayStepDir;
+   public void setCalibrationDir(File calibrationDir) {
+      this.calibrationDir = calibrationDir;
    }
    
    /** Getter for property refGrayStepODs.
@@ -198,27 +186,30 @@ class ScannerCalibration {
       return "" + blackThreshold + "\\" + whiteThreshold;
    }
    
-   public float[] calculateGrayStepODs(boolean force)
+   public float[] calculateGrayStepODs(String printer, boolean force)
       throws CalibrationException
    {
       if (refGrayStepODs == null) {
          throw new IllegalStateException("refGrayStepODs not initalized!");
       }
-      if (refGrayStepFile == null) {
-         throw new IllegalStateException("refGrayStepFile not initalized!");
-      }
-      if (scanGrayStepDir == null) {
-         throw new IllegalStateException("scanGrayStepDir not initalized!");
+      if (calibrationDir == null) {
+         throw new IllegalStateException("calibrationDir not initalized!");
       }
       try {
-         if (!scanGrayStepDir.isDirectory()) {
+         File refFile = new File(calibrationDir, REF_FILENAME);
+         if (!refFile.isFile()) {
             throw new FileNotFoundException(
-               "scanGrayStepDir " + scanGrayStepDir + " is not a directory!");
+               "Could not find file " + refFile);
          }
-         File[] scanFiles = scanGrayStepDir.listFiles();
+         File scanDir = new File(calibrationDir, printer);
+         if (!scanDir.isDirectory()) {
+            throw new FileNotFoundException(
+               "Could not find directory " + scanDir);
+         }
+         File[] scanFiles = scanDir.listFiles();
          if (scanFiles.length == 0) {
             throw new FileNotFoundException(
-               "empty scanGrayStepDir " + scanGrayStepDir);
+               "No scans in directory " + scanDir);
          }
          Arrays.sort(scanFiles,
          new Comparator() {
@@ -227,34 +218,37 @@ class ScannerCalibration {
                - ((File)o1).lastModified());
             }
          });
-         
          if (force || cachedRefData == null
-                   || !refGrayStepFile.equals(lastRefGrayStepFile))
+                   || !refFile.equals(lastRefFile)
+                   || refFile.lastModified() > lastRefFileModified)
          {
             if (log != null && log.isDebugEnabled()) {
-               log.debug("analysing " + refGrayStepFile.getName());
+               log.debug("analysing " + refFile.getName());
             }
-            cachedRefData = analyse(ImageIO.read(refGrayStepFile));
-            lastRefGrayStepFile = refGrayStepFile;
+            cachedRefData = analyse(ImageIO.read(refFile));
+            lastRefFile = refFile;
+            lastRefFileModified = refFile.lastModified();
             cachedODs = null;
          } else {
             if (log != null && log.isDebugEnabled()) {
-               log.debug("use cached data for " + lastRefGrayStepFile.getName());
+               log.debug("use cached data for " + lastRefFile.getName());
             }
          }
          
          if (force || cachedScanData == null
-                   || !scanFiles[0].equals(lastScanGrayStepFile))
+                   || !scanFiles[0].equals(lastScanFile)
+                   || scanFiles[0].lastModified() > lastScanFileModified)
          {
             if (log != null && log.isDebugEnabled()) {
                log.debug("analysing " + scanFiles[0].getName());
             }
             cachedScanData = analyse(ImageIO.read(scanFiles[0]));
-            lastScanGrayStepFile = scanFiles[0];
+            lastScanFile = scanFiles[0];
+            lastScanFileModified = scanFiles[0].lastModified();
             cachedODs = null;
          } else {
             if (log != null && log.isDebugEnabled()) {
-               log.debug("use cached data for " + lastScanGrayStepFile.getName());
+               log.debug("use cached data for " + lastScanFile.getName());
             }
          }
          
@@ -287,11 +281,11 @@ class ScannerCalibration {
       if (invRefPx.length != refGrayStepODs.length) {
          throw new CalibrationException("Mismatch of detected gray steps["
             + invRefPx.length + "] in "
-            + (lastRefGrayStepFile == null ? "?" : lastRefGrayStepFile.getName())
+            + (lastRefFile == null ? "?" : lastRefFile.getName())
             + " with refGrayStepODs float[" + refGrayStepODs.length + "]");
       }
-      ensureMonotonic(invRefPx, lastRefGrayStepFile);
-      ensureMonotonic(invPx, lastScanGrayStepFile);
+      ensureMonotonic(invRefPx, lastRefFile);
+      ensureMonotonic(invPx, lastScanFile);
       float[] result = new float[invPx.length];
       for (int i = 0; i < invPx.length; ++i) {
          int index = Arrays.binarySearch(invRefPx, invPx[i]);

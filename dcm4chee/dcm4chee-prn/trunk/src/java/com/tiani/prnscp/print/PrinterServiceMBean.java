@@ -398,16 +398,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setGrayStepGap(double grayStepGap);
    
-   /** Getter for property refGrayStepFile.
-    * @return Value of property refGrayStepFile.
-    */
-   public String getRefGrayStepFile();
-   
-   /** Setter for property refGrayStepFile.
-    * @param refGrayStepFile New value of property refGrayStepFile.
-    */
-   public void setRefGrayStepFile(String refGrayStepFile);
-   
    /** Getter for property refGrayStepODs.
     * @return Value of property refGrayStepODs.
     */
@@ -426,12 +416,12 @@ public interface PrinterServiceMBean extends ServiceMBean {
    /** Getter for property scanGrayStepDir.
     * @return Value of property scanGrayStepDir.
     */
-   public String getScanGrayStepDir();
+   public String getCalibrationDir();
    
    /** Setter for property scanGrayStepDir.
     * @param scanGrayStepDir New value of property scanGrayStepDir.
     */
-   public void setScanGrayStepDir(String scanGrayStepDir);
+   public void setCalibrationDir(String scanGrayStepDir);
    
    /** Getter for property scanPointExtension.
     * @return Value of property scanPointExtension.
@@ -483,6 +473,36 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public String[] getPLUTs();
 
+   /** Getter for property defaultPLUT.
+    * @return Value of property defaultPLUT.
+    */
+   public String getDefaultPLUT();
+   
+   /** Setter for property defaultPLUT.
+    * @param defaultPLUT New value of property defaultPLUT.
+    */
+   public void setDefaultPLUT(String defaultPLUT);
+   
+   /** Getter for property defaultAnnotation.
+    * @return Value of property defaultAnnotation.
+    */
+   public String getDefaultAnnotation();
+   
+   /** Setter for property defaultAnnotation.
+    * @param defaultAnnotation New value of property defaultAnnotation.
+    */
+   public void setDefaultAnnotation(String defaultAnnotation);
+   
+   /** Getter for property grayStepAnnotation.
+    * @return Value of property grayStepAnnotation.
+    */
+   public String getGrayStepAnnotation();
+   
+   /** Setter for property grayStepAnnotation.
+    * @param grayStepAnnotation New value of property grayStepAnnotation.
+    */
+   public void setGrayStepAnnotation(String grayStepAnnotation);
+   
    public boolean isSupportsFilmDestination(String filmDestination);
    
    public boolean isSupportsFilmSizeID(String filmSizeID);
@@ -497,9 +517,9 @@ public interface PrinterServiceMBean extends ServiceMBean {
 
    public boolean isSupportsResolutionID(String resolutionID);   
 
-   public boolean isSupportsAnnotationDisplayFormatID(String annotationID);
-   
    public boolean isSupportsConfigurationInformation(String configInfo);
+ 
+   public int countAnnotationBoxes(String annotationID);
    
    public void printGraySteps() throws PrintException;
    
@@ -507,30 +527,5 @@ public interface PrinterServiceMBean extends ServiceMBean {
    
    public void printGrayStepsWithLinOD() throws PrintException;
    
-   public void calibrate(boolean force) throws CalibrationException;
-         
-   /** Getter for property defaultPLUT.
-    * @return Value of property defaultPLUT.
-    *
-    */
-   public String getDefaultPLUT();
-   
-   /** Setter for property defaultPLUT.
-    * @param defaultPLUT New value of property defaultPLUT.
-    *
-    */
-   public void setDefaultPLUT(String defaultPLUT);
-   
-   /** Getter for property defaultAnnotation.
-    * @return Value of property defaultAnnotation.
-    *
-    */
-   public String getDefaultAnnotation();
-   
-   /** Setter for property defaultAnnotation.
-    * @param defaultAnnotation New value of property defaultAnnotation.
-    *
-    */
-   public void setDefaultAnnotation(String defaultAnnotation);
-   
+   public void calibrate(boolean force) throws CalibrationException;            
 }
