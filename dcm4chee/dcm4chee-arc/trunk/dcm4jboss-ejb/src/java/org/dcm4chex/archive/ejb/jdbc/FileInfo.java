@@ -29,10 +29,10 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import org.dcm4che.util.HostNameUtils;
+import java.net.UnknownHostException;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -42,7 +42,7 @@ public class FileInfo {
     public final byte[] patAttrs;
     public final String sopIUID;
     public final String sopCUID;
-    public final String aet;
+    public final String retrieveAET;
     public final String uri;
     public final String fpath;
     public final String tsUID;
@@ -55,7 +55,7 @@ public class FileInfo {
         byte[] patAttrs,
         String sopIUID,
         String sopCUID,
-        String aet,
+        String retrieveAET,
         String uri,
         String fpath,
         String tsUID,
@@ -66,7 +66,7 @@ public class FileInfo {
         this.patAttrs = patAttrs;
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
-        this.aet = aet;
+        this.retrieveAET = retrieveAET;
         this.uri = uri;
         this.fpath = fpath;
         this.tsUID = tsUID;
@@ -79,9 +79,9 @@ public class FileInfo {
     public File toFile() {
         try {
             URI tmp = new URI(uri);
-            String localhost = HostNameUtils.getLocalHostName();
+            String myHost = InetAddress.getLocalHost().getHostName();
             if (!"file".equalsIgnoreCase(tmp.getScheme())
-                || !localhost.equalsIgnoreCase(tmp.getHost())) {
+                || !myHost.equalsIgnoreCase(tmp.getHost())) {
                 throw new IllegalStateException("" + this);
             }
             return new File(new URI("file:" + tmp.getPath() + fpath));
@@ -89,7 +89,9 @@ public class FileInfo {
             throw new IllegalStateException("" + this);
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("" + this);
-        }
+        } catch (UnknownHostException e) {
+			throw new RuntimeException(e);
+		}
     }
 
 }
