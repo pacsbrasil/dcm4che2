@@ -677,7 +677,7 @@ public class PrintSCUFrame extends JFrame
                 }
             });
         chkUseSeparatePresState.setSelected(applySeparatePresState);
-        chkUseSeparatePresState.setToolTipText("Enables you to choose a separate <i>Presentation State</i> object to apply to the chosen DICOM image");
+        chkUseSeparatePresState.setToolTipText("Enables you to choose a separate Presentation State object to apply to the chosen DICOM image");
         subBtnPanel.add(chkUseSeparatePresState);
         
         subBtnPanel = new JPanel();
