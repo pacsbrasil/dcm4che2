@@ -19,10 +19,10 @@
  */
 package com.tiani.prnscp.client.plutgui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -45,12 +45,13 @@ import java.text.DecimalFormat;
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputAdapter;
 
-import com.tiani.prnscp.print.PLutBuilder;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
+
+import com.tiani.prnscp.print.PLutBuilder;
 
 /**
  *  Description of the Class
@@ -91,13 +92,14 @@ public class PLutPanel extends JPanel
         addMouseMotionListener(listener =
             new MouseInputAdapter()
             {
-                private int lastx, lasty;
                 private final int DELTA = 1;
                 private final float SLOPE_STEP = 0.1f;
                 private final float CENTER_STEP = 0.01f;
                 private final float GAMMA_FACT = 1.05f;
-                private final int CHANGE_CENTER_MASK = InputEvent.SHIFT_DOWN_MASK;
-                private final int CHANGE_SLOPE_MASK = InputEvent.CTRL_DOWN_MASK;
+                private final float CENTER_GRAB_DIST_REL = 0.01f;
+
+                private int lastx, lasty;
+                private boolean grabCntr;
 
 
                 private void update(MouseEvent e)
@@ -110,6 +112,9 @@ public class PLutPanel extends JPanel
                 public void mousePressed(MouseEvent e)
                 {
                     update(e);
+                    grabCntr = ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0
+                                && Math.abs((float)e.getY() / getHeight()
+                                            - builder.getCenter()) < CENTER_GRAB_DIST_REL);
                 }
 
 
@@ -117,6 +122,7 @@ public class PLutPanel extends JPanel
                 {
                     changingParam = 0;
                     repaint();
+                    grabCntr = false;
                 }
 
 
@@ -135,41 +141,45 @@ public class PLutPanel extends JPanel
                 {
                     int dx = e.getX() - lastx;
                     int dy = e.getY() - lasty;
+                    
                     update(e);
                     changingParam = 0;
-                    if ((e.getModifiersEx() & CHANGE_SLOPE_MASK) != 0) {//slope
-                        changingParam |= CHANGING_SLOPE;
-                        if (dx < -DELTA) {
-                            builder.setSlope(
-                                Math.max(0.f,
-                                builder.getSlope() - SLOPE_STEP));
-                            updatePLut();
-                        } else if (dx > DELTA) {
-                            builder.setSlope(
-                                Math.min(10.f,
-                                builder.getSlope() + SLOPE_STEP));
-                            updatePLut();
-                        }
-                    }
-                    if ((e.getModifiersEx() & CHANGE_CENTER_MASK) != 0) {//center
+                    if (grabCntr) { //center
                         changingParam |= CHANGING_CENTER;
                         builder.setCenter(
                             Math.max(0.f,
                                 Math.min(1.f,
                                     (float) e.getY() / getHeight())));
                         updatePLut();
-                    } else if ((e.getModifiersEx() & CHANGE_SLOPE_MASK) == 0) {//gamma
-                        changingParam |= CHANGING_GAMMA;
-                        if (dx < -DELTA) {
-                            builder.setGamma(
-                                Math.max(0.1f,
-                                    builder.getGamma() / GAMMA_FACT));
-                            updatePLut();
-                        } else if (dx > DELTA) {
-                            builder.setGamma(
-                                Math.min(10.f,
-                                    builder.getGamma() * GAMMA_FACT));
-                            updatePLut();
+                    }
+                    else {
+                        if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) { //slope
+                            changingParam |= CHANGING_SLOPE;
+                            if (dx < -DELTA) {
+                                builder.setSlope(
+                                    Math.max(0.f,
+                                    builder.getSlope() - SLOPE_STEP));
+                                updatePLut();
+                            } else if (dx > DELTA) {
+                                builder.setSlope(
+                                    Math.min(10.f,
+                                    builder.getSlope() + SLOPE_STEP));
+                                updatePLut();
+                            }
+                        }
+                        if ((e.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK) != 0) { //gamma
+                            changingParam |= CHANGING_GAMMA;
+                            if (dx < -DELTA) {
+                                builder.setGamma(
+                                    Math.max(0.1f,
+                                        builder.getGamma() / GAMMA_FACT));
+                                updatePLut();
+                            } else if (dx > DELTA) {
+                                builder.setGamma(
+                                    Math.min(10.f,
+                                        builder.getGamma() * GAMMA_FACT));
+                                updatePLut();
+                            }
                         }
                     }
                 }
@@ -461,8 +471,11 @@ public class PLutPanel extends JPanel
 
         //draw center
         g.setColor(Color.RED);
+        if ((changingParam & CHANGING_CENTER) != 0)
+            g.setStroke(new BasicStroke(3));
         y = (int) (builder.getCenter() * (plut.length - 1) * fy + y0 + 0.5);
         g.drawLine(0, y, getWidth(), y);
+        g.setStroke(new BasicStroke(1));
     }
 
 
