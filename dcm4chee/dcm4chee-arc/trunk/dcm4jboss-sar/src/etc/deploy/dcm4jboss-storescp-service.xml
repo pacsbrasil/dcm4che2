@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server>
+<!-- $Id$ -->
+
+<!-- ===================================================================== -->
+<!--                                                                       -->
+<!--  DICOM Storage Service Configuration                                   -->
+<!--                                                                       -->
+<!-- ===================================================================== -->
+
+<server>
+
+  <classpath codebase="lib" archives="@ARCHIVES@"/>
+
+  <mbean code="org.dcm4chex.service.StoreScpService" 
+         name="dcm4chex:service=StoreScp">
+
+    <depends optional-attribute-name="DcmServerName">
+        dcm4chex:service=DcmServer,name=DCMSRV
+    </depends>
+    
+    <!-- Do NOT uncomment this line if the service is deployed
+    in the same jboss instance as the Storage EJB. Otherwise
+    in VM calls to go over RMI!
+        
+    <attribute name="ProviderURL">localhost</attribute>
+    -->
+
+    <attribute name="ArchiveDir">archive</attribute>
+    
+    <attribute name="RetrieveAET">PACS_TIANI</attribute>
+    
+  </mbean>
+
+</server>
+

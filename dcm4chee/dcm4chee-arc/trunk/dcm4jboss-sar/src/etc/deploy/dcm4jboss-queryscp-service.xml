@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server>
+<!-- $Id$ -->
+
+<!-- ===================================================================== -->
+<!--                                                                       -->
+<!--  DICOM Query Service Configuration                                   -->
+<!--                                                                       -->
+<!-- ===================================================================== -->
+
+<server>
+
+  <classpath codebase="lib" archives="@ARCHIVES@"/>
+
+  <mbean code="org.dcm4chex.service.QueryScpService" 
+         name="dcm4chex:service=QueryScp">
+
+    <depends optional-attribute-name="DcmServerName">
+        dcm4chex:service=DcmServer,name=DCMSRV
+    </depends>
+    
+    <attribute name="Datasource">java:/PostgresDS</attribute>    
+         
+  </mbean>
+
+</server>
+

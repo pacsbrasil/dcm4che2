@@ -1,0 +1,213 @@
+<project name="dcm4jboss-sar" default="compile">
+	<property file="build.properties"/>
+	<property name="version" value="DEV"/>
+	<property name="common.jar" value="dcm4jboss-common.jar"/>
+	<property name="dcmsrv.jar" value="dcm4jboss-dcmsrv.jar"/>
+	<property name="dcmsrv.sar" value="dcm4jboss-dcmsrv.sar"/>
+	<property name="storescp.jar" value="dcm4jboss-storescp.jar"/>
+	<property name="storescp.sar" value="dcm4jboss-storescp.sar"/>
+	<property name="queryscp.jar" value="dcm4jboss-queryscp.jar"/>
+	<property name="queryscp.sar" value="dcm4jboss-queryscp.sar"/>
+
+	<property name="src.dir" value="${basedir}/src"/>
+	<property name="src.java" value="${src.dir}/java"/>
+	<property name="src.etc" value="${src.dir}/etc"/>
+	<property name="src.deploy" value="${src.etc}/deploy"/>
+
+	<property name="target.dir" value="${basedir}/target"/>
+	<property name="target.classes" value="${target.dir}/classes"/>
+	<property name="target.xdoclet" value="${target.dir}/xdoclet"/>
+	<property name="target.java" value="${target.xdoclet}/java"/>
+	<property name="target.deploy" value="${target.dir}/deploy"/>
+
+    <!-- Override with your dcm4che dist location -->
+	<property name="dcm4che.home" value="${user.home}/work/dcm4che14/build"/>		
+	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
+
+    <!-- Override with your dcm4jboss-ejb dist location -->
+	<property name="dcm4jboss-ejb.home" value="${user.home}/work/dcm4jboss-ejb/target"/>		
+
+    <!-- Override with your JBoss/Web server bundle dist location -->
+	<property name="jboss.home" value="${user.home}/jboss-3.2.1"/>		
+	<property name="jboss.conf" value="${jboss.home}/server/default"/>		
+	<property name="jboss.deploy" value="${jboss.conf}/deploy"/>		
+
+	<path id="base.path">
+		<pathelement location="${dcm4che.jar}"/>
+		<fileset dir="${jboss.home}/lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${jboss.conf}/lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${dcm4jboss-ejb.home}/client">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+    <!-- Override with your XDoclet bundle dist location -->
+	<property name="xdoclet.home" value="${user.home}/xdoclet"/>
+	<path id="xdoclet.path">
+		<fileset dir="${xdoclet.home}/lib">
+			<include name="*.jar"/>
+		</fileset>
+		<path refid="base.path"/>
+	</path>
+
+   	<!-- =================================================================== -->
+    <!-- Initialize                                                          -->
+    <!-- =================================================================== -->
+    
+    <target name="init">
+    	<tstamp>
+            <format property="TODAY" pattern="dd.MM.yyyy"/>
+        </tstamp>
+        <taskdef
+            name="xdoclet"
+            classname="xdoclet.DocletTask"
+            classpathref="xdoclet.path"
+            />
+        <taskdef
+            name="jmxdoclet"
+            classname="xdoclet.modules.jmx.JMXDocletTask"
+            classpathref="xdoclet.path"
+            />
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Prepares the directory structure                                    -->
+    <!-- =================================================================== -->
+    <target name="prepare" depends="init">
+        <mkdir dir="${target.classes}"/>
+        <mkdir dir="${target.java}"/>
+        <mkdir dir="${target.deploy}"/>
+        <mkdir dir="${target.dir}/dcmsrv"/>
+        <mkdir dir="${target.dir}/storescp"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Invoke XDoclet's jmxdoclet                                          -->
+    <!-- =================================================================== -->
+    <target name="jmxdoclet" depends="prepare" unless="xdoclet.skip">
+
+        <jmxdoclet 
+            destdir="${target.java}"
+            excludedtags="@version,@author,@todo,@since"
+            addedtags="@xdoclet-generated at ${TODAY},@copyright The XDoclet Team,@author XDoclet,@version ${version}"
+            force="${xdoclet.force}"
+            verbose="false"
+            >
+
+            <fileset dir="${src.java}">
+                <include name="**/*Service.java"/>
+            </fileset>
+            
+            <mbeaninterface/>
+		</jmxdoclet>
+		
+	</target>
+
+   	<!-- =================================================================== -->
+   	<!-- Compiles the source code                                            -->
+   	<!-- =================================================================== -->   
+   	<target name="compile" depends="jmxdoclet">
+		<javac
+        	destdir="${target.classes}"
+			debug="${javac.debug}"
+         	deprecation="off"
+         	optimize="on"
+         	classpathref="base.path"
+      	>
+        	<src path="${target.java}"/>
+         	<src path="${src.java}"/>
+      	</javac>
+   	</target>
+
+   	<!-- =================================================================== -->
+   	<!-- build sars                                        -->
+   	<!-- =================================================================== -->
+   
+   	<target name="sar" depends="dcmsrv-sar,storescp-sar,queryscp-sar"/>
+
+    <target name="dcmsrv-sar" depends="compile">
+        <copy file="${src.deploy}/dcm4jboss-dcmsrv-service.xml" 
+            tofile="${target.dir}/dcmsrv/jboss-service.xml">
+            <filterset>
+                <filter token="ARCHIVES" value="dcm4che.jar"/>
+            </filterset>
+        </copy>  
+        <zip zipfile="${target.deploy}/${dcmsrv.sar}">
+        	<zipfileset dir="${target.classes}">
+        		<include name="**/DcmServerService*"/>
+        		<include name="**/util/*"/>
+        	</zipfileset>
+        	<zipfileset dir="${target.dir}/dcmsrv" prefix="META-INF">
+        		<include name="jboss-service.xml"/>
+        	</zipfileset>        	
+        </zip>
+    </target>   
+
+    <target name="storescp-sar" depends="compile">
+        <copy file="${src.deploy}/dcm4jboss-storescp-service.xml" 
+            tofile="${target.dir}/storescp/jboss-service.xml">
+            <filterset>
+                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-ejb-client.jar"/>
+            </filterset>
+        </copy>  
+        <zip zipfile="${target.deploy}/${storescp.sar}">
+        	<zipfileset dir="${target.classes}">
+        		<include name="**/StoreScp*"/>
+        		<include name="**/util/*"/>
+        	</zipfileset>
+        	<zipfileset dir="${target.dir}/storescp" prefix="META-INF">
+        		<include name="jboss-service.xml"/>
+        	</zipfileset>        	
+        </zip>
+    </target>   
+
+    <target name="queryscp-sar" depends="compile">
+        <copy file="${src.deploy}/dcm4jboss-queryscp-service.xml" 
+            tofile="${target.dir}/queryscp/jboss-service.xml">
+            <filterset>
+                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-jdbc.jar"/>
+            </filterset>
+        </copy>  
+        <zip zipfile="${target.deploy}/${queryscp.sar}">
+        	<zipfileset dir="${target.classes}">
+        		<include name="**/QueryScp*"/>
+        	</zipfileset>
+        	<zipfileset dir="${target.dir}/queryscp" prefix="META-INF">
+        		<include name="jboss-service.xml"/>
+        	</zipfileset>        	
+        </zip>
+    </target>   
+   	<!-- =================================================================== -->
+   	<!-- deploy sars                                                         -->
+   	<!-- =================================================================== -->
+   
+   	<target name="deploy" depends="sar">
+    	<copy file="${target.deploy}/dcm4jboss-dcmsrv.sar" todir="${jboss.conf}/deploy"/>
+    	<copy file="${target.deploy}/dcm4jboss-storescp.sar" todir="${jboss.conf}/deploy"/>
+    	<copy file="${target.deploy}/dcm4jboss-queryscp.sar" todir="${jboss.conf}/deploy"/>
+   	</target>
+
+   	<!-- =================================================================== -->
+   	<!-- undeploy sars                                                       -->
+   	<!-- =================================================================== -->
+   
+   	<target name="undeploy">
+    	<delete file="${jboss.conf}/deploy/dcm4jboss-dcmsrv.sar"/>
+    	<delete file="${jboss.conf}/deploy/dcm4jboss-storescp.sar"/>
+    	<delete file="${jboss.conf}/deploy/dcm4jboss-queryscp.sar"/>
+   	</target>
+
+   	<!-- =================================================================== -->
+   	<!-- Cleans up the current build                                         -->
+   	<!-- =================================================================== -->
+   
+   	<target name="clean">
+     	<delete dir="${target.dir}"/>
+   	</target>
+	
+    
+</project>
