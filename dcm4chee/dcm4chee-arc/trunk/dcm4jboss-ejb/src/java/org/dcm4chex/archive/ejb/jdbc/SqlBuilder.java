@@ -178,9 +178,9 @@ class SqlBuilder {
                     break;
                 case JdbcProperties.ORACLE :
                     sb.append("* FROM ( SELECT ");
-                    appendTo(sb, select);
+                    appendTo(sb, selectC1C2CN());
                     sb.append(", ROWNUM as r1 FROM ( SELECT ");
-                    appendTo(sb, select);
+                    appendTo(sb, selectAsC1C2CN());
                     break;
                 default:
                     appendTo(sb, select);
@@ -228,6 +228,20 @@ class SqlBuilder {
         return sb.toString();
     }
 
+    private String[] selectC1C2CN() {
+        String[] retval = new String[select.length]; 
+        for (int i = 0; i < retval.length; i++)
+            retval[i] = "c" + (i+1);
+        return retval;
+    }
+
+    private String[] selectAsC1C2CN() {
+        String[] retval = new String[select.length]; 
+        for (int i = 0; i < retval.length; i++)
+            retval[i] = select[i] + " AS c" + (i+1);
+        return retval;
+    }
+
     private void appendTo(StringBuffer sb, String[] a) {
         for (int i = 0; i < a.length; i++) {
             if (i > 0)
@@ -261,9 +275,9 @@ class SqlBuilder {
             final int i3 = 3*i;
 	        sb.append(whereOrAnd);
 	        whereOrAnd = AND;
-	        sb.append(leftJoin[i+1]);
+	        sb.append(leftJoin[i3+1]);
 	        sb.append(" = ");
-	        sb.append(leftJoin[i+2]);
+	        sb.append(leftJoin[i3+2]);
 	        sb.append("(+)");
         }
     }
