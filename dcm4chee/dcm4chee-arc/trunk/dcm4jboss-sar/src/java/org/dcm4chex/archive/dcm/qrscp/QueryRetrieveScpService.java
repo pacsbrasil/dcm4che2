@@ -51,6 +51,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private int dimseTimeout = 0;
 
     private int soCloseDelay = 500;
+    
+    private int bufferSize = 512;
 
     private boolean patientRootFind;
 
@@ -190,6 +192,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.forwardAsMoveOriginator = forwardAsMoveOriginator;
     }
 
+    public final int getBufferSize() {
+        return bufferSize;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+    
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 findScp);

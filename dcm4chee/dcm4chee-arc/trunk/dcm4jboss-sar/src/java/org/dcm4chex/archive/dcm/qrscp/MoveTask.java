@@ -68,16 +68,13 @@ class MoveTask implements Runnable {
     private final static AuditLoggerFactory alf = AuditLoggerFactory
             .getInstance();
 
-    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
+    private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian};
 
-    private static final String[][] PROPOSED_TS = { NATIVE_TS,
-    //            new String[] { UIDs.JPEG2000Lossless },
-    //            new String[] { UIDs.JPEGLossless },
-    //            new String[] { UIDs.JPEG2000Lossy },
-    //            new String[] { UIDs.JPEGBaseline },
-    //            new String[] { UIDs.JPEGExtended },
-    };
+    static boolean isNativeLittleEndianTS(String uid) {
+        return UIDs.ExplicitVRLittleEndian.equals(uid)
+                || UIDs.ImplicitVRLittleEndian.equals(uid);
+    }
 
     private static final AssociationFactory af = AssociationFactory
             .getInstance();
@@ -87,11 +84,7 @@ class MoveTask implements Runnable {
     private static final UIDDictionary uidDict = DictionaryFactory
             .getInstance().getDefaultUIDDictionary();
 
-    private static int defaultBufferSize = 2048;
-
     private final QueryRetrieveScpService service;
-
-    private final byte[] buffer = new byte[defaultBufferSize];
 
     private final String moveDest;
 
@@ -210,15 +203,21 @@ class MoveTask implements Runnable {
         rq.setCalledAET(moveDest);
         rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
 
-        HashSet cuidSet = new HashSet();
+        HashMap cuidMap = new HashMap();
         for (int i = 0, n = toRetrieve.size(); i < n; i++) {
-            final String cuid = ((FileInfo) toRetrieve.get(i)).sopCUID;
-            if (cuidSet.add(cuid)) {
-                for (int j = 0; j < PROPOSED_TS.length; j++) {
-                    rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
-                            PROPOSED_TS[j]));
-                }
+            final FileInfo fileInfo = (FileInfo) toRetrieve.get(i);
+            final String cuid = fileInfo.sopCUID;
+            final String tsuid = fileInfo.tsUID;
+            HashSet tsuids = (HashSet) cuidMap.get(cuid);
+            if (tsuids == null) {
+                tsuids = new HashSet();
+                cuidMap.put(fileInfo.sopCUID, tsuids);
+                rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
+                        NATIVE_LE_TS));
             }
+            if (!isNativeLittleEndianTS(tsuid) && tsuids.add(tsuid))
+                    rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
+                            new String[] { tsuid}));
         }
         return rq;
     }
@@ -299,6 +298,7 @@ class MoveTask implements Runnable {
     }
 
     private void retrieveLocal() {
+        byte[] buffer = new byte[service.getBufferSize()];
         for (int i = 0, n = toRetrieve.size(); !canceled && i < n; ++i) {
             final FileInfo fileInfo = (FileInfo) toRetrieve.get(i);
             final String iuid = fileInfo.sopIUID;
@@ -326,7 +326,7 @@ class MoveTask implements Runnable {
                 }
             };
             try {
-                storeAssoc.invoke(makeCStoreRQ(fileInfo), storeScpListener);
+                storeAssoc.invoke(makeCStoreRQ(fileInfo, buffer), storeScpListener);
             } catch (Exception e) {
                 service.getLog().error("Failed to move " + iuid, e);
                 failedIUIDs.add(iuid);
@@ -355,7 +355,7 @@ class MoveTask implements Runnable {
         instancesAction.incNumberOfInstances(1);
     }
 
-    private Dimse makeCStoreRQ(FileInfo info) throws NoPresContextException {
+    private Dimse makeCStoreRQ(FileInfo info, byte[] buffer) throws NoPresContextException {
         Association assoc = storeAssoc.getAssociation();
         PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,
                 info.tsUID);
@@ -451,7 +451,8 @@ class MoveTask implements Runnable {
         for (int i = 0; i < instFiles.length; ++i) {
             Set fileAETs = getRemoteRetrieveAETSet(instFiles[i]);
             // test if local accessable
-            Set localAETs = new HashSet(Arrays.asList(service.getRetrieveAETs()));
+            Set localAETs = new HashSet(Arrays
+                    .asList(service.getRetrieveAETs()));
             localAETs.retainAll(fileAETs);
             if (!localAETs.isEmpty()) {
                 toRetrieve.add(instFiles[i]);

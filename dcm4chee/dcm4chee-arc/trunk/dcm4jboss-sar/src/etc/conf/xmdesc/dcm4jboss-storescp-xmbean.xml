@@ -95,7 +95,6 @@
          <value value="0" />
       </descriptors>
    </attribute>
-
    <attribute access="read-write"
       getMethod="getStorageDirs"
       setMethod="setStorageDirs">
@@ -273,6 +272,18 @@
          <value value="500" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of buffer used to copy data from TCP channel to file.
+      No need to change default value: 512.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="512" />
+      </descriptors>
+   </attribute>   
    <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">

@@ -22,6 +22,7 @@
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,6 +54,7 @@ import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.VRs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
@@ -95,6 +97,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private final StoreScpService service;
 
+    private int bufferSize = 512;
+
     private int updateDatabaseMaxRetries = 2;
 
     private int forwardPriority = 0;
@@ -133,6 +137,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setForwardPriority(int forwardPriority) {
         this.forwardPriority = forwardPriority;
+    }
+
+    public final int getBufferSize() {
+        return bufferSize;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
     }
 
     public final String[] getStorageDirs() {
@@ -345,16 +357,32 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private void storeToFile(DcmParser parser, Dataset ds, File file,
             DcmEncodeParam encParam, MessageDigest md) throws IOException {
         service.getLog().info("M-WRITE file:" + file);
-        BufferedOutputStream out = new BufferedOutputStream(
+        BufferedOutputStream os = new BufferedOutputStream(
                 new FileOutputStream(file));
-        DigestOutputStream dos = new DigestOutputStream(out, md);
+        DigestOutputStream dos = new DigestOutputStream(os, md);
         try {
             ds.writeFile(dos, encParam);
-            if (parser.getReadTag() == Tags.PixelData) {
-                ds.writeHeader(dos, encParam, parser.getReadTag(), parser
-                        .getReadVR(), parser.getReadLength());
-                copy(parser.getInputStream(), dos);
+            if (parser.getReadTag() != Tags.PixelData) return;
+            int len = parser.getReadLength();
+            InputStream in = parser.getInputStream();
+            byte[] buffer = new byte[bufferSize];
+            ds.writeHeader(dos, encParam, parser.getReadTag(), parser
+                    .getReadVR(), len);
+            if (len == -1) {
+                parser.parseHeader();
+                while (parser.getReadTag() == Tags.Item) {
+                    len = parser.getReadLength();
+                    ds.writeHeader(dos, encParam, Tags.Item, VRs.NONE, len);
+                    copy(in, dos, len, buffer);
+                    parser.parseHeader();
+                }
+                ds.writeHeader(dos, encParam, Tags.SeqDelimitationItem,
+                        VRs.NONE, 0);
+            } else {
+                copy(in, dos, len, buffer);
             }
+            parser.parseDataset(encParam, -1);
+            ds.subSet(Tags.PixelData, -1).writeDataset(dos, encParam);
         } finally {
             try {
                 dos.close();
@@ -363,11 +391,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    private void copy(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[512];
-        int c;
-        while ((c = in.read(buffer, 0, buffer.length)) != -1) {
-            out.write(buffer, 0, c);
+    private void copy(InputStream in, OutputStream out, int totLen,
+            byte[] buffer) throws IOException {
+        for (int len, toRead = totLen; toRead > 0; toRead -= len) {
+            len = in.read(buffer, 0, Math.min(toRead, buffer.length));
+            if (len == -1) { throw new EOFException(); }
+            out.write(buffer, 0, len);
         }
     }
 

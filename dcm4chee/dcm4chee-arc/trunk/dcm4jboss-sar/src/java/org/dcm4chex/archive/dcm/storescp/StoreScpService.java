@@ -282,6 +282,14 @@ public class StoreScpService extends AbstractScpService {
         this.acceptRLELossless = acceptRLELossless;
     }
 
+    public final int getBufferSize() {
+        return scp.getBufferSize();
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        scp.setBufferSize(bufferSize);
+    }
+    
     protected void startService() throws Exception {
         scp.checkReadyToStart();
         super.startService();

@@ -204,6 +204,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of buffer used to copy data file to TCP channel.
+      No need to change default value: 512.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="512" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getDataSourceJndiName"
       setMethod="setDataSourceJndiName">
       <description>Used internally - do NOT modify.

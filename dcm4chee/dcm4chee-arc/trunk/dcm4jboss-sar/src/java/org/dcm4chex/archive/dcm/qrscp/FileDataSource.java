@@ -71,8 +71,8 @@ class FileDataSource implements DataSource {
         File file = fileInfo.toFile();
         service.getLog().info("M-READ file:" + file);
         FileInputStream fis = new FileInputStream(file);
+        BufferedInputStream bis = new BufferedInputStream(fis);
         try {
-            BufferedInputStream bis = new BufferedInputStream(fis);
             DcmParser parser = parserFact.newDcmParser(bis);
             Dataset ds = objFact.newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
@@ -83,57 +83,47 @@ class FileDataSource implements DataSource {
             updateAttrs(ds, fileInfo.instAttrs);
             service.logDataset("Dataset:\n", ds);
             ds.writeDataset(out, enc);
-            if (parser.getReadTag() == Tags.PixelData) {
-                ds.writeHeader(
-                    out,
-                    enc,
-                    Tags.PixelData,
-                    parser.getReadVR(),
-                    parser.getReadLength());
-                if (parser.getReadLength() == -1) {
-                    parser.parseHeader();
-                    while (parser.getReadTag() == Tags.Item) {
-                        ds.writeHeader(
-                            out,
-                            enc,
-                            Tags.Item,
-                            VRs.NONE,
-                            parser.getReadLength());
-                        copy(bis, out, parser.getReadLength());
-                        parser.parseHeader();
-                    }
-                    ds.writeHeader(
-                        out,
-                        enc,
-                        Tags.SeqDelimitationItem,
-                        VRs.NONE,
-                        0);
-                } else {
-                    copy(bis, out, parser.getReadLength());
-                }
-                ds.clear();
-                parser.parseDataset(parser.getDcmDecodeParam(), -1);
-                ds.writeDataset(out, enc);
+            if (parser.getReadTag() != Tags.PixelData) return;            
+            int len = parser.getReadLength();
+            if (len == -1 && !enc.encapsulated) {
+                decompress(ds, bis, out);
+            } else {
+                ds.writeHeader(out, enc, parser.getReadTag(), parser
+                        .getReadVR(), len);
+                if (len == -1) {
+		            parser.parseHeader();
+		            int itemlen;
+	                while (parser.getReadTag() == Tags.Item) {
+	                    itemlen = parser.getReadLength();
+	                    ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
+	                    copy(bis, out, itemlen, buffer);
+	                    parser.parseHeader();
+	                }
+	                ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
+	                        VRs.NONE, 0);
+	            } else {
+	                copy(bis, out, len, buffer);
+	            }
             }
+            parser.parseDataset(parser.getDcmDecodeParam(), -1);
+            ds.subSet(Tags.PixelData, -1).writeDataset(out, enc);
         } finally {
             try {
-                fis.close();
+                bis.close();
             } catch (IOException ignore) {
             }
-            if (enc.encapsulated) {
-                file.delete();
-            }
         }
-
     }
 
-    private void copy(InputStream bis, OutputStream out, int totLen)
-        throws IOException {
+    private void decompress(Dataset ds, BufferedInputStream bis, OutputStream out) {
+        throw new UnsupportedOperationException("decompression not yet implemented");        
+    }
+
+    private void copy(InputStream in, OutputStream out, int totLen,
+            byte[] buffer) throws IOException {
         for (int len, toRead = totLen; toRead > 0; toRead -= len) {
-            len = bis.read(buffer, 0, Math.min(toRead, buffer.length));
-            if (len == -1) {
-                throw new EOFException();
-            }
+            len = in.read(buffer, 0, Math.min(toRead, buffer.length));
+            if (len == -1) { throw new EOFException(); }
             out.write(buffer, 0, len);
         }
     }
