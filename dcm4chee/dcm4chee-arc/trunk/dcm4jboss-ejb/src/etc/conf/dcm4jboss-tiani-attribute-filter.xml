@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE dcm4jboss-attribute-filter SYSTEM "file:/home/gunter/work/dcm4jboss-ejb/src/etc/conf/dcm4jboss-attribute-filter.dtd">
+<!DOCTYPE dcm4jboss-attribute-filter SYSTEM "dcm4jboss-attribute-filter.dtd">
 <dcm4jboss-attribute-filter>
     <filter level="PATIENT">
         <attr tag="00080005"/> <!-- Specific Character Set -->
@@ -203,7 +203,6 @@
         <attr tag="60000100"/> <!-- Overlay bits allocated, Overlay 1 -->
         <attr tag="60000102"/> <!-- Overlay bit position, Overlay 1 -->
         <attr tag="60001500"/> <!-- Overlay label, Overlay 1 -->
-        <attr tag="60003000"/> <!-- Overlay data, Overlay 1 -->
         <attr tag="60020010"/> <!-- Overlay rows, Overlay 2 -->
         <attr tag="60020011"/> <!-- Overlay columns, Overlay 2 -->
         <attr tag="60020022"/> <!-- Overlay description, Overlay 2 -->
@@ -212,7 +211,6 @@
         <attr tag="60020100"/> <!-- Overlay bits allocated, Overlay 2 -->
         <attr tag="60020102"/> <!-- Overlay bit position, Overlay 2 -->
         <attr tag="60021500"/> <!-- Overlay label, Overlay 2 -->
-        <attr tag="60023000"/> <!-- Overlay data, Overlay 2 -->
         <attr tag="60040010"/> <!-- Overlay rows, Overlay 3 -->
         <attr tag="60040011"/> <!-- Overlay columns, Overlay 3 -->
         <attr tag="60040022"/> <!-- Overlay description, Overlay 3 -->
@@ -221,7 +219,6 @@
         <attr tag="60040100"/> <!-- Overlay bits allocated, Overlay 3 -->
         <attr tag="60040102"/> <!-- Overlay bit position, Overlay 3 -->
         <attr tag="60041500"/> <!-- Overlay label, Overlay 3 -->
-        <attr tag="60043000"/> <!-- Overlay data, Overlay 3 -->
         <attr tag="60060010"/> <!-- Overlay rows, Overlay 4 -->
         <attr tag="60060011"/> <!-- Overlay columns, Overlay 4 -->
         <attr tag="60060022"/> <!-- Overlay description, Overlay 4 -->
@@ -230,6 +227,5 @@
         <attr tag="60060100"/> <!-- Overlay bits allocated, Overlay 4 -->
         <attr tag="60060102"/> <!-- Overlay bit position, Overlay 4 -->
         <attr tag="60061500"/> <!-- Overlay label, Overlay 4 -->
-        <attr tag="60063000"/> <!-- Overlay data, Overlay 4 -->
     </filter>
 </dcm4jboss-attribute-filter>

@@ -9,8 +9,8 @@ ALTER TABLE media ADD COLUMN media_usage DEFAULT 0 BIGINT NOT NULL;
 ALTER TABLE media ADD COLUMN media_rq_iuid VARCHAR(254);
 ALTER TABLE media ADD COLUMN media_status_info VARCHAR(254);
 
-CREATE SEQUENCE study_on_filesystem_pk_seq;
-CREATE TABLE study_on_filesystem (
+CREATE SEQUENCE study_on_fs_pk_seq;
+CREATE TABLE study_on_fs (
 	pk              INTEGER PRIMARY KEY NOT NULL,
 	study_fk		INTEGER,
 	filesystem_fk	INTEGER,
@@ -18,7 +18,7 @@ CREATE TABLE study_on_filesystem (
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 );
-CREATE UNIQUE INDEX i_study_on_filesystem ON study_on_filesystem(filesystem_fk,study_fk);
+CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(filesystem_fk,study_fk);
 
 CREATE SEQUENCE device_pk_seq;
 CREATE TABLE device (
@@ -29,20 +29,20 @@ CREATE TABLE device (
 );
 CREATE UNIQUE INDEX station_name ON device(station_name);
 
-CREATE TABLE rel_device_protocol (
+CREATE TABLE rel_dev_proto (
 	device_fk      INTEGER,
 	prcode_fk      INTEGER,
 FOREIGN KEY (device_fk) REFERENCES device(pk),
 FOREIGN KEY (prcode_fk) REFERENCES code(pk)
 );
-CREATE INDEX device_fk ON rel_device_protocol(device_fk);
-CREATE INDEX prcode_fk ON rel_device_protocol(prcode_fk);
+CREATE INDEX device_fk ON rel_dev_proto(device_fk);
+CREATE INDEX prcode_fk ON rel_dev_proto(prcode_fk);
 
-GRANT ALL PRIVILEGES ON TABLE study_on_filesystem TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE study_on_fs TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE device TO USER tiani;
-GRANT ALL PRIVILEGES ON TABLE rel_device_protocol TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE rel_dev_proto TO USER tiani;
 
-GRANT USAGE ON SEQUENCE study_on_filesystem_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE study_on_fs_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE device_pk_seq TO USER tiani;
 
 TERMINATE;

@@ -33,7 +33,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *          local-jndi-name="ejb/StudyOnFileSystem"
  *          primkey-field="pk"
  * @ejb.transaction type="Required"
- * @ejb.persistence table-name="study_on_filesystem"
+ * @ejb.persistence table-name="study_on_fs"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
  * 	           query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study.studyIuid=?1 AND sof.fileSystem.directoryPath=?2"

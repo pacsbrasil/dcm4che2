@@ -174,8 +174,8 @@ FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
 
-CREATE SEQUENCE study_on_filesystem_pk_seq;
-CREATE TABLE study_on_filesystem (
+CREATE SEQUENCE study_on_fs_pk_seq;
+CREATE TABLE study_on_fs (
 	pk              NUMBER PRIMARY KEY,
 	study_fk		INTEGER,
 	filesystem_fk	INTEGER,
@@ -183,7 +183,7 @@ CREATE TABLE study_on_filesystem (
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 );
-CREATE UNIQUE INDEX i_study_on_filesystem ON study_on_filesystem(filesystem_fk,study_fk);
+CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(filesystem_fk,study_fk);
 
 CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (
@@ -217,14 +217,14 @@ CREATE TABLE device (
 );
 CREATE UNIQUE INDEX station_name ON device(station_name);
 
-CREATE TABLE rel_device_protocol (
+CREATE TABLE rel_dev_proto (
 	device_fk      INTEGER,
 	prcode_fk      INTEGER,
 FOREIGN KEY (device_fk) REFERENCES device(pk),
 FOREIGN KEY (prcode_fk) REFERENCES code(pk)
 );
-CREATE INDEX device_fk ON rel_device_protocol(device_fk);
-CREATE INDEX prcode_fk ON rel_device_protocol(prcode_fk);
+CREATE INDEX device_fk ON rel_dev_proto(device_fk);
+CREATE INDEX prcode_fk ON rel_dev_proto(prcode_fk);
 
 CREATE SEQUENCE audit_record_pk_seq;
 CREATE TABLE audit_record(

@@ -87,7 +87,7 @@
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="pk-sql">
-+         <attribute name="pk-sql">values nextval for study_on_filesystem_pk_seq</attribute>
++         <attribute name="pk-sql">values nextval for study_on_fs_pk_seq</attribute>
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->

@@ -1,10 +1,10 @@
 DROP TABLE roles;
 DROP TABLE users;
 DROP TABLE audit_record;
-DROP TABLE rel_device_protocol;
+DROP TABLE rel_dev_proto;
 DROP TABLE device;
 DROP TABLE mwl_item;
-DROP TABLE study_on_filesystem;
+DROP TABLE study_on_fs;
 DROP TABLE files;
 DROP TABLE filesystem;
 DROP TABLE instance;

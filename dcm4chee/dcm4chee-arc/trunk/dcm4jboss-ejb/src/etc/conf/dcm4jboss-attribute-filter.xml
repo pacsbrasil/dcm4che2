@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE dcm4jboss-attribute-filter SYSTEM "file:/home/gunter/work/dcm4jboss-ejb/src/etc/conf/dcm4jboss-attribute-filter.dtd">
+<!DOCTYPE dcm4jboss-attribute-filter SYSTEM "dcm4jboss-attribute-filter.dtd">
 <dcm4jboss-attribute-filter>
     <filter level="PATIENT">
         <attr tag="00080005"/> <!-- Specific Character Set -->

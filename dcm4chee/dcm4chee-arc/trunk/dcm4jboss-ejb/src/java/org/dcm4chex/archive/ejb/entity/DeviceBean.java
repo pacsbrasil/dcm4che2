@@ -97,7 +97,7 @@ public abstract class DeviceBean implements EntityBean {
      *  target-role-name="protocol-codes-for-device"
      *  target-multiple="yes"
      *
-     * @jboss.relation-table table-name="rel_device_protocol"
+     * @jboss.relation-table table-name="rel_dev_proto"
      *
      * @jboss:relation
      *  fk-column="prcode_fk"

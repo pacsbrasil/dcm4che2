@@ -182,6 +182,16 @@
    <category name="org.dcm4chex.archive.dcm">
       <priority value="INFO"/>
    </category>
+   
+   <!-- Limit the org.dcm4chex.archive.mbean category to INFO --> 
+   <category name="org.dcm4chex.archive.mbean">
+      <priority value="INFO"/>
+   </category>
+   
+   <!-- Limit the org.dcm4chex.wado to INFO --> 
+   <category name="org.dcm4chex.wado">
+      <priority value="INFO"/>
+   </category>
 
    <!-- Limit the org.dcm4cheri category to INFO -->
    <category name="org.dcm4cheri">
