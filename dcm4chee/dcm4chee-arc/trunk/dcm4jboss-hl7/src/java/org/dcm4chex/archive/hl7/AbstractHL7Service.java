@@ -60,7 +60,8 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
                     String.class.getName(), HL7Service.class.getName() });
             }
         } catch (Exception e) {
-            throw new RuntimeException("JMX error:", e);
+            log.error("Failed to register HL7 service", e);
+            throw new RuntimeException("Failed to register HL7 service", e);
         }
     }
 
@@ -70,7 +71,9 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
                     new Object[] { uri },
                     new String[] { String.class.getName() });
         } catch (Exception e) {
-            throw new RuntimeException("JMX error:", e);
+            String prompt = "Failed to load XSL " + uri;
+            log.error(prompt, e);
+            throw new RuntimeException(prompt, e);
         }
     }
     

@@ -44,13 +44,20 @@
     <xsl:template name="xpn2pn">
         <xsl:param name="xpn"/>
         <xsl:value-of select="$xpn/text()"/>
-        <xsl:text>^</xsl:text>
-        <xsl:value-of select="$xpn/component[1]"/>
-        <xsl:text>^</xsl:text>
-        <xsl:value-of select="$xpn/component[2]"/>
-        <xsl:text>^</xsl:text>
-        <xsl:value-of select="$xpn/component[4]"/>
-        <xsl:text>^</xsl:text>
-        <xsl:value-of select="$xpn/component[3]"/>
-    </xsl:template>    
+        <xsl:variable name="compCount" select="count($xpn/component)"/>
+        <xsl:if test="$compCount &gt; 0">
+            <xsl:text>^</xsl:text>
+            <xsl:value-of select="$xpn/component[1]"/>
+            <xsl:if test="$compCount &gt; 1">
+                <xsl:text>^</xsl:text>
+                <xsl:value-of select="$xpn/component[2]"/>
+                <xsl:if test="$compCount &gt; 2">
+                    <xsl:text>^</xsl:text>
+                    <xsl:value-of select="$xpn/component[4]"/>
+                    <xsl:text>^</xsl:text>
+                    <xsl:value-of select="$xpn/component[3]"/>
+                </xsl:if>
+            </xsl:if>
+        </xsl:if>
+    </xsl:template>
 </xsl:stylesheet>

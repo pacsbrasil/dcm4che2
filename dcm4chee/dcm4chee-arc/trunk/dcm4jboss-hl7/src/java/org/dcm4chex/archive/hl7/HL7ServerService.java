@@ -155,7 +155,7 @@ public class HL7ServerService extends ServiceMBeanSupport
             serviceRegistry.remove(messageType);
     }
     
-    public Templates getTemplate(String uri) 
+    public Templates getTemplates(String uri) 
     		throws TransformerConfigurationException {
         Templates tpl = (Templates) templates.get(uri);
         if (tpl == null) {
@@ -180,7 +180,7 @@ public class HL7ServerService extends ServiceMBeanSupport
 
     public void ack(Document document, ContentHandler hl7out, HL7Exception hl7ex) {
         try {
-            Transformer t = getTemplate(ACK_XSL_URL).newTransformer();
+            Transformer t = getTemplates(ACK_XSL_URL).newTransformer();
             if (hl7ex != null) {
                 t.setParameter("AcknowledgementCode", hl7ex
                         .getAcknowledgementCode());
