@@ -12,10 +12,10 @@ import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -28,13 +28,14 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.util.UIDGenerator;
+import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocalHome;
-import org.dcm4chex.archive.util.InstanceCollector;
-import org.dcm4chex.archive.util.InstanceCollector.InstanceContainer;
+import org.dcm4chex.archive.ejb.util.InstanceCollector;
+import org.dcm4chex.archive.ejb.util.InstanceCollector.InstanceContainer;
 
 /**
  * @ejb.bean
@@ -99,6 +100,18 @@ public abstract class MediaComposerBean implements SessionBean {
     }
     
     /**
+     * Collect studies to media for storage.
+     * <p>
+     * <DL>
+     * <DD>1) Find all instances that are not assigned to a media and are older as <code>time</code></DD>
+     * <DD>2) collect instances to studies.</DD>
+     * <DD>3) collect studies for media</DD>
+     * <DD>4) assign media to studies</DD>
+     * </DL>
+     * @param time 			Timestamp: instances must be received before this timestamp.
+     * @param maxMediaUsage	The number of bytes that can be used to store instances on a media.
+     * @param prefix		Prefix for the FileSet id. Used if a new media object is created.
+     * 
      * @ejb.interface-method
      */
     public int collectStudiesReceivedBefore(long time, long maxMediaUsage, String prefix) throws FinderException {
@@ -115,21 +128,30 @@ public abstract class MediaComposerBean implements SessionBean {
         int nrOfStudies = collector.getNumberOfStudies();
         log.info( "Collected for storage: "+c.size()+" instances in "+nrOfStudies+" studies !");
 
-        splitTooLargeStudies( collector, maxMediaUsage );
+        splitTooLargeStudies( collector, maxMediaUsage, prefix );
         
-        Collection mediaCollection = mediaHome.findByStatus( MediaDTO.COLLECTING );
+        List mediaCollection = (List) mediaHome.findByStatus( MediaDTO.COLLECTING );
+        Comparator comp = new Comparator() {
+    		public int compare(Object arg0, Object arg1) {
+    			MediaLocal ml1 = (MediaLocal) arg0;
+    			MediaLocal ml2 = (MediaLocal) arg1;
+    			return (int) ( ml2.getMediaUsage() - ml1.getMediaUsage() );//more usage before lower usage!
+    		}
+    	};
+        Collections.sort( mediaCollection, comp );
+        log.info("Number of 'COLLECTING' media found:"+mediaCollection.size() );
         MediaLocal mediaLocal;
         List instancesForMedia;
         long maxSize, collSize;
         while ( nrOfStudies > 0 ) {
         	try {
-				mediaLocal = getNextMediaLocal( mediaCollection );
+				mediaLocal = getNextMediaLocal( mediaCollection, prefix );
 			} catch (CreateException e) {
 				log.error("Cant create MediaLocal! skip "+nrOfStudies+" for assigning media!");
 				break;
 			}
-        	maxSize = maxMediaUsage;//TODO use free size of media here!!!
-        	log.info("Collect for maxSize:"+maxMediaUsage+" nr of studies avail:"+nrOfStudies+ " totalSize:"+collector.getTotalSize() );
+        	maxSize = maxMediaUsage - mediaLocal.getMediaUsage();
+        	if ( log.isDebugEnabled() ) log.debug("Collect for media:"+mediaLocal.getFilesetId()+" free:"+maxSize+" - Number of studies avail:"+nrOfStudies+ " totalSize:"+collector.getTotalSize() );
         	instancesForMedia = new ArrayList();
         	collSize = collector.collectInstancesForSize( instancesForMedia, maxSize );
         	if ( collSize > 0L ){
@@ -145,7 +167,7 @@ public abstract class MediaComposerBean implements SessionBean {
 	        			break; 
 	        		}
 	        	} 
-	        	if ( log.isDebugEnabled() ) log.debug("Final collected: free:"+maxSize+" bytes; instancesForMedia:"+instancesForMedia);
+	        	if ( log.isDebugEnabled() ) log.debug("Final collected for media:"+mediaLocal.getFilesetId()+" free:"+maxSize+" bytes; instancesForMedia:"+instancesForMedia);
         	}
         	//media full -> assign media -> new media
         	this.assignMedia( instancesForMedia, mediaLocal );
@@ -156,18 +178,40 @@ public abstract class MediaComposerBean implements SessionBean {
         return c.size();
     }
     
-    private MediaLocal getNextMediaLocal( Collection coll ) throws CreateException {
+    /**
+     * Returns the next MediaLocal object from <code>col</code>.
+     * <p>
+     * If <code>col</code> is empty, a new MediaLocal is created.
+     * <p>
+     * In the other case the returning MediaLocal object is removed from the collection.
+     *  
+     * @param coll 	Collection with MediaLocal objects.
+     * 
+     * @return		The next MediaLocal object from co or a new created MediaLocal.
+     * 
+     * @throws CreateException if create of a new MediaLocal failed.
+     */
+    private MediaLocal getNextMediaLocal( Collection coll, String prefix ) throws CreateException {
     	MediaLocal ml = null;
     	if ( coll.size() > 0 ) {
     		ml = (MediaLocal) coll.iterator().next();
     		coll.remove( ml );
     	} else {
-			ml = mediaHome.create( UIDGenerator.getInstance().createUID() );
+			ml = createMedia( prefix );
     	}
     	return ml;
     }
     
-    private void splitTooLargeStudies(InstanceCollector collector, long maxMediaUsage ){
+    /**
+     * Checks the <code>collector</code> for studies with a size greater than <code>maxMediaUsage</code>.
+     * <p>
+     * If the collector contains such studies, they will be splitted and assigned to new created media objects.
+     * 
+     * @param collector		The InstanceCollector with instances collected to studies.
+     * @param maxMediaUsage	Max number of bytes that can be used to store instances on a media.
+     * @param prefix		Prefix for FileSet id.
+     */
+    private void splitTooLargeStudies(InstanceCollector collector, long maxMediaUsage, String prefix ){
         InstanceContainer largest = collector.getLargestStudy();
         while ( largest != null && largest.getStudySize() > maxMediaUsage ){
         	if ( log.isInfoEnabled() ) log.info( "Study (pk="+largest.getStudyPk()+") to large ("+largest.getStudySize()+") for a single medium ("+maxMediaUsage+") !");
@@ -181,7 +225,7 @@ public abstract class MediaComposerBean implements SessionBean {
         		InstanceLocal il;
         		while ( iter.hasNext() ) {
         			ic = (InstanceContainer) iter.next();
-    				ml = mediaHome.create( UIDGenerator.getInstance().createUID() );
+        			ml = createMedia( prefix );
     				assignMedia( ic, ml );
         		}
 			} catch (Exception e) {
@@ -192,6 +236,19 @@ public abstract class MediaComposerBean implements SessionBean {
     }
 
     /**
+	 * @param prefix
+	 * @return
+     * @throws CreateException
+	 */
+	private MediaLocal createMedia(String prefix) throws CreateException {
+		MediaLocal ml = mediaHome.create( UIDGenerator.getInstance().createUID() );
+		ml.setFilesetId( prefix+ml.getPk() );
+		ml.setMediaStatus( MediaDTO.COLLECTING );
+		if ( log.isInfoEnabled() ) log.info("New media created:"+ml.getFilesetId() );
+		return ml;
+	}
+
+	/**
      * Assign the given medialLocal to all instances of given InstanceContainer.
      * 
      * @param container		The InstanceContainer with a study for given media
@@ -202,12 +259,43 @@ public abstract class MediaComposerBean implements SessionBean {
 		InstanceLocal il;
 		while ( iterInstances.hasNext() ) {
 			il = (InstanceLocal) iterInstances.next();
-        	if ( log.isInfoEnabled() ) log.info( "Assign media "+mediaLocal.getFilesetIuid()+
-        										" to instance "+il.getSopIuid()+
-												" of study pk="+container.getStudyPk()+"!");
+        	if ( log.isDebugEnabled() ) log.debug( "Assign media "+mediaLocal.getFilesetId()+
+        										" to instance pk="+il.getPk()+"("+il.getSopIuid()+
+												") of study pk="+container.getStudyPk()+"!");
 			il.setMedia( mediaLocal );
+			mediaLocal.setMediaUsage( mediaLocal.getMediaUsage() + getInstanceSize( il ) );
 		}
     }
+	/**
+	 * Returns the size of the given instance.
+	 * <p>
+	 * If the instance contains more than one file, the size of the latest (with highest pk) file is used.
+	 * <p>
+	 * Copy of InstanceCollector.getInstanceSize method!!
+	 * 
+	 * @param instance The instance
+	 * 
+	 * @return The file size of the instance.
+	 */
+	private int getInstanceSize(InstanceLocal instance) {
+		Collection col = instance.getFiles();
+		if ( col.size() == 1 ) { FileLocal l;
+			return ( (FileLocal) col.iterator().next() ).getFileSize();
+		} else {
+			int size = 0;
+			int pk = Integer.MIN_VALUE;
+			Iterator iter = col.iterator();
+			FileLocal file;
+			while ( iter.hasNext() ) {
+				file = (FileLocal) iter.next();
+				if ( file.getPk().intValue() > pk ) {
+					pk = file.getPk().intValue();
+					size = file.getFileSize();
+				}
+			}
+			return size;
+		}
+	}
 
     /**
      * Assign the given MediaLocal to all instances of given collection of InstanceContainer(studies).
