@@ -28,3 +28,12 @@ function validateRadios(radios, radio_type)  //checks if a radio button have bee
 	alert('Please select a ' + radio_type);
 	return false;
 }
+
+function checkNotEmpty( field,field_type ) //checks if a field value is not null and not empty
+{
+	if ( field.length < 1 ) {
+		alert('Field ' + field_type + ' is empty!' );
+		return false;
+	}
+	return true;
+}
