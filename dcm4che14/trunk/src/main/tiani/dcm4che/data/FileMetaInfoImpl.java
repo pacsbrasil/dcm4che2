@@ -1,3 +1,4 @@
+/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
@@ -19,8 +20,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  *                                                                           *
  *****************************************************************************/
-
-/*$Id$*/
 
 package tiani.dcm4che.data;
 
@@ -66,20 +65,16 @@ final class FileMetaInfoImpl extends DcmObjectImpl
     }
     
     FileMetaInfoImpl init(String sopClassUID, String sopInstUID, String tsUID,
-            String implClassUID, String  implVersName) {
-        try {
-            setOB(Tags.FileMetaInformationVersion, (byte[])VERSION.clone());
-            setUI(Tags.MediaStorageSOPClassUID, sopClassUID);
-            setUI(Tags.MediaStorageSOPInstanceUID, sopInstUID);
-            setUI(Tags.TransferSyntaxUID, tsUID);
-            setUI(Tags.ImplementationClassUID, implClassUID);
-            if (implVersName != null) {
-                setSH(Tags.ImplementationVersionName, implVersName);
-            }
-            return this;
-        } catch (DcmValueException ex) {
-            throw new IllegalArgumentException(ex.getMessage());
+        String implClassUID, String  implVersName) {
+        setOB(Tags.FileMetaInformationVersion, (byte[])VERSION.clone());
+        setUI(Tags.MediaStorageSOPClassUID, sopClassUID);
+        setUI(Tags.MediaStorageSOPInstanceUID, sopInstUID);
+        setUI(Tags.TransferSyntaxUID, tsUID);
+        setUI(Tags.ImplementationClassUID, implClassUID);
+        if (implVersName != null) {
+            setSH(Tags.ImplementationVersionName, implVersName);
         }
+        return this;
     }
     
     public String getMediaStorageSOPClassUID() {

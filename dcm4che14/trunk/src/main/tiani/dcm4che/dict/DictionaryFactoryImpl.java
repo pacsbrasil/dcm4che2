@@ -82,6 +82,7 @@ public class DictionaryFactoryImpl
             throws Exception {
         TagDictionaryImpl dict = new TagDictionaryImpl();
         dict.load(xmlFile);
+        serFile.getParentFile().mkdirs();
         ObjectOutputStream oos = new ObjectOutputStream(
             new BufferedOutputStream(new FileOutputStream(serFile)));
         try {
@@ -125,6 +126,7 @@ public class DictionaryFactoryImpl
             throws Exception {
         UIDDictionaryImpl dict = new UIDDictionaryImpl();
         dict.load(xmlFile);
+        serFile.getParentFile().mkdirs();
         ObjectOutputStream oos = new ObjectOutputStream(
             new BufferedOutputStream(new FileOutputStream(serFile)));
         try {
@@ -139,11 +141,11 @@ public class DictionaryFactoryImpl
         if (args.length != 2) {
             System.out.println(
 "Usage: java -cp <classpath> tiani/dcm4che/dict/DictionaryFactoryImpl \\\n" +
-"  <dictionary.xml> <srcdir>");
+"  <dictionary.xml> <resdir>");
             System.exit(1);
         }
-        File srcDir = new File(args[1]);
-        initDefTagDict(new File(args[0]), new File(srcDir, DEF_TAG_DICT));
-        initDefUIDDict(new File(args[0]), new File(srcDir, DEF_UID_DICT));
+        File resdir = new File(args[1]);
+        initDefTagDict(new File(args[0]), new File(resdir, DEF_TAG_DICT));
+        initDefUIDDict(new File(args[0]), new File(resdir, DEF_UID_DICT));
     }
 }

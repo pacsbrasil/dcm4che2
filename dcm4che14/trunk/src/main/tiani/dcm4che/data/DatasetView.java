@@ -58,10 +58,6 @@ abstract class DatasetView extends BaseDatasetImpl implements Dataset {
         return filter(tag) ? backend.get(tag) : null;
     }
     
-    protected int getMaxGroupCount() {
-        return backend.getMaxGroupCount();
-    }        
-
     public int size() {
         int count = 0;
         for (Iterator iter = iterator(); iter.hasNext(); ++count)

@@ -216,7 +216,7 @@
      |  documentation compiles.
     -->
   <target name="compile" 
-	  depends="compile-xslt,compile-classes,compile-demo"
+	  depends="compile-xslt,compile-classes,compile-demo,compile-res"
 	  description="Compile all source files."/>
 
   <!-- Generate source from XML -->
@@ -288,7 +288,29 @@
        <exclude name="${javac.excludes}"/>
     </javac>
   </target>
-  
+
+  <target name="res-check" depends="init">
+    <uptodate property="res-generated-already"
+	      targetfile="${source.res}/tiani/dcm4che/dict/TagDictionary.ser">
+      <srcfiles dir="${source.etc}" includes="dictionary.xml"/>
+    </uptodate>
+  </target>	      
+
+  <!-- Compile resource files if necessary -->
+  <target name="compile-res" 
+	  depends="res-check,compile-classes" 
+	  unless="res-generated-already"> 
+    
+    <java classname="tiani.dcm4che.dict.DictionaryFactoryImpl" fork="yes">
+       <classpath>
+         <pathelement location="${build.classes}"/>
+         <pathelement path="${java.class.path}"/>
+       </classpath>
+       <arg value="${source.etc}/dictionary.xml"/>
+       <arg value="${source.res}"/>
+    </java>
+  </target>
+      
   <!-- ================================================================== -->
   <!-- Build Jars                                                         -->
   <!-- ================================================================== -->
