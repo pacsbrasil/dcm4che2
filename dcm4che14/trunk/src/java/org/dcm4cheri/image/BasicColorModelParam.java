@@ -38,7 +38,6 @@ abstract class BasicColorModelParam implements ColorModelParam {
     protected final int dataType;
     protected final int size;
     protected final int bits;
-    protected final int bits_8;
     protected final int min;
     protected final int max;
     protected final int shiftmask;
@@ -62,7 +61,6 @@ abstract class BasicColorModelParam implements ColorModelParam {
             throw new UnsupportedOperationException("Bits Stored: " + bits
                     + " not supported!");
         }
-        this.bits_8 = bits - 8;
         int hBit = ds.getInt(Tags.HighBit, bits-1);
         if (hBit != bits-1) {
             throw new UnsupportedOperationException("High Bit: " + hBit
@@ -83,7 +81,6 @@ abstract class BasicColorModelParam implements ColorModelParam {
         this.dataType = other.dataType;
         this.size = other.size;
         this.bits = other.bits;
-        this.bits_8 = other.bits_8;
         this.min = other.min;
         this.max = other.max;
         this.shiftmask = other.shiftmask;

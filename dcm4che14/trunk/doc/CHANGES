@@ -7,11 +7,15 @@ dcm4che 1.0.6 -  - Changes since dcm4che 1.0.5
 BUG FIXES:
 + class org.dcm4che.imageio.plugins.DcmImageWriteParam:
   Fix value for Pixel Aspect Ratio from 1 to int[]{1,1}
++ class org.dcm4che.imageio.plugin.DcmImageReader#getAspectRatio
+  did not consider pixel aspect ratio != 1:1
 
 ENHANCEMENTS:
 + class org.dcm4che.data.DcmParser: add method
   long parseDataset(String tsUID, int stopTag) throws IOException
 + add Status Code Definitions for Print Management Service Class
++ class org.dcm4che.imageio.plugin.DcmImageReader: support of P-value to
+  Device-Driver-Level transformation by DcmReadImageParam#setPValToDLL
 
 CHANGES:
 + change schema of Implementation Version Name in META-INF/MANIFEST.MF and

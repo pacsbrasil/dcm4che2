@@ -1,7 +1,6 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,27 +20,52 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.image;
+package org.dcm4cheri.imageio.plugins;
 
-import org.dcm4che.Implementation;
-import org.dcm4che.data.Dataset;
-import java.awt.image.ColorModel;
+import org.dcm4che.imageio.plugins.DcmImageReadParam;
 
 /**
+ * <description>
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$
+ * @since November 21, 2002
+ *
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go
+ *            beyond the cvs commit message
+ * </ul>
  */
-public abstract class ColorModelFactory {
+public class DcmImageReadParamImpl extends DcmImageReadParam {
    
-   public static ColorModelFactory getInstance() {
-      return (ColorModelFactory)Implementation.findFactory(
-         "dcm4che.image.ColorModelFactory");
+   private byte[] pvalToDLL;
+   
+   /** Getter for property PValToDLL.
+    * @return Value of property PValToDLL.
+    */
+   public byte[] getPValToDLL() {
+      return pvalToDLL;
    }
    
-   public abstract ColorModelParam makeParam(Dataset ds);
-   
-   public abstract ColorModelParam makeParam(Dataset ds, byte[] pv2dll);
-   
-   public abstract ColorModel getColorModel(ColorModelParam param);
+   /** Setter for property PValToDLL.
+    * @param PValToDLL New value of property PValToDLL.
+    */
+   public void setPValToDLL(byte[] pvalToDLL) {
+      if (pvalToDLL != null) {
+         checkLen(pvalToDLL.length);
+      }
+      this.pvalToDLL = pvalToDLL;
+   }
+
+   private final static void checkLen(int len) {
+      for (int n = 0x100; n <= 0x10000; n <<= 1) {
+         if (n == len) 
+            return;
+      }
+      throw new IllegalArgumentException("pvalToDLL length: " + len);
+   }
 }

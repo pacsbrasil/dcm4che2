@@ -1,7 +1,6 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,27 +20,36 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.image;
+package org.dcm4che.imageio.plugins;
 
-import org.dcm4che.Implementation;
-import org.dcm4che.data.Dataset;
-import java.awt.image.ColorModel;
+import javax.imageio.ImageReadParam;
 
 /**
+ * <description>
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$
+ * @since November 21, 2002
+ *
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go
+ *            beyond the cvs commit message
+ * </ul>
  */
-public abstract class ColorModelFactory {
+public abstract class DcmImageReadParam extends ImageReadParam {
+      
+   /** Getter for property PValToDLL.
+    * @return Value of property PValToDLL.
+    */
+   public abstract byte[] getPValToDLL();
    
-   public static ColorModelFactory getInstance() {
-      return (ColorModelFactory)Implementation.findFactory(
-         "dcm4che.image.ColorModelFactory");
-   }
+   /** Setter for property PValToDLL.
+    * @param PValToDLL New value of property PValToDLL.
+    */
+   public abstract void setPValToDLL(byte[] PValToDLL);
    
-   public abstract ColorModelParam makeParam(Dataset ds);
-   
-   public abstract ColorModelParam makeParam(Dataset ds, byte[] pv2dll);
-   
-   public abstract ColorModel getColorModel(ColorModelParam param);
 }
