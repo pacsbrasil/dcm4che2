@@ -26,14 +26,9 @@ package org.dcm4cheri.imageio.plugins;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
-import org.dcm4che.dict.Tags;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import javax.imageio.metadata.IIOMetadataFormatImpl;
 import javax.imageio.metadata.IIOMetadataNode;
 
@@ -41,6 +36,12 @@ import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -55,7 +56,7 @@ import javax.xml.transform.sax.TransformerHandler;
  * @version 1.0.0
  */
 final class DcmMetadataImpl extends DcmMetadata {
-
+    
     static final DcmImageReaderConf conf = DcmImageReaderConf.getInstance();
     
     // 2002.06.13, Thomas Hacklaender: Modifier "final" removed.
@@ -85,16 +86,18 @@ final class DcmMetadataImpl extends DcmMetadata {
      * @since 1.0.0
      */
     public final void setDataset(Dataset ds) {
+        if (ds == null)
+            throw new NullPointerException("ds can not be null");
         this.ds = ds;
     }
-
+    
     public final void setDictionary(TagDictionary dict) {
         this.dict = dict;
     }
     
     /**
      * This object supports the mergeTree, setFromTree, and reset methods.
-     * @return allways false.
+     * @return always false.
      * @author Thomas Hacklaender
      * @version 2002.06.16
      * @since 1.0.0
@@ -165,8 +168,8 @@ final class DcmMetadataImpl extends DcmMetadata {
     }
     
     /**
-     * Alters the internal state of this IIOMetadata object from a tree of 
-     * XML DOM Nodes whose syntax is defined by the given metadata format. The 
+     * Alters the internal state of this DcmMetadata's Dataset object from a tree
+     * of XML DOM Nodes whose syntax is defined by the given metadata format. The 
      * previous state is altered only as necessary to accomodate the nodes that 
      * are present in the given tree. If the tree structure or contents are 
      * invalid, an IIOInvalidTreeException will be thrown.
@@ -181,8 +184,42 @@ final class DcmMetadataImpl extends DcmMetadata {
      * @version 2002.06.16
      * @since 1.0.0
      */
-    public void mergeTree(String formatName, Node root) {
-        throw new IllegalStateException("Metadata is read-only!");
+    public void mergeTree(String formatName, Node root)
+    {
+        if (formatName.equals(IIOMetadataFormatImpl.standardMetadataFormatName)) {
+            throw new IllegalArgumentException(
+                IIOMetadataFormatImpl.standardMetadataFormatName
+                + " not supported!");
+        }
+        else if (formatName.equals(nativeMetadataFormatName)) {
+            mergeTree(root);
+        }
+        else {
+            throw new IllegalArgumentException("Not a recognized format: "
+                                               + formatName);
+        }
+    }
+    
+    /**
+     * Does a merge by using an identity <code>Transformer</code> to transform
+     * from the <code>DOMSource</code> to the <code>SAXResult</code> which is
+     * fed the SAX handler of the internal DICOM <code>Dataset</code>.
+     * @param root the root <code>Node</code> of a DOM tree
+     */
+    private void mergeTree(Node root)
+    {
+        DOMSource src = new DOMSource(root);
+        SAXResult res = new SAXResult(ds.getSAXHandler());
+        try {
+            Transformer trans = TransformerFactory.newInstance().newTransformer();
+            trans.transform(src, res);
+        }
+        catch (TransformerConfigurationException tce) {
+            tce.printStackTrace();
+        }
+        catch (TransformerException te) {
+            te.printStackTrace();
+        }
     }
     
     /**
@@ -213,8 +250,19 @@ final class DcmMetadataImpl extends DcmMetadata {
      * @since 1.0.0
      */
     public void setFromTree(String formatName, Node root) {
-        reset();
-        mergeTree(formatName, root);
+        if (formatName.equals(IIOMetadataFormatImpl.standardMetadataFormatName)) {
+            throw new IllegalArgumentException(
+                IIOMetadataFormatImpl.standardMetadataFormatName
+                + " not supported!");
+        }
+        else if (formatName.equals(nativeMetadataFormatName)) {
+            reset();
+            mergeTree(root);
+        }
+        else {
+            throw new IllegalArgumentException("Not a recognized format: "
+                                               + formatName);
+        }
     }
 
 }
