@@ -523,7 +523,7 @@ public abstract class StudyBean implements EntityBean {
             setModalitiesInStudy(mds);
             updated = true;
         }
-    	return true;
+    	return updated;
     }
 
     /**
