@@ -122,7 +122,7 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar"/>
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar, list-printers-jar"/>
   
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
@@ -147,7 +147,17 @@
     <jar jarfile="${build.bin.dir}/print-grayscale.jar"
          manifest="${src.res}/META-INF/print-grayscale.mf">
       <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/client/**"
+               includes="com/tiani/prnscp/client/PrintGrayscaleWithLinDDL*"
+      />
+    </jar>
+  </target>
+  
+  <target name="list-printers-jar" depends="compile">
+    <mkdir dir="${build.bin.dir}"/>
+    <jar jarfile="${build.bin.dir}/list-printers.jar"
+         manifest="${src.res}/META-INF/list-printers.mf">
+      <fileset dir="${build.classes.dir}"
+               includes="com/tiani/prnscp/client/GetAvailablePrinters*"
       />
     </jar>
   </target>
@@ -254,9 +264,6 @@
         <include name="conf/*"/>
         <include name="lib/*"/>
       </fileset>
-      <fileset dir="${jboss.dist}/server/default">
-        <include name="deploy/jmx-rmi-adaptor.sar/**"/>
-      </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>
         <include name="conf/calibration/README"/>
@@ -270,7 +277,15 @@
         <include name="conf/*"/>
         <include name="deploy/*.xml"/>
       </fileset>
-    </copy>    
+    </copy> 
+    <jar jarfile="${dist.dir}/server/default/deploy/jmx-rmi-adaptor.sar">
+      <metainf dir="${jboss.dist}/server/default/deploy/jmx-rmi-adaptor.sar/META-INF"
+               includes="jboss-service.xml"
+      />
+      <fileset dir="${jboss.dist}/server/default/deploy/jmx-rmi-adaptor.sar">
+        <exclude name="META-INF/**"/>
+      </fileset>
+    </jar>
     <fixcrlf srcdir="${dist.dir}/bin" eol="crlf" includes="*.bat"/>
     <fixcrlf srcdir="${dist.dir}/bin" eol="lf" includes="*.sh"/>
     <chmod dir="${dist.dir}/bin" perm="ugo+rx" includes="*.sh"/>
