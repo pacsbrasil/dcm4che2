@@ -20,10 +20,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 
+import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
@@ -40,17 +44,11 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 12.09.2004
  *
  */
-public class FileSystemMgtService extends ServiceMBeanSupport {
+public class FileSystemMgtService extends TimerSupport {
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
     private static final String LOCAL = "local";
-    private static final String CHECK_STRING_ONMEDIA = "ON_MEDIA";
-    private static final String CHECK_STRING_EXTERNAL = "EXTERNAL";
-    private static final String CHECK_STRING_NOTHING = "DONT_CHECK";
-
-	/** Milliseconds of one day. Is used to calculate search date. */
-	private static final long ONE_DAY_IN_MILLIS = 86400000;// one day has 86400000 milli seconds
-
+    
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
     private List dirPathList = Arrays.asList(new File[] { new File("archive")});
@@ -73,16 +71,36 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 	
 	private float freeDiskSpaceUpperThreshold = 2.5f;
 	
-	private boolean flushStudiesExternalRetrievable = false;
+	private boolean flushExternalRetrievable = false;
 	
-	private boolean flushStudiesOnMedia = true;
+	private boolean flushOnMedia = false;
 	
-	private boolean deleteStudiesUnconditional = false;
+	private boolean deleteUncommited = false;
 	
-	private int flushStudiesNotAccessedForDays = 3560;
-	
+	private long studyCacheTimeout = 0L;
+    
+    private long purgeFilesInterval = 0L;
+    
+    private long freeDiskSpaceInterval = 0L;
+    
+    private Integer purgeFilesListenerID;
+
+    private Integer freeDiskSpaceListenerID;
+    
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and isFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
+    
+    private final NotificationListener purgeFilesListener = 
+        new NotificationListener(){
+            public void handleNotification(Notification notif, Object handback) {
+                purgeFiles();
+            }};
+
+    private final NotificationListener freeDiskSpaceListener = 
+        new NotificationListener(){
+            public void handleNotification(Notification notif, Object handback) {
+                freeDiskSpace();
+            }};
 
     private static String null2local(String s) {
         return s == null ? LOCAL : s;
@@ -223,112 +241,112 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 	}
 
 	/**
-	 * Returns true if the freeDiskSpace policy flushStudiesExternalRetrievable is enabled.
+	 * Returns true if the freeDiskSpace policy flushExternalRetrievable is enabled.
 	 * <p>
 	 * If this policy is active studies must be external retrievable for deletion.
 	 * 
-	 * @return Returns true if flushStudiesExternalRetrievable policy is active.
+	 * @return Returns true if flushExternalRetrievable policy is active.
 	 */
 	public boolean isFlushStudiesExternalRetrievable() {
-		return flushStudiesExternalRetrievable;
+		return flushExternalRetrievable;
 	}
 	/**
-	 * Set the freeDiskSpace policy flushStudiesExternalRetrievable.
+	 * Set the freeDiskSpace policy flushExternalRetrievable.
 	 * <p>
 	 * Set this policy active if studies must be external retrievable for deletion.
 	 * 
-	 * @param b The flushStudiesExternalRetrievable to set.
-	 * 
-	 * @throws IllegalArgumentException if deleteStudiesUnconditional is active
+	 * @param b The flushExternalRetrievable to set.
 	 */
 	public void setFlushStudiesExternalRetrievable(boolean b) {
-		if ( b && deleteStudiesUnconditional ) {
-			this.flushStudiesExternalRetrievable = false;
-			throw new IllegalArgumentException("This policy is not allowed if deleteStudiesUnconditional is active!"); 
-		}
-		this.flushStudiesExternalRetrievable = b;
+		this.flushExternalRetrievable = b;
 	}
 	/**
-	 * Returns true if the freeDiskSpace policy deleteStudiesUnconditional is enabled.
+	 * Returns true if the freeDiskSpace policy deleteUncommited is enabled.
 	 * <p>
 	 * If this policy is active studies are deleted immedatly without any check.
 	 * 
-	 * @return Returns true if deleteStudiesUnconditional is active.
+	 * @return Returns true if deleteUncommited is active.
 	 */
-	public boolean isDeleteStudiesUnconditional() {
-		return deleteStudiesUnconditional;
+	public boolean isDeleteStudiesStorageNotCommited() {
+		return deleteUncommited;
 	}
 	
 	/**
-	 * Set the freeDiskSpace policy deleteStudiesUnconditional.
+	 * Set the freeDiskSpace policy deleteUncommited.
 	 * <p>
 	 * If this policy is active studies are deleted immedatly without any check.
 	 *
-	 * @param b The deleteStudiesUnconditional to set.
-	 * 
-	 * @throws IllegalArgumentException if flushStudiesExternalRetrievable or flushStudiesOnMedia is active
+	 * @param b The deleteUncommited to set.
 	 */
-	public void setDeleteStudiesUnconditional(boolean b) {
-		if ( b && ( flushStudiesExternalRetrievable || flushStudiesOnMedia )) {
-			deleteStudiesUnconditional = false;
-			throw new IllegalArgumentException("This policy is not allowed in combination with flushStudiesExternalRetrievable or flushStudiesOnMedia!"); 
-		}
-		deleteStudiesUnconditional = b;
+	public void setDeleteStudiesStorageNotCommited(boolean b) {
+		deleteUncommited = b;
 	}
 	
 	/**
-	 * Returns true if the freeDiskSpace policy flushStudiesOnMedia is enabled.
+	 * Returns true if the freeDiskSpace policy flushOnMedia is enabled.
 	 * <p>
 	 * If this policy is active studies must be stored on media (offline storage) for deletion.
 	 * 
-	 * @return Returns true if flushStudiesOnMedia policy is active.
+	 * @return Returns true if flushOnMedia policy is active.
 	 */
 	public boolean isFlushStudiesOnMedia() {
-		return flushStudiesOnMedia;
+		return flushOnMedia;
 	}
 	
 	/**
-	 * Set the freeDiskSpace policy flushStudiesOnMedia.
+	 * Set the freeDiskSpace policy flushOnMedia.
 	 * <p>
 	 * Set this policy active if studies must be on media (offline storage) for deletion.
 	 * 
-	 * @param b The flushStudiesOnMedia to set.
-	 *
-	 * @throws IllegalArgumentException if deleteStudiesUnconditional is active
+	 * @param b The flushOnMedia to set.
 	 */
 	public void setFlushStudiesOnMedia(boolean b) {
-		if ( b && deleteStudiesUnconditional ) {
-			this.flushStudiesOnMedia = false;
-			throw new IllegalArgumentException("This policy is not allowed if deleteStudiesUnconditional is active!"); 
-		}
-		this.flushStudiesOnMedia = b;
+		this.flushOnMedia = b;
 	}
 	
 	/**
-	 * Return number of days a study is not accessed for freeDiskSpace process.
-	 * <p>
-	 * This value is used by <code>freeDiskSpace</code> if the <code>freeDiskSpaceWaterMark</code> is not reached to 
-	 * release studies that are older (not accessed) as this number of days.
-	 * <p>
-	 * In this case the freeDiskSpace policies (flushStudiesExternalRetrievable, flushStudiesOnMedia 
-	 * and deleteStudiesUnconditional) are used to determine if the files of a study can be deleted.  
+	 * Return string representation 
 	 * 
-	 * @return Returns the flushStudiesNotAccessedForDays.
+	 * @return Returns the StudyCacheTimeout.
 	 */
-	public int getFlushStudiesNotAccessedForDays() {
-		return flushStudiesNotAccessedForDays;
+	public String getStudyCacheTimeout() {
+        return RetryIntervalls.formatIntervalZeroAsNever(studyCacheTimeout);
 	}
 	
 	/**
 	 * Set number of days a study is not accessed for freeDiskSpace.
 	 * 
-	 * @param flushStudiesNotAccessedForDays The flushStudiesNotAccessedForDays to set in days.
+	 * @param StudyCacheTimeoutDays The StudyCacheTimeoutDays to set in days.
 	 */
-	public void setFlushStudiesNotAccessedForDays(
-			int freeDiskSpaceNotAccessedForDays) {
-		this.flushStudiesNotAccessedForDays = freeDiskSpaceNotAccessedForDays;
+	public void setStudyCacheTimeout(String interval) {
+        this.studyCacheTimeout = RetryIntervalls.parseIntervalOrNever(interval);
 	}
 	
+    public final String getFreeDiskSpaceInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(freeDiskSpaceInterval);
+    }
+    
+    public void setFreeDiskSpaceInterval(String interval) {
+        this.freeDiskSpaceInterval = RetryIntervalls.parseIntervalOrNever(interval);
+        if (getState() == STARTED) {
+            stopScheduler(freeDiskSpaceListenerID, freeDiskSpaceListener);
+            freeDiskSpaceListenerID = startScheduler(freeDiskSpaceInterval,
+                    freeDiskSpaceListener);
+        }
+    }
+    
+    public final String getPurgeFilesInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(purgeFilesInterval);
+    }
+    
+    public void setPurgeFilesInterval(String interval) {
+        this.purgeFilesInterval = RetryIntervalls.parseIntervalOrNever(interval);
+        if (getState() == STARTED) {
+            stopScheduler(purgeFilesListenerID, purgeFilesListener);
+            purgeFilesListenerID = startScheduler(purgeFilesInterval, purgeFilesListener);
+        }
+    }
+    
 	public final boolean isMakeStorageDirectory() {
         return makeStorageDirectory;
     }
@@ -345,11 +363,24 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         this.mountFailedCheckFile = mountFailedCheckFile;
     }
     
-
     public final boolean isLocalFileSystem(String fsdir) {
         return fsPathSet.contains(fsdir) || rofsPathSet.contains(fsdir);
     }
 
+    protected void startService() throws Exception {
+         super.startService();
+         freeDiskSpaceListenerID = startScheduler(freeDiskSpaceInterval,
+                 freeDiskSpaceListener);
+         purgeFilesListenerID = startScheduler(purgeFilesInterval, purgeFilesListener);
+         
+    }
+    
+    protected void stopService() throws Exception {
+        stopScheduler(freeDiskSpaceListenerID, freeDiskSpaceListener);
+        stopScheduler(purgeFilesListenerID, purgeFilesListener);
+        super.stopService();
+    }
+    
     private FileSystemMgt newFileSystemMgt() {
         try {
             FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
@@ -416,6 +447,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     }
 
     public void purgeFiles() {
+        log.info("Check for unreferenced files to delete");
         FileSystemMgt fsMgt = newFileSystemMgt();
         try {
             FileDTO[] toDelete;
@@ -492,31 +524,39 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
      * <p>
      * The real deletion is done in the purge process! This method removes only the reference to the file system.  
      *
-     * @return The released size in bytes.
-     * 
-     * @throws IOException
-     * @throws FinderException
-     * @throws RemoveException
-     * @throws EJBException
+     * @return The released size in bytes or -1 if an error occured.
      */
-    public long freeDiskSpace() throws IOException, FinderException, EJBException, RemoveException {
-    	Long olderThan = null;
-    	String prefix;
-    	if ( ! isFreeDiskSpaceNecessary() ) {
-    		olderThan = new Long( System.currentTimeMillis() - this.flushStudiesNotAccessedForDays * ONE_DAY_IN_MILLIS );
-    		prefix = "FreeDiskSpace Status: Available disk space: OK ; Delete old files:";
-    	} else {
-    		prefix = "FreeDiskSpace Status: filesystems full! ; free disk space:";
-    	}
-    	
-        FileSystemMgt fsMgt = newFileSystemMgt();
-		long maxSizeToDel = (long) ( (float) this.minFreeDiskSpace * freeDiskSpaceUpperThreshold ) * dirPathList.size() - availableDiskSpace;
-		long releasedSize = fsMgt.releaseStudies( fsPathSet, maxSizeToDel, deleteStudiesUnconditional, flushStudiesOnMedia, flushStudiesExternalRetrievable, olderThan );
-    	return releasedSize;
+    public long freeDiskSpace() {
+        log.info("Check available Disk Space");
+        try {
+            if (isFreeDiskSpaceNecessary()) {
+                long maxSizeToDel = (long) ((float) this.minFreeDiskSpace * freeDiskSpaceUpperThreshold)
+                    * dirPathList.size() - availableDiskSpace;
+                FileSystemMgt fsMgt = newFileSystemMgt();
+                try {
+                    return fsMgt.freeDiskSpace(fsPathSet, deleteUncommited, flushOnMedia,
+                            flushExternalRetrievable, maxSizeToDel);
+                } finally {
+                    fsMgt.remove();
+                }            
+            } else if (studyCacheTimeout > 0L) {
+                long accessedBefore = System.currentTimeMillis() - studyCacheTimeout;
+                FileSystemMgt fsMgt = newFileSystemMgt();
+                try {
+                    return fsMgt.releaseStudies(fsPathSet, deleteUncommited, flushOnMedia,
+                            flushExternalRetrievable, accessedBefore);
+                } finally {
+                    fsMgt.remove();
+                }
+            } else {
+                return 0L;
+            }
+        } catch (Exception e) {
+            log.error("Free Disk Space failed:", e);
+            return -1L;
+        }
     }
     
- 
-	
 	/**
      * Check if a cleaning process is ncessary.
      * <p>

@@ -128,15 +128,16 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFlushStudiesNotAccessedForDays"
-      setMethod="setFlushStudiesNotAccessedForDays">
-      <description>Flush Studies which were not accessed for specified number
-      of days, independent of available disk space.
+      getMethod="isFlushStudiesExternalRetrievable"
+      setMethod="setFlushStudiesExternalRetrievable">
+      <description>Enables deletion of objects in local filesystems of Studies
+      which are retrieveable from an external Retrieve AE. DB Entries for
+      the Studies will not be removed!
       </description>
-      <name>FlushStudiesNotAccessedForDays</name>
-      <type>int</type>
+      <name>FlushStudiesExternalRetrievable</name>
+      <type>boolean</type>
       <descriptors>
-         <value value="3650" />
+         <value value="false" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -149,34 +150,65 @@
       <name>FlushStudiesOnMedia</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="false" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isFlushStudiesExternalRetrievable"
-      setMethod="setFlushStudiesExternalRetrievable">
-      <description>Enables deletion of objects in local filesystems of Studies
-      which are retrieveable from an external Retrieve AE. DB Entries for
-      the Studies will not be removed! 
+      getMethod="isDeleteStudiesStorageNotCommited"
+      setMethod="setDeleteStudiesStorageNotCommited">
+      <description>Enables deletion of least-recently accessed studies for
+          which no storage commitment request was received. Deletes
+          files AND database entries! Do only activate if you know what you
+          are doing!
       </description>
-      <name>FlushStudiesExternalRetrievable</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isDeleteStudiesUnconditional"
-      setMethod="setDeleteStudiesUnconditional">
-      <description>Enables deletion of least-recently accessed studies without
-          checking the availibility of the Study on Media or from an external 
-          retrieve AE. Deletes files AND database entries! Do only activate
-          if you know what you are doing!
-      </description>
-      <name>DeleteStudiesUnconditional</name>
+      <name>DeleteStudiesStorageNotCommited</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getStudyCacheTimeout"
+      setMethod="setStudyCacheTimeout">
+      <description>Defines how long a study may not be accessed, before it will
+      be deleted if it match one of the configured conditions:
+      FlushStudiesExternalRetrievable, FlushStudiesOnMedia and 
+      DeleteStudiesStorageNotCommited.
+      Format: ##h (in hours), ##d (in days), ##w (in weeks)
+      NEVER (= deletion of studies is only triggered by running out of disk space).
+      </description>
+      <name>StudyCacheTimeout</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NEVER" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPurgeFilesInterval"
+      setMethod="setPurgeFilesInterval">
+      <description>Interval in which unreferenced Files are purged from the
+      filesystem. Format: ##s (in seconds), ##m (in minutes), ##h (in hours)
+      NEVER (= disable deletion of unreferenced Files).
+      </description>
+      <name>PurgeFilesInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1m" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFreeDiskSpaceInterval"
+      setMethod="setFreeDiskSpaceInterval">
+      <description>Interval in which available disk space is checked for
+          necessity to free disk space by deletion of least-recently accessed
+          studies. FreeDiskSpaceInterval shall be greater than PurgeFilesInterval.
+          Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
+          NEVER (= no deletion of studies).          
+      </description>
+      <name>FreeDiskSpaceInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NEVER" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -213,7 +245,7 @@
    </operation>
    <operation impact="INFO">
       <description>Select Storage File System with Available Disk Space 
-      &gt; High Water Mark</description>
+      &gt; MinFreeDiskSpace</description>
       <name>selectStorageFileSystem</name>
       <return-type>org.dcm4chex.archive.mbean.FileSystemInfo</return-type>
    </operation>

@@ -5,23 +5,6 @@
   <mbean code="org.dcm4chex.archive.mbean.FileSystemMgtService" 
 	name="tiani.archive:service=FileSystemMgt"
 	xmbean-dd="xmdesc/dcm4jboss-fsmgt-xmbean.xml">
-  </mbean>
-
-  <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	 name="tiani.archive:service=Scheduler,name=FileSystemMgt.PurgeFiles"
-	 xmbean-dd="xmdesc/dcm4jboss-purge-scheduler-xmbean.xml">
-
-    <!-- To avoid NameNotBoundExceptions during server startup. MUST be
-	removed, if the service is NOT deployed in the same jboss instance
-	as the FileSystemMgt EJB!
-	-->
-    <depends>jboss.j2ee:jndiName=ejb/FileSystemMgt,service=EJB</depends>
-  </mbean>
-
-  <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	 name="tiani.archive:service=Scheduler,name=FileSystemMgt.FreeDiskSpace"
-	 xmbean-dd="xmdesc/dcm4jboss-freediskspace-scheduler-xmbean.xml">
-
     <!-- To avoid NameNotBoundExceptions during server startup. MUST be
 	removed, if the service is NOT deployed in the same jboss instance
 	as the FileSystemMgt EJB!

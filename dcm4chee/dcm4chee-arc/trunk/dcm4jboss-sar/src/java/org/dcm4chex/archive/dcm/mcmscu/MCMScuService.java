@@ -1,9 +1,11 @@
-/*
- * Created on 16.12.2004
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.dcm.mcmscu;
 
 import java.io.IOException;
@@ -21,6 +23,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -36,11 +40,13 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
+import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposer;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposerHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -52,17 +58,14 @@ import org.jboss.system.ServiceMBeanSupport;
  *
  * MBean to configure and service media creation managment issues.
  * <p>
- * 1) Collect studies to media for offline storage.<br>
+ * 1) Schedule media for offline storage.<br>
  * 2) Listen to an JMS queue for receiving media creation request from scheduler or WEB interface.<br>
  * 3) process a media creation request. (move instances and send media creation request and action to media creation managment AET)
  * 
  */
-public class MCMScuService extends ServiceMBeanSupport implements MessageListener {
+public class MCMScuService extends TimerSupport implements MessageListener {
 	
     private static final long MIN_MAX_MEDIA_USAGE = 20 * FileUtils.MEGA;
-
-    /** Milliseconds of one day. Is used to calculate search date. */
-	private static final long ONE_DAY_IN_MILLIS = 86400000;// one day has 86400000 milli seconds
 
 	/** Name of the JMS queue to receive media creation requests from scheduler or WEB interface. */ 
     private static final String QUEUE = "MCMScu";
@@ -72,19 +75,32 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 
     /** Action command for cancel media creation. */
     private static final int CANCEL_MEDIA_CREATION = 2;
-    
+
     /** Holds the max. number of bytes that can be used to collect instances for a singe media. */
 	private long maxMediaUsage = 680 * FileUtils.MEGA;
 	
-    /** Holds the max age of a media for status COLLECTING. */
-	private int maxStudyAge;
+	/** Holds the min age of instances in ms for collecting. */ 
+	private long minStudyAge;
 
-	/** Holds the prefix that is used to generate the fileset id. */
+    /** Holds the max age of a media for status COLLECTING. */
+	private long maxStudyAge;
+
+    private long scheduleMediaInterval;
+
+    private long updateMediaStatusInterval;
+
+    private long burnMediaInterval;
+    
+    private Integer scheduleMediaListenerID;
+    
+    private Integer updateMediaStatusListenerID;
+    
+    private Integer burnMediaListenerID;
+
+
+    /** Holds the prefix that is used to generate the fileset id. */
 	private String fileSetIdPrefix;
 	
-	/** Holds the min age of instances in days for collecting. */ 
-	private int minStudyAge;
-
 	/** Holds the calling AET. */
 	private String callingAET;
 
@@ -125,6 +141,24 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     
 	private MediaComposer mediaComposer;
 
+    private final NotificationListener scheduleMediaListener = 
+        new NotificationListener(){
+            public void handleNotification(Notification notif, Object handback) {
+                scheduleMedia();
+            }};
+    
+    private final NotificationListener updateMediaStatusListener = 
+        new NotificationListener(){
+            public void handleNotification(Notification notif, Object handback) {
+                updateMediaStatus();
+            }};
+    
+    private final NotificationListener burnMediaListener = 
+        new NotificationListener(){
+            public void handleNotification(Notification notif, Object handback) {
+                burnMedia();
+            }};
+            
 	/**
 	 * Returns the prefix for FileSetID creation.
 	 * 
@@ -163,35 +197,14 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	}
 
 	/**
-	 * Returns the maxMediaAge in days.
-	 * 
-	 * @return The maxMediaAge in days.
-	 */
-	public int getMaxStudyAge() {
-		return maxStudyAge;
-	}
-	
-	/**
-	 * Sets the max study age in days.
-	 * <p>
-	 * This value is used to determine how long an instance may not be stored offline.
-	 *  
-	 * @param maxStudyAge The maxStudyAge to set.
-	 */
-	public void setMaxStudyAge(int maxStudyAge) {
-		this.maxStudyAge = maxStudyAge;
-	}
-	/**
 	 * This value is used to get the search date from current date.
 	 * <p>
 	 * Instances must be older than the search date.  
-	 * <p>
-	 * This method returns always a positive value!
 	 * 
-	 * @return Returns the daysBefore.
+	 * @return Returns ##w (in weeks), ##d (in days), ##h (in hours).
 	 */
-	public int getMinStudyAge() {
-		return minStudyAge;
+	public String getMinStudyAge() {
+		return RetryIntervalls.formatInterval(minStudyAge);
 	}
 	
 	/**
@@ -199,13 +212,71 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * <p>
 	 * This value is used to ensure that all instances of a study is stored on a single media.
 	 * 
-	 * @param age The min number of days before instances are collected to media.
+	 * @param age ##w (in weeks), ##d (in days), ##h (in hours).
 	 */
-	public void setMinStudyAge(int age) {
-		if ( age < 0) age *= -1;
-		this.minStudyAge = age;
+	public void setMinStudyAge(String age) {
+		this.minStudyAge = RetryIntervalls.parseInterval(age);
 	}
 	
+    /**
+     * Returns the maxMediaAge before burned on media.
+     * 
+     * @return ##w (in weeks), ##d (in days), ##h (in hours).
+     */
+    public String getMaxStudyAge() {
+        return RetryIntervalls.formatInterval(maxStudyAge);
+    }
+    
+    /**
+     * Sets the max study age in days.
+     * <p>
+     * This value is used to determine how long an instance may not be stored offline.
+     *  
+     * @param maxStudyAge The maxStudyAge to set.
+     */
+    public void setMaxStudyAge(String age) {
+        this.maxStudyAge = RetryIntervalls.parseInterval(age);
+    }
+    
+    
+    public final String getBurnMediaInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(burnMediaInterval);
+    }
+    
+    public void setBurnMediaInterval(String interval) {
+        this.burnMediaInterval = RetryIntervalls.parseIntervalOrNever(interval);
+        if (getState() == STARTED) {
+            stopScheduler(burnMediaListenerID, burnMediaListener);
+            burnMediaListenerID = startScheduler(burnMediaInterval,
+                    burnMediaListener);
+        }
+    }
+    
+    public final String getScheduleMediaInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(scheduleMediaInterval);
+    }
+    
+    public void setScheduleMediaInterval(String interval) {
+        this.scheduleMediaInterval = RetryIntervalls.parseIntervalOrNever(interval);
+        if (getState() == STARTED) {
+            stopScheduler(scheduleMediaListenerID, scheduleMediaListener);
+            scheduleMediaListenerID = startScheduler(scheduleMediaInterval,
+                    scheduleMediaListener);
+        }
+    }
+    
+    public final String getUpdateMediaStatusInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(updateMediaStatusInterval);
+    }
+    
+    public void setUpdateMediaStatusInterval(String interval) {
+        this.updateMediaStatusInterval = RetryIntervalls.parseIntervalOrNever(interval);
+        if (getState() == STARTED) {
+            stopScheduler(updateMediaStatusListenerID, updateMediaStatusListener);
+            updateMediaStatusListenerID = startScheduler(updateMediaStatusInterval, updateMediaStatusListener);
+        }
+    }
+    
 	/**
 	 * Returns the calling AET defined in this MBean.
 	 * 
@@ -431,7 +502,8 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * 
 	 * @return Number of instances
 	 */
-	public int collectStudies() {
+	public int scheduleMedia() {
+        log.info("Check for studies for scheduling on media");
 		MediaComposer mc = null;
 		try {
 			mc = this.lookupMediaComposer();
@@ -458,7 +530,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * @return The search date
 	 */
 	private long getSearchDate() {
-		return System.currentTimeMillis() - ( getMinStudyAge() * ONE_DAY_IN_MILLIS );
+		return System.currentTimeMillis() - minStudyAge;
 	}
 	
 	/**
@@ -467,6 +539,10 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * This queue is used to receive media creation request from scheduler or web interface.
 	 */
     protected void startService() throws Exception {
+        super.startService();
+        scheduleMediaListenerID = startScheduler(scheduleMediaInterval, scheduleMediaListener);
+        updateMediaStatusListenerID = startScheduler(updateMediaStatusInterval, updateMediaStatusListener);
+        burnMediaListenerID = startScheduler(burnMediaInterval, burnMediaListener);
         JMSDelegate.startListening(QUEUE, this);
     }
 
@@ -475,7 +551,11 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * 
 	 */
     protected void stopService() throws Exception {
+        stopScheduler(scheduleMediaListenerID, scheduleMediaListener);
+        stopScheduler(updateMediaStatusListenerID, updateMediaStatusListener);
+        stopScheduler(burnMediaListenerID, burnMediaListener);
         JMSDelegate.stopListening(QUEUE);
+        super.stopService();
     }
 
     /**
@@ -839,7 +919,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	}
 	
 	
-    public String updateMediaStatus() throws InterruptedException, IOException {
+    public String updateMediaStatus() {
     	ActiveAssociation assoc = null;
     	try {
 	//get all media of status PROCESSING.
@@ -928,25 +1008,26 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
      * Initiate creation of Media with studies older than MaxStudyAge.
      * 
      * @return Number of media creations initiated.
-     * 
-     * @throws RemoteException
-     * @throws FinderException
-     * @throws HomeFactoryException
-     * @throws CreateException
      */
-    public int burnMedia() throws RemoteException, FinderException, HomeFactoryException, CreateException {
-    	int nrOfMedia = 0;
-    	Collection c = lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
-    	long maxAgeDate = System.currentTimeMillis() - ( maxStudyAge - minStudyAge ) * ONE_DAY_IN_MILLIS;//media is created after minStudyAge -> max media age is maxStudyAge-minStudyAge
-    	MediaDTO mediaDTO;
-    	for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
-    		mediaDTO = (MediaDTO) iter.next();
-    		if ( mediaDTO.getCreatedTime().getTime() < maxAgeDate ) {
-    			process( mediaDTO );
-    			nrOfMedia++;
-    		}
-    	}
-		return nrOfMedia ;
+    public int burnMedia() {
+        log.info("Check for scheduled Media to burn");
+        try {
+        	int nrOfMedia = 0;
+        	Collection c = lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
+        	long maxAgeDate = System.currentTimeMillis() - ( maxStudyAge - minStudyAge );//media is created after minStudyAge -> max media age is maxStudyAge-minStudyAge
+        	MediaDTO mediaDTO;
+        	for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
+        		mediaDTO = (MediaDTO) iter.next();
+        		if ( mediaDTO.getCreatedTime().getTime() < maxAgeDate ) {
+        			process( mediaDTO );
+        			nrOfMedia++;
+        		}
+        	}
+    		return nrOfMedia;
+        } catch (Exception e) {
+            log.error("Failed to initiate media creation:", e);
+            return -1;
+        }
     }
     
     /**

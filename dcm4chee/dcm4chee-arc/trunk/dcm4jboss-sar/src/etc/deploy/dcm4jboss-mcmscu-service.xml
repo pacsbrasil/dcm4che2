@@ -11,12 +11,6 @@
     <depends>
       jboss.mq:service=InvocationLayer,type=JVM
     </depends>
-  </mbean>
-
-  <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	 name="tiani.archive:service=Scheduler,name=MCMScuService.collectStudies"
-	 xmbean-dd="xmdesc/dcm4jboss-study2media-scheduler-xmbean.xml">
-
     <!-- To avoid NameNotBoundExceptions during server startup. MUST be
 	removed, if the service is NOT deployed in the same jboss instance
 	as the MediaComposer EJB!
@@ -24,23 +18,4 @@
     <depends>jboss.j2ee:jndiName=ejb/MediaComposer,service=EJB</depends>
   </mbean>
 
-  <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	 name="tiani.archive:service=Scheduler,name=MCMScuService.updateMediaStatus"
-	 xmbean-dd="xmdesc/dcm4jboss-updatemediastatus-scheduler-xmbean.xml">
-
-    <!-- To avoid NameNotBoundExceptions during server startup. MUST be
-	removed, if the service is NOT deployed in the same jboss instance
-	as the MediaComposer EJB!
-	-->
-    <depends>jboss.j2ee:jndiName=ejb/MediaComposer,service=EJB</depends>
-  </mbean>
-
-  <!-- Comment out for automatical offline storage (e.g. using dcmcdw with RImage)
-  <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	 name="tiani.archive:service=Scheduler,name=MCMScuService.burnMedia"
-	 xmbean-dd="xmdesc/dcm4jboss-burnmedia-scheduler-xmbean.xml">
-
-    <depends>jboss.j2ee:jndiName=ejb/MediaComposer,service=EJB</depends>
-  </mbean>
-  -->
 </server>

@@ -94,7 +94,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private StgCmtScuScp stgCmtScuScp = new StgCmtScuScp(this);
 
-	private long receiveResultInSameAssocTimeout;
+    private long receiveResultInSameAssocTimeout;
 
     public final String getScuRetryIntervalls() {
         return scuRetryIntervalls.toString();
@@ -168,16 +168,16 @@ public class StgCmtScuScpService extends AbstractScpService implements
         this.soCloseDelay = soCloseDelay;
     }
 
-	public final long getReceiveResultInSameAssocTimeout() {
-		return receiveResultInSameAssocTimeout;
-	}
-	
-	public final void setReceiveResultInSameAssocTimeout(long timeout) {
-		if (timeout < 0)
-			throw new IllegalArgumentException("timeout: " + timeout);
-		this.receiveResultInSameAssocTimeout = timeout;
-	}
-	
+    public final long getReceiveResultInSameAssocTimeout() {
+        return receiveResultInSameAssocTimeout;
+    }
+    
+    public final void setReceiveResultInSameAssocTimeout(long timeout) {
+        if (timeout < 0)
+            throw new IllegalArgumentException("timeout: " + timeout);
+        this.receiveResultInSameAssocTimeout = timeout;
+    }
+    
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.StorageCommitmentPushModel, stgCmtScuScp);
     }
@@ -188,12 +188,12 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         if (enable) {
-	        policy.putPresContext(UIDs.StorageCommitmentPushModel,
-	                getTransferSyntaxUIDs());
-	        policy.putRoleSelection(UIDs.StorageCommitmentPushModel, true, true);
+            policy.putPresContext(UIDs.StorageCommitmentPushModel,
+                    getTransferSyntaxUIDs());
+            policy.putRoleSelection(UIDs.StorageCommitmentPushModel, true, true);
         } else {
-	        policy.putPresContext(UIDs.StorageCommitmentPushModel, null);
-	        policy.removeRoleSelection(UIDs.StorageCommitmentPushModel);            
+            policy.putPresContext(UIDs.StorageCommitmentPushModel, null);
+            policy.removeRoleSelection(UIDs.StorageCommitmentPushModel);            
         }
     }
 
@@ -283,7 +283,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                             + " returns N-ACTION-RQ with error status: "
                             + rspCmd);
                 } else {
-                	Thread.sleep(receiveResultInSameAssocTimeout);                	
+                    Thread.sleep(receiveResultInSameAssocTimeout);                  
                 }
                 return status;
             } finally {
@@ -334,25 +334,12 @@ public class StgCmtScuScpService extends AbstractScpService implements
         for (int i = 0, n = refSOPSeq.vm(); i < n; ++i) {
             Dataset refSOP = refSOPSeq.getItem(i);
             if (storage != null && fileInfos != null
-                    && (failureReason = commit(refSOP, fileInfos)) == Status.Success) {
+                    && (failureReason = commit(storage, refSOP, fileInfos)) == Status.Success) {
                 successSOPSeq.addItem(refSOP);
             } else {
                 refSOP.putUS(Tags.FailureReason, failureReason);
                 failedSOPSeq.addItem(refSOP);
             }
-        }
-        if (!successSOPSeq.isEmpty()) {
-        	try {
-        		storage.commit(eventInfo);
-	        } catch (Exception e) {
-                log.error("Failed to update DB", e);
-                for (int i = 0, n = successSOPSeq.vm(); i < n; ++i) {
-                    Dataset refSOP = refSOPSeq.getItem(i);
-                    refSOP.putUS(Tags.FailureReason, Status.ProcessingFailure);
-                    failedSOPSeq.addItem(refSOP);                                    	
-                }
-                eventInfo.putSQ(Tags.RefSOPSeq);
-	        }
         }
         if (failedSOPSeq.isEmpty()) {
             eventInfo.remove(Tags.FailedSOPSeq);
@@ -361,7 +348,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 eventInfo);
     }
 
-    private int commit(Dataset refSOP, Map fileInfos) {
+    private int commit(Storage storage, Dataset refSOP, Map fileInfos) {
         final String iuid = refSOP.getString(Tags.RefSOPInstanceUID);
         final String cuid = refSOP.getString(Tags.RefSOPClassUID);
         FileInfo[] fileInfo = (FileInfo[]) fileInfos.get(iuid);
@@ -383,6 +370,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 retrieveAETs.add(fileInfo[i].fileRetrieveAET);
                 checkFile(fileInfo[i]);
             }
+            storage.commit(iuid);
             retrieveAETs.add(fileInfo[0].extRetrieveAET);
             retrieveAETs.remove(null);
             if (!retrieveAETs.isEmpty())

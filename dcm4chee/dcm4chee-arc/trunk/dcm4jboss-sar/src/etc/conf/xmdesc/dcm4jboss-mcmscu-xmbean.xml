@@ -18,59 +18,6 @@
       <name>MCMScuService</name>
    </constructor>
 
-   <attribute access="read-write"
-      getMethod="getFileSetIdPrefix"
-      setMethod="setFileSetIdPrefix">
-      <description>Prefix for FileSet ID.
-      </description>
-      <name>FileSetIdPrefix</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="DISK_" />
-      </descriptors>
-   </attribute>
- 
-    <attribute access="read-write"
-      getMethod="getMaxMediaUsage"
-      setMethod="setMaxMediaUsage">
-      <description>Maximal media usage for DICOM files. This values is usually
-      smaller than the real media size to keep space for index and optional html
-      files. 1MB = 1000000 Byte, 1GB = 1000MB
-      </description>
-      <name>MaxMediaUsage</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="600MB" />
-      </descriptors>
-   </attribute>
-
-    <attribute access="read-write"
-      getMethod="getMinStudyAge"
-      setMethod="setMinStudyAge">
-      <description>The minimal number of days before instances of studies are
-      scheduled for offline storage. Increasing the delay for scheduling
-      ensures that all instances of a study will be stored on a single media.
-      </description>
-      <name>MinStudyAge</name>
-      <type>int</type>
-      <descriptors>
-         <value value="2" />
-      </descriptors>
-   </attribute>
-
-    <attribute access="read-write"
-      getMethod="getMaxStudyAge"
-      setMethod="setMaxStudyAge">
-      <description>The maximal number of days before studies are archived on
-      media. Only effective, if media creation is triggered automatically.
-      </description>
-      <name>MaxStudyAge</name>
-      <type>int</type>
-      <descriptors>
-         <value value="30" />
-      </descriptors>
-   </attribute>
-
     <attribute access="read-write"
       getMethod="getCallingAET"
       setMethod="setCallingAET">
@@ -116,6 +63,104 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="CDRECORD" />
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getFileSetIdPrefix"
+      setMethod="setFileSetIdPrefix">
+      <description>Prefix for FileSet ID.
+      </description>
+      <name>FileSetIdPrefix</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DISK_" />
+      </descriptors>
+   </attribute>
+ 
+    <attribute access="read-write"
+      getMethod="getMaxMediaUsage"
+      setMethod="setMaxMediaUsage">
+      <description>Maximal media usage for DICOM files. This values is usually
+      smaller than the real media size to keep space for index and optional html
+      files. 1MB = 1000000 Byte, 1GB = 1000MB
+      </description>
+      <name>MaxMediaUsage</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="600MB" />
+      </descriptors>
+   </attribute>
+
+    <attribute access="read-write"
+      getMethod="getMinStudyAge"
+      setMethod="setMinStudyAge">
+      <description>The minimal duration before instances of studies are
+      scheduled for offline storage. Increasing the delay for scheduling
+      ensures that all instances of a study will be stored on a single media.
+      Format: ##h (in hours), ##d (in days), ##w (in weeks).
+      </description>
+      <name>MinStudyAge</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="2d" />
+      </descriptors>
+   </attribute>
+
+    <attribute access="read-write"
+      getMethod="getMaxStudyAge"
+      setMethod="setMaxStudyAge">
+      <description>The maximal duration before studies are archived on
+      media. Only effective, if media creation is triggered automatically
+      by BurnMediaInterval != NEVER.
+      Format: ##h (in hours), ##d (in days), ##w (in weeks).
+      </description>
+      <name>MaxStudyAge</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="4w" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getScheduleMediaInterval"
+      setMethod="setScheduleMediaInterval">
+      <description>Interval in which studies received former than configured
+          Minimal Study Age are associated to media, scheduled for creation.
+          Format: ##m (in minutes), ##h (in hours), ##d (in days).
+          NEVER (= disable media scheduling).          
+      </description>
+      <name>ScheduleMediaInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1h" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getUpdateMediaStatusInterval"
+      setMethod="setUpdateMediaStatusInterval">
+      <description>Interval in which Media Creation Server is quered for status
+          of pending Media Creation Requests.
+          Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
+          NEVER (= disable query of Media Creation Server).          
+      </description>
+      <name>UpdateMediaStatusInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1m" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getBurnMediaInterval"
+      setMethod="setBurnMediaInterval">
+      <description>Interval in which creation of media with studies
+          received former than configured Maximal Study Age is triggered
+          automatically. Format: ##h (in hours), ##d (in days), ##w (in weeks).
+          NEVER (= no automatical trigger of media creation).          
+      </description>
+      <name>BurnMediaInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NEVER" />
       </descriptors>
    </attribute>
 
@@ -203,6 +248,7 @@
          <value value="false" />
       </descriptors>
    </attribute>
+   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;
@@ -215,8 +261,8 @@
    </operation>
 
    <operation impact="ACTION">
-      <description>Associate studies older than MinStudyAge to media</description>
-      <name>collectStudies</name>
+      <description>Schedule media with studies received former than MinStudyAge</description>
+      <name>scheduleMedia</name>
       <return-type>int</return-type>
    </operation>
 
@@ -227,7 +273,7 @@
    </operation>
 
    <operation impact="ACTION">
-      <description>Initiate creation of Media with studies older than MaxStudyAge.
+      <description>Initiate creation of Media with studies received former than MaxStudyAge.
       </description>
       <name>burnMedia</name>
       <return-type>int</return-type>

@@ -24,6 +24,8 @@ public final class RetryIntervalls {
 
     private static final long MS_PER_DAY = 24 * MS_PER_HOUR;
 
+    private static final long MS_PER_WEEK = 7 * MS_PER_DAY;
+    
     private final int[] counts;
 
     private final long[] intervalls;
@@ -48,7 +50,7 @@ public final class RetryIntervalls {
 
     private void init(int i, String item) {
         final int x = item.indexOf('x');
-        intervalls[i] = parseMilliseconds(x != -1 ? item.substring(x + 1)
+        intervalls[i] = parseInterval(x != -1 ? item.substring(x + 1)
                 : item);
         counts[i] = x != -1 ? Math.max(1, Integer
                 .parseInt(item.substring(0, x))) : 1;
@@ -58,36 +60,59 @@ public final class RetryIntervalls {
         if (counts.length == 0) { return ""; }
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < counts.length; i++) {
-            sb.append(counts[i]);
-            sb.append('x');
-            if (intervalls[i] % MS_PER_DAY == 0)
-                sb.append(intervalls[i] / MS_PER_DAY).append("d,");
-            else if (intervalls[i] % MS_PER_HOUR == 0)
-                sb.append(intervalls[i] / MS_PER_HOUR).append("h,");
-            else if (intervalls[i] % MS_PER_MIN == 0)
-                sb.append(intervalls[i] / MS_PER_MIN).append("m,");
-            else
-                sb.append(intervalls[i] / 1000).append("s,");
+            sb.append(counts[i]).append('x');
+            formatInterval(intervalls[i], sb).append(',');
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();
     }
+    
+    public static String formatIntervalZeroAsNever(long ms) {
+        return ms == 0L ? "NEVER" : formatInterval(ms);
+    }
 
-    private long parseMilliseconds(String text) {
+    public static String formatInterval(long ms) {
+        return formatInterval(ms, new StringBuffer()).toString();
+    }
+
+    private static StringBuffer formatInterval(long ms, StringBuffer sb) {
+        if (ms % MS_PER_WEEK == 0)
+            sb.append(ms / MS_PER_WEEK).append("w");
+        else if (ms % MS_PER_DAY == 0)
+            sb.append(ms / MS_PER_DAY).append("d");
+        else if (ms % MS_PER_HOUR == 0)
+            sb.append(ms / MS_PER_HOUR).append("h");
+        else if (ms % MS_PER_MIN == 0)
+            sb.append(ms / MS_PER_MIN).append("m");
+        else
+            sb.append(ms / 1000).append("s");
+        return sb;
+    }
+
+    public static long parseIntervalOrNever(String text) {
+        return ("NEVER".equalsIgnoreCase(text)) ? 0L
+                : parseInterval(text);
+    }
+    
+    public static long parseInterval(String text) {
         int len = text.length();
-        long k = 1L;
+        long ms = Long.parseLong(text.substring(0, len - 1));
         switch (text.charAt(len - 1)) {
+        case 'w':
+            ms *= 7;
         case 'd':
-            k *= 24;
+            ms *= 24;
         case 'h':
-            k *= 60;
+            ms *= 60;
         case 'm':
-            k *= 60;
+            ms *= 60;
         case 's':
-            k *= 1000;
-            --len;
+            ms *= 1000;
+            break;
+            default:
+                throw new IllegalArgumentException("interval: " + text);
         }
-        return k * Long.parseLong(text.substring(0, len));
+        return ms;
     }
 
     public long getIntervall(int failureCount) {
