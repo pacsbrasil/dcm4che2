@@ -78,16 +78,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getDisableForAETs"
-      setMethod="setDisableForAETs">
-      <description>Disable Emission of Audit Logs for actions invoked by remote
-      nodes with listed AET. Use '\' (backslash) as delimiter.
-      "NONE" = empty list.
+      getMethod="getSupressLogForAETs"
+      setMethod="setSupressLogForAETs">
+      <description>Emission of Audit Logs for DICOM Storage, Query and Retrieve
+      will be supressed, if this list contains the AET of the initator of the
+      operation. Use '\' (backslash) as delimiter. "NONE" = Do not supress
+      Audit Trails according the initiator AET.
       </description>
       <name>DisableForAETs</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NONE" />
+         <value value="MOVE_SCU" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

@@ -39,7 +39,7 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
 
     private String actorName;
     
-    private ArrayList disabledForAETs = new ArrayList();
+    private ArrayList supressLogForAETs = new ArrayList();
 
     public final String getActorName() {
         return actorName;
@@ -49,20 +49,20 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
         this.actorName = actorName.trim();
     }
 
-    public String getDisableForAETs() {
-        if (disabledForAETs.isEmpty()) return "NONE";
-        StringBuffer sb = new StringBuffer((String) disabledForAETs.get(0));
-        for (int i = 1, n = disabledForAETs.size(); i < n; i++) {
-            sb.append('\\').append((String) disabledForAETs.get(i));
+    public String getSupressLogForAETs() {
+        if (supressLogForAETs.isEmpty()) return "NONE";
+        StringBuffer sb = new StringBuffer((String) supressLogForAETs.get(0));
+        for (int i = 1, n = supressLogForAETs.size(); i < n; i++) {
+            sb.append('\\').append((String) supressLogForAETs.get(i));
         }
         return sb.toString();
     }
 
-    public final void setDisableForAETs(String aets) {
+    public final void setSupressLogForAETs(String aets) {
         String trimed = aets.trim();
-        disabledForAETs.clear();
+        supressLogForAETs.clear();
         if (trimed.length() > 0 && !trimed.equalsIgnoreCase("NONE")) {
-            disabledForAETs.addAll(Arrays.asList(StringUtils.split(trimed, '\\')));
+            supressLogForAETs.addAll(Arrays.asList(StringUtils.split(trimed, '\\')));
         }
     }
 
@@ -329,21 +329,21 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
     
     public void logInstancesStored(RemoteNode node, InstancesAction action) {
         if (getState() == STARTED 
-                && !disabledForAETs.contains(node.getAET())) {
+                && !supressLogForAETs.contains(node.getAET())) {
             logger.logInstancesStored(node, action);
         }        
     }
     
     public void logInstancesSent(RemoteNode node, InstancesAction action) {
         if (getState() == STARTED 
-                && !disabledForAETs.contains(node.getAET())) {
+                && !supressLogForAETs.contains(node.getAET())) {
             logger.logInstancesSent(node, action);
         }        
     }
 
     public void logDicomQuery(Dataset keys, RemoteNode node, String cuid) {        
         if (getState() == STARTED 
-                && !disabledForAETs.contains(node.getAET())) {
+                && !supressLogForAETs.contains(node.getAET())) {
             logger.logDicomQuery(keys, node, cuid);
         }        
     }
