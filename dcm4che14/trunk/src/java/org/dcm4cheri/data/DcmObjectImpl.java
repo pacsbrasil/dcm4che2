@@ -2778,7 +2778,7 @@ abstract class DcmObjectImpl implements DcmObject {
                     case VRs.SQ :
                         sq = putSQ(el.tag());
                         for (int i = 0, n = el.vm(); i < n; ++i) {
-                            sq.addItem(el.getItem(i));
+                            sq.addNewItem().putAll(el.getItem(i));
                         }
                         break;
                     case VRs.OB :
