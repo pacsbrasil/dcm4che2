@@ -207,7 +207,7 @@ public abstract class MWLItemBean implements EntityBean {
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
         if (spsItem.getString(Tags.SPSID) == null) {
             String id = spsIdPrefix + getPk();
-            spsItem.putCS(Tags.SPSID, id);
+            spsItem.putSH(Tags.SPSID, id);
             setAttributes(ds);
         }
         log.info("Created " + prompt());
