@@ -49,12 +49,17 @@ public class PLutGUIFrame extends JFrame
         setJMenuBar(mnubar);
         setSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
     }
+    PLutGUIFrame(String title)
+    {
+        this();
+        setTitle(title);
+    }
     
     public static void main(String[] args)
     {
         BasicConfigurator.configure();
         Logger.getRootLogger().setLevel(Level.WARN);
-        PLutGUIFrame fr = new PLutGUIFrame();
+        PLutGUIFrame fr = new PLutGUIFrame("P-LUT Viewer");
         fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         fr.show();
     }
