@@ -28,7 +28,7 @@ import org.dcm4che.dict.VRs;
  * Wraps a <code>ByteBuffer</code> for a DICOM look-up table (LUT).
  * @author jforaci
  * @since Jul 29, 2003
- * @version $Revision $Date
+ * @version $Revision$ $Date$
  */
 final class LutBuffer
 {
