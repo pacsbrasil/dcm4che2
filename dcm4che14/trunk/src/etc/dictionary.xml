@@ -99,7 +99,8 @@
   <element tag="(0004,1504)" name="MRDR Directory Record Offset" vr="UL" vm="1"  key="MRDRDirectoryRecordOffset" />
   <element tag="(0004,1510)" name="Referenced SOP Class UID in File" vr="UI" vm="1"  key="RefSOPClassUIDInFile" />
   <element tag="(0004,1511)" name="Referenced SOP Instance UID in File" vr="UI" vm="1"  key="RefSOPInstanceUIDInFile" />
-  <element tag="(0004,1512)" name="Referenced SOP Transfer Syntax UID in File" vr="UI" vm="1"  key="RefSOPTransferSyntaxUIDInFile" />
+  <element tag="(0004,1512)" name="Referenced SOP Transfer Syntax UID in File" vr="UI" vm="1" key="RefSOPTransferSyntaxUIDInFile" />
+  <element tag="(0004,151A)" name="Referenced Related General SOP Class UID in File" vr="UI" vm="1-n" key="ReferencedRelatedGeneralSOPClassUIDInFile" />
   <element tag="(0004,1600)" name="Number of References" vr="UL" vm="1"  key="NumberOfReferences" />
 </elements>
 
@@ -146,6 +147,7 @@
   <element tag="(0008,0090)" name="Referring Physician's Name" vr="PN" vm="1" key="ReferringPhysicianName" />
   <element tag="(0008,0092)" name="Referring Physician's Address" vr="ST" vm="1" key="ReferringPhysicianAddress" />
   <element tag="(0008,0094)" name="Referring Physician's Telephone Numbers" vr="SH" vm="1-n" key="ReferringPhysicianPhoneNumbers" />
+  <element tag="(0008,0096)" name="Referring Physician Identification Sequence" vr="SQ" vm="1" key="ReferringPhysicianIdentificationSeq" />
   <element tag="(0008,0100)" name="Code Value" vr="SH" vm="1" key="CodeValue" />
   <element tag="(0008,0102)" name="Coding Scheme Designator" vr="SH" vm="1" key="CodingSchemeDesignator" />
   <element tag="(0008,0103)" name="Coding Scheme Version" vr="SH" vm="1" key="CodingSchemeVersion" />
@@ -153,10 +155,15 @@
   <element tag="(0008,0105)" name="Mapping Resource" vr="CS" vm="1" key="MappingResource" />
   <element tag="(0008,0106)" name="Context Group Version" vr="DT" vm="1" key="ContextGroupVersion" />
   <element tag="(0008,0107)" name="Context Group Local Version" vr="DT" vm="1" key="ContextGroupLocalVersion" />
-  <element tag="(0008,010B)" name="Code Set Extension Flag" vr="CS" vm="1" key="CodeSetExtensionFlag" />
-  <element tag="(0008,010C)" name="Private Coding Scheme Creator UID" vr="UI" vm="1" key="PrivateCodingSchemeCreatorUID" />
-  <element tag="(0008,010D)" name="Code Set Extension Creator UID" vr="UI" vm="1" key="CodeSetExtensionCreatorUID" />
+  <element tag="(0008,010B)" name="Context Group Extension Flag" vr="CS" vm="1" key="ContextGroupExtensionFlag" />
+  <element tag="(0008,010C)" name="Coding Scheme UID" vr="UI" vm="1" key="CodingSchemeUID" />
+  <element tag="(0008,010D)" name="Context Group Extension Creator UID" vr="UI" vm="1" key="ContextGroupExtensionCreatorUID" />
   <element tag="(0008,010F)" name="Context Identifier" vr="CS" vm="1" key="ContextIdentifier" />
+  <element tag="(0008,0110)" name="Coding Scheme Identification Sequence" vr="SQ" vm="1" key="CodingSchemeIdentificationSeq" />
+  <element tag="(0008,0112)" name="Coding Scheme Registry" vr="LO" vm="1" key="CodingSchemeRegistry" />
+  <element tag="(0008,0114)" name="Coding Scheme External ID" vr="ST" vm="1" key="CodingSchemeExternal" />
+  <element tag="(0008,0115)" name="Coding Scheme Name" vr="ST" vm="1" key="CodingSchemeName" />
+  <element tag="(0008,0116)" name="Responsible Organization" vr="ST" vm="1" key="ResponsibleOrganization" />
   <element tag="(0008,0201)" name="Timezone Offset From UTC" vr="SH" vm="1" key="TimezoneOffsetFromUTC" />
   <element tag="(0008,1000)" name="Network ID (Retired)" vr="UN" vm="1" key="NetworkIDRetired" retired="true" />
   <element tag="(0008,1010)" name="Station Name" vr="SH" vm="1" key="StationName" />
@@ -165,9 +172,13 @@
   <element tag="(0008,103E)" name="Series Description" vr="LO" vm="1" key="SeriesDescription" />
   <element tag="(0008,1040)" name="Institutional Department Name" vr="LO" vm="1" key="InstitutionalDepartmentName" />
   <element tag="(0008,1048)" name="Physician(s) of Record" vr="PN" vm="1-n" key="PhysicianOfRecord" />
+  <element tag="(0008,1049)" name="Physician(s) of Record Identification Sequence" vr="SQ" vm="1" key="PhysicianOfRecordIdentificationSeq" />
   <element tag="(0008,1050)" name="Performing Physician's Name" vr="PN" vm="1-n" key="PerformingPhysicianName" />
+  <element tag="(0008,1052)" name="Performing Physician Identification Sequence" vr="SQ" vm="1" key="PerformingPhysicianIdentificationSeq" />
   <element tag="(0008,1060)" name="Name of Physician(s) Reading Study" vr="PN" vm="1-n" key="NameOfPhysicianReadingStudy" />
+  <element tag="(0008,1062)" name="Physician(s) Reading Study Identification Sequence" vr="SQ" vm="1" key="PhysicianReadingStudyIdentificationSeq" />
   <element tag="(0008,1070)" name="Operator's Name" vr="PN" vm="1-n" key="OperatorName" />
+  <element tag="(0008,1072)" name="Operator Identification Sequence" vr="SQ" vm="1" key="OperatorIdentificationSeq" />
   <element tag="(0008,1080)" name="Admitting Diagnosis Description" vr="LO" vm="1-n" key="AdmittingDiagnosisDescription" />
   <element tag="(0008,1084)" name="Admitting Diagnosis Code Sequence" vr="SQ" vm="1" key="AdmittingDiagnosisCodeSeq" />
   <element tag="(0008,1090)" name="Manufacturer's Model Name" vr="LO" vm="1" key="ManufacturerModelName" />
@@ -178,6 +189,7 @@
   <element tag="(0008,1120)" name="Referenced Patient Sequence" vr="SQ" vm="1" key="RefPatientSeq" />
   <element tag="(0008,1125)" name="Referenced Visit Sequence" vr="SQ" vm="1" key="RefVisitSeq" />
   <element tag="(0008,1130)" name="Referenced Overlay Sequence" vr="SQ" vm="1" key="RefOverlaySeq" />
+  <element tag="(0008,113A)" name="Referenced Waveform Sequence" vr="SQ" vm="1" key="ReferencedWaveformSeq" />
   <element tag="(0008,1140)" name="Referenced Image Sequence" vr="SQ" vm="1" key="RefImageSeq" />
   <element tag="(0008,1145)" name="Referenced Curve Sequence" vr="SQ" vm="1" key="RefCurveSeq" />
   <element tag="(0008,114A)" name="Referenced Instance Sequence" vr="SQ" vm="1" key="RefInstanceSeq" />
@@ -189,6 +201,7 @@
   <element tag="(0008,1197)" name="Failure Reason" vr="US" vm="1" key="FailureReason" />
   <element tag="(0008,1198)" name="Failed SOP Sequence" vr="SQ" vm="1" key="FailedSOPSeq" />
   <element tag="(0008,1199)" name="Referenced SOP Sequence" vr="SQ" vm="1" key="RefSOPSeq" />
+  <element tag="(0008,1200)" name="Studies Containing Other Referenced Instances Sequence" vr="SQ" vm="1" key="StudiesContainingOtherReferencedInstancesSeq" />
   <element tag="(0008,2110)" name="Lossy Image Compression (Retired)" vr="CS" vm="1" key="LossyImageCompressionRetired" retired="true"/>  
   <element tag="(0008,2111)" name="Derivation Description" vr="ST" vm="1" key="DerivationDescription" />
   <element tag="(0008,2112)" name="Source Image Sequence" vr="SQ" vm="1" key="SourceImageSeq" />
@@ -215,12 +228,13 @@
   <element tag="(0008,2242)" name="Transducer Position Modifier Sequence" vr="SQ" vm="1" key="TransducerPositionModifierSeq" />
   <element tag="(0008,2244)" name="Transducer Orientation Sequence" vr="SQ" vm="1" key="TransducerOrientationSeq" />
   <element tag="(0008,2246)" name="Transducer Orientation Modifier Sequence" vr="SQ" vm="1" key="TransducerOrientationModifierSeq" />
+  <element tag="(0008,3001)" name="Alternate Representation Sequence" vr="SQ" vm="1" key="AlternateRepresentationSeq" />
   <element tag="(0008,4000)" name="(Study) Comments (Retired)" vr="LT" vm="1" key="StudyCommentsRetired" retired="true"/>  
   <element tag="(0008,9007)" name="Frame Type" vr="CS" vm="4" key="FrameType" />
   <element tag="(0008,9121)" name="Referenced Raw Data Sequence" vr="SQ" vm="1" key="RefRawDataSeq" />
   <element tag="(0008,9123)" name="Creator-Version UID" vr="UI" vm="1" key="CreatorVersionUID" />
   <element tag="(0008,9124)" name="Derivation Image Sequence" vr="SQ" vm="1" key="DerivationImageSeq" />
-  <element tag="(0008,9092)" name="Referring Image Evidence Sequence" vr="SQ" vm="1" key="ReferringImageEvidenceSeq" />
+  <element tag="(0008,9092)" name="Referenced Image Evidence Sequence" vr="SQ" vm="1" key="RefImageEvidenceSeq" />
   <element tag="(0008,9154)" name="Source Image Evidence Sequence" vr="SQ" vm="1" key="SourceImageEvidenceSeq" />
   <element tag="(0008,9205)" name="Pixel Presentation" vr="CS" vm="1" key="PixelPresentation" />
   <element tag="(0008,9206)" name="Volumetric Properties" vr="CS" vm="1" key="VolumetricProperties" />
@@ -229,6 +243,7 @@
   <element tag="(0008,9209)" name="Acquisition Contrast" vr="CS" vm="1" key="AcquisitionContrast" />
   <element tag="(0008,9215)" name="Derivation Code Sequence" vr="SQ" vm="1" key="DerivationCodeSeq" />
   <element tag="(0008,9237)" name="Referenced Grayscale Presentation State Sequence" vr="SQ" vm="1" key="RefGrayscalePresentationStateSeq" />
+  
   <element tag="(0010,0010)" name="Patient's Name" vr="PN" vm="1" key="PatientName" />
   <element tag="(0010,0020)" name="Patient ID" vr="LO" vm="1" key="PatientID" />
   <element tag="(0010,0021)" name="Issuer of Patient ID" vr="LO" vm="1" key="IssuerOfPatientID" />
@@ -262,6 +277,17 @@
   <element tag="(0010,21F0)" name="Patient's Religious Preference" vr="LO" vm="1" key="PatientReligiousPreference" />
   <element tag="(0010,4000)" name="Patient Comments" vr="LT" vm="1" key="PatientComments" />
   
+  <element tag="(0012,0010)" name="Clinical Trial Sponsor Name" vr="LO" vm="1" key="ClinicalTrialSponsorName" />
+  <element tag="(0012,0020)" name="Clinical Trial Protocol ID" vr="LO" vm="1" key="ClinicalTrialProtocolID" />
+  <element tag="(0012,0021)" name="Clinical Trial Protocol Name" vr="LO" vm="1" key="ClinicalTrialProtocolName" />
+  <element tag="(0012,0030)" name="Clinical Trial Site ID" vr="LO" vm="1" key="ClinicalTrialSiteID" />
+  <element tag="(0012,0031)" name="Clinical Trial Site Name" vr="LO" vm="1" key="ClinicalTrialSiteName" />
+  <element tag="(0012,0040)" name="Clinical Trial Subject ID" vr="LO" vm="1" key="ClinicalTrialSubjectID" />
+  <element tag="(0012,0042)" name="Clinical Trial Subject Reading ID" vr="LO" vm="1" key="ClinicalTrialSubjectReadingID" />
+  <element tag="(0012,0050)" name="Clinical Trial Time Point ID" vr="LO" vm="1" key="ClinicalTrialTimePointID" />
+  <element tag="(0012,0051)" name="Clinical Trial Time Point Description" vr="ST" vm="1" key="ClinicalTrialTimePointDescription" />
+  <element tag="(0012,0060)" name="Clinical Trial Coordinating Center Name" vr="LO" vm="1" key="CoordinatingCenterName" />
+  
   <element tag="(0018,0010)" name="Contrast/Bolus Agent" vr="LO" vm="1" key="ContrastBolusAgent" />
   <element tag="(0018,0012)" name="Contrast/Bolus Agent Sequence" vr="SQ" vm="1" key="ContrastBolusAgentSeq" />
   <element tag="(0018,0014)" name="Contrast/Bolus Administration Route Sequence" vr="SQ" vm="1" key="ContrastBolusAdministrationRouteSeq" />
@@ -292,7 +318,7 @@
   <element tag="(0018,0060)" name="KVP" vr="DS" vm="1" key="KVP" />
   <element tag="(0018,0070)" name="Counts Accumulated" vr="IS" vm="1" key="CountsAccumulated" />
   <element tag="(0018,0071)" name="Acquisition Termination Condition" vr="CS" vm="1" key="AcquisitionTerminationCondition" />
-  <element tag="(0018,0072)" name="Effective Series Duration" vr="DS" vm="1" key="EffectiveSeriesDuration" />
+  <element tag="(0018,0072)" name="Effective Duration" vr="DS" vm="1" key="EffectiveDuration" />
   <element tag="(0018,0073)" name="Acquisition Start Condition" vr="CS" vm="1" key="AcquisitionStartCondition" />
   <element tag="(0018,0074)" name="Acquisition Start Condition Data" vr="IS" vm="1" key="AcquisitionStartConditionData" />
   <element tag="(0018,0075)" name="Acquisition Termination Condition Data" vr="IS" vm="1" key="AcquisitionTerminationConditionData" />
@@ -333,8 +359,8 @@
   <element tag="(0018,1043)" name="Contrast/Bolus Stop Time" vr="TM" vm="1" key="ContrastBolusStopTime" />
   <element tag="(0018,1044)" name="Contrast/Bolus Total Dose" vr="DS" vm="1" key="ContrastBolusTotalDose" />
   <element tag="(0018,1045)" name="Syringe Counts" vr="IS" vm="1" key="SyringeCounts" />
-  <element tag="(0018,1046)" name="Contrast Flow Rate(s)" vr="DS" vm="1-n" key="ContrastFlowRate" />
-  <element tag="(0018,1047)" name="Contrast Flow Duration(s)" vr="DS" vm="1-n" key="ContrastFlowDuration" />
+  <element tag="(0018,1046)" name="Contrast Flow Rate" vr="DS" vm="1-n" key="ContrastFlowRate" />
+  <element tag="(0018,1047)" name="Contrast Flow Duration" vr="DS" vm="1-n" key="ContrastFlowDuration" />
   <element tag="(0018,1048)" name="Contrast/Bolus Ingredient" vr="CS" vm="1" key="ContrastBolusIngredient" />
   <element tag="(0018,1049)" name="Contrast/Bolus Ingredient Concentration" vr="DS" vm="1" key="ContrastBolusIngredientConcentration" />
   <element tag="(0018,1050)" name="Spatial Resolution" vr="DS" vm="1" key="SpatialResolution" />
@@ -431,7 +457,7 @@
   <element tag="(0018,1301)" name="Whole Body Technique" vr="CS" vm="1-n" key="WholeBodyTechnique" />
   <element tag="(0018,1302)" name="Scan Length" vr="IS" vm="1" key="ScanLength" />
   <element tag="(0018,1310)" name="Acquisition Matrix" vr="US" vm="4" key="AcquisitionMatrix" />
-  <element tag="(0018,1312)" name="Phase Encoding Direction" vr="CS" vm="1" key="PhaseEncodingDirection" />
+  <element tag="(0018,1312)" name="In-plane Phase Encoding Direction" vr="CS" vm="1" key="InPlanePhaseEncodingDirection" />
   <element tag="(0018,1314)" name="Flip Angle" vr="DS" vm="1" key="FlipAngle" />
   <element tag="(0018,1315)" name="Variable Flip Angle Flag" vr="CS" vm="1" key="VariableFlipAngleFlag" />
   <element tag="(0018,1316)" name="SAR" vr="DS" vm="1" key="SAR" />
@@ -478,6 +504,12 @@
   <element tag="(0018,1800)" name="Acquisition Time Synchronized" vr="CS" vm="1" key="AcquisitionTimeSynchronized" />
   <element tag="(0018,1802)" name="Time Distribution Protocol" vr="CS" vm="1" key="TimeDistributionProtocol" />
   <element tag="(0018,1801)" name="Time Source" vr="SH" vm="1" key="TimeSource" />
+  <element tag="(0018,3100)" name="IVUS Acquisition" vr="CS" vm="1" key="VUSAcquisition" />
+  <element tag="(0018,3101)" name="IVUS Pullback Rate" vr="DS" vm="1" key="VUSPullbackRate" />
+  <element tag="(0018,3102)" name="IVUS Gated Rate" vr="DS" vm="1" key="IVUSGatedRate" />
+  <element tag="(0018,3103)" name="IVUS Pullback Start Frame Number" vr="IS" vm="1" key="VUSPullbackStartFrameNumber" />
+  <element tag="(0018,3104)" name="IVUS Pullback Stop Frame Number" vr="IS" vm="1" key="IVUSPullbackStopFrameNumber" />
+  <element tag="(0018,3105)" name="Lesion Number" vr="IS" vm="1-n" key="LesionNumber" />
   <element tag="(0018,4000)" name="(Series) Comments (Retired)" vr="LT" vm="1" key="SeriesCommentsRetired" retired="true"/>
   <element tag="(0018,5000)" name="Output Power" vr="SH" vm="1-n" key="OutputPower" />
   <element tag="(0018,5010)" name="Transducer Data" vr="LO" vm="3" key="TransducerData" />
@@ -485,7 +517,7 @@
   <element tag="(0018,5020)" name="Processing Function" vr="LO" vm="1" key="ProcessingFunction" />
   <element tag="(0018,5021)" name="Postprocessing Function" vr="LO" vm="1" key="PostprocessingFunction" />
   <element tag="(0018,5022)" name="Mechanical Index" vr="DS" vm="1" key="MechanicalIndex" />
-  <element tag="(0018,5024)" name="Thermal Index" vr="DS" vm="1" key="ThermalIndex" />
+  <element tag="(0018,5024)" name="Bone Thermal Index" vr="DS" vm="1" key="BoneThermalIndex" />
   <element tag="(0018,5026)" name="Cranial Thermal Index" vr="DS" vm="1" key="CranialThermalIndex" />
   <element tag="(0018,5027)" name="Soft Tissue Thermal Index" vr="DS" vm="1" key="SoftTissueThermalIndex" />
   <element tag="(0018,5028)" name="Soft Tissue-focus Thermal Index" vr="DS" vm="1" key="SoftTissueFocusThermalIndex" />
@@ -538,6 +570,7 @@
   <element tag="(0018,6056)" name="Number of Table Entries" vr="UL" vm="1" key="NumberOfTableEntries" />
   <element tag="(0018,6058)" name="Table of Pixel Values" vr="UL" vm="1-n" key="TableOfPixelValues" />
   <element tag="(0018,605A)" name="Table of Parameter Values" vr="FL" vm="1-n" key="TableOfParameterValues" />
+  <element tag="(0018,6060)" name="R Wave Time Vector" vr="FL" vm="1-n" key="RWaveTimeVector" />
   <element tag="(0018,7000)" name="Detector Conditions Nominal Flag" vr="CS" vm="1" key="DetectorConditionsNominalFlag" />
   <element tag="(0018,7001)" name="Detector Temperature" vr="DS" vm="1" key="DetectorTemperature" />
   <element tag="(0018,7004)" name="Detector Type" vr="CS" vm="1" key="DetectorType" />
@@ -606,7 +639,7 @@
   <element tag="(0018,9034)" name="Rectilinear Phase Encode Reordering" vr="CS" vm="1" key="RectilinearPhaseEncodeReordering" />
   <element tag="(0018,9035)" name="Tag Thickness" vr="FD" vm="1" key="TagThickness" />
   <element tag="(0018,9036)" name="Partial Fourier Direction" vr="CS" vm="1" key="PartialFourierDirection" />
-  <element tag="(0018,9037)" name="Gating Synchronization Technique" vr="CS" vm="1" key="GatingSynchronizationTechnique" />
+  <element tag="(0018,9037)" name="Cardiac Synchronization Technique" vr="CS" vm="1" key="CardiacSynchronizationTechnique" />
   <element tag="(0018,9041)" name="Receive Coil Manufacturer Name" vr="LO" vm="1" key="ReceiveCoilManufacturerName" />
   <element tag="(0018,9042)" name="MR Receive Coil Sequence" vr="SQ" vm="1" key="MRReceiveCoilSeq" />
   <element tag="(0018,9043)" name="Receive Coil Type" vr="CS" vm="1" key="ReceiveCoilType" />
@@ -631,6 +664,7 @@
   <element tag="(0018,9065)" name="Time Domain Filtering" vr="CS" vm="1-2" key="TimeDomainFiltering" />
   <element tag="(0018,9066)" name="Number of Zero fills" vr="US" vm="1-2" key="NumberOfZeroFills" />
   <element tag="(0018,9067)" name="Baseline Correction" vr="CS" vm="1" key="BaselineCorrection" />
+  <element tag="(0018,9069)" name="Parallel Reduction Factor In-plane" vr="FD" vm="1" key="ParallelReductionFactorInPlane" />
   <element tag="(0018,9070)" name="Cardiac R-R Interval Specified" vr="FD" vm="1 " key="CardiacRRIntervalSpecified" />
   <element tag="(0018,9073)" name="Acquisition Duration" vr="FD" vm="1" key="AcquisitionDuration" />
   <element tag="(0018,9074)" name="Frame Acquisition Datetime" vr="DT" vm="1" key="FrameAcquisitionDatetime" />
@@ -651,7 +685,6 @@
   <element tag="(0018,9093)" name="Number of k-Space Trajectories" vr="US" vm="1" key="NumberOfKSpaceTrajectories" />
   <element tag="(0018,9094)" name="Coverage of k-Space" vr="CS" vm="1" key="CoverageOfKSpace" />
   <element tag="(0018,9095)" name="Spectroscopy Acquisition Phase Rows" vr="UL" vm="1" key="SpectroscopyAcquisitionPhaseRows" />
-  <element tag="(0018,9096)" name="Parallel Reduction Factor In-plane" vr="FD" vm="1" key="ParallelReductionFactorInPlane" />
   <element tag="(0018,9098)" name="Transmitter Frequency" vr="FD" vm="1-2" key="TransmitterFrequency" />
   <element tag="(0018,9100)" name="Resonant Nucleus" vr="CS" vm="1-2" key="ResonantNucleus" />
   <element tag="(0018,9101)" name="Frequency Correction" vr="CS" vm="1" key="FrequencyCorrection" />
@@ -667,25 +700,25 @@
   <element tag="(0018,9118)" name="Cardiac Trigger Sequence" vr="SQ" vm="1" key="CardiacTriggerSeq" />
   <element tag="(0018,9119)" name="MR Averages Sequence" vr="SQ" vm="1" key="MRAveragesSeq" />
   <element tag="(0018,9125)" name="MR FOV/Geometry Sequence" vr="SQ" vm="1" key="MRFOVGeometrySeq" />
-  <element tag="(0018,9127)" name="Spectroscopy Acquisition Data Columns" vr="UL" vm="1" key="SpectroscopyAcquisitionDataColumns" />
   <element tag="(0018,9126)" name="Volume Localization Sequence" vr="SQ" vm="1" key="VolumeLocalizationSeq" />
+  <element tag="(0018,9127)" name="Spectroscopy Acquisition Data Columns" vr="UL" vm="1" key="SpectroscopyAcquisitionDataColumns" />
   <element tag="(0018,9147)" name="Diffusion Anisotropy Type" vr="CS" vm="1" key="DiffusionAnisotropyType" />
   <element tag="(0018,9151)" name="Frame Reference Datetime" vr="DT" vm="1" key="FrameReferenceDatetime" />
-  <element tag="(0018,9152)" name="Metabolite Map Sequence" vr="SQ" vm="1" key="MetaboliteMapSeq" />
+  <element tag="(0018,9152)" name="MR Metabolite Map Sequence" vr="SQ" vm="1" key="MRMetaboliteMapSeq" />
   <element tag="(0018,9155)" name="Parallel Reduction Factor out-of-plane" vr="FD" vm="1" key="ParallelReductionFactorOutOfPlane" />
   <element tag="(0018,9159)" name="Spectroscopy Acquisition Out-of-plane Phase Steps" vr="UL" vm="1" key="SpectroscopyAcquisitionOutOfPlanePhaseSteps" />
   <element tag="(0018,9166)" name="Bulk Motion Status" vr="CS" vm="1" key="BulkMotionStatus" />
   <element tag="(0018,9168)" name="Parallel Reduction Factor Second In-plane" vr="FD" vm="1" key="ParallelReductionFactorSecondInPlane" />
   <element tag="(0018,9169)" name="Cardiac Beat Rejection Technique" vr="CS" vm="1" key="CardiacBeatRejectionTechnique" />
-  <element tag="(0018,9170)" name="Respiratory Motion Compensation" vr="CS" vm="1" key="RespiratoryMotionCompensation" />
+  <element tag="(0018,9170)" name="Respiratory Motion Compensation Technique" vr="CS" vm="1" key="RespiratoryMotionCompensationTechnique" />
   <element tag="(0018,9171)" name="Respiratory Signal Source" vr="CS" vm="1" key="RespiratorySignalSource" />
   <element tag="(0018,9172)" name="Bulk Motion Compensation Technique" vr="CS" vm="1" key="BulkMotionCompensationTechnique" />
-  <element tag="(0018,9173)" name="Bulk Motion Signal" vr="CS" vm="1" key="BulkMotionSignal" />
+  <element tag="(0018,9173)" name="Bulk Motion Signal Source" vr="CS" vm="1" key="BulkMotionSignalSource" />
   <element tag="(0018,9174)" name="Applicable Safety Standard Agency" vr="CS" vm="1" key="ApplicableSafetyStandardAgency" />
-  <element tag="(0018,9175)" name="Applicable Safety Standard Version" vr="LO" vm="1" key="ApplicableSafetyStandardVersion" />
-  <element tag="(0018,9176)" name="Operation Mode Sequence" vr="SQ" vm="1" key="OperationModeSeq" />
+  <element tag="(0018,9175)" name="Applicable Safety Standard Description" vr="LO" vm="1" key="ApplicableSafetyStandardDescription" />
+  <element tag="(0018,9176)" name="Operating Mode Sequence" vr="SQ" vm="1" key="OperatingModeSeq" />
   <element tag="(0018,9177)" name="Operating Mode Type" vr="CS" vm="1" key="OperatingModeType" />
-  <element tag="(0018,9178)" name="Operation Mode" vr="CS" vm="1" key="OperationMode" />
+  <element tag="(0018,9178)" name="Operating Mode" vr="CS" vm="1" key="OperatingMode" />
   <element tag="(0018,9179)" name="Specific Absorption Rate Definition" vr="CS" vm="1" key="SpecificAbsorptionRateDefinition" />
   <element tag="(0018,9180)" name="Gradient Output Type" vr="CS" vm="1" key="GradientOutputType" />
   <element tag="(0018,9181)" name="Specific Absorption Rate Value" vr="FD" vm="1" key="SpecificAbsorptionRateValue" />
@@ -698,9 +731,9 @@
   <element tag="(0018,9198)" name="First Order Phase Correction" vr="CS" vm="1" key="FirstOrderPhaseCorrection" />
   <element tag="(0018,9199)" name="Water Referenced Phase Correction" vr="CS" vm="1" key="WaterReferencedPhaseCorrection" />
   <element tag="(0018,9200)" name="MR Spectroscopy Acquisition Type" vr="CS" vm="1" key="MRSpectroscopyAcquisitionType" />
-  <element tag="(0018,9214)" name="Respiratory Motion Status" vr="CS" vm="1" key="RespiratoryMotionStatus" />
+  <element tag="(0018,9214)" name="Respiratory Cycle Position" vr="CS" vm="1" key="RespiratoryCyclePosition" />
   <element tag="(0018,9217)" name="Velocity Encoding Maximum Value" vr="FD" vm="1" key="VelocityEncodingMaximumValue" />
-  <element tag="(0018,9218)" name="Tag Spacing Second Dimension" vr="SS" vm="1" key="TagSpacingSecondDimension" />
+  <element tag="(0018,9218)" name="Tag Spacing Second Dimension" vr="FD" vm="1" key="TagSpacingSecondDimension" />
   <element tag="(0018,9219)" name="Tag Angle Second Axis" vr="SS" vm="1" key="TagAngleSecondAxis" />
   <element tag="(0018,9220)" name="Frame Acquisition Duration" vr="FD" vm="1" key="FrameAcquisitionDuration" />
   <element tag="(0018,9226)" name="MR Image Frame Type Sequence" vr="SQ" vm="1" key="MRImageFrameTypeSeq" />
@@ -708,8 +741,55 @@
   <element tag="(0018,9231)" name="MR Acquisition Phase Encoding Steps in-plane" vr="US" vm="1" key="MRAcquisitionPhaseEncodingStepsInPlane" />
   <element tag="(0018,9232)" name="MR Acquisition Phase Encoding Steps out-of-plane" vr="US" vm="1" key="MRAcquisitionPhaseEncodingStepsOutOfPlane" />
   <element tag="(0018,9234)" name="Spectroscopy Acquisition Phase Columns" vr="UL" vm="1" key="SpectroscopyAcquisitionPhaseColumns" />
-  <element tag="(0018,9236)" name="Cardiac Motion Status" vr="CS" vm="1" key="CardiacMotionStatus" />
+  <element tag="(0018,9236)" name="Cardiac Cycle Position" vr="CS" vm="1" key="CardiacCyclePosition" />
   <element tag="(0018,9239)" name="Specific Absorption Rate Sequence" vr="SQ" vm="1" key="SpecificAbsorptionRateSeq" />
+  <element tag="(0018,9240)" name="RF Echo Train Length" vr="US" vm="1" key="RFEchoTrainLength" />
+  <element tag="(0018,9241)" name="Gradient Echo Train Length" vr="US" vm="1" key="GradientEchoTrainLength" />
+  <element tag="(0018,9301)" name="CT Acquisition Type Sequence" vr="SQ" vm="1" key="CTAcquisitionTypeSeq" />
+  <element tag="(0018,9302)" name="Acquisition Type" vr="CS" vm="1" key="AcquisitionType" />
+  <element tag="(0018,9303)" name="Tube Angle" vr="FD" vm="1" key="TubeAngle" />
+  <element tag="(0018,9304)" name="CT Acquisition Details Sequence" vr="SQ" vm="1" key="CTAcquisitionDetailsSeq" />
+  <element tag="(0018,9305)" name="Revolution Time" vr="FD" vm="1" key="RevolutionTime" />
+  <element tag="(0018,9306)" name="Single Collimation Width" vr="FD" vm="1" key="SingleCollimationWidth" />
+  <element tag="(0018,9307)" name="Total Collimation Width" vr="FD" vm="1" key="TotalCollimationWidth" />
+  <element tag="(0018,9308)" name="CT Table Dynamics Sequence" vr="SQ" vm="1" key="CTTableDynamicsSeq" />
+  <element tag="(0018,9309)" name="Table Speed" vr="FD" vm="1" key="TableSpeed" />
+  <element tag="(0018,9310)" name="Table Feed per Rotation" vr="FD" vm="1" key="TableFeedPerRotation" />
+  <element tag="(0018,9311)" name="Spiral Pitch Factor" vr="FD" vm="1" key="SpiralPitchFactor" />
+  <element tag="(0018,9312)" name="CT Geometry Sequence" vr="SQ" vm="1" key="CTGeometrySeq" />
+  <element tag="(0018,9313)" name="Data Collection Center (Patient)" vr="FD" vm="3" key="DataCollectionCenterPatient" />
+  <element tag="(0018,9314)" name="CT Reconstruction Sequence" vr="SQ" vm="1" key="CTReconstructionSeq" />
+  <element tag="(0018,9315)" name="Reconstruction Algorithm" vr="CS" vm="1" key="ReconstructionAlgorithm" />
+  <element tag="(0018,9316)" name="Convolution Kernel Group" vr="CS" vm="1" key="ConvolutionKernelGroup" />
+  <element tag="(0018,9317)" name="Reconstruction Field of View" vr="FD" vm="2" key="ReconstructionFieldOfView" />
+  <element tag="(0018,9318)" name="Reconstruction Target Center (Patient)" vr="FD" vm="3" key="ReconstructionTargetCenterPatient" />
+  <element tag="(0018,9319)" name="Reconstruction Angle" vr="FD" vm="1" key="ReconstructionAngle" />
+  <element tag="(0018,9320)" name="Image Filter" vr="SH" vm="1" key="ImageFilter" />
+  <element tag="(0018,9321)" name="CT Exposure Sequence" vr="SQ" vm="1" key="CTExposureSeq" />
+  <element tag="(0018,9322)" name="Reconstruction Pixel Spacing" vr="FD" vm="2" key="ReconstructionPixelSpacing" />
+  <element tag="(0018,9323)" name="Exposure Modulation Type" vr="CS" vm="1" key="ExposureModulationType" />
+  <element tag="(0018,9324)" name="Estimated Dose Saving" vr="FD" vm="1" key="EstimatedDoseSaving" />
+  <element tag="(0018,9325)" name="CT X-ray Details Sequence" vr="SQ 1" key="CTXRayDetailsSeq" />
+  <element tag="(0018,9326)" name="CT Position Sequence" vr="SQ" vm="1" key="CTPositionSeq" />
+  <element tag="(0018,9327)" name="Table Position" vr="FD" vm="1" key="TablePosition" />
+  <element tag="(0018,9328)" name="Exposure Time in ms" vr="FD" vm="1" key="ExposureTimeInMs" />
+  <element tag="(0018,9329)" name="CT Image Frame Type Sequence" vr="SQ" vm="1" key="CTImageFrameTypeSeq" />
+  <element tag="(0018,9330)" name="X-Ray Tube Current in mA" vr="FD" vm="1" key="XRayTubeCurrentInMA" />
+  <element tag="(0018,9332)" name="Exposure in mAs" vr="FD" vm="1" key="ExposureInMAs" />
+  <element tag="(0018,9333)" name="Constant Volume Flag" vr="CS" vm="1" key="ConstantVolumeFlag" />
+  <element tag="(0018,9334)" name="Fluoroscopy Flag" vr="CS" vm="1" key="FluoroscopyFlag" />
+  <element tag="(0018,9335)" name="Distance Source to Data Collection Center" vr="FD" vm="1" key="DistanceSourceToDataCollectionCenter" />
+  <element tag="(0018,9337)" name="Contrast/Bolus Agent Number" vr="US" vm="1" key="ContrastBolusAgentNumber" />
+  <element tag="(0018,9338)" name="Contrast/Bolus Ingredient Code Sequence" vr="SQ" vm="1" key="ContrastBolusIngredientCodeSeq" />
+  <element tag="(0018,9340)" name="Contrast Administration Profile Sequence" vr="SQ" vm="1" key="ContrastAdministrationProfileSeq" />
+  <element tag="(0018,9341)" name="Contrast/Bolus Usage Sequence" vr="SQ" vm="1" key="ContrastBolusUsageSeq" />
+  <element tag="(0018,9342)" name="Contrast/Bolus Agent Administered" vr="CS" vm="1" key="ContrastBolusAgentAdministered" />
+  <element tag="(0018,9343)" name="Contrast/Bolus Agent Detected" vr="CS" vm="1" key="ContrastBolusAgentDetected" />
+  <element tag="(0018,9344)" name="Contrast/Bolus Agent Phase" vr="CS" vm="1" key="ContrastBolusAgentPhase" />
+  <element tag="(0018,9345)" name="CTDIvol" vr="FD" vm="1" key="CTDIvol" />
+  <element tag="(0018,A001)" name="Contributing Equipment Sequence" vr="SQ" vm="1" key="ContributingEquipmentSeq" />
+  <element tag="(0018,A002)" name="Contribution DateTime" vr="DT" vm="1" key="ContributionDateTime" />
+  <element tag="(0018,A003)" name="Contribution Description" vr="ST" vm="1" key="ContributionDescription" />
 
   <element tag="(0020,000D)" name="Study Instance UID" vr="UI" vm="1" key="StudyInstanceUID" />
   <element tag="(0020,000E)" name="Series Instance UID" vr="UI" vm="1" key="SeriesInstanceUID" />
@@ -782,10 +862,10 @@
   <element tag="(0020,9163)" name="In-concatenation Total Number" vr="US" vm="1" key="InConcatenationTotalNumber" />
   <element tag="(0020,9164)" name="Dimension Organization UID" vr="UI" vm="1" key="DimensionOrganizationUID" />
   <element tag="(0020,9165)" name="Dimension Index Pointer" vr="AT" vm="1" key="DimensionIndexPointer" />
-  <element tag="(0020,9167)" name="Functional Group Sequence Pointer" vr="AT" vm="1" key="FunctionalGroupSequencePointer" />
+  <element tag="(0020,9167)" name="Functional Group Pointer" vr="AT" vm="1" key="FunctionalGroupPointer" />
   <element tag="(0020,9213)" name="Dimension Index Private Creator" vr="LO" vm="1" key="DimensionIndexPrivateCreator" />
   <element tag="(0020,9221)" name="Dimension Organization Sequence" vr="SQ" vm="1" key="DimensionOrganizationSeq" />
-  <element tag="(0020,9222)" name="Dimension Sequence" vr="SQ" vm="1" key="DimensionSeq" />
+  <element tag="(0020,9222)" name="Dimension Index Sequence" vr="SQ" vm="1" key="DimensionIndexSeq" />
   <element tag="(0020,9228)" name="Concatenation Frame Offset Number" vr="UL" vm="1" key="ConcatenationFrameOffsetNumber" />
   <element tag="(0020,9238)" name="Functional Group Private Creator" vr="LO" vm="1" key="FunctionalGroupPrivateCreator" />
 
@@ -849,6 +929,7 @@
   <element tag="(0028,1351)" name="Partial View Description" vr="ST" vm="1" key="PartialViewDescription" />
   <element tag="(0028,2110)" name="Lossy Image Compression" vr="CS" vm="1" key="LossyImageCompression" />
   <element tag="(0028,2112)" name="Lossy Image Compression Ratio" vr="DS" vm="1-n" key="LossyImageCompressionRatio" />
+  <element tag="(0028,2114)" name="Lossy Image Compression Method" vr="CS" vm="1-n" key="LossyImageCompressionMethod" />
   <element tag="(0028,3000)" name="Modality LUT Sequence" vr="SQ" vm="1" key="ModalityLUTSeq" />
   <element tag="(0028,3002)" name="LUT Descriptor" vr="SS,US" vm="3" key="LUTDescriptor" />
   <element tag="(0028,3003)" name="LUT Explanation" vr="LO" vm="1" key="LUTExplanation" />
@@ -873,10 +954,10 @@
   <element tag="(0028,6190)" name="Mask Operation Explanation" vr="ST" vm="1" key="MaskOperationExplanation" />
   <element tag="(0028,9001)" name="Data Point Rows" vr="UL" vm="1" key="DataPointRows" />
   <element tag="(0028,9002)" name="Data Point Columns" vr="UL" vm="1" key="DataPointColumns" />
-  <element tag="(0028,9003)" name="Signal Domain" vr="CS" vm="1-2" key="SignalDomain" />
+  <element tag="(0028,9003)" name="Signal Domain Columns" vr="CS" vm="1" key="SignalDomain" />
   <element tag="(0028,9099)" name="Largest Monochrome Pixel Value" vr="US" vm="1" key="LargestMonochromePixelValue" />
   <element tag="(0028,9108)" name="Data Representation" vr="CS" vm="1" key="DataRepresentation" />
-  <element tag="(0028,9110)" name="Pixel Matrix Sequence" vr="SQ" vm="1" key="PixelMatrixSeq" />
+  <element tag="(0028,9110)" name="Pixel Measures Sequence" vr="SQ" vm="1" key="PixelMeasuresSeq" />
   <element tag="(0028,9132)" name="Frame VOI LUT Sequence" vr="SQ" vm="1" key="FrameVOILUTSeq" />
   <element tag="(0028,9145)" name="Pixel Value Transformation Sequence" vr="SQ" vm="1" key="PixelValueTransformationSeq" />
   <element tag="(0028,9235)" name="Signal Domain Rows" vr="CS" vm="1" key="SignalDomainRows" />
@@ -895,6 +976,7 @@
   <element tag="(0032,1020)" name="Scheduled Study Location" vr="LO" vm="1" key="ScheduledStudyLocation" />
   <element tag="(0032,1021)" name="Scheduled Study Location AE Title(s)" vr="AE" vm="1-n" key="ScheduledStudyLocationAET" />
   <element tag="(0032,1030)" name="Reason for Study" vr="LO" vm="1" key="ReasonforStudy" />
+  <element tag="(0032,1031)" name="Requesting Physician Identification Sequence" vr="SQ" vm="1" key="RequestingPhysicianIdentificationSeq" />
   <element tag="(0032,1032)" name="Requesting Physician" vr="PN" vm="1" key="RequestingPhysician" />
   <element tag="(0032,1033)" name="Requesting Service" vr="LO" vm="1" key="RequestingService" />
   <element tag="(0032,1040)" name="Study Arrival Date" vr="DA" vm="1" key="StudyArrivalDate" />
@@ -964,6 +1046,7 @@
   <element tag="(0040,0004)" name="Scheduled Procedure Step End Date" vr="DA" vm="1" key="SPSEndDate" />
   <element tag="(0040,0005)" name="Scheduled Procedure Step End Time" vr="TM" vm="1" key="SPSEndTime" />
   <element tag="(0040,0006)" name="Scheduled Performing Physician's Name" vr="PN" vm="1" key="ScheduledPerformingPhysicianName" />
+  <element tag="(0040,000B)" name="Scheduled Performing Physician Identification Sequence" vr="SQ" vm="1" key="ScheduledPerformingPhysicianIdentificationSeq" />
   <element tag="(0040,0007)" name="Scheduled Procedure Step Description" vr="LO" vm="1" key="SPSDescription" />
   <element tag="(0040,0008)" name="Scheduled Protocol Code Sequence" vr="SQ" vm="1" key="ScheduledProtocolCodeSeq" />
   <element tag="(0040,0009)" name="Scheduled Procedure Step ID" vr="SH" vm="1" key="SPSID" />
@@ -971,6 +1054,8 @@
   <element tag="(0040,0011)" name="Scheduled Procedure Step Location" vr="SH" vm="1" key="SPSLocation" />
   <element tag="(0040,0012)" name="Pre-Medication" vr="LO" vm="1" key="PreMedication" />
   <element tag="(0040,0020)" name="Scheduled Procedure Step Status" vr="CS" vm="1" key="SPSStatus" />
+  <element tag="(0040,0440)" name="Protocol Context Sequence" vr="SQ" vm="1" key="ProtocolContextSeq" />
+  <element tag="(0040,0441)" name="Content Item Modifier Sequence" vr="SQ" vm="1" key="ContentItemModifierSeq" />
   <element tag="(0040,0100)" name="Scheduled Procedure Step Sequence" vr="SQ" vm="1" key="SPSSeq" />
   <element tag="(0040,0220)" name="Referenced Non-Image Composite SOP Instance Sequence" vr="SQ" vm="1" key="RefNonImageCompositeSOPInstanceSeq" />
   <element tag="(0040,0241)" name="Performed Station AE Title" vr="AE" vm="1" key="PerformedStationAET" />
@@ -1036,6 +1121,10 @@
   <element tag="(0040,1009)" name="Reporting Priority" vr="SH" vm="1" key="ReportingPriority" />
   <element tag="(0040,100A)" name="Reason for Requested Procedure Code Sequence" vr="SQ" vm="1" key="ReasonforRequestedProcedureCodeSeq" />
   <element tag="(0040,1010)" name="Names of Intended Recipients of Results" vr="PN" vm="1-n" key="NamesOfIntendedRecipientsOfResults" />
+  <element tag="(0040,1011)" name="Intended Recipients of Results Identification Sequence" vr="SQ" vm="1" key="IntendedRecipientsOfResultsIdentificationSeq" />
+  <element tag="(0040,1101)" name="Person Identification Code Sequence" vr="SQ" vm="1" key="PersonIdentificationCodeSeq" />
+  <element tag="(0040,1102)" name="Person's Address" vr="ST" vm="1" key="PersonAddress" />
+  <element tag="(0040,1103)" name="Person's Telephone Numbers" vr="LO" vm="1-n" key="PersonTelephoneNumbers" />
   <element tag="(0040,1400)" name="Requested Procedure Comments" vr="LT" vm="1" key="RequestedProcedureComments" />
   <element tag="(0040,2001)" name="Reason for the Imaging Service Request" vr="LO" vm="1" key="ReasonForTheImagingServiceRequest" retired="true"/>
   <element tag="(0040,2004)" name="Issue Date of Imaging Service Request" vr="DA" vm="1" key="IssueDateOfImagingServiceRequest" />
@@ -1129,10 +1218,10 @@
   <element tag="(0040,DB0D)" name="Template Extension Creator UID" vr="UI" vm="1" key="TemplateExtensionCreatorUID" />
   <element tag="(0040,DB73)" name="Referenced Content Item Identifier" vr="UL" vm="1-n" key="RefContentItemIdentifier" />
   <element tag="(0040,9096)" name="Real World Value Mapping Sequence" vr="SQ" vm="1" key="RealWorldValueMappingSeq" />
-  <element tag="(0040,9210)" name="LUT Label" vr="SS" vm="1" key="LUTLabel" />
-  <element tag="(0040,9211)" name="Real World Value LUT Last Value Mapped" vr="US/SS" vm="1" key="RealWorldValueLUTLastValueMappedUS" />
+  <element tag="(0040,9210)" name="LUT Label" vr="SH" vm="1" key="LUTLabel" />
+  <element tag="(0040,9211)" name="Real World Value Last Value Mapped" vr="US/SS" vm="1" key="RealWorldValueLastValueMappedUS" />
   <element tag="(0040,9212)" name="Real World Value LUT Data" vr="FD" vm="1-n" key="RealWorldValueLUTData" />
-  <element tag="(0040,9216)" name="Real World Value LUT First Value Mapped" vr="US/SS" vm="1" key="RealWorldValueLUTFirstValueMappedUS" />
+  <element tag="(0040,9216)" name="Real World Value First Value Mapped" vr="US/SS" vm="1" key="RealWorldValueFirstValueMappedUS" />
   <element tag="(0040,9224)" name="Real World Value Intercept" vr="FD" vm="1" key="RealWorldValueIntercept" />
   <element tag="(0040,9225)" name="Real World Value Slope" vr="FD" vm="1" key="RealWorldValueSlope" />
 
@@ -1163,6 +1252,7 @@
   <element tag="(0054,0033)" name="Number of Frames in Phase" vr="US" vm="1" key="NumberOfFramesInPhase" />
   <element tag="(0054,0036)" name="Phase Delay" vr="IS" vm="1" key="PhaseDelay" />
   <element tag="(0054,0038)" name="Pause Between Frames" vr="IS" vm="1" key="PauseBetweenFrames" />
+  <element tag="(0054,0039)" name="Phase Description" vr="CS" vm="1" key="PhaseDescription" />
   <element tag="(0054,0050)" name="Rotation Vector" vr="US" vm="1-n" key="RotationVector" />
   <element tag="(0054,0051)" name="Number of Rotations" vr="US" vm="1" key="NumberOfRotations" />
   <element tag="(0054,0052)" name="Rotation Information Sequence" vr="SQ" vm="1" key="RotationInformationSeq" />
@@ -1195,6 +1285,7 @@
   <element tag="(0054,0410)" name="Patient Orientation Code Sequence" vr="SQ" vm="1" key="PatientOrientationCodeSeq" />
   <element tag="(0054,0412)" name="Patient Orientation Modifier Code Sequence" vr="SQ" vm="1" key="PatientOrientationModifierCodeSeq" />
   <element tag="(0054,0414)" name="Patient Gantry Relationship Code Sequence" vr="SQ" vm="1" key="PatientGantryRelationshipCodeSeq" />
+  <element tag="(0054,0500)" name="Slice Progression Direction" vr="CS" vm="1" key="SliceProgressionDirection" />
   <element tag="(0054,1000)" name="Series Type" vr="CS" vm="2" key="SeriesType" />
   <element tag="(0054,1001)" name="Units" vr="CS" vm="1" key="Units" />
   <element tag="(0054,1002)" name="Counts Source" vr="CS" vm="1" key="CountsSource" />
@@ -1259,8 +1350,8 @@
   <element tag="(0070,0066)" name="Graphic Layer Recommended Display Grayscale Value" vr="US" vm="1" key="GraphicLayerRecommendedDisplayGrayscaleValue" />
   <element tag="(0070,0067)" name="Graphic Layer Recommended Display RGB Value" vr="US" vm="3" key="GraphicLayerRecommendedDisplayRGBValue" />
   <element tag="(0070,0068)" name="Graphic Layer Description" vr="LO" vm="1" key="GraphicLayerDescription" />
-  <element tag="(0070,0080)" name="Presentation Label" vr="CS" vm="1" key="PresentationLabel" />
-  <element tag="(0070,0081)" name="Presentation Description" vr="LO" vm="1" key="PresentationDescription" />
+  <element tag="(0070,0080)" name="Content Label" vr="CS" vm="1" key="ContentLabel" />
+  <element tag="(0070,0081)" name="Content Description" vr="LO" vm="1" key="ContentDescription" />
   <element tag="(0070,0082)" name="Presentation Creation Date" vr="DA" vm="1" key="PresentationCreationDate" />
   <element tag="(0070,0083)" name="Presentation Creation Time" vr="TM" vm="1" key="PresentationCreationTime" />
   <element tag="(0070,0084)" name="Presentation Creator's Name" vr="PN" vm="1" key="PresentationCreatorName" />
@@ -1268,7 +1359,22 @@
   <element tag="(0070,0101)" name="Presentation Pixel Spacing" vr="DS" vm="2" key="PresentationPixelSpacing" />
   <element tag="(0070,0102)" name="Presentation Pixel Aspect Ratio" vr="IS" vm="2" key="PresentationPixelAspectRatio" />
   <element tag="(0070,0103)" name="Presentation Pixel Magnification Ratio" vr="FL" vm="1" key="PresentationPixelMagnificationRatio" />
-
+  <element tag="(0070,0306)" name="Shape Type" vr="CS" vm="1" key="ShapeType" /> 
+  <element tag="(0070,0308)" name="Registration Sequence" vr="SQ" vm="1" key="RegistrationSeq" /> 
+  <element tag="(0070,0309)" name="Matrix Registration Sequence" vr="SQ" vm="1" key="MatrixRegistrationSeq" /> 
+  <element tag="(0070,030A)" name="Matrix Sequence" vr="SQ" vm="1" key="MatrixSeq" /> 
+  <element tag="(0070,030C)" name="Frame of Reference Transformation Matrix Type" vr="CS" vm="1" key="FrameOfReferenceTransformationMatrixType" /> 
+  <element tag="(0070,030D)" name="Registration Type Code Sequence" vr="SQ" vm="1" key="RegistrationTypeCodeSeq" /> 
+  <element tag="(0070,030F)" name="Fiducial Description" vr="ST" vm="1" key="FiducialDescription" /> 
+  <element tag="(0070,0310)" name="Fiducial Identifier" vr="SH" vm="1" key="FiducialIdentifier" /> 
+  <element tag="(0070,0311)" name="Fiducial Identifier Code Sequence" vr="SQ" vm="1" key="FiducialIdentifierCodeSeq" /> 
+  <element tag="(0070,0312)" name="Contour Uncertainty Radius" vr="FD" vm="1" key="ContourUncertaintyRadius" /> 
+  <element tag="(0070,0314)" name="Used Fiducials Sequence" vr="SQ" vm="1" key="UsedFiducialsSeq" /> 
+  <element tag="(0070,0318)" name="Graphic Coordinates Data Sequence" vr="SQ" vm="1" key="GraphicCoordinatesDataSeq" /> 
+  <element tag="(0070,031A)" name="Fiducial UID" vr="UI" vm="1" key="FiducialUID" /> 
+  <element tag="(0070,031C)" name="Fiducial Set Sequence" vr="SQ" vm="1" key="FiducialSetSeq" /> 
+  <element tag="(0070,031E)" name="Fiducial Sequence" vr="SQ" vm="1" key="FiducialSeq" />
+  
   <element tag="(0088,0130)" name="Storage Media File-set ID" vr="SH" vm="1" key="StorageMediaFileSetID" />
   <element tag="(0088,0140)" name="Storage Media File-set UID" vr="UI" vm="1" key="StorageMediaFileSetUID" />
   <element tag="(0088,0200)" name="Icon Image Sequence" vr="SQ" vm="1" key="IconImageSeq" />
@@ -1282,6 +1388,11 @@
   <element tag="(0100,0424)" name="SOP Authorization Comment" vr="LT" vm="1" key="SOPAuthorizationComment" />
   <element tag="(0100,0426)" name="Authorization Equipment Certification Number" vr="LO" vm="1" key="AuthorizationEquipmentCertificationNumber" />
 
+  <element tag="(0400,0500)" name="Encrypted Attributes Sequence" vr="SQ" vm="1" key="EcryptedAttributesSeq" />
+  <element tag="(0400,0510)" name="Encrypted Content Transfer Syntax UID" vr="UI" vm="1" key="EncryptedContentTransferSyntax" />
+  <element tag="(0400,0520)" name="Encrypted Content" vr="OB" vm="1" key="EncryptedContent" />
+  <element tag="(0400,0550)" name="Modified Attributes Sequence" vr="SQ" vm="1" key="ModifiedAttributesSeq" />
+  
   <element tag="(2000,0010)" name="Number of Copies" vr="IS" vm="1" key="NumberOfCopies" />
   <element tag="(2000,001E)" name="Printer Configuration Sequence" vr="SQ" vm="1" key="PrinterConfigurationSeq" />
   <element tag="(2000,0020)" name="Print Priority" vr="CS" vm="1" key="PrintPriority" />
@@ -1428,6 +1539,9 @@
   <element tag="(3002,0029)" name="Fraction Number" vr="IS" vm="1" key="FractionNumber" />
   <element tag="(3002,0030)" name="Exposure Sequence" vr="SQ" vm="1" key="ExposureSeq" />
   <element tag="(3002,0032)" name="Meterset Exposure" vr="DS" vm="1" key="MetersetExposure" />
+  <element tag="(3002,0040)" name="Fluence Map Sequence" vr="SQ" vm="1" key="FluenceMapSeq" />
+  <element tag="(3002,0041)" name="Fluence Data Source" vr="CS" vm="1" key="FluenceDataSource" />
+  <element tag="(3002,0042)" name="Fluence Data Scale" vr="DS" vm="1" key="FluenceDataScale" />
 
   <element tag="(3004,0001)" name="DVH Type" vr="CS" vm="1" key="DVHType" />
   <element tag="(3004,0002)" name="Dose Units" vr="CS" vm="1" key="DoseUnits" />
@@ -1984,6 +2098,7 @@
   <uid value="1.2.840.10008.1.9" name="Basic Study Content Notification SOP Class" key="BasicStudyContentNotification" />
   <uid value="1.2.840.10008.1.20.1" name="Storage Commitment Push Model SOP Class" key="StorageCommitmentPushModel" />
   <uid value="1.2.840.10008.1.20.2" name="Storage Commitment Pull Model SOP Class" key="StorageCommitmentPullModel" />
+  <uid value="1.2.840.10008.1.40" name="Procedural Event Logging SOP Class" key="ProceduralEventLoggingSOPClass" />
   <uid value="1.2.840.10008.3.1.2.1.1" name="Detached Patient Management SOP Class" key="DetachedPatientManagement" />
   <uid value="1.2.840.10008.3.1.2.2.1" name="Detached Visit Management SOP Class" key="DetachedVisitManagement" />
   <uid value="1.2.840.10008.3.1.2.3.1" name="Detached Study Management SOP Class" key="DetachedStudyManagement" />
@@ -1993,6 +2108,7 @@
   <uid value="1.2.840.10008.3.1.2.3.5" name="Modality Performed Procedure Step Notification SOP Class" key="ModalityPerformedProcedureStepNotification" />
   <uid value="1.2.840.10008.3.1.2.5.1" name="Detached Results Management SOP Class" key="DetachedResultsManagement" />
   <uid value="1.2.840.10008.3.1.2.6.1" name="Detached Interpretation Management SOP Class" key="DetachedInterpretationManagement" />
+  <uid value="1.2.840.10008.4.2" name="Storage Service Class" key="StorageServiceClass" />
   <uid value="1.2.840.10008.5.1.1.1" name="Basic Film Session SOP Class" key="BasicFilmSession" />
   <uid value="1.2.840.10008.5.1.1.2" name="Basic Film Box SOP Class" key="BasicFilmBoxSOP" />
   <uid value="1.2.840.10008.5.1.1.4" name="Basic Grayscale Image Box SOP Class" key="BasicGrayscaleImageBox" />
@@ -2020,6 +2136,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.1.3" name="Digital Intra-oral X-Ray Image Storage - For Presentation" key="DigitalIntraoralXRayImageStorageForPresentation" />
   <uid value="1.2.840.10008.5.1.4.1.1.1.3.1" name="Digital Intra-oral X-Ray Image Storage - For Processing" key="DigitalIntraoralXRayImageStorageForProcessing" />
   <uid value="1.2.840.10008.5.1.4.1.1.2" name="CT Image Storage" key="CTImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.2.1" name="Enhanced CT Image Storage" key="EnhancedCTImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.3" name="Ultrasound Multi-frame Image Storage (Retired)" key="UltrasoundMultiframeImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.3.1" name="Ultrasound Multi-frame Image Storage" key="UltrasoundMultiframeImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.4" name="MR Image Storage" key="MRImageStorage" />
@@ -2049,6 +2166,8 @@
   <uid value="1.2.840.10008.5.1.4.1.1.12.3" name="X-Ray Angiographic Bi-Plane Image Storage (Retired)" key="XRayAngiographicBiPlaneImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.20" name="Nuclear Medicine Image Storage" key="NuclearMedicineImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.66" name="Raw Data Storage" key="RawDataStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.66.1" name="Spatial Registration Storage" key="SpatialRegistrationStorage" /> 
+  <uid value="1.2.840.10008.5.1.4.1.1.66.2" name="Spatial Fiducials Storage" key="SpatialFiducialsStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1" name="VL Image Storage (Retired)" key="VLImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.2" name="VL Multi-frame Image Storage (Retired)" key="VLMultiframeImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.1" name="VL Endoscopic Image Storage" key="VLEndoscopicImageStorage" />
@@ -2061,8 +2180,10 @@
   <uid value="1.2.840.10008.5.1.4.1.1.88.11" name="Basic Text SR" key="BasicTextSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.22" name="Enhanced SR" key="EnhancedSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.33" name="Comprehensive SR" key="ComprehensiveSR" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.40" name="Procedure Log Storage" key="ProcedureLogStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.50" name="Mammography CAD SR" key="MammographyCADSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.59" name="Key Object Selection Document" key="KeyObjectSelectionDocument" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.65" name="Chest CAD SR" key="ChestCADSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.128" name="Positron Emission Tomography Image Storage" key="PositronEmissionTomographyImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.129" name="Standalone PET Curve Storage" key="StandalonePETCurveStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.481.1" name="RT Image Storage" key="RTImageStorage" />
@@ -2086,6 +2207,9 @@
   <uid value="1.2.840.10008.5.1.4.32.2" name="General Purpose Scheduled Procedure Step SOP Class" key="GeneralPurposeScheduledProcedureStepSOPClass" />
   <uid value="1.2.840.10008.5.1.4.32.3" name="General Purpose Performed Procedure Step SOP Class" key="GeneralPurposePerformedProcedureStepSOPClass" />
   <uid value="1.2.840.10008.5.1.4.33" name="Instance Availability Notification SOP Class" key="InstanceAvailabilityNotificationSOPClass" />
+  <uid value="1.2.840.10008.5.1.4.37.1" name="General Relevant Patient Information Query General Relevant" key="PatientInformationQuery" />
+  <uid value="1.2.840.10008.5.1.4.37.2" name="Breast Imaging Relevant Patient Information Query" key="BreastImagingRelevantPatientInformationQuery" />
+  <uid value="1.2.840.10008.5.1.4.37.3" name="Cardiac Relevant Patient Information Query" key="CardiacRelevantPatientInformationQuery" />
 </uids>
 
 <uids type="MetaSOPClass">
@@ -2103,6 +2227,27 @@
 <uids type="SOPInstance">
   <uid value="1.2.840.10008.1.20.1.1" name="Storage Commitment Push Model SOP Instance" key="StorageCommitmentPushModelSOPInstance" />
   <uid value="1.2.840.10008.1.20.2.1" name="Storage Commitment Pull Model SOP Instance" key="StorageCommitmentPullModelSOPInstance" />
+  <uid value="1.2.840.10008.1.40.1" name="Procedural Event Logging SOP Instance" key="ProceduralEventLoggingSOPInstance" />
+  <uid value="1.2.840.10008.1.4.1.1" name="Talairach Brain Atlas Frame of Reference" key="TalairachBrainAtlasFrameOfReference" /> 
+  <uid value="1.2.840.10008.1.4.1.2" name="SPM2 T1 Frame of Reference" key="SPM2T1FrameOfReference" /> 
+  <uid value="1.2.840.10008.1.4.1.3" name="SPM2 T2 Frame of Reference" key="SPM2T2FrameOfReference" /> 
+  <uid value="1.2.840.10008.1.4.1.4" name="SPM2 PD Frame of Reference" key="SPM2PDFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.5" name="SPM2 EPI Frame of Reference" key="SPM2EPIFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.6" name="SPM2 FIL T1 Frame of Reference" key="SPM2FILT1FrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.7" name="SPM2 PET Frame of Reference" key="SPM2PETFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.8" name="SPM2 TRANSM Frame of Reference" key="SPM2TRANSMFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.9" name="SPM2 SPECT Frame of Reference" key="SPM2SPECTFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.10" name="SPM2 GRAY Frame of Reference" key="SPM2GRAYFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.11" name="SPM2 WHITE Frame of Reference" key="SPM2WHITEFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.12" name="SPM2 CSF Frame of Reference" key="SPM2CSFFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.13" name="SPM2 BRAINMASK Frame of Reference" key="SPM2BRAINMASKFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.14" name="SPM2 AVG305T1 Frame of Reference" key="SPM2AVG305T1FrameOfReference" /> 
+  <uid value="1.2.840.10008.1.4.1.15" name="SPM2 AVG152T1 Frame of Reference" key="SPM2AVG152T1FrameOfReference" /> 
+  <uid value="1.2.840.10008.1.4.1.16" name="SPM2 AVG152T2 Frame of Reference" key="SPM2AVG152T2FrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.17" name="SPM2 AVG152PD Frame of Reference" key="SPM2AVG152PDFrameOfReference" />
+  <uid value="1.2.840.10008.1.4.1.18" name="SPM2 SINGLESUBJT1 Frame of Reference" key="SPM2SINGLESUBJT1FrameOfReference" />
+  <uid value="1.2.840.10008.1.4.2.1" name="ICBM 452 T1 Frame of Reference" key="ICBM452T1FrameOfReference" />
+  <uid value="1.2.840.10008.1.4.2.2" name="ICBM Single Subject MRI Frame of Reference" key="ICBMSingleSubjectMRIFrameOfReference" />
   <uid value="1.2.840.10008.5.1.1.17" name="Printer SOP Instance" key="PrinterSOPInstance" />
   <uid value="1.2.840.10008.5.1.1.17.376" name="Printer Configuration Retrieval SOP Instance" key="PrinterConfigurationRetrievalSOPInstance" />
   <uid value="1.2.840.10008.5.1.1.25" name="Print Queue SOP Instance" key="PrintQueueSOPInstance" />
@@ -2110,6 +2255,14 @@
 
 <uids type="ApplicationContextName">
   <uid value="1.2.840.10008.3.1.1.1" name="DICOM Application Context Name" key="DICOMApplicationContextName" />
+</uids>
+
+<uids type="CodingScheme">
+  <uid value="1.2.840.10008.2.16.4" name="DICOM Controlled Terminology Coding Scheme" key="DICOMControlledTerminologyCodingScheme" />
+</uids>
+
+<uids type="SynchronizationFrameOfReference">
+  <uid value="1.2.840.10008.15.1.1" name="Universal Coordinated Time" key="UniversalCoordinatedTime" />
 </uids>
 
 <statuses>
