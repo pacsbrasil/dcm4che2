@@ -10,13 +10,14 @@
 		</head>
 		<body>
 			<p>Edit <i>dcmcdw-x.y.z/server/dcmcdw/conf/xsl/index.xsl</i> to generate this page (INDEX.HTM)
-		compliant to the IHE Portable Data for Imaging Integration Profile, specified in 
-		<a href="http://www.rsna.org/IHE/tf/IHE_TF_Suppl_TI_2004-06-04.pdf">
-			IHE Radiology Technical Framework 2004-2005 Supplements for Trial Implementation
-		</a>, Page 99f:</p>
+				compliant to the IHE Portable Data for Imaging Integration Profile, specified in 
+				<a href="http://www.rsna.org/IHE/tf/IHE_TF_Suppl_TI_2004-06-04.pdf">
+					IHE Radiology Technical Framework 2004-2005 Supplements for Trial Implementation
+				</a>, Page 99f:
+			</p>
 			<p><b>INDEX.HTM</b> file located in the root directory, which shall portray the exact content of
-		the interchange media. The file shall present:
-	</p>
+				the interchange media. The file shall present:
+			</p>
 			<ul>
 				<li>
 					<p>An informative header containing:</p>
@@ -26,15 +27,17 @@
 						</li>
 						<li>
 							<p>Optionally, a disclaimer statement about privacy/security from the institution
-					that created the interchange media.</p>
+								that created the interchange media.</p>
 						</li>
 					</ul>
 				</li>
-				<li>
-					<p>a <a href="IHE_PDI/INDEX.HTM">link</a> to an entry point for accessing the
-				web content of the IHE_PDI directory.</p>
-				</li>
-				<li>
+				<xsl:if test="dicomdir/attr[@tag='(2200,0008)']!='NO'">
+					<li>
+						<p>a <a href="IHE_PDI/INDEX.HTM">link</a> to an entry point for accessing the
+							web content of the IHE_PDI directory.</p>
+					</li>
+				</xsl:if>
+					<li>
 					<p>a <a href="README.TXT">link</a> to the README.TXT file.</p>
 				</li>
 				<li>
@@ -42,12 +45,14 @@
 				</li>
 				<li>
 					<p>a manifest that lists the data that can be imported by a Portable Media Importer Actor.
-				If there is web-viewable content that is not importable by a Portable Media Importer,
-				a note describing this situation shall be included as part of the manifest.</p>
+						If there is web-viewable content that is not importable by a Portable Media Importer,
+						a note describing this situation shall be included as part of the manifest.</p>
 				</li>
-				<li>
-					<p>a link to a launch point for a DICOM viewer, if present on the interchange media.</p>
-				</li>
+				<xsl:if test="dicomdir/attr[@tag='(2200,0009)']!='NO'">
+					<li>
+						<p>a link to a launch point for a DICOM viewer, if present on the interchange media.</p>
+					</li>
+				</xsl:if>
 			</ul>
 			<xsl:apply-templates select="dicomdir"/>
 		</body>

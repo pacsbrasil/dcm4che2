@@ -172,8 +172,11 @@ class FilesetBuilder {
             File link = new File(dest, files[i].getName());
             if (link.isDirectory())
                 mergeDir(files[i], link);
-            else
+            else {
+                if (link.delete())
+                    if (log.isDebugEnabled()) log.debug("M-DELETE " + link);
                 makeSymLink(files[i], link);
+            }
         }
     }
 
@@ -232,7 +235,7 @@ class FilesetBuilder {
                         } else {
                             try {
 	                            iconItem = mkIconItem(ds);
-	                        } catch (IOException e) {
+	                        } catch (Exception e) {
 	                            log.warn("Failed to generate icon from " + src, e);
 	                        }
                         }
@@ -247,7 +250,7 @@ class FilesetBuilder {
                     } else {
                         try {
                             mkJpegs(fileIDs);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             log.warn("Failed to generate jpeg from " + src, e);
                         }
                     }
@@ -345,17 +348,34 @@ class FilesetBuilder {
         h = (int) Math.min(h, w / ratio);
         int xSubsampling = (w0 - 1) / w + 1;
         int ySubsampling = (h0 - 1) / h + 1;
-        w = w0 / xSubsampling;
-        h = h0 / ySubsampling;
+        w = (w0 - 1) / xSubsampling + 1;
+        h = (h0 - 1) / ySubsampling + 1;
         if (log.isDebugEnabled())
                 log.debug("create icon[w=" + w + ",h=" + h + "] from image[w="
                         + w0 + ",h=" + h0 + "]");
         ImageReadParam param = reader.getDefaultReadParam();
-        param.setSourceSubsampling(xSubsampling, ySubsampling,
-                (xSubsampling - 1) / 2, (ySubsampling - 1) / 2);
+        param.setSourceSubsampling(xSubsampling, ySubsampling, 0, 0);
         param.setDestination(checkReusable(iconBI, w, h));
         iconBI = reader.read(frame, param);
-
+        if (w != iconBI.getWidth() || h != iconBI.getHeight()) {
+            log.warn("created icon with unexpected dimension[w="
+                    + iconBI.getWidth() + ",h=" + iconBI.getHeight()
+                    + "] instead [w=" + w  + ",h=" + h + "] from image[w="
+                    + w0 + ",h=" + h0 + "]");
+            w = iconBI.getWidth();
+            h = iconBI.getHeight();
+        }
+        /*
+        File dest = new File(ds.getString(Tags.SOPInstanceUID) + ".JPG");
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(
+                dest));
+        try {
+            JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
+            enc.encode(iconBI);
+        } finally {
+            out.close();
+        }
+        */
         if (iconPixelData == null || iconPixelData.length != w * h)
                 iconPixelData = new byte[w * h];
         for (int y = 0, i = 0; y < h; ++y)
@@ -406,8 +426,6 @@ class FilesetBuilder {
     }
 
     private void makeSymLink(File src, File dst) throws IOException {
-        if (dst.delete())
-                if (log.isDebugEnabled()) log.debug("M-DELETE " + dst);
         String[] cmd = new String[] { "ln", "-s", src.getAbsolutePath(),
                 dst.getAbsolutePath()};
         try {
