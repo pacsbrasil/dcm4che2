@@ -3232,11 +3232,11 @@
           <section>
             <title>General</title>
 
-            <para>The dcm4che Query/Retrieve Server AE can both accept
-            and propose Association Requests. The 
-            Query/Retrieve Server AE will accept Association Requests for the
-            Verification and Query/Retrieve Services. It will propose
-            Associations for Verification and Storage Services.</para>
+            <para>The dcm4che Query/Retrieve Server AE can both accept and
+            propose Association Requests. The Query/Retrieve Server AE will
+            accept Association Requests for the Verification and
+            Query/Retrieve Services. It will propose Associations for
+            Verification and Storage Services.</para>
 
             <para>The DICOM standard application context name for DICOM 3.0 is
             always accepted and proposed:</para>
@@ -4501,7 +4501,7 @@
 
                         <entry>LO</entry>
 
-                        <entry>S,*,U</entry>
+                        <entry>NONE</entry>
                       </row>
 
                       <row>
@@ -4521,7 +4521,7 @@
 
                         <entry>CS</entry>
 
-                        <entry>S,U</entry>
+                        <entry>S,*,U</entry>
                       </row>
 
                       <row>
@@ -4556,7 +4556,7 @@
 
                         <entry>DA</entry>
 
-                        <entry>S,*,U,R</entry>
+                        <entry>S,U,R</entry>
                       </row>
 
                       <row>
@@ -4566,7 +4566,7 @@
 
                         <entry>TM</entry>
 
-                        <entry>S,*,U,R</entry>
+                        <entry>S,U,R</entry>
                       </row>
 
                       <row>
@@ -4641,7 +4641,7 @@
 
                         <entry>DA</entry>
 
-                        <entry>S,*,U,R</entry>
+                        <entry>S,U,R</entry>
                       </row>
 
                       <row>
@@ -4651,7 +4651,7 @@
 
                         <entry>TM</entry>
 
-                        <entry>S,*,U,R</entry>
+                        <entry>S,U,R</entry>
                       </row>
 
                       <row>
@@ -4676,7 +4676,7 @@
 
                         <entry>UI</entry>
 
-                        <entry>S</entry>
+                        <entry>S,L</entry>
                       </row>
 
                       <row>
@@ -4786,7 +4786,7 @@
 
                         <entry>LO</entry>
 
-                        <entry>S,*,U</entry>
+                        <entry>NONE</entry>
                       </row>
 
                       <row>
@@ -4836,7 +4836,7 @@
 
                         <entry>DA</entry>
 
-                        <entry>S,*,U,R</entry>
+                        <entry>S,U,R</entry>
                       </row>
 
                       <row>
@@ -4846,7 +4846,7 @@
 
                         <entry>TM</entry>
 
-                        <entry>S,*,U,R</entry>
+                        <entry>S,U,R</entry>
                       </row>
 
                       <row>
@@ -4921,7 +4921,7 @@
 
                         <entry>DA</entry>
 
-                        <entry>S,*,U,R</entry>
+                        <entry>S,U,R</entry>
                       </row>
 
                       <row>
@@ -4931,7 +4931,7 @@
 
                         <entry>TM</entry>
 
-                        <entry>S,*,U,R</entry>
+                        <entry>S,U,R</entry>
                       </row>
 
                       <row>
@@ -4956,7 +4956,7 @@
 
                         <entry>UI</entry>
 
-                        <entry>S</entry>
+                        <entry>S,L</entry>
                       </row>
 
                       <row>
@@ -5427,7 +5427,7 @@
                   <row>
                     <entry>Implementation Version Name</entry>
 
-                    <entry>dcm4che-1.4</entry>
+                    <entry>dcm4che-1.0.18</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -6385,8 +6385,8 @@
       <title>Application Level Security</title>
 
       <para>dcm4che web module can be configured to require user
-      authentication in order to access to the user interface functionalities.
-      </para>
+      authentication in order to access to the user interface
+      functionalities.</para>
     </section>
   </section>
 
