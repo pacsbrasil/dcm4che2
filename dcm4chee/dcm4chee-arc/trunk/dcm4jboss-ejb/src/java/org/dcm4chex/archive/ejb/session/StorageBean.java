@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -17,19 +17,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 15.07.2003
- * Time: 10:33:59
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
- */
 package org.dcm4chex.archive.ejb.session;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -46,6 +36,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
@@ -104,10 +95,12 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  ref-name="ejb/File" 
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$ $Date$
  *
  */
 public abstract class StorageBean implements SessionBean {
-    private Logger log = Logger.getLogger(StorageBean.class);
+    private static Logger log = Logger.getLogger(StorageBean.class);
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
@@ -135,7 +128,8 @@ public abstract class StorageBean implements SessionBean {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();
-                } catch (NamingException ignore) {}
+                } catch (NamingException ignore) {
+                }
             }
         }
     }
@@ -151,16 +145,16 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int store(
-        Dataset ds,
-        java.lang.String[] retrieveAETs,
+    public org.dcm4che.data.Dataset store(
+        org.dcm4che.data.Dataset ds,
+        java.lang.String retrieveAETs,
         java.lang.String basedir,
         java.lang.String fileid,
         int size,
         byte[] md5)
         throws DcmServiceException {
         try {
-            ArrayList modified = new ArrayList();
+            Dataset coercedElements = dof.newDataset();
             FileMetaInfo fmi = ds.getFileMetaInfo();
             final String iuid = fmi.getMediaStorageSOPInstanceUID();
             final String cuid = fmi.getMediaStorageSOPClassUID();
@@ -169,16 +163,21 @@ public abstract class StorageBean implements SessionBean {
             InstanceLocal instance = null;
             try {
                 instance = instHome.findBySopIuid(iuid);
-                coerceInstanceIdentity(instance, ds, modified);
+                coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                instance = instHome.create(ds, getSeries(ds, modified));
+                instance = instHome.create(ds, getSeries(ds, coercedElements));
             }
             FileLocal file =
-                fileHome.create(retrieveAETs, basedir, fileid, tsuid, size, md5, instance);
+                fileHome.create(
+                    retrieveAETs,
+                    basedir,
+                    fileid,
+                    tsuid,
+                    size,
+                    md5,
+                    instance);
             log.info("inserted instance " + iuid);
-            return modified.isEmpty()
-                ? Status.Success
-                : Status.CoercionOfDataElements;
+            return coercedElements;
         } catch (Exception e) {
             log.error("store failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure);
@@ -189,15 +188,15 @@ public abstract class StorageBean implements SessionBean {
      * @param ds
      * @return
      */
-    private SeriesLocal getSeries(Dataset ds, ArrayList modified)
+    private SeriesLocal getSeries(Dataset ds, Dataset coercedElements)
         throws FinderException, CreateException {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
             series = seriesHome.findBySeriesIuid(uid);
-            coerceSeriesIdentity(series, ds, modified);
+            coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            series = seriesHome.create(ds, getStudy(ds, modified));
+            series = seriesHome.create(ds, getStudy(ds, coercedElements));
         }
 
         return series;
@@ -207,15 +206,15 @@ public abstract class StorageBean implements SessionBean {
      * @param ds
      * @return
      */
-    private StudyLocal getStudy(Dataset ds, ArrayList modified)
+    private StudyLocal getStudy(Dataset ds, Dataset coercedElements)
         throws CreateException, FinderException {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
             study = studyHome.findByStudyIuid(uid);
-            coerceStudyIdentity(study, ds, modified);
+            coerceStudyIdentity(study, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            study = studyHome.create(ds, getPatient(ds, modified));
+            study = studyHome.create(ds, getPatient(ds, coercedElements));
         }
 
         return study;
@@ -225,14 +224,14 @@ public abstract class StorageBean implements SessionBean {
      * @param ds
      * @return
      */
-    private PatientLocal getPatient(Dataset ds, ArrayList modified)
+    private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
         throws CreateException, FinderException {
         final String id = ds.getString(Tags.PatientID);
         Collection c = patHome.findByPatientId(id);
         for (Iterator it = c.iterator(); it.hasNext();) {
             PatientLocal patient = (PatientLocal) it.next();
             if (equals(patient, ds)) {
-                coercePatientIdentity(patient, ds, modified);
+                coercePatientIdentity(patient, ds, coercedElements);
                 return patient;
             }
         }
@@ -248,35 +247,39 @@ public abstract class StorageBean implements SessionBean {
     private void coercePatientIdentity(
         PatientLocal patient,
         Dataset ds,
-        ArrayList modified) {
-        coerceIdentity(patient.getAttributes(), ds, modified);
+        Dataset coercedElements) {
+        coerceIdentity(patient.getAttributes(), ds, coercedElements);
     }
 
     private void coerceStudyIdentity(
         StudyLocal study,
         Dataset ds,
-        ArrayList modified) {
-        coercePatientIdentity(study.getPatient(), ds, modified);
-        coerceIdentity(study.getAttributes(), ds, modified);
+        Dataset coercedElements) {
+        coercePatientIdentity(study.getPatient(), ds, coercedElements);
+        coerceIdentity(study.getAttributes(), ds, coercedElements);
     }
 
     private void coerceSeriesIdentity(
         SeriesLocal series,
         Dataset ds,
-        ArrayList modified) {
-        coerceStudyIdentity(series.getStudy(), ds, modified);
-        coerceIdentity(series.getAttributes(), ds, modified);
+        Dataset coercedElements) {
+        coerceStudyIdentity(series.getStudy(), ds, coercedElements);
+        coerceIdentity(series.getAttributes(), ds, coercedElements);
     }
 
     private void coerceInstanceIdentity(
         InstanceLocal instance,
         Dataset ds,
-        ArrayList modified) {
-        coerceSeriesIdentity(instance.getSeries(), ds, modified);
-        coerceIdentity(instance.getAttributes(), ds, modified);
+        Dataset coercedElements) {
+        coerceSeriesIdentity(instance.getSeries(), ds, coercedElements);
+        coerceIdentity(instance.getAttributes(), ds, coercedElements);
     }
 
-    private void coerceIdentity(Dataset ref, Dataset ds, ArrayList modified) {
+    private boolean coerceIdentity(
+        Dataset ref,
+        Dataset ds,
+        Dataset coercedElements) {
+        boolean coercedIdentity = false;
         for (Iterator it = ref.iterator(); it.hasNext();) {
             DcmElement refEl = (DcmElement) it.next();
             DcmElement el = ds.get(refEl.tag());
@@ -284,11 +287,15 @@ public abstract class StorageBean implements SessionBean {
                 ds.getCharset(),
                 refEl,
                 ref.getCharset(),
-                modified)) {
+                coercedElements)) {
                 log.warn("Coerce " + el + " to " + refEl);
-                modified.add(new Integer(refEl.tag()));
+                if (coercedElements != null) {
+                    coercedElements.putXX(refEl.tag(), refEl.getByteBuffer());
+                }
+                coercedIdentity = true;
             }
         }
+        return coercedIdentity;
     }
 
     private boolean equals(
@@ -296,7 +303,7 @@ public abstract class StorageBean implements SessionBean {
         Charset cs,
         DcmElement refEl,
         Charset refCS,
-        ArrayList modified) {
+        Dataset coercedElements) {
         final int vm = refEl.vm();
         if (el == null || el.vm() != vm) {
             return false;
@@ -308,7 +315,11 @@ public abstract class StorageBean implements SessionBean {
         }
         for (int i = 0; i < vm; ++i) {
             if (vr == VRs.SQ) {
-                coerceIdentity(refEl.getItem(i), el.getItem(i), modified);
+                if (coerceIdentity(refEl.getItem(i), el.getItem(i), null)) {
+                    if (coercedElements != null) {
+                        coercedElements.putSQ(el.tag());
+                    }
+                }
             } else {
                 try {
                     if (!(vr == VRs.PN
@@ -319,7 +330,7 @@ public abstract class StorageBean implements SessionBean {
                         return false;
                     }
                 } catch (DcmValueException e) {
-                    log.warn(e, e);
+                    log.warn("Failure during coercion of " + el, e);
                 }
             }
         }

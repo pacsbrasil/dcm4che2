@@ -19,6 +19,13 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 import javax.ejb.RemoveException;
@@ -26,9 +33,10 @@ import javax.ejb.RemoveException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
-import org.dcm4chex.archive.ejb.util.StringUtils;
 
 /**
 
@@ -153,12 +161,16 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * Retrieve AETs
      *
+     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="retrieve_aets"
      */
-    public abstract String getRetrieveAETsField();
+    public abstract String getRetrieveAETs();
 
-    public abstract void setRetrieveAETsField(String aets);
+    /**
+     * @ejb.interface-method
+     */ 
+    public abstract void setRetrieveAETs(String aets);
 
     /**
      * @ejb.relation
@@ -218,14 +230,6 @@ public abstract class SeriesBean implements EntityBean {
     }
     
     /**
-     * @ejb.interface-method
-     */
-    public void update()
-    {
-        setNumberOfSeriesRelatedInstances(getInstances().size());
-    }
-
-    /**
      * 
      * @ejb.interface-method
      */
@@ -245,25 +249,7 @@ public abstract class SeriesBean implements EntityBean {
     {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
     }
-    
-    /**
-     * 
-     * @ejb.interface-method
-     */
-    public String[] getRetrieveAETs()
-    {
-        return StringUtils.split(getRetrieveAETsField(), ',');
-    }
-    
-    /**
-     * 
-     * @ejb.interface-method
-     */
-    public void setRetrieveAETs(String[] aets)
-    {
-        setRetrieveAETsField(StringUtils.toString(aets, ','));
-    }
-    
+        
     /**
      * 
      * @ejb.interface-method
@@ -281,5 +267,35 @@ public abstract class SeriesBean implements EntityBean {
             + ", study->"
             + getStudy()
             + "]";
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void update()
+    {
+        Collection c = getInstances();
+        setNumberOfSeriesRelatedInstances(c.size());
+        Set resultAetSet = null;
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            InstanceLocal inst = (InstanceLocal) it.next();
+            inst.update();
+            String aets = inst.getRetrieveAETs();
+            if (aets != null) {
+                List aetList = Arrays.asList(StringUtils.split(aets, '\\'));
+                if (resultAetSet == null) {
+                    resultAetSet = new HashSet(aetList);
+                } else {
+                    resultAetSet.retainAll(aetList);
+                }
+            }
+        }
+        setRetrieveAETs(
+            resultAetSet == null
+                ? null
+                : StringUtils.toString(
+                    (String[]) resultAetSet.toArray(
+                        new String[resultAetSet.size()]),
+                    '\\'));
     }
 }

@@ -19,6 +19,12 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
@@ -31,11 +37,12 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
-import org.dcm4chex.archive.ejb.util.StringUtils;
 
 /**
  * Instance Bean
@@ -194,12 +201,16 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * Retrieve AETs
      *
+     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="retrieve_aets"
      */
-    public abstract String getRetrieveAETsField();
+    public abstract String getRetrieveAETs();
 
-    public abstract void setRetrieveAETsField(String aets);
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setRetrieveAETs(String aets);
 
     /**
      * @ejb.relation
@@ -307,24 +318,6 @@ public abstract class InstanceBean implements EntityBean {
      * 
      * @ejb.interface-method
      */
-    public String[] getRetrieveAETs()
-    {
-        return StringUtils.split(getRetrieveAETsField(), ',');
-    }
-    
-    /**
-     * 
-     * @ejb.interface-method
-     */
-    public void setRetrieveAETs(String[] aets)
-    {
-        setRetrieveAETsField(StringUtils.toString(aets, ','));
-    }
-    
-    /**
-     * 
-     * @ejb.interface-method
-     */
     public String asString() {
         return prompt();
     }
@@ -339,5 +332,23 @@ public abstract class InstanceBean implements EntityBean {
             + ", series->"
             + getSeries()
             + "]";
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void update() {
+        Collection c = getFiles();
+        Set resultAetSet = new HashSet();
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            FileLocal file = (FileLocal) it.next();
+            String aets = file.getRetrieveAETs();
+            resultAetSet.addAll(Arrays.asList(StringUtils.split(aets, '\\')));
+        }
+        setRetrieveAETs(
+            StringUtils.toString(
+                (String[]) resultAetSet.toArray(
+                    new String[resultAetSet.size()]),
+                '\\'));
     }
 }

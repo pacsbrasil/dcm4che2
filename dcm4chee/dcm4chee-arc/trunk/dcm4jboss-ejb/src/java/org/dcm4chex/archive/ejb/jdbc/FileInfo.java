@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -16,15 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 30.07.2003
- * Time: 16:33:21
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
  */
 package org.dcm4chex.archive.ejb.jdbc;
 

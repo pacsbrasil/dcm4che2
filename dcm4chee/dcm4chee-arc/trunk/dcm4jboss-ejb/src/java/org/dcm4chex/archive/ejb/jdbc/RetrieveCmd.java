@@ -51,7 +51,7 @@ public abstract class RetrieveCmd extends BaseCmd
             "Instance.encodedAttributes",
             "Instance.sopIuid",
             "Instance.sopCuid",
-            "File.retrieveAETsField",
+            "File.retrieveAETs",
             "File.directoryPath",
             "File.filePath",
             "File.fileTsuid",

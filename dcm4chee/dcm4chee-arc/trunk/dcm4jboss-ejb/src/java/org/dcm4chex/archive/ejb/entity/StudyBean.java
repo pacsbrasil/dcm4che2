@@ -19,8 +19,11 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -32,10 +35,10 @@ import javax.ejb.RemoveException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
-import org.dcm4chex.archive.ejb.util.StringUtils;
 
 /**
 
@@ -69,8 +72,7 @@ import org.dcm4chex.archive.ejb.util.StringUtils;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public abstract class StudyBean implements EntityBean
-{
+public abstract class StudyBean implements EntityBean {
 
     private static final String ATTRS_CFG = "study-attrs.cfg";
 
@@ -169,23 +171,6 @@ public abstract class StudyBean implements EntityBean
     public abstract void setNumberOfStudyRelatedInstances(int num);
 
     /**
-     * @ejb.interface-method
-     */
-    public void update()
-    {
-        Collection c = getSeries();
-        setNumberOfStudyRelatedSeries(c.size());
-        int numInstances = 0;
-        for (Iterator it = c.iterator(); it.hasNext();)
-        {
-            SeriesLocal series = (SeriesLocal) it.next();
-            series.update();
-            numInstances += series.getNumberOfSeriesRelatedInstances();
-        }
-        setNumberOfStudyRelatedInstances(numInstances);
-    }
-
-    /**
      * Study DICOM Attributes
      *
      * @ejb.persistence
@@ -199,12 +184,16 @@ public abstract class StudyBean implements EntityBean
     /**
      * Retrieve AETs
      *
+     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="retrieve_aets"
      */
-    public abstract String getRetrieveAETsField();
+    public abstract String getRetrieveAETs();
 
-    public abstract void setRetrieveAETsField(String aets);
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setRetrieveAETs(String aets);
 
     /**
      * @ejb.relation
@@ -250,37 +239,32 @@ public abstract class StudyBean implements EntityBean
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient)
-        throws CreateException
-    {
+        throws CreateException {
         setAttributes(ds);
         return null;
     }
 
     public void ejbPostCreate(Dataset ds, PatientLocal patient)
-        throws CreateException
-    {
+        throws CreateException {
         setPatient(patient);
         log.info("Created " + prompt());
     }
 
-    public void ejbRemove() throws RemoveException
-    {
+    public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
     }
 
     /**
      * @ejb.interface-method
      */
-    public Dataset getAttributes()
-    {
+    public Dataset getAttributes() {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
     }
 
     /**
      * @ejb.interface-method
      */
-    public void setAttributes(Dataset ds)
-    {
+    public void setAttributes(Dataset ds) {
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setStudyId(ds.getString(Tags.StudyID));
         setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
@@ -302,14 +286,10 @@ public abstract class StudyBean implements EntityBean
      *
      * @ejb.interface-method
      */
-    public Set getModalitiesInStudy()
-    
-    {
-        try
-        {
+    public Set getModalitiesInStudy() {
+        try {
             return ejbSelectModalitiesInStudy();
-        } catch (FinderException e)
-        {
+        } catch (FinderException e) {
             throw new EJBException(e);
         }
     }
@@ -318,31 +298,11 @@ public abstract class StudyBean implements EntityBean
      * 
      * @ejb.interface-method
      */
-    public String[] getRetrieveAETs()
-    {
-        return StringUtils.split(getRetrieveAETsField(), ',');
-    }
-    
-    /**
-     * 
-     * @ejb.interface-method
-     */
-    public void setRetrieveAETs(String[] aets)
-    {
-        setRetrieveAETsField(StringUtils.toString(aets, ','));
-    }
-    
-    /**
-     * 
-     * @ejb.interface-method
-     */
-    public String asString()
-    {
+    public String asString() {
         return prompt();
     }
 
-    private String prompt()
-    {
+    private String prompt() {
         return "Study[pk="
             + getPk()
             + ", uid="
@@ -350,5 +310,37 @@ public abstract class StudyBean implements EntityBean
             + ", patient->"
             + getPatient()
             + "]";
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void update() {
+        Collection c = getSeries();
+        setNumberOfStudyRelatedSeries(c.size());
+        int numInstances = 0;
+        Set resultAetSet = null;
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            SeriesLocal series = (SeriesLocal) it.next();
+            series.update();
+            numInstances += series.getNumberOfSeriesRelatedInstances();
+            String aets = series.getRetrieveAETs();
+            if (aets != null) {
+                List aetList = Arrays.asList(StringUtils.split(aets, '\\'));
+                if (resultAetSet == null) {
+                    resultAetSet = new HashSet(aetList);
+                } else {
+                    resultAetSet.retainAll(aetList);
+                }
+            }
+        }
+        setNumberOfStudyRelatedInstances(numInstances);
+        setRetrieveAETs(
+            resultAetSet == null
+                ? null
+                : StringUtils.toString(
+                    (String[]) resultAetSet.toArray(
+                        new String[resultAetSet.size()]),
+                    '\\'));
     }
 }

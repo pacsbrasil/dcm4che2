@@ -46,7 +46,7 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 public class StorageBeanTest extends TestCase
 {
 
-    public static final String[] RETRIEVE_AETS = { "QR_SCP" };
+    public static final String RETRIEVE_AETS = "QR_SCP";
     public static final String DIR = "storage";
     public static final String AET = "StorageBeanTest";
     public static final DcmObjectFactory objFact = DcmObjectFactory.getInstance();

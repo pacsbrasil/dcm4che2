@@ -33,6 +33,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4cheri.util.StringUtils;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -292,7 +293,8 @@ public abstract class QueryCmd extends BaseCmd {
                 "Patient.encodedAttributes",
                 "Study.encodedAttributes", 
                 "Study.numberOfStudyRelatedSeries", 
-                "Study.numberOfStudyRelatedInstances" 
+                "Study.numberOfStudyRelatedInstances", 
+                "Study.retrieveAETs" 
                 };
         }
 
@@ -310,6 +312,7 @@ public abstract class QueryCmd extends BaseCmd {
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
             ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(3));
             ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(4));
+            putRetrieveAETs(ds, rs.getString(5));
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
     }
@@ -330,7 +333,8 @@ public abstract class QueryCmd extends BaseCmd {
                 "Patient.encodedAttributes",
                 "Study.encodedAttributes",
                 "Series.encodedAttributes",
-                "Series.numberOfSeriesRelatedInstances" 
+                "Series.numberOfSeriesRelatedInstances", 
+                "Series.retrieveAETs" 
                  };
         }
 
@@ -352,6 +356,7 @@ public abstract class QueryCmd extends BaseCmd {
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));
             ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(4));
+            putRetrieveAETs(ds, rs.getString(5));
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -373,7 +378,9 @@ public abstract class QueryCmd extends BaseCmd {
                 "Patient.encodedAttributes",
                 "Study.encodedAttributes",
                 "Series.encodedAttributes",
-                "Instance.encodedAttributes" };
+                "Instance.encodedAttributes",
+                "Instance.retrieveAETs" 
+                };
         }
 
         protected String[] getTables() {
@@ -402,6 +409,7 @@ public abstract class QueryCmd extends BaseCmd {
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(4)).subSet(keys));
+            putRetrieveAETs(ds, rs.getString(5));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
     }
@@ -418,5 +426,11 @@ public abstract class QueryCmd extends BaseCmd {
         Dataset ds = dof.newDataset();
         ds.readDataset(bin, DcmDecodeParam.EVR_LE, -1);
         return ds;
+    }
+
+    private static void putRetrieveAETs(Dataset ds, String aets) {
+        if (aets != null) {
+            ds.putAE(Tags.RetrieveAET, StringUtils.split(aets, '\\'));
+        }
     }
 }
