@@ -38,9 +38,6 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
  * 	primkey-field="pk"
  * 	local-jndi-name="ejb/Code"
  * 
- * @jboss.container-configuration
- * 	name="Standard CMP 2.x EntityBean with cache invalidation"
- * 
  * @ejb.transaction type="Required"
  * 
  * @ejb.persistence table-name="code"

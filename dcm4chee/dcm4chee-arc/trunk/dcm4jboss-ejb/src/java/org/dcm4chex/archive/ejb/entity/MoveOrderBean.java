@@ -39,9 +39,6 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
  *  primkey-field="pk"
  *  local-jndi-name="ejb/MoveOrder"
  * 
- * @jboss.container-configuration
- *  name="Standard CMP 2.x EntityBean with cache invalidation"
- *  
  * @ejb.persistence
  *  table-name="move_order"
  * 

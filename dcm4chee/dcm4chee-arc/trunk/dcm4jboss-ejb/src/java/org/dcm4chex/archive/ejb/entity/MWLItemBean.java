@@ -46,9 +46,6 @@ import org.dcm4cheri.util.DatasetUtils;
  *  primkey-field="pk"
  *  local-jndi-name="ejb/MWLItem"
  * 
- * @jboss.container-configuration
- *  name="Standard CMP 2.x EntityBean with cache invalidation"
- *  
  * @ejb.transaction 
  *  type="Required"
  * 

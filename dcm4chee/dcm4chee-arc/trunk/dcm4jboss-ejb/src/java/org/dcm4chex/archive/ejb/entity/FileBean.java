@@ -39,9 +39,6 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
  * 	primkey-field="pk"
  * 	local-jndi-name="ejb/File"
  * 
- * @jboss.container-configuration
- *  name="Standard CMP 2.x EntityBean with cache invalidation"
- *  
  * @ejb.transaction
  * 	type="Required"
  * 
