@@ -34,17 +34,18 @@ public class ImagePanel extends JPanel
         //get reader
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         reader = (ImageReader) iter.next();
-        if (image != null)
-            setImage(image);
+        if (image != null) {
+            try {
+                setImage(image);
+            }
+            catch (Exception e) {}
+            repaint();
+        }
     }
     
-    public int[] getSamples()
+    public BufferedImage getBI()
     {
-        int[] samples = new int[bi.getWidth()*bi.getHeight()];
-        
-        bi.getRaster().getPixels(0,0,bi.getWidth(),bi.getHeight(),samples);
-        //bi.getRaster().getSamples(0,0,bi.getWidth(),bi.getHeight(),0,samples);
-        return samples;
+        return bi;
     }
     
     public BufferedImage updateImageParams(BufferedImage bi, DcmImageReadParam param)
@@ -63,31 +64,30 @@ public class ImagePanel extends JPanel
     }
 
     public void setImage(File newImg)
+        throws Exception
     {
         try {
             fis = new FileImageInputStream(newImg);
-            bi = null;
         }
-        catch(Exception e) {}
+        catch(Exception e) {
+            return;
+        }
+        bi = null;
         reader.setInput(fis);
         setPLut(lastPLut);
-        repaint();
     }
     
     public void setPLut(byte[] plut)
+        throws Exception
     {
         lastPLut = plut;
         readParam = (DcmImageReadParam)reader.getDefaultReadParam();
         readParam.setPValToDDL(plut);
-        try {
-            if (this.bi == null)
-                this.bi = reader.read(0, readParam);
+        if (fis != null) { //check if reader input stream has been set
+            if (bi == null) //first time?
+                bi = reader.read(0, readParam);
             else
-                this.bi = updateImageParams(bi, readParam);
-        }
-        catch (Exception e) {
-            bi = null;
-            e.printStackTrace();
+                bi = updateImageParams(bi, readParam);
         }
     }
     
@@ -95,8 +95,21 @@ public class ImagePanel extends JPanel
     {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
-        if (bi != null)
-            g2.drawImage(bi,0,0,getWidth(),getHeight(),null);
+        if (bi != null) {
+            final int panWidth = getWidth();
+            final int panHeight = getHeight();
+            final float biAspect = (float)bi.getWidth()/bi.getHeight();
+            final float panAspect = (float)panWidth/panHeight;
+            int newdim;
+            if (biAspect > panAspect) {
+                newdim = (int)(getWidth()/biAspect);
+                g2.drawImage(bi,0,(panHeight-newdim)/2,panWidth,newdim,null);
+            }
+            else {
+                newdim = (int)(getHeight()*biAspect);
+                g2.drawImage(bi,(panWidth-newdim)/2,0,newdim,panHeight,null);
+            }
+        }
     }
 }
 

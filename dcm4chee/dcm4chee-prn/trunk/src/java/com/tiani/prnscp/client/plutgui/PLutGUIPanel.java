@@ -23,7 +23,7 @@ public class PLutGUIPanel extends JPanel
         //read img
         final String TEST = "../dcm4che14/test/conf/data/MRABDO";
         //
-        imgPanel = new ImagePanel(new File(TEST));
+        imgPanel = new ImagePanel(null); //new File(TEST)
         plutPanel = new PLutPanel(imgPanel);
         //add image panel
         //plutPanel.setPreferredSize(new Dimension(300,600));
@@ -42,9 +42,24 @@ public class PLutGUIPanel extends JPanel
         add(plutPanel);
     }
     
+    public void equalize()
+    {
+        plutPanel.equalize();
+    }
+    
     public void setImage(File newImg)
     {
-        imgPanel.setImage(newImg);
+        try {
+            imgPanel.setImage(newImg);
+            imgPanel.repaint();
+            plutPanel.buildHisto();
+            plutPanel.repaint();
+        }
+        catch (Exception e) {
+            //bi = null;
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "There is a problem!");
+        }
     }
     
     public void paintComponent(Graphics g)

@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import java.io.File;
 
 import org.apache.log4j.*;
 
@@ -12,6 +13,7 @@ public class PLutGUIFrame extends JFrame
 {
     private final int DEF_WIDTH = 800, DEF_HEIGHT = 600;
     PLutGUIPanel guiPanel;
+    File lastFile = null; //for JFileChooser to remember last dir
     
     PLutGUIFrame()
     {
@@ -21,18 +23,20 @@ public class PLutGUIFrame extends JFrame
         //menu
         JMenuBar mnubar = new JMenuBar();
         JMenu mnuFile = new JMenu("File");
+        JMenu mnuProccess = new JMenu("Process");
         Action actOpenImg = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
                 {
                     JFileChooser chooser = new JFileChooser();
+                    chooser.setCurrentDirectory(lastFile);
                     int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
-                        guiPanel.setImage(chooser.getSelectedFile());
+                        guiPanel.setImage(lastFile = chooser.getSelectedFile());
                     }
                 }
             };
-        actOpenImg.putValue(Action.NAME,"Open");
+        actOpenImg.putValue(Action.NAME,"Open DICOM Image");
         Action actExit = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
@@ -41,14 +45,46 @@ public class PLutGUIFrame extends JFrame
                 }
             };
         actExit.putValue(Action.NAME,"Exit");
+        Action actExportDcmPres = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    //TODO!
+                }
+            };
+        actExportDcmPres.putValue(Action.NAME,"Export DICOM Presentation...");
+        Action actImportDcmPres = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    //TODO!
+                }
+            };
+        actImportDcmPres.putValue(Action.NAME,"Import DICOM Presentation...");
         JMenuItem mnuOpenImg = new JMenuItem(actOpenImg);
         mnuFile.add(mnuOpenImg);
+        JMenuItem mnuImportDcmPres = new JMenuItem(actImportDcmPres);
+        mnuFile.add(mnuImportDcmPres);
+        JMenuItem mnuExportDcmPres = new JMenuItem(actExportDcmPres);
+        mnuFile.add(mnuExportDcmPres);
         JMenuItem mnuExit = new JMenuItem(actExit);
         mnuFile.add(mnuExit);
+        Action actHistoEq = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    guiPanel.equalize();
+                }
+            };
+        actHistoEq.putValue(Action.NAME,"Histo-Eq");
+        JMenuItem mnuHistoEq = new JMenuItem(actHistoEq);
+        mnuProccess.add(mnuHistoEq);
         mnubar.add(mnuFile);
+        mnubar.add(mnuProccess);
         setJMenuBar(mnubar);
         setSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
     }
+    
     PLutGUIFrame(String title)
     {
         this();
