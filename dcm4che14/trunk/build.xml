@@ -3,7 +3,7 @@
 <project name="dcm4che" basedir="." default="release">
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.0.23"/>
+   <property name="version" value="1.0.24"/>
    <property name="javac.debug" value="on"/>
    
    <target name="init">
@@ -27,6 +27,7 @@
    <property name="samples.dir" value="${basedir}/samples"/>
    <property name="samples.java.dir" value="${samples.dir}/java"/>
    <property name="samples.conf.dir" value="${samples.dir}/conf"/>
+   <property name="samples.data.dir" value="${samples.dir}/data"/>
    <property name="samples.res.dir" value="${samples.dir}/resources"/>
    <property name="lib.dir" value="${basedir}/lib"/>
    <property name="doc.dir" value="${basedir}/doc"/>
@@ -350,6 +351,14 @@
            <fileset dir="${build.classes.dir}" includes="MediaCreationMgtScu*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="MediaCreationMgtScu*"/>
       </jar>
+      <jar jarfile="${build.samples.dir}/rtf2sr.jar">
+        	<manifest>
+				<attribute name="Main-Class" value="Rtf2Sr"/>
+				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar majix.jar"/>
+	    	</manifest>
+           <fileset dir="${build.classes.dir}" includes="Rtf2Sr*"/>
+           <fileset dir="${build.res.dir}" includes="Rtf2Sr*"/>
+      </jar>
       <jar jarfile="${build.samples.dir}/printscu.jar">
         	<manifest>
 				<attribute name="Main-Class" value="org.dcm4che.tools.printscu.PrintSCUFrame"/>
@@ -385,8 +394,9 @@
          <fileset dir="${src.dir}" includes="etc/NativeMetadataFormat.dtd"/>
       </copy>
       <copy todir="${dist.dir}/samples">
-         <fileset dir="${lib.dir}" includes="getopt.jar"/>
-         <fileset dir="${samples.conf.dir}" excludes="**/.nbattrs"/>
+         <fileset dir="${lib.dir}" includes="getopt.jar,majix.jar"/>
+         <fileset dir="${samples.conf.dir}"/>
+         <fileset dir="${samples.data.dir}"/>
       </copy>
       
       <mkdir dir="${dist.dir}/samples/data"/>
@@ -470,6 +480,16 @@
          </fileset>
          <fileset dir="${samples.res.dir}">
             <include name="Syslog.properties"/>
+         </fileset>
+      </copy>
+
+      <mkdir dir="${dist.dir}/samples/rtf2sr"/>
+      <copy todir="${dist.dir}/samples/rtf2sr">
+         <fileset dir="${samples.java.dir}">
+            <include name="Rtf2Sr.java"/>
+         </fileset>
+         <fileset dir="${samples.res.dir}">
+            <include name="Rtf2Sr.properties"/>
          </fileset>
       </copy>
       
