@@ -51,6 +51,7 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
         try {
             HttpServletRequest request = getCtx().getRequest();
     		model = MCMModel.getModel(request);
+    		model.setErrorCode( MCMModel.NO_ERROR );
             if ( request.getParameter("checkMCM") != null ) {
     			model.setMcmNotAvail( ! delegate.checkMcmScpAvail() );
     			model.setCheckAvail( true );
@@ -108,6 +109,12 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 					model.updateMediaStatus( mediaPk, MediaDTO.ERROR, e.getMessage() );
 				}
            	}
+		} else if ( action.equalsIgnoreCase("delete") ) {
+			System.out.println("delete media:"+request.getParameter("mediaPk"));
+			if ( ! delegate.deleteMedia( Integer.parseInt( request.getParameter("mediaPk"))) ) {
+				model.setErrorCode( MCMModel.ERROR_MEDIA_DELETE );
+			}
+			model.filterMediaList( true );
 		} else {
 			model.setErrorCode( MCMModel.ERROR_UNSUPPORTED_ACTION );
 		}
