@@ -288,18 +288,15 @@ public class ScannerCalibration
      * @exception  IOException  Description of the Exception
      */
     public File getMostRecentScanFile(String scanDirName)
-        throws IOException
     {
         checkCalDir();
         File scanDir = new File(calDir, scanDirName);
         if (!scanDir.isDirectory()) {
-            throw new FileNotFoundException(
-                    "Could not find directory " + scanDir);
+            return null;
         }
         File[] scanFiles = scanDir.listFiles();
         if (scanFiles.length == 0) {
-            throw new FileNotFoundException(
-                    "No scans in directory " + scanDir);
+            return null;
         }
         Arrays.sort(scanFiles,
             new Comparator()
