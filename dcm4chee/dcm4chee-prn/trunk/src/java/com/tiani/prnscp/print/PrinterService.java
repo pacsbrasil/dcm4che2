@@ -20,6 +20,7 @@
  */
 package com.tiani.prnscp.print;
 
+import java.awt.image.BufferedImage;
 import java.awt.print.Pageable;
 import java.awt.print.Paper;
 import java.io.File;
@@ -81,42 +82,53 @@ import org.jboss.system.server.ServerConfigLocator;
  * @created    April 24, 2003
  * @version    $Revision$ $Date$
  */
-public class PrinterService
-         extends ServiceMBeanSupport
-         implements PrinterServiceMBean, Runnable,
-        PrintServiceAttributeListener, PrintJobAttributeListener, PrintJobListener
-{
+public class PrinterService extends ServiceMBeanSupport implements
+        PrinterServiceMBean, Runnable, PrintServiceAttributeListener,
+        PrintJobAttributeListener, PrintJobListener {
 
     // Constants -----------------------------------------------------
     final static String NO = "NO";
+
     final static String YES = "YES";
+
     final static String WHITE = "WHITE";
+
     final static String BLACK = "BLACK";
+
     final static String NONE = "NONE";
+
     final static String REPLICATE = "REPLICATE";
+
     final static String BILINEAR = "BILINEAR";
+
     final static String CUBIC = "CUBIC";
+
     final static String PAPER = "PAPER";
+
     final static String CROP = "CROP";
+
     final static String DECIMATE = "DECIMATE";
 
     final static double PTS_PER_MM = 72 / 25.4;
+
     final static String ADF_FILE_EXT = ".adf";
+
     private final static String COLOR = ".color";
+
     private final static String GRAYSCALE = ".grayscale";
+
     private final static String[] LITTLE_ENDIAN_TS = {
-            UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian
-            };
-    private final static String[] ONLY_DEFAULT_TS = {
-            UIDs.ImplicitVRLittleEndian
-            };
+            UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian};
+
+    private final static String[] ONLY_DEFAULT_TS = { UIDs.ImplicitVRLittleEndian};
 
     // Attributes ----------------------------------------------------
     private ObjectName auditLogName;
+
     private String[] ts_uids = LITTLE_ENDIAN_TS;
-    private final static AssociationFactory asf =
-            AssociationFactory.getInstance();
+
+    private final static AssociationFactory asf = AssociationFactory
+            .getInstance();
 
     private String calledAET;
 
@@ -197,6 +209,7 @@ public class PrinterService
     private boolean supportsAnnotationBox = false;
 
     private String dateFormat = "yyyy-MM-dd";
+
     private String timeFormat = "hh:mm:ss";
 
     private LinkedHashMap cfgInfoForAETMap;
@@ -208,48 +221,51 @@ public class PrinterService
     private double chunkSize = 2.;
 
     private boolean minimizeJobsize;
-    
+
     private boolean warnQueuedJob;
 
     private boolean decimateByNearestNeighbor;
 
     private final PrinterCalibration calibration;
+
     private final ScannerCalibration scanner;
 
     private LinkedList highPriorQueue = new LinkedList();
+
     private LinkedList medPriorQueue = new LinkedList();
+
     private LinkedList lowPriorQueue = new LinkedList();
+
     private Object queueMonitor = new Object();
+
     private Object printerMonitor = new Object();
+
     private Thread scheduler;
+
     private PrintService printService;
 
-
     // Public --------------------------------------------------------
-	public PrinterService() {
-		Logger log = Logger.getLogger(getClass().getName());
-		calibration = new PrinterCalibration(log);
-		scanner = new ScannerCalibration(log);		
-	}
-	
+    public PrinterService() {
+        Logger log = Logger.getLogger(getClass().getName());
+        calibration = new PrinterCalibration(log);
+        scanner = new ScannerCalibration(log);
+    }
+
     /**
      *  Gets the auditLoggerName attribute of the PrinterService object
      *
      * @return    The auditLoggerName value
      */
-    public ObjectName getAuditLoggerName()
-    {
+    public ObjectName getAuditLoggerName() {
         return auditLogName;
     }
-
 
     /**
      *  Sets the auditLoggerName attribute of the PrinterService object
      *
      * @param  auditLogName  The new auditLoggerName value
      */
-    public void setAuditLoggerName(ObjectName auditLogName)
-    {
+    public void setAuditLoggerName(ObjectName auditLogName) {
         this.auditLogName = auditLogName;
     }
 
@@ -260,30 +276,21 @@ public class PrinterService
      *
      * @return    The calledAET value
      */
-    public String getCalledAET()
-    {
+    public String getCalledAET() {
         return calledAET;
     }
 
-
-    private long getCalibrationTime(Boolean color)
-    {
-        return (printGrayAsColor || color.booleanValue())
-                 ? colorCalibrationTime
-                 : monochromeCalibrationTime;
+    private long getCalibrationTime(Boolean color) {
+        return (printGrayAsColor || color.booleanValue()) ? colorCalibrationTime
+                : monochromeCalibrationTime;
     }
 
-
-    private long getCalibrationTime(Chromaticity chromaticity)
-    {
-        return Chromaticity.COLOR.equals(chromaticity)
-                 ? colorCalibrationTime
-                 : monochromeCalibrationTime;
+    private long getCalibrationTime(Chromaticity chromaticity) {
+        return Chromaticity.COLOR.equals(chromaticity) ? colorCalibrationTime
+                : monochromeCalibrationTime;
     }
 
-
-    private void setCalibrationTime(Chromaticity chromaticity, long time)
-    {
+    private void setCalibrationTime(Chromaticity chromaticity, long time) {
         if (Chromaticity.COLOR.equals(chromaticity)) {
             colorCalibrationTime = time;
         } else {
@@ -291,14 +298,10 @@ public class PrinterService
         }
     }
 
-
-    Chromaticity toChromaticity(Boolean color)
-    {
-        return (printGrayAsColor || color.booleanValue())
-                 ? Chromaticity.COLOR
-                 : Chromaticity.MONOCHROME;
+    Chromaticity toChromaticity(Boolean color) {
+        return (printGrayAsColor || color.booleanValue()) ? Chromaticity.COLOR
+                : Chromaticity.MONOCHROME;
     }
-
 
     /**
      *  Gets the status attribute of the PrinterService object
@@ -306,22 +309,16 @@ public class PrinterService
      * @param  color  Description of the Parameter
      * @return        The status value
      */
-    public PrinterStatus getStatus(Boolean color)
-    {
+    public PrinterStatus getStatus(Boolean color) {
         try {
-            if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
-                return PrinterStatus.FAILURE;
-            }
+            if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) { return PrinterStatus.FAILURE; }
             if (warnQueuedJob && getQueuedJobCount() > 0
-                     || getCalibrationTime(color) == 0L) {
-                return PrinterStatus.WARNING;
-            }
+                    || getCalibrationTime(color) == 0L) { return PrinterStatus.WARNING; }
             return PrinterStatus.NORMAL;
         } catch (PrintException e) {
             return PrinterStatus.FAILURE;
         }
     }
-
 
     /**
      *  Gets the statusInfo attribute of the PrinterService object
@@ -329,66 +326,51 @@ public class PrinterService
      * @param  color  Description of the Parameter
      * @return        The statusInfo value
      */
-    public PrinterStatusInfo getStatusInfo(Boolean color)
-    {
+    public PrinterStatusInfo getStatusInfo(Boolean color) {
         try {
             getPrintService();
-            if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
-                return PrinterStatusInfo.CHECK_PRINTER;
-            }
-            if (warnQueuedJob && getQueuedJobCount() > 0) {
-                return PrinterStatusInfo.QUEUED;
-            }
-            if (getCalibrationTime(color) == 0L) {
-                return PrinterStatusInfo.CALIBRATION_ERR;
-            }
+            if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) { return PrinterStatusInfo.CHECK_PRINTER; }
+            if (warnQueuedJob && getQueuedJobCount() > 0) { return PrinterStatusInfo.QUEUED; }
+            if (getCalibrationTime(color) == 0L) { return PrinterStatusInfo.CALIBRATION_ERR; }
             return PrinterStatusInfo.NORMAL;
         } catch (PrintException e) {
             return PrinterStatusInfo.ELEC_SW_ERROR;
         }
     }
 
-
     /**
      *  Getter for property printSCPName.
      *
      * @return    Value of property printSCPName.
      */
-    public ObjectName getPrintSCPName()
-    {
+    public ObjectName getPrintSCPName() {
         return this.printSCPName;
     }
-
 
     /**
      *  Setter for property printSCPName.
      *
      * @param  printSCPName  New value of property printSCPName.
      */
-    public void setPrintSCPName(ObjectName printSCPName)
-    {
+    public void setPrintSCPName(ObjectName printSCPName) {
         this.printSCPName = printSCPName;
     }
-
 
     /**
      *  Getter for property printerName.
      *
      * @return    Value of property printerName.
      */
-    public String getPrinterName()
-    {
+    public String getPrinterName() {
         return printerName;
     }
-
 
     /**
      *  Setter for property printerName.
      *
      * @param  printerName  New value of property printerName.
      */
-    public void setPrinterName(String printerName)
-    {
+    public void setPrinterName(String printerName) {
         if (!printerName.equals(this.printerName)) {
             this.printerName = printerName;
             try {
@@ -400,39 +382,32 @@ public class PrinterService
         }
     }
 
-
     /**
      *  Getter for property manufacturer.
      *
      * @return    Value of property manufacturer.
      */
-    public String getManufacturer()
-    {
+    public String getManufacturer() {
         return this.manufacturer;
     }
-
 
     /**
      *  Setter for property manufacturer.
      *
      * @param  manufacturer  New value of property manufacturer.
      */
-    public void setManufacturer(String manufacturer)
-    {
+    public void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
     }
-
 
     /**
      *  Getter for property manufacturerModelName.
      *
      * @return    Value of property manufacturerModelName.
      */
-    public String getManufacturerModelName()
-    {
+    public String getManufacturerModelName() {
         return this.manufacturerModelName;
     }
-
 
     /**
      *  Setter for property manufacturerModelName.
@@ -440,66 +415,54 @@ public class PrinterService
      * @param  manufacturerModelName  New value of property
      *      manufacturerModelName.
      */
-    public void setManufacturerModelName(String manufacturerModelName)
-    {
+    public void setManufacturerModelName(String manufacturerModelName) {
         this.manufacturerModelName = manufacturerModelName;
     }
-
 
     /**
      *  Getter for property deviceSerialNumber.
      *
      * @return    Value of property deviceSerialNumber.
      */
-    public String getDeviceSerialNumber()
-    {
+    public String getDeviceSerialNumber() {
         return this.deviceSerialNumber;
     }
-
 
     /**
      *  Getter for property softwareVersion.
      *
      * @return    Value of property softwareVersion.
      */
-    public String getSoftwareVersion()
-    {
+    public String getSoftwareVersion() {
         return this.softwareVersion;
     }
-
 
     /**
      *  Setter for property softwareVersion.
      *
      * @param  softwareVersion  New value of property softwareVersion.
      */
-    public void setSoftwareVersion(String softwareVersion)
-    {
+    public void setSoftwareVersion(String softwareVersion) {
         this.softwareVersion = softwareVersion;
     }
-
 
     /**
      *  Setter for property deviceSerialNumber.
      *
      * @param  deviceSerialNumber  New value of property deviceSerialNumber.
      */
-    public void setDeviceSerialNumber(String deviceSerialNumber)
-    {
+    public void setDeviceSerialNumber(String deviceSerialNumber) {
         this.deviceSerialNumber = deviceSerialNumber;
     }
-
 
     /**
      *  Getter for property ignorePrinterIsAcceptingJobs.
      *
      * @return    Value of property ignorePrinterIsAcceptingJobs.
      */
-    public boolean isIgnorePrinterIsAcceptingJobs()
-    {
+    public boolean isIgnorePrinterIsAcceptingJobs() {
         return this.ignorePrinterIsAcceptingJobs;
     }
-
 
     /**
      *  Setter for property ignorePrinterIsAcceptingJobs.
@@ -507,82 +470,71 @@ public class PrinterService
      * @param  ignorePrinterIsAcceptingJobs  New value of property
      *      ignorePrinterIsAcceptingJobs.
      */
-    public void setIgnorePrinterIsAcceptingJobs(boolean ignorePrinterIsAcceptingJobs)
-    {
+    public void setIgnorePrinterIsAcceptingJobs(
+            boolean ignorePrinterIsAcceptingJobs) {
         this.ignorePrinterIsAcceptingJobs = ignorePrinterIsAcceptingJobs;
     }
 
+    /**
+     *  Gets the ignoreMinDensity attribute of the PrinterService object
+     *
+     * @return
+     */
+    public boolean isWarnQueuedJob() {
+        return warnQueuedJob;
+    }
 
-	/**
-	 *  Gets the ignoreMinDensity attribute of the PrinterService object
-	 *
-	 * @return
-	 */
-	public boolean isWarnQueuedJob() {
-		return warnQueuedJob;
-	}
-
-	/**
-	 * @param warnQueuedJob
-	 */
-	public void setWarnQueuedJob(boolean warnQueuedJob) {
-		this.warnQueuedJob = warnQueuedJob;
-	}
+    /**
+     * @param warnQueuedJob
+     */
+    public void setWarnQueuedJob(boolean warnQueuedJob) {
+        this.warnQueuedJob = warnQueuedJob;
+    }
 
     /**
      *  Gets the ignoreMinDensity attribute of the PrinterService object
      *
      * @return    The ignoreMinDensity value
      */
-    public boolean isIgnoreMinDensity()
-    {
+    public boolean isIgnoreMinDensity() {
         return this.ignoreMinDensity;
     }
-
 
     /**
      *  Sets the ignoreMinDensity attribute of the PrinterService object
      *
      * @param  ignoreMinDensity  The new ignoreMinDensity value
      */
-    public void setIgnoreMinDensity(boolean ignoreMinDensity)
-    {
+    public void setIgnoreMinDensity(boolean ignoreMinDensity) {
         this.ignoreMinDensity = ignoreMinDensity;
     }
-
 
     /**
      *  Getter for property minimizeJobsize.
      *
      * @return    Value of property minimizeJobsize.
      */
-    public boolean isMinimizeJobsize()
-    {
+    public boolean isMinimizeJobsize() {
         return this.minimizeJobsize;
     }
-
 
     /**
      *  Setter for property minimizeJobsize.
      *
      * @param  minimizeJobsize  New value of property minimizeJobsize.
      */
-    public void setMinimizeJobsize(boolean minimizeJobsize)
-    {
+    public void setMinimizeJobsize(boolean minimizeJobsize) {
         this.minimizeJobsize = minimizeJobsize;
     }
-
 
     /**
      *  Getter for property decimateByNearestNeighbor.
      *
      * @return    Value of property decimateByNearestNeighbor.
      */
-    public boolean isDecimateByNearestNeighbor()
-    {
+    public boolean isDecimateByNearestNeighbor() {
         return this.decimateByNearestNeighbor;
     }
-
 
     /**
      *  Setter for property decimateByNearestNeighbor.
@@ -590,33 +542,27 @@ public class PrinterService
      * @param  decimateByNearestNeighbor  New value of property
      *      decimateByNearestNeighbor.
      */
-    public void setDecimateByNearestNeighbor(boolean decimateByNearestNeighbor)
-    {
+    public void setDecimateByNearestNeighbor(boolean decimateByNearestNeighbor) {
         this.decimateByNearestNeighbor = decimateByNearestNeighbor;
     }
-
 
     /**
      *  Getter for property chunkSize.
      *
      * @return    Value of property chunkSize.
      */
-    public double getChunkSize()
-    {
+    public double getChunkSize() {
         return this.chunkSize;
     }
-
 
     /**
      *  Setter for property chunkSize.
      *
      * @param  chunkSize  New value of property chunkSize.
      */
-    public void setChunkSize(double chunkSize)
-    {
+    public void setChunkSize(double chunkSize) {
         this.chunkSize = chunkSize;
     }
-
 
     /**
      *  Gets the printService attribute of the PrinterService object
@@ -624,13 +570,9 @@ public class PrinterService
      * @return                     The printService value
      * @exception  PrintException  Description of the Exception
      */
-    private PrintService getPrintService()
-        throws PrintException
-    {
+    private PrintService getPrintService() throws PrintException {
         if (printService != null) {
-            if (printService.getName().equals(printerName)) {
-                return printService;
-            }
+            if (printService.getName().equals(printerName)) { return printService; }
             printService.removePrintServiceAttributeListener(this);
             printService = null;
         }
@@ -646,58 +588,48 @@ public class PrinterService
         throw new PrintException("Failed to access Printer " + printerName);
     }
 
-
     /**
      *  Getter for property printToFile.
      *
      * @return    Value of property printToFile.
      */
-    public boolean isPrintToFile()
-    {
+    public boolean isPrintToFile() {
         return this.printToFile;
     }
-
 
     /**
      *  Setter for property printToFile.
      *
      * @param  printToFile  New value of property printToFile.
      */
-    public void setPrintToFile(boolean printToFile)
-    {
+    public void setPrintToFile(boolean printToFile) {
         this.printToFile = printToFile;
     }
-
 
     /**
      *  Getter for property printToFilePath.
      *
      * @return    Value of property printToFilePath.
      */
-    public String getPrintToFilePath()
-    {
+    public String getPrintToFilePath() {
         return this.printToFilePath;
     }
-
 
     /**
      *  Setter for property printToFilePath.
      *
      * @param  printToFilePath  New value of property printToFilePath.
      */
-    public void setPrintToFilePath(String printToFilePath)
-    {
+    public void setPrintToFilePath(String printToFilePath) {
         this.printToFilePath = printToFilePath;
     }
-
 
     /**
      *  Getter for property availableDestinations.
      *
      * @return    Value of property availableDestinations.
      */
-    public String[] getAvailablePrinters()
-    {
+    public String[] getAvailablePrinters() {
         PrintService[] services = PrintServiceLookup.lookupPrintServices(
                 DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
         String[] names = new String[services.length];
@@ -707,21 +639,18 @@ public class PrinterService
         return names;
     }
 
-
     /**
      *  Getter for property printServiceAttributes.
      *
      * @return    Value of property printServiceAttributes.
      */
-    public String[] getPrintServiceAttributes()
-    {
+    public String[] getPrintServiceAttributes() {
         try {
             return toStringArray(getPrintService().getAttributes());
         } catch (PrintException e) {
-            return new String[]{e.getMessage()};
+            return new String[] { e.getMessage()};
         }
     }
-
 
     /**
      *  Description of the Method
@@ -729,25 +658,23 @@ public class PrinterService
      * @param  as  Description of the Parameter
      * @return     Description of the Return Value
      */
-    static String[] toStringArray(AttributeSet as)
-    {
+    static String[] toStringArray(AttributeSet as) {
         Attribute[] a = as.toArray();
         String[] result = new String[a.length];
         for (int i = 0; i < a.length; ++i) {
-            result[i] =
-                    org.jboss.util.Classes.stripPackageName(a[i].getCategory()) + "=" + a[i];
+            result[i] = org.jboss.util.Classes.stripPackageName(a[i]
+                    .getCategory())
+                    + "=" + a[i];
         }
         return result;
     }
-
 
     /**
      *  Getter for property supportedAttributeValues.
      *
      * @return    Value of property supportedAttributeValues.
      */
-    public String[] getSupportedAttributeValues()
-    {
+    public String[] getSupportedAttributeValues() {
         try {
             PrintService ps = getPrintService();
             Class[] c = ps.getSupportedAttributeCategories();
@@ -755,71 +682,61 @@ public class PrinterService
             for (int i = 0; i < c.length; ++i) {
                 Object value = ps.getSupportedAttributeValues(c[i],
                         DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
-                result[i] = org.jboss.util.Classes.stripPackageName(c[i]) + "="
-                         + (value instanceof Object[]
-                         ? Arrays.asList((Object[]) value) : value);
+                result[i] = org.jboss.util.Classes.stripPackageName(c[i])
+                        + "="
+                        + (value instanceof Object[] ? Arrays
+                                .asList((Object[]) value) : value);
             }
             return result;
         } catch (PrintException e) {
-            return new String[]{e.getMessage()};
+            return new String[] { e.getMessage()};
         }
     }
-
 
     /**
      *  Getter for property supportsColor.
      *
      * @return    Value of property supportsColor.
      */
-    public boolean isSupportsColor()
-    {
+    public boolean isSupportsColor() {
         return this.supportsColor;
     }
-
 
     /**
      *  Setter for property supportsColor.
      *
      * @param  supportsColor  New value of property supportsColor.
      */
-    public void setSupportsColor(boolean supportsColor)
-    {
+    public void setSupportsColor(boolean supportsColor) {
         this.supportsColor = supportsColor;
     }
-
 
     /**
      *  Getter for property supportsGrayscale.
      *
      * @return    Value of property supportsGrayscale.
      */
-    public boolean isSupportsGrayscale()
-    {
+    public boolean isSupportsGrayscale() {
         return this.supportsGrayscale;
     }
-
 
     /**
      *  Setter for property supportsGrayscale.
      *
      * @param  supportsGrayscale  New value of property supportsGrayscale.
      */
-    public void setSupportsGrayscale(boolean supportsGrayscale)
-    {
+    public void setSupportsGrayscale(boolean supportsGrayscale) {
         this.supportsGrayscale = supportsGrayscale;
     }
-
 
     /**
      *  Getter for property supportsPresentationLUT.
      *
      * @return    Value of property supportsPresentationLUT.
      */
-    public boolean isSupportsPresentationLUT()
-    {
+    public boolean isSupportsPresentationLUT() {
         return this.supportsPresentationLUT;
     }
-
 
     /**
      *  Setter for property supportsPresentationLUT.
@@ -827,135 +744,110 @@ public class PrinterService
      * @param  supportsPresentationLUT  New value of property
      *      supportsPresentationLUT.
      */
-    public void setSupportsPresentationLUT(boolean supportsPresentationLUT)
-    {
+    public void setSupportsPresentationLUT(boolean supportsPresentationLUT) {
         this.supportsPresentationLUT = supportsPresentationLUT;
     }
-
 
     /**
      *  Gets the dateFormat attribute of the PrinterService object
      *
      * @return    The dateFormat value
      */
-    public String getDateFormat()
-    {
+    public String getDateFormat() {
         return dateFormat;
     }
-
 
     /**
      *  Sets the dateFormat attribute of the PrinterService object
      *
      * @param  dateFormat  The new dateFormat value
      */
-    public void setDateFormat(String dateFormat)
-    {
+    public void setDateFormat(String dateFormat) {
         this.dateFormat = dateFormat;
     }
-
 
     /**
      *  Gets the timeFormat attribute of the PrinterService object
      *
      * @return    The timeFormat value
      */
-    public String getTimeFormat()
-    {
+    public String getTimeFormat() {
         return timeFormat;
     }
-
 
     /**
      *  Sets the timeFormat attribute of the PrinterService object
      *
      * @param  timeFormat  The new timeFormat value
      */
-    public void setTimeFormat(String timeFormat)
-    {
+    public void setTimeFormat(String timeFormat) {
         this.timeFormat = timeFormat;
     }
-
 
     /**
      *  Gets the sessionLabel attribute of the PrinterService object
      *
      * @return    The sessionLabel value
      */
-    public String getSessionLabel()
-    {
+    public String getSessionLabel() {
         return sessionLabel;
     }
-
 
     /**
      *  Sets the sessionLabel attribute of the PrinterService object
      *
      * @param  sessionLabel  The new sessionLabel value
      */
-    public void setSessionLabel(String sessionLabel)
-    {
+    public void setSessionLabel(String sessionLabel) {
         this.sessionLabel = sessionLabel;
     }
-
 
     /**
      *  Gets the maxNumberOfCopies attribute of the PrinterService object
      *
      * @return    The maxNumberOfCopies value
      */
-    public int getMaxNumberOfCopies()
-    {
+    public int getMaxNumberOfCopies() {
         return maxNumberOfCopies;
     }
-
 
     /**
      *  Sets the maxNumberOfCopies attribute of the PrinterService object
      *
      * @param  maxNumberOfCopies  The new maxNumberOfCopies value
      */
-    public void setMaxNumberOfCopies(int maxNumberOfCopies)
-    {
-        if (maxNumberOfCopies <= 0) {
-            throw new IllegalArgumentException("max:" + maxNumberOfCopies);
-        }
+    public void setMaxNumberOfCopies(int maxNumberOfCopies) {
+        if (maxNumberOfCopies <= 0) { throw new IllegalArgumentException("max:"
+                + maxNumberOfCopies); }
         this.maxNumberOfCopies = maxNumberOfCopies;
     }
-
 
     /**
      *  Getter for property mediaType.
      *
      * @return    Value of property mediaType.
      */
-    public String getMediumType()
-    {
+    public String getMediumType() {
         return this.mediumType;
     }
-
 
     /**
      *  Setter for property mediaType.
      *
      * @param  mediumType  The new mediumType value
      */
-    public void setMediumType(String mediumType)
-    {
+    public void setMediumType(String mediumType) {
         this.mediumType = mediumType;
     }
-
 
     /**
      *  Getter for property defaultMediumType.
      *
      * @return    Value of property defaultMediumType.
      */
-    public String getDefaultMediumType()
-    {
+    public String getDefaultMediumType() {
         return firstOf(mediumType);
     }
-
 
     /**
      *  Gets the supportsMediumType attribute of the PrinterService object
@@ -963,66 +855,54 @@ public class PrinterService
      * @param  mediumType  Description of the Parameter
      * @return             The supportsMediumType value
      */
-    public boolean isSupportsMediumType(String mediumType)
-    {
+    public boolean isSupportsMediumType(String mediumType) {
         return contains(this.mediumType, mediumType);
     }
-
 
     /**
      *  Getter for property defaultPortrait.
      *
      * @return    Value of property defaultPortrait.
      */
-    public boolean isDefaultPortrait()
-    {
+    public boolean isDefaultPortrait() {
         return this.defaultPortrait;
     }
-
 
     /**
      *  Setter for property defaultPortrait.
      *
      * @param  defaultPortrait  New value of property defaultPortrait.
      */
-    public void setDefaultPortrait(boolean defaultPortrait)
-    {
+    public void setDefaultPortrait(boolean defaultPortrait) {
         this.defaultPortrait = defaultPortrait;
     }
-
 
     /**
      *  Getter for property defaultFilmOrientation.
      *
      * @return    Value of property defaultFilmOrientation.
      */
-    public String getDefaultFilmOrientation()
-    {
+    public String getDefaultFilmOrientation() {
         return defaultPortrait ? "PORTRAIT" : "LANDSCAPE";
     }
-
 
     /**
      *  Getter for property displayFormat.
      *
      * @return    Value of property displayFormat.
      */
-    public String getDisplayFormat()
-    {
+    public String getDisplayFormat() {
         return this.displayFormat;
     }
-
 
     /**
      *  Setter for property displayFormat.
      *
      * @param  displayFormat  New value of property displayFormat.
      */
-    public void setDisplayFormat(String displayFormat)
-    {
+    public void setDisplayFormat(String displayFormat) {
         this.displayFormat = displayFormat;
     }
-
 
     /**
      *  Gets the supportsDisplayFormat attribute of the PrinterService object
@@ -1032,21 +912,15 @@ public class PrinterService
      * @return                  The supportsDisplayFormat value
      */
     public boolean isSupportsDisplayFormat(String displayFormat,
-            String filmOrientation)
-    {
-        if (!displayFormat.startsWith("STANDARD\\")) {
-            return false;
-        }
-        if (filmOrientation != null
-                 ? filmOrientation.equals("PORTRAIT")
-                 : defaultPortrait) {
-            return contains(this.displayFormat, displayFormat.substring(9));
-        }
+            String filmOrientation) {
+        if (!displayFormat.startsWith("STANDARD\\")) { return false; }
+        if (filmOrientation != null ? filmOrientation.equals("PORTRAIT")
+                : defaultPortrait) { return contains(this.displayFormat,
+                displayFormat.substring(9)); }
         int pos = displayFormat.lastIndexOf(',');
-        return contains(this.displayFormat,
-                displayFormat.substring(pos + 1) + ',' + displayFormat.substring(9, pos));
+        return contains(this.displayFormat, displayFormat.substring(pos + 1)
+                + ',' + displayFormat.substring(9, pos));
     }
-
 
     /**
      *  Description of the Method
@@ -1054,15 +928,11 @@ public class PrinterService
      * @param  list  Description of the Parameter
      * @return       Description of the Return Value
      */
-    private static String firstOf(String list)
-    {
-        if (list == null || list.length() == 0) {
-            return null;
-        }
+    private static String firstOf(String list) {
+        if (list == null || list.length() == 0) { return null; }
         int pos = list.indexOf('\\');
         return pos == -1 ? list : list.substring(0, pos);
     }
-
 
     /**
      *  Description of the Method
@@ -1071,30 +941,23 @@ public class PrinterService
      * @param  value  Description of the Parameter
      * @return        Description of the Return Value
      */
-    private static boolean contains(String list, String value)
-    {
-        if (list == null || list.length() == 0) {
-            return false;
-        }
+    private static boolean contains(String list, String value) {
+        if (list == null || list.length() == 0) { return false; }
         StringTokenizer tk = new StringTokenizer(list, "\\");
         while (tk.hasMoreTokens()) {
-            if (value.equals(tk.nextToken())) {
-                return true;
-            }
+            if (value.equals(tk.nextToken())) { return true; }
         }
         return false;
     }
-
 
     /**
      *  Getter for property filmSizeID.
      *
      * @return    Value of property filmSizeID.
      */
-    public String getFilmSizeID()
-    {
+    public String getFilmSizeID() {
         StringBuffer sb = new StringBuffer();
-        for (Iterator it = filmSizeIDMap.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = filmSizeIDMap.entrySet().iterator(); it.hasNext();) {
             Map.Entry item = (Map.Entry) it.next();
             float[] wh = (float[]) item.getValue();
             sb.append(item.getKey());
@@ -1108,48 +971,36 @@ public class PrinterService
         return sb.toString();
     }
 
-
     /**
      *  Setter for property filmSizeID.
      *
      * @param  filmSizeID  New value of property filmSizeID.
      */
-    public void setFilmSizeID(String filmSizeID)
-    {
+    public void setFilmSizeID(String filmSizeID) {
         LinkedHashMap tmp = new LinkedHashMap();
-        for (StringTokenizer tokenizer =
-                new StringTokenizer(filmSizeID, "\\\r\n");
-                tokenizer.hasMoreTokens(); ) {
+        for (StringTokenizer tokenizer = new StringTokenizer(filmSizeID,
+                "\\\r\n"); tokenizer.hasMoreTokens();) {
             String s = tokenizer.nextToken().trim();
             int c1 = s.indexOf(':');
             int xpos = s.indexOf('x', c1 + 1);
-            float[] wh = {
-                    Float.parseFloat(s.substring(c1 + 1, xpos)),
-                    Float.parseFloat(s.substring(xpos + 1))
-                    };
+            float[] wh = { Float.parseFloat(s.substring(c1 + 1, xpos)),
+                    Float.parseFloat(s.substring(xpos + 1))};
             Arrays.sort(wh);
-            if (wh[0] <= 0) {
-                throw new IllegalArgumentException(s);
-            }
+            if (wh[0] <= 0) { throw new IllegalArgumentException(s); }
             tmp.put(s.substring(0, c1), wh);
         }
         filmSizeIDMap = tmp;
     }
-
 
     /**
      *  Getter for property defaultFilmSizeID.
      *
      * @return    Value of property defaultFilmSizeID.
      */
-    public String getDefaultFilmSizeID()
-    {
-        if (filmSizeIDMap.isEmpty()) {
-            return null;
-        }
+    public String getDefaultFilmSizeID() {
+        if (filmSizeIDMap.isEmpty()) { return null; }
         return (String) filmSizeIDMap.keySet().iterator().next();
     }
-
 
     /**
      *  Gets the supportsFilmSizeID attribute of the PrinterService object
@@ -1157,11 +1008,9 @@ public class PrinterService
      * @param  filmSizeID  Description of the Parameter
      * @return             The supportsFilmSizeID value
      */
-    public boolean isSupportsFilmSizeID(String filmSizeID)
-    {
+    public boolean isSupportsFilmSizeID(String filmSizeID) {
         return filmSizeIDMap.containsKey(filmSizeID);
     }
-
 
     /**
      *  Gets the supportsAnnotationDisplayFormatID attribute of the
@@ -1170,11 +1019,10 @@ public class PrinterService
      * @param  annotationID  Description of the Parameter
      * @return               The supportsAnnotationDisplayFormatID value
      */
-    public boolean isSupportsAnnotationDisplayFormatID(String annotationID)
-    {
-        return supportsAnnotationBox && countAnnotationBoxes(annotationID) != -1;
+    public boolean isSupportsAnnotationDisplayFormatID(String annotationID) {
+        return supportsAnnotationBox
+                && countAnnotationBoxes(annotationID) != -1;
     }
-
 
     /**
      *  Description of the Method
@@ -1182,18 +1030,15 @@ public class PrinterService
      * @param  wh  Description of the Parameter
      * @return     Description of the Return Value
      */
-    private Paper toPaper(float[] wh)
-    {
+    private Paper toPaper(float[] wh) {
         Paper paper = new Paper();
         paper.setSize(wh[0] * PTS_PER_MM, wh[1] * PTS_PER_MM);
-        paper.setImageableArea(
-                pageMargin[0] * PTS_PER_MM,
-                pageMargin[1] * PTS_PER_MM,
-                (wh[0] - (pageMargin[0] + pageMargin[2])) * PTS_PER_MM,
-                (wh[1] - (pageMargin[1] + pageMargin[3])) * PTS_PER_MM);
+        paper.setImageableArea(pageMargin[0] * PTS_PER_MM, pageMargin[1]
+                * PTS_PER_MM, (wh[0] - (pageMargin[0] + pageMargin[2]))
+                * PTS_PER_MM, (wh[1] - (pageMargin[1] + pageMargin[3]))
+                * PTS_PER_MM);
         return paper;
     }
-
 
     /**
      *  Gets the paper attribute of the PrinterService object
@@ -1201,35 +1046,28 @@ public class PrinterService
      * @param  filmSizeID  Description of the Parameter
      * @return             The paper value
      */
-    Paper getPaper(String filmSizeID)
-    {
+    Paper getPaper(String filmSizeID) {
         return toPaper((float[]) filmSizeIDMap.get(filmSizeID));
     }
-
 
     /**
      *  Gets the defaultPaper attribute of the PrinterService object
      *
      * @return    The defaultPaper value
      */
-    Paper getDefaultPaper()
-    {
-        if (filmSizeIDMap.isEmpty()) {
-            return null;
-        }
+    Paper getDefaultPaper() {
+        if (filmSizeIDMap.isEmpty()) { return null; }
         return toPaper((float[]) filmSizeIDMap.values().iterator().next());
     }
-
 
     /**
      *  Getter for property resolutionID.
      *
      * @return    Value of property resolutionID.
      */
-    public String getResolutionID()
-    {
+    public String getResolutionID() {
         StringBuffer sb = new StringBuffer();
-        for (Iterator it = resolutionIDMap.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = resolutionIDMap.entrySet().iterator(); it.hasNext();) {
             Map.Entry item = (Map.Entry) it.next();
             PrinterResolution pr = (PrinterResolution) item.getValue();
             sb.append(item.getKey());
@@ -1243,58 +1081,45 @@ public class PrinterService
         return sb.toString();
     }
 
-
     /**
      *  Setter for property resolutionID.
      *
      * @param  resolutionID  New value of property resolutionID.
      */
-    public void setResolutionID(String resolutionID)
-    {
+    public void setResolutionID(String resolutionID) {
         LinkedHashMap tmp = new LinkedHashMap();
-        for (StringTokenizer tokenizer =
-                new StringTokenizer(resolutionID, "\\\r\n");
-                tokenizer.hasMoreTokens(); ) {
+        for (StringTokenizer tokenizer = new StringTokenizer(resolutionID,
+                "\\\r\n"); tokenizer.hasMoreTokens();) {
             String s = tokenizer.nextToken().trim();
             int c1 = s.indexOf(':');
             int xpos = s.indexOf('x', c1 + 1);
-            PrinterResolution pr = new PrinterResolution(
-                    Integer.parseInt(s.substring(c1 + 1, xpos)),
-                    Integer.parseInt(s.substring(xpos + 1)),
-                    PrinterResolution.DPI);
+            PrinterResolution pr = new PrinterResolution(Integer.parseInt(s
+                    .substring(c1 + 1, xpos)), Integer.parseInt(s
+                    .substring(xpos + 1)), PrinterResolution.DPI);
             tmp.put(s.substring(0, c1), pr);
         }
         resolutionIDMap = tmp;
     }
-
 
     /**
      *  Getter for property defaultResolutionID.
      *
      * @return    Value of property defaultResolutionID.
      */
-    public String getDefaultResolutionID()
-    {
-        if (resolutionIDMap.isEmpty()) {
-            return null;
-        }
+    public String getDefaultResolutionID() {
+        if (resolutionIDMap.isEmpty()) { return null; }
         return (String) resolutionIDMap.keySet().iterator().next();
     }
-
 
     /**
      *  Gets the defaultPrinterResolution attribute of the PrinterService object
      *
      * @return    The defaultPrinterResolution value
      */
-    public PrinterResolution getDefaultPrinterResolution()
-    {
-        if (resolutionIDMap.isEmpty()) {
-            return null;
-        }
+    public PrinterResolution getDefaultPrinterResolution() {
+        if (resolutionIDMap.isEmpty()) { return null; }
         return (PrinterResolution) resolutionIDMap.values().iterator().next();
     }
-
 
     /**
      *  Gets the supportsResolutionID attribute of the PrinterService object
@@ -1302,44 +1127,36 @@ public class PrinterService
      * @param  resolutionID  Description of the Parameter
      * @return               The supportsResolutionID value
      */
-    public boolean isSupportsResolutionID(String resolutionID)
-    {
+    public boolean isSupportsResolutionID(String resolutionID) {
         return resolutionIDMap.containsKey(resolutionID);
     }
-
 
     /**
      *  Getter for property magnificationType.
      *
      * @return    Value of property magnificationType.
      */
-    public String getMagnificationType()
-    {
+    public String getMagnificationType() {
         return this.magnificationType;
     }
-
 
     /**
      *  Setter for property magnificationType.
      *
      * @param  magnificationType  New value of property magnificationType.
      */
-    public void setMagnificationType(String magnificationType)
-    {
+    public void setMagnificationType(String magnificationType) {
         this.magnificationType = magnificationType;
     }
-
 
     /**
      *  Getter for property defaultMagnificationType.
      *
      * @return    Value of property defaultMagnificationType.
      */
-    public String getDefaultMagnificationType()
-    {
+    public String getDefaultMagnificationType() {
         return firstOf(magnificationType);
     }
-
 
     /**
      *  Gets the supportsMagnificationType attribute of the PrinterService
@@ -1348,77 +1165,63 @@ public class PrinterService
      * @param  magnificationType  Description of the Parameter
      * @return                    The supportsMagnificationType value
      */
-    public boolean isSupportsMagnificationType(String magnificationType)
-    {
+    public boolean isSupportsMagnificationType(String magnificationType) {
         return contains(this.magnificationType, magnificationType);
     }
-
 
     /**
      *  Getter for property decimateCropBehavior.
      *
      * @return    Value of property decimateCropBehavior.
      */
-    public String getDecimateCropBehavior()
-    {
+    public String getDecimateCropBehavior() {
         return this.decimateCropBehavior;
     }
-
 
     /**
      *  Setter for property decimateCropBehavior.
      *
      * @param  decimateCropBehavior  New value of property decimateCropBehavior.
      */
-    public void setDecimateCropBehavior(String decimateCropBehavior)
-    {
+    public void setDecimateCropBehavior(String decimateCropBehavior) {
         this.decimateCropBehavior = decimateCropBehavior;
     }
-
 
     /**
      *  Getter for property borderDensity.
      *
      * @return    Value of property borderDensity.
      */
-    public String getBorderDensity()
-    {
+    public String getBorderDensity() {
         return this.borderDensity;
     }
-
 
     /**
      *  Setter for property borderDensity.
      *
      * @param  borderDensity  New value of property borderDensity.
      */
-    public void setBorderDensity(String borderDensity)
-    {
+    public void setBorderDensity(String borderDensity) {
         this.borderDensity = borderDensity;
     }
-
 
     /**
      *  Gets the trim attribute of the PrinterService object
      *
      * @return    The trim value
      */
-    public String getTrim()
-    {
+    public String getTrim() {
         return trim;
     }
-
 
     /**
      *  Sets the trim attribute of the PrinterService object
      *
      * @param  trim  The new trim value
      */
-    public void setTrim(String trim)
-    {
+    public void setTrim(String trim) {
         this.trim = trim;
     }
-
 
     /**
      *  Gets the minDensity attribute of the PrinterService object
@@ -1426,11 +1229,9 @@ public class PrinterService
      * @param  color  Description of the Parameter
      * @return        The minDensity value
      */
-    public int getMinDensity(Boolean color)
-    {
+    public int getMinDensity(Boolean color) {
         return calibration.getMinDensity(toChromaticity(color));
     }
-
 
     /**
      *  Gets the minDensity attribute of the PrinterService object
@@ -1438,11 +1239,9 @@ public class PrinterService
      * @param  chromaticity  Description of the Parameter
      * @return               The minDensity value
      */
-    int getMinDensity(Chromaticity chromaticity)
-    {
+    int getMinDensity(Chromaticity chromaticity) {
         return calibration.getMinDensity(chromaticity);
     }
-
 
     /**
      *  Gets the maxDensity attribute of the PrinterService object
@@ -1450,11 +1249,9 @@ public class PrinterService
      * @param  chromaticity  Description of the Parameter
      * @return               The maxDensity value
      */
-    int getMaxDensity(Chromaticity chromaticity)
-    {
+    int getMaxDensity(Chromaticity chromaticity) {
         return calibration.getMaxDensity(chromaticity);
     }
-
 
     /**
      *  Gets the maxDensity attribute of the PrinterService object
@@ -1462,44 +1259,33 @@ public class PrinterService
      * @param  color  Description of the Parameter
      * @return        The maxDensity value
      */
-    public int getMaxDensity(Boolean color)
-    {
+    public int getMaxDensity(Boolean color) {
         return calibration.getMaxDensity(toChromaticity(color));
     }
-
 
     /**
      *  Getter for property margin.
      *
      * @return    Value of property margin.
      */
-    public String getPageMargin()
-    {
-        return ""
-                 + pageMargin[0] + ','
-                 + pageMargin[1] + ','
-                 + pageMargin[2] + ','
-                 + pageMargin[3];
+    public String getPageMargin() {
+        return "" + pageMargin[0] + ',' + pageMargin[1] + ',' + pageMargin[2]
+                + ',' + pageMargin[3];
     }
-
 
     /**
      *  Setter for property margin.
      *
      * @param  pageMargin  The new pageMargin value
      */
-    public void setPageMargin(String pageMargin)
-    {
+    public void setPageMargin(String pageMargin) {
         StringTokenizer stk = new StringTokenizer(pageMargin, ",; \t\r\n\\");
-        if (stk.countTokens() != 4) {
-            throw new IllegalArgumentException("pageMargin: " + pageMargin);
-        }
-        this.pageMargin = new float[] {
-            Float.parseFloat(stk.nextToken()),
-            Float.parseFloat(stk.nextToken()),
-            Float.parseFloat(stk.nextToken()),
-            Float.parseFloat(stk.nextToken())
-        };
+        if (stk.countTokens() != 4) { throw new IllegalArgumentException(
+                "pageMargin: " + pageMargin); }
+        this.pageMargin = new float[] { Float.parseFloat(stk.nextToken()),
+                Float.parseFloat(stk.nextToken()),
+                Float.parseFloat(stk.nextToken()),
+                Float.parseFloat(stk.nextToken())};
         log.debug("pageMargin=" + getPageMargin());
     }
 
@@ -1508,77 +1294,63 @@ public class PrinterService
      *
      * @return    Value of property reverseLandscape.
      */
-    public boolean isReverseLandscape()
-    {
+    public boolean isReverseLandscape() {
         return this.reverseLandscape;
     }
-
 
     /**
      *  Setter for property reverseLandscape.
      *
      * @param  reverseLandscape  New value of property reverseLandscape.
      */
-    public void setReverseLandscape(boolean reverseLandscape)
-    {
+    public void setReverseLandscape(boolean reverseLandscape) {
         this.reverseLandscape = reverseLandscape;
     }
-
 
     /**
      *  Getter for property borderThickness.
      *
      * @return    Value of property borderThickness.
      */
-    public float getBorderThickness()
-    {
+    public float getBorderThickness() {
         return this.borderThickness;
     }
-
 
     /**
      *  Setter for property borderThickness.
      *
      * @param  borderThickness  New value of property borderThickness.
      */
-    public void setBorderThickness(float borderThickness)
-    {
+    public void setBorderThickness(float borderThickness) {
         this.borderThickness = borderThickness;
     }
-
 
     /**
      *  Getter for property illumination.
      *
      * @return    Value of property illumination.
      */
-    public int getIllumination()
-    {
+    public int getIllumination() {
         return this.illumination;
     }
-
 
     /**
      *  Setter for property illumination.
      *
      * @param  illumination  New value of property illumination.
      */
-    public void setIllumination(int illumination)
-    {
+    public void setIllumination(int illumination) {
         this.illumination = illumination;
     }
-
 
     /**
      *  Getter for property reflectedAmbientLight.
      *
      * @return    Value of property reflectedAmbientLight.
      */
-    public int getReflectedAmbientLight()
-    {
+    public int getReflectedAmbientLight() {
         return this.reflectedAmbientLight;
     }
-
 
     /**
      *  Setter for property reflectedAmbientLight.
@@ -1586,33 +1358,27 @@ public class PrinterService
      * @param  reflectedAmbientLight  New value of property
      *      reflectedAmbientLight.
      */
-    public void setReflectedAmbientLight(int reflectedAmbientLight)
-    {
+    public void setReflectedAmbientLight(int reflectedAmbientLight) {
         this.reflectedAmbientLight = reflectedAmbientLight;
     }
-
 
     /**
      *  Getter for property annotationDir.
      *
      * @return    Value of property annotationDir.
      */
-    public String getAnnotationDir()
-    {
+    public String getAnnotationDir() {
         return this.annotationDir;
     }
-
 
     /**
      *  Setter for property annotationDir.
      *
      * @param  annotationDir  New value of property annotationDir.
      */
-    public void setAnnotationDir(String annotationDir)
-    {
+    public void setAnnotationDir(String annotationDir) {
         this.annotationDir = toFile(annotationDir).getAbsolutePath();
     }
-
 
     // used by testdriver
     /**
@@ -1620,11 +1386,9 @@ public class PrinterService
      *
      * @param  annotationDir  The new annotationDir value
      */
-    void setAnnotationDir(File annotationDir)
-    {
+    void setAnnotationDir(File annotationDir) {
         this.annotationDir = annotationDir.getAbsolutePath();
     }
-
 
     /**
      *  Description of the Method
@@ -1632,31 +1396,26 @@ public class PrinterService
      * @param  fname  Description of the Parameter
      * @return        Description of the Return Value
      */
-    static int parseAnnotationBoxCount(String fname)
-    {
-        if (!fname.endsWith(ADF_FILE_EXT)) {
-            throw new IllegalArgumentException("fname:" + fname);
-        }
+    static int parseAnnotationBoxCount(String fname) {
+        if (!fname.endsWith(ADF_FILE_EXT)) { throw new IllegalArgumentException(
+                "fname:" + fname); }
         int extPos = fname.length() - ADF_FILE_EXT.length();
         int numPos = fname.lastIndexOf('.', extPos - 1);
         return Integer.parseInt(fname.substring(numPos + 1, extPos));
     }
 
+    private final FilenameFilter ADF_FILENAME_FILTER = new FilenameFilter() {
 
-    private final FilenameFilter ADF_FILENAME_FILTER =
-        new FilenameFilter()
-        {
-            public boolean accept(File dir, String name)
-            {
-                try {
-                    return parseAnnotationBoxCount(name) >= 0;
-                } catch (RuntimeException e) {
-                    log.warn("Illegal ADF Filename - " + name);
-                    return false;
-                }
+        public boolean accept(File dir, String name) {
+            try {
+                return name.endsWith(ADF_FILE_EXT)
+                        && parseAnnotationBoxCount(name) >= 0;
+            } catch (RuntimeException e) {
+                log.warn("Illegal ADF Filename - " + name);
+                return false;
             }
-        };
-
+        }
+    };
 
     /**
      *  Description of the Method
@@ -1664,22 +1423,19 @@ public class PrinterService
      * @param  fnames  Description of the Parameter
      * @param  ext     Description of the Parameter
      */
-    private static void skipFileExt(String[] fnames, String ext)
-    {
+    private static void skipFileExt(String[] fnames, String ext) {
         int extlen = ext.length();
         for (int i = 0; i < fnames.length; ++i) {
             fnames[i] = fnames[i].substring(0, fnames[i].length() - extlen);
         }
     }
 
-
     /**
      *  Getter for property annotationDisplayFormatIDs.
      *
      * @return    Value of property annotationDisplayFormatIDs.
      */
-    public String[] getAnnotationDisplayFormatIDs()
-    {
+    public String[] getAnnotationDisplayFormatIDs() {
         File dir = toFile(annotationDir);
         String[] fnames = dir.list(ADF_FILENAME_FILTER);
         for (int i = 0; i < fnames.length; ++i) {
@@ -1691,23 +1447,18 @@ public class PrinterService
         return fnames;
     }
 
-
     /**
      *  Description of the Method
      *
      * @param  annotationID  Description of the Parameter
      * @return               Description of the Return Value
      */
-    public int countAnnotationBoxes(String annotationID)
-    {
+    public int countAnnotationBoxes(String annotationID) {
         File f = getAnnotationFile(annotationID);
-        if (f == null) {
-            return -1;
-        }
+        if (f == null) { return -1; }
 
         return parseAnnotationBoxCount(f.getName());
     }
-
 
     /**
      *  Gets the annotationFile attribute of the PrinterService object
@@ -1715,40 +1466,36 @@ public class PrinterService
      * @param  annotationID  Description of the Parameter
      * @return               The annotationFile value
      */
-    File getAnnotationFile(String annotationID)
-    {
+    File getAnnotationFile(String annotationID) {
         File dir = toFile(annotationDir);
         File[] files = dir.listFiles(ADF_FILENAME_FILTER);
         for (int i = 0; i < files.length; ++i) {
-            if (files[i].getName().startsWith(annotationID)) {
-                return files[i];
-            }
+            if (files[i].getName().startsWith(annotationID)) { return files[i]; }
         }
         return null;
     }
 
+    File getAnnotationIconFile(String fname) {
+        return new File(toFile(annotationDir), fname);
+    }
 
     /**
      *  Getter for property lutDir.
      *
      * @return    Value of property lutDir.
      */
-    public String getLUTDir()
-    {
+    public String getLUTDir() {
         return this.lutDir;
     }
-
 
     /**
      *  Setter for property lutDir.
      *
      * @param  lutDir  New value of property lutDir.
      */
-    public void setLUTDir(String lutDir)
-    {
+    public void setLUTDir(String lutDir) {
         this.lutDir = toFile(lutDir).getAbsolutePath();
     }
-
 
     /**
      *  Gets the supportsConfigurationInformation attribute of the
@@ -1757,8 +1504,7 @@ public class PrinterService
      * @param  configInfo  Description of the Parameter
      * @return             The supportsConfigurationInformation value
      */
-    public boolean isSupportsConfigurationInformation(String configInfo)
-    {
+    public boolean isSupportsConfigurationInformation(String configInfo) {
         try {
             new PLutBuilder(configInfo, lutDir);
             return true;
@@ -1767,17 +1513,14 @@ public class PrinterService
         }
     }
 
-
     /**
      *  Getter for property supportsAnnotationBox.
      *
      * @return    Value of property supportsAnnotationBox.
      */
-    public boolean isSupportsAnnotationBox()
-    {
+    public boolean isSupportsAnnotationBox() {
         return this.supportsAnnotationBox;
     }
-
 
     /**
      *  Setter for property supportsAnnotationBox.
@@ -1785,11 +1528,9 @@ public class PrinterService
      * @param  supportsAnnotationBox  New value of property
      *      supportsAnnotationBox.
      */
-    public void setSupportsAnnotationBox(boolean supportsAnnotationBox)
-    {
+    public void setSupportsAnnotationBox(boolean supportsAnnotationBox) {
         this.supportsAnnotationBox = supportsAnnotationBox;
     }
-
 
     /**
      *  Gets the configurationInformationForCallingAET attribute of the
@@ -1797,10 +1538,9 @@ public class PrinterService
      *
      * @return    The configurationInformationForCallingAET value
      */
-    public String getConfigurationInformationForCallingAET()
-    {
+    public String getConfigurationInformationForCallingAET() {
         StringBuffer sb = new StringBuffer();
-        for (Iterator it = cfgInfoForAETMap.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = cfgInfoForAETMap.entrySet().iterator(); it.hasNext();) {
             Map.Entry item = (Map.Entry) it.next();
             sb.append(item.getKey());
             sb.append(':');
@@ -1810,7 +1550,6 @@ public class PrinterService
         sb.setLength(sb.length() - 1);
         return sb.toString();
     }
-
 
     /**
      *  Gets the configurationInformationForCallingAET attribute of the
@@ -1820,23 +1559,19 @@ public class PrinterService
      * @param  color  Description of the Parameter
      * @return        The configurationInformationForCallingAET value
      */
-    String getConfigurationInformationForCallingAET(String aet, Boolean color)
-    {
+    String getConfigurationInformationForCallingAET(String aet, Boolean color) {
         String mode = color.booleanValue() ? COLOR : GRAYSCALE;
         String info = (String) cfgInfoForAETMap.get(aet + mode);
         if (info == null) {
             info = (String) cfgInfoForAETMap.get(aet);
             if (info == null) {
                 info = (String) cfgInfoForAETMap.get(mode);
-                if (info == null) {
-                    throw new RuntimeException(
-                            "No configuration information associated with " + mode);
-                }
+                if (info == null) { throw new RuntimeException(
+                        "No configuration information associated with " + mode); }
             }
         }
         return info;
     }
-
 
     /**
      *  Sets the configurationInformationForCallingAET attribute of the
@@ -1845,32 +1580,27 @@ public class PrinterService
      * @param  ciForCallingAET  The new configurationInformationForCallingAET
      *      value
      */
-    public void setConfigurationInformationForCallingAET(String ciForCallingAET)
-    {
+    public void setConfigurationInformationForCallingAET(String ciForCallingAET) {
         LinkedHashMap tmp = new LinkedHashMap();
-        for (StringTokenizer tokenizer =
-                new StringTokenizer(ciForCallingAET, "\\\r\n");
-                tokenizer.hasMoreTokens(); ) {
+        for (StringTokenizer tokenizer = new StringTokenizer(ciForCallingAET,
+                "\\\r\n"); tokenizer.hasMoreTokens();) {
             String s = tokenizer.nextToken().trim();
             int c1 = s.indexOf(':');
-            if (c1 == -1) {
-                throw new IllegalArgumentException(s);
-            }
+            if (c1 == -1) { throw new IllegalArgumentException(s); }
             tmp.put(s.substring(0, c1), s.substring(c1 + 1));
         }
         cfgInfoForAETMap = tmp;
     }
-
 
     /**
      *  Getter for property annotationForCallingAET.
      *
      * @return    Value of property annotationForCallingAET.
      */
-    public String getAnnotationForCallingAET()
-    {
+    public String getAnnotationForCallingAET() {
         StringBuffer sb = new StringBuffer();
-        for (Iterator it = annotationForCallingAETMap.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = annotationForCallingAETMap.entrySet().iterator(); it
+                .hasNext();) {
             Map.Entry item = (Map.Entry) it.next();
             sb.append(item.getKey());
             sb.append(':');
@@ -1881,25 +1611,22 @@ public class PrinterService
         return sb.toString();
     }
 
-
     /**
      *  Gets the annotationForCallingAET attribute of the PrinterService object
      *
      * @param  callingAET  Description of the Parameter
      * @return             The annotationForCallingAET value
      */
-    String getAnnotationForCallingAET(String callingAET)
-    {
+    String getAnnotationForCallingAET(String callingAET) {
         if (annotationForCallingAETMap.isEmpty()) {
-            log.error("Configuration Error: missing attribute AnnotationForCallingAET value!");
+            log
+                    .error("Configuration Error: missing attribute AnnotationForCallingAET value!");
             return null;
         }
         String adfID = (String) annotationForCallingAETMap.get(callingAET);
-        return adfID != null
-                 ? adfID
-                 : (String) annotationForCallingAETMap.values().iterator().next();
+        return adfID != null ? adfID : (String) annotationForCallingAETMap
+                .values().iterator().next();
     }
-
 
     /**
      *  Setter for property annotationForCallingAET.
@@ -1907,33 +1634,26 @@ public class PrinterService
      * @param  annotationForCallingAET  New value of property
      *      annotationForCallingAET.
      */
-    public void setAnnotationForCallingAET(String annotationForCallingAET)
-    {
+    public void setAnnotationForCallingAET(String annotationForCallingAET) {
         LinkedHashMap tmp = new LinkedHashMap();
-        for (StringTokenizer tokenizer =
-                new StringTokenizer(annotationForCallingAET, "\\\r\n");
-                tokenizer.hasMoreTokens(); ) {
+        for (StringTokenizer tokenizer = new StringTokenizer(
+                annotationForCallingAET, "\\\r\n"); tokenizer.hasMoreTokens();) {
             String s = tokenizer.nextToken().trim();
             int c1 = s.indexOf(':');
-            if (c1 == -1) {
-                throw new IllegalArgumentException(s);
-            }
+            if (c1 == -1) { throw new IllegalArgumentException(s); }
             tmp.put(s.substring(0, c1), s.substring(c1 + 1));
         }
         annotationForCallingAETMap = tmp;
     }
-
 
     /**
      *  Getter for property annotationForPrintImage.
      *
      * @return    Value of property annotationForPrintImage.
      */
-    public String getAnnotationForPrintImage()
-    {
+    public String getAnnotationForPrintImage() {
         return this.annotationForPrintImage;
     }
-
 
     /**
      *  Setter for property annotationForPrintImage.
@@ -1941,11 +1661,9 @@ public class PrinterService
      * @param  annotationForPrintImage  New value of property
      *      annotationForPrintImage.
      */
-    public void setAnnotationForPrintImage(String annotationForPrintImage)
-    {
+    public void setAnnotationForPrintImage(String annotationForPrintImage) {
         this.annotationForPrintImage = annotationForPrintImage;
     }
-
 
     /**
      *  Gets the dateOfLastCalibration attribute of the PrinterService object
@@ -1953,12 +1671,10 @@ public class PrinterService
      * @param  color  Description of the Parameter
      * @return        The dateOfLastCalibration value
      */
-    public String getDateOfLastCalibration(Boolean color)
-    {
+    public String getDateOfLastCalibration(Boolean color) {
         long time = getCalibrationTime(color);
         return time != 0L ? new DAFormat().format(new Date(time)) : null;
     }
-
 
     /**
      *  Gets the timeOfLastCalibration attribute of the PrinterService object
@@ -1966,108 +1682,89 @@ public class PrinterService
      * @param  color  Description of the Parameter
      * @return        The timeOfLastCalibration value
      */
-    public String getTimeOfLastCalibration(Boolean color)
-    {
+    public String getTimeOfLastCalibration(Boolean color) {
         long time = getCalibrationTime(color);
         return time != 0L ? new TMFormat().format(new Date(time)) : null;
     }
-
 
     /**
      *  Gets the calibrationDir attribute of the PrinterService object
      *
      * @return    The calibrationDir value
      */
-    public String getCalibrationDir()
-    {
+    public String getCalibrationDir() {
         return scanner.getCalibrationDir().getAbsolutePath();
     }
-
 
     /**
      *  Sets the calibrationDir attribute of the PrinterService object
      *
      * @param  dir  The new calibrationDir value
      */
-    public void setCalibrationDir(String dir)
-    {
+    public void setCalibrationDir(String dir) {
         scanner.setCalibrationDir(toFile(dir));
     }
-
 
     /**
      *  Gets the scanPointExtension attribute of the PrinterService object
      *
      * @return    The scanPointExtension value
      */
-    public int getScanPointExtension()
-    {
+    public int getScanPointExtension() {
         return scanner.getScanPointExtension();
     }
-
 
     /**
      *  Sets the scanPointExtension attribute of the PrinterService object
      *
      * @param  extension  The new scanPointExtension value
      */
-    public void setScanPointExtension(int extension)
-    {
+    public void setScanPointExtension(int extension) {
         scanner.setScanPointExtension(extension);
     }
-
 
     /**
      *  Gets the scanThreshold attribute of the PrinterService object
      *
      * @return    The scanThreshold value
      */
-    public int getScanThreshold()
-    {
+    public int getScanThreshold() {
         return scanner.getScanThreshold();
     }
-
 
     /**
      *  Sets the scanThreshold attribute of the PrinterService object
      *
      * @param  scanThreshold  The new scanThreshold value
      */
-    public void setScanThreshold(int scanThreshold)
-    {
+    public void setScanThreshold(int scanThreshold) {
         scanner.setScanThreshold(scanThreshold);
     }
-
 
     /**
      *  Gets the assumeZeroMinOD attribute of the PrinterService object
      *
      * @return    The assumeZeroMinOD value
      */
-    public boolean isAssumeZeroMinOD()
-    {
+    public boolean isAssumeZeroMinOD() {
         return scanner.isAssumeZeroMinOD();
     }
-
 
     /**
      *  Sets the assumeZeroMinOD attribute of the PrinterService object
      *
      * @param  assumeZeroMinOD  The new assumeZeroMinOD value
      */
-    public void setAssumeZeroMinOD(boolean assumeZeroMinOD)
-    {
+    public void setAssumeZeroMinOD(boolean assumeZeroMinOD) {
         scanner.setAssumeZeroMinOD(assumeZeroMinOD);
     }
 
-    public boolean isSmoothODs()
-    {
+    public boolean isSmoothODs() {
         return calibration.isSmoothODs();
     }
 
-    public void setSmoothODs(boolean smoothODs)
-    {
-	calibration.setSmoothODs(smoothODs);
+    public void setSmoothODs(boolean smoothODs) {
+        calibration.setSmoothODs(smoothODs);
     }
 
     /**
@@ -2075,146 +1772,119 @@ public class PrinterService
      *
      * @return    The skipNonMonotonicODs value
      */
-    public int getSkipNonMonotonicODs()
-    {
+    public int getSkipNonMonotonicODs() {
         return calibration.getSkipNonMonotonicODs();
     }
-
 
     /**
      *  Sets the skipNonMonotonicODs attribute of the PrinterService object
      *
      * @param  skipNonMonotonicODs  The new skipNonMonotonicODs value
      */
-    public void setSkipNonMonotonicODs(int skipNonMonotonicODs)
-    {
+    public void setSkipNonMonotonicODs(int skipNonMonotonicODs) {
         calibration.setSkipNonMonotonicODs(skipNonMonotonicODs);
     }
-
 
     /**
      *  Gets the printGrayAsColor attribute of the PrinterService object
      *
      * @return    The printGrayAsColor value
      */
-    public boolean isPrintGrayAsColor()
-    {
+    public boolean isPrintGrayAsColor() {
         return this.printGrayAsColor;
     }
-
 
     /**
      *  Sets the printGrayAsColor attribute of the PrinterService object
      *
      * @param  printGrayAsColor  The new printGrayAsColor value
      */
-    public void setPrintGrayAsColor(boolean printGrayAsColor)
-    {
+    public void setPrintGrayAsColor(boolean printGrayAsColor) {
         this.printGrayAsColor = printGrayAsColor;
     }
-
 
     /**
      *  Gets the maxQueuedJobCount attribute of the PrinterService object
      *
      * @return    The maxQueuedJobCount value
      */
-    public int getMaxQueuedJobCount()
-    {
+    public int getMaxQueuedJobCount() {
         return this.maxQueuedJobCount;
     }
-
 
     /**
      *  Sets the maxQueuedJobCount attribute of the PrinterService object
      *
      * @param  maxQueuedJobCount  The new maxQueuedJobCount value
      */
-    public void setMaxQueuedJobCount(int maxQueuedJobCount)
-    {
+    public void setMaxQueuedJobCount(int maxQueuedJobCount) {
         this.maxQueuedJobCount = maxQueuedJobCount;
     }
-
 
     /**
      *  Gets the applyPLUTonRGB attribute of the PrinterService object
      *
      * @return    The applyPLUTonRGB value
      */
-    public int getApplyPLUTonRGB()
-    {
+    public int getApplyPLUTonRGB() {
         return this.applyPLUTonRGB;
     }
-
 
     /**
      *  Sets the applyPLUTonRGB attribute of the PrinterService object
      *
      * @param  applyPLUTonRGB  The new applyPLUTonRGB value
      */
-    public void setApplyPLUTonRGB(int applyPLUTonRGB)
-    {
+    public void setApplyPLUTonRGB(int applyPLUTonRGB) {
         this.applyPLUTonRGB = applyPLUTonRGB;
     }
 
-
-    boolean isGray(int rgb)
-    {
+    boolean isGray(int rgb) {
         final int b = rgb & 0xff;
         final int g = (rgb >> 8) & 0xff;
         final int r = (rgb >> 16) & 0xff;
-        return applyPLUTonRGB >=
-                Math.max(Math.max(r, g), b) - Math.min(Math.min(r, g), b);
+        return applyPLUTonRGB >= Math.max(Math.max(r, g), b)
+                - Math.min(Math.min(r, g), b);
     }
-
 
     /**
      *  Gets the license attribute of the PrinterService object
      *
      * @return    The license value
      */
-    public X509Certificate getLicense()
-    {
+    public X509Certificate getLicense() {
         try {
-            return (X509Certificate) server.getAttribute(printSCPName, "License");
+            return (X509Certificate) server.getAttribute(printSCPName,
+                    "License");
         } catch (Exception e) {
             throw new RuntimeException("JMX error", e);
         }
     }
-
 
     /**
      *  Gets the licenseCN attribute of the PrinterService object
      *
      * @return    The licenseCN value
      */
-    String getLicenseCN()
-    {
+    String getLicenseCN() {
         X509Certificate license = getLicense();
-        if (license == null) {
-            return "nobody";
-        }
+        if (license == null) { return "nobody"; }
         String dn = license.getSubjectX500Principal().getName();
         int start = dn.indexOf("CN=");
         int end = dn.indexOf(',', start + 3);
         return dn.substring(start + 3, end);
     }
 
-
     /**
      *  Gets the licenseEndDate attribute of the PrinterService object
      *
      * @return    The licenseEndDate value
      */
-    Date getLicenseEndDate()
-    {
+    Date getLicenseEndDate() {
         X509Certificate license = getLicense();
-        if (license == null) {
-            return new Date();
-        }
+        if (license == null) { return new Date(); }
         return license.getNotAfter();
     }
-
 
     /**
      *  Description of the Method
@@ -2222,23 +1892,15 @@ public class PrinterService
      * @param  desc  Description of the Parameter
      * @param  type  Description of the Parameter
      */
-    private void logActorConfig(String desc, String type)
-    {
+    private void logActorConfig(String desc, String type) {
         try {
-            server.invoke(auditLogName, "logActorConfig",
-                    new Object[]{
-                    desc,
-                    type,
-                    },
-                    new String[]{
-                    String.class.getName(),
-                    String.class.getName(),
-                    });
+            server.invoke(auditLogName, "logActorConfig", new Object[] { desc,
+                    type,}, new String[] { String.class.getName(),
+                    String.class.getName(),});
         } catch (Exception e) {
             log.warn("Failed to log ActorConfig:", e);
         }
     }
-
 
     /**
      *  Gets the pValToDDL attribute of the PrinterService object
@@ -2252,38 +1914,42 @@ public class PrinterService
      * @param  plut          Description of the Parameter
      * @return               The pValToDDL value
      */
-    byte[] getPValToDDL(Chromaticity chromaticity,
-            int n, float dmin, float dmax, float l0, float la, Dataset plut)
-    {
-        return calibration.getPValToDDL(chromaticity, n, dmin, dmax, l0, la, plut);
+    byte[] getPValToDDL(Chromaticity chromaticity, int n, float dmin,
+            float dmax, float l0, float la, Dataset plut) {
+        return calibration.getPValToDDL(chromaticity, n, dmin, dmax, l0, la,
+                plut);
     }
-
 
     /**
      *  Description of the Method
      *
      * @param  chromaticity  Description of the Parameter
      */
-    private void calibrate(Chromaticity chromaticity)
-    {
+    private void calibrate(Chromaticity chromaticity) {
         try {
             String scanDirName = toScanDirName(chromaticity);
-			File odFile = scanner.getODsFile(scanDirName);
-			if (odFile.exists()
-				&& odFile.lastModified() > getCalibrationTime(chromaticity)) {
-				log.info("Read Printer Characteristic - " + odFile);
-				calibration.setODs(chromaticity, scanner.readODs(odFile));
-				setCalibrationTime(chromaticity, odFile.lastModified());								
-			}
+            File odFile = scanner.getODsFile(scanDirName);
+            if (odFile.exists()
+                    && odFile.lastModified() > getCalibrationTime(chromaticity)) {
+                log.info("Read Printer Characteristic - " + odFile);
+                calibration.setODs(chromaticity, scanner.readODs(odFile));
+                setCalibrationTime(chromaticity, odFile.lastModified());
+            }
             File scanFile = scanner.getMostRecentScanFile(scanDirName);
             if (scanFile == null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("No scanned print outs for Calibration of Printer " + calledAET
-                             + ", chromaticity=" + chromaticity);
+                    log
+                            .debug("No scanned print outs for Calibration of Printer "
+                                    + calledAET
+                                    + ", chromaticity="
+                                    + chromaticity);
                 }
                 if (getCalibrationTime(chromaticity) == 0) {
-                    log.warn("No scanned print outs for Calibration of Printer " + calledAET
-                             + ", chromaticity=" + chromaticity + " -> print UNCALIBRATED!");
+                    log
+                            .warn("No scanned print outs for Calibration of Printer "
+                                    + calledAET
+                                    + ", chromaticity="
+                                    + chromaticity + " -> print UNCALIBRATED!");
                 }
                 return;
             }
@@ -2291,27 +1957,30 @@ public class PrinterService
 
             if (scanFileLastModified <= getCalibrationTime(chromaticity)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Calibration of Printer " + calledAET
-                             + ", chromaticity=" + chromaticity + " is uptodate");
+                    log
+                            .debug("Calibration of Printer " + calledAET
+                                    + ", chromaticity=" + chromaticity
+                                    + " is uptodate");
                 }
                 return;
             }
 
-            log.info("Calibrating Printer " + calledAET + ", chromaticity=" + chromaticity);
+            log.info("Calibrating Printer " + calledAET + ", chromaticity="
+                    + chromaticity);
             float[] ods = scanner.interpolate(scanner.analyse(scanFile));
             calibration.setODs(chromaticity, ods);
             scanner.writeODs(odFile, ods);
             odFile.setLastModified(scanFileLastModified);
             setCalibrationTime(chromaticity, scanFileLastModified);
-            log.info("Calibrated Printer " + calledAET + ", chromaticity=" + chromaticity);
-            logActorConfig(
-                    "Calibrated Printer " + calledAET + ", chromaticity=" + chromaticity, "PrinterCalibration");
+            log.info("Calibrated Printer " + calledAET + ", chromaticity="
+                    + chromaticity);
+            logActorConfig("Calibrated Printer " + calledAET
+                    + ", chromaticity=" + chromaticity, "PrinterCalibration");
         } catch (Exception e) {
             log.warn("Failed to calibrate Printer " + calledAET
-                     + ", chromaticity=" + chromaticity + ": " + e);
+                    + ", chromaticity=" + chromaticity + ": " + e);
         }
     }
-
 
     /**
      *  Description of the Method
@@ -2323,17 +1992,15 @@ public class PrinterService
      * @exception  PrintException  Description of the Exception
      */
     public void printImage(String fname, String configInfo, Boolean color)
-        throws IOException, PrintException
-    {
-        Chromaticity chromaticity = color.booleanValue()
-                 ? Chromaticity.COLOR
-                 : Chromaticity.MONOCHROME;
+            throws IOException, PrintException {
+        Chromaticity chromaticity = color.booleanValue() ? Chromaticity.COLOR
+                : Chromaticity.MONOCHROME;
         log.info("Printing " + fname);
         if (configInfo.length() > 0) {
             calibrate(chromaticity);
         }
-        PrintImageJob job =
-                new PrintImageJob(this, new File(fname), configInfo, chromaticity);
+        PrintImageJob job = new PrintImageJob(this, new File(fname),
+                configInfo, chromaticity);
         PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
         PrintService ps = getPrintService();
         setPrintRequestAttribute(ps, getDefaultPrinterResolution(), aset);
@@ -2353,32 +2020,27 @@ public class PrinterService
      * @exception  MalformedObjectNameException  Description of the Exception
      */
     protected ObjectName getObjectName(MBeanServer server, ObjectName name)
-        throws MalformedObjectNameException
-    {
+            throws MalformedObjectNameException {
         calledAET = name.getKeyProperty("calledAET");
-        if (!new ObjectName(OBJECT_NAME_PREFIX + calledAET).equals(name)) {
-            throw new MalformedObjectNameException("name: " + name);
-        }
+        if (!new ObjectName(OBJECT_NAME_PREFIX + calledAET).equals(name)) { throw new MalformedObjectNameException(
+                "name: " + name); }
         return name;
     }
-
 
     /**
      *  Description of the Method
      *
      * @exception  Exception  Description of the Exception
      */
-    public void startService()
-        throws Exception
-    {
+    public void startService() throws Exception {
         float[] refODs = scanner.readODs(scanner.getRefODsFile());
-        monochromeCalibrationTime = initCalibration(Chromaticity.MONOCHROME, refODs);
+        monochromeCalibrationTime = initCalibration(Chromaticity.MONOCHROME,
+                refODs);
         colorCalibrationTime = initCalibration(Chromaticity.COLOR, refODs);
         scheduler = new Thread(this);
         scheduler.start();
         putAcceptorPolicy(getAcceptorPolicy());
     }
-
 
     /**
      *  Description of the Method
@@ -2386,11 +2048,9 @@ public class PrinterService
      * @param  chromaticity  Description of the Parameter
      * @return               Description of the Return Value
      */
-    private String toScanDirName(Chromaticity chromaticity)
-    {
+    private String toScanDirName(Chromaticity chromaticity) {
         return calledAET + "." + chromaticity;
     }
-
 
     /**
      *  Description of the Method
@@ -2399,8 +2059,7 @@ public class PrinterService
      * @param  refODs        Description of the Parameter
      * @return               Description of the Return Value
      */
-    private long initCalibration(Chromaticity chromaticity, float[] refODs)
-    {
+    private long initCalibration(Chromaticity chromaticity, float[] refODs) {
         String scanDirName = toScanDirName(chromaticity);
         File odFile = scanner.getODsFile(scanDirName);
         scanner.initScanDir(scanDirName);
@@ -2409,20 +2068,18 @@ public class PrinterService
             return odFile.lastModified();
         } catch (IOException e) {
             log.warn("Failed to calibrate Printer " + calledAET
-                     + ", chromaticity=" + chromaticity + ": " + e);
+                    + ", chromaticity=" + chromaticity + ": " + e);
             calibration.setODs(chromaticity, refODs);
             return 0L;
         }
     }
-
 
     /**
      *  Gets the acceptorPolicy attribute of the PrinterService object
      *
      * @return    The acceptorPolicy value
      */
-    private AcceptorPolicy getAcceptorPolicy()
-    {
+    private AcceptorPolicy getAcceptorPolicy() {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
         if (supportsGrayscale) {
             policy.putPresContext(UIDs.BasicGrayscalePrintManagement, ts_uids);
@@ -2439,21 +2096,17 @@ public class PrinterService
         return policy;
     }
 
-
     /**
      *  Description of the Method
      *
      * @exception  Exception  Description of the Exception
      */
-    public void stopService()
-        throws Exception
-    {
+    public void stopService() throws Exception {
         putAcceptorPolicy(null);
         Thread tmp = scheduler;
         scheduler = null;
         tmp.interrupt();
     }
-
 
     /**
      *  Description of the Method
@@ -2463,13 +2116,10 @@ public class PrinterService
      * @exception  Exception  Description of the Exception
      */
     private void invokeOnPrintSCPName(String methode, String arg)
-        throws Exception
-    {
-        server.invoke(printSCPName, methode,
-                new Object[]{arg},
-                new String[]{String.class.getName()});
+            throws Exception {
+        server.invoke(printSCPName, methode, new Object[] { arg},
+                new String[] { String.class.getName()});
     }
-
 
     /**
      *  Description of the Method
@@ -2477,20 +2127,11 @@ public class PrinterService
      * @param  policy         Description of the Parameter
      * @exception  Exception  Description of the Exception
      */
-    private void putAcceptorPolicy(AcceptorPolicy policy)
-        throws Exception
-    {
-        server.invoke(printSCPName, "putAcceptorPolicy",
-                new Object[]{
-                calledAET,
-                policy
-                },
-                new String[]{
-                String.class.getName(),
-                AcceptorPolicy.class.getName()
-                });
+    private void putAcceptorPolicy(AcceptorPolicy policy) throws Exception {
+        server.invoke(printSCPName, "putAcceptorPolicy", new Object[] {
+                calledAET, policy}, new String[] { String.class.getName(),
+                AcceptorPolicy.class.getName()});
     }
-
 
     /**
      *  Description of the Method
@@ -2499,15 +2140,15 @@ public class PrinterService
      * @param  session  Description of the Parameter
      * @param  color    Description of the Parameter
      */
-    public void scheduleJob(String job, Dataset session, Boolean color)
-    {
-        ScheduledJob pageableJob =
-                new ScheduledJob(job, session, color);
+    public void scheduleJob(String job, Dataset session, Boolean color) {
+        ScheduledJob pageableJob = new ScheduledJob(job, session, color);
         log.info("Scheduling job - " + pageableJob.getJobID());
         String sessionLabel = session.getString(Tags.FilmSessionLabel);
         if (sessionLabel == null) {
-            session.putLO(Tags.FilmSessionLabel,
-                    Annotation.makeDefaultSessionLabel(this, pageableJob.getCallingAET()));
+            session
+                    .putLO(Tags.FilmSessionLabel, Annotation
+                            .makeDefaultSessionLabel(this, pageableJob
+                                    .getCallingAET()));
         }
         String prior = session.getString(Tags.PrintPriority);
         synchronized (queueMonitor) {
@@ -2522,11 +2163,9 @@ public class PrinterService
         }
     }
 
-
     // Runnable implementation -----------------------------------
     /**  Main processing method for the PrinterService object */
-    public void run()
-    {
+    public void run() {
         log.info("Scheduler Started");
         while (scheduler != null) {
             try {
@@ -2543,24 +2182,19 @@ public class PrinterService
         log.info("Scheduler Stopped");
     }
 
-
     /**
      *  Gets the queuedJobCount attribute of the PrinterService object
      *
      * @return                     The queuedJobCount value
      * @exception  PrintException  Description of the Exception
      */
-    private int getQueuedJobCount()
-        throws PrintException
-    {
+    private int getQueuedJobCount() throws PrintException {
         PrintService ps = getPrintService();
-        QueuedJobCount qjc = (QueuedJobCount) ps.getAttribute(QueuedJobCount.class);
-        if (qjc == null) {
-            return 0;
-        }
+        QueuedJobCount qjc = (QueuedJobCount) ps
+                .getAttribute(QueuedJobCount.class);
+        if (qjc == null) { return 0; }
         return qjc.getValue();
     }
-
 
     /**
      *  Gets the printerIsAcceptingJobs attribute of the PrinterService object
@@ -2568,51 +2202,40 @@ public class PrinterService
      * @return                     The printerIsAcceptingJobs value
      * @exception  PrintException  Description of the Exception
      */
-    private boolean isPrinterIsAcceptingJobs()
-        throws PrintException
-    {
+    private boolean isPrinterIsAcceptingJobs() throws PrintException {
         PrintService ps = getPrintService();
-        PrinterIsAcceptingJobs piaj =
-                (PrinterIsAcceptingJobs) ps.getAttribute(PrinterIsAcceptingJobs.class);
-        if (piaj == null) {
-            return true;
-        }
+        PrinterIsAcceptingJobs piaj = (PrinterIsAcceptingJobs) ps
+                .getAttribute(PrinterIsAcceptingJobs.class);
+        if (piaj == null) { return true; }
         return piaj == PrinterIsAcceptingJobs.ACCEPTING_JOBS;
     }
-
 
     /**
      *  Description of the Method
      *
      * @return    Description of the Return Value
      */
-    private ScheduledJob nextJobFromQueue()
-    {
-        if (!highPriorQueue.isEmpty()) {
-            return (ScheduledJob) highPriorQueue.removeFirst();
-        }
-        if (!medPriorQueue.isEmpty()) {
-            return (ScheduledJob) medPriorQueue.removeFirst();
-        }
-        if (!lowPriorQueue.isEmpty()) {
-            return (ScheduledJob) lowPriorQueue.removeFirst();
-        }
+    private ScheduledJob nextJobFromQueue() {
+        if (!highPriorQueue.isEmpty()) { return (ScheduledJob) highPriorQueue
+                .removeFirst(); }
+        if (!medPriorQueue.isEmpty()) { return (ScheduledJob) medPriorQueue
+                .removeFirst(); }
+        if (!lowPriorQueue.isEmpty()) { return (ScheduledJob) lowPriorQueue
+                .removeFirst(); }
         return null;
     }
-
 
     /**
      *  Description of the Method
      *
      * @param  scheduledJob  Description of the Parameter
      */
-    private void processJob(ScheduledJob scheduledJob)
-    {
+    private void processJob(ScheduledJob scheduledJob) {
         try {
             synchronized (printerMonitor) {
                 while (getQueuedJobCount() > maxQueuedJobCount) {
                     log.info("Maximal number of Printer Job reached - "
-                             + getQueuedJobCount() + " > " + maxQueuedJobCount);
+                            + getQueuedJobCount() + " > " + maxQueuedJobCount);
                     printerMonitor.wait();
                 }
             }
@@ -2625,30 +2248,29 @@ public class PrinterService
             setPrintRequestAttribute(ps, chromaticity, aset);
             String resId = scheduledJob.getRequestedResolutionID();
             setPrintRequestAttribute(ps,
-                    resId != null
-                     ? (PrinterResolution) this.resolutionIDMap.get(resId)
-                     : getDefaultPrinterResolution(),
-                    aset);
+                    resId != null ? (PrinterResolution) this.resolutionIDMap
+                            .get(resId) : getDefaultPrinterResolution(), aset);
             int copies = scheduledJob.getCopies();
             if (copies > 1) {
                 setPrintRequestAttribute(ps, new Copies(copies), aset);
                 setPrintRequestAttribute(ps, SheetCollate.COLLATED, aset);
             }
-            setPrintRequestAttribute(ps,
-                    new JobName(scheduledJob.getName(), null), aset);
+            setPrintRequestAttribute(ps, new JobName(scheduledJob.getName(),
+                    null), aset);
             print(scheduledJob, aset);
             log.info("Finished processing job - " + scheduledJob.getJobID());
             try {
                 invokeOnPrintSCPName("onJobDone", scheduledJob.getPath());
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         } catch (Throwable e) {
             log.error("Failed processing job - " + scheduledJob.getJobID(), e);
             try {
                 invokeOnPrintSCPName("onJobFailed", scheduledJob.getPath());
-            } catch (Throwable ignore) {}
+            } catch (Throwable ignore) {
+            }
         }
     }
-
 
     // PrintServiceAttributeListener implementation -------------------------
     /**
@@ -2658,11 +2280,9 @@ public class PrinterService
      * @param  set     Description of the Parameter
      * @return         Description of the Return Value
      */
-    static String toMsg(String prompt, AttributeSet set)
-    {
+    static String toMsg(String prompt, AttributeSet set) {
         return prompt + Arrays.asList(toStringArray(set));
     }
-
 
     /**
      *  Description of the Method
@@ -2671,27 +2291,24 @@ public class PrinterService
      * @param  pje     Description of the Parameter
      * @return         Description of the Return Value
      */
-    static String toMsg(String prompt, PrintJobEvent pje)
-    {
+    static String toMsg(String prompt, PrintJobEvent pje) {
         return toMsg(prompt, pje.getPrintJob().getAttributes());
     }
-
 
     /**
      *  Description of the Method
      *
      * @param  psae  Description of the Parameter
      */
-    public void attributeUpdate(PrintServiceAttributeEvent psae)
-    {
+    public void attributeUpdate(PrintServiceAttributeEvent psae) {
         if (log.isDebugEnabled()) {
-            log.debug(toMsg("printServiceAttributeUpdate: ", psae.getAttributes()));
+            log.debug(toMsg("printServiceAttributeUpdate: ", psae
+                    .getAttributes()));
         }
         synchronized (printerMonitor) {
             printerMonitor.notify();
         }
     }
-
 
     // PrintJobAttributeListener implementation -------------------------
     /**
@@ -2699,13 +2316,11 @@ public class PrinterService
      *
      * @param  pjae  Description of the Parameter
      */
-    public void attributeUpdate(PrintJobAttributeEvent pjae)
-    {
+    public void attributeUpdate(PrintJobAttributeEvent pjae) {
         if (log.isDebugEnabled()) {
             log.debug(toMsg("printJobAttributeUpdate: ", pjae.getAttributes()));
         }
     }
-
 
     // PrintJobListener implementation -------------------------
     /**
@@ -2713,78 +2328,66 @@ public class PrinterService
      *
      * @param  pje  Description of the Parameter
      */
-    public void printDataTransferCompleted(PrintJobEvent pje)
-    {
+    public void printDataTransferCompleted(PrintJobEvent pje) {
         if (log.isDebugEnabled()) {
             log.debug(toMsg("printDataTransferCompleted: ", pje));
         }
     }
 
-
     /**
      *  Description of the Method
      *
      * @param  pje  Description of the Parameter
      */
-    public void printJobCanceled(PrintJobEvent pje)
-    {
+    public void printJobCanceled(PrintJobEvent pje) {
         if (log.isDebugEnabled()) {
             log.debug(toMsg("printJobCanceled: ", pje));
         }
     }
 
-
     /**
      *  Description of the Method
      *
      * @param  pje  Description of the Parameter
      */
-    public void printJobCompleted(PrintJobEvent pje)
-    {
+    public void printJobCompleted(PrintJobEvent pje) {
         if (log.isDebugEnabled()) {
             log.debug(toMsg("printJobCompleted: ", pje));
         }
     }
 
-
     /**
      *  Description of the Method
      *
      * @param  pje  Description of the Parameter
      */
-    public void printJobFailed(PrintJobEvent pje)
-    {
+    public void printJobFailed(PrintJobEvent pje) {
         if (log.isDebugEnabled()) {
             log.info(toMsg("printJobFailed: ", pje));
         }
     }
 
-
     /**
      *  Description of the Method
      *
      * @param  pje  Description of the Parameter
      */
-    public void printJobNoMoreEvents(PrintJobEvent pje)
-    {
+    public void printJobNoMoreEvents(PrintJobEvent pje) {
         if (log.isDebugEnabled()) {
             log.debug(toMsg("printJobNoMoreEvents: ", pje));
         }
     }
 
-
     /**
      *  Description of the Method
      *
      * @param  pje  Description of the Parameter
      */
-    public void printJobRequiresAttention(PrintJobEvent pje)
-    {
+    public void printJobRequiresAttention(PrintJobEvent pje) {
         if (log.isDebugEnabled()) {
             log.debug(toMsg("printJobRequiresAttention: ", pje));
         }
     }
-
 
     // Package protected ---------------------------------------------
     /**
@@ -2793,19 +2396,13 @@ public class PrinterService
      * @param  path  Description of the Parameter
      * @return       Description of the Return Value
      */
-    static File toFile(String path)
-    {
-        if (path == null || path.trim().length() == 0) {
-            return null;
-        }
+    static File toFile(String path) {
+        if (path == null || path.trim().length() == 0) { return null; }
         File f = new File(path);
-        if (f.isAbsolute()) {
-            return f;
-        }
+        if (f.isAbsolute()) { return f; }
         File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
         return new File(systemHomeDir, path);
     }
-
 
     // Protected -----------------------------------------------------
 
@@ -2818,17 +2415,15 @@ public class PrinterService
      * @param  aset  The new printRequestAttribute value
      */
     private void setPrintRequestAttribute(PrintService ps, Attribute attr,
-            PrintRequestAttributeSet aset)
-    {
+            PrintRequestAttributeSet aset) {
         if (ps.isAttributeValueSupported(attr,
                 DocFlavor.SERVICE_FORMATTED.PAGEABLE, aset)) {
             aset.add(attr);
         } else {
             log.warn("Attribute " + attr + " not supported by printer "
-                     + printerName);
+                    + printerName);
         }
     }
-
 
     /**
      *  Description of the Method
@@ -2838,12 +2433,11 @@ public class PrinterService
      * @exception  PrintException  Description of the Exception
      */
     private void print(Pageable printData, PrintRequestAttributeSet aset)
-        throws PrintException
-    {
+            throws PrintException {
         PrintService ps = getPrintService();
         if (printToFile) {
-            setPrintRequestAttribute(ps,
-                    new Destination(toFile(printToFilePath).toURI()), aset);
+            setPrintRequestAttribute(ps, new Destination(
+                    toFile(printToFilePath).toURI()), aset);
         }
 
         DocPrintJob pj = ps.createPrintJob();
@@ -2859,5 +2453,9 @@ public class PrinterService
             pj.removePrintJobListener(this);
         }
     }
-}
 
+    BufferedImage getIcon(String fname) throws IOException {
+        return IconLoader.getInstance().load(
+                new File(toFile(annotationDir), fname));
+    }
+}

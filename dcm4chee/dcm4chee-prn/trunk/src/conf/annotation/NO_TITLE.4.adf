@@ -33,3 +33,11 @@ font.color=black
 4.y=bottom
 4.align=right
 4.valign=top
+
+icon.1=tiani_weiss_s.jpg
+icon.1.x=center
+icon.1.y=bottom
+icon.1.align=center
+icon.1.valign=top
+icon.1.height=20
+
