@@ -64,7 +64,7 @@ class RefSOPImpl implements org.dcm4che.srom.RefSOP {
     }
     
     public static RefSOP newRefSOP(Dataset ds) throws DcmValueException {
-        return ds != null ? new RefSOPImpl(ds) : null;
+        return ds != null && !ds.isEmpty() ? new RefSOPImpl(ds) : null;
     }
     
     // Public --------------------------------------------------------

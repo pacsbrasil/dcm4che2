@@ -34,12 +34,17 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharacterCodingException;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
 abstract class StringElement extends ValueElement {
+    
+    static Logger log = Logger.getLogger(StringElement.class);
+    
     private interface Trim {
         public String trim(String s);
     }
@@ -166,9 +171,14 @@ abstract class StringElement extends ValueElement {
             return null;
         }
         try {
-            return trim.trim((cs != null ? cs : Charsets.ASCII).newDecoder()
+             return trim.trim((cs != null ? cs : Charsets.ASCII).newDecoder()
                     .decode(getByteBuffer(index)).toString());
         } catch (CharacterCodingException ex) {
+            if (cs == null) {
+               log.warn("Non ASCII chars in value of " + this
+                    + " - try to decode as ISO_8859_1"); 
+               return getString(index, Charsets.ISO_8859_1);
+            }
             throw new DcmValueException(ex.getMessage(),ex);
         }
     }

@@ -34,6 +34,7 @@ import java.nio.charset.UnsupportedCharsetException;
  */
 class Charsets {
     static final Charset ASCII = Charset.forName("US-ASCII");         
+    static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");         
     static Charset lookup(String[] specCharset) {
         if (specCharset == null || specCharset.length == 0)
             return ASCII;
@@ -59,7 +60,7 @@ class Charsets {
         
     static {
         CHARSETS.put("",ASCII);
-        put("ISO_IR 100","ISO-8859-1");
+        CHARSETS.put("ISO_IR 100",ISO_8859_1);
         put("ISO_IR 101","ISO-8859-2");
         put("ISO_IR 109","ISO-8859-3");
         put("ISO_IR 110","ISO-8859-4");
