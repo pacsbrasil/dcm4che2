@@ -238,7 +238,7 @@
       <name>SpoolDirName</name>
       <type>javax.management.ObjectName</type>      
       <descriptors>
-         <value value="dcmcdw:service=SpoolDir" />
+         <value value="tiani.dcmcdw:service=SpoolDir" />
       </descriptors>
    </attribute>
 	&defaultAttributes;

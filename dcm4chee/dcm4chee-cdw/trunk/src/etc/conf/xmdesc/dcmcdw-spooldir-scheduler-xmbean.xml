@@ -30,7 +30,7 @@
       <name>SchedulableMBean</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="dcmcdw:service=SpoolDir" />
+         <value value="tiani.dcmcdw:service=SpoolDir" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

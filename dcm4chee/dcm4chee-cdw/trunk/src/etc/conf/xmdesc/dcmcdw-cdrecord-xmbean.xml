@@ -250,7 +250,7 @@
       <name>LabelPrintName</name>
       <type>javax.management.ObjectName</type>      
       <descriptors>
-         <value value="dcmcdw:service=LabelPrint" />
+         <value value="tiani.dcmcdw:service=LabelPrint" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -295,7 +295,7 @@
       <name>SpoolDirName</name>
       <type>javax.management.ObjectName</type>      
       <descriptors>
-         <value value="dcmcdw:service=SpoolDir" />
+         <value value="tiani.dcmcdw:service=SpoolDir" />
       </descriptors>
    </attribute>
    &defaultAttributes;

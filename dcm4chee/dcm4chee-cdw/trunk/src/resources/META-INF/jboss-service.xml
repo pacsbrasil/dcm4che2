@@ -9,67 +9,67 @@
 
 <server>
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="dcmcdw:service=Queue,name=MediaComposer">
+	 name="tiani.dcmcdw:service=Queue,name=MediaComposer">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>  
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="dcmcdw:service=Queue,name=MakeIsoImage">
+	 name="tiani.dcmcdw:service=Queue,name=MakeIsoImage">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>
   </mbean>  
 
    <mbean code="org.dcm4chex.cdw.mbean.SpoolDirService"
-      name="dcmcdw:service=SpoolDir"
+      name="tiani.dcmcdw:service=SpoolDir"
       xmbean-dd="xmdesc/dcmcdw-spooldir-xmbean.xml">
    </mbean>
 
    <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	  name="dcmcdw:service=SpoolDirScheduler"
+	  name="tiani.dcmcdw:service=SpoolDirScheduler"
       xmbean-dd="xmdesc/dcmcdw-spooldir-scheduler-xmbean.xml">
       <depends>
-         dcmcdw:service=SpoolDir
+         tiani.dcmcdw:service=SpoolDir
       </depends>
    </mbean>
    
    <mbean code="org.dcm4chex.cdw.mbean.DcmServerService"
-      name="dcmcdw:service=DcmServer"
+      name="tiani.dcmcdw:service=DcmServer"
       xmbean-dd="xmdesc/dcmcdw-dcmsrv-xmbean.xml">
    </mbean>
    
    <mbean code="org.dcm4chex.cdw.mbean.StoreScpService"
-      name="dcmcdw:service=StoreSCP"
+      name="tiani.dcmcdw:service=StoreSCP"
       xmbean-dd="xmdesc/dcmcdw-storescp-xmbean.xml">
       <depends>
-         dcmcdw:service=DcmServer
+         tiani.dcmcdw:service=DcmServer
       </depends>
       <depends>
-         dcmcdw:service=SpoolDir
+         tiani.dcmcdw:service=SpoolDir
       </depends>
    </mbean>
    
    <mbean code="org.dcm4chex.cdw.mbean.MediaCreationMgtScpService"
-      name="dcmcdw:service=MediaCreationMgtSCP"
+      name="tiani.dcmcdw:service=MediaCreationMgtSCP"
       xmbean-dd="xmdesc/dcmcdw-mcmscp-xmbean.xml">
       <depends>
-         dcmcdw:service=DcmServer
+         tiani.dcmcdw:service=DcmServer
       </depends>
       <depends>
-         dcmcdw:service=SpoolDir
+         tiani.dcmcdw:service=SpoolDir
       </depends>
    </mbean>
    
    <mbean code="org.dcm4chex.cdw.mbean.MediaComposerService"
-      name="dcmcdw:service=MediaComposer"
+      name="tiani.dcmcdw:service=MediaComposer"
       xmbean-dd="xmdesc/dcmcdw-composer-xmbean.xml">
       <depends>
-         dcmcdw:service=SpoolDir
+         tiani.dcmcdw:service=SpoolDir
       </depends>
       <depends>
-      	dcmcdw:service=Queue,name=MediaComposer
+      	tiani.dcmcdw:service=Queue,name=MediaComposer
       </depends>
       <depends>
         jboss.mq:service=InvocationLayer,type=JVM
@@ -77,10 +77,10 @@
    </mbean>
 
    <mbean code="org.dcm4chex.cdw.mbean.MakeIsoImageService"
-      name="dcmcdw:service=MakeIsoImage"
+      name="tiani.dcmcdw:service=MakeIsoImage"
       xmbean-dd="xmdesc/dcmcdw-mkisofs-xmbean.xml">
       <depends>
-      	dcmcdw:service=Queue,name=MakeIsoImage
+      	tiani.dcmcdw:service=Queue,name=MakeIsoImage
       </depends>
       <depends>
         jboss.mq:service=InvocationLayer,type=JVM
@@ -88,7 +88,7 @@
    </mbean>
 
    <mbean code="org.dcm4chex.cdw.mbean.LabelPrintService"
-      name="dcmcdw:service=LabelPrint"
+      name="tiani.dcmcdw:service=LabelPrint"
       xmbean-dd="xmdesc/dcmcdw-labelprint-xmbean.xml">
    </mbean>
 </server>
