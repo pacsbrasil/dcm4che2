@@ -76,12 +76,12 @@
                         <xsl:otherwise><xsl:value-of select="@start - @pagesize"/></xsl:otherwise>
                       </xsl:choose>
                     </xsl:variable>
-                    <a href="/jaudit/?type={@type}&amp;host={@host}&amp;from={@from}&amp;to={@to}&amp;aet={@aet}&amp;username={@username}&amp;patientname={@patientname}&amp;patientid={@patientid}&amp;start={$startentry}&amp;pagesize={@pagesize}{$sortbystr}">&lt;&lt; Prev</a>
+                    <a href="/dcm4jboss-arr/?type={@type}&amp;host={@host}&amp;from={@from}&amp;to={@to}&amp;aet={@aet}&amp;username={@username}&amp;patientname={@patientname}&amp;patientid={@patientid}&amp;start={$startentry}&amp;pagesize={@pagesize}{$sortbystr}">&lt;&lt; Prev</a>
                   </xsl:if>
                 </td>
                 <td>
                   <xsl:if test="$eof = 'false'">
-                    <a href="/jaudit/?type={@type}&amp;host={@host}&amp;from={@from}&amp;to={@to}&amp;aet={@aet}&amp;username={@username}&amp;patientname={@patientname}&amp;patientid={@patientid}&amp;start={@start + @pagesize}&amp;pagesize={@pagesize}{$sortbystr}">Next &gt;&gt;</a>
+                    <a href="/dcm4jboss-arr/?type={@type}&amp;host={@host}&amp;from={@from}&amp;to={@to}&amp;aet={@aet}&amp;username={@username}&amp;patientname={@patientname}&amp;patientid={@patientid}&amp;start={@start + @pagesize}&amp;pagesize={@pagesize}{$sortbystr}">Next &gt;&gt;</a>
                   </xsl:if>
                 </td>
               </tr>
@@ -93,7 +93,7 @@
         <td>
           <!-- query -->
           <table class="query">
-            <form name="frmArrQuery" method="get" action="/jaudit">
+            <form name="frmArrQuery" method="get" action="/dcm4jboss-arr">
               <xsl:variable name="pagesize_form">
                 <xsl:choose>
                   <xsl:when test="@pagesize &lt;= 0"><xsl:value-of select="number(30)"/></xsl:when> <!-- DEFAULT PAGE SIZE -->
@@ -166,9 +166,9 @@
             <!-- audit record list -->
  	          <table class="c1">
 	            <tr class="head">
-	              <td><a href="/jaudit?{$lastquery}&amp;orderby=type&amp;orderdir={$vsortdir-type}"><div class="width: 100%">Audit Event</div></a></td>
-	              <td><a href="/jaudit?{$lastquery}&amp;orderby=host&amp;orderdir={$vsortdir-host}"><div class="width: 100%">Host</div></a></td>
-	              <td><a href="/jaudit?{$lastquery}&amp;orderby=timestamp&amp;orderdir={$vsortdir-timestamp}"><div class="width: 100%">Timestamp (local)</div></a></td>
+	              <td><a href="/dcm4jboss-arr?{$lastquery}&amp;orderby=type&amp;orderdir={$vsortdir-type}"><div class="width: 100%">Audit Event</div></a></td>
+	              <td><a href="/dcm4jboss-arr?{$lastquery}&amp;orderby=host&amp;orderdir={$vsortdir-host}"><div class="width: 100%">Host</div></a></td>
+	              <td><a href="/dcm4jboss-arr?{$lastquery}&amp;orderby=timestamp&amp;orderdir={$vsortdir-timestamp}"><div class="width: 100%">Timestamp (local)</div></a></td>
 	              <td>Information</td>
 	              <td><!-- for view xml --></td>
 	            </tr>

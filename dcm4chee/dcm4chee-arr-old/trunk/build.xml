@@ -1,4 +1,4 @@
-<project default="all" name="jaudit">
+<project default="all" name="dcm4jboss-arr">
 
 	<!-- Allow user to adjust build properties without
 	modifying this build script.
@@ -220,7 +220,7 @@
             </deploymentdescriptor>
             
             <jbosswebxml destdir="${basedir}/target/web-inf"
-                securitydomain="java:/jaas/jaudit" />
+                securitydomain="java:/jaas/dcm4jboss-arr" />
         
         </webdoclet>
     </target>
@@ -257,7 +257,7 @@
 
     <target name="ejb-jdbc-jar">
 		<mkdir dir="${basedir}/target/${db.name}/deploy"/>
-        <jar jarfile="${basedir}/target/${db.name}/deploy/jaudit-ejb.jar">
+        <jar jarfile="${basedir}/target/${db.name}/deploy/dcm4jboss-arr-ejb.jar">
         	<metainf dir="${basedir}/target/meta-inf-${db.name}"/>
         	<fileset dir="${basedir}/target/classes">
                 <include name="**/ejb/**" />
@@ -267,12 +267,12 @@
 
 	<target name="jar" depends="compile">
 		<mkdir dir="${basedir}/target/common/lib"/>
-        <jar jarfile="${basedir}/target/common/lib/jaudit.jar">
+        <jar jarfile="${basedir}/target/common/lib/dcm4jboss-arr.jar">
         	<fileset dir="${basedir}/target/classes">
                 <include name="**/mbean/**" />
             </fileset>
         </jar>
-        <jar jarfile="${basedir}/target/common/lib/jaudit-login.jar">
+        <jar jarfile="${basedir}/target/common/lib/dcm4jboss-arr-login.jar">
         	<fileset dir="${basedir}/target/classes">
                 <include name="**/security/**" />
             </fileset>
@@ -282,7 +282,7 @@
 	<target name="war" depends="compile">
 		<mkdir dir="${basedir}/target/common/deploy"/>
         <war
-            warfile="${basedir}/target/common/deploy/jaudit.war"
+            warfile="${basedir}/target/common/deploy/dcm4jboss-arr.war"
             webxml="${basedir}/target/web-inf/web.xml"
         >
             <webinf dir="${basedir}/target/web-inf" includes="jboss-web.xml"/>
