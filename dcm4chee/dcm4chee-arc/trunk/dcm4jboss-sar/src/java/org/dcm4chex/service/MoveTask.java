@@ -141,7 +141,6 @@ class MoveTask implements Runnable {
         }
     };
 
-
     public MoveTask(QueryRetrieveScpService service,
             ActiveAssociation moveAssoc, int movePcid, Command moveRqCmd,
             FileInfo[][] fileInfo, AEData aeData, String moveDest)
@@ -155,7 +154,7 @@ class MoveTask implements Runnable {
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.retrieveAET = moveAssoc.getAssociation().getCalledAET();
         if ((remaining = fileInfo.length) > 0) {
-//            notifyMovePending(null);
+            notifyMovePending(null);
             prepareRetrieveInfo(fileInfo);
             if (!toRetrieve.isEmpty()) {
                 openAssociation();
@@ -226,6 +225,7 @@ class MoveTask implements Runnable {
             Map.Entry entry = (Entry) toForward.get(i);
             final String retrieveAET = (String) entry.getKey();
             final Set iuids = (Set) entry.getValue();
+            final int size = iuids.size();
             remaining -= iuids.size();
             DimseListener fwdmoveRspListener = new DimseListener() {
 
@@ -236,8 +236,11 @@ class MoveTask implements Runnable {
                         final int status = fwdMoveRspCmd.getStatus();
                         switch (status) {
                         case Status.Pending:
-                            notifyMovePending(fwdMoveRspCmd);
-                        	break;
+                            if (fwdMoveRspCmd.getInt(
+                                    Tags.NumberOfRemainingSubOperations, 0) < size) {
+                                notifyMovePending(fwdMoveRspCmd);
+                            }
+                            break;
                         case Status.Cancel:
                             remaining += fwdMoveRspCmd.getInt(
                                     Tags.NumberOfRemainingSubOperations, 0);
@@ -248,18 +251,22 @@ class MoveTask implements Runnable {
                             warnings += fwdMoveRspCmd.getInt(
                                     Tags.NumberOfWarningSubOperations, 0);
                             if (ds != null) {
-                                failedIUIDs.addAll(Arrays.asList(ds
-                                        .getStrings(Tags.FailedSOPInstanceUIDList)));
+                                failedIUIDs
+                                        .addAll(Arrays
+                                                .asList(ds
+                                                        .getStrings(Tags.FailedSOPInstanceUIDList)));
                             }
                             break;
-                        default: // General error
+                        default:
+                            // General error
                             service.getLog().error(
-                                    "Forwarded MOVE RQ to " + retrieveAET + " failed: " + fwdMoveRspCmd);
+                                    "Forwarded MOVE RQ to " + retrieveAET
+                                            + " failed: " + fwdMoveRspCmd);
                             failedIUIDs.addAll(iuids);
-                        }                    
+                        }
                     } catch (IOException e) {
-                        service.getLog().error("Failure during receive of C-MOVE_RSP:",
-                                e);
+                        service.getLog().error(
+                                "Failure during receive of C-MOVE_RSP:", e);
                     }
                 }
             };
@@ -317,7 +324,7 @@ class MoveTask implements Runnable {
             storeAssoc.release(true);
             // workaround to ensure that last STORE-RSP is processed before
             // finally MOVE-RSP is sent
-            Thread.sleep(10); 
+            Thread.sleep(10);
         } catch (Exception ignore) {
         }
         logInstancesSent();
@@ -437,22 +444,22 @@ class MoveTask implements Runnable {
         }
         return aets;
     }
-    
+
     private void prepareRetrieveInfo(FileInfo[][] fileInfo) {
         HashMap iuidsAtAE = new HashMap();
         for (int i = 0; i < fileInfo.length; ++i) {
             FileInfo[] instFiles = fileInfo[i];
             Set aets = getRemoteRetrieveAETs(instFiles);
             if (aets != null) {
-	            for (Iterator it = aets.iterator(); it.hasNext();) {
-	                final String aet = (String) it.next();
-	                Set iuids = (Set) iuidsAtAE.get(aet);
-	                if (iuids == null) {
-	                    iuids = new HashSet();
-	                    iuidsAtAE.put(aet, iuids);
-	                }
-	                iuids.add(instFiles[0].sopIUID);
-	            }
+                for (Iterator it = aets.iterator(); it.hasNext();) {
+                    final String aet = (String) it.next();
+                    Set iuids = (Set) iuidsAtAE.get(aet);
+                    if (iuids == null) {
+                        iuids = new HashSet();
+                        iuidsAtAE.put(aet, iuids);
+                    }
+                    iuids.add(instFiles[0].sopIUID);
+                }
             }
         }
         while (!iuidsAtAE.isEmpty()) {
