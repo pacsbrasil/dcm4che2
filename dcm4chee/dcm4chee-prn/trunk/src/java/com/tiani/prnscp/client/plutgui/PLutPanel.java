@@ -54,7 +54,7 @@ import org.dcm4che.dict.Tags;
  * @since      March, 2003
  * @version    $Revision$
  */
-class PLutPanel extends JPanel
+public class PLutPanel extends JPanel
 {
     private DcmObjectFactory dof = DcmObjectFactory.getInstance();
     private DecimalFormat numFormat = new DecimalFormat();

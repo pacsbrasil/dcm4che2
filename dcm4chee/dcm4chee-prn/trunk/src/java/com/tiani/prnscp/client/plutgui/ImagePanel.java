@@ -20,7 +20,7 @@ import org.dcm4cheri.imageio.plugins.DcmImageReader;
 import org.dcm4che.image.ColorModelFactory;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 
-class ImagePanel extends JPanel
+public class ImagePanel extends JPanel
 {
     private ImageReader reader;
     private DcmImageReadParam readParam;
