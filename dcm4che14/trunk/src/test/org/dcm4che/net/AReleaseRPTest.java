@@ -50,10 +50,10 @@ public class AReleaseRPTest extends ExtTestCase {
 
     private static final String A_RELEASE_RP = "../testdata/pdu/AReleaseRP.pdu";
 
-    private PDUFactory fact;
+    private AssociationFactory fact;
     
     protected void setUp() throws Exception {
-        fact = PDUFactory.getInstance();
+        fact = AssociationFactory.getInstance();
     }
 
     public void testWrite() throws Exception {
@@ -67,13 +67,12 @@ public class AReleaseRPTest extends ExtTestCase {
 
     public void testRead() throws Exception {
         InputStream in = new FileInputStream(A_RELEASE_RP);
-        UnparsedPDU raw = null;
+        AReleaseRP pdu = null;
         try {
-            raw = fact.readFrom(in);            
+            pdu = (AReleaseRP)fact.readFrom(in);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }
-        AReleaseRP pdu = (AReleaseRP)fact.parse(raw);
     }
 }
 

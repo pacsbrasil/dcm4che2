@@ -41,7 +41,9 @@ public interface AAssociateRJ extends PDU {
     public static final int APPLICATION_CONTEXT_NAME_NOT_SUPPORTED = 2;
     public static final int CALLING_AE_TITLE_NOT_RECOGNIZED = 3;
     public static final int CALLED_AE_TITLE_NOT_RECOGNIZED = 7;
+
     public static final int PROTOCOL_VERSION_NOT_SUPPORTED = 2;
+
     public static final int TEMPORARY_CONGESTION = 1;
     public static final int LOCAL_LIMIT_EXCEEDED = 2;
     

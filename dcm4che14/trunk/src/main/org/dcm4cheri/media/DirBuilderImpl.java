@@ -67,7 +67,7 @@ final class DirBuilderImpl implements DirBuilder {
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         Dataset ds = DirReaderImpl.factory.newDataset();
         try {
-            ds.read(in, FileFormat.DICOM_FILE, Tags.PixelData);
+            ds.readFile(in, FileFormat.DICOM_FILE, Tags.PixelData);
         } finally {
             in.close();
         }

@@ -23,6 +23,7 @@
 
 package org.dcm4cheri.data;
 
+import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
@@ -60,7 +61,7 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
     }
 
     public void startCommand() {
-        curDcmObject = (Dataset)result;
+        curDcmObject = (Command)result;
         seqStack.clear();
     }
     

@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,44 +21,31 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+package org.dcm4che.net;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public final class DatasetSerializer implements java.io.Serializable {
+public class AssociationEvent extends java.util.EventObject {
     
-    static final long serialVersionUID =  -4404056689087154718L;
+    private final AssociationState oldState;
+    private final AssociationState newState;
 
-    private transient Dataset ds;
-    
-    public DatasetSerializer() {}
-
-    public DatasetSerializer(Dataset ds) {
-        this.ds = ds; 
+    /** Creates a new instance of AssociationState */
+    public AssociationEvent(Association source, AssociationState oldState, 
+            AssociationState newState) {
+        super(source);
+        this.oldState = oldState;
+        this.newState = newState;
     }
     
-    private void writeObject(java.io.ObjectOutputStream out)
-            throws IOException {
-        boolean fmi = ds.getFileMetaInfo() != null;
-        out.writeBoolean(fmi);
-        ds.writeFile(out, fmi ? null : DcmEncodeParam.EVR_LE);
+    public final AssociationState getOldState() {
+        return oldState;
     }
     
-    private void readObject(java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        ds = DcmObjectFactory.getInstance().newDataset();
-        ds.readFile(in, in.readBoolean() ? FileFormat.DICOM_FILE
-                                     : FileFormat.EVR_LE_STREAM, -1);
+    public final AssociationState getNewState() {
+        return newState;
     }
-    
-    private Object readResolve() throws java.io.ObjectStreamException {
-        return ds;
-    }        
 }

@@ -22,53 +22,71 @@
  *****************************************************************************/
 
 package org.dcm4cheri.net;
-
 import org.dcm4che.net.*;
 
-import java.io.*;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.List;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-final class AsyncOpsWindowImpl implements AsyncOpsWindow {
+final class AssociationImpl implements Association {
+    
+    private final FsmImpl fsm;
+    private final DimseReaderImpl reader;
+    private final DimseWriterImpl writer;
+    private DimseDispatcher dispatcher;
 
-    private final int maxOpsInvoked;
-    private final int maxOpsPerformed;
-    
-    /** Creates a new instance of AsyncOpsWindowImpl */
-    AsyncOpsWindowImpl(int maxOpsInvoked, int maxOpsPerformed) {
-        this.maxOpsInvoked = maxOpsInvoked;
-        this.maxOpsPerformed = maxOpsPerformed;
+    /** Creates a new instance of AssociationImpl */
+    public AssociationImpl(Socket s, boolean requestor,
+            AssociationListener listener) throws IOException {
+        this.fsm = new FsmImpl(this, s, requestor, listener);
+        this.reader = new DimseReaderImpl(fsm);
+        this.writer = new DimseWriterImpl(fsm);
     }
-
-    AsyncOpsWindowImpl(DataInputStream din, int len)
-            throws IOException, PDUException {
-        if (len != 4) {
-            throw new PDUException(
-                    "Illegal length of AsyncOpsWindow sub-item: " + len,
-                new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                               AAbort.INVALID_PDU_PARAMETER_VALUE));
-        }
-        this.maxOpsInvoked = din.readUnsignedShort();
-        this.maxOpsPerformed = din.readUnsignedShort();
+        
+    public final void setTCPCloseTimeout(int tcpCloseTimeout) {
+        fsm.setTCPCloseTimeout(tcpCloseTimeout);
     }
     
-    public final int getMaxOpsInvoked() {
-        return maxOpsInvoked;
+    public final int getTCPCloseTimeout() {
+        return fsm.getTCPCloseTimeout();
     }
     
-    public final int getMaxOpsPerformed() {
-        return maxOpsPerformed;
+    public void setDispatcher(DimseDispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+    }        
+    
+    public final PDU connect(AAssociateRQ rq, int timeout) throws IOException {
+        fsm.write(rq);
+        return fsm.read(timeout);
     }
     
-    void writeTo(DataOutputStream dout) throws IOException {
-        dout.write(0x53);
-        dout.write(0);
-        dout.writeShort(4);
-        dout.writeShort(maxOpsInvoked);
-        dout.writeShort(maxOpsPerformed);
+    public final Dimse read(int timeout) throws IOException  {
+        return reader.read(timeout);
     }
 
+    public final void write(Dimse dimse) throws IOException  {
+         writer.write(dimse);
+    }
+
+    public final PDU release(int timeout) throws IOException {
+        fsm.write(AReleaseRQImpl.getInstance());
+        return fsm.read(timeout);
+    }
+
+    public final void abort(AAbort aa) throws IOException {
+        fsm.write(aa);
+    }
+
+    public final String getAcceptedTransferSyntaxUID(int pcid) {
+        return fsm.getAcceptedTransferSyntaxUID(pcid);
+    }
+    
+    public final List getAcceptedPresContext(String asuid) {
+        return fsm.getAcceptedPresContext(asuid);
+    }
 }

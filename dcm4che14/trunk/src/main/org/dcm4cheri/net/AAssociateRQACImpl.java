@@ -49,7 +49,13 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     private final LinkedHashMap roleSels = new LinkedHashMap();
     private final LinkedHashMap extNegs = new LinkedHashMap();
 
-    protected void init(UnparsedPDU raw) throws DcmULServiceException {
+    protected AAssociateRQACImpl init(UnparsedPDUImpl raw) throws PDUException {
+        if (raw.buffer() == null) {
+            throw new PDUException(
+                    "PDU length exceeds supported maximum " + raw,
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.REASON_NOT_SPECIFIED));
+        }
         ByteArrayInputStream bin = new ByteArrayInputStream(
                 raw.buffer(), 6, raw.length());
         DataInputStream din = new DataInputStream(bin);
@@ -73,7 +79,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
                     case 0x20:
                     case 0x21:
                         if (itemType != pctype()) {
-                            throw new DcmULServiceException(
+                            throw new PDUException(
                                     "unexpected item type "
                                           + Integer.toHexString(itemType) + 'H',
                                     new AAbortImpl(AAbort.SERVICE_PROVIDER,
@@ -86,20 +92,21 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
                         readUserInfo(din, itemLen);
                         break;
                    default:
-                        throw new DcmULServiceException(
+                        throw new PDUException(
                                 "unrecognized item type "
                                         + Integer.toHexString(itemType) + 'H',
                                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                         AAbort.UNRECOGNIZED_PDU_PARAMETER));
                 }
             }
-        } catch (DcmULServiceException e) {
+        } catch (PDUException e) {
             throw e;
         } catch (Exception e) {            
-            throw new DcmULServiceException("Failed to parse " + raw, e,
+            throw new PDUException("Failed to parse " + raw, e,
                     new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                    AAbort.REASON_NOT_SPECIFIED));
         }
+        return this;
     }
     
     public final int getProtocolVersion() {
@@ -285,10 +292,10 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     }
 
     private void readUserInfo(DataInputStream din, int len)
-            throws IOException, DcmULServiceException {
+            throws IOException, PDUException {
         int diff = len - din.available();
         if (diff != 0) {
-            throw new DcmULServiceException("User info item length=" + len
+            throw new PDUException("User info item length=" + len
                 + " mismatch PDU length (diff=" + diff + ")",
                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                AAbort.INVALID_PDU_PARAMETER_VALUE));
@@ -300,7 +307,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
             switch (subItemType) {
                 case 0x51:
                     if (itemLen != 4) {
-                        throw new DcmULServiceException(
+                        throw new PDUException(
                                 "Illegal length of Maximum length sub-item: "
                                 + itemLen,
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
@@ -324,7 +331,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
                     addExtNegotiation(new ExtNegotiationImpl(din, itemLen));
                     break;
                 default:
-                    throw new DcmULServiceException(
+                    throw new PDUException(
                             "unrecognized user sub-item type "
                                     + Integer.toHexString(subItemType) + 'H',
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,

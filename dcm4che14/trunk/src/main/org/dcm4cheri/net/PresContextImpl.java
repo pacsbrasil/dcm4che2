@@ -61,7 +61,7 @@ final class PresContextImpl implements PresContext {
     }
     
     PresContextImpl(int type, DataInputStream din, int len)
-            throws IOException, DcmULServiceException {
+            throws IOException, PDUException {
         this.type = type;
         this.pcid = din.readUnsignedByte();
         din.readUnsignedByte();
@@ -77,7 +77,7 @@ final class PresContextImpl implements PresContext {
             switch (uidtype) {
                 case 0x30:
                     if (type == 0x21 || asuid != null) {
-                        throw new DcmULServiceException(
+                        throw new PDUException(
                                 "Unexpected Abstract Syntax sub-item in"
                                 + " Presentation Context",
                                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
@@ -87,7 +87,7 @@ final class PresContextImpl implements PresContext {
                     break;
                 case 0x40:
                     if (type == 0x21 && !tsuids.isEmpty()) {
-                        throw new DcmULServiceException(
+                        throw new PDUException(
                                 "Unexpected Transfer Syntax sub-item in"
                                 + " Presentation Context",
                                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
@@ -96,7 +96,7 @@ final class PresContextImpl implements PresContext {
                     tsuids.add(AAssociateRQACImpl.readASCII(din, uidlen));
                     break;
                 default:
-                    throw new DcmULServiceException(
+                    throw new PDUException(
                             "unrecognized item type "
                                     + Integer.toHexString(uidtype) + 'H',
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
@@ -106,7 +106,7 @@ final class PresContextImpl implements PresContext {
         }
         this.asuid = asuid;
         if (remain < 0) {
-            throw new DcmULServiceException("Presentation item length: " + len
+            throw new PDUException("Presentation item length: " + len
                 + " mismatch length of sub-items",
                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                AAbort.INVALID_PDU_PARAMETER_VALUE));

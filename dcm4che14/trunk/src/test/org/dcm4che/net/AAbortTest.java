@@ -53,10 +53,10 @@ public class AAbortTest extends ExtTestCase {
     private final int REASON = AAbort.INVALID_PDU_PARAMETER_VALUE;
 
 
-    private PDUFactory fact;
+    private AssociationFactory fact;
     
     protected void setUp() throws Exception {
-        fact = PDUFactory.getInstance();
+        fact = AssociationFactory.getInstance();
     }
 
     public void testWrite() throws Exception {
@@ -70,13 +70,12 @@ public class AAbortTest extends ExtTestCase {
 
     public void testRead() throws Exception {
         InputStream in = new FileInputStream(A_ABORT);
-        UnparsedPDU raw = null;
+        AAbort pdu = null;
         try {
-            raw = fact.readFrom(in);            
+            pdu = (AAbort)fact.readFrom(in);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }
-        AAbort pdu = (AAbort)fact.parse(raw);
         assertEquals(SOURCE, pdu.source());
         assertEquals(REASON, pdu.reason());
     }

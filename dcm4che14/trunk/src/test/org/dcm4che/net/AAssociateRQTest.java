@@ -103,12 +103,12 @@ public class AAssociateRQTest extends AAssociateRQACTest {
 
     public void testRead() throws Exception {
         InputStream in = new FileInputStream(A_ASSOCIATE_RQ);
-        UnparsedPDU raw = null;
+        AAssociateRQ pdu = null;
         try {
-            raw = fact.readFrom(in);            
+            pdu = (AAssociateRQ)fact.readFrom(in);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }
-        check((AAssociateRQ)fact.parse(raw));        
+        check(pdu);        
      }
 }

@@ -389,8 +389,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         return parseFileMetaInfo(true, DcmDecodeParam.EVR_LE);
     }
     
-    public long parseCommand(boolean preamble, DcmDecodeParam param)
-            throws IOException {
+    public long parseCommand() throws IOException {
         if (handler != null)
             handler.startCommand();
                 

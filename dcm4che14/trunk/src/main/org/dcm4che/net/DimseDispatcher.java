@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,44 +21,14 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+package org.dcm4che.net;
 
 /**
  *
- * @author  gunter.zeilinger@tiani.com
+ * @author  <a href="mailto:gunter.zeilinger@tiani.com">gunter zeilinger</a>
  * @version 1.0.0
  */
-public final class DatasetSerializer implements java.io.Serializable {
-    
-    static final long serialVersionUID =  -4404056689087154718L;
+public interface DimseDispatcher {
 
-    private transient Dataset ds;
-    
-    public DatasetSerializer() {}
-
-    public DatasetSerializer(Dataset ds) {
-        this.ds = ds; 
-    }
-    
-    private void writeObject(java.io.ObjectOutputStream out)
-            throws IOException {
-        boolean fmi = ds.getFileMetaInfo() != null;
-        out.writeBoolean(fmi);
-        ds.writeFile(out, fmi ? null : DcmEncodeParam.EVR_LE);
-    }
-    
-    private void readObject(java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        ds = DcmObjectFactory.getInstance().newDataset();
-        ds.readFile(in, in.readBoolean() ? FileFormat.DICOM_FILE
-                                     : FileFormat.EVR_LE_STREAM, -1);
-    }
-    
-    private Object readResolve() throws java.io.ObjectStreamException {
-        return ds;
-    }        
 }
+

@@ -24,6 +24,7 @@
 package org.dcm4cheri.data;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
@@ -119,14 +120,21 @@ final class DatasetImpl extends BaseDatasetImpl
         totLen = 0;
     }
         
-    public void read(InputStream in, FileFormat format, int stopTag)
+    public void readFile(InputStream in, FileFormat format, int stopTag)
             throws IOException, DcmValueException {
         DcmParserImpl parser = new DcmParserImpl(in);
         parser.setDcmHandler(getDcmHandler());
         parser.parseDcmFile(format, stopTag);
     }
     
-    public void read(ImageInputStream in, FileFormat format, int stopTag)
+    public void readDataset(InputStream in, DcmDecodeParam param, int stopTag)
+            throws IOException, DcmValueException {
+        DcmParserImpl parser = new DcmParserImpl(in);
+        parser.setDcmHandler(getDcmHandler());
+        parser.parseDataset(param, stopTag);
+    }
+
+    public void readFile(ImageInputStream in, FileFormat format, int stopTag)
             throws IOException, DcmValueException {
         DcmParserImpl parser = new DcmParserImpl(in);
         parser.setDcmHandler(getDcmHandler());

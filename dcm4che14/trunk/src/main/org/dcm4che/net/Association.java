@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG                             *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -23,45 +23,32 @@
 
 package org.dcm4che.net;
 
+import java.io.IOException;
+import java.util.List;
+
 /**
  *
- * @author  gunter.zeilinger@tiani.com
+ * @author  <a href="mailto:gunter.zeilinger@tiani.com">gunter zeilinger</a>
+ * @version 1.0.0
  */
-public class DcmULServiceException extends Exception {
+public interface Association {
 
-    private final AAbort abort;
+    public void setTCPCloseTimeout(int tcpCloseTimeout);
     
-    /**
-     * Constructs an instance of <code>PDUParseException</code> with the
-     * specified detail message and corresponding A-Abort PDU.
-     * @param msg the detail message.
-     * @param abort corresponding A-Abort PDU.
-     */
-    public DcmULServiceException(String msg, AAbort abort) {
-        super(msg);
-        this.abort = abort;
-    }
+    public int getTCPCloseTimeout();
 
-    /**
-     * Constructs a new throwable with the specified detail message and
-     * cause and corresponding A-Abort PDU.
-     *
-     * @param msg the detail message.
-     * @param  cause the cause.
-     * @param abort corresponding A-Abort PDU.
-     */
-    public DcmULServiceException(String msg, Throwable cause, AAbort abort) {
-        super(msg, cause);
-        this.abort = abort;
-    }
+    public PDU connect(AAssociateRQ rq, int timeout) throws IOException;
     
-    /**
-     * Returns corresponding A-Abort PDU.
-     * @return corresponding A-Abort PDU.
-     */
-    public final AAbort getAAbort() {
-        return abort;
-    }
+    public Dimse read(int timeout) throws IOException;
+
+    public void write(Dimse dimse) throws IOException;
+
+    public PDU release(int timeout) throws IOException;
+
+    public void abort(AAbort aa) throws IOException;
+    
+    public String getAcceptedTransferSyntaxUID(int pcid);
+    
+    public List getAcceptedPresContext(String asuid);
 }
-
 

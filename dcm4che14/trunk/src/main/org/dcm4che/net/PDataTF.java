@@ -24,7 +24,6 @@
 package org.dcm4che.net;
 
 import java.io.InputStream;
-import java.util.Iterator;
 
 /**
  *
@@ -33,7 +32,7 @@ import java.util.Iterator;
  */
 public interface PDataTF extends PDU {
 
-    public Iterator pdvs();
+    public PDV readPDV();
 
     public int free();
     

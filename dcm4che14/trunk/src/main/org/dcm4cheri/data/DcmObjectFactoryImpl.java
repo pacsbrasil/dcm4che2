@@ -44,6 +44,10 @@ public final class DcmObjectFactoryImpl extends DcmObjectFactory {
     public DcmObjectFactoryImpl() {
     }
 
+    public Command newCommand() {
+        return new CommandImpl();
+    }    
+
     public Dataset newDataset() {
         return new DatasetImpl();
     }    
@@ -74,5 +78,5 @@ public final class DcmObjectFactoryImpl extends DcmObjectFactory {
         } catch (DcmValueException ex) {
             throw new IllegalArgumentException(ex.getMessage());
         }
-   }
+    }     
 }

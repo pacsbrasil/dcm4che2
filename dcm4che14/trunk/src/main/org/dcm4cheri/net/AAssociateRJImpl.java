@@ -36,15 +36,19 @@ final class AAssociateRJImpl implements AAssociateRJ {
 
     private final byte[] buf;
     
-    AAssociateRJImpl(UnparsedPDU raw) throws DcmULServiceException {
+    static AAssociateRJImpl parse(UnparsedPDUImpl raw) throws PDUException {
         if (raw.length() != 4) {
-            throw new DcmULServiceException("Illegal A-ASSOCIATE-RJ " + raw,
+            throw new PDUException("Illegal A-ASSOCIATE-RJ " + raw,
                     new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                    AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
-        this.buf = raw.buffer();
+        return new AAssociateRJImpl(raw.buffer());
     }
 
+    private AAssociateRJImpl(byte[] buf) {
+        this.buf = buf;
+    }
+    
     AAssociateRJImpl(int result, int source, int reason) {
         this.buf = new byte[]{ 3, 0, 0, 0, 0, 4, 0,
                 (byte)result,

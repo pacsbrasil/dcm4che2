@@ -35,8 +35,8 @@ import java.io.*;
 final class AAssociateACImpl extends AAssociateRQACImpl
         implements AAssociateAC {
 
-    AAssociateACImpl(UnparsedPDU raw) throws DcmULServiceException {
-        init(raw);
+    static AAssociateACImpl parse(UnparsedPDUImpl raw) throws PDUException {
+        return (AAssociateACImpl)new AAssociateACImpl().init(raw);
     }
 
     AAssociateACImpl() {

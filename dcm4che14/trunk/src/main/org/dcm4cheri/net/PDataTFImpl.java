@@ -35,16 +35,29 @@ import java.util.*;
  */
 final class PDataTFImpl implements PDataTF {
 
+    private static final int DEF_MAX_LENGTH = 0xFFFF;
+    private static final int MIN_MAX_LENGTH = 0x00FF;
     private final byte[] buf;
     private int pdulen;
     private int wpos;
     private final LinkedList pdvs = new LinkedList();
+    private final Iterator it;
     private PDVImpl curPDV = null;
     
-    PDataTFImpl(UnparsedPDU raw) throws DcmULServiceException {
-        this.pdulen = raw.length();
+    static PDataTFImpl parse(UnparsedPDUImpl raw) throws PDUException {
+        if (raw.buffer() == null) {
+            throw new PDUException(
+                    "PDU length exceeds supported maximum " + raw,
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.REASON_NOT_SPECIFIED));
+        }
+        return new PDataTFImpl(raw.length(), raw.buffer());
+    }
+    
+    private PDataTFImpl(int pdulen, byte[] buf) throws PDUException {
+        this.pdulen = pdulen;
         this.wpos = pdulen + 12;
-        this.buf = raw.buffer();
+        this.buf = buf;
         int off = 6;
         while (off <= pdulen) {
             PDVImpl pdv = new PDVImpl(off);
@@ -52,20 +65,32 @@ final class PDataTFImpl implements PDataTF {
             off += 4 + pdv.length();
         }
         if (off != pdulen + 6) {
-            throw new DcmULServiceException("Illegal " + toString(), 
+            throw new PDUException("Illegal " + toString(), 
                     new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                    AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
+        this.it = pdvs.iterator();
     }
 
     PDataTFImpl(int maxLength) {
+        if (maxLength == 0) {
+            maxLength = DEF_MAX_LENGTH;
+        }
+        if (maxLength < MIN_MAX_LENGTH 
+                || maxLength > UnparsedPDUImpl.MAX_LENGTH) {
+            throw new IllegalArgumentException("maxLength:" + maxLength);
+        }
         this.pdulen = 0;
         this.wpos = 12;
         this.buf = new byte[6 + maxLength];
+        this.it = null;
     }
     
-    public Iterator pdvs() {
-        return pdvs.iterator();
+    public PDV readPDV() {
+        if (it == null) {
+            throw new IllegalStateException("P-DATA-TF write only");
+        }
+        return it.hasNext() ? (PDV)it.next() : null;
     }
     
     public String toString() {
@@ -89,6 +114,9 @@ final class PDataTFImpl implements PDataTF {
     }
     
     public void openPDV(int pcid, boolean cmd) {
+        if (it != null) {
+            throw new IllegalStateException("P-DATA-TF read only");
+        }
         if ((pcid & 1) == 0) {
             throw new IllegalArgumentException("pcid=" + pcid);
         }
@@ -103,7 +131,15 @@ final class PDataTFImpl implements PDataTF {
         curPDV.cmd(cmd);
         pdulen += 6;        
     }
+    
+    boolean isOpenPDV() {
+        return curPDV != null;
+    }
 
+    boolean isEmpty() {
+        return pdvs.isEmpty();
+    }
+    
     public void closePDV(boolean last) {
         if (curPDV == null) {
             throw new IllegalStateException("No open PDV");

@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                             *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,44 +21,51 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4che.net;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
 /**
  *
- * @author  gunter.zeilinger@tiani.com
+ * @author  <a href="mailto:gunter.zeilinger@tiani.com">gunter zeilinger</a>
  * @version 1.0.0
  */
-public final class DatasetSerializer implements java.io.Serializable {
-    
-    static final long serialVersionUID =  -4404056689087154718L;
+public class PDUException extends IOException {
 
-    private transient Dataset ds;
+    private final AAbort abort;
     
-    public DatasetSerializer() {}
+    /**
+     * Constructs an instance of <code>PDUException</code> with the
+     * specified detail message and corresponding A-Abort PDU.
+     * @param msg the detail message.
+     * @param abort corresponding A-Abort PDU.
+     */
+    public PDUException(String msg, AAbort abort) {
+        super(msg);
+        this.abort = abort;
+    }
 
-    public DatasetSerializer(Dataset ds) {
-        this.ds = ds; 
+    /**
+     * Constructs a new throwable with the specified detail message and
+     * cause and corresponding A-Abort PDU.
+     *
+     * @param msg the detail message.
+     * @param  cause the cause.
+     * @param abort corresponding A-Abort PDU.
+     */
+    public PDUException(String msg, Throwable cause, AAbort abort) {
+        super(msg);
+        super.initCause(cause);
+        this.abort = abort;
     }
     
-    private void writeObject(java.io.ObjectOutputStream out)
-            throws IOException {
-        boolean fmi = ds.getFileMetaInfo() != null;
-        out.writeBoolean(fmi);
-        ds.writeFile(out, fmi ? null : DcmEncodeParam.EVR_LE);
+    /**
+     * Returns corresponding A-Abort PDU.
+     * @return corresponding A-Abort PDU.
+     */
+    public final AAbort getAAbort() {
+        return abort;
     }
-    
-    private void readObject(java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        ds = DcmObjectFactory.getInstance().newDataset();
-        ds.readFile(in, in.readBoolean() ? FileFormat.DICOM_FILE
-                                     : FileFormat.EVR_LE_STREAM, -1);
-    }
-    
-    private Object readResolve() throws java.io.ObjectStreamException {
-        return ds;
-    }        
 }
+
+

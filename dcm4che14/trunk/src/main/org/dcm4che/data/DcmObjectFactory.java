@@ -54,6 +54,8 @@ public abstract class DcmObjectFactory {
     protected DcmObjectFactory() {
     }
     
+    public abstract Command newCommand();
+    
     public abstract Dataset newDataset();
 
     public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,

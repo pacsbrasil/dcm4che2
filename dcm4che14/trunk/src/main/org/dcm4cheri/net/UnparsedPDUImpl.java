@@ -23,8 +23,6 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.*;
-
 import java.io.*;
 
 /**
@@ -32,26 +30,26 @@ import java.io.*;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-final class UnparsedPDUImpl implements UnparsedPDU {
+final class UnparsedPDUImpl {
     
-    static final int MAX_LENGTH = 1048576; // 1 MB
+    static final long MAX_LENGTH = 1048576L; // 1 MB
     private final byte[] buf;
+    private final int type;
     private final int len;
     
     /** Creates a new instance of RawPDU */
-    public UnparsedPDUImpl(InputStream in)
-            throws IOException, DcmULServiceException {
+    public UnparsedPDUImpl(InputStream in) throws IOException {
         byte[] h = new byte[6];
         readFully(in, h, 0, 6);
+        this.type = h[0] & 0xFF;
         this.len = ((h[2] & 0xff) << 24)
                 | ((h[3] & 0xff) << 16)
                 | ((h[4] & 0xff) << 8)
                 | ((h[5] & 0xff) << 0);
-        if (len > MAX_LENGTH) {
-            throw new DcmULServiceException(
-                    "PDU length exceeds supported maximum: " + len,
-                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                                   AAbort.REASON_NOT_SPECIFIED));
+        if ((len & 0xFFFFFFFF) > MAX_LENGTH) {
+            skipFully(in, len & 0xFFFFFFFFL);
+            this.buf = null;
+            return;
         }
         this.buf = new byte[6 + len];
         System.arraycopy(h, 0, buf, 0, 6);
@@ -59,7 +57,7 @@ final class UnparsedPDUImpl implements UnparsedPDU {
     }
 
     public final int type() {
-        return buf[0] & 0xFF;
+        return type;
     }
 
     public final int length() {
@@ -71,9 +69,20 @@ final class UnparsedPDUImpl implements UnparsedPDU {
     }
     
     public String toString() {
-        return "PDU[type=" + (buf[0] & 0xFF)
+        return "PDU[type=" + type
                 + ", length=" + (len & 0xFFFFFFFFL)
                 + "]";
+    }
+
+    static void skipFully(InputStream in, long len)
+            throws IOException {
+	long n = 0;
+	while (n < len) {
+	    long count = in.skip(len - n);
+	    if (count < 0)
+		throw new EOFException();
+	    n += count;
+	}
     }
 
     static void readFully(InputStream in, byte b[], int off, int len)

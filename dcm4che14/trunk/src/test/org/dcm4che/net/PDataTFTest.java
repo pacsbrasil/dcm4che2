@@ -56,12 +56,12 @@ public class PDataTFTest extends ExtTestCase {
     private final int MAX_LEN = 250;
 
 
-    private PDUFactory fact;
+    private AssociationFactory fact;
     
     protected void setUp() throws Exception {
         Arrays.fill(CMD, (byte)0xcc);
         Arrays.fill(DATA, (byte)0xdd);
-        fact = PDUFactory.getInstance();
+        fact = AssociationFactory.getInstance();
     }
         
     public void testWrite() throws Exception {
@@ -102,16 +102,14 @@ public class PDataTFTest extends ExtTestCase {
 
     public void testRead() throws Exception {
         InputStream in1 = new FileInputStream(P_DATA_TF1);
-        UnparsedPDU raw1 = null;
+        PDataTF pdu1 = null;
         try {
-            raw1 = fact.readFrom(in1);            
+            pdu1 = (PDataTF)fact.readFrom(in1);            
         } finally {
             try { in1.close(); } catch (IOException ignore) {}
         }
-        PDataTF pdu1 = (PDataTF)fact.parse(raw1);
-        Iterator it1 = pdu1.pdvs();
-        assertTrue(it1.hasNext());
-        PDataTF.PDV pdv11 = (PDataTF.PDV)it1.next();
+        PDataTF.PDV pdv11 = pdu1.readPDV();
+        assertNotNull(pdv11);
         assertEquals(CMD.length+2, pdv11.length());
         assertEquals(PCID, pdv11.pcid());
         assertTrue(pdv11.cmd());
@@ -121,8 +119,8 @@ public class PDataTFTest extends ExtTestCase {
         pdv11in.read(cmd);
         assertEquals(-1, pdv11in.read());
         assertEquals(CMD, cmd);
-        assertTrue(it1.hasNext());
-        PDataTF.PDV pdv12 = (PDataTF.PDV)it1.next();
+        PDataTF.PDV pdv12 = pdu1.readPDV();
+        assertNotNull(pdv12);
         int off = pdv12.length()-2;
         assertEquals(MAX_LEN-6-CMD.length-6, off);
         assertEquals(PCID, pdv12.pcid());
@@ -132,18 +130,16 @@ public class PDataTFTest extends ExtTestCase {
         InputStream pdv12in = pdv12.getInputStream();
         pdv12in.read(data, 0, off);
         assertEquals(-1, pdv12in.read());
-        assertTrue(!it1.hasNext());        
+        assertNull(pdu1.readPDV());
         InputStream in2 = new FileInputStream(P_DATA_TF2);
-        UnparsedPDU raw2 = null;
+        PDataTF pdu2 = null;
         try {
-            raw2 = fact.readFrom(in2);            
+            pdu2 = (PDataTF)fact.readFrom(in2);            
         } finally {
             try { in2.close(); } catch (IOException ignore) {}
         }
-        PDataTF pdu2 = (PDataTF)fact.parse(raw2);
-        Iterator it2 = pdu2.pdvs();
-        assertTrue(it2.hasNext());
-        PDataTF.PDV pdv21 = (PDataTF.PDV)it2.next();
+        PDataTF.PDV pdv21 = pdu2.readPDV();
+        assertNotNull(pdv21);
         assertEquals(DATA.length-off+2, pdv21.length());
         assertEquals(PCID, pdv21.pcid());
         assertTrue(!pdv21.cmd());
@@ -151,7 +147,7 @@ public class PDataTFTest extends ExtTestCase {
         InputStream pdv21in = pdv21.getInputStream();
         pdv21in.read(data, off, DATA.length-off);
         assertEquals(-1, pdv21in.read());
-        assertTrue(!it2.hasNext());        
+        assertNull(pdu2.readPDV());
         assertEquals(DATA, data);
     }    
 }

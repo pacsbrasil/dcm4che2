@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -23,22 +23,26 @@
 
 package org.dcm4che.net;
 
+import org.dcm4che.data.Command;
+import org.dcm4che.data.Dataset;
+
+import java.net.Socket;
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
  *
- * @author  gunter.zeilinger@tiani.com
+ * @author  <a href="mailto:gunter.zeilinger@tiani.com">gunter zeilinger</a>
  * @version 1.0.0
  */
-public abstract class PDUFactory {
+public abstract class AssociationFactory {
 
-    public static PDUFactory getInstance() {
+    public static AssociationFactory getInstance() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.net.PDUFactory",
-                "org.dcm4cheri.net.PDUFactoryImpl");
+        String name = System.getProperty("dcm4che.net.AssociationFactory",
+                "org.dcm4cheri.net.AssociationFactoryImpl");
         try {
-            return (PDUFactory)loader.loadClass(name).newInstance();
+            return (AssociationFactory)loader.loadClass(name).newInstance();
         } catch (ClassNotFoundException ex) {
             throw new ConfigurationError("class not found: " + name, ex); 
         } catch (InstantiationException ex) {
@@ -54,7 +58,7 @@ public abstract class PDUFactory {
         }
     }
     
-    protected PDUFactory() {
+    protected AssociationFactory() {
     }
     
     public abstract AAssociateRQ newAAssociateRQ();
@@ -76,8 +80,17 @@ public abstract class PDUFactory {
             boolean scu, boolean scp);    
     public abstract ExtNegotiation newExtNegotiation(String uid, byte[] info);    
 
-    public abstract UnparsedPDU readFrom(InputStream in)
-            throws IOException, DcmULServiceException;
+    public abstract PDU readFrom(InputStream in) throws IOException;
 
-    public abstract PDU parse(UnparsedPDU pdu) throws DcmULServiceException;
+    public abstract Association newRequestor(Socket s, AssociationListener l)
+            throws IOException;
+    
+    public abstract Association newAcceptor(Socket s, AssociationListener l)
+            throws IOException;
+    
+    public abstract Dimse newDimse(int pcid, Command cmd);
+    
+    public abstract Dimse newDimse(int pcid, Command cmd, Dataset ds);
+    
+    public abstract Dimse newDimse(int pcid, Command cmd, DataSource src);
 }

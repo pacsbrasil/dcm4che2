@@ -24,18 +24,21 @@
 package org.dcm4cheri.net;
 
 import org.dcm4che.net.*;
+import org.dcm4che.data.Command;
+import org.dcm4che.data.Dataset;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public final class PDUFactoryImpl extends PDUFactory {
+public final class AssociationFactoryImpl extends AssociationFactory {
     
-    public PDUFactoryImpl() {
+    public AssociationFactoryImpl() {
     }
 
     public AAssociateRQ newAAssociateRQ() {
@@ -55,11 +58,11 @@ public final class PDUFactoryImpl extends PDUFactory {
     }
         
     public AReleaseRQ newAReleaseRQ() {
-        return new AReleaseRQImpl();
+        return AReleaseRQImpl.getInstance();
     }
     
     public AReleaseRP newAReleaseRP() {
-        return new AReleaseRPImpl();
+        return AReleaseRPImpl.getInstance();
     }
 
     public AAbort newAAbort(int source, int reason) {
@@ -89,31 +92,50 @@ public final class PDUFactoryImpl extends PDUFactory {
         return new ExtNegotiationImpl(uid, info);
     }
     
-    public UnparsedPDU readFrom(InputStream in)
-            throws IOException, DcmULServiceException {
-        return new UnparsedPDUImpl(in);
-    }
-
-    public PDU parse(UnparsedPDU raw) throws DcmULServiceException {
+    public PDU readFrom(InputStream in)
+            throws IOException, PDUException {
+        UnparsedPDUImpl raw = new UnparsedPDUImpl(in);
         switch (raw.type()) {
             case 1:
-                return new AAssociateRQImpl(raw);
+                return AAssociateRQImpl.parse(raw);
             case 2:
-                return new AAssociateACImpl(raw);
+                return AAssociateACImpl.parse(raw);
             case 3:
-                return new AAssociateRJImpl(raw);
+                return AAssociateRJImpl.parse(raw);
             case 4:
-                return new PDataTFImpl(raw);
+                return PDataTFImpl.parse(raw);
             case 5:
-                return new AReleaseRQImpl(raw);
+                return AReleaseRQImpl.parse(raw);
             case 6:
-                return new AReleaseRPImpl(raw);
+                return AReleaseRPImpl.parse(raw);
             case 7:
-                return new AAbortImpl(raw);
+                return AAbortImpl.parse(raw);
             default:
-                throw new DcmULServiceException("Unrecognized " + raw,
+                throw new PDUException("Unrecognized " + raw,
                     new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                    AAbort.UNRECOGNIZED_PDU));
         }
+    }
+    
+    public Association newRequestor(Socket s, AssociationListener l)
+            throws IOException {
+        return new AssociationImpl(s, true, l);
+    }
+    
+    public Association newAcceptor(Socket s, AssociationListener l)
+            throws IOException {
+        return new AssociationImpl(s, false, l);
+    }
+    
+    public Dimse newDimse(int pcid, Command cmd) {
+        return new DimseImpl(pcid, cmd, null, null);
+    }
+    
+    public Dimse newDimse(int pcid, Command cmd, Dataset ds) {
+        return new DimseImpl(pcid, cmd, ds, null);
+    }
+    
+    public Dimse newDimse(int pcid, Command cmd, DataSource src) {
+        return new DimseImpl(pcid, cmd, null, src);
     }
 }

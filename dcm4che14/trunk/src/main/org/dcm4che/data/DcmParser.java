@@ -60,8 +60,7 @@ public interface DcmParser {
 
     public long parseFileMetaInfo() throws IOException;
     
-    public long parseCommand(boolean preamble, DcmDecodeParam param)
-            throws IOException;
+    public long parseCommand() throws IOException;
     
     public long parseDataset(DcmDecodeParam param, int stopTag)
             throws IOException;

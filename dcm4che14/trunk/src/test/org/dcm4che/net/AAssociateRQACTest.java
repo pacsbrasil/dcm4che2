@@ -53,10 +53,10 @@ class AAssociateRQACTest extends ExtTestCase {
     protected static final int MAX_OPS_PERFORMED = 2;
     protected static final byte[] EXT_NEG_INFO = new byte[0xe];
     
-    protected PDUFactory fact;
+    protected AssociationFactory fact;
         
     protected void setUp() throws Exception {
-        fact = PDUFactory.getInstance();
+        fact = AssociationFactory.getInstance();
         Arrays.fill(EXT_NEG_INFO, (byte)0xee);
     }
     

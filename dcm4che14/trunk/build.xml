@@ -283,6 +283,7 @@
        <src path="${source.demo}/imageio"/>
        <src path="${source.demo}/imgdisp"/>
        <src path="${source.demo}/media"/>
+       <src path="${source.demo}/net"/>
        <classpath refid="javac.classpath"/>
        <include name="${javac.includes}"/>
        <exclude name="${javac.excludes}"/>
@@ -370,6 +371,14 @@
       </fileset>
       <fileset dir="${build.classes}">
         <include name="DcmDir.class"/>
+      </fileset>
+    </jar>
+
+    <!-- Build dcmsnd.jar -->
+    <jar jarfile="${build.jars}/demo/dcmsnd.jar"
+         manifest="${source.demo}/net/dcmsnd.mf">
+      <fileset dir="${build.classes}">
+        <include name="DcmSnd.class"/>
       </fileset>
     </jar>
 

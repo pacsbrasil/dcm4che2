@@ -36,15 +36,19 @@ final class AAbortImpl implements AAbort {
     
     private final byte[] buf;
     
-    AAbortImpl(UnparsedPDU raw) throws DcmULServiceException {
+    static AAbortImpl parse(UnparsedPDUImpl raw) throws PDUException {
         if (raw.length() != 4) {
-            throw new DcmULServiceException("Illegal A-ABORT " + raw,
+            throw new PDUException("Illegal A-ABORT " + raw,
                     new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                    AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
-        this.buf = raw.buffer();
+        return new AAbortImpl(raw.buffer());
     }
 
+    private AAbortImpl(byte[] buf) {
+        this.buf = buf;
+    }
+    
     AAbortImpl(int source, int reason) {
         this.buf = new byte[]{ 7, 0, 0, 0, 0, 4, 0, 0,
                 (byte)source,

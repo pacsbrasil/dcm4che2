@@ -45,7 +45,7 @@ public class Xml2Dcm {
     public void read(DataInputStream in) throws IOException, DcmValueException {
         ds.clear();
         try {
-            ds.read(in, null, -1);
+            ds.readFile(in, null, -1);
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }

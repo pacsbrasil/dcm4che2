@@ -62,10 +62,13 @@ public interface Dataset extends DcmObject, java.io.Serializable {
     public void writeDataset(ImageOutputStream out, DcmEncodeParam param)
             throws IOException;
 
-    public void read(InputStream in, FileFormat format, int stopTag)
+    public void readDataset(InputStream in, DcmDecodeParam param, int stopTag)
             throws IOException;
 
-    public void read(ImageInputStream iin, FileFormat format, int stopTag)
+    public void readFile(InputStream in, FileFormat format, int stopTag)
+            throws IOException;
+
+    public void readFile(ImageInputStream iin, FileFormat format, int stopTag)
             throws IOException;
 
     public void writeFile(OutputStream out, DcmEncodeParam param)

@@ -54,10 +54,10 @@ public class AAssociateRJTest extends ExtTestCase {
     private final int SOURCE = AAssociateRJ.SERVICE_USER;
     private final int REASON = AAssociateRJ.CALLED_AE_TITLE_NOT_RECOGNIZED;
 
-    private PDUFactory fact;
+    private AssociationFactory fact;
         
     protected void setUp() throws Exception {
-        fact = PDUFactory.getInstance();
+        fact = AssociationFactory.getInstance();
     }
     
     public void testWrite() throws Exception {
@@ -71,13 +71,12 @@ public class AAssociateRJTest extends ExtTestCase {
 
     public void testRead() throws Exception {
         InputStream in = new FileInputStream(A_ASSOCIATE_RJ);
-        UnparsedPDU raw = null;
+        AAssociateRJ pdu = null;
         try {
-            raw = fact.readFrom(in);            
+            pdu = (AAssociateRJ)fact.readFrom(in);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }
-        AAssociateRJ pdu = (AAssociateRJ)fact.parse(raw);
         assertEquals(RESULT, pdu.result());
         assertEquals(SOURCE, pdu.source());
         assertEquals(REASON, pdu.reason());

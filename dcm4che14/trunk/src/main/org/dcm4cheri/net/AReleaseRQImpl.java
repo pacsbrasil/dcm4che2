@@ -34,21 +34,28 @@ import java.io.*;
  */
 final class AReleaseRQImpl implements AReleaseRQ {
 
-    private static final byte[] buf = { 5, 0, 0, 0, 0, 4, 0, 0, 0, 0 }; 
+    private AReleaseRQImpl() {
+    }
     
-    AReleaseRQImpl(UnparsedPDU raw) throws DcmULServiceException {
+    private static final AReleaseRQImpl instance = new AReleaseRQImpl();
+    
+    public static AReleaseRQImpl getInstance() {
+        return instance;
+    }
+    
+    public static AReleaseRQImpl parse(UnparsedPDUImpl raw)
+            throws PDUException {
         if (raw.length() != 4) {
-            throw new DcmULServiceException("Illegal A-RELEASE-RP " + raw,
+            throw new PDUException("Illegal A-RELEASE-RP " + raw,
                     new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                    AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
+        return instance;
     }
 
-    AReleaseRQImpl() {
-    }
-    
+    private static final byte[] BYTES = { 5, 0, 0, 0, 0, 4, 0, 0, 0, 0 };
     public void writeTo(OutputStream out) throws IOException {
-        out.write(buf);
+        out.write(BYTES);
         out.flush();
     }    
 

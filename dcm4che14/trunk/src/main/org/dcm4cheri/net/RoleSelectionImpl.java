@@ -46,10 +46,10 @@ final class RoleSelectionImpl implements RoleSelection {
     }
     
     RoleSelectionImpl(DataInputStream din, int len)
-            throws IOException, DcmULServiceException {
+            throws IOException, PDUException {
         int uidLen = din.readUnsignedShort();
         if (uidLen + 4 != len) {
-            throw new DcmULServiceException( "SCP/SCU role selection sub-item length: "
+            throw new PDUException( "SCP/SCU role selection sub-item length: "
                     + len + " mismatch UID-length:" + uidLen,
                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                AAbort.INVALID_PDU_PARAMETER_VALUE));

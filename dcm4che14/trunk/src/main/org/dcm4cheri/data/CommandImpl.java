@@ -23,11 +23,12 @@
 
 package org.dcm4cheri.data;
 
-import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmHandler;
+import org.dcm4che.data.*;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.dict.UIDs;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -39,17 +40,280 @@ import java.util.Iterator;
  * @version 1.0.0
  * @see "DICOM Part 7: Message Exchange, 6.3.1 Command Set Structure"
  */
-final class CommandImpl extends DcmObjectImpl
-        implements org.dcm4che.data.Command {
+final class CommandImpl extends DcmObjectImpl implements Command {
+    
+    public boolean isRequest() throws DcmValueException {
+        int cmd = get(Tags.CommandField).getInt();
+        switch (cmd) {
+            case C_STORE_RQ:
+            case C_GET_RQ:
+            case C_FIND_RQ:
+            case C_MOVE_RQ:
+            case C_ECHO_RQ:
+            case N_EVENT_REPORT_RQ:
+            case N_GET_RQ:
+            case N_SET_RQ:
+            case N_ACTION_RQ:
+            case N_CREATE_RQ:
+            case N_DELETE_RQ:
+            case C_CANCEL_RQ:
+                return true;
+            case C_STORE_RSP:
+            case C_GET_RSP:
+            case C_FIND_RSP:
+            case C_MOVE_RSP:
+            case C_ECHO_RSP:
+            case N_EVENT_REPORT_RSP:
+            case N_GET_RSP:
+            case N_SET_RSP:
+            case N_ACTION_RSP:
+            case N_CREATE_RSP:
+            case N_DELETE_RSP:
+                return false;
+            default:
+                throw new DcmValueException(
+                        "cmd:" + Integer.toHexString(cmd) + "H");
+        }
+    }
+        
+    private Command initCxxxxRQ(int cmd, int msgID, String sopClassUID,
+            int priority) {
+        if (priority != MEDIUM &&  priority != HIGH &&  priority != LOW) {
+            throw new IllegalArgumentException("priority=" + priority);
+        }
+        if (sopClassUID.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        setUI(Tags.AffectedSOPClassUID, sopClassUID);
+        setUS(Tags.CommandField, cmd);
+        setUS(Tags.MessageID, msgID);
+        setUS(Tags.Priority, priority);
+        return this;
+    }
+    
+    private Command initCxxxxRSP(int cmd, int msgID, String sopClassUID,
+            int status) {
+        if (sopClassUID != null) {
+            setUI(Tags.AffectedSOPClassUID, sopClassUID);
+        }
+        setUS(Tags.CommandField, cmd);
+        setUS(Tags.MessageIDToBeingRespondedTo, msgID);
+        setUS(Tags.Status, status);
+        return this;
+    }
+
+    public Command initCStoreRQ(int msgID, String sopClassUID,
+            String sopInstUID, int priority) {
+        if (sopInstUID.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        initCxxxxRQ(C_STORE_RQ, msgID, sopClassUID, priority);
+        setUI(Tags.AffectedSOPInstanceUID, sopInstUID);
+        return this;
+    }
+
+    public Command setMoveOriginator(String aet, int msgID) {
+        if (aet.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        setAE(Tags.MoveOriginatorAET, aet);
+        setUS(Tags.MoveOriginatorMessageID, msgID);
+        return this;
+    }
+    
+    public Command initCStoreRSP(int msgID, String sopClassUID,
+            String sopInstUID, int status) {
+        return initNxxxxRSP(C_STORE_RSP, msgID, sopClassUID, sopInstUID,
+                status);
+    }
+
+    public Command initCFindRQ(int msgID, String sopClassUID, int priority) {
+        return initCxxxxRQ(C_FIND_RQ, msgID, sopClassUID, priority);
+    }
+        
+    public Command initCFindRSP(int msgID, String sopClassUID, int status) {
+        return initCxxxxRSP(C_FIND_RSP, msgID, sopClassUID, status);
+    }
+    
+    public Command initCCancelRQ(int msgID) {
+        setUS(Tags.CommandField, C_CANCEL_RQ);
+        setUS(Tags.MessageIDToBeingRespondedTo, msgID);
+        return this;
+    }
+
+    public Command initCGetRQ(int msgID, String sopClassUID, int priority) {
+        return initCxxxxRQ(C_GET_RQ, msgID, sopClassUID, priority);
+    }
+
+    public Command initCGetRSP(int msgID, String sopClassUID, int status) {
+        return initCxxxxRSP(C_GET_RSP, msgID, sopClassUID, status);
+    }
+
+    public Command initCMoveRQ(int msgID, String sopClassUID, int priority,
+            String moveDest) {
+       if (moveDest.length() == 0) {
+            throw new IllegalArgumentException();
+       }
+       initCxxxxRQ(C_MOVE_RQ, msgID, sopClassUID, priority);
+       setAE(Tags.MoveDestination, moveDest);
+       return this;
+    }
+
+    public Command initCMoveRSP(int msgID, String sopClassUID, int status) {
+        return initCxxxxRSP(C_MOVE_RSP, msgID, sopClassUID, status);
+    }
+
+    public Command initCEchoRQ(int msgID, String sopClassUID) {
+        if (sopClassUID.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        setUI(Tags.AffectedSOPClassUID, sopClassUID);
+        setUS(Tags.CommandField, C_ECHO_RQ);
+        setUS(Tags.MessageID, msgID);
+        return this;
+    }
+
+    public Command initCEchoRQ(int msgID) {
+        return initCEchoRQ(msgID, UIDs.Verification);
+    }
+    
+    public Command initCEchoRSP(int msgID, String sopClassUID, int status) {
+        return initCxxxxRSP(C_ECHO_RSP, msgID, sopClassUID, status);
+    }
+
+    public Command initCEchoRSP(int msgID) {
+        return initCxxxxRSP(C_ECHO_RSP, msgID, UIDs.Verification, 0);
+    }
+
+    private Command initNxxxxRQ(int cmd, int msgID, String sopClassUID,
+            String sopInstanceUID) {
+        if (sopClassUID.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        if (sopInstanceUID.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        setUI(Tags.RequestedSOPClassUID, sopClassUID);
+        setUS(Tags.CommandField, cmd);
+        setUS(Tags.MessageID, msgID);
+        setUI(Tags.RequestedSOPInstanceUID, sopInstanceUID);
+        return this;
+    }
+    
+    private Command initNxxxxRSP(int cmd, int msgID, String sopClassUID,
+            String sopInstanceUID, int status) {
+        if (sopClassUID != null) {
+            setUI(Tags.AffectedSOPClassUID, sopClassUID);
+        }
+        setUS(Tags.CommandField, cmd);
+        setUS(Tags.MessageIDToBeingRespondedTo, msgID);
+        setUS(Tags.Status, status);
+        if (sopInstanceUID != null) {
+            setUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
+        }
+        return this;
+    }
+
+    public Command initNEventReportRQ(int msgID, String sopClassUID,
+            String sopInstanceUID, int eventTypeID) {
+        if (sopClassUID.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        if (sopInstanceUID.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        setUI(Tags.AffectedSOPClassUID, sopClassUID);
+        setUS(Tags.CommandField, N_EVENT_REPORT_RQ);
+        setUS(Tags.MessageID, msgID);
+        setUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
+        setUS(Tags.EventTypeID, eventTypeID);
+        return this;
+    }
+
+    public Command initNGetRQ(int msgID, String sopClassUID,
+            String sopInstUID, int[] attrIDs) {
+        initNxxxxRQ(N_GET_RQ, msgID, sopClassUID, sopInstUID);
+        if (attrIDs != null) {
+            setAT(Tags.AttributeIdentifierList, attrIDs);
+        }
+        return this;
+    }
+    
+    public Command initNGetRSP(int msgID, String sopClassUID,
+            String sopInstUID, int status) {
+        return initNxxxxRSP(N_GET_RSP, msgID, sopClassUID, sopInstUID, status);
+    }
+    
+    public Command initNSetRQ(int msgID, String sopClassUID,
+            String sopInstUID) {
+        return initNxxxxRQ(N_SET_RQ, msgID, sopClassUID, sopInstUID);
+    }
+    
+    public Command initNSetRSP(int msgID, String sopClassUID,
+            String sopInstUID, int status) {
+        return initNxxxxRSP(N_SET_RSP, msgID, sopClassUID, sopInstUID, status);
+    }
+
+    public Command initNActionRQ(int msgID, String sopClassUID,
+            String sopInstUID, int actionTypeID) {
+        initNxxxxRQ(N_ACTION_RQ, msgID, sopClassUID, sopInstUID);
+        setUS(Tags.ActionTypeID, actionTypeID);
+        return this;
+    }
+    
+    public Command initNActionRSP(int msgID, String sopClassUID,
+            String sopInstUID, int status) {
+        return initNxxxxRSP(N_ACTION_RSP, msgID, sopClassUID, sopInstUID,
+                status);
+    }
+
+    public Command initNCreateRQ(int msgID, String sopClassUID,
+            String sopInstanceUID) {
+        if (sopClassUID.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        setUI(Tags.AffectedSOPClassUID, sopClassUID);
+        setUS(Tags.CommandField, N_CREATE_RQ);
+        setUS(Tags.MessageID, msgID);
+        if (sopInstanceUID != null) {
+            setUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
+        }
+        return this;
+    }
+
+    public Command initNCreateRSP(int msgID, String sopClassUID,
+            String sopInstUID, int status) {
+        return initNxxxxRSP(N_CREATE_RSP, msgID, sopClassUID, sopInstUID,
+                status);
+    }
+
+    public Command initNDeleteRQ(int msgID, String sopClassUID,
+            String sopInstUID) {
+        return initNxxxxRQ(N_DELETE_RQ, msgID, sopClassUID, sopInstUID);
+    }
+    
+    public Command initNDeleteRSP(int msgID, String sopClassUID,
+            String sopInstUID, int status) {
+        return initNxxxxRSP(N_DELETE_RSP, msgID, sopClassUID, sopInstUID,
+                status);
+    }
+
+    public boolean isResponse() throws DcmValueException {
+        return !isRequest();
+    }
+    
+    public boolean hasDataset() throws DcmValueException {
+        return getInt(Tags.DataSetType, -1) != 0x0101;
+    }
     
     protected DcmElement set(DcmElement newElem) {
         if ((newElem.tag() & 0xFFFF0000) != 0x00000000)
             throw new IllegalArgumentException(newElem.toString());
-        
+/*        
         if (newElem.getByteBuffer().order() != ByteOrder.LITTLE_ENDIAN)
             throw new IllegalArgumentException(
                     newElem.getByteBuffer().toString());
-
+*/        
         return super.set(newElem);
     }
     
@@ -61,7 +325,7 @@ final class CommandImpl extends DcmObjectImpl
         int len = 0;
         for (int i = 0, n = list.size(); i < n; ++i)
             len += ((DcmElement)list.get(i)).length() + 8;
-
+        
         return len;
     }
     
@@ -69,9 +333,15 @@ final class CommandImpl extends DcmObjectImpl
         handler.setDcmDecodeParam(DcmDecodeParam.IVR_LE);
         write(0x00000000, grLen(), handler);
     }
-
+    
     public void write(OutputStream out) throws IOException {
         write(new DcmStreamHandlerImpl(out));
+    }
+    
+    public void read(InputStream in) throws IOException {
+        DcmParserImpl parser = new DcmParserImpl(in);
+        parser.setDcmHandler(getDcmHandler());
+        parser.parseCommand();
     }
 }
 

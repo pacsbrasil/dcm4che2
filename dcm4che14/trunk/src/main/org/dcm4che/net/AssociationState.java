@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,44 +21,41 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+package org.dcm4che.net;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public final class DatasetSerializer implements java.io.Serializable {
+public interface AssociationState {
     
-    static final long serialVersionUID =  -4404056689087154718L;
+    public static int IDLE = 1;
 
-    private transient Dataset ds;
-    
-    public DatasetSerializer() {}
+    public static int AWAITING_READ_ASS_RQ = 2;
+    public static int AWAITING_WRITE_ASS_RP = 3;
+    public static int AWAITING_WRITE_ASS_RQ = 4;
+    public static int AWAITING_READ_ASS_RP = 5;
 
-    public DatasetSerializer(Dataset ds) {
-        this.ds = ds; 
-    }
+    public static int ASSOCIATION_ESTABLISHED = 6;
+
+    public static int AWAITING_READ_REL_RP = 7;
+    public static int AWAITING_WRITE_REL_RP = 8;
+    public static int RCRS_AWAITING_WRITE_REL_RP = 9;
+    public static int RCAS_AWAITING_READ_REL_RP = 10;
+    public static int RCRS_AWAITING_READ_REL_RP = 11;
+    public static int RCAS_AWAITING_WRITE_REL_RP = 12;
+
+    public static int ASSOCIATION_TERMINATING = 13;
+
+    public int getType();
     
-    private void writeObject(java.io.ObjectOutputStream out)
-            throws IOException {
-        boolean fmi = ds.getFileMetaInfo() != null;
-        out.writeBoolean(fmi);
-        ds.writeFile(out, fmi ? null : DcmEncodeParam.EVR_LE);
-    }
+    public boolean isOpen();
+
+    public boolean canWritePDataTF();
+
+    public boolean canReadPDataTF();
     
-    private void readObject(java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        ds = DcmObjectFactory.getInstance().newDataset();
-        ds.readFile(in, in.readBoolean() ? FileFormat.DICOM_FILE
-                                     : FileFormat.EVR_LE_STREAM, -1);
-    }
-    
-    private Object readResolve() throws java.io.ObjectStreamException {
-        return ds;
-    }        
+    public String toString();
 }
+
