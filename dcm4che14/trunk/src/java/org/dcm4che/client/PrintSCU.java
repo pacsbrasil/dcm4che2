@@ -428,7 +428,7 @@ public class PrintSCU {
 		attr.putSQ(Tags.RefFilmSessionSeq).addItem(
 			makeRefSOP(UIDs.BasicFilmSession, curFilmSessionIUID));;
 		if (autoRefPLUT && curPLUT_IUID != null
-				&& attr.vm(Tags.RefFilmSessionSeq) == -1) {
+				&& attr.vm(Tags.RefPresentationLUTSeq) == -1) {
 			attr.putSQ(Tags.RefPresentationLUTSeq).addItem(
 				makeRefSOP(UIDs.PresentationLUT, curPLUT_IUID));
 		}
