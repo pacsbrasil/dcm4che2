@@ -3,7 +3,9 @@ package org.dcm4che.image;
 import java.nio.ByteOrder;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.VRs;
 
 public class PixelDataDescription
 {
@@ -22,6 +24,55 @@ public class PixelDataDescription
     protected final String pmi;
     protected final ByteOrder byteOrder;
     protected final int pixelDataVr;
+
+    private PixelDataDescription(int cols, int rows, int nf, int ba, int bs, int hb,
+        int spp, boolean signed, boolean byPlane, String pmi, ByteOrder byteOrder,
+        int pixelDataVr)
+    {
+        this.cols = cols;
+        this.rows = rows;
+        this.nf = nf;
+        this.frameSize = cols * rows;
+        this.samplesPerFrame = frameSize * spp;
+        this.size = frameSize * nf;
+        this.ba = ba;
+        this.bs = bs;
+        this.hb = hb;
+        this.spp = spp;
+        this.signed = signed;
+        this.byPlane = byPlane;
+        this.pmi = pmi;
+        this.byteOrder = byteOrder;
+        this.pixelDataVr = pixelDataVr;
+    }
+
+    public PixelDataDescription(PixelDataDescription desc, DcmDecodeParam dcmParam,
+        int bitsAllocated, int bitsStored, boolean signed, boolean byPlane)
+    {
+        this.cols = desc.getCols();
+        this.rows = desc.getRows();
+        this.nf = desc.getNumberOfFrames();
+        this.ba = desc.getBitsAllocated();
+        this.bs = desc.getBitsStored();
+        this.hb = bs - 1;
+        this.spp = desc.getSamplesPerPixel();
+        this.frameSize = cols * rows;
+        this.samplesPerFrame = frameSize * spp;
+        this.size = frameSize * nf;
+        this.signed = signed;
+        this.byPlane = byPlane;
+        this.pmi = desc.getPmi();
+        //set up proper values depending on target bit depth
+        this.byteOrder = dcmParam.byteOrder;
+        if (dcmParam.explicitVR) {
+            if (bitsAllocated > 8)
+                this.pixelDataVr = VRs.OW;
+            else
+                this.pixelDataVr = VRs.OB; //can also be OW!
+        }
+        else
+            this.pixelDataVr = VRs.OW;
+    }
 
     public PixelDataDescription(Dataset ds, ByteOrder byteOrder, int pixelDataVr)
     {
@@ -125,5 +176,10 @@ public class PixelDataDescription
 
     public int getSamplesPerPixel() {
         return spp;
+    }
+
+    protected Object clone() throws CloneNotSupportedException {
+        return new PixelDataDescription(cols, rows, nf, ba, bs, hb, spp, signed,
+            byPlane, pmi, byteOrder, pixelDataVr);
     }
 }
