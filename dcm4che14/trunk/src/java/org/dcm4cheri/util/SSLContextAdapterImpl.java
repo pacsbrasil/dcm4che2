@@ -76,8 +76,7 @@ import org.apache.log4j.Logger;
  * <li> make enabledCipherSuites param of SocketFactory instead of Adapter
  * </ul>
  */
-public class SSLContextAdapterImpl extends SSLContextAdapter
-        implements HandshakeCompletedListener, HandshakeFailedListener {
+public class SSLContextAdapterImpl extends SSLContextAdapter {
     // Constants -----------------------------------------------------
     
     // Attributes ----------------------------------------------------
@@ -126,8 +125,6 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
         } catch (GeneralSecurityException e) {
             throw new ConfigurationError("could not instantiate SSLContext", e);
         }
-        addHandshakeCompletedListener(this);
-        addHandshakeFailedListener(this);
     }
     
     // Public --------------------------------------------------------
@@ -403,6 +400,18 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
             }
             try {
                 s.startHandshake();
+                if (log.isInfoEnabled()) {
+                    SSLSession se = s.getSession();
+                    try {
+                        X509Certificate cert = (X509Certificate)
+                            se.getPeerCertificates()[0];
+                        log.info(s.getInetAddress().toString() + 
+                            ": accept " + se.getCipherSuite() + " with "
+                            + cert.getSubjectDN());
+                    } catch (SSLPeerUnverifiedException e) {
+                        log.error("SSL peer not verified:",e);
+                    }
+                }
             } catch (IOException e) {
                 if (hfl != null) {
                     HandshakeFailedEvent event = new HandshakeFailedEvent(s,e);
@@ -420,24 +429,5 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
         ConfigurationError(String msg, Exception x) {
             super(msg,x);
         }
-    }
-
-    //  HandshakeCompletedListener Implementation ---------------------------
-    public void handshakeCompleted(HandshakeCompletedEvent event) {
-        try {
-            X509Certificate cert = (X509Certificate)
-                event.getPeerCertificates()[0];
-            log.info(event.getSocket().getInetAddress().toString() + 
-                ": accept " + event.getCipherSuite() + " with "
-                + cert.getSubjectDN());
-        } catch (SSLPeerUnverifiedException e) {
-            log.error("SSL peer not verified:",e);
-        }
-    }
-    
-    //  HandshakeFailedListener Implementation-------------------------------
-    public void handshakeFailed(HandshakeFailedEvent event) {
-        log.warn(event.getSocket().getInetAddress().toString() + 
-            ": SSL handshake failed: ", event.getException());
     }
 }

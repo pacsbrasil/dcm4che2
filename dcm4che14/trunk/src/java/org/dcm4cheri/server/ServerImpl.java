@@ -28,8 +28,6 @@ import org.dcm4che.util.HandshakeFailedListener;
 
 import org.dcm4cheri.util.LF_ThreadPool;
 import org.dcm4cheri.util.SSLContextAdapterImpl;
-import org.dcm4che.util.HandshakeFailedListener;
-import org.dcm4che.util.HandshakeFailedEvent;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -40,9 +38,9 @@ import java.util.List;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
@@ -62,8 +60,7 @@ import org.apache.log4j.Logger;
  *            beyond the cvs commit message
  * </ul>
  */
-class ServerImpl implements LF_ThreadPool.Handler, Server,
-        HandshakeCompletedListener, HandshakeFailedListener {
+class ServerImpl implements LF_ThreadPool.Handler, Server {
     // Constants -----------------------------------------------------
     
     // Attributes ----------------------------------------------------
@@ -87,8 +84,6 @@ class ServerImpl implements LF_ThreadPool.Handler, Server,
             throw new NullPointerException();
         
         this.handler = handler;
-        addHandshakeCompletedListener(this);
-        addHandshakeFailedListener(this);
     }
     
     // Public --------------------------------------------------------
@@ -197,24 +192,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server,
                 log.info("handle - " + s);
             }
             if (s instanceof SSLSocket) {
-                SSLSocket ssl = (SSLSocket) s;
-                if (hcl != null) {
-                    for (int i = 0, n = hcl.size(); i < n; ++i) {
-                        ssl.addHandshakeCompletedListener(
-                            (HandshakeCompletedListener) hcl.get(i));
-                    }
-                }
-                try {
-                    ssl.startHandshake();
-                } catch (IOException e) {
-                    if (hfl != null) {
-                        HandshakeFailedEvent event = new HandshakeFailedEvent(ssl,e);
-                        for (int i = 0, n = hfl.size(); i < n; ++i) {
-                            ((HandshakeFailedListener) hfl.get(i)).handshakeFailed(event);
-                        }
-                        throw e;
-                    }
-                }
+                init((SSLSocket) s);
             }
             
             pool.promoteNewLeader();
@@ -245,23 +223,37 @@ class ServerImpl implements LF_ThreadPool.Handler, Server,
             throw new IllegalStateException("Already Running - " + threadPool);
         }
     }
-        
-    //  HandshakeCompletedListener Implementation ---------------------------
-    public void handshakeCompleted(HandshakeCompletedEvent event) {
+    
+    private void init(SSLSocket s) throws IOException {
+        if (hcl != null) {
+            for (int i = 0, n = hcl.size(); i < n; ++i) {
+                s.addHandshakeCompletedListener(
+                    (HandshakeCompletedListener) hcl.get(i));
+            }
+        }
         try {
-            X509Certificate cert = (X509Certificate)
-                event.getPeerCertificates()[0];
-            log.info(event.getSocket().getInetAddress().toString() + 
-                ": accept " + event.getCipherSuite() + " with "
-                + cert.getSubjectDN());
-        } catch (SSLPeerUnverifiedException e) {
-            log.error("SSL peer not verified:",e);
+            s.startHandshake();
+            if (log.isInfoEnabled()) {
+                SSLSession se = s.getSession();
+                try {
+                    X509Certificate cert = (X509Certificate)
+                        se.getPeerCertificates()[0];
+                    log.info(s.getInetAddress().toString() + 
+                        ": accept " + se.getCipherSuite() + " with "
+                        + cert.getSubjectDN());
+                } catch (SSLPeerUnverifiedException e) {
+                    log.error("SSL peer not verified:",e);
+                }
+            }
+        } catch (IOException e) {
+            if (hfl != null) {
+                HandshakeFailedEvent event = new HandshakeFailedEvent(s,e);
+                for (int i = 0, n = hfl.size(); i < n; ++i) {
+                    ((HandshakeFailedListener) hfl.get(i)).handshakeFailed(event);
+                }
+                throw e;
+            }
         }
     }
-    
-    //  HandshakeFailedListener Implementation-------------------------------
-    public void handshakeFailed(HandshakeFailedEvent event) {
-        log.warn(event.getSocket().getInetAddress().toString() + 
-            ": SSL handshake failed: ", event.getException());
-    }
+        
 }
