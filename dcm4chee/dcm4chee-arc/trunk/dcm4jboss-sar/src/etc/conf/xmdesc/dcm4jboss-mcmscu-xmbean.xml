@@ -54,12 +54,151 @@
       </descriptors>
    </attribute>
 
+    <attribute access="read-write"
+      getMethod="getCallingAET"
+      setMethod="setCallingAET">
+      <description>The calling AET.
+      </description>
+      <name>callingAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getRetrieveAET"
+      setMethod="setRetrieveAET">
+      <description>The retrieve AET (for move).
+      </description>
+      <name>retrieveAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getMoveDestinationAET"
+      setMethod="setMoveDestinationAET">
+      <description>The move destination AET.
+      </description>
+      <name>moveDestinationAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getMcmScpAET"
+      setMethod="setMcmScpAET">
+      <description>The Media Creation Managment SCP AET.
+      </description>
+      <name>McmScpAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getAcTimeout"
+      setMethod="setAcTimeout">
+      <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
+      </description>
+      <name>acTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="60000" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getDimseTimeout"
+      setMethod="setDimseTimeout">
+      <description>DIMSE message timeout in ms. 0 = no timeout.
+      </description>
+      <name>dimseTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="10000" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getSoCloseDelay"
+      setMethod="setSoCloseDelay">
+      <description>Socket close delay in ms after A-RELEASE RSP.
+      </description>
+      <name>SoCloseDelay</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getMaxPDUlen"
+      setMethod="setMaxPDUlen">
+      <description>Max. PDU size in bytes.
+      </description>
+      <name>maxPDUlen</name>
+      <type>int</type>
+      <descriptors>
+         <value value="16352" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getPriority"
+      setMethod="setPriority">
+      <description>Priority for move and media creation request. 0=medium, 1=high, 2=low.
+      </description>
+      <name>priority</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isIncludeNonDICOMObj"
+      setMethod="setIncludeNonDICOMObj">
+      <description>A flag indicating if the SCP should include in the media additional Non-DICOM information/objects
+      </description>
+      <name>includeNonDicomObj</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="isUseInstanceInfo"
+      setMethod="setUseInstanceInfo">
+      <description>Specifies whether or not to extract label information from the instances.
+      </description>
+      <name>useInstanceInfo</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+
    <!-- Operations -->
    &defaultOperations;
+
    <operation impact="ACTION">
       <description>Collect studies to medias</description>
       <name>collectStudies</name>
       <return-type>int</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description>Update media creation status</description>
+      <name>getMediaCreationStatus</name>
+      <return-type>java.lang.String</return-type>
    </operation>
    
 </mbean>
