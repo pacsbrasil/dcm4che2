@@ -67,12 +67,27 @@ public class PatientUpdateCtrl extends ThrowawayBean2
 			to_update.setPatientSex(patientSex);
 			to_update.setPatientName(patientName);
 			
-			Calendar c = Calendar.getInstance();
-			c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(patientBirthDay));
-			c.set(Calendar.MONTH, Integer.parseInt(patientBirthMonth)-1);
-			c.set(Calendar.YEAR, Integer.parseInt(patientBirthYear));			
-			
-			to_update.setPatientBirthDate( new SimpleDateFormat(PatientDTO.DATE_FORMAT).format(c.getTime()));
+			if ((patientBirthDay == null || patientBirthDay.length()==0) &&
+				  (patientBirthMonth == null || patientBirthMonth.length()==0) &&
+				  (patientBirthYear == null || patientBirthYear.length()==0))
+			{	
+				to_update.setPatientBirthDate(null);
+			}
+			else
+			{
+				try
+				{
+					Calendar c = Calendar.getInstance();
+					c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(patientBirthDay));
+					c.set(Calendar.MONTH, Integer.parseInt(patientBirthMonth)-1);
+					c.set(Calendar.YEAR, Integer.parseInt(patientBirthYear));			
+					to_update.setPatientBirthDate( new SimpleDateFormat(PatientDTO.DATE_FORMAT).format(c.getTime()));
+				}
+				catch (Throwable e1)
+				{
+					//do nothing
+				}
+			}
 			//updating data model
 			ContentEdit ce = lookupContentEdit();
 			ce.updatePatient(to_update);
