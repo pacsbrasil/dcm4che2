@@ -226,7 +226,8 @@ class StgCmtCmd {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+        BufferedInputStream in =
+            new BufferedInputStream(new FileInputStream(file));
         DigestInputStream dis = new DigestInputStream(in, md);
         try {
             DcmParser parser = pFact.newDcmParser(dis);
@@ -234,11 +235,13 @@ class StgCmtCmd {
             if (parser.getReadTag() == Tags.PixelData) {
                 if (parser.getReadLength() == -1) {
                     while (parser.parseHeader() == Tags.Item) {
-                        readOut(parser.getInputStream(), parser.getReadLength());                        
+                        readOut(
+                            parser.getInputStream(),
+                            parser.getReadLength());
                     }
                 }
                 readOut(parser.getInputStream(), parser.getReadLength());
-                parser.parseDataset(parser.getDcmDecodeParam(),-1);
+                parser.parseDataset(parser.getDcmDecodeParam(), -1);
             }
         } finally {
             try {
@@ -258,7 +261,7 @@ class StgCmtCmd {
                 throw new EOFException();
             }
         }
-        
+
     }
 
     private Dimse makeNEventReportRQ() {
@@ -341,6 +344,13 @@ class StgCmtCmd {
 
     private Socket createSocket()
         throws DcmServiceException, UnknownHostException, IOException {
-        return new Socket(aeData.getHostName(), aeData.getPort());
+        String[] cipherSuites = aeData.getCipherSuites();
+        if (cipherSuites == null || cipherSuites.length == 0) {
+            return new Socket(aeData.getHostName(), aeData.getPort());
+        } else {
+            return service.getSocketFactory(cipherSuites).createSocket(
+                aeData.getHostName(),
+                aeData.getPort());
+        }
     }
 }

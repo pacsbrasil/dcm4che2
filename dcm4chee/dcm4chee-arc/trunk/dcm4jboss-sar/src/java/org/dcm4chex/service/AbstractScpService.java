@@ -25,9 +25,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
@@ -35,6 +40,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
+import org.dcm4chex.service.util.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -128,6 +134,42 @@ abstract class AbstractScpService extends ServiceMBeanSupport
             log.debug(w.toString());
         } catch (Exception e) {
             log.warn("Failed to dump dataset", e);
+        }
+    }
+
+    public ServerSocketFactory getServerSocketFactory(String[] cipherSuites) {
+        try {
+            return (ServerSocketFactory) server.invoke(
+                dcmServerName,
+                "getServerSocketFactory",
+                new Object[] { cipherSuites },
+                new String[] {
+                        String[].class.getName(),
+                });
+        } catch (InstanceNotFoundException e) {
+            throw new ConfigurationException(e);
+        } catch (MBeanException e) {
+            throw new ConfigurationException(e);
+        } catch (ReflectionException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    public SocketFactory getSocketFactory(String[] cipherSuites) {
+        try {
+            return (SocketFactory) server.invoke(
+                    dcmServerName,
+                    "getSocketFactory",
+                    new Object[] { cipherSuites },
+                    new String[] {
+                            String[].class.getName(),
+                    });
+        } catch (InstanceNotFoundException e) {
+            throw new ConfigurationException(e);
+        } catch (MBeanException e) {
+            throw new ConfigurationException(e);
+        } catch (ReflectionException e) {
+            throw new ConfigurationException(e);
         }
     }
 }

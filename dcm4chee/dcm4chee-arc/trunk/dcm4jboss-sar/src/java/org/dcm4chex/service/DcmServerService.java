@@ -25,6 +25,8 @@ import java.security.KeyStore;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
@@ -46,279 +48,311 @@ import org.jboss.system.ServiceMBeanSupport;
  * @version $Revision$
  * @since 02.08.2003
  */
-public class DcmServerService extends ServiceMBeanSupport
-		implements
-			HandshakeFailedListener,
-			org.dcm4chex.service.DcmServerServiceMBean {
-	private ServerFactory sf = ServerFactory.getInstance();
-	private AssociationFactory af = AssociationFactory.getInstance();
-	private AcceptorPolicy policy = af.newAcceptorPolicy();
-	private DcmServiceRegistry services = af.newDcmServiceRegistry();
-	private DcmHandler handler = sf.newDcmHandler(policy, services);
-	private Server dcmsrv = sf.newServer(handler);
-	private SSLContextAdapter ssl = SSLContextAdapter.getInstance();
-	private DcmProtocol protocol = DcmProtocol.DICOM;
-	private String keyStoreURL = "resource:identity.p12";
-	private char[] keyStorePassword = {'p', 'a', 's', 's', 'w', 'd'};
-	private String trustStoreURL = "resource:cacerts.jks";
-	private char[] trustStorePassword = {'p', 'a', 's', 's', 'w', 'd'};
-	private KeyStore keyStore;
-	private KeyStore trustStore;
-	private ObjectName auditLogName;
-	private String actorName;
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public ObjectName getAuditLoggerName() {
-		return auditLogName;
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setAuditLoggerName(ObjectName auditLogName) {
-		this.auditLogName = auditLogName;
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public int getPort() {
-		return dcmsrv.getPort();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setPort(int port) {
-		dcmsrv.setPort(port);
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public String getProtocolName() {
-		return protocol.toString();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setProtocolName(String protocolName) {
-		this.protocol = DcmProtocol.valueOf(protocolName);
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public DcmHandler getDcmHandler() {
-		return handler;
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public SSLContextAdapter getSSLContextAdapter() {
-		return ssl;
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public int getRqTimeout() {
-		return handler.getRqTimeout();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setRqTimeout(int newRqTimeout) {
-		handler.setRqTimeout(newRqTimeout);
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public int getDimseTimeout() {
-		return handler.getDimseTimeout();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setDimseTimeout(int newDimseTimeout) {
-		handler.setDimseTimeout(newDimseTimeout);
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public int getSoCloseDelay() {
-		return handler.getSoCloseDelay();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setSoCloseDelay(int newSoCloseDelay) {
-		handler.setSoCloseDelay(newSoCloseDelay);
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public boolean isPackPDVs() {
-		return handler.isPackPDVs();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setPackPDVs(boolean newPackPDVs) {
-		handler.setPackPDVs(newPackPDVs);
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public int getMaxClients() {
-		return dcmsrv.getMaxClients();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setMaxClients(int newMaxClients) {
-		dcmsrv.setMaxClients(newMaxClients);
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public int getNumClients() {
-		return dcmsrv.getNumClients();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public String getCallingAETs() {
-		PropertyEditor pe = new AETsEditor();
-		pe.setValue(policy.getCallingAETs());
-		return pe.getAsText();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setCallingAETs(String newCallingAETs) {
-		PropertyEditor pe = new AETsEditor();
-		pe.setAsText(newCallingAETs);
-		policy.setCallingAETs((String[]) pe.getValue());
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public String getCalledAETs() {
-		PropertyEditor pe = new AETsEditor();
-		pe.setValue(policy.getCalledAETs());
-		return pe.getAsText();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setCalledAETs(String newCalledAETs) {
-		PropertyEditor pe = new AETsEditor();
-		pe.setAsText(newCalledAETs);
-		policy.setCalledAETs((String[]) pe.getValue());
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public int getMaxPDULength() {
-		return policy.getMaxPDULength();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public void setMaxPDULength(int newMaxPDULength) {
-		policy.setMaxPDULength(newMaxPDULength);
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public final void setKeyStorePassword(String keyStorePassword) {
-		this.keyStorePassword = keyStorePassword.toCharArray();
-	}
-	/**
-	 * @return Returns the keyStoreURL.
-	 */
-	public final String getKeyStoreURL() {
-		return keyStoreURL;
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public final void setKeyStoreURL(String keyStoreURL) {
-		this.keyStoreURL = keyStoreURL;
-		keyStore = null;
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public final void setTrustStorePassword(String trustStorePassword) {
-		this.trustStorePassword = trustStorePassword.toCharArray();
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public final String getTrustStoreURL() {
-		return trustStoreURL;
-	}
-	/**
-	 * @jmx.managed-attribute
-	 */
-	public final void setTrustStoreURL(String trustStoreURL) {
-		this.trustStoreURL = trustStoreURL;
-		trustStore = null;
-	}
-	private ServerSocketFactory getServerSocketFactory() {
-		if (!protocol.isTLS()) {
-			return ServerSocketFactory.getDefault();
-		}
-		try {
-			if (keyStore == null) {
-				keyStore = ssl.loadKeyStore(keyStoreURL, keyStorePassword);
-				ssl.setKey(keyStore, keyStorePassword);
-			}
-			if (trustStore == null) {
-				trustStore = ssl
-						.loadKeyStore(trustStoreURL, trustStorePassword);
-				ssl.setTrust(trustStore);
-			}
-			return ssl.getServerSocketFactory(protocol.getCipherSuites());
-		} catch (GeneralSecurityException e) {
-			throw new ConfigurationException(e);
-		} catch (IOException e) {
-			throw new ConfigurationException(e);
-		}
-	}
-	protected ObjectName getObjectName(MBeanServer server, ObjectName name) {
-		actorName = name.getKeyProperty("name");
-		return name;
-	}
-	protected void startService() throws Exception {
-		dcmsrv.addHandshakeFailedListener(this);
-		dcmsrv.setServerSocketFactory(getServerSocketFactory());
-		dcmsrv.start();
-		logActorStartStop(AuditLogger.START);
-	}
-	protected void stopService() throws Exception {
-		dcmsrv.stop();
-		dcmsrv.removeHandshakeFailedListener(this);
-		logActorStartStop(AuditLogger.STOP);
-	}
-	//  HandshakeFailedListener Implementation-------------------------------
-	public void handshakeFailed(HandshakeFailedEvent event) {
-		if (auditLogName != null) {
-			try {
-				server.invoke(auditLogName, "logHandshakeFailedEvent",
-						new Object[]{event,},
-						new String[]{HandshakeFailedEvent.class.getName(),});
-			} catch (Exception e) {
-				log.warn("Failed to log HandshakeFailedEvent:", e);
-			}
-		}
-	}
-	private void logActorStartStop(String action) {
-		if (auditLogName != null) {
-			try {
-				server.invoke(auditLogName, "logActorStartStop", new Object[]{
-						actorName, action,}, new String[]{
-						String.class.getName(), String.class.getName(),});
-			} catch (Exception e) {
-				log.warn("Failed to log ActorStartStop:", e);
-			}
-		}
-	}
+public class DcmServerService
+    extends ServiceMBeanSupport
+    implements HandshakeFailedListener, org.dcm4chex.service.DcmServerServiceMBean {
+    private ServerFactory sf = ServerFactory.getInstance();
+    private AssociationFactory af = AssociationFactory.getInstance();
+    private AcceptorPolicy policy = af.newAcceptorPolicy();
+    private DcmServiceRegistry services = af.newDcmServiceRegistry();
+    private DcmHandler handler = sf.newDcmHandler(policy, services);
+    private Server dcmsrv = sf.newServer(handler);
+    private SSLContextAdapter ssl = SSLContextAdapter.getInstance();
+    private DcmProtocol protocol = DcmProtocol.DICOM;
+    private String keyStoreURL = "resource:identity.p12";
+    private char[] keyStorePassword = { 'p', 'a', 's', 's', 'w', 'd' };
+    private String trustStoreURL = "resource:cacerts.jks";
+    private char[] trustStorePassword = { 'p', 'a', 's', 's', 'w', 'd' };
+    private KeyStore keyStore;
+    private KeyStore trustStore;
+    private ObjectName auditLogName;
+    private String actorName;
+    
+    public DcmServerService() {
+        dcmsrv.addHandshakeFailedListener(this);
+        ssl.addHandshakeFailedListener(this);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public ObjectName getAuditLoggerName() {
+        return auditLogName;
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setAuditLoggerName(ObjectName auditLogName) {
+        this.auditLogName = auditLogName;
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getPort() {
+        return dcmsrv.getPort();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setPort(int port) {
+        dcmsrv.setPort(port);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getProtocolName() {
+        return protocol.toString();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setProtocolName(String protocolName) {
+        this.protocol = DcmProtocol.valueOf(protocolName);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public DcmHandler getDcmHandler() {
+        return handler;
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public SSLContextAdapter getSSLContextAdapter() {
+        return ssl;
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getRqTimeout() {
+        return handler.getRqTimeout();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setRqTimeout(int newRqTimeout) {
+        handler.setRqTimeout(newRqTimeout);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getDimseTimeout() {
+        return handler.getDimseTimeout();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setDimseTimeout(int newDimseTimeout) {
+        handler.setDimseTimeout(newDimseTimeout);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getSoCloseDelay() {
+        return handler.getSoCloseDelay();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setSoCloseDelay(int newSoCloseDelay) {
+        handler.setSoCloseDelay(newSoCloseDelay);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public boolean isPackPDVs() {
+        return handler.isPackPDVs();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setPackPDVs(boolean newPackPDVs) {
+        handler.setPackPDVs(newPackPDVs);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getMaxClients() {
+        return dcmsrv.getMaxClients();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setMaxClients(int newMaxClients) {
+        dcmsrv.setMaxClients(newMaxClients);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getNumClients() {
+        return dcmsrv.getNumClients();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getCallingAETs() {
+        PropertyEditor pe = new AETsEditor();
+        pe.setValue(policy.getCallingAETs());
+        return pe.getAsText();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setCallingAETs(String newCallingAETs) {
+        PropertyEditor pe = new AETsEditor();
+        pe.setAsText(newCallingAETs);
+        policy.setCallingAETs((String[]) pe.getValue());
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getCalledAETs() {
+        PropertyEditor pe = new AETsEditor();
+        pe.setValue(policy.getCalledAETs());
+        return pe.getAsText();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setCalledAETs(String newCalledAETs) {
+        PropertyEditor pe = new AETsEditor();
+        pe.setAsText(newCalledAETs);
+        policy.setCalledAETs((String[]) pe.getValue());
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getMaxPDULength() {
+        return policy.getMaxPDULength();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setMaxPDULength(int newMaxPDULength) {
+        policy.setMaxPDULength(newMaxPDULength);
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setKeyStorePassword(String keyStorePassword) {
+        this.keyStorePassword = keyStorePassword.toCharArray();
+    }
+    /**
+     * @return Returns the keyStoreURL.
+     */
+    public final String getKeyStoreURL() {
+        return keyStoreURL;
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setKeyStoreURL(String keyStoreURL) {
+        this.keyStoreURL = keyStoreURL;
+        keyStore = null;
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setTrustStorePassword(String trustStorePassword) {
+        this.trustStorePassword = trustStorePassword.toCharArray();
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public final String getTrustStoreURL() {
+        return trustStoreURL;
+    }
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setTrustStoreURL(String trustStoreURL) {
+        this.trustStoreURL = trustStoreURL;
+        trustStore = null;
+    }
+    /**
+     * @jmx.managed-operation
+     */
+    public ServerSocketFactory getServerSocketFactory(String[] cipherSuites) {
+        if (cipherSuites == null || cipherSuites.length == 0) {
+            return ServerSocketFactory.getDefault();
+        }
+        try {
+            initTLSConf();
+            return ssl.getServerSocketFactory(protocol.getCipherSuites());
+        } catch (GeneralSecurityException e) {
+            throw new ConfigurationException(e);
+        } catch (IOException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+    /**
+     * @jmx.managed-operation
+     */
+    public SocketFactory getSocketFactory(String[] cipherSuites) {
+        if (cipherSuites == null || cipherSuites.length == 0) {
+            return SocketFactory.getDefault();
+        }
+        try {
+            initTLSConf();
+            return ssl.getSocketFactory(protocol.getCipherSuites());
+        } catch (GeneralSecurityException e) {
+            throw new ConfigurationException(e);
+        } catch (IOException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+    private void initTLSConf() throws GeneralSecurityException, IOException {
+        if (keyStore == null) {
+            keyStore = ssl.loadKeyStore(keyStoreURL, keyStorePassword);
+            ssl.setKey(keyStore, keyStorePassword);
+        }
+        if (trustStore == null) {
+            trustStore =
+                ssl.loadKeyStore(trustStoreURL, trustStorePassword);
+            ssl.setTrust(trustStore);
+        }
+    }
+    protected ObjectName getObjectName(MBeanServer server, ObjectName name) {
+        actorName = name.getKeyProperty("name");
+        return name;
+    }
+    protected void startService() throws Exception {
+        dcmsrv.setServerSocketFactory(
+            getServerSocketFactory(protocol.getCipherSuites()));
+        dcmsrv.start();
+        logActorStartStop(AuditLogger.START);
+    }
+    protected void stopService() throws Exception {
+        dcmsrv.stop();
+        logActorStartStop(AuditLogger.STOP);
+    }
+    //  HandshakeFailedListener Implementation-------------------------------
+    public void handshakeFailed(HandshakeFailedEvent event) {
+        if (auditLogName != null) {
+            try {
+                server.invoke(
+                    auditLogName,
+                    "logHandshakeFailedEvent",
+                    new Object[] { event, },
+                    new String[] { HandshakeFailedEvent.class.getName(), });
+            } catch (Exception e) {
+                log.warn("Failed to log HandshakeFailedEvent:", e);
+            }
+        }
+    }
+    private void logActorStartStop(String action) {
+        if (auditLogName != null) {
+            try {
+                server.invoke(
+                    auditLogName,
+                    "logActorStartStop",
+                    new Object[] { actorName, action, },
+                    new String[] {
+                        String.class.getName(),
+                        String.class.getName(),
+                        });
+            } catch (Exception e) {
+                log.warn("Failed to log ActorStartStop:", e);
+            }
+        }
+    }
 }

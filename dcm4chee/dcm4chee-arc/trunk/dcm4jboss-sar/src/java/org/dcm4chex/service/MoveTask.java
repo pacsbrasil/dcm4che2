@@ -171,10 +171,17 @@ class MoveTask implements Runnable {
     }
 
     private Socket createSocket()
-        throws DcmServiceException, UnknownHostException, IOException {
-        return new Socket(aeData.getHostName(), aeData.getPort());
+    throws DcmServiceException, UnknownHostException, IOException {
+        String[] cipherSuites = aeData.getCipherSuites();
+        if (cipherSuites == null || cipherSuites.length == 0) {
+            return new Socket(aeData.getHostName(), aeData.getPort());
+        } else {
+            return service.getSocketFactory(cipherSuites).createSocket(
+                    aeData.getHostName(),
+                    aeData.getPort());
+        }
     }
-
+    
     private void prepareRetrieveInfo(FileInfo[][] fileInfoArray) {
         FileSelector selector = new FileSelector(storeAssoc.getAssociation());
         for (int i = 0; i < fileInfoArray.length; i++) {
