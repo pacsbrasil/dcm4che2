@@ -39,12 +39,24 @@
 							 </td>
             </tr>
             <tr>
+               <td class="label" bgcolor="#eeeeee">Placer Order Number:</td>
+               <td>							 
+                  <input size="64" name="placerOrderNumber" type="text" value="{placerOrderNumber}" />
+							 </td>
+            </tr>
+            <tr>
+               <td class="label" bgcolor="#eeeeee">Filler Order Number:</td>
+               <td>							 
+                  <input size="64" name="fillerOrderNumber" type="text" value="{fillerOrderNumber}" />
+							 </td>
+            </tr>
             <tr>
                <td class="label" bgcolor="#eeeeee">Referring Physician:</td>
                <td>							 
                   <input size="64" name="referringPhysician" type="text" value="{referringPhysician}" />
 							 </td>
             </tr>
+            <tr>
                <td class="label" bgcolor="#eeeeee">Study Description:</td>
                <td>							 
                   <input size="64" name="studyDescription" type="text" value="{studyDescription}" />
