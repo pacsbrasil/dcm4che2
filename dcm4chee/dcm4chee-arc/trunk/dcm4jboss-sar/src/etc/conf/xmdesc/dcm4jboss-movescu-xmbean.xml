@@ -48,15 +48,14 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getEjbProviderURL"
-      setMethod="setEjbProviderURL">
-      <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
-      "LOCAL", if EJBs are deployed in same JBoss instance.
+      getMethod="getConcurrency"
+      setMethod="setConcurrency">
+      <description>Maximal number of concurrent invoked Move Requests.
       </description>
-      <name>EjbProviderURL</name>
-      <type>java.lang.String</type>
+      <name>concurrency</name>
+      <type>int</type>
       <descriptors>
-         <value value="LOCAL" />
+         <value value="1" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -75,7 +74,39 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Check for new move orders.</description>
-      <name>run</name>
+      <description>Used internally.</description>
+      <name>queueMoveOrder</name>
+      <parameter>
+	      <name>retrieveAET</name>
+	      <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+	      <name>moveDestination</name>
+	      <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+	      <name>priority</name>
+	      <type>int</type>
+      </parameter>
+      <parameter>
+	      <name>patientId</name>
+	      <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+	      <name>studyIuids</name>
+	      <type>[Ljava.lang.String;</type>
+      </parameter>
+      <parameter>
+	      <name>seriesIuids</name>
+	      <type>[Ljava.lang.String;</type>
+      </parameter>
+      <parameter>
+	      <name>sopIuids</name>
+	      <type>[Ljava.lang.String;</type>
+      </parameter>
+      <parameter>
+	      <name>scheduledTime</name>
+	      <type>long</type>
+      </parameter>
    </operation>
 </mbean>

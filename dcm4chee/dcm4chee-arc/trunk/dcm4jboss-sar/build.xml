@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.8.3"/>
+	<property name="version" value="0.9"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="bin.dir" value="${basedir}/bin"/>
@@ -164,6 +164,7 @@
    				<include name="conf/identity.p12"/>
    				<include name="conf/xmdesc/*.xml"/>
    				<include name="deploy/*.xml"/>
+   				<include name="deploy/jms/*.xml"/>
    			</fileset>
   			<fileset dir="${dcm4jboss-arr.home}/src/etc">
    				<include name="conf/xmdesc/*.xml"/>
@@ -235,7 +236,9 @@
 				<include name="conf/**"/>
 				<exclude name="conf/log4j.xml"/>
 				<exclude name="conf/login-config.xml"/>
+				<include name="conf/jbossmq-state.xml"/>
 				<include name="deploy/jbossweb-tomcat50.sar/**"/>
+				<include name="deploy/jms/jvm-il-service.xml"/>
 				<include name="deploy/jmx-console.war/**"/>
 				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
 				<exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
@@ -256,6 +259,7 @@
 				<include name="lib/jboss-management.jar"/>
 				<include name="lib/jboss-transaction.jar"/>
 				<include name="lib/jboss.jar"/>
+				<include name="lib/jbossmq.jar"/>
 				<include name="lib/jbosssx.jar"/>
 				<include name="lib/jmx-adaptor-plugin.jar"/>
 				<include name="lib/jnpserver.jar"/>

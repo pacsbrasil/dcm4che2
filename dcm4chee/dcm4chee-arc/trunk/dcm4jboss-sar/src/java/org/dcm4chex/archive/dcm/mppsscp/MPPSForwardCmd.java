@@ -113,7 +113,7 @@ abstract class MPPSForwardCmd {
             }
         } catch (Exception e) {
             service.getLog().error(
-                "sending storage commitment result to " + aeData + " failed:",
+                "forwarding MPPS to " + aeData + " failed:",
                 e);
         }
     }

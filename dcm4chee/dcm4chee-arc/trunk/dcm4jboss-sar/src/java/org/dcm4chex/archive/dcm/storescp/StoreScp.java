@@ -1,23 +1,11 @@
-/*
- * $Id$ Copyright (c)
- * 2002,2003 by TIANI MEDGRAPH AG
- * 
- * This file is part of dcm4che.
- * 
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 package org.dcm4chex.archive.dcm.storescp;
 
@@ -31,15 +19,16 @@ import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
 import javax.ejb.CreateException;
+import javax.jms.JMSException;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
@@ -66,14 +55,13 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.StorageRules;
+import org.dcm4chex.archive.dcm.movescu.MoveOrder;
 import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
-import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueue;
-import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueueHome;
-import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -84,6 +72,7 @@ import org.jboss.system.server.ServerConfigLocator;
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final String ALL = "ALL";
+
     private static final AuditLoggerFactory alf = AuditLoggerFactory
             .getInstance();
 
@@ -125,14 +114,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         Iterator it = coerceWarnCallingAETs.iterator();
         sb.append(it.next());
         while (it.hasNext())
-            sb.append(',').append(it.next());        
+            sb.append(',').append(it.next());
         return sb.toString();
     }
 
     public final void setCoerceWarnCallingAETs(String aets) {
         coerceWarnCallingAETs.clear();
         if ("NONE".equals(aets)) return;
-        coerceWarnCallingAETs.addAll(Arrays.asList(StringUtils.split(aets, ',')));
+        coerceWarnCallingAETs.addAll(Arrays
+                .asList(StringUtils.split(aets, ',')));
     }
 
     public final CompressionRules getCompressionRules() {
@@ -212,22 +202,28 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     && parser.getReadLength() != -1 ? compressionRules
                     .getTransferSyntaxFor(assoc, ds) : null;
             ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
-                    .getAffectedSOPClassUID(), rqCmd
-                    .getAffectedSOPInstanceUID(),
+                    .getAffectedSOPClassUID(),
+                    rqCmd.getAffectedSOPInstanceUID(),
                     compressTSUID != null ? compressTSUID : rq
                             .getTransferSyntaxUID()));
 
             storeToFile(parser, ds, file, md);
 
-            final String dirPath = dir.getCanonicalPath().replace(
-                    File.separatorChar, '/');
-            final String filePath = file.getCanonicalPath().replace(
-                    File.separatorChar, '/').substring(dirPath.length() + 1);
+            final String dirPath = dir.getCanonicalPath()
+                    .replace(File.separatorChar, '/');
+            final String filePath = file.getCanonicalPath()
+                    .replace(File.separatorChar, '/').substring(dirPath
+                            .length() + 1);
             try {
-                Dataset coercedElements = updateDB(assoc, ds, dirPath,
-                        filePath, (int) file.length(), md.digest());
+                Dataset coercedElements = updateDB(assoc,
+                        ds,
+                        dirPath,
+                        filePath,
+                        (int) file.length(),
+                        md.digest());
                 if (coercedElements.isEmpty()
-                        || !coerceWarnCallingAETs.contains(assoc.getCallingAET())) {
+                        || !coerceWarnCallingAETs.contains(assoc
+                                .getCallingAET())) {
                     rspCmd.putUS(Tags.Status, Status.Success);
                 } else {
                     int[] coercedTags = new int[coercedElements.size()];
@@ -242,11 +238,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 updateStoredStudiesInfo(assoc, ds);
                 updateInstancesStored(assoc, ds);
             } catch (DuplicateStorageException e) {
-                service.getLog().warn(
-                        "ignore attempt to store instance[uid="
-                                + rqCmd.getAffectedSOPInstanceUID()
-                                + "] in directory[" + file.getParent()
-                                + "] duplicated");
+                service.getLog().warn("ignore attempt to store instance[uid="
+                        + rqCmd.getAffectedSOPInstanceUID() + "] in directory["
+                        + file.getParent() + "] duplicated");
                 deleteFailedStorage(file);
             }
         } catch (DcmServiceException e) {
@@ -283,22 +277,31 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             int retry = 0;
             for (;;) {
                 try {
-                    return storage.store(assoc.getCallingAET(), assoc
-                            .getCalledAET(), ds, service.getRetrieveAETArray(),
-                            dirPath, filePath, fileLength, md5);
+                    return storage.store(assoc.getCallingAET(),
+                            assoc.getCalledAET(),
+                            ds,
+                            service.getRetrieveAETArray(),
+                            dirPath,
+                            filePath,
+                            fileLength,
+                            md5);
                 } catch (DuplicateStorageException e) {
                     throw e;
                 } catch (Exception e) {
                     if (retry++ >= updateDatabaseMaxRetries) {
-                        service.getLog().error(
-                                "failed to update DB with entries for received "
-                                        + dirPath + "/" + filePath, e);
+                        service
+                                .getLog()
+                                .error("failed to update DB with entries for received "
+                                        + dirPath + "/" + filePath,
+                                        e);
                         throw new DcmServiceException(Status.ProcessingFailure,
                                 e);
                     }
-                    service.getLog().warn(
-                            "failed to update DB with entries for received "
-                                    + dirPath + "/" + filePath + " - retry", e);
+                    service
+                            .getLog()
+                            .warn("failed to update DB with entries for received "
+                                    + dirPath + "/" + filePath + " - retry",
+                                    e);
                 }
             }
         } finally {
@@ -340,14 +343,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private StorageHome getStorageHome() throws HomeFactoryException {
-        return (StorageHome) EJBHomeFactory.getFactory().lookup(
-                StorageHome.class, StorageHome.JNDI_NAME);
-    }
-
-    private MoveOrderQueueHome getMoveOrderQueueHome()
-            throws HomeFactoryException {
-        return (MoveOrderQueueHome) EJBHomeFactory.getFactory().lookup(
-                MoveOrderQueueHome.class, MoveOrderQueueHome.JNDI_NAME);
+        return (StorageHome) EJBHomeFactory.getFactory()
+                .lookup(StorageHome.class, StorageHome.JNDI_NAME);
     }
 
     private void storeToFile(DcmParser parser, Dataset ds, File file,
@@ -385,14 +382,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             .getInputStream(), dos);
                     in.skip(parser.getReadLength() - read);
                 }
-                ds.writeHeader(dos, encParam, Tags.SeqDelimitationItem,
-                        VRs.NONE, 0);
+                ds.writeHeader(dos,
+                        encParam,
+                        Tags.SeqDelimitationItem,
+                        VRs.NONE,
+                        0);
             } else {
                 ds.writeHeader(dos, encParam, Tags.PixelData, parser
                         .getReadVR(), len);
                 copy(in, dos, len, buffer);
             }
-            parser.parseDataset(encParam, -1);
+            parser.parseDataset(decParam, -1);
             ds.subSet(Tags.PixelData, -1).writeDataset(dos, encParam);
         } finally {
             try {
@@ -418,12 +418,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     Status.DataSetDoesNotMatchSOPClassError,
                     "Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i])); }
         }
-        if (!rqCmd.getAffectedSOPInstanceUID().equals(
-                ds.getString(Tags.SOPInstanceUID))) { throw new DcmServiceException(
+        if (!rqCmd.getAffectedSOPInstanceUID().equals(ds
+                .getString(Tags.SOPInstanceUID))) { throw new DcmServiceException(
                 Status.DataSetDoesNotMatchSOPClassError,
                 "SOP Instance UID in Dataset differs from Affected SOP Instance UID"); }
-        if (!rqCmd.getAffectedSOPClassUID().equals(
-                ds.getString(Tags.SOPClassUID))) { throw new DcmServiceException(
+        if (!rqCmd.getAffectedSOPClassUID().equals(ds
+                .getString(Tags.SOPClassUID))) { throw new DcmServiceException(
                 Status.DataSetDoesNotMatchSOPClassError,
                 "SOP Class UID in Dataset differs from Affected SOP Class UID"); }
     }
@@ -518,42 +518,38 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private void forward(String[] destAETs, Iterator scns) {
         if (destAETs.length == 0) { return; }
 
-        MoveOrderQueue orderQueue;
-        try {
-            orderQueue = getMoveOrderQueueHome().create();
-        } catch (Exception e) {
-            service.getLog().error("Failed to access Move Order Queue", e);
-            return;
-        }
-        final MoveOrderValue order = new MoveOrderValue();
-        order.setScheduledTime(new Date());
-        order.setRetrieveAET(service.getRetrieveAET());
-        order.setPriority(forwardPriority);
+        String[] studyIUIDs = new String[1];
+        String[] seriesIUIDs = new String[1];
+        ArrayList sopIUIDs = new ArrayList();
         while (scns.hasNext()) {
             Dataset scn = (Dataset) scns.next();
+            studyIUIDs[0] = scn.getString(Tags.StudyInstanceUID);
             DcmElement refSeriesSeq = scn.get(Tags.RefSeriesSeq);
-            order.setStudyIuids(scn.getString(Tags.StudyInstanceUID));
             for (int i = 0, n = refSeriesSeq.vm(); i < n; ++i) {
                 Dataset refSeries = refSeriesSeq.getItem(i);
+                seriesIUIDs[0] = refSeries.getString(Tags.SeriesInstanceUID);
                 DcmElement refSOPSeq = refSeries.get(Tags.RefImageSeq);
-                StringBuffer sopIUIDs = new StringBuffer();
                 for (int j = 0, m = refSOPSeq.vm(); j < m; ++j) {
-                    if (j != 0) {
-                        sopIUIDs.append('\\');
-                    }
-                    sopIUIDs.append(refSOPSeq.getItem(j).getString(
-                            Tags.RefSOPInstanceUID));
+                    sopIUIDs.add(refSOPSeq.getItem(j)
+                            .getString(Tags.RefSOPInstanceUID));
                 }
-                order.setSeriesIuids(refSeries
-                        .getString(Tags.SeriesInstanceUID));
-                order.setSopIuids(sopIUIDs.toString());
-
+                String[] iuids = (String[]) sopIUIDs
+                        .toArray(new String[sopIUIDs.size()]);
                 for (int k = 0; k < destAETs.length; ++k) {
-                    order.setMoveDestination(destAETs[k]);
                     try {
-                        orderQueue.queue(order);
-                    } catch (RemoteException e) {
-                        service.getLog().error("Failed to queue " + order, e);
+                        MoveOrder order = new MoveOrder(service
+                                .getRetrieveAET(), destAETs[k],
+                                forwardPriority, null, studyIUIDs, seriesIUIDs,
+                                iuids);
+                        JMSDelegate
+                                .getInstance(MoveOrder.QUEUE)
+                                .queueMessage(order,
+                                        JMSDelegate
+                                                .toJMSPriority(forwardPriority),
+                                        0L);
+                    } catch (JMSException e) {
+                        service.getLog()
+                                .error("Failed to queue move order:", e);
                     }
                 }
             }
@@ -572,8 +568,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 stored = null;
             }
             if (stored == null) {
-                stored = alf.newInstancesAction("Create", suid, alf.newPatient(
-                        ds.getString(Tags.PatientID), ds
+                stored = alf.newInstancesAction("Create", suid, alf
+                        .newPatient(ds.getString(Tags.PatientID), ds
                                 .getString(Tags.PatientName)));
                 stored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
                 assoc.putProperty("InstancesStored", stored);
@@ -590,10 +586,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         InstancesAction stored = (InstancesAction) assoc
                 .getProperty("InstancesStored");
         if (stored != null) {
-            service.getAuditLogger()
-                    .logInstancesStored(
-                            alf.newRemoteNode(assoc.getSocket(), assoc
-                                    .getCallingAET()), stored);
+            service.getAuditLogger().logInstancesStored(alf.newRemoteNode(assoc
+                    .getSocket(), assoc.getCallingAET()),
+                    stored);
         }
         assoc.putProperty("InstancesStored", null);
     }
