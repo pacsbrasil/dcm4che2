@@ -254,7 +254,7 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     public void ejbPostCreate(Dataset ds, StudyLocal study) throws CreateException {
-        String name = ctx.getCallerPrincipal().getName();
+        String name = ds.getString(Tags.InstitutionName, "everyone");
         PrincipalLocal principal = principalHome.getPrincipal(name);
         getPrincipals().add(principal);
         study.getPrincipals().add(principal);
