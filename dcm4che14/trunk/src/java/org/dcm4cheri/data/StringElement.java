@@ -957,7 +957,7 @@ abstract class StringElement extends ValueElement {
         }
 
         public final Date[] getDateRange(int index) throws DcmValueException {
-            return toDateRange(getFormat(), super.getString(index, null), getInterval());
+            return toDateRange(getFormat(), super.getString(index, null), getTimeResolution());
         }
 
         public final Date[] getDates() throws DcmValueException {
@@ -1006,7 +1006,7 @@ abstract class StringElement extends ValueElement {
 
         protected abstract DateFormat getFormat();
         
-        protected long getInterval() { return 0L; }
+        protected long getTimeResolution() { return 1L; }
 
     }
 
@@ -1018,7 +1018,7 @@ abstract class StringElement extends ValueElement {
         }
     }
 
-    private static Date[] toDateRange(DateFormat f, String s, long interval) {
+    private static Date[] toDateRange(DateFormat f, String s, long resolution) {
         if (s == null) {
             return null;
         }
@@ -1027,7 +1027,7 @@ abstract class StringElement extends ValueElement {
         try {
             if (delim == -1) {
                 range[0] = f.parse(s);
-                range[1] = new Date(range[0].getTime() + interval-1);
+                range[1] = new Date(range[0].getTime() + resolution - 1);
             } else {
                 if (delim > 0) {
                     range[0] = f.parse(s.substring(0, delim));
@@ -1055,7 +1055,7 @@ abstract class StringElement extends ValueElement {
             return new DAFormat();
         }
         
-        protected long getInterval() { 
+        protected long getTimeResolution() { 
         	return MS_PER_DAY;
         }
 
