@@ -176,7 +176,7 @@
     the PLUT SOP class, nor specifies a value of Film Box attribute (2010,0150)
     Configuration Information.
     -->
-    <attribute name="DefaultLUT">linear256us</attribute>
+    <attribute name="DefaultLUT">midtone256us</attribute>
 
     <!--
     Defines the page margin for portrait orientation.
