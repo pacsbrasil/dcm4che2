@@ -31,7 +31,7 @@
 
     <!-- Override with your dcm4chx-config dist location -->
 	<property name="dcm4chex-config.home" value="${user.home}/work/dcm4chex-config/target"/>		
-	<property name="dcmcfg.jar" value="${dcm4chex-config.home}/lib/dcmcfg.jar"/>		
+	<property name="dcm4chex-config.jar" value="${dcm4chex-config.home}/lib/dcm4chex-config.jar"/>		
 
     <!-- Override with your dcm4chex-codec dist location -->
 	<property name="dcm4chex-codec.home" value="${user.home}/work/dcm4chex-codec/target"/>		
@@ -47,7 +47,7 @@
 
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
-		<pathelement location="${dcmcfg.jar}"/>
+		<pathelement location="${dcm4chex-config.jar}"/>
 		<pathelement location="${dcm4chex-codec.jar}"/>
 		<fileset dir="${jboss.home}/lib">
 			<include name="*.jar"/>
@@ -151,7 +151,7 @@
         <copy file="${src.deploy}/dcm4jboss-dcmsrv-service.xml" 
             tofile="${target.dir}/dcmsrv/jboss-service.xml">
             <filterset>
-                <filter token="ARCHIVES" value="dcm4che.jar,dcmcfg.jar"/>
+                <filter token="ARCHIVES" value="dcm4che.jar,dcm4chex-config.jar"/>
             </filterset>
         </copy>  
         <zip zipfile="${target.deploy}/${dcmsrv.sar}">
@@ -169,7 +169,7 @@
         <copy file="${src.deploy}/dcm4jboss-storescp-service.xml" 
             tofile="${target.dir}/storescp/jboss-service.xml">
             <filterset>
-                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-ejb-client.jar,dcmcfg.jar"/>
+                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-ejb-client.jar,dcm4chex-config.jar"/>
             </filterset>
         </copy>  
         <zip zipfile="${target.deploy}/${storescp.sar}">
@@ -187,7 +187,7 @@
         <copy file="${src.deploy}/dcm4jboss-findscp-service.xml" 
             tofile="${target.dir}/findscp/jboss-service.xml">
             <filterset>
-                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-jdbc.jar,dcmcfg.jar"/>
+                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-jdbc.jar,dcm4chex-config.jar"/>
             </filterset>
         </copy>  
         <zip zipfile="${target.deploy}/${findscp.sar}">
@@ -205,7 +205,7 @@
             tofile="${target.dir}/movescp/jboss-service.xml">
             <filterset>
                 <filter token="ARCHIVES"
-                	value="dcm4che.jar,dcm4jboss-jdbc.jar,dcm4chex-codec.jar,dcmcfg.jar"/>
+                	value="dcm4che.jar,dcm4jboss-jdbc.jar,dcm4chex-codec.jar,dcm4chex-config.jar"/>
             </filterset>
         </copy>  
         <zip zipfile="${target.deploy}/${movescp.sar}">
@@ -224,7 +224,7 @@
         <copy file="${src.deploy}/dcm4jboss-config-service.xml" 
             tofile="${target.dir}/config/jboss-service.xml">
             <filterset>
-                <filter token="ARCHIVES" value="dcmcfg.jar"/>
+                <filter token="ARCHIVES" value="dcm4chex-config.jar"/>
             </filterset>
         </copy>  
         <zip zipfile="${target.deploy}/${config.sar}">
