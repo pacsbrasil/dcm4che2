@@ -133,10 +133,14 @@ abstract class RelationConstraintsImpl implements RelationConstraints {
     }
 
     void checkHasProperties(Content source, Content target) {
-        if (!(source instanceof TextContent))
+        if (!(source instanceof TextContent ||
+                source instanceof CodeContent ||
+                source instanceof NumContent)) {
             throw new IllegalArgumentException("" + source);
-        if (target instanceof ContainerContent)
+        }
+        if (target instanceof ContainerContent) {
             throw new IllegalArgumentException("" + target);
+        }
     }
 
     void checkInferredFrom(Content source, Content target) {

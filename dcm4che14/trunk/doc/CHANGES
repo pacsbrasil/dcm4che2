@@ -17,9 +17,17 @@ DcmRcv:
 + add options --max-clients, --rq-timeout, --dimse-timeout, --so-close-delay
 
 CHANGES:
+org.dcm4che.data.Dataset:
++ log warning and ignore attributes with tag < (0004,0000), instead
+  throw new IllegalArgumentException
 org.dcm4che.net.Association:
 + rename property TCPCloseTimeout to soCloseDelay
 + remove timeout param from connect(), accept(), read()
+org.dcm4che.srom.RelationConstraints:
++ allow not only TextConent, but also CodeContent and NumContent
+  as source of hasProperties and inferredFrom relationship (DICOM CP-266)
++ move "BUILD" info file from root into doc directory to avoid conflict
+  with "build" directory on Windows platform.
  
 -------------------------------------------------------------------------------
 dcm4che 1.0.3 -  - Changes since dcm4che 1.0.2

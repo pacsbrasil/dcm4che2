@@ -96,9 +96,10 @@ final class DatasetImpl extends BaseDatasetImpl
     }
 
     protected DcmElement put(DcmElement newElem) {
-        if ((newElem.tag() >>> 16) < 4)
-            throw new IllegalArgumentException(newElem.toString());
-
+        if ((newElem.tag() >>> 16) < 4) {
+            log.warn("Ignore illegal attribute " + newElem);
+            return newElem;
+        }
         if (newElem.tag() == Tags.SpecificCharacterSet) {
             try {
                 this.charset = Charsets.lookup(newElem.getStrings(null));

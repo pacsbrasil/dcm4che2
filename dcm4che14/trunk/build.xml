@@ -267,7 +267,7 @@
       <copy todir="${dist.dir}">
          <fileset dir="${build.dir}" includes="lib/**,samples/**,doc/**"/>
          <fileset dir="${basedir}" includes="lib/log4j.jar"/>
-         <fileset dir="${doc.dir}" excludes="**/.nbattrs"/>
+         <fileset dir="${doc.dir}" excludes="BUILD,**/.nbattrs"/>
          <fileset dir="${src.dir}" includes="etc/NativeMetadataFormat.dtd"/>
       </copy>
       <copy todir="${dist.dir}/samples">
