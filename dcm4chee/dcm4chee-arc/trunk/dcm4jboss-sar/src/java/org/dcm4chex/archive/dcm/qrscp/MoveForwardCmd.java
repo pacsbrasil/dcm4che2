@@ -21,6 +21,7 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -34,6 +35,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
@@ -108,6 +110,8 @@ class MoveForwardCmd {
             if (a.getAcceptedTransferSyntaxUID(PCID) == null)
                 throw new IOException(
                     "Study Root IM MOVE Service not supported by " + aeData);
+            if (!isRelationalRetrieveAccepted(ac.getExtNegotiation(UIDs.StudyRootQueryRetrieveInformationModelMOVE)))
+                service.getLog().warn("Relational Retrieve not supported by " + aeData);
             Command cmd = of.newCommand();
             cmd.initCMoveRQ(MSGID,
                     UIDs.StudyRootQueryRetrieveInformationModelMOVE, priority,
@@ -127,6 +131,10 @@ class MoveForwardCmd {
             } catch (Exception ignore) {
             }
         }
+    }
+
+    private boolean isRelationalRetrieveAccepted(ExtNegotiation extNeg) {
+        return extNeg != null && Arrays.equals(extNeg.info(), RELATIONAL_RETRIEVE);
     }
 
     public void cancel() throws IOException {
