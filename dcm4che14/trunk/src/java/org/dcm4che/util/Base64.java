@@ -5,7 +5,7 @@
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
 
-package org.dcm4cheri.auditlog;
+package org.dcm4che.util;
 
 /**
  * Static methods for translating Base64 encoded strings to byte arrays
@@ -16,12 +16,12 @@ package org.dcm4cheri.auditlog;
  * @see     Preferences
  * @since   1.4
  */
-class Base64 {
+public class Base64 {
     /**
      * Translates the specified byte array into a Base64 string as per
      * Preferences.put(byte[]).
      */
-    static String byteArrayToBase64(byte[] a) {
+    public static String byteArrayToBase64(byte[] a) {
         return byteArrayToBase64(a, false);
     }
 
@@ -31,7 +31,7 @@ class Base64 {
      * not contain the uppercase alphabetic characters, which makes it
      * suitable for use in situations where case-folding occurs.
      */
-    static String byteArrayToAltBase64(byte[] a) {
+    public static String byteArrayToAltBase64(byte[] a) {
         return byteArrayToBase64(a, true);
     }
 
@@ -110,7 +110,7 @@ class Base64 {
      * @throw IllegalArgumentException if <tt>s</tt> is not a valid Base64
      *        string.
      */
-    static byte[] base64ToByteArray(String s) {
+    public static byte[] base64ToByteArray(String s) {
         return base64ToByteArray(s, false);
     }
 
@@ -122,7 +122,7 @@ class Base64 {
      *        if <tt>s</tt> is not a valid alternate representation
      *        Base64 string.
      */
-    static byte[] altBase64ToByteArray(String s) {
+    public static byte[] altBase64ToByteArray(String s) {
         return base64ToByteArray(s, true);
     }
 
