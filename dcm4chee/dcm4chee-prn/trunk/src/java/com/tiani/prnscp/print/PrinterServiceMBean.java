@@ -391,12 +391,12 @@ public interface PrinterServiceMBean extends ServiceMBean {
    /** Getter for property grayStepGap.
     * @return Value of property grayStepGap.
     */
-   public double getGrayStepGap();
+   public float getGrayStepGap();
    
    /** Setter for property grayStepGap.
     * @param grayStepGap New value of property grayStepGap.
     */
-   public void setGrayStepGap(double grayStepGap);
+   public void setGrayStepGap(float grayStepGap);
    
    /** Getter for property refGrayStepODs.
     * @return Value of property refGrayStepODs.
@@ -521,11 +521,11 @@ public interface PrinterServiceMBean extends ServiceMBean {
  
    public int countAnnotationBoxes(String annotationID);
    
-   public void printGraySteps() throws PrintException;
+   public void printGraySteps() throws PrintException, IOException;
    
-   public void printGrayStepsWithGSDF() throws PrintException;
+   public void printGrayStepsWithGSDF() throws PrintException, IOException;
    
-   public void printGrayStepsWithLinOD() throws PrintException;
+   public void printGrayStepsWithLinOD() throws PrintException, IOException;
    
    public void calibrate(boolean force) throws CalibrationException;            
    

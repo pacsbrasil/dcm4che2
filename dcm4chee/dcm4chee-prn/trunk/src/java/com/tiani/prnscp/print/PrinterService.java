@@ -62,7 +62,7 @@ import javax.print.attribute.standard.OrientationRequested;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.util.Arrays;
@@ -70,6 +70,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
@@ -151,7 +152,7 @@ public class PrinterService
    private String filmDestination;
    
    /** Holds value of property pageMargin. */
-   private double[] pageMargin;
+   private float[] pageMargin;
    
    /** Holds value of property borderThickness. */
    private float borderThickness;
@@ -178,7 +179,7 @@ public class PrinterService
    private int graySteps;
 
    /** Holds value of property grayStepGap. */
-   private double grayStepGap;
+   private float grayStepGap;
    
    private int status = NORMAL;
    private String statusInfo = "NORMAL";
@@ -711,20 +712,20 @@ public class PrinterService
       if (tk.countTokens() != 4) {
          throw new IllegalArgumentException("pageMargin: " + pageMargin);
       }
-      double[] tmp = {
-         Double.parseDouble(tk.nextToken()),
-         Double.parseDouble(tk.nextToken()),
-         Double.parseDouble(tk.nextToken()),
-         Double.parseDouble(tk.nextToken())
+      float[] tmp = {
+         Float.parseFloat(tk.nextToken()),
+         Float.parseFloat(tk.nextToken()),
+         Float.parseFloat(tk.nextToken()),
+         Float.parseFloat(tk.nextToken())
       };
       this.pageMargin = tmp;
    }
 
-   double[] getPageMargin(int orientation) {
+   float[] getPageMargin(int orientation) {
       if (orientation == PageFormat.PORTRAIT) {
-         return (double[]) pageMargin.clone();
+         return (float[]) pageMargin.clone();
       }
-      return new double[] {
+      return new float[] {
          pageMargin[1],
          pageMargin[2],
          pageMargin[3],
@@ -873,6 +874,18 @@ public class PrinterService
       return parseAnnotationBoxCount(annotationID);
    }
    
+   Annotation getAnnotation(String id) throws IOException {
+      File f = new File(annotationDir, id + PrinterService.ADF_FILE_EXT);
+      Properties props = new Properties();
+      FileInputStream in = new FileInputStream(f);
+      try {
+         props.load(in);
+      } finally {
+         try { in.close(); } catch (Exception ignore) {}
+      }
+      return new Annotation(this, props);
+   }
+   
    /** Getter for property pLUTDir.
     * @return Value of property pLUTDir.
     */
@@ -1019,14 +1032,14 @@ public class PrinterService
    /** Getter for property grayStepGap.
     * @return Value of property grayStepGap.
     */
-   public double getGrayStepGap() {
+   public float getGrayStepGap() {
       return grayStepGap;
    }
    
    /** Setter for property grayStepGap.
     * @param grayStepGap New value of property grayStepGap.
     */
-   public void setGrayStepGap(double grayStepGap) {
+   public void setGrayStepGap(float grayStepGap) {
       this.grayStepGap = grayStepGap;
    }
    
@@ -1107,17 +1120,17 @@ public class PrinterService
       scanner.setScanThreshold(scanThreshold);
    }
    
-   public void printGraySteps() throws PrintException {
+   public void printGraySteps() throws PrintException, IOException {
       print(new GrayStep(this, calibration.getIdentityPValToDDL()));
    }
    
-   public void printGrayStepsWithGSDF() throws PrintException {
+   public void printGrayStepsWithGSDF() throws PrintException, IOException {
       print(new GrayStep(this, calibration.getPValToDDLwGSDF(8,
             minDensity/100.f, maxDensity/100.f,
             illumination, reflectedAmbientLight)));
    }
    
-   public void printGrayStepsWithLinOD() throws PrintException {
+   public void printGrayStepsWithLinOD() throws PrintException, IOException {
       print(new GrayStep(this, calibration.getPValToDDLwLinOD(8,
             minDensity/100.f, maxDensity/100.f)));
    }
