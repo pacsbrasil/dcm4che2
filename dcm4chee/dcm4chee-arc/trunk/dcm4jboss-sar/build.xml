@@ -3,8 +3,6 @@
 	<property name="javac.debug" value="on"/>
 	<property name="version" value="0.2.0"/>
 
-	<property name="dist.dir" value="dcm4jboss-${version}"/>
-
 	<property name="src.dir" value="${basedir}/src"/>
 	<property name="src.java" value="${src.dir}/java"/>
 	<property name="src.etc" value="${src.dir}/etc"/>
@@ -16,6 +14,13 @@
 	<property name="target.java" value="${target.xdoclet}/java"/>
 	<property name="target.deploy" value="${target.dir}/deploy"/>
 	<property name="target.lib" value="${target.dir}/lib"/>
+
+	<property name="dist.name" value="dcm4jboss-${version}"/>
+	<property name="dist.dir" value="${target.dir}/${dist.name}"/>
+	<property name="dist.common" value="${dist.dir}/common"/>
+	<property name="dist.hsql" value="${dist.dir}/hsql"/>
+	<property name="dist.psql" value="${dist.dir}/psql"/>
+	<property name="dist.db2" value="${dist.dir}/db2"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="${user.home}/work/dcm4che14/build"/>		
@@ -80,7 +85,10 @@
         <mkdir dir="${target.java}"/>
         <mkdir dir="${target.lib}"/>
         <mkdir dir="${target.deploy}"/>
-        <mkdir dir="${target.dir}/${dist.dir}"/>
+        <mkdir dir="${dist.common}"/>
+        <mkdir dir="${dist.hsql}"/>
+        <mkdir dir="${dist.psql}"/>
+        <mkdir dir="${dist.db2}"/>
    </target>
 
     <!-- =================================================================== -->
@@ -169,24 +177,13 @@
    	<!-- =================================================================== -->
    
    	<target name="dist" depends="jar">
-   		<copy todir="${target.dir}/${dist.dir}">
+   		<copy todir="${dist.common}">
    			<fileset dir="${dcm4che.home}">
    				<include name="lib/dcm4che.jar"/>
    			</fileset>
    			<fileset dir="${dcm4jboss-ejb.target}">
    				<include name="lib/dcm4jboss-ejb-client.jar"/>
    				<include name="lib/dcm4jboss-jdbc.jar"/>
-   				<include name="deploy/dcm4jboss-ejb-hsql.jar"/>
-   				<include name="deploy/dcm4jboss-ejb-psql.jar"/>
-   				<include name="deploy/dcm4jboss-ejb-db2sql.jar"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src}">
-   				<include name="sql/create.hsql"/>
-   				<include name="sql/create.psql"/>
-   				<include name="sql/create.db2sql"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src/sql}">
-   				<include name="data/hypersonic/localDB.script"/>
    			</fileset>
    			<fileset dir="${src.etc}">
    				<include name="deploy/*.xml"/>
@@ -195,10 +192,50 @@
    				<include name="lib/dcm4jboss.jar"/>
    			</fileset>
    		</copy>
+   		<copy todir="${dist.hsql}">
+   			<fileset dir="${dcm4jboss-ejb.target}">
+   				<include name="deploy/dcm4jboss-ejb-hsql.jar"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}/etc">
+   				<include name="deploy/hsqldb-ds.xml"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}">
+   				<include name="sql/create.hsql"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}/sql">
+   				<include name="data/hypersonic/localDB.script"/>
+   			</fileset>
+   		</copy>
+   		<copy todir="${dist.psql}">
+   			<fileset dir="${dcm4jboss-ejb.target}">
+   				<include name="deploy/dcm4jboss-ejb-psql.jar"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}/etc">
+   				<include name="deploy/postgres-ds.xml"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.home}">
+   				<include name="lib/postgresql.jar"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}">
+   				<include name="sql/create.psql"/>
+   			</fileset>
+   		</copy>
+   		<copy todir="${dist.db2}">
+   			<fileset dir="${dcm4jboss-ejb.target}">
+   				<include name="deploy/dcm4jboss-ejb-db2.jar"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}/etc">
+   				<include name="deploy/db2-ds.xml"/>
+   				<include name="conf/standardjbosscmp-jdbc.xml"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}">
+   				<include name="sql/create.db2sql"/>
+   			</fileset>
+   		</copy>
    		<zip
-   			destfile="${target.dir}/${dist.dir}.zip"
+   			destfile="${target.dir}/${dist.name}.zip"
    			basedir="${target.dir}"
-   			includes="${dist.dir}/**"
+   			includes="${dist.name}/**"
    		/>
    	</target>
 	
