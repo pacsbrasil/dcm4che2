@@ -3,7 +3,7 @@
 <project name="dcm4che" basedir="." default="release">
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.0.18"/>
+   <property name="version" value="1.0.19"/>
    <property name="javac.debug" value="on"/>
    
    <target name="init">

@@ -244,7 +244,7 @@ public class DatasetTest extends TestCase {
 
     private final static String[] SCHEDULED_STATION_AET = {"AET1", "AET2"};
     private final static String[] PATIENT_AGE = {"040Y"};
-    private final static String[] IMAGE_TYPE = {"ORIGINAL", "PRIMARY"};
+    private final static String[] IMAGE_TYPE = {"ORIGINAL", "PRIMARY", "", "OTHER"};
     private final static String[] STUDY_DATE = {"19700101"};
     private final static String[] STUDY_TIME = {"010140"};
     private final static String[] ACQUISITION_DATETIME = {"19700101010140"};

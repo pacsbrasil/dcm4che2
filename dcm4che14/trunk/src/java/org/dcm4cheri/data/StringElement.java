@@ -219,21 +219,17 @@ abstract class StringElement extends ValueElement {
      */
     public synchronized String getString(int index, Charset cs)
         throws DcmValueException {
-        if (index >= vm()) {
+        ByteBuffer bb = getByteBuffer(index);
+        if (bb == null) {
             return null;
         }
-        Charset charset = cs != null ? cs : Charsets.ASCII;
+        final Charset charset = cs != null ? cs : Charsets.ASCII;
+        final int start = bb.position();
+        String s;
         try {
-            return trim.trim(
-                charset.newDecoder().decode(getByteBuffer(index)).toString());
-        } catch (CharacterCodingException ex) {
-            ByteBuffer bb = getByteBuffer(index);
-            String s =
-                trim.trim(
-                    new String(
-                        bb.array(),
-                        bb.arrayOffset(),
-                        bb.limit() - bb.position()));
+            s = charset.newDecoder().decode(bb).toString();
+        } catch (Exception ex) {
+            s = new String(bb.array(), start, bb.limit() - start);
             log.warn(
                 "Failed to decode value["
                     + index
@@ -243,8 +239,8 @@ abstract class StringElement extends ValueElement {
                     + charset
                     + "; return "
                     + s);
-            return s;
         }
+        return trim.trim(s);
     }
 
     /**
