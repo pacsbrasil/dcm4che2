@@ -196,11 +196,40 @@ public abstract class FileSystemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+	 * @ejb.persistence
+	 * 	column-name="min_available"
+	 */
+    public abstract long getMinAvailable();
+
+    /**
+     * @ejb.interface-method
+     */ 
+    public abstract void setMinAvailable(long hwm);
+    
+    /**
+     * @ejb.interface-method
      */ 
     public long getAvailable() {
         final long hwm = getHighWaterMark();
         return hwm == 0 ? 0 : hwm - getDiskUsage();
     }
+
+    /**
+     * @ejb.relation
+     *  name="filesystem-retrieve-aet"
+     *  role-name="filesystem-of-retrieve-aet"
+     *  target-ejb="RetrieveAET"
+     *  target-role-name="retrieve-aet-of-filesystem"
+     *  target-multiple="yes"
+     * @jboss:relation fk-column="retrieve_aet_fk" related-pk-field="pk"
+     * @jboss:target-relation fk-column="filesystem_fk" related-pk-field="pk"
+     * @jboss.relation-table table-name="rel_filesystem_retrieve_aet"
+     *    
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract java.util.Collection getRetrieveAETs();
+
+    public abstract void setRetrieveAETs(java.util.Collection retrieveAETs);
 
     /**
      * @ejb.select query=""

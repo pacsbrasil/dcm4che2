@@ -286,6 +286,40 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.relation
+     *  name="instance-external-retrieve-aet"
+     *  role-name="instance-on-external-retrieve-aet"
+     *  target-ejb="RetrieveAET"
+     *  target-role-name="external-retrieve-aet-of-instance"
+     *  target-multiple="yes"
+     * @jboss:relation fk-column="retrieve_aet_fk" related-pk-field="pk"
+     * @jboss:target-relation fk-column="instance_fk" related-pk-field="pk"
+     * @jboss.relation-table table-name="rel_instance_retrieve_aet"
+     *    
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract java.util.Collection getExternalRetrieveAETs();
+
+    public abstract void setExternalRetrieveAETs(java.util.Collection retrieveAETs);
+
+    /**
+     * @ejb.relation
+     *  name="instance-media"
+     *  role-name="instance-on-media"
+     *  target-ejb="Media"
+     *  target-role-name="media-with-instance"
+     *  target-multiple="yes"
+     * @jboss:relation fk-column="media_fk" related-pk-field="pk"
+     * @jboss:target-relation fk-column="instance_fk" related-pk-field="pk"
+     * @jboss.relation-table table-name="rel_instance_media"
+     *    
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract java.util.Collection getMedia();
+
+    public abstract void setMedia(java.util.Collection retrieveAETs);
+
+    /**
+     * @ejb.relation
      *  name="instance-srcode"
      *  role-name="sr-with-title"
      *  target-ejb="Code"
