@@ -35,7 +35,7 @@ import junit.framework.TestCase;
  */
 public class WADOCacheImplTest extends TestCase {
 
-	static WADOCache cache = WADOCacheImpl.getInstance();
+	static WADOCache cache = WADOCacheImpl.getWADOCache();
 
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(WADOCacheImplTest.class);
