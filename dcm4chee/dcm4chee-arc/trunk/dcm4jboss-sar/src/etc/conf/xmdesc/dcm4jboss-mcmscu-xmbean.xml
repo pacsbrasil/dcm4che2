@@ -202,6 +202,13 @@
    &defaultOperations;
 
    <operation impact="ACTION">
+      <description>Check availability of Media Creation Managment SCP. Returns OK, MOVE_DEST_UNAVAIL or MCM_SCP_UNAVAIL.
+      </description>
+      <name>checkMcmScpAvail</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+
+   <operation impact="ACTION">
       <description>Collect studies to medias</description>
       <name>collectStudies</name>
       <return-type>int</return-type>

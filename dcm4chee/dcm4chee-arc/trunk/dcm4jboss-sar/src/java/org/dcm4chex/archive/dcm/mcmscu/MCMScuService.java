@@ -807,6 +807,26 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     	return mcAssocRQ;
 	}
 	
+    /**
+     * Return the association request for SecondaryCaptureImageStorage.
+     * <p>
+     * This association is used for testing availability of move destination.
+     * 
+	 * @return Association for SecondaryCaptureImageStorage.
+	 */
+	private AAssociateRQ getStore2ndCaptureAssocReq() {
+    	AAssociateRQ mcAssocRQ = aFact.newAAssociateRQ();
+    	mcAssocRQ.setCalledAET( this.getMoveDestinationAET() );
+    	mcAssocRQ.setCallingAET( getCallingAET() );
+    	mcAssocRQ.setMaxPDULength( maxPDUlen );
+    	mcAssocRQ.addPresContext(aFact.newPresContext(1,
+                UIDs.SecondaryCaptureImageStorage,
+                new String[]{UIDs.forName("ExplicitVRLittleEndian"),
+        					 UIDs.forName("ImplicitVRLittleEndian")} ));
+    	return mcAssocRQ;
+	}
+	
+	
     public String getMediaCreationStatus() throws InterruptedException, IOException {
     	ActiveAssociation assoc = null;
     	try {
@@ -909,6 +929,70 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     		}
     	}
 		return nrOfMedia ;
+    }
+    
+    /**
+     * Checks the availability of Media Creation Managment SCP service.
+     * <p>
+     * Checks if the move destination is available and support SecondaryCaptureImageStorage.<br>
+     * Checks if the MediaCreation managment service is availabel.
+     * <p>
+     * 
+     * @return Returns OK, MOVE_DEST_UNAVAIL or MCM_SCP_UNAVAIL
+     */
+    public String checkMcmScpAvail() {
+    	String ret = "MOVE_DEST_UNAVAIL";
+    	ActiveAssociation assoc = null;
+    	AEData aeData;
+   	//check move dest.
+    	try {
+			aeData = new AECmd( this.getMoveDestinationAET() ).execute();
+			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getStore2ndCaptureAssocReq() );
+			if ( assoc == null ) {
+				if ( log.isDebugEnabled() ) log.debug("Move destination ("+getMoveDestinationAET()+") is not available! Reason: couldnt open association:" );
+			}
+			Association as = assoc.getAssociation();
+			if (as.getAcceptedTransferSyntaxUID(1) == null) {
+	        	if ( log.isDebugEnabled() ) log.debug( "Move destination ("+getMoveDestinationAET()+") is not available! Reason: doesnt support media creation managment!", null );
+			}
+			ret = "OK";
+    	} catch ( Exception x ) {
+    		if ( log.isDebugEnabled() ) log.debug( "Move destination ("+getMoveDestinationAET()+") is not available! Reason: Exception:", x );
+		} finally {
+			if ( assoc != null )
+				try {
+					assoc.release( true );
+				} catch (Exception e1) {
+					if ( log.isDebugEnabled() ) log.debug( "Cant release association for checkMcmScpAvail: MOVE_DEST"+assoc.getAssociation(),e1);
+				}
+    	}
+		if ( ! "OK".equals( ret ) ) return ret;
+    	
+ 	//check mcm scp.
+		ret = "MCM_SCP_UNAVAIL";
+    	try {
+			aeData = new AECmd( this.getMcmScpAET() ).execute();
+			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getMediaCreationAssocReq() );
+			if ( assoc == null ) {
+				if ( log.isDebugEnabled() ) log.debug("MCM SCP ("+getMcmScpAET()+") is not available! Reason: couldnt open association:" );
+			}
+			Association as = assoc.getAssociation();
+			if (as.getAcceptedTransferSyntaxUID(1) == null) {
+				if ( log.isDebugEnabled() ) log.debug( "MCM SCP ("+getMcmScpAET()+") is not available! Reason: doesnt support media creation managment!", null );
+			}
+			ret = "OK";
+    	} catch ( Exception x ) {
+    		if ( log.isDebugEnabled() ) log.debug( "MCM SCP ("+getMcmScpAET()+") is not available! Reason: Exception:", x );
+		} finally {
+			if ( assoc != null )
+				try {
+					assoc.release( true );
+				} catch (Exception e1) {
+					if ( log.isDebugEnabled() ) log.debug( "Cant release association for checkMcmScpAvail: MCM_SCP"+assoc.getAssociation(),e1);
+				}
+    	}
+    	
+    	return ret;
     }
 	
     
