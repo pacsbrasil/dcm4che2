@@ -178,8 +178,8 @@ public class ImagePanel extends JPanel
                     subx = width / maxWidth;
                 if (height > maxHeight)
                     suby = height / maxHeight;
-                //read pixel data
                 //System.out.println("sx="+subx+",sy="+suby);
+                //read pixel data
                 readParam.setSourceSubsampling(subx, suby, 0, 0);
                 bi = reader.read(0, readParam);
 				//get the actual dataset
@@ -189,7 +189,7 @@ public class ImagePanel extends JPanel
 				// as those used in the actual image
 				ColorModelFactory cmFactory = ColorModelFactory.getInstance();
 			    if (bi.getColorModel() instanceof IndexColorModel
-                    && !ds.getString(Tags.PhotometricInterpretation).equals("PALETTE COLOR")) {
+                    && !ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2").equals("PALETTE COLOR")) {
                     cmParam = cmFactory.makeParam(ds, plut);
                     applyingPLutToRGB = false;
                     //set window min/max
