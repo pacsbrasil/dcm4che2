@@ -40,10 +40,13 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class MakeIsoImageService extends ServiceMBeanSupport {
 
+    
     private static final String _ISO = ".iso";
 
     private static final String _SORT = ".sort";
     
+    private String executable = "mkisofs";
+
     private boolean keepSpoolFiles = false;
     
     private int isoLevel = 1;
@@ -94,6 +97,14 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
 
     public final void setSpoolDirName(ObjectName spoolDirName) {
         spoolDir.setSpoolDirName(spoolDirName);
+    }
+
+    public final String getExecutable() {
+        return executable;
+    }
+
+    public final void setExecutable(String executable) {
+        this.executable = executable;
     }
 
     public final boolean isKeepSpoolFiles() {
@@ -175,7 +186,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         int exitCode;
         try {
             ArrayList cmd = new ArrayList();
-            cmd.add("mkisofs");
+            cmd.add(executable);
             cmd.add("-f"); // follow symbolic links
             cmd.add("-iso-level");
             cmd.add(String.valueOf(isoLevel));

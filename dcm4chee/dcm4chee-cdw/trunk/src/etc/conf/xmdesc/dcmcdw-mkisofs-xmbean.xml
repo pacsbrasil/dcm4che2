@@ -24,6 +24,17 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
+      getMethod="getExecutable"
+      setMethod="setExecutable">
+      <description>Executable command to invoke mkisofs.
+      </description>
+      <name>Executable</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="mkisofs" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isKeepSpoolFiles"
       setMethod="setKeepSpoolFiles">
       <description>Keep spool files (for debugging) in failure case.
