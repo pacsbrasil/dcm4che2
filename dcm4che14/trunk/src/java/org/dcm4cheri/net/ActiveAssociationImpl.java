@@ -286,7 +286,10 @@ final class ActiveAssociationImpl
 	   public void error(Association src, IOException ioe) {
 	   }
 	   
-	   public void close(Association src) {
+	   public void closing(Association src) {
+	   }
+
+	   public void closed(Association src) {
 	       synchronized (rspDispatcher) {
 		       rspDispatcher.clear();
 		       rspDispatcher.notifyAll();

@@ -345,7 +345,11 @@ public class AssociationRequestor {
 				
 			}
 
-			public void close(Association src) {
+			public void closing(Association src) {
+			    
+			}
+			
+			public void closed(Association src) {
 				pcs.firePropertyChange(CONNECTED, true, false);
 				active = null;				
 			}

@@ -101,11 +101,15 @@ class Multicaster implements AssociationListener {
       b.error(src, ioe);
    }
    
-   public void close(Association src) {
-      a.close(src);
-      b.close(src);
+   public void closing(Association src) {
+      a.closing(src);
+      b.closing(src);
    }
       
+   public void closed(Association src) {
+       a.closed(src);
+       b.closed(src);
+    }
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

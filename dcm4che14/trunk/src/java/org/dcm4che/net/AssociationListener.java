@@ -43,6 +43,8 @@ public interface AssociationListener extends EventListener {
     
     void error(Association src, IOException ioe);
 
-    void close(Association src);
+    void closing(Association src);
+
+    void closed(Association src);
 }
 

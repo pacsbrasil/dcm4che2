@@ -199,7 +199,10 @@ class DcmRcvFSU implements AssociationListener, Runnable
    public void error(Association src, IOException ioe){
    }
 
-   public void close(Association src) {
+   public void closing(Association src) {
+   }
+
+   public void closed(Association src) {
       if (writer != null && !autocommit) {
          try {
             writer.commit();

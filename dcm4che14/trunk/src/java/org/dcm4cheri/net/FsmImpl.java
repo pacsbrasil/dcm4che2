@@ -27,12 +27,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
-
 import org.dcm4che.net.AAbort;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRJ;
@@ -47,7 +44,6 @@ import org.dcm4che.net.PDU;
 import org.dcm4che.net.PDUException;
 import org.dcm4che.net.PDataTF;
 import org.dcm4che.net.PresContext;
-
 import org.dcm4cheri.util.LF_ThreadPool;
 
 /**
@@ -66,7 +62,6 @@ final class FsmImpl
     private final Socket s;
     private final InputStream in;
     private final OutputStream out;
-    private final static Timer timer = new Timer(true);
     private int soCloseDelay = 500;
     private AAssociateRQ rq = null;
     private AAssociateAC ac = null;
@@ -952,7 +947,7 @@ final class FsmImpl
                     pool.shutdown();
                 }// stop reading
                 if (assocListener != null) {
-                    assocListener.close(assoc);
+                    assocListener.closing(assoc);
                 }
                 if (log.isInfoEnabled()) {
                     log.info("closing connection - " + s);
@@ -966,6 +961,9 @@ final class FsmImpl
                 try {
                     s.close();
                 } catch (IOException ignore) {}
+                if (assocListener != null) {
+                    assocListener.closed(assoc);
+                }
             }
 
 
@@ -1477,18 +1475,12 @@ final class FsmImpl
                 if (pool != null) {
                     pool.shutdown();
                 }
-                timer.schedule(
-                    new TimerTask()
-                    {
-                        public void run()
-                        {
-                            initMDC();
-                            changeState(STA1);
-                            clearMDC();
-                        }
-
-                    },
-                        soCloseDelay);
+                try {
+                    Thread.sleep(soCloseDelay);
+                } catch (InterruptedException e) {
+                    log.warn("Socket close Delay was interrupted: ", e);
+                }
+                changeState(STA1);
             }
         };
 

@@ -132,7 +132,10 @@ implements DimseListener, AssociationListener, FutureRSP {
       setException(ioe);
    }
    
-   synchronized public void close(Association src) {
+   public void closing(Association src) {
+   }
+   
+   synchronized public void closed(Association src) {
       closed = true;
       notifyAll();
    }
