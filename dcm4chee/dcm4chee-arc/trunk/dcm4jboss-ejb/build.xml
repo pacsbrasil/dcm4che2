@@ -2,12 +2,12 @@
 	<property file="build.properties"/>
 	<property name="version" value="DEV"/>
 
-    <!--property name="datasource.mapping" value="Hypersonic SQL"/-->
+    <property name="datasource.mapping" value="Hypersonic SQL"/>
     <!--property name="datasource.mapping" value="mySQL"/-->
-    <property name="datasource.mapping" value="PostgreSQL 7.2"/>
-    <!--property name="datasource.name" value="java:/DefaultDS"/-->
+    <!--property name="datasource.mapping" value="PostgreSQL 7.2"/-->
+    <property name="datasource.name" value="java:/DefaultDS"/>
     <!--property name="datasource.name" value="java:/MySqlDS"/-->
-    <property name="datasource.name" value="java:/PostgresDS"/>
+    <!--property name="datasource.name" value="java:/PostgresDS"/-->
 			
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="${user.home}/work/dcm4che14/build"/>		
@@ -82,6 +82,7 @@
 	<property name="target.xdoclet" value="${target.dir}/xdoclet"/>
 	<property name="target.java" value="${target.xdoclet}/java"/>
 	<property name="target.meta-inf" value="${target.xdoclet}/META-INF"/>
+	<property name="target.meta-inf-hsql" value="${target.xdoclet}/META-INF-hsql"/>
 	<property name="target.meta-inf-psql" value="${target.xdoclet}/META-INF-psql"/>
 	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
@@ -129,6 +130,7 @@
     <target name="prepare" depends="init">
         <mkdir dir="${target.classes}"/>
         <mkdir dir="${target.java}"/>
+        <mkdir dir="${target.meta-inf-hsql}"/>
         <mkdir dir="${target.meta-inf-psql}"/>
         <mkdir dir="${target.meta-inf-db2}"/>
         <mkdir dir="${target.deploy}"/>
@@ -178,7 +180,7 @@
             <!--utilobject cacheHomes="true" includeGUID="false"/-->
 
             <deploymentdescriptor
-                destdir="${target.meta-inf-psql}"
+                destdir="${target.meta-inf-hsql}"
                 validatexml="true"
                 description="dcm4jboss archive EJBs"
                 >
@@ -190,7 +192,7 @@
                 version="3.2"
                 unauthenticatedPrincipal="nobody"
                 xmlencoding="UTF-8"
-                destdir="${target.meta-inf-psql}"
+                destdir="${target.meta-inf-hsql}"
                 validatexml="true"
                 datasource="${datasource.name}"
                 typeMapping="${datasource.mapping}"                  
@@ -199,21 +201,41 @@
             
         </ejbdoclet>
 
-        <style style="${src.etc}/jdbc-properties.xsl"
-             in="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
-             out="${target.classes}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
-        />
+    	<uptodate property="meta-inf-psql.notRequired"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-psql"/>
 
     	<uptodate property="meta-inf-db2.notRequired"
-    		srcfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
     		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-db2"/>
+
+        <style style="${src.etc}/jdbc-properties.xsl"
+             in="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+             out="${target.classes}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
+        />
+    </target>
+
+    <target name="meta-inf-psql" unless="meta-inf-psql.notRequired">
+    	<copy todir="${target.meta-inf-psql}">
+    		<fileset dir="${target.meta-inf-hsql}"/>
+    	</copy>
+    	<replace file="${target.meta-inf-psql}/jbosscmp-jdbc.xml">
+  			<replacefilter
+  				token="Hypersonic SQL"
+  				value="PostgreSQL 7.2"/>
+  			<replacefilter
+  				token="hsqldb-fetch-key"
+  				value="postgresql-fetch-seq"/>
+		</replace>
     </target>
 
     <target name="meta-inf-db2" unless="meta-inf-db2.notRequired">
     	<copy todir="${target.meta-inf-db2}">
-    		<fileset dir="${target.meta-inf-psql}"/>
+    		<fileset dir="${target.meta-inf-hsql}"/>
     	</copy>
     	<patch
     		patchfile="${etc.db2}/meta-inf-db2.patch"
@@ -244,6 +266,9 @@
    <!-- Creates the ejb-jar                                                 -->
    <!-- =================================================================== -->
     <target name="jar" depends="compile">
+     	<antcall target="ejb-jar">
+    		<param name="db.name" value="hsql"/>
+    	</antcall>
     	<antcall target="ejb-jar">
     		<param name="db.name" value="psql"/>
     	</antcall>

@@ -43,7 +43,7 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
  *  table-name="move_order"
  * 
  * @jboss.entity-command
- *  name="postgresql-fetch-seq"
+ *  name="hsqldb-fetch-key"
  * 
  * @ejb.finder
  *  signature="java.util.Collection findAll()"

@@ -64,7 +64,7 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
  *  table-name="instance"
  * 
  * @jboss.entity-command
- *  name="postgresql-fetch-seq"
+ *  name="hsqldb-fetch-key"
  * 
  * @ejb.finder
  *  signature="java.util.Collection findAll()"

@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
  *  table-name="code"
  * 
  * @jboss.entity-command
- *  name="postgresql-fetch-seq"
+ *  name="hsqldb-fetch-key"
  * 
  * @ejb.finder
  *  signature="Collection findAll()"
