@@ -307,6 +307,11 @@ public abstract class InstanceBean implements EntityBean {
      */
     public abstract MediaLocal getMedia();
 
+    /**
+     * @ejb.interface-method view-type="local"
+     * 
+     * @param media
+     */
     public abstract void setMedia(MediaLocal media);
 
     /**
