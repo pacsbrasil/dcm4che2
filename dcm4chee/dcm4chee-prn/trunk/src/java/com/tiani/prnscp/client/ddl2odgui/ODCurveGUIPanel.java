@@ -1,7 +1,6 @@
 package com.tiani.prnscp.client.ddl2odgui;
 
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -46,9 +45,9 @@ public class ODCurveGUIPanel extends JPanel
     private Collection curves;
     private ODCurve opResultCurve = null;
     private ButtonLegendPanel legendPanel;
-    private Container frParent;
+    private ODCurveGUIFrame frParent;
     
-    ODCurveGUIPanel(Container parent)
+    ODCurveGUIPanel(ODCurveGUIFrame parent)
     {
         frParent = parent;
         curves = new LinkedList();
@@ -156,6 +155,43 @@ public class ODCurveGUIPanel extends JPanel
     public void setLegend(ButtonLegendPanel legend)
     {
         legendPanel = legend;
+    }
+    
+    public void export(Object object)
+    {
+        ODCurve curve = (ODCurve)object;
+        File file = frParent.promptUserForFile();
+
+        if (file == null)
+            return;
+        try {
+            sc.writeODs(file, curve.getData());
+        }
+        catch (IOException ioe) {
+            frParent.showMsgDialog("There was a problem exporting to the file\n"
+                                   + file, "Export error");
+        }
+    }
+    
+    public void remove(Object object)
+    {
+        if (curves.contains(object))
+            curves.remove(object);
+        else
+            return;
+        //get max
+        ODCurve curve;
+        Iterator i = curves.iterator();
+        maxODAllCurves = 0;
+        while (i.hasNext()) {
+            curve = (ODCurve)i.next();
+            if (maxODAllCurves < curve.getMax())
+                maxODAllCurves = curve.getMax();
+        }
+        //recreate GSDF
+        createGSDFCurve();
+        //repaint
+        repaint();
     }
     
     public void selected(Object object)

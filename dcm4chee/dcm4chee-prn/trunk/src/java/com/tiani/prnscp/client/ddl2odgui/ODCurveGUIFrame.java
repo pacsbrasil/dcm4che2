@@ -45,20 +45,16 @@ public class ODCurveGUIFrame extends JFrame
         //legendPanel.add(lbl);
         curvePanel.setLegend(legendPanel);
         contentPane.add(curvePanel, BorderLayout.CENTER);
-        contentPane.add(legendPanel, BorderLayout.EAST);
+        contentPane.add(legendPanel, BorderLayout.SOUTH);
         //setup menus
         JMenuBar mnubar = new JMenuBar();
         JMenu mnuCurve = new JMenu("Curve");
-        //create right-click menu for button legend
-        
         //create "curve -> load" curve menu
         Action actLoadCurve = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
                 {
-                    chooser.setCurrentDirectory(lastFile);
-                    int returnVal = chooser.showOpenDialog(ODCurveGUIFrame.this);
-                    if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    if (promptUserForFile() != null) {
                         try {
                             curvePanel.loadScannedImageCurve(lastFile = chooser.getSelectedFile());
                         }
@@ -120,7 +116,17 @@ public class ODCurveGUIFrame extends JFrame
         setTitle(title);
     }
     
-    private void showMsgDialog(String msg, String title)
+    File promptUserForFile()
+    {
+        chooser.setCurrentDirectory(lastFile);
+        int returnVal = chooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION)
+            return (lastFile = chooser.getSelectedFile());
+        else
+            return null;
+    }
+    
+    void showMsgDialog(String msg, String title)
     {
         JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
     }

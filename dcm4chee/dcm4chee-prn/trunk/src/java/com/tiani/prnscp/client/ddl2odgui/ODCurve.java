@@ -52,6 +52,11 @@ public class ODCurve
         return max;
     }
     
+    public float[] getData()
+    {
+        return ods;
+    }
+    
     public void setSelected(boolean selected)
     {
         this.selected = selected;
