@@ -187,7 +187,6 @@ public class SVGCreator implements XMLResponseObject{
 			out.flush();
 			out.close();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -219,8 +218,8 @@ public class SVGCreator implements XMLResponseObject{
 	        	addInterpSeparator();
         	}
         	addFooter();
+        	addG("scaling", "translate("+this.graphicXOffset*scaling+","+(this.graphicYOffset+100)*scaling+"), scale("+scaling +")",null,null,null);
         	addDefs();
-        	addG("scaling", "scale("+scaling +")",null,null,null);
         	addGrid( graphicWidthCm, graphicHeightCm );
     		log.info("grid added!");
     		addGraphic( graphicWidthCm, graphicHeightCm );
@@ -242,29 +241,29 @@ public class SVGCreator implements XMLResponseObject{
 	
 	private void addTextSegment() throws SAXException {
 		addG( "textSegment", "translate(0,30)",null,"40", null);
-		addText( "20","0","20",null,null, "2");//?? what is 2 ?
-		addText( "20","50","20",null,null, "");//?? what is "" ?
-		addText( "500","0","20",null,null, info.getAcquisDate());
-		addText( "500","50","20",null,null, info.getBirthday());
-		addText( "700","0","20",null,null, info.getAcquisTime());
-		addText( "700","50","20",null,null, info.getSex());
-		addText( "900","0","24",null,null, info.getPatientName());
-		addText( "900","50","20",null,null, "0/0");//?? what is 0/0 ?
-		addText( "1000","50","20",null,null, info.getPatientSize());
-		addText( "1100","50","20",null,null, info.getPatientWeight());
+		addText( "20","0","10",null,null, "2");//?? what is 2 ?
+		addText( "20","25","10",null,null, "");//?? what is "" ?
+		addText( "140","0","10",null,null, info.getAcquisDate());
+		addText( "140","25","10",null,null, info.getBirthday());
+		addText( "210","0","10",null,null, info.getAcquisTime());
+		addText( "210","25","10",null,null, info.getSex());
+		addText( "300","0","14",null,null, info.getPatientName());
+		addText( "300","25","10",null,null, "0/0");//?? what is 0/0 ?
+		addText( "330","25","10",null,null, info.getPatientSize());
+		addText( "400","25","10",null,null, info.getPatientWeight());
 
 		Properties props = new Properties();
 		props.setProperty("text-anchor", "end");
-		addText( "2300","50","20","30",props, "Department:");
-		addText( "2300","100","20","30",props, "Room:");
-		addText( "2300","150","20","30",props, "Operator:");
+		addText( "700","15","10","30",props, "Department:");
+		addText( "700","30","10","30",props, "Room:");
+		addText( "700","50","10","30",props, "Operator:");
 		
 		util.endElement( "g" );
-		this.graphicYOffset += 200;
+		this.graphicYOffset += 240;
 	}
 
 	private void addHeaderSeparator() throws SAXException {
-		addPath( "headerSeperator", "fill:none; stroke:black","5","M 0 195 H "+this.viewBoxWidth );
+		addPath( "headerSeperator", "fill:none; stroke:black","5","M 0 90 H "+this.viewBoxWidth*scaling );
 	}
 	private void addShortmeasSegment() {
 		//TODO
@@ -285,9 +284,9 @@ public class SVGCreator implements XMLResponseObject{
 		//TODO
 	}
 	private void addFooter() throws SAXException {
-		addG( "footer", "translate(0,"+(this.graphicYOffset+graphicHeight+30)+")", "black", "40", null );
+		addG( "footer", "translate(0,"+(this.graphicYOffset+graphicHeight+150)*this.scaling+")", "black", "40", null );
 		{
-			float endX = graphicXOffset + graphicWidth - 60;
+			float endX = (graphicXOffset + graphicWidth - 60)*scaling;
 			Properties props = new Properties();
 			props.setProperty("id","filtertext");
 			props.setProperty("text-anchor", "end");
@@ -300,13 +299,13 @@ public class SVGCreator implements XMLResponseObject{
 	
 	protected void addDefs() throws SAXException {
 		util.startElement("defs", EMPTY_ATTRIBUTES );
-	    	addPath( "1mmXd", "fill:none; stroke:red", null, "M 0 "+graphicYOffset+" V "+(graphicYOffset+graphicHeight) );
-	    	addPath( "1mmYd", "fill:none; stroke:red", null, "M "+graphicXOffset+" 0 H "+(graphicXOffset+graphicWidth) );
+	    	addPath( "1mmXd", "fill:none; stroke:red", null, "M 0 0 V "+graphicHeight );
+	    	addPath( "1mmYd", "fill:none; stroke:red", null, "M 0 0 H "+graphicWidth );
 	    	//Y
 	    	addG( "1cmY", null, null, null, null );
-	    		String s1 = "M "+graphicXOffset+" ";
-	    		String s2 = " H "+(graphicWidth+graphicXOffset);
-	    		float step = graphicYOffset+10;
+	    		String s1 = "M 0 ";
+	    		String s2 = " H "+(graphicWidth);
+	    		float step = 10;
 	    		for ( int i = 0 ; i < 4 ; i++, step += 10 ) {
 	    	    	addPath( "1mmY", "fill:none; stroke:pink", null, s1+step+s2 );
 	    	    	addPath( "1mmY", "fill:none; stroke:pink", null, s1+(step+50)+s2 );
@@ -314,9 +313,9 @@ public class SVGCreator implements XMLResponseObject{
 	    		util.endElement("g" );
     		//X
 	    	addG( "1cmX", null, null, null, null );
-	    		step =graphicYOffset + 10;
+	    		step = 10;
 	    		s1 = "M ";
-	    		s2 = graphicYOffset+" V "+(graphicHeight+graphicYOffset);
+	    		s2 = " 0 V "+graphicHeight;
 	    		for ( int i = 0 ; i < 4 ; i++, step += 10 ) {
 	    	    	addPath( "1mmX", "fill:none; stroke:pink", null, s1+step+s2 );
 	    	    	addPath( "1mmX", "fill:none; stroke:pink", null, s1+(step+50)+s2 );
@@ -328,15 +327,15 @@ public class SVGCreator implements XMLResponseObject{
 	
 	protected void addGrid( int width, int height ) throws SAXException {
     	addG( "Xlines", null, null, null, null );
-    		float step = graphicXOffset;
+    		float step = 0;
 	    	for ( int i = 0 ; i < width ; i++, step+=100 ){
 				addUse("#1cmX","translate("+step+",0)",null);
 	    	}
 	    	util.endElement("g" );
 
 		addG( "Ylines", null, null, null, null );
-		addUse("#1mmYd","translate(0,"+graphicYOffset+")",null);
-			step = graphicYOffset;
+		addUse("#1mmYd","translate(0,0)",null);
+			step = 0;
 	    	for ( int i = 0 ; i < height ; i++, step+=100 ){
 				addUse("#1cmY","translate(0,"+(step)+")",null);
 	    		addUse("#1mmYd","translate(0,"+(step+50)+")",null);
@@ -344,8 +343,8 @@ public class SVGCreator implements XMLResponseObject{
 	    	}
 	    util.endElement("g" );
     	addG( "Xlinesd", null, null, null, null );
-		addUse("#1mmXd","translate("+graphicXOffset+",0)",null);
-		step = graphicXOffset+50;
+		addUse("#1mmXd","translate(0,0)",null);
+		step = 50;
     	for ( int i = 0 ; i < width ; i++, step+=100 ){
 			addUse("#1mmXd","translate("+step+",0)",null);
 			addUse("#1mmXd","translate("+(step+50)+",0)",null);
@@ -355,7 +354,7 @@ public class SVGCreator implements XMLResponseObject{
 	}
 	
 	private void addGraphic( int width, int height ) throws SAXException{
-		WaveformTemplate tmpl = WaveformTemplateFactory.getInstance( waveForms, width*100, height*100 );
+		WaveformTemplate tmpl = WaveformTemplateFactory.getInstance( waveForms, (width-1)*100, height*100 );
 		WaveformArea[] calPulseAreas = tmpl.getCalPulseAreas();
 		WaveformArea[] wfAreas = tmpl.getWaveformAreas();
 		WaveformArea area;
@@ -372,33 +371,7 @@ public class SVGCreator implements XMLResponseObject{
 			}
 		}
 	}
-/*
-	private void add12LeadGraphic( int width, int height ) throws SAXException{
-		float deltaHeight = ((float) height) / 6f * 100f;
-		float yTopPos = graphicYOffset;
-		float calPulseX = graphicXOffset + 10f;
-		float leftGraphX = calPulseX + 110f;
-		float graphWidth = ( (float) ( width * 100 - leftGraphX ) ) / 2f;
-		float rightGraphX = leftGraphX + graphWidth;
-		log.info("yTopPos:"+yTopPos);
-		
-		//addG( "waveformSegment", "translate(0,"+graphicYOffset+")", null, "50", null );
-		addG( "waveformSegment", null, null, "50", null );
-		{
-			for ( int i = 0 ; i < 6 ; i ++ ) { //6 rows
-	    		log.info("add calPulse("+i+")! waveforms:"+this.waveForms.getNrOfChannels() );
-				addCalPulse( i, calPulseX, yTopPos, deltaHeight );
-	    		log.info("add WaveForm left!");
-				addWaveform( i, leftGraphX, yTopPos, deltaHeight, graphWidth );
-	    		log.info("add Waveform right!");
-				addWaveform( i+6, rightGraphX, yTopPos, deltaHeight, graphWidth );
-	    		log.info("graph row "+i+" added!");
-				yTopPos += deltaHeight;
-			}
-		}
-		util.endElement("g");
-	}
-/*_*/	
+
 	/**
 	 * @param topPos
 	 * @throws SAXException
@@ -415,9 +388,9 @@ public class SVGCreator implements XMLResponseObject{
 		float baseLineY = topPos + height/2f;
 		log.info("topPos:"+topPos);
 		addG( "lead"+lead, "translate("+(graphicXOffset+xOffset)+","+baseLineY+")",null, null, null );
-			addText( "0", "-100", "40", "green", null, waveForms.getChannel( lead ).getChSource());
-			addPath( "lead"+lead, "fill:none;stroke:black", "3", getWaveFormString( waveForms.getChannel( lead ), width ));
-		    addPath( "waveseparator", "fill:none;stroke:black", "5" ,"M 0 -60 L 0 -20 M 0 60 L 0 20 ");
+			addText( "0", "-100", "30", "green", null, waveForms.getChannel( lead ).getChSource());
+			addPath( "lead"+lead, "fill:none;stroke:black", "5", getWaveFormString( waveForms.getChannel( lead ), width ));
+		    addPath( "waveseparator", "fill:none;stroke:green", "5" ,"M 0 -90 L 0 -20 M 0 90 L 0 20 ");
 		   util.endElement("g");
 	}
 

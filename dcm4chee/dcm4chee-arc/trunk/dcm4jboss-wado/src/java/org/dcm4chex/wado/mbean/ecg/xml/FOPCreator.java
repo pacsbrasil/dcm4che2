@@ -49,7 +49,6 @@ public class FOPCreator implements XMLResponseObject{
 	private WaveformGroup[] waveformGroups;
 	private WaveformInfo info;
 
-	//private Float graphicHeight = new Float(16.0f);
 	/**
 	 * @param wfgrps
 	 * @param wfInfo
@@ -62,7 +61,7 @@ public class FOPCreator implements XMLResponseObject{
 		pageWidth = width;
 		pageHeight = height;
 		graphHeight = new Float( pageHeight.floatValue() - 4.0f );
-		graphWidth = new Float( pageWidth.floatValue() - 5.0f );
+		graphWidth = new Float( pageWidth.floatValue() - 2.0f );
 		log.info("page (h*w):"+pageHeight+"*"+pageWidth);
 		log.info("graph (h*w):"+graphHeight+"*"+graphWidth);
 	}
@@ -187,17 +186,11 @@ public class FOPCreator implements XMLResponseObject{
 	private void addHeader() throws SAXException {
 		util.startElement( "fo:static-content", "flow-name", "xsl-region-before");
 		{
-			AttributesImpl attr = util.newAttribute( "font-size", "20pt");
+			AttributesImpl attr = util.newAttribute( "font-size", "12pt");
 			util.addAttribute( attr, "text-align", "center" );
 			util.addAttribute( attr, "font-weight", "bold" );
 			util.startElement( "fo:block", attr);
-			{
-				//util.startElement("fo:external-graphic", "src", "../images/tiani_logo.jpg" );
-				//util.endElement("fo:external-graphic");
-				util.startElement("fo:inline", XMLUtil.EMPTY_ATTRIBUTES);
-				util.addValue( "ECG Report");
-				util.endElement("fo:inline");
-			}
+				util.addValue( info.getPatientName() );
 			util.endElement( "fo:block");
 		}
 		util.endElement( "fo:static-content" );
@@ -208,11 +201,16 @@ public class FOPCreator implements XMLResponseObject{
 	 * 
 	 */
 	private void addGraphicHeader(WaveformGroup group) throws SAXException {
-		AttributesImpl attr = util.newAttribute( "font-size", "12pt");
-		util.addAttribute( attr, "text-align", "center" );
-		util.addAttribute( attr, "font-weight", "bold" );
+		AttributesImpl attr = util.newAttribute( "font-size", "10pt");
 		util.startElement( "fo:block", attr);
-		util.addValue( info.getPatientName() );
+		addTable( "none",
+				  new String[]{"15mm","40mm","20mm","40mm","15mm","25mm","50mm","20mm","3mm","20mm"},
+				  new String[]{"left","left","left","left","left","left","left","right","left","left"},
+				  new String[][]{ {"2",null,info.getAcquisDate(),info.getAcquisTime(),null,null,null,"Department:",null,"" },
+								  {null,null,null,null,null,null,null,"Room:",null,"" },
+				  				  {null,null,info.getBirthday(),info.getSex(),"0/0",info.getPatientSize(),info.getPatientWeight(),"Operator:",null,"" }
+								}
+				);
 		util.endElement( "fo:block");
 	}
 
@@ -246,6 +244,31 @@ public class FOPCreator implements XMLResponseObject{
 			util.singleElement("fo:inline", null, group.getFilterText() );
 		}
 		util.endElement( "fo:block");
+	}
+	
+	private void addTable( String border, String[] columnWidths, String[] textAligns, String[][] data) throws SAXException {
+		AttributesImpl tblAttr = util.newAttribute( "border-style", border);
+		util.addAttribute( tblAttr, "table-layout", "fixed" );
+		util.startElement( "fo:table", tblAttr);
+		AttributesImpl colAttr = util.newAttribute( "column-number", border);
+		for ( int i = 0 ; i < columnWidths.length ; i++ ) {
+			util.singleElement("fo:table-column", util.newAttribute( "column-width", columnWidths[i]), null );
+		}
+		util.startElement( "fo:table-body", null);
+		int rows = data.length;
+		int cols = data[0].length;
+		AttributesImpl cellAttr = util.newAttribute( "border-style", "none");
+		for ( int row = 0 ; row < rows ; row++ ) {
+			util.startElement( "fo:table-row", null);
+			for ( int col = 0 ; col < cols ; col++ ) {
+				util.startElement( "fo:table-cell", cellAttr );
+				util.singleElement("fo:block", util.newAttribute( "text-align", textAligns[col]), data[row][col] );
+				util.endElement( "fo:table-cell");
+			}
+			util.endElement( "fo:table-row");
+		}
+		util.endElement( "fo:table-body");
+		util.endElement( "fo:table");
 	}
 
 	/**

@@ -89,7 +89,8 @@ public class XMLUtil {
 	}
 	
     public void addValue( String value ) throws SAXException {
-     th.characters(value.toCharArray(), 0, value.length() );
+    	if ( value != null )
+    		th.characters(value.toCharArray(), 0, value.length() );
 	}
 
 }

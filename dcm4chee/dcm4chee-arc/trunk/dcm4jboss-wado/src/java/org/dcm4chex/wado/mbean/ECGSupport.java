@@ -145,7 +145,7 @@ public class ECGSupport {
 			log.info( wfgrp );
 			WaveformInfo wfInfo = new WaveformInfo( ds );
 
-			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, new Float( 26.6f ), new Float(20.3f) );
+			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, new Float( 27.6f ), new Float(20.3f) );
 //			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, null, new Float(40.0f) );
 			OutputStream  out= new FileOutputStream( outFile );
 			svgCreator.toXML( out );
