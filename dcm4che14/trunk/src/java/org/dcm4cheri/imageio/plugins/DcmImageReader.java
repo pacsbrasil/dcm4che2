@@ -62,10 +62,9 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class DcmImageReader extends javax.imageio.ImageReader {
    
-   static final DcmParserFactory pfact =
-   DcmParserFactory.getInstance();
-   private static final ColorModelFactory cmFactory =
-   ColorModelFactory.getInstance();
+   static final DcmParserFactory pfact = DcmParserFactory.getInstance();
+   private static final ColorModelFactory cmFactory = 
+       ColorModelFactory.getInstance();
    
    private ImageInputStream stream = null;
    
@@ -84,8 +83,9 @@ public class DcmImageReader extends javax.imageio.ImageReader {
    private int planes = 0;
    private String pmi = null;
    private int dataType = 0;
+   private int stored = 0;
    private float aspectRatio = 0;
-   private boolean encapsulated = false;
+   private boolean encapsulated = false;   
    
    private int sourceXOffset;
    private int sourceYOffset;
@@ -189,7 +189,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
    }
    
    private void initParams() throws IOException {
-      int alloc, highBit;
+      int alloc;
       switch (alloc = theDataset.getInt(Tags.BitsAllocated,8)) {
          case 8:
             this.dataType = DataBuffer.TYPE_BYTE;
@@ -201,12 +201,13 @@ public class DcmImageReader extends javax.imageio.ImageReader {
             throw new IOException(
             "" + alloc + " Bits Allocated not supported!");
       }
-      
+      this.stored = theDataset.getInt(Tags.BitsStored,alloc);
       this.width = theDataset.getInt(Tags.Columns,0);
       this.height = theDataset.getInt(Tags.Rows,0);
       this.pmi = theDataset.getString(Tags.PhotometricInterpretation,null);
       this.planes = theDataset.getInt(Tags.PlanarConfiguration,0);
       this.aspectRatio = width * pixelRatio() / height;
+
       
       this.frameStartPos = new long[theDataset.getInt(Tags.NumberOfFrames,1)];
       
@@ -225,14 +226,14 @@ public class DcmImageReader extends javax.imageio.ImageReader {
          }
          if (frameLength < 3 * width * height) {
             throw new DcmValueException("Invalid Length of Pixel Data: "
-            + rLen);
+                    + rLen);
          }
          return;
       }
       
       if (frameLength < width * height * (alloc >> 3)) {
           throw new DcmValueException("Invalid Length of Pixel Data: "
-          + rLen);
+                  + rLen);
       }
    }
    
@@ -302,6 +303,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
    
    public BufferedImage read(int imageIndex, ImageReadParam param)
    throws IOException {
+      DcmImageReadParam readParam = (DcmImageReadParam) param;
       readMetadata();
       checkIndex(imageIndex);
       if (encapsulated) {
@@ -313,11 +315,8 @@ public class DcmImageReader extends javax.imageio.ImageReader {
          param = getDefaultReadParam();
       }
       
-      Iterator imageTypes = getImageTypes(imageIndex, (DcmImageReadParam) param);
-      this.theImage = getDestination(param,
-      imageTypes,
-      this.width,
-      this.height);
+      Iterator imageTypes = getImageTypes(imageIndex, readParam);
+      this.theImage = getDestination(param, imageTypes, this.width, this.height);
       this.theTile = theImage.getWritableTile(0, 0);
       
       Rectangle rect = getSourceRegion(param, width, height);
@@ -325,17 +324,16 @@ public class DcmImageReader extends javax.imageio.ImageReader {
       this.sourceYOffset = rect.y;
       this.sourceWidth = rect.width;
       this.sourceHeight = rect.height;
-      this.sourceXSubsampling = param.getSourceXSubsampling();
-      this.sourceYSubsampling = param.getSourceYSubsampling();
-      this.subsamplingXOffset = param.getSubsamplingXOffset();
-      this.subsamplingYOffset = param.getSubsamplingYOffset();
-      Point point = param.getDestinationOffset();
+      this.sourceXSubsampling = readParam.getSourceXSubsampling();
+      this.sourceYSubsampling = readParam.getSourceYSubsampling();
+      this.subsamplingXOffset = readParam.getSubsamplingXOffset();
+      this.subsamplingYOffset = readParam.getSubsamplingYOffset();
+      Point point = readParam.getDestinationOffset();
       this.destXOffset = point.x;
       this.destYOffset = point.y;
       this.destWidth = sourceWidth/sourceXSubsampling;
       this.totDestWidth = theTile.getWidth();
       this.totDestHeight = theTile.getHeight();
-      
       if (destXOffset < 0) {
          sourceXOffset -= destXOffset*sourceXSubsampling;
          if ((sourceWidth += destXOffset*sourceXSubsampling) < 0) {
@@ -369,6 +367,16 @@ public class DcmImageReader extends javax.imageio.ImageReader {
       else {
          readWordSamples(1,((DataBufferUShort)db).getData());
       }
+      
+      if (readParam.isMaskPixelData()) {
+          if (db instanceof DataBufferUShort) {
+              short[] data = ((DataBufferUShort)db).getData();
+              final int mask = -1 >>> (32 - stored);
+              for (int i = 0; i < data.length; i++)
+                data[i] &= mask;
+          }
+      }
+      
       return this.theImage;
    }
    
@@ -467,8 +475,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
             stream.readFully(srcRow);
             if (sourceXSubsampling == 1) {
                srcRowBuf.rewind();
-               srcRowBuf.get(dest, destY*totDestRowLen + destXOffsetLen,
-               srcRowLen);
+               srcRowBuf.get(dest, destY*totDestRowLen + destXOffsetLen, srcRowLen);
             }
             else {
                pos = destY*totDestWidth + destXOffset;

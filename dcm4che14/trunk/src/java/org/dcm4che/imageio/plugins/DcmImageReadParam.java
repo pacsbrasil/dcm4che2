@@ -25,31 +25,18 @@ package org.dcm4che.imageio.plugins;
 import javax.imageio.ImageReadParam;
 
 /**
- * <description>
- *
- * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$
  * @since November 21, 2002
  *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
  */
 public abstract class DcmImageReadParam extends ImageReadParam {
       
-   /** Getter for property PValToDDL.
-    * @return Value of property PValToDDL.
-    */
    public abstract byte[] getPValToDDL();
    
-   /** Setter for property PValToDDL.
-    * @param PValToDDL New value of property PValToDDL.
-    */
    public abstract void setPValToDDL(byte[] PValToDDL);
    
+   public abstract boolean isMaskPixelData();
+
+   public abstract void setMaskPixelData(boolean mask);
 }

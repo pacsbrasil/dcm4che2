@@ -25,47 +25,41 @@ package org.dcm4cheri.imageio.plugins;
 import org.dcm4che.imageio.plugins.DcmImageReadParam;
 
 /**
- * <description>
- *
- * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$
  * @since November 21, 2002
  *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
  */
 public class DcmImageReadParamImpl extends DcmImageReadParam {
-   
-   private byte[] pvalToDDL;
-   
-   /** Getter for property PValToDDL.
-    * @return Value of property PValToDDL.
-    */
-   public byte[] getPValToDDL() {
-      return pvalToDDL;
-   }
-   
-   /** Setter for property PValToDDL.
-    * @param PValToDDL New value of property PValToDDL.
-    */
-   public void setPValToDDL(byte[] pvalToDDL) {
-      if (pvalToDDL != null) {
-         checkLen(pvalToDDL.length);
-      }
-      this.pvalToDDL = pvalToDDL;
-   }
 
-   private final static void checkLen(int len) {
-      for (int n = 0x100; n <= 0x10000; n <<= 1) {
-         if (n == len) 
-            return;
-      }
-      throw new IllegalArgumentException("pvalToDDL length: " + len);
-   }
+    private byte[] pvalToDDL;
+
+    private boolean maskPixelData = true;
+
+    public byte[] getPValToDDL() {
+        return pvalToDDL;
+    }
+
+    public void setPValToDDL(byte[] pvalToDDL) {
+        if (pvalToDDL != null) {
+            checkLen(pvalToDDL.length);
+        }
+        this.pvalToDDL = pvalToDDL;
+    }
+
+    public final boolean isMaskPixelData() {
+        return maskPixelData;
+    }
+
+    public final void setMaskPixelData(boolean mask) {
+        this.maskPixelData = mask;
+    }
+
+    private final static void checkLen(int len) {
+        for (int n = 0x100; n <= 0x10000; n <<= 1) {
+            if (n == len)
+                return;
+        }
+        throw new IllegalArgumentException("pvalToDDL length: " + len);
+    }
 }
