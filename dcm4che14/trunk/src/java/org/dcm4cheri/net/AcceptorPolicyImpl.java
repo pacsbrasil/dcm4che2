@@ -22,6 +22,7 @@
 package org.dcm4cheri.net;
 
 import org.dcm4che.Implementation;
+import org.dcm4che.net.AETFilter;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AAssociateAC;
@@ -84,9 +85,25 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     
     private HashMap appCtxMap = new HashMap();
     
-    private HashSet calledAETs = new HashSet();
+    private final HashSet calledAETs = new HashSet();
     
-    private HashSet callingAETs = new HashSet();
+    private AETFilter calledAETFilter = new AETFilter() {
+
+        public boolean accept(String aet) {
+            return calledAETs.isEmpty() || calledAETs.contains(aet);
+        }
+        
+    };
+    
+    private final HashSet callingAETs = new HashSet();
+
+    private AETFilter callingAETFilter = new AETFilter() {
+
+        public boolean accept(String aet) {
+            return callingAETs.isEmpty() || callingAETs.contains(aet);
+        }
+        
+    };
     
     private HashMap policyForCalledAET = new HashMap();
     
@@ -96,7 +113,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     
     private HashMap roleSelectionMap = new HashMap();
     
-    private HashMap extNegotiaionMap = new HashMap();
+    private HashMap extNegotiaionMap = new HashMap();        
     
     // Static --------------------------------------------------------
     
@@ -201,6 +218,25 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     public String[] getCallingAETs() {
         return (String[])callingAETs.toArray(new String[callingAETs.size()]);
     }
+
+    public void setCalledAETFilter(AETFilter filter) {
+        if (filter == null) throw new NullPointerException();
+        this.calledAETFilter = filter;
+    }
+
+    public AETFilter getCalledAETFilter() {
+        return calledAETFilter;
+    }
+
+    public void setCallingAETFilter(AETFilter filter) {
+        if (filter == null) throw new NullPointerException();
+        this.callingAETFilter = filter;
+    }
+
+    public AETFilter getCallingAETFilter() {
+        return callingAETFilter;
+    }
+    
     
     public AcceptorPolicy getPolicyForCallingAET(String aet) {
         return (AcceptorPolicy)policyForCallingAET.get(aet);
@@ -277,7 +313,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
                 AAssociateRJ.PROTOCOL_VERSION_NOT_SUPPORTED);
         }
         String calledAET = rq.getCalledAET();
-        if (!calledAETs.isEmpty() && !calledAETs.contains(calledAET)) {
+        if (!getCalledAETFilter().accept(calledAET)) {
             return new AAssociateRJImpl(
                 AAssociateRJ.REJECTED_PERMANENT,
                 AAssociateRJ.SERVICE_USER,
@@ -289,8 +325,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
             policy1 = this;
         
         String callingAET = rq.getCallingAET();
-        if (!policy1.callingAETs.isEmpty()
-        && !policy1.callingAETs.contains(callingAET)) {
+        if (!policy1.getCallingAETFilter().accept(callingAET)) {
             return new AAssociateRJImpl(
                 AAssociateRJ.REJECTED_PERMANENT,
                 AAssociateRJ.SERVICE_USER,
@@ -415,6 +450,5 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         return Collections.unmodifiableList(
             new ArrayList(presCtxMap.values()));       
     }
-    
-    // Inner classes -------------------------------------------------
+
 }

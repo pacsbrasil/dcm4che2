@@ -58,6 +58,14 @@ public interface AcceptorPolicy
    
    String putApplicationContextName(String proposed, String returned);
    
+   void setCalledAETFilter(AETFilter filter);
+   
+   AETFilter getCalledAETFilter();
+
+   void setCallingAETFilter(AETFilter filter);
+
+   AETFilter getCallingAETFilter();
+   
    boolean addCalledAET(String aet);
 
    boolean removeCalledAET(String aet);
