@@ -46,7 +46,7 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
     }
 
     public final void setActorName(String actorName) {
-        this.actorName = actorName;
+        this.actorName = actorName.trim();
     }
 
     public String getDisableForAETs() {
@@ -59,9 +59,10 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
     }
 
     public final void setDisableForAETs(String aets) {
+        String trimed = aets.trim();
         disabledForAETs.clear();
-        if (aets != null && aets.length() > 0 && !aets.equalsIgnoreCase("NONE")) {
-            disabledForAETs.addAll(Arrays.asList(StringUtils.split(aets, '\\')));
+        if (trimed.length() > 0 && !trimed.equalsIgnoreCase("NONE")) {
+            disabledForAETs.addAll(Arrays.asList(StringUtils.split(trimed, '\\')));
         }
     }
 
@@ -70,12 +71,13 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
     }
 
     public void setSyslogHost(String newSyslogHost) throws Exception {
+        String trimed = newSyslogHost.trim();
         logActorConfig(actorName,
                 "SyslogHost",
                 getSyslogHost(),
-                newSyslogHost,
+                trimed,
                 AuditLogger.SECURITY);
-        logger.setSyslogHost(newSyslogHost);
+        logger.setSyslogHost(trimed);
     }
 
     public boolean isLogPatientRecord() {
@@ -136,12 +138,13 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
     }
 
     public void setFacility(String newFacility) {
+        String trimed = newFacility.trim();
         String oldFacility = getFacility();
-        logger.setFacility(newFacility);
+        logger.setFacility(trimed);
         logActorConfig(actorName,
                 "Facility",
                 oldFacility,
-                newFacility,
+                trimed,
                 AuditLogger.SECURITY);
     }
 
