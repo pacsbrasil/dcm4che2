@@ -10,8 +10,6 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$
@@ -29,9 +27,9 @@ public final class AECmd extends BaseCmd
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    public AECmd(DataSource ds, String aet) throws SQLException
+    public AECmd(String aet) throws SQLException
     {
-        super(ds, transactionIsolationLevel);
+        super(transactionIsolationLevel);
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.addSingleValueMatch("AE.title", SqlBuilder.TYPE1, aet);

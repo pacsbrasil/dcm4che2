@@ -225,17 +225,6 @@
       </descriptors>
    </attribute>   
    <attribute access="read-write"
-      getMethod="getDataSourceJndiName"
-      setMethod="setDataSourceJndiName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>DataSourceJndiName</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="java:/DefaultDS" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
       <description>Used internally - do NOT modify.

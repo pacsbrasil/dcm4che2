@@ -30,12 +30,8 @@ import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
-import javax.sql.DataSource;
 
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.data.Dataset;
@@ -86,10 +82,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     
     protected AuditLogger auditLogger;
 
-    protected String dsJndiName = "java:/DefaultDS";
-
-    private DataSource datasource;
-
     public final AuditLogger getAuditLogger() {
         return auditLogger;
     }
@@ -100,34 +92,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public final void setDcmServerName(ObjectName dcmServerName) {
         this.dcmServerName = dcmServerName;
-    }
-
-    public final String getDataSourceJndiName() {
-        return dsJndiName;
-    }
-
-    public final void setDataSourceJndiName(String jndiName) {
-        this.dsJndiName = jndiName;
-    }
-
-    public DataSource getDataSource() throws ConfigurationException {
-        if (datasource == null) {
-            try {
-                Context jndiCtx = new InitialContext();
-                try {
-                    datasource = (DataSource) jndiCtx.lookup(dsJndiName);
-                } finally {
-                    try {
-                        jndiCtx.close();
-                    } catch (NamingException ignore) {
-                    }
-                }
-            } catch (NamingException ne) {
-                throw new ConfigurationException(
-                        "Failed to access Data Source: " + dsJndiName, ne);
-            }
-        }
-        return datasource;
     }
 
     public final String getCalledAETs() {

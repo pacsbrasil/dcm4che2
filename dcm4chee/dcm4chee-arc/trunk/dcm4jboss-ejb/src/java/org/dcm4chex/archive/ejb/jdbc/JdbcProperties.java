@@ -30,6 +30,10 @@ import java.util.Properties;
  */
 public class JdbcProperties extends Properties {
 
+    /**
+     * Comment for <code>serialVersionUID</code>
+     */
+    private static final long serialVersionUID = 1L;
     public static final int HSQL = 0;
     public static final int PSQL = 1;
     public static final int MYSQL = 2;
@@ -41,9 +45,11 @@ public class JdbcProperties extends Properties {
     private static final String MYSQL_VAL = "mySQL";
     private static final String DB2_VAL = "DB2";
     private static final String ORACLE_VAL = "Oracle9i";
+    private static final String DATASOURCE_KEY = "datasource";
     private static final String DS_MAPPING_KEY = "datasource-mapping";
     private static final JdbcProperties instance = new JdbcProperties();
 
+    private final String datasource;
     private final int database;
 
     public static JdbcProperties getInstance() {
@@ -68,6 +74,10 @@ public class JdbcProperties extends Properties {
         return database;
     }
 
+    public String getDataSource() {
+        return datasource;
+    }
+
     private JdbcProperties() {
         try {
             InputStream in =
@@ -75,6 +85,7 @@ public class JdbcProperties extends Properties {
             load(in);
             in.close();
             database = toDatabase(super.getProperty(DS_MAPPING_KEY));
+            datasource = super.getProperty(DATASOURCE_KEY);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load jdbc properties", e);
         }

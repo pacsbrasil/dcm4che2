@@ -10,6 +10,8 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +23,9 @@ import java.util.StringTokenizer;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.jdbc.AECmd;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -254,5 +259,20 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
             seriesDir.getParentFile().delete();
         }
         return true;
+    }
+    
+    public Object locateInstance(String iuid) throws SQLException {
+        List list = new QueryFilesCmd(iuid).execute();
+        if (list.isEmpty())
+            return null;
+        for (int i = 0, n = list.size(); i < n; ++i) {
+            FileDTO dto = (FileDTO) list.get(i);
+            String dirPath = dto.getDirectoryPath();
+            if (isLocalFileSystem(dirPath))
+                return FileUtils.toFile(dirPath, dto.getFilePath());
+        }
+        FileDTO dto = (FileDTO) list.get(0);
+        AEData aeData = new AECmd(dto.getRetrieveAET()).execute();
+        return aeData.getHostName();
     }
 }

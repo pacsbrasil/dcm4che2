@@ -18,6 +18,8 @@ import java.io.Serializable;
  */
 public class FileSystemDTO implements Serializable {
 
+    private static final long serialVersionUID = 3257844398468315445L;
+
     private int pk;
 
     private String directoryPath;

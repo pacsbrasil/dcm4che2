@@ -24,10 +24,6 @@ import javax.jms.QueueSession;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -48,7 +44,6 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -120,10 +115,6 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     private int scnPriority = 0;
 
-    private String dsJndiName = "java:/DefaultDS";
-
-    private DataSource datasource;
-
     private QueueSession jmsSession;
 
     private String[] notifiedAETs = EMPTY;
@@ -176,14 +167,6 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     public final void setRetryIntervalls(String s) {
         this.retryIntervalls = new RetryIntervalls(s);
-    }
-
-    public final String getDataSourceJndiName() {
-        return dsJndiName;
-    }
-
-    public final void setDataSourceJndiName(String dsJndiName) {
-        this.dsJndiName = dsJndiName;
     }
 
     public final boolean isOfferInstanceAvailableNotification() {
@@ -294,33 +277,13 @@ public class IANScuService extends ServiceMBeanSupport implements
         }
     }
 
-    private DataSource getDataSource() throws ConfigurationException {
-        if (datasource == null) {
-            try {
-                Context jndiCtx = new InitialContext();
-                try {
-                    datasource = (DataSource) jndiCtx.lookup(dsJndiName);
-                } finally {
-                    try {
-                        jndiCtx.close();
-                    } catch (NamingException ignore) {
-                    }
-                }
-            } catch (NamingException ne) {
-                throw new ConfigurationException(
-                        "Failed to access Data Source: " + dsJndiName, ne);
-            }
-        }
-        return datasource;
-    }
-
     private int process(IANOrder order) {
         final String called = order.getDestination();
         ActiveAssociation aa = null;
         try {
             AEData aeData = null;
             try {
-                aeData = new AECmd(getDataSource(), called).execute();
+                aeData = new AECmd(called).execute();
             } catch (SQLException e1) {
                 log.error("Failed to access DB for resolving AET: " + called,
                         e1);

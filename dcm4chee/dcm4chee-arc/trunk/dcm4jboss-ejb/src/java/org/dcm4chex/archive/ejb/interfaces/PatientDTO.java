@@ -31,7 +31,9 @@ import java.util.List;
 public class PatientDTO implements Serializable
 {
 
-	public static final String DATE_FORMAT = "yyyy/MM/dd";
+    private static final long serialVersionUID = 3689073958293419577L;
+
+    public static final String DATE_FORMAT = "yyyy/MM/dd";
 	private int pk;
 	private String specificCharacterSet=null;
 	private String patientID=null;

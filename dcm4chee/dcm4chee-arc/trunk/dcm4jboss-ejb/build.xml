@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.0.1"/>
+	<property name="version" value="2.0.2"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
@@ -21,7 +21,7 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your XDoclet bundle dist location -->
-	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.1"/>
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.2"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 
     <!-- Override with your Cactus bundle dist location -->

@@ -12,8 +12,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmObjectFactory;
@@ -48,9 +46,9 @@ public class QueryStudiesCmd extends BaseCmd {
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
     
-    public QueryStudiesCmd(DataSource ds, Dataset filter)
+    public QueryStudiesCmd(Dataset filter)
             throws SQLException {
-        super(ds, transactionIsolationLevel);
+        super(transactionIsolationLevel);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
         sqlBuilder.addLiteralMatch("Patient.merge_fk", false, "IS NULL");

@@ -55,7 +55,7 @@ public class MWLFindScp extends DcmServiceBase {
         try {
             Dataset rqData = rq.getDataset();
             service.logDataset("Identifier:\n", rqData);
-            queryCmd = new MWLQueryCmd(service.getDataSource(), rqData);
+            queryCmd = new MWLQueryCmd(rqData);
             queryCmd.execute();
         } catch (Exception e) {
             service.getLog().error("Query DB failed:", e);

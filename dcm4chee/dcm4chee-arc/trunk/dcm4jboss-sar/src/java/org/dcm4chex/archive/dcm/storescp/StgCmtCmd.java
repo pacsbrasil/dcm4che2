@@ -97,13 +97,12 @@ class StgCmtCmd {
                 Status.MissingAttributeValue,
                 "Missing Referenced SOP Sequence (0008,1199) in Action Information"); }
         try {
-            this.aeData = new AECmd(service.getDataSource(), a.getCallingAET())
+            this.aeData = new AECmd(a.getCallingAET())
                     .execute();
             if (aeData == null) { throw new DcmServiceException(
                     Status.ProcessingFailure, "Failed to resolve AET:"
                             + a.getCallingAET()); }
-            this.fileInfos = RetrieveCmd.create(service.getDataSource(),
-                    refSOPSeq).execute();
+            this.fileInfos = RetrieveCmd.create(refSOPSeq).execute();
         } catch (SQLException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }

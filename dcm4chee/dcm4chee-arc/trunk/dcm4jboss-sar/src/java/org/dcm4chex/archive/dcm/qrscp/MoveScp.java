@@ -62,7 +62,7 @@ public class MoveScp extends DcmServiceBase {
             FileInfo[][] fileInfos = null;
             try {
                 aeData = service.queryAEData(dest);
-                fileInfos = RetrieveCmd.create(service.getDataSource(), rqData).execute();
+                fileInfos = RetrieveCmd.create(rqData).execute();
             } catch (SQLException e) {
                 service.getLog().error("Query DB failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);

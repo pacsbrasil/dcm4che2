@@ -10,8 +10,6 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmObjectFactory;
@@ -45,8 +43,8 @@ public class MWLQueryCmd extends BaseCmd {
      * @param ds
      * @throws SQLException
      */
-    public MWLQueryCmd(DataSource ds, Dataset keys) throws SQLException {
-        super(ds, transactionIsolationLevel);
+    public MWLQueryCmd(Dataset keys) throws SQLException {
+        super(transactionIsolationLevel);
         this.keys = keys;
         // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {

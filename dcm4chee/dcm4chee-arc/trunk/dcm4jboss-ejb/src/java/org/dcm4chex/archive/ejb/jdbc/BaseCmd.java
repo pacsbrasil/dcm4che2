@@ -33,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -45,16 +46,32 @@ import org.apache.log4j.Logger;
  */
 public abstract class BaseCmd {
     protected static final Logger log = Logger.getLogger(BaseCmd.class);
-
+    protected static DataSource ds;
     protected Connection con;
     protected Statement stmt;
     protected ResultSet rs = null;
     protected int prevLevel = 0;
+    
 
-    protected BaseCmd(DataSource ds, int transactionIsolationLevel) throws SQLException {
-        InitialContext ctx = null;
+    protected BaseCmd(int transactionIsolationLevel) throws SQLException {
+        if (ds == null) {
+            final String dsJndiName = JdbcProperties.getInstance().getDataSource();
+            try {
+                Context jndiCtx = new InitialContext();
+                try {
+                    ds = (DataSource) jndiCtx.lookup(dsJndiName);
+                } finally {
+                    try {
+                        jndiCtx.close();
+                    } catch (NamingException ignore) {
+                    }
+                }
+            } catch (NamingException ne) {
+                throw new RuntimeException(
+                        "Failed to access Data Source: " + dsJndiName, ne);
+            }
+        }
         try {
-            ctx = new InitialContext();
             con = ds.getConnection();
             prevLevel = con.getTransactionIsolation();
             if (transactionIsolationLevel > 0)
@@ -63,14 +80,6 @@ public abstract class BaseCmd {
         } catch (SQLException e) {
             close();
             throw e;
-        } catch (NamingException e) {
-            throw new SQLException(e.getMessage());
-        } finally {
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (NamingException ignore) {}
-            }
         }
     }
 

@@ -293,7 +293,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public AEData queryAEData(String aet) throws SQLException,
             UnkownAETException {
-        AEData aeData = new AECmd(getDataSource(), aet).execute();
+        AEData aeData = new AECmd(aet).execute();
         if (aeData == null) { throw new UnkownAETException(aet); }
         return aeData;
     }

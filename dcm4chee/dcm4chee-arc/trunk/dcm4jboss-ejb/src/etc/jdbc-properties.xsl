@@ -5,6 +5,10 @@
 <xsl:output method="text"/>
 
 <xsl:template match="/">
+<xsl:text>datasource=</xsl:text>
+<xsl:value-of select="jbosscmp-jdbc/defaults/datasource"/>
+<xsl:text>
+</xsl:text>
 <xsl:text>datasource-mapping=</xsl:text>
 <xsl:value-of select="jbosscmp-jdbc/defaults/datasource-mapping"/>
 <xsl:text>

@@ -100,17 +100,6 @@
          <value value="50" />
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getDataSourceJndiName"
-      setMethod="setDataSourceJndiName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>DataSourceJndiName</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="java:/DefaultDS" />
-      </descriptors>
-   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

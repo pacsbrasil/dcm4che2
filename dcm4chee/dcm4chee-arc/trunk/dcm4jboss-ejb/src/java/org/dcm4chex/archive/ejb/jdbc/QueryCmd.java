@@ -12,8 +12,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import javax.sql.DataSource;
-
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
@@ -39,22 +37,22 @@ public abstract class QueryCmd extends BaseCmd {
     private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
             "OFFLINE"};
 
-    public static QueryCmd create(DataSource ds, Dataset keys)
+    public static QueryCmd create(Dataset keys)
             throws SQLException {
         QueryCmd cmd;
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
         case 0:
-            cmd = new PatientQueryCmd(ds, keys);
+            cmd = new PatientQueryCmd(keys);
             break;
         case 1:
-            cmd = new StudyQueryCmd(ds, keys);
+            cmd = new StudyQueryCmd(keys);
             break;
         case 2:
-            cmd = new SeriesQueryCmd(ds, keys);
+            cmd = new SeriesQueryCmd(keys);
             break;
         case 3:
-            cmd = new ImageQueryCmd(ds, keys);
+            cmd = new ImageQueryCmd(keys);
             break;
         default:
             throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
@@ -67,8 +65,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    protected QueryCmd(DataSource ds, Dataset keys) throws SQLException {
-        super(ds, transactionIsolationLevel);
+    protected QueryCmd(Dataset keys) throws SQLException {
+        super(transactionIsolationLevel);
         this.keys = keys;        
     }
 
@@ -227,8 +225,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     static class PatientQueryCmd extends QueryCmd {
 
-        PatientQueryCmd(DataSource ds, Dataset keys) throws SQLException {
-            super(ds, keys);
+        PatientQueryCmd(Dataset keys) throws SQLException {
+            super(keys);
         }
 
         protected void init() {
@@ -253,8 +251,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     static class StudyQueryCmd extends QueryCmd {
 
-        StudyQueryCmd(DataSource ds, Dataset keys) throws SQLException {
-            super(ds, keys);
+        StudyQueryCmd(Dataset keys) throws SQLException {
+            super(keys);
         }
 
         protected void init() {
@@ -294,8 +292,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     static class SeriesQueryCmd extends QueryCmd {
 
-        SeriesQueryCmd(DataSource ds, Dataset keys) throws SQLException {
-            super(ds, keys);
+        SeriesQueryCmd(Dataset keys) throws SQLException {
+            super(keys);
         }
 
         protected void init() {
@@ -334,8 +332,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     static class ImageQueryCmd extends QueryCmd {
 
-        ImageQueryCmd(DataSource ds, Dataset keys) throws SQLException {
-            super(ds, keys);
+        ImageQueryCmd(Dataset keys) throws SQLException {
+            super(keys);
         }
 
         protected void init() {

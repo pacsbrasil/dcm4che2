@@ -22,7 +22,6 @@ import javax.ejb.SessionContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -76,16 +75,10 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  *  res-name="jdbc/DS"
  *  res-type="javax.sql.DataSource"
  *  res-auth="Container"
- * 
- * @jboss:resource-ref
- *  res-ref-name="jdbc/DS"
- *  res-type="javax.sql.DataSource"
- *  jndi-name="java:/DefaultDS"
  */
 public abstract class ContentManagerBean implements SessionBean {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    private DataSource ds;
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
     private SeriesLocalHome seriesHome;
@@ -95,7 +88,6 @@ public abstract class ContentManagerBean implements SessionBean {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DS");
             patHome =
                 (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
             studyHome =
@@ -141,7 +133,7 @@ public abstract class ContentManagerBean implements SessionBean {
      */
     public int countStudies(Dataset filter) {
         try {
-            return new QueryStudiesCmd(ds, filter).count();
+            return new QueryStudiesCmd(filter).count();
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -152,7 +144,7 @@ public abstract class ContentManagerBean implements SessionBean {
      */
     public List listStudies(Dataset filter, int offset, int limit) {
         try {
-            return new QueryStudiesCmd(ds, filter).list(offset, limit);
+            return new QueryStudiesCmd(filter).list(offset, limit);
         } catch (SQLException e) {
             throw new EJBException(e);
         }

@@ -172,7 +172,7 @@ public abstract class FileBean implements EntityBean
      *  target-ejb="FileSystem"
      *  target-multiple="yes"
 	 * 
-	 * @jboss:relation
+	 * @jboss.relation
 	 * 	fk-column="filesystem_fk"
 	 * 	related-pk-field="pk"
 	 * 

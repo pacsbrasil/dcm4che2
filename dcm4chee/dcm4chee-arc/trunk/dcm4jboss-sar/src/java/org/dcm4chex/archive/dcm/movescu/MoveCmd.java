@@ -130,7 +130,7 @@ class MoveCmd implements Runnable, DimseListener {
 
     private AEData queryAEData(String aet) throws SQLException,
             UnkownAETException {
-        AECmd aeCmd = new AECmd(service.getDataSource(), aet);
+        AECmd aeCmd = new AECmd(aet);
         AEData aeData = aeCmd.execute();
         if (aeData == null) { throw new UnkownAETException(aet); }
         return aeData;

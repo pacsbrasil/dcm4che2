@@ -58,7 +58,7 @@ public class FindScp extends DcmServiceBase {
             Dataset rqData = rq.getDataset();
             service.logDataset("Identifier:\n", rqData);
             logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
-            queryCmd = QueryCmd.create(service.getDataSource(), rqData);
+            queryCmd = QueryCmd.create(rqData);
             queryCmd.execute();
         } catch (Exception e) {
             service.getLog().error("Query DB failed:", e);

@@ -15,8 +15,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.sql.DataSource;
-
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
@@ -35,8 +33,9 @@ public class RetrieveCmd extends BaseCmd {
             "Patient.encodedAttributes", "Study.studyIuid",
             "Study.encodedAttributes", "Series.encodedAttributes",
             "Instance.encodedAttributes", "Instance.sopIuid",
-            "Instance.sopCuid", "Instance.retrieveAETs", "FileSystem.retrieveAET",
-            "FileSystem.directoryPath", "File.filePath", "File.fileTsuid",
+            "Instance.sopCuid", "Instance.externalRetrieveAET",
+            "FileSystem.retrieveAET", "FileSystem.directoryPath",
+            "File.filePath", "File.fileTsuid",
             "File.fileMd5Field", "File.fileSize"};
 
     private static final String[] ENTITY = { "Patient", "Study", "Series",
@@ -59,7 +58,7 @@ public class RetrieveCmd extends BaseCmd {
     }
     
 
-    public static RetrieveCmd create(DataSource ds, Dataset keys)
+    public static RetrieveCmd create(Dataset keys)
             throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if (qrLevel == null || qrLevel.length() == 0)
@@ -93,14 +92,14 @@ public class RetrieveCmd extends BaseCmd {
 
             sqlBuilder.addListOfUidMatch("Instance.sopIuid", SqlBuilder.TYPE1,
                     uids);
-            return new ImageRetrieveCmd(ds, sqlBuilder.getSql(), uids);
+            return new ImageRetrieveCmd(sqlBuilder.getSql(), uids);
         } else {
             throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
         }
-        return new RetrieveCmd(ds, sqlBuilder.getSql());
+        return new RetrieveCmd(sqlBuilder.getSql());
     }
 
-    public static RetrieveCmd create(DataSource ds, DcmElement refSOPSeq)
+    public static RetrieveCmd create(DcmElement refSOPSeq)
             throws SQLException {
         SqlBuilder sqlBuilder = newSqlBuilder();
         String[] uid = new String[refSOPSeq.vm()];
@@ -110,22 +109,22 @@ public class RetrieveCmd extends BaseCmd {
 
         sqlBuilder.addListOfUidMatch("Instance.sopIuid", SqlBuilder.TYPE1,
                 uid);
-        return new RetrieveCmd(ds, sqlBuilder.getSql());
+        return new RetrieveCmd(sqlBuilder.getSql());
     }
 
-    public static RetrieveCmd create(DataSource ds, String iuid)
+    public static RetrieveCmd create(String iuid)
             throws SQLException {
         SqlBuilder sqlBuilder = newSqlBuilder();
 
         sqlBuilder.addSingleValueMatch("Instance.sopIuid", SqlBuilder.TYPE1,
                 iuid);
-        return new RetrieveCmd(ds, sqlBuilder.getSql());
+        return new RetrieveCmd(sqlBuilder.getSql());
     }
 
     private final String sql;
 
-    protected RetrieveCmd(DataSource ds, String sql) throws SQLException {
-        super(ds, transactionIsolationLevel);
+    protected RetrieveCmd(String sql) throws SQLException {
+        super(transactionIsolationLevel);
         this.sql = sql;
     }
 
@@ -178,8 +177,8 @@ public class RetrieveCmd extends BaseCmd {
 
     static class ImageRetrieveCmd extends RetrieveCmd {
         final String[] uids;
-        ImageRetrieveCmd(DataSource ds, String sql, String[] uids) throws SQLException {
-            super(ds, sql);
+        ImageRetrieveCmd(String sql, String[] uids) throws SQLException {
+            super(sql);
             this.uids = uids;
         }
 
