@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.interfaces;
 
-import java.io.File;
 import java.io.Serializable;
 
 /**
@@ -128,11 +127,6 @@ public final class FileDTO implements Serializable {
      */
     public final void setFileTsuid(String tsuid) {
         this.tsuid = tsuid;
-    }
-    
-    public final File getFile() {
-        return new File(basedir.replace('/', File.separatorChar),
-                path.replace('/', File.separatorChar));
     }
 
 }

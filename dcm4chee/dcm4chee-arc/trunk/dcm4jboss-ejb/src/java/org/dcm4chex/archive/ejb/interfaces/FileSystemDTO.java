@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.interfaces;
 
-import java.io.File;
 import java.io.Serializable;
 
 /**
@@ -25,18 +24,11 @@ public class FileSystemDTO implements Serializable {
 
     private String retrieveAET;
 
-    private long diskUsage;
-
-    private long highWaterMark;
-
-
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
         sb.append(", dir=").append(directoryPath);
-        sb.append(", aets=").append(retrieveAET);
-        sb.append(", diskUsage=").append(diskUsage / 1000000f);
-        sb.append("MB, highwater=").append(highWaterMark / 1000000f);
-        sb.append("MB]");
+        sb.append(", aet=").append(retrieveAET);
+        sb.append("]");
         return sb;
     }
 
@@ -56,20 +48,8 @@ public class FileSystemDTO implements Serializable {
         return directoryPath;
     }
 
-    public final File getDirectory() {
-        return new File(directoryPath.replace('/',File.separatorChar));
-    }
-    
     public final void setDirectoryPath(String directoryPath) {
         this.directoryPath = directoryPath;
-    }
-
-    public final long getHighWaterMark() {
-        return highWaterMark;
-    }
-
-    public final void setHighWaterMark(long highWaterMark) {
-        this.highWaterMark = highWaterMark;
     }
 
     public final String getRetrieveAET() {
@@ -78,17 +58,5 @@ public class FileSystemDTO implements Serializable {
 
     public final void setRetrieveAET(String retrieveAET) {
         this.retrieveAET = retrieveAET;
-    }
-
-    public final long getDiskUsage() {
-        return diskUsage;
-    }
-
-    public final void setDiskUsage(long diskUsage) {
-        this.diskUsage = diskUsage;
-    }
-
-    public final long getAvailable() {
-        return highWaterMark > 0 ? highWaterMark - diskUsage : Long.MAX_VALUE;
     }
 }

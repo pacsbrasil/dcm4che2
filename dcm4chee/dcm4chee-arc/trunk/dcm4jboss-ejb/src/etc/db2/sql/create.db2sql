@@ -56,6 +56,8 @@ CREATE TABLE study (
 	num_series		INTEGER,
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR(254),
+	fileset_iuid	VARCHAR(254),
+	fileset_id		VARCHAR(254),
 	availability	INTEGER,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -95,6 +97,8 @@ CREATE TABLE series (
 	pps_iuid		VARCHAR(254),
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR(254),
+	fileset_iuid	VARCHAR(254),
+	fileset_id		VARCHAR(254),
 	availability	INTEGER,
 	hidden			SMALLINT,
 	created_time	TIMESTAMP,
@@ -111,22 +115,35 @@ CREATE INDEX modality ON series(modality);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 
+CREATE SEQUENCE media_pk_seq;
+CREATE TABLE media (
+	pk          	INTEGER PRIMARY KEY NOT NULL,
+	fileset_iuid	VARCHAR(254) NOT NULL,
+	fileset_id		VARCHAR(254),
+	media_status	INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
+CREATE INDEX media_status ON media(media_status);
+
 CREATE SEQUENCE instance_pk_seq;
 CREATE TABLE instance (
-	pk              INTEGER PRIMARY KEY  NOT NULL,
+	pk             	INTEGER PRIMARY KEY  NOT NULL,
 	series_fk		INTEGER,
 	srcode_fk		INTEGER,
+	media_fk		INTEGER,
 	sop_iuid		VARCHAR(254) NOT NULL,
 	sop_cuid		VARCHAR(254) NOT NULL,
 	inst_no			VARCHAR(254),
 	sr_complete		VARCHAR(254),
 	sr_verified		VARCHAR(254),
+	ext_retr_aet	VARCHAR(254),
 	retrieve_aets	VARCHAR(254),
 	availability	INTEGER,
 	commitment		SMALLINT,
 	inst_attrs		BLOB(64000),
 FOREIGN KEY (series_fk) REFERENCES series(pk),
-FOREIGN KEY (srcode_fk) REFERENCES code(pk)
+FOREIGN KEY (srcode_fk) REFERENCES code(pk),
+FOREIGN KEY (media_fk) REFERENCES media(pk)
 );
 CREATE INDEX series_fk ON instance(series_fk);
 CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid);
@@ -138,15 +155,12 @@ CREATE INDEX sr_verified ON instance(sr_verified);
 
 CREATE SEQUENCE filesystem_pk_seq;
 CREATE TABLE filesystem (
-	pk              INTEGER PRIMARY KEY  NOT NULL,
+	pk              INTEGER PRIMARY KEY NOT NULL,
 	dirpath			VARCHAR(254) NOT NULL,
-	retrieve_aets	VARCHAR(254) NOT NULL,
-	disk_usage		BIGINT DEFAULT 0 NOT NULL,
-	highwater_mark	BIGINT DEFAULT 0 NOT NULL,
-	min_available	BIGINT DEFAULT 0 NOT NULL
+	retrieve_aet	VARCHAR(254) NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
-CREATE INDEX retrieve_aets ON filesystem(retrieve_aets);
+CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);
 
 CREATE SEQUENCE files_pk_seq;
 CREATE TABLE files (
@@ -162,49 +176,6 @@ FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
-
-CREATE SEQUENCE retrieve_aet_pk_seq;
-CREATE TABLE retrieve_aet (
-	pk          	INTEGER PRIMARY KEY NOT NULL,
-	aet          	VARCHAR(254) NOT NULL,
-	availability	INTEGER NOT NULL
-);
-CREATE UNIQUE INDEX retrieve_aet_aet ON retrieve_aet(aet);
-
-CREATE SEQUENCE media_pk_seq;
-CREATE TABLE media (
-	pk          	INTEGER PRIMARY KEY NOT NULL,
-	fileset_iuid	VARCHAR(254) NOT NULL,
-	fileset_id		VARCHAR(254)
-);
-CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
-
-CREATE TABLE rel_instance_media (
-	instance_fk		INTEGER,
-	media_fk		INTEGER,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (media_fk) REFERENCES media(pk)
-);
-CREATE INDEX rel_instance_media_fk1 ON rel_instance_media(instance_fk);
-CREATE INDEX rel_instance_media_fk2 ON rel_instance_media(media_fk);
-
-CREATE TABLE rel_instance_aet (
-	instance_fk		INTEGER,
-	aet_fk			INTEGER,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (aet_fk) REFERENCES retrieve_aet(pk)
-);
-CREATE INDEX rel_instance_aet_fk1 ON rel_instance_aet(instance_fk);
-CREATE INDEX rel_instance_aet_fk2 ON rel_instance_aet(aet_fk);
-
-CREATE TABLE rel_filesystem_aet (
-	filesystem_fk	INTEGER,
-	aet_fk			INTEGER,
-FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk),
-FOREIGN KEY (aet_fk) REFERENCES retrieve_aet(pk)
-);
-CREATE INDEX rel_filesystem_aet_fk1 ON rel_filesystem_aet(filesystem_fk);
-CREATE INDEX rel_filesystem_aet_fk2 ON rel_filesystem_aet(aet_fk);
 
 CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (
@@ -267,6 +238,9 @@ INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
 
+INSERT INTO ae (aet,hostname,port) VALUES('QR_SCP','localhost',2350);
+INSERT INTO ae (aet,hostname,port) VALUES('LOCAL','localhost',2345);
+
 GRANT ALL PRIVILEGES ON TABLE ae TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE code TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE patient TO USER tiani;
@@ -276,6 +250,9 @@ GRANT ALL PRIVILEGES ON TABLE series TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE instance TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE filesystem TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE files TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE media TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE rel_instance_aet TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE rel_filesystem_aet TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE mwl_item TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE audit_record TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE users TO USER tiani;
@@ -290,6 +267,7 @@ GRANT USAGE ON SEQUENCE series_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE instance_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE filesystem_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE files_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE media_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE mwl_item_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE audit_record_pk_seq TO USER tiani;
 

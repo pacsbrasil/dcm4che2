@@ -66,9 +66,21 @@ public abstract class MediaBean implements EntityBean {
     public abstract void setFilesetId(String id);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="media_status"
+     */
+    public abstract int getMediaStatus();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setMediaStatus(int status);
+    
+    /**
      * @ejb.create-method
      */
     public Integer ejbCreate(String iuid, String id) throws CreateException {
+        setMediaStatus(-1);
         setFilesetIuid(iuid);
         setFilesetId(id);
         return null;

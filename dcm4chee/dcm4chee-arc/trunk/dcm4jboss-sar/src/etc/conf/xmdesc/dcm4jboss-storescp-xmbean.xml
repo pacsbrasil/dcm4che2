@@ -71,6 +71,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getOutOfResourcesThreshold"
+      setMethod="setOutOfResourcesThreshold">
+      <description>Minimal Available Disk Space in MB(=1000000 Bytes) in Stroage
+      Directory to accept received Objects. If the available Disk Space falls
+      below this value, storage of received objects is rejected
+      with Error Status "Out Of Resource".
+      </description>
+      <name>OutOfResourcesThreshold</name>
+      <type>int</type>
+      <descriptors>
+         <value value="30" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getUpdateDatabaseMaxRetries"
       setMethod="setUpdateDatabaseMaxRetries">
       <description>Maximal number of retries to update DB records for new received
@@ -266,28 +280,6 @@
       <type>int</type>
       <descriptors>
          <value value="512" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getMountFailedCheckFile"
-      setMethod="setMountFailedCheckFile">
-      <description>Existence of specified file signals failed mount.
-      </description>
-      <name>MountFailedCheckFile</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NO_MOUNT" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isMakeStorageDirectory"
-      setMethod="setMakeStorageDirectory">
-      <description>Make Storage Directory if no one already exists.
-      </description>
-      <name>MakeStorageDirectory</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

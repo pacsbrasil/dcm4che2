@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
-import java.io.File;
 import java.util.Comparator;
 
 /**
@@ -104,10 +103,5 @@ public class FileInfo {
                     .digit(md5Hex[(i << 1) + 1], 16));
         }
         return retval;
-    }
-    
-    public final File getFile() {
-        return new File(basedir.replace('/', File.separatorChar),
-                fileID.replace('/', File.separatorChar));
     }
 }

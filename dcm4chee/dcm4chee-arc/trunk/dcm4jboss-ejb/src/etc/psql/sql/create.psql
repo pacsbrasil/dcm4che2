@@ -45,6 +45,8 @@ CREATE TABLE study (
 	num_series		INTEGER,
 	num_instances	INTEGER,
 	retrieve_aets	TEXT,
+	fileset_iuid	TEXT,
+	fileset_id		TEXT,
 	availability	INTEGER,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -82,6 +84,8 @@ CREATE TABLE series (
 	pps_iuid		TEXT,
 	num_instances	INTEGER,
 	retrieve_aets	TEXT,
+	fileset_iuid	TEXT,
+	fileset_id		TEXT,
 	availability	INTEGER,
 	hidden			BOOLEAN,
 	created_time	TIMESTAMP,
@@ -98,21 +102,33 @@ CREATE INDEX modality ON series(modality);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 
+CREATE TABLE media (
+	pk          	SERIAL PRIMARY KEY,
+	fileset_iuid	TEXT NOT NULL,
+	fileset_id		TEXT,
+	media_status	INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
+CREATE INDEX media_status ON media(media_status);
+
 CREATE TABLE instance (
 	pk              SERIAL PRIMARY KEY,
 	series_fk		INTEGER,
 	srcode_fk		INTEGER,
+	media_fk		INTEGER,
 	sop_iuid		TEXT NOT NULL,
 	sop_cuid		TEXT NOT NULL,
 	inst_no			TEXT,
 	sr_complete		TEXT,
 	sr_verified		TEXT,
+	ext_retr_aet	TEXT,
 	retrieve_aets	TEXT,
 	availability	INTEGER,
 	commitment		BOOLEAN,
 	inst_attrs		BYTEA,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
-FOREIGN KEY (srcode_fk) REFERENCES code(pk)
+FOREIGN KEY (srcode_fk) REFERENCES code(pk),
+FOREIGN KEY (media_fk) REFERENCES media(pk)
 );
 CREATE INDEX series_fk ON instance(series_fk);
 CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid);
@@ -124,13 +140,10 @@ CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE TABLE filesystem (
 	pk          	SERIAL PRIMARY KEY,
 	dirpath			TEXT NOT NULL,
-	retrieve_aets	TEXT NOT NULL,
-	disk_usage		BIGINT DEFAULT 0 NOT NULL,
-	highwater_mark	BIGINT DEFAULT 0 NOT NULL,
-	min_available	BIGINT DEFAULT 0 NOT NULL
+	retrieve_aet	TEXT NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
-CREATE INDEX retrieve_aets ON filesystem(retrieve_aets);
+CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);
 
 CREATE TABLE files (
 	pk              SERIAL PRIMARY KEY,
@@ -145,47 +158,6 @@ FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
-
-CREATE TABLE retrieve_aet (
-	pk          	SERIAL PRIMARY KEY,
-	aet          	TEXT NOT NULL,
-	availability	INTEGER NOT NULL
-);
-CREATE UNIQUE INDEX retrieve_aet_aet ON retrieve_aet(aet);
-
-CREATE TABLE media (
-	pk          	SERIAL PRIMARY KEY,
-	fileset_iuid	TEXT NOT NULL,
-	fileset_id		TEXT
-);
-CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
-
-CREATE TABLE rel_instance_media (
-	instance_fk		INTEGER,
-	media_fk		INTEGER,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (media_fk) REFERENCES media(pk)
-);
-CREATE INDEX rel_instance_media_fk1 ON rel_instance_media(instance_fk);
-CREATE INDEX rel_instance_media_fk2 ON rel_instance_media(media_fk);
-
-CREATE TABLE rel_instance_aet (
-	instance_fk		INTEGER,
-	aet_fk			INTEGER,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (aet_fk) REFERENCES retrieve_aet(pk)
-);
-CREATE INDEX rel_instance_aet_fk1 ON rel_instance_aet(instance_fk);
-CREATE INDEX rel_instance_aet_fk2 ON rel_instance_aet(aet_fk);
-
-CREATE TABLE rel_filesystem_aet (
-	filesystem_fk	INTEGER,
-	aet_fk			INTEGER,
-FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk),
-FOREIGN KEY (aet_fk) REFERENCES retrieve_aet(pk)
-);
-CREATE INDEX rel_filesystem_aet_fk1 ON rel_filesystem_aet(filesystem_fk);
-CREATE INDEX rel_filesystem_aet_fk2 ON rel_filesystem_aet(aet_fk);
 
 CREATE TABLE mwl_item (
 	pk          	SERIAL PRIMARY KEY,
@@ -244,3 +216,6 @@ INSERT INTO users VALUES('admin','admin');
 INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
+
+INSERT INTO ae (aet,hostname,port) VALUES('QR_SCP','localhost',2350);
+INSERT INTO ae (aet,hostname,port) VALUES('LOCAL','localhost',2345);

@@ -14,11 +14,9 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 
 
 /**
@@ -54,12 +52,6 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * 
  * @jboss.query 
  *  signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
- *  strategy="on-find"
- *  eager-load-group="*"
- * 
- * @jboss.query 
- * 	signature="long ejbSelectSumFileLength(org.dcm4chex.archive.ejb.interfaces.FileSystemLocal fs)"
- * 	query="SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem = ?1"
  */
 public abstract class FileSystemBean implements EntityBean {
 
@@ -82,24 +74,15 @@ public abstract class FileSystemBean implements EntityBean {
 	 * 
 	 * @ejb.create-method
 	 */
-    public Integer ejbCreate(
-        String dirpath,
-        String aet,
-        long diskUsage,
-        long highwater)
+    public Integer ejbCreate(String dirpath, String aet)
         throws CreateException
     {
 		setDirectoryPath(dirpath);      
 		setRetrieveAET(aet);      
-        setDiskUsage(diskUsage);
-        setHighWaterMark(highwater);
         return null;
     }
 
-    public void ejbPostCreate(String dirpath,
-            String aets,
-            long diskUsage,
-            long total)
+    public void ejbPostCreate(String dirpath, String aets)
         throws CreateException
     {
         log.info("Created " + prompt());
@@ -118,10 +101,6 @@ public abstract class FileSystemBean implements EntityBean {
             + getDirectoryPath()
             + ", retrieveAET="
             + getRetrieveAET()
-            + ", diskUsage="
-            + getDiskUsage()
-            + ", highwaterMark="
-            + getHighWaterMark()
             + "]";
     }
     
@@ -157,7 +136,7 @@ public abstract class FileSystemBean implements EntityBean {
 	 * 
      * @ejb.interface-method
 	 * @ejb.persistence
-	 * 	column-name="retrieve_aets"
+	 * 	column-name="retrieve_aet"
 	 */
     public abstract String getRetrieveAET();
 
@@ -165,81 +144,4 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */ 
     public abstract void setRetrieveAET(String aet);
-
-    /**
-	 * Free Size
-	 * 
-     * @ejb.interface-method
-	 * @ejb.persistence
-	 * 	column-name="disk_usage"
-	 */
-    public abstract long getDiskUsage();
-
-    /**
-     * @ejb.interface-method
-     */ 
-    public abstract void setDiskUsage(long size);
-
-    /**
-	 * High Water Mark
-	 * 
-     * @ejb.interface-method
-	 * @ejb.persistence
-	 * 	column-name="highwater_mark"
-	 */
-    public abstract long getHighWaterMark();
-
-    /**
-     * @ejb.interface-method
-     */ 
-    public abstract void setHighWaterMark(long hwm);
-
-    /**
-     * @ejb.interface-method
-	 * @ejb.persistence
-	 * 	column-name="min_available"
-	 */
-    public abstract long getMinAvailable();
-
-    /**
-     * @ejb.interface-method
-     */ 
-    public abstract void setMinAvailable(long hwm);
-    
-    /**
-     * @ejb.interface-method
-     */ 
-    public long getAvailable() {
-        final long hwm = getHighWaterMark();
-        return hwm == 0 ? 0 : hwm - getDiskUsage();
-    }
-
-    /**
-     * @ejb.relation
-     *  name="filesystem-retrieve-aet"
-     *  role-name="filesystem-of-retrieve-aet"
-     *  target-ejb="RetrieveAET"
-     *  target-role-name="retrieve-aet-of-filesystem"
-     *  target-multiple="yes"
-     * @jboss:relation fk-column="aet_fk" related-pk-field="pk"
-     * @jboss:target-relation fk-column="filesystem_fk" related-pk-field="pk"
-     * @jboss.relation-table table-name="rel_filesystem_aet"
-     *    
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract java.util.Collection getRetrieveAETs();
-
-    public abstract void setRetrieveAETs(java.util.Collection retrieveAETs);
-
-    /**
-     * @ejb.select query=""
-     */ 
-    public abstract long ejbSelectSumFileLength(FileSystemLocal fs) throws FinderException;
-    
-    /**
-     * @ejb.interface-method
-     */ 
-    public void updateDiskUsage() throws FinderException {
-        setDiskUsage(ejbSelectSumFileLength((FileSystemLocal) ctx.getEJBLocalObject()));
-    }
 }

@@ -30,6 +30,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
 /**
@@ -195,8 +196,15 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
-     * Retrieve AETs
-     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="ext_retr_aet"
+     */
+    public abstract String getExternalRetrieveAET();
+
+    public abstract void setExternalRetrieveAET(String aet);
+
+    /**
      * @ejb.interface-method
      * @ejb.persistence
      *  column-name="retrieve_aets"
@@ -286,37 +294,17 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.relation
-     *  name="instance-external-retrieve-aet"
-     *  role-name="instance-on-external-retrieve-aet"
-     *  target-ejb="RetrieveAET"
-     *  target-role-name="external-retrieve-aet-of-instance"
-     *  target-multiple="yes"
-     * @jboss:relation fk-column="aet_fk" related-pk-field="pk"
-     * @jboss:target-relation fk-column="instance_fk" related-pk-field="pk"
-     * @jboss.relation-table table-name="rel_instance_aet"
-     *    
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract java.util.Collection getExternalRetrieveAETs();
-
-    public abstract void setExternalRetrieveAETs(java.util.Collection retrieveAETs);
-
-    /**
-     * @ejb.relation
      *  name="instance-media"
      *  role-name="instance-on-media"
      *  target-ejb="Media"
      *  target-role-name="media-with-instance"
-     *  target-multiple="yes"
      * @jboss:relation fk-column="media_fk" related-pk-field="pk"
-     * @jboss:target-relation fk-column="instance_fk" related-pk-field="pk"
-     * @jboss.relation-table table-name="rel_instance_media"
      *    
      * @ejb.interface-method view-type="local"
      */
-    public abstract java.util.Collection getMedia();
+    public abstract MediaLocal getMedia();
 
-    public abstract void setMedia(java.util.Collection retrieveAETs);
+    public abstract void setMedia(MediaLocal media);
 
     /**
      * @ejb.relation
@@ -340,10 +328,6 @@ public abstract class InstanceBean implements EntityBean {
      * @return code of SR title
      */
     public abstract CodeLocal getSrCode();
-
-//    public void ejbLoad() {
-//        retrieveAETSet = null;
-//    }
 
     /**
      * Create Instance.
@@ -374,11 +358,7 @@ public abstract class InstanceBean implements EntityBean {
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
-/*        SeriesLocal series = getSeries();
-        if (series != null) {
-            series.incNumberOfSeriesRelatedInstances(-1);
-        }
-*/    }
+    }
 
     /**
      * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
@@ -391,7 +371,10 @@ public abstract class InstanceBean implements EntityBean {
     public void updateDerivedFields() throws FinderException {
         final Integer pk = getPk();
         Set aetSet = ejbSelectRetrieveAETs(pk);
-        final String aets = toString(aetSet);
+        String aets = toString(aetSet);
+        final String extAet = getExternalRetrieveAET();
+        if (extAet != null && extAet.length() != 0)
+            aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;
         if (!aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
     }

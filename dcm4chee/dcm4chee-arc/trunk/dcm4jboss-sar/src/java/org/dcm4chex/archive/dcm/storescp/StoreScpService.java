@@ -22,7 +22,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
+import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
@@ -116,22 +116,6 @@ public class StoreScpService extends AbstractScpService {
         return EJBHomeFactory.getEjbProviderURL();
     }
 
-    public String getMountFailedCheckFile() {
-        return scp.getMountFailedCheckFile();
-    }
-
-    public void setMountFailedCheckFile(String mountFailedCheckFile) {
-        scp.setMountFailedCheckFile(mountFailedCheckFile);
-    }
-
-    public boolean isMakeStorageDirectory() {
-        return scp.isMakeStorageDirectory();
-    }
-
-    public void setMakeStorageDirectory(boolean makeStorageDirectory) {
-        scp.setMakeStorageDirectory(makeStorageDirectory);
-    }
-
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
@@ -182,6 +166,14 @@ public class StoreScpService extends AbstractScpService {
     
     public final void setUpdateDatabaseRetryInterval(long interval) {
         scp.setUpdateDatabaseRetryInterval(interval);
+    }
+    
+    public final int getOutOfResourcesThreshold() {
+        return scp.getOutOfResourcesThreshold();
+    }
+    
+    public final void setOutOfResourcesThreshold(int outOfResourcesThreshold) {
+        scp.setOutOfResourcesThreshold(outOfResourcesThreshold);
     }
     
     public final int getAcTimeout() {
@@ -383,24 +375,12 @@ public class StoreScpService extends AbstractScpService {
         super.sendNotification(notif);
     }
 
-    FileSystemDTO getStorageFileSystem() {
+    FileSystemInfo selectStorageFileSystem() {
         try {
-            return (FileSystemDTO) server.invoke(fileSystemMgtName,
-                    "getStorageFileSystem",
+            return (FileSystemInfo) server.invoke(fileSystemMgtName,
+                    "selectStorageFileSystem",
                     null,
                     null);
-        } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
-        }
-    }
-
-    boolean nextStorageDirectory() {
-        try {
-            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
-                    "nextStorageDirectory",
-                    null,
-                    null);
-            return b.booleanValue();
         } catch (JMException e) {
             throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
         }

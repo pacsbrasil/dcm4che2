@@ -59,6 +59,10 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *  eager-load-group="*"
  * 
  * @jboss.query 
+ * 	signature="int ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(java.lang.Integer pk)"
+ * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1" AND i.externalRetrieveAET IS NULL"
+ * 
+ * @jboss.query 
  * 	signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
  * 	query="SELECT COUNT(s) FROM Series s WHERE s.hidden = FALSE AND s.study.pk = ?1"
  * 
@@ -210,6 +214,23 @@ public abstract class StudyBean implements EntityBean {
 
     public abstract void setEncodedAttributes(byte[] bytes);
 
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="fileset_iuid"
+     */
+    public abstract String getFilesetIuid();
+
+    public abstract void setFilesetIuid(String iuid);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="fileset_id"
+     */
+    public abstract String getFilesetId();
+
+    public abstract void setFilesetId(String id);
+    
     /**
      * Retrieve AETs
      *
@@ -293,12 +314,7 @@ public abstract class StudyBean implements EntityBean {
      * @return all series of this study
      */
     public abstract java.util.Collection getSeries();
-/*
-    public void ejbLoad() {
-        retrieveAETSet = null;
-        modalitySet = null;
-    }
-*/
+
     /**
      * Create study.
      *
@@ -306,8 +322,6 @@ public abstract class StudyBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient)
             throws CreateException {
-//        retrieveAETSet = null;
-//        modalitySet = null;
         setAttributes(ds);
         return null;
     }
@@ -327,6 +341,16 @@ public abstract class StudyBean implements EntityBean {
      */ 
     public abstract Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
     
+    /**
+     * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND s.hidden = FALSE"
+     */ 
+    public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk) throws FinderException;
+    
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(Integer pk) throws FinderException;
+
     /**
      * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE AND f.fileSystem.retrieveAET = ?2"
      */ 
@@ -369,7 +393,15 @@ public abstract class StudyBean implements EntityBean {
             if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
                 it.remove();
         }
-        final String aets = toString(aetSet);
+        String aets = toString(aetSet);
+        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
+            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
+            if (extAetSet.size() == 1) {
+                final String extAet = (String) extAetSet.iterator().next();
+                if (extAet != null && extAet.length() != 0)
+                    aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;                
+            }
+        }
         if (!aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
         final String mds = toString(ejbSelectModalityInStudies(pk));
@@ -434,144 +466,6 @@ public abstract class StudyBean implements EntityBean {
         setStudyDateTime(date != null ? new java.sql.Timestamp(date.getTime())
                 : null);
     }
-
-    /*
-     * ejb.interface-method
-     *
-    public void incNumberOfStudyRelatedSeries(int inc) {
-        setNumberOfStudyRelatedSeries(getNumberOfStudyRelatedSeries() + inc);
-    }
-
-    /**
-     * ejb.interface-method
-     *
-    public void incNumberOfStudyRelatedInstances(int inc) {
-        setNumberOfStudyRelatedInstances(getNumberOfStudyRelatedInstances()
-                + inc);
-    }
-
-    /**
-     * ejb.interface-method
-     *
-    public Set getRetrieveAETSet() {
-        return Collections.unmodifiableSet(retrieveAETSet());
-    }
-
-    private Set retrieveAETSet() {
-        if (retrieveAETSet == null) {
-            retrieveAETSet = new HashSet();
-            String aets = getRetrieveAETs();
-            if (aets != null) {
-                retrieveAETSet.addAll(Arrays.asList(StringUtils.split(aets,
-                        '\\')));
-            }
-        }
-        return retrieveAETSet;
-    }
-    
-    /**
-     * ejb.interface-method
-     *
-    public boolean updateRetrieveAETs() {
-        
-        Collection c = getSeries();
-        HashSet newAETSet = null;
-        Iterator it = c.iterator();
-        while (it.hasNext()) {
-            SeriesLocal series = (SeriesLocal) it.next();
-            // consider only series with instances
-            if (series.getNumberOfSeriesRelatedInstances() > 0) {
-                if (newAETSet == null) {
-                    newAETSet = new HashSet(series.getRetrieveAETSet());
-                } else {
-                    newAETSet.retainAll(series.getRetrieveAETSet());
-                }
-            }
-        }
-        if (newAETSet == null) {
-            newAETSet = new HashSet();
-        }
-        if (retrieveAETSet().equals(newAETSet)) { return false; }
-        retrieveAETSet = newAETSet;
-        String newAETs = StringUtils.toString((String[]) retrieveAETSet()
-                .toArray(new String[retrieveAETSet.size()]), '\\');
-        setRetrieveAETs(newAETs);
-        return true;
-    }
-
-    /**
-     * 
-     * ejb.interface-method
-     *
-    public boolean updateAvailability() {
-        Collection c = getSeries();
-        int availability = 0;
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            SeriesLocal series = (SeriesLocal) it.next();
-            availability = Math.max(availability, series.getAvailabilitySafe());
-        }
-        if (availability != getAvailabilitySafe()) {
-            setAvailability(availability);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * ejb.interface-method
-     *
-    public boolean updateModalitiesInStudy() {
-        Collection c = getSeries();
-        HashSet newModalitySet = new HashSet();
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            SeriesLocal series = (SeriesLocal) it.next();
-            if (!series.getHiddenSafe())
-                newModalitySet.add(series.getModality());
-        }
-        if (!newModalitySet.equals(getModalitySet())) {
-            StringBuffer sb = new StringBuffer();
-            Iterator it = newModalitySet.iterator();
-            if (it.hasNext()) {
-                sb.append(it.next());
-                while (it.hasNext())
-                    sb.append('\\').append(it.next());
-            }
-            setModalitiesInStudy(sb.toString());
-            modalitySet = newModalitySet;
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * ejb.interface-method
-     *
-    public Set getModalitySet() {
-        if (modalitySet == null) {
-            modalitySet = new HashSet();
-            String mds = getModalitiesInStudy();
-            if (mds != null) {
-                modalitySet.addAll(Arrays.asList(StringUtils.split(mds, '\\')));
-            }
-        }
-        return modalitySet;
-    }
-
-    /**
-     * ejb.interface-method
-     *
-    public boolean addModalityInStudy(String md) {
-        if (getModalitySet().contains(md)) { return false; }
-        modalitySet.add(md);
-        String prev = getModalitiesInStudy();
-        if (prev == null || prev.length() == 0) {
-            setModalitiesInStudy(md);
-        } else {
-            setModalitiesInStudy(prev + '\\' + md);
-        }
-        return true;
-    }
-    */
 
     /**
      * 

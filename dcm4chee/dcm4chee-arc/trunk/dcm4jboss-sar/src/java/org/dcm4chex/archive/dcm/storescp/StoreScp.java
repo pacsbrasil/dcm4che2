@@ -51,13 +51,11 @@ import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
 
@@ -68,6 +66,7 @@ import org.jboss.logging.Logger;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
+    private static final long MEGA = 1000000L;
     private static final AuditLoggerFactory alf = AuditLoggerFactory
             .getInstance();
 
@@ -95,12 +94,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private HashSet coerceWarnCallingAETs = new HashSet();
 
-    private String mountFailedCheckFile = "NO_MOUNT";
-
-    private boolean makeStorageDirectory = true;
-    
     private long updateDatabaseRetryInterval = 0L;
 
+    private long outOfResourcesThreshold = 30000000L;
+    
     public StoreScp(StoreScpService service) {
         this.service = service;
         this.log = service.getLog();
@@ -164,23 +161,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public final void setUpdateDatabaseRetryInterval(long interval) {
         this.updateDatabaseRetryInterval = interval;
     }
+
+    public final int getOutOfResourcesThreshold() {
+        return (int) (outOfResourcesThreshold / MEGA);
+    }
+
+    public final void setOutOfResourcesThreshold(int outOfResourcesThreshold) {
+        this.outOfResourcesThreshold = outOfResourcesThreshold * MEGA;
+    }
     
-    public final boolean isMakeStorageDirectory() {
-        return makeStorageDirectory;
-    }
-
-    public final void setMakeStorageDirectory(boolean makeStorageDirectory) {
-        this.makeStorageDirectory = makeStorageDirectory;
-    }
-
-    public final String getMountFailedCheckFile() {
-        return mountFailedCheckFile;
-    }
-
-    public final void setMountFailedCheckFile(String mountFailedCheckFile) {
-        this.mountFailedCheckFile = mountFailedCheckFile;
-    }
-
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
@@ -197,19 +186,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             service.logDataset("Dataset:\n", ds);
             checkDataset(rqCmd, ds);
 
-            FileSystemDTO fs = selectStorageFileSystem();
-            File baseDir = FileUtils.resolve(fs.getDirectory());
-
-            if (!baseDir.isDirectory() && !makeStorageDirectory) {
-                throw new ConfigurationException("Storage Directory " + baseDir
-                        + " does not exists.");
-            }
-            if (new File(baseDir, mountFailedCheckFile).exists()) {
-                log.error("Mount check of Storage Directory " + baseDir
-                        + " failed: Found " + mountFailedCheckFile);
-                throw new DcmServiceException(Status.ProcessingFailure);
-            }
-
+            FileSystemInfo fsInfo = service.selectStorageFileSystem();
+            if (fsInfo.getAvailable() < outOfResourcesThreshold)
+                throw new DcmServiceException(Status.OutOfResources);
+            File baseDir = fsInfo.getDirectory();
             file = makeFile(baseDir, ds);
             MessageDigest md = MessageDigest.getInstance("MD5");
             String compressTSUID = parser.getReadTag() == Tags.PixelData
@@ -226,7 +206,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 final int baseDirPathLength = baseDir.getPath().length();
                 final String filePath = file.getPath().substring(
                         baseDirPathLength + 1).replace(File.separatorChar, '/');
-                Dataset coercedElements = updateDB(assoc, ds, fs, filePath,
+                Dataset coercedElements = updateDB(assoc, ds, fsInfo, filePath,
                         file, md.digest());
                 if (coercedElements.isEmpty()
                         || !coerceWarnCallingAETs.contains(assoc
@@ -242,7 +222,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
                     ds.putAll(coercedElements);
                 }
-                updateIANInfo(assoc, ds, fs.getRetrieveAET());
+                updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
                 updateInstancesStored(assoc, ds);
             } catch (DuplicateStorageException e) {
                 log.warn("ignore attempt to store instance[uid="
@@ -261,31 +241,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    /**
-     * @return
-     * @throws DcmServiceException
-     */
-    private FileSystemDTO selectStorageFileSystem() throws DcmServiceException {
-        FileSystemDTO fsdto;
-        while ((fsdto = service.getStorageFileSystem()).getAvailable() <= 0)
-            if (!service.nextStorageDirectory()) {
-                log
-                        .error("High Water Mark reached on last configured File System: "
-                                + fsdto);
-                throw new DcmServiceException(Status.OutOfResources);
-            }
-        return fsdto;
-    }
-
     private void deleteFailedStorage(File file) {
         if (file == null)
             return;
         log.info("M-DELETE file:" + file);
         file.delete();
+        // purge empty series and study directory
+        File seriesDir = file.getParentFile();
+        if (seriesDir.delete())
+            seriesDir.getParentFile().delete();
     }
 
     private Dataset updateDB(Association assoc, Dataset ds,
-            FileSystemDTO fsDTO, String filePath, File file, byte[] md5)
+            FileSystemInfo fsInfo, String filePath, File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             DuplicateStorageException, IOException {
         Storage storage = getStorageHome().create();
@@ -295,7 +263,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	            try {
 	                synchronized(this) {
 		                return storage.store(assoc.getCallingAET(),
-		                        assoc.getCalledAET(), ds, fsDTO.getDirectoryPath(),
+		                        assoc.getCalledAET(), ds,
+		                        fsInfo.getRetrieveAET(), fsInfo.getPath(),
 		                        filePath, (int) file.length(), md5);
 	                }
 	            } catch (DuplicateStorageException e) {

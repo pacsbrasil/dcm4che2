@@ -20,10 +20,22 @@ import org.jboss.system.server.ServerConfigLocator;
  *
  */
 public class FileUtils {
+    public static String slashify(File f) {
+        return f.getPath().replace(File.separatorChar, '/');
+    }
+    
     public static File resolve(File f) {
         if (f.isAbsolute()) return f;
         File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
         return new File(serverHomeDir, f.getPath());
     }
+    
+    public static File toFile(String unixPath) {
+        return resolve(new File(unixPath.replace('/', File.separatorChar)));
+    }
 
+    public static File toFile(String unixDirPath, String unixFilePath) {
+        return resolve(new File(unixDirPath.replace('/', File.separatorChar),
+                unixFilePath.replace('/', File.separatorChar)));
+    }
 }

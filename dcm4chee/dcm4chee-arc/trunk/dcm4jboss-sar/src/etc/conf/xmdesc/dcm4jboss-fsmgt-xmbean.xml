@@ -58,15 +58,38 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getDefaultHighWaterMark"
-      setMethod="setDefaultHighWaterMark">
-      <description>Default High Water Mark. Format: ##.#MB or ##.#GB,
-      with 1MB = 1000000 Bytes and 1GB = 1000MB.
+      getMethod="getHighWaterMark"
+      setMethod="setHighWaterMark">
+      <description>High Water Mark in MB(=1000000 Bytes).
+      Storage Directory switches to next entry in DirectoryPathList,
+      if amount of available disk space falls below this value.      
       </description>
-      <name>DefaultHighWaterMark</name>
+      <name>HighWaterMark</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMountFailedCheckFile"
+      setMethod="setMountFailedCheckFile">
+      <description>Existence of specified file signals failed mount.
+      </description>
+      <name>MountFailedCheckFile</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="10GB" />
+         <value value="NO_MOUNT" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isMakeStorageDirectory"
+      setMethod="setMakeStorageDirectory">
+      <description>Make Storage Directory if no one already exists.
+      </description>
+      <name>MakeStorageDirectory</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -97,94 +120,19 @@
       <return-type>boolean</return-type>
    </operation>
    <operation impact="INFO">
-      <description>Returns File System Info about current Storage Directory.
-      </description>
-      <name>getStorageFileSystem</name>
-      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
+      <description>Show Available Disk Space on Local File Systems</description>
+      <name>showAvailableDiskSpace</name>
+      <return-type>java.lang.String</return-type>
    </operation>
-   <operation impact="ACTION">
-      <description>Select next Storage Directory from Directory Path List.</description>
-      <name>nextStorageDirectory</name>
-      <return-type>boolean</return-type>
+   <operation impact="INFO">
+      <description>Select Storage File System with Available Disk Space 
+      &gt; High Water Mark</description>
+      <name>selectStorageFileSystem</name>
+      <return-type>org.dcm4chex.archive.mbean.FileSystemInfo</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Purge unreferenced Files</description>
       <name>purgeFiles</name>
       <return-type>void</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>List configured File Systems</description>
-      <name>listFileSystems</name>
-      <return-type>java.lang.String</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Add new File System Configuration</description>
-      <name>addFileSystem</name>
-      <parameter>
-        <description>Directory Path (use / as delimiter)</description>
-        <name>DirPath</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Associated Retrieve AET</description>
-        <name>RetrieveAET</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>High Water Mark. Format: ##.#MB or ##.#GB</description>
-        <name>HighWaterMark</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Update Retrieve AET of File System Configuration</description>
-      <name>updateRetrieveAET</name>
-      <parameter>
-        <description>Directory Path (use / as delimiter)</description>
-        <name>DirPath</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>New Associated Retrieve AET</description>
-        <name>RetrieveAET</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>(Re-)Calculate Disk Usage by accumulating length of files</description>
-      <name>updateDiskUsage</name>
-      <parameter>
-        <description>Directory Path (use / as delimiter)</description>
-        <name>DirPath</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Update High Water Mark of File System Configuration</description>
-      <name>updateHighWaterMark</name>
-      <parameter>
-        <description>Directory Path (use / as delimiter)</description>
-        <name>DirPath</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>New High Water Mark. Format: ##.#MB or ##.#GB</description>
-        <name>HighWaterMark</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Remove File System Configuration</description>
-      <name>removeFileSystem</name>
-      <parameter>
-        <description>Directory Path (use / as delimiter)</description>
-        <name>DirPath</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
+   </operation>   
 </mbean>

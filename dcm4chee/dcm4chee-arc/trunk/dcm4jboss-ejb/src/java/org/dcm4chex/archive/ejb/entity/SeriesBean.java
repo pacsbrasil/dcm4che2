@@ -77,6 +77,10 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *  transaction-type="Supports"
  * 
  * @jboss.query 
+ * 	signature="int ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(java.lang.Integer pk)"
+ * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1" AND i.externalRetrieveAET IS NULL"
+ * 
+ * @jboss.query 
  * 	signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
  * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
  * 
@@ -241,6 +245,22 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setEncodedAttributes(byte[] attr);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="fileset_iuid"
+     */
+    public abstract String getFilesetIuid();
+
+    public abstract void setFilesetIuid(String iuid);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="fileset_id"
+     */
+    public abstract String getFilesetId();
+
+    public abstract void setFilesetId(String id);
+
+    /**
      * Retrieve AETs
      *
      * @ejb.interface-method
@@ -383,10 +403,20 @@ public abstract class SeriesBean implements EntityBean {
     public abstract java.util.Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
 
     /**
+     * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Series s, IN(s.instances) i WHERE s.pk = ?1"
+     */ 
+    public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk) throws FinderException;
+    
+    /**
      * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
      */ 
     public abstract java.util.Set ejbSelectInstancesWithRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
 
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(Integer pk) throws FinderException;
+        
     /**
      * @ejb.select query=""
      */ 
@@ -411,7 +441,15 @@ public abstract class SeriesBean implements EntityBean {
             if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
                 it.remove();
         }
-        final String aets = toString(aetSet);
+        String aets = toString(aetSet);
+        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
+            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
+            if (extAetSet.size() == 1) {
+                final String extAet = (String) extAetSet.iterator().next();
+                if (extAet != null && extAet.length() != 0)
+                    aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;                
+            }
+        }
         if (!aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
         final int availability = ejbSelectAvailability(pk);
@@ -439,14 +477,7 @@ public abstract class SeriesBean implements EntityBean {
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
-/*        StudyLocal study = getStudy();
-        if (study != null) {
-            // study.updateModalitiesInStudy();?
-            study.incNumberOfStudyRelatedSeries(-1);
-            study
-                    .incNumberOfStudyRelatedInstances(-getNumberOfSeriesRelatedInstances());
-        }
-*/    }
+    }
 
     /**
      * 
@@ -498,102 +529,6 @@ public abstract class SeriesBean implements EntityBean {
         }
         return ds;
     }
-
-    /*
-     * ejb.interface-method
-     *
-    public void incNumberOfSeriesRelatedInstances(int inc) {
-        setNumberOfSeriesRelatedInstances(getNumberOfSeriesRelatedInstances()
-                + inc);
-        if (!getHiddenSafe()) {
-            getStudy().incNumberOfStudyRelatedInstances(inc);
-        }
-    }
-
-    /**
-     * ejb.interface-method
-     *
-    public void hide() {
-        if (getHiddenSafe()) return;
-        StudyLocal study = getStudy();
-        study.incNumberOfStudyRelatedSeries(-1);
-        study
-                .incNumberOfStudyRelatedInstances(-getNumberOfSeriesRelatedInstances());
-        setHidden(true);
-    }
-
-    /**
-     * ejb.interface-method
-     *
-    public void unhide() {
-        if (!getHiddenSafe()) return;
-        StudyLocal study = getStudy();
-        study.incNumberOfStudyRelatedSeries(1);
-        study
-                .incNumberOfStudyRelatedInstances(getNumberOfSeriesRelatedInstances());
-        setHidden(false);
-    }
-
-    /**
-     * ejb.interface-method
-     *
-    public Set getRetrieveAETSet() {
-        return Collections.unmodifiableSet(retrieveAETSet());
-    }
-
-    private Set retrieveAETSet() {
-        if (retrieveAETSet == null) {
-            retrieveAETSet = new HashSet();
-            String aets = getRetrieveAETs();
-            if (aets != null) {
-                retrieveAETSet.addAll(Arrays.asList(StringUtils.split(aets,
-                        '\\')));
-            }
-        }
-        return retrieveAETSet;
-    }
-
-    /**
-     * ejb.interface-method
-     *
-    public boolean updateRetrieveAETs() {
-        Collection c = getInstances();
-        HashSet newAETSet = new HashSet();
-        Iterator it = c.iterator();
-        if (it.hasNext()) {
-            newAETSet.addAll(((InstanceLocal) it.next()).getRetrieveAETSet());
-            while (it.hasNext()) {
-                newAETSet.retainAll(((InstanceLocal) it.next())
-                        .getRetrieveAETSet());
-            }
-        }
-        if (retrieveAETSet().equals(newAETSet)) { return false; }
-        retrieveAETSet = newAETSet;
-        String newAETs = StringUtils.toString((String[]) retrieveAETSet()
-                .toArray(new String[retrieveAETSet.size()]), '\\');
-        setRetrieveAETs(newAETs);
-        return true;
-    }
-
-    /**
-     * 
-     * ejb.interface-method
-     *
-    public boolean updateAvailability() {
-        Collection c = getInstances();
-        int availability = 0;
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            InstanceLocal instance = (InstanceLocal) it.next();
-            availability = Math.max(availability, instance
-                    .getAvailabilitySafe());
-        }
-        if (availability != getAvailabilitySafe()) {
-            setAvailability(availability);
-            return true;
-        }
-        return false;
-    }
-    */
 
     /**
      * 

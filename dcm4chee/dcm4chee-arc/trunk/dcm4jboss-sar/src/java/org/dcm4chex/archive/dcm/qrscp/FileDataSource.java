@@ -57,7 +57,7 @@ class FileDataSource implements DataSource {
 
     public void writeTo(OutputStream out, String tsUID) throws IOException {
         DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
-        File file = FileUtils.resolve(fileInfo.getFile());
+        File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
         service.getLog().info("M-READ file:" + file);
         FileImageInputStream fiis = new FileImageInputStream(file);
         try {

@@ -190,7 +190,7 @@ class StgCmtCmd {
     private void checkFile(FileInfo info) throws IOException {
         if (!service.isLocalFileSystem(info.basedir))
             return;
-        File file = FileUtils.resolve(info.getFile());
+        File file = FileUtils.toFile(info.basedir, info.fileID);
         service.getLog().info("M-READ file:" + file);
         MessageDigest md = null;
         try {

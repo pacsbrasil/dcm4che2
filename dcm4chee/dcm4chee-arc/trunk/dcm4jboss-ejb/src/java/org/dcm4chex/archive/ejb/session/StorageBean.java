@@ -155,7 +155,8 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(java.lang.String callingAET,
             java.lang.String calledAET, org.dcm4che.data.Dataset ds,
-            java.lang.String dirpath, java.lang.String fileid, int size,
+            java.lang.String retrieveAET, java.lang.String dirpath,
+            java.lang.String fileid, int size,
             byte[] md5) throws DcmServiceException, DuplicateStorageException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -175,7 +176,12 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.create(ds.subSet(attrFilter
                         .getInstanceFilter()), getSeries(ds, coercedElements));
             }
-            FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirpath);
+            FileSystemLocal fs;
+            try {
+                fs = fileSystemHome.findByDirectoryPath(dirpath);
+            } catch (ObjectNotFoundException onfe) {
+                fs = fileSystemHome.create(dirpath, retrieveAET);
+            }
             FileLocal file = fileHome.create(fileid,
                     tsuid,
                     size,

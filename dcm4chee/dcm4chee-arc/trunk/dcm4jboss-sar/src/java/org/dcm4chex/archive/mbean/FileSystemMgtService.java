@@ -9,7 +9,7 @@
 package org.dcm4chex.archive.mbean;
 
 import java.io.File;
-import java.rmi.RemoteException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,17 +18,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-import javax.ejb.RemoveException;
-
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -42,9 +37,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 
     private static final long MEGA = 1000000L;
 
-    private static final long GIGA = 1000 * MEGA;
-
-    private long defHWM = 10 * GIGA;
+    private long highWaterMark = 50000000L;
 
     private List dirPathList = Arrays.asList(new File[] { new File("archive")});
 
@@ -53,28 +46,13 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     private String retrieveAET = "QR_SCP";
 
     private File curDir = new File("archive");
+    
+    private String mountFailedCheckFile = "NO_MOUNT";
+
+    private boolean makeStorageDirectory = true;
 
     private static String null2local(String s) {
         return s == null ? LOCAL : s;
-    }
-
-    public final String getDefaultHighWaterMark() {
-        return defHWM > GIGA ? "" + (((float) defHWM) / GIGA) + "GB" : ""
-                + (((float) defHWM) / MEGA) + "MB";
-    }
-
-    public final void setDefaultHighWaterMark(String s) {
-        this.defHWM = parseSize(s);
-    }
-
-    private static long parseSize(String s) {
-        final int len = s.length();
-        if (len > 2) {
-            final float f = Float.parseFloat(s.substring(0, len - 2));
-            if (s.endsWith("GB")) return (long) (f * GIGA);
-            if (s.endsWith("MB")) return (long) (f * MEGA);
-        }
-        throw new IllegalArgumentException(s);
     }
 
     private static String local2null(String s) {
@@ -87,14 +65,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(local2null(ejbProviderURL));
-    }
-
-    public final String getRetrieveAET() {
-        return retrieveAET;
-    }
-
-    public final void setRetrieveAET(String aet) {
-        this.retrieveAET = aet;
     }
 
     public final String getStorageDirectory() {
@@ -130,18 +100,104 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         fsPathSet = set;
     }
 
+    public final String getRetrieveAET() {
+        return retrieveAET;
+    }
+
+    public final void setRetrieveAET(String aet) {
+        this.retrieveAET = aet;
+    }
+
+    public final int getHighWaterMark() {
+        return (int) (highWaterMark / MEGA);
+    }
+
+    public final void setHighWaterMark(int highWaterMark) {
+        this.highWaterMark = highWaterMark * MEGA;
+    }
+
+    public final boolean isMakeStorageDirectory() {
+        return makeStorageDirectory;
+    }
+
+    public final void setMakeStorageDirectory(boolean makeStorageDirectory) {
+        this.makeStorageDirectory = makeStorageDirectory;
+    }
+
+    public final String getMountFailedCheckFile() {
+        return mountFailedCheckFile;
+    }
+
+    public final void setMountFailedCheckFile(String mountFailedCheckFile) {
+        this.mountFailedCheckFile = mountFailedCheckFile;
+    }
+
     public final boolean isLocalFileSystem(String fsdir) {
         return fsPathSet.contains(fsdir);
     }
 
-    private static String toFsPath(File dir) {
-        return dir.getPath().replace(File.separatorChar, '/');
+    private FileSystemMgt newFileSystemMgt() {
+        try {
+            FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
+                    .getFactory().lookup(FileSystemMgtHome.class,
+                            FileSystemMgtHome.JNDI_NAME);
+            return home.create();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to access File System Mgt EJB:",
+                    e);
+        }
     }
 
-    private static File resolve(File f) {
-        if (f.isAbsolute()) return f;
-        File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
-        return new File(serverHomeDir, f.getPath());
+    public String showAvailableDiskSpace() throws IOException {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0, n = dirPathList.size(); i < n; i++) {
+            FileSystemInfo info = initFileSystemInfo((File) dirPathList.get(i));
+            sb.append(info).append("\r\n");
+        }
+        return sb.toString();
+    }
+    
+    private FileSystemInfo initFileSystemInfo(File dir) throws IOException {
+        File d = FileUtils.resolve(dir);
+        if (!d.isDirectory()) {
+            if (!makeStorageDirectory) {
+                throw new IOException("Storage Directory " + d
+	                    + " does not exists.");
+            } else {
+                if (d.mkdirs()) {
+                    log.warn("M-CREATE Storage Directory: " + d);
+                } else {
+                    throw new IOException("Failed to create Storage Directory " + d);
+                }
+            }
+        } else {
+            if (new File(d, mountFailedCheckFile).exists()) {
+	            throw new IOException("Mount check of Storage Directory " + d
+	                    + " failed: Found " + mountFailedCheckFile);
+            }
+        }
+        long available = new se.mog.io.File(d).getDiskSpaceAvailable();
+        return new FileSystemInfo(FileUtils.slashify(dir), d, available, retrieveAET);
+    }
+
+    public FileSystemInfo selectStorageFileSystem() throws IOException {
+        FileSystemInfo info = initFileSystemInfo(curDir);
+        if (info.getAvailable() > highWaterMark)
+            return info;
+        final int off = dirPathList.indexOf(curDir);
+        for (int i = 1, n = dirPathList.size(); i < n; ++i) {
+            File dir = (File) dirPathList.get((off + i) % n);
+            info = initFileSystemInfo(dir);
+            if (info.getAvailable() > highWaterMark) {
+                log.info("High Water Mark reached on current Storage Directory "
+                        + curDir + " - switch Storage Directory to " + dir);
+                curDir = dir;
+                return info;
+            }
+        }
+        log.error("High Water Mark reached on Storage Directory " + curDir
+                + " - no alternative Storage Directory available");
+        return info;
     }
 
     public void purgeFiles() {
@@ -151,14 +207,15 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
             for (int i = 0, n = dirPathList.size(); i < n; ++i) {
                 try {
                     File f = (File) dirPathList.get(i);
-                    toDelete = fsMgt.getDereferencedFiles(toFsPath(f));
+                    toDelete = fsMgt.getDereferencedFiles(FileUtils.slashify(f));
                 } catch (Exception e) {
                     log.warn("Failed to query dereferenced files:", e);
                     break;
                 }
                 for (int j = 0; j < toDelete.length; j++) {
                     FileDTO fileDTO = toDelete[j];
-                    if (delete(resolve(fileDTO.getFile()))) {
+                    if (delete(FileUtils.toFile(fileDTO.getDirectoryPath(),
+                            fileDTO.getFilePath()))) {
                         try {
                             fsMgt.deleteFile(fileDTO.getPk());
                         } catch (Exception e) {
@@ -178,18 +235,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 
     }
 
-    private FileSystemMgt newFileSystemMgt() {
-        try {
-            FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
-                    .getFactory().lookup(FileSystemMgtHome.class,
-                            FileSystemMgtHome.JNDI_NAME);
-            return home.create();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to access File System Mgt EJB:",
-                    e);
-        }
-    }
-
     private boolean delete(File file) {
         log.info("M-DELETE file: " + file);
         if (!file.exists()) {
@@ -200,121 +245,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
             log.warn("Failed to delete file: " + file);
             return false;
         }
+        // purge empty series and study directory
+        File seriesDir = file.getParentFile();
+        if (seriesDir.delete()) {
+            seriesDir.getParentFile().delete();
+        }
         return true;
     }
-
-    public String listFileSystems() throws RemoteException, FinderException {
-        StringBuffer sb = new StringBuffer();
-        FileSystemDTO[] fss;
-        FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            fss = fsMgt.getAllFileSystems();
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
-        for (int i = 0; i < fss.length; i++) {
-            fss[i].toString(sb).append("\r\n");
-        }
-        return sb.toString();
-    }
-
-    public String addFileSystem(String dirPath, String retrieveAET,
-            String highWaterMark) throws RemoteException, CreateException,
-            FinderException {
-        FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            FileSystemDTO fs = new FileSystemDTO();
-            fs.setDirectoryPath(dirPath);
-            fs.setRetrieveAET(retrieveAET);
-            fs.setHighWaterMark(parseSize(highWaterMark));
-            return fsMgt.addFileSystem(fs).toString();
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
-    }
-
-    public FileSystemDTO updateHighWaterMark(String dirPath, String highWaterMark) throws RemoteException,
-            CreateException, FinderException {
-        FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            return fsMgt.updateHighWaterMark(dirPath, parseSize(highWaterMark));
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
-    }
-
-
-    public FileSystemDTO updateRetrieveAET(String dirPath, String retrieveAET) throws RemoteException,
-            CreateException, FinderException {
-        FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            return fsMgt.updateRetrieveAET(dirPath, retrieveAET);
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
-    }
-
-    public FileSystemDTO updateDiskUsage(String dirPath)
-            throws RemoteException, FinderException {
-        FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            return fsMgt.updateDiskUsage(dirPath);
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
-    }
-    
-    public void removeFileSystem(String dirPath) throws RemoteException,
-            FinderException, RemoveException {
-        FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            fsMgt.removeFileSystem(dirPath);
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
-    }
-
-    public FileSystemDTO getStorageFileSystem() throws RemoteException {
-        FileSystemMgt fsMgt = newFileSystemMgt();
-        try {
-            FileSystemDTO dto = new FileSystemDTO();
-            dto.setDirectoryPath(toFsPath(curDir));
-            dto.setRetrieveAET(retrieveAET);
-            dto.setHighWaterMark(defHWM);
-            return fsMgt.probeFileSystem(dto);
-        } finally {
-            try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
-            }
-        }
-    }
-
-    public boolean nextStorageDirectory() {
-        int index = dirPathList.indexOf(curDir) + 1;
-        if (index == dirPathList.size())
-            return false;
-        curDir = (File) dirPathList.get(index);
-        log.info("Switch to next Storage Directory: " + curDir);
-        return true;
-    }
-
 }

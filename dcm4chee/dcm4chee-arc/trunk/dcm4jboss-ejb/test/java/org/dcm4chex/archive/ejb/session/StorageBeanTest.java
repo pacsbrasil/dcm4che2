@@ -25,9 +25,6 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 
@@ -57,18 +54,8 @@ public class StorageBeanTest extends TestCase {
     protected void setUp() throws Exception {
         Context ctx = new InitialContext();
         StorageHome home = (StorageHome) ctx.lookup(StorageHome.JNDI_NAME);
-        FileSystemMgtHome  fsMgtHome = (FileSystemMgtHome) ctx.lookup(FileSystemMgtHome.JNDI_NAME);
         ctx.close();
         storage = home.create();
-        FileSystemMgt fsMgt = fsMgtHome.create();
-        try {
-            FileSystemDTO fs = new FileSystemDTO();
-            fs.setDirectoryPath("/");
-            fs.setRetrieveAET(RETRIEVE_AET);
-            fsMgt.addFileSystem(fs);
-        } catch (Exception e) {            
-        }
-        fsMgt.remove();
     }
 
     /*
@@ -104,6 +91,7 @@ public class StorageBeanTest extends TestCase {
             CALLING_AET,
             CALLED_AET,
             ds,
+            RETRIEVE_AET,
             "/",
             path.substring(1),
             (int) file.length(),

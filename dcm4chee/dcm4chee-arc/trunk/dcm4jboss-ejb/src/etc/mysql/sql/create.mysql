@@ -45,6 +45,8 @@ CREATE TABLE study (
 	num_series		INTEGER,
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR(250) BINARY,
+	fileset_iuid	VARCHAR(250) BINARY,
+	fileset_id		VARCHAR(250) BINARY,
 	availability	INTEGER,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -82,6 +84,8 @@ CREATE TABLE series (
 	pps_iuid		VARCHAR(250) BINARY,
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR(250) BINARY,
+	fileset_iuid	VARCHAR(250) BINARY,
+	fileset_id		VARCHAR(250) BINARY,
 	availability	INTEGER,
 	hidden			TINYINT,
 	created_time	TIMESTAMP,
@@ -98,21 +102,33 @@ CREATE INDEX modality ON series(modality);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 
+CREATE TABLE media (
+	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	fileset_iuid	VARCHAR(250) BINARY NOT NULL,
+	fileset_id		VARCHAR(250) BINARY,
+	media_status	INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
+CREATE INDEX media_status ON media(media_status);
+
 CREATE TABLE instance (
 	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
 	series_fk		INTEGER,
 	srcode_fk		INTEGER,
+	media_fk		INTEGER,
 	sop_iuid		VARCHAR(250) BINARY NOT NULL,
 	sop_cuid		VARCHAR(250) BINARY NOT NULL,
 	inst_no			VARCHAR(250) BINARY,
 	sr_complete		VARCHAR(250) BINARY,
 	sr_verified		VARCHAR(250) BINARY,
+	ext_retr_aet	VARCHAR(250) BINARY,
 	retrieve_aets	VARCHAR(250) BINARY,
 	availability	INTEGER,
 	commitment		TINYINT,
 	inst_attrs		BLOB,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
-FOREIGN KEY (srcode_fk) REFERENCES code(pk)
+FOREIGN KEY (srcode_fk) REFERENCES code(pk),
+FOREIGN KEY (media_fk) REFERENCES media(pk)
 );
 CREATE INDEX series_fk ON instance(series_fk);
 CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid);
@@ -121,17 +137,13 @@ CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 
-
 CREATE TABLE filesystem (
 	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
 	dirpath			VARCHAR(250) BINARY NOT NULL,
-	retrieve_aets	VARCHAR(250) BINARY NOT NULL,
-	disk_usage		BIGINT DEFAULT 0 NOT NULL,
-	highwater_mark	BIGINT DEFAULT 0 NOT NULL,
-	min_available	BIGINT DEFAULT 0 NOT NULL
+	retrieve_aet	VARCHAR(250) BINARY NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
-CREATE INDEX retrieve_aets ON filesystem(retrieve_aets);
+CREATE INDEX retrieve_aet ON filesystem(retrieve_aet);
 
 CREATE TABLE files (
 	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -153,40 +165,6 @@ CREATE TABLE retrieve_aet (
 	availability	INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX retrieve_aet_aet ON retrieve_aet(aet);
-
-CREATE TABLE media (
-	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
-	fileset_iuid	VARCHAR(250) BINARY NOT NULL,
-	fileset_id		VARCHAR(250) BINARY
-);
-CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
-
-CREATE TABLE rel_instance_media (
-	instance_fk		INTEGER,
-	media_fk		INTEGER,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (media_fk) REFERENCES media(pk)
-);
-CREATE INDEX rel_instance_media_fk1 ON rel_instance_media(instance_fk);
-CREATE INDEX rel_instance_media_fk2 ON rel_instance_media(media_fk);
-
-CREATE TABLE rel_instance_aet (
-	instance_fk		INTEGER,
-	aet_fk			INTEGER,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (aet_fk) REFERENCES retrieve_aet(pk)
-);
-CREATE INDEX rel_instance_aet_fk1 ON rel_instance_aet(instance_fk);
-CREATE INDEX rel_instance_aet_fk2 ON rel_instance_aet(aet_fk);
-
-CREATE TABLE rel_filesystem_aet (
-	filesystem_fk	INTEGER,
-	aet_fk			INTEGER,
-FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk),
-FOREIGN KEY (aet_fk) REFERENCES retrieve_aet(pk)
-);
-CREATE INDEX rel_filesystem_aet_fk1 ON rel_filesystem_aet(filesystem_fk);
-CREATE INDEX rel_filesystem_aet_fk2 ON rel_filesystem_aet(aet_fk);
 
 CREATE TABLE mwl_item (
 	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -243,3 +221,6 @@ INSERT INTO users VALUES('admin','admin');
 INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
+
+INSERT INTO ae (aet,hostname,port) VALUES('QR_SCP','localhost',2350);
+INSERT INTO ae (aet,hostname,port) VALUES('LOCAL','localhost',2345);

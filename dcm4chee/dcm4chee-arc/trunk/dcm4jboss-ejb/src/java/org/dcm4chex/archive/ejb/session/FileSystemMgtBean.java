@@ -15,7 +15,6 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
@@ -119,29 +118,12 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @throws CreateException
      * @ejb.interface-method
      */
-    public FileSystemDTO addFileSystem(FileSystemDTO dto) throws CreateException {
-        return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAET(), dto.getDiskUsage(), dto.getHighWaterMark()));
+    public FileSystemDTO addFileSystem(FileSystemDTO dto)
+    		throws CreateException {
+        return toDTO(fileSystemHome.create(dto.getDirectoryPath(),
+                dto.getRetrieveAET()));
     }
 
-    /**
-     * @throws CreateException
-     * @throws FinderException
-     * @ejb.interface-method
-     */
-    public FileSystemDTO probeFileSystem(FileSystemDTO dto) {
-        try {
-            return getFileSystem(dto.getDirectoryPath());
-        } catch (ObjectNotFoundException e) {
-            try {
-                return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAET(), dto.getDiskUsage(), dto.getHighWaterMark()));
-            } catch (CreateException e1) {
-                throw new EJBException(e1);
-            }
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        }
-    }
-    
     /**
      * @throws FinderException
      * @ejb.interface-method
@@ -150,33 +132,6 @@ public abstract class FileSystemMgtBean implements SessionBean {
         return toDTO(fileSystemHome.findByDirectoryPath(dirPath));
     }
     
-    /**
-     * @ejb.interface-method
-     */
-    public FileSystemDTO updateHighWaterMark(String dirPath, long hwm)  throws FinderException {
-        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
-        fs.setHighWaterMark(hwm);
-        return toDTO(fs);
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public FileSystemDTO updateDiskUsage(String dirPath)  throws FinderException {
-        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
-        fs.updateDiskUsage();
-        return toDTO(fs);
-    }
-    
-    /**
-     * @ejb.interface-method
-     */
-    public FileSystemDTO updateRetrieveAET(String dirPath, String retrieveAET)  throws FinderException {
-        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
-        fs.setRetrieveAET(retrieveAET);
-        return toDTO(fs);
-    }
-
     /**
      * @ejb.interface-method
      */
@@ -209,8 +164,6 @@ public abstract class FileSystemMgtBean implements SessionBean {
         dto.setPk(fs.getPk().intValue());
         dto.setDirectoryPath(fs.getDirectoryPath());
         dto.setRetrieveAET(fs.getRetrieveAET());
-        dto.setDiskUsage(fs.getDiskUsage());
-        dto.setHighWaterMark(fs.getHighWaterMark());
         return dto;
     }
 

@@ -30,8 +30,6 @@ public class FileBeanTest extends ServletTestCase {
     public static final String FILEID = "2003/07/11/12345678/9ABCDEF0";
     public static final String TSUID = "1.2.40.0.13.1.1.9999.3";
     public static final int SIZE = 567890;
-    public static final long USED = 0L;
-    public static final long HIGH_WATER_MARK = 1000000000L;
     public static final byte[] MD5 =
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
@@ -69,9 +67,7 @@ public class FileBeanTest extends ServletTestCase {
         FileSystemLocal fs =
             fileSystemHome.create(
                 DIRPATH,
-                RETRIEVE_AETS,
-                USED,
-                HIGH_WATER_MARK);
+                RETRIEVE_AETS);
         FileLocal file =
             fileHome.create(
                 FILEID,
