@@ -51,6 +51,30 @@ abstract class Match
     public abstract boolean isUniveralMatch();
     protected abstract void appendBodyTo(StringBuffer sb);
 
+    static class NULLValue extends Match
+    {
+    	private boolean inverter;
+        public NULLValue(String field, boolean inverter)
+        {
+            super(field, false);
+            this.inverter = inverter;
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return false;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            sb.append(column);
+            sb.append(" IS");
+            if ( inverter )
+            	sb.append( " NOT" );
+            sb.append(" NULL");
+        }
+    }
+    
     static class SingleValue extends Match
     {
         private final String value;
