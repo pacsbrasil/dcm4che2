@@ -25,7 +25,8 @@ if [ -n "$CLASSPATH" ] ; then
   LOCALCLASSPATH=$CLASSPATH
 fi
 
-LIB_DIR=`dirname $0`/../server/dcmcdw/lib
+BIN_DIR=`dirname $0`
+LIB_DIR=${BIN_DIR}/../lib
 LOCALCLASSPATH=${LIB_DIR}/fop.jar
 LOCALCLASSPATH=${LIB_DIR}/avalon-framework-cvs-20020806.jar:$LOCALCLASSPATH
 LOCALCLASSPATH=${LIB_DIR}/batik.jar:$LOCALCLASSPATH
@@ -33,5 +34,5 @@ LOCALCLASSPATH=${LIB_DIR}/jimi-1.0.jar:$LOCALCLASSPATH
 LOCALCLASSPATH=${LIB_DIR}/jai_core.jar:$LOCALCLASSPATH
 LOCALCLASSPATH=${LIB_DIR}/jai_codec.jar:$LOCALCLASSPATH
 
-$JAVACMD -classpath "$LOCALCLASSPATH" $FOP_OPTS org.apache.fop.apps.Fop "$@"
+$JAVACMD -classpath "$LOCALCLASSPATH" $FOP_OPTS org.apache.fop.apps.Fop -c ${BIN_DIR}/fopcfg.xml "$@"
 
