@@ -52,7 +52,7 @@ import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelFactory;
-import org.dcm4che.image.PixelData;
+import org.dcm4che.image.PixelDataReader;
 import org.dcm4che.image.PixelDataFactory;
 import org.dcm4che.imageio.plugins.DcmImageReadParam;
 
@@ -91,7 +91,7 @@ public class DcmImageReader extends ImageReader
     private DcmParser theParser;
     private DcmMetadataImpl theMetadata;
     private Dataset theDataset;
-    private PixelData pixelData;
+    private PixelDataReader pdReader;
     private int width;
     private int height;
     private int planes;
@@ -117,7 +117,7 @@ public class DcmImageReader extends ImageReader
     public DcmImageReader(ImageReaderSpi originatingProvider)
     {
         super(originatingProvider);
-        pixelDataFact = PixelDataFactory.newInstance();
+        pixelDataFact = PixelDataFactory.getInstance();
         stream = null;
         theImage = null;
         theTile = null;
@@ -148,7 +148,7 @@ public class DcmImageReader extends ImageReader
         pmi = null;
         theImage = null;
         theTile = null;
-        pixelData = null;
+        pdReader = null;
     }
 
     public void setInput(Object input, boolean seekForwardOnly, boolean ignoreMetadata)
@@ -235,7 +235,7 @@ public class DcmImageReader extends ImageReader
         theParser.setDcmHandler(theDataset.getDcmHandler());
         theParser.parseDcmFile(fileFormat, Tags.PixelData);
         theMetadata = new DcmMetadataImpl(theDataset);
-        pixelData = pixelDataFact.newPixelData(theDataset, stream,
+        pdReader = pixelDataFact.newReader(theDataset, stream,
             theParser.getDcmDecodeParam().byteOrder, theParser.getReadVR());
         if(theParser.getReadTag() == Tags.PixelData)
             initParams();
@@ -264,11 +264,7 @@ public class DcmImageReader extends ImageReader
         samplesPerPixel = theDataset.getInt(Tags.SamplesPerPixel, 1);
         aspectRatio = ((float)width * pixelRatio()) / (float)height;
         
-        long pixelDataLen = (long)width * height * numberOfFrames * samplesPerPixel * alloc;
-        if (pixelDataLen % 8 != 0)
-            pixelDataLen = (pixelDataLen >>> 3) + 1;
-        else
-            pixelDataLen = pixelDataLen >>> 3;
+        long pixelDataLen = pdReader.getPixelDataDescription().calcPixelDataLength();
         
         if(rLen < pixelDataLen)
             throw new DcmValueException("Invalid Length of Pixel Data (too short): " + rLen);
@@ -282,16 +278,16 @@ public class DcmImageReader extends ImageReader
 
     private float pixelRatio()
     {
-        int ratio[] = theDataset.getInts(0x280034);
+        int ratio[] = theDataset.getInts(Tags.PixelAspectRatio);
         if(ratio != null && ratio.length == 2)
             if(ratio[0] == ratio[1])
                 return 1.0F;
             else
                 return (float)ratio[1] / (float)ratio[0];
-        float spacing[] = theDataset.getFloats(0x280030);
+        float spacing[] = theDataset.getFloats(Tags.PixelSpacing);
         if(spacing == null || spacing.length != 2)
         {
-            spacing = theDataset.getFloats(0x181164);
+            spacing = theDataset.getFloats(Tags.ImagerPixelSpacing);
             if(spacing == null || spacing.length != 2)
                 return 1.0F;
         }
@@ -327,7 +323,7 @@ public class DcmImageReader extends ImageReader
     {
         readMetadata();
         checkIndex(imageIndex);
-        pixelData.resetStream();
+        pdReader.resetStream();
         if(param == null)
             param = getDefaultReadParam();
         Iterator imageTypes = getImageTypes(imageIndex, (DcmImageReadParam)param);
@@ -365,34 +361,34 @@ public class DcmImageReader extends ImageReader
         java.awt.image.DataBuffer db = theTile.getDataBuffer();
         //seek to proper frame (imageIndex parameter)
         for (int i = 0; i < imageIndex; i++)
-            pixelData.skipToNextFrame();
+            pdReader.skipToNextFrame();
         //read samples
         if (dataType == DataBuffer.TYPE_BYTE)
         {
             byte tilebuff[][] = ((DataBufferByte)db).getBankData();
             if(planes == 0) {
-                readSamples(pixelData, samplesPerPixel, tilebuff[0]);
+                readSamples(pdReader, samplesPerPixel, tilebuff[0]);
             }
             else {
                 for(int s = 0; s < samplesPerPixel; s++)
-                    readSamples(pixelData, 1, tilebuff[s]);
+                    readSamples(pdReader, 1, tilebuff[s]);
             }
         }
         else if (dataType == DataBuffer.TYPE_USHORT)
         {
             short tilebuff[][] = ((DataBufferUShort)db).getBankData();
             if(planes == 0) {
-                readSamples(pixelData, samplesPerPixel, tilebuff[0]);
+                readSamples(pdReader, samplesPerPixel, tilebuff[0]);
             }
             else {
                 for(int s = 0; s < samplesPerPixel; s++)
-                    readSamples(pixelData, 1, tilebuff[s]);
+                    readSamples(pdReader, 1, tilebuff[s]);
             }
         }
         return theImage;
     }
 
-    private void readSamples(PixelData pd, final int samples, byte dest[])
+    private void readSamples(PixelDataReader pd, final int samples, byte dest[])
         throws IOException
     {
         final int maxPosMax = totDestHeight * totDestWidth;
@@ -468,7 +464,7 @@ public class DcmImageReader extends ImageReader
         }
     }
 
-    private void readSamples(PixelData pd, final int samples, short dest[])
+    private void readSamples(PixelDataReader pd, final int samples, short dest[])
         throws IOException
     {
         final int maxPosMax = totDestHeight * totDestWidth;
