@@ -70,13 +70,14 @@ import org.dcm4chex.arr.ejb.entity.AuditRecordLocalHome;
  *  value="Hypersonic SQL"
  * 
  * @ejb:resource-ref
- *  res-name="jdbc/DefaultDS"
+ *  res-name="jdbc/DS"
  *  res-type="javax.sql.DataSource"
  *  res-auth="Container"
  * 
  * @jboss:resource-ref 
- *  res-ref-name="jdbc/DefaultDS"
- *  resource-name="java:/DefaultDS"
+ *  res-ref-name="jdbc/DS"
+ *  res-type="javax.sql.DataSource"
+ *  jndi-name="java:/DefaultDS"
  * 
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @author  <a href="mailto:joseph@tiani.com">joseph foraci</a>
@@ -122,7 +123,7 @@ public abstract class QueryAuditRecordBean implements SessionBean {
             Context jndiCtx = new InitialContext();
             home = (AuditRecordLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/AuditRecord");
-            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
+            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DS");
             String envVal = (String) jndiCtx.lookup("java:comp/env/Database");
             database = Arrays.asList(DATABASE).indexOf(envVal);
             if (database == -1) { throw new EJBException(

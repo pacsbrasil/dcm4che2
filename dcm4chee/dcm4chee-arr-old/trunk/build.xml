@@ -5,7 +5,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.8.2"/>
+	<property name="version" value="0.9.2"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
@@ -15,7 +15,7 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your XDoclet bundle dist location -->
-	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.1"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 	<property name="xdoclet.force" value="off"/>	
 	<property name="xdoclet.verbose" value="off"/>	
@@ -132,6 +132,10 @@
     	<copy todir="${basedir}/target/meta-inf-psql">
     		<fileset dir="${basedir}/target/meta-inf-hsql"/>
     	</copy>
+		<replace dir="${basedir}/target/meta-inf-psql"
+					token="DefaultDS"
+					value="MySqlDS"
+		/>
     	<replace file="${basedir}/target/meta-inf-psql/jbosscmp-jdbc.xml">
   			<replacefilter
   				token="Hypersonic SQL"
@@ -140,17 +144,16 @@
   				token="hsqldb-fetch-key"
   				value="postgresql-fetch-seq"/>
 		</replace>
-    	<replace file="${basedir}/target/meta-inf-psql/ejb-jar.xml">
-  			<replacefilter
-  				token="Hypersonic SQL"
-  				value="PostgreSQL 7.2"/>
-		</replace>
     </target>
 
    <target name="meta-inf-mysql" unless="meta-inf-mysql.notRequired">
     	<copy todir="${basedir}/target/meta-inf-mysql">
     		<fileset dir="${basedir}/target/meta-inf-hsql"/>
     	</copy>
+		<replace dir="${basedir}/target/meta-inf-mysql"
+					token="DefaultDS"
+					value="MySqlDS"
+		/>
     	<replace file="${basedir}/target/meta-inf-mysql/jbosscmp-jdbc.xml">
   			<replacefilter
   				token="Hypersonic SQL"
@@ -158,11 +161,6 @@
   			<replacefilter
   				token="hsqldb-fetch-key"
   				value="mysql-get-generated-keys"/>
-		</replace>
-    	<replace file="${basedir}/target/meta-inf-mysql/ejb-jar.xml">
-  			<replacefilter
-  				token="Hypersonic SQL"
-  				value="mySQL"/>
 		</replace>
     </target>
 
@@ -173,6 +171,10 @@
     	<patch
     		patchfile="${basedir}/src/etc/patch/meta-inf-oracle.patch"
     		originalfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
+    	/>
+    	<replace dir="${basedir}/target/meta-inf-oracle"
+  				token="DefaultDS"
+  				value="OracleDS"
     	/>
     	<replace file="${basedir}/target/meta-inf-oracle/ejb-jar.xml">
   			<replacefilter
@@ -189,11 +191,10 @@
     		patchfile="${basedir}/src/etc/patch/meta-inf-db2.patch"
     		originalfile="${basedir}/target/meta-inf-db2/jbosscmp-jdbc.xml"
     	/>
-    	<replace file="${basedir}/target/meta-inf-db2/ejb-jar.xml">
-  			<replacefilter
-  				token="Hypersonic SQL"
-  				value="DB2"/>
-		</replace>
+    	<replace dir="${basedir}/target/meta-inf-db2"
+  				token="DefaultDS"
+  				value="DB2DS"
+    	/>
     </target>
     
 
