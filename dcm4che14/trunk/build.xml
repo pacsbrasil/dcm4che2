@@ -384,9 +384,17 @@
 
     <!-- Build imgdump.jar -->
     <jar jarfile="${build.jars}/demo/imgdump.jar"
-         manifest="${source.demo}/imageio/imgdump.mf"
-         basedir="${build.classes}"
-         includes="ImageDumper.class"/>
+         manifest="${source.demo}/imageio/imgdump.mf">
+      <fileset dir="${source.demo}/imageio">
+        <include name="resources/DcmImageReader.properties"/>
+        <include name="resources/SimpleDcmMetadata.xml"/>
+        <include name="resources/SimpleDcmMetadata.xsl"/>
+      </fileset>
+      <fileset dir="${build.classes}">
+        <include name="ImageDumper.class"/>
+        <include name="de/iftm/dcm4che/imageio/plugins/SimpleDcmMetadataFormat.class"/>
+      </fileset>
+    </jar>
 
     <!-- Build imgflip.jar -->
     <jar jarfile="${build.jars}/demo/imgflip.jar"

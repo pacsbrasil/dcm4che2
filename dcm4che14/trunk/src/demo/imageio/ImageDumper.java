@@ -138,6 +138,14 @@ public class ImageDumper {
             System.out.println("Stream metadata:");
             String nativeFormatName = sm.getNativeMetadataFormatName();
             displayMetadata(sm.getAsTree(nativeFormatName));
+            String[] extraFormatNames = sm.getExtraMetadataFormatNames();
+            if (extraFormatNames != null) {
+                for (int i = 0; i < extraFormatNames.length; ++i) {
+                    System.out.println("Extra Stream metadata - "
+                            + extraFormatNames[i]);
+                    displayMetadata(sm.getAsTree(extraFormatNames[i]));
+                }
+            }   
         }
 
         for (int i = 0; i < numImages; i++) {

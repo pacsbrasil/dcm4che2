@@ -23,8 +23,7 @@
 
 package org.dcm4cheri.imageio.plugins;
 
-import org.dcm4cheri.util.StringUtils;
-
+import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
@@ -39,22 +38,28 @@ import javax.imageio.metadata.IIOMetadataNode;
 
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.DefaultHandler;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.TransformerHandler;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-final class DcmMetadataImpl extends org.dcm4che.imageio.plugins.DcmMetadata {
+final class DcmMetadataImpl extends DcmMetadata {
 
+    static final DcmImageReaderConf conf = DcmImageReaderConf.getInstance();
     private final Dataset ds;
     private TagDictionary dict = 
             DictionaryFactory.getInstance().getDefaultTagDictionary();
             
     /** Creates a new instance of DcmMetadata */
     public DcmMetadataImpl(Dataset ds) {
-        super(false, null, null);
+        super(false,
+            conf.getExtraStreamMetadataFormatNames(),
+            conf.getExtraStreamMetadataFormatClassNames());
         this.ds = ds;
     }
     
@@ -72,22 +77,26 @@ final class DcmMetadataImpl extends org.dcm4che.imageio.plugins.DcmMetadata {
     
     public Node getAsTree(String formatName) {
         if (formatName.equals(nativeMetadataFormatName)) {
-            return getNativeTree();
+            return getTree(formatName, null, null);
         } else if (formatName.equals
                    (IIOMetadataFormatImpl.standardMetadataFormatName)) {
             throw new IllegalArgumentException(
                     IIOMetadataFormatImpl.standardMetadataFormatName
                     + " not supported!");
+        } else if (conf.contains(formatName)) {
+            return getTree(formatName, conf.getFilterDataset(formatName),
+                    conf.getTransformerHandler(formatName));
         } else {
-            throw new IllegalArgumentException("Not a recognized format!");
+            throw new IllegalArgumentException("Not a recognized format: "
+                    + formatName);
         }
     }
     
-    private Node getNativeTree() {
-        final IIOMetadataNode root =
-                new IIOMetadataNode(nativeMetadataFormatName);
+    private Node getTree(String formatName,
+            Dataset filter, TransformerHandler th) {
+        final IIOMetadataNode root = new IIOMetadataNode(formatName);
         
-        DefaultHandler ch = new DefaultHandler() {
+        ContentHandler ch = new DefaultHandler() {
             Node curNode = root;
             public void startElement (String uri, String localName,
                                       String qName, Attributes attr) {
@@ -113,12 +122,16 @@ final class DcmMetadataImpl extends org.dcm4che.imageio.plugins.DcmMetadata {
                 curNode = curNode.getParentNode();
             }
         };
-               	
+        
         try {
-            ds.writeFile(ch, dict);
+            if (th != null) {
+                th.setResult(new SAXResult(ch));
+                ch = th;
+            }
+            ds.subset(filter).writeFile(ch, dict);
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw new RuntimeException("Exception in getNativeTree", ex);
+            throw new RuntimeException("Exception in getTree", ex);
         }
         return root;
     }

@@ -39,38 +39,50 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class DcmImageReaderSpi extends ImageReaderSpi {
 
-    private static final String vendorName = "TIANI MEDGRAPH AG";
+    static final String vendorName = "TIANI MEDGRAPH AG";
 
-    private static final String version = "1.0";
+    static final String version = "1.0";
 
-    private static final String[] names = { "DICOM" };
+    static final String[] names = { "DICOM" };
 
-    private static final String[] suffixes = { "dcm" };
+    static final String[] suffixes = { "dcm" };
 
-    private static final String[] MIMETypes = { "Application/dicom" };
+    static final String[] MIMETypes = { "Application/dicom" };
 
-    private static final String readerClassName =
-        "org.dcm4cheri.imageio.plugins.DcmImageReader";
+    static final String readerClassName =
+            "org.dcm4cheri.imageio.plugins.DcmImageReader";
 
     private static final String[] writerSpiNames = null;
 
+    static final boolean supportsStandardStreamMetadataFormat = false;
+    static final String nativeStreamMetadataFormatName = 
+            org.dcm4che.imageio.plugins.DcmMetadata.nativeMetadataFormatName;
+    static final String nativeStreamMetadataFormatClassName = 
+            "org.dcm4che.imageio.plugins.DcmMetadataFormat";
+    
+    static final DcmImageReaderConf conf = DcmImageReaderConf.getInstance();
+    static final boolean supportsStandardImageMetadataFormat = false;
+    static final String nativeImageMetadataFormatName = null;
+    static final String nativeImageMetadataFormatClassName = null;
+    static final String[] extraImageMetadataFormatNames = null;
+    static final String[] extraImageMetadataFormatClassNames = null;
+
     public DcmImageReaderSpi() {
-        super(vendorName,
-              version,
-              names,
-              suffixes,
-              MIMETypes,
-              readerClassName,
-              STANDARD_INPUT_TYPE,
-              writerSpiNames,
-              false,
-              org.dcm4che.imageio.plugins.DcmMetadata.nativeMetadataFormatName,
-              "org.dcm4che.imageio.plugins.DcmMetadataFormat",
-              null, null,
-              false,
-              null, null,
-              null, null
-              );
+            super(vendorName, version,
+                  names, suffixes, MIMETypes,
+                  readerClassName,
+                  STANDARD_INPUT_TYPE, // Accept ImageInputStreams
+                  writerSpiNames,
+                  supportsStandardStreamMetadataFormat,
+                  nativeStreamMetadataFormatName,
+                  nativeStreamMetadataFormatClassName,
+                  conf.getExtraStreamMetadataFormatNames(),
+                  conf.getExtraStreamMetadataFormatClassNames(),
+                  supportsStandardImageMetadataFormat,
+                  nativeImageMetadataFormatName,
+                  nativeImageMetadataFormatClassName,
+                  extraImageMetadataFormatNames,
+                  extraImageMetadataFormatClassNames);
     }
 
     public String getDescription(Locale locale) {

@@ -161,9 +161,9 @@ public class DcmDir {
     public void list() throws IOException, TransformerConfigurationException {
         SAXTransformerFactory tf =
             (SAXTransformerFactory)TransformerFactory.newInstance();
-        URL url = DcmDir.class.getResource( "/resources/DcmDir.xsl");
-        Templates xslt = tf.newTemplates(
-                    new StreamSource(url.openStream(),url.toExternalForm()));
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        InputStream in = cl.getResourceAsStream( "resources/DcmDir.xsl");
+        Templates xslt = tf.newTemplates(new StreamSource(in));
         DirReader reader = fact.newDirReader(dirFile);
         reader.getFileSetInfo().writeFile(getTransformerHandler(tf, xslt), dict);
         try {            
@@ -223,29 +223,31 @@ public class DcmDir {
             ParserConfigurationException, SAXException {
         DirBuilderPref pref = fact.newDirBuilderPref();
         SAXParser p = SAXParserFactory.newInstance().newSAXParser();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
         pref.setFilterForRecordType("PATIENT",
-                loadDataset(p, "/resources/patient.xml"));
+                loadDataset(cl, "resources/patient.xml", p));
         pref.setFilterForRecordType("STUDY",
-                loadDataset(p, "/resources/study.xml"));
+                loadDataset(cl, "resources/study.xml", p));
         pref.setFilterForRecordType("SERIES",
-                loadDataset(p, "/resources/series.xml"));
+                loadDataset(cl, "resources/series.xml", p));
         pref.setFilterForRecordType("IMAGE",
-                loadDataset(p, "/resources/image.xml"));
+                loadDataset(cl, "resources/image.xml", p));
         pref.setFilterForRecordType("PRESENTATION",
-                loadDataset(p, "/resources/presentation.xml"));
+                loadDataset(cl, "resources/presentation.xml", p));
         pref.setFilterForRecordType("SR DOCUMENT",
-                loadDataset(p, "/resources/sr_document.xml"));
+                loadDataset(cl, "resources/sr_document.xml", p));
         pref.setFilterForRecordType("KEY OBJECT DOC",
-                loadDataset(p, "/resources/key_object_doc.xml"));
+                loadDataset(cl, "resources/key_object_doc.xml", p));
         pref.setFilterForRecordType("WAVEFORM",
-                loadDataset(p, "/resources/waveform.xml"));
+                loadDataset(cl, "resources/waveform.xml", p));
         return pref;
     }
 
-    private Dataset loadDataset(SAXParser p, String res)
+    private Dataset loadDataset(ClassLoader cl, String res, SAXParser p)
             throws IOException, SAXException {
         Dataset ds = objFact.newDataset();
-        InputStream in = DcmDir.class.getResourceAsStream(res);
+        InputStream in = cl.getResourceAsStream(res);
         try {
             p.parse(in, ds.getSAXHandler());
         } finally {

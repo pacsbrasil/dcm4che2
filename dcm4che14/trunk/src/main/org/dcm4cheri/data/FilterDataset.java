@@ -52,14 +52,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     public FilterDataset(Dataset backend) {
         this.backend = backend;
     }
-                
-    public int size() {
-        int count = 0;
-        for (Iterator iter = iterator(); iter.hasNext();)
-            ++count;
-        return count;
-    }
-    
+                    
     protected abstract boolean filter(int tag);
     
     public Iterator iterator() {
@@ -157,15 +150,28 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             this.filter = filter;
         }
 
+        public int size() {
+            if (filter == null) {
+                return backend.size();
+            }
+            int count = 0;
+            for (Iterator iter = iterator(); iter.hasNext();)
+                ++count;
+            return count;
+        }
+        
         protected  boolean filter(int tag) {
-            return filter.contains(tag);
+            return filter == null || filter.contains(tag);
         }
 
         public boolean contains(int tag) {
-            return filter.contains(tag) && backend.contains(tag);
+            return filter(tag) && backend.contains(tag);
         }
 
         public DcmElement get(int tag) {
+            if (filter == null) {
+                return backend.get(tag);
+            }
             DcmElement filterEl = filter.get(tag);
             if (filterEl == null) {
                 return null;
@@ -196,6 +202,18 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             this.toTag = toTag & 0xFFFFFFFFL;
         }
         
+        public int size() {
+            int count = 0;
+            long ltag;
+            for (Iterator iter = backend.iterator(); iter.hasNext();) {
+                ltag = ((DcmElement)iter.next()).tag() & 0xFFFFFFFFL;
+                if (ltag < fromTag) continue;
+                if (ltag > toTag) break;
+                ++count;
+            }
+            return count;
+        }
+
         protected boolean filter(int tag) {
             long ltag = tag & 0xFFFFFFFF;
             return ltag >= fromTag && ltag <= toTag;
