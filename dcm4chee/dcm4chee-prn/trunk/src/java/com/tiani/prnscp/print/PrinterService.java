@@ -203,11 +203,10 @@ public class PrinterService
 
     private boolean decimateByNearestNeighbor;
 
-    private final PrinterCalibration calibration = new PrinterCalibration(log);
+    private final PrinterCalibration calibration = new PrinterCalibration();
     private final ScannerCalibration scanner =
             new ScannerCalibration(log.getCategory());
 
-    private long notifCount = 0;
     private LinkedList highPriorQueue = new LinkedList();
     private LinkedList medPriorQueue = new LinkedList();
     private LinkedList lowPriorQueue = new LinkedList();
@@ -1822,7 +1821,7 @@ public class PrinterService
             log.warn("No scans in directory " + scanDir);
         }
         scanner.setScanDir(scanDir);
-        calibration.setODs(scanner.readODs(scanner.getRefODsFile()));
+        calibration.setPrinterODs(scanner.readODs(scanner.getRefODsFile()));
     }
 
 
@@ -2052,11 +2051,11 @@ public class PrinterService
             log.debug("Calibration uptodate");
             return;
         }
-        log.info("Calibrating " + calledAET + "/" + printerName);
+        log.info("Calibrating Printer: " + calledAET + "/" + printerName);
         float[] ods = scanner.calculateGrayscaleODs();
-        calibration.setODs(ods);
+        calibration.setPrinterODs(ods);
         calibration.setCalibrationTime(scanFileLastModified);
-        String prompt = "Calibrated " + calledAET + "/" + printerName;
+        String prompt = "Calibrated Printer: " + calledAET + "/" + printerName;
         log.info(prompt);
         logActorConfig(prompt, "PrinterCalibration");
         if (backupCalibration) {
@@ -2128,10 +2127,10 @@ public class PrinterService
     {
         try {
             File odFile = scanner.getBackupODsFile();
-            calibration.setODs(scanner.readODs(odFile));
+            calibration.setPrinterODs(scanner.readODs(odFile));
             calibration.setCalibrationTime(odFile.lastModified());
         } catch (IOException e) {
-            log.warn("Initial Calibration failed:", e);
+            log.warn("Initial Calibration failed: " + e);
         }
         scheduler = new Thread(this);
         scheduler.start();

@@ -27,8 +27,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.TMFormat;
 
-import org.jboss.logging.Logger;
-
 /**
  *  <description>
  *
@@ -43,29 +41,23 @@ class PrinterCalibration
     // Attributes ----------------------------------------------------
     private long calibrationTime = 0L;
 
-    private float[] ods = new float[256];
-
-    private final Logger log;
+    private float[] printerODs = new float[256];
 
     // Static --------------------------------------------------------
 
     // Constructors --------------------------------------------------
-    PrinterCalibration(Logger log)
-    {
-        this.log = log;
-    }
 
     // Public --------------------------------------------------------
 
     /**
-     *  Description of the Method
+     *  Returns Device Driving Level to print specified Optical Density
      *
-     * @param  density  Description of the Parameter
-     * @return          Description of the Return Value
+     * @param  od  Optical Density to print
+     * @return     corresponding Device Driving Level
      */
-    public int toDDL(float density)
+    public int toDDL(float od)
     {
-        int i = Arrays.binarySearch(ods, density);
+        int i = Arrays.binarySearch(printerODs, od);
         if (i >= 0) {
             return 255 - i;
         }
@@ -76,18 +68,34 @@ class PrinterCalibration
         if (i > 255) {
             return 0;
         }
-        float diff1 = ods[i] - density;
-        float diff2 = density - ods[i - 1];
+        float diff1 = printerODs[i] - od;
+        float diff2 = od - printerODs[i - 1];
         return 255 - (diff1 < diff2 ? i : i - 1);
     }
 
 
     /**
-     *  Gets the identityPValToDDL attribute of the PrinterCalibration object
+     *  Returns Device Driving Levels to print specified Optical Density values
      *
-     * @return    The identityPValToDDL value
+     * @param  od  Optical Density values
+     * @return     corresponding Device Driving Levels
      */
-    public byte[] getIdentityPValToDDL()
+    public byte[] toDDL(float[] od)
+    {
+        byte[] ddl = new byte[od.length];
+        for (int pv = 0; pv < ddl.length; ++pv) {
+            ddl[pv] = (byte) toDDL(od[pv]);
+        }
+        return ddl;
+    }
+
+
+    /**
+     *  Returns Identity function
+     *
+     * @return    Identity function
+     */
+    public static byte[] getIdentityPValToDDL()
     {
         byte[] lut = new byte[256];
         for (int i = 0; i < 256; ++i) {
@@ -98,41 +106,85 @@ class PrinterCalibration
 
 
     /**
-     *  Gets the pValToDDLwLinOD attribute of the PrinterCalibration object
+     *  Returns Device Driving Levels for P-Values interpreted as
+     *  normalized density values for given density range.
      *
-     * @param  n     Description of the Parameter
-     * @param  dmin  Description of the Parameter
-     * @param  dmax  Description of the Parameter
-     * @return       The pValToDDLwLinOD value
+     * @param  n     p-value bit size
+     * @param  dmin  minimal optical density
+     * @param  dmax  maximum optical density
+     * @return       Device Driving Levels for P-Values
      */
     public byte[] getPValToDDLwLinOD(int n, float dmin, float dmax)
     {
-        check(n, dmin, dmax);
-        byte[] lut = new byte[1 << n];
-        for (int p = 0; p < lut.length; ++p) {
-            lut[p] = (byte) toDDL(dmin + (dmax - dmin) * p / ((1 << n) - 1));
-        }
-//        if (log.isDebugEnabled()) {
-//            logLut("PValToDDLwLinOD[dmin=" + dmin + ", dmax=" + dmax + "]:", lut);
-//        }
-        return lut;
+        return toDDL(getPValToLinOD(n, dmin, dmax));
     }
 
 
     /**
-     *  Gets the pValToDDLwGSDF attribute of the PrinterCalibration object
+     *  Returns Linear Optical Densities for given density range.
      *
-     * @param  n     Description of the Parameter
-     * @param  dmin  Description of the Parameter
-     * @param  dmax  Description of the Parameter
-     * @param  l0    Description of the Parameter
-     * @param  la    Description of the Parameter
-     * @return       The pValToDDLwGSDF value
+     * @param  n     p-value bit size
+     * @param  dmin  minimal optical density
+     * @param  dmax  maximum optical density
+     * @return       Optical Densities for P-Values
+     */
+    public static float[] getPValToLinOD(int n, float dmin, float dmax)
+    {
+        if (n < 8 || n > 16) {
+            throw new IllegalArgumentException("n: " + n);
+        }
+        if (dmin > dmax) {
+            throw new IllegalArgumentException("dmin: " + dmin + ", dmax: " + dmax);
+        }
+        float[] od = new float[1 << n];
+        final int pvmax = od.length - 1;
+        for (int pv = 0; pv < od.length; ++pv) {
+            od[pv] = dmin + (dmax - dmin) * pv / pvmax;
+        }
+        return od;
+    }
+
+
+
+    /**
+     *  Returns Device Driving Levels for P-Values according DICOM GSDF
+     *  for given density range and illumination conditions.
+     *
+     * @param  n     p-value bit size
+     * @param  dmin  minimal optical density
+     * @param  dmax  maximum optical density
+     * @param  l0    illumination in cd/m*m
+     * @param  la    reflected ambient light in cd/m*m
+     * @return       Device Driving Levels for P-Values
      */
     public byte[] getPValToDDLwGSDF(int n, float dmin, float dmax,
             float l0, float la)
     {
-        check(n, dmin, dmax);
+        return toDDL(getPValToGsdfOD(n, dmin, dmax, l0, la));
+    }
+
+
+    /**
+     *  Returns Optical Densities for P-Values according DICOM GSDF
+     *  for given density range and illumination conditions.
+     *
+     * @param  n     p-value bit size
+     * @param  dmin  minimal optical density
+     * @param  dmax  maximum optical density
+     * @param  l0    illumination in cd/m*m
+     * @param  la    reflected ambient light in cd/m*m
+     * @return       Optical Densities for P-Values
+     */
+    public static float[] getPValToGsdfOD(int n, float dmin, float dmax,
+            float l0, float la)
+    {
+        if (n < 8 || n > 16) {
+            throw new IllegalArgumentException("n: " + n);
+        }
+        if (dmin > dmax) {
+            throw new IllegalArgumentException(
+                    "dmin: " + dmin + ", dmax: " + dmax);
+        }
         if (l0 < 50 || l0 > 3000) {
             throw new IllegalArgumentException("l0: " + l0);
         }
@@ -141,40 +193,26 @@ class PrinterCalibration
         }
         double jmin = inverseGSDF(lum(dmax, l0, la));
         double jmax = inverseGSDF(lum(dmin, l0, la));
-        byte[] lut = new byte[1 << n];
-        for (int pv = 0; pv < lut.length; ++pv) {
-            lut[pv] = (byte) toDDL((float) density(pv, n, jmin, jmax, l0, la));
+        float[] od = new float[1 << n];
+        final int pvmax = od.length - 1;
+        for (int pv = 0; pv < od.length; ++pv) {
+            od[pv] = (float) density(pv, pvmax, jmin, jmax, l0, la);
         }
-//        if (log.isDebugEnabled()) {
-//            logLut("PValToDDLwGSDF[dmin=" + dmin + ", dmax=" + dmax
-//                     + ", L0=" + l0 + ", La=" + la + "]:", lut);
-//        }
-        return lut;
+        return od;
     }
 
-/*
-    private void logLut(String prompt, byte[] lut)
-    {
-        StringBuffer sb = new StringBuffer(prompt);
-        for (int i = lut.length; --i >= 0; ) {
-            int ddl = lut[i] & 0xff;
-            sb.append("\n\tpv=").append(i).append("\tddl=")
-                    .append(ddl).append("\tod=").append(ods[255 - ddl]);
-        }
-        log.debug(sb.toString());
-    }
-*/
 
     /**
-     *  Gets the pValToDDL attribute of the PrinterCalibration object
+     *  Returns Optical Densities for P-Values evaluating the given
+     *  Presentation LUT, the density range and illumination conditions.
      *
-     * @param  n     Description of the Parameter
-     * @param  dmin  Description of the Parameter
-     * @param  dmax  Description of the Parameter
-     * @param  l0    Description of the Parameter
-     * @param  la    Description of the Parameter
-     * @param  plut  Description of the Parameter
-     * @return       The pValToDDL value
+     * @param  n     p-value bit size
+     * @param  dmin  minimal optical density
+     * @param  dmax  maximum optical density
+     * @param  l0    illumination in cd/m*m
+     * @param  la    reflected ambient light in cd/m*m
+     * @param  plut  Presentation LUT
+     * @return       Device Driving Levels for P-Values
      */
     public byte[] getPValToDDL(int n, float dmin, float dmax,
             float l0, float la, Dataset plut)
@@ -224,22 +262,22 @@ class PrinterCalibration
 
 
     /**
-     *  Sets the oDs attribute of the PrinterCalibration object
+     *  Sets Optical Density values for Device Driving Levels of the printer.
      *
-     * @param  newODs  The new oDs value
+     * @param  ods  Optical Density values for 256 DDLs
      */
-    public void setODs(float[] newODs)
+    public void setPrinterODs(float[] ods)
     {
-        if (newODs.length != 256) {
-            throw new IllegalArgumentException("newODs.length:" + newODs.length);
+        if (ods.length != 256) {
+            throw new IllegalArgumentException("ods.length:" + ods.length);
         }
         // ensure monoton increasing
         int iMax = 0;
         int iMin = 0;
-        float max = newODs[0];
-        float min = newODs[0];
+        float max = ods[0];
+        float min = ods[0];
         for (int i = 1; i < 256; ++i) {
-            final float od = newODs[i];
+            final float od = ods[i];
             if (od < min) {
                 iMin = i;
                 min = od;
@@ -252,10 +290,10 @@ class PrinterCalibration
         if (iMin >= iMax) {
             throw new IllegalArgumentException("iMin:" + iMin + ", iMax:" + iMax);
         }
-        System.arraycopy(newODs, iMin, ods, iMin, iMax - iMin);
-        Arrays.fill(ods, 0, iMin, min);
-        Arrays.fill(ods, iMax, 256, max);
-        Arrays.sort(ods, iMin, iMax);
+        System.arraycopy(ods, iMin, printerODs, iMin, iMax - iMin);
+        Arrays.fill(printerODs, 0, iMin, min);
+        Arrays.fill(printerODs, iMax, 256, max);
+        Arrays.sort(printerODs, iMin, iMax);
     }
 
 
@@ -266,10 +304,10 @@ class PrinterCalibration
      */
     public int getMinDensity()
     {
-        if (ods == null) {
-            throw new IllegalStateException("ODs not yet iitialized");
+        if (printerODs == null) {
+            throw new IllegalStateException("Printer ODs not yet iitialized");
         }
-        return (int) (ods[0] * 100);
+        return (int) (printerODs[0] * 100);
     }
 
 
@@ -280,10 +318,10 @@ class PrinterCalibration
      */
     public int getMaxDensity()
     {
-        if (ods == null) {
-            throw new IllegalStateException("ODs not yet iitialized");
+        if (printerODs == null) {
+            throw new IllegalStateException("Printer ODs not yet iitialized");
         }
-        return (int) (ods[ods.length - 1] * 100);
+        return (int) (printerODs[printerODs.length - 1] * 100);
     }
 
 
@@ -330,34 +368,18 @@ class PrinterCalibration
         return new TMFormat().format(new Date(calibrationTime));
     }
 
-
-    // Package protected ---------------------------------------------
-
-    // Protected -----------------------------------------------------
-
     // Private -------------------------------------------------------
 
-    private void check(int n, float dmin, float dmax)
-    {
-        if (n < 8 || n > 16) {
-            throw new IllegalArgumentException("n: " + n);
-        }
-        if (dmin > dmax) {
-            throw new IllegalArgumentException("dmin: " + dmin + ", dmax: " + dmax);
-        }
-    }
-
-
-    private double lum(double density, float l0, float la)
+    private static double lum(double density, float l0, float la)
     {
         return la + l0 * Math.pow(10, -density);
     }
 
 
-    private double density(int pv, int n, double jmin, double jmax,
+    private static double density(int pv, int pvmax, double jmin, double jmax,
             float l0, float la)
     {
-        double j = jmin + (jmax - jmin) * pv / ((1 << n) - 1);
+        double j = jmin + (jmax - jmin) * pv / pvmax;
         return -Math.log((gsdf(j) - la) / l0) / LOG10;
     }
 
@@ -374,7 +396,7 @@ class PrinterCalibration
     private final static double B5 = 1.2992634E-4;
 
 
-    private double gsdf(double j)
+    private static double gsdf(double j)
     {
         double lnj = Math.log(j);
         double lnj2 = lnj * lnj;
@@ -398,7 +420,7 @@ class PrinterCalibration
     private final static double LOG10 = Math.log(10);
 
 
-    private double inverseGSDF(double l)
+    private static double inverseGSDF(double l)
     {
         double log10L = Math.log(l) / LOG10;
         double log10L2 = log10L * log10L;
@@ -411,6 +433,5 @@ class PrinterCalibration
         return C0 + C1 * log10L + C2 * log10L2 + C3 * log10L3 + C4 * log10L4
                  + C5 * log10L5 + C6 * log10L6 + C7 * log10L7 + C8 * log10L8;
     }
-    // Inner classes -------------------------------------------------
 }
 
