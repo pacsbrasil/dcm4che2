@@ -27,6 +27,7 @@ import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.FileUtils;
 import org.dcm4chex.cdw.common.JMSDelegate;
+import org.dcm4chex.cdw.common.LabelPrintDelegate;
 import org.dcm4chex.cdw.common.MediaCreationException;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
 import org.jboss.system.server.ServerConfigLocator;
@@ -53,6 +54,8 @@ public class NeroCmdService extends AbstractMediaWriterService {
 
     private boolean autoLoad = false;
 
+    private boolean appendEnabled = false;
+
     private boolean closeSession = true;
 
     private boolean simulate = false;
@@ -64,7 +67,7 @@ public class NeroCmdService extends AbstractMediaWriterService {
     private int retryInterval = 60;
 
     private boolean verify = false;
-
+    
     private boolean logEnabled = false;
 
     private int pauseTime = 10;
@@ -73,7 +76,7 @@ public class NeroCmdService extends AbstractMediaWriterService {
 
     private final File logFile;
 
-    protected ObjectName labelPrintName;
+    private final LabelPrintDelegate labelPrint = new LabelPrintDelegate(this);
 
     public NeroCmdService() {
         File homedir = ServerConfigLocator.locate().getServerHomeDir();
@@ -81,11 +84,11 @@ public class NeroCmdService extends AbstractMediaWriterService {
     }
 
     public final ObjectName getLabelPrintName() {
-        return labelPrintName;
+        return labelPrint.getLabelPrintName();
     }
 
     public final void setLabelPrintName(ObjectName labelPrintName) {
-        this.labelPrintName = labelPrintName;
+        labelPrint.setLabelPrintName(labelPrintName);
     }
 
     public final String getDriveLetter() {
@@ -135,6 +138,22 @@ public class NeroCmdService extends AbstractMediaWriterService {
         this.verify = verify;
     }
 
+    public String getKeepLabelFiles() {
+        return labelPrint.getKeepLabelFiles();
+    }
+
+    public void setKeepLabelFiles(String s) {
+        labelPrint.setKeepLabelFiles(s);
+    }
+
+    public boolean isPrintLabel() {
+        return labelPrint.isPrintLabel();
+    }
+
+    public void setPrintLabel(boolean printLabel) {
+        labelPrint.setPrintLabel(printLabel);
+    }
+    
     public final int getPauseTime() {
         return pauseTime;
     }
@@ -143,6 +162,14 @@ public class NeroCmdService extends AbstractMediaWriterService {
         if (pauseTime < 0)
                 throw new IllegalArgumentException("pauseTime: " + pauseTime);
         this.pauseTime = pauseTime;
+    }
+
+    public final boolean isAppendEnabled() {
+        return appendEnabled;
+    }
+
+    public final void setAppendEnabled(boolean appendEnabled) {
+        this.appendEnabled = appendEnabled;
     }
 
     public final boolean isCloseSession() {
@@ -226,7 +253,7 @@ public class NeroCmdService extends AbstractMediaWriterService {
                 retry(rq, attrs, "No or Wrong Media");
                 return;
             }
-            if (hasTOC()) {
+            if (!appendEnabled && hasTOC()) {
                 eject();
                 retry(rq, attrs, "Media not empty");
                 return;
@@ -249,11 +276,13 @@ public class NeroCmdService extends AbstractMediaWriterService {
                     log.info("Verified " + rq);
                     if (eject) eject();
                 }
-                if (rq.getLabelFile() != null) printLabel(rq);
             } catch (MediaCreationException e) {
                 eject();
                 throw e;
             }
+            
+            labelPrint.print(rq);
+            
             if (rq.isCanceled()) {
                 log.info("" + rq + " was canceled");
                 return;
@@ -298,19 +327,6 @@ public class NeroCmdService extends AbstractMediaWriterService {
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     "Verification failed:", e);
-        }
-    }
-
-    private void printLabel(MediaCreationRequest rq)
-            throws MediaCreationException {
-        try {
-            server.invoke(labelPrintName,
-                    "print",
-                    new Object[] { rq},
-                    new String[] { MediaCreationRequest.class.getName()});
-        } catch (Exception e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
         }
     }
 

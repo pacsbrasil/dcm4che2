@@ -47,6 +47,8 @@ public class SpoolDirDelegate {
 
     private static final String GET_INSTANCE_FILE = "getInstanceFile";
 
+    private static final String GET_LABEL_FILE = "getLabelFile";
+
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private final ServiceMBeanSupport service;
@@ -88,8 +90,20 @@ public class SpoolDirDelegate {
         }
     }
 
+    public File getLabelFile(String iuid, String format) {
+        try {
+            return (File) service.getServer().invoke(spoolDirName,
+                    GET_LABEL_FILE,
+                    new Object[] { iuid, format},
+                    new String[] { String.class.getName(),
+                            String.class.getName()});
+        } catch (JMException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
     public void deleteRefInstances(Dataset rq) {
-        if (Flag.isYes(rq
+        if (Flag.isYES(rq
                 .getString(Tags.PreserveCompositeInstancesAfterMediaCreation)))
                 return;
         DcmElement refSOPs = rq.get(Tags.RefSOPSeq);

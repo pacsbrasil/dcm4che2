@@ -51,6 +51,8 @@ public class MediaCreationRequest implements Serializable {
     private int volsetSize = 1;
 
     private int retries = 0;
+    
+    private boolean keepLabelFile = false;
 
     public MediaCreationRequest(File requestFile) {
         this.requestFile = requestFile;
@@ -70,6 +72,7 @@ public class MediaCreationRequest implements Serializable {
         this.volsetSeqno = other.volsetSeqno;
         this.volsetSize = other.volsetSize;
         this.retries = other.retries;
+        this.keepLabelFile = other.keepLabelFile;
     }
 
     public final File getDicomDirFile() {
@@ -109,6 +112,10 @@ public class MediaCreationRequest implements Serializable {
 
     public final void setPriority(String priority) {
         this.priority = priority;
+    }
+
+    public final String getFilesetUID() {
+        return filesetDir != null ? filesetDir.getName() : null;
     }
 
     public final String getFilesetID() {
@@ -179,15 +186,23 @@ public class MediaCreationRequest implements Serializable {
         this.retries = retries;
     }
 
+    public final boolean isKeepLabelFile() {
+        return keepLabelFile;
+    }
+    
+    public final void setKeepLabelFile(boolean keepLabelFile) {
+        this.keepLabelFile = keepLabelFile;
+    }
+    
     public final boolean isCanceled() {
         return !requestFile.exists();
     }
 
     public String toString() {
-        return "MCRQ@" + mediaWriterName
-                + "[" + requestFile.getName() + "]-Disk#" + volsetSeqno
+        return "MCRQ[" + requestFile.getName() + "]-Disk#" + volsetSeqno
                 + "/" + volsetSize + "[" + filesetID + "/"
-                + (filesetDir == null ? "" : filesetDir.getName()) + "]";
+                + (filesetDir == null ? "" : filesetDir.getName()) 
+                + "]@" + mediaWriterName;
     }
 
     public Dataset readAttributes(Logger log) throws IOException {
@@ -208,7 +223,7 @@ public class MediaCreationRequest implements Serializable {
 
     public boolean cleanFiles(SpoolDirDelegate spoolDir) {
         boolean retval = true;
-        if (labelFile != null && labelFile.exists())
+        if (!keepLabelFile && labelFile != null && labelFile.exists())
                 retval = spoolDir.delete(labelFile);
         if (isoImageFile != null && isoImageFile.exists())
                 retval = spoolDir.delete(isoImageFile) && retval;

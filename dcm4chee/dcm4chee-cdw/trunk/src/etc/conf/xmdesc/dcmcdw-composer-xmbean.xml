@@ -39,12 +39,12 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getCreateLabel"
-      setMethod="setCreateLabel">
-      <description>Controls creation of Media Label file.
-      Enumerated Values: NO|PS|PDF.
+      getMethod="getLabelFileFormat"
+      setMethod="setLabelFileFormat">
+      <description>Defines Format of created Label file. 
+      NO(=no Label File), PDF or PS(=Postscript).
       </description>
-      <name>CreateLabel</name>
+      <name>LableFileFormat</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="NO" />

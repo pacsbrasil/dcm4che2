@@ -9,7 +9,6 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,13 +31,15 @@ import org.dcm4chex.cdw.common.MediaCreationRequest;
  */
 class LabelCreator {
 
+    private static final String NO = "NO";
+
+    private static final String PS = "PS";
+
+    private static final String PDF = "PDF";
+
     private final Driver fop = new Driver();
 
-    private boolean active = false;
-
-    private int renderer;
-
-    private String ext;
+    private int renderer = 0;
 
     private final Logger log = Logger.getLogger(LabelCreator.class);
 
@@ -50,33 +51,33 @@ class LabelCreator {
     }
 
     public final boolean isActive() {
-        return active;
-    }
-    public final String getCreateLabel() {
-        return active ? (renderer == Driver.RENDER_PS ? "PS" : "PDF") : "NO";
+        return renderer > 0;
     }
 
-    public final void setCreateLabel(String format) {
-        if ("PS".equalsIgnoreCase(format)) {
+    public final String getLabelFileFormat() {
+        switch (renderer) {
+        case Driver.RENDER_PDF:
+            return PDF;
+        case Driver.RENDER_PS:
+            return PS;
+        default:
+            return NO;
+        }
+    }
+
+    public final void setLabelFileFormat(String format) {
+        if (PS.equalsIgnoreCase(format)) {
             fop.setRenderer(renderer = Driver.RENDER_PS);
-            ext = ".ps";
-            active = true;
-        } else if ("PDF".equalsIgnoreCase(format)) {
+        } else if (PDF.equalsIgnoreCase(format)) {
             fop.setRenderer(renderer = Driver.RENDER_PDF);
-            ext = ".pdf";
-            active = true;
         } else {
-            active = false;
+            renderer = 0;
         }
     }
 
     public void createLabel(MediaCreationRequest rq, DicomDirDOM dom)
             throws MediaCreationException {
-        if (!active) return;
-        File f = new File(rq.getFilesetDir().getParent(), rq
-                .getFilesetDir().getName()
-                + ext);
-        rq.setLabelFile(f);
+        if (renderer == 0) return;
         OutputStream out;
         try {
             out = new BufferedOutputStream(new FileOutputStream(rq

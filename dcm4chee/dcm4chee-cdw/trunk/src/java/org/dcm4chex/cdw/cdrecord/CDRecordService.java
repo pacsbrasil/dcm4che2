@@ -28,6 +28,7 @@ import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.FileUtils;
 import org.dcm4chex.cdw.common.JMSDelegate;
+import org.dcm4chex.cdw.common.LabelPrintDelegate;
 import org.dcm4chex.cdw.common.MediaCreationException;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
 import org.jboss.system.server.ServerConfigLocator;
@@ -93,7 +94,7 @@ public class CDRecordService extends AbstractMediaWriterService {
     private boolean appendEnabled = false;
 
     private boolean multiSession = false;
-    
+
     private boolean padding = false;
 
     private boolean simulate = false;
@@ -113,12 +114,12 @@ public class CDRecordService extends AbstractMediaWriterService {
     private int graceTime = MIN_GRACE_TIME;
 
     private int mountTime = 10;
-    
+
     private int pauseTime = 10;
 
     private final File logFile;
 
-    protected ObjectName labelPrintName;
+    private final LabelPrintDelegate labelPrint = new LabelPrintDelegate(this);
 
     public CDRecordService() {
         File homedir = ServerConfigLocator.locate().getServerHomeDir();
@@ -126,11 +127,11 @@ public class CDRecordService extends AbstractMediaWriterService {
     }
 
     public final ObjectName getLabelPrintName() {
-        return labelPrintName;
+        return labelPrint.getLabelPrintName();
     }
 
     public final void setLabelPrintName(ObjectName labelPrintName) {
-        this.labelPrintName = labelPrintName;
+        labelPrint.setLabelPrintName(labelPrintName);
     }
 
     public final String getDriveLetterOrMountDirectory() {
@@ -176,6 +177,22 @@ public class CDRecordService extends AbstractMediaWriterService {
         this.verify = verify;
     }
 
+    public String getKeepLabelFiles() {
+        return labelPrint.getKeepLabelFiles();
+    }
+
+    public void setKeepLabelFiles(String s) {
+        labelPrint.setKeepLabelFiles(s);
+    }
+
+    public boolean isPrintLabel() {
+        return labelPrint.isPrintLabel();
+    }
+
+    public void setPrintLabel(boolean printLabel) {
+        labelPrint.setPrintLabel(printLabel);
+    }
+
     public final int getGraceTime() {
         return graceTime;
     }
@@ -193,7 +210,7 @@ public class CDRecordService extends AbstractMediaWriterService {
     public final void setMountTime(int mountTime) {
         this.mountTime = mountTime;
     }
-    
+
     public final int getPauseTime() {
         return pauseTime;
     }
@@ -215,15 +232,19 @@ public class CDRecordService extends AbstractMediaWriterService {
     public final boolean isAppendEnabled() {
         return appendEnabled;
     }
+
     public final void setAppendEnabled(boolean appendEnabled) {
         this.appendEnabled = appendEnabled;
     }
+
     public final boolean isMultiSession() {
         return multiSession;
     }
+
     public final void setMultiSession(boolean multiSession) {
         this.multiSession = multiSession;
     }
+
     public final boolean isSimulate() {
         return simulate;
     }
@@ -317,35 +338,37 @@ public class CDRecordService extends AbstractMediaWriterService {
                 burn(rq.getIsoImageFile());
                 log.info("Burned " + rq);
                 if (verify) {
-                    if (!hasTOC()) // load media
-                        throw new MediaCreationException(
-                                ExecutionStatusInfo.PROC_FAILURE, "Verification failed!");
+                    if (!hasTOC())
+                            // load media
+                            throw new MediaCreationException(
+                                    ExecutionStatusInfo.PROC_FAILURE,
+                                    "Verification failed!");
                     if (!mount) { // On Windows wait for automount
-	                    if (mountTime > 0) {
-	                        try {
-	                            Thread.sleep(mountTime * 1000L);
-	                        } catch (InterruptedException e) {
-	                            log.warn("Mount Time was interrupted:", e);
-	                        }
-	                    }
+                        if (mountTime > 0) {
+                            try {
+                                Thread.sleep(mountTime * 1000L);
+                            } catch (InterruptedException e) {
+                                log.warn("Mount Time was interrupted:", e);
+                            }
+                        }
                     } else {
                         mount();
                     }
                     try {
-	                    log.info("Verifying " + rq);
-	                    verify(rq.getFilesetDir());
-	                    log.info("Verified " + rq);
+                        log.info("Verifying " + rq);
+                        verify(rq.getFilesetDir());
+                        log.info("Verified " + rq);
                     } finally {
-                        if (mount)
-                            umount();
+                        if (mount) umount();
                     }
                     if (eject) eject();
                 }
-                if (rq.getLabelFile() != null) printLabel(rq);
             } catch (MediaCreationException e) {
                 eject();
                 throw e;
             }
+
+            labelPrint.print(rq);
 
             if (rq.isCanceled()) {
                 log.info("" + rq + " was canceled");
@@ -374,11 +397,13 @@ public class CDRecordService extends AbstractMediaWriterService {
                 ExecutionStatusInfo.OUT_OF_SUPPLIES);
         rq.writeAttributes(attrs, log);
         try {
-            JMSDelegate.getInstance(rq.getMediaWriterName()).queue(log, rq,
+            JMSDelegate.getInstance(rq.getMediaWriterName()).queue(log,
+                    rq,
                     System.currentTimeMillis() + retryInterval * 1000L);
         } catch (JMSException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE, e);
-        }        
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    e);
+        }
     }
 
     private void verify(File fsDir) throws MediaCreationException {
@@ -388,19 +413,6 @@ public class CDRecordService extends AbstractMediaWriterService {
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     "Verification failed:", e);
-        }
-    }
-
-    private void printLabel(MediaCreationRequest rq)
-            throws MediaCreationException {
-        try {
-            server.invoke(labelPrintName,
-                    "print",
-                    new Object[] { rq},
-                    new String[] { MediaCreationRequest.class.getName()});
-        } catch (Exception e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
         }
     }
 

@@ -168,10 +168,10 @@ class FilesetBuilder {
         this.reader = service.getImageReader();
         this.rq = rq;
         this.attrs = attrs;
-        this.preserveInstances = Flag.isYes(attrs
+        this.preserveInstances = Flag.isYES(attrs
                 .getString(Tags.PreserveCompositeInstancesAfterMediaCreation))
                 && !service.isArchiveHighWater();
-        this.viewer = Flag.isYes(attrs
+        this.viewer = Flag.isYES(attrs
                 .getString(Tags.IncludeDisplayApplication));
         this.nonDICOM = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
         this.web = service.includeWeb(nonDICOM);

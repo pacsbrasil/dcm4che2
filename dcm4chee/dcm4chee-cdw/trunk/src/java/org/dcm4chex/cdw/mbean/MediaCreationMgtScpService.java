@@ -387,7 +387,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     }
 
     private void disableMediaSplitting(Dataset ds, Command rspCmd) {
-        if (Flag.isYes(ds.getString(Tags.AllowMediaSplitting))) {
+        if (Flag.isYES(ds.getString(Tags.AllowMediaSplitting))) {
             rspCmd.putUS(Tags.Status, Status.AttributeValueOutOfRange);
             rspCmd.putLO(Tags.ErrorComment, ""
                     + ds.get(Tags.AllowMediaSplitting));
@@ -571,16 +571,15 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
         Dataset mcrq = dof.newDataset();
         log.info("M-READ " + f);
-        for (int retry = 0;; ++retry) {
+        IOException error = null;
+        for (int retry = 0; retry <= maxReadRequestRetries; ++retry) {
             try {
                 mcrq.readFile(f, FileFormat.DICOM_FILE, -1);
-                break;
+                final int[] filter = rqCmd.getTags(Tags.AttributeIdentifierList);
+                return filter != null ? mcrq.subSet(filter) : mcrq;
             } catch (IOException e) {
-                if (retry > maxReadRequestRetries) {
-                    log.error("M-READ " + f + " finally failed:", e);
-                    throw new DcmServiceException(Status.ProcessingFailure, e);
-                }
-                log.warn("M-READ " + f + " failed - retry");
+                error = e;
+                log.warn("M-READ " + f + " failed");
                 try {
                     Thread.sleep(readRequestRetryInterval);
                 } catch (InterruptedException e1) {
@@ -588,7 +587,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 }
             }
         }
-        final int[] filter = rqCmd.getTags(Tags.AttributeIdentifierList);
-        return filter != null ? mcrq.subSet(filter) : mcrq;
+        log.error("Give up attemps to read " + f, error);
+        throw new DcmServiceException(Status.ProcessingFailure, error);
     }
 }

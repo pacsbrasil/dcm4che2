@@ -3,7 +3,7 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 
-    <property name="version" value="0.9"/>
+    <property name="version" value="0.9.1"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
 
     <!-- Override with your JBoss server bundle dist location -->
@@ -115,6 +115,7 @@
 				<include name="bin/fop.bat"/>
 				<include name="bin/xalan.sh"/>
 				<include name="bin/xalan.bat"/>
+				<include name="bin/acrobat.bat"/>
    			</zipfileset>	
 			<zipfileset dir="${src.etc}" prefix="${dist.standalone}">
 				<include name="bin/fopcfg.xml"/>

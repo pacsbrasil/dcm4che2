@@ -277,12 +277,12 @@ public class MediaComposerService extends ServiceMBeanSupport {
         this.jpegWidth = jpegWidth;
     }
 
-    public String getCreateLabel() {
-        return labelCreator.getCreateLabel();
+    public String getLabelFileFormat() {
+        return labelCreator.getLabelFileFormat();
     }
 
-    public void setCreateLabel(String format) {
-        labelCreator.setCreateLabel(format);
+    public void setLabelFileFormat(String format) {
+        labelCreator.setLabelFileFormat(format);
     }
 
     public final boolean isMakeIsoImage() {
@@ -399,18 +399,16 @@ public class MediaComposerService extends ServiceMBeanSupport {
         dom.createIndex(rq);
         builder.createMd5Sums(rq);
         if (labelCreator.isActive()) {
-            try {
-                labelCreator.createLabel(rq, dom);
-            } finally {
-                spoolDir.register(rq.getLabelFile());
-            }
+            File f = spoolDir.getLabelFile(rq.getFilesetUID(), labelCreator.getLabelFileFormat());
+            rq.setLabelFile(f);
+            labelCreator.createLabel(rq, dom);
         }
     }
 
     private List splitMedia(MediaCreationRequest rq, Dataset attrs,
             FilesetBuilder builder, DicomDirDOM dom, final long fsSize)
             throws MediaCreationException, IOException {
-        if (!Flag.isYes(attrs.getString(Tags.AllowMediaSplitting))) { throw new MediaCreationException(
+        if (!Flag.isYES(attrs.getString(Tags.AllowMediaSplitting))) { throw new MediaCreationException(
                 ExecutionStatusInfo.SET_OVERSIZED, "File-set size: "
                         + FileUtils.formatSize(fsSize)
                         + " exceeds Media Capacity: "

@@ -34,7 +34,6 @@ import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.PrintQuality;
 
 import org.dcm4chex.cdw.common.Executer;
-import org.dcm4chex.cdw.common.MediaCreationRequest;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -47,7 +46,8 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     private static final String[] chromaticityStringTable = { "monochrome",
             "color"};
 
-    private static final List chromaticityStringList = Arrays.asList(chromaticityStringTable);
+    private static final List chromaticityStringList = Arrays
+            .asList(chromaticityStringTable);
 
     private static final Chromaticity[] chromaticityValueTable = {
             Chromaticity.MONOCHROME, Chromaticity.COLOR};
@@ -113,8 +113,9 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     private static final String[] printQualityStringTable = { "draft",
             "normal", "high"};
 
-    private static final List printQualityStringList = Arrays.asList(printQualityStringTable);
-    
+    private static final List printQualityStringList = Arrays
+            .asList(printQualityStringTable);
+
     private static final PrintQuality[] printQualityValueTable = {
             PrintQuality.DRAFT, PrintQuality.NORMAL, PrintQuality.HIGH};
 
@@ -122,14 +123,15 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
         return attr != null ? attr.toString() : "*";
     }
 
-    private static Attribute toAttribute(String s, List stringList, Attribute[] valueTable) {
+    private static Attribute toAttribute(String s, List stringList,
+            Attribute[] valueTable) {
         try {
             return "*".equals(s) ? null : valueTable[stringList.indexOf(s)];
         } catch (IndexOutOfBoundsException e) {
             throw new IllegalArgumentException(s);
         }
     }
-    
+
     private String printerName = null;
 
     private Chromaticity chromaticity = null;
@@ -137,34 +139,42 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     private Media media = null;
 
     private PrintQuality printQuality = null;
-    
+
     private boolean useExternalPrintUtility = false;
-    
-    private String printUtilityCommandLine = "acroread /t/h/p %s";
+
+    private String extPrintCmdPrefix = "acroread.bat";
+
+    private String extPrintCmdSuffix = "";
 
     private int labelFileAvailabilityTime = 10;
-        
+
     public final String getPrintUtilityCommandLine() {
-        return printUtilityCommandLine;
+        return extPrintCmdPrefix + " %s " + extPrintCmdSuffix;
     }
-    
-    public final void setPrintUtilityCommandLine(String externalCommand) {
-        this.printUtilityCommandLine = externalCommand;
+
+    public final void setPrintUtilityCommandLine(String cmd) {
+        int splitPos = cmd.indexOf("%s");
+        if (splitPos == -1) {
+            this.extPrintCmdPrefix = cmd.trim();
+            this.extPrintCmdSuffix = "";
+        } else {
+            this.extPrintCmdPrefix = cmd.substring(0, splitPos).trim();
+            this.extPrintCmdSuffix = cmd.substring(splitPos + 2).trim();
+        }
     }
-    
+
     public final boolean isUseExternalPrintUtility() {
         return useExternalPrintUtility;
     }
-    
+
     public final void setUseExternalPrintUtility(boolean useExternalCommand) {
         this.useExternalPrintUtility = useExternalCommand;
     }
-    
-    
+
     public final int getLabelFileAvailabilityTime() {
         return labelFileAvailabilityTime;
     }
-    
+
     public final void setLabelFileAvailabilityTime(int time) {
         this.labelFileAvailabilityTime = time;
     }
@@ -174,7 +184,9 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     }
 
     public final void setChromaticity(String s) {
-        this.chromaticity = (Chromaticity) toAttribute(s, chromaticityStringList, chromaticityValueTable);
+        this.chromaticity = (Chromaticity) toAttribute(s,
+                chromaticityStringList,
+                chromaticityValueTable);
     }
 
     public final String getMedia() {
@@ -182,7 +194,9 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     }
 
     public final void setMedia(String media) {
-        this.media = (Media) toAttribute(media, mediaStringList, mediaValueTable);
+        this.media = (Media) toAttribute(media,
+                mediaStringList,
+                mediaValueTable);
     }
 
     public final String getPrinterName() {
@@ -198,7 +212,9 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     }
 
     public final void setPrintQuality(String printQuality) {
-        this.printQuality = (PrintQuality) toAttribute(printQuality, printQualityStringList, printQualityValueTable);
+        this.printQuality = (PrintQuality) toAttribute(printQuality,
+                printQualityStringList,
+                printQualityValueTable);
     }
 
     private PrintService lookupPrintService(DocFlavor flavor)
@@ -218,34 +234,50 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
         return pservices[0];
     }
 
-    public void print(MediaCreationRequest rq) throws IOException, PrintException {
-        log.info("Prepare printing Label for " + rq);
-        File file = rq.getLabelFile();
+    public void print(File file) throws IOException, PrintException {
+        if (useExternalPrintUtility)
+            externalPrint(file);
+        else
+            javaPrint(file);
+    }
+
+    private void externalPrint(File file) throws IOException, PrintException {
         String fpath = file.getPath();
-        if (useExternalPrintUtility) {
-            String cmd = printUtilityCommandLine.replaceFirst("%s", fpath);
-            Executer exe = new Executer(cmd);
-            try {
-                int exit = exe.waitFor();
-                if (exit != 0)
-                    throw new PrintException(cmd + " exit with " + exit);
-            } catch (InterruptedException e1) {
-                throw new PrintException(cmd + " throws " + e1);
-            }
-            if (labelFileAvailabilityTime > 0)
+        final String cmd = extPrintCmdPrefix + " \"" + fpath + "\" "
+                + extPrintCmdSuffix;
+        log.info("Executing: " + cmd);
+        Executer exe = new Executer(cmd);
+        try {
+            int exit = exe.waitFor();
+            log.info("Exit(" + exit + "): " + cmd);
+            if (exit != 0) { throw new PrintException(cmd + " exit with "
+                    + exit); }
+        } catch (InterruptedException e1) {
+            log.error("Failed: " + cmd, e1);
+            throw new PrintException(cmd + " throws " + e1);
+        }
+        if (labelFileAvailabilityTime > 0) {
+            log.info("Wait " + labelFileAvailabilityTime + "s before deleting Label File " + file);
                 try {
                     Thread.sleep(labelFileAvailabilityTime * 1000L);
                 } catch (InterruptedException e2) {
-                    log.warn("Wait after Invoke of Print Utility was interrupted:", e2);
+                    log
+                            .warn("Wait after Invoke of Print Utility was interrupted:",
+                                    e2);
                 }
         }
-        DocFlavor flavor = fpath.endsWith(".ps") ? DocFlavor.INPUT_STREAM.POSTSCRIPT
-                : fpath.endsWith(".pdf") ? DocFlavor.INPUT_STREAM.PDF : null;
-        PrintService printer = lookupPrintService(flavor);
-        DocPrintJob pj = printer.createPrintJob();
-        BufferedInputStream in = new BufferedInputStream(new FileInputStream(
-                file));
+    }
+
+    private void javaPrint(File file) throws IOException, PrintException {
+        BufferedInputStream in = null;
+        log.info("Initializing print of " + file);
         try {
+            String fname = file.getName().toUpperCase();
+            DocFlavor flavor = fname.endsWith(".PS") ? DocFlavor.INPUT_STREAM.POSTSCRIPT
+                    : fname.endsWith(".PDF") ? DocFlavor.INPUT_STREAM.PDF
+                            : null;
+            PrintService printer = lookupPrintService(flavor);
+            DocPrintJob pj = printer.createPrintJob();
             PrintRequestAttributeSet attrs = new HashPrintRequestAttributeSet();
             if (chromaticity != null) attrs.add(chromaticity);
             if (media != null) attrs.add(media);
@@ -260,19 +292,23 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
                     attrs.remove(a[i]);
                 }
             }
+            in = new BufferedInputStream(new FileInputStream(file));
             Doc doc = new SimpleDoc(in, flavor, null);
             pj.print(doc, attrs);
+            log.error("Initialized print of " + file);
         } catch (PrintException e) {
-            log.error("Failed to print " + file + " to " + printer, e);
+            log.error("Failed: Printing of " + file, e);
+            throw e;
+        } catch (IOException e) {
+            log.error("Failed: Printing of " + file, e);
             throw e;
         } finally {
-            in.close();
+            if (in != null) in.close();
         }
     }
 
     public String listAvailablePrinters() {
-        return toString(PrintServiceLookup.lookupPrintServices(null,
-                        null));
+        return toString(PrintServiceLookup.lookupPrintServices(null, null));
     }
 
     public String listSupportedChromaticity() throws PrintException {
@@ -288,13 +324,11 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     }
 
     public String listSupportedDocFlavors() throws PrintException {
-        return toString(lookupPrintService(null)
-                        .getSupportedDocFlavors());
+        return toString(lookupPrintService(null).getSupportedDocFlavors());
     }
 
     private String toString(Object[] a) {
-        if (a.length == 0)
-            return "";
+        if (a.length == 0) return "";
         StringBuffer sb = new StringBuffer(a[0].toString());
         for (int i = 1; i < a.length; i++) {
             sb.append('\n').append(a[i]);

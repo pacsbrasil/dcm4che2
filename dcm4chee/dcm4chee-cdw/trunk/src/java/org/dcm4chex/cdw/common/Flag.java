@@ -25,7 +25,7 @@ public class Flag {
         return s == null || s.equals(YES) || s.equals(NO);
     }
 
-    public static boolean isYes(String s) {
+    public static boolean isYES(String s) {
         return YES.equals(s);
     }
 

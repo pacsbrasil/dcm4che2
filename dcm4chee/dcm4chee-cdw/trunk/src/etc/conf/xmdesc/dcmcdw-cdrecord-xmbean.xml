@@ -138,7 +138,7 @@
    <attribute access="read-write"
       getMethod="isAppendEnabled"
       setMethod="setAppendEnabled">
-      <description>Allow to append already exisiting session.
+      <description>Allow to append already existing session.
       </description>
       <name>AppendEnabled</name>
       <type>boolean</type>
@@ -228,6 +228,43 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isPrintLabel"
+      setMethod="setPrintLabel">
+      <description>Print Label after successful burn (and optional verify)
+      of media. Attention: Label File creation by FilesetComposer Service must
+      activated by setting its attribute "LabelFileFormat" = "PDF" or "PS".
+      S.a. Label Print Service for Printing Configuration.
+      </description>
+      <name>PrintLabel</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getLabelPrintName"
+      setMethod="setLabelPrintName">
+      <description>Reference to Label Print Service - do NOT modify.
+      </description>
+      <name>LabelPrintName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="dcmcdw:service=LabelPrint" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getKeepLabelFiles"
+      setMethod="setKeepLabelFiles">
+      <description>Controls persistence of created Label files.
+      Enumerated Values: YES|NO|IF_NOT_PRINTED
+      </description>
+      <name>KeepLabelFiles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="IF_NOT_PRINTED" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isKeepSpoolFiles"
       setMethod="setKeepSpoolFiles">
       <description>Keep spool files (for debugging).
@@ -247,17 +284,6 @@
       <type>boolean</type>      
       <descriptors>
          <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getLabelPrintName"
-      setMethod="setLabelPrintName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>LabelPrintName</name>
-      <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcmcdw:service=LabelPrint" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

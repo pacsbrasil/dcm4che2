@@ -39,11 +39,15 @@ public class SpoolDirService extends ServiceMBeanSupport {
 
     private String requestDirPath;
 
+    private String labelDirPath;
+
     private File archiveDir;
 
     private File filesetDir;
 
     private File requestDir;
+
+    private File labelDir;
 
     private long archiveDiskUsage = 0L;
 
@@ -60,6 +64,8 @@ public class SpoolDirService extends ServiceMBeanSupport {
     private long fsduRefreshTime;
 
     private long fsduRefreshInterval = MS_PER_HOUR;
+
+    private long purgeLabelDirAfter = MS_PER_DAY;
 
     private long purgeMediaCreationRequestsAfter = MS_PER_DAY;
 
@@ -83,7 +89,7 @@ public class SpoolDirService extends ServiceMBeanSupport {
 
     private File resolve(File dir) {
         if (dir.isAbsolute()) return dir;
-        File dataDir = ServerConfigLocator.locate().getServerHomeDir();
+        File dataDir = ServerConfigLocator.locate().getServerDataDir();
         return new File(dataDir, dir.getPath());
     }
 
@@ -115,6 +121,17 @@ public class SpoolDirService extends ServiceMBeanSupport {
         checkDir(dir);
         this.requestDirPath = path;
         this.requestDir = dir;
+    }
+
+    public final String getLabelDirPath() {
+        return labelDirPath;
+    }
+
+    public final void setLabelDirPath(String path) {
+        File dir = resolve(new File(path));
+        checkDir(dir);
+        this.labelDirPath = path;
+        this.labelDir = dir;
     }
 
     public final boolean isArchiveHighWater() {
@@ -149,20 +166,22 @@ public class SpoolDirService extends ServiceMBeanSupport {
         return FileUtils.formatSize(filesetDiskUsage);
     }
 
-    public void refreshArchiveDiskUsage() {
+    public String refreshArchiveDiskUsage() {
         log.info("Calculating Archive Disk Usage");
         archiveDiskUsage = 0L;
         register(archiveDir);
         log.info("Calculated Archive Disk Usage: " + getArchiveDiskUsage());
         aduRefreshTime = System.currentTimeMillis();
+        return getArchiveDiskUsage();        
     }
 
-    public void refreshFilesetDiskUsage() {
+    public String refreshFilesetDiskUsage() {
         log.info("Calculating Fileset Disk Usage");
         filesetDiskUsage = 0L;
         register(filesetDir);
         log.info("Calculated Fileset Disk Usage: " + getFilesetDiskUsage());
         fsduRefreshTime = System.currentTimeMillis();
+        return getFilesetDiskUsage();
     }
 
     public void register(File f) {
@@ -231,6 +250,14 @@ public class SpoolDirService extends ServiceMBeanSupport {
         this.purgeFilesetDirAfter = timeFromString(s);
     }
 
+    public final String getPurgeLabelDirAfter() {
+        return timeAsString(purgeLabelDirAfter);
+    }
+
+    public final void setPurgeLabelDirAfter(String s) {
+        this.purgeLabelDirAfter = timeFromString(s);
+    }
+
     public File getInstanceFile(String iuid) {
         final int i = (iuid.hashCode() & 0x7FFFFFFF) % numberOfArchiveBuckets;
         File bucket = new File(archiveDir, String.valueOf(i));
@@ -242,14 +269,19 @@ public class SpoolDirService extends ServiceMBeanSupport {
         return new File(requestDir, iuid);
     }
 
+    public File getLabelFile(String iuid, String ext) {
+        return new File(labelDir, iuid + '.' + ext);
+    }
+
     public File getMediaFilesetRootDir(String iuid) {
         return new File(filesetDir, iuid);
     }
 
     public void purge() {
         purgeExpiredMediaCreationRequests();
-        purgeExpiredPreservedInstances();
-        purgeResidualTemporaryFiles();
+        purgeArchiveDir();
+        purgeFilesetDir();
+        purgeLabelDir();
         final long now = System.currentTimeMillis();
         if (now > aduRefreshTime + aduRefreshInterval)
                 refreshArchiveDiskUsage();
@@ -263,7 +295,13 @@ public class SpoolDirService extends ServiceMBeanSupport {
                 - purgeMediaCreationRequestsAfter);
     }
 
-    public void purgeExpiredPreservedInstances() {
+    public void purgeLabelDir() {
+        if (purgeLabelDirAfter == 0) return;
+        deleteFilesModifiedBefore(requestDir, System.currentTimeMillis()
+                - purgeLabelDirAfter);
+    }
+
+    public void purgeArchiveDir() {
         if (purgeArchiveDirAfter == 0) return;
         String[] ss = archiveDir.list();
         if (ss == null) return;
@@ -275,7 +313,7 @@ public class SpoolDirService extends ServiceMBeanSupport {
         }
     }
 
-    public void purgeResidualTemporaryFiles() {
+    public void purgeFilesetDir() {
         if (purgeArchiveDirAfter == 0) return;
         deleteFilesModifiedBefore(filesetDir, System.currentTimeMillis()
                 - purgeFilesetDirAfter);
@@ -309,14 +347,27 @@ public class SpoolDirService extends ServiceMBeanSupport {
         log.debug("Success: M-DELETE " + f);
         boolean success = f.delete();
         if (success) {
-            final String fpath = f.getPath();
-            if (fpath.startsWith(archiveDir.getPath()))
-                archiveDiskUsage -= length;
-            else if (fpath.startsWith(filesetDir.getPath()))
-                    filesetDiskUsage -= length;
+            unregister(f, length);
         } else
             log.warn("Failed: M-DELETE " + f);
         return success;
+    }
+
+    private void unregister(File f, long length) {
+        String fpath = f.getPath();
+        if (fpath.startsWith(archiveDir.getPath())) {
+            if ((archiveDiskUsage -= length) < 0L) {
+                log.info("Correct negative ArchiveDiskUsage: "
+                        + archiveDiskUsage);
+                archiveDiskUsage = 0L;
+            }
+        } else if (fpath.startsWith(filesetDir.getPath())) {
+            if ((filesetDiskUsage -= length) < 0L) {
+                log.info("Correct negative FilesetDiskUsage: "
+                        + filesetDiskUsage);
+                filesetDiskUsage = 0L;
+            }
+        }
     }
 
     public boolean copy(File src, File dest, byte[] b) {
@@ -335,7 +386,6 @@ public class SpoolDirService extends ServiceMBeanSupport {
                 FileOutputStream fos = new FileOutputStream(dest);
                 try {
                     int read;
-//                    byte[] b = (byte[]) buffer;
                     while ((read = fis.read(b)) != -1)
                         fos.write(b, 0, read);
                 } finally {
@@ -369,18 +419,8 @@ public class SpoolDirService extends ServiceMBeanSupport {
         delete(dest);
         dest.getParentFile().mkdirs();
         if (src.renameTo(dest)) {
-            final long len = dest.length();
-            final String sPath = src.getPath();
-            if (sPath.startsWith(archiveDir.getPath()))
-                archiveDiskUsage -= len;
-            else if (sPath.startsWith(filesetDir.getPath()))
-                    filesetDiskUsage -= len;
-
-            final String dPath = dest.getPath();
-            if (dPath.startsWith(filesetDir.getPath()))
-                filesetDiskUsage += len;
-            else if (dPath.startsWith(archiveDir.getPath()))
-                    archiveDiskUsage += len;
+            unregister(src, dest.length());
+            register(dest);
             if (log.isDebugEnabled())
                     log.debug("Success: M-MOVE " + src + " -> " + dest);
             return true;

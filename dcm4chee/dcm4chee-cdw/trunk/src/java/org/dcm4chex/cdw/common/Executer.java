@@ -11,7 +11,7 @@ package org.dcm4chex.cdw.common;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.StringTokenizer;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 import org.dcm4cheri.util.StringUtils;
@@ -34,11 +34,31 @@ public class Executer {
     private final Thread stderrReader;
 
     private static String[] tokenize(String cmd) {
-        StringTokenizer st = new StringTokenizer(cmd);
-        String[] cmdarray = new String[st.countTokens()];
-        for (int i = 0; i < cmdarray.length; i++)
-            cmdarray[i] = st.nextToken();
-        return cmdarray;
+        ArrayList cmdarray = new ArrayList();
+        final int len = cmd.length();
+        char[] c = new char[len + 1];
+        cmd.getChars(0, len, c, 0);
+        c[len] = ' ';
+        char delim = '\0';
+        for (int i = 0, off = 0; i <= len; ++i) {
+            if (delim == '\0') {
+                if (c[i] == ' ') continue;
+                if (c[i] == '"') {
+                    delim = '"';
+                    off = i + 1;
+                } else {
+                    delim = ' ';
+                    off = i;
+                }
+            } else {
+                if (c[i] == delim) {
+                    int count = i - off;
+                    if (count > 0) cmdarray.add(new String(c, off, count));
+                    delim = '\0';
+                }
+            }
+        }
+        return (String[]) cmdarray.toArray(new String[cmdarray.size()]);
     }
 
     public Executer(String cmd) throws IOException {
@@ -73,6 +93,10 @@ public class Executer {
         int exit = child.waitFor();
         if (log.isDebugEnabled()) log.debug("exit(" + exit + "): " + cmd);
         return exit;
+    }
+
+    public void destroy() {
+        child.destroy();
     }
 
     private Thread startCopy(final InputStream in, final OutputStream out) {

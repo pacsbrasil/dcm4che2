@@ -26,53 +26,6 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getPrinterName"
-      setMethod="setPrinterName">
-      <description>Specifies Printer to use. '*' = unspecified.
-      </description>
-      <name>PrinterName</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="*" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getChromaticity"
-      setMethod="setChromaticity">
-      <description>Specifies monochrome or color printing. 
-      '*' = unspecified. listSupportedChromaticity returns possible values.
-      </description>
-      <name>Chromaticity</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="*" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getMedia"
-      setMethod="setMedia">
-      <description>Specifies the medium on which to print. 
-      '*' = unspecified. listSupportedMedia returns possible values.
-      </description>
-      <name>Media</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="*" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getPrintQuality"
-      setMethod="setPrintQuality">
-      <description>Specifies specifies the print quality. 
-      '*' = unspecified. listSupportedPrintQuality returns possible values.
-      </description>
-      <name>PrintQuality</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="*" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isUseExternalPrintUtility"
       setMethod="setUseExternalPrintUtility">
       <description>If true, the generated label is printed using an
@@ -93,7 +46,7 @@
       <name>PrintUtilityCommandLine</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="acroread /t/h/p %s" />
+         <value value="acroread.bat %s" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -108,6 +61,63 @@
          <value value="10" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getPrinterName"
+      setMethod="setPrinterName">
+      <description>Specifies Printer. Only effective for direct printing
+      (UseExternalPrintUtility=false).
+      Operation 'listAvailablePrinters' returns possible values.
+      '*' = Auto-select a Printer, which supports the file format
+      of the Label File.
+      </description>
+      <name>PrinterName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="*" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getChromaticity"
+      setMethod="setChromaticity">
+      <description>Specifies monochrome or color printing. Only
+      effective for direct printing (UseExternalPrintUtility=false).
+      Operation 'listSupportedChromaticity' returns possible values.
+      '*' = use Printer Default.
+      </description>
+      <name>Chromaticity</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="*" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMedia"
+      setMethod="setMedia">
+      <description>Specifies the medium on which to print. Only
+      effective for direct printing (UseExternalPrintUtility=false). 
+      Operation 'listSupportedMedia' returns possible values.
+      '*' = use Printer Default.
+      </description>
+      <name>Media</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="*" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPrintQuality"
+      setMethod="setPrintQuality">
+      <description>Specifies specifies the print quality.  Only
+      effective for direct printing (UseExternalPrintUtility=false).
+      Operation 'listSupportedPrintQuality' returns possible values.
+      '*' = use Printer Default.
+      </description>
+      <name>PrintQuality</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="*" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
    
    <!-- Operations -->
@@ -117,8 +127,13 @@
       <return-type>java.lang.String</return-type>
    </operation>
    <operation impact="INFO">
-      <description>List Supported Doc Flavors 
-      of Printer specified by PrinterName</description>
+      <description>List Supported Doc Flavors of Printer specified by
+      PrinterName. At least one of the two possible Label File Formats
+      (s. Attribute 'LabelFileFormat' of service MediaComposer):
+      'application/postscript' or 'application/pdf' must be supported by the 
+      Printer. Otherwise you have to configure usage of an external Print
+      Utility (UseExternalPrintUtility=true) to print Labels on that Printer.
+      </description>
       <name>listSupportedDocFlavors</name>
       <return-type>java.lang.String</return-type>
    </operation>
@@ -144,9 +159,9 @@
       <description>Print Label</description>
       <name>print</name>
       <parameter>
-         <description>Media Creation Request</description>
-         <name>MediaCreationRequest</name>
-         <type>org.dcm4chex.cdw.common.MediaCreationRequest</type>
+         <description>Label File</description>
+         <name>LabelFile</name>
+         <type>java.io.File</type>
       </parameter>
    </operation>
    &defaultOperations;
