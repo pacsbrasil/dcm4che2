@@ -2465,7 +2465,7 @@ public class PrinterService
         server.invoke(printSCPName, "putAcceptorPolicy",
                 new Object[]{
                 calledAET,
-                getAcceptorPolicy()
+                policy
                 },
                 new String[]{
                 String.class.getName(),
