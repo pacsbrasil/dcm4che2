@@ -31,7 +31,7 @@ import java.util.ArrayList;
  * @version $Revision$
  * @since 30.08.2003
  */
-public class NetworkAEInfo extends ConfigInfo {
+public class NetworkAEInfo {
 
     /** Unique AE title for this Network AE */
     private String aeTitle;
@@ -230,6 +230,15 @@ public class NetworkAEInfo extends ConfigInfo {
     }
 
     public boolean isValid() {
-        return aeTitle != null && !ncList.isEmpty() && !tcList.isEmpty();
+        return aeTitle != null && !ncList.isEmpty() && !tcList.isEmpty() && isValid(getTransferCapability());
+    }
+
+    private boolean isValid(TransferCapabilityInfo[] tc) {
+        for (int i = 0; i < tc.length; i++) {
+            if (!tc[i].isValid()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -26,7 +26,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
@@ -128,10 +128,13 @@ public class LdapConfig {
     private String host = "localhost";
     private String port = "389";
     private boolean createRelatedDeviceDescription = true;
+    private boolean closeRelatedDirContext = true;
     private InitialDirContext ctx = null;
     private String configurationDN = null;
     private String devicesDN = null;
     private String aetRegistryDN = null;
+
+    private WeakHashMap objToDN = new WeakHashMap();
 
     public final String getBaseDN() {
         return baseDN;
@@ -163,6 +166,22 @@ public class LdapConfig {
 
     public final void setCreateRelatedDeviceDescription(boolean createRelatedDevice) {
         this.createRelatedDeviceDescription = createRelatedDevice;
+    }
+
+    public final boolean isCloseRelatedDirContext() {
+        return closeRelatedDirContext;
+    }
+
+    public final void setCloseRelatedDirContext(boolean closeRelatedDirContext) {
+        this.closeRelatedDirContext = closeRelatedDirContext;
+    }
+    
+    public final String dnOf(Object obj) {
+        return (String) objToDN.get(obj);
+    }
+    
+    public final String putDN(Object obj, String dn) {
+        return (String) objToDN.put(obj, dn);
     }
 
     public void connect() throws NamingException {
@@ -357,10 +376,9 @@ public class LdapConfig {
         return loadDevice(dn.substring(dn.indexOf(',') + 1));
     }
 
-    public void createDevice(DeviceInfo info, Map refDNs)
-        throws NamingException {
+    public void createDevice(DeviceInfo info) throws NamingException {
         prepare();
-        store(makeRDN(info) + "," + devicesDN, info, refDNs);
+        storeDevice(makeRDN(info) + "," + devicesDN, info);
     }
 
     private DeviceInfo loadDevice(String dn)
@@ -409,8 +427,13 @@ public class LdapConfig {
         }
         if ((attr = attribs.get(RELATED_DEVICE_REFERENCE)) != null) {
             for (NamingEnumeration e = attr.getAll(); e.hasMore();) {
-                device.addRelatedDeviceDescription(
-                    ctx.lookup((String) e.next()));
+                String rddDN = (String) e.next();
+                Object rdd = ctx.lookup(rddDN);
+                if (closeRelatedDirContext && (rdd instanceof DirContext)) {
+                    ((DirContext) rdd).close();
+                }
+                device.addRelatedDeviceDescription(rdd);
+                objToDN.put(rdd, rddDN);
             }
         }
         if ((attr = attribs.get(AUTHORIZED_NODE_CERTIFICATE_REFERENCE))
@@ -462,8 +485,7 @@ public class LdapConfig {
         return device;
     }
 
-    private void store(String dn, DeviceInfo device, Map objDNs)
-        throws NamingException {
+    private void storeDevice(String dn, DeviceInfo device) throws NamingException {
         if (!device.isValid()) {
             throw new IllegalArgumentException(device.toString());
         }
@@ -512,10 +534,10 @@ public class LdapConfig {
         }
         if (device.hasRelatedDeviceReference()) {
             Object[] rdd = device.getRelatedDeviceDescription();
-            attrs.put(makeRefAttribute(RELATED_DEVICE_REFERENCE, rdd, objDNs));
+            attrs.put(makeRefAttribute(RELATED_DEVICE_REFERENCE, rdd));
             if (createRelatedDeviceDescription) {
                 for (int i = 0; i < rdd.length; i++) {
-                    String rddDN = (String) objDNs.get(rdd[i]);
+                    String rddDN = (String) objToDN.get(rdd[i]);
                     ctx.bind(rddDN, rdd[i]);
                 }
             }
@@ -523,18 +545,11 @@ public class LdapConfig {
         if (device.hasAuthorizedNodeCertificate()) {
             X509Certificate[] certs = device.getAuthorizedNodeCertificate();
             attrs.put(
-                makeRefAttribute(
-                    AUTHORIZED_NODE_CERTIFICATE_REFERENCE,
-                    certs,
-                    objDNs));
+                makeRefAttribute(AUTHORIZED_NODE_CERTIFICATE_REFERENCE, certs));
         }
         if (device.hasThisNodeCertificate()) {
             X509Certificate[] certs = device.getThisNodeCertificate();
-            attrs.put(
-                makeRefAttribute(
-                    THIS_NODE_CERTIFICATE_REFERENCE,
-                    certs,
-                    objDNs));
+            attrs.put(makeRefAttribute(THIS_NODE_CERTIFICATE_REFERENCE, certs));
         }
         attrs.put(INSTALLED, toString(device.isInstalled()));
         ctx.createSubcontext(dn, attrs).close();
@@ -543,25 +558,22 @@ public class LdapConfig {
         NetworkConnectionInfo[] nc = device.getNetworkConnection();
         for (int i = 0; i < nc.length; i++) {
             NetworkConnectionInfo info = nc[i];
-            ncDNs.put(info, store(makeRDN(info) + "," + dn, info));
+            ncDNs.put(info, storeNetworkConnection(makeRDN(info) + "," + dn, info));
         }
         NetworkAEInfo[] ae = device.getNetworkAE();
         for (int i = 0; i < ae.length; i++) {
             NetworkAEInfo info = ae[i];
-            String storeAsChild = store(makeRDN(info) + "," + dn, info, ncDNs);
+            storeNetworkAE(makeRDN(info) + "," + dn, info, ncDNs);
         }
     }
 
-    private Attribute makeRefAttribute(
-        String attrID,
-        Object[] objs,
-        Map objDNs) {
+    private Attribute makeRefAttribute(String attrID, Object[] objs) {
         Attribute attr = new BasicAttribute(attrID);
         Object refDn;
         for (int i = 0; i < objs.length; i++) {
-            if (!((refDn = objDNs.get(objs[i])) instanceof String)) {
-                throw new IllegalArgumentException(
-                    "objDNs contains no DN of " + objs[i]);
+            if (!((refDn = objToDN.get(objs[i])) instanceof String)) {
+                throw new IllegalStateException(
+                    "objToDN contains no DN of " + objs[i]);
             }
             attr.add(refDn);
         }
@@ -576,7 +588,9 @@ public class LdapConfig {
                 ctx.getAttributes(dn, new String[] { USER_CERTIFICATE });
             Attribute attr = attribs.get(USER_CERTIFICATE);
             for (NamingEnumeration e = attr.getAll(); e.hasMore();) {
-                doAdd(createCertificate((byte[]) e.next()));
+                X509Certificate cert = createCertificate((byte[]) e.next());
+                doAdd(cert);
+                objToDN.put(cert, dn);
             }
         }
     }
@@ -662,14 +676,12 @@ public class LdapConfig {
         return aeInfo;
     }
 
-    private String store(String dn, NetworkAEInfo aeInfo, Map objDNs)
+    private String storeNetworkAE(String dn, NetworkAEInfo aeInfo, IdentityHashMap ncDNs)
         throws NamingException {
-        if (objDNs == null) {
-            throw new NullPointerException("objDNs");
-        }
-        if (!aeInfo.isValid()) {
-            throw new IllegalArgumentException(aeInfo.toString());
-        }
+//        already checked by DeviceInfo.isValid
+//        if (!aeInfo.isValid()) {
+//            throw new IllegalArgumentException(aeInfo.toString());
+//        }
         Attributes attrs = new BasicAttributes(true); // case-ignore
         Attribute classAttr = new BasicAttribute(OBJECTCLASS);
         classAttr.add(TOP);
@@ -714,11 +726,7 @@ public class LdapConfig {
             NetworkConnectionInfo[] nc = aeInfo.getNetworkConnection();
             Object refDn;
             for (int i = 0; i < nc.length; i++) {
-                if (!((refDn = objDNs.get(nc[i])) instanceof String)) {
-                    throw new IllegalArgumentException(
-                        "objDNs contains no DN of " + nc[i]);
-                }
-                attr.add(refDn);
+                attr.add(ncDNs.get(nc[i]));
             }
             attrs.put(attr);
         }
@@ -730,7 +738,7 @@ public class LdapConfig {
         TransferCapabilityInfo[] capabilities = aeInfo.getTransferCapability();
         for (int i = 0; i < capabilities.length; i++) {
             TransferCapabilityInfo capability = capabilities[i];
-            store(makeRDN(capability) + "," + dn, capability);
+            storeTransferCapability(makeRDN(capability) + "," + dn, capability);
         }
         return dn;
     }
@@ -781,11 +789,12 @@ public class LdapConfig {
                 + (con.isListening() ? ("+" + PORT + "=" + con.getPort()) : ""));
     }
 
-    private String store(String dn, NetworkConnectionInfo con)
+    private String storeNetworkConnection(String dn, NetworkConnectionInfo con)
         throws NamingException {
-        if (!con.isValid()) {
-            throw new IllegalArgumentException(con.toString());
-        }
+//        already checked by DeviceInfo.isValid
+//        if (!con.isValid()) {
+//            throw new IllegalArgumentException(con.toString());
+//        }
         Attributes attrs = new BasicAttributes(true); // case-ignore
         Attribute classAttr = new BasicAttribute(OBJECTCLASS);
         classAttr.add(TOP);
@@ -854,11 +863,12 @@ public class LdapConfig {
                 + capability.getRole());
     }
 
-    private void store(String dn, TransferCapabilityInfo capability)
+    private void storeTransferCapability(String dn, TransferCapabilityInfo capability)
         throws NamingException {
-        if (!capability.isValid()) {
-            throw new IllegalArgumentException(capability.toString());
-        }
+//        already checked by DeviceInfo.isValid
+//        if (!capability.isValid()) {
+//            throw new IllegalArgumentException(capability.toString());
+//        }
         Attributes attrs = new BasicAttributes(true); // case-ignore
         Attribute classAttr = new BasicAttribute(OBJECTCLASS);
         classAttr.add(TOP);

@@ -24,11 +24,15 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
 /**
+ * Represents a Device.
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup67_fz.pdf">
+ * DICOM Supplement 67 - Configuration Management.</a>   
+ * 
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$
  * @since 30.08.2003
  */
-public class DeviceInfo extends ConfigInfo {
+public class DeviceInfo {
 
     private String deviceName;
     private String description;
@@ -44,6 +48,10 @@ public class DeviceInfo extends ConfigInfo {
     private ArrayList aeList = new ArrayList();
     private ArrayList conList = new ArrayList();
 
+    /**
+     * Returns a String representation of this device.
+     * @return a String representation of this device.
+     */
     public String toString() {
         return getClass().getName()
             + "[\n\tdeviceName="
@@ -83,11 +91,26 @@ public class DeviceInfo extends ConfigInfo {
         sb.append("]");
         return sb.toString();
     }
-
+    
+    /**
+     * Gets the unique name (within the scope of the LDAP database)
+     * for this device. It is restricted to legal LDAP names, and not
+     * constrained by DICOM AE Title limitations.
+     * @return the unique name for this device.
+     * @see #setDeviceName
+     */
     public String getDeviceName() {
         return deviceName;
     }
 
+    /**
+     * Sets the unique name (within the scope of the LDAP database)
+     * for this device. It is restricted to legal LDAP names, and not
+     * constrained by DICOM AE Title limitations. Mandatory for valid devices.
+     * @param deviceName unique name for this device.
+     * @see #getDeviceName
+     * @see #isValid
+     */
     public void setDeviceName(String deviceName) {
         if (deviceName == null)
             throw new NullPointerException("deviceName");
@@ -95,34 +118,73 @@ public class DeviceInfo extends ConfigInfo {
         this.deviceName = deviceName;
     }
 
+    /**
+     * Gets unconstrained text description of this device. 
+     * @return unconstrained text description of this device.
+     * @see #setDescription
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets unconstrained text description of this device.
+     * @param description text description.
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Gets value of Manufacturer (0008,0070) attribute in SOP instances
+     * created by this device.
+     * @return value of Manufacturer (0008,0070) attribute.
+     */
     public String getManufacturer() {
         return manufacturer;
     }
 
+    /**
+     * Sets value of Manufacturer (0008,0070) attribute in SOP instances
+     * created by this device.
+     * @param manufacturer value of Manufacturer (0008,0070) attribute.
+     */
     public void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
     }
 
+    /**
+     * Gets the value of Manufacturer Model Name (0008,1090) attribute 
+     * in SOP instances created by this device.
+     * @return the value of Manufacturer Model Name (0008,1090) attribute.
+     */
     public String getManufacturerModelName() {
         return manufacturerModelName;
     }
 
+    /**
+     * Sets the value of Manufacturer Model Name (0008,1090) attribute 
+     * in SOP instances created by this device.
+     * @param manufacturerModelName value of Manufacturer Model Name
+     * (0008,1090) attribute.
+     */
     public void setManufacturerModelName(String manufacturerModelName) {
         this.manufacturerModelName = manufacturerModelName;
     }
 
+    /**
+     * Gets Version of the device and/or its subcomponents
+     * (manufacturer specific).
+     * @return Version of the device.
+     */
     public String[] getVersions() {
         return (String[]) versions.toArray(new String[versions.size()]);
     }
 
+    /**
+     * Add version of the device and/or its subcomponent.
+     * @param version version of the device/subcomponent.
+     */
     public void addVersion(String version) {
         if (version == null)
             throw new NullPointerException("version");
@@ -130,10 +192,19 @@ public class DeviceInfo extends ConfigInfo {
         versions.add(version);
     }
 
+    /**
+     * Remove version of the device and/or its subcomponent.
+     * @param version version to remove.
+     * @return <code>true</code> if the devices was associated
+     * with the specified version.
+     */
     public boolean removeVersion(String version) {
         return versions.remove(version);
     }
 
+    /**
+     * @return <code>true</code> if a version of the device is specified. 
+     */
     public boolean hasVersion() {
         return !versions.isEmpty();
     }
@@ -276,7 +347,28 @@ public class DeviceInfo extends ConfigInfo {
     }
 
     public boolean isValid() {
-        return deviceName != null;
+        return deviceName != null
+            && !conList.isEmpty()
+            && !aeList.isEmpty()
+            && isValid(getNetworkConnection())
+            && isValid(getNetworkAE());
     }
 
+    private boolean isValid(NetworkConnectionInfo[] nc) {
+        for (int i = 0; i < nc.length; i++) {
+            if (!nc[i].isValid()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isValid(NetworkAEInfo[] ae) {
+        for (int i = 0; i < ae.length; i++) {
+            if (!ae[i].isValid()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

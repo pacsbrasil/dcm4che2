@@ -31,7 +31,7 @@ import java.util.ArrayList;
  * @version $Revision$
  * @since 30.08.2003
  */
-public class NetworkConnectionInfo extends ConfigInfo {
+public class NetworkConnectionInfo {
 
     private String cn;
     private String hostname;
@@ -111,37 +111,5 @@ public class NetworkConnectionInfo extends ConfigInfo {
 
     public boolean isListening() {
         return port > 0;
-    }
-
-    public boolean equals(Object o) {
-        if (o == this)
-            return true;
-
-        if (!(o instanceof NetworkConnectionInfo))
-            return false;
-
-        NetworkConnectionInfo other = (NetworkConnectionInfo) o;
-        return (cn == null ? other.cn == null : cn.equals(other.cn))
-            && (hostname == null
-                ? other.hostname == null
-                : hostname.equals(other.hostname))
-            && (!isListening() ? !other.isListening() : port == other.port)
-            && (installed == null
-                ? other.installed == null
-                : installed.equals(other.installed))
-            && csList.equals(other.csList);
-    }
-
-    public int hashCode() {
-        int hash = csList.hashCode();
-        if (cn != null)
-            hash ^= cn.hashCode();
-        if (hostname != null)
-            hash ^= hostname.hashCode();
-        if (installed != null)
-            hash ^= installed.hashCode();
-        if (isListening())
-            hash ^= port;
-        return hash;
     }
 }
