@@ -397,18 +397,4 @@ public abstract class StorageBean implements SessionBean {
         }
         return true;
     }
-
-    /*
-    public boolean updateStudy(String siud) {
-        try {
-            log.info("updating study " + siud);
-            studyHome.findByStudyIuid(siud).update();
-            log.info("updated study " + siud);
-            return true;
-        } catch (Exception e) {
-            log.error("update study failed:", e);
-            return false;
-        }
-    }
-    */
 }

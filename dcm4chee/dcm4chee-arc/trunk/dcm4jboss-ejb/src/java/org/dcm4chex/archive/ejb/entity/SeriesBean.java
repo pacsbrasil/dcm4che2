@@ -289,6 +289,7 @@ public abstract class SeriesBean implements EntityBean {
             return false;
         }
         if (!areAllInstancesRetrieveableFrom(aet)) {
+            log.warn("areAllInstancesRetrieveableFrom(" + aet + ")->false - " + prompt());
             return false;
         }
         retrieveAETSet.add(aet);
@@ -304,9 +305,10 @@ public abstract class SeriesBean implements EntityBean {
     private boolean areAllInstancesRetrieveableFrom(String aet) {
         Collection c = getInstances();
         for (Iterator it = c.iterator(); it.hasNext();) {
-            if (!((InstanceLocal) it.next())
-                .getRetrieveAETSet()
+            InstanceLocal instance = (InstanceLocal) it.next();
+            if (!instance.getRetrieveAETSet()
                 .contains(aet)) {
+                log.warn("instance " + instance + " retrieveAETs: " + instance.getRetrieveAETSet() + " does not contain " + aet);
                 return false;
             }
         }
@@ -331,30 +333,4 @@ public abstract class SeriesBean implements EntityBean {
             + "]";
     }
 
-    /*
-    public void update() {
-        Collection c = getInstances();
-        setNumberOfSeriesRelatedInstances(c.size());
-        Set resultAetSet = null;
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            InstanceLocal inst = (InstanceLocal) it.next();
-            inst.update();
-            String aets = inst.getRetrieveAETs();
-            if (aets != null) {
-                List aetList = Arrays.asList(StringUtils.split(aets, '\\'));
-                if (resultAetSet == null) {
-                    resultAetSet = new HashSet(aetList);
-                } else {
-                    resultAetSet.retainAll(aetList);
-                }
-            }
-        }
-        setRetrieveAETs(
-            resultAetSet == null
-                ? null
-                : StringUtils.toString(
-                    (String[]) resultAetSet.toArray(
-                        new String[resultAetSet.size()]),
-                    '\\'));
-    }*/
 }

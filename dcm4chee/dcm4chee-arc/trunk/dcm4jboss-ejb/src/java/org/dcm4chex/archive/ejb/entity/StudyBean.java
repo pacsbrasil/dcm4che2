@@ -313,6 +313,7 @@ public abstract class StudyBean implements EntityBean {
             return false;
         }
         if (!areAllSeriesRetrieveableFrom(aet)) {
+            log.warn("areAllSeriesRetrieveableFrom(" + aet + ")->false - " + prompt());
             return false;
         }
         retrieveAETSet.add(aet);
@@ -328,7 +329,15 @@ public abstract class StudyBean implements EntityBean {
     private boolean areAllSeriesRetrieveableFrom(String aet) {
         Collection c = getSeries();
         for (Iterator it = c.iterator(); it.hasNext();) {
-            if (!((SeriesLocal) it.next()).getRetrieveAETSet().contains(aet)) {
+            SeriesLocal series = (SeriesLocal) it.next();
+            if (!series.getRetrieveAETSet().contains(aet)) {
+                log.warn(
+                        "series "
+                        + series
+                        + " retrieveAETs: "
+                        + series.getRetrieveAETSet()
+                        + " does not contain "
+                        + aet);
                 return false;
             }
         }
@@ -396,35 +405,4 @@ public abstract class StudyBean implements EntityBean {
             + getPatient()
             + "]";
     }
-
-    /*
-    public void update() {
-        Collection c = getSeries();
-        setNumberOfStudyRelatedSeries(c.size());
-        int numInstances = 0;
-        Set resultAetSet = null;
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            SeriesLocal series = (SeriesLocal) it.next();
-            series.update();
-            numInstances += series.getNumberOfSeriesRelatedInstances();
-            String aets = series.getRetrieveAETs();
-            if (aets != null) {
-                List aetList = Arrays.asList(StringUtils.split(aets, '\\'));
-                if (resultAetSet == null) {
-                    resultAetSet = new HashSet(aetList);
-                } else {
-                    resultAetSet.retainAll(aetList);
-                }
-            }
-        }
-        setNumberOfStudyRelatedInstances(numInstances);
-        setRetrieveAETs(
-            resultAetSet == null
-                ? null
-                : StringUtils.toString(
-                    (String[]) resultAetSet.toArray(
-                        new String[resultAetSet.size()]),
-                    '\\'));
-    }
-     */
 }
