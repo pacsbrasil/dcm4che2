@@ -8,6 +8,8 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +37,14 @@ public class FolderForm {
                 .getAttribute(FOLDER_ATTRNAME);
         if (form == null) {
             form = new FolderForm();
+            try {
+				URL wadoURL = new URL( "http", request.getServerName(), 
+						request.getServerPort(), "/dcm4jboss-wado/wado");
+				form.setWadoBaseURL( wadoURL.toString() );
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
         }
         form.setErrorCode( NO_ERROR ); //reset error code
@@ -106,11 +116,26 @@ public class FolderForm {
 
     private int total;
     
-    /** Error code for rendering message.
-     * 
-     */
+    /** Error code for rendering message. */
     private String errorCode = NO_ERROR;
+    
+    /** Base URL for WADO service. Used for image view */
+    private String wadoBaseURL;
+    
 
+	/**
+	 * @return Returns the wadoBaseURL.
+	 */
+	public String getWadoBaseURL() {
+		return wadoBaseURL;
+	}
+	/**
+	 * @param wadoBaseURL The wadoBaseURL to set.
+	 */
+	public void setWadoBaseURL(String wadoBaseURL) {
+		this.wadoBaseURL = wadoBaseURL;
+	}
+	
     public final int getLimit() {
         return LIMIT;
     }
