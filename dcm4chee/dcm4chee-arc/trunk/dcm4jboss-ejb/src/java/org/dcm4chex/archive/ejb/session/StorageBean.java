@@ -212,6 +212,7 @@ public abstract class StorageBean implements SessionBean {
                     md5,
                     instance);
             updateRetrieveAETs(instance, retrieveAETs);
+            updateAvailability(instance);
             log.info("inserted instance " + iuid);
             return coercedElements;
         } catch (Exception e) {
@@ -234,6 +235,16 @@ public abstract class StorageBean implements SessionBean {
                     StudyLocal study = series.getStudy();
                     study.addRetrieveAET(a[i]);
                 }
+            }
+        }
+    }
+
+    private void updateAvailability(InstanceLocal instance) {
+        if (instance.updateAvailability(0)) {
+            SeriesLocal series = instance.getSeries();
+            if (series.updateAvailability()) {
+                StudyLocal study = series.getStudy();
+                study.updateAvailability();
             }
         }
     }

@@ -43,7 +43,8 @@ CREATE TABLE patient (
 	pat_name    	VARCHAR2(255),
 	pat_birthdate  	DATE,
 	pat_sex		  	VARCHAR2(255),
-	pat_attrs		LONG RAW
+	pat_attrs		LONG RAW,
+FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 ALTER TABLE patient ADD CONSTRAINT pat_merge_fk FOREIGN KEY (merge_fk) REFERENCES patient(pk);
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
@@ -65,6 +66,7 @@ CREATE TABLE study (
 	num_series		INTEGER,
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR2(255),
+	availability	INTEGER,
 	study_attrs		LONG RAW,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
@@ -85,6 +87,7 @@ CREATE TABLE series (
 	pps_start		TIMESTAMP,
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR2(255),
+	availability	INTEGER,
 	series_attrs	LONG RAW,
 FOREIGN KEY (study_fk) REFERENCES study(pk)
 );
@@ -105,6 +108,7 @@ CREATE TABLE instance (
 	sr_complete		VARCHAR2(255),
 	sr_verified		VARCHAR2(255),
 	retrieve_aets	VARCHAR2(255),
+	availability	INTEGER,
 	inst_attrs		LONG RAW,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk)

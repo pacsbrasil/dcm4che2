@@ -195,6 +195,17 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setRetrieveAETs(String aets);
 
     /**
+     * Instance Availability
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="availability"
+     */
+    public abstract int getAvailability();
+
+    public abstract void setAvailability(int availability);
+    
+    /**
      * @ejb.relation
      *  name="patient-study"
      *  role-name="study-of-patient"
@@ -368,6 +379,24 @@ public abstract class StudyBean implements EntityBean {
             }
         }
         return true;
+    }
+
+    /**
+     * 
+     * @ejb.interface-method
+     */
+    public boolean updateAvailability() {
+        Collection c = getSeries();
+        int availability = 0;
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            SeriesLocal series = (SeriesLocal) it.next();
+            availability = Math.max(availability, series.getAvailability());            
+        }
+        if (availability != getAvailability()) {
+            setAvailability(availability);
+            return true;
+        }
+        return false;
     }
 
     /**

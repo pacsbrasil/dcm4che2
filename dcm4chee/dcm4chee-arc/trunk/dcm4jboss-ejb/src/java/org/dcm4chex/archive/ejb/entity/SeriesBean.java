@@ -173,6 +173,17 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setRetrieveAETs(String aets);
 
     /**
+     * Instance Availability
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="availability"
+     */
+    public abstract int getAvailability();
+
+    public abstract void setAvailability(int availability);
+
+    /**
      * @ejb.relation
      *  name="study-series"
      *  role-name="series-of-study"
@@ -346,6 +357,23 @@ public abstract class SeriesBean implements EntityBean {
             if (!instance.getRetrieveAETSet().contains(aet)) {
                 return false;
             }
+        }
+        return true;
+    }
+
+    /**
+     * 
+     * @ejb.interface-method
+     */
+    public boolean updateAvailability() {
+        Collection c = getInstances();
+        int availability = 0;
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            InstanceLocal instance = (InstanceLocal) it.next();
+            availability = Math.max(availability, instance.getAvailability());            
+        }
+        if (availability != getAvailability()) {
+            return false;
         }
         return true;
     }

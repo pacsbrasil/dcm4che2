@@ -42,6 +42,8 @@ public abstract class QueryCmd extends BaseCmd {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     private static final String[] QRLEVEL =
         { "PATIENT", "STUDY", "SERIES", "IMAGE" };
+    private static final String[] AVAILABILITY =
+        { "ONLINE", "NEARLINE", "OFFLINE" };
 
     public static QueryCmd create(DataSource ds, Dataset keys)
         throws SQLException {
@@ -230,7 +232,7 @@ public abstract class QueryCmd extends BaseCmd {
             final int tag = key.tag();
             if (tag == Tags.SpecificCharacterSet)
                 continue;
-            
+
             final int vr = key.vr();
             DcmElement el = ds.get(tag);
             if (el == null) {
@@ -247,7 +249,7 @@ public abstract class QueryCmd extends BaseCmd {
             }
         }
     }
-    
+
     protected abstract void fillDataset(Dataset ds) throws SQLException;
     protected void fillDataset(Dataset ds, int column) throws SQLException {
         ds.putAll(
@@ -299,7 +301,8 @@ public abstract class QueryCmd extends BaseCmd {
                 "Study.modalitiesInStudy",
                 "Study.numberOfStudyRelatedSeries",
                 "Study.numberOfStudyRelatedInstances",
-                "Study.retrieveAETs" };
+                "Study.retrieveAETs",
+                "Study.availability" };
         }
 
         protected String[] getTables() {
@@ -319,6 +322,7 @@ public abstract class QueryCmd extends BaseCmd {
             ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(4));
             ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(5));
             putRetrieveAETs(ds, rs.getString(6));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(6)]);
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
     }
@@ -340,7 +344,8 @@ public abstract class QueryCmd extends BaseCmd {
                 "Study.encodedAttributes",
                 "Series.encodedAttributes",
                 "Series.numberOfSeriesRelatedInstances",
-                "Series.retrieveAETs" };
+                "Series.retrieveAETs",
+                "Series.availability" };
         }
 
         protected String[] getTables() {
@@ -361,6 +366,7 @@ public abstract class QueryCmd extends BaseCmd {
             fillDataset(ds, 3);
             ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(4));
             putRetrieveAETs(ds, rs.getString(5));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(6)]);
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -383,7 +389,8 @@ public abstract class QueryCmd extends BaseCmd {
                 "Study.encodedAttributes",
                 "Series.encodedAttributes",
                 "Instance.encodedAttributes",
-                "Instance.retrieveAETs" };
+                "Instance.retrieveAETs",
+                "Instance.availability" };
         }
 
         protected String[] getTables() {
@@ -412,6 +419,7 @@ public abstract class QueryCmd extends BaseCmd {
             fillDataset(ds, 3);
             fillDataset(ds, 4);
             putRetrieveAETs(ds, rs.getString(5));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(6)]);
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
 

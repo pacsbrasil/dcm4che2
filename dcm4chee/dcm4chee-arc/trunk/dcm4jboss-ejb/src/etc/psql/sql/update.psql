@@ -4,6 +4,13 @@ ALTER TABLE patient
 	ADD CONSTRAINT pat_merge_fk FOREIGN KEY (merge_fk) REFERENCES patient(pk);
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 
+ALTER TABLE study
+	ADD COLUMN availability INTEGER;
+ALTER TABLE series
+	ADD COLUMN availability INTEGER;
+ALTER TABLE instance
+	ADD COLUMN availability INTEGER;
+	
 CREATE TABLE users(
 	user_id		TEXT PRIMARY KEY,
 	passwd 		TEXT

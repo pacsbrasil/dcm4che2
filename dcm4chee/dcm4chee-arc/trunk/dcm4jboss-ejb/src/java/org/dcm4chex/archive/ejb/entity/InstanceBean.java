@@ -43,7 +43,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 
@@ -216,6 +215,17 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setRetrieveAETs(String aets);
 
     /**
+     * Instance Availability
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="availability"
+     */
+    public abstract int getAvailability();
+
+    public abstract void setAvailability(int availability);
+
+    /**
      * @ejb.relation
      *  name="series-instance"
      *  role-name="instance-of-series"
@@ -304,7 +314,18 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     /**
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method
+     */
+    public boolean updateAvailability(int availability) {
+        if (availability != getAvailability()) {
+            setAvailability(availability);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @ejb.interface-method
      */
     public Dataset getAttributes() {
         return DatasetUtils.fromByteArray(
@@ -380,24 +401,6 @@ public abstract class InstanceBean implements EntityBean {
             + ", series->"
             + getSeries()
             + "]";
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void update() {
-        Collection c = getFiles();
-        Set resultAetSet = new HashSet();
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            FileLocal file = (FileLocal) it.next();
-            String aets = file.getRetrieveAETs();
-            resultAetSet.addAll(Arrays.asList(StringUtils.split(aets, '\\')));
-        }
-        setRetrieveAETs(
-            StringUtils.toString(
-                (String[]) resultAetSet.toArray(
-                    new String[resultAetSet.size()]),
-                '\\'));
     }
 
     private CodeLocal toCode(Dataset item) throws CreateException {

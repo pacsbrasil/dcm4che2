@@ -40,9 +40,9 @@ CREATE TABLE patient (
 	pat_name    	TEXT,
 	pat_birthdate  	DATE,
 	pat_sex		  	TEXT,
-	pat_attrs		BYTEA
+	pat_attrs		BYTEA,
+FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
-ALTER TABLE patient ADD CONSTRAINT pat_merge_fk FOREIGN KEY (merge_fk) REFERENCES patient(pk);
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(UPPER(pat_name));
@@ -61,6 +61,7 @@ CREATE TABLE study (
 	num_series		INTEGER,
 	num_instances	INTEGER,
 	retrieve_aets	TEXT,
+	availability	INTEGER,
 	study_attrs		BYTEA,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
@@ -80,6 +81,7 @@ CREATE TABLE series (
 	pps_start		TIMESTAMP,
 	num_instances	INTEGER,
 	retrieve_aets	TEXT,
+	availability	INTEGER,
 	series_attrs	BYTEA,
 FOREIGN KEY (study_fk) REFERENCES study(pk)
 );
@@ -99,6 +101,7 @@ CREATE TABLE instance (
 	sr_complete		TEXT,
 	sr_verified		TEXT,
 	retrieve_aets	TEXT,
+	availability	INTEGER,
 	inst_attrs		BYTEA,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk)
