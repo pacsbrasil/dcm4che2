@@ -9,53 +9,24 @@ package org.dcm4chex.wado.mbean;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.apache.log4j.Logger;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
-import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
- * @author franz.willer
+ * @author franz.willer 
  *
  * The MBean to manage the WADO service.
  * <p>
  * This class use WADOSupport for the WADO methods and WADOCache for caching jpg images.
  */
-public class WADOService extends ServiceMBeanSupport  {
+public class WADOService extends AbstractCacheService {
 
-	private Logger log = Logger.getLogger( getClass().getName() );
-	private WADOCache cache = WADOCacheImpl.getWADOCache();
 	private WADOSupport support = new WADOSupport( this.server );
-	
-	private static final long GIGA = 1000000000L;
-	private static final long MEGA = 1000000L;
-	
-	public void setCacheRoot( String newRoot ) {
-		cache.setCacheRoot( newRoot );
-	}
-	
-	public String getCacheRoot() {
-		return cache.getCacheRoot();
-	}
-	
-	public void setMinFreeSpace( int minFree ) {
-		cache.setMinFreeSpace( minFree * MEGA );
-	}
-	
-	public int getMinFreeSpace() {
-		return (int) (cache.getMinFreeSpace() / MEGA);
-	}
 
-	public void setPreferredFreeSpace( int minFree ) {
-		cache.setPreferredFreeSpace( minFree * MEGA );
+	public WADOService() {
+		cache = WADOCacheImpl.getWADOCache();
 	}
-	
-	public int getPreferredFreeSpace() {
-		return (int) (cache.getPreferredFreeSpace() / MEGA);
-	}
-	
 	/**
 	 * @return Returns the clientRedirect.
 	 */
@@ -79,34 +50,6 @@ public class WADOService extends ServiceMBeanSupport  {
 	 */
 	public void setRedirectCaching(boolean redirectCaching) {
 		cache.setRedirectCaching( redirectCaching );
-	}
-	
-	/**
-	 * Clears the cache.
-	 * <p>
-	 * Remove all files in the cache.
-	 *
-	 */
-	public void clearCache() {
-		cache.clearCache();
-	}
-	
-	/**
-	 * Cleans the cache if necessary.
-	 *
-	 */
-	public void cleanCache() {
-		cache.cleanCache( false ); //cleans the cache and wait until clean process is done. (not in background)
-	}
-	
-	/**
-	 * Returns the available space of the cache drive.
-	 * <p>
-	 * 
-	 * @return
-	 */
-	public String getFreeSpace() {
-		return getSizeWithUnit( cache.getFreeSpace() );
 	}
 	
 	/**
@@ -145,31 +88,6 @@ public class WADOService extends ServiceMBeanSupport  {
 	 */
 	public WADOResponseObject getWADOObject( WADORequestObject reqVO ) {
 		return support.getWADOObject( reqVO );
-	}
-
-	/**
-	 * Returns a String representation with trailing (G|M|K)B.
-	 * <p>
-	 * Rounds the value to a more readable form.
-	 * <p>
-	 * Use 1000 instead of 1024 for one KB.
-	 * 
-	 * @param size the size in bytes.
-	 * 
-	 * @return The size with unit. e.g. 2GB
-	 */
-	private String getSizeWithUnit(long size) {
-		if ( size >= GIGA ){
-				return (size/GIGA)+" GB";
-		} else if ( size > MEGA ) {
-			if ( (size % MEGA) == 0 ) {
-				return (size/MEGA)+" MB";
-			} else {
-				return (size/1000L)+" KB";
-			}
-		} else {
-			return (size/1000L)+" KB";
-		}
 	}
 
 }
