@@ -18,26 +18,31 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package com.tiani.prnscp.print;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
@@ -127,8 +132,30 @@ public class ScannerCalibration
                 }
                 ods[i++] = Float.parseFloat(s);
             }
-            if (i != 256) {
+            if (i != 256 && i != 16) {
                 throw new IOException("Only " + i + " OD values in " + f);
+            }
+            if (i == 16) { //interpolate
+                r.close();
+                if (!f.renameTo(new File(f.getCanonicalPath() + ".bak"))) {
+                    log.info("backup of OD values failed");
+                    f.delete();
+                }
+                BufferedWriter out = new BufferedWriter(new FileWriter(f));
+                
+                int j;
+                float[] tmp = new float[16];
+                float fx = (float)15 / 255;
+                
+                Curve interpCurve = new SplineInterpCurve();
+                System.arraycopy(ods, 0, tmp, 0, 16);
+                interpCurve.addAll(tmp);
+                for (j = 0; j < 256; j++) {
+                    ods[j] = interpCurve.evaluate(j * fx);
+                    out.write(Float.toString(ods[j]) + "\n");
+                }
+                out.close();
+                return ods;
             }
             return ods;
         } catch (IllegalArgumentException e) {
