@@ -8,16 +8,20 @@
  ******************************************/
 package org.dcm4chex.cdw.mbean;
 
+import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
+import java.awt.image.IndexColorModel;
+import java.awt.image.Raster;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 
 import javax.imageio.ImageReadParam;
@@ -174,7 +178,8 @@ class FilesetBuilder {
                 mergeDir(files[i], link);
             else {
                 if (link.delete())
-                    if (log.isDebugEnabled()) log.debug("M-DELETE " + link);
+                        if (log.isDebugEnabled())
+                                log.debug("M-DELETE " + link);
                 makeSymLink(files[i], link);
             }
         }
@@ -234,14 +239,15 @@ class FilesetBuilder {
                                             + src);
                         } else {
                             try {
-	                            iconItem = mkIconItem(ds);
-	                        } catch (Exception e) {
-	                            log.warn("Failed to generate icon from " + src, e);
-	                        }
+                                iconItem = mkIconItem(ds);
+                            } catch (Exception e) {
+                                log.warn("Failed to generate icon from " + src,
+                                        e);
+                            }
                         }
                 if (iconItem != null)
                         rec.putSQ(Tags.IconImageSeq).addItem(iconItem);
-	            if (isWeb()) {
+                if (isWeb()) {
                     if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                             && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
                         log
@@ -310,10 +316,8 @@ class FilesetBuilder {
                 // if bi.getSampleModel() instanceof BandedSampleModel 
                 if (imageBI.getSampleModel() instanceof BandedSampleModel) {
                     log.debug("convert RGB plane to RGB pixel");
-                    BufferedImage newbi = new BufferedImage(imageBI.getWidth(),
-                            imageBI.getHeight(), BufferedImage.TYPE_INT_RGB);
-                    ColorConvertOp ccop = new ColorConvertOp(null);
-                    ccop.filter(imageBI, newbi);
+                    BufferedImage newbi = convertBI(imageBI,
+                            BufferedImage.TYPE_INT_RGB);
                     imageBI.flush();
                     imageBI = newbi;
                     jpegBI = null;
@@ -332,6 +336,18 @@ class FilesetBuilder {
             }
             bi.flush();
         }
+    }
+
+    private BufferedImage convertBI(BufferedImage src, int imageType) {
+        BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(),
+                imageType);
+        Graphics2D big = dst.createGraphics();
+        try {
+            big.drawImage(src, 0, 0, null);
+        } finally {
+            big.dispose();
+        }
+        return dst;
     }
 
     private Dataset mkIconItem(Dataset ds) throws IOException {
@@ -360,32 +376,66 @@ class FilesetBuilder {
         if (w != iconBI.getWidth() || h != iconBI.getHeight()) {
             log.warn("created icon with unexpected dimension[w="
                     + iconBI.getWidth() + ",h=" + iconBI.getHeight()
-                    + "] instead [w=" + w  + ",h=" + h + "] from image[w="
-                    + w0 + ",h=" + h0 + "]");
+                    + "] instead [w=" + w + ",h=" + h + "] from image[w=" + w0
+                    + ",h=" + h0 + "]");
             w = iconBI.getWidth();
             h = iconBI.getHeight();
         }
-        /*
-        File dest = new File(ds.getString(Tags.SOPInstanceUID) + ".JPG");
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(
-                dest));
-        try {
-            JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
-            enc.encode(iconBI);
-        } finally {
-            out.close();
+        String pmi = ds.getString(Tags.PhotometricInterpretation);
+        BufferedImage bi = iconBI;
+        if ("RGB".equals(pmi)) {
+            bi = convertBI(iconBI, BufferedImage.TYPE_BYTE_INDEXED);
+            pmi = "PALETTE COLOR";
         }
-        */
-        if (iconPixelData == null || iconPixelData.length != w * h)
-                iconPixelData = new byte[w * h];
-        for (int y = 0, i = 0; y < h; ++y)
-            for (int x = 0; x < w; ++x, ++i)
-                iconPixelData[i] = (byte) iconBI.getRGB(x, y);
 
+        /*
+         File dest = new File(ds.getString(Tags.SOPInstanceUID) + ".JPG");
+         OutputStream out = new BufferedOutputStream(new FileOutputStream(
+         dest));
+         try {
+         JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
+         enc.encode(bi);
+         } finally {
+         out.close();
+         }
+         */
+
+        if (iconPixelData == null || iconPixelData.length != w * h)
+            iconPixelData = new byte[w * h];
         Dataset iconItem = dof.newDataset();
-        iconItem.putCS(Tags.PhotometricInterpretation, "MONOCHROME2");
-        iconItem.putUS(Tags.Rows, iconBI.getHeight());
-        iconItem.putUS(Tags.Columns, iconBI.getWidth());
+
+        if ("PALETTE COLOR".equals(pmi)) {
+            IndexColorModel cm = (IndexColorModel) bi.getColorModel();
+            int[] lutDesc = { cm.getMapSize(), 0, 8};
+            byte[] r = new byte[lutDesc[0]];
+            byte[] g = new byte[lutDesc[0]];
+            byte[] b = new byte[lutDesc[0]];
+            cm.getReds(r);
+            cm.getGreens(g);
+            cm.getBlues(b);
+            iconItem.putUS(Tags.RedPaletteColorLUTDescriptor, lutDesc);
+            iconItem.putUS(Tags.GreenPaletteColorLUTDescriptor, lutDesc);
+            iconItem.putUS(Tags.BluePaletteColorLUTDescriptor, lutDesc);
+            iconItem.putOW(Tags.RedPaletteColorLUTData, ByteBuffer.wrap(r)
+                    .order(ByteOrder.LITTLE_ENDIAN));
+            iconItem.putOW(Tags.GreenPaletteColorLUTData, ByteBuffer.wrap(g)
+                    .order(ByteOrder.LITTLE_ENDIAN));
+            iconItem.putOW(Tags.BluePaletteColorLUTData, ByteBuffer.wrap(b)
+                    .order(ByteOrder.LITTLE_ENDIAN));
+
+            Raster raster = bi.getRaster();
+            for (int y = 0, i = 0; y < h; ++y)
+                for (int x = 0; x < w; ++x, ++i)
+                    iconPixelData[i] = (byte) raster.getSample(x, y, 0);
+        } else {
+            pmi = "MONOCHROME2";
+            for (int y = 0, i = 0; y < h; ++y)
+                for (int x = 0; x < w; ++x, ++i)
+                    iconPixelData[i] = (byte) bi.getRGB(x, y);
+        }
+        iconItem.putCS(Tags.PhotometricInterpretation, pmi);
+        iconItem.putUS(Tags.Rows, bi.getHeight());
+        iconItem.putUS(Tags.Columns, bi.getWidth());
         iconItem.putUS(Tags.SamplesPerPixel, 1);
         iconItem.putUS(Tags.BitsAllocated, 8);
         iconItem.putUS(Tags.BitsStored, 8);
