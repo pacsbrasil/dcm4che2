@@ -111,7 +111,7 @@ public abstract class MediaBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="mcrq_iuid"
+     * @ejb.persistence column-name="media_rq_iuid"
      */
     public abstract String getMediaCreationRequestIuid();
 

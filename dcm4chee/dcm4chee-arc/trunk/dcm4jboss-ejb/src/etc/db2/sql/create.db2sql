@@ -120,7 +120,7 @@ CREATE TABLE media (
 	pk          	INTEGER PRIMARY KEY NOT NULL,
 	fileset_iuid	VARCHAR(254) NOT NULL, 
 	fileset_id		VARCHAR(254),
-	mcrq_iuid		VARCHAR(254),
+	media_rq_iuid	VARCHAR(254),
 	media_status	INTEGER NOT NULL,
 	media_usage		BIGINT NOT NULL,
 	created_time	TIMESTAMP,

@@ -106,7 +106,7 @@ CREATE TABLE media (
 	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
 	fileset_iuid	VARCHAR(250) BINARY NOT NULL,
 	fileset_id		VARCHAR(250) BINARY,
-	mcrq_iuid		VARCHAR(250) BINARY,
+	media_rq_iuid	VARCHAR(250) BINARY,
 	media_status	INTEGER NOT NULL,
 	media_usage		BIGINT NOT NULL,
 	created_time	TIMESTAMP,

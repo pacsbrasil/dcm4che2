@@ -106,7 +106,7 @@ CREATE TABLE media (
 	pk          	IDENTITY PRIMARY KEY,
 	fileset_iuid	VARCHAR(256) NOT NULL,
 	fileset_id		VARCHAR(256), 
-	mcrq_iuid		VARCHAR(256),
+	media_rq_iuid	VARCHAR(256),
 	media_usage		BIGINT NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP

@@ -106,7 +106,7 @@ CREATE TABLE media (
 	pk          	SERIAL PRIMARY KEY,
 	fileset_iuid	TEXT NOT NULL,
 	fileset_id		TEXT, 
-	mcrq_iuid		TEXT,
+	media_rq_iuid	TEXT,
 	media_status	INTEGER NOT NULL,
 	media_usage		INT8 NOT NULL,
 	created_time	TIMESTAMP,
