@@ -11,6 +11,7 @@ DROP TABLE move_order;
 DROP TABLE ae;
 
 
+DROP SEQUENCE ae_pk_seq;
 DROP SEQUENCE move_pk_seq;
 DROP SEQUENCE code_pk_seq;
 DROP SEQUENCE patient_pk_seq;
