@@ -524,7 +524,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     // error already logged
                 }
                 if (!keepSpoolFiles)
-                    spoolDir.deleteRefInstances(attrs);
+                    deleteRefInstances(attrs);
+                    
                 throw new DcmServiceException(Status.ProcessingFailure, e);
             }
             break;
@@ -540,7 +541,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             if (!f.delete())
                 throw new DcmServiceException(
                         Status.CancellationDeniedForUnspecifiedReason);
-            spoolDir.deleteRefInstances(attrs);
+            deleteRefInstances(attrs);
 
             break;
         default:
@@ -548,6 +549,13 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     + actionID);
         }
         return null;
+    }
+
+    private void deleteRefInstances(final Dataset attrs) {
+        new Thread(new Runnable() {
+            public void run() {
+                spoolDir.deleteRefInstances(attrs);
+            }});
     }
 
     private String lookupMediaWriterName(String aet) throws DcmServiceException {
