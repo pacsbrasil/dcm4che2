@@ -1,0 +1,203 @@
+/*****************************************************************************
+ *                                                                           *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
+ *                                                                           *
+ *  This file is part of dcm4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU Lesser General Public License as published    *
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  Lesser General Public License for more details.                          *
+ *                                                                           *
+ *  You should have received a copy of the GNU Lesser General Public         *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
+
+package org.dcm4cheri.util;
+
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
+
+/**
+ * Leader/Follower Thread Pool 
+ *
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20020519 gunter zeilinger:</b>
+ * <ul>
+ * <li> initial import 
+ * </ul>
+ */
+public class LF_ThreadPool
+{
+   // Constants -----------------------------------------------------
+   private static final Logger log =
+         Logger.getLogger("org.dcm4cheri.utilLF_ThreadPool");
+   
+   // Attributes ----------------------------------------------------
+   private final Handler handler;
+   private boolean shutdown = false;
+   private Thread leader = null;
+   private Object mutex = new Object();
+   private int waiting = 0;
+   private int running = 0;
+   private int maxRunning = 10;
+   
+   // Static --------------------------------------------------------
+   
+   // Constructors --------------------------------------------------
+   public LF_ThreadPool(Handler handler) {
+      if (handler == null)
+         throw new NullPointerException();
+      
+      this.handler = handler;
+   }
+   
+   // Public --------------------------------------------------------
+   public int waiting()
+   {
+      return waiting;
+   }
+   
+   public int running()
+   {
+      return running;
+   }
+   
+   public boolean isShutdown()
+   {
+      return shutdown;
+   }
+   
+   public int getMaxRunning()
+   {
+      return maxRunning;
+   }
+   
+   public void setMaxRunning(int maxRunning)
+   {
+      if (maxRunning <= 0)
+         throw new IllegalArgumentException("maxRunning: " + maxRunning);
+            
+      this.maxRunning = maxRunning;
+   }
+   
+   public String toString()
+   {
+      return "LF_ThreadPool[leader:"
+            + (leader == null ? "null" : leader.getName())
+            + ", waiting:" + waiting
+            + ", running: " + running + "(" + maxRunning
+            + "), shutdown: " + shutdown + "]";
+   }
+   
+   public void join()
+   {
+      shutdown = false;
+      while (!shutdown && waiting + running < maxRunning)
+      {
+         synchronized (mutex)
+         {
+            while (leader != null)
+            {
+               if (log.isLoggable(Level.FINER))
+                  log.finer("" + this + " - "
+                     + Thread.currentThread().getName() + " enter wait()");
+               ++waiting;
+               try { mutex.wait(); }
+               catch (InterruptedException ie)
+               {
+                  ie.printStackTrace();
+               }
+               finally { --waiting; }
+               if (log.isLoggable(Level.FINER))
+                  log.finer("" + this + " - "
+                     + Thread.currentThread().getName() + " awaked");
+            }
+            if (shutdown)
+               return;
+
+            leader = Thread.currentThread();
+            if (log.isLoggable(Level.FINER))
+               log.finer("" + this + " - New Leader"); 
+         }
+         ++running;
+         try {  handler.run(this); }
+         finally { --running; }
+      }
+   }
+   
+   public boolean promoteNewLeader()
+   {
+      if (shutdown)
+         return false;
+      
+      // only the current leader can promote the next leader
+      if (leader != Thread.currentThread())
+         throw new IllegalStateException();
+      
+      leader = null;
+      
+      // notify (one) waiting thread in join()
+      synchronized (mutex) {
+         if (waiting > 0)
+         {
+            if (log.isLoggable(Level.FINER))
+               log.finer("" + this + " - promote new leader by notify"); 
+            mutex.notify();
+            return true;
+         }
+      }
+            
+      // if there is no waiting thread,
+      // and the maximum number of running threads is not yet reached,
+      if (running >= maxRunning) {
+         if (log.isLoggable(Level.FINER))
+            log.finer("" + this + " - Max number of threads reached"); 
+         return false;
+      }
+      
+      // start a new one
+      if (log.isLoggable(Level.FINER))
+         log.finer("" + this + " - promote new leader by start new Thread"); 
+      new Thread(
+         new Runnable() {
+            public void run() { join(); }
+         }
+      ).start();
+      
+      return true;
+   }
+   
+   public void shutdown() {
+      shutdown = true;
+      leader = null;
+      synchronized (mutex)
+      {
+         mutex.notifyAll();
+      }
+   }
+         
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------
+   public interface Handler {
+      void run(LF_ThreadPool pool);
+   }
+}

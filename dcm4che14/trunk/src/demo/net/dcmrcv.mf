@@ -1,0 +1,3 @@
+Main-Class: DcmRcv
+Class-Path: ../lib/dcm4che.jar getopt.jar
+
