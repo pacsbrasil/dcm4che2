@@ -142,7 +142,7 @@
    </operation>
    <operation impact="ACTION">
       <description>Update Retrieve AETs of File System Configuration</description>
-      <name>updateFileSystem</name>
+      <name>updateRetrieveAETs</name>
       <parameter>
         <description>Directory Path (use / as delimiter)</description>
         <name>DirPath</name>
