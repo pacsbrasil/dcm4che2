@@ -178,8 +178,8 @@
       <priority value="INFO"/>
    </category>
 
-   <!-- Limit the org.dcm4chex.service category to INFO --> 
-   <category name="org.dcm4chex.service">
+   <!-- Limit the org.dcm4chex.archive.dcm category to INFO --> 
+   <category name="org.dcm4chex.archive.dcm">
       <priority value="INFO"/>
    </category>
 
