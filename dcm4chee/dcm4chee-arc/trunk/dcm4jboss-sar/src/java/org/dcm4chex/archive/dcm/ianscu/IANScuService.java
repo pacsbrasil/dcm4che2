@@ -106,6 +106,12 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     private String callingAET = DEFAULT_CALLING_AET;
 
+    private int acTimeout;
+
+    private int dimseTimeout;
+
+    private int soCloseDelay;
+
     private boolean preferInstanceAvailableNotification = true;
 
     private boolean offerInstanceAvailableNotification = true;
@@ -124,12 +130,12 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     public final String getNotifiedAETs() {
         return notifiedAETs.length > 0 ? StringUtils
-                .toString(notifiedAETs, ',') : NONE;
+                .toString(notifiedAETs, '\\') : NONE;
     }
 
     public final void setNotifiedAETs(String notifiedAETs) {
         this.notifiedAETs = NONE.equalsIgnoreCase(notifiedAETs) ? EMPTY
-                : StringUtils.split(notifiedAETs, ',');
+                : StringUtils.split(notifiedAETs, '\\');
     }
 
     public final String getCallingAET() {
@@ -140,6 +146,30 @@ public class IANScuService extends ServiceMBeanSupport implements
         this.callingAET = callingAET;
     }
 
+    public final int getAcTimeout() {
+        return acTimeout;
+    }
+
+    public final void setAcTimeout(int acTimeout) {
+        this.acTimeout = acTimeout;
+    }
+
+    public final int getDimseTimeout() {
+        return dimseTimeout;
+    }
+
+    public final void setDimseTimeout(int dimseTimeout) {
+        this.dimseTimeout = dimseTimeout;
+    }
+
+    public final int getSoCloseDelay() {
+        return soCloseDelay;
+    }
+
+    public final void setSoCloseDelay(int soCloseDelay) {
+        this.soCloseDelay = soCloseDelay;
+    }
+    
     public final String getRetryIntervalls() {
         return retryIntervalls.toString();
     }
@@ -301,6 +331,9 @@ public class IANScuService extends ServiceMBeanSupport implements
                 return ERR_UNKOWN_DEST;
             }
             Association a = af.newRequestor(createSocket(aeData));
+            a.setAcTimeout(acTimeout);
+            a.setDimseTimeout(dimseTimeout);
+            a.setSoCloseDelay(soCloseDelay);
             AAssociateRQ rq = af.newAAssociateRQ();
             rq.setCalledAET(called);
             rq.setCallingAET(callingAET);

@@ -54,6 +54,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getEjbProviderURL"
+      setMethod="setEjbProviderURL">
+      <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
+      "LOCAL", if EJBs are deployed in same JBoss instance.
+      </description>
+      <name>EjbProviderURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="LOCAL" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDataSourceJndiName"
       setMethod="setDataSourceJndiName">
       <description>Used internally - do NOT modify.
@@ -73,6 +85,17 @@
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="dcm4chex:service=DcmServer" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMppsScpServiceName"
+      setMethod="setMppsScpServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>MppsScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chex:service=MPPSScp" />
       </descriptors>
    </attribute>
    &defaultAttributes;

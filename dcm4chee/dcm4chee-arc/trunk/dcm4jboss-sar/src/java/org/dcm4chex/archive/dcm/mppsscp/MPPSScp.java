@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 package org.dcm4chex.archive.dcm.mppsscp;
 
@@ -28,7 +17,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
@@ -83,12 +71,8 @@ class MPPSScp extends DcmServiceBase {
         service.logDataset("Creating MPPS:\n", mpps);
         checkCreateAttributs(mpps);
         createMPPS(iuid, mpps);
-        if (service.isForward()) {
-            Association a = assoc.getAssociation();
-            a.putProperty("MPPSForwardCmd-" + cmd.getMessageID(),
-                    new MPPSForwardCmd.NCreate(service, a.getCalledAET(), iuid,
-                            mpps));
-        }
+        mpps.putUI(Tags.SOPInstanceUID, iuid);
+        service.sendMPPSNotification(mpps);
         return null;
     }
 
@@ -111,12 +95,26 @@ class MPPSScp extends DcmServiceBase {
         }
     }
 
+
+    protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
+            throws IOException, DcmServiceException {
+        final Command cmd = rq.getCommand();
+        final Dataset mpps = rq.getDataset();
+        final String iuid = cmd.getRequestedSOPInstanceUID();
+        service.logDataset("Set MPPS:\n", mpps);
+        checkSetAttributs(mpps);
+        updateMPPS(iuid, mpps);
+        mpps.putUI(Tags.SOPInstanceUID, iuid);
+        service.sendMPPSNotification(mpps);
+        return null;
+    }
+    
     private void updateMPPS(String iuid, Dataset mpps)
             throws DcmServiceException {
         try {
             MPPSManager mgr = getMPPSManagerHome().create();
             try {
-                mgr.updateMPPS(iuid, mpps);
+                 mgr.updateMPPS(iuid, mpps);
             } finally {
                 try {
                     mgr.remove();
@@ -128,23 +126,6 @@ class MPPSScp extends DcmServiceBase {
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-    }
-
-    protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-            throws IOException, DcmServiceException {
-        final Command cmd = rq.getCommand();
-        final Dataset mpps = rq.getDataset();
-        final String iuid = cmd.getRequestedSOPInstanceUID();
-        service.logDataset("Set MPPS:\n", mpps);
-        checkSetAttributs(mpps);
-        updateMPPS(iuid, mpps);
-        if (service.isForward()) {
-            Association a = assoc.getAssociation();
-            a.putProperty("MPPSForwardCmd-" + cmd.getMessageID(),
-                    new MPPSForwardCmd.NSet(service, a.getCalledAET(), iuid,
-                            mpps));
-        }
-        return null;
     }
 
     private void checkCreateAttributs(Dataset mpps) throws DcmServiceException {
@@ -182,13 +163,5 @@ class MPPSScp extends DcmServiceBase {
                             "Missing Type 1 Attribute "
                                     + Tags.toString(TYPE1_FINAL_ATTR[i]));
         }
-    }
-
-    protected void doAfterRsp(ActiveAssociation assoc, Dimse rsp) {
-        Association a = assoc.getAssociation();
-        Command cmd = rsp.getCommand();
-        String key = "MPPSForwardCmd-" + cmd.getMessageIDToBeingRespondedTo();
-        MPPSForwardCmd forwardCmd = (MPPSForwardCmd) a.getProperty(key);
-        if (forwardCmd != null) forwardCmd.execute();
     }
 }

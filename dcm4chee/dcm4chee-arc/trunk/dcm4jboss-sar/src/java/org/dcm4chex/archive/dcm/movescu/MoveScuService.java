@@ -52,6 +52,12 @@ public class MoveScuService extends ServiceMBeanSupport implements
 
     private String calledAET = DEF_CALLED_AET;
 
+    private int acTimeout;
+
+    private int dimseTimeout;
+
+    private int soCloseDelay;
+
     private String dsJndiName = "java:/DefaultDS";
 
     private DataSource datasource;
@@ -72,6 +78,30 @@ public class MoveScuService extends ServiceMBeanSupport implements
         this.calledAET = retrieveAET;
     }
 
+    public final int getAcTimeout() {
+        return acTimeout;
+    }
+
+    public final void setAcTimeout(int acTimeout) {
+        this.acTimeout = acTimeout;
+    }
+
+    public final int getDimseTimeout() {
+        return dimseTimeout;
+    }
+
+    public final void setDimseTimeout(int dimseTimeout) {
+        this.dimseTimeout = dimseTimeout;
+    }
+
+    public final int getSoCloseDelay() {
+        return soCloseDelay;
+    }
+
+    public final void setSoCloseDelay(int soCloseDelay) {
+        this.soCloseDelay = soCloseDelay;
+    }
+    
     public final String getDataSourceJndiName() {
         return dsJndiName;
     }

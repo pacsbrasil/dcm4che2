@@ -23,7 +23,7 @@
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
       <description>Accepted Called AETs.
-      Separate Separate multiple values by '\'(backslash). 
+      Separate multiple values by '\'(backslash). 
       </description>
       <name>CalledAETs</name>
       <type>java.lang.String</type>
@@ -55,50 +55,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getForwardAET"
-      setMethod="setForwardAET">
-      <description>Forward MPPS to specified AE. "NONE" = no forwarding.
-      </description>
-      <name>ForwardAET</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getAcTimeout"
-      setMethod="setAcTimeout">
-      <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
-      </description>
-      <name>AcTimeout</name>
-      <type>int</type>
-      <descriptors>
-         <value value="10000" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getDimseTimeout"
-      setMethod="setDimseTimeout">
-      <description>DIMSE message timeout in ms. 0 = no timeout.
-      </description>
-      <name>DimseTimeout</name>
-      <type>int</type>
-      <descriptors>
-         <value value="60000" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getSoCloseDelay"
-      setMethod="setSoCloseDelay">
-      <description>Socket close delay in ms after A-RELEASE RSP.
-      </description>
-      <name>SoCloseDelay</name>
-      <type>int</type>
-      <descriptors>
-         <value value="500" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
@@ -108,17 +64,6 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getDataSourceJndiName"
-      setMethod="setDataSourceJndiName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>DataSourceJndiName</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="java:/DefaultDS" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

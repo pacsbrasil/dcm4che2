@@ -139,6 +139,9 @@ class MoveCmd implements Runnable, DimseListener {
     private ActiveAssociation openAssociation(AEData moveSCP)
             throws IOException {
         Association a = af.newRequestor(createSocket(moveSCP));
+        a.setAcTimeout(service.getAcTimeout());
+        a.setDimseTimeout(service.getDimseTimeout());
+        a.setSoCloseDelay(service.getSoCloseDelay());
         AAssociateRQ rq = af.newAAssociateRQ();
         rq.setCalledAET(moveSCP.getTitle());
         rq.setCallingAET(service.getCallingAET());

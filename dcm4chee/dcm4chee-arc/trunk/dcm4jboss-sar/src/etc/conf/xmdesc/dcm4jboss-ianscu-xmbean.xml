@@ -4,7 +4,7 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Move SCU Service to process Move Orders</description>
+   <description>IAN/SCN SCU Service to notify DICOM peers about available Instances</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate" />
@@ -22,7 +22,8 @@
    <attribute access="read-write"
       getMethod="getNotifiedAETs"
       setMethod="setNotifiedAETs">
-      <description>Comma separated list of AETs of notified AEs.
+      <description>AET(s) of notified AE(s).
+      Separate multiple values by '\'(backslash).
       "NONE" = do not notify any AE.
       </description>
       <name>NotifiedAETs</name>
@@ -104,6 +105,39 @@
       <type>int</type>
       <descriptors>
          <value value="0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAcTimeout"
+      setMethod="setAcTimeout">
+      <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
+      </description>
+      <name>AcTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="10000" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDimseTimeout"
+      setMethod="setDimseTimeout">
+      <description>DIMSE message timeout in ms. 0 = no timeout.
+      </description>
+      <name>DimseTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="60000" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSoCloseDelay"
+      setMethod="setSoCloseDelay">
+      <description>Socket close delay in ms after A-RELEASE RSP.
+      </description>
+      <name>SoCloseDelay</name>
+      <type>int</type>
+      <descriptors>
+         <value value="500" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
