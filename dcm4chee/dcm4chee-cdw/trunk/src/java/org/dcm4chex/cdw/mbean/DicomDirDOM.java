@@ -152,7 +152,7 @@ class DicomDirDOM {
             appendAttrs(root, fsinfo.getFileMetaInfo());
             appendAttrs(root, fsinfo);
             appendRecords(root, reader.getFirstRecord());
-            appendAttrs(root, attrs.subSet(new int[] { Tags.RefSOPSeq}, true));
+            appendAttrs(root, attrs.subSet(new int[] { Tags.RefSOPSeq}, true, true));
             if (debug) {
                 service.logMemoryUsage();
                 log.debug("Created DicomDirDOM for " + rq);

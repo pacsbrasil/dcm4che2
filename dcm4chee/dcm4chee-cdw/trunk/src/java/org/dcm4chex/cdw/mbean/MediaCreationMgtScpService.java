@@ -291,7 +291,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             String prompt = refSOPs == null ? "N-Create Information:\n"
                     : "N-Create Information:\n(0008,1199) SQ #-1 *"
                             + refSOPs.vm() + " // Referenced SOP Sequence\n";
-            logDataset(prompt, info.subSet(new int[] { Tags.RefSOPSeq}, true));
+            logDataset(prompt, info.subSet(new int[] { Tags.RefSOPSeq}, true, true));
         }
         checkCreateAttributes(info, rspCmd);
         String iuid = rspCmd.getAffectedSOPInstanceUID();
