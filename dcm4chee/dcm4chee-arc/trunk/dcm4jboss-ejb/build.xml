@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.5.0"/>
+	<property name="version" value="0.5.1"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
@@ -30,16 +30,19 @@
 
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-3.2.3"/>		
+	<property name="jboss.client" value="${jboss.home}/client"/>		
 	<property name="jboss.conf" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.conf}/deploy"/>		
 	<property name="ejb.jar" value="${jboss.conf}/lib/jboss-j2ee.jar"/>		
 	<property name="log4j.jar" value="${jboss.conf}/lib/log4j.jar"/>		
+	<property name="getopt.jar" value="${jboss.client}/getopt.jar"/>		
 	<property name="jboss-system.jar" value="${jboss.home}/lib/jboss-system.jar"/>		
 
 	<path id="base.path">
 		<pathelement location="${jboss-system.jar}"/>
 		<pathelement location="${ejb.jar}"/>
 		<pathelement location="${log4j.jar}"/>
+		<pathelement location="${getopt.jar}"/>
 		<pathelement location="${dcm4che.jar}"/>
 	</path>
 
@@ -81,6 +84,7 @@
 	</path>
 	
 	<property name="src.java" value="${basedir}/src/java"/>
+	<property name="src.res" value="${basedir}/src/resources"/>
 	<property name="src.etc" value="${basedir}/src/etc"/>
 	<property name="etc.db2" value="${src.etc}/db2"/>
 	<property name="etc.oracle" value="${src.etc}/oracle"/>
@@ -108,6 +112,7 @@
 	<property name="target.psql.deploy" value="${target.dir}/psql/deploy"/>
 	<property name="target.oracle.deploy" value="${target.dir}/oracle/deploy"/>
 	<property name="target.db2.deploy" value="${target.dir}/db2/deploy"/>
+	<property name="target.common.bin" value="${target.dir}/common/bin"/>	
 	<property name="target.common.lib" value="${target.dir}/common/lib"/>	
 	<property name="target.hsql.lib" value="${target.dir}/hsql/lib"/>
 	<property name="target.psql.lib" value="${target.dir}/psql/lib"/>
@@ -167,6 +172,7 @@
         <mkdir dir="${target.psql.deploy}"/>
         <mkdir dir="${target.oracle.deploy}"/>
         <mkdir dir="${target.db2.deploy}"/>
+        <mkdir dir="${target.common.bin}"/>
         <mkdir dir="${target.common.lib}"/>
         <mkdir dir="${target.hsql.lib}"/>
         <mkdir dir="${target.psql.lib}"/>
@@ -327,7 +333,25 @@
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="db2"/>
     	</antcall>
-    	<antcall target="lib-jar"/>
+        <jar jarfile="${target.common.lib}/dcm4jboss-ejb-client.jar">
+        	<fileset dir="${target.classes}">
+                <include name="**/util/*"/>
+                <include name="**/interfaces/*"/>
+                <exclude name="**/interfaces/*Local*"/>
+            </fileset>
+        </jar>
+        <jar jarfile="${target.common.bin}/editmwl.jar">
+         	<manifest>
+	        	<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditMwl"/>
+	        	<attribute name="Class-Path" value="../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar "/>
+          	</manifest>	
+        	<fileset dir="${target.classes}">
+                <include name="**/tools/EditMwl*"/>
+            </fileset>
+        	<fileset dir="${src.res}">
+                <include name="**/tools/EditMwl*"/>
+            </fileset>
+        </jar>
     </target>
     <target name="ejb-jdbc-jar">
         <jar jarfile="${target.dir}/${db.name}/deploy/dcm4jboss-ejb-${db.name}.jar">
@@ -335,6 +359,7 @@
         	<fileset dir="${target.classes}">
                 <exclude name="**/*Test.class"/>
                 <exclude name="**/jdbc/**"/>
+                <exclude name="**/tools/**"/>
             </fileset>
         </jar>
         <style style="${src.etc}/jdbc-properties.xsl"
@@ -349,19 +374,6 @@
         </jar>
     </target>
 
-   <!-- =================================================================== -->
-   <!-- Creates the ejb-lib-jar                                             -->
-   <!-- =================================================================== -->
-    <target name="lib-jar">
-        <jar jarfile="${target.common.lib}/dcm4jboss-ejb-client.jar">
-        	<fileset dir="${target.classes}">
-                <include name="**/util/*"/>
-                <include name="**/interfaces/*"/>
-                <exclude name="**/interfaces/*Local*"/>
-            </fileset>
-        </jar>
-    </target>
-            
    <!-- =================================================================== -->
    <!-- Creates the test-war                                                -->
    <!-- =================================================================== -->

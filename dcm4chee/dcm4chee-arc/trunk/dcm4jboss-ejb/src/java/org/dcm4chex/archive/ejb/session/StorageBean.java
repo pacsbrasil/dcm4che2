@@ -123,8 +123,10 @@ public abstract class StorageBean implements SessionBean {
     private FileLocalHome fileHome;
     private AttributeFilter attrFilter;
     private AttributeCoercions attrCoercions;
+    private SessionContext sessionCtx;
 
     public void setSessionContext(SessionContext ctx) {
+        sessionCtx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
@@ -146,7 +148,7 @@ public abstract class StorageBean implements SessionBean {
                 new AttributeCoercions(
                     (String) jndiCtx.lookup(
                         "java:comp/env/AttributeCoercionConfigURL"));
-        } catch (NamingException e) {
+         } catch (NamingException e) {
             throw new EJBException(e);
         } catch (ConfigurationException e) {
             throw new EJBException(e);
@@ -161,6 +163,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     public void unsetSessionContext() {
+        sessionCtx = null;
         patHome = null;
         studyHome = null;
         seriesHome = null;
@@ -213,6 +216,7 @@ public abstract class StorageBean implements SessionBean {
             return coercedElements;
         } catch (Exception e) {
             log.error("store failed:", e);
+            sessionCtx.setRollbackOnly();
             throw new DcmServiceException(Status.ProcessingFailure);
         }
     }
