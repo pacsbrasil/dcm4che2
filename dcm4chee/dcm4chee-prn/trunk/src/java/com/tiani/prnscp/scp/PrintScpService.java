@@ -534,7 +534,8 @@ public class PrintScpService
       {
          try {
             Dataset ds = rq.getDataset(); // read out dataset
-            String uid = rq.getCommand().getAffectedSOPInstanceUID();            
+            String uid = rspCmd.getAffectedSOPInstanceUID();            
+            log.info("Creating Presentation LUT[uid=" + uid + "]");         
             HashMap pluts = getPresentationLUTs(as);
             if (pluts.get(uid) != null) {
                throw new DcmServiceException(Status.DuplicateSOPInstance);
@@ -543,6 +544,7 @@ public class PrintScpService
             // in Stored Print Object
             ds.putUI(Tags.SOPInstanceUID, uid);
             pluts.put(uid, ds);
+            log.info("Created Presentation LUT[uid=" + uid + "]");         
             return null;
          } catch (DcmServiceException e) {
             log.warn("Failed to create Presentation LUT SOP Instance", e);

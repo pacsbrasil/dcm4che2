@@ -103,24 +103,26 @@ class FilmSessionService
       throws IOException, DcmServiceException 
    {
       try {
+         String uid = rspCmd.getAffectedSOPInstanceUID();
          Dataset ds = rq.getDataset(); // read out dataset
-         if (scp.getFilmSession(as) != null) {
-            throw new DcmServiceException(Status.ProcessingFailure,
-               "Only support one Basic Film Session SOP Instance on an Association.");
-         }
-         String uid = rq.getCommand().getAffectedSOPInstanceUID();
-         File dir = scp.getSessionSpoolDir(uid);
-         if (dir.exists()) {
-            throw new DcmServiceException(Status.DuplicateSOPInstance);
-         }         
          Association a = as.getAssociation();
          AAssociateRQ aarq = a.getAAssociateRQ();
          PresContext pc =aarq.getPresContext(rq.pcid());
          String asuid = pc.getAbstractSyntaxUID();
+         scp.getLog().info("Creating Film Session[uid=" + uid + "]");         
+         if (scp.getFilmSession(as) != null) {
+            throw new DcmServiceException(Status.ProcessingFailure,
+               "Only support one Basic Film Session SOP Instance on an Association.");
+         }
+         File dir = scp.getSessionSpoolDir(uid);
+         if (dir.exists()) {
+            throw new DcmServiceException(Status.DuplicateSOPInstance);
+         }         
          FilmSession session = new FilmSession(scp, asuid, uid, ds, dir, rspCmd);
          scp.initSessionSpoolDir(dir);
          a.putProperty("FilmSession", session);
          a.addAssociationListener(this);
+         scp.getLog().info("Create Film Session[uid=" + uid + "]");         
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to create Basic Film Session SOP Instance", e);

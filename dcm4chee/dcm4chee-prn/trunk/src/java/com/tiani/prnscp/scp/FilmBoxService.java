@@ -81,16 +81,18 @@ class FilmBoxService extends DcmServiceBase
       throws IOException, DcmServiceException 
    {
       try {
+         String uid = rspCmd.getAffectedSOPInstanceUID();
          Dataset ds = rq.getDataset(); // read out dataset
+         scp.getLog().info("Creating Film Box[uid=" + uid + "]");         
          FilmSession session = scp.getFilmSession(as);
          HashMap pluts = scp.getPresentationLUTs(as);
          checkRefFilmSession(ds, session);
-         String uid = rq.getCommand().getAffectedSOPInstanceUID();
          if (session.containsFilmBox(uid)) {
             throw new DcmServiceException(Status.DuplicateSOPInstance);
          }
          addRefImageBox(ds, session.getImageBoxCUID());
          session.addFilmBox(uid, new FilmBox(scp, uid, ds, pluts));
+         scp.getLog().info("Created Film Box[uid=" + uid + "]");         
          return ds;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to create Basic Film Box SOP Instance", e);
