@@ -31,6 +31,9 @@ public class AENewSubmitCtrl extends Errable
 
 	private String title, hostName, chiperSuites;
 	private int port, pk;
+	private String newPar = null;
+	private String cancelPar = null;
+	
 
 	/**
 	 * @param chiperSuites The chiperSuites to set.
@@ -64,6 +67,16 @@ public class AENewSubmitCtrl extends Errable
 		this.title = title;
 	}
 
+	public final void setNew(String newPar)
+	{
+		this.newPar = newPar;
+	}
+
+	public final void setCancel(String cancel)
+	{
+		this.cancelPar = cancel;
+	}
+	
 	private AEData getAE()
 	{
 		return new AEData(
@@ -76,6 +89,8 @@ public class AENewSubmitCtrl extends Errable
 
 	protected String perform() throws Exception
 	{
+		if (newPar != null)
+		{
 			try
 			{
 				AEData newAE = getAE();
@@ -88,5 +103,8 @@ public class AENewSubmitCtrl extends Errable
 				this.backURL = "aenew.m";
 				return ERROR_VIEW;				
 			}
+		}
+		else
+			return "success";			
 	}
 }
