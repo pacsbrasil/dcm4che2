@@ -44,7 +44,7 @@
 	</path>
 	
     <!-- Override with your Cactus bundle dist location -->
-    <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.4.1"/>
+    <property name="cactus.home" value="${user.home}/jakarta-cactus"/>
     <property name="cactus.lib" value="${cactus.home}/lib"/>
 	<fileset id="cactus.container.jars" dir="${cactus.lib}">
       	<include name="aspectjrt-*.jar"/>
