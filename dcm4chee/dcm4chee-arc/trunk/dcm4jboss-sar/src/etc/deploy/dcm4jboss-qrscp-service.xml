@@ -13,7 +13,7 @@
     	dcm4chex:service=DcmServer,name=DCMSRV
     </depends>
     
-    <attribute name="DataSource">java:/PostgresDS</attribute>    
+    <attribute name="DataSource">java:/DefaultDS</attribute>    
 
 	<!--
 	Specifies if the C-MOVE SCP shall send optional C-MOVE RSP DICOM Messages

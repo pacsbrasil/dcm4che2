@@ -3,8 +3,7 @@
 	<property name="javac.debug" value="on"/>
 	<property name="version" value="0.2.0"/>
 
-	<property name="dist.db2" value="dcm4jboss-db2-${version}"/>
-	<property name="dist.psql" value="dcm4jboss-psql-${version}"/>
+	<property name="dist.dir" value="dcm4jboss-${version}"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
 	<property name="src.java" value="${src.dir}/java"/>
@@ -23,7 +22,9 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your dcm4jboss-ejb dist location -->
-	<property name="dcm4jboss-ejb.home" value="${user.home}/work/dcm4jboss-ejb/target"/>		
+	<property name="dcm4jboss-ejb.home" value="${user.home}/work/dcm4jboss-ejb"/>		
+	<property name="dcm4jboss-ejb.target" value="${dcm4jboss-ejb.home}/target"/>		
+	<property name="dcm4jboss-ejb.src" value="${dcm4jboss-ejb.home}/src"/>		
 
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-3.2.2"/>		
@@ -32,8 +33,8 @@
 
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
-		<pathelement location="${dcm4jboss-ejb.home}/lib/dcm4jboss-jdbc.jar"/>
-		<pathelement location="${dcm4jboss-ejb.home}/deploy/dcm4jboss-ejb-psql.jar"/>
+		<pathelement location="${dcm4jboss-ejb.target}/lib/dcm4jboss-jdbc.jar"/>
+		<pathelement location="${dcm4jboss-ejb.target}/deploy/dcm4jboss-ejb-psql.jar"/>
 		<fileset dir="${jboss.home}/lib">
 			<include name="*.jar"/>
 		</fileset>
@@ -79,8 +80,7 @@
         <mkdir dir="${target.java}"/>
         <mkdir dir="${target.lib}"/>
         <mkdir dir="${target.deploy}"/>
-        <mkdir dir="${target.dir}/${dist.db2}"/>
-        <mkdir dir="${target.dir}/${dist.psql}"/>
+        <mkdir dir="${target.dir}/${dist.dir}"/>
    </target>
 
     <!-- =================================================================== -->
@@ -168,16 +168,25 @@
    	<!-- Pack distributions                                                  -->
    	<!-- =================================================================== -->
    
-   	<target name="dist" depends="dist-psql,dist-db2"/>
-   	<target name="dist-psql" depends="jar">
-   		<copy todir="${target.dir}/${dist.psql}">
+   	<target name="dist" depends="jar">
+   		<copy todir="${target.dir}/${dist.dir}">
    			<fileset dir="${dcm4che.home}">
    				<include name="lib/dcm4che.jar"/>
    			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.home}">
+   			<fileset dir="${dcm4jboss-ejb.target}">
    				<include name="lib/dcm4jboss-ejb-client.jar"/>
    				<include name="lib/dcm4jboss-jdbc.jar"/>
+   				<include name="deploy/dcm4jboss-ejb-hsql.jar"/>
    				<include name="deploy/dcm4jboss-ejb-psql.jar"/>
+   				<include name="deploy/dcm4jboss-ejb-db2sql.jar"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}">
+   				<include name="sql/create.hsql"/>
+   				<include name="sql/create.psql"/>
+   				<include name="sql/create.db2sql"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src/sql}">
+   				<include name="data/hypersonic/localDB.script"/>
    			</fileset>
    			<fileset dir="${src.etc}">
    				<include name="deploy/*.xml"/>
@@ -187,43 +196,9 @@
    			</fileset>
    		</copy>
    		<zip
-   			destfile="${target.dir}/${dist.psql}.zip"
+   			destfile="${target.dir}/${dist.dir}.zip"
    			basedir="${target.dir}"
-   			includes="${dist.psql}/**"
-   		/>
-   	</target>
-   	<target name="service-db2-xml" >
-   		<copy todir="${target.dir}">
-   			<fileset dir="${src.etc}">
-   				<include name="deploy/*.xml"/>
-   			</fileset>
-   		</copy>
-   		<replace
-   			dir="${target.deploy}"
-   			includes="*.xml"
-   			token="PostgresDS"
-   			value="DB2DS"
-   		/>
-   	</target>
-   	<target name="dist-db2" depends="jar,service-db2-xml">
-   		<copy todir="${target.dir}/${dist.db2}">
-   			<fileset dir="${dcm4che.home}">
-   				<include name="lib/dcm4che.jar"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.home}">
-   				<include name="lib/dcm4jboss-ejb-client.jar"/>
-   				<include name="lib/dcm4jboss-jdbc.jar"/>
-   				<include name="deploy/dcm4jboss-ejb-db2.jar"/>
-   			</fileset>
-   			<fileset dir="${target.dir}">
-   				<include name="lib/dcm4jboss.jar"/>
-   				<include name="deploy/*.xml"/>
-   			</fileset>
-   		</copy>
-   		<zip
-   			destfile="${target.dir}/${dist.db2}.zip"
-   			basedir="${target.dir}"
-   			includes="${dist.db2}/**"
+   			includes="${dist.dir}/**"
    		/>
    	</target>
 	

@@ -27,7 +27,7 @@
     Name after "java:/" must match with <jndi-name> attribute of 
     JDBC Datasource configuration deployment file (*-ds.xml) 
 	-->
-    <attribute name="DataSource">java:/PostgresDS</attribute>    
+    <attribute name="DataSource">java:/DefaultDS</attribute>    
 
     <!-- 
     Specifies number of intervalls of retries of failed Move Requests.
