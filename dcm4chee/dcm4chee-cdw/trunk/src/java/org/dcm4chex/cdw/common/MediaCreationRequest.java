@@ -139,8 +139,8 @@ public class MediaCreationRequest implements Serializable {
     }
 
     public String toString() {
-        return "MediaCreationRequest[mediaWriter=" + mediaWriterName + "rquid="
-                + requestFile.getName() + ", fsuid="
+        return "MediaCreationRequest[mediaWriter=" + mediaWriterName
+        		+ ", rquid=" + requestFile.getName() + ", fsuid="
                 + (filesetDir == null ? "" : filesetDir.getName()) + ", fsid="
                 + (filesetID == null ? "" : filesetID) + ", seqNo="
                 + volsetSeqno + ", tot=" + volsetSize + "]";

@@ -272,7 +272,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        log.info("initialize " + WebBuilder.class.getName());
+        log.info("initialize " + DicomDirDOM.class.getName());
         JMSDelegate.getInstance("MediaComposer").setMessageListener(listener);
     }
 
@@ -297,10 +297,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 FilesetBuilder builder = new FilesetBuilder(this, rq, attrs);
                 builder.build();
                 // TODO split fileset on several media
-                WebBuilder webBuilder = new WebBuilder(this, rq, attrs);
-                if (logXml) webBuilder.toXML(xmlFile);
-                webBuilder.createIndex();
-                if (builder.isWeb()) webBuilder.createWeb();
+                DicomDirDOM dom = new DicomDirDOM(this, rq, attrs);
+                if (logXml) dom.toXML(xmlFile);
+                dom.createIndex();
+                if (builder.isWeb()) dom.createWeb();
                 final long fsSize = sizeOf(rq.getFilesetDir());
                 if (fsSize > mediaCapacity)
                         throw new MediaCreationException(

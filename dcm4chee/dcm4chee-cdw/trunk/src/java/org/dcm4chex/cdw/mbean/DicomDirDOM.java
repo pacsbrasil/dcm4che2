@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
  * @since 12.07.2004
  *
  */
-class WebBuilder {
+class DicomDirDOM {
 
     private static final DirBuilderFactory dbf = DirBuilderFactory
             .getInstance();
@@ -76,9 +76,6 @@ class WebBuilder {
 
     private final MediaCreationRequest rq;
 
-    private static final int[] RQ_TAGS = { Tags.IncludeNonDICOMObjects,
-            Tags.IncludeDisplayApplication,};
-
     static {
         try {
             dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
@@ -94,7 +91,7 @@ class WebBuilder {
         }
     }
 
-    public WebBuilder(MediaComposerService service, MediaCreationRequest rq,
+    public DicomDirDOM(MediaComposerService service, MediaCreationRequest rq,
             Dataset attrs) throws MediaCreationException {
         this.service = service;
         this.log = service.getLog();
@@ -108,7 +105,7 @@ class WebBuilder {
             appendAttrs(root, fsinfo.getFileMetaInfo());
             appendAttrs(root, fsinfo);
             appendRecords(root, reader.getFirstRecord());
-            appendAttrs(root, attrs.subSet(RQ_TAGS));
+            appendAttrs(root, attrs.subSet(new int[]{ Tags.RefSOPSeq }, true));
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);

@@ -88,7 +88,7 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
                 DcmElement sq = attrs.get(Tags.RefStorageMediaSeq);
                 if (sq == null) sq = attrs.putSQ(Tags.RefStorageMediaSeq);
                 Dataset item = sq.addNewItem();
-                item.putUI(Tags.StorageMediaFileSetID, rq.getFilesetID());
+                item.putSH(Tags.StorageMediaFileSetID, rq.getFilesetID());
                 item.putUI(Tags.StorageMediaFileSetUID, rq.getFilesetDir()
                         .getName());
                 attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated, rq
