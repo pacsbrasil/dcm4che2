@@ -1,7 +1,7 @@
 <project name="dcm4jboss-hl7" default="jar">
 	<property file="build.properties"/>
 	
-	<property name="version" value="2.1.0"/>
+	<property name="version" value="2.1.1"/>
 	<property name="javac.debug" value="on"/>
 	
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		

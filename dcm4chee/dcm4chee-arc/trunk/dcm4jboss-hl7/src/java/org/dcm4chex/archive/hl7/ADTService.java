@@ -29,9 +29,9 @@ import org.xml.sax.ContentHandler;
 
 public class ADTService extends AbstractHL7Service {
 
-    private static final String PID2DCM_XSL_URL = "resource:xsl/pid2dcm.xsl";
+    private static final String PID2DCM_XSL_URL = "resource:xsl/hl7/pid2dcm.xsl";
 
-    private static final String MRG2DCM_XSL_URL = "resource:xsl/mrg2dcm.xsl";
+    private static final String MRG2DCM_XSL_URL = "resource:xsl/hl7/mrg2dcm.xsl";
 
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {

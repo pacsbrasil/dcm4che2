@@ -54,9 +54,9 @@ import org.xml.sax.XMLReader;
 public class HL7ServerService extends ServiceMBeanSupport
 	implements Server.Handler {
 
-    private static final String ACK_XSL_URL = "resource:xsl/msh2ack.xsl";
+    private static final String ACK_XSL_URL = "resource:xsl/hl7/msh2ack.xsl";
     
-    private static final String LOG_MSG_XSL_URL = "resource:xsl/logmsg.xsl";
+    private static final String LOG_MSG_XSL_URL = "resource:xsl/hl7/logmsg.xsl";
 
     private static final TransformerFactory tf = 
         						TransformerFactory.newInstance();
