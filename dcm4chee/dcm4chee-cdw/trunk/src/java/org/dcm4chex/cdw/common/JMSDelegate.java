@@ -6,7 +6,7 @@
  *  See terms of license at gnu.org.      *
  *                                        *
  ******************************************/
-package org.dcm4chex.cdw;
+package org.dcm4chex.cdw.common;
 
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -20,6 +20,7 @@ import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 
 /**
  * @author gunter.zeilinter@tiani.com

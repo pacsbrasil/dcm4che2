@@ -1,4 +1,4 @@
-<project default="sar">
+<project default="dist">
 
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
@@ -43,14 +43,32 @@
       </javac>
     </target>
 
+   <target name="jar" depends="compile">
+      <mkdir dir="${dist.dir}/lib"/>
+      <jar destfile="${dist.dir}/lib/dcm4jboss-cdw.jar">
+         <fileset dir="${build.classes.dir}"
+            includes="org/dcm4chex/cdw/common/**"
+         />
+      </jar>
+   </target>
+   
    <target name="sar" depends="compile">
       <mkdir dir="${dist.dir}/deploy"/>
       <zip destfile="${dist.dir}/deploy/dcm4jboss-cdw.sar">
          <fileset dir="${src.resources}"
-            includes="META-INF/*.xml"
+            includes="META-INF/jboss-service.xml"
          />
          <fileset dir="${build.classes.dir}"
-            includes="org/dcm4chex/**"
+            includes="org/dcm4chex/cdw/mbean/**"
+         />
+      </zip>
+      <zip destfile="${dist.dir}/deploy/dcm4jboss-cdrecord.sar">
+         <zipfileset dir="${src.resources}"
+            fullpath="META-INF/jboss-service.xml"
+            includes="META-INF/cdrecord-service.xml"
+         />
+         <fileset dir="${build.classes.dir}"
+            includes="org/dcm4chex/cdw/cdrecord/**"
          />
       </zip>
    </target>
@@ -63,11 +81,12 @@
    	<!-- Pack distributions                                                  																		   -->
    	<!-- =================================================================== -->
 
-   	<target name="dist" depends="sar">
+   	<target name="dist" depends="jar,sar">
    		<property name="dist.standalone" value="${dist.name}"/>
    		<zip destfile="${build.dir}/${dist.standalone}.zip">
-			<zipfileset dir="target/${dist.name}/deploy/" prefix="${dist.standalone}/server/dcmcdw/deploy">
-				<include name="dcm4jboss-cdw.sar"/>
+			<zipfileset dir="target/${dist.name}" prefix="${dist.standalone}/server/dcmcdw">
+				<include name="deploy/*"/>
+				<include name="lib/*"/>
    			</zipfileset>	
 			<zipfileset dir="${dcm4che.home}" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="lib/dcm4che.jar"/>

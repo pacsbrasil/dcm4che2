@@ -8,7 +8,7 @@
 >
 
 <server>
-   <mbean code="org.dcm4chex.cdw.SpoolDirService"
+   <mbean code="org.dcm4chex.cdw.mbean.SpoolDirService"
       name="dcmcdw:service=SpoolDir"
       xmbean-dd="xmdesc/dcmcdw-spooldir-xmbean.xml">
    </mbean>
@@ -21,26 +21,12 @@
       </depends>
    </mbean>
    
-   <mbean code="org.dcm4chex.cdw.CDWriterService"
-      name="dcmcdw:service=CDWriter"
-      xmbean-dd="xmdesc/dcmcdw-cdwriter-xmbean.xml">
-      <depends>
-         dcmcdw:service=SpoolDir
-      </depends>
-      <depends>
-      	dcmcdw:service=Queue,name=Pending
-      </depends>
-      <depends>
-        jboss.mq:service=InvocationLayer,type=JVM
-      </depends>
-   </mbean>
-   
-   <mbean code="org.dcm4chex.cdw.DcmServerService"
+   <mbean code="org.dcm4chex.cdw.mbean.DcmServerService"
       name="dcmcdw:service=DcmServer"
       xmbean-dd="xmdesc/dcmcdw-dcmsrv-xmbean.xml">
    </mbean>
    
-   <mbean code="org.dcm4chex.cdw.StoreScpService"
+   <mbean code="org.dcm4chex.cdw.mbean.StoreScpService"
       name="dcmcdw:service=StoreSCP"
       xmbean-dd="xmdesc/dcmcdw-storescp-xmbean.xml">
       <depends>
@@ -51,7 +37,7 @@
       </depends>
    </mbean>
    
-   <mbean code="org.dcm4chex.cdw.MediaCreationMgtScpService"
+   <mbean code="org.dcm4chex.cdw.mbean.MediaCreationMgtScpService"
       name="dcmcdw:service=MediaCreationMgtSCP"
       xmbean-dd="xmdesc/dcmcdw-mcmscp-xmbean.xml">
       <depends>

@@ -6,7 +6,7 @@
  *  See terms of license at gnu.org.      *
  *                                        *
  ******************************************/
-package org.dcm4chex.cdw;
+package org.dcm4chex.cdw.mbean;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,6 +26,7 @@ import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
+import org.dcm4chex.cdw.common.*;
 
 /**
  * @author gunter.zeilinter@tiani.com

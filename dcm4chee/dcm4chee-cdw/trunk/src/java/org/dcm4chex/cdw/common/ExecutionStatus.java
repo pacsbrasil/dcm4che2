@@ -6,8 +6,7 @@
  *  See terms of license at gnu.org.      *
  *                                        *
  ******************************************/
-package org.dcm4chex.cdw;
-
+package org.dcm4chex.cdw.common;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -15,14 +14,18 @@ package org.dcm4chex.cdw;
  * @since 23.06.2004
  *
  */
-public class ExecutionStatusInfo {
+public class ExecutionStatus {
 
-    public static final String NORMAL = "NORMAL";
-    
-    public static final String QUEUED = "QUEUED";
+    public static final String IDLE = "IDLE";
 
-    public static final String PROC_FAILURE = "PROC_FAILURE";    
+    public static final String PENDING = "PENDING";
 
-    private ExecutionStatusInfo() {}
+    public static final String CREATING = "CREATING";
 
+    public static final String DONE = "DONE";
+
+    public static final String FAILURE = "FAILURE";
+
+    private ExecutionStatus() {
+    }
 }

@@ -19,7 +19,7 @@
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
-   <class>org.dcm4chex.dcmcdw.CDWriterService</class>
+   <class>org.dcm4chex.cdw.cdrecord.CDWriterService</class>
 
    <constructor>
       <description>The default constructor</description>

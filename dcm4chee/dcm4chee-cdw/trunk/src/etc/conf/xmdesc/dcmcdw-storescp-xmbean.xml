@@ -19,7 +19,7 @@
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
-   <class>org.dcm4chex.dcmcdw.StoreScpService</class>
+   <class>org.dcm4chex.cdw.mbean.StoreScpService</class>
 
    <constructor>
       <description>The default constructor</description>

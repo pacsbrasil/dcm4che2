@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<!-- $Id$ -->
+
+<!DOCTYPE server PUBLIC
+   "-//JBoss//DTD MBean Service 3.2//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss-service_3_2.dtd"
+>
+
+<server>
+   <mbean code="org.dcm4chex.cdw.cdrecord.CDRecordService"
+      name="dcmcdw:service=CDWriter"
+      xmbean-dd="xmdesc/dcmcdw-cdwriter-xmbean.xml">
+      <depends>
+         dcmcdw:service=SpoolDir
+      </depends>
+      <depends>
+      	dcmcdw:service=Queue,name=Pending
+      </depends>
+      <depends>
+        jboss.mq:service=InvocationLayer,type=JVM
+      </depends>
+   </mbean>
+</server>

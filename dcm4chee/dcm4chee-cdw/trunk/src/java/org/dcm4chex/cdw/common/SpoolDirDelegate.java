@@ -6,7 +6,7 @@
  *  See terms of license at gnu.org.      *
  *                                        *
  ******************************************/
-package org.dcm4chex.cdw;
+package org.dcm4chex.cdw.common;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

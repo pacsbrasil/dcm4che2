@@ -6,7 +6,7 @@
  *  See terms of license at gnu.org.      *
  *                                        *
  ******************************************/
-package org.dcm4chex.cdw;
+package org.dcm4chex.cdw.mbean;
 
 import javax.management.ObjectName;
 
@@ -17,6 +17,7 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
+import org.dcm4chex.cdw.common.*;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
