@@ -8,8 +8,6 @@ package org.dcm4chex.archive.web.maverick;
 
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
-import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
@@ -57,16 +55,6 @@ public abstract class Errable extends Dcm4JbossController
 					AEManagerHome.class,
 					AEManagerHome.JNDI_NAME);
 		return home.create();
-	}		
-	
-	protected PatientUpdate lookupPatientUpdate() throws Exception
-	{
-		PatientUpdateHome home =
-			(PatientUpdateHome) EJBHomeFactory.getFactory().lookup(
-					PatientUpdateHome.class,
-					PatientUpdateHome.JNDI_NAME);
-		return home.create();
-	}
-	
+	}			
 	
 }
