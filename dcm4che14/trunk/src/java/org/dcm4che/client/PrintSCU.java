@@ -748,7 +748,7 @@ public class PrintSCU {
      * @throws IOException
      * @throws DcmServiceException
      */
-    public int setImageBox(int index, File file, Dataset attr)
+    public int setImageBox(int index, File file, File psFile, Dataset attr)
         throws InterruptedException, IOException, DcmServiceException {
         if (index < 0 || index >= countImageBoxes()) {
             throw new IndexOutOfBoundsException(
@@ -772,8 +772,9 @@ public class PrintSCU {
             requestor.invokeAndWaitForRSP(
                 pcidPrint,
                 nSetRQ,
-                new PrintSCUDataSource(this, imageBox, file, new File(file.getParent() + "/xlut_p03.pre"), true));
+                new PrintSCUDataSource(this, imageBox, file, psFile, true));
         return checkStatus(rsp.getCommand());
+        //new File(file.getParent() + "/xlut_p03.pre")
     }
 
     boolean isColorPrint() {

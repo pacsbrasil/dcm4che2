@@ -358,7 +358,7 @@ public class PrintSCUFrame extends JFrame
                         //dump to log
                         dump(attr, "Image Box");
                         //create image box
-                        printSCU.setImageBox(nextImageBoxIndex++, file, attr);
+                        printSCU.setImageBox(nextImageBoxIndex++, file, null, attr);
                     }
                     catch (PrintSCUConfigurationException e1) {
                         JOptionPane.showMessageDialog(PrintSCUFrame.this, e1);
