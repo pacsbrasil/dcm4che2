@@ -365,7 +365,12 @@
         <style style="${src.etc}/jdbc-properties.xsl"
              in="${target.meta-inf}-${db.name}/jbosscmp-jdbc.xml"
              out="${target.res}-${db.name}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
-        />
+        >
+			<xmlcatalog>
+        		<dtd publicId="-//JBoss//DTD JBOSSCMP-JDBC 3.2//EN"
+            		 location="${jboss.home}/docs/dtd/jbosscmp-jdbc_3_2.dtd"/>
+		    </xmlcatalog>        
+        </style>
         <jar jarfile="${target.dir}/${db.name}/lib/dcm4jboss-jdbc-${db.name}.jar">
         	<fileset dir="${target.classes}">
                 <include name="**/jdbc/*"/>
