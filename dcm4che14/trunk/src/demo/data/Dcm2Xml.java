@@ -41,6 +41,8 @@ import gnu.getopt.*;
  */
 public class Dcm2Xml {
 
+    private static final DcmParserFactory pfact = 
+            DcmParserFactory.getInstance();
     private OutputStream out = System.out;
     private URL xslt = null;
     private LinkedList xsltParams = new LinkedList();
@@ -109,11 +111,10 @@ public class Dcm2Xml {
     
     public void process(String file)
             throws IOException, TransformerConfigurationException {
-        DcmParser parser = DcmParserFactory.getInstance().newDcmParser();
         DataInputStream in = new DataInputStream(new BufferedInputStream(
                 new FileInputStream(file)));
         try {
-            parser.setInput(in);
+            DcmParser parser = pfact.newDcmParser(in);
             parser.setSAXHandler(getTransformerHandler(), dict);
             parser.parseDcmFile(null, stopTag);
         } finally {

@@ -26,6 +26,9 @@ package tiani.dcm4che.data;
 
 import org.dcm4che.data.DcmParser;
 
+import java.io.InputStream;
+import javax.imageio.stream.ImageInputStream;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -37,8 +40,17 @@ public final class DcmParserFactoryImpl
     /** Creates a new instance of DcmParserFactoryImpl */
     public DcmParserFactoryImpl() {
     }
-
+/*
     public DcmParser newDcmParser() {
         return new DcmParserImpl();
     }    
+*/
+    public DcmParser newDcmParser(InputStream in) {
+        return new DcmParserImpl(in);
+    }    
+
+    public DcmParser newDcmParser(ImageInputStream in) {
+        return new DcmParserImpl(in);
+    }    
+
 }

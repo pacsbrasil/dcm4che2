@@ -82,9 +82,8 @@ public class DcmImageReaderSpi extends ImageReaderSpi {
             return false;
         }
         
-        DcmParser parser = DcmParserFactory.getInstance().newDcmParser();
-        parser.setInput((ImageInputStream)input);
-
+        DcmParser parser =
+                DcmImageReader.pfact.newDcmParser((ImageInputStream)input);
         return parser.detectFileFormat() != null;
     }
 

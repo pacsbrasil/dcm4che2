@@ -23,6 +23,9 @@
 
 package org.dcm4che.data;
 
+import java.io.InputStream;
+import javax.imageio.stream.ImageInputStream;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -48,7 +51,9 @@ public abstract class DcmParserFactory {
     protected DcmParserFactory() {
     }
     
-    public abstract DcmParser newDcmParser();
+//    public abstract DcmParser newDcmParser();
+    public abstract DcmParser newDcmParser(InputStream in);
+    public abstract DcmParser newDcmParser(ImageInputStream in);
 
     static class ConfigurationError extends Error {
         ConfigurationError(String msg, Exception x) {

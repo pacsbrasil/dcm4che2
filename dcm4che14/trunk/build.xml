@@ -356,6 +356,12 @@
          basedir="${build.classes}"
          includes="Xml2Dcm.class"/>
 
+    <!-- Build acr2dcm.jar -->
+    <jar jarfile="${build.jars}/demo/acr2dcm.jar"
+         manifest="${source.demo}/data/acr2dcm.mf"
+         basedir="${build.classes}"
+         includes="Acr2Dcm.class"/>
+
     <!-- Build dcmdir.jar -->
     <jar jarfile="${build.jars}/demo/dcmdir.jar"
          manifest="${source.demo}/media/dcmdir.mf">

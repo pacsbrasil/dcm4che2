@@ -121,16 +121,14 @@ final class DatasetImpl extends BaseDatasetImpl
         
     public void read(InputStream in, FileFormat format, int stopTag)
             throws IOException, DcmValueException {
-        DcmParserImpl parser = new DcmParserImpl();
-        parser.setInput(in);
+        DcmParserImpl parser = new DcmParserImpl(in);
         parser.setDcmHandler(getDcmHandler());
         parser.parseDcmFile(format, stopTag);
     }
     
-    public void read(ImageInputStream iin, FileFormat format, int stopTag)
+    public void read(ImageInputStream in, FileFormat format, int stopTag)
             throws IOException, DcmValueException {
-        DcmParserImpl parser = new DcmParserImpl();
-        parser.setInput(iin);
+        DcmParserImpl parser = new DcmParserImpl(in);
         parser.setDcmHandler(getDcmHandler());
         parser.parseDcmFile(format, stopTag);
     }

@@ -85,6 +85,18 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     
     private ByteArrayOutputStream unBuf = null;
     
+    public DcmParserImpl(InputStream in) {
+        if (in == null) {
+            throw new NullPointerException();
+        }
+        this.in = in instanceof DataInput ? (DataInput)in
+                                          : new DataInputStream(in);
+    }
+
+    public DcmParserImpl(ImageInputStream in) {        
+        this.in = in;
+    }
+/*    
     public final void reset() {
         bb12.order(ByteOrder.LITTLE_ENDIAN);
         decodeParam = DcmDecodeParam.IVR_LE;
@@ -99,7 +111,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         eof = false;
         tsUID = null;
     }
-    
+*/    
     public final int getReadTag() {
         return rTag;
     }
@@ -135,7 +147,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     public final void setSAXHandler(ContentHandler hc, TagDictionary dict) {
         this.handler = new DcmHandlerAdapter(hc, dict);
     }
-    
+/*    
     public final void setInput(InputStream in) {
         if (in != null) {
             this.in = in instanceof DataInput ? (DataInput)in
@@ -148,7 +160,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     public final void setInput(ImageInputStream in) {        
         this.in = in;
     }
-    
+*/    
     public final void setVRMap(VRMap vrMap) {
         if (vrMap == null)
             throw new NullPointerException();

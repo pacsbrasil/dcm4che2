@@ -64,6 +64,8 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class DcmImageReader extends javax.imageio.ImageReader {
 
+    static final DcmParserFactory pfact =
+            DcmParserFactory.getInstance();
     private static final ColorModelFactory cmFactory =
             ColorModelFactory.getInstance();
     
@@ -76,7 +78,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
     // The image's tile.
     private WritableRaster theTile = null;
 
-    private DcmParser theParser = DcmParserFactory.getInstance().newDcmParser();
+    private DcmParser theParser = null;
     private DcmMetadataImpl theMetadata = null;
     private Dataset theDataset = null;
     private long[] frameStartPos = null;
@@ -165,7 +167,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
         if (stream == null) {
             throw new IllegalStateException("Input not set!");
         }
-        theParser.setInput(stream);
+        theParser = pfact.newDcmParser(stream);
         FileFormat fileFormat = theParser.detectFileFormat();
         if (fileFormat == null) {
             throw new IOException("Unrecognized file format!");
@@ -491,7 +493,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
      * Remove local settings based on parsing of a stream.
      */
     private void resetStreamSettings() {
-        theParser.reset();
+        theParser = null;
         theMetadata = null;
         theDataset = null;
         frameStartPos = null;

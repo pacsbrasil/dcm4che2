@@ -46,11 +46,11 @@ import javax.imageio.stream.ImageInputStream;
  */
 class DirReaderImpl implements DirReader {
     
+    static final DcmParserFactory pfactory = DcmParserFactory.getInstance();
     static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
     protected final File file;
     protected final ImageInputStream in;
-    protected final DcmParser parser = 
-            DcmParserFactory.getInstance().newDcmParser();
+    protected final DcmParser parser;
     protected Dataset fsi;
     protected int offFirstRootRec;
     protected int offLastRootRec;
@@ -63,7 +63,7 @@ class DirReaderImpl implements DirReader {
     DirReaderImpl(File file, ImageInputStream in) {
         this.file = file != null ? file.getAbsoluteFile() : null;
         this.in = in;
-        parser.setInput(in);
+        this.parser = pfactory.newDcmParser(in);
     }
     
     DirReaderImpl initReader() throws IOException {

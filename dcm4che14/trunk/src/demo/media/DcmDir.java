@@ -253,7 +253,7 @@ public class DcmDir {
                     cmd = c;
                     dcmdir.setDirFile(new File(g.getOptarg()));
                     break;
-               case 'G':
+                case 'G':
                    dcmdir.setSkipGroupLen(false);
                     break;
                 case 'S':

@@ -54,17 +54,17 @@ public class DcmParserTest extends TestCase {
     private static final String EVR_LE = "../testdata/sr/examplef9.dcm";
     private static final String DICOMDIR = "../testdata/dir/DICOMDIR";
     private static final String PART10_EVR_LE = "../testdata/img/6AF8_10";
+    private static final DcmParserFactory pfact = DcmParserFactory.getInstance();
     private DcmParser parser;
     
     protected void setUp() throws Exception {
-        parser = DcmParserFactory.getInstance().newDcmParser();
     }
     
     public void testEVR_LE() throws Exception {
         DataInputStream in = new DataInputStream(
                 new BufferedInputStream(new FileInputStream(EVR_LE)));
         try {
-            parser.setInput(in);
+            parser = pfact.newDcmParser(in);
             parser.parseDcmFile(null, -1);
         } finally {
             try { in.close(); } catch (Exception ignore) {}
@@ -75,7 +75,7 @@ public class DcmParserTest extends TestCase {
         DataInputStream in = new DataInputStream(
                 new BufferedInputStream(new FileInputStream(DICOMDIR)));
         try {
-            parser.setInput(in);
+            parser = pfact.newDcmParser(in);
             parser.parseDcmFile(null, -1);
         } finally {
             try { in.close(); } catch (Exception ignore) {}
@@ -86,7 +86,7 @@ public class DcmParserTest extends TestCase {
         DataInputStream in = new DataInputStream(
                 new BufferedInputStream(new FileInputStream(PART10_EVR_LE)));
         try {
-            parser.setInput(in);
+            parser = pfact.newDcmParser(in);
             parser.parseDcmFile(null, -1);
         } finally {
             try { in.close(); } catch (Exception ignore) {}
