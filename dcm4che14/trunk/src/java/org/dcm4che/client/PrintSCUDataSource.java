@@ -49,21 +49,27 @@ import org.dcm4che.net.DataSource;
  */
 class PrintSCUDataSource implements DataSource {
 
-	static final DcmParserFactory parserFact =
+	private static final DcmParserFactory parserFact =
 		DcmParserFactory.getInstance();
-	private final  PrintSCU printSCU;
-	private final  Dataset imageBox;
-	private final  File file;
+	private final PrintSCU printSCU;
+	private final Dataset imageBox;
+	private final File file;
+    private final boolean burnInOverlays;
 	
 	/**
-	 * @param printSCU
-	 * @param imageBox
-	 * @param file
+	 * @param printSCU the calling <code>PrintSCU</code>
+	 * @param imageBox the <code>Dataset</code> containing the Image Box header
+     *        (minus any image pixel module-specific attributes)
+	 * @param file the path to the local file containing the image to be sent
+     * @param burnInOverlays specifies whether to "burn-in" and Overlay Planes
+     *        found within the DICOM image
 	 */
-	public PrintSCUDataSource(PrintSCU printSCU, Dataset imageBox, File file) {
+	public PrintSCUDataSource(PrintSCU printSCU, Dataset imageBox, File file,
+                              boolean burnInOverlays) {
 		this.printSCU = printSCU;
 		this.imageBox = imageBox;
 		this.file = file;
+        this.burnInOverlays = burnInOverlays;
 	}
 
 	private static final Dataset IMAGE_MODULE =
@@ -81,7 +87,7 @@ class PrintSCUDataSource implements DataSource {
 		IMAGE_MODULE.putUS(Tags.PixelRepresentation);
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.dcm4che.net.DataSource#writeTo(java.io.OutputStream, java.lang.String)
 	 */
 	public void writeTo(OutputStream out, String tsUID) throws IOException {
@@ -102,7 +108,6 @@ class PrintSCUDataSource implements DataSource {
 				}
 				if (ds.getInt(Tags.PlanarConfiguration, 0) != 0) {
 					throw new IOException("Conversion from Planar Configuration color-by-pixel to color-by-plane not yet supported");
-			
 				}
 			} else {
 				if (!"MONOCHROME2".equals(pmi) && !"MONOCHROME1".equals(pmi)) {
@@ -131,11 +136,14 @@ class PrintSCUDataSource implements DataSource {
 				parser.getReadVR(),
 				parser.getReadLength());
                 
-            int bitsStored = ds.getInt(Tags.BitsStored, 0);
-            int cols = ds.getInt(Tags.Columns, 0);
-            int rows = ds.getInt(Tags.Rows, 0);
+            final int bitsStored = ds.getInt(Tags.BitsStored, 0);
+            final int highBit = ds.getInt(Tags.HighBit, bitsStored - 1);
+            final int cols = ds.getInt(Tags.Columns, 0);
+            final int rows = ds.getInt(Tags.Rows, 0);
+            final int spp = ds.getInt(Tags.SamplesPerPixel, 1);
+            final boolean signed = (ds.getInt(Tags.PixelRepresentation, 0) == 1);
             
-            class Overlay
+            final class Overlay
             {
                 public int cols, rows;
                 public int x, y;
@@ -165,48 +173,40 @@ class PrintSCUDataSource implements DataSource {
                     list.add(new Overlay(group));
                 cntr--;
                 group += 0x20000;
-                System.out.println("GROUP = " + Integer.toHexString(group));
             }
             Overlay[] overlays = (Overlay[])list.toArray(new Overlay[0]);
+            list = null;
             
-            if (overlays.length > 0) { //check if any overlays exist
-                System.out.println("Overlays found: " + overlays.length);
-                parser = parserFact.newDcmParser(new BufferedInputStream(new FileInputStream(file)));
+            //check if any overlays exist and if they are to be burned into the image
+            if (burnInOverlays && overlays.length > 0) {
+                final int burnValue = (signed) ? -1 ^ (1 << highBit) : -1;
+                parser = parserFact.newDcmParser(new BufferedInputStream(
+                    new FileInputStream(file)));
                 Dataset tmp = PrintSCU.dcmFact.newDataset();
                 parser.setDcmHandler(tmp.getDcmHandler());
                 parser.parseDcmFile(null, -1);
                 ByteBuffer buff = tmp.getByteBuffer(Tags.PixelData);
-                System.out.println("Pixeldata len: " + buff.limit());
-                int spp = ds.getInt(Tags.SamplesPerPixel, 1);
 
                 Overlay ovl;
                 for (int i = 0; i < overlays.length; i++) {
                     ovl = overlays[i];
-                    int mask = 1;
-                    int colstart = Math.max(0, ovl.x);
-                    int colend = Math.min(ovl.x + ovl.cols, cols);
-                    int rowstart = Math.max(0, ovl.y);
-                    int rowend = Math.min(ovl.y + ovl.rows, rows);
+                    final int colstart = Math.max(0, ovl.x);
+                    final int colend = Math.min(ovl.x + ovl.cols, cols);
+                    final int rowstart = Math.max(0, ovl.y);
+                    final int rowend = Math.min(ovl.y + ovl.rows, rows);
                     final int x = (ovl.x >= 0) ? 0 : -ovl.x;
-                    int y = (ovl.y >= 0) ? 0 : -ovl.y;
-                    int ind;
-                    int cnt = 0;
+                    final int y = (ovl.y >= 0) ? 0 : -ovl.y;
+                    int mask = 1;
+                    int ind = x + y * ovl.cols;
                     for (int j = rowstart; j < rowend; j++) {
-                        ind = x + y * ovl.cols;
                         for (int k = colstart; k < colend; k++) {
                             if ((ovl.data[ind >> 3] & mask) > 0) {
                                 switch (bitsStored) {
                                     case 8:
-                                        cnt++;
-                                        //buff.position((j*cols + k)*spp);
-                                        //bArr[(j*cols + k)*spp] = -1;
                                         for (int s = 0; s < spp; s++)
                                             buff.put((j*cols + k)*spp + s, (byte)-1);
                                         break;
                                     case 12:
-                                        cnt++;
-                                        //buff.position((j*cols + k)*spp);
-                                        //sArr[(j*cols + k)*spp] = -1;
                                         for (int s = 0; s < spp; s++)
                                             buff.putShort((j*cols + k)*spp*2 + s, (short)-1);
                                         break;
@@ -218,12 +218,10 @@ class PrintSCUDataSource implements DataSource {
                             else
                                 mask = mask << 1;
                         }
-                        y++;
+                        ind += ovl.cols;
                     }
-                    System.out.println("In overlay " + i + " pixels modified=" + cnt);
                 }
                 out.write(buff.array());
-                System.out.println("WROTE DATA");
             }
             else {
     			copy(in, out, parser.getReadLength());
@@ -232,11 +230,12 @@ class PrintSCUDataSource implements DataSource {
 				Tags.ItemDelimitationItem, VRs.NONE, 0);
 			ds.writeHeader(out, encodeParam,
 				Tags.SeqDelimitationItem, VRs.NONE, 0);
-		} finally {
+		}
+        finally {
 			try {
 				in.close();
-			} catch (IOException ignore) {
 			}
+            catch (IOException ignore) {}
 		}
 	}
 	
