@@ -74,8 +74,6 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
  */
 public abstract class StudyBean implements EntityBean {
 
-    private static final String ATTRS_CFG = "study-attrs.cfg";
-
     private static final Logger log = Logger.getLogger(StudyBean.class);
 
     /**
@@ -270,9 +268,7 @@ public abstract class StudyBean implements EntityBean {
         setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
-        setEncodedAttributes(
-            DatasetUtil.toByteArray(
-                ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        setEncodedAttributes(DatasetUtil.toByteArray(ds));
     }
 
     /**

@@ -32,8 +32,10 @@
 	<property name="jboss.deploy" value="${jboss.conf}/deploy"/>		
 	<property name="ejb.jar" value="${jboss.conf}/lib/jboss-j2ee.jar"/>		
 	<property name="log4j.jar" value="${jboss.conf}/lib/log4j.jar"/>		
+	<property name="jboss-system.jar" value="${jboss.home}/lib/jboss-system.jar"/>		
 
 	<path id="base.path">
+		<pathelement location="${jboss-system.jar}"/>
 		<pathelement location="${ejb.jar}"/>
 		<pathelement location="${log4j.jar}"/>
 		<pathelement location="${dcm4che.jar}"/>
@@ -297,7 +299,6 @@
                 <exclude name="**/*Test.class"/>
                 <exclude name="**/jdbc/**"/>
             </fileset>
-        	<fileset dir="${src.conf}"/>
         </jar>
     </target>
 

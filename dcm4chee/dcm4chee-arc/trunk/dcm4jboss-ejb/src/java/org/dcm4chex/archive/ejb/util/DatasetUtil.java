@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -17,29 +17,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 17.07.2003
- * Time: 17:49:18
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
- */
 package org.dcm4chex.archive.ejb.util;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StreamTokenizer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -127,59 +112,7 @@ public class DatasetUtil
             throw new EJBException(e);
         }
     }
-
-    public static Dataset getFilter(String attrs_cfg)
-    {
-        Dataset ds = (Dataset) filterMap.get(attrs_cfg);
-        if (ds == null)
-        {
-            ds = dof.newDataset();
-            StringTokenizer st = new StringTokenizer(attrs_cfg, "+");            
-            while (st.hasMoreTokens())
-            {
-                loadFilter(st.nextToken(), ds);
-            }
-            filterMap.put(attrs_cfg, ds);
-        }
-        return ds;
-    }
-
-    private static void loadFilter(String attrs_cfg, Dataset ds)
-    {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        InputStream is = cl.getResourceAsStream(attrs_cfg);
-        if (is == null)
-        {
-            throw new EJBException("Missing " + attrs_cfg);
-        }
-        Reader r = new BufferedReader(new InputStreamReader(is));
-        StreamTokenizer st = new StreamTokenizer(r);
-        try
-        {
-            while (st.nextToken() != StreamTokenizer.TT_EOF)
-            {
-                if (st.ttype == StreamTokenizer.TT_WORD)
-                {
-                    ds.putXX(Tags.forName(st.sval));
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            throw new EJBException("Failed to parse " + attrs_cfg, e);
-        }
-        finally
-        {
-            try
-            {
-                is.close();
-            }
-            catch (IOException ignore)
-            {
-            }
-        }
-    }
-
+    
     private DatasetUtil()
     {
     }

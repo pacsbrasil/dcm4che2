@@ -72,8 +72,6 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
  */
 public abstract class SeriesBean implements EntityBean {
 
-    private static final String ATTRS_CFG = "series-attrs.cfg";
-
     private static final Logger log = Logger.getLogger(SeriesBean.class);
     
     /**
@@ -239,7 +237,7 @@ public abstract class SeriesBean implements EntityBean {
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
         setPpsStartDateTime(ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));        
+        setEncodedAttributes(DatasetUtil.toByteArray(ds));        
     }
 
     /**

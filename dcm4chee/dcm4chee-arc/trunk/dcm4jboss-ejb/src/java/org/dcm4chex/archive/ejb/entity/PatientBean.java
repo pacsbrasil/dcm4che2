@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -16,15 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 08.07.2003
- * Time: 18:28:10
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
  */
 package org.dcm4chex.archive.ejb.entity;
 
@@ -67,12 +58,9 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public abstract class PatientBean implements EntityBean
-{
+public abstract class PatientBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(PatientBean.class);
-
-    private static final String ATTRS_CFG = "patient-attrs.cfg";
 
     /**
      * Auto-generated Primary Key
@@ -183,61 +171,52 @@ public abstract class PatientBean implements EntityBean
      */
     public abstract java.util.Collection getStudies();
 
-   /**
-     * Create patient.
-     *
-     * @ejb.create-method
-     */
-    public Integer ejbCreate(Dataset ds) throws CreateException
-    {
+    /**
+      * Create patient.
+      *
+      * @ejb.create-method
+      */
+    public Integer ejbCreate(Dataset ds) throws CreateException {
         setAttributes(ds);
         return null;
     }
 
-    public void ejbPostCreate(Dataset ds) throws CreateException
-    {
+    public void ejbPostCreate(Dataset ds) throws CreateException {
         log.info("Created " + prompt());
     }
 
-    public void ejbRemove() throws RemoveException
-    {
+    public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
     }
 
     /**
      * @ejb.interface-method
      */
-    public Dataset getAttributes()
-    {
+    public Dataset getAttributes() {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public void setAttributes(Dataset ds)
-    {
+    public void setAttributes(Dataset ds) {
         setPatientId(ds.getString(Tags.PatientID));
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
         setPatientName(ds.getString(Tags.PatientName));
         setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
         setPatientSex(ds.getString(Tags.PatientSex));
-        setEncodedAttributes(
-            DatasetUtil.toByteArray(
-                ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        setEncodedAttributes(DatasetUtil.toByteArray(ds));
     }
 
     /**
      * 
      * @ejb.interface-method
      */
-    public String asString()
-    {
+    public String asString() {
         return prompt();
     }
 
-    private String prompt()
-    {
+    private String prompt() {
         return "Patient[pk="
             + getPk()
             + ", pid="

@@ -83,7 +83,6 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
  *
  */
 public abstract class InstanceBean implements EntityBean {
-    private static final String ATTRS_CFG = "instance-attrs.cfg";
     private static final Logger log = Logger.getLogger(InstanceBean.class);
     private CodeLocalHome codeHome;
 
@@ -98,7 +97,8 @@ public abstract class InstanceBean implements EntityBean {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();
-                } catch (NamingException ignore) {}
+                } catch (NamingException ignore) {
+                }
             }
         }
     }
@@ -309,9 +309,7 @@ public abstract class InstanceBean implements EntityBean {
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
-        setEncodedAttributes(
-            DatasetUtil.toByteArray(
-                ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        setEncodedAttributes(DatasetUtil.toByteArray(ds));
     }
 
     /**

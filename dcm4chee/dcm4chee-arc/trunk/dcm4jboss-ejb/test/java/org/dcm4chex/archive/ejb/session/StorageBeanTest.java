@@ -46,6 +46,8 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 public class StorageBeanTest extends TestCase
 {
 
+    public static final String CALLING_AET = "STORE_SCU";
+    public static final String CALLED_AET = "STORE_SCP";
     public static final String RETRIEVE_AETS = "QR_SCP";
     public static final String DIR = "storage";
     public static final String AET = "StorageBeanTest";
@@ -104,7 +106,7 @@ public class StorageBeanTest extends TestCase
         }
         MessageDigest md = MessageDigest.getInstance("MD5");
         Dataset ds = loadDataset(file, md);
-        storage.store(ds, RETRIEVE_AETS, "/", path.substring(1), (int)file.length(), md.digest());
+        storage.store(CALLING_AET, CALLED_AET, ds, RETRIEVE_AETS, "/", path.substring(1), (int)file.length(), md.digest());
     }
 
     private Dataset loadDataset(File file, MessageDigest md) throws IOException

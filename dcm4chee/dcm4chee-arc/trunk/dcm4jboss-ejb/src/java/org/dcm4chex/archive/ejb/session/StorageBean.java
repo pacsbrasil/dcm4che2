@@ -43,6 +43,9 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -53,6 +56,8 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+
+import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * Storage Bean
@@ -94,6 +99,16 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  view-type="local"
  *  ref-name="ejb/File" 
  * 
+ * @ejb.env-entry
+ *  name="attributeFilter"
+ *  type="java.lang.String"
+ *  value="dcm4jboss-attribute-filter.xml"
+ * 
+ * @ejb.env-entry
+ *  name="attributeCoercions"
+ *  type="java.lang.String"
+ *  value="dcm4jboss-attribute-coercions.xml"
+ * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  *
@@ -107,6 +122,9 @@ public abstract class StorageBean implements SessionBean {
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instHome;
     private FileLocalHome fileHome;
+
+    private AttributeFilter attrFilter;
+    private AttributeCoercions attrCoercions;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
@@ -122,7 +140,23 @@ public abstract class StorageBean implements SessionBean {
                 (InstanceLocalHome) jndiCtx.lookup(
                     "java:comp/env/ejb/Instance");
             fileHome = (FileLocalHome) jndiCtx.lookup("java:comp/env/ejb/File");
+
+            String serverConfigURL =
+                ServerConfigLocator.locate().getServerConfigURL().toString();
+            attrFilter =
+                new AttributeFilter(
+                    serverConfigURL
+                        + (String) jndiCtx.lookup(
+                            "java:comp/env/attributeFilter"));
+            attrCoercions =
+                new AttributeCoercions(
+                    serverConfigURL
+                        + (String) jndiCtx.lookup(
+                            "java:comp/env/attributeCoercions"));
+
         } catch (NamingException e) {
+            throw new EJBException(e);
+        } catch (ConfigurationException e) {
             throw new EJBException(e);
         } finally {
             if (jndiCtx != null) {
@@ -146,6 +180,8 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(
+        java.lang.String callingAET,
+        java.lang.String calledAET,
         org.dcm4che.data.Dataset ds,
         java.lang.String retrieveAETs,
         java.lang.String basedir,
@@ -160,12 +196,16 @@ public abstract class StorageBean implements SessionBean {
             final String cuid = fmi.getMediaStorageSOPClassUID();
             final String tsuid = fmi.getTransferSyntaxUID();
             log.info("inserting instance " + iuid);
+            attrCoercions.coerce(callingAET, calledAET, ds, coercedElements);
             InstanceLocal instance = null;
             try {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                instance = instHome.create(ds, getSeries(ds, coercedElements));
+                instance =
+                    instHome.create(
+                        ds.subSet(attrFilter.getInstanceFilter()),
+                        getSeries(ds, coercedElements));
             }
             FileLocal file =
                 fileHome.create(
@@ -196,7 +236,10 @@ public abstract class StorageBean implements SessionBean {
             series = seriesHome.findBySeriesIuid(uid);
             coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            series = seriesHome.create(ds, getStudy(ds, coercedElements));
+            series =
+                seriesHome.create(
+                    ds.subSet(attrFilter.getSeriesFilter()),
+                    getStudy(ds, coercedElements));
         }
 
         return series;
@@ -214,7 +257,10 @@ public abstract class StorageBean implements SessionBean {
             study = studyHome.findByStudyIuid(uid);
             coerceStudyIdentity(study, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            study = studyHome.create(ds, getPatient(ds, coercedElements));
+            study =
+                studyHome.create(
+                    ds.subSet(attrFilter.getStudyFilter()),
+                    getPatient(ds, coercedElements));
         }
 
         return study;
@@ -235,7 +281,8 @@ public abstract class StorageBean implements SessionBean {
                 return patient;
             }
         }
-        PatientLocal patient = patHome.create(ds);
+        PatientLocal patient =
+            patHome.create(ds.subSet(attrFilter.getPatientFilter()));
         return patient;
     }
 
