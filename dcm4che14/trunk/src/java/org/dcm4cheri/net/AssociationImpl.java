@@ -212,17 +212,17 @@ final class AssociationImpl implements Association {
     }
 
     public final PDU connect(AAssociateRQ rq) throws IOException {
-        fsm.initMDC();
+        initMDC();
         try {
             fsm.write(rq);
             return fsm.read(acTimeout, b10);
         } finally {
-            fsm.clearMDC();
+            clearMDC();
         }
     }
 
     public final PDU accept(AcceptorPolicy policy) throws IOException {
-        fsm.initMDC();
+        initMDC();
         try {
             PDU rq = fsm.read(rqTimeout, b10);
             if (!(rq instanceof AAssociateRQ))
@@ -235,12 +235,20 @@ final class AssociationImpl implements Association {
                 fsm.write((AAssociateRJ) rp);
             return rp;
         } finally {
-            fsm.clearMDC();
+            clearMDC();
         }
     }
 
-    public final Dimse read() throws IOException {
+    final void initMDC() {
         fsm.initMDC();
+    }
+
+	final void clearMDC() {
+		fsm.clearMDC();
+	}
+
+    public final Dimse read() throws IOException {
+        initMDC();
         try {
             Dimse dimse = reader.read(dimseTimeout);
             if (dimse != null) {
@@ -248,45 +256,45 @@ final class AssociationImpl implements Association {
             }
             return dimse;
         } finally {
-            fsm.clearMDC();
+            clearMDC();
         }
     }
 
     public final void write(Dimse dimse) throws IOException {
-        fsm.initMDC();
+        initMDC();
         try {
             msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
             writer.write(dimse);
         } finally {
-            fsm.clearMDC();
+            clearMDC();
         }
     }
 
     public final PDU release(int timeout) throws IOException {
-        fsm.initMDC();
+        initMDC();
         try {
             fsm.write(AReleaseRQImpl.getInstance());
             return fsm.read(timeout, b10);
         } finally {
-            fsm.clearMDC();
+            clearMDC();
         }
     }
 
     final void writeReleaseRQ() throws IOException {
-        fsm.initMDC();
+        initMDC();
         try {
             fsm.write(AReleaseRQImpl.getInstance());
         } finally {
-            fsm.clearMDC();
+            clearMDC();
         }
     }
 
     public final void abort(AAbort aa) throws IOException {
-        fsm.initMDC();
+        initMDC();
         try {
             fsm.write(aa);
         } finally {
-            fsm.clearMDC();
+            clearMDC();
         }
     }
 

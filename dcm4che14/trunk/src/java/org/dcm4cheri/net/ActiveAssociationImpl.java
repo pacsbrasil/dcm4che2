@@ -48,7 +48,7 @@ final class ActiveAssociationImpl
 	// Constants -----------------------------------------------------
 
 	// Attributes ----------------------------------------------------
-	private final Association assoc;
+	private final AssociationImpl assoc;
 	private final DcmServiceRegistry services;
 	private final IntHashtable2 rspDispatcher = new IntHashtable2();
 	private final IntHashtable2 cancelDispatcher = new IntHashtable2();
@@ -63,7 +63,7 @@ final class ActiveAssociationImpl
 			throw new IllegalStateException(
 				"Association not established - " + assoc.getState());
 
-		this.assoc = assoc;
+		this.assoc = (AssociationImpl) assoc;
 		this.services = services;
 		((AssociationImpl) assoc).setThreadPool(threadPool);
 	}
@@ -144,7 +144,7 @@ final class ActiveAssociationImpl
 				pool.shutdown();
 				return;
 			}
-
+			assoc.initMDC();
 			Command cmd = dimse.getCommand();
 			switch (cmd.getCommandField()) {
 				case Command.C_STORE_RQ :
@@ -225,6 +225,8 @@ final class ActiveAssociationImpl
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			pool.shutdown();
+		} finally {
+			assoc.clearMDC();		    
 		}
 	}
 
