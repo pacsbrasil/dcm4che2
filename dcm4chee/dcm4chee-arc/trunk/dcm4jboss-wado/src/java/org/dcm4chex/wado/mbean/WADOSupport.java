@@ -10,9 +10,15 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -25,9 +31,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
-import org.dcm4chex.wado.mbean.cache.IconCache;
-import org.dcm4chex.wado.mbean.cache.IconCacheImpl;
+import org.dcm4chex.wado.mbean.cache.WADOCache;
+import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.jboss.mx.util.MBeanServerLocator;
+
+import sun.misc.BASE64Encoder;
 
 /**
  * @author franz.willer
@@ -38,12 +46,15 @@ import org.jboss.mx.util.MBeanServerLocator;
 public class WADOSupport {
 	
 public static final String CONTENT_TYPE_JPEG = "image/jpeg";
+public static final String CONTENT_TYPE_DICOM = "application/dicom";
 
 private static Logger log = Logger.getLogger( WADOService.class.getName() );
 
 private static ObjectName fileSystemMgtName = null;
 
 private static MBeanServer server;
+
+private static final int BUF_LEN = 65536;
 
 public WADOSupport( MBeanServer mbServer ) {
 	if ( server != null ) {
@@ -69,16 +80,37 @@ public WADOSupport( MBeanServer mbServer ) {
  * @return The WADO response object.
  */
 public WADOResponseObject getWADOObject( WADORequestObject req ) {
-	String studyUID = req.getStudyUID();
-	String seriesUID = req.getSeriesUID();
-	String instanceUID = req.getObjectUID();
 	List contentTypes = req.getContentTypes();
 	if ( contentTypes == null || contentTypes.contains( CONTENT_TYPE_JPEG ) ) {
-		return this.handleJpg( studyUID, seriesUID, instanceUID, req.getRows(), req.getColumns() );
+		return this.handleJpg( req );
+	} else if ( contentTypes.contains( CONTENT_TYPE_DICOM ) ) {
+		return handleDicom( req );
 	} else {
-		return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented!");
+		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented!");
 		
 	}
+}
+
+public WADOResponseObject handleDicom( WADORequestObject req ) {
+	File file = null;
+	try {
+		file = this.getDICOMFile( req.getStudyUID(), req.getSeriesUID(), req.getObjectUID() );
+		if ( file == null ) {
+			if ( log.isDebugEnabled() ) log.debug("Dicom objkect not found: "+req);
+			return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
+		}
+	} catch (IOException x) {
+		log.error("Exception in handleDicom: "+x.getMessage(), x);
+		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
+	} catch ( NeedRedirectionException nre ) {
+    	return getRemoteDICOMFile( nre.getHostname(), req);
+	}
+	try {
+		return new WADOResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
+	} catch (FileNotFoundException x) {
+		log.error("Exception in handleDicom: "+x.getMessage(), x);
+		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
+	}	
 }
 
 /**
@@ -95,18 +127,28 @@ public WADOResponseObject getWADOObject( WADORequestObject req ) {
  * 
  * @return	The WADO response object containing the file of the image.
  */
-public WADOResponseObject handleJpg( String studyUID, String seriesUID, String instanceUID, String rows, String columns ){
+public WADOResponseObject handleJpg( WADORequestObject req ){
+	String studyUID = req.getStudyUID();
+	String seriesUID = req.getSeriesUID();
+	String instanceUID = req.getObjectUID();
+	String rows = req.getRows();
+	String columns = req.getColumns();
 	try {
-		IconCache cache = IconCacheImpl.getInstance();
+		WADOCache cache = WADOCacheImpl.getInstance();
 		File file;
 		BufferedImage bi = null;
 		if ( rows == null ) {
-			file = cache.getIconFile( studyUID, seriesUID, instanceUID );
+			file = cache.getImageFile( studyUID, seriesUID, instanceUID );
 		} else {
-			file = cache.getIconFile( studyUID, seriesUID, instanceUID, rows, columns );
+			file = cache.getImageFile( studyUID, seriesUID, instanceUID, rows, columns );
 		}
 		if ( file == null ) {
-			File dicomFile = getDICOMFile( studyUID, seriesUID, instanceUID );
+			File dicomFile = null;
+			try {
+				dicomFile = getDICOMFile( studyUID, seriesUID, instanceUID );
+			} catch ( NeedRedirectionException nre ) {
+	        	return getRemoteDICOMFile( nre.getHostname(), req);
+			}
 			if ( dicomFile != null ) {
 				bi = getImage( dicomFile, rows, columns );
 			} else {
@@ -114,14 +156,14 @@ public WADOResponseObject handleJpg( String studyUID, String seriesUID, String i
 			}
 			if ( bi != null ) {
 				if ( rows == null ) {
-					file = cache.putIcon( bi, studyUID, seriesUID, instanceUID );
+					file = cache.putImage( bi, studyUID, seriesUID, instanceUID );
 				} else {
-					file = cache.putIcon( bi, studyUID, seriesUID, instanceUID, rows, columns );
+					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns );
 				}
 			}
 		}
 		if ( file != null ) {
-			return new WADOResponseObjectImpl( file, CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
+			return new WADOResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
 			
 		}
 		
@@ -146,21 +188,22 @@ public WADOResponseObject handleJpg( String studyUID, String seriesUID, String i
  * 
  * @throws IOException
  */
-private File getDICOMFile( String studyUID, String seriesUID, String instanceUID ) throws IOException {
+private File getDICOMFile( String studyUID, String seriesUID, String instanceUID ) throws IOException, NeedRedirectionException {
     File file;
+    Object dicomObject = null;
 	try {
-        Object o = server.invoke(fileSystemMgtName,
+        dicomObject = server.invoke(fileSystemMgtName,
                 "locateInstance",
                 new Object[] { instanceUID },
                 new String[] { String.class.getName() } );
         
-        if ( o == null ) return null; //not found!
-        if ( o instanceof File ) return (File) o; //We have the File!
-        if ( o instanceof String ) {
-        	return getRemoteDICOMFile( (String) o, studyUID, seriesUID, instanceUID);
-        }
     } catch (Exception e) {
-        System.out.println("Failed to get DICOM file:"+ e);
+        log.error("Failed to get DICOM file", e);
+    }
+    if ( dicomObject == null ) return null; //not found!
+    if ( dicomObject instanceof File ) return (File) dicomObject; //We have the File!
+    if ( dicomObject instanceof String ) {
+    	throw new NeedRedirectionException( (String) dicomObject );
     }
 	return null;
 }
@@ -168,16 +211,55 @@ private File getDICOMFile( String studyUID, String seriesUID, String instanceUID
 /**
  * Tries to get the DICOM file from an external WADO service.
  * 
- * @param string		Hostname of remote WADO service.
+ * @param hostname		Hostname of remote WADO service.
  * @param studyUID		Unique identifier of the study.
  * @param seriesUID		Unique identifier of the series.
  * @param instanceUID	Unique identifier of the instance.
  * 
  * @return The File object or null if not found.
  */
-private File getRemoteDICOMFile(String string, String studyUID, String seriesUID, String instanceUID) {
-	System.out.println("Warning: getRemoteDICOMFile not implemented!");
-	return null;
+private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject req ) {
+	if ( log.isInfoEnabled() ) log.info("WADO request redirected to hostname:"+hostname);
+	URL url = null;
+	try {
+//		BufferedOutputStream out = new BufferedOutputStream( new FileOutputStream( tmpFile ) );
+		StringBuffer sb = new StringBuffer();
+		sb.append( "/dcm4jboss-wado/wado?requestType=WADO");
+		Map mapParam = req.getRequestParams();
+		Iterator iter = mapParam.keySet().iterator();
+		Object key;
+		while ( iter.hasNext() ) {
+			key = iter.next();
+			sb.append("&").append(key).append("=").append( ( (String[]) mapParam.get(key))[0] );
+		}
+		url = new URL("http",hostname,8080, sb.toString() );
+		if (log.isDebugEnabled() ) log.debug("redirect url:"+url );
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		String authHeader = (String)req.getRequestHeaders().get("Authorization");
+		if ( authHeader != null ) {
+			conn.addRequestProperty("Authorization", authHeader );
+		}
+		conn.connect();
+		if (log.isDebugEnabled() ) log.debug("conn.getResponseCode():"+conn.getResponseCode() );
+		if ( conn.getResponseCode() != HttpServletResponse.SC_OK ) {
+			if (log.isInfoEnabled() ) log.info("Remote WADO server responses with:"+conn.getResponseMessage() );
+			return new WADOResponseObjectImpl( null, conn.getContentType(), conn.getResponseCode(), conn.getResponseMessage() );
+		}
+		InputStream is = conn.getInputStream();
+		if ( CONTENT_TYPE_JPEG.equals( conn.getContentType() ) ) {
+			File file = WADOCacheImpl.getInstance().putStream( is, req.getStudyUID(), 
+													req.getSeriesUID(), 
+													req.getObjectUID(), 
+													req.getRows(), 
+													req.getColumns() );
+			is = new FileInputStream( file );
+		}
+		return new WADOResponseObjectImpl( is, conn.getContentType(), HttpServletResponse.SC_OK, null);
+	} catch (Exception e) {
+		log.error("Can't connect to remote WADO service:"+url, e);
+		e.printStackTrace();
+		return null;
+	}
 }
 
 /**
@@ -200,7 +282,6 @@ private BufferedImage getImage(File file, String rows, String columns) throws IO
     ImageInputStream in = new FileImageInputStream( file );
     reader.setInput( in );
 	BufferedImage bi = reader.read(0);
-	//bi = ImageIO.read(new File(testImage));
 	if ( rows != null || columns != null ) {
 		bi = resize( bi, rows, columns );
 	}
@@ -231,8 +312,6 @@ private BufferedImage resize( BufferedImage bi, String rows, String columns ) {
 		newW = (int) (newH * ratio);
 	else if ( newH == -1 ) 
 		newH = (int) (newW / ratio);
-//    int w = Math.min(w0, newW);
-//    int h = Math.min(h0, newH);
 	int w = newW;
 	int h = newH;
     w = (int) Math.min(w, h * ratio);
@@ -269,6 +348,39 @@ public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
  */
 public ObjectName getFileSystemMgtName() {
 	return fileSystemMgtName;
+}
+
+/**
+ * Inner exception class to handle WADO redirection.
+ *  
+ * @author franz.willer
+ *
+ * Holds the hostname of the WADO server that have direct access of the requested object.
+ */
+class NeedRedirectionException extends Exception {
+
+	/** Comment for <code>serialVersionUID</code> */
+	private static final long serialVersionUID = 1L;
+	/** holds the hostname to redirect */
+	private String hostname;
+
+	/**
+	 * Creates a NeedRedirectionException instance.
+	 * 
+	 * @param hostname the target of redirection.
+	 */
+	public NeedRedirectionException( String hostname ) {
+		this.hostname = hostname;
+	}
+	
+	/**
+	 * Returns the hostname to redirect.
+	 * 
+	 * @return
+	 */
+	public String getHostname() {
+		return this.hostname;
+	}
 }
 
 }
