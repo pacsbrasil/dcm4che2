@@ -6,7 +6,7 @@
  */
 package org.dcm4chex.wado.common;
 
-import java.io.File;
+import java.io.InputStream;
 
 /**
  * @author franz.willer
@@ -21,7 +21,7 @@ public interface WADOResponseObject {
 	 * 
 	 * @return A file object containing either a DICOM or Image (jpeg) object.
 	 */
-	File getFile();
+	InputStream getStream();
 	
 	/**
 	 * Returns the content type that should be set in the response.

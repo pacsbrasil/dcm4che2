@@ -6,7 +6,7 @@
  */
 package org.dcm4chex.wado.mbean;
 
-import java.io.File;
+import java.io.InputStream;
 
 import org.dcm4chex.wado.common.WADOResponseObject;
 
@@ -18,13 +18,13 @@ import org.dcm4chex.wado.common.WADOResponseObject;
  */
 public class WADOResponseObjectImpl implements WADOResponseObject {
 
-	private File file;
+	private InputStream stream;
 	private String contentType;
 	private int returnCode;
 	private String errorMessage;
 
-	public WADOResponseObjectImpl( File pFile, String contentType, int retCode, String errMsg ) {
-		file = pFile;
+	public WADOResponseObjectImpl( InputStream pStream, String contentType, int retCode, String errMsg ) {
+		stream = pStream;
 		this.contentType = contentType;
 		returnCode = retCode;
 		errorMessage = errMsg;
@@ -33,8 +33,8 @@ public class WADOResponseObjectImpl implements WADOResponseObject {
 	/* (non-Javadoc)
 	 * @see org.dcm4chex.wado.common.WADOResponseObject#getFile()
 	 */
-	public File getFile() {
-		return file;
+	public InputStream getStream() {
+		return stream;
 	}
 
 	/* (non-Javadoc)
