@@ -449,10 +449,24 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		int[] iaSrc = getIntArrayFromSet( folderForm.getStickyStudies() );
 		ce.moveStudies( iaSrc, iDest );
 		
-		PatientModel destModel = folderForm.getPatientByPk( iDest );
+		PatientModel destPat = folderForm.getPatientByPk( iDest );
 		List path = findModelPath( folderForm.getPatients(), iaSrc[0], 1 );
-		_updatePatientWithStudies( destModel, cm );
-		_updatePatientWithStudies( (PatientModel) path.get(0), cm );
+		PatientModel srcPat = (PatientModel) path.get(0);
+		_updatePatientWithStudies( destPat, cm );
+		_updatePatientWithStudies( srcPat, cm );
+		StudyModel study;
+		for ( int i = 0, len=iaSrc.length ; i < len ; i++ ) {
+			study = new StudyModel( cm.getStudy( iaSrc[i] ) );
+	        AuditLoggerDelegate.logProcedureRecord(getCtx(),
+	                AuditLoggerDelegate.MODIFY,
+	                destPat.getPatientID(),
+	                destPat.getPatientName(),
+	                study.getPlacerOrderNumber(),
+	                study.getFillerOrderNumber(),
+	                study.getStudyIUID(),
+	                study.getAccessionNumber(),
+	                "study moved from " + srcPat.getPatientName()+ " ("+srcPat.getPatientID()+")" );
+		}
 	}
 	
     /**
@@ -476,10 +490,34 @@ public class FolderSubmitCtrl extends FolderCtrl {
 
 		List destPath = findModelPath( folderForm.getPatients(), iDest, 1 );
 
-		StudyModel destModel = (StudyModel) destPath.get(1);
+		StudyModel destStudy = (StudyModel) destPath.get(1);
 		List sourcePath = findModelPath( folderForm.getPatients(), iaSrc[0], 2 );
-		_updateStudyWithSeries( destModel, cm );
-		_updateStudyWithSeries( (StudyModel) sourcePath.get(1), cm );//0..patient,1..study,2..series
+		StudyModel srcStudy = (StudyModel) sourcePath.get(1);//0..patient,1..study,2..series
+		PatientModel pat = (PatientModel) destPath.get(0);
+		//update model for view
+		_updateStudyWithSeries( destStudy, cm );
+		_updateStudyWithSeries( srcStudy, cm );
+		//audit log for source study
+		AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                AuditLoggerDelegate.MODIFY,
+                pat.getPatientID(),
+                pat.getPatientName(),
+                srcStudy.getPlacerOrderNumber(),
+                srcStudy.getFillerOrderNumber(),
+                srcStudy.getStudyIUID(),
+                srcStudy.getAccessionNumber(),
+                iaSrc.length + " series moved to " + destStudy.getStudyDescription()+ " ("+destStudy.getStudyIUID()+")" );
+		//audit log for destination study
+		AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                AuditLoggerDelegate.MODIFY,
+                pat.getPatientID(),
+                pat.getPatientName(),
+                destStudy.getPlacerOrderNumber(),
+                destStudy.getFillerOrderNumber(),
+                destStudy.getStudyIUID(),
+                destStudy.getAccessionNumber(),
+                iaSrc.length + " series moved from " + srcStudy.getStudyDescription()+ " ("+srcStudy.getStudyIUID()+")" );
+
 	}
 	
 	private void _updateStudyWithSeries(StudyModel study, ContentManager cm) throws Exception {
@@ -502,6 +540,20 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		List sourcePath = findModelPath( folderForm.getPatients(), iaSrc[0], 3 );
 		_updateSeriesWithInstances( destModel, cm );
 		_updateSeriesWithInstances( (SeriesModel) sourcePath.get(2), cm );//0..patient,1..study,2..series,3..instances
+
+		StudyModel srcStudy = (StudyModel) sourcePath.get(1);//0..patient,1..study,2..series
+		PatientModel pat = (PatientModel) destPath.get(0);
+
+		AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                AuditLoggerDelegate.MODIFY,
+                pat.getPatientID(),
+                pat.getPatientName(),
+                srcStudy.getPlacerOrderNumber(),
+                srcStudy.getFillerOrderNumber(),
+                srcStudy.getStudyIUID(),
+                srcStudy.getAccessionNumber(),
+                iaSrc.length + " instances moved to " + destModel.getSeriesDescription()+ " ("+destModel.getSeriesIUID()+")" );
+		
 	}
 	
 	private void _updateSeriesWithInstances(SeriesModel series, ContentManager cm) throws Exception {
@@ -580,7 +632,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	 * @param depth		The tree depth where the pk should be found.
 	 * @return A list with all nodes to get the model.
 	 */
-    private List findModelHistory( List parent, String pk, int depth ) {
+    private List findModelPath( List parent, String pk, int depth ) {
        	int iPk = Integer.parseInt(pk);
    	    return findModelPath( parent, iPk, depth );
     }
@@ -636,8 +688,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private boolean checkStickyPlacement( Set stickyParent, Set stickyChilds, int depth ) {
 		FolderForm folderForm = (FolderForm) getForm();
   		List listParent, listChilds;
-		listParent = findModelHistory( folderForm.getPatients(), (String)stickyParent.iterator().next(), depth );
-		listChilds = findModelHistory( folderForm.getPatients(), (String)stickyChilds.iterator().next(), depth+1 );
+		listParent = findModelPath( folderForm.getPatients(), (String)stickyParent.iterator().next(), depth );
+		listChilds = findModelPath( folderForm.getPatients(), (String)stickyChilds.iterator().next(), depth+1 );
 		int listParentSize = listParent.size();
 		if ( listParent.get(listParentSize-1).equals( listChilds.get(listChilds.size()-2) ) ) {
 			return false; //same parent;
