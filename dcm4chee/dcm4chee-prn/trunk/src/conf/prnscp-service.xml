@@ -281,7 +281,7 @@
     Basic Film Box. Multiple values can be specified, must be separated by 
     '\' characters. The first specified value is used as the default.
     -->
-    <attribute name="ResolutionID">STANDARD\HIGH</attribute>
+    <attribute name="ResolutionID">STANDARD:300x300\HIGH:600x600</attribute>
     
     <attribute name="AnnotationDir">conf/annotation</attribute>
 

@@ -132,7 +132,7 @@ public class PrinterService
    private LinkedHashMap filmSizeIDMap = new LinkedHashMap();
    
    /** Holds value of property resolutionID. */
-   private String resolutionID;
+   private LinkedHashMap resolutionIDMap = new LinkedHashMap();
    
    /** Holds value of property magnificationType. */
    private String magnificationType;
@@ -614,25 +614,60 @@ public class PrinterService
     * @return Value of property resolutionID.
     */
    public String getResolutionID() {
-      return this.resolutionID;
+      StringBuffer sb = new StringBuffer();
+      for (Iterator it = resolutionIDMap.entrySet().iterator(); it.hasNext();) {
+         Map.Entry item = (Map.Entry) it.next();
+         PrinterResolution pr = (PrinterResolution) item.getValue();
+         sb.append(item.getKey());
+         sb.append(':');
+         sb.append(pr.getFeedResolution(PrinterResolution.DPI));
+         sb.append('x');
+         sb.append(pr.getCrossFeedResolution(PrinterResolution.DPI));
+         sb.append('\\');
+      }
+      sb.setLength(sb.length()-1);
+      return sb.toString();
    }
    
    /** Setter for property resolutionID.
     * @param resolutionID New value of property resolutionID.
     */
    public void setResolutionID(String resolutionID) {
-      this.resolutionID = resolutionID;
+      LinkedHashMap tmp = new LinkedHashMap();
+      StringTokenizer tk = new StringTokenizer(resolutionID, "\\");
+      while (tk.hasMoreTokens()) {
+         String s = tk.nextToken();
+         int c1 = s.indexOf(':');
+         int xpos = s.indexOf('x', c1+1);
+         PrinterResolution pr = new PrinterResolution(
+            Integer.parseInt(s.substring(c1+1, xpos)),
+            Integer.parseInt(s.substring(xpos+1)),
+            PrinterResolution.DPI);
+         tmp.put(s.substring(0, c1), pr);
+      }
+      resolutionIDMap = tmp;
    }
+
    
    /** Getter for property defaultResolutionID.
     * @return Value of property defaultResolutionID.
     */
    public String getDefaultResolutionID() {
-      return firstOf(resolutionID);
+      if (resolutionIDMap.isEmpty()) {
+         return null;
+      }
+      return (String) resolutionIDMap.keySet().iterator().next();
+   }
+
+   public PrinterResolution getDefaultPrinterResolution() {
+      if (resolutionIDMap.isEmpty()) {
+         return null;
+      }
+      return (PrinterResolution) resolutionIDMap.values().iterator().next();
    }
    
    public boolean isSupportsResolutionID(String resolutionID) {
-      return contains(this.resolutionID, resolutionID);
+      return resolutionIDMap.containsKey(resolutionID);
    }
       
    /** Getter for property magnificationType.
@@ -1274,7 +1309,7 @@ public class PrinterService
    public void printGrayscaleWithLinDDL() throws PrintException, IOException {
       log.info("Printing grayscale [LIN DDL]");
       print(new Grayscale(this, calibration.getIdentityPValToDDL(),
-         printerName + "[LIN DDL]"));
+         printerName + "[LIN DDL]"), null);
       log.info("Printed grayscale [LIN DDL]");
    }
    
@@ -1283,7 +1318,7 @@ public class PrinterService
       print(new Grayscale(this, calibration.getPValToDDLwGSDF(8,
                minDensity/100.f, maxDensity/100.f,
                illumination, reflectedAmbientLight),
-            printerName + "[GSDF]"));
+            printerName + "[GSDF]"), null);
       log.info("Printed grayscale [GSDF]");
    }
    
@@ -1291,7 +1326,7 @@ public class PrinterService
       log.info("Printing grayscale [LIN OD]");
       print(new Grayscale(this, calibration.getPValToDDLwLinOD(8,
                minDensity/100.f, maxDensity/100.f),
-            printerName + "[LIN OD]"));
+            printerName + "[LIN OD]"), null);
       log.info("Printed grayscale [LIN OD]");
    }
    
@@ -1378,7 +1413,7 @@ public class PrinterService
       Dataset sessionAttr = (Dataset)notif.getUserData();
       try {
          long mil = System.currentTimeMillis(); 
-         print(new Films(this, jobDir, (Dataset)notif.getUserData()));
+         print(new Films(this, jobDir, sessionAttr), sessionAttr);
          log.info("Finished processing job - " + jobID);
          log.info("Finished processing job in "+(System.currentTimeMillis()-mil));
          sendNotification(
@@ -1458,7 +1493,7 @@ public class PrinterService
    
    // Private -------------------------------------------------------
    
-   private void print(Pageable printData)
+   private void print(Pageable printData, Dataset sessionAttr)
       throws PrintException
    {
       if (autoCalibration) {
@@ -1469,11 +1504,23 @@ public class PrinterService
          }
       }
       PrintService ps = getPrintService();
+      if (ps == null) {
+         throw new PrintException("Failed to access Printer " + printerName);
+      }
       PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
       if (printToFile) {
         aset.add(new Destination(toFile(printToFilePath).toURI()));
       }
-      aset.add(new PrinterResolution(600,600,PrinterResolution.DPI));
+      if (ps.isAttributeCategorySupported(PrinterResolution.class)) {
+         String id = sessionAttr == null ? null
+            : sessionAttr.getString(Tags.RequestedResolutionID);
+         PrinterResolution res = id != null
+            ? (PrinterResolution) this.resolutionIDMap.get(id)
+            : getDefaultPrinterResolution();
+         if (res != null) {
+            aset.add(res);
+         }
+      }
       DocPrintJob pj = ps.createPrintJob();         
       Doc doc = new SimpleDoc(printData, 
          DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
