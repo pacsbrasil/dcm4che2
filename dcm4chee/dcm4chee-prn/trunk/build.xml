@@ -20,6 +20,8 @@
   <property name="jboss.server.lib" value="${jboss.server}/lib"/>
   <property name="jboss.server.conf" value="${jboss.server}/conf"/>
 
+  <property name="doc.dir" value="${basedir}/doc"/>
+  <property name="doc.xml" value="${doc.dir}/xml"/>
   <property name="lib.dir" value="${basedir}/lib"/>
   <property name="src.dir" value="${basedir}/src"/>
   <property name="src.java" value="${src.dir}/java"/>
@@ -31,7 +33,7 @@
   <property name="build.deploy.dir" value="${build.dir}/deploy"/>
   <property name="build.lib.dir" value="${build.dir}/lib"/>
   <property name="build.bin.dir" value="${build.dir}/bin"/>
-
+  
   <property name="dist.name" value="${name}-${version}"/>
   <property name="dist.dir" value="${build.dir}/${dist.name}"/>
 
@@ -227,6 +229,9 @@
     <delete file="${jboss.server.deploy}/prnscp.sar" />
   </target>           
 
+  <target name="doc">
+  </target>           
+  
   <target name="release" depends="build">
     <mkdir dir="${dist.dir}/server/default"/>
     <copy todir="${dist.dir}">

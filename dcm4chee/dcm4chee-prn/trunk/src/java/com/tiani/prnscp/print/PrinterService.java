@@ -235,6 +235,7 @@ public class PrinterService
 
    private final PrinterCalibration calibration = new PrinterCalibration();
    private final ScannerCalibration scanner = new ScannerCalibration(log);
+   private final License license = new License(log);
    
    private long notifCount = 0;
    private LinkedList highPriorQueue = new LinkedList();
