@@ -384,8 +384,6 @@ public class ScannerCalibration
                      + (lastRefFile == null ? "?" : lastRefFile.getName())
                      + " with refGrayscaleODs float[" + refGrayscaleODs.length + "]");
         }
-        ensureMonotonic(invRefPx, lastRefFile);
-        ensureMonotonic(invPx, lastScanFile);
         float[] result = new float[invPx.length];
         for (int i = 0; i < invPx.length; ++i) {
             int index = Arrays.binarySearch(invRefPx, invPx[i]);
@@ -428,18 +426,6 @@ public class ScannerCalibration
             }
         }
         return true;
-    }
-
-
-    private void ensureMonotonic(float[] a, File src)
-    {
-        if (!isMonotonic(a)) {
-            Arrays.sort(a);
-            if (log != null) {
-                log.warn("Grayscale " + (src == null ? "" : src.getName())
-                         + " not monotonic increasing! Calibrate with sorted steps!");
-            }
-        }
     }
 
 
@@ -518,6 +504,11 @@ public class ScannerCalibration
                     sb.append(px[i]);
                 }
                 log.debug(sb.toString());
+            }
+            if (!isMonotonic(px)) {
+                Arrays.sort(px);
+                log.warn("Grayscale " + f.getName()
+                          + " not monotonic increasing! Calibrate with sorted steps!");
             }
             return px;
         } finally {
