@@ -378,7 +378,7 @@ class MoveTask implements Runnable
             Tags.MoveOriginatorMessageID,
             moveRqCmd.getMessageID());
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        DataSource ds = new FileDataSource(info, buffer, scp.getEncodingRate());
+        DataSource ds = new FileDataSource(info, buffer, scp.getCompressionRate());
         return af.newDimse(presCtx.pcid(), storeRqCmd, ds);
     }
 

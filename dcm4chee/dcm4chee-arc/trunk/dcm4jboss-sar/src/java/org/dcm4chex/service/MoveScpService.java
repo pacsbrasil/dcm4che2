@@ -53,7 +53,7 @@ public class MoveScpService
     private ObjectName dcmServerName;
     private DcmHandler dcmHandler;
     private String dsJndiName;
-	private double encodingRate = 2.0;
+	private float compressionRate = 10;
     private DataSource datasource;
     private MoveScp scp = new MoveScp(this);
 
@@ -102,17 +102,17 @@ public class MoveScpService
 	/**
 	 * @jmx.managed-attribute
 	 */
-	public double getEncodingRate()
+	public float getCompressionRate()
 	{
-		return encodingRate;
+		return compressionRate;
 	}
 
 	/**
 	 * @jmx.managed-attribute
 	 */
-	public void setEncodingRate(double encodingRate)
+	public void setCompressionRate(float compressionRate)
 	{
-		this.encodingRate = encodingRate;
+		this.compressionRate = compressionRate;
 	}
 
 
