@@ -339,7 +339,7 @@ public class DcmServerService extends ServiceMBeanSupport implements
                 .getDefault(); }
         try {
             initTLSConf();
-            return ssl.getServerSocketFactory(protocol.getCipherSuites());
+            return ssl.getServerSocketFactory(cipherSuites);
         } catch (GeneralSecurityException e) {
             throw new ConfigurationException(e);
         } catch (IOException e) {
@@ -355,7 +355,7 @@ public class DcmServerService extends ServiceMBeanSupport implements
                 .getDefault(); }
         try {
             initTLSConf();
-            return ssl.getSocketFactory(protocol.getCipherSuites());
+            return ssl.getSocketFactory(cipherSuites);
         } catch (GeneralSecurityException e) {
             throw new ConfigurationException(e);
         } catch (IOException e) {
