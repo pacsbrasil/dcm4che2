@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -45,8 +44,8 @@ import java.util.Random;
 
 /**
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$ $Date$
  */
 public class HL7SRExportImpl implements HL7SRExport {
     

@@ -2,6 +2,22 @@ Revision History
 =================
 
 -------------------------------------------------------------------------------
+dcm4che 1.0.5 -  - Changes since dcm4che 1.0.4
+-------------------------------------------------------------------------------
+BUG FIXES:
++ org.dcm4che.srom.HL7Export#toHL7(String..):
+  Fix Inconsistence between API and Implementation of String argument order
+
+ENHANCEMENTS:
+org.dcm4che.data.Dataset:
++ Float getFloat(tag, index)
++ Double getDouble(tag, index)
+
+CHANGES:
++ ren build target publish to release
++ import TIANI IHE connectathon certficate to trusted cacerts
+
+-------------------------------------------------------------------------------
 dcm4che 1.0.4 -  - Changes since dcm4che 1.0.3
 -------------------------------------------------------------------------------
 BUG FIXES:
