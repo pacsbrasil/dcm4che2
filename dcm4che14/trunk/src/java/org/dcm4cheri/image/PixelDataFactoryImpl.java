@@ -22,6 +22,8 @@
 
 package org.dcm4cheri.image;
 
+import java.nio.ByteOrder;
+
 import javax.imageio.stream.ImageInputStream;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.image.PixelData;
@@ -41,8 +43,8 @@ public class PixelDataFactoryImpl extends PixelDataFactory
     {
     }
 
-    public PixelData newPixelData(Dataset ds, ImageInputStream in)
+    public PixelData newPixelData(Dataset dataset, ImageInputStream iis, ByteOrder byteOrder, int pixelDataVr)
     {
-        return new PixelDataImpl(ds, in);
+        return new PixelDataImpl(dataset, iis, byteOrder, pixelDataVr);
     }
 }

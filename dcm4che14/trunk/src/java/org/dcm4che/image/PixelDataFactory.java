@@ -22,6 +22,8 @@
 
 package org.dcm4che.image;
 
+import java.nio.ByteOrder;
+
 import javax.imageio.stream.ImageInputStream;
 import org.dcm4che.data.Dataset;
 import org.dcm4cheri.image.PixelDataFactoryImpl;
@@ -52,5 +54,5 @@ public abstract class PixelDataFactory
      * <code>PixelData</code> instance and will have undefined effects upon
      * the next read.
      */
-    public abstract PixelData newPixelData(Dataset dataset, ImageInputStream imageinputstream);
+    public abstract PixelData newPixelData(Dataset dataset, ImageInputStream iis, ByteOrder byteOrder, int pixelDataVr);
 }
