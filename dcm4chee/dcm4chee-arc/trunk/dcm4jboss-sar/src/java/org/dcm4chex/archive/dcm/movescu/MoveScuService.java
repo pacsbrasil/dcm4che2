@@ -171,14 +171,8 @@ public class MoveScuService extends ServiceMBeanSupport implements
 
     void logDataset(String prompt, Dataset ds) {
         if (!log.isDebugEnabled()) { return; }
-        try {
-            StringWriter w = new StringWriter();
-            w.write(prompt);
-            ds.dumpDataset(w, dumpParam);
-            log.debug(w.toString());
-        } catch (Exception e) {
-            log.warn("Failed to dump dataset", e);
-        }
+        log.debug(prompt);
+        log.debug( ds );
     }
 
     Socket createSocket(AEData aeData) throws IOException {
