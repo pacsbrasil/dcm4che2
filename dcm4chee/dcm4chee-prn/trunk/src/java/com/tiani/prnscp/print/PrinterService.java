@@ -59,6 +59,7 @@ import javax.print.attribute.standard.Chromaticity;
 import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.PrinterResolution;
 import javax.print.attribute.standard.QueuedJobCount;
+import javax.print.attribute.standard.PrinterIsAcceptingJobs;
 import javax.print.attribute.standard.SheetCollate;
 import javax.print.event.PrintJobAttributeEvent;
 import javax.print.event.PrintJobAttributeListener;
@@ -124,9 +125,6 @@ public class PrinterService
    static final String DECIMATE = "DECIMATE";
   
    static final double PTS_PER_MM = 72/25.4;
-   private static final String[] CODE_STRING = {
-      null, "NORMAL", "WARNING", "FAILURE"
-   };
    static final String ADF_FILE_EXT = ".adf";
    static final String LUT_FILE_EXT = ".lut";
    private static final String[] LITTLE_ENDIAN_TS = {
@@ -139,7 +137,7 @@ public class PrinterService
    // Attributes ----------------------------------------------------
    private String[] ts_uids = LITTLE_ENDIAN_TS;
    private final static AssociationFactory asf =
-   AssociationFactory.getInstance();
+      AssociationFactory.getInstance();
    
    private String aet;
    
@@ -148,6 +146,9 @@ public class PrinterService
    
    /** Holds value of property printerName. */
    private String printerName;
+   
+   /** Holds value of property ignorePrinterIsAcceptingJobs. */
+   private boolean ignorePrinterIsAcceptingJobs;
    
    /** Holds value of property printToFilePath. */
    private String printToFilePath;
@@ -235,6 +236,8 @@ public class PrinterService
    
    /** Holds value of property autoCalibration. */
    private boolean autoCalibration = false;
+
+   private boolean calibrationErr = false;
    
    /** Holds value of property printGrayscaleAtStartup. */
    private boolean printGrayscaleAtStartup = false;
@@ -270,9 +273,6 @@ public class PrinterService
    private boolean decimateByNearestNeighbor;
    
    
-   private int status = NORMAL;
-   private String statusInfo = "NORMAL";
-   
    private final PrinterCalibration calibration = new PrinterCalibration();
    private final ScannerCalibration scanner = new ScannerCalibration(log);
    
@@ -293,25 +293,28 @@ public class PrinterService
    
    // PrinterMBean implementation -----------------------------------
    
-   /** Getter for property status.
-    * @return Value of property status.
+   /** Getter for string value for property status.
+    * @return String value of property status.
     */
-   public int getStatusID() {
-      return status;
+   public PrinterStatus getStatus() {
+      try {
+         getPrintService();
+         return PrinterStatus.NORMAL;
+      } catch (PrintException e) {
+         return PrinterStatus.FAILURE;
+      }
    }
    
    /** Getter for property statusInfo.
     * @return Value of property statusInfo.
     */
-   public String getStatusInfo() {
-      return statusInfo;
-   }
-   
-   /** Getter for string value for property status.
-    * @return String value of property status.
-    */
-   public String getStatus() {
-      return CODE_STRING[status];
+   public PrinterStatusInfo getStatusInfo() {
+      try {
+         getPrintService();
+         return PrinterStatusInfo.NORMAL;
+      } catch (PrintException e) {
+         return PrinterStatusInfo.ELEC_CONFIG_ERR;
+      }
    }
    
    /** Getter for property printSCP.
@@ -347,6 +350,20 @@ public class PrinterService
             log.warn(e, e);
          }
       }
+   }
+   
+   /** Getter for property ignorePrinterIsAcceptingJobs.
+    * @return Value of property ignorePrinterIsAcceptingJobs.
+    */
+   public boolean isIgnorePrinterIsAcceptingJobs() {
+      return this.ignorePrinterIsAcceptingJobs;
+   }
+   
+   /** Setter for property ignorePrinterIsAcceptingJobs.
+    * @param ignorePrinterIsAcceptingJobs New value of property ignorePrinterIsAcceptingJobs.
+    */
+   public void setIgnorePrinterIsAcceptingJobs(boolean ignorePrinterIsAcceptingJobs) {
+      this.ignorePrinterIsAcceptingJobs = ignorePrinterIsAcceptingJobs;
    }
    
    /** Getter for property minimizeJobsize.
@@ -1609,6 +1626,16 @@ public class PrinterService
       }
       return qjc.getValue();
    }
+
+   private boolean isPrinterIsAcceptingJobs() throws PrintException {
+      PrintService ps = getPrintService();
+      PrinterIsAcceptingJobs piaj =
+         (PrinterIsAcceptingJobs) ps.getAttribute(PrinterIsAcceptingJobs.class);
+      if (piaj == null) {
+         return true;
+      }
+      return piaj == PrinterIsAcceptingJobs.ACCEPTING_JOBS;
+   }
    
    private PageableJob nextJobFromQueue() {
       if (!highPriorQueue.isEmpty()) {
@@ -1734,8 +1761,10 @@ public class PrinterService
       if (autoCalibration) {
          try {
             calibrate(false);
+            calibrationErr = true;
          } catch (CalibrationException e) {
             log.warn("Calibration fails, continue printing", e);
+            calibrationErr = false;
          }
       }
       PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();

@@ -50,10 +50,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
    
    String OBJECT_NAME_PREFIX = "dcm4chex:service=Printer,aet=";
    
-   int NORMAL  = 1;
-   int WARNING = 2;
-   int FAILURE = 3;
-      
    /** Getter for property printSCP.
     * @return Value of property printSCP.
     */
@@ -371,20 +367,15 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public String getDefaultResolutionID();
    
-   /** Getter for property status.
-    * @return Value of property status.
-    */
-   int getStatusID();
-   
    /** Getter for code string for property status.
     * @return String value of property status.
     */
-   String getStatus();
+   PrinterStatus getStatus();
        
    /** Getter for property statusInfo.
     * @return Value of property statusInfo.
     */
-   String getStatusInfo();
+   PrinterStatusInfo getStatusInfo();
    
    /** Getter for property measuredODs.
     * @return Value of property measuredODs.
@@ -619,6 +610,16 @@ public interface PrinterServiceMBean extends ServiceMBean {
     * @param maxQueuedJobCount New value of property maxQueuedJobCount.
     */
    public void setMaxQueuedJobCount(int maxQueuedJobCount);
+   
+   /** Getter for property ignorePrinterIsAcceptingJobs.
+    * @return Value of property ignorePrinterIsAcceptingJobs.
+    */
+   public boolean isIgnorePrinterIsAcceptingJobs();
+   
+   /** Setter for property ignorePrinterIsAcceptingJobs.
+    * @param ignorePrinterIsAcceptingJobs New value of property ignorePrinterIsAcceptingJobs.
+    */
+   public void setIgnorePrinterIsAcceptingJobs(boolean ignorePrinterIsAcceptingJobs);
    
    /** Getter for property supportsMonochrome.
     * @return Value of property supportsMonochrome.

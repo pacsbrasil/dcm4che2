@@ -29,6 +29,14 @@
     <attribute name="MaxQueuedJobCount">10</attribute>
     
     <!--
+    Specifies, if the state of the IPP attribute ACCEPTING_JOBS queried from
+    the printer shall be ignored. Necessary with current J2SDK 1.4.1 for Linux,
+    because there the attribute values returned is always NOT_ACCEPTING_JOBS,
+    even the printer is actually ready to accept jobs.
+    -->
+    <attribute name="IgnorePrinterIsAcceptingJobs">false</attribute>
+    
+    <!--
     Activates redirection of all printing into a postscript file.
     -->
     <attribute name="PrintToFile">false</attribute>

@@ -23,6 +23,8 @@
 package com.tiani.prnscp.scp;
 
 import com.tiani.prnscp.print.PrinterServiceMBean;
+import com.tiani.prnscp.print.PrinterStatus;
+import com.tiani.prnscp.print.PrinterStatusInfo;
 import com.tiani.util.license.LicenseStore;
 
 import org.dcm4che.data.Command;
@@ -591,9 +593,9 @@ public class PrintScpService
          try {
             String aet = as.getAssociation().getCalledAET();
             result.putCS(Tags.PrinterStatus,
-               (String) getPrinterAttribute(aet, "Status"));
+               ((PrinterStatus) getPrinterAttribute(aet, "Status")).toString());
             result.putCS(Tags.PrinterStatusInfo,
-               (String) getPrinterAttribute(aet, "StatusInfo"));
+               ((PrinterStatusInfo) getPrinterAttribute(aet, "StatusInfo")).toString());
             result.putDA(Tags.DateOfLastCalibration,
                (String) getPrinterAttribute(aet, "DateOfLastCalibration"));
             result.putTM(Tags.TimeOfLastCalibration,
