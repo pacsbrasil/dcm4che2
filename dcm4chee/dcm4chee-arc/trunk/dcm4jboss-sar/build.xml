@@ -130,6 +130,7 @@
    			</fileset>
    			<fileset dir="${dcm4jboss-ejb.src}/etc">
    				<include name="*/sql/*"/>
+   				<include name="*/conf/login-config.xml"/>
    				<include name="*/deploy/*-ds.xml"/>
    				<include name="hsql/data/hypersonic/localDB.script"/>
    			</fileset>
@@ -142,6 +143,43 @@
    				<include name="db2/**"/>
    			</fileset>
    		</copy>
+   		<copy todir="${dist.dir}/hsql">
+  			<fileset dir="${src.etc}">
+   				<include name="conf/xmdesc/*.xml"/>
+  			</fileset>
+   		</copy>
+   		<copy todir="${dist.dir}/psql">
+  			<fileset dir="${src.etc}">
+   				<include name="conf/xmdesc/*.xml"/>
+  			</fileset>
+   		</copy>
+   		<replace dir="${dist.dir}/psql/conf/xmdesc"
+   			token="DefaultDS" 
+   			value="PostgresSQL"/>
+   		<copy todir="${dist.dir}/mysql">
+  			<fileset dir="${src.etc}">
+   				<include name="conf/xmdesc/*.xml"/>
+  			</fileset>
+   		</copy>
+   		<replace dir="${dist.dir}/mysql/conf/xmdesc"
+   			token="DefaultDS" 
+   			value="MySqlDS"/>
+   		<copy todir="${dist.dir}/oracle">
+  			<fileset dir="${src.etc}">
+   				<include name="conf/xmdesc/*.xml"/>
+  			</fileset>
+   		</copy>
+   		<replace dir="${dist.dir}/oracle/conf/xmdesc"
+   			token="DefaultDS" 
+   			value="OracleDS"/>
+   		<copy todir="${dist.dir}/db2">
+  			<fileset dir="${src.etc}">
+   				<include name="conf/xmdesc/*.xml"/>
+  			</fileset>
+   		</copy>
+   		<replace dir="${dist.dir}/db2/conf/xmdesc"
+   			token="DefaultDS" 
+   			value="DB2DS"/>
    		<copy todir="${dist.dir}/common">
    			<fileset dir="${dcm4che.home}">
    				<include name="lib/dcm4che.jar"/>
@@ -162,7 +200,6 @@
    				<include name="bin/*.bat"/>
    				<include name="conf/cacerts.jks"/>
    				<include name="conf/identity.p12"/>
-   				<include name="conf/xmdesc/*.xml"/>
    				<include name="deploy/*.xml"/>
    				<include name="deploy/jms/*.xml"/>
    			</fileset>
@@ -185,6 +222,7 @@
    			</fileset>
    		</copy>
    		<mkdir dir="${dist.dir}/common/data/jbossmq/file"/>
+   		<mkdir dir="${dist.dir}/common/tmp/jbossmq"/>
    		<unzip src="${hapi.zip}" dest="${dist.dir}/common/lib"/>
    		<zip
    			destfile="${target.dir}/${dist.name}.zip"
@@ -242,7 +280,9 @@
 				<exclude name="conf/log4j.xml"/>
 				<exclude name="conf/login-config.xml"/>
 				<include name="conf/jbossmq-state.xml"/>
+				<include name="deploy/hsqldb-ds.xml"/>
 				<include name="deploy/jbossweb-tomcat50.sar/**"/>
+				<include name="deploy/jms/hsqldb-jdbc2-service.xml"/>
 				<include name="deploy/jms/jvm-il-service.xml"/>
 				<include name="deploy/jmx-console.war/**"/>
 				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
