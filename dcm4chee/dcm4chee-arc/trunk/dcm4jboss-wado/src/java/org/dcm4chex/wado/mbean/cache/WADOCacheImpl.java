@@ -30,7 +30,7 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
 public class WADOCacheImpl implements WADOCache {
 
 	public static final String DEFAULT_CACHE_ROOT = "/wadocache";
-	public static final String DEFAULT_WADO_SUBDIR = "wado/default";
+	public static final String DEFAULT_WADO_SUBDIR = "default";
 	public static final String DEFAULT_RID_SUBDIR = "rid";
 
 	private static WADOCacheImpl singletonWADO = null;
@@ -149,7 +149,6 @@ public class WADOCacheImpl implements WADOCache {
 	public File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID) throws IOException {
 		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null );
 		_writeImageFile( image, file);
-		cleanCache( true );
 		return file;
 	}
 
@@ -212,7 +211,6 @@ public class WADOCacheImpl implements WADOCache {
 			String instanceUID, String rows, String columns) throws IOException {
 		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, null );
 		_writeImageFile( image, file);
-		cleanCache( true );
 		return file;
 	}
 
@@ -280,7 +278,25 @@ public class WADOCacheImpl implements WADOCache {
 	 */
 	public void clearCache() {
 		log.info("Clear cache called: cacheRoot:"+getAbsCacheRoot() );
-		delTree( this.getAbsCacheRoot() );
+		if ( this == singletonWADO ) {
+			log.info("Clear WADO cache!");
+			File[] files = getAbsCacheRoot().listFiles();
+			if ( files == null ) {
+				log.warn("WADO cache not cleared! Reason: cache root is not a directory or cant be read.");
+				return;
+			}
+			for ( int i = 0, len = files.length ; i < len ; i++ ) {
+				if ( ! files[i].getName().equals( DEFAULT_RID_SUBDIR ) ) {
+					delTree( files[i] );
+					if ( ! files[i].getName().equals( DEFAULT_WADO_SUBDIR ) ) {//dont del default dir
+						files[i].delete();
+					}
+				}
+			}
+		} else {
+			log.info("Clear RID cache!");
+			delTree( new File( this.getAbsCacheRoot(), DEFAULT_RID_SUBDIR ) );
+		}
 	}
 
 	/**
@@ -314,7 +330,7 @@ public class WADOCacheImpl implements WADOCache {
 	}
 
 	/**
-	 * Removes old entries to shrink this cache.
+	 * Removes old entries of this chache to free disk space.
 	 * <p>
 	 * This method can be called to run on the same thread ( e.g. if started via JMX console) or 
 	 * in a seperate thread (if clean is handled automatically by WADOCache).
@@ -325,7 +341,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @param	background	If true, clean runs in a seperate thread.
 	 */
-	public void cleanCache( boolean background ) {
+	public void freeDiskSpace( boolean background ) {
 		long currFree = getFreeSpace();
 		if ( log.isDebugEnabled() ) log.debug("WADOCache.cleancache: free:"+currFree+" minFreeSpace:"+getMinFreeSpace() );
 		if ( currFree < getMinFreeSpace() ) {
@@ -351,7 +367,18 @@ public class WADOCacheImpl implements WADOCache {
 	 * If a directory is empty after deleting a file, the directory will also be deleted.
 	 */
 	private void _clean(long sizeToDel ) {
-		FileToDelContainer ftd = new FileToDelContainer( this.getAbsCacheRoot(), sizeToDel );
+		log.info( "Free disk space for "+( this==singletonWADO ? "WADO":"RID" )+" cache!");
+		FileToDelContainer ftd = new FileToDelContainer( new File( getAbsCacheRoot(), defaultSubdir ), sizeToDel );
+		if ( this == singletonWADO) {
+			File[] files = getAbsCacheRoot().listFiles();
+			if ( files != null ) {
+				for ( int i = 0, len = files.length ; i < len ; i++ ) {
+					if ( ! files[i].getName().equals( DEFAULT_RID_SUBDIR ) && ! files[i].getName().equals( DEFAULT_WADO_SUBDIR ) ) {
+						ftd.searchDirectory( new File( this.getAbsCacheRoot(), files[i].getName() ) );
+					}
+				}
+			}
+		}
 		Iterator iter = ftd.getFilesToDelete().iterator();
 		File file;
 		while ( iter.hasNext() ) {
@@ -367,6 +394,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * @param dir Directory
 	 */
 	private void _deleteDirWhenEmpty( File dir ) {
+		if ( dir.equals( getAbsCacheRoot() ) ) return;
 		if ( dir == null ) return;
 		File[] files = dir.listFiles();
 		if ( files != null && files.length == 0 ) {
@@ -422,6 +450,7 @@ public class WADOCacheImpl implements WADOCache {
 	 */
 	public long getFreeSpace() {
 		se.mog.io.File file = new se.mog.io.File( getAbsCacheRoot() );
+		log.info("getFreeDiskSpace from :"+getAbsCacheRoot()+" free:"+file.getDiskSpaceAvailable() );
 		return file.getDiskSpaceAvailable();
 	}
 
