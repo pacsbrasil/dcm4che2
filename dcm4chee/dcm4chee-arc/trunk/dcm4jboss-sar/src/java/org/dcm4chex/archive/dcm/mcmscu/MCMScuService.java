@@ -53,7 +53,7 @@ public class MCMScuService extends ServiceMBeanSupport
 	 * @param fileSetIdPrefix The fileSetIdPrefix to set.
 	 */
 	public void setFileSetIdPrefix(String fileSetIdPrefix) {
-		this.fileSetIdPrefix = fileSetIdPrefix;
+		this.fileSetIdPrefix = fileSetIdPrefix.toUpperCase();
 	}
 	/**
 	 * Returns the max media usage for collecting studies.
