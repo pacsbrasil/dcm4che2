@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.text.ParsePosition;
 import java.util.Date;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 /**
  * <description>
@@ -49,6 +50,7 @@ public class TMFormat extends SimpleDateFormat {
     // Constructors --------------------------------------------------
     public TMFormat() {
         super("HHmmss.SSS");
+        setTimeZone(TimeZone.getTimeZone("GMT"));
     }
     
     // Methods -------------------------------------------------------

@@ -832,11 +832,8 @@ abstract class DcmObjectImpl implements DcmObject {
             if (time == null || time.isEmpty()) {
                 return date.getDate();
             }
-            Date t = time.getDate();
-            return new Date(
-                date.getDate().getTime()
-                    + t.getTime()
-                    - t.getTimezoneOffset() * 60000L);
+            return new Date(date.getDate().getTime()
+            		+ time.getDate().getTime());
         } catch (DcmValueException e) {
             return null;
         }
@@ -858,21 +855,17 @@ abstract class DcmObjectImpl implements DcmObject {
         try {
             Date[] dateRange = date.getDateRange();
             DcmElement time = get(timeTag);
-            if (time == null || time.isEmpty()) {
-                if (dateRange[1] != null) {
-                    dateRange[1] =
-                        new Date(dateRange[1].getTime() + MS_PER_DAY - 1);
-                }
-                return dateRange;
-            }
-
-            Date[] timeRange = time.getDateRange();
-            long toff = timeRange[0].getTimezoneOffset() * 60000L;
-            return new Date[] {
-                new Date(
-                    dateRange[0].getTime() + timeRange[0].getTime() - toff),
-                new Date(
-                    dateRange[1].getTime() + timeRange[1].getTime() - toff)};
+            Date[] timeRange = (time == null || time.isEmpty()) ? null 
+            	    : time.getDateRange();
+            if (dateRange[0] != null && timeRange != null && timeRange[0] != null)
+            	dateRange[0] = new Date(dateRange[0].getTime() 
+            			+ timeRange[0].getTime());
+            if (dateRange[1] != null)
+            	dateRange[1] = new Date(dateRange[1].getTime() 
+            			+ (timeRange != null && timeRange[1] != null 
+            					? timeRange[1].getTime()
+            					: MS_PER_DAY - 1));
+            return dateRange; 
         } catch (DcmValueException e) {
             return null;
         }
