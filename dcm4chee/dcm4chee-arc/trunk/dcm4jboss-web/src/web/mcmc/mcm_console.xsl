@@ -12,25 +12,31 @@
 		<table border="0" cellspacing="0" cellpadding="0" width="100%" bgcolor="eeeeee">
 			<td valign="top">
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
-					<td bgcolor="eeeeee" align="center">Displaying media
-						<b>
-							<xsl:value-of select="offset + 1"/>
-						</b>
-							to
-						<b>
-							<xsl:choose>
-								<xsl:when test="offset + limit &lt; total">
-									<xsl:value-of select="offset + limit"/>
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:value-of select="total"/>												
-								</xsl:otherwise>
-							</xsl:choose>
-						</b>
-							of
-						<b>
-							<xsl:value-of select="total"/>
-						</b>matching media.
+					<td bgcolor="eeeeee" align="center">
+						<xsl:if test="total &gt; 0">
+							Displaying media
+							<b>
+								<xsl:value-of select="offset + 1"/>
+							</b>
+								to
+							<b>
+								<xsl:choose>
+									<xsl:when test="offset + limit &lt; total">
+										<xsl:value-of select="offset + limit"/>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="total"/>												
+									</xsl:otherwise>
+								</xsl:choose>
+							</b>
+								of
+							<b>
+								<xsl:value-of select="total"/>
+							</b>matching media.
+						</xsl:if>
+						<xsl:if test="total = 0">
+							No matching media found!
+						</xsl:if>
  					</td>
 
 					<td width="150" bgcolor="eeeeee">
@@ -65,7 +71,7 @@
 								</xsl:if>
 							</input>
 						</td> 
-						<td width="130" bgcolor="eeeeee" class="label">Creation date:</td>
+						<td width="130" bgcolor="eeeeee" class="label">Creation date (yyyy/MM/dd):</td>
 						<td width="90" bgcolor="eeeeee">
 							<input size="10" name="startCreationDate" type="text" value="{filter/startCreationDate}"/>
 			      		</td>
@@ -78,10 +84,14 @@
 								<td width="60%" bgcolor="eeeeee" rowspan="2" align="center">
 									<table border="1" cellpadding="4" cellspacing="4" bgcolor="eeeeee">
 										<tr>										
-											<td nowrap="" valign="middle" align="center" bgcolor="ee8888"><font color="000000">&#160;Media Creation Managment service not available!&#160;</font>
-												<a href="mcm_console.m?action=check_mcm_avail">
-													<img src="images/checkmcm.gif" alt="Retry" border="0" title="Retry"/>		
-												</a>
+											<td nowrap="" valign="middle" align="center" bgcolor="ee8888">
+												<font color="000000">&#160;Offline Storage Service not available!&#160;<br/>
+												<input type="checkbox" value="true" name="checkMCM" border="0"
+												 	title="Enable availability check of offline storage.">
+													<xsl:if test="/model/checkAvail = 'true'">
+							                  				<xsl:attribute name="checked">true</xsl:attribute>
+													</xsl:if>Retry to connect to Offline Storage
+												</input></font>
 											</td>
 										</tr>
 									</table>
@@ -90,6 +100,7 @@
 							</xsl:when>
 							<xsl:otherwise>
 								<td width="60%" bgcolor="eeeeee"></td>
+								<td width="100%" bgcolor="eeeeee" />
 							</xsl:otherwise>
 						</xsl:choose>
 					</tr>
@@ -123,7 +134,7 @@
 								</xsl:if>
 							</input>
 						</td> 
-						<td width="130" bgcolor="eeeeee" class="label">Update date:
+						<td width="130" bgcolor="eeeeee" class="label">Update date (yyyy/MM/dd):
 						</td>
 			      		<td width="90" bgcolor="eeeeee">
 			        		<input size="10" name="startUpdateDate" type="text" value="{filter/startUpdateDate}"/>
