@@ -209,8 +209,7 @@ public final class ISO8601DateFormat extends DateFormat
 		StringTokenizer st = new StringTokenizer(s, ".+-:TZz", true);
 		String tok; //a token
 		boolean strict = !isLenient();
-		int f = 1, year, month, day, hour, min;
-		int sec, msec = 0, off = 0;
+		int f = 1, year, month, day, hour, min, sec;
 
 		p = 0;
 		tok = st.nextToken();
@@ -267,6 +266,7 @@ public final class ISO8601DateFormat extends DateFormat
 			throw new ParseException("invalid second",p);
 		p += tok.length();
 		//
+		Calendar cal = new GregorianCalendar(year,month-1,day,hour,min,sec);
 		if (st.hasMoreTokens()) {
 			//get fractional second portion, if exists
 			tok = st.nextToken();
@@ -274,9 +274,10 @@ public final class ISO8601DateFormat extends DateFormat
 			if (".".equals(tok)) {
 				tok = st.nextToken();
 				p += tok.length();
-				msec = Integer.parseInt(tok);
+				int msec = Integer.parseInt(tok);
 				if (tok.length()!=3)
 					msec = (int)((double)msec * Math.pow(10,(3-tok.length())) + 0.5);
+		        cal.set(Calendar.MILLISECOND,msec);
 				tok = st.nextToken();
 				p += tok.length();
 			}
@@ -286,7 +287,7 @@ public final class ISO8601DateFormat extends DateFormat
 				else f = 1;
 				tok = st.nextToken();
 				p += tok.length();
-				off = Integer.parseInt(tok) * 3600 * 1000;
+				int off = Integer.parseInt(tok) * 3600 * 1000;
 				if ((tok.length()!=2 && strict) || !(tok = st.nextToken()).equals(":"))
 					throw new ParseException("invalid zone hour offset length",p);
 				p += tok.length();
@@ -296,10 +297,9 @@ public final class ISO8601DateFormat extends DateFormat
 				if (tok.length()!=2 && strict)
 					throw new ParseException("invalid zone min offset length",p);
 				off *= f;
-			}
-			else if ((!"Z".equals(tok) && strict) ||
-				(tok.charAt(0)!='Z' && tok.charAt(0)!='z')) {
-				throw new ParseException("invalid time zone",p);
+		        //set time to be in GMT timezone, by telling the Calendar it's offset from GMT
+		        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+		        cal.set(Calendar.ZONE_OFFSET,off);
 			}
 			//check for extra tokens exception
 			if (st.hasMoreTokens() && strict) {
@@ -309,17 +309,6 @@ public final class ISO8601DateFormat extends DateFormat
 		else if (strict) {
 			throw new ParseException("missing time zone",p);
 		}
-        else {  //not strict and missing timezone (assume this timezone)
-            off = getCalendar().get(Calendar.ZONE_OFFSET);
-            off += getCalendar().getTimeZone().getDSTSavings();
-        }
-		//return
-		Calendar cal = new GregorianCalendar(year,month-1,day,hour,min,sec);
-        //set time to be in GMT timezone, by telling the Calendar it's offset from GMT
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.set(Calendar.ZONE_OFFSET,off);
-        //don't forget to set the milliseconds!
-        cal.set(Calendar.MILLISECOND,msec);
 		return cal.getTime();
 	}
 }
