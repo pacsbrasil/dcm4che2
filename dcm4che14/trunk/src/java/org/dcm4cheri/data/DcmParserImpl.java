@@ -447,7 +447,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                
     public long parseDataset(DcmDecodeParam param, int stopTag)
             throws IOException {
-        setDcmDecodeParam(param);
+        if (param != null)
+            setDcmDecodeParam(param);
         if (handler != null) {
             handler.startDataset();
             handler.setDcmDecodeParam(decodeParam);
