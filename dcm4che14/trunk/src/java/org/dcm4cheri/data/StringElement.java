@@ -730,7 +730,7 @@ abstract class StringElement extends ValueElement {
 
     private static final class DA extends DateString {
         DA(int tag, ByteBuffer data) {
-            super(tag, data, NO_TRIM);
+            super(tag, data, TRAIL_TRIM);
         }
 
         public final int vr() {
