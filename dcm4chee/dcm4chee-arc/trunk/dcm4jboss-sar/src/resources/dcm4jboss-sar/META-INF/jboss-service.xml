@@ -227,6 +227,11 @@
 
   <mbean code="org.jboss.varia.scheduler.Scheduler" 
 	 name="dcm4chex:service=Scheduler,name=Scheduler of MoveScu">
+    <!-- To avoid NameNotBoundExceptions during server startup. MUST be
+	removed, if the service is NOT deployed in the same jboss instance
+	as the MoveOrderQueue EJB!
+	-->
+    <depends>jboss.j2ee:jndiName=ejb/MoveOrderQueue,service=EJB</depends>
         
     <!-- 
     Value must match with name attribute of MoveScuService mbean (s.above)!
