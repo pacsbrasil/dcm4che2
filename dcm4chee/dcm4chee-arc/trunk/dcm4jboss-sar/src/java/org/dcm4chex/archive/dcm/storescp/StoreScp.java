@@ -28,13 +28,16 @@ import java.util.Map;
 
 import javax.ejb.CreateException;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
@@ -200,7 +203,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq
                     .getTransferSyntaxUID());
             Dataset ds = objFact.newDataset();
-            DcmParser parser = StoreScpService.paf.newDcmParser(in);
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
             service.logDataset("Dataset:\n", ds);
@@ -635,7 +638,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (ian != null) {
             return ian.get(Tags.RefSeriesSeq);
         }
-        ians.put(siud, ian = StoreScpService.dof.newDataset());
+        ians.put(siud, ian = DcmObjectFactory.getInstance().newDataset());
         ian.putAll(ds.subSet(SCN_TAGS));
         DcmElement ppsSeq = ian.putSQ(Tags.RefPPSSeq);
         Dataset pps = ds.getItem(Tags.RefPPSSeq);
@@ -673,8 +676,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 stored = null;
             }
             if (stored == null) {
-                stored = StoreScpService.alf.newInstancesAction("Create", suid,
-                        StoreScpService.alf.newPatient(
+                final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+                stored = alf.newInstancesAction("Create", suid,
+                        alf.newPatient(
                             ds.getString(Tags.PatientID), 
                             ds.getString(Tags.PatientName)));
                 stored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
@@ -692,7 +696,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 .getProperty("InstancesStored");
         if (stored != null) {
             service.logInstancesStored(
-                    StoreScpService.alf.newRemoteNode(assoc.getSocket(),
+                    AuditLoggerFactory.getInstance().newRemoteNode(assoc.getSocket(),
                             assoc.getCallingAET()), stored);
         }
         assoc.putProperty("InstancesStored", null);

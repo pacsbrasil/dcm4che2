@@ -34,7 +34,9 @@ import javax.management.ObjectName;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
@@ -44,6 +46,7 @@ import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
@@ -270,10 +273,10 @@ public class StgCmtScuScpService extends AbstractScpService implements
         try {
             ActiveAssociation aa = openAssociation(calledAET, callingAET, false);
             try {
-                Command cmd = dof.newCommand();
+                Command cmd = DcmObjectFactory.getInstance().newCommand();
                 cmd.initNActionRQ(1, UIDs.StorageCommitmentPushModel,
                         UIDs.StorageCommitmentPushModelSOPInstance, 1);
-                Dimse rq = asf.newDimse(1, cmd, actionInfo);
+                Dimse rq = AssociationFactory.getInstance().newDimse(1, cmd, actionInfo);
                 logDataset("Storage Commitment Request:\n", actionInfo);
                 FutureRSP rsp = aa.invoke(rq);
                 Command rspCmd = rsp.get().getCommand();
@@ -326,7 +329,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 log.error("Failed to query DB", e);
             }
         }
-        Dataset eventInfo = dof.newDataset();
+        Dataset eventInfo = DcmObjectFactory.getInstance().newDataset();
         eventInfo.putUI(Tags.TransactionUID, actionInfo
                 .getString(Tags.TransactionUID));
         DcmElement successSOPSeq = eventInfo.putSQ(Tags.RefSOPSeq);
@@ -399,7 +402,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 file));
         DigestInputStream dis = new DigestInputStream(in, md);
         try {
-            DcmParser parser = paf.newDcmParser(dis);
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
             if (parser.getReadTag() == Tags.PixelData) {
                 if (parser.getReadLength() == -1) {
@@ -438,6 +441,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         if (ae == null) {
             throw new UnkownAETException(calledAET);
         }
+        final AssociationFactory asf = AssociationFactory.getInstance();
         Association a = asf.newRequestor(createSocket(ae));
         a.setAcTimeout(acTimeout);
         a.setDimseTimeout(dimseTimeout);
@@ -479,11 +483,11 @@ public class StgCmtScuScpService extends AbstractScpService implements
         try {
             ActiveAssociation aa = openAssociation(calledAET, callingAET, true);
             try {
-                Command cmd = dof.newCommand();
+                Command cmd = DcmObjectFactory.getInstance().newCommand();
                 cmd.initNEventReportRQ(1, UIDs.StorageCommitmentPushModel,
                         UIDs.StorageCommitmentPushModelSOPInstance, eventInfo
                                 .contains(Tags.FailedSOPSeq) ? 2 : 1);
-                Dimse rq = asf.newDimse(1, cmd, eventInfo);
+                Dimse rq = AssociationFactory.getInstance().newDimse(1, cmd, eventInfo);
                 logDataset("Storage Commitment Result:\n", eventInfo);
                 FutureRSP rsp = aa.invoke(rq);
                 Command rspCmd = rsp.get().getCommand();

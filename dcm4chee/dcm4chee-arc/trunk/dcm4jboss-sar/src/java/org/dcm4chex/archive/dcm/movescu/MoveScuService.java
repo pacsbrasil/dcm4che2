@@ -9,10 +9,7 @@
 package org.dcm4chex.archive.dcm.movescu;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -40,13 +37,6 @@ public class MoveScuService extends ServiceMBeanSupport implements
     private static final String DEF_CALLING_AET = "MOVE_SCU";
 
     private static final String DEF_CALLED_AET = "QR_SCP";
-
-    private static final Map dumpParam = new HashMap(5);
-    static {
-        dumpParam.put("maxlen", new Integer(128));
-        dumpParam.put("vallen", new Integer(64));
-        dumpParam.put("prefix", "\t");
-    }
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 

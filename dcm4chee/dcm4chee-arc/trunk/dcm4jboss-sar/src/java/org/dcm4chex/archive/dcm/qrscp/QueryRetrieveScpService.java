@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -49,6 +48,8 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  */
 public class QueryRetrieveScpService extends AbstractScpService {
 
+    private static final String NONE = "NONE";
+    
     private static String transactionIsolationLevelAsString(int level) {
         switch (level) {
         	case 0:
@@ -78,7 +79,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return 0;
     }
     
-    private ArrayList sendNoPixelDataToAETs = new ArrayList();
+    private String[] sendNoPixelDataToAETs = null;
+    
+    private String[] ignoreUnsupportedSOPClassFailuresByAETs = null;
     
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
     
@@ -130,9 +133,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private MoveScp moveScp = new MoveScp(this);
     
-    private int limitFailedSOPInstanceUIDList = 100;
-
-    private int maxSOPInstanceUIDsPerMoveRQ = 100;
+    private int maxUIDsPerMoveRQ = 100;
     
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
@@ -312,26 +313,27 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
     
     public final String getSendNoPixelDataToAETs() {
-        if (sendNoPixelDataToAETs.isEmpty()) return "NONE";
-        StringBuffer sb = 
-            new StringBuffer((String) sendNoPixelDataToAETs.get(0));
-        for (int i = 1, n = sendNoPixelDataToAETs.size(); i < n; i++) {
-            sb.append('\\').append((String) sendNoPixelDataToAETs.get(i));
-        }
-        return sb.toString();
+        return sendNoPixelDataToAETs == null ? NONE
+                : StringUtils.toString(callingAETs, '\\');
     }
 
     public final void setSendNoPixelDataToAETs(String aets) {
-        sendNoPixelDataToAETs.clear();
-        if (aets != null && aets.length() > 0 
-                && !aets.equalsIgnoreCase("NONE")) {
-            sendNoPixelDataToAETs.addAll(
-                    Arrays.asList(StringUtils.split(aets, '\\')));
-        }
+        this.sendNoPixelDataToAETs = NONE.equalsIgnoreCase(aets) ? null 
+                : StringUtils.split(aets, '\\');
+    }
+    
+    public final String getIgnoreUnsupportedSOPClassFailuresByAETs() {
+        return ignoreUnsupportedSOPClassFailuresByAETs == null ? NONE
+            : StringUtils.toString(ignoreUnsupportedSOPClassFailuresByAETs, '\\');
+    }
+    
+    public final void setIgnoreUnsupportedSOPClassFailuresByAETs(String aets) {
+        this.ignoreUnsupportedSOPClassFailuresByAETs = NONE.equalsIgnoreCase(aets) ? null 
+                : StringUtils.split(aets, '\\');
     }
     
     public final String getRequestStgCmtFromAETs() {
-        if (requestStgCmtFromAETs.isEmpty()) return "NONE";        
+        if (requestStgCmtFromAETs.isEmpty()) return NONE;        
         StringBuffer sb = new StringBuffer();
         Iterator it = requestStgCmtFromAETs.entrySet().iterator();
         while (it.hasNext()) {
@@ -350,7 +352,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public final void setRequestStgCmtFromAETs(String aets) {
         requestStgCmtFromAETs.clear();
         if (aets != null && aets.length() > 0 
-                && !aets.equalsIgnoreCase("NONE")) {
+                && !aets.equalsIgnoreCase(NONE)) {
             String[] a = StringUtils.split(aets, '\\');
             String s;
             int c;
@@ -373,20 +375,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.bufferSize = bufferSize;
     }
 
-	public final int getLimitFailedSOPInstanceUIDList() {
-		return limitFailedSOPInstanceUIDList;
+	public final int getMaxUIDsPerMoveRQ() {
+		return maxUIDsPerMoveRQ;
 	}
 	
-	public final void setLimitFailedSOPInstanceUIDList(int limit) {
-		this.limitFailedSOPInstanceUIDList = limit;
-	}
-
-	public final int getMaxSOPInstanceUIDsPerMoveRQ() {
-		return maxSOPInstanceUIDsPerMoveRQ;
-	}
-	
-	public final void setMaxSOPInstanceUIDsPerMoveRQ(int max) {
-		this.maxSOPInstanceUIDsPerMoveRQ = max;
+	public final void setMaxUIDsPerMoveRQ(int max) {
+		this.maxUIDsPerMoveRQ = max;
 	}
 	
 	protected void bindDcmServices(DcmServiceRegistry services) {
@@ -477,7 +471,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     boolean isWithoutPixelData(String moveDest) {
-        return sendNoPixelDataToAETs.contains(moveDest);
+        return sendNoPixelDataToAETs != null
+            && Arrays.asList(sendNoPixelDataToAETs).contains(moveDest);
+    }
+    
+    boolean isIgnoreUnsupportedSOPClassFailures(String moveDest) {
+        return ignoreUnsupportedSOPClassFailuresByAETs != null
+            && Arrays.asList(ignoreUnsupportedSOPClassFailuresByAETs).contains(moveDest);
     }
     
     String getStgCmtAET(String moveDest) {

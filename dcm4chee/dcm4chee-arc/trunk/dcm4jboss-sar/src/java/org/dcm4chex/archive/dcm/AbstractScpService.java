@@ -9,16 +9,9 @@
 
 package org.dcm4chex.archive.dcm;
 
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.management.ObjectName;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
@@ -35,28 +28,14 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public abstract class AbstractScpService extends ServiceMBeanSupport {
 
-    private static final String ANY = "ANY";
-
-    private static final Map dumpParam = new HashMap(5);
-    static {
-        dumpParam.put("maxlen", new Integer(128));
-        dumpParam.put("vallen", new Integer(64));
-        dumpParam.put("prefix", "\t");
-    }
+    protected static final String ANY = "ANY";
+    protected static final String NONE = "NONE";
 
     protected static final String[] ONLY_DEFAULT_TS = { UIDs.ImplicitVRLittleEndian,};
 
     protected static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian,};
 
-    public static final DcmParserFactory paf = DcmParserFactory.getInstance();
-    
-    public static final AssociationFactory asf = AssociationFactory.getInstance();
-
-    public static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
-    public static final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-    
     protected ObjectName dcmServerName;
 
     protected ObjectName auditLogName;
@@ -112,7 +91,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         for (int i = 0; i < calledAETs.length; ++i) {
             AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
             if (policy1 == null) {
-                policy1 = asf.newAcceptorPolicy();
+                policy1 = AssociationFactory.getInstance().newAcceptorPolicy();
                 policy1.setCallingAETs(callingAETs);
                 policy.putPolicyForCalledAET(calledAETs[i], policy1);                
             } else {

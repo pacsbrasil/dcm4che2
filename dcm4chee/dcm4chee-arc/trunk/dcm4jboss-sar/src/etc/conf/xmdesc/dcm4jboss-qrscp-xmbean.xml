@@ -57,6 +57,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getIgnoreUnsupportedSOPClassFailuresByAETs"
+      setMethod="setIgnoreUnsupportedSOPClassFailuresByAETs">
+      <description>Move Destination AET(s) to which failures in transmitting
+      objects caused by not supported SOP Classes shall NOT cause to return
+      a warning status "Sub-Operation fails" in the final MOVE RSP to the MOVE SCU.
+      "NONE" = no such aet.
+      </description>
+      <name>IgnoreUnsupportedSOPClassFailuresByAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
       getMethod="getRequestStgCmtFromAETs"
       setMethod="setRequestStgCmtFromAETs">
       <description>Move Destination AET(s), from which Storage Commitment
@@ -219,25 +234,12 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getLimitFailedSOPInstanceUIDList"
-      setMethod="setLimitFailedSOPInstanceUIDList">
-      <description>Limit maximal number of SOP Instance UID reported as failed
-          in returned MOVE RSP. Necessary, because the maximal value length of
-          UI attributes of 64kB could be otherwise exceeded.
-      </description>
-      <name>LimitFailedSOPInstanceUIDList</name>
-      <type>int</type>
-      <descriptors>
-         <value value="100" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getMaxSOPInstanceUIDsPerMoveRQ"
-      setMethod="setMaxSOPInstanceUIDsPerMoveRQ">
+      getMethod="getMaxUIDsPerMoveRQ"
+      setMethod="setMaxUIDsPerMoveRQ">
       <description>Maximal number of SOP Instance UIDs in forwarded MOVE RQ.
           Larger Move RQs are splitted in smaller according this constraint.
       </description>
-      <name>MaxSOPInstanceUIDsPerMoveRQ</name>
+      <name>MaxUIDsPerMoveRQ</name>
       <type>int</type>
       <descriptors>
          <value value="100" />

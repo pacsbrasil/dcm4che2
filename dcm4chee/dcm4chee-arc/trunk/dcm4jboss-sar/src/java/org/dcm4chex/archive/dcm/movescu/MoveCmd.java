@@ -23,7 +23,6 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
@@ -36,7 +35,7 @@ import org.jboss.logging.Logger;
  * @since 26.08.2004
  *
  */
-class MoveCmd implements Runnable, DimseListener {
+class MoveCmd implements Runnable {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -55,6 +54,8 @@ class MoveCmd implements Runnable, DimseListener {
     private final Logger log;
 
     private final MoveOrder order;
+    
+    private int status = INVOKE_FAILED_STATUS;
 
     public MoveCmd(final MoveScuService service, MoveOrder order) {
         this.service = service;
@@ -82,45 +83,35 @@ class MoveCmd implements Runnable, DimseListener {
             putUI(ds, Tags.SeriesInstanceUID, order.getSeriesIuids());
             putUI(ds, Tags.SOPInstanceUID, order.getSopIuids());
             service.logDataset("Identifier:\n", ds);
-            moveAssoc.invoke(af.newDimse(PCID, cmd, ds), this);
+            Dimse moveRsp = moveAssoc.invoke(af.newDimse(PCID, cmd, ds)).get();
+            Command moveRspCmd = moveRsp.getCommand();
+            status = moveRspCmd.getStatus();
+            if (status == Status.SubOpsOneOrMoreFailures && order.getSopIuids() != null) {
+                Dataset moveRspData = moveRsp.getDataset();
+                if (moveRspData != null) {
+                    String[] failedUIDs = ds.getStrings(Tags.FailedSOPInstanceUIDList);
+                    if (failedUIDs != null && failedUIDs.length != 0) {
+                        order.setSopIuids(failedUIDs);
+                    }
+                }                
+            }
         } catch (Exception e) {
             log.warn("Failed to invoke C-MOVE-RQ for " + order, e);
-            order.setFailureStatus(INVOKE_FAILED_STATUS);
-            order.setFailureCount(order.getFailureCount()+1);
-            service.queueFailedMoveOrder(order);
         } finally {
             if (moveAssoc != null) try {
                 moveAssoc.release(true);
+                // workaround to ensure that the final MOVE-RSP is processed
+                // before to continue 
+                Thread.sleep(10);
             } catch (Exception e) {
                 log.warn("Failed to release " + moveAssoc.getAssociation());
-            }
+            }            
         }
-    }
-
-    public void dimseReceived(Association assoc, Dimse dimse) {
-        Command cmd = dimse.getCommand();
-        Dataset ds = null;
-        try {
-            ds = dimse.getDataset();
-        } catch (IOException e) {
-            log.warn("Failed to read Move Response Identifier:", e);
+        if (status != Status.Success) {
+            order.setFailureStatus(status);
+            order.setFailureCount(order.getFailureCount()+1);
+            service.queueFailedMoveOrder(order);
         }
-        final int status = cmd.getStatus();
-        switch (status) {
-        case Status.Success:
-            log.info("Finished processing " + order);
-            return;
-        case Status.Pending:
-            return;
-        }
-        String[] failedUIDs = ds != null ? ds
-                .getStrings(Tags.FailedSOPInstanceUIDList) : null;
-        if (failedUIDs != null) {
-            order.setSopIuids(failedUIDs);
-        }
-        order.setFailureStatus(status);
-        order.setFailureCount(order.getFailureCount()+1);
-        service.queueFailedMoveOrder(order);
     }
 
     private static void putUI(Dataset ds, int tag, String[] uids) {
