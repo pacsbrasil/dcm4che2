@@ -318,7 +318,49 @@ public abstract class MediaComposerBean implements SessionBean {
     public List getWithStatus(int status) throws FinderException {
         return toMediaDTOs(mediaHome.findByStatus(status));
     }
-        
+    
+    /**
+     * Find media for given search params.
+     * <p>
+     * Add all founded media to the given collection.<br>
+     * This allows to fill a collection with sequential calls without clearing the collection.<br>
+     * 
+     * 
+     * @ejb.interface-method
+     */
+    public int findByCreatedTime( Collection col, Long after,
+            Long before, Integer stati, Integer offset, Integer limit,
+            boolean desc) throws FinderException {
+    	Timestamp tsAfter = null;
+    	if ( after != null ) tsAfter = new Timestamp(after.longValue() );
+    	Timestamp tsBefore = null;
+    	if ( before != null ) tsBefore = new Timestamp(before.longValue() );
+    	col.addAll( toMediaDTOs( mediaHome.listByCreatedTime( stati, tsAfter,
+    			tsBefore, offset, limit, desc ) ) );
+    	return mediaHome.countByCreatedTime( stati,tsAfter, tsBefore );
+    }
+
+    /**
+     * Find media for given search params.
+     * <p>
+     * Add all founded media to the given collection.<br>
+     * This allows to fill a collection with sequential calls without clearing the collection.<br>
+     * 
+     * 
+     * @ejb.interface-method
+     */
+    public int findByUpdatedTime( Collection col, Long after,
+            Long before, Integer stati, Integer offset, Integer limit,
+            boolean desc) throws FinderException {
+    	Timestamp tsAfter = null;
+    	if ( after != null ) tsAfter = new Timestamp(after.longValue() );
+    	Timestamp tsBefore = null;
+    	if ( before != null ) tsBefore = new Timestamp(before.longValue() );
+    	col.addAll( toMediaDTOs( mediaHome.listByUpdatedTime( stati, tsAfter,
+    			tsBefore, offset, limit, desc ) ) );
+    	return mediaHome.countByUpdatedTime( stati, tsAfter, tsBefore );
+    }
+    
     private List toMediaDTOs(Collection c) {
         ArrayList list = new ArrayList();
         for (Iterator it = c.iterator(); it.hasNext();) {
