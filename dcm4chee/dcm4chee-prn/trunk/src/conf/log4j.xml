@@ -60,7 +60,7 @@
   <!-- ============================== -->
 
   <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
-    <param name="Threshold" value="INFO"/>
+    <param name="Threshold" value="DEBUG"/>
     <param name="Target" value="System.out"/>
 
     <layout class="org.apache.log4j.PatternLayout">
@@ -116,11 +116,14 @@
   <!-- Limit categories -->
   <!-- ================ -->
 
-  <!-- Limit JBoss categories to INFO
+  <!-- Limit JBoss categories to INFO -->
   <category name="org.jboss">
     <priority value="INFO"/>
   </category>
-  -->
+
+  <category name="org.dcm4cheri">
+    <priority value="INFO"/>
+  </category>
 
   <!-- Increase the priority threshold for the DefaultDS category
   <category name="DefaultDS">
