@@ -280,26 +280,40 @@ abstract class StringElement extends ValueElement
     }
 
 
+    private static boolean isUniversalMatch(String p)
+    {
+        if (p == null) {
+            return true;
+        }
+        for (int i = 0, n = p.length(); i < n; ++i) {
+            if (p.charAt(i) != '*') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     /**
      *  Description of the Method
      *
-     * @param  key         Description of the Parameter
+     * @param  key           Description of the Parameter
      * @param  ignorePNCase  Description of the Parameter
-     * @param  keyCS       Description of the Parameter
-     * @param  dsCS        Description of the Parameter
-     * @return             Description of the Return Value
+     * @param  keyCS         Description of the Parameter
+     * @param  dsCS          Description of the Parameter
+     * @return               Description of the Return Value
      */
     protected boolean matchValue(DcmElement key, boolean ignorePNCase,
             Charset keyCS, Charset dsCS)
     {
         for (int i = 0, m = key.vm(); i < m; ++i) {
-            String regex;
+            String pattern;
             try {
-                regex = key.getString(i, keyCS);
+                pattern = key.getString(i, keyCS);
             } catch (DcmValueException e) {
                 throw new IllegalArgumentException("key: " + key);
             }
-            if (regex.equals("*")) {
+            if (isUniversalMatch(pattern)) {
                 return true;
             }
             String s;
@@ -311,8 +325,8 @@ abstract class StringElement extends ValueElement
                     return true;
                 }
                 if (ignorePNCase && vr() == VRs.PN
-                         ? match(s.toLowerCase(), regex.toLowerCase())
-                         : match(s, regex)) {
+                         ? match(pattern.toUpperCase(), s.toUpperCase())
+                         : match(pattern, s)) {
                     return true;
                 }
             }
@@ -321,13 +335,44 @@ abstract class StringElement extends ValueElement
     }
 
 
-    private static boolean match(String regex, String input)
+    private static boolean match(String pattern, String input)
     {
-        if (regex.indexOf('*') == -1 && regex.indexOf('?') == -1) {
-            return regex.equals(input);
+        if (pattern.indexOf('*') == -1 && pattern.indexOf('?') == -1) {
+            return pattern.equals(input);
         }
-        return Pattern.matches(regex, input);
+        return Pattern.matches(toRegEx(pattern), input);
     }
+
+
+    private static String toRegEx(String pattern)
+    {
+        char[] a = pattern.toCharArray();
+        StringBuffer sb = new StringBuffer(a.length + 10);
+        boolean inQuote = false;
+        for (int i = 0; i < a.length; ++i) {
+            if (a[i] == '*' || a[i] == '?') {
+                if (inQuote) {
+                    sb.append('\\').append('E');
+                    inQuote = false;
+                }
+                sb.append('.');
+                if (a[i] == '*') {
+                    sb.append('*');
+                }
+            } else {
+                if (!inQuote) {
+                    sb.append('\\').append('Q');
+                    inQuote = true;
+                }
+                sb.append(a[i]);
+            }
+        }
+        if (inQuote) {
+            sb.append('\\').append('E');
+        }
+        return sb.toString();
+    }
+
 
     // LT -------------------------------------------------------------
     private final static class LT extends StringElement
@@ -1311,9 +1356,9 @@ abstract class StringElement extends ValueElement
     {
         DAFormat f = new DAFormat();
         if (value.indexOf('-') != -1) {
-            toDate(f, value);
-        } else {
             toDateRange(f, value);
+        } else {
+            toDate(f, value);
         }
         return new DA(tag, toByteBuffer(value, NO_TRIM, NO_CHECK, null));
     }

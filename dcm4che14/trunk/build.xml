@@ -180,6 +180,19 @@
       </junitreport>
    </target>
    
+   <target name="test-dirreader" depends="compile,prepare-res">
+      <mkdir dir="${build.reports.dir}"/>
+      <junit printsummary="true" fork="yes" dir="${test.conf.dir}">
+         <classpath refid="base.path"/>
+         <formatter type="xml" />                  
+         <test name="org.dcm4che.media.DirReaderTest" todir="${build.reports.dir}"/>
+      </junit>
+      <junitreport todir="${build.reports.dir}">
+         <fileset dir="${build.reports.dir}" includes="TEST-*.xml"/>
+         <report format="frames" todir="${build.reports.dir}/html"/>
+      </junitreport>
+   </target>
+   
    <target name="jar" depends="compile,prepare-res">
       <mkdir dir="${build.lib.dir}"/>
       <jar jarfile="${build.lib.dir}/dcm4che.jar"
