@@ -121,7 +121,7 @@ public class Tags {
     
     public static int valueOf(String s) {
         char[] a = s.toCharArray();
-        if (a.length != 11 || a[0] != '(' || a[4] != ',' || a[10] != ')') {
+        if (a.length != 11 || a[0] != '(' || a[5] != ',' || a[10] != ')') {
             return -1;
         }
         int d1 = digit(a[1]);
@@ -147,8 +147,8 @@ public class Tags {
 
     private static int digit(char c) {
         return (c >= '0' &amp;&amp; c &lt;= '9') ? (c - '0')
-            : (c >= 'A' &amp;&amp; c &lt;= 'F') ? (c - 'A')
-            : (c >= 'a' &amp;&amp; c &lt;= 'f') ? (c - 'a')
+            : (c >= 'A' &amp;&amp; c &lt;= 'F') ? (c - 'A' + 10)
+            : (c >= 'a' &amp;&amp; c &lt;= 'f') ? (c - 'a' + 10)
             : -1;
     }
 

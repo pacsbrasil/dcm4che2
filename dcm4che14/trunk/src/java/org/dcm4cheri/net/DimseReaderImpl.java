@@ -59,7 +59,12 @@ final class DimseReaderImpl {
         
     public synchronized Dimse read(int timeout) throws IOException {
         this.timeout = timeout;
-        if (!nextPDV()) {
+        try {
+            if (!nextPDV()) {
+                return null;
+            }
+        } catch (EOFException e) {
+            FsmImpl.log.warn("Socket closed on open association:" + fsm.socket());
             return null;
         }
         if (!pdv.cmd()) {

@@ -300,6 +300,7 @@ abstract class StringElement extends ValueElement {
     protected boolean matchValue(
         DcmElement key,
         boolean ignorePNCase,
+        boolean ignoreEmpty,
         Charset keyCS,
         Charset dsCS) {
         for (int i = 0, m = key.vm(); i < m; ++i) {
@@ -973,6 +974,7 @@ abstract class StringElement extends ValueElement {
         protected boolean matchValue(
             DcmElement key,
             boolean ignorePNCase,
+            boolean ignoreEmpty,
             Charset keyCS,
             Charset dsCS) {
             for (int i = 0, n = key.vm(); i < n; ++i) {
