@@ -1,1 +1,1 @@
-<jsp:forward page="arr-list.do" />
+<jsp:forward page="arr-list.do?start=0&amp;pagesize=30" />

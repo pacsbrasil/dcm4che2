@@ -184,7 +184,7 @@
 	
 	<!-- Matching templates are used for special handling of basic elements -->
 	<xsl:template match="Host">
-        <span class="host"><a href="arr-list.do?host={.}&amp;start=0&amp;pagesize=-1"><xsl:value-of select="."/></a></span><br/>
+        <span class="host"><a href="arr-list.do?host={.}&amp;start=0&amp;pagesize=30"><xsl:value-of select="."/></a></span><br/>
     </xsl:template>
 	<xsl:template match="TimeStamp"> <!-- make timestamp into a pretty link -->
         <xsl:variable name="timezone-found">
