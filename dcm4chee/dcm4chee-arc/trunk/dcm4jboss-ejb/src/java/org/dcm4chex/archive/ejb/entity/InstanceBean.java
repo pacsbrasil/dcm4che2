@@ -238,7 +238,7 @@ public abstract class InstanceBean implements EntityBean {
      *  role-name="sr-with-title"
      *  target-ejb="Code"
      *  target-role-name="title-of-sr"
-     *  target-role-multiple="true"
+     *  target-multiple="yes"
      *
      * @jboss:relation
      *  fk-column="srcode_fk"

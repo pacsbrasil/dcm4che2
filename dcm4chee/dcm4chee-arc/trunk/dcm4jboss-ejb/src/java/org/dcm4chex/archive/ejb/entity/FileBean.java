@@ -170,7 +170,7 @@ public abstract class FileBean implements EntityBean {
      *  role-name="file-at-node"
      *  target-ejb="Node"
      *  target-role-name="node-of-file"
-     *  target-role-multiple="true"
+     *  target-multiple="yes"
      *
      * @jboss:relation
      *  fk-column="node_fk"

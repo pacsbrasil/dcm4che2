@@ -60,6 +60,7 @@ public class StorageBeanTest extends TestCase
 
     public static final String DIR = "storage";
     public static final String AET = "StorageBeanTest";
+    public static final DcmObjectFactory objFact = DcmObjectFactory.getInstance();
 
     private Storage storage;
 
@@ -81,7 +82,7 @@ public class StorageBeanTest extends TestCase
             storage.getNodeURI(AET);
         } catch (ObjectNotFoundException e) {
             String host = HostNameUtils.getLocalHostName();
-            URI tmp = new File(AET).toURI();
+            URI tmp = new File(DIR).toURI();
             String uri = "file://" + host + tmp.getPath();
             storage.createNode(uri, AET, AET);
         }
@@ -130,7 +131,7 @@ public class StorageBeanTest extends TestCase
         InputStream is = new FileInputStream(file);
         BufferedInputStream bis = new BufferedInputStream(is);
         DigestInputStream dis = new DigestInputStream(is, md);
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        Dataset ds = objFact.newDataset();
         try
         {
             ds.readFile(dis, FileFormat.DICOM_FILE, -1);
@@ -144,6 +145,8 @@ public class StorageBeanTest extends TestCase
             catch (IOException ignore)
             {
             }
+        }
+        if (ds.getFileMetaInfo() == null) {
         }
         ds.remove(Tags.PixelData);
         return ds;

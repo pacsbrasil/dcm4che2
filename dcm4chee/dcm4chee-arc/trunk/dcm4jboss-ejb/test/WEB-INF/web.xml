@@ -61,6 +61,14 @@
    	</ejb-local-ref>
     
  	<ejb-local-ref>
+      	<ejb-ref-name>ejb/Node</ejb-ref-name>
+      	<ejb-ref-type>Entity</ejb-ref-type>
+      	<local-home>org.dcm4chex.archive.ejb.interfaces.NodeLocalHome</local-home>
+      	<local>org.dcm4chex.archive.ejb.interfaces.NodeLocal</local>
+      	<ejb-link>@EJB_JAR@#Node</ejb-link>
+   	</ejb-local-ref>
+    
+ 	<ejb-local-ref>
       	<ejb-ref-name>ejb/File</ejb-ref-name>
       	<ejb-ref-type>Entity</ejb-ref-type>
       	<local-home>org.dcm4chex.archive.ejb.interfaces.FileLocalHome</local-home>
