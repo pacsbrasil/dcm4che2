@@ -27,9 +27,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Vector;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
@@ -83,7 +87,7 @@ class PrintSCUDataSource implements DataSource {
 	public void writeTo(OutputStream out, String tsUID) throws IOException {
 		InputStream in = new BufferedInputStream(
 			new FileInputStream(file));
-		Dataset ds = PrintSCU.dcmFact.newDataset();
+		final Dataset ds = PrintSCU.dcmFact.newDataset();
 		try {
 			DcmParser parser = parserFact.newDcmParser(in);
 			parser.setDcmHandler(ds.getDcmHandler());
@@ -126,7 +130,104 @@ class PrintSCUDataSource implements DataSource {
 				parser.getReadTag(),
 				parser.getReadVR(),
 				parser.getReadLength());
-			copy(in, out, parser.getReadLength());
+                
+            int bitsStored = ds.getInt(Tags.BitsStored, 0);
+            int cols = ds.getInt(Tags.Columns, 0);
+            int rows = ds.getInt(Tags.Rows, 0);
+            
+            class Overlay
+            {
+                public int cols, rows;
+                public int x, y;
+                public byte[] data;
+                public Overlay (int group)
+                {
+                    final int OvRows = 0x10, OvCols = 0x11;
+                    final int OvOrigin = 0x50, OvData = 0x3000;
+                    data = ds.getByteBuffer(group | OvData).array();
+                    if (data == null)
+                        throw new IllegalArgumentException("no overlay data");
+                    int[] origin = ds.getInts(group | OvOrigin);
+                    x = origin[0] - 1;
+                    y = origin[1] - 1;
+                    cols = ds.getInt(group | OvCols, 0);
+                    rows = ds.getInt(group | OvRows, 0);
+                    if (cols == 0 || rows == 0)
+                        throw new IllegalArgumentException("bad/no cols/rows in overlay");
+                }
+            };
+            
+            DcmElement el;
+            int group = 0x60000000, cntr = 16;
+            List list = new Vector(16);
+            while (cntr > 0) {
+                if ((el = ds.get(group | 0x3000)) != null)
+                    list.add(new Overlay(group));
+                cntr--;
+                group += 0x20000;
+                System.out.println("GROUP = " + Integer.toHexString(group));
+            }
+            Overlay[] overlays = (Overlay[])list.toArray(new Overlay[0]);
+            
+            if (overlays.length > 0) { //check if any overlays exist
+                System.out.println("Overlays found: " + overlays.length);
+                parser = parserFact.newDcmParser(new BufferedInputStream(new FileInputStream(file)));
+                Dataset tmp = PrintSCU.dcmFact.newDataset();
+                parser.setDcmHandler(tmp.getDcmHandler());
+                parser.parseDcmFile(null, -1);
+                ByteBuffer buff = tmp.getByteBuffer(Tags.PixelData);
+                System.out.println("Pixeldata len: " + buff.limit());
+                int spp = ds.getInt(Tags.SamplesPerPixel, 1);
+
+                Overlay ovl;
+                for (int i = 0; i < overlays.length; i++) {
+                    ovl = overlays[i];
+                    int mask = 1;
+                    int colstart = Math.max(0, ovl.x);
+                    int colend = Math.min(ovl.x + ovl.cols, cols);
+                    int rowstart = Math.max(0, ovl.y);
+                    int rowend = Math.min(ovl.y + ovl.rows, rows);
+                    final int x = (ovl.x >= 0) ? 0 : -ovl.x;
+                    int y = (ovl.y >= 0) ? 0 : -ovl.y;
+                    int ind;
+                    int cnt = 0;
+                    for (int j = rowstart; j < rowend; j++) {
+                        ind = x + y * ovl.cols;
+                        for (int k = colstart; k < colend; k++) {
+                            if ((ovl.data[ind >> 3] & mask) > 0) {
+                                switch (bitsStored) {
+                                    case 8:
+                                        cnt++;
+                                        //buff.position((j*cols + k)*spp);
+                                        //bArr[(j*cols + k)*spp] = -1;
+                                        for (int s = 0; s < spp; s++)
+                                            buff.put((j*cols + k)*spp + s, (byte)-1);
+                                        break;
+                                    case 12:
+                                        cnt++;
+                                        //buff.position((j*cols + k)*spp);
+                                        //sArr[(j*cols + k)*spp] = -1;
+                                        for (int s = 0; s < spp; s++)
+                                            buff.putShort((j*cols + k)*spp*2 + s, (short)-1);
+                                        break;
+                                }
+                            }
+                            ind++;
+                            if (mask == 0x80)
+                                mask = 1;
+                            else
+                                mask = mask << 1;
+                        }
+                        y++;
+                    }
+                    System.out.println("In overlay " + i + " pixels modified=" + cnt);
+                }
+                out.write(buff.array());
+                System.out.println("WROTE DATA");
+            }
+            else {
+    			copy(in, out, parser.getReadLength());
+            }
 			ds.writeHeader(out, encodeParam,
 				Tags.ItemDelimitationItem, VRs.NONE, 0);
 			ds.writeHeader(out, encodeParam,
