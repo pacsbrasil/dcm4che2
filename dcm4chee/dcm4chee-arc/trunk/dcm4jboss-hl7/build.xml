@@ -1,7 +1,7 @@
 <project name="dcm4jboss-hl7" default="jar">
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.8.1"/>
+	<property name="version" value="2.0.4"/>
 	<property name="javac.debug" value="on"/>
 	
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -11,11 +11,14 @@
 	<property name="dcm4jboss-ejb.lib" value="${dcm4jboss-ejb.home}/target/common/lib"/>		
 	<property name="ejb-client.jar" value="dcm4jboss-ejb-client.jar" />
 
-	<property name="jboss.home" value="${user.home}/jboss-3.2.5"/>
+	<property name="dcm4jboss-sar.home" value="../dcm4jboss-sar" />
+	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.home}/target/lib/dcm4jboss.jar" />
+	
+	<property name="jboss.home" value="${user.home}/jboss-3.2.6"/>
 	<property name="jboss.lib" value="${jboss.home}/lib"/>
 	<property name="jboss.server.lib" value="${jboss.home}/server/default/lib"/>
 
-	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.2"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 
 	<property name="hapi.dist" value="../hapi/dist"/>
@@ -32,6 +35,7 @@
 		<pathelement location="${dcm4che.jar}"/>
 		<pathelement location="${hapi.dist}/${hapi.jar}"/>
 		<pathelement location="${dcm4jboss-ejb.lib}/${ejb-client.jar}"/>
+		<pathelement location="${dcm4jboss.jar}"/>
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
 		</fileset>

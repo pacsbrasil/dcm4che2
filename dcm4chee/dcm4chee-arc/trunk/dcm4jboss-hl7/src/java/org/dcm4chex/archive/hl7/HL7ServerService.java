@@ -1,25 +1,15 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.hl7;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
@@ -33,6 +23,8 @@ import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.util.MLLP_Protocol;
 import org.dcm4che.util.SSLContextAdapter;
+import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.mbean.TLSConfigService;
 import org.jboss.system.ServiceMBeanSupport;
 
 import ca.uhn.hl7v2.app.Application;
@@ -44,28 +36,22 @@ import ca.uhn.hl7v2.app.Application;
  */
 public class HL7ServerService extends ServiceMBeanSupport {
 
-    private static final String GET_AUDIT_LOGGER = "getAuditLogger";
-
-    private final static AuditLoggerFactory alf = AuditLoggerFactory
-            .getInstance();
-
     private HL7Server hl7srv = new HL7Server(this);
-
-    private SSLContextAdapter ssl = SSLContextAdapter.getInstance();
 
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
 
-    private String keyStoreURL = "resource:identity.p12";
-
-    private char[] keyStorePassword = { 'p', 'a', 's', 's', 'w', 'd'};
-
-    private String trustStoreURL = "resource:cacerts.jks";
-
-    private char[] trustStorePassword = { 'p', 'a', 's', 's', 'w', 'd'};
-
     private ObjectName auditLogName;
 
-    private AuditLogger auditLogger;
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
+    
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
+    }
+
 
     public ObjectName getAuditLoggerName() {
         return auditLogName;
@@ -91,53 +77,15 @@ public class HL7ServerService extends ServiceMBeanSupport {
         this.protocol = MLLP_Protocol.valueOf(protocolName);
     }
 
-    public final void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = keyStorePassword.toCharArray();
-    }
-
-    public final String getKeyStoreURL() {
-        return keyStoreURL;
-    }
-
-    public final void setKeyStoreURL(String keyStoreURL) {
-        this.keyStoreURL = keyStoreURL;
-    }
-
-    public final void setTrustStorePassword(String trustStorePassword) {
-        this.trustStorePassword = trustStorePassword.toCharArray();
-    }
-
-    public final String getTrustStoreURL() {
-        return trustStoreURL;
-    }
-
-    public final void setTrustStoreURL(String trustStoreURL) {
-        this.trustStoreURL = trustStoreURL;
-    }
-
     public void registerApplication(String messageType, String triggerEvent,
             Application handler) {
         hl7srv.registerApplication(messageType, triggerEvent, handler);
     }
 
     protected void startService() throws Exception {
-        if (auditLogName != null) {
-            auditLogger = (AuditLogger) server.invoke(auditLogName,
-                    GET_AUDIT_LOGGER, null, null);
-        }
-        hl7srv.setServerSocketFactory(getServerSocketFactory(protocol
+        hl7srv.setServerSocketFactory(tlsConfig.getServerSocketFactory(protocol
                 .getCipherSuites()));
         hl7srv.start();
-    }
-
-    private ServerSocketFactory getServerSocketFactory(String[] cipherSuites)
-            throws GeneralSecurityException, IOException {
-        if (cipherSuites == null || cipherSuites.length == 0) { return ServerSocketFactory
-                .getDefault(); }
-        ssl.setKey(ssl.loadKeyStore(keyStoreURL, keyStorePassword),
-                keyStorePassword);
-        ssl.setTrust(ssl.loadKeyStore(trustStoreURL, trustStorePassword));
-        return ssl.getServerSocketFactory(protocol.getCipherSuites());
     }
 
     protected void stopService() throws Exception {
@@ -160,15 +108,21 @@ public class HL7ServerService extends ServiceMBeanSupport {
                 }
             }
         } catch (IOException e) {
-            logHandshakeFailed(s, e);
+            logSecurityAlert("NodeAuthentification", s, null, e.getMessage());
         }
 
     }
 
-    private void logHandshakeFailed(SSLSocket s, IOException e) {
-        if (auditLogger != null) {
-            auditLogger.logSecurityAlert("NodeAuthentification", alf
-                    .newRemoteUser(alf.newRemoteNode(s, null)), e.getMessage());
+    private void logSecurityAlert(String alertType, Socket socket, String aet,
+            String description) {
+        if (auditLogName == null) return;
+        try {
+            server.invoke(auditLogName, "logSecurityAlert",
+                new Object[] { alertType, socket, aet, description },
+                new String[] { String.class.getName(), Socket.class.getName(),
+                    String.class.getName(), String.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
         }
     }
 }
