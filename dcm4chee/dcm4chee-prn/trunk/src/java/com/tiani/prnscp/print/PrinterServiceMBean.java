@@ -694,6 +694,9 @@ public interface PrinterServiceMBean extends ServiceMBean
      */
     public void setAssumeZeroMinOD(boolean assumeZeroMinOD);
 
+    public boolean isSmoothODs();
+
+    public void setSmoothODs(boolean smoothODs);
 
     /**
      *  Gets the skipNonMonotonicODs attribute of the PrinterServiceMBean object

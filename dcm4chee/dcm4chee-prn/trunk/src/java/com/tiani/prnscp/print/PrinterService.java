@@ -2037,6 +2037,15 @@ public class PrinterService
         scanner.setAssumeZeroMinOD(assumeZeroMinOD);
     }
 
+    public boolean isSmoothODs()
+    {
+        return calibration.isSmoothODs();
+    }
+
+    public void setSmoothODs(boolean smoothODs)
+    {
+	calibration.setSmoothODs(smoothODs);
+    }
 
     /**
      *  Gets the skipNonMonotonicODs attribute of the PrinterService object
