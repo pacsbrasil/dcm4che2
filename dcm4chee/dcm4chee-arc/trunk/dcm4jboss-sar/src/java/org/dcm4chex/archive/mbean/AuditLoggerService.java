@@ -24,7 +24,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since August 21, 2002
  * @version $Revision$ $Date$
  */
-public class AuditLoggerService extends ServiceMBeanSupport {
+public class AuditLoggerService extends ServiceMBeanSupport  {
 
     private final static AuditLoggerFactory alf = AuditLoggerFactory
             .getInstance();
@@ -295,11 +295,9 @@ public class AuditLoggerService extends ServiceMBeanSupport {
 
     protected void startService() throws Exception {
         logActorStartStop(AuditLogger.START);
-        super.startService();
     }
 
     protected void stopService() throws Exception {
-        super.stopService();
         logActorStartStop(AuditLogger.STOP);
     }
 }
