@@ -1838,10 +1838,10 @@ public class PrinterService
       if (autoCalibration) {
          try {
             calibrate(false);
-            calibrationErr = true;
+            calibrationErr = false;
          } catch (CalibrationException e) {
             log.warn("Calibration fails, continue printing", e);
-            calibrationErr = false;
+            calibrationErr = true;
          }
       }
       PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
