@@ -3,7 +3,7 @@
 <project name="dcm4che" basedir="." default="release">
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.1.2"/>
+   <property name="version" value="1.1.3"/>
    <property name="javac.debug" value="on"/>
    
    <target name="init">
@@ -37,7 +37,7 @@
    <property name="build.lib.dir" value="${build.dir}/lib"/>
    <property name="build.generate.dir" value="${build.dir}/generate"/>
    <property name="build.classes.dir" value="${build.dir}/classes"/>
-   <property name="build.samples.dir" value="${build.dir}/samples"/>
+   <property name="build.bin.dir" value="${build.dir}/bin"/>
    <property name="build.res.dir" value="${build.dir}/resources"/>
    <property name="build.javadocs.dir" value="${build.dir}/doc/api"/>
    <property name="build.reports.dir" value="${build.dir}/reports"/>
@@ -212,22 +212,22 @@
                     includes="org/dcm4che*/**,META-INF/services/**"/>
       </jar>
 
-      <mkdir dir="${build.samples.dir}"/>
-      <jar jarfile="${build.samples.dir}/acr2dcm.jar">
+      <mkdir dir="${build.bin.dir}"/>
+      <jar jarfile="${build.bin.dir}/acr2dcm.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Acr2Dcm"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}" includes="Acr2Dcm*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/dcm2jpg.jar">
+      <jar jarfile="${build.bin.dir}/dcm2jpg.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Dcm2Jpg"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}" includes="Dcm2Jpg*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/dcm2xml.jar">
+      <jar jarfile="${build.bin.dir}/dcm2xml.jar">
          	<manifest>
 				<attribute name="Main-Class" value="Dcm2Xml"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -235,14 +235,14 @@
           <fileset dir="${build.classes.dir}" includes="Dcm2Xml*"/>
            <fileset dir="${build.res.dir}" includes="Dcm2Xml2.xsl"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/xml2dcm.jar">
+      <jar jarfile="${build.bin.dir}/xml2dcm.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Xml2Dcm"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}" includes="Xml2Dcm*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/dcmdir.jar">
+      <jar jarfile="${build.bin.dir}/dcmdir.jar">
         	<manifest>
 				<attribute name="Main-Class" value="DcmDir"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -251,7 +251,7 @@
            <fileset dir="${build.res.dir}" includes="DcmDir.properties"/>
            <fileset dir="${build.res.dir}" includes="Dcm2Xml2.xsl"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/dcmrcv.jar">
+      <jar jarfile="${build.bin.dir}/dcmrcv.jar">
         	<manifest>
 				<attribute name="Main-Class" value="DcmRcv"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -259,7 +259,7 @@
            <fileset dir="${build.classes.dir}" includes="DcmRcv*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="DcmRcv*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/dcmsnd.jar">
+      <jar jarfile="${build.bin.dir}/dcmsnd.jar">
         	<manifest>
 				<attribute name="Main-Class" value="DcmSnd"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -267,7 +267,7 @@
            <fileset dir="${build.classes.dir}" includes="DcmSnd*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="DcmSnd*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/hl7snd.jar">
+      <jar jarfile="${build.bin.dir}/hl7snd.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Hl7Snd"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -275,7 +275,7 @@
            <fileset dir="${build.classes.dir}" includes="Hl7Snd*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="Hl7Snd*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/hl7rcv.jar">
+      <jar jarfile="${build.bin.dir}/hl7rcv.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Hl7Rcv"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -283,7 +283,7 @@
            <fileset dir="${build.classes.dir}" includes="Hl7Rcv*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="Hl7Rcv*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/mppssnd.jar">
+      <jar jarfile="${build.bin.dir}/mppssnd.jar">
         	<manifest>
 				<attribute name="Main-Class" value="MppsSnd"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -291,7 +291,7 @@
            <fileset dir="${build.classes.dir}" includes="MppsSnd*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="MppsSnd*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/mvstudy.jar">
+      <jar jarfile="${build.bin.dir}/mvstudy.jar">
         	<manifest>
 				<attribute name="Main-Class" value="MoveStudy"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -299,7 +299,7 @@
            <fileset dir="${build.classes.dir}" includes="MoveStudy*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="MoveStudy*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/syslog.jar">
+      <jar jarfile="${build.bin.dir}/syslog.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Syslog"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -307,7 +307,7 @@
            <fileset dir="${build.classes.dir}" includes="Syslog*"/>
            <fileset dir="${build.res.dir}" includes="Syslog*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/imgdisp.jar">
+      <jar jarfile="${build.bin.dir}/imgdisp.jar">
         	<manifest>
 				<attribute name="Main-Class" value="ImageDisplay"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar"/>
@@ -315,7 +315,7 @@
            <fileset dir="${build.classes.dir}" includes="ImageDisplay*,ToolBarButton*,ImageBox*"/>
            <fileset dir="${build.res.dir}" includes="*.gif"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/imgdump.jar">
+      <jar jarfile="${build.bin.dir}/imgdump.jar">
         	<manifest>
 				<attribute name="Main-Class" value="ImageDumper"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar"/>
@@ -323,28 +323,28 @@
            <fileset dir="${build.classes.dir}" includes="ImageDumper*,de/**"/>
            <fileset dir="${build.res.dir}" includes="SimpleDcmMetadata*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/imgflip.jar">
+      <jar jarfile="${build.bin.dir}/imgflip.jar">
         	<manifest>
 				<attribute name="Main-Class" value="ImageFlipper"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}" includes="ImageFlipper*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/imgread.jar">
+      <jar jarfile="${build.bin.dir}/imgread.jar">
         	<manifest>
 				<attribute name="Main-Class" value="ImageReadParamDemo"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}" includes="ImageReadParamDemo*,ReadThread*,ReadParamPanel*,ImagePanel*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/syslogd.jar">
+      <jar jarfile="${build.bin.dir}/syslogd.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Syslogd"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}" includes="Syslogd*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/mcmscu.jar">
+      <jar jarfile="${build.bin.dir}/mcmscu.jar">
         	<manifest>
 				<attribute name="Main-Class" value="MediaCreationMgtScu"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -352,7 +352,7 @@
            <fileset dir="${build.classes.dir}" includes="MediaCreationMgtScu*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="MediaCreationMgtScu*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/rtf2sr.jar">
+      <jar jarfile="${build.bin.dir}/rtf2sr.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Rtf2Sr"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar majix.jar"/>
@@ -360,7 +360,7 @@
            <fileset dir="${build.classes.dir}" includes="Rtf2Sr*"/>
            <fileset dir="${build.res.dir}" includes="Rtf2Sr*"/>
       </jar>
-      <jar jarfile="${build.samples.dir}/printscu.jar">
+      <jar jarfile="${build.bin.dir}/printscu.jar">
         	<manifest>
 				<attribute name="Main-Class" value="org.dcm4che.tools.printscu.PrintSCUFrame"/>
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
@@ -389,12 +389,12 @@
            description="Build destribution ZIP file">
       <mkdir dir="${dist.dir}"/>
       <copy todir="${dist.dir}">
-         <fileset dir="${build.dir}" includes="lib/**,samples/**,doc/**"/>
+         <fileset dir="${build.dir}" includes="lib/**,bin/**,doc/**"/>
          <fileset dir="${basedir}" includes="lib/log4j.jar"/>
          <fileset dir="${doc.dir}" excludes="BUILD,**/.nbattrs"/>
          <fileset dir="${src.dir}" includes="etc/NativeMetadataFormat.dtd"/>
       </copy>
-      <copy todir="${dist.dir}/samples">
+      <copy todir="${dist.dir}/bin">
          <fileset dir="${lib.dir}" includes="getopt.jar,majix.jar"/>
          <fileset dir="${samples.conf.dir}"/>
          <fileset dir="${samples.data.dir}"/>
