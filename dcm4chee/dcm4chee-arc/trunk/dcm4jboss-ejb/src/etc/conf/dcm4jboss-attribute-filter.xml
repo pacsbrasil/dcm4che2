@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dcm4jboss-attribute-filter SYSTEM "dcm4jboss-attribute-filter.dtd">
 <dcm4jboss-attribute-filter>
   <patient>
 <!-- Specific Character Set -->

@@ -130,7 +130,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (dirs == null) {
             throw new IllegalArgumentException();
         }
-        StringTokenizer stok = new StringTokenizer(dirs, ", ");
+        StringTokenizer stok = new StringTokenizer(dirs, ": ");
         File[] tmp = new File[stok.countTokens()];
         if (tmp.length == 0) {
             throw new IllegalArgumentException(dirs);

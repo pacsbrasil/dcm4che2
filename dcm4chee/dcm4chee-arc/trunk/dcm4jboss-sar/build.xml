@@ -196,6 +196,10 @@
    			<fileset dir="${dcm4che.home}">
    				<include name="lib/dcm4che.jar"/>
    			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}/etc">
+   				<include name="conf/*.xml"/>
+   				<include name="conf/*.dtd"/>
+   			</fileset>
   			<fileset dir="${src.etc}">
    				<include name="deploy/*.xml"/>
    			</fileset>

@@ -57,8 +57,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 
-import org.jboss.system.server.ServerConfigLocator;
-
 /**
  * Storage Bean
  * 
@@ -97,7 +95,17 @@ import org.jboss.system.server.ServerConfigLocator;
  * @ejb.ejb-ref
  *  ejb-name="File" 
  *  view-type="local"
- *  ref-name="ejb/File" 
+ *  ref-name="ejb/File"
+ * 
+ * @ejb.env-entry
+ *  name="AttributeFilterConfigURL"
+ *  type="java.lang.String"
+ *  value="resource:dcm4jboss-attribute-filter.xml" 
+ * 
+ * @ejb.env-entry
+ *  name="AttributeCoercionConfigURL"
+ *  type="java.lang.String"
+ *  value="resource:dcm4jboss-attribute-coercion.xml" 
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
@@ -106,19 +114,14 @@ import org.jboss.system.server.ServerConfigLocator;
 public abstract class StorageBean implements SessionBean {
     private static Logger log = Logger.getLogger(StorageBean.class);
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    private static final String serverConfigURL =
-        ServerConfigLocator.locate().getServerConfigURL().toString();
-    private static final AttributeFilter attrFilter =
-        new AttributeFilter(serverConfigURL + "dcm4jboss-attribute-filter.xml");
-    private static final AttributeCoercions attrCoercions =
-        new AttributeCoercions(
-            serverConfigURL + "dcm4jboss-attribute-coercions.xml");
 
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instHome;
     private FileLocalHome fileHome;
+    private AttributeFilter attrFilter;
+    private AttributeCoercions attrCoercions;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
@@ -134,6 +137,14 @@ public abstract class StorageBean implements SessionBean {
                 (InstanceLocalHome) jndiCtx.lookup(
                     "java:comp/env/ejb/Instance");
             fileHome = (FileLocalHome) jndiCtx.lookup("java:comp/env/ejb/File");
+            attrFilter =
+                new AttributeFilter(
+                    (String) jndiCtx.lookup(
+                        "java:comp/env/AttributeFilterConfigURL"));
+            attrCoercions =
+                new AttributeCoercions(
+                    (String) jndiCtx.lookup(
+                        "java:comp/env/AttributeCoercionConfigURL"));
         } catch (NamingException e) {
             throw new EJBException(e);
         } catch (ConfigurationException e) {
