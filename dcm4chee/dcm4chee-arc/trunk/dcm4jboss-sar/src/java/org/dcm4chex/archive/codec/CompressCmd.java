@@ -147,7 +147,8 @@ public abstract class CompressCmd extends CodecCmd {
 			Dataset ds = of.newDataset();
     		p.setDcmHandler(ds.getDcmHandler());
     		p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-    		pxdataVR[0] = p.getReadVR();
+    		if (pxdataVR != null && pxdataVR.length != 0)
+    			pxdataVR[0] = p.getReadVR();
     		FileMetaInfo fmi = of.newFileMetaInfo(ds, tsuid);
     		ds.setFileMetaInfo(fmi);
             log.info("M-WRITE file:" + outFile);
