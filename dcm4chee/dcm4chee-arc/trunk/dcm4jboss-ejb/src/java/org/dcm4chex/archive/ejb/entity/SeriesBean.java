@@ -56,6 +56,11 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *  query="SELECT OBJECT(a) FROM Series AS a"
  *  transaction-type="Supports"
  *
+ * * @ejb.finder
+ *  signature="java.util.Collection findSeriesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
+ *  query="SELECT DISTINCT OBJECT(s) FROM Series s, IN(s.instances) i WHERE i.media = ?1"
+ *  transaction-type="Supports"
+ *
  * @ejb.finder
  *  signature="org.dcm4chex.archive.ejb.interfaces.SeriesLocal findBySeriesIuid(java.lang.String uid)"
  *  query="SELECT OBJECT(a) FROM Series AS a WHERE a.seriesIuid = ?1"
