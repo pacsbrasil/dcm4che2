@@ -19,12 +19,17 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
+import javax.jms.JMSException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.dcm4chex.archive.dcm.movescu.MoveOrder;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -35,6 +40,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.JMSDelegate;
 
 /**
  * 
@@ -42,181 +48,213 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class FolderSubmitCtrl extends FolderCtrl
-{
+public class FolderSubmitCtrl extends FolderCtrl {
 
-	protected String perform() throws Exception
-	{
-		try
-		{
-			FolderForm folderForm = (FolderForm) getForm();
-			setSticky(folderForm.getStickyPatients(), "stickyPat");
-			setSticky(folderForm.getStickyStudies(), "stickyStudy");
-			setSticky(folderForm.getStickySeries(), "stickySeries");
-			setSticky(folderForm.getStickyInstances(), "stickyInst");
-			HttpServletRequest rq = getCtx().getRequest();
-			if (rq.getParameter("filter") != null || rq.getParameter("filter.x") != null)
-			{
-				return query(true);
-			}
-			if (rq.getParameter("prev") != null
-				|| rq.getParameter("prev.x") != null	
-				|| rq.getParameter("next") != null
-				||rq.getParameter("next.x") != null)
-			{
-				return query(false);
-			}
-			if (rq.getParameter("del") != null || rq.getParameter("del.x") != null)
-			{
-				return delete();
-			}
-			if (rq.getParameter("merge") != null || rq.getParameter("merge.x") != null)
-			{
-				return MERGE;
-			}
-			if (rq.getParameter("move") != null || rq.getParameter("move.x") != null)
-			{
-				return FOLDER;
-			}
-			return FOLDER;
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-			throw e;
-		}
-	}
+    private static final int MOVE_PRIOR = 0;
 
-	// private methods 
+    protected String perform() throws Exception {
+        try {
+            FolderForm folderForm = (FolderForm) getForm();
+            setSticky(folderForm.getStickyPatients(), "stickyPat");
+            setSticky(folderForm.getStickyStudies(), "stickyStudy");
+            setSticky(folderForm.getStickySeries(), "stickySeries");
+            setSticky(folderForm.getStickyInstances(), "stickyInst");
+            HttpServletRequest rq = getCtx().getRequest();
+            if (rq.getParameter("filter") != null
+                    || rq.getParameter("filter.x") != null) { return query(true); }
+            if (rq.getParameter("prev") != null
+                    || rq.getParameter("prev.x") != null
+                    || rq.getParameter("next") != null
+                    || rq.getParameter("next.x") != null) { return query(false); }
+            if (rq.getParameter("send") != null
+                    || rq.getParameter("send.x") != null) { return send(); }
+            if (rq.getParameter("del") != null
+                    || rq.getParameter("del.x") != null) { return delete(); }
+            if (rq.getParameter("merge") != null
+                    || rq.getParameter("merge.x") != null) { return MERGE; }
+            if (rq.getParameter("move") != null
+                    || rq.getParameter("move.x") != null) { return FOLDER; }
+            return FOLDER;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
 
-	private String query(boolean newQuery) throws Exception
-	{
+    private String query(boolean newQuery) throws Exception {
 
-		ContentManager cm = lookupContentManager();
+        ContentManager cm = lookupContentManager();
 
-		try
-		{
-			FolderForm folderForm = (FolderForm) getForm();
-			StudyFilterDTO filter = folderForm.getStudyFilter();
-			if (newQuery)
-			{
-				folderForm.setTotal(cm.countStudies(filter));
-			}
-			folderForm.updatePatients(
-				cm.listPatients(
-					filter,
-					folderForm.getOffset(),
-					folderForm.getLimit()));
-		} finally
-		{
-			try
-			{
-				cm.remove();
-			} catch (Exception e)
-			{
-			}
-		}
-		return FOLDER;
-	}
+        try {
+            FolderForm folderForm = (FolderForm) getForm();
+            StudyFilterDTO filter = folderForm.getStudyFilter();
+            if (newQuery) {
+                folderForm.setTotal(cm.countStudies(filter));
+                folderForm.setAets(lookupAEManager().getAes());
+            }
+            folderForm.updatePatients(cm.listPatients(filter, folderForm
+                    .getOffset(), folderForm.getLimit()));
+        } finally {
+            try {
+                cm.remove();
+            } catch (Exception e) {
+            }
+        }
+        return FOLDER;
+    }
 
-	private String delete() throws Exception
-	{
-		ContentEdit edit = lookupContentEdit();
-		FolderForm folderForm = (FolderForm) getForm();
-		PatientDTO patient;
-		StudyDTO study;
-		SeriesDTO series;
-		InstanceDTO instance;
+    private String send() throws Exception {
+        FolderForm folderForm = (FolderForm) getForm();
+        List patients = folderForm.getPatients();
+        for (int i = 0, n = patients.size(); i < n; i++) {
+            PatientDTO pat = (PatientDTO) patients.get(i);
+            scheduleMoveStudies(pat.getStudies(), folderForm.isSticky(pat));
+        }
+        return FOLDER;
+    }
 
-		//deleting Patients
-		for (Iterator patient_iter = folderForm.getPatients().iterator();
-			patient_iter.hasNext();
-			)
-		{
-			patient = (PatientDTO) patient_iter.next();
+    private void scheduleMoveStudies(List studies, boolean stickyPat) {
+        FolderForm folderForm = (FolderForm) getForm();
+        ArrayList uids = new ArrayList();
+        for (int i = 0, n = studies.size(); i < n; i++) {
+            final StudyDTO study = (StudyDTO) studies.get(i);
+            final String studyIUID = study.getStudyIUID();
+            if (stickyPat || folderForm.isSticky(study))
+                uids.add(studyIUID);
+            else
+                scheduleMoveSeries(studyIUID, study.getSeries());
+        }
+        if (!uids.isEmpty()) {
+            scheduleMove((String[]) uids.toArray(new String[uids.size()]),
+                    null,
+                    null);
+        }
+    }
 
-			if (folderForm
-				.getStickyPatients()
-				.contains(String.valueOf(patient.getPk())))
-			{
-				edit.deletePatient(patient.getPk());
-			} else //deleting Studies
-				{
-				for (Iterator study_iter = patient.getStudies().iterator();
-					study_iter.hasNext();
-					)
-				{
-					study = (StudyDTO) study_iter.next();
-					if (folderForm
-						.getStickyStudies()
-						.contains(String.valueOf(study.getPk())))
-					{
-						edit.deleteStudy(study.getPk());
-					} else //deleting Series
-						{
-						for (Iterator series_iter =
-							study.getSeries().iterator();
-							series_iter.hasNext();
-							)
-						{
-							series = (SeriesDTO) series_iter.next();
-							if (folderForm
-								.getStickySeries()
-								.contains(String.valueOf(series.getPk())))
-							{
-								edit.deleteSeries(series.getPk());
-							} else //deleting Instances
-								{
-								for (Iterator instance_iter =
-									series.getInstances().iterator();
-									instance_iter.hasNext();
-									)
-								{
-									instance =
-										(InstanceDTO) instance_iter.next();
-									if (folderForm
-										.getStickyInstances()
-										.contains(
-											String.valueOf(instance.getPk())))
-										edit.deleteInstance(instance.getPk());
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+    private void scheduleMoveSeries(String studyIUID, List series) {
+        FolderForm folderForm = (FolderForm) getForm();
+        ArrayList uids = new ArrayList();
+        for (int i = 0, n = series.size(); i < n; i++) {
+            final SeriesDTO serie = (SeriesDTO) series.get(i);
+            final String seriesIUID = serie.getSeriesIUID();
+            if (folderForm.isSticky(serie))
+                uids.add(seriesIUID);
+            else
+                scheduleMoveInstances(studyIUID, seriesIUID, serie
+                        .getInstances());
+        }
+        if (!uids.isEmpty()) {
+            scheduleMove(new String[] { studyIUID}, (String[]) uids
+                    .toArray(new String[uids.size()]), null);
+        }
+    }
 
-		folderForm.removeStickies();
+    private void scheduleMoveInstances(String studyIUID, String seriesIUID,
+            List instances) {
+        FolderForm folderForm = (FolderForm) getForm();
+        ArrayList uids = new ArrayList();
+        for (int i = 0, n = instances.size(); i < n; i++) {
+            final InstanceDTO inst = (InstanceDTO) instances.get(i);
+            if (folderForm.isSticky(inst)) uids.add(inst.getSopIUID());
+        }
+        if (!uids.isEmpty()) {
+            scheduleMove(new String[] { studyIUID},
+                    new String[] { seriesIUID},
+                    (String[]) uids.toArray(new String[uids.size()]));
+        }
+    }
 
-		return FOLDER;
-	}
+    private void scheduleMove(String[] studyIuids, String[] seriesIuids,
+            String[] sopIuids) {
+        FolderForm folderForm = (FolderForm) getForm();
+        MoveOrder order = new MoveOrder(null, folderForm.getDestination(),
+                MOVE_PRIOR, null, studyIuids, seriesIuids, sopIuids);
+        try {
+            log.info("Scheduling " + order);
+            JMSDelegate.getInstance(MoveOrder.QUEUE).queueMessage(order,
+                    JMSDelegate.toJMSPriority(MOVE_PRIOR),
+                    -1);
+        } catch (JMSException e) {
+            log.error("Failed: Scheduling " + order, e);
+        }
+    }
 
-	private void setSticky(Set stickySet, String attr)
-	{
-		stickySet.clear();
-		String[] newValue = getCtx().getRequest().getParameterValues(attr);
-		if (newValue != null)
-		{
-			stickySet.addAll(Arrays.asList(newValue));
-		}
-	}
+    private String delete() throws Exception {
+        ContentEdit edit = lookupContentEdit();
+        FolderForm folderForm = (FolderForm) getForm();
+        deletePatients(edit, folderForm.getPatients());
+        folderForm.removeStickies();
+        return FOLDER;
+    }
 
-	private ContentEdit lookupContentEdit() throws Exception
-	{
-		ContentEditHome home =
-			(ContentEditHome) EJBHomeFactory.getFactory().lookup(
-				ContentEditHome.class,
-				ContentEditHome.JNDI_NAME);
-		return home.create();
-	}
+    private void deletePatients(ContentEdit edit, List patients)
+            throws Exception {
+        FolderForm folderForm = (FolderForm) getForm();
+        for (int i = 0, n = patients.size(); i < n; i++) {
+            PatientDTO pat = (PatientDTO) patients.get(i);
+            if (folderForm.isSticky(pat))
+                edit.deleteStudy(pat.getPk());
+            else
+                deleteStudies(edit, pat.getStudies());
+        }
+    }
 
-	private ContentManager lookupContentManager() throws Exception
-	{
-		ContentManagerHome home =
-			(ContentManagerHome) EJBHomeFactory.getFactory().lookup(
-				ContentManagerHome.class,
-				ContentManagerHome.JNDI_NAME);
-		return home.create();
-	}
+    private void deleteStudies(ContentEdit edit, List studies) throws Exception {
+        FolderForm folderForm = (FolderForm) getForm();
+        for (int i = 0, n = studies.size(); i < n; i++) {
+            StudyDTO study = (StudyDTO) studies.get(i);
+            if (folderForm.isSticky(study))
+                edit.deleteStudy(study.getPk());
+            else
+                deleteSeries(edit, study.getSeries());
+        }
+    }
 
+    private void deleteSeries(ContentEdit edit, List series) throws Exception {
+        FolderForm folderForm = (FolderForm) getForm();
+        for (int i = 0, n = series.size(); i < n; i++) {
+            SeriesDTO serie = (SeriesDTO) series.get(i);
+            if (folderForm.isSticky(serie))
+                edit.deleteSeries(serie.getPk());
+            else
+                deleteInstances(edit, serie.getInstances());
+        }
+    }
+
+    private void deleteInstances(ContentEdit edit, List instances)
+            throws Exception {
+        FolderForm folderForm = (FolderForm) getForm();
+        for (int i = 0, n = instances.size(); i < n; i++) {
+            InstanceDTO instance = (InstanceDTO) instances.get(i);
+            if (folderForm.isSticky(instance))
+                    edit.deleteInstance(instance.getPk());
+        }
+    }
+
+    private void setSticky(Set stickySet, String attr) {
+        stickySet.clear();
+        String[] newValue = getCtx().getRequest().getParameterValues(attr);
+        if (newValue != null) {
+            stickySet.addAll(Arrays.asList(newValue));
+        }
+    }
+
+    private ContentEdit lookupContentEdit() throws Exception {
+        ContentEditHome home = (ContentEditHome) EJBHomeFactory.getFactory()
+                .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
+        return home.create();
+    }
+
+    private ContentManager lookupContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+                .getFactory().lookup(ContentManagerHome.class,
+                        ContentManagerHome.JNDI_NAME);
+        return home.create();
+    }
+
+    private AEManager lookupAEManager() throws Exception {
+        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
+                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        return home.create();
+    }
 }

@@ -28,6 +28,11 @@
 	<!-- TODO dependence should be eliminated -->
 	<property name="dcm4jboss-jdbc-hsql.jar" value="${dcm4jboss-ejb.dir}/hsql/lib/dcm4jboss-jdbc-hsql.jar" />
 
+	<!-- Override with your dcm4jboss-sar working directory -->
+	<property name="dcm4jboss-sar.dir" value="../dcm4jboss-sar/target" />
+	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.dir}/lib/dcm4jboss.jar" />
+	
+	
 	<property name="target.dir" value="target"/>
 	<property name="file" value="${ant.project.name}.war"/>
 	<property name="product" value="${target.dir}/deploy/${file}"/>
@@ -43,6 +48,7 @@
 		<pathelement location="${maverick.jar}"/>
 		<pathelement location="${commons-beanutils.jar}"/>
 		<pathelement location="${dcm4jboss-ejb-client.jar}"/>
+		<pathelement location="${dcm4jboss.jar}"/>
 	<!-- TODO dependence should be eliminated -->
 		<pathelement location="${dcm4jboss-jdbc-hsql.jar}"/>
 	</path>

@@ -19,6 +19,8 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
+import org.apache.log4j.Logger;
+
 /**
  * 
  * @author gunter.zeilinger@tiani.com
@@ -27,6 +29,9 @@ package org.dcm4chex.archive.web.maverick;
  */
 public class FolderCtrl extends Dcm4JbossFormController {
 
+
+	protected static Logger log = Logger.getLogger(FolderCtrl.class);
+    
     public static final String FOLDER = "folder";
     public static final String MERGE = "merge";
     

@@ -34,427 +34,376 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class FolderForm
-{
-	static final String FOLDER_ATTRNAME = "folderFrom";
-	static FolderForm getFolderForm(HttpServletRequest request)
-	{
-		FolderForm form =
-			(FolderForm) request.getSession().getAttribute(FOLDER_ATTRNAME);
-		if (form == null)
-		{
-			form = new FolderForm();
-			request.getSession().setAttribute(FOLDER_ATTRNAME, form);
-		}
-		return form;
-	}
+public class FolderForm {
 
-	public static final int LIMIT = 10;
+    static final String FOLDER_ATTRNAME = "folderFrom";
 
-	private String patientID;
-	private String patientName;
-	private String accessionNumber;
-	private String studyID;
-	private String studyDateRange;
-	private String modality;
+    static FolderForm getFolderForm(HttpServletRequest request) {
+        FolderForm form = (FolderForm) request.getSession()
+                .getAttribute(FOLDER_ATTRNAME);
+        if (form == null) {
+            form = new FolderForm();
+            request.getSession().setAttribute(FOLDER_ATTRNAME, form);
+        }
+        return form;
+    }
 
-	private StudyFilterDTO studyFilter = null;
-	private List patients;
-	private final Set stickyPatients = new HashSet();
-	private final Set stickyStudies = new HashSet();
-	private final Set stickySeries = new HashSet();
-	private final Set stickyInstances = new HashSet();
-	private int offset;
-	private int total;
+    public static final int LIMIT = 10;
 
-	public final int getLimit()
-	{
-		return LIMIT;
-	}
+    private String patientID;
 
-	public final String getAccessionNumber()
-	{
-		return accessionNumber;
-	}
+    private String patientName;
 
-	public final void setAccessionNumber(String accessionNumber)
-	{
-		this.accessionNumber = accessionNumber;
-	}
+    private String accessionNumber;
 
-	public final String getModality()
-	{
-		return modality;
-	}
+    private String studyID;
 
-	public final void setModality(String modality)
-	{
-		this.modality = modality;
-	}
+    private String studyDateRange;
 
-	public final String getPatientID()
-	{
-		return patientID;
-	}
+    private String modality;
 
-	public final void setPatientID(String patientID)
-	{
-		this.patientID = patientID;
-	}
+    private StudyFilterDTO studyFilter = null;
 
-	public final String getPatientName()
-	{
-		return patientName;
-	}
+    private List patients;
 
-	public final void setPatientName(String patientName)
-	{
-		this.patientName = patientName;
-	}
+    private List aets;
 
-	public final String getStudyDateRange()
-	{
-		return studyDateRange;
-	}
+    private String destination;
 
-	public final void setStudyDateRange(String studyDateRange)
-	{
-		this.studyDateRange = studyDateRange;
-	}
+    private final Set stickyPatients = new HashSet();
 
-	public final String getStudyID()
-	{
-		return studyID;
-	}
+    private final Set stickyStudies = new HashSet();
 
-	public final void setStudyID(String studyID)
-	{
-		this.studyID = studyID;
-	}
+    private final Set stickySeries = new HashSet();
 
-	public final void setTotal(int total)
-	{
-		this.total = total;
-	}
+    private final Set stickyInstances = new HashSet();
 
-	public final Set getStickyInstances()
-	{
-		return stickyInstances;
-	}
+    private int offset;
 
-	public final Set getStickyPatients()
-	{
-		return stickyPatients;
-	}
+    private int total;
 
-	public final Set getStickySeries()
-	{
-		return stickySeries;
-	}
+    public final int getLimit() {
+        return LIMIT;
+    }
 
-	public final Set getStickyStudies()
-	{
-		return stickyStudies;
-	}
+    public final String getAccessionNumber() {
+        return accessionNumber;
+    }
 
-	public final int getOffset()
-	{
-		return offset;
-	}
+    public final void setAccessionNumber(String accessionNumber) {
+        this.accessionNumber = accessionNumber;
+    }
 
-	public final List getPatients()
-	{
-		return patients;
-	}
+    public final String getModality() {
+        return modality;
+    }
 
-	public final void setFilter(String filter)
-	{
-		offset = 0;
-		total = -1;
-		studyFilter = null;
-	}
+    public final void setModality(String modality) {
+        this.modality = modality;
+    }
 
-	public final void setNext(String next)
-	{
-		offset += LIMIT;
-	}
+    public final String getPatientID() {
+        return patientID;
+    }
 
-	public final void setPrev(String prev)
-	{
-		offset = Math.max(0, offset - LIMIT);
-	}
+    public final void setPatientID(String patientID) {
+        this.patientID = patientID;
+    }
 
-	public final StudyFilterDTO getStudyFilter()
-	{
-		if (studyFilter == null)
-		{
-			studyFilter = new StudyFilterDTO();
-			studyFilter.setPatientID(patientID);
-			studyFilter.setPatientName(patientName);
-			studyFilter.setAccessionNumber(accessionNumber);
-			studyFilter.setStudyID(studyID);
-			studyFilter.setStudyDateRange(studyDateRange);
-			studyFilter.setModality(modality);
-		}
-		return studyFilter;
-	}
+    public final String getPatientName() {
+        return patientName;
+    }
 
-	public final int getTotal()
-	{
-		return total;
-	}
+    public final void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
 
-	public void updatePatients(List newPatients)
-	{
-		List sticky = patients;
-		patients = newPatients;
-		if (sticky != null)
-		{
-			for (int i = sticky.size(); --i >= 0;)
-			{
-				PatientDTO pat = (PatientDTO) sticky.get(i);
-				if (isSticky(pat))
-				{
-					mergeSticky(pat);
-				}
-			}
-		}
-	}
+    public final String getStudyDateRange() {
+        return studyDateRange;
+    }
 
-	private void mergeSticky(PatientDTO stickyPat)
-	{
-		for (int i = patients.size(); --i >= 0;)
-		{
-			PatientDTO pat = (PatientDTO) patients.get(i);
-			if (pat.getPk() == stickyPat.getPk())
-			{
-				List stickyStudies = stickyPat.getStudies();
-				for (int j = stickyStudies.size(); --j >= 0;)
-				{
-					mergeSticky(
-						(StudyDTO) stickyStudies.get(j),
-						pat.getStudies());
-				}
-				return;
-			}
-		}
-		patients.add(0, stickyPat);
-	}
+    public final void setStudyDateRange(String studyDateRange) {
+        this.studyDateRange = studyDateRange;
+    }
 
-	private void mergeSticky(StudyDTO stickyStudy, List studies)
-	{
-		for (int i = studies.size(); --i >= 0;)
-		{
-			StudyDTO study = (StudyDTO) studies.get(i);
-			if (study.getPk() == stickyStudy.getPk())
-			{
-				List stickySeries = stickyStudy.getSeries();
-				for (int j = stickySeries.size(); --j >= 0;)
-				{
-					mergeSticky(
-						(SeriesDTO) stickySeries.get(j),
-						study.getSeries());
-				}
-				return;
-			}
-		}
-		studies.add(0, stickyStudy);
-	}
+    public final String getStudyID() {
+        return studyID;
+    }
 
-	private void mergeSticky(SeriesDTO stickySerie, List series)
-	{
-		for (int i = series.size(); --i >= 0;)
-		{
-			SeriesDTO serie = (SeriesDTO) series.get(i);
-			if (serie.getPk() == stickySerie.getPk())
-			{
-				List stickyInstances = stickySerie.getInstances();
-				for (int j = stickyInstances.size(); --j >= 0;)
-				{
-					mergeSticky(
-						(InstanceDTO) stickyInstances.get(j),
-						serie.getInstances());
-				}
-				return;
-			}
-		}
-		series.add(0, stickySerie);
-	}
+    public final void setStudyID(String studyID) {
+        this.studyID = studyID;
+    }
 
-	private void mergeSticky(InstanceDTO stickyInst, List instances)
-	{
-		for (int i = instances.size(); --i >= 0;)
-		{
-			InstanceDTO inst = (InstanceDTO) instances.get(i);
-			if (inst.getPk() == stickyInst.getPk())
-			{
-				return;
-			}
-		}
-		instances.add(0, stickyInst);
-	}
+    public final void setTotal(int total) {
+        this.total = total;
+    }
 
-	private boolean isSticky(PatientDTO patientDTO)
-	{
-		boolean sticky = stickyPatients.contains("" + patientDTO.getPk());
-		for (Iterator it = patientDTO.getStudies().iterator(); it.hasNext();)
-		{
-			if (isSticky((StudyDTO) it.next()))
-			{
-				sticky = true;
-			} else
-			{
-				it.remove();
-			}
-		}
-		return sticky;
-	}
+    public final Set getStickyInstances() {
+        return stickyInstances;
+    }
 
-	private boolean isSticky(StudyDTO studyDTO)
-	{
-		boolean sticky = stickyStudies.contains("" + studyDTO.getPk());
-		for (Iterator it = studyDTO.getSeries().iterator(); it.hasNext();)
-		{
-			if (isSticky((SeriesDTO) it.next()))
-			{
-				sticky = true;
-			} else
-			{
-				it.remove();
-			}
-		}
-		return sticky;
-	}
+    public final Set getStickyPatients() {
+        return stickyPatients;
+    }
+    
+    public final Set getStickySeries() {
+        return stickySeries;
+    }
 
-	private boolean isSticky(SeriesDTO seriesDTO)
-	{
-		boolean sticky = stickySeries.contains("" + seriesDTO.getPk());
-		for (Iterator it = seriesDTO.getInstances().iterator(); it.hasNext();)
-		{
-			if (isSticky((InstanceDTO) it.next()))
-			{
-				sticky = true;
-			} else
-			{
-				it.remove();
-			}
-		}
-		return sticky;
-	}
+    public final Set getStickyStudies() {
+        return stickyStudies;
+    }
 
-	private boolean isSticky(InstanceDTO instanceDTO)
-	{
-		return stickyInstances.contains("" + instanceDTO.getPk());
-	}
+    public final int getOffset() {
+        return offset;
+    }
 
-	public PatientDTO getPatientByPk(int patPk)
-	{
-		for (int i = 0, n = patients.size(); i < n; i++)
-		{
-			PatientDTO pat = (PatientDTO) patients.get(i);
-			if (pat.getPk() == patPk)
-			{
-				return pat;
-			}
-		}
-		return null;
-	}
+    public final List getPatients() {
+        return patients;
+    }
 
-	public StudyDTO getStudyByPk(int patPk, int studyPk)
-	{
-		return getStudyByPk(getPatientByPk(patPk), studyPk);
-	}
+    public final List getAets() {
+        return aets;
+    }
 
-	public StudyDTO getStudyByPk(PatientDTO patient, int studyPk)
-	{
-		if (patient == null)
-		{
-			return null;
-		}
-		List studies = patient.getStudies();
-		for (int i = 0, n = studies.size(); i < n; i++)
-		{
-			StudyDTO study = (StudyDTO) studies.get(i);
-			if (study.getPk() == studyPk)
-			{
-				return study;
-			}
-		}
-		return null;
-	}
+    public final void setAets(List aets) {
+        this.aets = aets;
+    }
 
-	public SeriesDTO getSeriesByPk(int patPk, int studyPk, int seriesPk)
-	{
-		return getSeriesByPk(getStudyByPk(patPk, studyPk), seriesPk);
-	}
+    public final String getDestination() {
+        return destination;
+    }
 
-	public SeriesDTO getSeriesByPk(StudyDTO study, int seriesPk)
-	{
-		if (study == null)
-		{
-			return null;
-		}
-		List series = study.getSeries();
-		for (int i = 0, n = series.size(); i < n; i++)
-		{
-			SeriesDTO serie = (SeriesDTO) series.get(i);
-			if (serie.getPk() == seriesPk)
-			{
-				return serie;
-			}
-		}
-		return null;
-	}
+    public final void setDestination(String destination) {
+        this.destination = destination;
+    }
 
-	public void removeStickies()
-	{
-		PatientDTO patient;
-		StudyDTO study;
-		SeriesDTO series;
-		InstanceDTO instance;
-		for (Iterator patient_iter = patients.iterator();patient_iter.hasNext();)
-		{
-			patient = (PatientDTO) patient_iter.next();
-			if (stickyPatients.contains(String.valueOf(patient.getPk())))
-			{
-				patient_iter.remove();
-				stickyPatients.remove(String.valueOf(patient.getPk()));
-			} else
-				for (Iterator study_iter = patient.getStudies().iterator();
-					study_iter.hasNext();
-					)
-				{
-					study = (StudyDTO) study_iter.next();
-					if (stickyStudies.contains(String.valueOf(study.getPk())))
-					{
-						study_iter.remove();
-						stickyStudies.remove(String.valueOf(study.getPk()));
-					} else
-						for (Iterator series_iter =
-							study.getSeries().iterator();
-							series_iter.hasNext();
-							)
-						{
-							series = (SeriesDTO) series_iter.next();
-							if (stickySeries.contains(String.valueOf(series.getPk())))
-							{
-								series_iter.remove();
-								stickySeries.remove(String.valueOf(series.getPk()));
-							} else
-								for (Iterator instance_iter =
-									series.getInstances().iterator();
-									instance_iter.hasNext();
-									)
-								{
-									instance = (InstanceDTO) instance_iter.next();
-									if (isSticky(instance))
-									{
-										instance_iter.remove();
-										stickyInstances.remove(String.valueOf(instance.getPk()));
-									}
-								}
-						}
-				}
-		}
-	}
+    public final void setFilter(String filter) {
+        offset = 0;
+        total = -1;
+        studyFilter = null;
+    }
+
+    public final void setNext(String next) {
+        offset += LIMIT;
+    }
+
+    public final void setPrev(String prev) {
+        offset = Math.max(0, offset - LIMIT);
+    }
+
+    public final StudyFilterDTO getStudyFilter() {
+        if (studyFilter == null) {
+            studyFilter = new StudyFilterDTO();
+            studyFilter.setPatientID(patientID);
+            studyFilter.setPatientName(patientName);
+            studyFilter.setAccessionNumber(accessionNumber);
+            studyFilter.setStudyID(studyID);
+            studyFilter.setStudyDateRange(studyDateRange);
+            studyFilter.setModality(modality);
+        }
+        return studyFilter;
+    }
+
+    public final int getTotal() {
+        return total;
+    }
+
+    public void updatePatients(List newPatients) {
+        List sticky = patients;
+        patients = newPatients;
+        if (sticky != null) {
+            for (int i = sticky.size(); --i >= 0;) {
+                PatientDTO pat = (PatientDTO) sticky.get(i);
+                if (keepSticky(pat)) {
+                    mergeSticky(pat);
+                }
+            }
+        }
+    }
+
+    private void mergeSticky(PatientDTO stickyPat) {
+        for (int i = patients.size(); --i >= 0;) {
+            PatientDTO pat = (PatientDTO) patients.get(i);
+            if (pat.getPk() == stickyPat.getPk()) {
+                List stickyStudies = stickyPat.getStudies();
+                for (int j = stickyStudies.size(); --j >= 0;) {
+                    mergeSticky((StudyDTO) stickyStudies.get(j), pat
+                            .getStudies());
+                }
+                return;
+            }
+        }
+        patients.add(0, stickyPat);
+    }
+
+    private void mergeSticky(StudyDTO stickyStudy, List studies) {
+        for (int i = studies.size(); --i >= 0;) {
+            StudyDTO study = (StudyDTO) studies.get(i);
+            if (study.getPk() == stickyStudy.getPk()) {
+                List stickySeries = stickyStudy.getSeries();
+                for (int j = stickySeries.size(); --j >= 0;) {
+                    mergeSticky((SeriesDTO) stickySeries.get(j), study
+                            .getSeries());
+                }
+                return;
+            }
+        }
+        studies.add(0, stickyStudy);
+    }
+
+    private void mergeSticky(SeriesDTO stickySerie, List series) {
+        for (int i = series.size(); --i >= 0;) {
+            SeriesDTO serie = (SeriesDTO) series.get(i);
+            if (serie.getPk() == stickySerie.getPk()) {
+                List stickyInstances = stickySerie.getInstances();
+                for (int j = stickyInstances.size(); --j >= 0;) {
+                    mergeSticky((InstanceDTO) stickyInstances.get(j), serie
+                            .getInstances());
+                }
+                return;
+            }
+        }
+        series.add(0, stickySerie);
+    }
+
+    private void mergeSticky(InstanceDTO stickyInst, List instances) {
+        for (int i = instances.size(); --i >= 0;) {
+            InstanceDTO inst = (InstanceDTO) instances.get(i);
+            if (inst.getPk() == stickyInst.getPk()) { return; }
+        }
+        instances.add(0, stickyInst);
+    }
+
+    private boolean keepSticky(PatientDTO patientDTO) {
+        boolean sticky = isSticky(patientDTO);
+        for (Iterator it = patientDTO.getStudies().iterator(); it.hasNext();) {
+            if (keepSticky((StudyDTO) it.next())) {
+                sticky = true;
+            } else {
+                it.remove();
+            }
+        }
+        return sticky;
+    }
+
+    private boolean keepSticky(StudyDTO studyDTO) {
+        boolean sticky = isSticky(studyDTO);
+        for (Iterator it = studyDTO.getSeries().iterator(); it.hasNext();) {
+            if (keepSticky((SeriesDTO) it.next())) {
+                sticky = true;
+            } else {
+                it.remove();
+            }
+        }
+        return sticky;
+    }
+
+    private boolean keepSticky(SeriesDTO seriesDTO) {
+        boolean sticky = isSticky(seriesDTO);
+        for (Iterator it = seriesDTO.getInstances().iterator(); it.hasNext();) {
+            if (isSticky((InstanceDTO) it.next())) {
+                sticky = true;
+            } else {
+                it.remove();
+            }
+        }
+        return sticky;
+    }
+
+    public final boolean isSticky(PatientDTO patientDTO) {
+        return  stickyPatients.contains("" + patientDTO.getPk());
+    }
+
+    public final boolean isSticky(StudyDTO studyDTO) {
+        return stickyStudies.contains("" + studyDTO.getPk());
+    }
+
+    public final boolean isSticky(SeriesDTO seriesDTO) {
+        return stickySeries.contains("" + seriesDTO.getPk());
+    }
+
+    public final boolean isSticky(InstanceDTO instanceDTO) {
+        return stickyInstances.contains("" + instanceDTO.getPk());
+    }
+
+    public PatientDTO getPatientByPk(int patPk) {
+        for (int i = 0, n = patients.size(); i < n; i++) {
+            PatientDTO pat = (PatientDTO) patients.get(i);
+            if (pat.getPk() == patPk) { return pat; }
+        }
+        return null;
+    }
+
+    public StudyDTO getStudyByPk(int patPk, int studyPk) {
+        return getStudyByPk(getPatientByPk(patPk), studyPk);
+    }
+
+    public StudyDTO getStudyByPk(PatientDTO patient, int studyPk) {
+        if (patient == null) { return null; }
+        List studies = patient.getStudies();
+        for (int i = 0, n = studies.size(); i < n; i++) {
+            StudyDTO study = (StudyDTO) studies.get(i);
+            if (study.getPk() == studyPk) { return study; }
+        }
+        return null;
+    }
+
+    public SeriesDTO getSeriesByPk(int patPk, int studyPk, int seriesPk) {
+        return getSeriesByPk(getStudyByPk(patPk, studyPk), seriesPk);
+    }
+
+    public SeriesDTO getSeriesByPk(StudyDTO study, int seriesPk) {
+        if (study == null) { return null; }
+        List series = study.getSeries();
+        for (int i = 0, n = series.size(); i < n; i++) {
+            SeriesDTO serie = (SeriesDTO) series.get(i);
+            if (serie.getPk() == seriesPk) { return serie; }
+        }
+        return null;
+    }
+
+    public void removeStickies() {
+        PatientDTO patient;
+        StudyDTO study;
+        SeriesDTO series;
+        InstanceDTO instance;
+        for (Iterator patient_iter = patients.iterator(); patient_iter
+                .hasNext();) {
+            patient = (PatientDTO) patient_iter.next();
+            if (stickyPatients.contains(String.valueOf(patient.getPk()))) {
+                patient_iter.remove();
+                stickyPatients.remove(String.valueOf(patient.getPk()));
+            } else
+                for (Iterator study_iter = patient.getStudies().iterator(); study_iter
+                        .hasNext();) {
+                    study = (StudyDTO) study_iter.next();
+                    if (stickyStudies.contains(String.valueOf(study.getPk()))) {
+                        study_iter.remove();
+                        stickyStudies.remove(String.valueOf(study.getPk()));
+                    } else
+                        for (Iterator series_iter = study.getSeries()
+                                .iterator(); series_iter.hasNext();) {
+                            series = (SeriesDTO) series_iter.next();
+                            if (stickySeries.contains(String.valueOf(series
+                                    .getPk()))) {
+                                series_iter.remove();
+                                stickySeries.remove(String.valueOf(series
+                                        .getPk()));
+                            } else
+                                for (Iterator instance_iter = series
+                                        .getInstances().iterator(); instance_iter
+                                        .hasNext();) {
+                                    instance = (InstanceDTO) instance_iter
+                                            .next();
+                                    if (isSticky(instance)) {
+                                        instance_iter.remove();
+                                        stickyInstances.remove(String
+                                                .valueOf(instance.getPk()));
+                                    }
+                                }
+                        }
+                }
+        }
+    }
 }

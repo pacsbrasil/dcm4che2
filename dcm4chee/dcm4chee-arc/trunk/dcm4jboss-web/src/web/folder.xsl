@@ -8,7 +8,7 @@
 <xsl:include href="page.xsl"/>
 
 <xsl:template match="model">
-	<form action="foldersubmit.m" method="post" name="myForm">
+	<form action="foldersubmit.m" method="get" name="myForm">
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td valign="top">
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
@@ -53,7 +53,13 @@
 						</input>
 					</td>
 					<td width="40" bgcolor="eeeeee">
-						<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0" onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
+						<a href="addpat.m">
+							<img src="images/addpat.gif" alt="AddPatient" border="0"/>		
+						</a>
+					</td>
+					<td width="40" bgcolor="eeeeee">
+						<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0"
+							onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
@@ -65,6 +71,22 @@
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
+					</td>
+					<td width="40" bgcolor="eeeeee">
+						<input type="image" value="Send" name="send" src="images/send.gif" alt="send" border="0"
+							onclick="return confirm('Send selected entities to ' + document.myForm.destination.value  + '?')">
+							<xsl:if test="total &lt;= 0">
+								<xsl:attribute name="disabled">disabled</xsl:attribute>
+							</xsl:if>
+						</input>
+					</td>
+					<td width="50" bgcolor="eeeeee">
+						<select size="1" name="destination">
+							<xsl:for-each select="aets/item">
+								<xsl:sort data-type="text" order="ascending" select="title"/>
+								<option><xsl:value-of select="title"/></option>
+							</xsl:for-each>						
+						</select>
 					</td>
 				</table>
 				<table border="0" width="100%" cellpadding="0" cellspacing="0">
@@ -135,7 +157,7 @@
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					 Name:</font>
+					??Name:</font>
 			</td>
     	<td>
 				<font size="1" color="ff0000">
@@ -177,7 +199,7 @@
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					 Date/Time:</font>
+					??Date/Time:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -230,7 +252,7 @@
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					 Date/Time:</font>
+					??Date/Time:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -311,9 +333,9 @@
       <td>
       </td>
 			<td align="right">
-			  <a href="patientEdit.m?pk={pk}">
-            <font size="1">Edit</font>
-          </a> 				  
+				<a href="patientEdit.m?pk={pk}">
+					<img src="images/edit.gif" alt="edit" border="0"/>		
+				</a>
 			</td>
 			<td align="right" bgcolor="cccccc">
 				<input type="checkbox" name="stickyPat" value="{pk}">
@@ -485,9 +507,9 @@
 		</td>
     <td title="Pixel Matrix">
 	    	<xsl:value-of select="photometricInterpretation"/>
-				 
+				??
     		<xsl:value-of select="rows"/>x<xsl:value-of select="columns"/>x<xsl:value-of select="numberOfFrames"/>
-				 
+				??
     		<xsl:value-of select="bitsAllocated"/>bits
     </td>
 		<td title="Number of Files">
