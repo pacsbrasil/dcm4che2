@@ -17,7 +17,7 @@
 			<fo:layout-master-set>
 				<fo:simple-page-master master-name="page" page-height="14cm" page-width="14cm" margin="1cm">
 					<fo:region-body>
-					  <xsl:attribute name="background-image">url(label_bg.eps)</xsl:attribute>
+					  <xsl:attribute name="background-image">url(label_bg.jpg)</xsl:attribute>
             <xsl:attribute name="background-attachment">fixed</xsl:attribute>
             <xsl:attribute name="background-repeat">no-repeat</xsl:attribute>
  					</fo:region-body>
@@ -37,7 +37,7 @@
 						<xsl:otherwise>
 							<!-- Include TIANI Logo -->
 							<fo:block text-align="center">
-								<fo:external-graphic src="tiani_logo.eps"/>
+								<fo:external-graphic src="tiani_logo.jpg"/>
 							</fo:block>
 						</xsl:otherwise>
 						</xsl:choose>
@@ -45,7 +45,7 @@
 					<fo:block-container position="absolute" top="42mm" left="5mm" right="40mm" bottom="80mm">
 					<!-- Include IHE Logo -->
 						<fo:block text-align="center">
-							<fo:external-graphic src="ihe_logo.eps"/>
+							<fo:external-graphic src="ihe_logo.gif"/>
 						</fo:block>
 					</fo:block-container>
 					<!-- if Include Display Application -->

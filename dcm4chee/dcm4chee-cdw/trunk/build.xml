@@ -100,7 +100,11 @@
    		<property name="dist.standalone" value="${dist.name}"/>
    		<zip destfile="${build.dir}/${dist.standalone}.zip">
 			<zipfileset dir="target/${dist.name}" prefix="${dist.standalone}">
-				<include name="bin/*"/>
+				<include name="bin/init_redhat.sh"/>
+				<include name="bin/install_service.bat"/>
+   			</zipfileset>	
+			<zipfileset dir="target/${dist.name}" prefix="${dist.standalone}/server/dcmcdw/samples">
+				<include name="bin/fop.*"/>
    			</zipfileset>	
 			<zipfileset dir="target/${dist.name}" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="deploy/*"/>
