@@ -29,6 +29,8 @@ import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.srom.Code;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -40,25 +42,38 @@ class CodeImpl implements Code {
     private static final int MEANING_PROMPT_LEN = 32;
 
     // Attributes ----------------------------------------------------
+    static Logger log = Logger.getLogger(CodeImpl.class);
+    
     private final String codeValue;
     private final String codingSchemeDesignator;
     private final String codingSchemeVersion;
     private final String codeMeaning;
 
     // Constructors --------------------------------------------------
+    private String check(String val, String prompt, String def) {
+        if (val == null || val.length() == 0) {
+            log.warn(prompt);
+            return def;
+        }
+        return val;
+    }
+    
     public CodeImpl(
         String codeValue,
         String codingSchemeDesignator,
         String codingSchemeVersion,
         String codeMeaning)
     {
-        if ((this.codeValue = codeValue).length() == 0)
-            throw new IllegalArgumentException();
-        if ((this.codingSchemeDesignator = codingSchemeDesignator).length() == 0)
-            throw new IllegalArgumentException();
-        if ((this.codeMeaning = codeMeaning).length() == 0)
-            throw new IllegalArgumentException();
+        this.codeValue = check(codeValue,
+            "Missing (0008,0100) Code Value - insert \"__NULL__\"",
+            "__NULL__");
+        this.codingSchemeDesignator = check(codingSchemeDesignator,
+            "Missing (0008,0102) Coding Scheme Designator - insert \"99NULL\"",
+            "99NULL");
         this.codingSchemeVersion = codingSchemeVersion;
+        this.codeMeaning = check(codeMeaning,
+            "Missing (0008,0104) Code Meaning - insert \"__NULL__\"",
+            "__NULL__");
     }
 
     public CodeImpl(Dataset ds) throws DcmValueException { 
