@@ -8,9 +8,14 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.List;
+
+import org.dcm4che.data.Dataset;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
@@ -109,6 +114,12 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
         return home.create();
     }
 
+    private ContentManager lookupContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
+                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        return home.create();
+    }
+
     private void executeCreate() {
         try {
         	SeriesModel series = new SeriesModel();
@@ -128,6 +139,13 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
             FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
             PatientModel pat = form.getPatientByPk(patPk);
             StudyModel study = form.getStudyByPk(patPk, studyPk);
+            
+            ContentManager cm = lookupContentManager();
+            List allSeries = cm.listSeriesOfStudy(studyPk);
+            for (int i = 0, n = allSeries.size(); i < n; i++)
+                allSeries.set(i, new SeriesModel((Dataset) allSeries.get(i)));
+            form.getStudyByPk(patPk, studyPk).setSeries(allSeries);
+
             AuditLoggerDelegate.logProcedureRecord(getCtx(),
                     AuditLoggerDelegate.CREATE,
                     pat.getPatientID(),
