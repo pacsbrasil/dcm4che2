@@ -14,9 +14,8 @@
   <property name="jboss.dist" value="${user.home}/jboss-3.0.4"/>
   <property name="jboss.bin" value="${jboss.dist}/bin"/>
   <property name="jboss.lib" value="${jboss.dist}/lib"/>
-  <property name="jboss.conf" value="default"/>
   <property name="jboss.client" value="${jboss.dist}/client"/>
-  <property name="jboss.server" value="${jboss.dist}/server/${jboss.conf}"/>
+  <property name="jboss.server" value="${jboss.dist}/server/default"/>
   <property name="jboss.server.deploy" value="${jboss.server}/deploy"/>
   <property name="jboss.server.lib" value="${jboss.server}/lib"/>
   <property name="jboss.server.conf" value="${jboss.server}/conf"/>
@@ -63,6 +62,7 @@
     <pathelement location="${jboss.lib}/jboss-system.jar"/>
     <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
     <pathelement location="${jboss.server.lib}/log4j.jar"/>
+    <pathelement location="${jboss.server.lib}/jbosssx.jar"/>
     <pathelement location="${jboss.client}/jmx-rmi-connector-client.jar"/>
     <pathelement location="${build.classes.dir}"/>
   </path>
@@ -109,8 +109,27 @@
     </javac>
   </target>
 
-  <target name="sar" depends="dcmsrv-sar,prnscp-sar,printer-sar"/>
+  <target name="sar" depends="auditlog-sar,dcmsrv-sar,prnscp-sar,printer-sar"/>
   
+  <target name="auditlog-sar" depends="compile">
+    <mkdir dir="${build.dir}/auditlog"/>
+    <copy file="${src.conf}/auditlog-service.xml" 
+          tofile="${build.dir}/auditlog/jboss-service.xml">
+      <filterset>
+        <filter token="ARCHIVES" value="dcm4che.jar"/>
+      </filterset>
+    </copy>  
+    <mkdir dir="${build.deploy.dir}"/>
+    <jar jarfile="${build.deploy.dir}/auditlog.sar">
+      <metainf dir="${build.dir}/auditlog"
+               includes="jboss-service.xml"
+      />
+      <fileset dir="${build.classes.dir}"
+               includes="org/dcm4chex/service/Audit*"
+      />
+    </jar>
+  </target>   
+
   <target name="dcmsrv-sar" depends="compile">
     <mkdir dir="${build.dir}/dcmsrv"/>
     <copy file="${src.conf}/dcmsrv-service.xml" 
@@ -174,7 +193,7 @@
     <mkdir dir="${build.lib.dir}"/>
     <jar jarfile="${build.lib.dir}/dcmsrv.jar">
       <fileset dir="${build.classes.dir}"
-               includes="org/dcm4chex/service/DcmServer*"
+               includes="org/dcm4chex/service/*"
       />
     </jar>
   </target>   
@@ -302,6 +321,18 @@
     
   <target name="service-xml">
     <mkdir dir="${build.deploy.dir}"/>
+    <copy file="${src.dir}/conf/auditlog-service.xml" 
+          todir="${build.deploy.dir}">
+      <filterset>
+        <filter token="ARCHIVES" value="dcm4che.jar,dcmsrv.jar"/>
+      </filterset>
+    </copy>
+    <copy file="${src.dir}/conf/dcmsrv-service.xml" 
+          todir="${build.deploy.dir}">
+      <filterset>
+        <filter token="ARCHIVES" value="dcm4che.jar,dcmsrv.jar"/>
+      </filterset>
+    </copy>
     <copy file="${src.conf}/prnscp-service.xml" 
           todir="${build.deploy.dir}">
       <filterset>
@@ -312,12 +343,6 @@
           todir="${build.deploy.dir}">
       <filterset>
         <filter token="ARCHIVES" value="dcm4che.jar,prnscp.jar"/>
-      </filterset>
-    </copy>
-    <copy file="${src.dir}/conf/dcmsrv-service.xml" 
-          todir="${build.deploy.dir}">
-      <filterset>
-        <filter token="ARCHIVES" value="dcm4che.jar,dcmsrv.jar"/>
       </filterset>
     </copy>
   </target>
@@ -338,6 +363,9 @@
     <copy file="${lib.dir}/dcm4che.jar"
         todir="${jboss.server.lib}" />
         
+    <copy file="${build.deploy.dir}/auditlog.sar"
+        todir="${jboss.server.deploy}" />
+        
     <copy file="${build.deploy.dir}/dcmsrv.sar"
         todir="${jboss.server.deploy}" />
         
@@ -352,6 +380,7 @@
     <delete file="${jboss.server.deploy}/printer.sar" />
     <delete file="${jboss.server.deploy}/prnscp.sar" />
     <delete file="${jboss.server.deploy}/dcmsrv.sar" />
+    <delete file="${jboss.server.deploy}/auditlog.sar" />
   </target>           
     
   <target name="fail_unless_docbook_xsl_present" unless="docbook-xsl.present">
@@ -428,6 +457,9 @@
       <fileset dir="${jboss.dist}/server/minimal">
         <include name="conf/*"/>
         <include name="lib/*"/>
+      </fileset>
+      <fileset dir="${jboss.dist}/server/default">
+        <include name="lib/jbosssx.jar"/>
       </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>

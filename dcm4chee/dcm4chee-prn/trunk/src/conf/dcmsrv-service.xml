@@ -29,7 +29,10 @@
   -->
 
   <mbean code="org.dcm4chex.service.DcmServerService" 
-         name="dcm4chex:service=DcmServer">
+         name="dcm4chex:service=DcmServer,name=DCMSRV">
+    <depends optional-attribute-name="AuditLogger">
+      dcm4chex:service=AuditLogger
+    </depends>
          
     <!--
     Set maximal number of simultaneously conncected DICOM clients.
