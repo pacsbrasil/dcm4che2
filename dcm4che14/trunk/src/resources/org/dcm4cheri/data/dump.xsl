@@ -30,16 +30,7 @@
 <xsl:param name="vallen" select="64"/>
 
 <xsl:template match="/">
-    <xsl:apply-templates select="dicomfile/filemetainfo"/>
-    <xsl:apply-templates select="dicomfile/dataset"/>
-</xsl:template>
-
-<xsl:template match="filemetainfo">
-<xsl:text>=== File Meta Information ===
-</xsl:text>
-<xsl:apply-templates select="elm">
-    <xsl:with-param name="level" select="''"/>
-</xsl:apply-templates>
+    <xsl:apply-templates select="dataset"/>
 </xsl:template>
 
 <xsl:template match="dataset">
