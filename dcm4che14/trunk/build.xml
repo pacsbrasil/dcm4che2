@@ -382,6 +382,17 @@
       </fileset>
     </jar>
 
+    <!-- Build dcmrcv.jar -->
+    <jar jarfile="${build.jars}/demo/dcmrcv.jar"
+         manifest="${source.demo}/net/dcmrcv.mf">
+      <fileset dir="${build.classes}">
+        <include name="DcmRcv*.class"/>
+      </fileset>
+      <fileset dir="${source.demo}/net">
+        <include name="resources/DcmRcv.properties"/>
+      </fileset>
+    </jar>
+
     <!-- Build imgdump.jar -->
     <jar jarfile="${build.jars}/demo/imgdump.jar"
          manifest="${source.demo}/imageio/imgdump.mf">

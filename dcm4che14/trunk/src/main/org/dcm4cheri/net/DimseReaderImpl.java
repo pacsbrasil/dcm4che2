@@ -26,6 +26,8 @@ package org.dcm4cheri.net;
 import org.dcm4che.net.*;
 import org.dcm4che.data.*;
 
+import org.dcm4cheri.util.LF_ThreadPool;
+
 import java.io.*;
 
 /**
@@ -43,12 +45,17 @@ final class DimseReaderImpl {
     private PDataTF pDataTF = null;
     private PDataTF.PDV pdv = null;
     private byte[] buf = null;
+    private LF_ThreadPool pool = null;
 
     /** Creates a new instance of DimseReader */
     public DimseReaderImpl(FsmImpl fsm) {
         this.fsm = fsm;
     }
     
+    public void setThreadPool(LF_ThreadPool pool) {
+       this.pool = pool;
+    }
+        
     public synchronized Dimse read(int timeout) throws IOException {
         this.timeout = timeout;
         if (!nextPDV()) {
@@ -91,19 +98,23 @@ final class DimseReaderImpl {
                         + " and " + pdv);
             }
             in = new PDataTFInputStream(pdv.getInputStream());
+        } else { // no Dataset
+           if (pool != null) {
+              // trigger read of next Dimse by Follower Thread
+              pool.promoteNewLeader();
+           }
         }
-        Dimse retval = new DimseImpl(pcid, tsUID, cmd, in);
-        if (!rq) {
-            retval.getDataset();
-        }
-        return retval;
+        return new DimseImpl(pcid, tsUID, cmd, in);
     }
     
     private InputStream nextStream() throws IOException {
         if (pdv != null && pdv.last()) {
-            return null;
+           if (!pdv.cmd() && pool != null) {
+              // trigger read of next Dimse by Follower Thread
+              pool.promoteNewLeader();
+           }
+           return null;
         }
-        PDataTF.PDV prevPDV = pdv;        
         if (!nextPDV()) {
             throw new EOFException(
                     "Association released during receive of DIMSE");
@@ -112,16 +123,16 @@ final class DimseReaderImpl {
     }
     
     private boolean nextPDV() throws IOException {
-        PDataTF.PDV prevPDV = pdv;
+        boolean hasPrev = pdv != null && !pdv.last();
+        boolean prevCmd = hasPrev && pdv.cmd();
+        int prevPcid = hasPrev ? pdv.pcid() : 0;
         while (pDataTF == null || (pdv = pDataTF.readPDV()) == null) {
             if (!nextPDataTF()) {
                 return false;
             }
         }
-        if (prevPDV != null && !prevPDV.last()
-                && (prevPDV.cmd() != pdv.cmd()
-                || prevPDV.pcid() != pdv.pcid())) {
-            abort("Mismatch of following PDVs: " + prevPDV + " -> " + pdv);
+        if (hasPrev && (prevCmd != pdv.cmd() || prevPcid != pdv.pcid())) {
+            abort("Mismatch of following PDVs: " + pdv);
         }
         return true;
     }
@@ -141,22 +152,15 @@ final class DimseReaderImpl {
             pDataTF = (PDataTF)pdu;
             return true;
         }
+        if (pdu instanceof AReleaseRP) {
+            return false;
+        }
         if (pdu instanceof AReleaseRQ) {
             fsm.write(AReleaseRPImpl.getInstance());
             return false;
         }
         throw new PDUException("Received " + pdu, (AAbort)pdu);
     }                
-
-//    public InputStream openInputStream(int timeout) throws IOException {
-//        if (pDataTFin != null) {
-//            pDataTFin.close();
-//        }
-//        this.timeout = timeout;
-//        return nextPDV()
-//                ? new PDataTFInputStream(pdv.getInputStream())
-//                : null;
-//    }
 
     private class PDataTFInputStream extends InputStream {
         private InputStream in;

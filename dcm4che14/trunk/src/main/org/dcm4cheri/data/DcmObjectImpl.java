@@ -45,7 +45,7 @@ import java.util.logging.*;
 import org.dcm4cheri.util.StringUtils;
 
 abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
-    private static final String CLASSNAME = "tiani.dcm4che.data.DcmObjectImpl";
+    private static final String CLASSNAME = "org.dcm4cheri.data.DcmObjectImpl";
     protected static final Logger log = Logger.getLogger(CLASSNAME);
     
     protected ArrayList list = new ArrayList();    

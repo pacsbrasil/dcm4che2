@@ -32,25 +32,29 @@ import java.util.List;
  * @version 1.0.0
  */
 public interface Association {
+   
+   int nextMsgID();
 
-    public void setTCPCloseTimeout(int tcpCloseTimeout);
-    
-    public int getTCPCloseTimeout();
+   PDU connect(AAssociateRQ rq, int timeout) throws IOException;
+   
+   PDU accept(AcceptorPolicy policy, int timeout) throws IOException;
 
-    public PDU connect(AAssociateRQ rq, int timeout) throws IOException;
-    
-    public Dimse read(int timeout) throws IOException;
+   Dimse read(int timeout) throws IOException;
+   
+   void write(Dimse dimse) throws IOException;
+   
+   PDU release(int timeout) throws IOException;
+   
+   void abort(AAbort aa) throws IOException;
 
-    public void write(Dimse dimse) throws IOException;
-
-    public PDU release(int timeout) throws IOException;
-
-    public void abort(AAbort aa) throws IOException;
-    
-    public String getAcceptedTransferSyntaxUID(int pcid);
-    
-    public PresContext getAcceptedPresContext(String asuid, String tsuid);
-    
-    public int nextMsgID();
+   AssociationState getState();
+   
+   void setTCPCloseTimeout(int tcpCloseTimeout);
+   
+   int getTCPCloseTimeout();
+   
+   String getAcceptedTransferSyntaxUID(int pcid);
+   
+   PresContext getAcceptedPresContext(String asuid, String tsuid);
 }
 

@@ -110,7 +110,7 @@ class DimseImpl implements Dimse {
         if (ds == null) {
             throw new IllegalStateException("Missing Dataset");
         }
-        ds.writeDataset(out, DcmDecodeParam.valueOf(tsUID));        
+        ds.writeDataset(out, DcmDecodeParam.valueOf(tsUID));       
     }
     
 }

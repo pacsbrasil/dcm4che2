@@ -54,10 +54,10 @@ public class AAssociateRJTest extends ExtTestCase {
     private final int SOURCE = AAssociateRJ.SERVICE_USER;
     private final int REASON = AAssociateRJ.CALLED_AE_TITLE_NOT_RECOGNIZED;
 
-    private AssociationFactory fact;
+    private Factory fact;
         
     protected void setUp() throws Exception {
-        fact = AssociationFactory.getInstance();
+        fact = Factory.getInstance();
     }
     
     public void testWrite() throws Exception {

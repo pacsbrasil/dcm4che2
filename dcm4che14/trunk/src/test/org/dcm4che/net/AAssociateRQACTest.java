@@ -53,10 +53,10 @@ class AAssociateRQACTest extends ExtTestCase {
     protected static final int MAX_OPS_PERFORMED = 2;
     protected static final byte[] EXT_NEG_INFO = new byte[0xe];
     
-    protected AssociationFactory fact;
+    protected Factory fact;
         
     protected void setUp() throws Exception {
-        fact = AssociationFactory.getInstance();
+        fact = Factory.getInstance();
         Arrays.fill(EXT_NEG_INFO, (byte)0xee);
     }
     
@@ -65,14 +65,15 @@ class AAssociateRQACTest extends ExtTestCase {
         assertEquals(CALLING_AET, rqac.getCallingAET());
         assertEquals(CALLED_AET, rqac.getCalledAET());
         assertEquals(UIDs.DICOMApplicationContextName,
-                rqac.getApplicationContextUID());
+                rqac.getApplicationContext());
         assertEquals(MAX_LENGTH, rqac.getMaxLength());
         AsyncOpsWindow aow = rqac.getAsyncOpsWindow();
         assertNotNull(aow);
         assertEquals(MAX_OPS_INVOKED, aow.getMaxOpsInvoked());
         assertEquals(MAX_OPS_PERFORMED, aow.getMaxOpsPerformed());
-        assertEquals(2, rqac.countRoleSelections());
-        Iterator rsit = rqac.iterateRoleSelections();
+        Collection rsList = rqac.listRoleSelections();
+        assertEquals(2, rsList.size());
+        Iterator rsit = rsList.iterator();
         RoleSelection rs1 = (RoleSelection)rsit.next();
         assertEquals(AS_UID1, rs1.getSOPClassUID());
         assertTrue(rs1.scu());
@@ -84,8 +85,9 @@ class AAssociateRQACTest extends ExtTestCase {
         assertTrue(!rs2.scp());
         assertEquals(rs2, rqac.getRoleSelection(AS_UID2));
         assertTrue(!rsit.hasNext());
-        assertEquals(1, rqac.countExtNegotiations());
-        Iterator enit = rqac.iterateExtNegotiations();
+        Collection enList = rqac.listExtNegotiations();
+        assertEquals(1, enList.size());
+        Iterator enit = enList.iterator();
         ExtNegotiation en = (ExtNegotiation)enit.next();
         assertEquals(AS_UID2, en.getSOPClassUID());
         assertEquals(EXT_NEG_INFO, en.info());

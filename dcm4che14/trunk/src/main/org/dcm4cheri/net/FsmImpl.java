@@ -44,7 +44,6 @@ final class FsmImpl {
     private final Socket s;
     private final InputStream in;
     private final OutputStream out;
-    private final AssociationListener listener;
     private final static Timer timer = new Timer(true);
     private int tcpCloseTimeout = 500;
     private AAssociateRQ rq = null;
@@ -53,13 +52,13 @@ final class FsmImpl {
     private AAbort aa = null;
 
     /** Creates a new instance of DcmULServiceImpl */
-    public FsmImpl(AssociationImpl assoc, Socket s, boolean requestor, AssociationListener listener) throws IOException {
+    public FsmImpl(AssociationImpl assoc, Socket s, boolean requestor)
+    throws IOException {
         this.assoc = assoc;
         this.requestor = requestor;
         this.s = s;
         this.in = s.getInputStream();
         this.out = s.getOutputStream();
-        this.listener = listener;
         changeState(requestor ? STA4 : STA2);
     }    
    
@@ -116,7 +115,7 @@ final class FsmImpl {
         if (ac == null) {
             throw new IllegalStateException(state.toString());
         }
-        for (Iterator it = rq.iteratePresContext(); it.hasNext();) {
+        for (Iterator it = rq.listPresContext().iterator(); it.hasNext();) {
             PresContext rqpc = (PresContext)it.next();
             if (asuid.equals(rqpc.getAbstractSyntaxUID())) {
                 PresContext acpc = ac.getPresContext(rqpc.pcid());
@@ -136,10 +135,6 @@ final class FsmImpl {
             }
             State prev = this.state;
             this.state = state;
-            if (listener != null) {
-                listener.stateChanged(
-                        new AssociationEvent(assoc, prev, state));
-            }
             state.entry();
         }
     }
@@ -278,6 +273,8 @@ final class FsmImpl {
             return "Sta 1 - Idle";
         }
         void entry() {
+            try { in.close(); } catch (IOException ignore) {}
+            try { out.close(); } catch (IOException ignore) {}
             try { s.close(); } catch (IOException ignore) {}
         }
         void write(AAbort abort) throws IOException {

@@ -56,8 +56,9 @@ public class AAssociateRQTest extends AAssociateRQACTest {
     
     protected void check(AAssociateRQ rq) {
         super.check(rq);
-        assertEquals(3, rq.countPresContext());
-        Iterator pcit = rq.iteratePresContext();
+        Collection c = rq.listPresContext();
+        assertEquals(3, c.size());
+        Iterator pcit = c.iterator();
         PresContext pc1 = (PresContext)pcit.next();
         assertEquals(AS_UID1, pc1.getAbstractSyntaxUID());
         List ts1 = pc1.getTransferSyntaxUIDs();

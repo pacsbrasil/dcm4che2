@@ -366,4 +366,81 @@ public class StringUtils {
         }
         return retval;
     }
+    
+    private static final int UID_DIGIT1 = 0;
+    private static final int UID_DIGIT = 1;
+    private static final int UID_DOT = 2;
+    private static final int UID_ERROR = -1;
+    private static int nextState(int state, char c)
+    {
+       switch (state)
+       {
+          case UID_DIGIT1:
+             if (c > '0' && c <= '9')
+                return UID_DIGIT;
+             if (c == '0')
+                return UID_DOT;
+             return UID_ERROR;
+          case UID_DIGIT:
+             if (c >= '0' && c <= '9')
+                return UID_DIGIT;
+             // fall through
+          case UID_DOT:
+             if (c == '.')
+                return UID_DIGIT1;
+             // fall through
+       }
+       return UID_ERROR;
+    }
+    
+    public static String checkUID(String s)
+    {
+       char[] a = s.toCharArray();
+       if (a.length == 0 || a.length > 64)
+          throw new IllegalArgumentException(s);
+       
+       int state = UID_DIGIT1;
+       for (int i = 0; i < a.length; ++i)
+       {
+          if ((state = nextState(state, a[i])) == UID_ERROR)
+             throw new IllegalArgumentException(s);
+       }
+       if (state == UID_DIGIT1)
+          throw new IllegalArgumentException(s);
+
+       return s;
+    }
+
+    public static String[] checkUIDs(String[] a)
+    {
+       for (int i = 0; i < a.length; ++i)
+       {
+          checkUID(a[i]);
+       }
+       return a;
+    }
+        
+    public static String checkAET(String s)
+    {
+       char[] a = s.toCharArray();
+       if (a.length == 0 || a.length > 16)
+          throw new IllegalArgumentException(s);
+
+       for (int i = 0; i < a.length; ++i)
+       {
+          if (a[i] < '\u0020' || a[i] >= '\u007f')
+             throw new IllegalArgumentException(s);
+       }
+       return s;
+    }
+
+    public static String[] checkAETs(String[] a)
+    {
+       for (int i = 0; i < a.length; ++i)
+       {
+          checkAET(a[i]);
+       }
+       return a;
+    }
+        
 }

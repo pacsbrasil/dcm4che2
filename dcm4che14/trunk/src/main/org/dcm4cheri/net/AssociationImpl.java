@@ -22,8 +22,20 @@
  *****************************************************************************/
 
 package org.dcm4cheri.net;
-import org.dcm4che.net.*;
+
+import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationState;
+import org.dcm4che.net.AAssociateAC;
+import org.dcm4che.net.AAssociateRQ;
+import org.dcm4che.net.AAssociateRJ;
+import org.dcm4che.net.AAbort;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.PDU;
+import org.dcm4che.net.PresContext;
 import org.dcm4che.dict.Tags;
+
+import org.dcm4cheri.util.LF_ThreadPool;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -35,72 +47,89 @@ import java.util.List;
  * @version 1.0.0
  */
 final class AssociationImpl implements Association {
-    
-    private final FsmImpl fsm;
-    private final DimseReaderImpl reader;
-    private final DimseWriterImpl writer;
-    private DimseDispatcher dispatcher;
-    private int msgID = 0;
-    private final byte[] b10 = new byte[10];
+   
+   private final FsmImpl fsm;
+   private final DimseReaderImpl reader;
+   private final DimseWriterImpl writer;
+   private int msgID = 0;
+   private final byte[] b10 = new byte[10];
+   
+   /** Creates a new instance of AssociationImpl */
+   public AssociationImpl(Socket s, boolean requestor) throws IOException {
+      this.fsm = new FsmImpl(this, s, requestor);
+      this.reader = new DimseReaderImpl(fsm);
+      this.writer = new DimseWriterImpl(fsm);
+   }
+   
+   public final AssociationState getState() {
+      return fsm.getState();
+   }
+   
+   public final int nextMsgID() {
+      return ++msgID;
+   }
+   
+   public void setThreadPool(LF_ThreadPool pool) {
+     reader.setThreadPool(pool);
+   }
+   
+   public final void setTCPCloseTimeout(int tcpCloseTimeout) {
+      fsm.setTCPCloseTimeout(tcpCloseTimeout);
+   }
+   
+   public final int getTCPCloseTimeout() {
+      return fsm.getTCPCloseTimeout();
+   }
+      
+   public final PDU connect(AAssociateRQ rq, int timeout) throws IOException {
+      fsm.write(rq);
+      return fsm.read(timeout, b10);
+   }
+   
+   public final PDU accept(AcceptorPolicy policy, int timeout) throws IOException {
+      PDU rq = fsm.read(timeout, b10);
+      if (!(rq instanceof AAssociateRQ))
+         return (AAbort)rq;
 
-    /** Creates a new instance of AssociationImpl */
-    public AssociationImpl(Socket s, boolean requestor,
-            AssociationListener listener) throws IOException {
-        this.fsm = new FsmImpl(this, s, requestor, listener);
-        this.reader = new DimseReaderImpl(fsm);
-        this.writer = new DimseWriterImpl(fsm);
-    }
-        
-    public final int nextMsgID() {
-        return ++msgID;
-    }
+      PDU rp = policy.negotiate((AAssociateRQ)rq);
+      if (rp instanceof AAssociateAC)
+         fsm.write((AAssociateAC)rp);
+      else
+         fsm.write((AAssociateRJ)rp);
+      return rp;
+   }
 
-    public final void setTCPCloseTimeout(int tcpCloseTimeout) {
-        fsm.setTCPCloseTimeout(tcpCloseTimeout);
-    }
-    
-    public final int getTCPCloseTimeout() {
-        return fsm.getTCPCloseTimeout();
-    }
-    
-    public void setDispatcher(DimseDispatcher dispatcher) {
-        this.dispatcher = dispatcher;
-    }        
-    
-    public final PDU connect(AAssociateRQ rq, int timeout) throws IOException {
-        fsm.write(rq);
-        return fsm.read(timeout, b10);
-    }
-    
-    public final Dimse read(int timeout) throws IOException  {
-        Dimse dimse = reader.read(timeout);
-        msgID = Math.max(
-                dimse.getCommand().getInt(Tags.MessageID, msgID),
-                msgID);
-        return dimse;
-    }
-
-    public final void write(Dimse dimse) throws IOException  {
+   public final Dimse read(int timeout) throws IOException  {
+      Dimse dimse = reader.read(timeout);
+      if (dimse != null) {
          msgID = Math.max(
-                dimse.getCommand().getInt(Tags.MessageID, msgID),
-                msgID);
-         writer.write(dimse);
-    }
-
-    public final PDU release(int timeout) throws IOException {
-        fsm.write(AReleaseRQImpl.getInstance());
-        return fsm.read(timeout, b10);
-    }
-
-    public final void abort(AAbort aa) throws IOException {
-        fsm.write(aa);
-    }
-
-    public final String getAcceptedTransferSyntaxUID(int pcid) {
-        return fsm.getAcceptedTransferSyntaxUID(pcid);
-    }
-    
-    public final PresContext getAcceptedPresContext(String asuid, String tsuid) {
-        return fsm.getAcceptedPresContext(asuid, tsuid);
-    }
+               dimse.getCommand().getInt(Tags.MessageID, msgID),
+               msgID);
+      }
+      return dimse;
+   }
+   
+   public final void write(Dimse dimse) throws IOException  {
+      msgID = Math.max(
+            dimse.getCommand().getInt(Tags.MessageID, msgID),
+            msgID);
+      writer.write(dimse);
+   }
+   
+   public final PDU release(int timeout) throws IOException {
+      fsm.write(AReleaseRQImpl.getInstance());
+      return fsm.read(timeout, b10);
+   }
+   
+   public final void abort(AAbort aa) throws IOException {
+      fsm.write(aa);
+   }
+   
+   public final String getAcceptedTransferSyntaxUID(int pcid) {
+      return fsm.getAcceptedTransferSyntaxUID(pcid);
+   }
+   
+   public final PresContext getAcceptedPresContext(String asuid, String tsuid) {
+      return fsm.getAcceptedPresContext(asuid, tsuid);
+   }
 }

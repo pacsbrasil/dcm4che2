@@ -23,9 +23,30 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.*;
+import org.dcm4che.net.AAbort;
+import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.AAssociateRQ;
+import org.dcm4che.net.AAssociateRJ;
+import org.dcm4che.net.AAssociateAC;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.AReleaseRQ;
+import org.dcm4che.net.AReleaseRP;
+import org.dcm4che.net.AsyncOpsWindow;
+import org.dcm4che.net.DataSource;
+import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.ExtNegotiation;
+import org.dcm4che.net.Factory;
+import org.dcm4che.net.PDataTF;
+import org.dcm4che.net.PDU;
+import org.dcm4che.net.PDUException;
+import org.dcm4che.net.PresContext;
+import org.dcm4che.net.RoleSelection;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+
+import org.dcm4cheri.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,9 +57,9 @@ import java.net.Socket;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public final class AssociationFactoryImpl extends AssociationFactory {
+public final class FactoryImpl extends Factory {
     
-    public AssociationFactoryImpl() {
+    public FactoryImpl() {
     }
 
     public AAssociateRQ newAAssociateRQ() {
@@ -70,12 +91,14 @@ public final class AssociationFactoryImpl extends AssociationFactory {
     }
     
     public PresContext newPresContext(int pcid, String asuid, String[] tsuids) {
-        return new PresContextImpl(0x020, pcid, 0, asuid, tsuids);
+        return new PresContextImpl(0x020, pcid, 0,
+            StringUtils.checkUID(asuid),
+            StringUtils.checkUIDs(tsuids));
     }
     
     public PresContext newPresContext(int pcid, int result, String tsuid) {
         return new PresContextImpl(0x021, pcid, result, null,
-                new String[]{ tsuid } );
+                new String[]{ StringUtils.checkUID(tsuid) } );
     }
     
     public AsyncOpsWindow newAsyncOpsWindow(
@@ -93,7 +116,7 @@ public final class AssociationFactoryImpl extends AssociationFactory {
     }
     
     public PDU readFrom(InputStream in, byte[] buf)
-            throws IOException, PDUException {
+            throws IOException {
         UnparsedPDUImpl raw = new UnparsedPDUImpl(in, buf);
         switch (raw.type()) {
             case 1:
@@ -117,16 +140,19 @@ public final class AssociationFactoryImpl extends AssociationFactory {
         }
     }
     
-    public Association newRequestor(Socket s, AssociationListener l)
-            throws IOException {
-        return new AssociationImpl(s, true, l);
+    public Association newRequestor(Socket s) throws IOException {
+        return new AssociationImpl(s, true);
     }
     
-    public Association newAcceptor(Socket s, AssociationListener l)
-            throws IOException {
-        return new AssociationImpl(s, false, l);
+    public Association newAcceptor(Socket s) throws IOException {
+        return new AssociationImpl(s, false);
     }
-    
+
+    public ActiveAssociation newActiveAssociation(Association assoc,
+            DcmServiceRegistry services) {
+         return new ActiveAssociationImpl(assoc, services);
+    }
+
     public Dimse newDimse(int pcid, Command cmd) {
         return new DimseImpl(pcid, cmd, null, null);
     }
@@ -138,4 +164,13 @@ public final class AssociationFactoryImpl extends AssociationFactory {
     public Dimse newDimse(int pcid, Command cmd, DataSource src) {
         return new DimseImpl(pcid, cmd, null, src);
     }
+    
+    public AcceptorPolicy newAcceptorPolicy() {
+       return new AcceptorPolicyImpl();
+    }
+   
+    public DcmServiceRegistry newDcmServiceRegistry() {
+       return new DcmServiceRegistryImpl();
+    }
+
 }

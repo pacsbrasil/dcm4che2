@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -21,56 +20,37 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.net;
+package org.dcm4che.server;
 
-import org.dcm4che.net.*;
-
-import java.io.*;
+import java.io.IOException;
+import java.net.Socket;
 
 /**
+ * <description> 
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$ $Date$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go 
+ *            beyond the cvs commit message
+ * </ul>
  */
-final class AsyncOpsWindowImpl implements AsyncOpsWindow {
+public interface Server
+{
+   interface Handler
+   {
+      void handle(Socket s) throws IOException;
+   }
 
-    private final int maxOpsInvoked;
-    private final int maxOpsPerformed;
-    
-    static final AsyncOpsWindow DEFAULT = new AsyncOpsWindowImpl(1,1);
-    
-    /** Creates a new instance of AsyncOpsWindowImpl */
-    AsyncOpsWindowImpl(int maxOpsInvoked, int maxOpsPerformed) {
-        this.maxOpsInvoked = maxOpsInvoked;
-        this.maxOpsPerformed = maxOpsPerformed;
-    }
-    
-    AsyncOpsWindowImpl(DataInputStream din, int len)
-            throws IOException, PDUException {
-        if (len != 4) {
-            throw new PDUException(
-                    "Illegal length of AsyncOpsWindow sub-item: " + len,
-                new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                               AAbort.INVALID_PDU_PARAMETER_VALUE));
-        }
-        this.maxOpsInvoked = din.readUnsignedShort();
-        this.maxOpsPerformed = din.readUnsignedShort();
-    }
-    
-    public final int getMaxOpsInvoked() {
-        return maxOpsInvoked;
-    }
-    
-    public final int getMaxOpsPerformed() {
-        return maxOpsPerformed;
-    }
-    
-    void writeTo(DataOutputStream dout) throws IOException {
-        dout.write(0x53);
-        dout.write(0);
-        dout.writeShort(4);
-        dout.writeShort(maxOpsInvoked);
-        dout.writeShort(maxOpsPerformed);
-    }
+   public void setMaxClients(int max);
 
+   public void start(int port) throws IOException;
+
+   public void stop();
 }

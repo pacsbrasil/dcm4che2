@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -23,15 +22,84 @@
 
 package org.dcm4che.net;
 
-import java.net.Socket;
-
 /**
+ * Defines association acceptance/rejection behavior.
  *
- * @author  <a href="mailto:gunter.zeilinger@tiani.com">gunter zeilinger</a>
- * @version 1.0.0
+ * @see Association#accept
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20020518 gunter zeilinger:</b>
+ * <ul>
+ * <li> Initial import
+ * </ul>
  */
-public interface AcceptorPolicy {
+public interface AcceptorPolicy
+{   
+   public void setReceivedPDUMaxLength(int maxLength);
+   
+   public int getReceivedPDUMaxLength();
+   
+   public AsyncOpsWindow getAsyncOpsWindow();
+    
+   public void setAsyncOpsWindow(AsyncOpsWindow aow);
+   
+   public void setImplClassUID(String implClassUID);
 
-    PDU negotiate(Socket s, AAssociateRQ rq);
+   public String getImplClassUID();
+   
+   public void setImplVersionName(String implVers);
+   
+   public String getImplVersionName();
+   
+   public String putApplicationContextName(String proposed, String returned);
+   
+   public boolean addCalledAET(String aet);
+
+   public boolean removeCalledAET(String aet);
+
+   public void setCalledAETs(String[] aets);
+   
+   public String[] getCalledAETs();
+   
+   public boolean addCallingAET(String aet);
+
+   public boolean removeCallingAET(String aet);
+   
+   public void setCallingAETs(String[] aets);
+   
+   public String[] getCallingAETs();
+   
+   public AcceptorPolicy addPolicyForCalledAET(String aet,
+         AcceptorPolicy policy);
+   
+   public AcceptorPolicy getPolicyForCalledAET(String aet);
+   
+   public AcceptorPolicy addPolicyForCallingAET(String aet,
+         AcceptorPolicy policy);
+
+   public AcceptorPolicy getPolicyForCallingAET(String aet);
+
+   public PresContext addPresContext(String asuid, String[] tsuids);
+
+   public PresContext getPresContext(String as);
+
+   public PresContext removePresContext(String as);
+      
+   public RoleSelection addRoleSelection(RoleSelection rs);
+   
+   public RoleSelection getRoleSelection(String uid);
+
+   public RoleSelection removeRoleSelection(String uid);
+
+   public ExtNegotiator addExtNegPolicy(String uid, ExtNegotiator en);
+   
+   public ExtNegotiator getExtNegPolicy(String uid);
+
+   public ExtNegotiator removeExtNegPolicy(String uid);
+   
+   public PDU negotiate(AAssociateRQ rq);
+  
 }
-

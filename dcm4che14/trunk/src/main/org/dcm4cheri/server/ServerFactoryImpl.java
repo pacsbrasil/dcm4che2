@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -21,56 +20,60 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.net;
+package org.dcm4cheri.server;
 
-import org.dcm4che.net.*;
-
-import java.io.*;
+import org.dcm4che.server.Server;
+import org.dcm4che.server.DcmHandler;
+import org.dcm4che.server.ServerFactory;
+import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.DcmServiceRegistry;
 
 /**
+ * <description> 
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$ $Date$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go 
+ *            beyond the cvs commit message
+ * </ul>
  */
-final class AsyncOpsWindowImpl implements AsyncOpsWindow {
-
-    private final int maxOpsInvoked;
-    private final int maxOpsPerformed;
-    
-    static final AsyncOpsWindow DEFAULT = new AsyncOpsWindowImpl(1,1);
-    
-    /** Creates a new instance of AsyncOpsWindowImpl */
-    AsyncOpsWindowImpl(int maxOpsInvoked, int maxOpsPerformed) {
-        this.maxOpsInvoked = maxOpsInvoked;
-        this.maxOpsPerformed = maxOpsPerformed;
-    }
-    
-    AsyncOpsWindowImpl(DataInputStream din, int len)
-            throws IOException, PDUException {
-        if (len != 4) {
-            throw new PDUException(
-                    "Illegal length of AsyncOpsWindow sub-item: " + len,
-                new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                               AAbort.INVALID_PDU_PARAMETER_VALUE));
-        }
-        this.maxOpsInvoked = din.readUnsignedShort();
-        this.maxOpsPerformed = din.readUnsignedShort();
-    }
-    
-    public final int getMaxOpsInvoked() {
-        return maxOpsInvoked;
-    }
-    
-    public final int getMaxOpsPerformed() {
-        return maxOpsPerformed;
-    }
-    
-    void writeTo(DataOutputStream dout) throws IOException {
-        dout.write(0x53);
-        dout.write(0);
-        dout.writeShort(4);
-        dout.writeShort(maxOpsInvoked);
-        dout.writeShort(maxOpsPerformed);
-    }
-
+public class ServerFactoryImpl extends ServerFactory
+{
+   
+   public Server newServer(Server.Handler handler)
+   {
+      return new ServerImpl(handler);
+   }
+   
+   public DcmHandler newDcmHandler(AcceptorPolicy policy,
+         DcmServiceRegistry services)
+   {
+      return new DcmHandlerImpl(policy, services);
+   }
+   
+   // Constants -----------------------------------------------------
+   
+   // Attributes ----------------------------------------------------
+   
+   // Static --------------------------------------------------------
+   
+   // Constructors --------------------------------------------------
+   
+   // Public --------------------------------------------------------
+      
+   // ServerFactory overrides ---------------------------------------
+   
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------
 }

@@ -40,8 +40,7 @@ public class DcmSnd {
 
     private static final UIDDictionary uidDict = 
             DictionaryFactory.getInstance().getDefaultUIDDictionary();
-    private static final AssociationFactory aFact = 
-            AssociationFactory.getInstance();
+    private static final Factory aFact = Factory.getInstance();
     private static final DcmObjectFactory dFact = 
             DcmObjectFactory.getInstance();
     private static final DcmParserFactory pFact = 
@@ -157,7 +156,7 @@ public class DcmSnd {
         int count = 0;
         for (int i = 0; i < repeatWhole; ++i) {
             Association assoc = aFact.newRequestor(
-                    new Socket(url.getHost(), url.getPort()), null);
+                    new Socket(url.getHost(), url.getPort()));
             PDU assocAC = assoc.connect(assocRQ, assocTO);
             if (assocAC instanceof AAssociateAC) {
                 if (assoc.getAcceptedTransferSyntaxUID(pcid) == null) {
@@ -207,7 +206,7 @@ public class DcmSnd {
         Result res = new Result();
         for (int i = 0; i < repeatWhole; ++i) {
             Association assoc = aFact.newRequestor(
-                    new Socket(url.getHost(), url.getPort()), null);
+                    new Socket(url.getHost(), url.getPort()));
             PDU assocAC = assoc.connect(assocRQ, assocTO);
             if (assocAC instanceof AAssociateAC) {
                 for (int k = offset; k < args.length; ++k) {

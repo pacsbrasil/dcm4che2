@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -21,56 +20,24 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.net;
-
-import org.dcm4che.net.*;
-
-import java.io.*;
+package org.dcm4che.net;
 
 /**
+ * <description> 
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20020519 gunter zeilinger:</b>
+ * <ul>
+ * <li> Initial import
+ * <ul>
  */
-final class AsyncOpsWindowImpl implements AsyncOpsWindow {
-
-    private final int maxOpsInvoked;
-    private final int maxOpsPerformed;
-    
-    static final AsyncOpsWindow DEFAULT = new AsyncOpsWindowImpl(1,1);
-    
-    /** Creates a new instance of AsyncOpsWindowImpl */
-    AsyncOpsWindowImpl(int maxOpsInvoked, int maxOpsPerformed) {
-        this.maxOpsInvoked = maxOpsInvoked;
-        this.maxOpsPerformed = maxOpsPerformed;
-    }
-    
-    AsyncOpsWindowImpl(DataInputStream din, int len)
-            throws IOException, PDUException {
-        if (len != 4) {
-            throw new PDUException(
-                    "Illegal length of AsyncOpsWindow sub-item: " + len,
-                new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                               AAbort.INVALID_PDU_PARAMETER_VALUE));
-        }
-        this.maxOpsInvoked = din.readUnsignedShort();
-        this.maxOpsPerformed = din.readUnsignedShort();
-    }
-    
-    public final int getMaxOpsInvoked() {
-        return maxOpsInvoked;
-    }
-    
-    public final int getMaxOpsPerformed() {
-        return maxOpsPerformed;
-    }
-    
-    void writeTo(DataOutputStream dout) throws IOException {
-        dout.write(0x53);
-        dout.write(0);
-        dout.writeShort(4);
-        dout.writeShort(maxOpsInvoked);
-        dout.writeShort(maxOpsPerformed);
-    }
-
+public interface ExtNegotiator
+{
+   byte[] negotiate(byte[] offered);
+   
 }

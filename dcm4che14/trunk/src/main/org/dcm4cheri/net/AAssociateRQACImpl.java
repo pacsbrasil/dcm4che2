@@ -133,11 +133,11 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         this.callingAET = checkAE(aet);
     }
 
-    public final String getApplicationContextUID() {
+    public final String getApplicationContext() {
         return appCtxUID;
     }
 
-    public final void setApplicationContextUID(String appCtxUID) {
+    public final void setApplicationContext(String appCtxUID) {
         appCtxUID = checkUID(appCtxUID);
     }
 
@@ -186,16 +186,12 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         return (PresContext)presCtxs.get(new Integer(pcid));
     }
 
-    public final Iterator iteratePresContext() {
-        return presCtxs.values().iterator();
+    public final Collection listPresContext() {
+        return presCtxs.values();
     }
 
     public final void clearPresContext() {
         presCtxs.clear();
-    }
-    
-    public final int countPresContext() {
-        return presCtxs.size();
     }
     
     public final String getImplClassUID() {
@@ -241,12 +237,8 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         return (RoleSelection)roleSels.get(uid);
     }
 
-    public Iterator iterateRoleSelections() {
-        return roleSels.values().iterator();
-    }
-    
-    public int countRoleSelections() {
-        return roleSels.size();
+    public Collection listRoleSelections() {
+        return roleSels.values();
     }
     
     public void clearRoleSelections() {
@@ -261,12 +253,8 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         return (ExtNegotiation)extNegs.get(uid);
     }
 
-    public Iterator iterateExtNegotiations() {
-        return extNegs.values().iterator();
-    }
-    
-    public int countExtNegotiations() {
-        return extNegs.size();
+    public Collection listExtNegotiations() {
+        return extNegs.values();
     }
     
     public void clearExtNegotiations() {

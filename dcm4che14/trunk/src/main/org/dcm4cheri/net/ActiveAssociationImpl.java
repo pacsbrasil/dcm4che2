@@ -1,0 +1,238 @@
+/*****************************************************************************
+ *                                                                           *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
+ *                                                                           *
+ *  This file is part of dcm4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU Lesser General Public License as published    *
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  Lesser General Public License for more details.                          *
+ *                                                                           *
+ *  You should have received a copy of the GNU Lesser General Public         *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
+
+package org.dcm4cheri.net;
+
+import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationState;
+import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.DcmService;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.DimseListener;
+import org.dcm4che.data.Command;
+import org.dcm4che.data.Dataset;
+
+import org.dcm4cheri.util.LF_ThreadPool;
+import org.dcm4cheri.util.IntHashtable2;
+
+import java.io.IOException;
+
+/**
+ * <description> 
+ *
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$ $Date$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go 
+ *            beyond the cvs commit message
+ * </ul>
+ */
+final class ActiveAssociationImpl 
+implements ActiveAssociation, LF_ThreadPool.Handler
+{
+   // Constants -----------------------------------------------------
+   
+   // Attributes ----------------------------------------------------
+   private final Association assoc;
+   private final DcmServiceRegistry services;
+   private final IntHashtable2 rspDispatcher = new IntHashtable2();
+   private final IntHashtable2 cancelDispatcher = new IntHashtable2();
+   private final LF_ThreadPool threadPool = new LF_ThreadPool(this);
+   private boolean running = false;
+   private int timeout = 0;
+   
+   // Static --------------------------------------------------------
+   
+   // Constructors --------------------------------------------------
+   ActiveAssociationImpl(Association assoc, DcmServiceRegistry services)
+   {
+      if (assoc.getState().getType()
+            != AssociationState.ASSOCIATION_ESTABLISHED)
+         throw new IllegalStateException("Association not esrablished - "
+               + assoc.getState());      
+
+      this.assoc = assoc;
+      this.services = services;
+      ((AssociationImpl)assoc).setThreadPool(threadPool);
+   }   
+   
+   // Public --------------------------------------------------------
+   public final void addCancelListener(int msgID, DimseListener l) {
+      cancelDispatcher.put(msgID, l);
+   }
+   
+   public final void setTimeout(int timeout) {
+      this.timeout = timeout;
+   }
+   
+   public final int getTimeout() {
+      return timeout;
+   }
+
+   public void run()
+   {
+      if (running)
+         throw new IllegalStateException("Already running: " + threadPool);
+      
+      this.running = true;
+      threadPool.join();
+   }
+   
+   public Association getAssociation()
+   {
+      return assoc;
+   }
+   
+   public void invoke(Dimse rq, DimseListener l)
+   throws IOException
+   {
+      checkRunning();
+      rspDispatcher.put(rq.getCommand().getMessageID(), l);
+      assoc.write(rq);
+   }
+      
+   // LF_ThreadPool.Handler implementation --------------------------
+   public void run(LF_ThreadPool pool)
+   {
+      try
+      {
+         Dimse dimse = assoc.read(timeout);
+         
+         // if Association was released
+         if (dimse == null)
+         {
+            pool.shutdown();
+            return;
+         }
+         
+         Command cmd = dimse.getCommand();
+         switch (cmd.getCommandField()) {
+            case Command.C_STORE_RQ:
+               services.lookup(cmd.getAffectedSOPClassUID())
+                        .c_store(this, dimse);
+               break;
+            case Command.C_GET_RQ:
+               services.lookup(cmd.getAffectedSOPClassUID())
+                        .c_get(this, dimse);
+               break;
+            case Command.C_FIND_RQ:
+               services.lookup(cmd.getAffectedSOPClassUID())
+                        .c_find(this, dimse);
+               break;
+            case Command.C_MOVE_RQ:
+               services.lookup(cmd.getAffectedSOPClassUID())
+                        .c_move(this, dimse);
+               break;
+            case Command.C_ECHO_RQ:
+               services.lookup(cmd.getAffectedSOPClassUID())
+                        .c_echo(this, dimse);
+               break;
+            case Command.N_EVENT_REPORT_RQ:
+               services.lookup(cmd.getAffectedSOPClassUID())
+                        .n_event_report(this, dimse);
+               break;
+            case Command.N_GET_RQ:
+               services.lookup(cmd.getRequestedSOPClassUID())
+                        .n_get(this, dimse);
+               break;
+            case Command.N_SET_RQ:
+               services.lookup(cmd.getRequestedSOPClassUID())
+                        .n_set(this, dimse);
+               break;
+            case Command.N_ACTION_RQ:
+               services.lookup(cmd.getRequestedSOPClassUID())
+                        .n_action(this, dimse);
+               break;
+            case Command.N_CREATE_RQ:
+               services.lookup(cmd.getAffectedSOPClassUID())
+                        .n_action(this, dimse);
+               break;
+            case Command.N_DELETE_RQ:
+               services.lookup(cmd.getRequestedSOPClassUID())
+                        .n_delete(this, dimse);
+               break;
+            case Command.C_STORE_RSP:
+            case Command.C_GET_RSP:
+            case Command.C_FIND_RSP:
+            case Command.C_MOVE_RSP:
+            case Command.C_ECHO_RSP:
+            case Command.N_EVENT_REPORT_RSP:
+            case Command.N_GET_RSP:
+            case Command.N_SET_RSP:
+            case Command.N_ACTION_RSP:
+            case Command.N_CREATE_RSP:
+            case Command.N_DELETE_RSP:
+               handleResponse(dimse);
+               break;
+            case Command.C_CANCEL_RQ:
+               handleCancel(dimse);
+               break;
+            default:
+               throw new RuntimeException("Illegal Command: " + cmd);
+          }
+      } catch (IOException ioe) {
+         ioe.printStackTrace();
+         pool.shutdown();
+      }
+   }
+      
+   // Y overrides ---------------------------------------------------
+   
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   private void handleResponse(Dimse dimse) throws IOException {
+      Command cmd = dimse.getCommand();
+      Dataset ds = dimse.getDataset(); // read out dataset, if any
+      int msgID = cmd.getMessageIDToBeingRespondedTo();
+      DimseListener l = (DimseListener)(cmd.isPending()
+            ? rspDispatcher.get(msgID)
+            : rspDispatcher.remove(msgID));
+
+      if (l != null)
+         l.dimseReceived(assoc, dimse);
+   }
+
+   private void handleCancel(Dimse dimse) {
+      Command cmd = dimse.getCommand();
+      int msgID = cmd.getMessageIDToBeingRespondedTo();
+      DimseListener l = (DimseListener)cancelDispatcher.remove(msgID);
+
+      if (l != null)
+         l.dimseReceived(assoc, dimse);
+   }
+   
+   private void checkRunning() {
+      if (!running)
+         throw new IllegalStateException("Not running: " + threadPool);
+   }
+   
+   // Inner classes -------------------------------------------------
+}

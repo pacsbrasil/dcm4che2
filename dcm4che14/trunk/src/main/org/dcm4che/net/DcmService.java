@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -23,12 +22,56 @@
 
 package org.dcm4che.net;
 
+import java.io.IOException;
+
 /**
+ * <description> 
  *
- * @author  <a href="mailto:gunter.zeilinger@tiani.com">gunter zeilinger</a>
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go 
+ *            beyond the cvs commit message
+ * </ul>
  */
-public interface DimseDispatcher {
+public interface DcmService
+{
+   void c_store(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+   
+   void c_get(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
 
+   void c_find(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+
+   void c_move(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+
+   void c_echo(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+
+   void n_create(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+
+   void n_set(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+
+   void n_get(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+
+   void n_delete(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+
+   void n_action(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
+
+   void n_event_report(ActiveAssociation assoc, Dimse rq)
+   throws IOException;
 }
-

@@ -30,8 +30,8 @@ package org.dcm4che.net;
  */
 public interface ExtNegotiation {
 
-    public String getSOPClassUID();
+   public String getSOPClassUID();
 
-    public byte[] info();
+   public byte[] info();
 }
 

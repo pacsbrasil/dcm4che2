@@ -29,6 +29,6 @@ package org.dcm4che.net;
  * @version 1.0.0
  */
 public interface DimseListener {
-
+   void dimseReceived(Association assoc, Dimse dimse);
 }
 

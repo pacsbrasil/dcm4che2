@@ -23,7 +23,7 @@
 
 package org.dcm4che.net;
 
-import java.util.Iterator;
+import java.util.Collection;
 
 /**
  *
@@ -46,7 +46,7 @@ public interface AAssociateRQAC extends PDU {
      * Default = { @link org.dcm4che.dict.UIDs#DICOMApplicationContextName }.
      * @see #setApplicationContext
      * @return Application-context-name. */    
-    public String getApplicationContextUID();
+    public String getApplicationContext();
 
     /** Returns Source DICOM Application Name.
      * Default = "ANONYMOUS".
@@ -65,7 +65,7 @@ public interface AAssociateRQAC extends PDU {
     /** Sets Application-context-name.
      * @see #getApplicationContext
      * @param uid Application-context-name */    
-    public void setApplicationContextUID(String uid);
+    public void setApplicationContext(String uid);
 
     /** Sets Source DICOM Application Name.
      * @see #setCalledAET
@@ -109,15 +109,11 @@ public interface AAssociateRQAC extends PDU {
      * Presentation Context with this id. */    
     public PresContext getPresContext(int id);
 
-    /** Returns an iterator over the contained Presentation Context Items.
+    /** Returns an list of contained Presentation Context Items.
      * The sequence shall be equal to the order, in which the Presentation Context Items
      * where added by {@link #addPresContext}.
-     * @return an iterator over the contained Presentation Context Items. */    
-    public Iterator iteratePresContext();
-
-    /** Returns number of Presentation Context Items in this Associate RQ/AC.
-     * @return number of Presentation Context Items.  */    
-    public int countPresContext();
+     * @return list of contained Presentation Context Items. */    
+    public Collection listPresContext();
     
     /** Returns Implementation Class UID in this AssociateRQ.
      * @see #setImplClassUID
@@ -193,16 +189,11 @@ public interface AAssociateRQAC extends PDU {
      * associated which the specified SOP Class UID. */    
     public RoleSelection getRoleSelection(String sopClass);
 
-    /** Returns an iterator over the contained SCP/SCU Role Selection Sub-Items.
+    /** Returns list of the contained SCP/SCU Role Selection Sub-Items.
      * The sequence shall be equal to the order, in which the SCP/SCU Role Selection Sub-Items
      * where added by {@link #addRoleSelection}.
-     * @return an iterator over the contained SCP/SCU Role Selection Sub-Items */    
-    public Iterator iterateRoleSelections();
-
-    /** Returns number of SCP/SCU Role Selection Sub-Items in this AssociateRQ.
-     * Default = 0.
-     * @return number of SCP/SCU Role Selection Sub-Items.  */    
-    public int countRoleSelections();
+     * @return list of contained SCP/SCU Role Selection Sub-Items */    
+    public Collection listRoleSelections();
 
     /** Adds specified Extended Negotiation Sub-item to this AssociateRQ.
      * If this AssociateRQ previously contained a Extended Negotiation Sub-Item associated
@@ -230,15 +221,10 @@ public interface AAssociateRQAC extends PDU {
      * associated which the specified SOP Class UID. */    
     public ExtNegotiation getExtNegotiation(String sopClass);
 
-    /** Returns number of Extended Negotiation Sub-Items in this AssociateRQ.
-     * Default = 0.
-     * @return number of Extended Negotiation Sub-Items.  */    
-    public int countExtNegotiations();
-
-    /** Returns an iterator over the contained Extended Negotiation Sub-Items.
+    /** Returns list of contained Extended Negotiation Sub-Items.
      * The sequence shall be equal to the order, in which the Extended Negotiation Sub-Items
      * where added by {@link #addRoleSelection}.
-     * @return an iterator over the contained Extended Negotiation Sub-Items */    
-    public Iterator iterateExtNegotiations();
+     * @return list the contained Extended Negotiation Sub-Items */    
+    public Collection listExtNegotiations();
 }
 

@@ -50,10 +50,10 @@ public class AReleaseRQTest extends ExtTestCase {
 
     private static final String A_RELEASE_RQ = "../testdata/pdu/AReleaseRQ.pdu";
 
-    private AssociationFactory fact;
+    private Factory fact;
     
     protected void setUp() throws Exception {
-        fact = AssociationFactory.getInstance();
+        fact = Factory.getInstance();
     }
 
     public void testWrite() throws Exception {

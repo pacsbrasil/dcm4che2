@@ -67,6 +67,30 @@ public interface Command extends DcmObject {
 
     public static final int NO_DATASET         = 0x0101;
     
+    public int getMessageID();
+
+    public int getMessageIDToBeingRespondedTo();
+
+    public String getAffectedSOPClassUID();
+
+    public String getAffectedSOPInstanceUID();
+
+    public String getRequestedSOPClassUID();
+
+    public String getRequestedSOPInstanceUID();
+
+    public int getCommandField();
+
+    public int getStatus();
+
+    public boolean isPending();
+
+    public boolean isRequest();
+
+    public boolean isResponse();
+
+    public boolean hasDataset();
+
     public Command initCStoreRQ(int msgID, String sopClassUID,
             String sopInstUID, int priority);
 
@@ -101,6 +125,9 @@ public interface Command extends DcmObject {
     public Command initNEventReportRQ(int msgID, String sopClassUID,
             String sopInstanceUID, int eventTypeID);
     
+    public Command initNEventReportRSP(int msgID, String sopClassUID,
+            String sopInstUID, int status);
+    
     public Command initNGetRQ(int msgID, String sopClassUID,
             String sopInstUID, int[] attrIDs);
     
@@ -130,12 +157,6 @@ public interface Command extends DcmObject {
     
     public Command initNDeleteRSP(int msgID, String sopClassUID,
             String sopInstUID, int status);
-
-    public boolean isRequest() throws DcmValueException;
-
-    public boolean isResponse() throws DcmValueException;
-
-    public boolean hasDataset() throws DcmValueException;
     
     public void write(DcmHandler handler) throws IOException;
 

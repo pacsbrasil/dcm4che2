@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -23,18 +22,29 @@
 
 package org.dcm4che.net;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
+ * <description> 
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$ $Date$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go 
+ *            beyond the cvs commit message
+ * </ul>
  */
-public interface UnparsedPDU {
+public interface ActiveAssociation extends Runnable
+{
+   void addCancelListener(int msgID, DimseListener l);
+   
+   Association getAssociation();
 
-    public int type();
-
-    public int length();
-
-    public byte[] buffer();
+   void invoke(Dimse rq, DimseListener l) throws IOException;
 }
