@@ -48,10 +48,19 @@ public class MoveScp extends DcmServiceBase {
     private final Logger log;
     private final DataSourceFactory dsf;
     private boolean sendPendingMoveRSP = true;
+    private int acTimeout = 5000;
 
     public MoveScp(Logger log, DataSourceFactory dsf) {
         this.log = log;
         this.dsf = dsf;
+    }
+
+    public final int getAcTimeout() {
+        return acTimeout;
+    }
+
+    public final void setAcTimeout(int acTimeout) {
+        this.acTimeout = acTimeout;
     }
 
     public final boolean isSendPendingMoveRSP() {
@@ -79,7 +88,8 @@ public class MoveScp extends DcmServiceBase {
                     fileInfos,
                     aeData,
                     dest,
-                    sendPendingMoveRSP))
+                    sendPendingMoveRSP,
+                    acTimeout))
                 .start();
         } catch (DcmServiceException e) {
             Command rspCmd = objFact.newCommand();

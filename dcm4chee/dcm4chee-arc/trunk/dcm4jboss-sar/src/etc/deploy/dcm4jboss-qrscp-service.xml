@@ -20,15 +20,22 @@
 	with Pending Status to the C-MOVE SCU during the retrieve process.
 	-->
     <attribute name="SendPendingMoveRSP">true</attribute>
+
+	<!--
+	Specifies time-out in ms for receiving the A-ASSOCIATE-AC PDU after
+	transmission of the A-ASSOCIATE-RQ to open an association
+	to the move destination AE.
+	-->
+    <attribute name="AcTimeout">5000</attribute>
     
     <attribute name="CallingAETs">__any__</attribute>
 
-    <attribute name="PatientRootFind">-</attribute>
+    <attribute name="PatientRootFind">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
     <attribute name="StudyRootFind">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
-    <attribute name="PatientStudyOnlyFind">-</attribute>
-    <attribute name="PatientRootMove">-</attribute>
+    <attribute name="PatientStudyOnlyFind">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
+    <attribute name="PatientRootMove">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
     <attribute name="StudyRootMove">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
-    <attribute name="PatientStudyOnlyMove">-</attribute>         
+    <attribute name="PatientStudyOnlyMove">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>         
 </mbean>
 
 </server>

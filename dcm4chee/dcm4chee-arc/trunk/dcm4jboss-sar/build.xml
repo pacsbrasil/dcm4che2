@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.3.6"/>
+	<property name="version" value="0.4.0"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
@@ -183,6 +183,7 @@
    				<include name="common/**"/>
    				<include name="hsql/**"/>
    				<include name="psql/**"/>
+   				<include name="oracle/**"/>
    				<include name="db2/**"/>
    				<exclude name="**/test.war"/>
    			</fileset>
@@ -218,6 +219,9 @@
     	</antcall>
    		<antcall target="standalone-dist">
       		<param name="db.name" value="psql"/>
+    	</antcall>
+   		<antcall target="standalone-dist">
+      		<param name="db.name" value="oracle"/>
     	</antcall>
    		<antcall target="standalone-dist">
       		<param name="db.name" value="db2"/>

@@ -243,6 +243,20 @@ public class QueryRetrieveScpService
         moveScp.setSendPendingMoveRSP(sendPendingMoveRSP);
     }
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public final int getAcTimeout() {
+        return moveScp.getAcTimeout();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setAcTimeout(int acTimeout) {
+        moveScp.setAcTimeout(acTimeout);
+    }
+
     protected void bindDcmServices(DcmServiceRegistry services)
     {
         services.bind(
