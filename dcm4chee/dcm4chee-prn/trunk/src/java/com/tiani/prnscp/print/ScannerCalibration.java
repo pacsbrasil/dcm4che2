@@ -246,7 +246,7 @@ public class ScannerCalibration
      */
     public String getScanThreshold()
     {
-        return "" + blackThreshold + "\\" + whiteThreshold;
+        return "" + blackThreshold + "/" + whiteThreshold;
     }
 
 
@@ -395,9 +395,9 @@ public class ScannerCalibration
                 if (index == 0) {
                     // = extrapolation
                     index = 1;
-                } else if (index == invPx.length) {
+                } else if (index == invRefPx.length) {
                     // = extrapolation
-                    index = invPx.length - 1;
+                    index = invRefPx.length - 1;
                 }
                 result[i] = refGrayscaleODs[index - 1]
                          + (refGrayscaleODs[index] - refGrayscaleODs[index - 1])

@@ -114,7 +114,7 @@ class PrinterCalibration
         check(n, dmin, dmax);
         byte[] lut = new byte[1 << n];
         for (int p = 0; p < lut.length; ++p) {
-            lut[p] = (byte) toDDL(dmax - (dmax - dmin) * p / ((1 << n) - 1));
+            lut[p] = (byte) toDDL(dmin + (dmax - dmin) * p / ((1 << n) - 1));
         }
         if (log.isDebugEnabled()) {
             logLut("PValToDDLwLinOD[dmin=" + dmin + ", dmax=" + dmax + "]:", lut);
@@ -285,7 +285,7 @@ class PrinterCalibration
      */
     public void setGrayscaleODs(float[] stepODs)
     {
-        if (stepODs.length < 4 || stepODs.length > 64) {
+        if (stepODs.length < 4 || stepODs.length > 128) {
             throw new IllegalArgumentException("steps: " + stepODs.length);
         }
         if (this.stepODs != null && Arrays.equals(this.stepODs, stepODs)) {

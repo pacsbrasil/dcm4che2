@@ -1932,7 +1932,7 @@ public class PrinterService
      */
     public void setGrayscales(int grayscales)
     {
-        if (grayscales < 4 || grayscales > 64) {
+        if (grayscales < 4 || grayscales > 128) {
             throw new IllegalArgumentException("grayscales: " + grayscales);
         }
         this.grayscales = grayscales;

@@ -168,7 +168,7 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar, list-printers-jar, plut-jar, localhost-jar"/>
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar, list-printers-jar, plut-jar, probescan-jar, localhost-jar"/>
   
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
@@ -239,9 +239,26 @@
         <fileset dir="${build.classes.dir}"
                includes="com/tiani/prnscp/client/PLut*"
         />
-        <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/client/plutgui/*"
-        />
+    </jar>
+  </target>
+
+  <target name="probescan-jar" depends="compile">
+    <mkdir dir="${build.bin.dir}"/>
+    <jar jarfile="${build.bin.dir}/probescan.jar">
+        <manifest>
+            <attribute
+                name="Main-Class"
+                value="com.tiani.prnscp.print.ScannerCalibration"
+            />
+            <attribute
+                name="Class-Path"
+                value="../lib/getopt.jar ../server/default/lib/log4j.jar"
+            />
+        </manifest>
+        <fileset dir="${build.classes.dir}">
+            <include name="com/tiani/prnscp/print/ScannerCalibration*"/>
+            <include name="com/tiani/prnscp/print/CalibrationException*"/>
+        </fileset>
     </jar>
   </target>
 
