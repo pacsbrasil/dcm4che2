@@ -22,7 +22,6 @@
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.media.DirBuilder;
 import org.dcm4che.media.DirBuilderFactory;
@@ -145,23 +144,19 @@ class DcmRcvFSU implements AssociationListener, Runnable
       return file;
    }
       
-   private String toFileID(Dataset ds, int tag) {
-      try {
-         String s = ds.getString(tag);
-         if (s == null || s.length() == 0)
+    private String toFileID(Dataset ds, int tag) {
+	String s = ds.getString(tag);
+	if (s == null || s.length() == 0)
             return "__NULL__";
-         char[] in = s.toUpperCase().toCharArray();
-         char[] out = new char[Math.min(8,in.length)];
-         for (int i = 0; i < out.length; ++i) {
+	char[] in = s.toUpperCase().toCharArray();
+	char[] out = new char[Math.min(8,in.length)];
+	for (int i = 0; i < out.length; ++i) {
             out[i] = in[i] >= '0' && in[i] <= '9'
-                  || in[i] >= 'A' && in[i] <= 'Z'
-                   ? in[i] : '_';
-         }
-         return new String(out);
-      } catch (DcmValueException e) {
-         return "__ERR__";
-      }
-   }
+		|| in[i] >= 'A' && in[i] <= 'Z'
+		? in[i] : '_';
+	}
+	return new String(out);
+    }
 
    public void schedule(final File file, final Dataset ds) {
       synchronized (queue) {

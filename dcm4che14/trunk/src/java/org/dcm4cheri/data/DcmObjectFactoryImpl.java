@@ -27,7 +27,6 @@ import org.dcm4che.Implementation;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
@@ -71,15 +70,11 @@ public final class DcmObjectFactoryImpl extends DcmObjectFactory {
     }
     
     public FileMetaInfo newFileMetaInfo(Dataset ds, String transferSyntaxUID) {
-        try {
             return new FileMetaInfoImpl().init(
                     ds.getString(Tags.SOPClassUID, null),
                     ds.getString(Tags.SOPInstanceUID, null),
                     transferSyntaxUID,
                     Implementation.getClassUID(),
                     Implementation.getVersionName());
-        } catch (DcmValueException ex) {
-            throw new IllegalArgumentException(ex.getMessage());
-        }
     }     
 }

@@ -81,80 +81,69 @@ public interface DcmObject {
    
    ByteBuffer getByteBuffer(int tag);
    
-   String getString(int tag) throws DcmValueException;
+   String getString(int tag);
    
-   String getString(int tag, String defVal) throws DcmValueException;
+   String getString(int tag, String defVal);
    
-   String getString(int tag, int index)
-   throws DcmValueException;
+   String getString(int tag, int index);
    
-   String getString(int tag, int index, String defVal)
-   throws DcmValueException;
+   String getString(int tag, int index, String defVal);
    
-   String[] getStrings(int tag) throws DcmValueException;
+   String[] getStrings(int tag);
    
-   String getBoundedString(int maxLen, int tag)
-   throws DcmValueException;
+   String getBoundedString(int maxLen, int tag);
    
-   String getBoundedString(int maxLen, int tag, String defVal)
-   throws DcmValueException;
+   String getBoundedString(int maxLen, int tag, String defVal);
    
-   String getBoundedString(int maxLen, int tag, int index)
-   throws DcmValueException;
+   String getBoundedString(int maxLen, int tag, int index);
    
-   String getBoundedString(int maxLen, int tag, int index, String defVal)
-   throws DcmValueException;
+   String getBoundedString(int maxLen, int tag, int index, String defVal);
    
-   String[] getBoundedStrings(int maxLen, int tag)
-   throws DcmValueException;
+   String[] getBoundedStrings(int maxLen, int tag);
    
-   Integer getInteger(int tag) throws DcmValueException;
+   Integer getInteger(int tag);
 
-   Integer getInteger(int tag, int index) throws DcmValueException;
+   Integer getInteger(int tag, int index);
    
-   int getInt(int tag, int defVal) throws DcmValueException;
+   int getInt(int tag, int defVal);
    
-   int getInt(int tag, int index, int defVal)
-   throws DcmValueException;
+   int getInt(int tag, int index, int defVal);
    
-   int[] getInts(int tag) throws DcmValueException;
+   int[] getInts(int tag);
    
-   Float getFloat(int tag) throws DcmValueException;
+   Float getFloat(int tag);
    
-   Float getFloat(int tag, int index) throws DcmValueException;
+   Float getFloat(int tag, int index);
    
-   float getFloat(int tag, float defVal) throws DcmValueException;
+   float getFloat(int tag, float defVal);
    
-   float getFloat(int tag, int index, float defVal)
-   throws DcmValueException;
+   float getFloat(int tag, int index, float defVal);
    
-   float[] getFloats(int tag) throws DcmValueException;
+   float[] getFloats(int tag);
    
-   Double getDouble(int tag) throws DcmValueException;
+   Double getDouble(int tag);
    
-   Double getDouble(int tag, int index) throws DcmValueException;
+   Double getDouble(int tag, int index);
    
-   double getDouble(int tag, double defVal)
-   throws DcmValueException;
+   double getDouble(int tag, double defVal);
    
-   double getDouble(int tag, int index, double defVal)
-   throws DcmValueException;
+   double getDouble(int tag, int index, double defVal);
    
-   double[] getDoubles(int tag) throws DcmValueException;
+   double[] getDoubles(int tag);
    
-   Date getDate(int tag) throws DcmValueException;
+   Date getDate(int tag);
    
-   Date getDate(int tag, int index) throws DcmValueException;
+   Date getDate(int tag, int index);
    
-   Date[] getDates(int tag) throws DcmValueException;
+   Date[] getDates(int tag);
    
-   Date getDateTime(int dateTag, int timeTag) throws DcmValueException;
+   Date getDateTime(int dateTag, int timeTag);
    
-   Date[] getDateRange(int tag) throws DcmValueException;
+   Date[] getDateRange(int tag);
    
-   Date[] getDateRange(int tag, int index) throws DcmValueException;
+   Date[] getDateRange(int tag, int index);
    
-   Date[] getDateTimeRange(int dateTag, int timeTag) throws DcmValueException;
+   Date[] getDateTimeRange(int dateTag, int timeTag);
 
    Dataset getItem(int tag);
    

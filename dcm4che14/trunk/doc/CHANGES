@@ -14,6 +14,9 @@ CHANGES:
 + change schema of Implementation Version Name in META-INF/MANIFEST.MF and
   A-ASSOCIATE-RQ/AC to dcm4che-1.x.y (from DCM4CHEyyyymmdd)
 + add properties port and serverSocketFactory to org.dcm4che.server.Server
++ org.dcm4che.data.DcmObject: change getter methodes to do not throw
+  org.dcm4che.data.DcmValueException, but return null or default value, if
+  an decoding error occurs.   
   
 
 -------------------------------------------------------------------------------
