@@ -23,6 +23,7 @@
 
 package org.dcm4che.media;
 
+import org.dcm4che.Dcm4che;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.FileMetaInfo;
 
@@ -38,23 +39,10 @@ import javax.imageio.stream.ImageInputStream;
  */
 public abstract class DirBuilderFactory {
 
-    public static DirBuilderFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.media.DirBuilderFactory",
-                "org.dcm4cheri.media.DirBuilderFactoryImpl");
-        try {
-            return (DirBuilderFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-    
-    protected DirBuilderFactory() {
-    }
+   public static DirBuilderFactory getInstance() {
+      return (DirBuilderFactory)Dcm4che.findFactory(
+            "dcm4che.media.DirBuilderFactory");
+   }
     
     public abstract DirReader newDirReader(File file) throws IOException;
 
@@ -77,9 +65,4 @@ public abstract class DirBuilderFactory {
     public abstract DirBuilder newDirBuilder(DirWriter writer,
             DirBuilderPref pref) throws IOException;
     
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
 }

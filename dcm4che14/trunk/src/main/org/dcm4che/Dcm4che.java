@@ -20,95 +20,66 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.net;
+package org.dcm4che;
 
-import org.dcm4che.Dcm4che;
-import org.dcm4che.data.Command;
-import org.dcm4che.data.Dataset;
-
-import java.net.Socket;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.ResourceBundle;
 
 /**
- * <description>
+ * <description> 
  *
  * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
- *
+ *   
  * <p><b>Revisions:</b>
  *
  * <p><b>yyyymmdd author:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go
+ * <li> explicit fix description (no line numbers but methods) go 
  *            beyond the cvs commit message
  * </ul>
  */
-public abstract class Factory {
+public class Dcm4che
+{
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
    // Static --------------------------------------------------------
-   public static Factory getInstance() {
-      return (Factory)Dcm4che.findFactory(
-            "dcm4che.net.Factory");
+   private final static ResourceBundle rb =
+      ResourceBundle.getBundle("org/dcm4che/Dcm4che");
+   
+   public static String getImplementationClassUID() {
+      return rb.getString("dcm4che.ImplementationClassUID");
    }
    
+   public static String getImplementationVersionName() {
+      return rb.getString("dcm4che.ImplementationVersionName");
+   }
+   
+   public static Object findFactory(String key) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        String name = rb.getString(key);
+        try {
+            return loader.loadClass(name).newInstance();
+        } catch (ClassNotFoundException ex) {
+            throw new ConfigurationError("class not found: " + name, ex); 
+        } catch (InstantiationException ex) {
+            throw new ConfigurationError("could not instantiate: " + name, ex); 
+        } catch (IllegalAccessException ex) {
+            throw new ConfigurationError("could not instantiate: " + name, ex); 
+        }
+   }
+
    // Constructors --------------------------------------------------
+   private Dcm4che(){
+   }
    
    // Public --------------------------------------------------------
-   public abstract AAssociateRQ newAAssociateRQ();
+      
+   // Z implementation ----------------------------------------------
    
-   public abstract AAssociateAC newAAssociateAC();
-   
-   public abstract AAssociateRJ newAAssociateRJ(
-         int result, int source, int reason);
-   
-   public abstract PDataTF newPDataTF(int maxLength);
-   
-   public abstract AReleaseRQ newAReleaseRQ();
-   
-   public abstract AReleaseRP newAReleaseRP();
-   
-   public abstract AAbort newAAbort(int source, int reason);
-   
-   public abstract PresContext newPresContext(
-         int pcid, String asuid, String[] tsuids);
-   
-   public abstract PresContext newPresContext(
-         int pcid, int result, String tsuid);
-   
-   public abstract AsyncOpsWindow newAsyncOpsWindow(
-         int maxOpsInvoked, int maxOpsPerfomed);
-   
-   public abstract RoleSelection newRoleSelection(String uid,
-         boolean scu, boolean scp);
-   
-   public abstract ExtNegotiation newExtNegotiation(String uid, byte[] info);
-   
-   public abstract PDU readFrom(InputStream in, byte[] buf)
-   throws IOException;
-   
-   public abstract Association newRequestor(Socket s)
-   throws IOException;
-   
-   public abstract Association newAcceptor(Socket s)
-   throws IOException;
-   
-   public abstract ActiveAssociation newActiveAssociation(Association assoc,
-         DcmServiceRegistry services);
-
-   public abstract Dimse newDimse(int pcid, Command cmd);
-   
-   public abstract Dimse newDimse(int pcid, Command cmd, Dataset ds);
-   
-   public abstract Dimse newDimse(int pcid, Command cmd, DataSource src);
-   
-   public abstract AcceptorPolicy newAcceptorPolicy();
-   
-   public abstract DcmServiceRegistry newDcmServiceRegistry();
+   // Y overrides ---------------------------------------------------
    
    // Package protected ---------------------------------------------
    
@@ -117,4 +88,9 @@ public abstract class Factory {
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+    static class ConfigurationError extends Error {
+        ConfigurationError(String msg, Exception x) {
+            super(msg,x);
+        }
+    }
 }

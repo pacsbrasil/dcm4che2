@@ -175,29 +175,18 @@ public class DcmRcv extends DcmServiceBase {
    // Static --------------------------------------------------------
    public static void main(String args[]) throws Exception {
       LongOpt[] longopts = new LongOpt[] {
-         new LongOpt("policy", LongOpt.REQUIRED_ARGUMENT, null, 'P'),
          new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 'b'),
          new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 'L'),
          new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
          new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
       };
-      Getopt g = new Getopt("dcmrcv", args, "p:d:", longopts, true);
+      Getopt g = new Getopt("dcmrcv", args, "", longopts, true);
       
       DcmRcv dcmrcv = new DcmRcv();
+      dcmrcv.policy.setAsyncOpsWindow(fact.newAsyncOpsWindow(0,0));
       int c;
       while ((c = g.getopt()) != -1) {
          switch (c) {
-            case 'd':
-              dcmrcv.dir = new File(g.getOptarg());
-              if (!dcmrcv.dir.exists())
-                 dcmrcv.dir.mkdirs();
-              else
-                 if (!dcmrcv.dir.isDirectory())
-                    throw new IllegalArgumentException("" + dcmrcv.dir);
-              break;
-            case 'p':
-              dcmrcv.port = Integer.parseInt(g.getOptarg());
-              break;
             case 'L':
               dcmrcv.policy.setReceivedPDUMaxLength(
                   Integer.parseInt(g.getOptarg()));
@@ -214,6 +203,24 @@ public class DcmRcv extends DcmServiceBase {
                break;
          }
       }
+        int optind = g.getOptind();
+        switch(args.length - optind) {
+          case 2:
+            dcmrcv.dir = new File(args[optind+1]);
+            if (!dcmrcv.dir.exists())
+               dcmrcv.dir.mkdirs();
+            else
+               if (!dcmrcv.dir.isDirectory())
+                  throw new IllegalArgumentException("" + dcmrcv.dir);
+          case 1:
+            dcmrcv.port = Integer.parseInt(args[optind]);
+            break;
+          case 0:
+            exit(messages.getString("missing"));
+           default:
+            exit(messages.getString("many"));
+        }
+
       dcmrcv.enable(IMAGE_SOP_CLASS_UIDs, SUPPORTED_TS_UIDs);
       dcmrcv.enable(OTHER_STORAGE_SOP_CLASS_UIDs, NATIVE_TS_UIDs);
       dcmrcv.start();

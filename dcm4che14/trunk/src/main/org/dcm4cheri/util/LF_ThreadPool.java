@@ -134,8 +134,11 @@ public class LF_ThreadPool
                log.finer("" + this + " - New Leader"); 
          }
          ++running;
-         try {  handler.run(this); }
-         finally { --running; }
+         try {  
+            do {
+               handler.run(this);
+            } while (!shutdown && leader == Thread.currentThread());
+         } finally { --running; }
       }
    }
    

@@ -23,6 +23,8 @@
 
 package org.dcm4che.data;
 
+import org.dcm4che.Dcm4che;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -30,30 +32,11 @@ package org.dcm4che.data;
  */
 public abstract class DcmObjectFactory {
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
+   public static DcmObjectFactory getInstance() {
+      return (DcmObjectFactory)Dcm4che.findFactory(
+            "dcm4che.data.DcmObjectFactory");
+   }
 
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
-    protected DcmObjectFactory() {
-    }
-    
     public abstract Command newCommand();
     
     public abstract Dataset newDataset();

@@ -23,6 +23,7 @@
 
 package org.dcm4che.srom;
 
+import org.dcm4che.Dcm4che;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmValueException;
 
@@ -41,29 +42,10 @@ public abstract class SRDocumentFactory {
     // Constants -----------------------------------------------------
     
     // Constructor ---------------------------------------------------
-    public static SRDocumentFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.srom.SRDocumentFactory",
-        "org.dcm4cheri.srom.SRDocumentFactoryImpl");
-        try {
-            return (SRDocumentFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex);
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex);
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex);
-        }
-    }
-    
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-    
-    protected SRDocumentFactory() {
-    }
+   public static SRDocumentFactory getInstance() {
+      return (SRDocumentFactory)Dcm4che.findFactory(
+            "dcm4che.srom.SRDocumentFactory");
+   }
     
     // Public --------------------------------------------------------
     

@@ -82,6 +82,7 @@ final class FsmImpl {
    public synchronized void addAssociationListener(AssociationListener l) {
      assocListener = Multicaster.add(assocListener, l);
    }
+
    public synchronized void removeAssociationListener(AssociationListener l) {
      assocListener = Multicaster.remove(assocListener, l);
    }
@@ -174,8 +175,8 @@ final class FsmImpl {
     
     private synchronized void changeState(State state) {
         if (this.state != state) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("" + assoc + ": " + state);
+            if (log.isLoggable(Level.INFO)) {
+                log.info("" + s.getInetAddress() + ": " + state);
             }
             State prev = this.state;
             this.state = state;
@@ -185,7 +186,6 @@ final class FsmImpl {
 
     public PDU read(int timeout, byte[] buf) throws IOException {
        try {
-          PDU retval = null;
           synchronized (in) {
              s.setSoTimeout(timeout);
              UnparsedPDUImpl raw = null;
@@ -195,13 +195,8 @@ final class FsmImpl {
                 changeState(STA1);
                 throw e;
              }
-             retval = state.parse(raw);
+             return state.parse(raw);
           }
-          if (log.isLoggable(Level.FINE)) {
-             log.fine("" + assoc + ">>" + retval);
-          }
-          if (assocListener != null) assocListener.received(assoc, retval);
-          return retval;
        } catch (IOException ioe) {
            if (assocListener != null) assocListener.error(assoc, ioe);
            throw ioe;
@@ -209,10 +204,7 @@ final class FsmImpl {
     }
   
     public void write(AAssociateRQ rq) throws IOException {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + "<<" + rq);
-       }
-       if (assocListener != null) assocListener.write(assoc, rq);
+       fireWrite(rq);
        try {
           synchronized (out) { state.write(rq); }
        } catch (IOException ioe) {
@@ -223,10 +215,7 @@ final class FsmImpl {
     }
     
     public void write(AAssociateAC ac) throws IOException {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + "<<" + ac);
-       }
-       if (assocListener != null) assocListener.write(assoc, ac);
+       fireWrite(ac);
        try {
           synchronized (out) { state.write(ac); }
        } catch (IOException ioe) {
@@ -237,10 +226,7 @@ final class FsmImpl {
     }
     
     public void write(AAssociateRJ rj) throws IOException {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + "<<" + rj);
-       }
-       if (assocListener != null) assocListener.write(assoc, rj);
+       fireWrite(rj);
        try {
           synchronized (out) { state.write(rj); }
        } catch (IOException ioe) {
@@ -250,10 +236,7 @@ final class FsmImpl {
     }
     
     public void write(PDataTF data) throws IOException {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + "<<" + data);
-       }
-       if (assocListener != null) assocListener.write(assoc, data);
+       fireWrite(data);
        try {
           synchronized (out) { state.write(data); }
        } catch (IOException ioe) {
@@ -263,10 +246,7 @@ final class FsmImpl {
     }
     
     public void write(AReleaseRQ rq) throws IOException {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + "<<" + rq);
-       }
-       if (assocListener != null) assocListener.write(assoc, rq);
+       fireWrite(rq);
        try {
           synchronized (out) { state.write(rq); }
        } catch (IOException ioe) {
@@ -276,10 +256,7 @@ final class FsmImpl {
     }
     
     public void write(AReleaseRP rp) throws IOException {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + "<<" + rp);
-       }
-       if (assocListener != null) assocListener.write(assoc, rp);
+       fireWrite(rp);
        try {
           synchronized (out) { state.write(rp); }
        } catch (IOException ioe) {
@@ -289,10 +266,7 @@ final class FsmImpl {
     }
     
     public void write(AAbort abort) throws IOException {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + "<<" + abort);
-       }
-       if (assocListener != null) assocListener.write(assoc, abort);
+       fireWrite(abort);
        try {
           synchronized (out) { state.write(abort); }
        } catch (IOException ioe) {
@@ -302,19 +276,46 @@ final class FsmImpl {
     }
     
     void fireReceived(Dimse dimse) {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + ">>" + dimse);
+       if (log.isLoggable(Level.INFO)) {
+          log.info("" + s.getInetAddress() + " >> " + dimse);
        }
        if (assocListener != null) assocListener.received(assoc, dimse);
     }
     
     void fireWrite(Dimse dimse) {
-       if (log.isLoggable(Level.FINE)) {
-          log.fine("" + assoc + "<<" + dimse);
+       if (log.isLoggable(Level.INFO)) {
+          log.info("" + s.getInetAddress() + " << " + dimse);
        }
        if (assocListener != null) assocListener.write(assoc, dimse);
     }
 
+    private void fireWrite(PDU pdu) {
+       if (pdu instanceof PDataTF) {
+          if (log.isLoggable(Level.FINE)) {
+             log.fine("" + s.getInetAddress() + " << " + pdu);
+          }
+       } else {
+          if (log.isLoggable(Level.INFO)) {
+             log.info("" + s.getInetAddress() + " << " + pdu);
+          }
+       }
+       if (assocListener != null) assocListener.write(assoc, pdu);       
+    }
+
+    private PDU fireReceived(PDU pdu) {
+       if (pdu instanceof PDataTF) {
+          if (log.isLoggable(Level.FINE)) {
+             log.fine("" + s.getInetAddress() + " >> " + pdu);
+          }
+       } else {
+          if (log.isLoggable(Level.INFO)) {
+             log.info("" + s.getInetAddress() + " >> " + pdu);
+          }
+       }
+       if (assocListener != null) assocListener.received(assoc, pdu);
+       return pdu;
+    }
+    
     private abstract class State {
         
         private final int type;
@@ -351,7 +352,7 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 7:
-                        aa = AAbortImpl.parse(raw);
+                        fireReceived(aa = AAbortImpl.parse(raw));
                         changeState(STA1);
                         return aa;
                     default:
@@ -427,7 +428,7 @@ final class FsmImpl {
             try {
                 switch (raw.type()) {
                     case 1:
-                        rq = AAssociateRQImpl.parse(raw);
+                        fireReceived(rq = AAssociateRQImpl.parse(raw));
                         changeState(STA3);
                         return rq;
                     case 2: case 3: case 4: case 5: case 6:
@@ -435,7 +436,7 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 7:
-                        aa = AAbortImpl.parse(raw);
+                        fireReceived(aa = AAbortImpl.parse(raw));
                         changeState(STA1);
                         return aa;
                     default:
@@ -511,11 +512,11 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 2: 
-                        ac = AAssociateACImpl.parse(raw);
+                        fireReceived(ac = AAssociateACImpl.parse(raw));
                         changeState(STA6);
                         return ac;
                     case 3:
-                        rj = AAssociateRJImpl.parse(raw);
+                        fireReceived(rj = AAssociateRJImpl.parse(raw));
                         changeState(STA13);
                         return rj;
                     case 4: case 5: case 6:
@@ -523,7 +524,7 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 7:
-                        aa = AAbortImpl.parse(raw);
+                        fireReceived(aa = AAbortImpl.parse(raw));
                         changeState(STA1);
                         return aa;
                     default:
@@ -564,9 +565,9 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 4: 
-                        return PDataTFImpl.parse(raw);
+                        return fireReceived(PDataTFImpl.parse(raw));
                     case 5:
-                        PDU pdu = AReleaseRQImpl.parse(raw);
+                        PDU pdu = fireReceived(AReleaseRQImpl.parse(raw));
                         changeState(STA8);
                         return pdu;
                     case 6:
@@ -574,7 +575,7 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 7:
-                        aa = AAbortImpl.parse(raw);
+                        fireReceived(aa = AAbortImpl.parse(raw));
                         changeState(STA1);
                         return aa;
                     default:
@@ -626,17 +627,17 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 4: 
-                        return PDataTFImpl.parse(raw);
+                        return fireReceived(PDataTFImpl.parse(raw));
                     case 5:
-                        PDU pdu = AReleaseRQImpl.parse(raw);
+                        PDU pdu = fireReceived(AReleaseRQImpl.parse(raw));
                         changeState(requestor ? STA9 : STA10);
                         return pdu;
                     case 6:
-                        pdu = AReleaseRPImpl.parse(raw);
+                        fireReceived(pdu = AReleaseRPImpl.parse(raw));
                         changeState(STA1);
                         return pdu;
                     case 7:
-                        aa = AAbortImpl.parse(raw);
+                        fireReceived(aa = AAbortImpl.parse(raw));
                         changeState(STA1);
                         return aa;
                     default:
@@ -714,11 +715,11 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 6:
-                        PDU pdu = AReleaseRPImpl.parse(raw);
+                        PDU pdu = fireReceived(AReleaseRPImpl.parse(raw));
                         changeState(STA12);
                         return pdu;
                     case 7:
-                        aa = AAbortImpl.parse(raw);
+                        fireReceived(aa = AAbortImpl.parse(raw));
                         changeState(STA1);
                         return aa;
                     default:
@@ -748,11 +749,11 @@ final class FsmImpl {
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
                     case 6:
-                        PDU pdu = AReleaseRPImpl.parse(raw);
+                        PDU pdu = fireReceived(AReleaseRPImpl.parse(raw));
                         changeState(STA1);
                         return pdu;
                     case 7:
-                        aa = AAbortImpl.parse(raw);
+                        fireReceived(aa = AAbortImpl.parse(raw));
                         changeState(STA1);
                         return aa;
                     default:

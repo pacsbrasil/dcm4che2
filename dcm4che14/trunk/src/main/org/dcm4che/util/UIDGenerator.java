@@ -23,6 +23,8 @@
 
 package org.dcm4che.util;
 
+import org.dcm4che.Dcm4che;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -30,32 +32,12 @@ package org.dcm4che.util;
  */
 public abstract class UIDGenerator {
 
-    public static UIDGenerator getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.util.UIDGenerator",
-                "org.dcm4cheri.util.UIDGeneratorImpl");
-        try {
-            return (UIDGenerator)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-    
-    protected UIDGenerator() {
-    }
+   public static UIDGenerator getInstance() {
+      return (UIDGenerator)Dcm4che.findFactory(
+            "dcm4che.util.UIDGenerator");
+   }
     
     public abstract String createUID();
 
     public abstract String createUID(String root);
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
 }

@@ -23,6 +23,7 @@
 
 package org.dcm4che.image;
 
+import org.dcm4che.Dcm4che;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmValueException;
 import java.awt.image.ColorModel;
@@ -34,32 +35,13 @@ import java.awt.image.ColorModel;
  */
 public abstract class ColorModelFactory {
 
-    public static ColorModelFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.image.ColorModelFactory",
-                "org.dcm4cheri.image.ColorModelFactoryImpl");
-        try {
-            return (ColorModelFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-    
-    protected ColorModelFactory() {
-    }
-    
+   public static ColorModelFactory getInstance() {
+      return (ColorModelFactory)Dcm4che.findFactory(
+            "dcm4che.image.ColorModelFactory");
+   }
+
     public abstract ColorModelParam makeParam(Dataset ds)
             throws DcmValueException;
 
     public abstract ColorModel getColorModel(ColorModelParam param);
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
 }

@@ -22,6 +22,7 @@
 
 package org.dcm4che.server;
 
+import org.dcm4che.Dcm4che;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 
@@ -46,22 +47,11 @@ public abstract class ServerFactory {
    // Attributes ----------------------------------------------------
    
    // Static --------------------------------------------------------
-   public static ServerFactory getInstance()
-   {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      String name = System.getProperty("dcm4che.server.ServerFactory",
-            "org.dcm4cheri.server.ServerFactoryImpl");
-      try {
-         return (ServerFactory)loader.loadClass(name).newInstance();
-      } catch (ClassNotFoundException ex) {
-         throw new ConfigurationError("class not found: " + name, ex);
-      } catch (InstantiationException ex) {
-         throw new ConfigurationError("could not instantiate: " + name, ex);
-      } catch (IllegalAccessException ex) {
-         throw new ConfigurationError("could not instantiate: " + name, ex);
-      }
+   public static ServerFactory getInstance() {
+      return (ServerFactory)Dcm4che.findFactory(
+            "dcm4che.server.ServerFactory");
    }
-   
+      
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
@@ -77,10 +67,4 @@ public abstract class ServerFactory {
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
-   static class ConfigurationError extends Error
-   {
-      ConfigurationError(String msg, Exception x) {
-         super(msg,x);
-      }
-   }
 }

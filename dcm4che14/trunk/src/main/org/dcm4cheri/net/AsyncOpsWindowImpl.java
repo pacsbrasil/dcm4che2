@@ -72,5 +72,11 @@ final class AsyncOpsWindowImpl implements AsyncOpsWindow {
         dout.writeShort(maxOpsInvoked);
         dout.writeShort(maxOpsPerformed);
     }
+    
+    public String toString() {
+       return "AsyncOpsWindow[invoked=" + maxOpsInvoked
+                          + ",performed=" + maxOpsPerformed
+                          + "]";
+    }
 
 }

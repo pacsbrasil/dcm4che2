@@ -23,6 +23,8 @@
 
 package org.dcm4che.dict;
 
+import org.dcm4che.Dcm4che;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -30,23 +32,10 @@ package org.dcm4che.dict;
  */
 public abstract class DictionaryFactory {
 
-    public static DictionaryFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.dict.DictionaryFactory",
-                "org.dcm4cheri.dict.DictionaryFactoryImpl");
-        try {
-            return (DictionaryFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-    
-    protected DictionaryFactory() {
-    }
+   public static DictionaryFactory getInstance() {
+      return (DictionaryFactory)Dcm4che.findFactory(
+            "dcm4che.dict.DictionaryFactory");
+   }
     
     public abstract TagDictionary newTagDictionary();
 
@@ -55,10 +44,4 @@ public abstract class DictionaryFactory {
     public abstract UIDDictionary newUIDDictionary();
 
     public abstract UIDDictionary getDefaultUIDDictionary();
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
 }

@@ -23,12 +23,29 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.*;
+import org.dcm4che.Dcm4che;
+import org.dcm4che.net.AAssociateRQAC;
+import org.dcm4che.net.AAbort;
+import org.dcm4che.net.AsyncOpsWindow;
+import org.dcm4che.net.PresContext;
+import org.dcm4che.net.RoleSelection;
+import org.dcm4che.net.ExtNegotiation;
+import org.dcm4che.net.PDUException;
 import org.dcm4che.dict.UIDs;
-import org.dcm4cheri.util.Impl;
+import org.dcm4cheri.util.StringUtils;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
  *
@@ -42,8 +59,8 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     private int maxLength = DEFAULT_MAX_LENGTH;
     private String callingAET = "ANONYMOUS";
     private String calledAET = "ANONYMOUS";
-    private String implClassUID = Impl.CLASS_UID;
-    private String implVers = Impl.VERSION_NAME;
+    private String implClassUID = Dcm4che.getImplementationClassUID();
+    private String implVers = Dcm4che.getImplementationVersionName();
     private AsyncOpsWindow asyncOpsWindow = null;
     private final LinkedHashMap presCtxs = new LinkedHashMap();
     private final LinkedHashMap roleSels = new LinkedHashMap();
@@ -126,11 +143,11 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     }
 
     public void setCalledAET(String aet) {        
-        this.calledAET = checkAE(aet);
+        this.calledAET = StringUtils.checkAET(aet);
     }
 
     public void setCallingAET(String aet) {
-        this.callingAET = checkAE(aet);
+        this.callingAET = StringUtils.checkAET(aet);
     }
 
     public final String getApplicationContext() {
@@ -138,24 +155,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     }
 
     public final void setApplicationContext(String appCtxUID) {
-        appCtxUID = checkUID(appCtxUID);
-    }
-
-    private String checkAE(String aet) {
-        String retval = aet.trim();
-        int len = retval.length();
-        if (len == 0 || len > 16) {
-            throw new IllegalArgumentException(aet);
-        }
-        return retval;
-    }
-
-    private String checkUID(String uid) {
-        int len = uid.length();
-        if (len == 0 || len > 64) {
-            throw new IllegalArgumentException(uid);
-        }
-        return uid;
+        appCtxUID = StringUtils.checkUID(appCtxUID);
     }
     
     public final int nextPCID() {
@@ -199,7 +199,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     }
 
     public final void setImplClassUID(String uid) {
-        this.implClassUID = checkUID(uid);
+        this.implClassUID = StringUtils.checkUID(uid);
     }
 
     public final String getImplVersionName() {
@@ -207,7 +207,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     }
     
     public final void setImplVersionName(String name) {
-        this.implVers = name != null ? checkAE(name) : null;
+        this.implVers = name != null ? StringUtils.checkAET(name) : null;
     }
 
     public final int getMaxLength() {
@@ -336,7 +336,8 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
     
-    private void writeAE(DataOutputStream dout, String aet) throws IOException {
+    private void writeAE(DataOutputStream dout, String aet)
+    throws IOException {
         dout.writeBytes(aet);
         for (int n = aet.length(); n < 16; ++n) {
             dout.write(0);
@@ -433,4 +434,22 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         }
         return retval;
     }
+
+    protected abstract String typeAsString();
+    
+    public String toString() {
+        return toStringBuffer(new StringBuffer()).toString();
+    }
+    
+    final StringBuffer toStringBuffer(StringBuffer sb) {
+        sb.append(typeAsString())
+               .append("[called=").append(calledAET)
+               .append(", calling=").append(callingAET)
+               .append(", maxPDULen=").append(maxLength);
+        if (asyncOpsWindow != null) {
+           sb.append(", maxOpsInvoked=").append(asyncOpsWindow.getMaxOpsInvoked())
+             .append(", maxOpsPerformed=").append(asyncOpsWindow.getMaxOpsPerformed());
+        }
+        return sb.append("]");
+    }    
 }

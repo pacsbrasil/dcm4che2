@@ -27,6 +27,8 @@ import org.dcm4che.data.*;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.dict.UIDDictionary;
+import org.dcm4che.dict.DictionaryFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,6 +44,8 @@ import java.util.Iterator;
  */
 final class CommandImpl extends DcmObjectImpl implements Command {
    
+   private static UIDDictionary DICT =
+      DictionaryFactory.getInstance().getDefaultUIDDictionary();
    private int cmdField = -1;
    private int dataSetType = -1;
    private int status = -1;
@@ -428,5 +432,73 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       parser.setDcmHandler(getDcmHandler());
       parser.parseCommand();
    }
+   
+    public String toString() {
+        return toStringBuffer(new StringBuffer()).toString();
+    }
+    
+    private StringBuffer toStringBuffer(StringBuffer sb) {
+       sb.append(cmdFieldAsString()).append("[id=").append(msgID);
+       if (sopClassUID != null)
+          sb.append(",class=").append(DICT.lookup(sopClassUID));
+       if (sopInstUID != null)
+          sb.append(",inst=").append(DICT.lookup(sopInstUID));
+       sb.append(",dataset=").append(Integer.toHexString(dataSetType));
+       if (status != -1)
+          sb.append(",status=").append(Integer.toHexString(status));
+       return sb.append("]");
+    }
+
+    private String cmdFieldAsString() {
+      switch (cmdField) {
+         case C_STORE_RQ:
+            return "C_STORE_RQ";
+         case C_GET_RQ:
+            return "C_GET_RQ";
+         case C_FIND_RQ:
+            return "C_FIND_RQ";
+         case C_MOVE_RQ:
+            return "C_MOVE_RQ";
+         case C_ECHO_RQ:
+            return "C_ECHO_RQ";
+         case N_EVENT_REPORT_RQ:
+            return "N_EVENT_REPORT_RQ";
+         case N_GET_RQ:
+            return "N_GET_RQ";
+         case N_SET_RQ:
+            return "N_SET_RQ";
+         case N_ACTION_RQ:
+            return "N_ACTION_RQ";
+         case N_CREATE_RQ:
+            return "N_CREATE_RQ";
+         case N_DELETE_RQ:
+            return "N_DELETE_RQ";
+         case C_CANCEL_RQ:
+            return "C_CANCEL_RQ";
+         case C_STORE_RSP:
+            return "C_STORE_RSP";
+         case C_GET_RSP:
+            return "C_GET_RSP";
+         case C_FIND_RSP:
+            return "C_FIND_RSP";
+         case C_MOVE_RSP:
+            return "C_MOVE_RSP";
+         case C_ECHO_RSP:
+            return "C_ECHO_RSP";
+         case N_EVENT_REPORT_RSP:
+            return "N_EVENT_REPORT_RSP";
+         case N_GET_RSP:
+            return "N_GET_RSP";
+         case N_SET_RSP:
+            return "N_SET_RSP";
+         case N_ACTION_RSP:
+            return "N_ACTION_RSP";
+         case N_CREATE_RSP:
+            return "N_CREATE_RSP";
+         case N_DELETE_RSP:
+            return "N_DELETE_RSP";
+      }
+      return "cmd:" + Integer.toHexString(cmdField);
+    }
 }
 

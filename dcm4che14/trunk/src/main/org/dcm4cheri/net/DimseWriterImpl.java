@@ -48,12 +48,13 @@ final class DimseWriterImpl {
     }
     
     public synchronized void write(Dimse dimse) throws IOException {
-        fsm.fireWrite(dimse);
         pcid = dimse.pcid();
         String tsUID = fsm.getAcceptedTransferSyntaxUID(pcid);
         if (tsUID == null) {
             throw new IllegalStateException();
         }
+        ((DimseImpl)dimse).setTransferSyntaxUID(tsUID);
+        fsm.fireWrite(dimse);
         if (pDataTF == null) {
             pDataTF = new PDataTFImpl(fsm.getWriteMaxLength());
         }

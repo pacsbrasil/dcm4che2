@@ -22,6 +22,7 @@
 
 package org.dcm4cheri.net;
 
+import org.dcm4che.Dcm4che;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AAssociateAC;
@@ -34,7 +35,6 @@ import org.dcm4che.net.ExtNegotiator;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.dict.UIDs;
 
-import org.dcm4cheri.util.Impl;
 import org.dcm4cheri.util.StringUtils;
 
 import java.util.Arrays;
@@ -65,9 +65,9 @@ class AcceptorPolicyImpl implements AcceptorPolicy
    
    private AsyncOpsWindow aow = null;
 
-   private String implClassUID = Impl.CLASS_UID;
+   private String implClassUID = Dcm4che.getImplementationClassUID();
 
-   private String implVers = Impl.VERSION_NAME;
+   private String implVers = Dcm4che.getImplementationVersionName();
    
    private HashMap appCtxMap = new HashMap();
 
@@ -344,7 +344,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy
       ac.setMaxLength(this.maxLength);
       ac.setImplClassUID(this.implClassUID);
       ac.setImplVersionName(this.implVers);
-      ac.setAsyncOpsWindow(negotiateAOW(ac.getAsyncOpsWindow()));
+      ac.setAsyncOpsWindow(negotiateAOW(rq.getAsyncOpsWindow()));
       negotiatePresCtx(rq, ac);
       negotiateRoleSelection(rq, ac);
       negotiateExt(rq, ac);

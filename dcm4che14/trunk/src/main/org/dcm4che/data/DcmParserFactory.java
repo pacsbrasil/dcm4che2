@@ -23,6 +23,8 @@
 
 package org.dcm4che.data;
 
+import org.dcm4che.Dcm4che;
+
 import java.io.InputStream;
 import javax.imageio.stream.ImageInputStream;
 
@@ -32,32 +34,12 @@ import javax.imageio.stream.ImageInputStream;
  * @version 1.0.0
  */
 public abstract class DcmParserFactory {
-
-    public static DcmParserFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmParserFactory",
-                "org.dcm4cheri.data.DcmParserFactoryImpl");
-        try {
-            return (DcmParserFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-    
-    protected DcmParserFactory() {
-    }
-    
-//    public abstract DcmParser newDcmParser();
-    public abstract DcmParser newDcmParser(InputStream in);
-    public abstract DcmParser newDcmParser(ImageInputStream in);
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
+   
+   public static DcmParserFactory getInstance() {
+      return (DcmParserFactory)Dcm4che.findFactory(
+            "dcm4che.data.DcmParserFactory");
+   }
+   
+   public abstract DcmParser newDcmParser(InputStream in);
+   public abstract DcmParser newDcmParser(ImageInputStream in);
 }

@@ -30,6 +30,8 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDDictionary;
+import org.dcm4che.dict.DictionaryFactory;
 
 import java.io.*;
 
@@ -47,7 +49,7 @@ class DimseImpl implements Dimse {
     private Dataset ds;
     private InputStream in;
     private final DataSource src;
-    private final String tsUID;
+    private String tsUID;
         
     public DimseImpl(int pcid, String tsUID, Command cmd, InputStream in) {
         this.pcid = pcid;
@@ -81,6 +83,10 @@ class DimseImpl implements Dimse {
         return tsUID;
     }
     
+    final void setTransferSyntaxUID(String tsuid) {
+        this.tsUID = tsuid;
+    }
+    
     public final Dataset getDataset() throws IOException {
         if (ds != null) {
             return ds;
@@ -112,5 +118,12 @@ class DimseImpl implements Dimse {
         }
         ds.writeDataset(out, DcmDecodeParam.valueOf(tsUID));       
     }
+
+    private static UIDDictionary DICT =
+      DictionaryFactory.getInstance().getDefaultUIDDictionary();
     
+    public String toString() {
+       return cmd.toString() + ", pcid=" + pcid
+            + ", tsuid=" + DICT.lookup(tsUID);
+    }
 }

@@ -49,4 +49,8 @@ final class AAssociateRQImpl extends AAssociateRQACImpl
     protected int pctype() {
         return 0x20;
     }
+    
+    protected String typeAsString() {
+       return "AAssociateRQ";
+    }
 }
