@@ -8,23 +8,23 @@ echo Could not locate %RUNJAR%. Please check that you are in the
 echo bin directory when running this script.
 goto eof
 
-found_runjar:
+:found_runjar
 if "%1" == "uninstall" goto uninstall
 if "%1" == "server" goto install
 if "%1" == "client" goto install
-echo Usage: %0 {server|client|uninstall}
+echo "Usage: %0 server|client|uninstall"
 echo Options:
 echo   server    install prnscp 1.0.0 service, using client hotspot vm
 echo   server    install prnscp 1.0.0 service, using server hotspot vm
 echo   uninstall uninstall prnscp 1.0.0 service
 goto eof
 
-install:
+:install
 if not "%JAVA_HOME%" == "" goto found_javahome
 echo set JAVA_HOME to your JDK 1.4 installation directory
 goto eof
 
-found_javahome:
+:found_javahome
 set VM=%JAVA_HOME%\bin\%1\jvm.dll
 if exist "%VM%" goto found_vm
 set VM=%JAVA_HOME%\jre\bin\%1\jvm.dll
@@ -33,17 +33,14 @@ echo Could not locate %VM%. Please check that you JAVA_HOME is set to your
 echo JDK 1.4 installation directory
 goto eof
 
-found_vm:
-set TOOLS_JAR = %JAVA_HOME%\lib\tools.jar
-if exist "%TOOLS_JAR% install
+:found_vm
+set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
+if exist "%TOOLS_JAR%" goto install
 echo Could not locate %TOOLS_JAR%. Unexpected results may occur.
 echo Make sure that JAVA_HOME points to a JDK and not a JRE.
 
-install:
-JavaService.exe -install prnscp-1.0.0 %VM%" %JAVA_OPTS% \
- -Djava.class.path=%TOOLS_JAR%;%RUNJAR% \
- -start org.jboss.Main -stop org.jboss.Main -method systemExit \
- -out %DIRNAME%\bin\out.txt -current %DIRNAME%\bin
+:install
+JavaService.exe -install prnscp-1.0.0 "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out %DIRNAME%\bin\out.txt -current %DIRNAME%\bin
 goto eof
 
 :uninstall
