@@ -6,7 +6,7 @@
   <property file="build.properties" />
 
   <property name="name" value="jprint"/>
-  <property name="version" value="1.2.4"/>
+  <property name="version" value="1.2.3"/>
   <property name="javac.debug" value="on"/>
   <property name="javac.optimize" value="off"/>
 
@@ -38,11 +38,11 @@
   <property name="jboss.server.conf" value="${jboss.server}/conf"/>
 
   <!-- Override with your docbook-xsl dist location -->
-  <property name="docbook-xsl.home" value="${user.home}/docbook-xsl-1.61.3"/>
+  <property name="docbook-xsl.home" value="${user.home}/docbook-xsl-1.65.1"/>
   <property name="docbook-xsl.fo.dir" value="${docbook-xsl.home}/fo"/>
 
   <!-- Override with your Apache FOP dist location -->
-  <property name="fop.home" value="${user.home}/fop-0.20.5rc3a"/>
+  <property name="fop.home" value="${user.home}/fop-0.20.5"/>
   <property name="fop.jar" value="${fop.home}/build/fop.jar"/>
   
   <property name="doc.dir" value="${basedir}/doc"/>
