@@ -28,7 +28,7 @@ import org.dcm4che.data.Dataset;
 /**
  * The <code>IconImage</code> interface represents a
  * <i>Icon Image</i>. Optional property of {@link ImageContent}. Use
- * {@link SRDocumentFactory#newIconImage) to <code>IconImage</code>
+ * {@link SRDocumentFactory#newIconImage} to <code>IconImage</code>
  * generate instances,
  *
  * @author  gunter.zeilinger@tiani.com
