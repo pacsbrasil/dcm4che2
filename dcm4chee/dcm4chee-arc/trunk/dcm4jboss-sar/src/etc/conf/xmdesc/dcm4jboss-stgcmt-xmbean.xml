@@ -53,7 +53,7 @@
       <name>ReceiveResultInSameAssocTimeout</name>
       <type>long</type>
       <descriptors>
-         <value value="5000" />
+         <value value="0" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
