@@ -188,33 +188,35 @@
     <!--
     Defines the default directory, which contains Presentation LUTs as
     DICOM files, which can be selected by a PrintSCU via the value of the
-    Film Box attribute (2010,0150) Configuration Information. Only effective,
-    if the Print SCU does not provide a PLUT itself using the PLUT SOP class.
+    Film Box attribute (2010,0150) Configuration Information: shape=<LUT-name>.
+    Only effective, if the Print SCU does not provide a PLUT itself using
+    the PLUT SOP class.
     -->
     <attribute name="LUTDir">conf/lut</attribute>
 
     <!--
-    Associates Calling AETs with Presentation LUTs available in the directory
-    specified by attribute LUTDir. Only effective, if the calling Print SCU
-    does whether provide a PLUT using the PLUT SOP class, nor specifies
-    a value of Film Box attribute (2010,0150) Configuration Information.
+    Associates Calling AETs with Configuration Information values. Only effective,
+    if the calling Print SCU does whether provide a PLUT using the PLUT SOP class,
+    nor specifies itselfs a value of Film Box attribute
+    (2010,0150) Configuration Information.
     Multiple entires must be separated by  '\' characters or line breaks.
-    If no entry match the calling AET, the Presentation LUT specified in the
-    first entry will be used.
+    If no entry match the calling AET, the Configuration Information specified
+    in the first entry will be used.
     At least, one entry must be configured!
-    Format: <calling-aet>:<lut-name> 
+    Format: <calling-aet>:<Configuration Information Value> 
     -->
-    <attribute name="LUTForCallingAET">
-      IDENTITY:IDENTITY
-      LINOD:LINOD
-      MIDTONE2:MIDTONE2
-      LIGHTEN1:LIGHTEN1
-      LIGHTEN2:LIGHTEN2
-      LIGHTEN3:LIGHTEN3
-      LIGHTEN4:LIGHTEN4
-      LIGHTEN5:LIGHTEN5
-      DARKEN9:DARKEN9
-      DARKEN8:DARKEN8
+    <attribute name="ConfigurationInformationForCallingAET">
+      IDENTITY:shape=IDENTITY
+      LIN_OD:shape=LIN_OD
+      MIDTONE2:center=0.5,slope=2
+      LIGHTEN1:gamma=1.1
+      LIGHTEN2:gamma=1.2
+      LIGHTEN3:gamma=1.3
+      LIGHTEN4:gamma=1.4
+      LIGHTEN5:gamma=1.5
+      DARKEN9:gamma=0.9
+      DARKEN8:gamma=0.8
+      PHILIPS:shape=PHILIPS
     </attribute>
 
     <!--

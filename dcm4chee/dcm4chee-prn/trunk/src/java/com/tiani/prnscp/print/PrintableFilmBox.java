@@ -100,7 +100,7 @@ class PrintableFilmBox implements Printable
         // set Filmbox Configuration Information if not provided.
         if (filmbox.getString(Tags.ConfigurationInformation) == null) {
             filmbox.putLO(Tags.ConfigurationInformation,
-                    service.getLUTForCallingAET(callingAET));
+                    service.getConfigurationInformationForCallingAET(callingAET));
         }
         this.pageFormat = toPageFormat(filmbox);
         // parse ImageDisplayFormat

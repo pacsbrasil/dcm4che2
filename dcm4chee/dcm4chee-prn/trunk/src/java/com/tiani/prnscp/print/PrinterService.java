@@ -103,7 +103,6 @@ public class PrinterService
 
     final static double PTS_PER_MM = 72 / 25.4;
     final static String ADF_FILE_EXT = ".adf";
-    final static String LUT_FILE_EXT = ".lut";
     private final static String[] LITTLE_ENDIAN_TS = {
             UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian
@@ -227,7 +226,7 @@ public class PrinterService
     private String timeFormat = "hh:mm:ss";
 
     /**  Holds value of property lutForCallingAET. */
-    private LinkedHashMap lutForCallingAETMap;
+    private LinkedHashMap cfgInfoForAETMap;
 
     /**  Holds value of property annotationForCallingAET. */
     private LinkedHashMap annotationForCallingAETMap;
@@ -1590,33 +1589,6 @@ public class PrinterService
     }
 
 
-    private final static FilenameFilter LUT_FILENAME_FILTER =
-        new FilenameFilter()
-        {
-            public boolean accept(File dir, String name)
-            {
-                return name.endsWith(LUT_FILE_EXT);
-            }
-        };
-
-
-    /**
-     *  Getter for property LUTs.
-     *
-     * @return    Value of property LUTs.
-     */
-    public String[] getLUTs()
-    {
-        File dir = toFile(lutDir);
-        if (!dir.isDirectory()) {
-            return new String[]{};
-        }
-        String[] fnames = dir.list(LUT_FILENAME_FILTER);
-        skipFileExt(fnames, LUT_FILE_EXT);
-        return fnames;
-    }
-
-
     /**
      *  Gets the supportsConfigurationInformation attribute of the
      *  PrinterService object
@@ -1626,8 +1598,12 @@ public class PrinterService
      */
     public boolean isSupportsConfigurationInformation(String configInfo)
     {
-        String[] ids = getLUTs();
-        return Arrays.asList(ids).indexOf(configInfo) != -1;
+        try {
+            new PLutBuilder(configInfo, lutDir);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
 
@@ -1655,14 +1631,14 @@ public class PrinterService
 
 
     /**
-     *  Getter for property lutForCallingAET.
+     *  Gets the configurationInformationForCallingAET attribute of the PrinterService object
      *
-     * @return    Value of property lutForCallingAET.
+     * @return    The configurationInformationForCallingAET value
      */
-    public String getLUTForCallingAET()
+    public String getConfigurationInformationForCallingAET()
     {
         StringBuffer sb = new StringBuffer();
-        for (Iterator it = lutForCallingAETMap.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = cfgInfoForAETMap.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry item = (Map.Entry) it.next();
             sb.append(item.getKey());
             sb.append(':');
@@ -1674,28 +1650,28 @@ public class PrinterService
     }
 
 
-    String getLUTForCallingAET(String callingAET)
+    String getConfigurationInformationForCallingAET(String callingAET)
     {
-        if (lutForCallingAETMap.isEmpty()) {
-            log.error("Configuration Error: missing attribute LUTForCallingAET value!");
+        if (cfgInfoForAETMap.isEmpty()) {
+            log.error("Configuration Error: missing attribute ConfigurationInformationForCallingAET value!");
             return null;
         }
-        String lut = (String) lutForCallingAETMap.get(callingAET);
-        return lut != null
-                 ? lut
-                 : (String) lutForCallingAETMap.values().iterator().next();
+        String cfgInfo = (String) cfgInfoForAETMap.get(callingAET);
+        return cfgInfo != null
+                 ? cfgInfo
+                 : (String) cfgInfoForAETMap.values().iterator().next();
     }
 
 
     /**
-     *  Setter for property lutForCallingAET.
+     *  Sets the configurationInformationForCallingAET attribute of the PrinterService object
      *
-     * @param  lutForCallingAET  New value of property lutForCallingAET.
+     * @param  ciForCallingAET  The new configurationInformationForCallingAET value
      */
-    public void setLUTForCallingAET(String lutForCallingAET)
+    public void setConfigurationInformationForCallingAET(String ciForCallingAET)
     {
         LinkedHashMap tmp = new LinkedHashMap();
-        String[] strings = toStringArray(lutForCallingAET);
+        String[] strings = toStringArray(ciForCallingAET);
         for (int i = 0; i < strings.length; ++i) {
             String s = strings[i];
             int c1 = s.indexOf(':');
@@ -1704,7 +1680,7 @@ public class PrinterService
             }
             tmp.put(s.substring(0, c1), s.substring(c1 + 1));
         }
-        lutForCallingAETMap = tmp;
+        cfgInfoForAETMap = tmp;
     }
 
 
@@ -1876,7 +1852,7 @@ public class PrinterService
 
     private static String[] toStringArray(String text)
     {
-        StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n\\");
+        StringTokenizer stk = new StringTokenizer(text, " \t\r\n\\");
         String[] a = new String[stk.countTokens()];
         for (int i = 0; i < a.length; ++i) {
             a[i] = stk.nextToken();

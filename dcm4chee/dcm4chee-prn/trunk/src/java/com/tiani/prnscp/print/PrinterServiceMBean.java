@@ -749,27 +749,19 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property LUTs.
+     *  Gets the configurationInformationForCallingAET attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property LUTs.
+     * @return    The configurationInformationForCallingAET value
      */
-    public String[] getLUTs();
+    public String getConfigurationInformationForCallingAET();
 
 
     /**
-     *  Getter for property lutForCallingAET.
+     *  Sets the configurationInformationForCallingAET attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property lutForCallingAET.
+     * @param  cfgInfoForAET  The new configurationInformationForCallingAET value
      */
-    public String getLUTForCallingAET();
-
-
-    /**
-     *  Setter for property lutForCallingAET.
-     *
-     * @param  lutForCallingAET  New value of property lutForCallingAET.
-     */
-    public void setLUTForCallingAET(String lutForCallingAET);
+    public void setConfigurationInformationForCallingAET(String cfgInfoForAET);
 
 
     /**

@@ -236,25 +236,16 @@ class PrintableImageBox
             }
         }
         String configInfo = imageBox.getString(Tags.ConfigurationInformation,
-                filmbox.getString(Tags.ConfigurationInformation));
-        if (configInfo != null) {
-            pLUT = dof.newDataset();
-            File pLutFile = new File(service.getLUTDir(),
-                    configInfo + PrinterService.LUT_FILE_EXT);
-            if (debug) {
-                log.debug("ImageBox #" + pos
-                         + ": Load PLUT[" + configInfo + "] from file - " + pLutFile);
-            }
-            InputStream in = new BufferedInputStream(new FileInputStream(pLutFile));
-            try {
-                pLUT.readFile(in, FileFormat.DICOM_FILE, -1);
-            } finally {
-                try {
-                    in.close();
-                } catch (IOException ignore) {}
-            }
+                filmbox.getString(Tags.ConfigurationInformation));        
+        if (configInfo == null) {
+            return null;
         }
-        return pLUT;
+        PLutBuilder plutBuilder = new PLutBuilder(configInfo, service.getLUTDir());
+        if (debug) {
+            log.debug("ImageBox #" + pos
+                     + ": Apply PLUT[" + plutBuilder + "]");
+        }
+        return plutBuilder.createOrLoadPLUT(service.getLUTDir());
     }
 
 
