@@ -44,7 +44,7 @@
 	<property name="war.deploy.dir" value="${deploy.root}/deploy"/>
 	<property name="jar.deploy.dir" value="${deploy.root}/lib"/>
 	<property name="service.deploy.dir" value="${deploy.root}/deploy"/>
-	<property name="xmbean.deploy.dir" value="${deploy.root}/\conf\xmdesc"/>
+	<property name="xmbean.deploy.dir" value="${deploy.root}/conf/xmdesc"/>
 
 	<property name="test.dir" value="test"/>
 	<property name="test.src.dir" value="${test.dir}/java"/>
@@ -114,7 +114,9 @@
 	     </jar>
 	</target>
 
-	<target name="deploy" depends="war,jar">
+	<target name="deploy" depends="war,jar,deploy-only"/>
+	
+	<target name="deploy-only">
 		<copy file="${war.file}" todir="${war.deploy.dir}" />
 		<copy file="${jar.file}" todir="${jar.deploy.dir}" />
 		<copy file="${service.xml.file}" todir="${service.deploy.dir}" />
