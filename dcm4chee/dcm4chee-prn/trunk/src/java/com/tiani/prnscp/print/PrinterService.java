@@ -35,6 +35,7 @@ import org.jboss.system.server.ServerConfigLocator;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
+import org.jboss.logging.Logger;
 
 import java.awt.print.Pageable;
 import java.awt.print.Paper;
@@ -50,6 +51,7 @@ import javax.print.attribute.Attribute;
 import javax.print.attribute.AttributeSet;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.PrinterResolution;
 import javax.print.event.PrintJobAttributeEvent;
 import javax.print.event.PrintJobAttributeListener;
 import javax.print.event.PrintJobListener;
@@ -94,7 +96,11 @@ public class PrinterService
    implements PrinterServiceMBean, NotificationListener, Runnable,
       PrintServiceAttributeListener, PrintJobAttributeListener, PrintJobListener
 {
-   
+    static {
+        javax.imageio.spi.IIORegistry.getDefaultInstance().registerServiceProvider(
+                 new org.dcm4cheri.imageio.plugins.DcmImageReaderSpi());
+    }
+    
    // Constants -----------------------------------------------------
    static final double PTS_PER_MM = 72/25.4;
    private static final String[] CODE_STRING = {
@@ -263,7 +269,7 @@ public class PrinterService
     * @param printerName New value of property printerName.
     */
    public void setPrinterName(String printerName) {
-      if (!printerName.equals(this.printerName)) {
+       if (!printerName.equals(this.printerName)) {
          this.printerName = printerName;
          try {
             getPrintService(); // to register Attribute Listener
@@ -272,6 +278,8 @@ public class PrinterService
          }
       }
    }
+
+   protected Logger getLogger(){return log;}
    
    private PrintService getPrintService() throws PrintException {
       if (printService != null) {
@@ -924,6 +932,63 @@ public class PrinterService
          }
       };
                            
+      /** Holds value of property trimBoxThickness. */
+      private float trimBoxThickness;
+      
+      /** Holds value of property colorVis. */
+      private String colorVis;
+      
+      /** Holds value of property colorAllOfPage. */
+      private String colorAllOfPage;
+      
+      /** Holds value of property colorTrimBox. */
+      private String colorTrimBox;
+      
+      /** Holds value of property spaceBetweenVisW. */
+      private float spaceBetweenVisW;
+      
+      /** Holds value of property spaceBetweenVisH. */
+      private float spaceBetweenVisH;
+      
+      /** Holds value of property useBorderDensForGrid. */
+      private boolean useBorderDensForGrid;
+      
+      /** Holds value of property puzzleScaleStartSize. */
+      private int puzzleScaleStartSize;
+      
+      /** Holds value of property puzzleScalePackageSizeMin. */
+      private int puzzleScalePackageSizeMin;
+      
+      /** Holds value of property puzzleScalePackageSize1000. */
+      private int puzzleScalePackageSize1000;
+      
+      /** Holds value of property puzzleScalePackageSize2000. */
+      private int puzzleScalePackageSize2000;
+      
+      /** Holds value of property puzzleScalePackageSize3000. */
+      private int puzzleScalePackageSize3000;
+      
+      /** Holds value of property puzzleScalePackageSize4000. */
+      private int puzzleScalePackageSize4000;
+      
+      /** Holds value of property puzzleScalePackageSize5000. */
+      private int puzzleScalePackageSize5000;
+      
+      /** Holds value of property puzzleScalePackageSize6000. */
+      private int puzzleScalePackageSize6000;
+      
+      /** Holds value of property puzzleScalePackageSize7000. */
+      private int puzzleScalePackageSize7000;
+      
+      /** Holds value of property puzzleScalePackageSize8000. */
+      private int puzzleScalePackageSize8000;
+      
+      /** Holds value of property puzzleScalePackageSize9000. */
+      private int puzzleScalePackageSize9000;
+      
+      /** Holds value of property puzzleScalePackageSize10000. */
+      private int puzzleScalePackageSize10000;
+      
    /** Getter for property LUTs.
     * @return Value of property LUTs.
     */
@@ -1204,6 +1269,8 @@ public class PrinterService
       this.printGrayscaleAtStartup = printGrayscaleAtStartup;
    }
    
+   protected PrinterCalibration getPrinterCalibration(){return calibration;}
+   
    public void printGrayscaleWithLinDDL() throws PrintException, IOException {
       log.info("Printing grayscale [LIN DDL]");
       print(new Grayscale(this, calibration.getIdentityPValToDDL(),
@@ -1310,8 +1377,10 @@ public class PrinterService
          new Notification(NOTIF_PRINTING, this, ++notifCount, job));
       Dataset sessionAttr = (Dataset)notif.getUserData();
       try {
+         long mil = System.currentTimeMillis(); 
          print(new Films(this, jobDir, (Dataset)notif.getUserData()));
          log.info("Finished processing job - " + jobID);
+         log.info("Finished processing job in "+(System.currentTimeMillis()-mil));
          sendNotification(
             new Notification(NOTIF_DONE, this, ++notifCount, job));
       } catch (Exception e) {
@@ -1402,8 +1471,9 @@ public class PrinterService
       PrintService ps = getPrintService();
       PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
       if (printToFile) {
-         aset.add(new Destination(toFile(printToFilePath).toURI()));
+        aset.add(new Destination(toFile(printToFilePath).toURI()));
       }
+      aset.add(new PrinterResolution(600,600,PrinterResolution.DPI));
       DocPrintJob pj = ps.createPrintJob();         
       Doc doc = new SimpleDoc(printData, 
          DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
@@ -1416,6 +1486,310 @@ public class PrinterService
          pj.removePrintJobAttributeListener(this);
          pj.removePrintJobListener(this);
       }
+   }
+   
+   /** Getter for property trimBoxThickness.
+    * @return Value of property trimBoxThickness.
+    *
+    */
+   public float getTrimBoxThickness() {
+       return this.trimBoxThickness;
+   }
+   
+   /** Setter for property trimBoxThickness.
+    * @param trimBoxThickness New value of property trimBoxThickness.
+    *
+    */
+   public void setTrimBoxThickness(float trimBoxThickness) {
+       this.trimBoxThickness = trimBoxThickness;
+   }
+   
+   /** Getter for property colorVis.
+    * @return Value of property colorVis.
+    *
+    */
+   public String getColorVis() {
+       return this.colorVis;
+   }
+   
+   /** Setter for property colorVis.
+    * @param colorVis New value of property colorVis.
+    *
+    */
+   public void setColorVis(String colorVis) {
+       this.colorVis = colorVis;
+   }
+   
+   /** Getter for property colorAllOfPage.
+    * @return Value of property colorAllOfPage.
+    *
+    */
+   public String getColorAllOfPage() {
+       return this.colorAllOfPage;
+   }
+   
+   /** Setter for property colorAllOfPage.
+    * @param colorAllOfPage New value of property colorAllOfPage.
+    *
+    */
+   public void setColorAllOfPage(String colorAllOfPage) {
+       this.colorAllOfPage = colorAllOfPage;
+   }
+   
+   /** Getter for property colorTrimBox.
+    * @return Value of property colorTrimBox.
+    *
+    */
+   public String getColorTrimBox() {
+       return this.colorTrimBox;
+   }
+   
+   /** Setter for property colorTrimBox.
+    * @param colorTrimBox New value of property colorTrimBox.
+    *
+    */
+   public void setColorTrimBox(String colorTrimBox) {
+       this.colorTrimBox = colorTrimBox;
+   }
+   
+   /** Getter for property spaceBetweenVisW.
+    * @return Value of property spaceBetweenVisW.
+    *
+    */
+   public float getSpaceBetweenVisW() {
+       return this.spaceBetweenVisW;
+   }
+   
+   /** Setter for property spaceBetweenVisW.
+    * @param spaceBetweenVisW New value of property spaceBetweenVisW.
+    *
+    */
+   public void setSpaceBetweenVisW(float spaceBetweenVisW) {
+       this.spaceBetweenVisW = spaceBetweenVisW;
+   }
+   
+   /** Getter for property spaceBetweenVisH.
+    * @return Value of property spaceBetweenVisH.
+    *
+    */
+   public float getSpaceBetweenVisH() {
+       return this.spaceBetweenVisH;
+   }
+   
+   /** Setter for property spaceBetweenVisH.
+    * @param spaceBetweenVisH New value of property spaceBetweenVisH.
+    *
+    */
+   public void setSpaceBetweenVisH(float spaceBetweenVisH) {
+       this.spaceBetweenVisH = spaceBetweenVisH;
+   }
+   
+   /** Getter for property useBorderDensForGrid.
+    * @return Value of property useBorderDensForGrid.
+    *
+    */
+   public boolean isUseBorderDensForGrid() {
+       return this.useBorderDensForGrid;
+   }
+   
+   /** Setter for property useBorderDensForGrid.
+    * @param useBorderDensForGrid New value of property useBorderDensForGrid.
+    *
+    */
+   public void setUseBorderDensForGrid(boolean useBorderDensForGrid) {
+       this.useBorderDensForGrid = useBorderDensForGrid;
+   }
+   
+   /** Getter for property puzzleScaleStartSize.
+    * @return Value of property puzzleScaleStartSize.
+    *
+    */
+   public int getPuzzleScaleStartSize() {
+       return this.puzzleScaleStartSize;
+   }
+   
+   /** Setter for property puzzleScaleStartSize.
+    * @param puzzleScaleStartSize New value of property puzzleScaleStartSize.
+    *
+    */
+   public void setPuzzleScaleStartSize(int puzzleScaleStartSize) {
+       this.puzzleScaleStartSize = puzzleScaleStartSize;
+   }
+   
+   /** Getter for property puzzleScalePackageSizeMin.
+    * @return Value of property puzzleScalePackageSizeMin.
+    *
+    */
+   public int getPuzzleScalePackageSizeMin() {
+       return this.puzzleScalePackageSizeMin;
+   }
+   
+   /** Setter for property puzzleScalePackageSizeMin.
+    * @param puzzleScalePackageSizeMin New value of property puzzleScalePackageSizeMin.
+    *
+    */
+   public void setPuzzleScalePackageSizeMin(int puzzleScalePackageSizeMin) {
+       this.puzzleScalePackageSizeMin = puzzleScalePackageSizeMin;
+   }
+   
+   /** Getter for property puzzleScalePackageSize1000.
+    * @return Value of property puzzleScalePackageSize1000.
+    *
+    */
+   public int getPuzzleScalePackageSize1000() {
+       return this.puzzleScalePackageSize1000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize1000.
+    * @param puzzleScalePackageSize1000 New value of property puzzleScalePackageSize1000.
+    *
+    */
+   public void setPuzzleScalePackageSize1000(int puzzleScalePackageSize1000) {
+       this.puzzleScalePackageSize1000 = puzzleScalePackageSize1000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize2000.
+    * @return Value of property puzzleScalePackageSize2000.
+    *
+    */
+   public int getPuzzleScalePackageSize2000() {
+       return this.puzzleScalePackageSize2000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize2000.
+    * @param puzzleScalePackageSize2000 New value of property puzzleScalePackageSize2000.
+    *
+    */
+   public void setPuzzleScalePackageSize2000(int puzzleScalePackageSize2000) {
+       this.puzzleScalePackageSize2000 = puzzleScalePackageSize2000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize3000.
+    * @return Value of property puzzleScalePackageSize3000.
+    *
+    */
+   public int getPuzzleScalePackageSize3000() {
+       return this.puzzleScalePackageSize3000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize3000.
+    * @param puzzleScalePackageSize3000 New value of property puzzleScalePackageSize3000.
+    *
+    */
+   public void setPuzzleScalePackageSize3000(int puzzleScalePackageSize3000) {
+       this.puzzleScalePackageSize3000 = puzzleScalePackageSize3000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize4000.
+    * @return Value of property puzzleScalePackageSize4000.
+    *
+    */
+   public int getPuzzleScalePackageSize4000() {
+       return this.puzzleScalePackageSize4000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize4000.
+    * @param puzzleScalePackageSize4000 New value of property puzzleScalePackageSize4000.
+    *
+    */
+   public void setPuzzleScalePackageSize4000(int puzzleScalePackageSize4000) {
+       this.puzzleScalePackageSize4000 = puzzleScalePackageSize4000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize5000.
+    * @return Value of property puzzleScalePackageSize5000.
+    *
+    */
+   public int getPuzzleScalePackageSize5000() {
+       return this.puzzleScalePackageSize5000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize5000.
+    * @param puzzleScalePackageSize5000 New value of property puzzleScalePackageSize5000.
+    *
+    */
+   public void setPuzzleScalePackageSize5000(int puzzleScalePackageSize5000) {
+       this.puzzleScalePackageSize5000 = puzzleScalePackageSize5000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize6000.
+    * @return Value of property puzzleScalePackageSize6000.
+    *
+    */
+   public int getPuzzleScalePackageSize6000() {
+       return this.puzzleScalePackageSize6000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize6000.
+    * @param puzzleScalePackageSize6000 New value of property puzzleScalePackageSize6000.
+    *
+    */
+   public void setPuzzleScalePackageSize6000(int puzzleScalePackageSize6000) {
+       this.puzzleScalePackageSize6000 = puzzleScalePackageSize6000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize7000.
+    * @return Value of property puzzleScalePackageSize7000.
+    *
+    */
+   public int getPuzzleScalePackageSize7000() {
+       return this.puzzleScalePackageSize7000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize7000.
+    * @param puzzleScalePackageSize7000 New value of property puzzleScalePackageSize7000.
+    *
+    */
+   public void setPuzzleScalePackageSize7000(int puzzleScalePackageSize7000) {
+       this.puzzleScalePackageSize7000 = puzzleScalePackageSize7000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize8000.
+    * @return Value of property puzzleScalePackageSize8000.
+    *
+    */
+   public int getPuzzleScalePackageSize8000() {
+       return this.puzzleScalePackageSize8000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize8000.
+    * @param puzzleScalePackageSize8000 New value of property puzzleScalePackageSize8000.
+    *
+    */
+   public void setPuzzleScalePackageSize8000(int puzzleScalePackageSize8000) {
+       this.puzzleScalePackageSize8000 = puzzleScalePackageSize8000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize9000.
+    * @return Value of property puzzleScalePackageSize9000.
+    *
+    */
+   public int getPuzzleScalePackageSize9000() {
+       return this.puzzleScalePackageSize9000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize9000.
+    * @param puzzleScalePackageSize9000 New value of property puzzleScalePackageSize9000.
+    *
+    */
+   public void setPuzzleScalePackageSize9000(int puzzleScalePackageSize9000) {
+       this.puzzleScalePackageSize9000 = puzzleScalePackageSize9000;
+   }
+   
+   /** Getter for property puzzleScalePackageSize10000.
+    * @return Value of property puzzleScalePackageSize10000.
+    *
+    */
+   public int getPuzzleScalePackageSize10000() {
+       return this.puzzleScalePackageSize10000;
+   }
+   
+   /** Setter for property puzzleScalePackageSize10000.
+    * @param puzzleScalePackageSize10000 New value of property puzzleScalePackageSize10000.
+    *
+    */
+   public void setPuzzleScalePackageSize10000(int puzzleScalePackageSize10000) {
+       this.puzzleScalePackageSize10000 = puzzleScalePackageSize10000;
    }
    
    // Inner classes -------------------------------------------------

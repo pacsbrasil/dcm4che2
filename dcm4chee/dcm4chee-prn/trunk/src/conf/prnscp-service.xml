@@ -15,7 +15,7 @@
   <mbean code="com.tiani.prnscp.print.PrinterService" 
          name="dcm4chex:service=Printer,aet=TIANI_PRINT">
          
-    <attribute name="PrinterName">replace-by-your-printer-name</attribute>
+    <attribute name="PrinterName">MINOLTA</attribute>
     
     <attribute name="PrintToFile">false</attribute>
     <attribute name="PrintToFilePath">out.ps</attribute>
@@ -174,6 +174,108 @@
     -->
     <attribute name="BorderThickness">2.0</attribute>
    
+    <!--
+    Defines the thickness of Trim Box in mm.
+    -->
+    <attribute name="TrimBoxThickness">1.0</attribute>
+   
+    <!--
+    Defines the vertical space between Img Boxes in mm.
+    -->
+    <attribute name="SpaceBetweenVisH">2.0</attribute>
+
+    <!--
+    Defines the horizontal space between Img Boxes in mm.
+    -->
+    <attribute name="SpaceBetweenVisW">4.0</attribute>
+    
+    <!--
+    Defines the Color for ImageableArea -Annotation
+    -->
+    <attribute name="colorAllOfPage">255,255,255</attribute>
+    
+    <!--
+    Defines the Color for TrimBox
+    -->
+    <attribute name="colorTrimBox">0,255,0</attribute>
+    
+    <!--
+    Defines the Color for ImgBox background if EmptyImgDens not is set and border Dens not is set
+    -->
+    <attribute name="colorVis">0,0,0</attribute>
+
+    <!--
+    Defines the start size for scale BufferedImg in pieces
+    size is BufferedImgH * scaleH
+    -->
+    <attribute name="puzzleScaleStartSize">500</attribute>
+
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH < 1000
+    -->
+    <attribute name="puzzleScalePackageSizeMin">5</attribute>
+    
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 1000
+    -->
+    <attribute name="puzzleScalePackageSize1000">10</attribute>
+    
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 2000
+    -->
+    <attribute name="puzzleScalePackageSize2000">10</attribute>
+
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 3000
+    -->
+    <attribute name="puzzleScalePackageSize3000">20</attribute>
+
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 4000
+    -->
+    <attribute name="puzzleScalePackageSize4000">20</attribute>
+    
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 5000
+    -->
+    <attribute name="puzzleScalePackageSize5000">30</attribute>
+
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 6000
+    -->
+    <attribute name="puzzleScalePackageSize6000">30</attribute>
+
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 7000
+    -->
+    <attribute name="puzzleScalePackageSize7000">40</attribute>
+    
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 8000
+    -->
+    <attribute name="puzzleScalePackageSize8000">40</attribute>
+    
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 9000
+    -->
+    <attribute name="puzzleScalePackageSize9000">50</attribute>
+    
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH > puzzleScaleStartSize)
+    and BufferedImgH * scaleH > 10000
+    -->
+    <attribute name="puzzleScalePackageSize10000">50</attribute>
+            
     <!--
     Requested Resolution ID identifiers supported by the printer for the
     Basic Film Box. Multiple values can be specified, must be separated by 

@@ -599,4 +599,232 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setPrintGrayscaleAtStartup(boolean printGrayscaleAtStartup);
    
+   /** Getter for property trimBoxThickness.
+    * @return Value of property trimBoxThickness.
+    *
+    */
+   public float getTrimBoxThickness();
+   
+   /** Setter for property trimBoxThickness.
+    * @param trimBoxThickness New value of property trimBoxThickness.
+    *
+    */
+   public void setTrimBoxThickness(float trimBoxThickness);
+   
+   /** Getter for property colorVis.
+    * @return Value of property colorVis.
+    *
+    */
+   public String getColorVis();
+   
+   /** Setter for property colorVis.
+    * @param colorVis New value of property colorVis.
+    *
+    */
+   public void setColorVis(String colorVis);
+   
+   /** Getter for property colorAllOfPage.
+    * @return Value of property colorAllOfPage.
+    *
+    */
+   public String getColorAllOfPage();
+   
+   /** Setter for property colorAllOfPage.
+    * @param colorAllOfPage New value of property colorAllOfPage.
+    *
+    */
+   public void setColorAllOfPage(String colorAllOfPage);
+   
+   /** Getter for property colorTrimBox.
+    * @return Value of property colorTrimBox.
+    *
+    */
+   public String getColorTrimBox();
+   
+   /** Setter for property colorTrimBox.
+    * @param colorTrimBox New value of property colorTrimBox.
+    *
+    */
+   public void setColorTrimBox(String colorTrimBox);
+   
+   /** Getter for property spaceBetweenVisW.
+    * @return Value of property spaceBetweenVisW.
+    *
+    */
+   public float getSpaceBetweenVisW();
+   
+   /** Setter for property spaceBetweenVisW.
+    * @param spaceBetweenVisW New value of property spaceBetweenVisW.
+    *
+    */
+   public void setSpaceBetweenVisW(float spaceBetweenVisW);
+   
+   /** Getter for property spaceBetweenVisH.
+    * @return Value of property spaceBetweenVisH.
+    *
+    */
+   public float getSpaceBetweenVisH();
+   
+   /** Setter for property spaceBetweenVisH.
+    * @param spaceBetweenVisH New value of property spaceBetweenVisH.
+    *
+    */
+   public void setSpaceBetweenVisH(float spaceBetweenVisH);
+   
+   /** Getter for property useBorderDensForGrid.
+    * @return Value of property useBorderDensForGrid.
+    *
+    */
+   public boolean isUseBorderDensForGrid();
+   
+   /** Setter for property useBorderDensForGrid.
+    * @param useBorderDensForGrid New value of property useBorderDensForGrid.
+    *
+    */
+   public void setUseBorderDensForGrid(boolean useBorderDensForGrid);
+   
+   /** Getter for property puzzleScaleStartSize.
+    * @return Value of property puzzleScaleStartSize.
+    *
+    */
+   public int getPuzzleScaleStartSize();
+   
+   /** Setter for property puzzleScaleStartSize.
+    * @param puzzleScaleStartSize New value of property puzzleScaleStartSize.
+    *
+    */
+   public void setPuzzleScaleStartSize(int puzzleScaleStartSize);
+   
+   /** Getter for property puzzleScalePackageSizeMin.
+    * @return Value of property puzzleScalePackageSizeMin.
+    *
+    */
+   public int getPuzzleScalePackageSizeMin();
+   
+   /** Setter for property puzzleScalePackageSizeMin.
+    * @param puzzleScalePackageSizeMin New value of property puzzleScalePackageSizeMin.
+    *
+    */
+   public void setPuzzleScalePackageSizeMin(int puzzleScalePackageSizeMin);
+   
+   /** Getter for property puzzleScalePackageSize1000.
+    * @return Value of property puzzleScalePackageSize1000.
+    *
+    */
+   public int getPuzzleScalePackageSize1000();
+   
+   /** Setter for property puzzleScalePackageSize1000.
+    * @param puzzleScalePackageSize1000 New value of property puzzleScalePackageSize1000.
+    *
+    */
+   public void setPuzzleScalePackageSize1000(int puzzleScalePackageSize1000);
+   
+   /** Getter for property puzzleScalePackageSize2000.
+    * @return Value of property puzzleScalePackageSize2000.
+    *
+    */
+   public int getPuzzleScalePackageSize2000();
+   
+   /** Setter for property puzzleScalePackageSize2000.
+    * @param puzzleScalePackageSize2000 New value of property puzzleScalePackageSize2000.
+    *
+    */
+   public void setPuzzleScalePackageSize2000(int puzzleScalePackageSize2000);
+   
+   /** Getter for property puzzleScalePackageSize3000.
+    * @return Value of property puzzleScalePackageSize3000.
+    *
+    */
+   public int getPuzzleScalePackageSize3000();
+   
+   /** Setter for property puzzleScalePackageSize3000.
+    * @param puzzleScalePackageSize3000 New value of property puzzleScalePackageSize3000.
+    *
+    */
+   public void setPuzzleScalePackageSize3000(int puzzleScalePackageSize3000);
+   
+   /** Getter for property puzzleScalePackageSize4000.
+    * @return Value of property puzzleScalePackageSize4000.
+    *
+    */
+   public int getPuzzleScalePackageSize4000();
+   
+   /** Setter for property puzzleScalePackageSize4000.
+    * @param puzzleScalePackageSize4000 New value of property puzzleScalePackageSize4000.
+    *
+    */
+   public void setPuzzleScalePackageSize4000(int puzzleScalePackageSize4000);
+   
+   /** Getter for property puzzleScalePackageSize5000.
+    * @return Value of property puzzleScalePackageSize5000.
+    *
+    */
+   public int getPuzzleScalePackageSize5000();
+   
+   /** Setter for property puzzleScalePackageSize5000.
+    * @param puzzleScalePackageSize5000 New value of property puzzleScalePackageSize5000.
+    *
+    */
+   public void setPuzzleScalePackageSize5000(int puzzleScalePackageSize5000);
+   
+   /** Getter for property puzzleScalePackageSize6000.
+    * @return Value of property puzzleScalePackageSize6000.
+    *
+    */
+   public int getPuzzleScalePackageSize6000();
+   
+   /** Setter for property puzzleScalePackageSize6000.
+    * @param puzzleScalePackageSize6000 New value of property puzzleScalePackageSize6000.
+    *
+    */
+   public void setPuzzleScalePackageSize6000(int puzzleScalePackageSize6000);
+   
+   /** Getter for property puzzleScalePackageSize7000.
+    * @return Value of property puzzleScalePackageSize7000.
+    *
+    */
+   public int getPuzzleScalePackageSize7000();
+   
+   /** Setter for property puzzleScalePackageSize7000.
+    * @param puzzleScalePackageSize7000 New value of property puzzleScalePackageSize7000.
+    *
+    */
+   public void setPuzzleScalePackageSize7000(int puzzleScalePackageSize7000);
+   
+   /** Getter for property puzzleScalePackageSize8000.
+    * @return Value of property puzzleScalePackageSize8000.
+    *
+    */
+   public int getPuzzleScalePackageSize8000();
+   
+   /** Setter for property puzzleScalePackageSize8000.
+    * @param puzzleScalePackageSize8000 New value of property puzzleScalePackageSize8000.
+    *
+    */
+   public void setPuzzleScalePackageSize8000(int puzzleScalePackageSize8000);
+   
+   /** Getter for property puzzleScalePackageSize9000.
+    * @return Value of property puzzleScalePackageSize9000.
+    *
+    */
+   public int getPuzzleScalePackageSize9000();
+   
+   /** Setter for property puzzleScalePackageSize9000.
+    * @param puzzleScalePackageSize9000 New value of property puzzleScalePackageSize9000.
+    *
+    */
+   public void setPuzzleScalePackageSize9000(int puzzleScalePackageSize9000);
+   
+   /** Getter for property puzzleScalePackageSize10000.
+    * @return Value of property puzzleScalePackageSize10000.
+    *
+    */
+   public int getPuzzleScalePackageSize10000();
+   
+   /** Setter for property puzzleScalePackageSize10000.
+    * @param puzzleScalePackageSize10000 New value of property puzzleScalePackageSize10000.
+    *
+    */
+   public void setPuzzleScalePackageSize10000(int puzzleScalePackageSize10000);
+   
 }
