@@ -54,6 +54,8 @@ import org.dcm4che.dict.VRs;
 import org.dcm4che.image.ColorModelFactory;
 import org.xml.sax.ContentHandler;
 
+import com.sun.rsasign.i;
+
 /**
  *  Implementation of <code>Dataset</code> container objects.
  *
@@ -528,7 +530,10 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
 
     private boolean match(DcmElementImpl key, boolean ignorePNCase,
             boolean ignoreEmpty, Charset keyCS) {
-        DcmElementImpl e = (DcmElementImpl) get(key.tag());
+        final int tag = key.tag();
+        // ignore Character Set Attribute in key
+        if (tag == Tags.SpecificCharacterSet) return true;
+        DcmElementImpl e = (DcmElementImpl) get(tag);
         if (e == null) { return ignoreEmpty || key.isEmpty(); }
         return e.match(key, ignorePNCase, ignoreEmpty, keyCS, getCharset());
     }
