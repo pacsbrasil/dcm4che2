@@ -22,6 +22,10 @@
   <!-- Override with your license dist location -->
   <property name="license.home" value="../license/build"/>
   <property name="check-license.jar" value="${license.home}/lib/check-license.jar"/>
+
+  <!-- Override with your auditrep dist location -->
+  <property name="jaudit.home" value="../auditrep/build/jaudit-0.1.0"/>
+  
   
   <!-- Override with your JBoss/Web server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-3.0.6"/>
@@ -59,6 +63,8 @@
   
   <property name="dist.name" value="${name}-${version}"/>
   <property name="dist.dir" value="${build.dir}/${dist.name}"/>
+  <property name="dist-with-jaudit.name" value="${name}-with-jaudit-${version}"/>
+  <property name="dist-with-jaudit.dir" value="${build.dir}/${dist-with-jaudit.name}"/>
 
   <path id="fop.path">
     <pathelement location="${fop.jar}"/>
@@ -90,6 +96,7 @@
     <available property="fop.present" file="${fop.jar}" />
     <available property="license.present" file="${check-license.jar}" />
     <antcall target="fail_if_no_license"/>
+    <available property="jaudit.present" file="${jaudit.home}" />
   </target>
 
   <target name="fetch"
@@ -157,8 +164,6 @@
       />
       <fileset dir="${build.classes.dir}">
          <include name="com/tiani/prnscp/scp/*"/>
-         <include name="com/tiani/license/LicenseStore*"/>
-         <include name="com/tiani/license/MACReader*"/>          
       </fileset>
     </jar>
   </target>   
@@ -190,8 +195,6 @@
       <fileset dir="${build.classes.dir}">
          <include name="com/tiani/prnscp/print/*"/>
          <include name="com/tiani/prnscp/scp/*"/>
-         <include name="com/tiani/license/LicenseStore*"/>
-         <include name="com/tiani/license/MACReader*"/>          
       </fileset>
     </jar>
   </target>
@@ -266,6 +269,7 @@
         <fileset dir="${build.classes.dir}">
             <include name="com/tiani/prnscp/client/ddl2odgui/*"/>
             <include name="com/tiani/prnscp/print/ScannerCalibration*"/>
+            <include name="com/tiani/prnscp/print/CalibrationException*"/>
         </fileset>
     </jar>
   </target>
@@ -398,6 +402,10 @@
             srcfile="${doc.xml}/jprint-cs.xml"
             targetfile="${build.doc.dir}/jprint-cs.pdf"/>
     <ant target="gen_cs_pdf"/>
+    <uptodate property="sm_pdf_uptodate"
+            srcfile="${doc.xml}/jprint-sm.xml"
+            targetfile="${build.doc.dir}/jprint-sm.pdf"/>
+    <ant target="gen_sm_pdf"/>
   </target>
 
   <target name="gen_cs_pdf" depends="check_docbook_xsl" unless="cs_pdf_uptodate">
@@ -416,8 +424,26 @@
         <arg line="-pdf ${build.doc.dir}/jprint-cs.pdf"/>
     </java>
   </target>
+
+  <target name="gen_sm_pdf" depends="check_docbook_xsl" unless="sm_pdf_uptodate">
+    <mkdir dir="${build.doc.dir}"/>
+    <copy file="${doc.img}/draft.gif" todir="${docbook-xsl.fo.dir}"/>
+    <copy file="${doc.xsl}/fo/jprint-sm.xsl" todir="${docbook-xsl.fo.dir}">
+        <filterset>
+          <filter token="DRAFT_IMG_URI" value="file://${docbook-xsl.fo.dir}/draft.gif"/>
+        </filterset>
+    </copy>
+    <java classname="org.apache.fop.apps.Fop"
+        classpathref="fop.path"
+        fork="yes">
+        <arg line="-xml ${doc.xml}/jprint-sm.xml"/>
+        <arg line="-xsl ${docbook-xsl.fo.dir}/jprint-sm.xsl"/>
+        <arg line="-pdf ${build.doc.dir}/jprint-sm.pdf"/>
+    </java>
+  </target>
   
-  <target name="release" depends="build, doc">
+  <target name="release" depends="release-without-jaudit, release-with-jaudit"/>
+  <target name="release-without-jaudit" depends="build, doc">
     <copy todir="${dist.dir}">
       <fileset dir="${jboss.home}">
         <include name="bin/run.*"/>
@@ -433,7 +459,6 @@
         <include name="lib/jboss-system.jar"/>
         <include name="lib/log4j-boot.jar"/>
         <include name="server/default/conf/jndi.properties"/>
-        <include name="server/default/conf/log4j.xml"/>
         <include name="server/default/deploy/jmx-rmi-adaptor.sar/**"/>
         <include name="server/default/lib/jboss-management.jar"/>
         <include name="server/default/lib/jboss.jar"/>
@@ -442,6 +467,8 @@
       </fileset>
       <fileset dir="${basedir}">
         <include name="bin/JavaService.exe"/>
+        <include name="doc/display-consistency.pdf"/>
+        <include name="doc/gsdf_od.xls"/>
         <include name="images/*.dcm"/>
       </fileset>
       <fileset dir="${build.dir}">
@@ -454,7 +481,7 @@
         tofile="${dist.dir}/server/default/conf/jboss-service.xml"/>
     <copy todir="${dist.dir}">
       <filterset>
-        <filter token="VERSION" value="${version}"/>
+        <filter token="SERVICE" value="${dist.name}"/>
       </filterset>
       <fileset dir="${src.dir}">
         <include name="bin/*.sh"/>
@@ -476,8 +503,8 @@
         <include name="conf/annotation/*.adf"/>
         <include name="conf/calibration/DSI256.ods"/>
         <include name="conf/lut/*.lut"/>
-        <include name="conf/tls/*.jks"/>
-        <include name="conf/tls/*.p12"/>
+        <include name="conf/cacerts.jks"/>
+        <include name="conf/log4j.xml"/>
       </fileset>
       <fileset dir="${build.dir}">
         <include name="lib/*"/>
@@ -485,22 +512,78 @@
         <include name="deploy/*.xml"/>
       </fileset>
     </copy>
-    <!--
-    <jar jarfile="${dist.dir}/server/default/deploy/jmx-rmi-adaptor.sar">
-      <metainf dir="${jboss.home}/server/default/deploy/jmx-rmi-adaptor.sar/META-INF"
-               includes="jboss-service.xml"
-      />
-      <fileset dir="${jboss.home}/server/default/deploy/jmx-rmi-adaptor.sar">
-        <exclude name="META-INF/**"/>
-      </fileset>
-    </jar>
-      -->
     <fixcrlf srcdir="${dist.dir}/bin" eol="crlf" includes="*.bat"/>
     <fixcrlf srcdir="${dist.dir}/bin" eol="lf" includes="*.sh"/>
     <chmod dir="${dist.dir}/bin" perm="ugo+rx" includes="*.sh"/>
     <zip destfile="${build.dir}/${dist.name}.zip"
          basedir="${build.dir}"
          includes="${dist.name}/**"
+    />
+  </target>
+
+  <target name="release-with-jaudit" depends="build, doc" if="jaudit.present">
+    <copy todir="${dist-with-jaudit.dir}">
+        <fileset dir="${jaudit.home}">
+            <exclude name="bin/*"/>
+        </fileset>
+    </copy>
+    <copy todir="${dist-with-jaudit.dir}">
+      <fileset dir="${jboss.home}">
+        <include name="bin/run.*"/>
+        <include name="bin/jboss_init_redhat.sh"/>
+        <include name="client/jnp-client.jar"/>
+        <include name="client/jmx-rmi-connector-client.jar"/>
+      </fileset>
+      <fileset dir="${basedir}">
+        <include name="bin/JavaService.exe"/>
+        <include name="doc/display-consistency.pdf"/>
+        <include name="doc/gsdf_od.xls"/>
+        <include name="images/*.dcm"/>
+      </fileset>
+      <fileset dir="${build.dir}">
+        <include name="bin/*"/>
+        <include name="doc/*"/>
+      </fileset>
+    </copy>
+    <copy file="${check-license.jar}" todir="${dist-with-jaudit.dir}/bin"/>
+    <copy todir="${dist-with-jaudit.dir}">
+      <filterset>
+        <filter token="SERVICE" value="${dist-with-jaudit.name}"/>
+      </filterset>
+      <fileset dir="${src.dir}">
+        <include name="bin/*.sh"/>
+        <include name="bin/*.bat"/>
+      </fileset>
+    </copy>
+    <copy todir="${dist-with-jaudit.dir}/server/default">
+        <fileset dir="${dcm4che.home}">
+            <include name="lib/dcm4che.jar"/>
+        </fileset>
+        <fileset dir="${dcm4jboss.home}">
+            <include name="lib/auditlog.jar"/>
+            <include name="lib/dcmsrv.jar"/>
+        </fileset>
+        <fileset dir="${license.home}">
+            <include name="lib/check-license.jar"/>
+        </fileset>
+      <fileset dir="${src.dir}">
+        <include name="conf/cacerts.jks"/>
+        <include name="conf/annotation/*.adf"/>
+        <include name="conf/calibration/DSI256.ods"/>
+        <include name="conf/lut/*.lut"/>
+      </fileset>
+      <fileset dir="${build.dir}">
+        <include name="lib/*"/>
+        <include name="conf/*"/>
+        <include name="deploy/*.xml"/>
+      </fileset>
+    </copy>
+    <fixcrlf srcdir="${dist-with-jaudit.dir}/bin" eol="crlf" includes="*.bat"/>
+    <fixcrlf srcdir="${dist-with-jaudit.dir}/bin" eol="lf" includes="*.sh"/>
+    <chmod dir="${dist-with-jaudit.dir}/bin" perm="ugo+rx" includes="*.sh"/>
+    <zip destfile="${build.dir}/${dist-with-jaudit.name}.zip"
+         basedir="${build.dir}"
+         includes="${dist-with-jaudit.name}/**"
     />
   </target>
        

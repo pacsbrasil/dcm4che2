@@ -77,7 +77,7 @@ public class PrintScpService
 {
 
     // Constants -----------------------------------------------------
-    final static String UNKNOWN = "unkown";
+    final static String UNKNOWN = "unknown";
     final static String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1.2";
     final static int SHUTDOWN_DELAY_MINUTES = 20;
     final static Map dumpParam = new HashMap(5);

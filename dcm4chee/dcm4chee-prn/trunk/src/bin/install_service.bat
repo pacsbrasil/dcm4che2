@@ -40,11 +40,11 @@ echo Could not locate %TOOLS_JAR%. Unexpected results may occur.
 echo Make sure that JAVA_HOME points to a JDK and not a JRE.
 
 :install
-JavaService.exe -install prnscp-@VERSION@ "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out %DIRNAME%\out.txt -current %DIRNAME%
+JavaService.exe -install @SERVICE@ "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out %DIRNAME%\out.txt -current %DIRNAME%
 goto eof
 
 :uninstall
-JavaService.exe -uninstall prnscp-@VERSION@
+JavaService.exe -uninstall @SERVICE@
 goto eof
 
 :eof
