@@ -13,10 +13,12 @@
     <property name="jboss.dist" value="${user.home}/jboss-3.0.3"/>
     <property name="jboss.deploy.dir" value="${jboss.dist}/server/default/deploy"/>
     <property name="jboss.lib.dir" value="${jboss.dist}/server/default/lib"/>
+    <property name="jboss.conf.dir" value="${jboss.dist}/server/default/conf"/>
 
     <property name="lib.dir" value="${basedir}/lib"/>
     <property name="src.dir" value="${basedir}/src/java"/>
     <property name="src.resources" value="${basedir}/src/resources"/>
+    <property name="src.etc" value="${basedir}/src/etc"/>
     <property name="build.dir" value="${basedir}/build"/>
     <property name="build.classes.dir" value="${build.dir}/classes"/>
     <property name="build.deploy.dir" value="${build.dir}/deploy"/>
@@ -89,6 +91,8 @@
     <target name="deploy" depends="build">
         <copy file="${lib.dir}/dcm4che.jar"
             todir="${jboss.lib.dir}" />
+        <copy file="${src.etc}/prncfg.xml"
+            todir="${jboss.conf.dir}" />
         <copy file="${build.deploy.dir}/dcmsrv.sar"
             todir="${jboss.deploy.dir}" />
         <copy file="${build.deploy.dir}/prnscp.sar"

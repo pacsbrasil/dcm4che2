@@ -22,6 +22,7 @@
 
 package com.tiani.prnscp.print;
 
+import org.dcm4che.data.Dataset;
 import org.jboss.system.ServiceMBean;
 
 /**
@@ -68,12 +69,35 @@ public interface PrinterServiceMBean extends ServiceMBean {
     * @return Value of property queueName.
     *
     */
-   public String getQueueName();
+   String getQueueName();
    
    /** Setter for property queueName.
     * @param queueName New value of property queueName.
     *
     */
-   public void setQueueName(String queueName);
+   void setQueueName(String queueName);
+   
+   /** Getter for property printerConfiguration.
+    * @return Value of property printerConfiguration.
+    */
+   Dataset getPrinterConfiguration();
+   
+   /** Returns number of image boxes on film box for specifed image display format.
+    * @param imageDisplayFormat image display format
+    * @return number of image boxes on film box.
+    */
+   int countImageBoxes(String imageDisplayFormat);
+   
+   /** Getter for property printerConfigurationFile.
+    * @return Value of property printerConfigurationFile.
+    *
+    */
+   public String getPrinterConfigurationFile();
+   
+   /** Setter for property printerConfigurationFile.
+    * @param printerConfigurationFile New value of property printerConfigurationFile.
+    *
+    */
+   public void setPrinterConfigurationFile(String printerConfigurationFile);
    
 }

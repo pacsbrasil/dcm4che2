@@ -29,12 +29,14 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
+import org.dcm4che.net.PresContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,20 +67,7 @@ class FilmSessionService
    private final PrintScpService scp;
    
    // Static --------------------------------------------------------
-   static String getFilmSessionUID(ActiveAssociation as) {
-      return (String) as.getAssociation().getProperty("FilmSession");
-   }
-
-   static String checkFilmSessionUID(ActiveAssociation as, Dimse rq)
-      throws DcmServiceException 
-   {
-      String uid = rq.getCommand().getRequestedSOPInstanceUID();
-      if (!uid.equals(getFilmSessionUID(as))) {
-         throw new DcmServiceException(Status.NoSuchObjectInstance);
-      }
-      return uid;
-   }
-   
+      
    // Constructors --------------------------------------------------
    public FilmSessionService(PrintScpService scp) {
       this.scp = scp;
@@ -88,9 +77,9 @@ class FilmSessionService
 
    // AssociationListener implementation ----------------------------
    public void close(Association as) {
-      String uid = (String) as.getProperty("FilmSession");
-      if (uid != null) {
-         scp.deleteFilmSession(uid);
+      FilmSession session = (FilmSession) as.getProperty("FilmSession");
+      if (session != null) {
+         scp.unlockSessionSpoolDir(session.dir());
       }
    }
    
@@ -115,14 +104,22 @@ class FilmSessionService
    {
       try {
          Dataset ds = rq.getDataset(); // read out dataset
-         if (getFilmSessionUID(as) != null) {
+         if (scp.getFilmSession(as) != null) {
             throw new DcmServiceException(Status.ProcessingFailure,
                "Only support one Basic Film Session SOP Instance on an Association.");
          }
          String uid = rq.getCommand().getAffectedSOPInstanceUID();
-         scp.createFilmSession(uid, ds);
+         File dir = scp.getSessionSpoolDir(uid);
+         if (dir.exists()) {
+            throw new DcmServiceException(Status.DuplicateSOPInstance);
+         }         
          Association a = as.getAssociation();
-         a.putProperty("FilmSession", uid);
+         AAssociateRQ aarq = a.getAAssociateRQ();
+         PresContext pc =aarq.getPresContext(rq.pcid());
+         String asuid = pc.getAbstractSyntaxUID();
+         FilmSession session = new FilmSession(asuid, uid, ds, dir);
+         scp.initSessionSpoolDir(dir);
+         a.putProperty("FilmSession", session);
          a.addAssociationListener(this);
          return null;
       } catch (DcmServiceException e) {
@@ -136,7 +133,12 @@ class FilmSessionService
    {
       try {
          Dataset ds = rq.getDataset(); // read out dataset
-         File dir = scp.getFilmSessionDir(checkFilmSessionUID(as, rq));
+         String uid = rq.getCommand().getRequestedSOPInstanceUID();
+         FilmSession session = scp.getFilmSession(as);
+         if (session == null || !uid.equals(session.uid())) {
+            throw new DcmServiceException(Status.NoSuchObjectInstance);
+         }
+         session.setDataset(ds);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to update Basic Film Session SOP Instance", e);
@@ -148,7 +150,12 @@ class FilmSessionService
       throws IOException, DcmServiceException
    {
       try {
-         scp.createJob(FilmSessionService.getFilmSessionUID(as)); 
+         String uid = rq.getCommand().getRequestedSOPInstanceUID();
+         FilmSession session = scp.getFilmSession(as);
+         if (session == null || !uid.equals(session.uid())) {
+            throw new DcmServiceException(Status.NoSuchObjectInstance);
+         }
+         scp.createPrintJob(session, true);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to print Basic Film Session SOP Instance", e);
@@ -160,7 +167,12 @@ class FilmSessionService
       throws IOException, DcmServiceException 
    {
       try {
-         scp.deleteFilmSession(checkFilmSessionUID(as, rq));
+         String uid = rq.getCommand().getRequestedSOPInstanceUID();
+         FilmSession session = scp.getFilmSession(as);
+         if (session == null || !uid.equals(session.uid())) {
+            throw new DcmServiceException(Status.NoSuchObjectInstance);
+         }
+         scp.unlockSessionSpoolDir(session.dir());
          Association a = as.getAssociation();
          a.putProperty("FilmSession", null);
          a.removeAssociationListener(this);

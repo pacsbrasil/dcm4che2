@@ -41,9 +41,9 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
-import org.dcm4che.util.UIDGenerator;
 
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -61,17 +61,13 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * <description>
@@ -112,21 +108,22 @@ public class PrintScpService
    private QueueSession queueSession;
    private QueueSender queueSend;
    private String queueName;
+   private String spoolDirectory;
    private File spoolDir;
    private FilmSessionService filmSessionService = new FilmSessionService(this);
    private FilmBoxService filmBoxService = new FilmBoxService(this);
    private ImageBoxService imageBoxService = new ImageBoxService(this);
          
-   private DcmObjectFactory dof = DcmObjectFactory.getInstance();
-   private UIDGenerator uidgen = UIDGenerator.getInstance();
    private ObjectName printer;
    private ObjectName dcmServer;
    private DcmHandler dcmHandler;
    private AcceptorPolicy policy;
    private DcmServiceRegistry services;
    private String[] ts_uids = LITTLE_ENDIAN_TS;
+   private int jobCounter = 0;
    
    // Static --------------------------------------------------------
+   static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
    
    // Constructors --------------------------------------------------
    
@@ -194,22 +191,14 @@ public class PrintScpService
     * @return Value of property spoolDirPath.
     */
    public String getSpoolDirectory() {
-      return spoolDir.getPath();
+      return spoolDirectory;
    }
    
    /** Setter for property spoolDirPath.
     * @param spoolDirPath New value of property spoolDirPath.
     */
-   public void setSpoolDirectory(String spoolDirectory) throws Exception {
-      File tmp = new File(spoolDirectory);
-      if (!tmp.exists()) {
-         log.info("Create spool directory - " + tmp);
-         tmp.mkdirs();
-      }
-      if (!tmp.isDirectory() || !tmp.canWrite()) {
-         throw new IOException("No writeable spool directory - " + tmp);
-      }
-      spoolDir = tmp;
+   public void setSpoolDirectory(String spoolDirectory) {
+      this.spoolDirectory = spoolDirectory;
    }
    
    // NotificationListener implementation -----------------------------
@@ -228,6 +217,20 @@ public class PrintScpService
    public void startService()
    throws Exception
    {
+      spoolDir = new File(spoolDirectory);
+      if (!spoolDir.isAbsolute()) {
+         File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+         spoolDir = new File(systemHomeDir, spoolDirectory);
+      }
+      if (!spoolDir.exists()) {
+         log.info("Creating spool directory - " + spoolDir.getCanonicalPath());
+         spoolDir.mkdirs();
+      }
+      if (!spoolDir.isDirectory() || !spoolDir.canWrite()) {
+         throw new IOException("No writeable spool directory - " + spoolDir);
+      }
+      cleardir(spoolDir);
+      
       server.addNotificationListener(printer, this, NOTIF_FILTER, null);
       
       Context iniCtx = new InitialContext();
@@ -277,263 +280,158 @@ public class PrintScpService
       queueConn = null;
       
       server.removeNotificationListener(printer, this);
+      
+      cleardir(spoolDir);
    }
+   
+   
    
    // Package protected ---------------------------------------------
-   File getFilmSessionRootDir(String suid) {
-      return new File(spoolDir, suid);
-   }
-
-   File getFilmSessionDir(String suid) {
-      return new File(getFilmSessionRootDir(suid), "SESSION");
+ 
+   
+   FilmSession getFilmSession(ActiveAssociation as) {
+      return (FilmSession) as.getAssociation().getProperty("FilmSession");
    }
    
-   File getAttrFile(File dir) {
-      return new File(dir, "ATTR");
-   }
-      
-   File getFilmBoxDir(String suid, String fuid) {
-      return new File(getFilmSessionDir(suid), fuid);
-   }
-
-   File getImageBoxFile(String suid, String fuid, String iuid) {
-      return new File(getFilmBoxDir(suid, fuid), iuid);
-   }
-
-   File getHardCopyDir(String suid) {
-      return new File(getFilmSessionRootDir(suid), "HC");
-   }
-
-   File getJobRootDir(String suid) {
-      return new File(getFilmSessionRootDir(suid), "JOBS");
-   }
-
-   File getJobDir(String suid, String juid) {
-      return new File(getJobRootDir(suid), juid);
+   File getSessionSpoolDir(String uid) {
+      return new File(spoolDir, uid);
    }
    
-   void createFilmSession(String suid, Dataset ds)
-      throws DcmServiceException
-   {
-      File dir = getFilmSessionRootDir(suid);
-      if (dir.exists()) {
-         throw new DcmServiceException(Status.DuplicateSOPInstance);
-      }
-      dir.mkdir();
-      getJobRootDir(suid).mkdir();
-      getHardCopyDir(suid).mkdir();
-      File session = getFilmSessionDir(suid);
-      session.mkdir();
-      try {
-         if (log.isDebugEnabled()) {
-            log.debug("Store Session - " + getAttrFile(session));
-         }
-         writeDataset(getAttrFile(session), ds);
-      } catch (DcmServiceException e) {
-         rmdir(dir);
-         throw e;
+   void initSessionSpoolDir(File dir) throws DcmServiceException {
+      if (!dir.mkdir() || !lockSessionSpoolDir(dir)
+         || !new File(dir, SPOOL_HARDCOPY_DIR_SUFFIX).mkdir()
+         || !new File(dir, SPOOL_JOB_DIR_SUFFIX).mkdir())
+      {
+         deltree(dir);
+         throw new DcmServiceException(Status.ProcessingFailure,
+            "Failed to initalize spool directory: " + dir);
       }
    }
-   
-   void deleteFilmSession(String suid) {
-      if (getJobRootDir(suid).list().length == 0) {
-         rmdir(getFilmSessionRootDir(suid));
-      } else {
-         rmdir(getFilmSessionDir(suid));
-      }      
-   }
-   
-   void writeDataset(File f, Dataset data) throws  DcmServiceException {
+
+   private boolean lockSessionSpoolDir(File dir) {
       try {
-         OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
-         try {
-            data.writeDataset(out,  DcmEncodeParam.EVR_LE);
-         } finally {
-            try { out.close(); } catch (IOException ignore) {}
-         }
+         new File(dir, SPOOL_SESSION_LOCK_SUFFIX).createNewFile();
+         return true;
       } catch (IOException e) {
-         throw new DcmServiceException(Status.ProcessingFailure, e);
+         return false;
+      }
+   }
+
+   void unlockSessionSpoolDir(File dir) {
+      new File(dir, SPOOL_SESSION_LOCK_SUFFIX).delete();
+      if (countJobsInSession(dir) == 0) {
+         deltree(dir);
+      }
+   }
+
+   private boolean isSessionSpoolDirLocked(File dir) {
+      return new File(dir, SPOOL_SESSION_LOCK_SUFFIX).exists();
+   }
+
+   private int countJobsInSession(File dir) {
+      return new File(dir, SPOOL_JOB_DIR_SUFFIX).list().length;
+   }
+   
+   private void purgeSessionSpoolDir(File dir) {
+      if (!isSessionSpoolDirLocked(dir) && countJobsInSession(dir) == 0) {
+         deltree(dir);
+      }
+   }
+     
+   void cleardir(File dir) {
+      File[] files = dir.listFiles();
+      for (int i = 0; i < files.length; ++i) {
+         deltree(files[i]);
       }
    }
    
-   Dataset readDataset(File f) throws  DcmServiceException {
-      Dataset data = dof.newDataset();
-      try {
-         InputStream in = new BufferedInputStream(new FileInputStream(f));
-         try {
-            data.readDataset(in, DcmEncodeParam.EVR_LE, -1);
-         } finally {
-            try { in.close(); } catch (IOException ignore) {}
-         }
-      } catch (IOException e) {
-         throw new DcmServiceException(Status.ProcessingFailure, e);
-      }
-      return data;
-   }   
-   
-   boolean rmdir(File dir) {
+   boolean deltree(File dir) {
       if (dir.isDirectory()) {
-         File[] files = dir.listFiles();
-         for (int i = 0; i < files.length; ++i) {
-            rmdir(files[i]);
-         }
+         cleardir(dir);
       }
       return dir.delete();
    }
-   
-   void createJob(String suid, String fuid) 
+
+   int countImageBoxes(String format)
       throws DcmServiceException
    {
-      File job = newJobDir(suid);
-      log.info("Create job - " + job);
-      createStoredPrint(job, suid, getFilmBoxDir(suid, fuid));
-      sendJob(suid, job);
-   }
-      
-   void createJob(String suid)
-      throws DcmServiceException
-   {
-      File job = newJobDir(suid);
-      log.info("Create job - " + job);
-      File[] films = getFilmSessionDir(suid).listFiles();
-      Arrays.sort(films,
-         new Comparator() {
-            public int compare(Object o1, Object o2) {
-               return (int)(((File)o1).lastModified()
-                          - ((File)o2).lastModified());
-            }
-         });
-      for (int i = 1; i < films.length; ++i) {
-         createStoredPrint(job, suid, films[i]);
+      if (format == null) {
+         throw new DcmServiceException(Status.MissingAttribute);
       }
-      sendJob(suid, job);
+      try {
+         Integer n = (Integer) server.invoke(printer, "countImageBoxes", 
+                        new Object[] { format },
+                        new String[] { "java.lang.String" });
+         return n.intValue();
+      } catch (IllegalArgumentException e) {
+         throw new DcmServiceException(Status.InvalidAttributeValue, e);
+      } catch (Exception e) {
+         throw new DcmServiceException(Status.ProcessingFailure, e);
+      }
+   }
+   
+   void createPrintJob(FilmSession session, boolean all)
+      throws DcmServiceException
+   {
+      String jobID = "J-" + ++jobCounter;
+      File jobdir = new File(new File(session.dir(), SPOOL_JOB_DIR_SUFFIX), jobID);
+      if (!jobdir.mkdir()) {
+         throw new DcmServiceException(Status.ProcessingFailure,
+            "Failed write access to spool directory: " + spoolDir);
+      }
+      log.info("Create job: " + jobID);
+      try {
+         if (all) {
+            Iterator it = session.getFilmBoxes().values().iterator();
+            while (it.hasNext()) {
+               storePrint(jobdir, session, (FilmBox) it.next());
+            }
+         } else {
+            storePrint(jobdir, session, session.getCurrentFilmBox());
+         }
+         try {
+            Dataset ds = session.getDataset();
+            TextMessage msg = queueSession.createTextMessage(jobdir.getPath());
+            msg.setIntProperty("NumberOfCopies", ds.getInt(Tags.NumberOfCopies, 1));  
+            msg.setStringProperty("MediumType", ds.getString(Tags.MediumType)); 
+            msg.setStringProperty("FilmDestination", ds.getString(Tags.FilmDestination)); 
+            queueSend.send(msg);
+         } catch (JMSException e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+         } catch (DcmValueException e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+         }
+      } catch (DcmServiceException e) {
+         deltree(jobdir);
+         throw e;
+      }
    }
 
    void deleteJob(File job) {
-      log.info("Deleting job - " + job);
+      log.info("Deleting job - " + job.getName());
       if (!job.exists()) {
-         log.warn("No such job - " + job);
+         log.warn("No such job - " + job.getName());
          return;
       }
-      if (!rmdir(job)) {
-         log.warn("Failed to delete job - " + job);
+      if (!deltree(job)) {
+         log.warn("Failed to delete job - " + job.getName());
       }
-      File jobRootDir = job.getParentFile();
-      File sessionRootDir = jobRootDir.getParentFile();
-      File sessionDir = new File(sessionRootDir, "SESSION");
-      if (jobRootDir.list().length == 0 && !sessionDir.exists()) {
-         log.info("Purge Session - " + sessionRootDir);
-         rmdir(sessionRootDir);
-      }
+      purgeSessionSpoolDir(job.getParentFile().getParentFile());
    }
    
       
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   private File newJobDir(String suid) {
-      File dir = getJobDir(suid, uidgen.createUID());
-      dir.mkdir();
-      return dir;
-   }
-   
-   private void sendJob(String suid, File job)
+   private void storePrint(File job, FilmSession session, FilmBox filmBox) 
       throws DcmServiceException
    {
       try {
-         Dataset session = readDataset(getAttrFile(getFilmSessionDir(suid)));
-         TextMessage msg = queueSession.createTextMessage(job.getPath());
-         msg.setIntProperty("NumberOfCopies", session.getInt(Tags.NumberOfCopies, 1));  
-         msg.setStringProperty("MediumType", session.getString(Tags.MediumType)); 
-         msg.setStringProperty("FilmDestination", session.getString(Tags.FilmDestination)); 
-         queueSend.send(msg);
-      } catch (JMSException e) {
-         throw new DcmServiceException(Status.ProcessingFailure, e);
-      } catch (DcmValueException e) {
-         throw new DcmServiceException(Status.ProcessingFailure, e);
-      }
-   }
-   
-   private void createStoredPrint(File job, String suid, File filmBoxDir) 
-      throws DcmServiceException
-   {
-      try {
-         String cuid = UIDs.StoredPrintStorage;
-         String iuid = uidgen.createUID();
-         Dataset sp = dof.newDataset();
-         sp.setFileMetaInfo(
-            dof.newFileMetaInfo(cuid, iuid, UIDs.ExplicitVRLittleEndian));
-         sp.putUI(Tags.SOPClassUID, cuid);
-         sp.putUI(Tags.SOPInstanceUID, iuid);
-         sp.putDA(Tags.StudyDate);
-         sp.putTM(Tags.StudyTime);
-         sp.putSH(Tags.AccessionNumber);
-         sp.putCS(Tags.Modality, "STORED_PRINT");
-         sp.putLO(Tags.Manufacturer, "TIANI MEDGRAPH AG");
-         sp.putPN(Tags.PatientName);
-         sp.putLO(Tags.PatientID);
-         sp.putDA(Tags.PatientBirthDate);
-         sp.putCS(Tags.PatientSex);
-         sp.putUI(Tags.StudyInstanceUID, suid);
-         sp.putUI(Tags.SeriesInstanceUID, uidgen.createUID());
-         sp.putSH(Tags.StudyID);
-         sp.putIS(Tags.SeriesNumber);
-         sp.putIS(Tags.InstanceNumber);
-
-
-         if (log.isDebugEnabled()) {
-            log.debug("Read FilmBox - " + getAttrFile(filmBoxDir));
-         }
-         Dataset filmbox = readDataset(getAttrFile(filmBoxDir));
-         filmbox.remove(Tags.RefFilmSessionSeq);
-         DcmElement refImageBoxSeq = filmbox.remove(Tags.RefImageBoxSeq);
-         String iboxCUID = refImageBoxSeq.getItem().getString(Tags.RefSOPClassUID);      
-         DcmElement capabilities = sp.putSQ(Tags.PrintManagementCapabilitiesSeq);
-         capabilities.addNewItem().putUI(Tags.RefSOPClassUID, UIDs.BasicFilmSession);
-         capabilities.addNewItem().putUI(Tags.RefSOPClassUID, UIDs.BasicFilmBoxSOP);
-         capabilities.addNewItem().putUI(Tags.RefSOPClassUID, iboxCUID);
-         capabilities.addNewItem().putUI(Tags.RefSOPClassUID, 
-            iboxCUID.equals(UIDs.BasicGrayscaleImageBox)
-               ? UIDs.HardcopyGrayscaleImageStorage
-               : UIDs.HardcopyColorImageStorage);
-
-         sp.putSQ(Tags.PrinterCharacteristicsSeq);
-         sp.putSQ(Tags.FilmBoxContentSeq).addItem(filmbox);
-
-         File[] iboxfiles = filmBoxDir.listFiles();
-         Arrays.sort(iboxfiles,
-            new Comparator() {
-               public int compare(Object o1, Object o2) {
-                  return (int)(((File)o1).lastModified()
-                             - ((File)o2).lastModified());
-               }
-            });
-         Dataset[] imgboxes = new Dataset[refImageBoxSeq.vm()];
-         for (int i = iboxfiles.length - 1; i > 0; --i) {
-            if (log.isDebugEnabled()) {
-               log.debug("Read ImageBox - " + iboxfiles[i]);
-            }
-            Dataset imgbox = readDataset(iboxfiles[i]);
-            int ipos = imgbox.getInt(Tags.ImagePositionOnFilm, -1);
-            if (ipos <= 0 || ipos > imgboxes.length) {
-               throw new RuntimeException("ipos: " + ipos);
-            }
-            if (imgboxes[ipos-1] == null) {
-               imgboxes[ipos-1] = imgbox;
-            }
-         }
-
-         DcmElement contentSeq = sp.putSQ(Tags.ImageBoxContentSeq);
-         for (int i = 0; i < imgboxes.length; ++i) {
-            if (imgboxes[i] != null && imgboxes[i].contains(Tags.RefImageSeq)) {
-               contentSeq.addItem(imgboxes[i]);
-            }
-         }
-
-         File f = new File(job, iuid);
+         Dataset storedPrint = filmBox.createStoredPrint(session);
+         File f = File.createTempFile("SP-","",job);
          OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
          try {
-            sp.writeFile(out, null);
+            storedPrint.writeFile(out, null);
          } finally {
             try { out.close(); } catch (IOException ignore) {}
          }

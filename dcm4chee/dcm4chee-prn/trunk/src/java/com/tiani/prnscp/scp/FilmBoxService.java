@@ -40,6 +40,7 @@ import org.dcm4che.util.UIDGenerator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 /**
  * <description>
@@ -62,23 +63,10 @@ class FilmBoxService extends DcmServiceBase
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   private final UIDGenerator gen = UIDGenerator.getInstance();
    private final PrintScpService scp;
    
    // Static --------------------------------------------------------
-   static String getFilmBoxUID(ActiveAssociation as) {
-      return (String) as.getAssociation().getProperty("FilmBox");
-   }
-
-   static String checkFilmBoxUID(ActiveAssociation as, Dimse rq)
-      throws DcmServiceException 
-   {
-      String uid = rq.getCommand().getRequestedSOPInstanceUID();
-      if (!uid.equals(getFilmBoxUID(as))) {
-         throw new DcmServiceException(Status.NoSuchObjectInstance);
-      }
-      return uid;
-   }
+   private static final UIDGenerator uidgen = UIDGenerator.getInstance();
    
    // Constructors --------------------------------------------------
    public FilmBoxService(PrintScpService scp) {
@@ -89,88 +77,63 @@ class FilmBoxService extends DcmServiceBase
    
       
    // DcmServiceBase overrides --------------------------------------
-    
+
    protected Dataset doNCreate(ActiveAssociation as, Dimse rq, Command rspCmd)
       throws IOException, DcmServiceException 
    {
       try {
          Dataset ds = rq.getDataset(); // read out dataset
-         String suid = FilmSessionService.getFilmSessionUID(as);
-         String fuid = rq.getCommand().getAffectedSOPInstanceUID();
-         File dir = scp.getFilmBoxDir(suid, fuid);
-         if (dir.exists()) {
+         FilmSession session = scp.getFilmSession(as);
+         checkRefFilmSession(ds, session);
+         String uid = rq.getCommand().getAffectedSOPInstanceUID();
+         if (session.containsFilmBox(uid)) {
             throw new DcmServiceException(Status.DuplicateSOPInstance);
          }
-         createImageBoxes(ds, getImageBoxCUID(as.getAssociation(), rq.pcid()));
-         dir.mkdir();
-         try {
-            scp.writeDataset(new File(dir, "ATTR"), ds);
-         } catch (DcmServiceException e) {
-            scp.rmdir(dir);
-            throw e;
-         }
-         Association a = as.getAssociation();
-         a.putProperty("FilmBox", fuid);
+         addRefImageBox(ds, session.getImageBoxCUID());
+         session.addFilmBox(uid, new FilmBox(ds));
          return ds;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to create Basic Film Box SOP Instance", e);
          throw e;
       }
    }
-   
-   private String getImageBoxCUID(Association a, int pcid)
-      throws DcmServiceException 
-   {
-      AAssociateRQ rq = a.getAAssociateRQ();
-      PresContext pc =rq.getPresContext(pcid);
-      String as = pc.getAbstractSyntaxUID();
-      if (as.equals(UIDs.BasicGrayscalePrintManagement)) {
-         return UIDs.BasicGrayscaleImageBox;
-      }
-      if (as.equals(UIDs.BasicColorPrintManagement)) {
-         return UIDs.BasicColorImageBox;
-      }
-      throw new DcmServiceException(Status.ProcessingFailure,
-               "Wrong Presentation Context - " + as);
-   }
-   
-   private void createImageBoxes(Dataset data, String cuid)
+
+   private void checkRefFilmSession(Dataset ds, FilmSession session)
       throws DcmServiceException
    {
-      int n = numImageBoxes(data);
+      if (session == null) {
+         throw new DcmServiceException(Status.ProcessingFailure,
+            "No Film Session");
+      }
+      try {
+         Dataset ref = ds.getItem(Tags.RefFilmSessionSeq);
+         if (!ref.getString(Tags.RefSOPClassUID).equals(UIDs.BasicFilmSession)) {
+            throw new DcmServiceException(Status.InvalidAttributeValue);
+         }
+         if (!ref.getString(Tags.RefSOPInstanceUID).equals(session.uid())) {
+            throw new DcmServiceException(Status.InvalidAttributeValue);
+         }         
+      } catch (DcmValueException e) {
+         throw new DcmServiceException(Status.InvalidAttributeValue, e);
+      } catch (NullPointerException e) {
+         throw new DcmServiceException(Status.MissingAttribute);
+      }
+   }       
+   
+   void addRefImageBox(Dataset data, String cuid)
+      throws DcmServiceException
+   {
+      int n;
+      try {
+         n = scp.countImageBoxes(data.getString(Tags.ImageDisplayFormat));
+      } catch (DcmValueException e) {
+         throw new DcmServiceException(Status.InvalidAttributeValue, e);
+      }
       DcmElement sq = data.putSQ(Tags.RefImageBoxSeq);
       for (int i = 0; i < n; ++i) {
          Dataset item = sq.addNewItem();
          item.putUI(Tags.RefSOPClassUID, cuid);
-         item.putUI(Tags.RefSOPInstanceUID, gen.createUID());
-      }
-   }
-      
-   private int numImageBoxes(Dataset data) throws DcmServiceException {
-      try {
-         String format = data.getString(Tags.ImageDisplayFormat);
-         if (format == null) {
-            throw new DcmServiceException(Status.MissingAttribute,
-               "Missing Image Display Format (2010,0010)");
-         }
-         if (!format.startsWith("STANDARD")) {
-            throw new DcmServiceException(Status.InvalidArgumentValue,
-               "Unsupported Image Display Format (2010,0010) - " + format);
-         }      
-         try {
-            int del = format.indexOf(',');
-            int c = Integer.parseInt(format.substring(9,del));
-            int r = Integer.parseInt(format.substring(del+1));
-            if (c <= 0 || r <= 0) {
-               throw new IllegalArgumentException();
-            }
-            return c * r;
-         } catch (Exception e) {
-            throw new DcmServiceException(Status.InvalidArgumentValue,
-               "Invalid Image Display Format (2010,0010) - " + format);
-         }
-      } catch (DcmValueException e) {
-         throw new DcmServiceException(Status.InvalidArgumentValue, e);
+         item.putUI(Tags.RefSOPInstanceUID, uidgen.createUID());
       }
    }
    
@@ -179,10 +142,12 @@ class FilmBoxService extends DcmServiceBase
    {
       try {
          Dataset ds = rq.getDataset(); // read out dataset
-         File dir = scp.getFilmBoxDir(
-            FilmSessionService.getFilmSessionUID(as), 
-            checkFilmBoxUID(as, rq));
-         // TO DO
+         String uid = rq.getCommand().getRequestedSOPInstanceUID();
+         FilmSession session = scp.getFilmSession(as);
+         if (session == null || !uid.equals(session.getCurrentFilmBoxUID())) {
+            throw new DcmServiceException(Status.NoSuchObjectInstance);
+         }
+         session.getCurrentFilmBox().setDataset(ds);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to update Basic Film Box SOP Instance", e);
@@ -194,9 +159,12 @@ class FilmBoxService extends DcmServiceBase
       throws IOException, DcmServiceException
    {
       try {
-         scp.createJob(
-            FilmSessionService.getFilmSessionUID(as), 
-            checkFilmBoxUID(as, rq));
+         String uid = rq.getCommand().getRequestedSOPInstanceUID();
+         FilmSession session = scp.getFilmSession(as);
+         if (session == null || !uid.equals(session.getCurrentFilmBoxUID())) {
+            throw new DcmServiceException(Status.NoSuchObjectInstance);
+         }
+         scp.createPrintJob(session, false);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to print Basic Film Box SOP Instance", e);
@@ -208,12 +176,12 @@ class FilmBoxService extends DcmServiceBase
       throws IOException, DcmServiceException 
    {
       try {
-         String suid = FilmSessionService.getFilmSessionUID(as);
-         String fuid = checkFilmBoxUID(as, rq);
-         File dir = scp.getFilmBoxDir(suid, fuid);
-         scp.rmdir(dir);
-         Association a = as.getAssociation();
-         a.putProperty("FilmBox", null);
+         String uid = rq.getCommand().getRequestedSOPInstanceUID();
+         FilmSession session = scp.getFilmSession(as);
+         if (session == null || !uid.equals(session.getCurrentFilmBoxUID())) {
+            throw new DcmServiceException(Status.NoSuchObjectInstance);
+         }
+         session.deleteFilmBox();
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to delete Basic Film Box SOP Instance", e);

@@ -24,10 +24,12 @@ package com.tiani.prnscp.scp;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -82,24 +84,20 @@ class ImageBoxService extends DcmServiceBase
    // Public --------------------------------------------------------
    
       
-   // DcmServiceBase overrides --------------------------------------   
+   // DcmServiceBase overrides -------------------------------------- 
+   
    protected Dataset doNSet(ActiveAssociation as, Dimse rq, Command rspCmd)
       throws IOException, DcmServiceException
    {
-      Command cmd = rq.getCommand();
-      String cuid = cmd.getRequestedSOPClassUID();
-      String iuid = cmd.getRequestedSOPInstanceUID();
-      String tuid = rq.getTransferSyntaxUID();
-      String suid = FilmSessionService.getFilmSessionUID(as);
-      String fuid = FilmBoxService.getFilmBoxUID(as);
-      int stopTag = Tags.BasicGrayscaleImageSeq;
-      String hcuid = UIDs.HardcopyGrayscaleImageStorage;
-      if (cuid.equals(UIDs.BasicColorImageBox)) {
-         stopTag = Tags.BasicColorImageSeq;
-         hcuid = UIDs.HardcopyColorImageStorage;
-      }
       InputStream in = rq.getDataAsStream();
       try {
+         Command cmd = rq.getCommand();
+         String cuid = cmd.getRequestedSOPClassUID();
+         String boxuid = cmd.getRequestedSOPInstanceUID();
+         String tuid = rq.getTransferSyntaxUID();
+         FilmSession session = scp.getFilmSession(as);
+         checkRefImageBoxSeq(cuid, boxuid, session);
+         int stopTag = session.getImageSeqTag();
          DcmParser parser = dpf.newDcmParser(in);
          Dataset box = dof.newDataset();
          parser.setDcmHandler(box.getDcmHandler());
@@ -117,12 +115,16 @@ class ImageBoxService extends DcmServiceBase
          }
          if (sqLen != 0) {
             int itemLen = parser.getReadLength();
-            String hiuid = uidgen.createUID();
-            File f = new File(scp.getHardCopyDir(suid), hiuid);
-            Dataset hc = createHC(suid, fuid, hcuid, hiuid, box);
+
+            String hcuid = uidgen.createUID();
+            Dataset hc = createHC(hcuid, session, box);
             parser.setDcmHandler(hc.getDcmHandler());
             parser.parseDataset(tuid, Tags.PixelData);
-            OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
+            File hcdir = new File(session.dir(), 
+               PrintScpService.SPOOL_HARDCOPY_DIR_SUFFIX);
+            File hcfile = new File(hcdir, hcuid);
+            OutputStream out = new BufferedOutputStream(
+               new FileOutputStream(hcfile));
             try {
                hc.writeFile(out, null);
                hc.writeHeader(out, DcmEncodeParam.EVR_LE,
@@ -142,14 +144,42 @@ class ImageBoxService extends DcmServiceBase
             parser.setDcmHandler(box.getDcmHandler());
          }
          parser.parseDataset(tuid, -1);
-         File boxfile = new File(scp.getFilmBoxDir(suid, fuid), iuid);
-         scp.writeDataset(boxfile, box);
+         session.getCurrentFilmBox().setImageBox(boxuid, box);
+         return null;
+      } catch (DcmServiceException e) {
+         scp.getLog().warn("Failed to set Image Box SOP Instance", e);
+         throw e;
       } finally {
          try { in.close(); } catch (IOException ignore) {}
       }
-      return null;
    }
    
+   private void checkRefImageBoxSeq(String cuid, String boxuid, FilmSession session)
+      throws DcmServiceException
+   {
+      if (session == null) {
+         throw new DcmServiceException(Status.NoSuchObjectInstance);
+      }
+      FilmBox filmbox = session.getCurrentFilmBox();
+      if (filmbox == null) {
+         throw new DcmServiceException(Status.NoSuchObjectInstance);
+      }
+      try {
+         DcmElement sq = filmbox.getDataset().get(Tags.RefImageBoxSeq);
+         for (int i = 0, n = sq.vm(); i < n; ++i) {
+            Dataset ref = sq.getItem(i);
+            if (ref.getString(Tags.RefSOPInstanceUID).equals(boxuid)) {
+               if (ref.getString(Tags.RefSOPClassUID).equals(cuid)) {
+                  return;
+               }
+               throw new DcmServiceException(Status.ClassInstanceConflict);
+            }
+         }
+      } catch (DcmValueException e) {
+         throw new DcmServiceException(Status.ProcessingFailure, e);
+      }
+   }
+
    private void copy(InputStream in, OutputStream out, int len)
       throws IOException, DcmServiceException
    {
@@ -165,18 +195,22 @@ class ImageBoxService extends DcmServiceBase
       }      
    }
    
-   private Dataset createHC(String suid, String fuid, String cuid, String iuid,
-         Dataset box) {
+   private Dataset createHC(String hcuid, FilmSession session, Dataset box) {
       Dataset ds = dof.newDataset();
+      String cuid = session.getHardcopyCUID();
+      // use Film Session Instance UID as Study UID
+      String studyuid = session.uid();
+      // use Film Box Instance UID as Series UID
+      String seriesuid = session.getCurrentFilmBoxUID();
       ds.setFileMetaInfo(
-         dof.newFileMetaInfo(cuid, iuid, UIDs.ExplicitVRLittleEndian));
+         dof.newFileMetaInfo(cuid, hcuid, UIDs.ExplicitVRLittleEndian));
       Dataset item = box.putSQ(Tags.RefImageSeq).addNewItem();
       item.putAE(Tags.RetrieveAET, "UNKOWN");
       ds.putCS(Tags.ImageType, new String[]{ "DERIVED", "SECONDARY" });
       ds.putUI(Tags.SOPClassUID, cuid);
       item.putUI(Tags.RefSOPClassUID, cuid);      
-      ds.putUI(Tags.SOPInstanceUID, iuid);
-      item.putUI(Tags.RefSOPInstanceUID, iuid);      
+      ds.putUI(Tags.SOPInstanceUID, hcuid);
+      item.putUI(Tags.RefSOPInstanceUID, hcuid);      
       ds.putDA(Tags.StudyDate);
       ds.putTM(Tags.StudyTime);
       ds.putSH(Tags.AccessionNumber);
@@ -187,10 +221,10 @@ class ImageBoxService extends DcmServiceBase
       item.putLO(Tags.PatientID);
       ds.putDA(Tags.PatientBirthDate);
       ds.putCS(Tags.PatientSex);
-      ds.putUI(Tags.StudyInstanceUID, suid);
-      item.putUI(Tags.StudyInstanceUID, suid);
-      ds.putUI(Tags.SeriesInstanceUID, fuid);
-      item.putUI(Tags.SeriesInstanceUID, fuid);
+      ds.putUI(Tags.StudyInstanceUID, studyuid);
+      item.putUI(Tags.StudyInstanceUID, studyuid);
+      ds.putUI(Tags.SeriesInstanceUID, seriesuid);
+      item.putUI(Tags.SeriesInstanceUID, seriesuid);
       ds.putSH(Tags.StudyID);
       ds.putIS(Tags.SeriesNumber);
       ds.putIS(Tags.InstanceNumber);

@@ -43,7 +43,13 @@ import javax.management.ObjectName;
  * </ul>
  */
 public interface PrintScpServiceMBean extends ServiceMBean {
-    
+
+   String SPOOL_SESSION_LOCK_SUFFIX = "LOCK";
+   
+   String SPOOL_HARDCOPY_DIR_SUFFIX = "HC";
+
+   String SPOOL_JOB_DIR_SUFFIX = "JOBS";
+   
    /** Getter for property dcmServer.
     * @return Value of property dcmServer.
     *
@@ -72,24 +78,22 @@ public interface PrintScpServiceMBean extends ServiceMBean {
     * @return Value of property queueName.
     *
     */
-   public String getQueueName();
+   String getQueueName();
    
    /** Setter for property queueName.
     * @param queueName New value of property queueName.
     *
     */
-   public void setQueueName(String queueName);
+   void setQueueName(String queueName);
    
    /** Getter for property spoolDirectory.
     * @return Value of property spoolDirectory.
-    *
     */
-   public String getSpoolDirectory();
+   String getSpoolDirectory();
    
    /** Setter for property spoolDirectory.
     * @param spoolDirPath New value of property spoolDirectory.
-    *
     */
-   public void setSpoolDirectory(String spoolDirectory)  throws Exception;
+   void setSpoolDirectory(String spoolDirectory);
    
 }

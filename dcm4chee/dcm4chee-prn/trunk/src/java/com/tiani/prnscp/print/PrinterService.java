@@ -22,7 +22,14 @@
 
 package com.tiani.prnscp.print;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
+
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -39,9 +46,14 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.StringTokenizer;
+import java.util.NoSuchElementException;
 
 /**
  * <description>
@@ -68,16 +80,16 @@ public class PrinterService
       null, "NORMAL", "WARNING", "FAILURE"
    };
    
-   // Attributes ----------------------------------------------------
-   
+   // Attributes ----------------------------------------------------   
    private QueueConnection conn;
    private QueueSession session;
    private String queueName;
    private long notifCount = 0;
    
+   private Dataset printerConfiguration;
+   private String printerConfigurationFile = "conf/prncfg.xml";
    private int status = NORMAL;
    private String statusInfo = "NORMAL";
-   
    
    // Static --------------------------------------------------------
    
@@ -135,6 +147,50 @@ public class PrinterService
       this.queueName = queueName;
    }
       
+   /** Getter for property printerConfigurationFile.
+    * @return Value of property printerConfigurationFile.
+    */
+   public String getPrinterConfigurationFile() {
+      return printerConfigurationFile;
+   }
+   
+   /** Setter for property printerConfigurationFile.
+    * @param printerConfigurationFile New value of property printerConfigurationFile.
+    */
+   public void setPrinterConfigurationFile(String printerConfigurationFile) {
+      this.printerConfigurationFile = printerConfigurationFile;
+      
+   }
+   
+   /** Getter for property printerConfiguration.
+    * @return Value of property printerConfiguration.
+    */
+   public Dataset getPrinterConfiguration() {
+      return printerConfiguration;
+   }
+   
+   public int countImageBoxes(String imageDisplayFormat) {
+      StringTokenizer tok = new StringTokenizer(imageDisplayFormat, ",\\");
+      try {
+         String type = tok.nextToken();
+         if (type.equals("STANDARD")) {
+            int c = Integer.parseInt(tok.nextToken());
+            int r = Integer.parseInt(tok.nextToken());
+            return c * r;
+         }
+         if (type.equals("ROW") || type.equals("COL")) {
+            int sum = 0;
+            while (tok.hasMoreTokens()) {
+               sum += Integer.parseInt(tok.nextToken());
+            }
+            return sum;
+         }
+         // TO DO support of other types: SLIDE, SUPERSLIDE, CUSTOM/i
+      } catch (RuntimeException e) {
+      }
+      throw new IllegalArgumentException(imageDisplayFormat);
+   }
+   
    // MessageListener implementation -----------------------------------
    
    public void onMessage(Message msg) {
@@ -219,6 +275,7 @@ public class PrinterService
    public void startService()
       throws Exception
    {
+      loadPrinterConfiguration();
       Context iniCtx = new InitialContext();
       QueueConnectionFactory qcf = 
          (QueueConnectionFactory) iniCtx.lookup("ConnectionFactory");
@@ -245,6 +302,26 @@ public class PrinterService
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+   
+   private void loadPrinterConfiguration() throws Exception {
+      boolean debug = log.isDebugEnabled();
+      // Get the system home directory
+      File f = new File(printerConfigurationFile);
+      if (!f.isAbsolute()) {
+         File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+         f = new File(systemHomeDir, printerConfigurationFile);
+      }
+      if (debug) {
+         log.debug("Loading Printer Configuration from: "
+            + f.getCanonicalPath());
+      }
+      DcmObjectFactory dof = DcmObjectFactory.getInstance();
+      Dataset ds = dof.newDataset();
+      SAXParserFactory spf = SAXParserFactory.newInstance();
+      SAXParser sp = spf.newSAXParser();
+      sp.parse(f, ds.getSAXHandler());
+      printerConfiguration = ds;
+   }
    
    // Inner classes -------------------------------------------------
 }
