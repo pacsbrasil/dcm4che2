@@ -249,7 +249,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             final String filePath = file.getPath().substring(
                     baseDirPathLength + 1).replace(File.separatorChar, '/');
             Dataset coercedElements = updateDB(assoc, ds, fsInfo, filePath,
-                    file, md.digest());
+                    file, md5sum);
             if (coercedElements.isEmpty()
                     || !coerceWarnCallingAETs.contains(assoc
                             .getCallingAET())) {
