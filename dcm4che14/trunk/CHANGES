@@ -17,6 +17,8 @@ dcmsnd Sample Application:
   dcmrcv --dest DIR).
 new syslog Sample Application:
 + to send/generate syslog messages
+new mppssnd Sample Application:
++ to send MPPS messages to remote DICOM node
 new Image I/O compatible DICOM ImageWriter (contributed by Dr. Hacklaender)
 + org.dcm4che.imageio.plugins.DcmImageWriteParam
 + org.dcm4cheri.imageio.plugins.DcmImageWriteParamImpl

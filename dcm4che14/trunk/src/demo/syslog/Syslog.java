@@ -154,7 +154,7 @@ public class Syslog implements PollDirSrv.Handler {
    public void openSession() throws Exception {
    }
    
-   public void process(File file) throws Exception {
+   public boolean process(File file) throws Exception {
       BufferedReader r = new BufferedReader(new FileReader(file));
       try {
          syslog.reset();
@@ -166,6 +166,7 @@ public class Syslog implements PollDirSrv.Handler {
          try { r.close(); } catch (IOException io) {}
       }
       send();
+      return true;
    }
    
    public void closeSession() {

@@ -62,7 +62,7 @@ package org.dcm4che.dict;
 /** Provides UIDs constants.
  *
  * @author gunter zeilinger
- * @version 1.0
+ * @version 1.0.1
  */
 public class UIDs {
 
@@ -70,15 +70,16 @@ public class UIDs {
   private UIDs() {
   }
 
-  public static final String forName(String name)
-  throws NoSuchFieldException {
+  public static final String forName(String name) {
     try {
       return (String)UIDs.class.getField(name).get(null);
     } catch (IllegalAccessException e) {
       throw new Error(e);
+    } catch (NoSuchFieldException e) {
+      throw new IllegalArgumentException("Unkown UID Name: " + name);
     }
-  }    
-
+  }
+  
 </xsl:text>
 <xsl:apply-templates select="dictionary/uids/uid"/>
 <xsl:text>}</xsl:text>

@@ -28,9 +28,6 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmParseException;
-import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
@@ -42,8 +39,8 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.Factory;
-import org.dcm4che.net.DataSource;
 import org.dcm4che.net.Dimse;
+import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.server.PollDirSrv;
@@ -77,24 +74,23 @@ import org.apache.log4j.Logger;
  *
  * @author  gunter.zeilinger@tiani.com
  */
-public class DcmSnd implements PollDirSrv.Handler {
+public class MppsSnd implements PollDirSrv.Handler {
    
    // Constants -----------------------------------------------------
    private static final String[] DEF_TS = { UIDs.ImplicitVRLittleEndian };
    private static final int PCID_ECHO = 1;
+   private static final int PCID_MPPS = 3;
    
    // Attributes ----------------------------------------------------
-   static final Logger log = Logger.getLogger("DcmSnd");
+   static final Logger log = Logger.getLogger("MppsSnd");
    private static ResourceBundle messages = ResourceBundle.getBundle(
-         "resources/DcmSnd", Locale.getDefault());
+         "resources/MppsSnd", Locale.getDefault());
    
    private static final UIDDictionary uidDict =
          DictionaryFactory.getInstance().getDefaultUIDDictionary();
    private static final Factory aFact = Factory.getInstance();
    private static final DcmObjectFactory oFact =
          DcmObjectFactory.getInstance();
-   private static final DcmParserFactory pFact =
-         DcmParserFactory.getInstance();
 
    private static final int ECHO = 0;
    private static final int SEND = 1;
@@ -102,77 +98,46 @@ public class DcmSnd implements PollDirSrv.Handler {
 
    private final int mode;
    private DcmURL url = null;
-   private int repeatSingle = 1;
-   private int repeatWhole = 1;
-   private int priority = Command.MEDIUM;
    private int assocTO = 0;
    private int dimseTO = 0;
    private int releaseTO = 0;
    private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
-   private int bufferSize = 2048;
-   private byte[] buffer = null;
    private SSLContextAdapter tls = null;
-   private Dataset overwrite = oFact.newDataset();
    private PollDirSrv pollDirSrv = null;
    private File pollDir = null;
    private long pollPeriod = 5000L;
    private ActiveAssociation activeAssociation = null;
-   private int sentCount = 0;
-   private long sentBytes = 0L;
    
    // Static --------------------------------------------------------
    private static final LongOpt[] LONG_OPTS = new LongOpt[] {
-      new LongOpt("prior-high", LongOpt.NO_ARGUMENT, null, 'P'),
-      new LongOpt("prior-low", LongOpt.NO_ARGUMENT, null, 'p'),
       new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("set", LongOpt.REQUIRED_ARGUMENT, null, 's'),
       new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("ts", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("poll-dir", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("poll-period", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("poll-retry-open", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("poll-delta-last-modified", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("poll-done-dir", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("repeat-dimse", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("repeat-assoc", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
       new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
    };
    
-   private static void set(Configuration cfg, String s) {
-      int pos = s.indexOf(':');
-      if (pos == -1) {
-         cfg.put("set." + s,"");
-      } else {
-         cfg.put("set." + s.substring(0,pos), s.substring(pos+1));
-      }
-   }
-
    public static void main(String args[]) throws Exception {
-      Getopt g = new Getopt("dcmsnd", args, "", LONG_OPTS);
+      Getopt g = new Getopt("mppssnd", args, "", LONG_OPTS);
       
       Configuration cfg = new Configuration(
-            DcmSnd.class.getResource("dcmsnd.cfg"));
+            MppsSnd.class.getResource("mppssnd.cfg"));
 
       int c;
       while ((c = g.getopt()) != -1) {
          switch (c) {
             case 2:
                cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
-               break;
-            case 'P':
-               cfg.put("prior", "1");
-               break;
-            case 'p':
-               cfg.put("prior", "2");
-               break;
-            case 's':
-               set(cfg,  g.getOptarg());
                break;
             case 'v':
                exit(messages.getString("version"), false);
@@ -190,8 +155,8 @@ public class DcmSnd implements PollDirSrv.Handler {
       }
 //      listConfig(cfg);
       try {
-         DcmSnd dcmsnd = new DcmSnd(cfg, new DcmURL(args[optind]), argc);
-         dcmsnd.execute(args, optind+1);
+         MppsSnd mppssnd = new MppsSnd(cfg, new DcmURL(args[optind]), argc);
+         mppssnd.execute(args, optind+1);
       } catch (IllegalArgumentException e) {
          exit(e.getMessage(), true);
       }
@@ -199,17 +164,11 @@ public class DcmSnd implements PollDirSrv.Handler {
 
    // Constructors --------------------------------------------------
    
-   DcmSnd(Configuration cfg, DcmURL url, int argc) {
+   MppsSnd(Configuration cfg, DcmURL url, int argc) {
       this.url = url;
-      this.priority = Integer.parseInt(cfg.getProperty("prior", "0"));
-      this.bufferSize = Integer.parseInt(cfg.getProperty("buf-len", "2048"))
-            & 0xfffffffe;
-      this.repeatWhole = Integer.parseInt(cfg.getProperty("repeat-assoc", "1"));
-      this.repeatSingle = Integer.parseInt(cfg.getProperty("repeat-dimse", "1"));
       this.mode = argc > 1 ? SEND : initPollDirSrv(cfg) ? POLL : ECHO;
       initAssocRQ(cfg, url, mode == ECHO);
       initTLS(cfg);
-      initOverwrite(cfg);
    }
        
    // Public --------------------------------------------------------
@@ -245,50 +204,45 @@ public class DcmSnd implements PollDirSrv.Handler {
    public void echo()
    throws InterruptedException, IOException, GeneralSecurityException {
       long t1 = System.currentTimeMillis();
-      int count = 0;
-      for (int i = 0; i < repeatWhole; ++i) {
-         ActiveAssociation active = openAssoc();
-         if (active != null) {
-            if (active.getAssociation().getAcceptedTransferSyntaxUID(PCID_ECHO)
-                     == null) {
-               log.error(messages.getString("noPCEcho"));
-            }
-            else for (int j = 0; j < repeatSingle; ++j, ++count) {
-               active.invoke( aFact.newDimse(PCID_ECHO,
-                  oFact.newCommand().initCEchoRQ(j)), null);
-            }
-            active.release(true);
+      ActiveAssociation active = openAssoc();
+      if (active != null) {
+         if (active.getAssociation().getAcceptedTransferSyntaxUID(PCID_ECHO)
+                  == null) {
+            log.error(messages.getString("noPCEcho"));
+         } else {
+            active.invoke( aFact.newDimse(PCID_ECHO,
+               oFact.newCommand().initCEchoRQ(1)), null);
          }
+         active.release(true);
       }
       long dt = System.currentTimeMillis() - t1;
       log.info(
          MessageFormat.format(messages.getString("echoDone"),
-            new Object[]{ new Integer(count), new Long(dt) }));
+            new Object[]{ new Long(dt) }));
    }
    
    public void send(String[] args, int offset)
    throws InterruptedException, IOException, GeneralSecurityException {
-      if (bufferSize > 0) {
-         buffer = new byte[bufferSize];
-      }
       long t1 = System.currentTimeMillis();
-      for (int i = 0; i < repeatWhole; ++i) {
-         ActiveAssociation active = openAssoc();
-         if (active != null) {
-            for (int k = offset; k < args.length; ++k) {
-               send(active, new File(args[k]));
+      int count = 0;
+      ActiveAssociation active = openAssoc();
+      if (active != null) {
+         if (active.getAssociation().getAcceptedTransferSyntaxUID(PCID_MPPS)
+                  == null) {
+            log.error(messages.getString("noPCMpps"));
+         } else for (int k = offset; k < args.length; ++k) {
+            if (sendFile(active, new File(args[k]))) {
+               ++count;
             }
-            active.release(true);
          }
+         active.release(true);
       }
       long dt = System.currentTimeMillis() - t1;
       log.info(
          MessageFormat.format(messages.getString("sendDone"),
             new Object[]{
-               new Integer(sentCount),
-               new Long(sentBytes),
+               new Integer(count),
                new Long(dt),
-               new Float(sentBytes/(1.024f*dt)),
       }));
    }
    
@@ -320,209 +274,114 @@ public class DcmSnd implements PollDirSrv.Handler {
    }
       
    // Private -------------------------------------------------------   
-   private void send(ActiveAssociation active, File file)
-   throws InterruptedException, IOException {
-      if (!file.isDirectory()) {
-         for (int i = 0; i < repeatSingle; ++i) {
-            sendFile(active, file);
-         }
-         return;
-      }
-      File[] list = file.listFiles();
-      for (int i = 0; i < list.length; ++i) {
-         send(active, list[i]);
-      }
-   }
-   
    private boolean sendFile(ActiveAssociation active, File file)
    throws InterruptedException, IOException {
-      InputStream in = null;
-      DcmParser parser = null;
-      Dataset ds = null;
-      try {
-         try {
-            in = new BufferedInputStream(new FileInputStream(file));
-            parser = pFact.newDcmParser(in);
-            FileFormat format = parser.detectFileFormat();
-            if (format != null) {
-               ds = oFact.newDataset();
-               parser.setDcmHandler(ds.getDcmHandler());
-               parser.parseDcmFile(format, Tags.PixelData);
-               log.info(
-                  MessageFormat.format(messages.getString("readDone"),
-                  new Object[]{ file }));
-            } else {
-               log.error(
-                  MessageFormat.format(messages.getString("failformat"),
-                  new Object[]{ file }));
-               return false;
-            }
-         } catch (IOException e) {
-            log.error(
-               MessageFormat.format(messages.getString("failread"),
-               new Object[]{ file, e }));
-            return false;
-         }
-         sendDataset(active, file, parser, ds);
-         return true;
-      } finally {
-         if (in != null) {
-            try { in.close(); } catch (IOException ignore) {};
-         }
+      String fname = file.getName();
+      if (fname.endsWith(".create")) {
+         return evalRSP(sendCreate(active, file));
+      }
+      if (fname.endsWith(".set")) {
+         return evalRSP(sendSet(active, file));
+      }
+      
+      log.error(MessageFormat.format(messages.getString("errfname"), 
+                           new Object[]{ file }));
+      return false;
+   }
+   
+   private boolean evalRSP(FutureRSP futureRSP)
+   throws InterruptedException, IOException {
+      if (futureRSP == null) {
+         return false;
+      }
+      Dimse rsp = futureRSP.get();
+      switch (rsp.getCommand().getStatus()) {
+         case 0:
+            return true;
+         default:
+            throw new IOException("" + rsp);
       }
    }
    
-   private boolean sendDataset(ActiveAssociation active, File file,
-         DcmParser parser, Dataset ds)
+   private FutureRSP sendSet(ActiveAssociation active, File file)
    throws InterruptedException, IOException {
-      String sopInstUID = ds.getString(Tags.SOPInstanceUID);
-      if (sopInstUID == null) {
-        log.error(
-            MessageFormat.format(messages.getString("noSOPinst"),
-               new Object[]{ file }));
-         return false;
+      Dataset ds = loadDataset(file);
+      if (ds == null) {
+         return null;
       }
-      String sopClassUID = ds.getString(Tags.SOPClassUID);
-      if (sopClassUID == null) {
-        log.error(
-            MessageFormat.format(messages.getString("noSOPclass"),
-               new Object[]{ file }));
-         return false;
-      }
-      PresContext pc = null;
-      Association assoc = active.getAssociation();
-      if (parser.getDcmDecodeParam().encapsulated) {
-         String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
-         if ((pc = assoc.getAcceptedPresContext(sopClassUID, tsuid))
-               == null) {
-            log.error(
-               MessageFormat.format(messages.getString("noPCStore3"),
-                  new Object[]{ uidDict.lookup(sopClassUID),
-                     uidDict.lookup(tsuid), file }));
-            return false;
-         }
-      } else if ((pc = assoc.getAcceptedPresContext(sopClassUID,
-            UIDs.ImplicitVRLittleEndian)) == null
-            && (pc = assoc.getAcceptedPresContext(sopClassUID,
-            UIDs.ExplicitVRLittleEndian)) == null
-            && (pc = assoc.getAcceptedPresContext(sopClassUID,
-            UIDs.ExplicitVRBigEndian)) == null) {
+      FileMetaInfo fmi = ds.getFileMetaInfo();
+      if (fmi == null) {
          log.error(
-               MessageFormat.format(messages.getString("noPCStore2"),
-                  new Object[]{ uidDict.lookup(sopClassUID),file }));
-         return false;
-         
+            MessageFormat.format(messages.getString("noFMI"),
+            new Object[]{ file }));
+         return null;
       }
-      doOverwrite(ds);
-      active.invoke(aFact.newDimse(pc.pcid(),
-            oFact.newCommand().initCStoreRQ(assoc.nextMsgID(),
-                  sopClassUID, sopInstUID, priority),
-            new MyDataSource(parser, ds, buffer)), null);
-      sentBytes += parser.getStreamPosition();
-      ++sentCount;
-      return true;
+      if (!UIDs.ModalityPerformedProcedureStep.equals(
+            fmi.getMediaStorageSOPClassUID())) {
+         log.error(
+            MessageFormat.format(messages.getString("errSOPClass"),
+               new Object[]{ 
+                  file, 
+                  uidDict.toString(fmi.getMediaStorageSOPClassUID())
+               }));
+         return null;
+      }
+      return active.invoke(aFact.newDimse(PCID_MPPS,
+            oFact.newCommand().initNSetRQ(
+                  active.getAssociation().nextMsgID(),
+                  UIDs.ModalityPerformedProcedureStep,
+                  fmi.getMediaStorageSOPInstanceUID()), ds));
+   }
+   
+   private FutureRSP sendCreate(ActiveAssociation active, File file)
+   throws InterruptedException, IOException {
+      Dataset ds = loadDataset(file);
+      if (ds == null) {
+         return null;
+      }
+      FileMetaInfo fmi = ds.getFileMetaInfo();
+      String instUID = null;
+      if (fmi != null) {
+         if (!UIDs.ModalityPerformedProcedureStep.equals(
+               fmi.getMediaStorageSOPClassUID())) {
+            log.error(
+               MessageFormat.format(messages.getString("errSOPClass"),
+                  new Object[]{ 
+                     file, 
+                     uidDict.toString(fmi.getMediaStorageSOPClassUID())
+                  }));
+            return null;
+         }
+         instUID = fmi.getMediaStorageSOPInstanceUID();
+      }
+      return active.invoke(aFact.newDimse(PCID_MPPS,
+            oFact.newCommand().initNCreateRQ(
+                  active.getAssociation().nextMsgID(),
+                  UIDs.ModalityPerformedProcedureStep,
+                  instUID),
+            ds));
    }
 
-   private void doOverwrite(Dataset ds) {
-      for (Iterator it = overwrite.iterator(); it.hasNext();) {
-         DcmElement el = (DcmElement)it.next();
-         ds.putXX(el.tag(), el.vr(), el.getByteBuffer());
+   private Dataset loadDataset(File file) {
+      InputStream in = null;
+      try {
+         in = new BufferedInputStream(new FileInputStream(file));
+         Dataset retval = oFact.newDataset();
+         retval.readFile(in, null, -1);
+         log.info(
+            MessageFormat.format(messages.getString("readDone"),
+            new Object[]{ file }));
+         return retval;
+      } catch (IOException e) {
+         log.error(
+            MessageFormat.format(messages.getString("failread"),
+            new Object[]{ file, e }));
+         return null;
+      } finally {
+         try { in.close(); } catch (IOException ignore) {};
       }
    }
-            
-   private static final class MyDataSource implements DataSource {
-      final DcmParser parser;
-      final Dataset ds;
-      final byte[] buffer;
-      MyDataSource(DcmParser parser, Dataset ds, byte[] buffer) {
-         this.parser = parser;
-         this.ds = ds;
-         this.buffer = buffer;
-      }
-      public void writeTo(OutputStream out, String tsUID)
-      throws IOException {
-         DcmEncodeParam netParam =
-            (DcmEncodeParam)DcmDecodeParam.valueOf(tsUID);
-         ds.writeDataset(out, netParam);
-         if (parser.getReadTag() == Tags.PixelData) {
-            DcmDecodeParam fileParam = parser.getDcmDecodeParam();
-            ds.writeHeader(out, netParam,
-                  parser.getReadTag(),
-                  parser.getReadVR(),
-                  parser.getReadLength());
-            if (netParam.encapsulated) {
-               parser.parseHeader();
-               while (parser.getReadTag() == Tags.Item) {
-                  ds.writeHeader(out, netParam,
-                        parser.getReadTag(),
-                        parser.getReadVR(),
-                        parser.getReadLength());
-                  copy(parser.getInputStream(), out,
-                       parser.getReadLength(), false, buffer);
-               }
-               if (parser.getReadTag() != Tags.SeqDelimitationItem) {
-                  throw new DcmParseException("Unexpected Tag:"
-                  + Tags.toString(parser.getReadTag()));
-               }
-               if (parser.getReadLength() != 0) {
-                  throw new DcmParseException("(fffe,e0dd), Length:"
-                  + parser.getReadLength());
-               }
-               ds.writeHeader(out, netParam,
-                     Tags.SeqDelimitationItem, VRs.NONE, 0);
-            } else {
-               boolean swap = fileParam.byteOrder != netParam.byteOrder
-                     && parser.getReadVR() == VRs.OW;
-               copy(parser.getInputStream(), out,
-                    parser.getReadLength(), swap, buffer);
-            }
-            ds.clear();
-            parser.parseDataset(fileParam, -1);
-            ds.writeDataset(out, netParam);
-         }
-      }
-   }
-      
-   private static void copy(InputStream in, OutputStream out, int len,
-   boolean swap, byte[] buffer) throws IOException {
-      if (swap && (len & 1) != 0) {
-         throw new DcmParseException("Illegal length of OW Pixel Data: "
-         + len);
-      }
-      if (buffer == null) {
-         if (swap) {
-            int tmp;
-            for (int i = 0; i < len; ++i,++i) {
-               tmp = in.read();
-               out.write(in.read());
-               out.write(tmp);
-            }
-         } else {
-            for (int i = 0; i < len; ++i) {
-               out.write(in.read());
-            }
-         }
-      } else {
-         byte tmp;
-         int c, remain = len;
-         while (remain > 0) {
-            c = in.read(buffer, 0, Math.min(buffer.length, remain));
-            if (swap) {
-               if ((c & 1) != 0) {
-                  buffer[c++] = (byte)in.read();
-               }
-               for (int i = 0; i < c; ++i,++i) {
-                  tmp = buffer[i];
-                  buffer[i] = buffer[i+1];
-                  buffer[i+1] = tmp;
-               }
-            }
-            out.write(buffer, 0, c);
-            remain -= c;
-         }
-      }
-   }
-      
+   
    private Socket newSocket(String host, int port)
    throws IOException, GeneralSecurityException {
       if (tls != null) {
@@ -550,43 +409,13 @@ public class DcmSnd implements PollDirSrv.Handler {
       if (echo) {
          assocRQ.addPresContext(
             aFact.newPresContext(PCID_ECHO, UIDs.Verification, DEF_TS));
-         return;
-      }
-      for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
-         String key = (String)it.nextElement();
-         if (key.startsWith("pc.")) {
-            initPresContext(Integer.parseInt(key.substring(3)),
-               cfg.tokenize(cfg.getProperty(key), new LinkedList()));
-         }
+      } else {
+         assocRQ.addPresContext(aFact.newPresContext(
+            PCID_MPPS, UIDs.ModalityPerformedProcedureStep,
+               cfg.tokenize(cfg.getProperty("ts", ""))));
       }
    }
-      
-   private final void initPresContext(int pcid, List val) {
-      Iterator it = val.iterator();
-      String as = UIDs.forName((String)it.next());
-      String[] tsUIDs = new String[val.size()-1];
-      for (int i = 0; i < tsUIDs.length; ++i) {
-         tsUIDs[i] = UIDs.forName((String)it.next());
-      }
-      assocRQ.addPresContext(aFact.newPresContext(pcid, as, tsUIDs));
-   }
-   
-   private void initOverwrite(Configuration cfg) {
-      for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
-         String key = (String)it.nextElement();
-         if (key.startsWith("set.")) {
-            try {
-               overwrite.putXX(Tags.forName(key.substring(4)),
-                  cfg.getProperty(key));
-            } catch (Exception e) {
-               throw new IllegalArgumentException(
-                  "Illegal entry in dcmsnd.cfg - "
-                     + key + "=" + cfg.getProperty(key));
-            }
-         }
-      }
-   }
-   
+         
    private boolean initPollDirSrv(Configuration cfg) {
       String pollDirName = cfg.getProperty("poll-dir", "", "<none>", "");
       if (pollDirName.length() == 0) {
@@ -627,11 +456,11 @@ public class DcmSnd implements PollDirSrv.Handler {
          char[] keypasswd = cfg.getProperty("key-passwd","dcm4che").toCharArray();
          tls.setKey(
             tls.loadKeyStore(
-               DcmSnd.class.getResource(cfg.getProperty("tls-key","dcmsnd.key")),
+               MppsSnd.class.getResource(cfg.getProperty("tls-key","mppssnd.key")),
                keypasswd),
             keypasswd);
          tls.setTrust(tls.loadKeyStore(
-            DcmSnd.class.getResource(cfg.getProperty("tls-cacerts", "cacerts")),
+            MppsSnd.class.getResource(cfg.getProperty("tls-cacerts", "cacerts")),
             cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
       } catch (Exception ex) {
          throw new RuntimeException("Could not initalize TLS configuration - "

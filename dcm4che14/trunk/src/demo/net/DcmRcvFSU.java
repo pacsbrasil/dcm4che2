@@ -100,12 +100,7 @@ class DcmRcvFSU implements AssociationListener, Runnable
    private static int[] toTags(String[] names) {
       int[] retval = new int[names.length];
       for (int i = 0; i < names.length; ++i) {
-         try {
-            retval[i] = Tags.forName(names[i]);
-         } catch (NoSuchFieldException nfe) {
-            throw new IllegalArgumentException(
-               "Illegal entry in dcmrcv.cfg - " + nfe.getMessage());
-         }
+         retval[i] = Tags.forName(names[i]);
       }
       return retval;
    }
@@ -133,14 +128,7 @@ class DcmRcvFSU implements AssociationListener, Runnable
       if (ds == null) {
          map.put(type, ds = objFact.newDataset());
       }
-      int tag;
-      try {
-         tag = Tags.forName(key.substring(pos2+1));
-      } catch (NoSuchFieldException e) {
-         throw new IllegalArgumentException("Unkown tag name in dcmrcv.cfg - "
-               + key.substring(pos2+1));
-      }
-      ds.putXX(tag);
+      ds.putXX(Tags.forName(key.substring(pos2+1)));
    }
       
    // Public --------------------------------------------------------

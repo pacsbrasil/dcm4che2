@@ -62,7 +62,7 @@ package org.dcm4che.dict;
 /** Provides tag constants.
  *
  * @author gunter zeilinger
- * @version 1.0
+ * @version 1.0.1
  */
 public class Tags {
 
@@ -78,12 +78,13 @@ public class Tags {
         return sb;
     }
 
-    public static final int forName(String name)
-    throws NoSuchFieldException {
+    public static final int forName(String name) {
        try {
           return Tags.class.getField(name).getInt(null);
        } catch (IllegalAccessException e) {
           throw new Error(e);
+       } catch (NoSuchFieldException e) {
+          throw new IllegalArgumentException("Unkown Tag Name: " + name);
        }
     }
 

@@ -387,6 +387,18 @@
       </fileset>
     </jar>
 
+    <!-- Build mppssnd.jar -->
+    <jar jarfile="${build.jars}/demo/mppssnd.jar"
+         manifest="${source.demo}/net/mppssnd.mf">
+      <fileset dir="${build.classes}">
+        <include name="MppsSnd*.class"/>
+        <include name="Configuration.class"/>
+      </fileset>
+      <fileset dir="${source.demo}/net">
+        <include name="resources/MppsSnd.properties"/>
+      </fileset>
+    </jar>
+
     <!-- Build dcmrcv.jar -->
     <jar jarfile="${build.jars}/demo/dcmrcv.jar"
          manifest="${source.demo}/net/dcmrcv.mf">

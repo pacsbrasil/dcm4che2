@@ -46,7 +46,7 @@ public interface PollDirSrv
    interface Handler
    {
       void openSession() throws Exception;
-      void process(File file) throws Exception;
+      boolean process(File file) throws Exception;
       void closeSession();
    }
 

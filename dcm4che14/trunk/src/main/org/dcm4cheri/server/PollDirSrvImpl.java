@@ -216,9 +216,10 @@ public class PollDirSrvImpl implements PollDirSrv
             for (int i = 0; i < files.length; ++i) {
                try {
                   log.info("process " + files[i]);
-                  handler.process(files[i]);
-                  ++doneCount;
-                  success(files[i]);
+                  if (handler.process(files[i])) {
+                     ++doneCount;
+                     success(files[i]);
+                  }
                } catch (Exception e) {
                   ++failCount;
                   log.error("process " + files[i] + " failed!", e);

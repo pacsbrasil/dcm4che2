@@ -390,18 +390,13 @@ public class DcmRcv extends DcmServiceBase {
    }
    
    private void initPresContext(String asName, String[] tsNames) {
-      try {
-         String as = UIDs.forName(asName);
-         String[] tsUIDs = new String[tsNames.length];
-         for (int i = 0; i < tsUIDs.length; ++i) {
-            tsUIDs[i] = UIDs.forName(tsNames[i]);
-         }
-         policy.addPresContext(as, tsUIDs);
-         services.bind(as, this);
-      } catch (NoSuchFieldException nfe) {
-         throw new IllegalArgumentException(
-            "Illegal entry in dcmrcv.cfg - " + nfe.getMessage());
+      String as = UIDs.forName(asName);
+      String[] tsUIDs = new String[tsNames.length];
+      for (int i = 0; i < tsUIDs.length; ++i) {
+         tsUIDs[i] = UIDs.forName(tsNames[i]);
       }
+      policy.addPresContext(as, tsUIDs);
+      services.bind(as, this);
    }
    
    private void initOverwrite(Configuration cfg) {
