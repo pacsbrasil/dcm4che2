@@ -117,7 +117,7 @@ class FilmSessionService
          AAssociateRQ aarq = a.getAAssociateRQ();
          PresContext pc =aarq.getPresContext(rq.pcid());
          String asuid = pc.getAbstractSyntaxUID();
-         FilmSession session = new FilmSession(scp, asuid, uid, ds, dir);
+         FilmSession session = new FilmSession(scp, asuid, uid, ds, dir, rspCmd);
          scp.initSessionSpoolDir(dir);
          a.putProperty("FilmSession", session);
          a.addAssociationListener(this);
@@ -138,7 +138,7 @@ class FilmSessionService
          if (session == null || !uid.equals(session.uid())) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
          }
-         session.setDataset(ds);
+         session.updateAttributes(ds, rspCmd);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to update Basic Film Session SOP Instance", e);

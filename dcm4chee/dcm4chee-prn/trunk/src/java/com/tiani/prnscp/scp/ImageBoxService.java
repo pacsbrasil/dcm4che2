@@ -165,7 +165,7 @@ class ImageBoxService extends DcmServiceBase
       if (filmbox == null) {
          throw new DcmServiceException(Status.NoSuchObjectInstance);
       }
-      DcmElement sq = filmbox.getDataset().get(Tags.RefImageBoxSeq);
+      DcmElement sq = filmbox.getAttributes().get(Tags.RefImageBoxSeq);
       for (int i = 0, n = sq.vm(); i < n; ++i) {
          Dataset ref = sq.getItem(i);
          if (ref.getString(Tags.RefSOPInstanceUID).equals(boxuid)) {

@@ -141,7 +141,7 @@ class FilmBoxService extends DcmServiceBase
          if (session == null || !uid.equals(session.getCurrentFilmBoxUID())) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
          }
-         session.getCurrentFilmBox().setDataset(ds, pluts);
+         session.getCurrentFilmBox().updateAttributes(ds, pluts);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to update Basic Film Box SOP Instance", e);

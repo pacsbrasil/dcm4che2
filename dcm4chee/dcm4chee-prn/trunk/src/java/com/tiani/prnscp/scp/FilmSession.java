@@ -22,13 +22,16 @@
 
 package com.tiani.prnscp.scp;
 
+import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -60,6 +63,7 @@ class FilmSession {
    private final String imageBoxCUID;
    private final String hardcopyCUID;
    private final int imageSeqTag;
+   private final Dataset prnCfgItem;
    private final LinkedHashMap filmBoxes = new LinkedHashMap();
    private String curFilmBoxUID = null;
    private FilmBox curFilmBox = null;
@@ -67,24 +71,32 @@ class FilmSession {
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   public FilmSession(PrintScpService scp, String asuid, String uid,
-         Dataset session, File dir)
+   public FilmSession(PrintScpService scp, String metaCUID, String uid,
+         Dataset session, File dir, Command rspCmd)
+      throws DcmServiceException
    {
       this.scp = scp;
-      if (asuid.equals(UIDs.BasicGrayscalePrintManagement)) {
+      if (metaCUID.equals(UIDs.BasicGrayscalePrintManagement)) {
          imageBoxCUID = UIDs.BasicGrayscaleImageBox;
          hardcopyCUID = UIDs.HardcopyGrayscaleImageStorage;
          imageSeqTag = Tags.BasicGrayscaleImageSeq;
-      } else if (asuid.equals(UIDs.BasicColorPrintManagement)) {
+      } else if (metaCUID.equals(UIDs.BasicColorPrintManagement)) {
          imageBoxCUID = UIDs.BasicColorImageBox;
          hardcopyCUID = UIDs.HardcopyColorImageStorage;
          imageSeqTag = Tags.BasicColorImageSeq;
       } else {
-         throw new IllegalArgumentException("asuid: " + asuid);
+         throw new DcmServiceException(Status.ProcessingFailure);
       }
       this.uid = uid;
       this.session = session;
       this.dir = dir;
+      this.prnCfgItem = scp.getPrinterConfigurationFor(metaCUID);
+      if (prnCfgItem == null) {
+         scp.getLog().warn(
+            "Could not find Printer Confguration for Meta SOP Class: "
+            + metaCUID);
+      }
+      check(session, rspCmd);
    }
    
    // Public --------------------------------------------------------
@@ -100,10 +112,10 @@ class FilmSession {
       return dir;
    }   
    
-   public Dataset getDataset() {
+   public Dataset getAttributes() {
       return session;
    }
-   
+
    public String getImageBoxCUID() {
       return imageBoxCUID;
    }
@@ -116,7 +128,10 @@ class FilmSession {
       return imageSeqTag;
    }
 
-   public void setDataset(Dataset modification) {
+   public void updateAttributes(Dataset modification, Command rspCmd)
+      throws DcmServiceException
+   {
+      check(modification, rspCmd);
       session.putAll(modification);
    }
 
@@ -151,7 +166,7 @@ class FilmSession {
       if (curFilmBox == null) {
          throw new IllegalStateException();
       }
-      curFilmBox.setDataset(filmbox, pluts);
+      curFilmBox.updateAttributes(filmbox, pluts);
    }
    
    public void deleteFilmBox() {
@@ -164,5 +179,38 @@ class FilmSession {
    }
       
    // Private -------------------------------------------------------
+   private void check(Dataset ds, Command rsp)
+      throws DcmServiceException
+   {
+      if (!checkPrintPriority(ds.getString(Tags.PrintPriority))) {
+         rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+      }
+      checkMediumType(ds.getString(Tags.MediumType));
+      if (ds.getInt(Tags.MemoryAllocation, 0) != 0) {
+         rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
+      }      
+   }
    
+   private boolean checkPrintPriority(String val) {
+      return val == null 
+         || "HIGH".equals(val)
+         || "LOW".equals(val)
+         || "MED".equals(val);
+   }
+   
+   private void checkMediumType(String val)
+      throws DcmServiceException
+   {
+      if (val != null && prnCfgItem != null) {
+         DcmElement sq = prnCfgItem.get(Tags.MediaInstalledSeq);
+         for (int i = 0, n = sq.vm(); i < n; ++i) {
+            if (val.equals(sq.getItem(i).getString(Tags.MediumType))) {
+               return;
+            }
+         }
+         scp.getLog().warn("Requested Media Type: " + val + " is not installed");
+         throw new DcmServiceException(Status.InvalidAttributeValue);
+      }
+   }
+         
 }

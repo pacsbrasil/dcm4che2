@@ -82,11 +82,11 @@ class FilmBox {
       return "FilmBox[uid=" + uid + ", " + imageBoxes.size() + " ImageBoxes]";
    }      
    
-   public Dataset getDataset() {
+   public Dataset getAttributes() {
       return dataset;
    }
 
-   public void setDataset(Dataset modification, HashMap pluts)
+   public void updateAttributes(Dataset modification, HashMap pluts)
       throws DcmServiceException
    {
       addPLUT(modification, pluts);

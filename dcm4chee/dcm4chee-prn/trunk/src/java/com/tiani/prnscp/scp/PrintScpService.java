@@ -47,6 +47,7 @@ import org.jboss.system.server.ServerConfigLocator;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -426,7 +427,21 @@ public class PrintScpService
             "Failed to access printer configuration");
       }
    }
-   
+      
+   Dataset getPrinterConfigurationFor(String metaSOPcuid)
+      throws DcmServiceException
+   {
+      Dataset pc = getPrinterConfiguration();
+      DcmElement sq = pc.get(Tags.PrinterConfigurationSeq);
+      for (int i = 0, n = sq.vm(); i < n; ++i) {
+         Dataset item = sq.getItem(i);
+         if (metaSOPcuid.equals(item.getString(Tags.SOPClassesSupported, 0))) {
+            return item;
+         }
+      }
+      return null;
+   }
+      
    void createPrintJob(FilmSession session, boolean all)
       throws DcmServiceException
    {
@@ -447,12 +462,15 @@ public class PrintScpService
             storePrint(jobdir, session, session.getCurrentFilmBox());
          }
          try {
-            Dataset ds = session.getDataset();
+            Dataset ds = session.getAttributes();
             TextMessage msg = queueSession.createTextMessage(jobdir.getPath());
             msg.setIntProperty("NumberOfCopies", ds.getInt(Tags.NumberOfCopies, 1));  
             msg.setStringProperty("MediumType", ds.getString(Tags.MediumType)); 
             msg.setStringProperty("FilmDestination", ds.getString(Tags.FilmDestination)); 
-            queueSend.send(msg);
+            queueSend.send(msg,
+               Message.DEFAULT_DELIVERY_MODE,
+               toPriority(ds.getString(Tags.PrintPriority)), 
+               Message.DEFAULT_TIME_TO_LIVE);
          } catch (JMSException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
          }
@@ -460,6 +478,16 @@ public class PrintScpService
          deltree(jobdir);
          throw e;
       }
+   }
+   
+   private int toPriority(String prior) {
+      if ("LOW".equals(prior)) {
+         return Message.DEFAULT_PRIORITY - 1;
+      }
+      if ("HIGH".equals(prior)) {
+         return Message.DEFAULT_PRIORITY + 1;
+      }
+      return Message.DEFAULT_PRIORITY;
    }
 
    void deleteJob(File job) {
