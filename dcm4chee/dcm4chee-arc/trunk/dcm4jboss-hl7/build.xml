@@ -17,7 +17,7 @@
 	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 
-	<property name="hapi.home" value="${user.home}/hapi_0.4.1"/>
+	<property name="hapi.dist" value="../hapi/dist"/>
 	<property name="hapi.jar" value="hapi-0.4.1.jar"/>
 	
 	<property name="src.java" value="${basedir}/src/java"/>
@@ -29,7 +29,7 @@
 	
 	<path id="class.path">
 		<pathelement location="${dcm4che.jar}"/>
-		<pathelement location="${hapi.home}/${hapi.jar}"/>
+		<pathelement location="${hapi.dist}/${hapi.jar}"/>
 		<pathelement location="${dcm4jboss-ejb.lib}/${ejb-client.jar}"/>
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
