@@ -36,6 +36,7 @@ import java.awt.image.DataBuffer;
  * @version 1.0.0
  */
 abstract class BasicColorModelParam implements ColorModelParam {   
+    protected final int dataType;
     protected final int size;
     protected final int bits;
     protected final int bits_8;
@@ -45,6 +46,18 @@ abstract class BasicColorModelParam implements ColorModelParam {
 
     /** Creates a new instance of PaletteColorParam */
     protected BasicColorModelParam(Dataset ds) throws DcmValueException {
+        int alloc = ds.getInt(Tags.BitsAllocated,8);
+        switch (alloc) {
+            case 8:
+                this.dataType = DataBuffer.TYPE_BYTE;
+                break;
+            case 16:
+                this.dataType = DataBuffer.TYPE_USHORT;
+                break;
+            default:
+                throw new UnsupportedOperationException(
+                        "" + alloc + " Bits Allocated not supported!");
+        }
         this.bits = ds.getInt(Tags.BitsStored, 8);
         if (bits < 8 || bits > 16) {
             throw new UnsupportedOperationException("Bits Stored: " + bits
@@ -68,6 +81,7 @@ abstract class BasicColorModelParam implements ColorModelParam {
     }
 
     protected BasicColorModelParam(BasicColorModelParam other) {
+        this.dataType = other.dataType;
         this.size = other.size;
         this.bits = other.bits;
         this.bits_8 = other.bits_8;

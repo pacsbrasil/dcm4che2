@@ -67,14 +67,14 @@ final class MonochromeParam extends BasicColorModelParam  {
                 width[i] = (max - min) / slope;
             }
         }
-        this.hashcode =
-                hashcode(inverse, min, max, slope, intercept, center, width);
+        this.hashcode = hashcode(dataType, inverse, min, max,
+                slope, intercept, center, width);
     }
     
-    private static int hashcode(int inverse, int min, int max,
+    private static int hashcode(int dataType, int inverse, int min, int max,
             float slope, float intercept, float[] center, float[] width) {
         StringBuffer sb = new StringBuffer();
-        sb.append(inverse).append(min).append(max)
+        sb.append(dataType).append(inverse).append(min).append(max)
                 .append(slope).append(intercept);
         if (Math.min(center.length, width.length) != 0) {
             sb.append(center[0]).append(width[0]);
@@ -90,8 +90,8 @@ final class MonochromeParam extends BasicColorModelParam  {
         this.intercept = other.intercept;
         this.center = new float[] { center1 };
         this.width = new float[] { width1 };
-        this.hashcode =
-                hashcode(inverse, min, max, slope, intercept, center, width);
+        this.hashcode = hashcode(dataType, inverse, min, max,
+                slope, intercept, center, width);
     }
     
     public ColorModelParam update(float center, float width, boolean inverse) {
@@ -155,49 +155,56 @@ final class MonochromeParam extends BasicColorModelParam  {
         return mask(pxValue)*slope + intercept;
     }    
     
+    private static int toARGB(int grey) {
+        return 0xff000000 // alpha
+            | (grey << 16)
+            | (grey << 8)
+            | (grey);
+    }
+    
     public ColorModel newColorModel() {
-        byte[] lut = new byte[size];
+        int[] cmap = new int[size];
         if (getNumberOfWindows() == 0) {
             if (min == 0) {
                 for (int i = 0; i < size; ++i) {
-                    lut[i] = (byte)((i>>bits_8) ^ inverse);
+                    cmap[i] = toARGB(((i>>bits_8) ^ inverse) & 0xff);
                 }
             } else {
                 for (int i = 0, j = size>>1; j < size; ++j,++i) {
-                    lut[i] = (byte)((j>>bits_8) ^ inverse);
-                    lut[j] = (byte)((i>>bits_8) ^ inverse);
+                    cmap[i] = toARGB(((j>>bits_8) ^ inverse) & 0xff);
+                    cmap[j] = toARGB(((i>>bits_8) ^ inverse) & 0xff);
                 }
             }
         } else {
-            createLUT(lut, (int)((center[0] - intercept)/slope),
+            createCMAP(cmap, (int)((center[0] - intercept)/slope),
                     (int)(width[0]/slope));
         }
-        return new IndexColorModel(bits, size, lut, lut, lut);
+        return new IndexColorModel(bits, size, cmap, 0, false, -1, dataType);
     }
     
-    private void createLUT(byte[] lut, int c, int w) {
+    private void createCMAP(int[] cmap, int c, int w) {
         int u = c - (w>>1);
         int o = u + w;
         if (u > 0 && inverse != 0) {
-            Arrays.fill(lut, 0, Math.min(u,max), (byte)255);
+            Arrays.fill(cmap, 0, Math.min(u,max), 0xffffffff);
         }
         if (o < max && inverse == 0) {
-            Arrays.fill(lut, Math.max(0,o), max, (byte)255);
+            Arrays.fill(cmap, Math.max(0,o), max, 0xffffffff);
         }
         for (int i = Math.max(0,u), n = Math.min(o,max); i < n; ++i) {
-            lut[i] = (byte)(((i-u)<<8) / w ^ inverse);
+            cmap[i] = toARGB((((i-u)<<8) / w ^ inverse) & 0xff);
         }
         if (min == 0) {
             return; // all done for unsigned px val
         }
         if (u > min && inverse != 0) {
-            Arrays.fill(lut, size>>1, Math.min(u+size, size), (byte)255);
+            Arrays.fill(cmap, size>>1, Math.min(u+size, size), 0xffffffff);
         }
         if (o < 0 && inverse == 0) {
-            Arrays.fill(lut, Math.max(o+size,size>>1), size, (byte)255);
+            Arrays.fill(cmap, Math.max(o+size,size>>1), size, 0xffffffff);
         }
         for (int i = Math.max(min,u), n = Math.min(o,0); i < n; ++i) {
-            lut[i+size] = (byte)(((i-u)<<8) / w ^ inverse);
+            cmap[i+size] = toARGB((((i-u)<<8) / w ^ inverse) & 0xff);
         }
     }
 }

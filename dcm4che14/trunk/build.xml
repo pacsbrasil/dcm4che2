@@ -396,6 +396,12 @@
       </fileset>
     </jar>
 
+    <!-- Build dcm2jpg.jar -->
+    <jar jarfile="${build.jars}/demo/dcm2jpg.jar"
+         manifest="${source.demo}/imageio/dcm2jpg.mf"
+         basedir="${build.classes}"
+         includes="Dcm2Jpg.class"/>
+
     <!-- Build imgflip.jar -->
     <jar jarfile="${build.jars}/demo/imgflip.jar"
          manifest="${source.demo}/imageio/imgflip.mf"
@@ -527,6 +533,8 @@
     <copy todir="${release.demo}" filtering="no">
       <fileset dir="${source.demo}">
          <include name="**/*.java"/>
+         <include name="**/*.properties"/>
+         <include name="**/*.xml"/>
          <include name="**/*.xsl"/>
       </fileset>
     </copy>
