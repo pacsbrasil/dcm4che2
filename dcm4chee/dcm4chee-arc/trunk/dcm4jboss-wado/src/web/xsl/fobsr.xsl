@@ -22,6 +22,9 @@
             </fo:layout-master-set>
             <fo:page-sequence master-reference="page">
             	<fo:static-content flow-name="xsl-region-before">
+          <fo:block text-align="center">
+            <fo:external-graphic src="url(http://127.0.0.1:8080/dcm4jboss-wado/wado?requestType=WADO&amp;studyUID=1.2.528.1.1001.100.2.801.3313.36309633972.20050118155723703&amp;seriesUID=1.2.528.1.1001.100.3.801.3313.36309633972.20050118155723718&amp;objectUID=1.2.528.1.1001.100.4.801.3313.36309633972.20050118155723734)"/>
+         </fo:block>
             		<fo:block font-size="20pt"  text-align="center" font-weight="bold" >
             			<xsl:value-of select="attr[@tag='0040A043']/item/attr[@tag='00080104']"/>
             		</fo:block>
@@ -101,10 +104,11 @@
 		  <xsl:choose>
 			  <xsl:when test="attr[@tag='0040A040']='TEXT'">
 				<fo:block font-size="12pt"><xsl:value-of select="attr[@tag='0040A160']"/></fo:block>
+			              <xsl:apply-templates select="attr[@tag='0040A730']/item" mode="content"/>
 			  </xsl:when>
 
 			  <xsl:when test="attr[@tag='0040A040']='IMAGE '">
-			  	<fo:block font-size="12pt">Image not supported!</fo:block>
+			              <xsl:apply-templates select="attr[@tag='00081199']/item" mode="image"/>
 			  </xsl:when>
 	
 			  <xsl:when test="attr[@tag='0040A040']='CODE'">
@@ -136,5 +140,17 @@
 	</fo:list-block>
 	
 	</xsl:template>
-   
+ 
+	<xsl:template match="item" mode="image">
+		<fo:block>IMAGE</fo:block>
+
+	    <fo:block>
+	        <fo:external-graphic >
+	            <xsl:attribute name="src">url(http://127.0.0.1:8080/dcm4jboss-wado/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="attr[@tag='00081155']"/>)</xsl:attribute>
+	        </fo:external-graphic >
+	    </fo:block>
+
+	</xsl:template>
+	    
+    
 </xsl:stylesheet>
