@@ -434,8 +434,8 @@ class FilesetBuilder {
                     iconPixelData[i] = (byte) bi.getRGB(x, y);
         }
         iconItem.putCS(Tags.PhotometricInterpretation, pmi);
-        iconItem.putUS(Tags.Rows, bi.getHeight());
-        iconItem.putUS(Tags.Columns, bi.getWidth());
+        iconItem.putUS(Tags.Rows, h);
+        iconItem.putUS(Tags.Columns, w);
         iconItem.putUS(Tags.SamplesPerPixel, 1);
         iconItem.putUS(Tags.BitsAllocated, 8);
         iconItem.putUS(Tags.BitsStored, 8);
