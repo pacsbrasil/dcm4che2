@@ -94,11 +94,25 @@
     
     <!--
     Film Size ID identifiers supported by the printer for the Basic Film Box. 
-    Multiple values can be specified, must be separated by '\' characters. 
+    Multiple values can be specified, must be separated by '\' characters
+    or line breaks. 
     Format: id:WidthxHeight, with  width and height in mm.
     The first specified value is used as the default Film Size.
     -->
-    <attribute name="FilmSizeID">A4:210x297\A3:297x420</attribute>
+    <attribute name="FilmSizeID">
+      A4:210x297
+      A3:297x420
+      8INX10IN:203x254
+      8_5INX11IN:216x279
+      10INX12IN:265x305
+      10INX14IN:265x355
+      11INX14IN:279x355
+      11INX17IN:265x432
+      14INX14IN:355x355
+      14INX17IN:432x432
+      24CMX24CM:240x240
+      24CMX30CM:240x300
+    </attribute>
         
     <!--
     Magnification Type identifiers supported by the printer for the Basic 

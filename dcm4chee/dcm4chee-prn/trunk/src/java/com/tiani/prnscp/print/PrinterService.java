@@ -647,9 +647,9 @@ public class PrinterService
     */
    public void setFilmSizeID(String filmSizeID) {
       LinkedHashMap tmp = new LinkedHashMap();
-      StringTokenizer tk = new StringTokenizer(filmSizeID, "\\");
-      while (tk.hasMoreTokens()) {
-         String s = tk.nextToken();
+      String[] strings = toStringArray(filmSizeID);
+      for (int i = 0; i < strings.length; ++i) {
+         String s = strings[i];
          int c1 = s.indexOf(':');
          int xpos = s.indexOf('x', c1+1);
          float[] wh = {
@@ -725,9 +725,9 @@ public class PrinterService
     */
    public void setResolutionID(String resolutionID) {
       LinkedHashMap tmp = new LinkedHashMap();
-      StringTokenizer tk = new StringTokenizer(resolutionID, "\\");
-      while (tk.hasMoreTokens()) {
-         String s = tk.nextToken();
+      String[] strings = toStringArray(resolutionID);
+      for (int i = 0; i < strings.length; ++i) {
+         String s = strings[i];
          int c1 = s.indexOf(':');
          int xpos = s.indexOf('x', c1+1);
          PrinterResolution pr = new PrinterResolution(
@@ -1188,6 +1188,15 @@ public class PrinterService
       }
       calibration.setTimeOfLastCalibration(timeOfLastCalibration);
    }      
+   
+   private static String[] toStringArray(String text) {
+      StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n\\");
+      String[] a = new String[stk.countTokens()];
+      for (int i = 0; i < a.length; ++i) {
+         a[i] = stk.nextToken();
+      }
+      return a;
+   }
    
    private static float[] toFloatArray(String text) {
       StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n\\");
