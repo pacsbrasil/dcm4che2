@@ -313,7 +313,7 @@
   			<fileset dir="${dcm4jboss-hl7.home}/src/etc">
    				<include name="deploy/*.xml"/>
    				<include name="conf/xmdesc/*.xml"/>
-   				<include name="conf/xsl/*.xsl"/>
+   				<include name="conf/xsl/hl7/*.xsl"/>
    			</fileset>
    		</copy>
     </target>
