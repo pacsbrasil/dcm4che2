@@ -23,30 +23,18 @@
 
 package org.dcm4che.util;
 
-import java.util.StringTokenizer;
-
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.3
  */
-public final class DcmURL extends Object {
-    // Constants -----------------------------------------------------    
-    public static final String ANONYMOUS = "ANONYMOUS";
-    public static final int DICOM_PORT = 104;
-    
-    private static final int DELIMITER = -1;
-    private static final int CALLED_AET = 0;
-    private static final int CALLING_AET = 1;
-    private static final int HOST = 2;
-    private static final int PORT = 3;
-    private static final int END = 4;
-    
+public final class MLLP_URL extends Object {
+    // Constants -----------------------------------------------------        
     private static final String[] PROTOCOLS = {
-        "dicom",
-        "dicom-tls",
-        "dicom-tls.nodes",
-        "dicom-tls.3des"
+        "mllp",
+        "mllp-tls",
+        "mllp-tls.nodes",
+        "mllp-tls.3des"
     };
 
     private static final String[][] CIPHERSUITES = {
@@ -66,28 +54,17 @@ public final class DcmURL extends Object {
     // Attributes ----------------------------------------------------
     private String protocol;
     private String[] cipherSuites;
-    private String calledAET;
-    private String callingAET = ANONYMOUS;
     private String host;
-    private int port = DICOM_PORT;
+    private int port = 0;
 
     // Constructors --------------------------------------------------
-    public DcmURL(String spec) {
+    public MLLP_URL(String spec) {
         parse(spec.trim());
-        if (calledAET == null) {
-            throw new IllegalArgumentException("Missing called AET");
-        }
-        if (host == null) {
-            throw new IllegalArgumentException("Missing host name");
-        }
     }
 
-    public DcmURL(String protocol, String calledAET, String callingAET,
-            String host, int port) {
+    public MLLP_URL(String protocol, String host, int port) {
         this.protocol = protocol.toLowerCase();
         this.cipherSuites = toCipherSuites(protocol);
-        this.calledAET = calledAET;
-        this.callingAET = callingAET;
         this.host = host;
         this.port = port;
     }
@@ -101,14 +78,6 @@ public final class DcmURL extends Object {
         return cipherSuites;
     }
     
-    public final String getCallingAET() {
-        return callingAET;
-    }
-    
-    public final String getCalledAET() {
-        return calledAET;
-    }
-    
     public final String getHost() {
         return host;
     }
@@ -118,8 +87,7 @@ public final class DcmURL extends Object {
     }
     
     public String toString() {
-        return protocol + "://" + calledAET + ':' + callingAET
-                + '@' + host + ':' + port;
+        return protocol + "://" + host + ':' + port;
     }
 
     public static String[] toCipherSuites(String protocol) {
@@ -134,49 +102,17 @@ public final class DcmURL extends Object {
     // Private -------------------------------------------------------
     
     private void parse(String s) {
-        int delimPos = s.indexOf("://");
-        if (delimPos == -1) {
+        int delimPos1 = s.indexOf("://");
+        if (delimPos1 == -1) {
             throw new IllegalArgumentException(s);
         }
-        protocol = s.substring(0, delimPos).toLowerCase();
-        cipherSuites = toCipherSuites(protocol);
-        StringTokenizer stk = new StringTokenizer(
-            s.substring(delimPos+3),":@/", true);
-        String tk;
-        int state = CALLED_AET;
-        boolean tcpPart = false;
-        while (stk.hasMoreTokens()) {
-            tk = stk.nextToken();
-            switch (tk.charAt(0)) {
-                case ':':
-                    state = tcpPart ? PORT : CALLING_AET;
-                    break;
-                case '@':
-                    tcpPart = true;
-                    state = HOST;
-                    break;
-                case '/':
-                    return;
-                default:
-                    switch (state) {
-                        case CALLED_AET:
-                            calledAET = tk;
-                            break;
-                        case CALLING_AET:
-                            callingAET = tk;
-                            break;
-                        case HOST:
-                            host = tk;
-                            break;
-                        case PORT:
-                            port = Integer.parseInt(tk);
-                            return;
-                        default:
-                            throw new RuntimeException();
-                    }
-                    state = DELIMITER;
-                    break;
-            }
+        int delimPos2 = s.indexOf(':', delimPos1+3);
+        if (delimPos2 == -1) {
+            throw new IllegalArgumentException(s);
         }
+        protocol = s.substring(0, delimPos1).toLowerCase();
+        cipherSuites = toCipherSuites(protocol);
+        host = s.substring(delimPos1+3, delimPos2);
+        port = Integer.parseInt(s.substring(delimPos2+1));
     }
 }

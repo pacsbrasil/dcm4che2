@@ -86,9 +86,11 @@ class VerificationImpl implements Verification {
         ds.putDT(Tags.VerificationDateTime, new Date(time));
         ds.putPN(Tags.VerifyingObserverName, observerName);
         ds.putLO(Tags.VerifyingOrganization, observerOrg);
-        observerCode.toDataset(
-            ds.putSQ(Tags.VerifyingObserverIdentificationCodeSeq)
-                    .addNewItem());
+        if (observerCode != null) {
+            observerCode.toDataset(
+                ds.putSQ(Tags.VerifyingObserverIdentificationCodeSeq)
+                        .addNewItem());
+        }
     }
     
 }
