@@ -69,41 +69,43 @@ public class MoveScuService
     private static final int INVOKE_FAILED_STATUS = -1;
 
     private DataSourceFactory dsf = new DataSourceFactory(log);
-    private long[] retryIntervalls = {};
+    private long[] retryIntervalls = {
+    };
     private MoveOrderQueue queue;
-    private boolean running = false;
+    private int invoked = 0;
+    private int maxConcurrentMoves = 1;
 
     /**
-	 * @jmx.managed-attribute
-	 */
+     * @jmx.managed-attribute
+     */
     public String getDataSource() {
         return dsf.getJNDIName();
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
+     * @jmx.managed-attribute
+     */
     public void setDataSource(String datasource) {
         dsf.setJNDIName(datasource);
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
+     * @jmx.managed-attribute
+     */
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
+     * @jmx.managed-attribute
+     */
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
+     * @jmx.managed-attribute
+     */
     public String getRetryIntervalls() {
         MillisecondArrayEditor e = new MillisecondArrayEditor();
         e.setValue(retryIntervalls);
@@ -111,13 +113,28 @@ public class MoveScuService
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
+     * @jmx.managed-attribute
+     */
     public void setRetryIntervalls(String text) {
         MillisecondArrayEditor e = new MillisecondArrayEditor();
         e.setAsText(text);
         retryIntervalls = (long[]) e.getValue();
     }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getMaxConcurrentMoves() {
+        return maxConcurrentMoves;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setMaxConcurrentMoves(int maxConcurrentMoves) {
+        this.maxConcurrentMoves = maxConcurrentMoves;
+    }
+
 
     private String getAET() {
         String aet = getServiceName().getKeyProperty("aet");
@@ -125,27 +142,17 @@ public class MoveScuService
     }
 
     /**
-	 * @jmx.managed-operation
-	 */
+     * @jmx.managed-operation
+     */
     public void run() {
-        synchronized (this) {
-            if (running) {
-                return;
+        MoveOrderValue order;
+        while (invoked < maxConcurrentMoves && (order = fetchNextOrder()) != null) {
+            try {
+                process(order);
+            } catch (Exception e) {
+                log.error("Failed to invoke " + order);
+                queueFailedMoveOrder(order, INVOKE_FAILED_STATUS);
             }
-            running = true;
-        }
-        try {
-            MoveOrderValue order;
-            while ((order = fetchNextOrder()) != null) {
-                try {
-                    process(order);
-                } catch (Exception e) {
-                    log.error("Failed to invoke " + order);
-                    queueFailedMoveOrder(order, INVOKE_FAILED_STATUS);
-                }
-            }
-        } finally {
-            running = false;
         }
     }
 
@@ -155,8 +162,10 @@ public class MoveScuService
             ConfigurationException,
             InterruptedException,
             IOException {
-        final ActiveAssociation moveAssoc =
+        ActiveAssociation moveAssoc =
             openAssociation(queryAEData(order.getRetrieveAET()));
+        ++invoked;
+        try {
             Command cmd = dof.newCommand();
             cmd.initCMoveRQ(
                 moveAssoc.getAssociation().nextMsgID(),
@@ -174,33 +183,34 @@ public class MoveScuService
                 public void dimseReceived(Association assoc, Dimse dimse) {
                     Command cmd = dimse.getCommand();
                     final int status = cmd.getStatus();
-                    if (status == Status.Pending) {
+                    if (status == Status.Pending || status == Status.Success) {
                         return;
                     }
-                    if (status != Status.Success) {
-	                    Dataset ds = null;
-	                    try {
-	                        ds = dimse.getDataset();
-	                    } catch (IOException e) {
-	                        log.warn("Failed to read Move Response Identifier:", e);
-	                    }
-	                    String[] failedUIDs =
-	                        ds != null
-	                            ? ds.getStrings(Tags.FailedSOPInstanceUIDList)
-	                            : null;
-	                    if (failedUIDs != null) {
-	                        order.setSopIuids(
-	                            StringUtils.toString(failedUIDs, '\\'));
-	                    }
-	                    queueFailedMoveOrder(order, status);
+                    Dataset ds = null;
+                    try {
+                        ds = dimse.getDataset();
+                    } catch (IOException e) {
+                        log.warn("Failed to read Move Response Identifier:", e);
                     }
-					try {
-						moveAssoc.release(false);
-					} catch (Exception e) {
-						log.warn("Failed to release " + moveAssoc.getAssociation());
-					}
+                    String[] failedUIDs =
+                        ds != null
+                            ? ds.getStrings(Tags.FailedSOPInstanceUIDList)
+                            : null;
+                    if (failedUIDs != null) {
+                        order.setSopIuids(
+                            StringUtils.toString(failedUIDs, '\\'));
+                    }
+                    queueFailedMoveOrder(order, status);
                 }
             });
+        } finally {
+            try {
+                moveAssoc.release(true);
+            } catch (Exception e) {
+                log.warn("Failed to release " + moveAssoc.getAssociation());
+            }
+            --invoked;
+        }
     }
 
     private static void putUI(Dataset ds, int tag, String uids) {
@@ -209,7 +219,7 @@ public class MoveScuService
         }
     }
 
-    private MoveOrderValue fetchNextOrder() {
+    private synchronized MoveOrderValue fetchNextOrder() {
         try {
             if (queue == null) {
                 MoveOrderQueueHome home =
@@ -225,7 +235,7 @@ public class MoveScuService
         }
     }
 
-    private void queueFailedMoveOrder(
+    private synchronized void queueFailedMoveOrder(
         MoveOrderValue order,
         int failureStatus) {
         Date newScheduledTime = null;

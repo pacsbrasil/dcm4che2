@@ -214,9 +214,14 @@
     Specifies number of intervalls of retries of failed Move Requests.
     Number of comma separated intervall time entries defines number of 
     retries.  Time values can be specified in milliseconds (##), seconds (##s),
-    minutes (##m), hours (##h) and days (##d);
+    minutes (##m), hours (##h) or days (##d);
 	-->
     <attribute name="RetryIntervalls">1m,10m,1h,6h,1d</attribute>    
+
+    <!-- 
+    Specifies maximal number of concurrently invoked move requests.
+	-->
+    <attribute name="MaxConcurrentMoves">1</attribute>
 
   </mbean>
 
@@ -231,7 +236,7 @@
     <!-- 
     Specifies intervall in milliseconds for polling for new Move Orders in DB.
 	-->
-    <attribute name="SchedulePeriod">10000</attribute>
+    <attribute name="SchedulePeriod">60000</attribute>
 
     <attribute name="StartAtStartup">true</attribute>
     <attribute name="SchedulableMBeanMethod">run</attribute>

@@ -37,6 +37,10 @@
 	-->
     <attribute name="RetryIntervalls">1m,10m,1h,6h,1d</attribute>    
 
+    <!-- 
+    Specifies maximal number of concurrently invoked move requests.
+	-->
+    <attribute name="MaxConcurrentMoves">1</attribute>
   </mbean>
 
   <mbean code="org.jboss.varia.scheduler.Scheduler" 
@@ -50,7 +54,7 @@
     <!-- 
     Specifies intervall in milliseconds for polling for new Move Orders in DB.
 	-->
-    <attribute name="SchedulePeriod">10000</attribute>
+    <attribute name="SchedulePeriod">60000</attribute>
 
     <attribute name="StartAtStartup">true</attribute>
     <attribute name="SchedulableMBeanMethod">run</attribute>
