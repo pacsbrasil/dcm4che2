@@ -570,6 +570,7 @@ public class WADOCacheImpl implements WADOCache {
 		if ( pos != -1 ) {
 			ext = contentType.substring( pos+1 );
 			if ( ext.equalsIgnoreCase("jpeg") ) ext = "jpg";
+			else if ( ext.equalsIgnoreCase("svg+xml") ) ext = "svg";
 			//do some other mapping here;
 			ext = "." + ext;
 		}

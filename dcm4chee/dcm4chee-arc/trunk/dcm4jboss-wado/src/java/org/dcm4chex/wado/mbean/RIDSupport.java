@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +47,7 @@ import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.srom.SRDocumentFactory;
 import org.dcm4che.util.ISO8601DateFormat;
 import org.dcm4cheri.util.StringUtils;
@@ -119,15 +121,33 @@ public class RIDSupport {
 	 * @return Returns the sopCuids.
 	 */
 	public Set getECGSopCuids() {
+		if ( ecgSopCuids == null ) setDefaultECGSopCuids();
 		return ecgSopCuids;
 	}
 	/**
 	 * @param sopCuids The sopCuids to set.
 	 */
 	public void setECGSopCuids(Set sopCuids) {
-		this.ecgSopCuids = sopCuids;
+		if ( sopCuids != null && ! sopCuids.isEmpty() )
+			ecgSopCuids = sopCuids;
+		else {
+			setDefaultECGSopCuids();
+		}
 	}
 	
+	/**
+	 * 
+	 */
+	private void setDefaultECGSopCuids() {
+		ecgSopCuids = new HashSet();
+		ecgSopCuids.add( UIDs.TwelveLeadECGWaveformStorage );
+		ecgSopCuids.add( UIDs.GeneralECGWaveformStorage );
+		ecgSopCuids.add( UIDs.AmbulatoryECGWaveformStorage );
+		ecgSopCuids.add( UIDs.HemodynamicWaveformStorage );
+		ecgSopCuids.add( UIDs.CardiacElectrophysiologyWaveformStorage );
+		ecgSopCuids.add( UIDs.BasicVoiceAudioWaveformStorage );
+	}
+
 	private static List getCardiologyConceptNameCodes() {
 		if ( cardiologyConceptNameCodes == null ) {
 			cardiologyConceptNameCodes = new ArrayList();
@@ -293,7 +313,7 @@ public class RIDSupport {
 	 * 
 	 * @return The content type that is allowed by the request or null.
 	 */
-	private String checkContentType(RIDRequestObject reqObj, String[] types) {
+	protected String checkContentType(RIDRequestObject reqObj, String[] types) {
 		List allowed = reqObj.getAllowedContentTypes();
 		String s;
 		if ( log.isDebugEnabled() ) log.debug(" check against:"+allowed);
@@ -494,22 +514,27 @@ public class RIDSupport {
 		Dataset queryDS = factory.newDataset();
 		queryDS.putCS(Tags.QueryRetrieveLevel, "IMAGE");
 		queryDS.putUI(Tags.SOPInstanceUID, uid );
+		QueryCmd cmd = null;
 		try {
-			QueryCmd cmd = QueryCmd.create( queryDS, false );
+			cmd = QueryCmd.create( queryDS, false );
 			cmd.execute();
 			if ( cmd.next() ) {
 				Dataset ds = cmd.getDataset();
 				String cuid = ds.getString( Tags.SOPClassUID );
 				if ( getECGSopCuids().contains( cuid ) ) {
-					return getECGSupport().getECGDocument( ds );
+					cmd.close();
+					return getECGSupport().getECGDocument( reqObj, ds );
 				} else {
+					cmd.close();
 					return getDocument( reqObj );
 				}
 			} else {
+				cmd.close();
 				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ "not found!");
 			}
 		} catch (SQLException x) {
 			log.error("Cant get RIDDocument:", x);
+			if ( cmd != null ) cmd.close();
 			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
 		}
 	}
@@ -604,7 +629,7 @@ public class RIDSupport {
         Transformer t = template.newTransformer();
         t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
         out.close();
-        //TODO tmpFile.delete();
+        tmpFile.delete();
         if ( ! outFile.exists() ) return null;
         return outFile;
 	}

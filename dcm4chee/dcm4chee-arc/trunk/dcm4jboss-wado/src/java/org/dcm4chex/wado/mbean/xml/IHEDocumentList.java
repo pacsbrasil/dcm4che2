@@ -56,6 +56,7 @@ public class IHEDocumentList implements XMLResponseObject{
 	private List datasets = new ArrayList();
 	private Dataset queryDS = null;
     private TransformerHandler th = null;
+    private XMLUtil util = null;
 	
 	private String docCode;
 	private String docCodeSystem;
@@ -259,7 +260,22 @@ public class IHEDocumentList implements XMLResponseObject{
         if ( xslFile != null ) {
         	th.processingInstruction("xml-stylesheet", "href='"+xslFile+"' type='text/xsl'");
         }
-        startElement("IHEDocumentList", EMPTY_ATTRIBUTES );
+        
+        toXML();
+        
+        th.endDocument();
+	    try {
+			out.flush();
+			out.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void toXML() throws SAXException {
+        util = new XMLUtil( th );
+
+        util.startElement("IHEDocumentList", EMPTY_ATTRIBUTES );
         addDocCode( );
         addActivityTime( );
         Dataset ds;
@@ -276,17 +292,14 @@ public class IHEDocumentList implements XMLResponseObject{
     	addRecordTarget( ds );
         addAuthor();
         addDocuments();
-        endElement("IHEDocumentList");
-        th.endDocument();
-	    try {
-			out.flush();
-			out.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        util.endElement("IHEDocumentList");
 				
         
+	}
+	
+	public void embedXML( TransformerHandler th ) throws SAXException {
+		this.th = th;
+		toXML();
 	}
 
 	/**
@@ -295,51 +308,51 @@ public class IHEDocumentList implements XMLResponseObject{
 	private void addDocCode() throws SAXException {
 		AttributesImpl attr = new AttributesImpl();
 		if ( docCode != null ) 
-			addAttribute(attr, "code", docCode );
+			util.addAttribute(attr, "code", docCode );
 		if ( docCodeSystem != null ) 
-			addAttribute(attr, "codeSystem", docCodeSystem );
+			util.addAttribute(attr, "codeSystem", docCodeSystem );
 		if ( docDisplayName != null ) 
-			addAttribute(attr, "displayName", docDisplayName );
-		startElement("code", attr );
-		endElement("code");
+			util.addAttribute(attr, "displayName", docDisplayName );
+		util.startElement("code", attr );
+		util.endElement("code");
 	}
 	/**
 	 * @throws SAXException
 	 */
 	private void addActivityTime() throws SAXException {
 		AttributesImpl attr = new AttributesImpl();
-		addAttribute( attr, "value", DATETIME_FORMATTER.format( new Date() ));
-		startElement( "activityTime", attr );
-		endElement( "activityTime");
+		util.addAttribute( attr, "value", DATETIME_FORMATTER.format( new Date() ));
+		util.startElement( "activityTime", attr );
+		util.endElement( "activityTime");
 	}
 
 	/**
 	 * @throws SAXException
 	 */
 	private void addRecordTarget(Dataset ds) throws SAXException {
-        startElement("recordTarget", EMPTY_ATTRIBUTES );
-         startElement("patient", EMPTY_ATTRIBUTES);
+		util.startElement("recordTarget", EMPTY_ATTRIBUTES );
+		 util.startElement("patient", EMPTY_ATTRIBUTES);
           //patient id
 		  AttributesImpl attrsPatID = new AttributesImpl();
-		  addAttribute( attrsPatID, "root", ds.getString( Tags.IssuerOfPatientID ) );//issuer id
-		  addAttribute( attrsPatID, "extension", ds.getString( Tags.PatientID ));//patient id within issuer
-		  startElement("id", attrsPatID );
-		  endElement("id");
+		  util.addAttribute( attrsPatID, "root", ds.getString( Tags.IssuerOfPatientID ) );//issuer id
+		  util.addAttribute( attrsPatID, "extension", ds.getString( Tags.PatientID ));//patient id within issuer
+		  util.startElement("id", attrsPatID );
+		  util.endElement("id");
 		  //patientPatient
 		  addPatientPatient( ds );
-		  startElement( "providerOrganization", EMPTY_ATTRIBUTES);
+		  util.startElement( "providerOrganization", EMPTY_ATTRIBUTES);
 		  	AttributesImpl attrsOrgID = new AttributesImpl();
-		  	addAttribute( attrsOrgID, "id", "");//TODO where can i get the id?
-			startElement("id", attrsOrgID );
-			endElement("id");
-			startElement("name", EMPTY_ATTRIBUTES );
+		  	util.addAttribute( attrsOrgID, "id", "");//TODO where can i get the id?
+		  	util.startElement("id", attrsOrgID );
+		  	util.endElement("id");
+		  	util.startElement("name", EMPTY_ATTRIBUTES );
 			  String orgName = ds.getString( Tags.InstitutionName );//TODO Institution name correct?
 			  if ( orgName != null )
 			  	th.characters( orgName.toCharArray(), 0, orgName.length() );
-			endElement("name");			
-		  endElement( "providerOrganization" );
-		 endElement("patient");
-        endElement("recordTarget" );
+			util.endElement("name");			
+		  util.endElement( "providerOrganization" );
+		 util.endElement("patient");
+		util.endElement("recordTarget" );
 	}
 
 	/**
@@ -366,61 +379,61 @@ public class IHEDocumentList implements XMLResponseObject{
         } catch ( Exception x ) {
         	log.info("Exception getting person informations:", x);
         }
-        startElement("patientPatient", EMPTY_ATTRIBUTES );
+        util.startElement("patientPatient", EMPTY_ATTRIBUTES );
         //Names
-        startElement("name", EMPTY_ATTRIBUTES );
-        startElement("family", EMPTY_ATTRIBUTES );
+        util.startElement("name", EMPTY_ATTRIBUTES );
+        util.startElement("family", EMPTY_ATTRIBUTES );
         th.characters(familyName.toCharArray(),0,familyName.length());
-        endElement("family" );       
-        startElement("given", EMPTY_ATTRIBUTES );
+        util.endElement("family" );       
+        util.startElement("given", EMPTY_ATTRIBUTES );
         th.characters(givenName.toCharArray(),0,givenName.length());
-        endElement("given" );       
-        endElement("name" );
+        util.endElement("given" );       
+        util.endElement("name" );
         //genderCode
         AttributesImpl attr = new AttributesImpl();
-        addAttribute( attr, "code", genderCode );
-        addAttribute( attr, "codeSystem", "1.2.840.10008.2.16.4" );//??
-        startElement("administrativeGenderCode", attr );
-        endElement("administrativeGenderCode" );
+        util.addAttribute( attr, "code", genderCode );
+        util.addAttribute( attr, "codeSystem", "1.2.840.10008.2.16.4" );//??
+        util.startElement("administrativeGenderCode", attr );
+        util.endElement("administrativeGenderCode" );
         //birth
         AttributesImpl attrBirth = new AttributesImpl();
-        addAttribute( attrBirth, "value", birthDate );
-        startElement("birthTime", attrBirth );
-        endElement("birthTime" );
-       endElement("patientPatient" );
+        util.addAttribute( attrBirth, "value", birthDate );
+        util.startElement("birthTime", attrBirth );
+        util.endElement("birthTime" );
+       util.endElement("patientPatient" );
 	}
 	
 	private void addAuthor() throws SAXException {
 		//TODO
-        startElement("author", EMPTY_ATTRIBUTES );
-        startElement("noteText", EMPTY_ATTRIBUTES );
+		util.startElement("author", EMPTY_ATTRIBUTES );
+		util.startElement("noteText", EMPTY_ATTRIBUTES );
           AttributesImpl attr = new AttributesImpl();
-          addAttribute( attr, "value", reqURL );
-          startElement("reference", attr );
-          endElement("reference" );
-        endElement("noteText" );       
-        startElement("assignedAuthor", EMPTY_ATTRIBUTES );
+          util.addAttribute( attr, "value", reqURL );
+          util.startElement("reference", attr );
+          util.endElement("reference" );
+        util.endElement("noteText" );       
+        util.startElement("assignedAuthor", EMPTY_ATTRIBUTES );
 		  AttributesImpl attrsID = new AttributesImpl();
-		  addAttribute( attrsID, "root", "" );//TODO
-		  addAttribute( attrsID, "extension", "");//TODO
-		  startElement("id", attrsID );
-		  endElement("id");
-	      startElement("assignedDevice", EMPTY_ATTRIBUTES );
+		  util.addAttribute( attrsID, "root", "" );//TODO
+		  util.addAttribute( attrsID, "extension", "");//TODO
+		  util.startElement("id", attrsID );
+		  util.endElement("id");
+		  util.startElement("assignedDevice", EMPTY_ATTRIBUTES );
 			  AttributesImpl attrsCode = new AttributesImpl();
-			  addAttribute( attrsCode, "code", "" );//TODO
-			  addAttribute( attrsCode, "codeSystem", "");//TODO
-			  addAttribute( attrsCode, "displayName", "");//TODO
-			  startElement("code", attrsCode );
-			  endElement("code");
-	          startElement("manufacturerModelName", EMPTY_ATTRIBUTES );
+			  util.addAttribute( attrsCode, "code", "" );//TODO
+			  util.addAttribute( attrsCode, "codeSystem", "");//TODO
+			  util.addAttribute( attrsCode, "displayName", "");//TODO
+			  util.startElement("code", attrsCode );
+			  util.endElement("code");
+			  util.startElement("manufacturerModelName", EMPTY_ATTRIBUTES );
 	          //TODO th.characters("TODO".toCharArray(),0,4);
-	          endElement("manufacturerModelName" );       
-	          startElement("softwareName", EMPTY_ATTRIBUTES );
+			  util.endElement("manufacturerModelName" );       
+			  util.startElement("softwareName", EMPTY_ATTRIBUTES );
 	          //TODO th.characters("TODO".toCharArray(),0,4);
-	          endElement("softwareName" );       
-		  endElement("assignedDevice" );       
-        endElement("assignedAuthor" );       
-        endElement("author" );
+			  util.endElement("softwareName" );       
+		  util.endElement("assignedDevice" );       
+		 util.endElement("assignedAuthor" );       
+		util.endElement("author" );
 	}
 	
 	private void addDocuments() throws SAXException {
@@ -444,36 +457,36 @@ public class IHEDocumentList implements XMLResponseObject{
 		String title = "DocumentTitle";
 		String link = docRIDUrl+"/IHERetrieveDocument?requestType=DOCUMENT&documentUID="+
 						uid + "&preferredContentType=application/pdf";
-        startElement("component", EMPTY_ATTRIBUTES );
-        startElement("documentInformation", EMPTY_ATTRIBUTES );
+		util.startElement("component", EMPTY_ATTRIBUTES );
+		util.startElement("documentInformation", EMPTY_ATTRIBUTES );
         //id
         AttributesImpl attrID = new AttributesImpl();
-        addAttribute( attrID, "root", uid );
-        startElement("id", attrID );
-        endElement("id" );
+        util.addAttribute( attrID, "root", uid );
+        util.startElement("id", attrID );
+        util.endElement("id" );
         //component code (SUMMARY, SUMMARY_RADIOLOGY,..)
         addComponentCode( ds );        
 		//title
-        startElement("title", EMPTY_ATTRIBUTES );
+        util.startElement("title", EMPTY_ATTRIBUTES );
         th.characters(title.toCharArray(), 0, title.length() );
-        endElement("title" );
+        util.endElement("title" );
         //text
-        startElement("text", EMPTY_ATTRIBUTES );
+        util.startElement("text", EMPTY_ATTRIBUTES );
         AttributesImpl attrTxt = new AttributesImpl();
-        addAttribute( attrTxt, "value", link );
-        startElement("reference", attrTxt );
-        endElement("reference" );
-        endElement("text" );
+        util.addAttribute( attrTxt, "value", link );
+        util.startElement("reference", attrTxt );
+        util.endElement("reference" );
+        util.endElement("text" );
         //statusCode 
         addComponentStatusCode( ds );
         //effective	time
         AttributesImpl attrEff = new AttributesImpl();
-        addAttribute( attrEff, "value", acquisTime );
-        startElement("effectiveTime", attrEff );
-        endElement("effectiveTime" );
+        util.addAttribute( attrEff, "value", acquisTime );
+        util.startElement("effectiveTime", attrEff );
+        util.endElement("effectiveTime" );
        
-        endElement("documentInformation" );
-        endElement("component" );
+        util.endElement("documentInformation" );
+        util.endElement("component" );
 		
 	}
 	
@@ -493,10 +506,10 @@ public class IHEDocumentList implements XMLResponseObject{
 			//TODO: where get the status of waveform storage!?
 		}
         AttributesImpl attrStatusCode = new AttributesImpl();
-        addAttribute( attrStatusCode, "code", statusCode );
-        addAttribute( attrStatusCode, "codeSystem", "" );
-        startElement("statusCode", attrStatusCode );
-        endElement("statusCode" );
+        util.addAttribute( attrStatusCode, "code", statusCode );
+        util.addAttribute( attrStatusCode, "codeSystem", "" );
+        util.startElement("statusCode", attrStatusCode );
+        util.endElement("statusCode" );
 	}
 
 	/**
@@ -533,24 +546,13 @@ public class IHEDocumentList implements XMLResponseObject{
 				displayname = "Cardiac Electrophysiology";
 		}
         AttributesImpl attrCode = new AttributesImpl();
-        addAttribute( attrCode, "code", code );
-        addAttribute( attrCode, "codeSystem", codeSystem );
-        addAttribute( attrCode, "displayName", displayname );
-        startElement("code", attrCode );
-        endElement("code" );
+        util.addAttribute( attrCode, "code", code );
+        util.addAttribute( attrCode, "codeSystem", codeSystem );
+        util.addAttribute( attrCode, "displayName", displayname );
+        util.startElement("code", attrCode );
+        util.endElement("code" );
 	}
 
-	private void startElement( String name, Attributes attr ) throws SAXException {
-	       th.startElement("", name, name, attr );
-	}
-	private void endElement( String name ) throws SAXException {
-	       th.endElement("", name, name );
-	}
-	
-	private void addAttribute( AttributesImpl attr, String name, String value ) {
-		if ( value == null ) return;
-		attr.addAttribute("", name, name, "", value);		
-	}
 	
 	public class DatasetDateComparator implements Comparator {
 

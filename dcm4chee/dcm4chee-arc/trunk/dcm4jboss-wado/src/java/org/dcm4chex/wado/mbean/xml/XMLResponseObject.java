@@ -9,6 +9,7 @@ package org.dcm4chex.wado.mbean.xml;
 import java.io.OutputStream;
 
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.SAXException;
 
@@ -20,4 +21,5 @@ import org.xml.sax.SAXException;
  */
 public interface XMLResponseObject {
 	void toXML( OutputStream out ) throws TransformerConfigurationException, SAXException;
+	void embedXML( TransformerHandler th ) throws TransformerConfigurationException, SAXException;
 }

@@ -9,23 +9,32 @@ package org.dcm4chex.wado.mbean;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 
+import org.apache.fop.apps.Driver;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.RIDResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.NeedRedirectionException;
-import org.dcm4chex.wado.mbean.ecg.WaveForm16Buffer;
-import org.dcm4chex.wado.mbean.ecg.WaveForm8Buffer;
-import org.dcm4chex.wado.mbean.ecg.WaveFormBuffer;
-import org.dcm4chex.wado.mbean.ecg.WaveFormGroup;
-import org.dcm4chex.wado.mbean.xml.SVGCreator;
+import org.dcm4chex.wado.mbean.cache.WADOCache;
+import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
+import org.dcm4chex.wado.mbean.ecg.WaveformGroup;
+import org.dcm4chex.wado.mbean.ecg.WaveformInfo;
+import org.dcm4chex.wado.mbean.ecg.xml.FOPCreator;
+import org.dcm4chex.wado.mbean.ecg.xml.SVGCreator;
 
 /**
  * @author franz.willer
@@ -35,27 +44,58 @@ import org.dcm4chex.wado.mbean.xml.SVGCreator;
  */
 public class ECGSupport {
 
-	public static final String CONTENT_TYPE_SVGXML = "Image/svg+xml";
+	public static final String CONTENT_TYPE_SVGXML = "image/svg+xml";
 	private static Logger log = Logger.getLogger( ECGSupport.class.getName() );
 	
     private static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
 	private RIDSupport ridSupport;
+	
+    private final Driver fop = new Driver();
+	
 
     public ECGSupport( RIDSupport ridSupport ) {
     	this.ridSupport = ridSupport;
     }
 	/**
+	 * @param reqObj
 	 * @param ds
 	 * @return
 	 */
-	public RIDResponseObject getECGDocument(Dataset ds) {
+	public RIDResponseObject getECGDocument(RIDRequestObject reqObj, Dataset ds) {
+		String contentType = reqObj.getParam("preferredContentType");
+		if ( contentType.equals( CONTENT_TYPE_SVGXML ) || contentType.equals( "image/svg" )) {
+			contentType = CONTENT_TYPE_SVGXML;
+			if ( ridSupport.checkContentType( reqObj, new String[]{ CONTENT_TYPE_SVGXML } ) == null ) {
+				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+			}
+		} else if ( contentType.equals( RIDSupport.CONTENT_TYPE_PDF) ) {
+			if ( ridSupport.checkContentType( reqObj, new String[]{ RIDSupport.CONTENT_TYPE_PDF } ) == null ) {
+				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+			}
+		} else {
+			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/svg+xml' are supported !");
+		}
 		log.info("get ECG document!");
+		WADOCache cache = WADOCacheImpl.getRIDCache();
+		File outFile = cache.getFileObject(null, null, reqObj.getParam("documentUID"), contentType );
+		try {
+			if ( outFile.exists() ) {
+				return new RIDStreamResponseObjectImpl( new FileInputStream( outFile ),contentType, HttpServletResponse.SC_OK, null);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		try {
 			Dataset fullDS = getDataset( ds );
 			if ( fullDS == null ) {
 				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Requested document not found::"+ds.getString( Tags.SOPClassUID ) );
 			} else {
-				return handleECG( fullDS );
+				if ( contentType.equals( RIDSupport.CONTENT_TYPE_PDF ) ) {
+					return handlePDF( fullDS, outFile );
+				} else {
+					return handleSVG( fullDS, outFile );
+				}
 			}
 		} catch (NeedRedirectionException e) {
 			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Requested Document is not on this Server! Try to get document from:"+e.getHostname() );
@@ -95,43 +135,62 @@ public class ECGSupport {
 	
     /**
 	 * @param ds
+     * @param outFile
 	 * @return
 	 */
-	private RIDResponseObject handleECG(Dataset ds) {
+	private RIDResponseObject handleSVG(Dataset ds, File outFile) {
 		try { 
 			DcmElement elem = ds.get( Tags.WaveformSeq);
-			WaveFormGroup wfgrp = new WaveFormGroup( elem, 0 );//TODO all groups
+			WaveformGroup wfgrp = new WaveformGroup( elem, 0 );//TODO all groups
 			log.info( wfgrp );
-			ByteBuffer bb = ds.get( Tags.WaveformSeq).getItem(0).getByteBuffer( Tags.WaveformData );
-			log.info( "WafeFormData:"+bb.capacity());
-			if ( log.isDebugEnabled() ) {
-				StringBuffer sb1 = new StringBuffer();
-				int len = 10;//number of samples to dump
-				if ( len > wfgrp.getNrOfSamples() ) len = wfgrp.getNrOfSamples();
-				int bytesPerRow = wfgrp.getBitsAlloc()/8 * wfgrp.getNrOfChannels();
-				int bytelen = bytesPerRow * len;
-				for ( int i = 0 ; i < bytelen ; i++ ) {
-					if ( i % bytesPerRow == 0 ) sb1.append("\nSample ").append(i/bytesPerRow).append(" :");
-					sb1.append( Integer.toHexString( ((int)bb.get()) & 0x0ff ) ).append("|");
-				}
-				log.info("ByteBuffer dump:"+sb1);
-				for ( int i = 0; i < len ; i++) {
-					StringBuffer sb = new StringBuffer();
-					sb.append("Data(").append(i).append("):");
-					for ( int j = 0 ; j < wfgrp.getNrOfChannels() ; j++) {
-						sb.append( wfgrp.getChannel(j).getRawValue() ).append("|");
-					}
-					log.info(sb);
-				}
-			}
-			SVGCreator svgCreator = new SVGCreator( wfgrp );
-			return new RIDTransformResponseObjectImpl(svgCreator, CONTENT_TYPE_SVGXML, HttpServletResponse.SC_OK, null);
+			WaveformInfo wfInfo = new WaveformInfo( ds );
+
+			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, new Float( 26.6f ), new Float(20.3f) );
+//			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, null, new Float(40.0f) );
+			OutputStream  out= new FileOutputStream( outFile );
+			svgCreator.toXML( out );
+			out.close();
+			return new RIDStreamResponseObjectImpl( new FileInputStream( outFile), CONTENT_TYPE_SVGXML, HttpServletResponse.SC_OK, null);
 		} catch ( Throwable t ) {
 			t.printStackTrace();
 		}
 		return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_IMPLEMENTED, "ECG support not implemented yet!");
 	}
 	
+	private RIDResponseObject handlePDF(Dataset ds, File outFile) {
+		try { 
+	        OutputStream out = new FileOutputStream( outFile );
+	        outFile.getParentFile().mkdirs();
+	        File tmpFile = new File( outFile.toString()+".fop");
+	     if ( ! tmpFile.exists() ) {
+	        tmpFile.deleteOnExit();
+	        OutputStream tmpOut = new FileOutputStream( tmpFile);
+	        
+			DcmElement elem = ds.get( Tags.WaveformSeq);
+			int nrOfWFGroups = elem.vm();
+			WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
+			for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
+				wfgrps[i] = new WaveformGroup( elem, i );
+			}
+			WaveformInfo wfInfo = new WaveformInfo( ds );
+
+			FOPCreator fopCreator = new FOPCreator( wfgrps, wfInfo, new Float( 28.6f ), new Float(20.3f) );
+			fopCreator.toXML( tmpOut );
+	        tmpOut.close();
+	     }
+	        fop.setRenderer(Driver.RENDER_PDF);
+	        fop.setOutputStream( out );
+			SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+	        Transformer t = tf.newTransformer();
+	        t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
+	        out.close();
+			//TODO tmpFile.delete();
+			return new RIDStreamResponseObjectImpl(new FileInputStream( outFile ), RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
+		} catch ( Throwable t ) {
+			t.printStackTrace();
+		}
+		return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_IMPLEMENTED, "ECG support not implemented yet!");
+	}
 	
 	
 }

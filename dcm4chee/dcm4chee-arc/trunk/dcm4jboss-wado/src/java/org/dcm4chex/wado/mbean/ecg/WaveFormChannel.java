@@ -29,6 +29,8 @@ public class WaveFormChannel {
 	private String sensitivityUnit;
 	
 	private WaveFormBuffer buffer;
+	private Float lowFreq;
+	private Float highFreq;
 	
 	/**
 	 * @param buffer
@@ -44,9 +46,40 @@ public class WaveFormChannel {
 		status = ch.getString( Tags.ChannelStatus );
 		sensitivity = ch.getFloat( Tags.ChannelSensitivity, -1f );
 		sensitivityUnit = ch.get(Tags.ChannelSensitivityUnitsSeq).getItem().getString( Tags.CodeValue );
-		
+		lowFreq = ch.getFloat( Tags.FilterLowFrequency );
+		highFreq = ch.getFloat( Tags.FilterHighFrequency );
 		this.buffer = buffer;
 	}
+	
+	/**
+	 * @return Returns the chSource.
+	 */
+	public String getChSource() {
+		return chSource;
+	}
+	/**
+	 * @return Returns the label.
+	 */
+	public String getLabel() {
+		return label;
+	}
+
+	/**
+	 * @return
+	 */
+	public Float getLowFreq() {
+		return lowFreq;
+	}
+
+	/**
+	 * @return
+	 */
+	public Float getHighFreq() {
+		return highFreq;
+	}
+
+	
+	
 	
 	public int getRawValue() {
 		return buffer.getValue();
