@@ -316,6 +316,9 @@ public class DcmServerService
         return name;
     }
     protected void startService() throws Exception {
+        // force reload of key/truststore
+        keyStore = null;
+        trustStore = null;
         dcmsrv.setServerSocketFactory(
             getServerSocketFactory(protocol.getCipherSuites()));
         dcmsrv.start();
