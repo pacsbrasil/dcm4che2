@@ -41,6 +41,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -123,17 +125,13 @@ final class AssociationImpl implements Association {
    public final Dimse read(int timeout) throws IOException  {
       Dimse dimse = reader.read(timeout);
       if (dimse != null) {
-         msgID = Math.max(
-               dimse.getCommand().getInt(Tags.MessageID, msgID),
-               msgID);
+         msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
       }
       return dimse;
    }
    
    public final void write(Dimse dimse) throws IOException  {
-      msgID = Math.max(
-            dimse.getCommand().getInt(Tags.MessageID, msgID),
-            msgID);
+      msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
       writer.write(dimse);
    }
    

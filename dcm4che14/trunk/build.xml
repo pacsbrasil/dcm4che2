@@ -379,6 +379,7 @@
          manifest="${source.demo}/net/dcmsnd.mf">
       <fileset dir="${build.classes}">
         <include name="DcmSnd*.class"/>
+        <include name="Configuration.class"/>
       </fileset>
       <fileset dir="${source.demo}/net">
         <include name="resources/DcmSnd.properties"/>
@@ -390,7 +391,8 @@
          manifest="${source.demo}/net/dcmrcv.mf">
       <fileset dir="${build.classes}">
         <include name="DcmRcv*.class"/>
-      </fileset>
+        <include name="Configuration.class"/>
+     </fileset>
       <fileset dir="${source.demo}/net">
         <include name="resources/DcmRcv.properties"/>
       </fileset>

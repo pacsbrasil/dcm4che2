@@ -22,6 +22,8 @@
 
 package org.dcm4che.server;
 
+import org.dcm4che.net.AssociationListener;
+
 /**
  * <description> 
  *
@@ -40,5 +42,8 @@ package org.dcm4che.server;
  */
 public interface DcmHandler extends Server.Handler
 {
+   void addAssociationListener(AssociationListener l);
+   
+   void removeAssociationListener(AssociationListener l);
    
 }

@@ -23,6 +23,12 @@
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.Factory;
@@ -49,13 +55,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Properties;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.security.GeneralSecurityException;
 
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
+
+import org.apache.log4j.Logger;
 
 /**
  * <description>
@@ -75,15 +82,21 @@ import gnu.getopt.LongOpt;
 public class DcmRcv extends DcmServiceBase {
    // Constants -----------------------------------------------------
    private static final int SUCCESS = 0x0000;   
+   static final Logger log = Logger.getLogger("DcmRcv");
    
    // Attributes ----------------------------------------------------
    private static ResourceBundle messages = ResourceBundle.getBundle(
          "resources/DcmRcv", Locale.getDefault());
    
-   private static ServerFactory srvFact = ServerFactory.getInstance();
-   private static Factory fact = Factory.getInstance();
+   private static final ServerFactory srvFact = ServerFactory.getInstance();
+   private static final Factory fact = Factory.getInstance();
+   private static final DcmParserFactory pFact =
+         DcmParserFactory.getInstance();
+   private static final DcmObjectFactory oFact =
+         DcmObjectFactory.getInstance();
    
    private SSLContextAdapter tls = null;
+   private Dataset overwrite = oFact.newDataset();
    private AcceptorPolicy policy = fact.newAcceptorPolicy();
    private DcmServiceRegistry services = fact.newDcmServiceRegistry();
    private DcmHandler handler = srvFact.newDcmHandler(policy, services);
@@ -92,6 +105,7 @@ public class DcmRcv extends DcmServiceBase {
    private int bufferSize = 2048;
    private byte[] buffer = null;
    private File dir = null;
+   private DcmRcvFSU fsu = null;
    private long rspDelay = 0L;
       
    // Static --------------------------------------------------------
@@ -102,6 +116,12 @@ public class DcmRcv extends DcmServiceBase {
       new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("rsp-delay", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("set.PatientID", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("set.PatientName", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("fs-id", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("fs-uid", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("fs-file-id", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("fs-lazy-update", LongOpt.NO_ARGUMENT, null, 3),
       new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -115,12 +135,16 @@ public class DcmRcv extends DcmServiceBase {
    public static void main(String args[]) throws Exception {
       Getopt g = new Getopt("dcmrcv", args, "", LONG_OPTS);
       
-      Properties cfg = loadConfig();
+      Configuration cfg = new Configuration(
+            DcmRcv.class.getResource("dcmrcv.cfg"));
       int c;
       while ((c = g.getopt()) != -1) {
          switch (c) {
             case 2:
                cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
+               break;
+            case 3:
+               cfg.put(LONG_OPTS[g.getLongind()].getName(), "<yes>");
                break;
             case 'v':
                exit(messages.getString("version"), false);
@@ -150,7 +174,7 @@ public class DcmRcv extends DcmServiceBase {
    }
    
    // Constructors --------------------------------------------------
-   DcmRcv(Properties cfg) {
+   DcmRcv(Configuration cfg) {
       port = Integer.parseInt(cfg.getProperty("port"));
       rspDelay = Integer.parseInt(cfg.getProperty("rsp-delay", "0")) * 1000L;
       bufferSize = Integer.parseInt(
@@ -158,14 +182,18 @@ public class DcmRcv extends DcmServiceBase {
       initDest(cfg);
       initTLS(cfg);
       initPolicy(cfg);
+      initOverwrite(cfg);
    }
       
    // Public --------------------------------------------------------
    public void start() throws GeneralSecurityException, IOException {
+      if (fsu != null) {
+         new Thread(fsu).start();
+      }
       if (bufferSize > 0) {
          buffer = new byte[bufferSize];
       }
-      System.out.println(MessageFormat.format(messages.getString("start"),
+      log.info(MessageFormat.format(messages.getString("start"),
             new Object[]{ new Date(), "" + port }));
       if (tls != null) {
          server.start(port, tls.getServerSocketFactory());
@@ -185,18 +213,14 @@ public class DcmRcv extends DcmServiceBase {
                   rqCmd.getAffectedSOPClassUID(),
                   rqCmd.getAffectedSOPInstanceUID(),
                   rq.getTransferSyntaxUID());
-            OutputStream out = new BufferedOutputStream(
-                  new FileOutputStream(
-                        new File(dir, rqCmd.getAffectedSOPInstanceUID())));
-            try {
-               fmi.write(out);
-               copy(in, out);
-            } catch (IOException ioe) {
-               ioe.printStackTrace();
-            } finally {
-               try { out.close(); } catch (IOException ignore) {}
+            if (fsu == null) {
+               storeToDir(in, fmi);
+            } else {
+               storeToFileset(in, fmi);
             }
          }
+      } catch (IOException ioe) {
+         ioe.printStackTrace();
       } finally {
          in.close();
       }
@@ -210,11 +234,71 @@ public class DcmRcv extends DcmServiceBase {
       rspCmd.setUS(Tags.Status, SUCCESS);
    }
    
+   private OutputStream openOutputStream(File file)
+   throws IOException {
+      File parent = file.getParentFile();
+      if (!parent.exists()) {
+         if (!parent.mkdirs()) {
+            throw new IOException("Could not create " + parent);
+         }
+         log.info("M-WRITE " + parent);
+      }
+      log.info("M-WRITE " + file);
+      return new BufferedOutputStream(new FileOutputStream(file));
+   }
+   
+   private void storeToDir(InputStream in, FileMetaInfo fmi)
+   throws IOException {
+      OutputStream out = openOutputStream(
+                  new File(dir, fmi.getMediaStorageSOPInstanceUID()));
+      try {
+         fmi.write(out);
+         copy(in, out);
+      } finally {
+         try { out.close(); } catch (IOException ignore) {}
+      }
+   }
+   
+   private void storeToFileset(InputStream in, FileMetaInfo fmi)
+   throws IOException {
+      Dataset ds = oFact.newDataset();
+      DcmParser parser = pFact.newDcmParser(in);
+      parser.setDcmHandler(ds.getDcmHandler());
+      DcmDecodeParam decParam =
+            DcmDecodeParam.valueOf(fmi.getTransferSyntaxUID());
+      parser.parseDataset(decParam, Tags.PixelData);
+      doOverwrite(ds);
+      File file = fsu.toFile(ds);
+      OutputStream out = openOutputStream(file);
+      try {
+         ds.setFileMetaInfo(fmi);
+         ds.writeFile(out, (DcmEncodeParam)decParam);
+         if (parser.getReadTag() != Tags.PixelData) {
+            return;
+         }
+         ds.writeHeader(out, (DcmEncodeParam)decParam,
+               parser.getReadTag(),
+               parser.getReadVR(),
+               parser.getReadLength());
+         copy(in, out);
+      } finally {
+         try { out.close(); } catch (IOException ignore) {}
+      }
+      fsu.schedule(file, ds);
+   }
+   
+   private void doOverwrite(Dataset ds) {
+      for (Iterator it = overwrite.iterator(); it.hasNext();) {
+         DcmElement el = (DcmElement)it.next();
+         ds.setXX(el.tag(), el.vr(), el.getByteBuffer());
+      }
+   }
+         
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private -------------------------------------------------------   
    private void copy(InputStream in, OutputStream out)
    throws IOException {
       if (buffer == null) {
@@ -230,26 +314,13 @@ public class DcmRcv extends DcmServiceBase {
       }
    }
       
-   private static Properties loadConfig() {
-      InputStream in = DcmRcv.class.getResourceAsStream("dcmrcv.cfg");
-      try {
-         Properties retval = new Properties();
-         retval.load(in);
-         return retval;
-      } catch (Exception e) {
-         throw new RuntimeException("Could not read dcmrcv.cfg", e);
-      } finally {
-         if (in != null) {
-            try { in.close(); } catch (IOException ignore) {}
-         }
-      }
-   }            
-         
-   private static void listConfig(Properties cfg) {
+   private static void listConfig(Configuration cfg) {
       for (int i = 0, n = LONG_OPTS.length - 2; i < n; ++i) {
-         System.out.print(LONG_OPTS[i].getName());
-         System.out.print('=');
-         System.out.println(cfg.getProperty(LONG_OPTS[i].getName(),""));
+         String opt = LONG_OPTS[i].getName();
+         String val = cfg.getProperty(opt);
+         if (val != null) {
+            log.info(opt + "=" + val);
+         }
       }
    }
 
@@ -261,57 +332,38 @@ public class DcmRcv extends DcmServiceBase {
       System.exit(1);
    }
    
-   private static List tokenize(Properties cfg, String s, List result) {
-      StringTokenizer stk = new StringTokenizer(s, ", ");
-      while (stk.hasMoreTokens()) {
-         String tk = stk.nextToken();
-         if (tk.startsWith("$")) {
-            tokenize(cfg, cfg.getProperty(tk.substring(1),""), result);
-         } else {
-            result.add(tk);
-         }
-      }
-      return result;
-   }
-   
-   private static final String[] EMPTY_STRING_ARRAY = {};
-   private static String[] tokenize(Properties cfg, String s) {
-      return s != null ? (String[])tokenize(cfg, s, new LinkedList())
-                                       .toArray(EMPTY_STRING_ARRAY)
-                       : null;
-   }
-   
-   private static String replace(String val, String from, String to) {
-      return from.equals(val) ? to : val;
-   }
-   
-   private final void initDest(Properties cfg) {
-      String dest = replace(cfg.getProperty("dest"), "<none>", "");
+   private final void initDest(Configuration cfg) {
+      String dest = cfg.getProperty("dest", "", "<none>", "");
       if (dest.length() == 0)
          return;
       
       this.dir = new File(dest);
-      if (!dir.exists()) {
-         if (dir.mkdirs()) {
-            System.out.println(
-            MessageFormat.format(messages.getString("mkdir"),
-            new Object[]{ dir }));
-         } else {
-            exit(MessageFormat.format(messages.getString("failmkdir"),
-            new Object[]{ dest }), true);
-         }
+      if ("DICOMDIR".equals(dir.getName())) {
+         this.fsu = new DcmRcvFSU(dir, cfg);
+         handler.addAssociationListener(fsu);
+         dir = dir.getParentFile();
       } else {
-         if (!dir.isDirectory())
-            exit(MessageFormat.format(messages.getString("errdir"),
-            new Object[]{ dest }), true);
+         if (!dir.exists()) {
+            if (dir.mkdirs()) {
+               log.info(MessageFormat.format(messages.getString("mkdir"),
+                  new Object[]{ dir }));
+            } else {
+               exit(MessageFormat.format(messages.getString("failmkdir"),
+               new Object[]{ dest }), true);
+            }
+         } else {
+            if (!dir.isDirectory())
+               exit(MessageFormat.format(messages.getString("errdir"),
+               new Object[]{ dest }), true);
+         }
       }
    }
 
-   private final void initPolicy(Properties cfg) {
-      policy.setCalledAETs(tokenize(cfg,
-            replace(cfg.getProperty("called-aets"), "<any>", null)));
-      policy.setCallingAETs(tokenize(cfg,
-                  replace(cfg.getProperty("calling-aets"), "<any>", null)));
+   private void initPolicy(Configuration cfg) {
+      policy.setCalledAETs(cfg.tokenize(
+            cfg.getProperty("called-aets", null, "<any>", null)));
+      policy.setCallingAETs(cfg.tokenize(
+                  cfg.getProperty("calling-aets", null, "<any>", null)));
       policy.setMaxPDULength(
             Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
       policy.setAsyncOpsWindow(fact.newAsyncOpsWindow(
@@ -319,19 +371,18 @@ public class DcmRcv extends DcmServiceBase {
       for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
          String key = (String)it.nextElement();
          if (key.startsWith("pc.")) {
-            initPresContext(
-               tokenize(cfg, cfg.getProperty(key), new LinkedList()));
+            initPresContext(key.substring(3),
+                  cfg.tokenize(cfg.getProperty(key)));
          }
       }
    }
    
-   private final void initPresContext(List val) {
+   private void initPresContext(String asName, String[] tsNames) {
       try {
-         Iterator it = val.iterator();
-         String as = UIDs.forName((String)it.next());
-         String[] tsUIDs = new String[val.size()-1];
+         String as = UIDs.forName(asName);
+         String[] tsUIDs = new String[tsNames.length];
          for (int i = 0; i < tsUIDs.length; ++i) {
-            tsUIDs[i] = UIDs.forName((String)it.next());
+            tsUIDs[i] = UIDs.forName(tsNames[i]);
          }
          policy.addPresContext(as, tsUIDs);
          services.bind(as, this);
@@ -341,10 +392,26 @@ public class DcmRcv extends DcmServiceBase {
       }
    }
    
-   private final void initTLS(Properties cfg) {
+   private void initOverwrite(Configuration cfg) {
+      for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
+         String key = (String)it.nextElement();
+         if (key.startsWith("set.")) {
+            try {
+               overwrite.setXX(Tags.forName(key.substring(4)),
+                  cfg.getProperty(key));
+            } catch (Exception e) {
+               throw new IllegalArgumentException(
+                  "Illegal entry in dcmsnd.cfg - "
+                     + key + "=" + cfg.getProperty(key));
+            }
+         }
+      }
+   }
+
+   private void initTLS(Configuration cfg) {
       try {
-         String[] chiperSuites = tokenize(cfg,
-               replace(cfg.getProperty("tls", ""), "<none>", ""));
+         String[] chiperSuites = cfg.tokenize(
+               cfg.getProperty("tls", "", "<none>", ""));
          if (chiperSuites.length == 0)
             return;
 

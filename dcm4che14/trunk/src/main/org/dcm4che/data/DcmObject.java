@@ -23,11 +23,14 @@
 
 package org.dcm4che.data;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Iterator;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -116,6 +119,8 @@ public interface DcmObject {
     
     public DcmElement setAE(int tag, String[] values);
     
+    public DcmElement setAS(int tag);
+
     public DcmElement setAS(int tag, String value);
     
     public DcmElement setAS(int tag, String[] values);
@@ -208,17 +213,23 @@ public interface DcmObject {
     
     public DcmElement setLT(int tag, String[] values);
     
+    public DcmElement setOB(int tag);
+
     public DcmElement setOB(int tag, byte[] value);
 
     public DcmElement setOB(int tag, ByteBuffer value);
 
     public DcmElement setOBsq(int tag);
     
+    public DcmElement setOF(int tag);
+
     public DcmElement setOF(int tag, float[] value);
 
     public DcmElement setOF(int tag, ByteBuffer value);
 
     public DcmElement setOFsq(int tag);
+
+    public DcmElement setOW(int tag);
 
     public DcmElement setOW(int tag, short[] value);
 
@@ -298,6 +309,8 @@ public interface DcmObject {
     
     public DcmElement setUL(int tag, String[] values);
 
+    public DcmElement setUN(int tag);
+
     public DcmElement setUN(int tag, byte[] value);
 
     public DcmElement setUNsq(int tag);
@@ -320,8 +333,30 @@ public interface DcmObject {
 
     public DcmElement setXX(int tag, int vr);
 
-    public DcmElement setXX(int tag, int vr, ByteBuffer bytes);
+    public DcmElement setXX(int tag, int vr, ByteBuffer value);
     
+    public DcmElement setXX(int tag, int vr, String value);
+
+    public DcmElement setXX(int tag, int vr, String[] values);
+
     public DcmElement setXXsq(int tag, int vr);
+
+    public DcmElement setXX(int tag);
+
+    public DcmElement setXX(int tag, ByteBuffer value);
+
+    public DcmElement setXX(int tag, String value);
+    
+    public DcmElement setXX(int tag, String[] values);
+
+    public DcmElement setXXsq(int tag);
+
+    public void writeHeader(OutputStream out, DcmEncodeParam encParam,
+         int tag, int vr, int len)
+    throws IOException;
+
+    public void writeHeader(ImageOutputStream iout, DcmEncodeParam encParam,
+            int tag, int vr, int len)
+    throws IOException;
 }
 

@@ -193,7 +193,8 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         return autoCommit;
     }
     
-    public void setAutoCommit(boolean autoCommit) throws IOException {
+    public synchronized void setAutoCommit(boolean autoCommit)
+    throws IOException {
         if (this.autoCommit == autoCommit) {
             return;
         }
@@ -202,7 +203,8 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         }
     }
     
-    public void commit() throws IOException {
+    public synchronized void commit()
+    throws IOException {
         if (dirtyOffsets.isEmpty()) { // nothing to commit
             if (newRecPos != rollbackPos) {
                 throw new RuntimeException("newRecPos:" + newRecPos
@@ -234,7 +236,8 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         rollbackPos = newRecPos;
     }
     
-    public void rollback() throws IOException {
+    public synchronized void rollback()
+    throws IOException {
         if (newRecPos == rollbackPos) { // nothing to rollback
             return;
         }
@@ -265,14 +268,14 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         }
     }
         
-    public DirRecord add(DirRecord parent, String type, Dataset ds)
-            throws IOException {
+    public synchronized DirRecord add(DirRecord parent, String type, Dataset ds)
+    throws IOException {
         return add(parent, type, ds, null, null, null, null);
     }
     
-    public DirRecord add(DirRecord parent, String type, Dataset ds,
+    public synchronized DirRecord add(DirRecord parent, String type, Dataset ds,
             String[] fileIDs, String classUID, String instUID, String tsUID)
-            throws IOException {
+    throws IOException {
         return add(parent, type, ds, fileIDs, classUID, instUID, tsUID,
                 false);
     }

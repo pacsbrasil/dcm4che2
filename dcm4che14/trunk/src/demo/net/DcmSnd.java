@@ -25,6 +25,7 @@ import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -65,12 +66,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Properties;
-import java.util.StringTokenizer;
 import java.security.GeneralSecurityException;
 
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
+
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -83,13 +84,14 @@ public class DcmSnd {
    private static final int PCID_ECHO = 1;
    
    // Attributes ----------------------------------------------------
+   static final Logger log = Logger.getLogger("DcmSnd");
    private static ResourceBundle messages = ResourceBundle.getBundle(
          "resources/DcmSnd", Locale.getDefault());
    
    private static final UIDDictionary uidDict =
          DictionaryFactory.getInstance().getDefaultUIDDictionary();
    private static final Factory aFact = Factory.getInstance();
-   private static final DcmObjectFactory dFact =
+   private static final DcmObjectFactory oFact =
          DcmObjectFactory.getInstance();
    private static final DcmParserFactory pFact =
          DcmParserFactory.getInstance();
@@ -105,6 +107,7 @@ public class DcmSnd {
    private int bufferSize = 2048;
    private byte[] buffer = null;
    private SSLContextAdapter tls = null;
+   private Dataset overwrite = oFact.newDataset();
    
    // Static --------------------------------------------------------
    private static final LongOpt[] LONG_OPTS = new LongOpt[] {
@@ -113,6 +116,8 @@ public class DcmSnd {
       new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("set.PatientID", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("set.PatientName", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -127,7 +132,9 @@ public class DcmSnd {
    public static void main(String args[]) throws Exception {
       Getopt g = new Getopt("dcmsnd", args, "", LONG_OPTS);
       
-      Properties cfg = loadConfig();
+      Configuration cfg = new Configuration(
+            DcmSnd.class.getResource("dcmsnd.cfg"));
+
       int c;
       while ((c = g.getopt()) != -1) {
          switch (c) {
@@ -170,7 +177,7 @@ public class DcmSnd {
 
    // Constructors --------------------------------------------------
    
-   DcmSnd(Properties cfg, DcmURL url, boolean echo) {
+   DcmSnd(Configuration cfg, DcmURL url, boolean echo) {
       this.url = url;
       this.priority = Integer.parseInt(cfg.getProperty("prior", "0"));
       this.bufferSize = Integer.parseInt(cfg.getProperty("buf-len", "2048"))
@@ -179,6 +186,7 @@ public class DcmSnd {
       this.repeatSingle = Integer.parseInt(cfg.getProperty("repeat-dimse", "1"));
       initAssocRQ(cfg, url, echo);
       initTLS(cfg);
+      initOverwrite(cfg);
    }
        
    // Public --------------------------------------------------------
@@ -194,11 +202,11 @@ public class DcmSnd {
             ActiveAssociation active = aFact.newActiveAssociation(assoc, null);
             active.start();
             if (assoc.getAcceptedTransferSyntaxUID(PCID_ECHO) == null) {
-               System.out.println(messages.getString("noPCEcho"));
+               log.error(messages.getString("noPCEcho"));
             }
             else for (int j = 0; j < repeatSingle; ++j, ++count) {
                active.invoke(
-                     aFact.newDimse(PCID_ECHO, dFact.newCommand().initCEchoRQ(j)),
+                     aFact.newDimse(PCID_ECHO, oFact.newCommand().initCEchoRQ(j)),
                      null);
 //               Dimse rsp = assoc.read(dimseTO);
             }
@@ -207,8 +215,8 @@ public class DcmSnd {
          }
       }
       long dt = System.currentTimeMillis() - t1;
-      System.out.println(
-         MessageFormat.format(messages.getString("doneEcho"),
+      log.info(
+         MessageFormat.format(messages.getString("echoDone"),
             new Object[]{ new Integer(count), new Long(dt) }));
    }
    
@@ -233,9 +241,8 @@ public class DcmSnd {
          }
       }
       long dt = System.currentTimeMillis() - t1;
-      System.out.println();
-      System.out.println(
-         MessageFormat.format(messages.getString("doneStore"),
+      log.info(
+         MessageFormat.format(messages.getString("storeDone"),
             new Object[]{
                new Integer(res.sentCount),
                new Long(res.sentBytes),
@@ -275,17 +282,20 @@ public class DcmSnd {
          parser = pFact.newDcmParser(in);
          FileFormat format = parser.detectFileFormat();
          if (format != null) {
-            ds = dFact.newDataset();
+            ds = oFact.newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(format, Tags.PixelData);
+            log.info(
+               MessageFormat.format(messages.getString("readDone"),
+               new Object[]{ file }));
          } else {
-            System.out.println(
+            log.error(
                MessageFormat.format(messages.getString("failformat"),
                new Object[]{ file }));
          }
       } catch (IOException e) {
-         System.out.println(
-            MessageFormat.format(messages.getString("failraid"),
+         log.error(
+            MessageFormat.format(messages.getString("failread"),
             new Object[]{ file, e }));
          ds = null;
       }
@@ -306,14 +316,14 @@ public class DcmSnd {
    throws InterruptedException, IOException {
       String sopInstUID = ds.getString(Tags.SOPInstanceUID);
       if (sopInstUID == null) {
-        System.out.println(
+        log.error(
             MessageFormat.format(messages.getString("noSOPinst"),
                new Object[]{ file }));
          return false;
       }
       String sopClassUID = ds.getString(Tags.SOPClassUID);
       if (sopClassUID == null) {
-        System.out.println(
+        log.error(
             MessageFormat.format(messages.getString("noSOPclass"),
                new Object[]{ file }));
          return false;
@@ -324,7 +334,7 @@ public class DcmSnd {
          String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
          if ((pc = assoc.getAcceptedPresContext(sopClassUID, tsuid))
                == null) {
-            System.out.println(
+            log.error(
                MessageFormat.format(messages.getString("noPCStore3"),
                   new Object[]{ uidDict.lookup(sopClassUID),
                      uidDict.lookup(tsuid), file }));
@@ -336,22 +346,29 @@ public class DcmSnd {
             UIDs.ExplicitVRLittleEndian)) == null
             && (pc = assoc.getAcceptedPresContext(sopClassUID,
             UIDs.ExplicitVRBigEndian)) == null) {
-         System.out.println(
+         log.error(
                MessageFormat.format(messages.getString("noPCStore2"),
                   new Object[]{ uidDict.lookup(sopClassUID),file }));
          return false;
          
       }
+      doOverwrite(ds);
       active.invoke(aFact.newDimse(pc.pcid(),
-            dFact.newCommand().initCStoreRQ(assoc.nextMsgID(),
+            oFact.newCommand().initCStoreRQ(assoc.nextMsgID(),
                   sopClassUID, sopInstUID, priority),
             new MyDataSource(parser, ds, buffer)), null);
       res.sentBytes += parser.getStreamPosition();
       ++res.sentCount;
-      System.out.print('.');
       return true;
    }
-   
+
+   private void doOverwrite(Dataset ds) {
+      for (Iterator it = overwrite.iterator(); it.hasNext();) {
+         DcmElement el = (DcmElement)it.next();
+         ds.setXX(el.tag(), el.vr(), el.getByteBuffer());
+      }
+   }
+            
    private static final class MyDataSource implements DataSource {
       final DcmParser parser;
       final Dataset ds;
@@ -367,20 +384,20 @@ public class DcmSnd {
             (DcmEncodeParam)DcmDecodeParam.valueOf(tsUID);
          ds.writeDataset(out, netParam);
          if (parser.getReadTag() == Tags.PixelData) {
-            writeTag(netParam.byteOrder, out, Tags.PixelData);
-            if (netParam.explicitVR) {
-               writeVR(out, parser.getReadVR());
-            }
-            int pxlen = parser.getReadLength();
             DcmDecodeParam fileParam = parser.getDcmDecodeParam();
-            writeLen(netParam.byteOrder, out, pxlen);
-            if (pxlen == -1) {
+            ds.writeHeader(out, netParam,
+                  parser.getReadTag(),
+                  parser.getReadVR(),
+                  parser.getReadLength());
+            if (netParam.encapsulated) {
                parser.parseHeader();
                while (parser.getReadTag() == Tags.Item) {
-                  writeTag(netParam.byteOrder, out, Tags.Item);
-                  int itemLen = parser.getReadLength();
-                  writeLen(netParam.byteOrder, out, itemLen);
-                  copy(parser.getInputStream(), out, itemLen, false, buffer);
+                  ds.writeHeader(out, netParam,
+                        parser.getReadTag(),
+                        parser.getReadVR(),
+                        parser.getReadLength());
+                  copy(parser.getInputStream(), out,
+                       parser.getReadLength(), false, buffer);
                }
                if (parser.getReadTag() != Tags.SeqDelimitationItem) {
                   throw new DcmParseException("Unexpected Tag:"
@@ -390,12 +407,13 @@ public class DcmSnd {
                   throw new DcmParseException("(fffe,e0dd), Length:"
                   + parser.getReadLength());
                }
-               writeTag(netParam.byteOrder, out, Tags.SeqDelimitationItem);
-               writeLen(netParam.byteOrder, out, 0);
+               ds.writeHeader(out, netParam,
+                     Tags.SeqDelimitationItem, VRs.NONE, 0);
             } else {
-               copy(parser.getInputStream(), out, pxlen,
-               fileParam.byteOrder != netParam.byteOrder
-                  && parser.getReadVR() == VRs.OW, buffer);
+               boolean swap = fileParam.byteOrder != netParam.byteOrder
+                     && parser.getReadVR() == VRs.OW;
+               copy(parser.getInputStream(), out,
+                    parser.getReadLength(), swap, buffer);
             }
             ds.clear();
             parser.parseDataset(fileParam, -1);
@@ -403,44 +421,7 @@ public class DcmSnd {
          }
       }
    }
-   
-   private static void writeTag(ByteOrder order, OutputStream out, int tag)
-   throws IOException {
-      if (order == ByteOrder.LITTLE_ENDIAN) {
-         out.write(tag >> 16);
-         out.write(tag >> 24);
-         out.write(tag >> 0);
-         out.write(tag >> 8);
-      } else { // order == ByteOrder.BIG_ENDIAN
-         out.write(tag >> 24);
-         out.write(tag >> 16);
-         out.write(tag >> 8);
-         out.write(tag >> 0);
-      }
-   }
-   
-   private static void writeVR(OutputStream out, int vr) throws IOException {
-      out.write(vr >> 8);
-      out.write(vr >> 0);
-      out.write(0);
-      out.write(0);
-   }
-   
-   private static void writeLen(ByteOrder order, OutputStream out, int len)
-   throws IOException {
-      if (order == ByteOrder.LITTLE_ENDIAN) {
-         out.write(len >> 0);
-         out.write(len >> 8);
-         out.write(len >> 16);
-         out.write(len >> 24);
-      } else { // order == ByteOrder.BIG_ENDIAN
-         out.write(len >> 24);
-         out.write(len >> 16);
-         out.write(len >> 8);
-         out.write(len >> 0);
-      }
-   }
-   
+      
    private static void copy(InputStream in, OutputStream out, int len,
    boolean swap, byte[] buffer) throws IOException {
       if (swap && (len & 1) != 0) {
@@ -490,29 +471,6 @@ public class DcmSnd {
       }
    }
    
-   private static Properties loadConfig() {
-      InputStream in = DcmSnd.class.getResourceAsStream("dcmsnd.cfg");
-      try {
-         Properties retval = new Properties();
-         retval.load(in);
-         return retval;
-      } catch (Exception e) {
-         throw new RuntimeException("Could not read dcmsnd.cfg", e);
-      } finally {
-         if (in != null) {
-            try { in.close(); } catch (IOException ignore) {}
-         }
-      }
-   }            
-
-   private static void listConfig(Properties cfg) {
-      for (int i = 0, n = LONG_OPTS.length - 2; i < n; ++i) {
-         System.out.print(LONG_OPTS[i].getName());
-         System.out.print('=');
-         System.out.println(cfg.getProperty(LONG_OPTS[i].getName(),""));
-      }
-   }
-
    private static void exit(String prompt, boolean error) {
       if (prompt != null)
          System.err.println(prompt);
@@ -520,32 +478,8 @@ public class DcmSnd {
          System.err.println(messages.getString("try"));
       System.exit(1);
    }
-   
-   private static List tokenize(Properties cfg, String s, List result) {
-      StringTokenizer stk = new StringTokenizer(s, ", ");
-      while (stk.hasMoreTokens()) {
-         String tk = stk.nextToken();
-         if (tk.startsWith("$")) {
-            tokenize(cfg, cfg.getProperty(tk.substring(1),""), result);
-         } else {
-            result.add(tk);
-         }
-      }
-      return result;
-   }
-   
-   private static String replace(String val, String from, String to) {
-      return from.equals(val) ? to : val;
-   }
-   
-   private static final String[] EMPTY_STRING_ARRAY = {};
-   private static String[] tokenize(Properties cfg, String s) {
-      return s != null ? (String[])tokenize(cfg, s, new LinkedList())
-                                       .toArray(EMPTY_STRING_ARRAY)
-                       : null;
-   }
-   
-   private final void initAssocRQ(Properties cfg, DcmURL url, boolean echo) {      
+      
+   private final void initAssocRQ(Configuration cfg, DcmURL url, boolean echo) {      
       assocRQ.setCalledAET(url.getCalledAET());
       assocRQ.setCallingAET(url.getCallingAET());
       assocRQ.setMaxPDULength(
@@ -561,7 +495,7 @@ public class DcmSnd {
          String key = (String)it.nextElement();
          if (key.startsWith("pc.")) {
             initPresContext(Integer.parseInt(key.substring(3)),
-               tokenize(cfg, cfg.getProperty(key), new LinkedList()));
+               cfg.tokenize(cfg.getProperty(key), new LinkedList()));
          }
       }
    }
@@ -581,10 +515,26 @@ public class DcmSnd {
       }
    }
    
-   private final void initTLS(Properties cfg) {
+   private void initOverwrite(Configuration cfg) {
+      for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
+         String key = (String)it.nextElement();
+         if (key.startsWith("set.")) {
+            try {
+               overwrite.setXX(Tags.forName(key.substring(4)),
+                  cfg.getProperty(key));
+            } catch (Exception e) {
+               throw new IllegalArgumentException(
+                  "Illegal entry in dcmsnd.cfg - "
+                     + key + "=" + cfg.getProperty(key));
+            }
+         }
+      }
+   }
+   
+   private void initTLS(Configuration cfg) {
       try {
-         String[] chiperSuites = tokenize(cfg,
-               replace(cfg.getProperty("tls", ""), "<none>", ""));
+         String[] chiperSuites = cfg.tokenize(
+               cfg.getProperty("tls", "", "<none>", ""));
          if (chiperSuites.length == 0)
             return;
 

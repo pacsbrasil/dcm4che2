@@ -277,6 +277,8 @@ public final class IntHashtable2 {
             //*/
             index = (index + jump) % keyList.length;
             //System.out.print(" => " + index);
+            if (index == firstDeleted) // not found in possible slots => it was deleted
+               return index;
         }
     }
 

@@ -106,8 +106,8 @@ public class DcmDir {
       new LongOpt("onlyInUse", LongOpt.NO_ARGUMENT, null, 3),
       new LongOpt("maxlen", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("vallen", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("uid", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("id", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("fs-uid", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("fs-id", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("readme", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("readme-charset", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("grouplen", LongOpt.NO_ARGUMENT, null, 3),
@@ -209,8 +209,8 @@ public class DcmDir {
          this.readMeCharset = 
                replace(cfg.getProperty("readme-charset",""), "<none>", "");
       }
-      this.id =  replace(cfg.getProperty("id",""), "<none>", "");
-      this.uid =  replace(cfg.getProperty("uid",""), "<auto>", "");
+      this.id =  replace(cfg.getProperty("fs-id",""), "<none>", "");
+      this.uid =  replace(cfg.getProperty("fs-uid",""), "<auto>", "");
       this.maxlen =  new Integer(cfg.getProperty("maxlen","79"));
       this.vallen =  new Integer(cfg.getProperty("maxlen","64"));
       this.skipGroupLen = !"<yes>".equals(cfg.getProperty("grouplen"));
@@ -292,11 +292,11 @@ public class DcmDir {
    }
    
    private void addDirBuilderPrefElem(HashMap map, String key) {
-      if (!key.startsWith("DICOMDIR."))
+      if (!key.startsWith("dir."))
          return;
       
       int pos2 = key.lastIndexOf('.');
-      String type = key.substring(9,pos2).replace('_',' ');
+      String type = key.substring(4,pos2).replace('_',' ');
       Dataset ds = (Dataset)map.get(type);
       if (ds == null) {
          map.put(type, ds = objFact.newDataset());

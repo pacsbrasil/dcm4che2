@@ -26,16 +26,19 @@ package org.dcm4cheri.data;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmHandler;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.VRMap;
 import org.dcm4che.dict.VRs;
 
 import org.dcm4cheri.util.StringUtils;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -43,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.xml.sax.helpers.DefaultHandler;
 import org.apache.log4j.Logger;
@@ -264,6 +268,10 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(StringElement.createAE(tag, values));
     }
     
+    public DcmElement setAS(int tag) {
+        return set(StringElement.createAS(tag));
+    }
+
     public DcmElement setAS(int tag, String value) {
         return set(value != null
                 ? StringElement.createAS(tag, value)
@@ -473,6 +481,10 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
          return set(StringElement.createLT(tag, values, getCharset()));
     }
     
+    public DcmElement setOB(int tag) {
+        return set(ValueElement.createOB(tag));
+    }
+    
     public DcmElement setOB(int tag, byte[] value) {
         return set(ValueElement.createOB(tag, value));
     }
@@ -485,6 +497,10 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(FragmentElement.createOB(tag));
     }    
 
+    public DcmElement setOF(int tag) {
+        return set(ValueElement.createOF(tag));
+    }
+    
     public DcmElement setOF(int tag, float[] value) {
         return set(ValueElement.createOF(tag, value));
     }
@@ -497,6 +513,10 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(FragmentElement.createOF(tag));
     }    
 
+    public DcmElement setOW(int tag) {
+        return set(ValueElement.createOW(tag));
+    }
+    
     public DcmElement setOW(int tag, short[] value) {
         return set(ValueElement.createOW(tag, value));
     }
@@ -684,6 +704,10 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
                         0L,  0xFFFFFFFFL)));
     }
 
+    public DcmElement setUN(int tag) {
+        return set(ValueElement.createUN(tag));
+    }
+    
     public DcmElement setUN(int tag, byte[] value) {
         return set(ValueElement.createUN(tag, value));
     }
@@ -734,6 +758,26 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
          return set(StringElement.createUT(tag, values, getCharset()));
     }
     
+    public DcmElement setXX(int tag) {
+       return setXX(tag, VRMap.DEFAULT.lookup(tag));
+    }
+
+    public DcmElement setXX(int tag, ByteBuffer bytes) {
+       return setXX(tag, VRMap.DEFAULT.lookup(tag), bytes);
+    }
+    
+    public DcmElement setXX(int tag, String value) {
+       return setXX(tag, VRMap.DEFAULT.lookup(tag), value);
+    }
+
+    public DcmElement setXX(int tag, String[] values) {
+       return setXX(tag, VRMap.DEFAULT.lookup(tag), values);
+    }
+
+    public DcmElement setXXsq(int tag) {
+       return setXXsq(tag, VRMap.DEFAULT.lookup(tag));
+    }
+    
     public DcmElement setXXsq(int tag, int vr) {
         switch (vr) {
             case VRs.OB:
@@ -753,59 +797,59 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
     public DcmElement setXX(int tag, int vr) {
         switch (vr) {
             case VRs.AE:
-                return set(StringElement.createAE(tag));
+                return setAE(tag);
             case VRs.AS:
-                return set(StringElement.createAS(tag));
+                return setAS(tag);
             case VRs.AT:
-                return set(ValueElement.createAT(tag));
+                return setAT(tag);
             case VRs.CS:
-                return set(StringElement.createCS(tag));
+                return setCS(tag);
             case VRs.DA:
-                return set(StringElement.createDA(tag));
+                return setDA(tag);
             case VRs.DS:
-                return set(StringElement.createDS(tag));
+                return setDS(tag);
             case VRs.DT:
-                return set(StringElement.createDT(tag));
+                return setDT(tag);
             case VRs.FL:
-                return set(ValueElement.createFL(tag));
+                return setFL(tag);
             case VRs.FD:
-                return set(ValueElement.createFD(tag));
+                return setFD(tag);
             case VRs.IS:
-                return set(StringElement.createIS(tag));
+                return setIS(tag);
             case VRs.LO:
-                return set(StringElement.createLO(tag));
+                return setLO(tag);
             case VRs.LT:
-                return set(StringElement.createLT(tag));
+                return setLT(tag);
             case VRs.OB:
-                return set(ValueElement.createOB(tag));
+                return setOB(tag);
             case VRs.OF:
-                return set(ValueElement.createOF(tag));
+                return setOF(tag);
             case VRs.OW:
-                return set(ValueElement.createOW(tag));
+                return setOW(tag);
             case VRs.PN:
-                return set(StringElement.createPN(tag));
+                return setPN(tag);
             case VRs.SH:
-                return set(StringElement.createSH(tag));
+                return setSH(tag);
             case VRs.SL:
-                return set(ValueElement.createSL(tag));
+                return setSL(tag);
             case VRs.SQ:
                 return ((Dataset)this).setSQ(tag);
             case VRs.SS:
-                return set(ValueElement.createSS(tag));
+                return setSS(tag);
             case VRs.ST:
-                return set(StringElement.createST(tag));
+                return setST(tag);
             case VRs.TM:
-                return set(StringElement.createTM(tag));
+                return setTM(tag);
             case VRs.UI:
-                return set(StringElement.createUI(tag));
+                return setUI(tag);
             case VRs.UN:
-                return set(ValueElement.createUN(tag));
+                return setUN(tag);
             case VRs.UL:
-                return set(ValueElement.createUL(tag));
+                return setUL(tag);
             case VRs.US:
-                return set(ValueElement.createUS(tag));
+                return setUS(tag);
             case VRs.UT:
-                return set(StringElement.createUT(tag));
+                return setUT(tag);
             default:
                 throw new IllegalArgumentException(Tags.toString(tag)
                                     + " " + VRs.toString(vr));
@@ -872,6 +916,126 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         }
     }
     
+    public DcmElement setXX(int tag, int vr, String value) {
+        switch (vr) {
+            case VRs.AE:
+                return setAE(tag, value);
+            case VRs.AS:
+                return setAS(tag, value);
+//            case VRs.AT:
+//                return setAT(tag, value);
+            case VRs.CS:
+                return setCS(tag, value);
+            case VRs.DA:
+                return setDA(tag, value);
+            case VRs.DS:
+                return setDS(tag, value);
+            case VRs.DT:
+                return setDT(tag, value);
+            case VRs.FL:
+                return setFL(tag, value);
+            case VRs.FD:
+                return setFD(tag, value);
+            case VRs.IS:
+                return setIS(tag, value);
+            case VRs.LO:
+                return setLO(tag, value);
+            case VRs.LT:
+                return setLT(tag, value);
+//            case VRs.OB:
+//                return setOB(tag, value);
+//            case VRs.OF:
+//                return setOF(tag, value);
+//            case VRs.OW:
+//                return setOW(tag, value);
+            case VRs.PN:
+                return setPN(tag, value);
+            case VRs.SH:
+                return setSH(tag, value);
+            case VRs.SL:
+                return setSL(tag, value);
+            case VRs.SS:
+                return setSS(tag, value);
+            case VRs.ST:
+                return setST(tag, value);
+            case VRs.TM:
+                return setTM(tag, value);
+            case VRs.UI:
+                return setUI(tag, value);
+//            case VRs.UN:
+//                return setUN(tag, value);
+            case VRs.UL:
+                return setUL(tag, value);
+            case VRs.US:
+                return setUS(tag, value);
+            case VRs.UT:
+                return setUT(tag, value);
+            default:
+                throw new IllegalArgumentException(Tags.toString(tag)
+                                    + " " + VRs.toString(vr));
+        }
+    }
+    
+    public DcmElement setXX(int tag, int vr, String[] values) {
+        switch (vr) {
+            case VRs.AE:
+                return setAE(tag, values);
+            case VRs.AS:
+                return setAS(tag, values);
+//            case VRs.AT:
+//                return setAT(tag, values);
+            case VRs.CS:
+                return setCS(tag, values);
+            case VRs.DA:
+                return setDA(tag, values);
+            case VRs.DS:
+                return setDS(tag, values);
+            case VRs.DT:
+                return setDT(tag, values);
+            case VRs.FL:
+                return setFL(tag, values);
+            case VRs.FD:
+                return setFD(tag, values);
+            case VRs.IS:
+                return setIS(tag, values);
+            case VRs.LO:
+                return setLO(tag, values);
+            case VRs.LT:
+                return setLT(tag, values);
+//            case VRs.OB:
+//                return setOB(tag, values);
+//            case VRs.OF:
+//                return setOF(tag, values);
+//            case VRs.OW:
+//                return setOW(tag, values);
+            case VRs.PN:
+                return setPN(tag, values);
+            case VRs.SH:
+                return setSH(tag, values);
+            case VRs.SL:
+                return setSL(tag, values);
+            case VRs.SS:
+                return setSS(tag, values);
+            case VRs.ST:
+                return setST(tag, values);
+            case VRs.TM:
+                return setTM(tag, values);
+            case VRs.UI:
+                return setUI(tag, values);
+//            case VRs.UN:
+//                return setUN(tag, values);
+            case VRs.UL:
+                return setUL(tag, values);
+            case VRs.US:
+                return setUS(tag, values);
+            case VRs.UT:
+                return setUT(tag, values);
+            default:
+                throw new IllegalArgumentException(Tags.toString(tag)
+                                    + " " + VRs.toString(vr));
+        }
+    }
+    
     public Iterator iterator() {
         return list.iterator();
     }
@@ -897,4 +1061,93 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
             handler.endElement();
         }
     }    
+    
+    public void writeHeader(ImageOutputStream out, DcmEncodeParam encParam,
+         int tag, int vr, int len)
+    throws IOException {
+      if (encParam.byteOrder == ByteOrder.LITTLE_ENDIAN) {
+         out.write(tag >> 16);
+         out.write(tag >> 24);
+         out.write(tag >> 0);
+         out.write(tag >> 8);
+      } else { // order == ByteOrder.BIG_ENDIAN
+         out.write(tag >> 24);
+         out.write(tag >> 16);
+         out.write(tag >> 8);
+         out.write(tag >> 0);
+      }
+      if (vr != VRs.NONE && encParam.explicitVR) { 
+         out.write(vr >> 8);
+         out.write(vr >> 0);
+         if (VRs.isLengthField16Bit(vr)) {
+            if (encParam.byteOrder == ByteOrder.LITTLE_ENDIAN) {
+               out.write(len >> 0);
+               out.write(len >> 8);
+            } else {
+               out.write(len >> 8);
+               out.write(len >> 0);
+            }
+            return;
+         } else {
+            out.write(0);
+            out.write(0);
+         }
+      }
+      if (encParam.byteOrder == ByteOrder.LITTLE_ENDIAN) {
+         out.write(len >> 0);
+         out.write(len >> 8);
+         out.write(len >> 16);
+         out.write(len >> 24);
+      } else { // order == ByteOrder.BIG_ENDIAN
+         out.write(len >> 24);
+         out.write(len >> 16);
+         out.write(len >> 8);
+         out.write(len >> 0);
+      }
+    }
+    
+    public void writeHeader(OutputStream out, DcmEncodeParam encParam,
+         int tag, int vr, int len)
+    throws IOException {
+      if (encParam.byteOrder == ByteOrder.LITTLE_ENDIAN) {
+         out.write(tag >> 16);
+         out.write(tag >> 24);
+         out.write(tag >> 0);
+         out.write(tag >> 8);
+      } else { // order == ByteOrder.BIG_ENDIAN
+         out.write(tag >> 24);
+         out.write(tag >> 16);
+         out.write(tag >> 8);
+         out.write(tag >> 0);
+      }
+      if (encParam.explicitVR) { 
+         out.write(vr >> 8);
+         out.write(vr >> 0);
+         if (VRs.isLengthField16Bit(vr)) {
+            if (encParam.byteOrder == ByteOrder.LITTLE_ENDIAN) {
+               out.write(len >> 0);
+               out.write(len >> 8);
+            } else {
+               out.write(len >> 8);
+               out.write(len >> 0);
+            }
+            return;
+         } else {
+            out.write(0);
+            out.write(0);
+         }
+      }
+      if (encParam.byteOrder == ByteOrder.LITTLE_ENDIAN) {
+         out.write(len >> 0);
+         out.write(len >> 8);
+         out.write(len >> 16);
+         out.write(len >> 24);
+      } else { // order == ByteOrder.BIG_ENDIAN
+         out.write(len >> 24);
+         out.write(len >> 16);
+         out.write(len >> 8);
+         out.write(len >> 0);
+      }
+    }
+    
 }

@@ -119,15 +119,26 @@ implements ActiveAssociation, LF_ThreadPool.Handler
    throws InterruptedException, IOException
    {
 //      checkRunning();
+      if (FsmImpl.log.isDebugEnabled()) {
+         FsmImpl.log.debug("invoke " + rq
+         + "\n" + rspDispatcher.size() + " Ops still waiting for RSP");
+      }
       int msgID = rq.getCommand().getMessageID();
       int maxOps = assoc.getMaxOpsInvoked();
       if (maxOps == 0) {
          rspDispatcher.put(msgID, l);
       } else synchronized (rspDispatcher) {
          while (rspDispatcher.size() >= maxOps) {
+            if (FsmImpl.log.isDebugEnabled()) {
+               FsmImpl.log.debug("wait for curOps[" + rspDispatcher.size()
+                     + "] < maxOps[" + maxOps + "]");
+            }
             rspDispatcher.wait();
          }
          rspDispatcher.put(msgID, l);
+      }
+      if (FsmImpl.log.isDebugEnabled()) {
+         FsmImpl.log.debug("writing " + rq);
       }
       assoc.write(rq);
    }

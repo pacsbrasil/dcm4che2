@@ -20,20 +20,13 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.server;
-
-import org.dcm4che.server.DcmHandler;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationListener;
-import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.net.Factory;
-
+import java.io.InputStream;
 import java.io.IOException;
-import java.net.Socket;
-import java.util.Iterator;
+import java.net.URL;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * <description> 
@@ -50,64 +43,57 @@ import java.util.LinkedList;
  *            beyond the cvs commit message
  * </ul>
  */
-class DcmHandlerImpl implements DcmHandler
+class Configuration extends Properties
 {
-   
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   private final static Factory fact = Factory.getInstance();
    
-   private final AcceptorPolicy policy;
-   private final DcmServiceRegistry services;
-   private final LinkedList listeners = new LinkedList();
-   
-   private int requestTO = 5000;
-   
-   // Static --------------------------------------------------------
+   // Static --------------------------------------------------------  
+   private static String replace(String val, String from, String to) {
+      return from.equals(val) ? to : val;
+   }
    
    // Constructors --------------------------------------------------
-   public DcmHandlerImpl(AcceptorPolicy policy, DcmServiceRegistry services)
-   {
-      if (policy == null)
-         throw new NullPointerException();
-   
-      if (services == null)
-         throw new NullPointerException();
-      
-      this.policy = policy;
-      this.services = services;
+   public Configuration(URL url) {
+      InputStream in = null;
+      try {
+         load(in = url.openStream());
+      } catch (Exception e) {
+         throw new RuntimeException("Could not load configuration from "
+               + url, e);
+      } finally {
+         if (in != null) {
+            try { in.close(); } catch (IOException ignore) {}
+         }
+      }
    }
    
    // Public --------------------------------------------------------
+   public String getProperty(String key, String defaultValue,
+                             String replace, String to) {
+      return replace(getProperty(key, defaultValue), replace, to);
+   }
+   
+   public List tokenize(String s, List result) {
+      StringTokenizer stk = new StringTokenizer(s, ", ");
+      while (stk.hasMoreTokens()) {
+         String tk = stk.nextToken();
+         if (tk.startsWith("$")) {
+            tokenize(getProperty(tk.substring(1),""), result);
+         } else {
+            result.add(tk);
+         }
+      }
+      return result;
+   }
+   
+   public String[] tokenize(String s) {
+      if (s == null)
+         return null;
       
-   // DcmHandler implementation -------------------------------------
-   public void handle(Socket s) throws IOException {
-      Association assoc = fact.newAcceptor(s);
-      for (Iterator it = listeners.iterator(); it.hasNext();) {
-         assoc.addAssociationListener((AssociationListener)it.next());
-      }
-      if (assoc.accept(policy, requestTO) instanceof AAssociateAC)
-         fact.newActiveAssociation(assoc, services).run();
+      List l = tokenize(s, new LinkedList());      
+      return (String[])l.toArray(new String[l.size()]);
    }
-      
-   public void addAssociationListener(AssociationListener l) {
-      synchronized (listeners) {
-         listeners.add(l);
-      }
-   }
-   
-   public void removeAssociationListener(AssociationListener l) {
-      synchronized (listeners) {
-         listeners.remove(l);
-      }
-   }
-   
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
+       
 }
