@@ -46,7 +46,7 @@ public interface DcmElement {
    
    int hashCode();
    
-   DcmElement intern();
+   DcmElement share();
       
    ByteBuffer getByteBuffer();
    

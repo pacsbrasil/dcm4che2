@@ -59,7 +59,7 @@ class DcmElementImpl implements DcmElement {
         this.tag = tag;
     }
 
-    public DcmElement intern() {
+    public DcmElement share() {
         return this;
     }
        

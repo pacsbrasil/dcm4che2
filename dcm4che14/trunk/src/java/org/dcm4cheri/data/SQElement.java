@@ -50,11 +50,11 @@ class SQElement extends DcmElementImpl
         this.parent = parent;
     }
     
-    public DcmElement intern() {
+    public DcmElement share() {
         synchronized(list) {
             final int size = list.size();
             for (int i = 0; i < size; i++) {
-                ((Dataset) list.get(i)).internalize();
+                ((Dataset) list.get(i)).shareElements();
             }
         }
         return this;

@@ -133,11 +133,11 @@ abstract class DcmObjectImpl implements DcmObject {
         list.clear();
     }
     
-    public void internalize() {
+    public void shareElements() {
         synchronized (list) {
             final int size = list.size();
             for (int i = 0; i < size; ++i)
-                list.set(i, ((DcmElement) list.get(i)).intern());
+                list.set(i, ((DcmElement) list.get(i)).share());
         }        
     }
 

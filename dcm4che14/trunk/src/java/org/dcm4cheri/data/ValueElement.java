@@ -70,7 +70,7 @@ abstract class ValueElement extends DcmElementImpl {
         return data.equals(ve.data);
     }
     
-    public DcmElement intern() {
+    public DcmElement share() {
         WeakReference wr = (WeakReference) whm.get(this);
         if (wr != null) {
             DcmElement e = (DcmElement) wr.get();

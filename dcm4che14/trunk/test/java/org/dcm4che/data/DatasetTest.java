@@ -204,7 +204,7 @@ public class DatasetTest extends TestCase {
 
     public void testInternalize() throws Exception {
         testReadDICOMDIR();
-        ds.internalize();
+        ds.shareElements();
     }
 
     /**
