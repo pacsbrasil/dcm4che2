@@ -92,7 +92,9 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  */
 public abstract class StorageBean implements SessionBean {
 
-    private static Logger log = Logger.getLogger(StorageBean.class);
+    private static final int ForbiddenAttributeCoercion = 0xCB00;
+    
+	private static Logger log = Logger.getLogger(StorageBean.class);
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -178,11 +180,9 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                attrCoercions
-                        .coerce(callingAET, calledAET, ds, coercedElements);
+                attrCoercions.coerce(callingAET, calledAET, ds, coercedElements);
                 final int[] filter = attrFilter.getInstanceFilter();
-                final boolean exclude = attrFilter.isExcludeInstanceFilter();        
-                instance = instHome.create(ds.subSet(filter, exclude, exclude),
+                instance = instHome.create(ds.subSet(filter),
                         getSeries(ds, coercedElements));
             }
             FileSystemLocal fs;
@@ -210,7 +210,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private SeriesLocal getSeries(Dataset ds, Dataset coercedElements)
-            throws FinderException, CreateException {
+            throws FinderException, CreateException, DcmServiceException {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
@@ -218,8 +218,7 @@ public abstract class StorageBean implements SessionBean {
             coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
             final int[] filter = attrFilter.getSeriesFilter();
-            final boolean exclude = attrFilter.isExcludeSeriesFilter();        
-            series = seriesHome.create(ds.subSet(filter, exclude, exclude),
+            series = seriesHome.create(ds.subSet(filter),
                     getStudy(ds, coercedElements));
         }
         return series;
@@ -228,9 +227,11 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @param ds
      * @return
+     * @throws DcmServiceException 
+     * @throws IllegalAttributeCoercionException 
      */
     private StudyLocal getStudy(Dataset ds, Dataset coercedElements)
-            throws CreateException, FinderException {
+            throws CreateException, FinderException, DcmServiceException {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
@@ -238,8 +239,7 @@ public abstract class StorageBean implements SessionBean {
             coerceStudyIdentity(study, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
             final int[] filter = attrFilter.getStudyFilter();
-            final boolean exclude = attrFilter.isExcludeStudyFilter();        
-            study = studyHome.create(ds.subSet(filter, exclude, exclude),
+            study = studyHome.create(ds.subSet(filter),
                     getPatient(ds, coercedElements));
         }
 
@@ -249,9 +249,11 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @param ds
      * @return
+     * @throws DcmServiceException 
+     * @throws IllegalAttributeCoercionException 
      */
     private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
-            throws CreateException, FinderException {
+            throws CreateException, FinderException, DcmServiceException {
         final String id = ds.getString(Tags.PatientID);
         Collection c = patHome.findByPatientId(id);
         for (Iterator it = c.iterator(); it.hasNext();) {
@@ -266,8 +268,7 @@ public abstract class StorageBean implements SessionBean {
             }
         }
         final int[] filter = attrFilter.getPatientFilter();
-        final boolean exclude = attrFilter.isExcludePatientFilter();        
-        PatientLocal patient = patHome.create(ds.subSet(filter, exclude, exclude));
+        PatientLocal patient = patHome.create(ds.subSet(filter));
         return patient;
     }
 
@@ -277,46 +278,51 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
-            Dataset coercedElements) {
+            Dataset coercedElements) throws DcmServiceException {
         coerceIdentity(patient.getAttributes(false), ds, coercedElements);
     }
 
     private void coerceStudyIdentity(StudyLocal study, Dataset ds,
-            Dataset coercedElements) {
+            Dataset coercedElements) throws DcmServiceException {
         coercePatientIdentity(study.getPatient(), ds, coercedElements);
         coerceIdentity(study.getAttributes(false), ds, coercedElements);
     }
 
     private void coerceSeriesIdentity(SeriesLocal series, Dataset ds,
-            Dataset coercedElements) {
+            Dataset coercedElements) throws DcmServiceException {
         coerceStudyIdentity(series.getStudy(), ds, coercedElements);
         coerceIdentity(series.getAttributes(false), ds, coercedElements);
     }
 
     private void coerceInstanceIdentity(InstanceLocal instance, Dataset ds,
-            Dataset coercedElements) {
+            Dataset coercedElements) throws DcmServiceException {
         coerceSeriesIdentity(instance.getSeries(), ds, coercedElements);
         coerceIdentity(instance.getAttributes(false), ds, coercedElements);
     }
 
     private boolean coerceIdentity(Dataset ref, Dataset ds,
-            Dataset coercedElements) {
+            Dataset coercedElements) throws DcmServiceException {
         boolean coercedIdentity = false;
         for (Iterator it = ref.iterator(); it.hasNext();) {
             DcmElement refEl = (DcmElement) it.next();
-            DcmElement el = ds.get(refEl.tag());
+            final int tag = refEl.tag();
+			DcmElement el = ds.get(tag);
             if (!equals(el,
                     ds.getCharset(),
                     refEl,
                     ref.getCharset(),
                     coercedElements)) {
+            	if (attrFilter.isCoercionForbidden(tag)) {
+            		throw new DcmServiceException(ForbiddenAttributeCoercion,
+            				"Storage would require forbidden Coercion of " + el + " to " + refEl);
+            	}
                 log.warn("Coerce " + el + " to " + refEl);
                 if (coercedElements != null) {
                     if (VRs.isLengthField16Bit(refEl.vr())) {
-                        coercedElements.putXX(refEl.tag(), refEl
+                        coercedElements.putXX(tag, refEl
                                 .getByteBuffer());
                     } else {
-                        coercedElements.putXX(refEl.tag());
+                        coercedElements.putXX(tag);
                     }
                 }
                 coercedIdentity = true;
@@ -326,7 +332,8 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private boolean equals(DcmElement el, Charset cs, DcmElement refEl,
-            Charset refCS, Dataset coercedElements) {
+            Charset refCS, Dataset coercedElements)
+    		throws DcmServiceException {
         final int vm = refEl.vm();
         if (el == null || el.vm() != vm) { return false; }
         final int vr = refEl.vr();

@@ -13,7 +13,6 @@ import java.util.Arrays;
 
 import javax.xml.parsers.SAXParserFactory;
 
-import org.dcm4che.dict.Tags;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -30,15 +29,21 @@ public final class AttributeFilter {
     private int[] studyFilter;
     private int[] seriesFilter;
     private int[] instanceFilter;
-    private boolean excludePatientFilter;
-    private boolean excludeStudyFilter;
-    private boolean excludeSeriesFilter;
-    private boolean excludeInstanceFilter;
+    private int[] noCoercion;
 
+    private static int[] parseInts(ArrayList list) {
+        int[] array = new int[list.size()];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = Integer.parseInt((String) list.get(i), 16);
+        }
+        Arrays.sort(array);
+        return array;
+    }
+    
     private class MyHandler extends DefaultHandler {
         private String level;
-        private boolean exclude;
-        private ArrayList list = new ArrayList();
+        private ArrayList filter = new ArrayList();
+        private ArrayList noCoerceList = new ArrayList();
 
         public void startElement(
             String uri,
@@ -47,41 +52,36 @@ public final class AttributeFilter {
             Attributes attributes)
             throws SAXException {
             if (qName.equals("attr")) {
-                list.add(attributes.getValue("tag"));
+            	String tag = attributes.getValue("tag");
+            	String coerce = attributes.getValue("coerce");
+            	filter.add(tag);
+            	if ("false".equalsIgnoreCase(coerce))
+            		noCoerceList.add(tag);
             } else if (qName.equals("filter")) {
                 level = attributes.getValue("level");
-                exclude = "true".equalsIgnoreCase(attributes.getValue("exclude"));
             }
         }
-
-        private int[] tags() {
-            int[] array = new int[list.size()];
-            for (int i = 0; i < array.length; i++) {
-	            array[i] = Integer.parseInt((String) list.get(i), 16);
-            }
-            Arrays.sort(array);
-            list.clear();
-            return array;
-        }
-
+        
         public void endElement(String uri, String localName, String qName)
                 throws SAXException {
             if (qName.equals("filter")) {
 	            if (level.equals("PATIENT")) {
-	                patientFilter = tags();
-	                excludePatientFilter = exclude;
+	                patientFilter = AttributeFilter.parseInts(filter);
 	            } else if (level.equals("STUDY")) {
-	                studyFilter = tags();
-	                excludeStudyFilter = exclude;
+	                studyFilter = AttributeFilter.parseInts(filter);
 	            } else if (level.equals("SERIES")) {
-	                seriesFilter = tags();
-	                excludeSeriesFilter = exclude;
+	                seriesFilter = AttributeFilter.parseInts(filter);
 	            } else if (level.equals("IMAGE")) {
-	                instanceFilter = tags();
-	                excludeInstanceFilter = exclude;
+	                instanceFilter = AttributeFilter.parseInts(filter);
 	            }
+	            filter.clear();
             }
         }
+        
+		public void endDocument() throws SAXException {
+			noCoercion = AttributeFilter.parseInts(noCoerceList);
+			noCoerceList.clear();
+		}
     }
 
     public AttributeFilter(String uri) throws ConfigurationException {
@@ -111,20 +111,9 @@ public final class AttributeFilter {
     public final int[] getInstanceFilter() {
         return instanceFilter;
     }
-
-    public final boolean isExcludePatientFilter() {
-        return excludePatientFilter;
+    
+    public boolean isCoercionForbidden(int tag) {
+    	return Arrays.binarySearch(noCoercion, tag) >= 0;
     }
-
-    public final boolean isExcludeStudyFilter() {
-        return excludeStudyFilter;
-    }
-
-    public final boolean isExcludeSeriesFilter() {
-        return excludeSeriesFilter;
-    }
-
-    public final boolean isExcludeInstanceFilter() {
-        return excludeInstanceFilter;
-    }
+    
 }

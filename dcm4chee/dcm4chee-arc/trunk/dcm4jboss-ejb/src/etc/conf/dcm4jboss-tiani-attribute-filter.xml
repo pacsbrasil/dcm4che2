@@ -4,7 +4,7 @@
     <filter level="PATIENT">
         <attr tag="00080005"/> <!-- Specific Character Set -->
         <attr tag="00100010"/> <!--  Patient's Name -->
-        <attr tag="00100020"/> <!--  Patient ID -->
+        <attr tag="00100020" coerce="false"/> <!--  Patient ID -->
         <attr tag="00100021"/> <!-- Issuer of Patient ID -->
         <attr tag="00100030"/> <!-- Patient's Birth Date -->
         <attr tag="00100040"/> <!-- Patient's Sex -->
@@ -18,7 +18,7 @@
         <attr tag="00080090"/> <!-- Referring Physician Name -->
         <attr tag="00081030"/> <!-- Study Description -->
         <attr tag="00081032"/> <!-- Procedure Code Seq -->
-        <attr tag="0020000D"/> <!-- Study Instance UID -->
+        <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
         <attr tag="00200010"/> <!-- Study ID -->
     </filter>
     <filter level="SERIES">
@@ -45,7 +45,7 @@
         <attr tag="00181030"/> <!-- Protocol Name -->
         <attr tag="00185100"/> <!-- Patient Position -->
         <attr tag="00185101"/> <!-- View Position -->
-        <attr tag="0020000E"/> <!-- Series Instance UID -->
+        <attr tag="0020000E" coerce="false"/> <!-- Series Instance UID -->
         <attr tag="00200011"/> <!-- Series Number -->
         <attr tag="00200052"/> <!-- Frame of Reference UID -->
         <attr tag="00200060"/> <!-- Laterality -->
