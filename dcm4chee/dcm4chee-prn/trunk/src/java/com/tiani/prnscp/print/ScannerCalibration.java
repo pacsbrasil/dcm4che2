@@ -634,10 +634,10 @@ public class ScannerCalibration
                 new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h')
                 };
 
-        Getopt g = new Getopt("plut.jar", args, "t:e:h", longopts, true);
+        Getopt g = new Getopt("probescan", args, "t:e:h", longopts, true);
         try {
-            ScannerCalibration sc = new ScannerCalibration(
-                Logger.getLogger(ScannerCalibration.class));
+            ScannerCalibration sc =
+                new ScannerCalibration(Logger.getLogger("probescan"));
             int c;
             while ((c = g.getopt()) != -1) {
                 switch (c) {
@@ -656,13 +656,13 @@ public class ScannerCalibration
             int optind = g.getOptind();
             int argc = args.length - optind;
             if (argc != 1) {
-                exit("probescan.jar: wrong number of arguments\n");
+                exit("probescan: wrong number of arguments\n");
             }
             sc.analyse(new File(args[optind]));
         } catch (IllegalArgumentException e) {
-            exit("probescan.jar: illegal argument - " + e.getMessage() + "\n");
+            exit("probescan: illegal argument - " + e.getMessage() + "\n");
         } catch (IOException e) {
-            System.err.println("probescan.jar: i/o error - " + e.getMessage() + "\n");
+            System.err.println("probescan: i/o error - " + e.getMessage() + "\n");
             System.exit(1);
         }
     }
