@@ -68,14 +68,8 @@ public class FindScp extends DcmServiceBase {
     }
 
     void logDicomQuery(Association assoc, Command cmd, Dataset keys) {
-        if (service.getAuditLogger() != null) {
-            service.getAuditLogger()
-                    .logDicomQuery(
-                            keys,
-                            alf.newRemoteNode(assoc.getSocket(), assoc
-                                    .getCallingAET()),
-                            cmd.getAffectedSOPClassUID());
-        }
+        service.logDicomQuery(keys, alf.newRemoteNode(assoc.getSocket(), assoc
+                .getCallingAET()), cmd.getAffectedSOPClassUID());
     }
 
     private class MultiCFindRsp implements MultiDimseRsp {

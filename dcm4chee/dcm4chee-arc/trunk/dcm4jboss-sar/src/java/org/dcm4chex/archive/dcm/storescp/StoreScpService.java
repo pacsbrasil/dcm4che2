@@ -16,6 +16,9 @@ import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.ObjectName;
 
+import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.RemoteNode;
+import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
@@ -411,6 +414,19 @@ public class StoreScpService extends AbstractScpService {
             return b.booleanValue();
         } catch (JMException e) {
             throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
+        }
+    }
+
+    void logInstancesStored(RemoteNode node, InstancesAction action) {
+        if (auditLogName == null) return;
+        try {
+            server.invoke(auditLogName,
+                    "logInstancesStored",
+                    new Object[] { node, action},
+                    new String[] { RemoteNode.class.getName(), 
+                    	InstancesAction.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
         }
     }
 }

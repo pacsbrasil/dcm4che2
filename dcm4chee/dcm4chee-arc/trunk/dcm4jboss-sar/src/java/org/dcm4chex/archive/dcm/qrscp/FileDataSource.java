@@ -46,6 +46,7 @@ class FileDataSource implements DataSource {
     private final FileInfo fileInfo;
     private final byte[] buffer;
 
+    // buffer == null => send no Pixeldata
     public FileDataSource(
         QueryRetrieveScpService service,
         FileInfo fileInfo,
@@ -69,7 +70,7 @@ class FileDataSource implements DataSource {
             updateAttrs(ds, fileInfo.studyAttrs);
             updateAttrs(ds, fileInfo.seriesAttrs);
             updateAttrs(ds, fileInfo.instAttrs);
-            if (parser.getReadTag() != Tags.PixelData) {
+            if (parser.getReadTag() != Tags.PixelData || buffer == null) {
                 service.logDataset("Dataset:\n", ds);
                 ds.writeDataset(out, enc);
                 return;                

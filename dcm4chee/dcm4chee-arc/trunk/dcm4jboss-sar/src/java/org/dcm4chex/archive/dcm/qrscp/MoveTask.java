@@ -92,6 +92,8 @@ class MoveTask implements Runnable {
 
     private final String moveCalledAET;
 
+    private final boolean withoutPixeldata;
+
     private ActiveAssociation moveAssoc;
 
     private final ArrayList failedIUIDs = new ArrayList();
@@ -145,6 +147,7 @@ class MoveTask implements Runnable {
         this.moveRqCmd = moveRqCmd;
         this.aeData = aeData;
         this.moveDest = moveDest;
+        this.withoutPixeldata = service.isWithoutPixelData(moveDest);
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.moveCalledAET = moveAssoc.getAssociation().getCalledAET();
         if ((remaining = fileInfo.length) > 0) {
@@ -296,7 +299,8 @@ class MoveTask implements Runnable {
     }
 
     private void retrieveLocal() {
-        byte[] buffer = new byte[service.getBufferSize()];
+        byte[] buffer = withoutPixeldata ? null
+                : new byte[service.getBufferSize()];
         Association a = storeAssoc.getAssociation();
         final int n = toRetrieve.size();
         final int remainingAfter = remaining - n;
@@ -356,14 +360,7 @@ class MoveTask implements Runnable {
 	            --remaining;
 	        }
         }
-        logInstancesSent();
-    }
-
-    private void logInstancesSent() {
-        if (service.getAuditLogger() != null) {
-            service.getAuditLogger().logInstancesSent(remoteNode,
-                    instancesAction);
-        }
+        service.logInstancesSent(remoteNode, instancesAction);
     }
 
     private void updateInstancesAction(final FileInfo fileInfo) {
@@ -429,8 +426,7 @@ class MoveTask implements Runnable {
                 moveAssoc.getAssociation()
                         .write(af.newDimse(movePcid, cmd, ds));
             } catch (Exception e) {
-                log
-                        .info("Failed to send Move RSP to Move Originator:", e);
+                log.info("Failed to send Move RSP to Move Originator:", e);
                 moveAssoc = null;
             }
         }

@@ -9,13 +9,18 @@
 package org.dcm4chex.archive.mbean;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.Patient;
+import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.auditlog.User;
+import org.dcm4che.data.Dataset;
+import org.dcm4cheri.util.StringUtils;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -33,6 +38,8 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
             .getLogger(getClass().getName()));
 
     private String actorName;
+    
+    private ArrayList disabledForAETs = new ArrayList();
 
     public final String getActorName() {
         return actorName;
@@ -40,6 +47,22 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
 
     public final void setActorName(String actorName) {
         this.actorName = actorName;
+    }
+
+    public String getDisableForAETs() {
+        if (disabledForAETs.isEmpty()) return "NONE";
+        StringBuffer sb = new StringBuffer((String) disabledForAETs.get(0));
+        for (int i = 1, n = disabledForAETs.size(); i < n; i++) {
+            sb.append('\\').append((String) disabledForAETs.get(i));
+        }
+        return sb.toString();
+    }
+
+    public final void setDisableForAETs(String aets) {
+        disabledForAETs.clear();
+        if (aets != null && aets.length() > 0 && !aets.equalsIgnoreCase("NONE")) {
+            disabledForAETs.addAll(Arrays.asList(StringUtils.split(aets, '\\')));
+        }
     }
 
     public AuditLogger getAuditLogger() {
@@ -300,7 +323,28 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
                     desc);
         }
     }
+    
+    public void logInstancesStored(RemoteNode node, InstancesAction action) {
+        if (getState() == STARTED 
+                && !disabledForAETs.contains(node.getAET())) {
+            logger.logInstancesStored(node, action);
+        }        
+    }
+    
+    public void logInstancesSent(RemoteNode node, InstancesAction action) {
+        if (getState() == STARTED 
+                && !disabledForAETs.contains(node.getAET())) {
+            logger.logInstancesSent(node, action);
+        }        
+    }
 
+    public void logDicomQuery(Dataset keys, RemoteNode node, String cuid) {        
+        if (getState() == STARTED 
+                && !disabledForAETs.contains(node.getAET())) {
+            logger.logDicomQuery(keys, node, cuid);
+        }        
+    }
+    
     private void logActorStartStop(String action) {
         logger.logActorStartStop(actorName, action, getCurrentUser());
     }

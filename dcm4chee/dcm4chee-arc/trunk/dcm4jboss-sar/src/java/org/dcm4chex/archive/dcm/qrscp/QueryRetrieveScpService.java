@@ -12,15 +12,20 @@ package org.dcm4chex.archive.dcm.qrscp;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.management.ObjectName;
 
+import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.RemoteNode;
+import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.ExtNegotiator;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
@@ -63,6 +68,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
             return Connection.TRANSACTION_SERIALIZABLE;
         return 0;
     }
+    
+    private ArrayList sendNoPixelDataToAETs = new ArrayList();
     
     private String queryTransactionIsolationLevel;
 
@@ -227,7 +234,26 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public final void setForwardAsMoveOriginator(boolean forwardAsMoveOriginator) {
         this.forwardAsMoveOriginator = forwardAsMoveOriginator;
     }
+    
+    public final String getSendNoPixelDataToAETs() {
+        if (sendNoPixelDataToAETs.isEmpty()) return "NONE";
+        StringBuffer sb = 
+            new StringBuffer((String) sendNoPixelDataToAETs.get(0));
+        for (int i = 1, n = sendNoPixelDataToAETs.size(); i < n; i++) {
+            sb.append('\\').append((String) sendNoPixelDataToAETs.get(i));
+        }
+        return sb.toString();
+    }
 
+    public final void setSendNoPixelDataToAETs(String aets) {
+        sendNoPixelDataToAETs.clear();
+        if (aets != null && aets.length() > 0 
+                && !aets.equalsIgnoreCase("NONE")) {
+            sendNoPixelDataToAETs.addAll(
+                    Arrays.asList(StringUtils.split(aets, '\\')));
+        }
+    }
+    
     public final int getBufferSize() {
         return bufferSize;
     }
@@ -284,6 +310,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     };
 
+
+
     protected void initPresContexts(AcceptorPolicy policy) {
         String[] asuids = getAbstractSyntaxUIDs();
         addPresContexts(policy, asuids, getTransferSyntaxUIDs());
@@ -307,6 +335,36 @@ public class QueryRetrieveScpService extends AbstractScpService {
             return b.booleanValue();
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
+    }
+
+    boolean isWithoutPixelData(String moveDest) {
+        return sendNoPixelDataToAETs.contains(moveDest);
+    }
+
+    void logInstancesSent(RemoteNode node, InstancesAction action) {
+        if (auditLogName == null) return;
+        try {
+            server.invoke(auditLogName,
+                    "logInstancesSent",
+                    new Object[] { node, action},
+                    new String[] { RemoteNode.class.getName(),
+                    	InstancesAction.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }
+    }
+
+    void logDicomQuery(Dataset keys, RemoteNode node, String cuid) {
+        if (auditLogName == null) return;
+        try {
+            server.invoke(auditLogName,
+                    "logDicomQuery",
+                    new Object[] { keys, node, cuid},
+                    new String[] { Dataset.class.getName(), 
+                    	RemoteNode.class.getName(), String.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
         }
     }
 }

@@ -33,7 +33,6 @@ import javax.management.ReflectionException;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
-import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -72,6 +71,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected ObjectName dcmServerName;
 
+    protected ObjectName auditLogName;
+    
     protected DcmHandler dcmHandler;
 
     protected String calledAETs;
@@ -79,19 +80,21 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String callingAETs;
     
     protected boolean acceptExplicitVRLE = true;
-    
-    protected AuditLogger auditLogger;
-
-    public final AuditLogger getAuditLogger() {
-        return auditLogger;
-    }
-
+        
     public final ObjectName getDcmServerName() {
         return dcmServerName;
     }
 
     public final void setDcmServerName(ObjectName dcmServerName) {
         this.dcmServerName = dcmServerName;
+    }
+
+    public final ObjectName getAuditLoggerName() {
+        return auditLogName;
+    }
+
+    public final void setAuditLoggerName(ObjectName auditLogName) {
+        this.auditLogName = auditLogName;
     }
 
     public final String getCalledAETs() {
@@ -129,8 +132,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
     
     protected void startService() throws Exception {
-        auditLogger = (AuditLogger) server.invoke(dcmServerName,
-                "getAuditLogger", null, null);
+//        auditLogger = (AuditLogger) server.invoke(dcmServerName,
+//                "getAuditLogger", null, null);
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "getDcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());

@@ -87,6 +87,17 @@
          <value value="dcm4chex:service=MPPSScp" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chex:service=AuditLogger" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

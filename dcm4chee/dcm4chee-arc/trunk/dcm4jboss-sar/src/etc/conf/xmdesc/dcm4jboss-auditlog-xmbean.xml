@@ -8,7 +8,7 @@
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
-      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
    <class>org.dcm4chex.archive.mbean.AuditLoggerService</class>
@@ -73,6 +73,19 @@
       <type>boolean</type>
       <descriptors>
          <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDisableForAETs"
+      setMethod="setDisableForAETs">
+      <description>Disable Emission of Audit Logs for actions invoked by remote
+      nodes with listed AET. Use '\' (backslash) as delimiter.
+      "NONE" = empty list.
+      </description>
+      <name>DisableForAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -201,12 +214,12 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="INFO">
-      <description>Get Audit Logger</description>
+      <description>Used internally</description>
       <name>getAuditLogger</name>
       <return-type>org.dcm4che.auditlog.AuditLogger</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Log Configuration Change</description>
+      <description>Used internally</description>
       <name>logActorConfig</name>
       <parameter>
         <description>Description</description>
@@ -221,7 +234,7 @@
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Log Study Deleted</description>
+      <description>Used internally</description>
       <name>logStudyDeleted</name>
       <parameter>
         <description>Patient ID</description>
@@ -251,7 +264,7 @@
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Log Patient Record</description>
+      <description>Used internally</description>
       <name>logPatientRecord</name>
       <parameter>
         <description>Object Action:  Create|Modify|Access|Delete</description>
@@ -276,7 +289,7 @@
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Log Procedure Record</description>
+      <description>Used internally</description>
       <name>logProcedureRecord</name>
       <parameter>
         <description>Object Action:  Create|Modify|Access|Delete</description>
@@ -316,6 +329,49 @@
       <parameter>
         <description>Description</description>
         <name>description</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Used internally</description>
+      <name>logInstancesStored</name>
+      <parameter>
+        <name>node</name>
+        <type>org.dcm4che.auditlog.RemoteNode</type>
+      </parameter>
+      <parameter>
+        <name>action</name>
+        <type>org.dcm4che.auditlog.InstancesAction</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Used internally</description>
+      <name>logInstancesSent</name>
+      <parameter>
+        <name>node</name>
+        <type>org.dcm4che.auditlog.RemoteNode</type>
+      </parameter>
+      <parameter>
+        <name>action</name>
+        <type>org.dcm4che.auditlog.InstancesAction</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Used internally</description>
+      <name>logDicomQuery</name>
+      <parameter>
+        <name>keys</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <name>node</name>
+        <type>org.dcm4che.auditlog.RemoteNode</type>
+      </parameter>
+      <parameter>
+        <name>cuid</name>
         <type>java.lang.String</type>
       </parameter>
       <return-type>void</return-type>

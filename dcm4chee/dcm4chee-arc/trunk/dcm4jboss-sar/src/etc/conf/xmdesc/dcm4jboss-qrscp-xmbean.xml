@@ -44,6 +44,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getSendNoPixelDataToAETs"
+      setMethod="setSendNoPixelDataToAETs">
+      <description>Move Destination AET(s), to which images are sent without
+      pixel data. Separate multiple values by '\'(backslash).
+      "NONE" = no such aet.
+      </description>
+      <name>SendNoPixelDataToAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptPatientRootFind"
       setMethod="setAcceptPatientRootFind">
       <description>Support Patient Root Query/Retrieve Information Model - FIND SOP Class
@@ -244,6 +257,17 @@
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="dcm4chex:service=DcmServer" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chex:service=AuditLogger" />
       </descriptors>
    </attribute>
    &defaultAttributes;

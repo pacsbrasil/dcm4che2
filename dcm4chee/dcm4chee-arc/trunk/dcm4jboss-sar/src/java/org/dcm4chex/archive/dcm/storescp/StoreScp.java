@@ -676,9 +676,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     void updateInstancesStored(Association assoc, Dataset ds) {
-        if (service.getAuditLogger() == null) {
-            return;
-        }
         try {
             InstancesAction stored = (InstancesAction) assoc
                     .getProperty("InstancesStored");
@@ -703,14 +700,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     void logInstancesStored(Association assoc) {
-        if (service.getAuditLogger() == null) {
-            return;
-        }
         InstancesAction stored = (InstancesAction) assoc
                 .getProperty("InstancesStored");
         if (stored != null) {
-            service.getAuditLogger()
-                    .logInstancesStored(
+            service.logInstancesStored(
                             alf.newRemoteNode(assoc.getSocket(), assoc
                                     .getCallingAET()), stored);
         }
