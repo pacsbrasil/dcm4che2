@@ -7,6 +7,7 @@ dcm4che 1.0.5 -  - Changes since dcm4che 1.0.4
 BUG FIXES:
 + org.dcm4che.srom.HL7Export#toHL7(String..):
   Fix Inconsistence between API and Implementation of String argument order
++ Fix bug in mppssnd utility (did not work at all)
 
 ENHANCEMENTS:
 org.dcm4che.data.Dataset:

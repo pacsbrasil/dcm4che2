@@ -420,9 +420,14 @@ public class MppsSnd implements PollDirSrv.Handler {
             assocRQ.addPresContext(
             aFact.newPresContext(PCID_ECHO, UIDs.Verification, DEF_TS));
         } else {
+            List tsNames = cfg.tokenize(cfg.getProperty("ts"), new LinkedList());
+            String[] tsUIDs = new String[tsNames.size()];
+            Iterator it = tsNames.iterator();
+            for (int i = 0; i < tsUIDs.length; ++i) {
+                tsUIDs[i] = UIDs.forName((String)it.next());
+            }
             assocRQ.addPresContext(aFact.newPresContext(
-            PCID_MPPS, UIDs.ModalityPerformedProcedureStep,
-            cfg.tokenize(cfg.getProperty("ts", ""))));
+                PCID_MPPS, UIDs.ModalityPerformedProcedureStep, tsUIDs));
         }
     }
     

@@ -55,7 +55,7 @@ public class UIDDictionaryImpl implements UIDDictionary, java.io.Serializable {
         Entry entry = (Entry)map.get(uid);
 	return entry != null
 	    ? entry
-	    : new Entry(uid, "");
+	    : new Entry(uid, "?");
     }
     
     public String toString(String uid) {
