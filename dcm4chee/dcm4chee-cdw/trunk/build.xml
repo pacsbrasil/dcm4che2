@@ -3,7 +3,7 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 
-    <property name="version" value="0.9.4"/>
+    <property name="version" value="1.0"/>
     <property name="dist.jboss.conf" value="dcmcdw"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
     <property name="dist.standalone" value="dcmcdw-standalone-${version}"/>
@@ -114,25 +114,30 @@
    			<fileset dir="${src.etc}" includes="data/mergedir/README.TXT"/>
    		</copy>
    		<zip destfile="${build.dir}/${dist.name}.zip">
+			<zipfileset dir="${basedir}" prefix="${dist.jboss.conf}">
+				<include name="doc/*"/>
+			</zipfileset>
 			<zipfileset dir="${build.dir}" prefix="${dist.jboss.conf}">
 				<include name="bin/acroread.bat"/>
 				<include name="bin/fop.bat"/>
+				<include name="bin/install.bat"/>
 				<include name="bin/run.conf"/>
 				<include name="bin/xalan.bat"/>
  				<include name="data/mergedir/README.TXT"/>
- 				<include name="deploy/*"/>
+				<include name="deploy/*"/>
 				<include name="lib/*"/>
    			</zipfileset>	
 			<zipfileset dir="${build.dir}" prefix="${dist.jboss.conf}" filemode="755">
 				<include name="bin/fop.sh"/>
+				<include name="bin/install.sh"/>
 				<include name="bin/xalan.sh"/>
    			</zipfileset>	
 			<zipfileset dir="${src.etc}" prefix="${dist.jboss.conf}">
 				<include name="bin/fopcfg.xml"/>
 				<include name="conf/**"/>
-				<exclude name="conf/jboss-service.xml"/>
 				<include name="data/**"/>
 				<exclude name="data/mergedir/README.TXT"/>
+				<include name="deploy/jms/*"/>
 			</zipfileset>
 			<zipfileset dir="${dcm4che.home}" prefix="${dist.jboss.conf}">
 				<include name="lib/dcm4che.jar"/>
@@ -159,10 +164,6 @@
 				<include name="bin/install_service.bat"/>
 				<include name="bin/run.conf"/>
    			</zipfileset>	
-			<zipfileset dir="${src.etc}" prefix="${dist.standalone}/server/${dist.jboss.conf}">
-				<include name="conf/jboss-service.xml"/>
-				<include name="deploy/**"/>
-			</zipfileset>
 			<zipfileset dir="${basedir}" prefix="${dist.standalone}">
 				<include name="bin/*"/>
 			</zipfileset>
@@ -182,6 +183,9 @@
 				<include name="bin/shutdown.sh"/>
 				<include name="bin/twiddle.sh"/>
 			</zipfileset>
+			<zipfileset dir="${src.etc}" prefix="${dist.standalone}/server/dcmcdw">
+				<include name="deploy/jmx-console.war/**"/>
+			</zipfileset>
 			<zipfileset dir="${jboss.home}/server/default" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="deploy/hsqldb-ds.xml"/>
 				<include name="deploy/jboss-jca.sar"/>
@@ -199,9 +203,7 @@
 				<include name="conf/jndi.properties"/>
 				<include name="conf/login-config.xml"/>
 				<include name="conf/server.policy"/>
-				<include name="conf/web.xml"/>
 				<include name="conf/xmdesc/*"/>
-				<include name="conf/xsl/*"/>
 				<include name="lib/autonumber-plugin.jar"/>
 				<include name="lib/bcel.jar"/>
 				<include name="lib/hsqldb.jar"/>
