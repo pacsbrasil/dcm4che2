@@ -24,7 +24,7 @@
   <property name="check-license.jar" value="${license.home}/lib/check-license.jar"/>
 
   <!-- Override with your auditrep dist location -->
-  <property name="jaudit.home" value="../auditrep/build/jaudit-0.1.0"/>
+  <property name="jaudit.home" value="../auditrep/build/jaudit-0.2.0"/>
   
   
   <!-- Override with your JBoss/Web server bundle dist location -->
