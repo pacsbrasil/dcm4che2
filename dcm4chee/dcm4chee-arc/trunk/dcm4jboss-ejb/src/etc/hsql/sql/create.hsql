@@ -103,7 +103,7 @@ CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 
-CREATE TABLE file (
+CREATE TABLE files (
 	pk              IDENTITY PRIMARY KEY,
 	instance_fk     INTEGER,
 	retrieve_aets	VARCHAR(256) NOT NULL,
@@ -114,4 +114,4 @@ CREATE TABLE file (
 	file_size       INTEGER,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 );
-CREATE INDEX instance_fk ON file(instance_fk);
+CREATE INDEX instance_fk ON files(instance_fk);
