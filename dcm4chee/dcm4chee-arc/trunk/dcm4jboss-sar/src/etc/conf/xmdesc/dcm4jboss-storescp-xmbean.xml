@@ -59,18 +59,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getRetrieveAETs"
-      setMethod="setRetrieveAETs">
-      <description>Comma separated list of RetrieveAETs associated with
-      stored DICOM objects.
-      </description>
-      <name>RetrieveAETs</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="QR_SCP" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getCompressionRules"
       setMethod="setCompressionRules">
       <description>List of image compression rules.
@@ -82,19 +70,6 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JPEGLSLossless;NONE" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getStorageRules"
-      setMethod="setStorageRules">
-      <description>List of storage rules.
-      Format:=['['CONDITION[,..]']']DIRPATH
-      CONDITION:=(calling|called)[!]=AET['|'..]   
-      </description>
-      <name>StorageRules</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2]archive2;archive" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -274,7 +249,29 @@
       <descriptors>
          <value value="512" />
       </descriptors>
-   </attribute>   
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMountFailedCheckFile"
+      setMethod="setMountFailedCheckFile">
+      <description>Existence of specified file signals failed mount.
+      </description>
+      <name>MountFailedCheckFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NO_MOUNT" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isMakeStorageDirectory"
+      setMethod="setMakeStorageDirectory">
+      <description>Make Storage Directory if no one already exists.
+      </description>
+      <name>MakeStorageDirectory</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
@@ -296,6 +293,17 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="java:/DefaultDS" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>FileSystemMgtName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chex:service=FileSystemMgt" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

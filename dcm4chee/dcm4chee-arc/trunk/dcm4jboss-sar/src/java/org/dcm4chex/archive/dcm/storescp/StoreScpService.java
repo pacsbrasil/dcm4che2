@@ -10,23 +10,19 @@
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
+import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
+import javax.management.ObjectName;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
-import org.dcm4chex.archive.config.StorageRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
@@ -82,9 +78,9 @@ public class StoreScpService extends AbstractScpService {
             UIDs.KeyObjectSelectionDocument, UIDs.RTDoseStorage,
             UIDs.RTStructureSetStorage, UIDs.RTBeamsTreatmentRecordStorage,
             UIDs.RTPlanStorage, UIDs.RTBrachyTreatmentRecordStorage,
-            UIDs.RTTreatmentSummaryRecordStorage,};
+            UIDs.RTTreatmentSummaryRecordStorage, UIDs.RawDataStorage};
 
-    private Set retrieveAETSet;
+    private ObjectName fileSystemMgtName;
 
     private boolean acceptStorageCommitment = true;
 
@@ -120,6 +116,30 @@ public class StoreScpService extends AbstractScpService {
         return EJBHomeFactory.getEjbProviderURL();
     }
 
+    public String getMountFailedCheckFile() {
+        return scp.getMountFailedCheckFile();
+    }
+
+    public void setMountFailedCheckFile(String mountFailedCheckFile) {
+        scp.setMountFailedCheckFile(mountFailedCheckFile);
+    }
+
+    public boolean isMakeStorageDirectory() {
+        return scp.isMakeStorageDirectory();
+    }
+
+    public void setMakeStorageDirectory(boolean makeStorageDirectory) {
+        scp.setMakeStorageDirectory(makeStorageDirectory);
+    }
+
+    public final ObjectName getFileSystemMgtName() {
+        return fileSystemMgtName;
+    }
+
+    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
+        this.fileSystemMgtName = fileSystemMgtName;
+    }
+
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
@@ -130,14 +150,6 @@ public class StoreScpService extends AbstractScpService {
 
     public void setCoerceWarnCallingAETs(String aets) {
         scp.setCoerceWarnCallingAETs(aets);
-    }
-
-    public String getStorageRules() {
-        return scp.getStorageRules().toString();
-    }
-
-    public void setStorageRules(String rules) {
-        scp.setStorageRules(new StorageRules(rules));
     }
 
     public final String getCompressionRules() {
@@ -178,37 +190,6 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setSoCloseDelay(int soCloseDelay) {
         this.soCloseDelay = soCloseDelay;
-    }
-
-    public final String getRetrieveAETs() {
-        if (retrieveAETSet == null) return null;
-        StringBuffer sb = new StringBuffer();
-        Iterator it = retrieveAETSet.iterator();
-        sb.append(it.next());
-        while (it.hasNext())
-            sb.append(',').append(it.next());
-        return sb.toString();
-    }
-
-    public final void setRetrieveAETs(String aets) {
-        String[] a = StringUtils.split(aets, ',');
-        if (a.length == 0) { throw new IllegalArgumentException(
-                "Missing Retrieve AET"); }
-        this.retrieveAETSet = Collections.unmodifiableSet(new HashSet(Arrays
-                .asList(a)));
-    }
-
-    final Set getRetrieveAETSet() {
-        return retrieveAETSet;
-    }
-
-    final String[] getRetrieveAETArray() {
-        return (String[]) retrieveAETSet.toArray(new String[retrieveAETSet
-                .size()]);
-    }
-
-    final String getRetrieveAET() {
-        return (String) retrieveAETSet.iterator().next();
     }
 
     public boolean isAcceptStorageCommitment() {
@@ -310,7 +291,6 @@ public class StoreScpService extends AbstractScpService {
     }
 
     protected void startService() throws Exception {
-        scp.checkReadyToStart();
         super.startService();
     }
 
@@ -386,4 +366,40 @@ public class StoreScpService extends AbstractScpService {
         notif.setUserData(assoc);
         super.sendNotification(notif);
     }
+
+    FileSystemDTO getStorageFileSystem() {
+        try {
+            return (FileSystemDTO) server.invoke(fileSystemMgtName,
+                    "getStorageFileSystem",
+                    null,
+                    null);
+        } catch (JMException e) {
+            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
+        }
+    }
+
+    boolean nextStorageDirectory() {
+        try {
+            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
+                    "nextStorageDirectory",
+                    null,
+                    null);
+            return b.booleanValue();
+        } catch (JMException e) {
+            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
+        }
+    }
+
+    boolean isLocalFileSystem(String dirpath) {
+        try {
+            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
+                    "isLocalFileSystem",
+                    new Object[] { dirpath},
+                    new String[] { String.class.getName()});
+            return b.booleanValue();
+        } catch (JMException e) {
+            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
+        }
+    }
+
 }

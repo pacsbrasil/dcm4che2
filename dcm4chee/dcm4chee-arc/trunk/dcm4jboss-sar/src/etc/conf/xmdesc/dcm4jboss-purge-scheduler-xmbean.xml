@@ -41,7 +41,7 @@
       <name>SchedulableMBean</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="dcm4chex:service=PurgeFiles" />
+         <value value="dcm4chex:service=FileSystemMgt" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -52,7 +52,7 @@
       <name>SchedulableMBeanMethod</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="run" />
+         <value value="purgeFiles" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

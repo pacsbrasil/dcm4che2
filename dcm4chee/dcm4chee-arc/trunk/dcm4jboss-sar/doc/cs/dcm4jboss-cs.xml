@@ -2,7 +2,7 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
 <article status="draft">
-  <title>Dcm4che Release 1.4</title>
+  <title>dcm4che/archive v 0.9</title>
 
   <subtitle>DICOM Conformance Statement</subtitle>
 
@@ -10,17 +10,18 @@
     <corpauthor><ulink url="http://www.tiani.com">TIANI MEDGRAPH
     AG</ulink></corpauthor>
 
-    <pubdate>? March 2004</pubdate>
+    <pubdate>Sept 2004</pubdate>
   </articleinfo>
 
   <abstract>
     <title>Overview</title>
 
-    <para>Dcm4che is a system that provides services for safe storage and
-    retrieve of DICOM evidence object such Images, Key Image Notes,
+    <para>Dcm4che/archive is a system that provides services for safe storage
+    and retrieve of DICOM evidence object such Images, Key Image Notes,
     Presentation States, Structured Reports and others.</para>
 
-    <para>Dcm4che supports the following IHE Integration Profiles:</para>
+    <para>Dcm4che/archive supports the following IHE Integration
+    Profiles:</para>
 
     <para>- Access to Radiology Information</para>
 
@@ -38,7 +39,7 @@
 
     <para>- Basic Security</para>
 
-    <para>Dcm4che supports the following network services:<table>
+    <para>Dcm4che/archive supports the following network services:<table>
         <title>NETWORK SERVICES</title>
 
         <tgroup align="left" cols="3">
@@ -365,6 +366,22 @@
             </row>
 
             <row>
+              <entry>Instance Availability Notification</entry>
+
+              <entry>Yes</entry>
+
+              <entry>No</entry>
+            </row>
+
+            <row>
+              <entry>Basic Study Content Notification</entry>
+
+              <entry>Yes</entry>
+
+              <entry>No</entry>
+            </row>
+
+            <row>
               <entry
               spanname="c1-3"><emphasis>Query/Retrieve</emphasis></entry>
             </row>
@@ -446,23 +463,42 @@
           <revision>
             <revnumber>0.1</revnumber>
 
-            <date>19 Feb 2004</date>
+            <date>Feb 2004</date>
 
             <authorinitials>uc</authorinitials>
 
             <revremark>Initial draft</revremark>
           </revision>
-        </revhistory></para>
 
-      <para><revhistory>
           <revision>
             <revnumber>0.2</revnumber>
 
-            <date>02 Mar 2004</date>
+            <date>Mar 2004</date>
 
             <authorinitials>uc</authorinitials>
 
             <revremark>Initial draft</revremark>
+          </revision>
+
+          <revision>
+            <revnumber>0.3</revnumber>
+
+            <date>May 2004</date>
+
+            <authorinitials>hm</authorinitials>
+
+            <revremark>ad MWL section, update configuration
+            section</revremark>
+          </revision>
+
+          <revision>
+            <revnumber>0.4</revnumber>
+
+            <date>Sep 2004</date>
+
+            <authorinitials>gz</authorinitials>
+
+            <revremark>ad IAN, SCN, compression</revremark>
           </revision>
         </revhistory></para>
     </section>
@@ -528,7 +564,7 @@
             <term>AE</term>
 
             <listitem>
-              <para>Application Entity</para>
+              <para>DICOM Application Entity</para>
             </listitem>
           </varlistentry>
 
@@ -536,7 +572,7 @@
             <term>AET</term>
 
             <listitem>
-              <para>AE Title</para>
+              <para>Application Entity Title</para>
             </listitem>
           </varlistentry>
 
@@ -591,6 +627,14 @@
           </varlistentry>
 
           <varlistentry>
+            <term>IAN</term>
+
+            <listitem>
+              <para>Instance Availability Notification</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term>IOD</term>
 
             <listitem>
@@ -623,10 +667,34 @@
           </varlistentry>
 
           <varlistentry>
+            <term>MPPS</term>
+
+            <listitem>
+              <para>Modality Performed Procedure Step</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>MWL</term>
+
+            <listitem>
+              <para>Modality Worklist</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term>P-LUT</term>
 
             <listitem>
               <para>Presentation Look-up Table</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>Q/R</term>
+
+            <listitem>
+              <para>Query Retrieve</para>
             </listitem>
           </varlistentry>
 
@@ -643,6 +711,14 @@
 
             <listitem>
               <para>Service Class User</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>SCN</term>
+
+            <listitem>
+              <para>Study Content Notification</para>
             </listitem>
           </varlistentry>
 
@@ -722,9 +798,9 @@
       <section>
         <title>Application Data Flow</title>
 
-        <para>dcm4che is logically divided in three different DICOM
-        Application Entities: Storage Server, Query/Retrieve Server and MPPS
-        Manager.</para>
+        <para>dcm4che/archive is logically divided in 4 different DICOM
+        Application Entities: Storage Server, Query/Retrieve Server, MPPS
+        Manager and IAN/SCN Service.</para>
 
         <para>The Application Entities detailed in the Application Data Flow
         Diagram are all Java Enterprise Application and are designed to run in
@@ -753,34 +829,39 @@
 
         <para>The MPPS manager AE implements the DICOM Modality Performed
         Procedure Step Service.</para>
+
+        <para>The IAN/SCN service implements the DICOM Instance Availability
+        Notification and the Basic Study Content Notification as SCU.</para>
       </section>
 
       <section>
         <title>Functional Definition of AEs</title>
 
         <section>
-          <title>Functional Definition of dcm4che Storage Server Application
-          Entity</title>
+          <title>Functional Definition of dcm4che/archive Storage Server
+          Application Entity</title>
 
-          <para>dcm4che Storage Server Application Entity waits for another
-          application to connect at the presentation address configured for
-          its Application Entity Title. When another application connects, the
-          STORAGE-SCP AE expects it to be a DICOM application.</para>
+          <para>The dcm4che/archive Storage Server Application Entity waits
+          for another application to connect at the presentation address
+          configured for its Application Entity Title. When another
+          application connects, the STORAGE-SCP AE expects it to be a DICOM
+          application.</para>
 
           <para>The STORAGE-SCP AE will accept Associations with Presentation
-          Contexts for SOPClasses of the Verification, Storage, and Storage
+          Contexts for SOP Classes of the Verification, Storage, and Storage
           Commitment Service Classes.</para>
 
-          <para>Any images received on such Presentation Contexts will be
-          added to the Image Repository.</para>
+          <para>DICOM Instances received in a Storage Request are filed on
+          local (attached/mounted) file system(s). A subset of attributes from
+          received Instances is also stored in records local database.</para>
         </section>
 
         <section>
-          <title>Functional Definition of dcm4che Query/Retrieve Server
-          Application Entity</title>
+          <title>Functional Definition of dcm4che/archive Query/Retrieve
+          Server Application Entity</title>
 
-          <para>dcm4che Query/Retrieve Server Application Entity waits for
-          another application to connect at the presentation address
+          <para>The dcm4che/archive Query/Retrieve Server Application Entity
+          waits for another application to connect at the presentation address
           configured for its Application Entity Title. When another
           application connects, the Storage Server AE expects it to be a DICOM
           application.</para>
@@ -795,17 +876,18 @@
         </section>
 
         <section>
-          <title>Functional Definition of dcm4che Modality Worklist Server
-          Application Entity</title>
+          <title>Functional Definition of dcm4che/archive Modality Worklist
+          Server Application Entity</title>
 
-          <para>Modality Worklist Server Application Entity waits for another
-          application to connect at the presentation address configured for
-          its Application Entity Title. When another application connects, the
-          Storage Server AE expects it to be a DICOM application.</para>
+          <para>The dcm4che/archive Modality Worklist Server Application
+          Entity waits for another application to connect at the presentation
+          address configured for its Application Entity Title. When another
+          application connects, the Modality Worklist Server AE expects it to
+          be a DICOM application.</para>
 
           <para>The Modality Worklist Server AE will accept Associations with
           Presentation Contexts for SOP Classes of the Verification and
-          Modality Worklist Service Classes.ff</para>
+          Modality Worklist Service Classes.</para>
 
           <para>When a Modality Worklist Find request is received, Modality
           Worklist Server AE will query the local database for a list of
@@ -818,13 +900,14 @@
         </section>
 
         <section>
-          <title>Functional Definition of dcm4che MPPS Manager Application
-          Entity</title>
+          <title>Functional Definition of dcm4che/archive MPPS Manager
+          Application Entity</title>
 
-          <para>dcm4che MPPS Manager Application Entity waits for another
-          application to connect at the presentation address configured for
-          its Application Entity Title. When another application connects, the
-          MPPS Manager AE expects it to be a DICOM application.</para>
+          <para>The dcm4che/archive MPPS Manager Application Entity waits for
+          another application to connect at the presentation address
+          configured for its Application Entity Title. When another
+          application connects, the MPPS Manager AE expects it to be a DICOM
+          application.</para>
 
           <para>The MPPS Manager AE will accept Associations with Presentation
           Contexts for SOP Classes of the Verification and Modality Performed
@@ -833,6 +916,24 @@
           <para>The MPPS Manager stores the received MPPS instances in the
           local database and can be configured to forward them to a remote
           MPPS SCP.</para>
+        </section>
+
+        <section>
+          <title>Functional Definition of dcm4che/archive IAN/SCN Application
+          Entity</title>
+
+          <para>The dcm4che/archive IAN/SCN Application Entity notifies a
+          configurable list of remote DICOM peer application, about new
+          instances received by the Storage Server AE, triggered by the
+          release of the association to the Storage Server AE.</para>
+
+          <para>It will initiate a new association to the remote AE which
+          shall be notified, offering a Presentation Context for the Instance
+          Availibility Notification SOP Class or for the Basic Study Content
+          Notification SOP Class or for both - dependend of its configuration
+          and perform the notification for each study received by the Storage
+          Server AE in the released association, using the accepted
+          service.</para>
         </section>
       </section>
 
@@ -859,16 +960,17 @@
       <title>AE Specifications</title>
 
       <section>
-        <title>dcm4che Storage Server Application Entity Specification</title>
+        <title>dcm4che/archive Storage Server Application Entity
+        Specification</title>
 
         <section>
           <title>SOP Classes</title>
 
-          <para>dcm4che Storage Server Application Entity provides Standard
-          Conformance to the following SOP Classes:</para>
+          <para>dcm4che/archive Storage Server Application Entity provides
+          Standard Conformance to the following SOP Classes:</para>
 
           <table>
-            <title>SOP Classes for dcm4che Storage Server AE</title>
+            <title>SOP Classes for dcm4che/archive Storage Server AE</title>
 
             <tgroup align="left" cols="4">
               <colspec align="left" colname="c1" />
@@ -1262,18 +1364,19 @@
           <section>
             <title>General</title>
 
-            <para>The dcm4che Storage Server AE can both accept and propose
-            Association Requests. The dcm4che Storage Server AE will accept
-            Association Requests for the Verification, Storage, and Storage
-            Commitment Push Model Services. It will propose Associations only
-            for the Storage Commitment Push Model Service.</para>
+            <para>The dcm4che/archive Storage Server AE can both accept and
+            propose Association Requests. The dcm4che/archive Storage Server
+            AE will accept Association Requests for the Verification, Storage,
+            and Storage Commitment Push Model Services. It will propose
+            Associations only for the Storage Commitment Push Model
+            Service.</para>
 
             <para>The DICOM standard application context name for DICOM 3.0 is
             always accepted and proposed:</para>
 
             <table>
-              <title>DICOM application context name for dcm4che Storage Server
-              AE</title>
+              <title>DICOM application context name for dcm4che/archive
+              Storage Server AE</title>
 
               <tgroup align="left" cols="2">
                 <tbody>
@@ -1290,15 +1393,15 @@
           <section>
             <title>Number of Associations</title>
 
-            <para>dcm4che Storage Server can support multiple simultaneous
-            Associations requested by peer AEs. Default is 10. This value can
-            be configured through the attribute "MaxClients" in the
-            Application Server configuration file (i.e. jboss-service.xml for
-            JBoss application seerver).</para>
+            <para>dcm4che/archive Storage Server can support multiple
+            simultaneous Associations requested by peer AEs. Default is 10.
+            This value can be configured through the attribute "MaxClients" in
+            the Application Server configuration file (i.e. jboss-service.xml
+            for JBoss application seerver).</para>
 
             <table>
-              <title>Number of Associations accepted for dcm4che Storage
-              Server AE</title>
+              <title>Number of Associations accepted for dcm4che/archive
+              Storage Server AE</title>
 
               <tgroup align="left" cols="2">
                 <tbody>
@@ -1315,7 +1418,7 @@
           <section>
             <title>Asynchronous Nature</title>
 
-            <para>dcm4che Storage Server does not support asynchronous
+            <para>dcm4che/archive Storage Server does not support asynchronous
             communication. Multiple outstanding transactions are not
             supported. It allows up to one invoked and one performed operation
             on an Association (it is synchronous). Asynchronous mode of
@@ -1359,7 +1462,7 @@
                   <row>
                     <entry>Implementation Version Name</entry>
 
-                    <entry>dcm4che-1.4</entry>
+                    <entry>dcm4che-1.1</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -1385,10 +1488,10 @@
               <section>
                 <title>Proposed Presentation Contexts</title>
 
-                <para>dcm4che Storage Server will propose Presentation
+                <para>dcm4che/archive Storage Server will propose Presentation
                 Contexts as shown in the following table:<table>
-                    <title>Proposed Presentation Contexts by the dcm4che
-                    Storage Server AE</title>
+                    <title>Proposed Presentation Contexts by the
+                    dcm4che/archive Storage Server AE</title>
 
                     <tgroup align="left" cols="6">
                       <colspec colname="c1" />
@@ -1447,23 +1550,30 @@
                         </row>
 
                         <row>
-                          <entry>Storage Commitment Push Model</entry>
+                          <entry morerows="1">Storage Commitment Push
+                          Model</entry>
 
-                          <entry>1.2.840.10008.1.20.1.1.1</entry>
+                          <entry morerows="1">1.2.840.10008.1.20.1.1.1</entry>
 
                           <entry>Implicit VR Little Endian</entry>
 
                           <entry>1.2.840.10008.1.2</entry>
 
-                          <entry>SCP</entry>
+                          <entry morerows="1">SCP</entry>
 
-                          <entry>None</entry>
+                          <entry morerows="1">None</entry>
+                        </row>
+
+                        <row>
+                          <entry>Explicit VR Little Endian</entry>
+
+                          <entry>1.2.840.10008.1.2.1</entry>
                         </row>
                       </tbody>
                     </tgroup>
                   </table></para>
 
-                <section id="s-sop-spec-conf">
+                <section>
                   <title>SOP Specific Conformance</title>
 
                   <section>
@@ -1482,20 +1592,20 @@
                     functional).</para>
                   </section>
 
-                  <section id="s-gray-meta-sop">
+                  <section>
                     <title>Specific Conformance for Storage Commitment SOP
                     Classes</title>
 
                     <para>The associated Activity with the Storage Commitment
-                    Push Model service is the communication by the dcm4che
-                    Storage Server AE to peer AEs that it has committed to
-                    permanently store Composite SOP Instances that have been
-                    sent to it.</para>
+                    Push Model service is the communication by the
+                    dcm4che/archive Storage Server AE to peer AEs that it has
+                    committed to permanently store Composite SOP Instances
+                    that have been sent to it.</para>
 
                     <para>It thus allows peer AEs to determine whether the
-                    dcm4che Storage Server has taken responsibility for the
-                    archiving of specific SOP Instances so that they can be
-                    flushed from the peer AE system.</para>
+                    dcm4che/archive Storage Server has taken responsibility
+                    for the archiving of specific SOP Instances so that they
+                    can be flushed from the peer AE system.</para>
                   </section>
                 </section>
               </section>
@@ -1514,10 +1624,10 @@
               <title>Description and Sequencing of Activities</title>
 
               <para>A remote peer DICOM Application Entity, acting as an
-              Storage SCU, establishes an association with dcm4che Storage
-              Server that accepts these Associations for the purpose of
-              receiving supported SOP Class Instances and Storage Committment
-              requests.</para>
+              Storage SCU, establishes an association with dcm4che/archive
+              Storage Server that accepts these Associations for the purpose
+              of receiving supported SOP Class Instances and Storage
+              Committment requests.</para>
 
               <para>In the default configuration any Calling and Called AET
               will be accepted. But the Called AET does not correspond to the
@@ -1607,8 +1717,8 @@
               <title>Accepted Presentation Contexts</title>
 
               <table>
-                <title>Accepted Presentation Contexts for dcm4che Storage
-                Server AE</title>
+                <title>Accepted Presentation Contexts for dcm4che/archive
+                Storage Server AE</title>
 
                 <tgroup align="left" cols="6">
                   <colspec colname="c1" />
@@ -1671,9 +1781,9 @@
 
                       <entry>1.2.840.10008.1.20.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link
+                      linkend="t-tsnoimage">Transfer Syntaxes for Non-Image
+                      Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1686,9 +1796,8 @@
 
                       <entry>1.2.840.10008.5.1.1.29</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1700,9 +1809,8 @@
 
                       <entry>1.2.840.10008.5.1.1.30</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1714,9 +1822,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1729,9 +1836,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.1.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1744,9 +1850,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.1.1.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1759,9 +1864,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.1.2</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1774,9 +1878,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.1.2.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1789,9 +1892,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.1.3</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1804,9 +1906,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.1.3.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1818,9 +1919,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.2</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1832,9 +1932,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.3.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1846,9 +1945,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.4</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1860,9 +1958,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.4.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1874,9 +1971,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.6.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1888,9 +1984,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.7</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1902,9 +1997,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.12.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1916,9 +2010,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.12.2</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1930,9 +2023,22 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.20</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry>SCP</entry>
+
+                      <entry>None</entry>
+                    </row>
+
+                    <row>
+                      <entry>Raw Data Storage</entry>
+
+                      <entry>1.2.840.10008.5.1.4.1.1.66</entry>
+
+                      <entry spanname="s34"><link
+                      linkend="t-tsnoimage">Transfer Syntaxes for Non-Image
+                      Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1944,9 +2050,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.77.1.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1958,9 +2063,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.77.1.2</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1973,9 +2077,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.77.1.3</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -1987,9 +2090,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.77.1.4</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -2002,9 +2104,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.128</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -2016,9 +2117,8 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.481.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link linkend="t-tsimage">Transfer
+                      Syntaxes for Image Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -2031,9 +2131,9 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.11.1</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link
+                      linkend="t-tsnoimage">Transfer Syntaxes for Non-Image
+                      Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -2045,9 +2145,9 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.88.11</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link
+                      linkend="t-tsnoimage">Transfer Syntaxes for Non-Image
+                      Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -2059,9 +2159,9 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.88.22</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link
+                      linkend="t-tsnoimage">Transfer Syntaxes for Non-Image
+                      Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -2073,9 +2173,9 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.88.33</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link
+                      linkend="t-tsnoimage">Transfer Syntaxes for Non-Image
+                      Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
@@ -2087,13 +2187,129 @@
 
                       <entry>1.2.840.10008.5.1.4.1.1.88.59</entry>
 
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
+                      <entry spanname="s34"><link
+                      linkend="t-tsnoimage">Transfer Syntaxes for Non-Image
+                      Storage Services</link></entry>
 
                       <entry>SCP</entry>
 
                       <entry>None</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </table>
+
+              <table id="t-tsnoimage">
+                <title>Accepted Transfer Syntaxes for Non-Image Storage
+                Services</title>
+
+                <tgroup cols="2">
+                  <colspec colwidth="200" />
+
+                  <colspec colwidth="120" />
+
+                  <thead>
+                    <row>
+                      <entry>Name</entry>
+
+                      <entry>UID</entry>
+                    </row>
+                  </thead>
+
+                  <tbody>
+                    <row>
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </table>
+
+              <table id="t-tsimage">
+                <title>Accepted Transfer Syntaxes for Image Storage
+                Services</title>
+
+                <tgroup cols="2">
+                  <colspec colwidth="200" />
+
+                  <colspec colwidth="120" />
+
+                  <thead>
+                    <row>
+                      <entry>Name</entry>
+
+                      <entry>UID</entry>
+                    </row>
+                  </thead>
+
+                  <tbody>
+                    <row>
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry>JPEG Baseline</entry>
+
+                      <entry>1.2.840.10008.1.2.4.50</entry>
+                    </row>
+
+                    <row>
+                      <entry>JPEG Extended</entry>
+
+                      <entry>1.2.840.10008.1.2.4.51</entry>
+                    </row>
+
+                    <row>
+                      <entry>JPEG Lossless, Non-Hierarchical</entry>
+
+                      <entry>1.2.840.10008.1.2.4.57</entry>
+                    </row>
+
+                    <row>
+                      <entry>JPEG Lossless, Non-Hierarchical, First-Order
+                      Prediction</entry>
+
+                      <entry>1.2.840.10008.1.2.4.70</entry>
+                    </row>
+
+                    <row>
+                      <entry>JPEG-LS Lossless Image Compression</entry>
+
+                      <entry>1.2.840.10008.1.2.4.80</entry>
+                    </row>
+
+                    <row>
+                      <entry>JPEG-LS Lossy (Near-Lossless) Image</entry>
+
+                      <entry>1.2.840.10008.1.2.4.81</entry>
+                    </row>
+
+                    <row>
+                      <entry>JPEG 2000 Image Compression (Lossless
+                      Only)</entry>
+
+                      <entry>1.2.840.10008.1.2.4.90</entry>
+                    </row>
+
+                    <row>
+                      <entry>JPEG 2000 Image Compression</entry>
+
+                      <entry>1.2.840.10008.1.2.4.91</entry>
                     </row>
                   </tbody>
                 </tgroup>
@@ -2104,15 +2320,16 @@
               Context for the Verification SOP Class.</para>
             </section>
 
-            <section id="s-sop-spec-conf">
+            <section>
               <title>SOP Specific Conformance</title>
 
               <section>
                 <title>Specific Conformance for Verification SOP Class</title>
 
-                <para>dcm4che Storage Server provides standard conformance to
-                the DICOM Verification Service Class as a SCP. The status code
-                for the C-ECHO is described in the following table:</para>
+                <para>dcm4che/archive Storage Server provides standard
+                conformance to the DICOM Verification Service Class as a SCP.
+                The status code for the C-ECHO is described in the following
+                table:</para>
 
                 <table>
                   <title>C-Echo Response Status Handling Behavior</title>
@@ -2151,7 +2368,7 @@
                 </table>
               </section>
 
-              <section id="s-gray-meta-sop">
+              <section>
                 <title>Specific Conformance for Storage SOP Classes</title>
 
                 <para>The associated Activity with the Storage service is the
@@ -2160,7 +2377,7 @@
                 will return a failure status if it is unable to store the
                 received instance(s).</para>
 
-                <para>The dcm4che Storage Server AE does not have any
+                <para>The dcm4che/archive Storage Server AE does not have any
                 dependencies on the number of Associations used to send images
                 to it. Images belonging to more than one Study or Series can
                 be sent over a single or multiple Associations. Images
@@ -2169,16 +2386,16 @@
                 of SOP Instances or the maximum amount of total SOP Instance
                 data that can be transferred over a single Association.</para>
 
-                <para>The dcm4che Storage Server AE is configured to retain
-                the original DICOM data in DICOM Part 10 compliant file
-                format. The dcm4che Storage Server AE is Level 2 (Full)
-                conformant as a Storage SCP. In addition, all Private and SOP
-                Class Extended Elements are maintained in the DICOM format
-                files. In addition to saving all Elements in files, a subset
-                of the Elements are stored in the dcm4che Query/Retrieve
-                Server database to support query and retrieval requests and
-                also allow updating of Patient, Study, and Series information
-                by user input, or demographic and Study related
+                <para>The dcm4che/archive Storage Server AE is configured to
+                retain the original DICOM data in DICOM Part 10 compliant file
+                format. The dcm4che/archive Storage Server AE is Level 2
+                (Full) conformant as a Storage SCP. In addition, all Private
+                and SOP Class Extended Elements are maintained in the DICOM
+                format files. In addition to saving all Elements in files, a
+                subset of the Elements are stored in the dcm4che/archive
+                Query/Retrieve Server database to support query and retrieval
+                requests and also allow updating of Patient, Study, and Series
+                information by user input, or demographic and Study related
                 messages.</para>
 
                 <para>TIf the received instance is a duplicate of a previously
@@ -2348,8 +2565,8 @@
                     </table></para>
                 </section>
 
-                <section id="s-GSIB">
-                  <title>Specific Conformance for for Storage Commitment SOP
+                <section>
+                  <title>Specific Conformance for Storage Commitment SOP
                   Class</title>
 
                   <para>The associated Activity with the Storage Commitment
@@ -2542,11 +2759,11 @@
                     </tgroup>
                   </table>
 
-                  <para>The dcm4che Storage Server AE will return the
+                  <para>The dcm4che/archive Storage Server AE will return the
                   following Status Code values in N-ACTION Responses:</para>
 
                   <table>
-                    <title>dcm4che Storage Server N-ACTION Response
+                    <title>dcm4che/archive Storage Server N-ACTION Response
                     Status</title>
 
                     <tgroup align="left" cols="4">
@@ -2630,8 +2847,8 @@
                   Storage Commitment Push Model SCU:</para>
 
                   <table>
-                    <title>dcm4che Storage Server N-EVENT Report Response
-                    Status Handling Behaviour</title>
+                    <title>dcm4che/archive Storage Server N-EVENT Report
+                    Response Status Handling Behaviour</title>
 
                     <tgroup align="left" cols="4">
                       <colspec colwidth="40" />
@@ -2698,8 +2915,9 @@
                   behaviour in case of communication failure:</para>
 
                   <table>
-                    <title>dcm4che Storage Server AE Storage Commitment Push
-                    Model Communication Failure Behaviour</title>
+                    <title>dcm4che/archive Storage Server AE Storage
+                    Commitment Push Model Communication Failure
+                    Behaviour</title>
 
                     <tgroup align="left" cols="2">
                       <colspec colwidth="50%" />
@@ -2777,15 +2995,16 @@
       </section>
 
       <section>
-        <title>dcm4che Query/Retrieve Server Application Entity
+        <title>dcm4che/archive Query/Retrieve Server Application Entity
         Specification</title>
 
         <section>
           <title>SOP Classes</title>
 
-          <para>dcm4che Query/Retrieve Server Application Entity provides
-          Standard Conformance to the following SOP Classes:<table>
-              <title>SOP Classes for dcm4che Query/Retrieve Server AE</title>
+          <para>dcm4che/archive Query/Retrieve Server Application Entity
+          provides Standard Conformance to the following SOP Classes:<table>
+              <title>SOP Classes for dcm4che/archive Query/Retrieve Server
+              AE</title>
 
               <tgroup align="left" cols="4">
                 <colspec align="left" colname="c1" />
@@ -3232,9 +3451,9 @@
           <section>
             <title>General</title>
 
-            <para>The dcm4che Query/Retrieve Server AE can both accept and
-            propose Association Requests. The Query/Retrieve Server AE will
-            accept Association Requests for the Verification and
+            <para>The dcm4che/archive Query/Retrieve Server AE can both accept
+            and propose Association Requests. The Query/Retrieve Server AE
+            will accept Association Requests for the Verification and
             Query/Retrieve Services. It will propose Associations for
             Verification and Storage Services.</para>
 
@@ -3260,7 +3479,7 @@
           <section>
             <title>Number of Associations</title>
 
-            <para>dcm4che Query/Retrieve Server can support multiple
+            <para>dcm4che/archive Query/Retrieve Server can support multiple
             simultaneous Associations requested by peer AEs. Default is 10.
             This value can be configured through the attribute "MaxClients" in
             the Application Server configuration file (i.e. jboss-service.xml
@@ -3285,11 +3504,11 @@
           <section>
             <title>Asynchronous Nature</title>
 
-            <para>dcm4che Query/Retrieve Server does not support asynchronous
-            communication. Multiple outstanding transactions are not
-            supported. It allows up to one invoked and one performed operation
-            on an Association (it is synchronous). Asynchronous mode of
-            operation is not supported.</para>
+            <para>dcm4che/archive Query/Retrieve Server does not support
+            asynchronous communication. Multiple outstanding transactions are
+            not supported. It allows up to one invoked and one performed
+            operation on an Association (it is synchronous). Asynchronous mode
+            of operation is not supported.</para>
 
             <table>
               <title>Asynchronous Nature as SCP for dcm4che Query/Retrieve
@@ -3329,7 +3548,7 @@
                   <row>
                     <entry>Implementation Version Name</entry>
 
-                    <entry>dcm4che-1.4</entry>
+                    <entry>dcm4che-1.1</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -3347,9 +3566,9 @@
             <section>
               <title>Description and Sequencing of Activities</title>
 
-              <para>The dcm4che Query/Retrieve Server AE will initiate a new
-              Association when a valid C-MOVE Request has been performed by an
-              external Peer. The Query/Retrieve Server AE will send the
+              <para>The dcm4che/archive Query/Retrieve Server AE will initiate
+              a new Association when a valid C-MOVE Request has been performed
+              by an external Peer. The Query/Retrieve Server AE will send the
               Association Request to the specific C-MOVE destination, and upon
               successful negotiation of the required Presentation Context the
               image transfer is started. In all cases an attempt will be made
@@ -3365,10 +3584,10 @@
               <section>
                 <title>Proposed Presentation Contexts</title>
 
-                <para>dcm4che Query/Retrieve Server will propose Presentation
-                Contexts as shown in the following table:<table>
-                    <title>Proposed Presentation Contexts by the dcm4che
-                    Query/Retrieve Server AE</title>
+                <para>dcm4che/archive Query/Retrieve Server will propose
+                Presentation Contexts as shown in the following table:<table>
+                    <title>Proposed Presentation Contexts by the
+                    dcm4che/archive Query/Retrieve Server AE</title>
 
                     <tgroup align="left" cols="6">
                       <colspec colname="c1" />
@@ -3413,28 +3632,14 @@
 
                       <tbody>
                         <row>
-                          <entry>Verification</entry>
-
-                          <entry>1.2.840.10008.1.1</entry>
-
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
-
-                          <entry>SCU</entry>
-
-                          <entry>None</entry>
-                        </row>
-
-                        <row>
                           <entry>Hardcopy Grayscale Image Storage SOP
                           Class</entry>
 
                           <entry>1.2.840.10008.5.1.1.29</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3447,9 +3652,9 @@
 
                           <entry>1.2.840.10008.5.1.1.30</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3461,9 +3666,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3476,9 +3681,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.1.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3491,9 +3696,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.1.1.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3506,9 +3711,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.1.2</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3521,9 +3726,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.1.2.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3536,9 +3741,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.1.3</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3551,9 +3756,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.1.3.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3565,9 +3770,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.2</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3579,9 +3784,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.3.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3593,9 +3798,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.4</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3607,9 +3812,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.4.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3621,9 +3826,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.6.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3635,9 +3840,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.7</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3649,9 +3854,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.12.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3663,9 +3868,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.12.2</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3677,9 +3882,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.20</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3691,9 +3896,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.77.1.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3705,9 +3910,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.77.1.2</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3720,9 +3925,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.77.1.3</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3734,9 +3939,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.77.1.4</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3749,9 +3954,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.128</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3763,9 +3968,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.481.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsimage">Transfer Syntaxes for
+                          Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3778,9 +3983,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.11.1</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsnoimage">Transfer Syntaxes for
+                          Non-Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3792,9 +3997,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.88.11</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsnoimage">Transfer Syntaxes for
+                          Non-Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3806,9 +4011,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.88.22</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsnoimage">Transfer Syntaxes for
+                          Non-Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3820,9 +4025,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.88.33</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsnoimage">Transfer Syntaxes for
+                          Non-Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3834,9 +4039,9 @@
 
                           <entry>1.2.840.10008.5.1.4.1.1.88.59</entry>
 
-                          <entry>Implicit VR Little Endian</entry>
-
-                          <entry>1.2.840.10008.1.2</entry>
+                          <entry spanname="s34"><link
+                          linkend="t-proposed-tsnoimage">Transfer Syntaxes for
+                          Non-Image Storage Services</link></entry>
 
                           <entry>SCU</entry>
 
@@ -3844,31 +4049,132 @@
                         </row>
                       </tbody>
                     </tgroup>
+                  </table><table id="t-proposed-tsnoimage">
+                    <title>Proposed Transfer Syntaxes for Non-Image Storage
+                    Services</title>
+
+                    <tgroup cols="2">
+                      <colspec colwidth="200" />
+
+                      <colspec colwidth="120" />
+
+                      <thead>
+                        <row>
+                          <entry>Name</entry>
+
+                          <entry>UID</entry>
+                        </row>
+                      </thead>
+
+                      <tbody>
+                        <row>
+                          <entry>Implicit VR Little Endian</entry>
+
+                          <entry>1.2.840.10008.1.2</entry>
+                        </row>
+
+                        <row>
+                          <entry>Explicit VR Little Endian</entry>
+
+                          <entry>1.2.840.10008.1.2.1</entry>
+                        </row>
+                      </tbody>
+                    </tgroup>
+                  </table><table id="t-proposed-tsimage">
+                    <title>Proposed Transfer Syntaxes for Image Storage
+                    Services</title>
+
+                    <tgroup cols="2">
+                      <colspec colwidth="200" />
+
+                      <colspec colwidth="120" />
+
+                      <thead>
+                        <row>
+                          <entry>Name</entry>
+
+                          <entry>UID</entry>
+                        </row>
+                      </thead>
+
+                      <tbody>
+                        <row>
+                          <entry>Implicit VR Little Endian</entry>
+
+                          <entry>1.2.840.10008.1.2</entry>
+                        </row>
+
+                        <row>
+                          <entry>Explicit VR Little Endian</entry>
+
+                          <entry>1.2.840.10008.1.2.1</entry>
+                        </row>
+
+                        <row>
+                          <entry>JPEG Baseline</entry>
+
+                          <entry>1.2.840.10008.1.2.4.50</entry>
+                        </row>
+
+                        <row>
+                          <entry>JPEG Extended</entry>
+
+                          <entry>1.2.840.10008.1.2.4.51</entry>
+                        </row>
+
+                        <row>
+                          <entry>JPEG Lossless, Non-Hierarchical</entry>
+
+                          <entry>1.2.840.10008.1.2.4.57</entry>
+                        </row>
+
+                        <row>
+                          <entry>JPEG Lossless, Non-Hierarchical, First-Order
+                          Prediction</entry>
+
+                          <entry>1.2.840.10008.1.2.4.70</entry>
+                        </row>
+
+                        <row>
+                          <entry>JPEG-LS Lossless Image Compression</entry>
+
+                          <entry>1.2.840.10008.1.2.4.80</entry>
+                        </row>
+
+                        <row>
+                          <entry>JPEG-LS Lossy (Near-Lossless) Image</entry>
+
+                          <entry>1.2.840.10008.1.2.4.81</entry>
+                        </row>
+
+                        <row>
+                          <entry>JPEG 2000 Image Compression (Lossless
+                          Only)</entry>
+
+                          <entry>1.2.840.10008.1.2.4.90</entry>
+                        </row>
+
+                        <row>
+                          <entry>JPEG 2000 Image Compression</entry>
+
+                          <entry>1.2.840.10008.1.2.4.91</entry>
+                        </row>
+                      </tbody>
+                    </tgroup>
                   </table></para>
 
-                <section id="s-sop-spec-conf">
+                <section>
                   <title>SOP Specific Conformance</title>
 
                   <section>
-                    <title>Specific Conformance for Verification SOP
-                    Class</title>
-
-                    <para>Standard conformance is provided to the DICOM
-                    Verification Service Class as an SCU. The Verification
-                    Service as an SCU is actually only supported as a
-                    diagnostic service tool for network communication
-                    issues..</para>
-                  </section>
-
-                  <section id="s-gray-meta-sop">
                     <title>Specific Conformance for Image, SR, KIN and SPS SOP
                     Classes</title>
 
                     <para>When a SOP Instance is selected for export from
-                    dcm4che Query/Retrieve Server, its contents will be
-                    exported as it was originally received unless some of the
-                    Patient demographic and Study information Elements were
-                    altered.</para>
+                    dcm4che/archive Query/Retrieve Server, its contents will
+                    be exported as it was originally received unless some of
+                    the Patient demographic and Study information Elements
+                    were altered.</para>
 
                     <para>The Patient demographic and Study information can be
                     entered or altered by several means: manually (through the
@@ -3884,8 +4190,8 @@
                     SCP:</para>
 
                     <para><table>
-                        <title>dcm4che Query/Retrieve Server AE C-STORE
-                        Response Status Handling Behavior</title>
+                        <title>dcm4che/archive Query/Retrieve Server AE
+                        C-STORE Response Status Handling Behavior</title>
 
                         <tgroup align="left" cols="4">
                           <colspec colwidth="40" />
@@ -4029,8 +4335,8 @@
                       </table></para>
 
                     <para><table>
-                        <title>dcm4che Query/Retrieve Server AE Communication
-                        Failure Behavior</title>
+                        <title>dcm4che/archive Query/Retrieve Server AE
+                        Communication Failure Behavior</title>
 
                         <tgroup align="left" cols="2">
                           <colspec colwidth="50%" />
@@ -4192,7 +4498,7 @@
               <title>Accepted Presentation Contexts</title>
 
               <table>
-                <title>Accepted Presentation Contexts for dcm4che
+                <title>Accepted Presentation Contexts for dcm4che/archive
                 Query/Retrieve Server AE</title>
 
                 <tgroup align="left" cols="6">
@@ -4252,89 +4558,129 @@
                     </row>
 
                     <row>
-                      <entry>Patient Root Q/R Information Model – FIND</entry>
-
-                      <entry>1.2.840.10008.5.1.4.1.2.1.1</entry>
-
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
-
-                      <entry>SCP</entry>
-
-                      <entry>None</entry>
-                    </row>
-
-                    <row>
-                      <entry>Patient Root Q/R Information Model – MOVE</entry>
-
-                      <entry>1.2.840.10008.5.1.4.1.2.1.2</entry>
-
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
-
-                      <entry>SCP</entry>
-
-                      <entry>None</entry>
-                    </row>
-
-                    <row>
-                      <entry>Study Root Q/R Information Model – FIND</entry>
-
-                      <entry>1.2.840.10008.5.1.4.1.2.2.1</entry>
-
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
-
-                      <entry>SCP</entry>
-
-                      <entry>None</entry>
-                    </row>
-
-                    <row>
-                      <entry>Study Root Q/R Information Model – MOVE</entry>
-
-                      <entry>1.2.840.10008.5.1.4.1.2.2.2</entry>
-
-                      <entry>Implicit VR Little Endian</entry>
-
-                      <entry>1.2.840.10008.1.2</entry>
-
-                      <entry>SCP</entry>
-
-                      <entry>None</entry>
-                    </row>
-
-                    <row>
-                      <entry>Patient/Study Only Q/R Information Model –
+                      <entry morerows="1">Patient Root Q/R Information Model –
                       FIND</entry>
 
-                      <entry>1.2.840.10008.5.1.4.1.2.3.1</entry>
+                      <entry morerows="1">1.2.840.10008.5.1.4.1.2.1.1</entry>
 
                       <entry>Implicit VR Little Endian</entry>
 
                       <entry>1.2.840.10008.1.2</entry>
 
-                      <entry>SCP</entry>
+                      <entry morerows="1">SCP</entry>
 
-                      <entry>None</entry>
+                      <entry morerows="1">Relational-queries</entry>
                     </row>
 
                     <row>
-                      <entry>Patient/Study Only Q/R Information Model –
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Patient Root Q/R Information Model –
                       MOVE</entry>
 
-                      <entry>1.2.840.10008.5.1.4.1.2.3.2</entry>
+                      <entry morerows="1">1.2.840.10008.5.1.4.1.2.1.2</entry>
 
                       <entry>Implicit VR Little Endian</entry>
 
                       <entry>1.2.840.10008.1.2</entry>
 
-                      <entry>SCP</entry>
+                      <entry morerows="1">SCP</entry>
 
-                      <entry>None</entry>
+                      <entry morerows="1">Relational-retrieve</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Study Root Q/R Information Model –
+                      FIND</entry>
+
+                      <entry morerows="1">1.2.840.10008.5.1.4.1.2.2.1</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry morerows="1">SCP</entry>
+
+                      <entry morerows="1">Relational-queries</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Study Root Q/R Information Model –
+                      MOVE</entry>
+
+                      <entry morerows="1">1.2.840.10008.5.1.4.1.2.2.2</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry morerows="1">SCP</entry>
+
+                      <entry morerows="1">Relational-retrieve</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Patient/Study Only Q/R Information
+                      Model – FIND</entry>
+
+                      <entry morerows="1">1.2.840.10008.5.1.4.1.2.3.1</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry morerows="1">SCP</entry>
+
+                      <entry morerows="1">Relational-queries</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Patient/Study Only Q/R Information
+                      Model – MOVE</entry>
+
+                      <entry morerows="1">1.2.840.10008.5.1.4.1.2.3.2</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry morerows="1">SCP</entry>
+
+                      <entry morerows="1">Relational-retrieve</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
                     </row>
                   </tbody>
                 </tgroup>
@@ -4345,15 +4691,16 @@
               Context for the Verification SOP Class.</para>
             </section>
 
-            <section id="s-sop-spec-conf">
+            <section>
               <title>SOP Specific Conformance</title>
 
               <section>
                 <title>Specific Conformance for Verification SOP Class</title>
 
-                <para>dcm4che Storage Server provides standard conformance to
-                the DICOM Verification Service Class as a SCP. The status code
-                for the C-ECHO is described in the following table:</para>
+                <para>dcm4che/archive Storage Server provides standard
+                conformance to the DICOM Verification Service Class as a SCP.
+                The status code for the C-ECHO is described in the following
+                table:</para>
 
                 <table>
                   <title>C-Echo Response Status Handling Behavior</title>
@@ -5002,8 +5349,8 @@
                 “NONE” indicates that no matching is supported, but that
                 values for this Element are requested to be returned (i.e.
                 universal matching).<table>
-                    <title>dcm4che Query/Retrieve Server C-FIND Response
-                    Status</title>
+                    <title>dcm4che/archive Query/Retrieve Server C-FIND
+                    Response Status</title>
 
                     <tgroup align="left" cols="4">
                       <colspec colwidth="40" />
@@ -5089,8 +5436,8 @@
 
                 <para>Exported SOP Instances are always updated with the
                 latest values kept in the database prior to export.<table>
-                    <title>dcm4che Query/Retrieve Server C-MOVE Response
-                    Status</title>
+                    <title>dcm4che/archive Query/Retrieve Server C-MOVE
+                    Response Status</title>
 
                     <tgroup align="left" cols="4">
                       <colspec colwidth="40" />
@@ -5209,8 +5556,8 @@
                   </table></para>
 
                 <para><table>
-                    <title>dcm4che Query/Retrieve Server Service Communication
-                    Failure Behavior</title>
+                    <title>dcm4che/archive Query/Retrieve Server Service
+                    Communication Failure Behavior</title>
 
                     <tgroup align="left" cols="2">
                       <colspec colwidth="50%" />
@@ -5267,15 +5614,15 @@
       </section>
 
       <section>
-        <title>dcm4che Modality Worklist Server Application Entity
+        <title>dcm4che/archive Modality Worklist Server Application Entity
         Specification</title>
 
         <section>
           <title>SOP Classes</title>
 
-          <para>dcm4che Modality Worklist Server Application Entity provides
-          Standard Conformance to the following SOP Classes:<table>
-              <title>SOP Classes for dcm4che Modality Worklist Server
+          <para>dcm4che/archive Modality Worklist Server Application Entity
+          provides Standard Conformance to the following SOP Classes:<table>
+              <title>SOP Classes for dcm4che/archive Modality Worklist Server
               AE</title>
 
               <tgroup align="left" cols="4">
@@ -5330,9 +5677,9 @@
           <section>
             <title>General</title>
 
-            <para>dcm4che Modality Worklist Server AE can both accept and
-            propose Association Requests. The Query/Retrieve Server AE will
-            accept Association Requests for the Verification and
+            <para>dcm4che/archive Modality Worklist Server AE can both accept
+            and propose Association Requests. The Query/Retrieve Server AE
+            will accept Association Requests for the Verification and
             Query/Retrieve Services. It will propose Associations for
             Verification and Storage Services.</para>
 
@@ -5340,8 +5687,8 @@
             always accepted and proposed:</para>
 
             <para><table>
-                <title>DICOM application context name for dcm4che Modality
-                Worklist Server AE</title>
+                <title>DICOM application context name for dcm4che/archive
+                Modality Worklist Server AE</title>
 
                 <tgroup align="left" cols="2">
                   <tbody>
@@ -5358,15 +5705,15 @@
           <section>
             <title>Number of Associations</title>
 
-            <para>dcm4che Modality Worklist Server can support multiple
-            simultaneous Associations requested by peer AEs. Default is 10.
-            This value can be configured through the attribute "MaxClients" in
-            the Application Server configuration file (i.e. jboss-service.xml
-            for JBoss application seerver).</para>
+            <para>dcm4che/archive Modality Worklist Server can support
+            multiple simultaneous Associations requested by peer AEs. Default
+            is 10. This value can be configured through the attribute
+            "MaxClients" in the Application Server configuration file (i.e.
+            jboss-service.xml for JBoss application seerver).</para>
 
             <table>
-              <title>Number of Associations accepted for dcm4che Modality
-              Worklist Server AE</title>
+              <title>Number of Associations accepted for dcm4che/archive
+              Modality Worklist Server AE</title>
 
               <tgroup align="left" cols="2">
                 <tbody>
@@ -5383,15 +5730,15 @@
           <section>
             <title>Asynchronous Nature</title>
 
-            <para>dcm4che Modality Worklist Server does not support
+            <para>dcm4che/archive Modality Worklist Server does not support
             asynchronous communication. Multiple outstanding transactions are
             not supported. It allows up to one invoked and one performed
             operation on an Association (it is synchronous). Asynchronous mode
             of operation is not supported.</para>
 
             <table>
-              <title>Asynchronous Nature as SCP for dcm4che Modality Worklist
-              Server AE</title>
+              <title>Asynchronous Nature as SCP for dcm4che/archive Modality
+              Worklist Server AE</title>
 
               <tgroup align="left" cols="2">
                 <tbody>
@@ -5413,8 +5760,8 @@
             is:</para>
 
             <table>
-              <title>DICOM Implementation Class and Version for dcm4che
-              Modality Worklist Server AE</title>
+              <title>DICOM Implementation Class and Version for
+              dcm4che/archive Modality Worklist Server AE</title>
 
               <tgroup align="left" cols="2">
                 <tbody>
@@ -5427,7 +5774,7 @@
                   <row>
                     <entry>Implementation Version Name</entry>
 
-                    <entry>dcm4che-1.0.18</entry>
+                    <entry>dcm4che-1.1</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -5541,7 +5888,7 @@
             <title>Accepted Presentation Contexts</title>
 
             <para><table>
-                <title>Accepted Presentation Contexts for dcm4che
+                <title>Accepted Presentation Contexts for dcm4che/archive
                 Query/Retrieve Server AE</title>
 
                 <tgroup align="left" cols="6">
@@ -5601,18 +5948,24 @@
                     </row>
 
                     <row>
-                      <entry>Modality Worklist Information Model –
-                      FIND</entry>
+                      <entry morerows="1">Modality Worklist Information Model
+                      – FIND</entry>
 
-                      <entry>1.2.840.10008.5.1.4.31</entry>
+                      <entry morerows="1">1.2.840.10008.5.1.4.31</entry>
 
                       <entry>Implicit VR Little Endian</entry>
 
                       <entry>1.2.840.10008.1.2</entry>
 
-                      <entry>SCP</entry>
+                      <entry morerows="1">SCP</entry>
 
-                      <entry>None</entry>
+                      <entry morerows="1">None</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
                     </row>
                   </tbody>
                 </tgroup>
@@ -5632,9 +5985,9 @@
           <section>
             <title>Specific Conformance for Verification SOP Class</title>
 
-            <para>dcm4che Storage Server provides standard conformance to the
-            DICOM Verification Service Class as a SCP. The status code for the
-            C-ECHO is described in the following table:</para>
+            <para>dcm4che/archive Storage Server provides standard conformance
+            to the DICOM Verification Service Class as a SCP. The status code
+            for the C-ECHO is described in the following table:</para>
 
             <para><table>
                 <title>C-Echo Response Status Handling Behavior</title>
@@ -5824,8 +6177,8 @@
               <title>Modality Worklist Server AE C-STORE Response</title>
 
               <para><table>
-                  <title>dcm4che Modality Worklist Server C-STORE Response
-                  Status</title>
+                  <title>dcm4che/archive Modality Worklist Server C-STORE
+                  Response Status</title>
 
                   <tgroup align="left" cols="4">
                     <colspec colwidth="40" />
@@ -5906,8 +6259,8 @@
               Reasons</title>
 
               <para><table>
-                  <title>dcm4che Modality Server Service Communication Failure
-                  Behavior</title>
+                  <title>dcm4che/archive Modality Server Service Communication
+                  Failure Behavior</title>
 
                   <tgroup align="left" cols="2">
                     <colspec colwidth="50%" />
@@ -5940,7 +6293,29 @@
       </section>
 
       <section>
-        <title>dcm4che MPPS Manager Application Entity Specification</title>
+        <title>dcm4che/archive MPPS Manager Application Entity
+        Specification</title>
+
+        <section>
+          <title>SOP Classes</title>
+        </section>
+
+        <section>
+          <title>Association Establishment Policy</title>
+        </section>
+
+        <section>
+          <title>Association Initiation Policy</title>
+        </section>
+
+        <section>
+          <title>Association Acceptance Policy</title>
+        </section>
+      </section>
+
+      <section>
+        <title>dcm4che/archive IAN/SCN Service Application Entity
+        Specification</title>
 
         <section>
           <title>SOP Classes</title>
@@ -5971,16 +6346,17 @@
         <section>
           <title>TCP/IP Stack</title>
 
-          <para>dcm4che inherits their TCP/IP stack from the installed Java
-          Runtime Environment.</para>
+          <para>dcm4che/archive inherits their TCP/IP stack from the installed
+          Java Runtime Environment.</para>
         </section>
       </section>
 
       <section>
         <title>Physical Network Interface</title>
 
-        <para>dcm4che is indifferent to the physical medium over which TCP/IP
-        executes; it inherits this from the Java Runtime Environment.</para>
+        <para>dcm4che/archive is indifferent to the physical medium over which
+        TCP/IP executes; it inherits this from the Java Runtime
+        Environment.</para>
       </section>
     </section>
 
@@ -6016,35 +6392,35 @@
 
                 <tbody>
                   <row>
-                    <entry>dcm4che Storage Server</entry>
+                    <entry>dcm4che/archive Storage Server</entry>
 
                     <entry>STORE_SCP</entry>
 
-                    <entry>2351</entry>
+                    <entry>2350</entry>
                   </row>
 
                   <row>
-                    <entry>dcm4che Query/Retrieve Server</entry>
+                    <entry>dcm4che/archive Query/Retrieve Server</entry>
 
                     <entry>QR_SCP</entry>
 
-                    <entry>2351</entry>
+                    <entry>2350</entry>
                   </row>
 
                   <row>
-                    <entry>dcm4che Modality Worklist Server</entry>
+                    <entry>dcm4che/archive Modality Worklist Server</entry>
 
                     <entry>MWL_SCP</entry>
 
-                    <entry>2351</entry>
+                    <entry>2350</entry>
                   </row>
 
                   <row>
-                    <entry>dcm4che MPPS Manager</entry>
+                    <entry>dcm4che/archive MPPS Manager</entry>
 
                     <entry>MPPS_MGR</entry>
 
-                    <entry>2351</entry>
+                    <entry>2350</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -6066,8 +6442,8 @@
         <title>Parameters</title>
 
         <para>The following table shows the dcm4che configuration parameters
-        relevant to DICOM communication. Refer to the dcm4che Service Manual
-        for details on general configuration capabilities.</para>
+        relevant to DICOM communication. Refer to the dcm4che/archive Service
+        Manual for details on general configuration capabilities.</para>
 
         <para><table>
             <title>Configuration Parameter Table</title>
@@ -6362,16 +6738,16 @@
     <section>
       <title>Security Profiles</title>
 
-      <para>dcm4che supports secure DICOM communication in conformance with
-      the Basic TLS Secure Transport Connection Profile. At default
+      <para>dcm4che/archive supports secure DICOM communication in conformance
+      with the Basic TLS Secure Transport Connection Profile. At default
       configuration, the TLS option is deactivated.</para>
     </section>
 
     <section>
       <title>Association Level Security</title>
 
-      <para>dcm4che can be configured to accept Association Requests from only
-      a limited list of Calling AE Titles.</para>
+      <para>dcm4che/archive can be configured to accept Association Requests
+      from only a limited list of Calling AE Titles.</para>
 
       <para>In the default configuration, Association requests with any
       Calling AET and any Called AET will be accepted. However, if the Called
@@ -6384,7 +6760,7 @@
     <section>
       <title>Application Level Security</title>
 
-      <para>dcm4che web module can be configured to require user
+      <para>dcm4che/archive web module can be configured to require user
       authentication in order to access to the user interface
       functionalities.</para>
     </section>
@@ -6437,8 +6813,8 @@
     <title>Appendix A. Implementation Statements of IHE Integration
     Profiles</title>
 
-    <para><phrase> dcm4che has implemented the following DICOM service classes
-    and HL7 messages:</phrase></para>
+    <para><phrase> dcm4che/archive has implemented the following DICOM service
+    classes and HL7 messages:</phrase></para>
 
     <itemizedlist>
       <listitem>

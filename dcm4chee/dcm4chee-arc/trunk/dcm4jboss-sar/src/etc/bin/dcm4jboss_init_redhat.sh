@@ -22,6 +22,8 @@
 
 # [ #420297 ] dcm4jboss startup/shutdown for RedHat
 
+. /etc/rc.d/init.d/functions
+
 #define where jboss is - this is the directory containing directories log, bin, conf etc
 JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcm4jboss"}
 

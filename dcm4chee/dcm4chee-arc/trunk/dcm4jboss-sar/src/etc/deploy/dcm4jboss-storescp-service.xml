@@ -8,5 +8,8 @@
     <depends>
       dcm4chex:service=DcmServer
     </depends>
+    <depends>
+    	dcm4chex:service=FileSystemMgt
+    </depends>    
   </mbean>
 </server>

@@ -403,7 +403,7 @@ public class IANScuService extends ServiceMBeanSupport implements
             scnSeries.putUI(Tags.SeriesInstanceUID, ianSeries
                     .getString(Tags.SeriesInstanceUID));
             DcmElement ianSOPSeq = ianSeries.get(Tags.RefSOPSeq);
-            DcmElement scnSOPSeq = scnSeries.putSQ(Tags.RefImageBoxSeq);
+            DcmElement scnSOPSeq = scnSeries.putSQ(Tags.RefImageSeq);
             for (int j = 0, m = ianSOPSeq.vm(); j < m; ++j) {
                 scnSOPSeq.addItem(ianSOPSeq.getItem(i));
             }

@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.io.BufferedInputStream;
@@ -31,8 +20,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -55,7 +42,6 @@ import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.net.RoleSelection;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
@@ -63,6 +49,7 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 
 /**
  * 
@@ -194,28 +181,16 @@ class StgCmtCmd {
     private void checkFile(FileInfo[] fileInfo) throws IOException {
         Arrays.sort(fileInfo, FileInfo.DESC_ORDER);
         for (int i = 0; i < fileInfo.length; i++) {
-            if (isLocal(fileInfo[i])) {
-                checkFile(fileInfo[i]);
-                return;
-            }
+            checkFile(fileInfo[i]);
+            return;
         }
         throw new IOException("Instance not accessable from " + callingAET);
     }
 
-    private boolean isLocal(FileInfo info) {
-        if (info.fileRetrieveAETs == null) return false;
-
-        Set aets = toHashSet(info.fileRetrieveAETs);
-        aets.retainAll(service.getRetrieveAETSet());
-        return !aets.isEmpty();
-    }
-
-    private HashSet toHashSet(String aets) {
-        return new HashSet(Arrays.asList(StringUtils.split(aets, '\\')));
-    }
-
     private void checkFile(FileInfo info) throws IOException {
-        File file = info.toFile();
+        if (!service.isLocalFileSystem(info.basedir))
+            return;
+        File file = FileUtils.resolve(info.getFile());
         service.getLog().info("M-READ file:" + file);
         MessageDigest md = null;
         try {

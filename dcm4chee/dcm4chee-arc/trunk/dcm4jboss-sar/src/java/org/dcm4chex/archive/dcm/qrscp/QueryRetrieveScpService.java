@@ -1,38 +1,25 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
+import javax.management.ObjectName;
+
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.ExtNegotiator;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
@@ -45,8 +32,8 @@ import org.dcm4chex.archive.exceptions.UnkownAETException;
  */
 public class QueryRetrieveScpService extends AbstractScpService {
 
-    private Set retrieveAETSet;
-
+    private ObjectName fileSystemMgtName;
+    
     private boolean sendPendingMoveRSP = true;
 
     private boolean retrieveLastReceived = true;
@@ -77,27 +64,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private MoveScp moveScp = new MoveScp(this);
 
-    public final String getRetrieveAETs() {
-        StringBuffer sb = new StringBuffer();
-        Iterator it = retrieveAETSet.iterator();
-        sb.append(it.next());
-        while (it.hasNext())
-            sb.append(',').append(it.next());
-        return sb.toString();
+    public final ObjectName getFileSystemMgtName() {
+        return fileSystemMgtName;
     }
 
-    public final void setRetrieveAETs(String aets) {
-        String[] a = StringUtils.split(aets, ',');
-        if (a.length == 0) { throw new IllegalArgumentException(
-        "Missing Retrieve AET"); }
-        this.retrieveAETSet = Collections.unmodifiableSet(new HashSet(Arrays
-                .asList(a)));
+    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
+        this.fileSystemMgtName = fileSystemMgtName;
     }
 
-    final Set getRetrieveAETSet() {
-        return retrieveAETSet;
-    }
-    
     public final boolean isAcceptPatientRootFind() {
         return patientRootFind;
     }
@@ -270,5 +244,17 @@ public class QueryRetrieveScpService extends AbstractScpService {
         AEData aeData = new AECmd(getDataSource(), aet).execute();
         if (aeData == null) { throw new UnkownAETException(aet); }
         return aeData;
+    }
+
+    boolean isLocalFileSystem(String dirpath) throws DcmServiceException {
+        try {
+            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
+                    "isLocalFileSystem",
+                    new Object[] { dirpath},
+                    new String[] { String.class.getName()});
+            return b.booleanValue();
+        } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
     }
 }

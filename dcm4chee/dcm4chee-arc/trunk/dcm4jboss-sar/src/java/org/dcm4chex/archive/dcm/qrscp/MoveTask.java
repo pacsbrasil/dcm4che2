@@ -1,22 +1,11 @@
-/*
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 package org.dcm4chex.archive.dcm.qrscp;
 
@@ -27,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -212,11 +202,13 @@ class MoveTask implements Runnable {
             if (tsuids == null) {
                 tsuids = new HashSet();
                 cuidMap.put(fileInfo.sopCUID, tsuids);
-                rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
+                rq.addPresContext(af.newPresContext(rq.nextPCID(),
+                        cuid,
                         NATIVE_LE_TS));
             }
             if (!isNativeLittleEndianTS(tsuid) && tsuids.add(tsuid))
-                    rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
+                    rq.addPresContext(af.newPresContext(rq.nextPCID(),
+                            cuid,
                             new String[] { tsuid}));
         }
         return rq;
@@ -249,20 +241,20 @@ class MoveTask implements Runnable {
                     final int status = fwdMoveRspCmd.getStatus();
                     switch (status) {
                     case Status.Pending:
-                        if (fwdMoveRspCmd.getInt(
-                                Tags.NumberOfRemainingSubOperations, 0) < size) {
+                        if (fwdMoveRspCmd
+                                .getInt(Tags.NumberOfRemainingSubOperations, 0) < size) {
                             notifyMovePending(fwdMoveRspCmd);
                         }
                         break;
                     case Status.Cancel:
-                        remaining += fwdMoveRspCmd.getInt(
-                                Tags.NumberOfRemainingSubOperations, 0);
+                        remaining += fwdMoveRspCmd
+                                .getInt(Tags.NumberOfRemainingSubOperations, 0);
                     case Status.Success:
                     case Status.SubOpsOneOrMoreFailures:
-                        completed += fwdMoveRspCmd.getInt(
-                                Tags.NumberOfCompletedSubOperations, 0);
-                        warnings += fwdMoveRspCmd.getInt(
-                                Tags.NumberOfWarningSubOperations, 0);
+                        completed += fwdMoveRspCmd
+                                .getInt(Tags.NumberOfCompletedSubOperations, 0);
+                        warnings += fwdMoveRspCmd
+                                .getInt(Tags.NumberOfWarningSubOperations, 0);
                         if (ds != null) {
                             failedIUIDs
                                     .addAll(Arrays
@@ -272,27 +264,27 @@ class MoveTask implements Runnable {
                         break;
                     default:
                         // General error
-                        service.getLog().error(
-                                "Forwarded MOVE RQ to " + retrieveAET
-                                        + " failed: " + fwdMoveRspCmd);
+                        service.getLog().error("Forwarded MOVE RQ to "
+                                + retrieveAET + " failed: " + fwdMoveRspCmd);
                         failedIUIDs.addAll(iuids);
                     }
                 } catch (IOException e) {
-                    service.getLog().error(
-                            "Failure during receive of C-MOVE_RSP:", e);
+                    service.getLog()
+                            .error("Failure during receive of C-MOVE_RSP:", e);
                 }
             }
         };
         try {
             moveForwardCmd = new MoveForwardCmd(service, service
                     .isForwardAsMoveOriginator() ? moveOriginatorAET
-                    : moveCalledAET, retrieveAET, moveRqCmd.getInt(
-                    Tags.Priority, 0), moveDest, (String[]) iuids
+                    : moveCalledAET, retrieveAET, moveRqCmd
+                    .getInt(Tags.Priority, 0), moveDest, (String[]) iuids
                     .toArray(new String[size]));
             moveForwardCmd.execute(fwdmoveRspListener);
         } catch (Exception e) {
-            service.getLog().error(
-                    "Failed to forward MOVE RQ to " + retrieveAET, e);
+            service.getLog().error("Failed to forward MOVE RQ to "
+                    + retrieveAET,
+                    e);
             failedIUIDs.addAll(iuids);
         }
     }
@@ -326,7 +318,8 @@ class MoveTask implements Runnable {
                 }
             };
             try {
-                storeAssoc.invoke(makeCStoreRQ(fileInfo, buffer), storeScpListener);
+                storeAssoc.invoke(makeCStoreRQ(fileInfo, buffer),
+                        storeScpListener);
             } catch (Exception e) {
                 service.getLog().error("Failed to move " + iuid, e);
                 failedIUIDs.add(iuid);
@@ -355,7 +348,8 @@ class MoveTask implements Runnable {
         instancesAction.incNumberOfInstances(1);
     }
 
-    private Dimse makeCStoreRQ(FileInfo info, byte[] buffer) throws NoPresContextException {
+    private Dimse makeCStoreRQ(FileInfo info, byte[] buffer)
+            throws NoPresContextException {
         Association assoc = storeAssoc.getAssociation();
         PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,
                 info.tsUID);
@@ -373,7 +367,9 @@ class MoveTask implements Runnable {
             }
         }
         Command storeRqCmd = of.newCommand();
-        storeRqCmd.initCStoreRQ(assoc.nextMsgID(), info.sopCUID, info.sopIUID,
+        storeRqCmd.initCStoreRQ(assoc.nextMsgID(),
+                info.sopCUID,
+                info.sopIUID,
                 moveRqCmd.getInt(Tags.Priority, Command.MEDIUM));
         storeRqCmd
                 .putUS(Tags.MoveOriginatorMessageID, moveRqCmd.getMessageID());
@@ -409,8 +405,8 @@ class MoveTask implements Runnable {
                 moveAssoc.getAssociation()
                         .write(af.newDimse(movePcid, cmd, ds));
             } catch (Exception e) {
-                service.getLog().info(
-                        "Failed to send Move RSP to Move Originator:", e);
+                service.getLog()
+                        .info("Failed to send Move RSP to Move Originator:", e);
                 moveAssoc = null;
             }
         }
@@ -446,37 +442,35 @@ class MoveTask implements Runnable {
         return rspCmd;
     }
 
-    private Set getRemoteRetrieveAETs(FileInfo[] instFiles) {
+    private Set getRemoteRetrieveAETs(FileInfo[] instFiles)
+            throws DcmServiceException {
         Set aets = new HashSet();
         for (int i = 0; i < instFiles.length; ++i) {
-            Set fileAETs = getRemoteRetrieveAETSet(instFiles[i]);
-            // test if local accessable
-            Set localAETs = new HashSet(service.getRetrieveAETSet());
-            localAETs.retainAll(fileAETs);
-            if (!localAETs.isEmpty()) {
+            if (service.isLocalFileSystem(instFiles[i].basedir)) {
                 toRetrieve.add(instFiles[i]);
                 return null;
             }
-            aets.addAll(fileAETs);
+            aets.addAll(getRemoteRetrieveAETs(instFiles[i]));
         }
         return aets;
     }
 
-    private Set getRemoteRetrieveAETSet(FileInfo info) {
+    private List getRemoteRetrieveAETs(FileInfo info) {
         if (info.fileRetrieveAETs != null)
-                return toHashSet(info.fileRetrieveAETs);
+                return toList(info.fileRetrieveAETs);
         // fall back to (external) retrieve AE
-        Set aets = toHashSet(info.instRetrieveAETs);
+        List aets = toList(info.instRetrieveAETs);
         // mark aets as external
         externalAETs.addAll(aets);
         return aets;
     }
 
-    private HashSet toHashSet(String aets) {
-        return new HashSet(Arrays.asList(StringUtils.split(aets, '\\')));
+    private List toList(String aets) {
+        return Arrays.asList(StringUtils.split(aets, '\\'));
     }
 
-    private void prepareRetrieveInfo(FileInfo[][] fileInfo) {
+    private void prepareRetrieveInfo(FileInfo[][] fileInfo)
+            throws DcmServiceException {
         HashMap iuidsAtAE = new HashMap();
         for (int i = 0; i < fileInfo.length; ++i) {
             FileInfo[] instFiles = fileInfo[i];

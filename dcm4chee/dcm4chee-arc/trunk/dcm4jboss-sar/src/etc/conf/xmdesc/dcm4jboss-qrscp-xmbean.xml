@@ -46,19 +46,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getRetrieveAETs"
-      setMethod="setRetrieveAETs">
-      <description>Comma separated list of RetrieveAETs associated
-      with local accessable Files.
-      Usually equal or a sub-set of accepted Called AETs.
-      </description>
-      <name>RetrieveAETs</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="QR_SCP" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isAcceptPatientRootFind"
       setMethod="setAcceptPatientRootFind">
       <description>Support Patient Root Query/Retrieve Information Model - FIND SOP Class
@@ -224,6 +211,17 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="java:/DefaultDS" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>FileSystemMgtName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chex:service=FileSystemMgt" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
