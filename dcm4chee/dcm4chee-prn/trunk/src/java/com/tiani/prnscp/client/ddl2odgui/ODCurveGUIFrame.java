@@ -14,6 +14,7 @@ public class ODCurveGUIFrame extends JFrame
     private final int DEF_WIDTH = 800, DEF_HEIGHT = 600;
     
     private ODCurveGUIPanel curvePanel;
+    private ButtonLegendPanel legendPanel;
     private File lastFile = null; //for JFileChooser to remember last dir
     private JFileChooser chooser = new JFileChooser();
     
@@ -45,7 +46,7 @@ public class ODCurveGUIFrame extends JFrame
                                           + ioe.getMessage(),
                                           "File Error");
                         }
-                        curvePanel.repaint();
+                        ODCurveGUIFrame.this.validate();
                     }
                 }
             };
@@ -58,9 +59,16 @@ public class ODCurveGUIFrame extends JFrame
         contentPane.setLayout(new BorderLayout());
         //curve panel
         curvePanel = new ODCurveGUIPanel();
+        legendPanel = new ButtonLegendPanel(curvePanel);
+        legendPanel.setMinimumSize(new Dimension(DEF_WIDTH / 4, DEF_HEIGHT));
+        JLabel lbl = new JLabel("Loaded Curves");
+        //legendPanel.add(lbl);
+        curvePanel.setLegend(legendPanel);
         contentPane.add(curvePanel, BorderLayout.CENTER);
+        contentPane.add(legendPanel, BorderLayout.EAST);
         //set size
         setSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
+        validate();
     }
     
     private ODCurveGUIFrame(String title)
