@@ -146,7 +146,8 @@ class DicomDirDOM {
             appendAttrs(root, fsinfo);
             appendRecords(root, reader.getFirstRecord());
             appendAttrs(root, attrs.subSet(new int[] { Tags.RefSOPSeq}, true));
-        } catch (IOException e) {
+        } catch (Throwable e) {
+            log.error("Create DicomDirDOM failed:", e);
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
         } finally {

@@ -79,7 +79,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private boolean keepSpoolFiles = false;
 
-    private boolean createIcon = true;
+//    private boolean createIcon = true;
 
     private int iconWidth = 64;
 
@@ -99,6 +99,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private Set valuesForIncludeMd5Sums = new HashSet();
 
+    private Set valuesForCreateIcons = new HashSet();
+    
     private final ImageReader imageReader;
 
     private final MessageListener listener = new MessageListener() {
@@ -165,6 +167,16 @@ public class MediaComposerService extends ServiceMBeanSupport {
         valuesForIncludeWeb.addAll(Arrays.asList(values));
     }
 
+    public final String[] getValuesForCreateIcons() {
+        return (String[]) valuesForCreateIcons.toArray(new String[valuesForCreateIcons.size()]);
+    }
+
+    public final void setValuesForCreateIcons(String[] values) {
+        valuesForCreateIcons.clear();
+        valuesForCreateIcons.addAll(Arrays.asList(values));
+    }
+
+    
     final File getMergeDirWeb() {
         return mergeDirWeb;
     }
@@ -274,14 +286,6 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     public final void setIconWidth(int iconWidth) {
         this.iconWidth = iconWidth;
-    }
-
-    public final boolean isCreateIcon() {
-        return createIcon;
-    }
-
-    public final void setCreateIcon(boolean includeIcon) {
-        this.createIcon = includeIcon;
     }
 
     public final int getJpegHeight() {
@@ -479,6 +483,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     boolean includeMd5Sums(String value) {
         return valuesForIncludeMd5Sums.contains(value);
+    }
+
+    boolean createIcons(String value) {
+        return valuesForCreateIcons.contains(value);
     }
 
 }

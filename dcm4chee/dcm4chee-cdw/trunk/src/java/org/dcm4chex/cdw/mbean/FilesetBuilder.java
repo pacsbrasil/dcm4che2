@@ -116,6 +116,8 @@ class FilesetBuilder {
     private final boolean web;
 
     private final boolean md5sums;
+    
+    private final boolean icons;
 
     private BufferedImage imageBI;
 
@@ -176,6 +178,7 @@ class FilesetBuilder {
         this.nonDICOM = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
         this.web = service.includeWeb(nonDICOM);
         this.md5sums = service.includeMd5Sums(nonDICOM);
+        this.icons = service.createIcons(nonDICOM);
 
     }
 
@@ -226,7 +229,8 @@ class FilesetBuilder {
                 mergeDir(service.getMergeDirWeb(), rootDir);
             }
             if (viewer) mergeDir(service.getMergeDirViewer(), rootDir);
-        } catch (IOException e) {
+        } catch (Throwable e) {
+            log.error("buildFileset failed:", e);
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
         }
@@ -313,7 +317,7 @@ class FilesetBuilder {
             Dataset rec = recFact.makeRecord(recType, ds);
             if (DirRecord.IMAGE.equals(recType)) {
                 Dataset iconItem = item.getItem(Tags.IconImageSeq);
-                if (iconItem == null && service.isCreateIcon())
+                if (iconItem == null && icons)
                         if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                                 && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
                             log.info("Generation from icon from compressed image not supported - "

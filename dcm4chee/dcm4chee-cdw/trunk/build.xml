@@ -3,7 +3,7 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 
-    <property name="version" value="0.8.2"/>
+    <property name="version" value="0.8.3"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
 
     <!-- Override with your JBoss server bundle dist location -->

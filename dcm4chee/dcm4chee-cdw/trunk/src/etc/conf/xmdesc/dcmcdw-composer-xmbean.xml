@@ -73,15 +73,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isCreateIcon"
-      setMethod="setCreateIcon">
-      <description>Creates an icon to include in DICOMDIR for image instances
-      for which no icon is provided in the Media Creation Request.
+      getMethod="getValuesForCreateIcons"
+      setMethod="setValuesForCreateIcons">
+      <description>Comma separated list of values of flag
+      "Include Non-DICOM Objects" (2200,0008), to create
+      icons for DICOMDIR, if no icon is provided in the
+      Media Creation Request.
       </description>
-      <name>CreateIcon</name>
-      <type>boolean</type>      
+      <name>ValuesForCreateIcons</name>
+      <type>[Ljava.lang.String;</type>      
       <descriptors>
-         <value value="true" />
+         <value value="NO,FOR_PHYSICIAN,FOR_PATIENT,FOR_TEACHING,FOR_RESEARCH" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
