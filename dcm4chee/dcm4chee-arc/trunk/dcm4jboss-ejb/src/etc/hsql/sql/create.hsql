@@ -168,6 +168,25 @@ CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 CREATE INDEX mwl_pat_id ON mwl_item(pat_id);
 CREATE INDEX mwl_pat_name ON mwl_item(pat_name);
 
+CREATE TABLE audit_record(
+	pk 				INTEGER NOT NULL IDENTITY PRIMARY KEY,
+	msg_type 		VARCHAR(256),
+	host_name 		VARCHAR_IGNORECASE(256),
+	time_stamp 		TIMESTAMP,
+	aet 			VARCHAR(256),
+	user_name 		VARCHAR(256),
+	patient_name	VARCHAR_IGNORECASE(256),
+	patient_id 		VARCHAR(256),
+	xml_data 		VARCHAR(64000)
+);
+CREATE INDEX arr_msg_type ON audit_record(msg_type);
+CREATE INDEX arr_host_name ON audit_record(host_name);
+CREATE INDEX arr_time_stamp ON audit_record(time_stamp);
+CREATE INDEX arr_aet ON audit_record(aet);
+CREATE INDEX arr_user_name ON audit_record(user_name);
+CREATE INDEX arr_patient_name ON audit_record(patient_name);
+CREATE INDEX arr_patient_id ON audit_record(patient_id);
+
 CREATE TABLE users(
 	user_id		VARCHAR(256) PRIMARY KEY,
 	passwd 		VARCHAR(256)
@@ -181,3 +200,4 @@ CREATE INDEX user_id ON roles(user_id);
 INSERT INTO users VALUES('admin','admin');
 INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebAdmin');
+INSERT INTO roles VALUES('admin','AuditRepAdmin');

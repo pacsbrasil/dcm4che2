@@ -120,7 +120,7 @@ $Revision$
        </authentication>
     </application-policy>
 
-    <!--application-policy name = "auditrep-secdom">
+    <application-policy name = "auditrep-secdom">
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
@@ -128,11 +128,11 @@ $Revision$
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
           </login-module>
-          <login-module code="org.dcm4chex.service.AuditingLoginModule"
+          <login-module code="org.dcm4chex.arr.security.AuditingLoginModule"
              flag = "optional" >
           </login-module>
        </authentication>
-    </application-policy-->
+    </application-policy>
 
     <!-- A template configuration for the web-console web application. This
       defaults to the UsersRolesLoginModule the same as other and should be
