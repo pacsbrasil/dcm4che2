@@ -63,6 +63,7 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueueHome;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.util.*;
 import org.jboss.logging.Logger;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -199,6 +200,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         Command rqCmd = rq.getCommand();
         InputStream in = rq.getDataAsStream();
         Association assoc = activeAssoc.getAssociation();
+        File file = null;
         try {
             DcmDecodeParam decParam =
                 DcmDecodeParam.valueOf(rq.getTransferSyntaxUID());
@@ -217,7 +219,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             File dir =
                 storageDirFiles[today.get(Calendar.DAY_OF_MONTH)
                     % storageDirFiles.length];
-            File file = makeFile(dir, today, ds);
+            file = makeFile(dir, today, ds);
             MessageDigest md = MessageDigest.getInstance("MD5");
             storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
 
@@ -251,13 +253,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             updateStoredStudiesInfo(assoc, ds);
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
+            deleteFailedStorage(file);            
             throw e;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            deleteFailedStorage(file);            
             throw new DcmServiceException(Status.ProcessingFailure, e);
         } finally {
             in.close();
         }
+    }
+
+    private void deleteFailedStorage(File file) {
+        if (file == null) return;
+        log.info("M-DELETE file:" + file);
+        file.delete();
     }
 
     private Dataset updateDB(
@@ -315,7 +325,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    private File makeFile(File basedir, Calendar today, Dataset ds) {
+    private File makeFile(File basedir, Calendar today, Dataset ds)
+        throws IOException {
         File dir =
             new File(
                 basedir,
@@ -331,12 +342,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        int hash = ds.getString(Tags.SOPInstanceUID).hashCode();
-        File f;
-        while ((f = new File(dir, toHex(hash))).exists()) {
-            ++hash;
+        for (int hash = ds.getString(Tags.SOPInstanceUID).hashCode();
+            ;
+            ++hash) {
+            File f = new File(dir, toHex(hash));
+            if (f.createNewFile()) {
+                return f;
+            }
         }
-        return f;
     }
 
     private File toFile(String basedir, String[] fileIDs) {

@@ -23,7 +23,6 @@ package org.dcm4chex.service;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.Date;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -45,6 +44,7 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueueHome;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.service.util.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -69,8 +69,7 @@ public class MoveScuService
     private static final int INVOKE_FAILED_STATUS = -1;
 
     private DataSourceFactory dsf = new DataSourceFactory(log);
-    private long[] retryIntervalls = {
-    };
+    private RetryIntervalls retryIntervalls = new RetryIntervalls();
     private MoveOrderQueue queue;
     private int invoked = 0;
     private int maxConcurrentMoves = 1;
@@ -107,18 +106,14 @@ public class MoveScuService
      * @jmx.managed-attribute
      */
     public String getRetryIntervalls() {
-        MillisecondArrayEditor e = new MillisecondArrayEditor();
-        e.setValue(retryIntervalls);
-        return e.getAsText();
+        return retryIntervalls.toString();
     }
 
     /**
      * @jmx.managed-attribute
      */
     public void setRetryIntervalls(String text) {
-        MillisecondArrayEditor e = new MillisecondArrayEditor();
-        e.setAsText(text);
-        retryIntervalls = (long[]) e.getValue();
+        retryIntervalls = new RetryIntervalls(text);
     }
 
     /**
@@ -135,7 +130,6 @@ public class MoveScuService
         this.maxConcurrentMoves = maxConcurrentMoves;
     }
 
-
     private String getAET() {
         String aet = getServiceName().getKeyProperty("aet");
         return aet != null ? aet : DEFAULT_AET;
@@ -146,7 +140,8 @@ public class MoveScuService
      */
     public void run() {
         MoveOrderValue order;
-        while (invoked < maxConcurrentMoves && (order = fetchNextOrder()) != null) {
+        while (invoked < maxConcurrentMoves
+            && (order = fetchNextOrder()) != null) {
             try {
                 process(order);
             } catch (Exception e) {
@@ -238,15 +233,9 @@ public class MoveScuService
     private synchronized void queueFailedMoveOrder(
         MoveOrderValue order,
         int failureStatus) {
-        Date newScheduledTime = null;
-        if (order.getFailureCount() < retryIntervalls.length) {
-            newScheduledTime =
-                new Date(
-                    System.currentTimeMillis()
-                        + retryIntervalls[order.getFailureCount()]);
-        }
-        order.setScheduledTime(newScheduledTime);
         order.addFailure(failureStatus);
+        order.setScheduledTime(
+            retryIntervalls.scheduleNextRetry(order.getFailureCount()));
         try {
             queue.queue(order);
         } catch (Throwable e) {
