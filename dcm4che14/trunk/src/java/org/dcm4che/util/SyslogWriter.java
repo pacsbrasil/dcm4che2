@@ -317,6 +317,10 @@ public class SyslogWriter extends OutputStreamWriter {
     }
     
     public void writeHeader(int level) throws IOException {
+        writeHeader(level, System.currentTimeMillis());
+    }
+    
+    public void writeHeader(int level, long millis) throws IOException {
         if ((level & ~7) != 0) {
             throw new IllegalArgumentException("level: " + level);
         }
@@ -325,8 +329,8 @@ public class SyslogWriter extends OutputStreamWriter {
         this.write('<');
         this.write(String.valueOf(facility|level));
         this.write('>');
-        
-        Calendar cal =  Calendar.getInstance();
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(millis);
         this.write(MONTH[cal.get(Calendar.MONTH)]);
         this.write(' ');
         this.write(DAY[cal.get(Calendar.DAY_OF_MONTH)]);
@@ -356,14 +360,24 @@ public class SyslogWriter extends OutputStreamWriter {
     
     public void write(int level, String msg)
     throws IOException {
-        writeHeader(level);
+        write(level, msg, System.currentTimeMillis());
+    }
+    
+    public void write(int level, String msg, long millis)
+    throws IOException {
+        writeHeader(level, millis);
         write(msg);
         flush();
     }
     
     public void writeTo(int level, String msg, OutputStream out)
     throws IOException {
-        writeHeader(level);
+        writeTo(level, msg, out, System.currentTimeMillis());
+    }
+
+    public void writeTo(int level, String msg, OutputStream out, long millis)
+    throws IOException {
+        writeHeader(level, millis);
         write(msg);
         writeTo(out);
     }
