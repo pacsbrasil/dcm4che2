@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
@@ -22,8 +21,6 @@ import org.dcm4chex.archive.common.PrivateTags;
  *
  */
 public class PatientModel extends AbstractModel {
-
-    private List studies = new ArrayList();
 
     private int pk = -1;
 
@@ -96,12 +93,27 @@ public class PatientModel extends AbstractModel {
     public final void setPatientSex(String patientSex) {
         ds.putCS(Tags.PatientSex, patientSex);
     }
-
+    
+    /**
+     * Returns the list of studies.
+     * <p>
+     * Use the <code>getChilds</code> from <code>AbstractModel</code> method now.
+     * 
+     * @return studies as List.
+     */
     public final List getStudies() {
-        return studies;
+        return getChilds();
     }
 
+    /**
+     * Set a new list of studies.
+     * <p>
+     * Use the <code>setChilds</code> from <code>AbstractModel</code> method now.
+     * 
+     * @param studies List of studies
+     */
     public final void setStudies(List studies) {
-        this.studies = studies;
+        setChilds( studies );
     }
+    
 }

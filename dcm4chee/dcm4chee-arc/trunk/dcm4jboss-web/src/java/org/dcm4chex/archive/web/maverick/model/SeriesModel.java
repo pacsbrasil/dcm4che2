@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
@@ -24,7 +23,6 @@ import org.dcm4chex.archive.common.PrivateTags;
  */
 public class SeriesModel extends AbstractModel {
 
-    private List instances = new ArrayList();
     private int pk = -1;
 
     public SeriesModel() {
@@ -141,11 +139,25 @@ public class SeriesModel extends AbstractModel {
         return StringUtils.toString(ds.getStrings(Tags.RetrieveAET), '\\');
     }
 
+    /**
+     * Returns the list of Instances.
+     * <p>
+     * Use the <code>getChilds</code> from <code>AbstractModel</code> method now.
+     * 
+     * @return Instances as List.
+     */
     public final List getInstances() {
-        return instances;
+        return getChilds();
     }
 
+    /**
+     * Set a new list of instances.
+     * <p>
+     * Use the <code>setChilds</code> from <code>AbstractModel</code> method now.
+     * 
+     * @param instances List of instances
+     */
     public final void setInstances(List instances) {
-        this.instances = instances;
+        setChilds(instances);
     }
 }

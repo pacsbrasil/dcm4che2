@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick.model;
 
+
 import org.dcm4che.dict.Tags;
 
 /**
@@ -76,4 +77,11 @@ public class StudyFilterModel extends AbstractModel {
     public final void setModality(String s) {
         ds.putCS(Tags.ModalitiesInStudy, s);
     }
+    /**
+     * Returns -1 because pk isnt use here.
+     */
+    public int getPk() {
+    	return -1;
+    }
+
 }

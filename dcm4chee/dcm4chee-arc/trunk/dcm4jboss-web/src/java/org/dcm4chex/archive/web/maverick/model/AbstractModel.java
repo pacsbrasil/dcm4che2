@@ -10,14 +10,18 @@ package org.dcm4chex.archive.web.maverick.model;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.DAFormat;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -35,7 +39,10 @@ public abstract class AbstractModel {
 
     private static DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    protected final Dataset ds;
+    protected Dataset ds;
+    
+    private List childs = new ArrayList();
+    private List childsPK = null;
 
     protected AbstractModel() {
         this.ds = dof.newDataset();
@@ -44,6 +51,15 @@ public abstract class AbstractModel {
     protected AbstractModel(Dataset ds) {
         if (ds == null) throw new NullPointerException();
         this.ds = ds;
+    }
+    
+    public boolean update( Dataset dsNew ) {
+    	if ( ds.getInt(PrivateTags.SeriesPk, -1) != dsNew.getInt(PrivateTags.SeriesPk, -1) ) {
+    		return false;
+    	}
+    	this.ds = dsNew;
+    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
+    	return true;
     }
 
     public String getSpecificCharacterSet() {
@@ -169,4 +185,78 @@ public abstract class AbstractModel {
         }
         return f.format(cal.getTime());
     }
+    
+    /**
+     * Returns the childs of this model as List.
+     * 
+     * @return List of childs.
+     */
+    public List getChilds() {
+    	return childs;
+    }
+    
+    /**
+     * Set the childs for this model.
+     * <p>
+     * This method should not be used directly! Use dedicated method of implementation class instead.
+     * <p>
+     * If param is null, return without any changes!
+     * <p>
+     * Resets <code>childsPK</code> to obtain new child pk's with <code>containsPK</code> method.
+     * 
+     * @param list New list of childs.
+     */
+    public void setChilds( List list ) {
+    	if ( list != null ) {
+    		childs = list;
+    		childsPK = null;
+    	}
+    }
+    
+    /**
+     * Checks if this model contains given child.
+     * 
+     * @param model A childs model
+     * @return true if this model contains given child.
+     */
+    public boolean contains( AbstractModel model ) {
+    	return childs.contains( model );
+    }
+    
+    /**
+     * Checks if this model contains a child with given pk.
+     * <p>
+     * Use carefully, because pk's are only unique within a model type!
+     * 
+     * @param pk The childs pk
+     * @return 
+     */
+    public boolean containsPK( int pk ) {
+    	return getChildsPK().contains( new Integer( pk ) );
+    }
+    
+    /**
+     * Gets the list of all clients pk's.
+     * <p>
+     * This method is used primary in method <code>containsPK</code>
+     * 
+     * @return List of childs pk's.
+     */
+    public List getChildsPK(){
+    	if ( childsPK != null ) return childsPK;
+    	childsPK = new ArrayList();
+    	Iterator iter = getChilds().iterator();
+    	while ( iter.hasNext() ) {
+    		childsPK.add( new Integer( ((AbstractModel) iter.next() ).getPk() ) );
+    	}
+    	return childsPK;
+    }
+    
+    /**
+     * Get the pk of this model instance.
+     * 
+     * @return pk
+     */
+    public abstract int getPk();
+    
 }

@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick.model;
 
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -79,4 +80,5 @@ public class InstanceModel extends AbstractModel {
     public final String getRetrieveAETs() {
         return StringUtils.toString(ds.getStrings(Tags.RetrieveAET), '\\');
     }
-}
+    
+ }
