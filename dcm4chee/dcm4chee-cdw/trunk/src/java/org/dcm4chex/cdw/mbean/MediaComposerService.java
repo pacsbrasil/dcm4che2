@@ -10,7 +10,10 @@ package org.dcm4chex.cdw.mbean;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -52,7 +55,19 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private boolean keepSpoolFiles = false;
 
+    private boolean createIcon = true;
+
+    private int iconWidth = 64;
+
+    private int iconHeight = 64;
+
+    private int jpegWidth = 512;
+
+    private int jpegHeight = 512;
+
     private boolean makeIsoImage = true;
+
+    private final ImageReader imageReader;
 
     private final MessageListener listener = new MessageListener() {
 
@@ -72,6 +87,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
         File datadir = ServerConfigLocator.locate().getServerDataDir();
         checkExists(mergeDir = new File(datadir, "mergedir"));
         checkExists(mergeDirViewer = new File(datadir, "mergedir-viewer"));
+        Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
+        if (!it.hasNext())
+                throw new ConfigurationException("DICOM Image Reader not found");
+        imageReader = (ImageReader) it.next();
     }
 
     private void checkExists(File file) {
@@ -89,6 +108,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     final DirRecordFactory getDirRecordFactory() {
         return dirRecordFactory;
+    }
+
+    final ImageReader getImageReader() {
+        return imageReader;
     }
 
     public final boolean isKeepSpoolFiles() {
@@ -116,6 +139,46 @@ public class MediaComposerService extends ServiceMBeanSupport {
         checkExists(new File(mergeDir, fname));
         checkExists(new File(mergeDirViewer, fname));
         this.fileSetDescriptorFile = fname;
+    }
+
+    public final int getIconHeight() {
+        return iconHeight;
+    }
+
+    public final void setIconHeight(int iconHeight) {
+        this.iconHeight = iconHeight;
+    }
+
+    public final int getIconWidth() {
+        return iconWidth;
+    }
+
+    public final void setIconWidth(int iconWidth) {
+        this.iconWidth = iconWidth;
+    }
+
+    public final boolean isCreateIcon() {
+        return createIcon;
+    }
+
+    public final void setCreateIcon(boolean includeIcon) {
+        this.createIcon = includeIcon;
+    }
+
+    public final int getJpegHeight() {
+        return jpegHeight;
+    }
+
+    public final void setJpegHeight(int jpegHeight) {
+        this.jpegHeight = jpegHeight;
+    }
+
+    public final int getJpegWidth() {
+        return jpegWidth;
+    }
+
+    public final void setJpegWidth(int jpegWidth) {
+        this.jpegWidth = jpegWidth;
     }
 
     public final boolean isMakeIsoImage() {

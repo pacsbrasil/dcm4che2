@@ -212,7 +212,7 @@ public class CDRecordService extends AbstractMediaWriterService {
             String[] cmdarray = (String[]) cmd.toArray(new String[cmd.size()]);
             if (logEnabled)
                 logout = new BufferedOutputStream(new FileOutputStream(logFile));
-            exitCode = new Executer(log, cmdarray, logout, null).waitFor();
+            exitCode = new Executer(cmdarray, logout, null).waitFor();
         } catch (InterruptedException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
@@ -245,13 +245,12 @@ public class CDRecordService extends AbstractMediaWriterService {
         String[] cmdarray = { "cdrecord", "dev=" + device, option};
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-            Executer ex = new Executer(log, cmdarray, stdout, null);
+            Executer ex = new Executer(cmdarray, stdout, null);
             int exit = ex.waitFor();
-            if (exit != 0)
-                    throw new MediaCreationException(
-                            ExecutionStatusInfo.PROC_FAILURE, ex.cmd()
-                                    + " failed with exit status:" + exit);
-            return stdout.toString().indexOf(match) != -1;
+            String result = stdout.toString();
+            if (log.isDebugEnabled())
+                log.debug("cdrecord stdout: " + result);
+            return exit == 0 && result.indexOf(match) != -1;
         } catch (InterruptedException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);

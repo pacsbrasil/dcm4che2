@@ -199,8 +199,8 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
             cmd.add("-o");
             cmd.add(isoImageFile.getAbsolutePath());
             cmd.add(srcDir.getAbsolutePath());
-            String[] a = (String[]) cmd.toArray(new String[cmd.size()]);
-            exitCode = new Executer(log, a, null, null).waitFor();
+            String[] cmdarray = (String[]) cmd.toArray(new String[cmd.size()]);
+            exitCode = new Executer(cmdarray).waitFor();
         } catch (InterruptedException e) {
             throw new IOException(e.getMessage());
         } finally {

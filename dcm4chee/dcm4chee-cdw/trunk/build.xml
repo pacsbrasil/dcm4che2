@@ -3,7 +3,7 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 
-    <property name="version" value="0.2.1"/>
+    <property name="version" value="0.3"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
 
     <!-- Override with your JBoss server bundle dist location -->
@@ -27,6 +27,7 @@
         <pathelement location="${jboss.home}/lib/jboss-common.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-system.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-jmx.jar"/>
+        <pathelement location="${jboss.home}/server/default/lib/log4j.jar"/>
         <pathelement location="${jboss.home}/server/default/lib/jboss-j2ee.jar"/>
         <pathelement location="${build.classes.dir}"/>
     </path>
