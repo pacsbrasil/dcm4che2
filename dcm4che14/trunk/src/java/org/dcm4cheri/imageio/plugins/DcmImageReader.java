@@ -23,10 +23,31 @@
 
 package org.dcm4cheri.imageio.plugins;
 
-import org.apache.log4j.Logger;
-import org.dcm4che.image.ColorModelFactory;
-import org.dcm4che.imageio.plugins.DcmImageReadParam;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.WritableRaster;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+import java.util.Collections;
+import java.util.Iterator;
 
+import javax.imageio.IIOException;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.stream.ImageInputStream;
+
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -34,32 +55,13 @@ import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.image.ColorModelFactory;
+import org.dcm4che.image.ColorModelParam;
+import org.dcm4che.imageio.plugins.DcmImageReadParam;
 import org.dcm4cheri.image.ImageReaderFactory;
 import org.dcm4cheri.image.ItemParser;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
-
-import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.PixelInterleavedSampleModel;
-import java.awt.image.WritableRaster;
-import java.awt.Rectangle;
-import java.awt.Point;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import javax.imageio.IIOException;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.ImageReadParam;
-import javax.imageio.spi.ImageReaderSpi;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.stream.ImageInputStream;
 
 /**
  *
@@ -92,7 +94,10 @@ public class DcmImageReader extends ImageReader {
     private int width = -1;
     private int height = -1;
     private int planes = 0;
+	private int samplesPerPixel = 1;
     private String pmi = null;
+	private ColorModelParam cmParam;
+
 
     private int dataType = 0;
     private int stored = 0;
@@ -213,7 +218,8 @@ public class DcmImageReader extends ImageReader {
         this.stored = theDataset.getInt(Tags.BitsStored, alloc);
         this.width = theDataset.getInt(Tags.Columns, 0);
         this.height = theDataset.getInt(Tags.Rows, 0);
-        this.pmi = theDataset.getString(Tags.PhotometricInterpretation, null);
+        this.samplesPerPixel = theDataset.getInt(Tags.SamplesPerPixel, 1);
+        this.pmi = theDataset.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
         this.planes = theDataset.getInt(Tags.PlanarConfiguration, 0);
         this.aspectRatio = width * pixelRatio() / height;
 
@@ -234,7 +240,7 @@ public class DcmImageReader extends ImageReader {
             frameStartPos[i] = frameStartPos[i - 1] + frameLength;
         }
 
-        if ("RGB".equals(this.pmi)) {
+        if (this.samplesPerPixel > 1) {
             if (alloc == 16) {
                 throw new IOException("RGB 16 Bits allocated not supported!");
             }
@@ -290,16 +296,17 @@ public class DcmImageReader extends ImageReader {
             throws IOException {
         readMetadata();
         checkIndex(imageIndex);
-        ArrayList l = new ArrayList(1);
-        if ("RGB".equals(this.pmi)) {
-            l.add(this.planes != 0 ? RGB_PLANE : RGB_PIXEL);
-        } else {
-            l.add(new ImageTypeSpecifier(cmFactory.getColorModel(cmFactory
-                    .makeParam(theDataset, param != null ? param.getPValToDDL()
-                            : null)), new PixelInterleavedSampleModel(
-                    this.dataType, 1, 1, 1, 1, new int[] { 0 })));
-        }
-        return l.iterator();
+        return Collections.singletonList(getImageTypeSpecifier(
+        		param != null ? param.getPValToDDL() : null)).iterator();
+    }
+    
+    private ImageTypeSpecifier getImageTypeSpecifier(byte[] pv2dll) {
+    	return this.samplesPerPixel == 3
+    			? (this.planes != 0 ? RGB_PLANE : RGB_PIXEL)
+    			: new ImageTypeSpecifier(cmFactory.getColorModel(
+    					this.cmParam = cmFactory.makeParam(theDataset, pv2dll)),
+    					new PixelInterleavedSampleModel(
+    							this.dataType, 1, 1, 1, 1, new int[] { 0 }));
     }
 
     public ImageReadParam getDefaultReadParam() {
@@ -314,7 +321,12 @@ public class DcmImageReader extends ImageReader {
         if (readParam == null) {
             readParam = (DcmImageReadParam) getDefaultReadParam();
         }
+        Iterator imageTypes = getImageTypes(imageIndex, readParam);
+        this.theImage = getDestination(param, imageTypes, this.width,
+                this.height);
         if (decompressor != null) {
+        	ImageReadParam decompressorReadParam = decompressor.getDefaultReadParam();
+        	decompressorReadParam.setDestination(theImage);
             if (imageIndex > 0 && frameStartPos[imageIndex] == 0) {
                 if (itemParser.getNumberOfDataFragments() == frameStartPos.length) {
                     for (int i = 1; i < frameStartPos.length; ++i)
@@ -322,19 +334,13 @@ public class DcmImageReader extends ImageReader {
                 } else {
                     for (int i = 0; i < imageIndex; ++i)
 	                    if (frameStartPos[i+1] == 0)
-	                        decompress(i, readParam);
+	                        decompress(i, decompressorReadParam);
                 }
             }
-            BufferedImage bi = decompress(imageIndex, readParam);
-            if (readParam.isMaskPixelData())
-                maskPixelData(bi.getTile(0,0).getDataBuffer());
-            return bi;
+            return adjustBufferedImage(decompress(imageIndex, decompressorReadParam), readParam);
         }
         stream.seek(this.frameStartPos[imageIndex]);
 
-        Iterator imageTypes = getImageTypes(imageIndex, readParam);
-        this.theImage = getDestination(param, imageTypes, this.width,
-                this.height);
         this.theTile = theImage.getWritableTile(0, 0);
 
         Rectangle rect = getSourceRegion(param, width, height);
@@ -369,7 +375,7 @@ public class DcmImageReader extends ImageReader {
 
         DataBuffer db = this.theTile.getDataBuffer();
         if (this.dataType == DataBuffer.TYPE_BYTE) {
-            if ("RGB".equals(this.pmi)) {
+            if (this.samplesPerPixel == 3) {
                 if (this.planes != 0) {
                     readByteSamples(1, ((DataBufferByte) db).getData(0));
                     readByteSamples(1, ((DataBufferByte) db).getData(1));
@@ -383,13 +389,55 @@ public class DcmImageReader extends ImageReader {
         } else {
             readWordSamples(1, ((DataBufferUShort) db).getData());
         }
-
-        if (readParam.isMaskPixelData())
-            maskPixelData(db);
-        return this.theImage;
+        
+        return adjustBufferedImage(this.theImage, readParam);
     }
 
-    private BufferedImage decompress(int imageIndex, DcmImageReadParam readParam)
+	private BufferedImage adjustBufferedImage(BufferedImage bi,
+			DcmImageReadParam readParam) {
+		final boolean autoWindowing = cmParam != null
+			&& cmParam.isMonochrome() 
+			&& cmParam.getNumberOfWindows() == 0
+			&& readParam.isAutoWindowing();
+		if (!autoWindowing && !readParam.isMaskPixelData())
+			return bi;
+		final WritableRaster raster = bi.getRaster();
+		DataBuffer db = raster.getDataBuffer();
+		if (!(db instanceof DataBufferUShort))
+			return bi;
+        short[] data = ((DataBufferUShort) db).getData();
+        final int mask = -1 >>> (32 - stored);
+        if (!autoWindowing) {
+	        for (int i = 0; i < data.length; i++)
+	            data[i] &= mask;
+	        return bi;
+        }
+        final int sign = theDataset.getInt(Tags.PixelPresentation, 0) == 0 ?
+        		0 : ~mask;
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        int val;
+        if (readParam.isMaskPixelData()) {
+	        for (int i = 0; i < data.length; i++) {
+	            val = (data[i] &= mask) | sign;
+	            if (val < min) min = val;
+	            if (val > max) max = val;	            	
+	        }
+        } else {
+	        for (int i = 0; i < data.length; i++) {
+	            val = (data[i] & mask) | sign;
+	            if (val < min) min = val;
+	            if (val > max) max = val;	            	
+	        }        	
+        }
+        final float w = (max - min) * cmParam.getRescaleSlope();
+        final float c = ((max + min) / 2) * cmParam.getRescaleSlope()
+        								+ cmParam.getRescaleIntercept();
+        ColorModel cm = cmFactory.getColorModel(cmParam.update(c, w, cmParam.isInverse()));
+		return new BufferedImage(cm, raster, false, null);
+	}
+
+	private BufferedImage decompress(int imageIndex, ImageReadParam readParam)
             throws IOException {
         log.debug("Start decompressing frame#" + (imageIndex+1));
         itemStream.seek(this.frameStartPos[imageIndex]);
@@ -402,15 +450,6 @@ public class DcmImageReader extends ImageReader {
         }
         log.debug("Finished decompressed frame#" + (imageIndex+1));
         return bi;
-    }
-
-    private void maskPixelData(DataBuffer db) {
-        if (db instanceof DataBufferUShort) {
-            short[] data = ((DataBufferUShort) db).getData();
-            final int mask = -1 >>> (32 - stored);
-            for (int i = 0; i < data.length; i++)
-                data[i] &= mask;
-        }
     }
 
     private void readByteSamples(int samples, byte[] dest) throws IOException {
@@ -566,6 +605,7 @@ public class DcmImageReader extends ImageReader {
         theDataset = null;
         frameStartPos = null;
         pmi = null;
+        cmParam = null;
 
         theImage = null;
         theTile = null;
@@ -573,6 +613,6 @@ public class DcmImageReader extends ImageReader {
             decompressor.dispose();
         decompressor = null;
         itemStream = null;
-        itemParser = null;
+        itemParser = null;        
     }
 }

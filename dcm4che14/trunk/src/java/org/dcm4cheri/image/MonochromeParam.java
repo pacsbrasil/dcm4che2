@@ -123,6 +123,10 @@ final class MonochromeParam extends BasicColorModelParam  {
       slope, intercept, center, width, pv2dll);
    }
    
+   public boolean isMonochrome() {
+   		return true;
+   }
+   
    public ColorModelParam update(float center, float width, boolean inverse) {
       if (width < 0) {
          throw new IllegalArgumentException("width: " + width);

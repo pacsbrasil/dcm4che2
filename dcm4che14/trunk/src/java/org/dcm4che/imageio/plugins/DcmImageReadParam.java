@@ -39,4 +39,9 @@ public abstract class DcmImageReadParam extends ImageReadParam {
    public abstract boolean isMaskPixelData();
 
    public abstract void setMaskPixelData(boolean mask);
+   
+   public abstract boolean isAutoWindowing();
+   
+   public abstract void setAutoWindowing(boolean autoWindowing);
+   
 }

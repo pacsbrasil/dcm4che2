@@ -32,9 +32,10 @@ import org.dcm4che.imageio.plugins.DcmImageReadParam;
  */
 public class DcmImageReadParamImpl extends DcmImageReadParam {
 
-    private byte[] pvalToDDL;
+    private byte[] pvalToDDL = null;
 
     private boolean maskPixelData = true;
+    private boolean autoWindowing = true;
 
     public byte[] getPValToDDL() {
         return pvalToDDL;
@@ -55,6 +56,14 @@ public class DcmImageReadParamImpl extends DcmImageReadParam {
         this.maskPixelData = mask;
     }
 
+	public final boolean isAutoWindowing() {
+		return autoWindowing;
+	}
+
+	public final void setAutoWindowing(boolean autoWindowing) {
+		this.autoWindowing = autoWindowing;
+	}
+    
     private final static void checkLen(int len) {
         for (int n = 0x100; n <= 0x10000; n <<= 1) {
             if (n == len)

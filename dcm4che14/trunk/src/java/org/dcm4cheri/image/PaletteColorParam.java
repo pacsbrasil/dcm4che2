@@ -217,6 +217,10 @@ final class PaletteColorParam extends BasicColorModelParam {
         throw new UnsupportedOperationException();
     }
     
+    public boolean isMonochrome() {
+        return false;
+    }
+    
     public boolean isCacheable() {
         return false;
     }

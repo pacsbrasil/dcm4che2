@@ -56,5 +56,7 @@ public interface ColorModelParam {
     public boolean isInverse();
     
     public boolean isCacheable();
+
+	public boolean isMonochrome();
 }
 
