@@ -57,10 +57,7 @@
    
    <target name="clean"
            description="clean up" >
-      <delete file="${dcm4che_jar}"/>
-      <delete dir="${samples_out}"/>
-      <delete dir="${local_out}"/>
-      <delete dir="${reports}"/>
+      <delete dir="${out}"/>
    </target>
 
    <target name="main" depends="package"/>
