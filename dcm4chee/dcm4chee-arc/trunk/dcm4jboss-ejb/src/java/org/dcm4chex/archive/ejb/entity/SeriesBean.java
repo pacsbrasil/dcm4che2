@@ -27,8 +27,15 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
+import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -38,6 +45,7 @@ import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
@@ -61,7 +69,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *  name="hsqldb-fetch-key"
  * 
  * @ejb.finder
- *  signature="Collection findAll()"
+ *  signature="java.util.Collection findAll()"
  *  query="SELECT OBJECT(a) FROM Series AS a"
  *  transaction-type="Supports"
  *
@@ -70,6 +78,21 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *  query="SELECT OBJECT(a) FROM Series AS a WHERE a.seriesIuid = ?1"
  *  transaction-type="Supports"
  *
+ * @ejb.finder
+ *  signature="java.util.Collection findByPpsIuid(java.lang.String uid)"
+ *  query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid = ?1"
+ *  transaction-type="Supports"
+ * 
+ * @ejb.finder
+ *  signature="java.util.Collection findWithNoPpsIuid()"
+ *  query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid IS NULL"
+ *  transaction-type="Supports"
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="MPPS" 
+ *  view-type="local"
+ *  ref-name="ejb/MPPS"
+ * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
@@ -77,7 +100,28 @@ public abstract class SeriesBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(SeriesBean.class);
     private Set retrieveAETSet;
+    private MPPSLocalHome mppsHome;
+    
+    public void setEntityContext(EntityContext ctx) {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            mppsHome = (MPPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/MPPS");
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {}
+            }
+        }
+    }
 
+    public void unsetEntityContext() {
+        mppsHome = null;
+    }
+    
     /**
      * Auto-generated Primary Key
      *
@@ -135,6 +179,22 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract java.util.Date getPpsStartDateTime();
 
+    public abstract void setPpsStartDateTime(java.util.Date datetime);
+    
+    /**
+     * PPS Instance UID
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pps_iuid"
+     */
+    public abstract String getPpsIuid();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setPpsIuid(String uid);
+    
+    
     /**
      * Number Of Series Related Instances
      *
@@ -146,8 +206,6 @@ public abstract class SeriesBean implements EntityBean {
     public abstract int getNumberOfSeriesRelatedInstances();
 
     public abstract void setNumberOfSeriesRelatedInstances(int num);
-
-    public abstract void setPpsStartDateTime(java.util.Date datetime);
 
     /**
      * Encoded Series Dataset
@@ -296,6 +354,18 @@ public abstract class SeriesBean implements EntityBean {
             ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
         setEncodedAttributes(
             DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+        Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
+        if (refPPS != null) {
+            final String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
+            setPpsIuid(ppsUID);
+            try {
+                MPPSLocal mpps = mppsHome.findBySopIuid(ppsUID);
+                setMpps(mpps);            
+            } catch (ObjectNotFoundException ignore) {
+            } catch (FinderException e) {
+                throw new EJBException(e);
+            }
+        }
     }
 
     /**
@@ -313,7 +383,9 @@ public abstract class SeriesBean implements EntityBean {
     public void incNumberOfSeriesRelatedInstances(int inc) {
         setNumberOfSeriesRelatedInstances(
             getNumberOfSeriesRelatedInstances() + inc);
-        getStudy().incNumberOfStudyRelatedInstances(inc);
+        if (!getHidden()) {
+            getStudy().incNumberOfStudyRelatedInstances(inc);
+        }
     }
 
 

@@ -210,6 +210,19 @@ public abstract class PatientBean implements EntityBean {
     public abstract java.util.Collection getStudies();
 
     /**
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract void setMpps(java.util.Collection mpps);
+
+    /**
+     * @ejb.interface-method view-type="local"
+     * @ejb.relation
+     *  name="patient-mpps"
+     *  role-name="patient-has-mpps"
+     */
+    public abstract java.util.Collection getMpps();
+    
+    /**
       * Create patient.
       *
       * @ejb.create-method

@@ -244,19 +244,6 @@ public abstract class StudyBean implements EntityBean {
      * @return all series of this study
      */
     public abstract java.util.Collection getSeries();
-
-    /**
-     * @ejb.interface-method view-type="local"
-     */
-    public abstract void setMpps(java.util.Collection mpps);
-
-    /**
-     * @ejb.interface-method view-type="local"
-     * @ejb.relation
-     *  name="study-mpps"
-     *  role-name="study-has-mpps"
-     */
-    public abstract java.util.Collection getMpps();
     
     public void ejbLoad() {
         retrieveAETSet = null;

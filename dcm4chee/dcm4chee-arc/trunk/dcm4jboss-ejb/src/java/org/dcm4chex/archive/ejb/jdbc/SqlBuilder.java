@@ -114,6 +114,13 @@ class SqlBuilder {
         addMatch(new Match.SingleValue(field, type2, value));
     }
 
+    public void addLiteralMatch(
+            String field,
+            boolean type2,
+            String literal) {
+        addMatch(new Match.AppendLiteral(field, type2, literal));
+    }
+    
     public void addListOfUidMatch(String field, boolean type2, String[] uids) {
         addMatch(new Match.ListOfUID(field, type2, uids));
     }

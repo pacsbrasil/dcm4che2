@@ -79,10 +79,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *  query="SELECT OBJECT(a) FROM Instance AS a WHERE a.sopIuid = ?1"
  *  transaction-type="Supports"
  * 
- * @ejb.ejb-ref
- *  ejb-name="Code" 
- *  view-type="local"
- *  ref-name="ejb/Code"
+ * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
  */
 public abstract class InstanceBean implements EntityBean {

@@ -85,6 +85,27 @@ abstract class Match
         }
     }
 
+    static class AppendLiteral extends Match
+    {
+        private final String literal;
+        public AppendLiteral(String field, boolean type2, String literal)
+        {
+            super(field, type2);
+            this.literal = literal;
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return false;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            sb.append(column);
+            sb.append(literal);
+        }
+    }
+    
     static class ListOfUID extends Match
     {
         private final String[] uids;

@@ -48,11 +48,13 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -246,9 +248,13 @@ public abstract class StorageBean implements SessionBean {
             coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
             series = seriesHome.create(ds.subSet(attrFilter.getSeriesFilter()),
-                    getStudy(ds, coercedElements));
+                    getStudy(ds, coercedElements));            
+            MPPSLocal mpps;
+            CodeLocal drcode;
+            if ((mpps = series.getMpps()) != null && mpps.isIncorrectWorklistEntrySelected()) {
+                series.hide();
+            }
         }
-
         return series;
     }
 

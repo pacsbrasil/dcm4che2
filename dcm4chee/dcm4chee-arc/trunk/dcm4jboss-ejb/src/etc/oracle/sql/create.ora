@@ -80,16 +80,16 @@ CREATE INDEX ref_physician ON study(UPPER(ref_physician));
 CREATE SEQUENCE mpps_pk_seq;
 CREATE TABLE mpps (
 	pk          	NUMBER PRIMARY KEY,
-	study_fk		INTEGER,
+	patient_fk		INTEGER,
 	drcode_fk		INTEGER,
 	mpps_iuid		VARCHAR2(255) NOT NULL,
 	mpps_status		VARCHAR2(255),
 	mpps_attrs		LONG RAW,
-FOREIGN KEY (study_fk) REFERENCES study(pk),
+FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
 CREATE UNIQUE INDEX mpps_iuid ON mpps (mpps_iuid);
-CREATE INDEX mpps_study_fk ON mpps(study_fk);
+CREATE INDEX mpps_patient_fk ON study(patient_fk);
 
 CREATE SEQUENCE series_pk_seq;
 CREATE TABLE series (

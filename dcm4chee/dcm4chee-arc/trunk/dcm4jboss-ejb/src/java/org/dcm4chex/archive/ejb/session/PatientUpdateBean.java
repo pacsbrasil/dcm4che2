@@ -100,6 +100,7 @@ public abstract class PatientUpdateBean implements SessionBean {
         {
         	priorPat= updateOrCreate(priorDTOs[i]);
         	dominantPat.getStudies().addAll(priorPat.getStudies());
+        	dominantPat.getMpps().addAll(priorPat.getMpps());
         	priorPat.setMergedWith(dominantPat);
         }
     }

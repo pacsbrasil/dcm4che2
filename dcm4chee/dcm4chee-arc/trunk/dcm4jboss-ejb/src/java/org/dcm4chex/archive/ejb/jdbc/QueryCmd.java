@@ -127,6 +127,10 @@ public abstract class QueryCmd extends BaseCmd {
     }
 
     protected void addStudyMatch() {
+        sqlBuilder.addLiteralMatch(
+            "Study.numberOfStudyRelatedSeries",
+            SqlBuilder.TYPE1,
+            " != 0");
         sqlBuilder.addListOfUidMatch(
             "Study.studyIuid",
             SqlBuilder.TYPE1,
@@ -155,6 +159,10 @@ public abstract class QueryCmd extends BaseCmd {
     }
 
     protected void addSeriesMatch() {
+        sqlBuilder.addLiteralMatch(
+            "Series.hidden",
+            SqlBuilder.TYPE2,
+            "=false");
         sqlBuilder.addListOfUidMatch(
             "Series.seriesIuid",
             SqlBuilder.TYPE1,

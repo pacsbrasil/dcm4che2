@@ -36,8 +36,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
-
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -73,20 +73,22 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *  query="SELECT OBJECT(a) FROM MPPS AS a WHERE a.sopIuid = ?1"
  *  transaction-type="Supports"
  * 
- * @ejb.ejb-ref
- *  ejb-name="Code" 
- *  view-type="local"
- *  ref-name="ejb/Code"
- *
+ * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
+ * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  */
 public abstract class MPPSBean implements EntityBean {
     private static final Logger log = Logger.getLogger(MPPSBean.class);
+    private EntityContext ctx;
+    private SeriesLocalHome seriesHome;
     private CodeLocalHome codeHome;
 
     public void setEntityContext(EntityContext ctx) {
+        this.ctx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
+            seriesHome =
+                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
             codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
         } catch (NamingException e) {
             throw new EJBException(e);
@@ -100,9 +102,11 @@ public abstract class MPPSBean implements EntityBean {
     }
 
     public void unsetEntityContext() {
+        ctx = null;
+        seriesHome = null;
         codeHome = null;
     }
-    
+
     /**
      * Auto-generated Primary Key
      *
@@ -154,42 +158,27 @@ public abstract class MPPSBean implements EntityBean {
     public abstract byte[] getEncodedAttributes();
 
     public abstract void setEncodedAttributes(byte[] bytes);
-    
-    
-    /**
-     * @ejb.relation
-     *  name="mpps-drcode"
-     *  role-name="mpps-with-drcode"
-     *  target-ejb="Code"
-     *  target-role-name="drcode-of-mpps"
-     *  target-multiple="yes"
-     *
-     * @jboss:relation
-     *  fk-column="drcode_fk"
-     *  related-pk-field="pk"
-     */
-    public abstract void setDiscontinuationReasonCode(CodeLocal srCode);
 
     /**
      * @ejb.interface-method view-type="local"
-     */
-    public abstract CodeLocal getDiscontinuationReasonCode();
-
-    /**
+     * 
      * @ejb.relation
-     *  name="study-mpps"
-     *  role-name="mpps-of-study"
+     *  name="patient-mpps"
+     *  role-name="mpps-of-patient"
+     *  cascade-delete="yes"
      *
      * @jboss:relation
-     *  fk-column="study_fk"
+     *  fk-column="patient_fk"
      *  related-pk-field="pk"
      */
-    public abstract void setStudy(StudyLocal study);
+    public abstract void setPatient(PatientLocal patient);
 
     /**
      * @ejb.interface-method view-type="local"
+     * 
+     * @return patient of this study
      */
-    public abstract StudyLocal getStudy();
+    public abstract PatientLocal getPatient();
 
     /**
      * @ejb.interface-method view-type="local"
@@ -205,19 +194,41 @@ public abstract class MPPSBean implements EntityBean {
     public abstract java.util.Collection getSeries();
 
     /**
+     * @ejb.relation name="mpps-drcode"
+     *  role-name="mpps-with-drcode"
+     *  target-ejb="Code"
+     *  target-role-name="drcode-of-mpps"
+     *  target-multiple="yes"
+     *
+     * @jboss:relation fk-column="drcode_fk" related-pk-field="pk"
+     */
+    public abstract void setDrCode(CodeLocal srCode);
+
+    /**
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract CodeLocal getDrCode();
+
+    /**
      * Create Instance.
      *
      * @ejb.create-method
      */
-    public Integer ejbCreate(String iuid, Dataset ds)
+    public Integer ejbCreate(String iuid, Dataset ds, PatientLocal patient)
         throws CreateException {
         setSopIuid(iuid);
         return null;
     }
 
-    public void ejbPostCreate(String iuid, Dataset ds)
+    public void ejbPostCreate(String iuid, Dataset ds, PatientLocal patient)
         throws CreateException {
-       	setAttributes(ds);
+        setPatient(patient);
+        setAttributes(ds);
+        try {
+            setSeries(seriesHome.findByPpsIuid(iuid));
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
         log.info("Created " + prompt());
     }
 
@@ -232,9 +243,11 @@ public abstract class MPPSBean implements EntityBean {
             + getSopIuid()
             + ", status="
             + getPpsStatus()
+            + ", patient->"
+            + getPatient()
             + "]";
     }
-    
+
     /**
      * @ejb.interface-method
      */
@@ -243,14 +256,17 @@ public abstract class MPPSBean implements EntityBean {
             getEncodedAttributes(),
             DcmDecodeParam.EVR_LE);
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public void setAttributes(Dataset ds) {
         setPpsStatus(ds.getString(Tags.PPSStatus));
         try {
-            setDiscontinuationReasonCode(CodeBean.valueOf(codeHome, ds.getItem(Tags.PPSDiscontinuationReasonCodeSeq)));
+            setDrCode(
+                CodeBean.valueOf(
+                    codeHome,
+                    ds.getItem(Tags.PPSDiscontinuationReasonCodeSeq)));
         } catch (CreateException e) {
             throw new EJBException(e);
         } catch (FinderException e) {
@@ -258,5 +274,15 @@ public abstract class MPPSBean implements EntityBean {
         }
         setEncodedAttributes(
             DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isIncorrectWorklistEntrySelected() {
+        CodeLocal drcode = getDrCode();
+        return drcode != null
+            && "110514".equals(drcode.getCodeValue())
+            && "DCM".equals(drcode.getCodingSchemeDesignator());
     }
 }
