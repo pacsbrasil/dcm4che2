@@ -17,6 +17,17 @@
     <attribute name="SyslogHost">localhost</attribute>
     <attribute name="SyslogPort">4000</attribute>
     <attribute name="Facility">authpriv</attribute>         
+
+    <attribute name="LogActorConfig">true</attribute>
+    <attribute name="LogActorStartStop">true</attribute>
+    <attribute name="LogBeginStoringInstances">true</attribute>
+    <attribute name="LogDicomQuery">true</attribute>
+    <attribute name="LogInstancesSent">true</attribute>
+    <attribute name="LogInstancesStored">true</attribute>
+    <attribute name="LogSecurityAlert">true</attribute>
+    <attribute name="LogUserAuthenticated">true</attribute>
+    <attribute name="LogExport">true</attribute>
+
   </mbean>
 
 </server>
