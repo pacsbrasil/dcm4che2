@@ -155,7 +155,7 @@
    		</copy>
    		<replace dir="${dist.dir}/psql/conf/xmdesc"
    			token="DefaultDS" 
-   			value="PostgresSQL"/>
+   			value="PostgresDS"/>
    		<copy todir="${dist.dir}/mysql">
   			<fileset dir="${src.etc}">
    				<include name="conf/xmdesc/*.xml"/>
