@@ -18,7 +18,7 @@ import java.io.Serializable;
 public final class FileDTO implements Serializable {
 
     private static final long serialVersionUID = 3617574916212536371L;
-
+    
     private int pk;
 
     private String aet;
@@ -88,7 +88,7 @@ public final class FileDTO implements Serializable {
     public final void setFileMd5(byte[] md5) {
         this.md5 = md5;
     }
-
+    
     /**
      * @return Returns the path.
      */

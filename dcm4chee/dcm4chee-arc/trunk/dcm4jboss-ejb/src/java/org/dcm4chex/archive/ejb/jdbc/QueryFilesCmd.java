@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.MD5;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -24,7 +25,8 @@ public final class QueryFilesCmd extends BaseCmd {
     public static int transactionIsolationLevel = 0;
 
     private static final String[] SELECT_ATTRIBUTE = { "File.filePath",
-            "FileSystem.directoryPath", "FileSystem.retrieveAET" };
+            "File.fileMd5Field", "FileSystem.directoryPath",
+            "FileSystem.retrieveAET" };
 
     private static final String[] ENTITY = { "Instance", "File", "FileSystem" };
 
@@ -51,8 +53,9 @@ public final class QueryFilesCmd extends BaseCmd {
             while (next()) {
                 FileDTO dto = new FileDTO();
                 dto.setFilePath(rs.getString(1));
-                dto.setDirectoryPath(rs.getString(2));
-                dto.setRetrieveAET(rs.getString(3));
+                dto.setFileMd5(MD5.toBytes(rs.getString(2)));
+                dto.setDirectoryPath(rs.getString(3));
+                dto.setRetrieveAET(rs.getString(4));
                 result.add(dto);
             }
         } finally {

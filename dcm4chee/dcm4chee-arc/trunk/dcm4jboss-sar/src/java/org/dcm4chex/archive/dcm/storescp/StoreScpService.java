@@ -81,7 +81,7 @@ public class StoreScpService extends AbstractScpService {
             UIDs.RTTreatmentSummaryRecordStorage, UIDs.RawDataStorage};
 
     private ObjectName fileSystemMgtName;
-
+    
     private boolean acceptStorageCommitment = true;
 
     private boolean acceptJPEGBaseline = true;
@@ -136,6 +136,22 @@ public class StoreScpService extends AbstractScpService {
         scp.setCoerceWarnCallingAETs(aets);
     }
 
+    public boolean isStoreDuplicateIfDiffHost() {
+        return scp.isStoreDuplicateIfDiffHost();
+    }
+    
+    public void setStoreDuplicateIfDiffHost(boolean storeDuplicate) {
+        scp.setStoreDuplicateIfDiffHost(storeDuplicate);
+    }
+
+    public boolean isStoreDuplicateIfDiffMD5() {
+        return scp.isStoreDuplicateIfDiffMD5();
+    }
+    
+    public void setStoreDuplicateIfDiffMD5(boolean storeDuplicate) {
+        scp.setStoreDuplicateIfDiffMD5(storeDuplicate);
+    }
+    
     public final String getCompressionRules() {
         return scp.getCompressionRules().toString();
     }

@@ -57,6 +57,29 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isStoreDuplicateIfDiffMD5"
+      setMethod="setStoreDuplicateIfDiffMD5">
+      <description>Store duplicate objects, if MD5 sum of new object differs
+      from MD5 sum of existing files.</description>
+      <name>StoreDuplicateIfDiffMD5</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isStoreDuplicateIfDiffHost"
+      setMethod="setStoreDuplicateIfDiffHost">
+      <description>Store duplicate objects, if existing files are NOT located 
+      on this host.
+      </description>
+      <name>StoreDuplicateIfDiffHost</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getCompressionRules"
       setMethod="setCompressionRules">
       <description>List of image compression rules.

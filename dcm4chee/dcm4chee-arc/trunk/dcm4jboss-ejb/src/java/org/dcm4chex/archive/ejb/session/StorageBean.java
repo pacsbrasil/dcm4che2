@@ -9,7 +9,6 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -36,7 +35,6 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
-import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
@@ -157,7 +155,7 @@ public abstract class StorageBean implements SessionBean {
             java.lang.String calledAET, org.dcm4che.data.Dataset ds,
             java.lang.String retrieveAET, java.lang.String dirpath,
             java.lang.String fileid, int size,
-            byte[] md5) throws DcmServiceException, DuplicateStorageException {
+            byte[] md5) throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
         final String cuid = fmi.getMediaStorageSOPClassUID();
@@ -168,7 +166,6 @@ public abstract class StorageBean implements SessionBean {
             InstanceLocal instance = null;
             try {
                 instance = instHome.findBySopIuid(iuid);
-                checkDuplicateStorage(instance, dirpath, md5);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
                 attrCoercions
@@ -191,26 +188,11 @@ public abstract class StorageBean implements SessionBean {
             instance.updateDerivedFields();
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
-        } catch (DuplicateStorageException e) {
-            log.warn("ignore attempt to store instance[uid=" + iuid
-                    + "] duplicated");
-            sessionCtx.setRollbackOnly();
-            throw e;
         } catch (Exception e) {
             log.error("inserting records for instance[uid=" + iuid
                     + "] failed:", e);
             sessionCtx.setRollbackOnly();
             throw new DcmServiceException(Status.ProcessingFailure);
-        }
-    }
-
-    private void checkDuplicateStorage(InstanceLocal instance, String dirPath,
-            byte[] md5) throws DuplicateStorageException {
-        Collection c = instance.getFiles();
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            FileLocal file = (FileLocal) it.next();
-            if (file.getFileSystem().getDirectoryPath().equals(dirPath)
-                    && Arrays.equals(file.getFileMd5(), md5)) { throw new DuplicateStorageException(); }
         }
     }
 

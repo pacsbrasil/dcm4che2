@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
@@ -50,10 +51,11 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
-import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -81,7 +83,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
     private final StoreScpService service;
-
+    
     private final Logger log;
 
     private int bufferSize = 512;
@@ -90,6 +92,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private int maxCountUpdateDatabaseRetries = 0;
 
+    private boolean storeDuplicateIfDiffMD5 = true;
+
+    private boolean storeDuplicateIfDiffHost = true;
+    
     private CompressionRules compressionRules = new CompressionRules("");
 
     private HashSet coerceWarnCallingAETs = new HashSet();
@@ -122,6 +128,22 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 .split(aets, '\\')));
     }
 
+    public final boolean isStoreDuplicateIfDiffHost() {
+        return storeDuplicateIfDiffHost;
+    }
+    
+    public final void setStoreDuplicateIfDiffHost(boolean storeDuplicate) {
+        this.storeDuplicateIfDiffHost = storeDuplicate;
+    }
+    
+    public final boolean isStoreDuplicateIfDiffMD5() {
+        return storeDuplicateIfDiffMD5;
+    }
+    
+    public final void setStoreDuplicateIfDiffMD5(boolean storeDuplicate) {
+        this.storeDuplicateIfDiffMD5 = storeDuplicate;
+    }
+    
     public final CompressionRules getCompressionRules() {
         return compressionRules;
     }
@@ -173,10 +195,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
+        String iuid = rqCmd.getAffectedSOPInstanceUID();
+        String cuid = rqCmd.getAffectedSOPClassUID();
         InputStream in = rq.getDataAsStream();
         Association assoc = activeAssoc.getAssociation();
         File file = null;
         try {
+            List duplicates = new QueryFilesCmd(iuid).execute();
+            if (!(duplicates.isEmpty() 
+                    || storeDuplicateIfDiffMD5
+                    || storeDuplicateIfDiffHost && !containsLocal(duplicates))) {
+                log.info("Received Instance[uid=" + iuid
+                        + "] already exists - ignored");
+                return;
+            }
+
             DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq
                     .getTransferSyntaxUID());
             Dataset ds = objFact.newDataset();
@@ -185,7 +218,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             parser.parseDataset(decParam, Tags.PixelData);
             service.logDataset("Dataset:\n", ds);
             checkDataset(rqCmd, ds);
-
+            
+            
             FileSystemInfo fsInfo = service.selectStorageFileSystem();
             if (fsInfo.getAvailable() < outOfResourcesThreshold)
                 throw new DcmServiceException(Status.OutOfResources);
@@ -202,34 +236,36 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             .getTransferSyntaxUID()));
 
             storeToFile(parser, ds, file, md);
-            try {
-                final int baseDirPathLength = baseDir.getPath().length();
-                final String filePath = file.getPath().substring(
-                        baseDirPathLength + 1).replace(File.separatorChar, '/');
-                Dataset coercedElements = updateDB(assoc, ds, fsInfo, filePath,
-                        file, md.digest());
-                if (coercedElements.isEmpty()
-                        || !coerceWarnCallingAETs.contains(assoc
-                                .getCallingAET())) {
-                    rspCmd.putUS(Tags.Status, Status.Success);
-                } else {
-                    int[] coercedTags = new int[coercedElements.size()];
-                    Iterator it = coercedElements.iterator();
-                    for (int i = 0; i < coercedTags.length; i++) {
-                        coercedTags[i] = ((DcmElement) it.next()).tag();
-                    }
-                    rspCmd.putAT(Tags.OffendingElement, coercedTags);
-                    rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
-                    ds.putAll(coercedElements);
-                }
-                updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
-                updateInstancesStored(assoc, ds);
-            } catch (DuplicateStorageException e) {
-                log.warn("ignore attempt to store instance[uid="
-                        + rqCmd.getAffectedSOPInstanceUID() + "] in directory["
-                        + file.getParent() + "] duplicated");
+            
+            byte[] md5sum = md.digest();
+            if (ignoreDuplicate(duplicates, md5sum)) {
+                log.info("Received Instance[uid=" + iuid
+                        + "] already exists - ignored");
                 deleteFailedStorage(file);
+                return;
             }
+            
+            final int baseDirPathLength = baseDir.getPath().length();
+            final String filePath = file.getPath().substring(
+                    baseDirPathLength + 1).replace(File.separatorChar, '/');
+            Dataset coercedElements = updateDB(assoc, ds, fsInfo, filePath,
+                    file, md.digest());
+            if (coercedElements.isEmpty()
+                    || !coerceWarnCallingAETs.contains(assoc
+                            .getCallingAET())) {
+                rspCmd.putUS(Tags.Status, Status.Success);
+            } else {
+                int[] coercedTags = new int[coercedElements.size()];
+                Iterator it = coercedElements.iterator();
+                for (int i = 0; i < coercedTags.length; i++) {
+                    coercedTags[i] = ((DcmElement) it.next()).tag();
+                }
+                rspCmd.putAT(Tags.OffendingElement, coercedTags);
+                rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
+                ds.putAll(coercedElements);
+            }
+            updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
+            updateInstancesStored(assoc, ds);
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             deleteFailedStorage(file);
@@ -239,6 +275,29 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             deleteFailedStorage(file);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+
+    private boolean containsLocal(List duplicates) {
+        for (int i = 0, n = duplicates.size(); i < n; ++i) {
+            FileDTO dto = (FileDTO) duplicates.get(i);
+            if (service.isLocalFileSystem(dto.getDirectoryPath()))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean ignoreDuplicate(List duplicates, byte[] md5sum) {
+        for (int i = 0, n = duplicates.size(); i < n; ++i) {
+            FileDTO dto = (FileDTO) duplicates.get(i);
+            if (storeDuplicateIfDiffMD5
+                    && !Arrays.equals(md5sum, dto.getFileMd5()))
+                continue;
+            if (storeDuplicateIfDiffHost
+                    && !service.isLocalFileSystem(dto.getDirectoryPath()))
+                continue;
+            return true;
+        }
+        return false;
     }
 
     private void deleteFailedStorage(File file) {
@@ -255,7 +314,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private Dataset updateDB(Association assoc, Dataset ds,
             FileSystemInfo fsInfo, String filePath, File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
-            DuplicateStorageException, IOException {
+            IOException {
         Storage storage = getStorageHome().create();
         try {
 	        int retry = 0;
@@ -267,8 +326,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		                        fsInfo.getRetrieveAET(), fsInfo.getPath(),
 		                        filePath, (int) file.length(), md5);
 	                }
-	            } catch (DuplicateStorageException e) {
-	                throw e;
 	            } catch (Exception e) {
 	                ++retry;
 	                if (retry > updateDatabaseMaxRetries) {

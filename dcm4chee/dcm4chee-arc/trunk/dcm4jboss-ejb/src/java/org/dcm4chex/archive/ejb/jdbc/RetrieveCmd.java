@@ -112,15 +112,6 @@ public class RetrieveCmd extends BaseCmd {
         return new RetrieveCmd(sqlBuilder.getSql());
     }
 
-    public static RetrieveCmd create(String iuid)
-            throws SQLException {
-        SqlBuilder sqlBuilder = newSqlBuilder();
-
-        sqlBuilder.addSingleValueMatch("Instance.sopIuid", SqlBuilder.TYPE1,
-                iuid);
-        return new RetrieveCmd(sqlBuilder.getSql());
-    }
-
     private final String sql;
 
     protected RetrieveCmd(String sql) throws SQLException {
