@@ -1,24 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE server>
 <!-- $Id$ -->
-
 <server>
-
-<classpath codebase="lib" archives="dcm4jboss.jar"/>
-
-<mbean code="org.dcm4chex.service.MWLFindScpService" 
-	name="dcm4chex:service=MWLFindScp,aet=MWL_SCP">
-
-    <depends optional-attribute-name="DcmServerName">
-    	dcm4chex:service=DcmServer,name=DCMSRV
+  <classpath codebase="lib" archives="dcm4jboss.jar"/>
+  <mbean code="org.dcm4chex.archive.dcm.mwlscp.MWLFindScpService" 
+	     name="dcm4chex:service=MWLFindScp"
+	     xmbean-dd="xmdesc/dcm4jboss-mwlscp-xmbean.xml">
+    <depends>
+      dcm4chex:service=DcmServer
     </depends>
-    
-    <attribute name="DataSource">java:/DefaultDS</attribute>    
-    
-    <attribute name="CallingAETs">__any__</attribute>
-
-    <attribute name="TransferSyntaxes">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
-</mbean>
-
+  </mbean>
 </server>
-
