@@ -53,6 +53,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     protected String perform() throws Exception {
         try {
             FolderForm folderForm = (FolderForm) getForm();
+    		folderForm.setErrorCode( FolderForm.NO_ERROR );//reset error code
             setSticky(folderForm.getStickyPatients(), "stickyPat");
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
             setSticky(folderForm.getStickySeries(), "stickySeries");
@@ -414,6 +415,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	    		}
 	    		ret = FOLDER;
     		} catch ( Exception x ) {
+        		folderForm.setErrorCode( FolderForm.ERROR_MOVE );
     			System.err.println("Exception:"+x);
     			x.printStackTrace(System.err);
     			
@@ -432,7 +434,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
     		}
     	} else {
     		ret = FOLDER;
-    		folderForm.setErrorCode( FolderForm.ERROR_MOVE );
     	}
 		return ret;
     }
@@ -596,29 +597,72 @@ public class FolderSubmitCtrl extends FolderCtrl {
        	int iStickySer = folderForm.getStickySeries().size();
        	int iStickyInst = folderForm.getStickyInstances().size();
        	if ( iStickyPat > 0 ) {
-       		if ( iStickyPat > 1 || iStickyStu < 1 || iStickySer > 0 || iStickyInst > 0 ) {
+       		if ( !checkSticky( iStickyPat, iStickyStu, iStickySer, iStickyInst, MOVE_STUDIES ) ){
        			return MOVE_ERROR;
        		}
-        	if ( checkStickyPlacement( folderForm.getStickyPatients(), folderForm.getStickyStudies(), 0 ) ) {
+        	if ( checkStickyPlacement( folderForm.getStickyPatients(), folderForm.getStickyStudies(), 0, MOVE_STUDIES ) ) {
         		return MOVE_STUDIES;
        		}
        	} else if ( iStickyStu > 0 ) {
-       		if ( iStickyStu > 1 || iStickySer < 1 || iStickyInst > 0 ) {
+       		if ( !checkSticky( iStickyStu, iStickySer, iStickyInst, 0, MOVE_SERIES ) ) {
        			return MOVE_ERROR;
        		}
-        	if ( this.checkStickyPlacement( folderForm.getStickyStudies(), folderForm.getStickySeries(), 1 ) ) {
+        	if ( this.checkStickyPlacement( folderForm.getStickyStudies(), folderForm.getStickySeries(), 1, MOVE_SERIES ) ) {
         		return MOVE_SERIES;	
         	}
        	} else if ( iStickySer > 0 ) {
-       		if ( iStickySer > 1 || iStickyInst < 1 ) {
+       		if ( !checkSticky( iStickySer, iStickyInst, 0, 0, MOVE_INSTANCES ) ) {
        			return MOVE_ERROR;
        		}
-        	if ( checkStickyPlacement( folderForm.getStickySeries(), folderForm.getStickyInstances(), 2 ) ) {
+        	if ( checkStickyPlacement( folderForm.getStickySeries(), folderForm.getStickyInstances(), 2, MOVE_INSTANCES ) ) {
         		return MOVE_INSTANCES;
         	}
+       	} else {
+       		folderForm.setErrorCode( FolderForm.ERROR_MOVE_NO_SELECTION );
        	}
    		return MOVE_ERROR; //nothing selected
     }
+	
+	/**
+	 * Checks the numbers of selected stickies.
+	 * <p>
+	 * This method checks if only one destination, one ore more sources and no other stickies are set.
+	 * <p>
+	 * If one of the following rules are not fullfilled, a corresponding error code is set in FolderForms.
+	 * <DL>
+	 * <DT>Rule:</DT>
+	 * <DD>  iDest must be 1</DD>
+	 * <DD>  iSource must be greater than 0</DD>
+	 * <DD>  iOther1 and iOther2 must be 0</DD>
+	 * </DL>
+	 * 
+	 * @param iDest		Number of selected destinations
+	 * @param iSource	Number of selected sources
+	 * @param iOther1	Number of selected 
+	 * @param iOther2
+	 * 
+	 * @return true if check is OK, false if otherwise.
+	 */
+	private boolean checkSticky( int iDest, int iSource, int iOther1, int iOther2, int moveMode ) {
+    	FolderForm folderForm = (FolderForm) getForm();
+		if ( iDest > 1) {
+			folderForm.setErrorCode( FolderForm.ERROR_MOVE_TO_MANY_DEST );
+			return false;
+		} else if ( iSource < 1 ) {
+			folderForm.setErrorCode( FolderForm.ERROR_MOVE_NO_SOURCE );
+			return false;
+		} else if ( iOther1 > 0 || iOther2 > 0 ) {
+			switch ( moveMode ) {
+				case MOVE_STUDIES:
+					folderForm.setErrorCode( FolderForm.ERROR_MOVE_UNSELECT_SERIES );//Wrong: series and/or instances are selected!
+					break;
+				case MOVE_SERIES:
+					folderForm.setErrorCode( FolderForm.ERROR_MOVE_UNSELECT_INSTANCES );//Wrong: instances are selected!
+			}
+			return false;
+		}
+		return true;
+	}
     
 	/**
 	 * Returns the tree nodes for a given pk.
@@ -679,24 +723,36 @@ public class FolderSubmitCtrl extends FolderCtrl {
      * 1) the destination must be different to the source parent.<br>
      * 2) all source models must have the same parent.<br>
      * 3) the destination and the source parent must have the same parent.<br>
+     * <p>
+     * If one of the checks failed a corresponding error code is set in FolderForms.
      * 
      * @param stickyParent Sticky information of the parent (the destination).
      * @param stickyChilds Sticky information of the childs (the source).
      * @param depth Tree depth (where is the destination) (use 0 for Patient,1 for Study,2 for Series)
      * @return
      */
-    private boolean checkStickyPlacement( Set stickyParent, Set stickyChilds, int depth ) {
+    private boolean checkStickyPlacement( Set stickyParent, Set stickyChilds, int depth, int moveMode ) {
 		FolderForm folderForm = (FolderForm) getForm();
   		List listParent, listChilds;
 		listParent = findModelPath( folderForm.getPatients(), (String)stickyParent.iterator().next(), depth );
 		listChilds = findModelPath( folderForm.getPatients(), (String)stickyChilds.iterator().next(), depth+1 );
 		int listParentSize = listParent.size();
 		if ( listParent.get(listParentSize-1).equals( listChilds.get(listChilds.size()-2) ) ) {
+			if ( moveMode == MOVE_STUDIES)
+				folderForm.setErrorCode( FolderForm.ERROR_MOVE_SAME_PATIENT );
+			else if ( moveMode == MOVE_SERIES)
+				folderForm.setErrorCode( FolderForm.ERROR_MOVE_SAME_STUDY );
+			else if ( moveMode == MOVE_INSTANCES)
+				folderForm.setErrorCode( FolderForm.ERROR_MOVE_SAME_SERIES );
 			return false; //same parent;
 		}
 		listParentSize -= 1;
 		for ( int i = 0 ; i < listParentSize ; i++ ) {
 			if ( !listParent.get(i).equals( listChilds.get(i) ) ) {
+				if ( moveMode == MOVE_SERIES)
+					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_PATIENT );
+				else if ( moveMode == MOVE_INSTANCES)
+					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_STUDY );
 				return false; //different parent(s) from parent;
 			}
 			
@@ -706,6 +762,12 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		iter.next(); //skip first element (is used for listChilds)
 		while ( iter.hasNext() ) {
 			if ( !model.containsPK( Integer.parseInt( iter.next().toString() ) ) ) {
+				if ( moveMode == MOVE_STUDIES)
+					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_STUDY_PARENT );
+				else if ( moveMode == MOVE_SERIES)
+					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_SERIES_PARENT );
+				else if ( moveMode == MOVE_INSTANCES)
+					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_INSTANCE_PARENT );
 				return false; //this child has not the same parent as first child element
 			}
 		}
