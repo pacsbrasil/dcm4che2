@@ -24,7 +24,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -40,7 +39,6 @@ import org.dcm4chex.archive.ejb.interfaces.DTO2Dataset;
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
  * 
@@ -98,11 +96,7 @@ public abstract class PatientUpdateBean implements SessionBean {
 
         PatientLocal dominantPat = updateOrCreate(dominantDTO);
         PatientLocal priorPat = updateOrCreate(priorDTO);
-        Collection studies = priorPat.getStudies();
-        for (Iterator iter = studies.iterator(); iter.hasNext();) {
-            StudyLocal study = (StudyLocal) iter.next();
-            study.setPatient(dominantPat);
-        }        
+        dominantPat.getStudies().addAll(priorPat.getStudies());
         priorPat.setMergedWith(dominantPat);
     }
 
