@@ -28,8 +28,8 @@
 		Clearly, its better to have TNS set up properly.
 	 -->
     <driver-class>oracle.jdbc.driver.OracleDriver</driver-class>
-    <user-name>pacsdb</user-name>
-    <password>pacsdb</password>
+    <user-name>pacs</user-name>
+    <password>pacs</password>
     <!-- Uses the pingDatabase method to check a connection is still valid before handing it out from the pool -->
     <!--valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.OracleValidConnectionChecker</valid-connection-checker-class-name-->
     <!-- Checks the Oracle error codes and messages for fatal errors -->
