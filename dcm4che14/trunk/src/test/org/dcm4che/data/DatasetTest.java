@@ -190,41 +190,51 @@ public class DatasetTest extends TestCase {
         ds.putUS(Tags.RefFrameNumbers, REF_FRAME_NUMBER);
         ds.putUT(Tags.TextValue, TEXT_VALUE);
     }
-    
+        
     public void testGetString() throws Exception {
         setStrings();
-        assertEquals(SCHEDULED_STATION_AET[0],
-                ds.getString(Tags.ScheduledStationAET));
-        assertEquals(PATIENT_AGE[0], ds.getString(Tags.PatientAge));
-        assertEquals(IMAGE_TYPE[0], ds.getString(Tags.ImageType));
-        assertEquals(STUDY_DATE[0], ds.getString(Tags.StudyDate));
+        Dataset ds2 = DcmObjectFactory.getInstance().newDataset();
+        ds2.putAll(ds);
+        ds = ds2;
+        assertEquals(SCHEDULED_STATION_AET, ds, Tags.ScheduledStationAET);
+        assertEquals(PATIENT_AGE, ds, Tags.PatientAge);
+        assertEquals(IMAGE_TYPE, ds, Tags.ImageType);
+        assertEquals(STUDY_DATE, ds, Tags.StudyDate);
         assertEquals(STUDY_TIME[0], ds.getString(Tags.StudyTime).substring(0,6));
-        assertEquals(ACQUISITION_DATETIME[0],
-                ds.getString(Tags.AcquisitionDatetime));
-        assertEquals(IMAGE_POSITION[0], ds.getString(Tags.ImagePosition));
-        assertEquals(ANCHOR_POINT[0], ds.getString(Tags.AnchorPoint));
-        assertEquals(TABLE_OF_Y_BREAK_POINTS[0],
-                ds.getString(Tags.TableOfYBreakPoints));
-        assertEquals(REF_FRAME_NUMBER[0], ds.getString(Tags.RefFrameNumber));
-        assertEquals(OTHER_PATIENT_IDS[0], ds.getString(Tags.OtherPatientIDs));
-        assertEquals(ADDITIONAL_PATIENT_HISTORY[0],
-                ds.getString(Tags.AdditionalPatientHistory));
-        assertEquals(OTHER_PATIENT_NAMES[0],
-                ds.getString(Tags.OtherPatientNames));
-        assertEquals(ACCESSION_NUMBER[0], ds.getString(Tags.AccessionNumber));
-        assertEquals(DISPLAYED_AREA_BRHC[0],
-                ds.getString(Tags.DisplayedAreaBottomRightHandCorner));
-        assertEquals(OVERLAY_ORIGIN[0], ds.getString(Tags.OverlayOrigin));
-        assertEquals(DERIVATION_DESCRIPTION[0],
-                ds.getString(Tags.DerivationDescription));
-        assertEquals(SOP_CLASSES_SUPPORTED[0],
-                ds.getString(Tags.SOPClassesSupported));
-        assertEquals(REF_SAMPLE_POSITIONS[0],
-                ds.getString(Tags.RefSamplePositions));
-        assertEquals(REF_FRAME_NUMBER[0], ds.getString(Tags.RefFrameNumbers));
-        assertEquals(TEXT_VALUE[0], ds.getString(Tags.TextValue));
+        assertEquals(ACQUISITION_DATETIME,
+                ds, Tags.AcquisitionDatetime);
+        assertEquals(IMAGE_POSITION, ds, Tags.ImagePosition);
+        assertEquals(ANCHOR_POINT, ds, Tags.AnchorPoint);
+        assertEquals(TABLE_OF_Y_BREAK_POINTS,
+                ds, Tags.TableOfYBreakPoints);
+        assertEquals(REF_FRAME_NUMBER, ds, Tags.RefFrameNumber);
+        assertEquals(OTHER_PATIENT_IDS, ds, Tags.OtherPatientIDs);
+        assertEquals(ADDITIONAL_PATIENT_HISTORY,
+                ds, Tags.AdditionalPatientHistory);
+        assertEquals(OTHER_PATIENT_NAMES,
+                ds, Tags.OtherPatientNames);
+        assertEquals(ACCESSION_NUMBER, ds, Tags.AccessionNumber);
+        assertEquals(DISPLAYED_AREA_BRHC,
+                ds, Tags.DisplayedAreaBottomRightHandCorner);
+        assertEquals(OVERLAY_ORIGIN, ds, Tags.OverlayOrigin);
+        assertEquals(DERIVATION_DESCRIPTION,
+                ds, Tags.DerivationDescription);
+        assertEquals(SOP_CLASSES_SUPPORTED,
+                ds, Tags.SOPClassesSupported);
+        assertEquals(REF_SAMPLE_POSITIONS,
+                ds, Tags.RefSamplePositions);
+        assertEquals(REF_FRAME_NUMBER, ds, Tags.RefFrameNumbers);
+        assertEquals(TEXT_VALUE, ds, Tags.TextValue);
     }
     
+    private void assertEquals(String[] expected, Dataset ds, int tag)
+    throws DcmValueException {
+       assertEquals(expected.length, ds.vm(tag));
+       for (int i = 0; i < expected.length; ++i) {
+         assertEquals(expected[i], ds.getString(tag, i));
+       }
+    }
+
     public void testGetStrings() throws Exception {
         setStrings();
         assertEquals(SCHEDULED_STATION_AET,

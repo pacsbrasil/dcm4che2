@@ -1,742 +1,348 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE project-module [ <!ENTITY config SYSTEM "file:./config.xml"> ]>
+<?xml version="1.0"?>
 
-<!-- ====================================================================== -->
-<!--                                                                        -->
-<!--  Copyright (c) 1998-2000 by Jason Dillon <jason@planet57.com>          -->
-<!--  Copyright (c) 2001 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>  -->
-<!--                                                                        -->
-<!--  This file is part of dcm4che; a DICOM implementation in Java.         -->
-<!--                                                                        -->
-<!--  This library is free software; you can redistribute it and/or modify  -->
-<!--  it under the terms of the GNU Lesser General Public License as        -->
-<!--  published by the Free Software Foundation; either version 2 of the    -->
-<!--  License, or (at your option) any later version.                       -->
-<!--                                                                        -->
-<!--  This library is distributed in the hope that it will be useful, but   -->
-<!--  WITHOUT ANY WARRANTY; without even the implied warranty of            -->
-<!--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     -->
-<!--  Lesser General Public License for more details.                       -->
-<!--                                                                        -->
-<!-- ====================================================================== -->
-
-<!-- $Id$ -->
-
-<project default="main">
-
-  <!-- ================================================================== -->
-  <!-- Basic module configuration                                         -->
-  <!-- ================================================================== -->
-
-  <!--
-     |  Give users a chance to use a different Buildmagic.
-    -->
-  <property file="${user.home}/.buildmagic.properties"/>
-
-  <!-- 
-     |  Load Buildmagic Ant extentions. 
-    -->
-  <property name="planet57.buildmagic.root" value="${basedir}/../tools/planet57/buildmagic"/>
-  <property name="planet57.buildmagic.lib" value="${planet57.buildmagic.root}/lib"/>
-  <path id="planet57.buildmagic.classpath">
-    <fileset dir="${planet57.buildmagic.lib}">
-      <include name="**/*.jar"/>
-    </fileset>
-  </path>
-  <taskdef name="taskdef" classname="planet57.tools.buildmagic.task.Taskdef"
-	   classpathref="planet57.buildmagic.classpath"/>
-  <taskdef classpathref="planet57.buildmagic.classpath"
-	   resource="planet57/tools/buildmagic/task/autoload.properties"/>
-
-  <!--
-     |  Setup the basic module roots.
-     |
-     |  module.root     - Should be the directory this file is in
-     |  project.root    - Where the project root directory is
-     |  project.config  - Where the project configuration files live
-   -->
-  <property name="module.root" value="${basedir}"/>
-  <property name="project.root">
-    <findroot basedir="." suffix="build/build.xml"/>
-  </property>
-  <property name="project.config" value="${project.root}/build"/>
-
-  <!-- 
-     |  Include user, project and module property overrides.
-     |
-     |  override.properties     - Used rarely (ignore)
-     |  .buildmagic.properties  - Provide Buildmagic specific properties
-     |  .ant.properties         - Ant properties
-     |  local.properties        - User local module properties
-     |  config.properties       - Used rarely (ignore)
-    -->
-  <property file="${project.config}/override.properties"/>
-  <property file="${module.root}/override.properties"/>
-  <property file="${user.home}/.buildmagic.properties"/>
-  <property file="${user.home}/.ant.properties"/>
-  <property file="${module.root}/local.properties"/>
-  <property file="${project.config}/local.properties"/>
-  <property file="${module.root}/config.properties"/>
-  <property file="${moudle.parent.config}/config.properties"/>
-
-  <!-- 
-     |  Setup the basic environment for a source module.
-     |
-     |  module.source    - The module source root
-     |  module.output    - The root where build output will be placed
-     |  module.build     - Where released files will be placed
-     |  module.release   - Where released files will be placed
-     |  tools.root       - Where to build support tools live
-     |  thirdparty.root  - Where to thirdparty libraries live
-    -->
-  <property name="module.source" value="${module.root}/src"/>
-  <property name="module.output" value="${module.root}/output"/>
-  <property name="module.build" value="${module.output}"/>
-  <property name="module.release" value="${module.output}"/>
-  <property name="tools.root" value="${project.root}/tools"/>
-  <property name="thirdparty.root" value="${project.root}/thirdparty"/>
-
-  <!-- 
-     |  Load project configuration.
-     |
-     |  config.xml  - Define most configuration elements here (required).
-    -->
-  &config;
-
-  
-  <!-- ================================================================== -->
-  <!-- Initialize, Configure and Bootstrap the build system               -->
-  <!-- ================================================================== -->
-
-  <!-- 
-     |  Bootstrap all required extensions.
-     |
-     |  Build local Ant extensions here if they are required.
-     |
-     |  This target will not run once the bootstraped-already is set.
-    -->
-  <target name="bootstrap" 
-	  depends="bootstrap-init" 
-	  unless="bootstraped-already">
-    <property name="bootstraped-already" value="true"/>
-  </target>
-
-  <!-- Fail if the required bootstrapping dependencies are missing -->
-  <target name="bootstrap-init" 
-	  depends="bootstrap-check" 
-	  unless="have-bootstrap-dependencies-already">
-    <echo>Missing some or all of the required dependencies.</echo>
-    <fail message="Can not continue."/>
-  </target>
-
-  <!-- Check for required libraries -->
-  <target name="bootstrap-check" unless="bootstraped-already">
-    <!-- Check for required extensions here -->
-    <property name="have-bootstrap-dependencies-already" value="true"/>
-  </target>
-
-  <!-- 
-     |  Configure the module build system.
-     |
-     |  o Updates/installs example files if they exist
-     |  o Invokes the 'configure-hook' target, which should be defined in 
-     |    config.xml.
-     |
-     |  This target will not run once the configured-already property is set.
-    -->
-  <target name="configure" 
-	  unless="configured-already"
-	  description="Configure the module build system.">
-    <property name="module.examples" value="${module.root}/etc"/>
-    <property name="module.examples.extension" value="-example"/>
-    <copy todir="${module.root}" filtering="yes">
-      <fileset dir="${module.examples}/">
-         <include name="**/*${module.examples.extension}"/>
+<project name="dcm4che" basedir="." default="main">
+   <!-- set global properties for this build -->
+   <property name="version.number" value="1.0.2"/>
+   <property name="src" value="src"/>
+   <property name="src.java" value="${src}/java"/>
+   <property name="src.etc" value="${src}/etc"/>
+   <property name="src.res" value="${src}/resources"/>
+   <property name="test" value="test"/>
+   <property name="test.java" value="${test}/java"/>
+   <property name="test.conf" value="${test}/conf"/>
+   <property name="samples" value="samples"/>
+   <property name="samples.java" value="${samples}/java"/>
+   <property name="samples.conf" value="${samples}/conf"/>
+   <property name="samples.res" value="${samples}/resources"/>
+   <property name="lib" value="lib"/>
+   <property name="doc" value="doc"/>
+   <property name="out" value="dcm4che-${version.number}"/>
+   <property name="lib_out" value="${out}/lib"/>
+   <property name="samples_out" value="${out}/samples"/>
+   <property name="doc_out" value="${out}/doc"/>
+   <property name="javadoc" value="${doc_out}/api"/>
+   <property name="reports" value="${out}/reports"/>
+   <property name="dcm4che_jar" value="${lib_out}/dcm4che.jar"/>
+   <property name="local_out" value="${out}/dcm4che"/>
+   <property name="build" value="${local_out}/classes"/>
+   <path id="build.classpath">
+      <fileset dir="${lib}">
+         <include name="**/*.jar"/>
       </fileset>
-      <mapper type="glob" from="*${module.examples.extension}" to="*"/>
-    </copy>
+   </path>
+   <path id="run.classpath">
+      <pathelement location="${build}"/>
+      <path refid="build.classpath"/>
+   </path>
+   <path id="test.classpath">
+      <pathelement location="${test.conf}"/>
+      <path refid="run.classpath"/>
+   </path>
 
-    <antcall target="configure-hook"/>
-    <property name="configured-already" value="true"/>
-  </target>
+   <target name="init">
+      <tstamp/>
+      <mkdir dir="${lib_out}"/>
+      <mkdir dir="${samples_out}"/>
+      <mkdir dir="${javadoc}"/>
+      <mkdir dir="${build}"/>
+      <mkdir dir="${reports}"/>
+   </target>
 
-  <!-- Disable execution of the configure target -->
-  <target name="disable-configure">
-    <property name="configured-already" value="true"/>
-  </target>
+   <target name="clean"
+           description="clean up" >
+      <delete file="${dcm4che_jar}"/>
+      <delete dir="${samples_out}"/>
+      <delete dir="${local_out}"/>
+      <delete dir="${reports}"/>
+   </target>
 
-  <!-- 
-     |  Initialize the build system.
-     |
-     |  o Sets the timestamp and build.number properties
-     |  o Installs property defaults
-     |  o Displays some module information
-     |  o Invokes to 'init-hook' target which should be defined in config.xml
-     |  o Resolves properties for psuedo late-binding
-     |  o Installs filters for each property
-     |
-     |  This target will not run once the initialized-already property is set.
-    -->
-  <target name="init" 
-	  depends="configure, bootstrap" 
-	  unless="initialized-already">
-    <tstamp>
-      <format property="build.number" pattern="yyyyMMddHHmm"/>
-    </tstamp>
-    <property name="build.id" value="${build.number}"/>
-    <property resource="planet57/tools/buildmagic/common.properties"/>
-    <property resource="planet57/tools/buildmagic/task.properties"/>
-    <moduleinfo/>
-    <call target="init-hook" unless="bypass-init-hook"/>
-    <resolver force="${buildmagic.resolveproperties.force}"/>
-    <propertyfilter all="${buildmagic.propertyfilter.all}"/>
-    <property name="initialized-already" value="true"/>
-  </target>
+   <target name="main" depends="package">
+   <!-- WRITEME -->
+   </target>
 
-  <!-- Disable execution of the init target -->
-  <target name="disable-init">
-    <property name="initialized-already" value="true"/>
-  </target>
+   <target name="all" depends="clean,test,publish">
+   <!-- WRITEME -->
+   </target>
 
-  <!-- Disable execution of the init-hook target -->
-  <target name="disable-init-hook">
-    <property name="bypass-init-hook" value="true"/>
-  </target>
+   <!-- Generate java source from XML via XSLT -->
+   <target name="xml2java" depends="init">
+      <mkdir dir="${src.java}/org/dcm4che/dict"/>
+      <style processor="trax"
+             style="${src.etc}/Tags.xsl"
+             in="${src.etc}/dictionary.xml"
+             out="${src.java}/org/dcm4che/dict/Tags.java"
+      />
 
+      <style processor="trax"
+             style="${src.etc}/VRMap.xsl"
+             in="${src.etc}/dictionary.xml"
+              out="${src.java}/org/dcm4che/dict/VRMap.java"
+      />
 
-  <!-- ================================================================== -->
-  <!-- Compile                                                            -->
-  <!-- ================================================================== -->
+      <style processor="trax"
+             style="${src.etc}/UIDs.xsl"
+             in="${src.etc}/dictionary.xml"
+             out="${src.java}/org/dcm4che/dict/UIDs.java"
+      />    
+   </target>
 
-  <!-- 
-     |  Compile everything.
-     |
-     |  This target should depend on other compile-* targets for each 
-     |  different type of compile that needs to be performed, short of
-     |  documentation compiles.
-    -->
-  <target name="compile" 
-	  depends="compile-xslt,compile-classes,compile-demo,compile-res"
-	  description="Compile all source files."/>
+   <target name="compile" depends="xml2java">
+      <javac srcdir="${src.java}"
+             destdir="${build}"
+             classpathref="build.classpath"/>
+      <javac srcdir="${samples.java}"
+             destdir="${build}"
+             classpathref="build.classpath"/>
+      <javac srcdir="${test.java}"
+             destdir="${build}"
+             classpathref="build.classpath"/>
+   </target>
 
-  <!-- Generate source from XML -->
-  <target name="compile-xslt" depends="init">
-    <style processor="trax"
-        style="${source.etc}/Tags.xsl"
-        in="${source.etc}/dictionary.xml"
-        out="${source.java}/org/dcm4che/dict/Tags.java"
-    />
-
-    <style processor="trax"
-        style="${source.etc}/VRMap.xsl"
-        in="${source.etc}/dictionary.xml"
-        out="${source.java}/org/dcm4che/dict/VRMap.java"
-    />
-
-    <style processor="trax"
-        style="${source.etc}/UIDs.xsl"
-        in="${source.etc}/dictionary.xml"
-        out="${source.java}/org/dcm4che/dict/UIDs.java"
-    />
-  </target>
-  
-  <!-- Compile all class files -->
-  <target name="compile-classes" depends="compile-xslt">
-    <!-- property name="cp" refid="javac.classpath"/ -->
-    <!-- echo message="Classpath is ${cp}"/ -->
-    
-    <mkdir dir="${build.classes}"/>
-    <javac destdir="${build.classes}"
-           optimize="${javac.optimize}"
-	   target="${javac.target}"
-           debug="${javac.debug}"
-	   depend="${javac.depend}"
-	   verbose="${javac.verbose}"
-	   deprecation="${javac.deprecation}"
-	   includeAntRuntime="${javac.include.ant.runtime}"
-	   includeJavaRuntime="${javac.include.java.runtime}"
-	   failonerror="${javac.fail.onerror}">
-       <src path="${source.java}"/>
-       <classpath refid="javac.classpath"/>
-       <include name="${javac.includes}"/>
-       <exclude name="${javac.excludes}"/>
-    </javac>
-  </target>
-
-  <!-- Compile all class files -->
-  <target name="compile-demo" depends="compile-classes">
-    <!-- property name="cp" refid="javac.classpath"/ -->
-    <!-- echo message="Classpath is ${cp}"/ -->
-    
-    <mkdir dir="${build.classes}"/>
-    <javac destdir="${build.classes}"
-           optimize="${javac.optimize}"
-	   target="${javac.target}"
-           debug="${javac.debug}"
-	   depend="${javac.depend}"
-	   verbose="${javac.verbose}"
-	   deprecation="${javac.deprecation}"
-	   includeAntRuntime="${javac.include.ant.runtime}"
-	   includeJavaRuntime="${javac.include.java.runtime}"
-	   failonerror="${javac.fail.onerror}">
-       <src path="${source.demo}/data"/>
-       <src path="${source.demo}/imageio"/>
-       <src path="${source.demo}/imgdisp"/>
-       <src path="${source.demo}/media"/>
-       <src path="${source.demo}/net"/>
-       <src path="${source.demo}/syslog"/>
-       <classpath refid="javac.classpath"/>
-       <include name="${javac.includes}"/>
-       <exclude name="${javac.excludes}"/>
-    </javac>
-  </target>
-
-  <target name="res-check" depends="init">
-    <uptodate property="res-generated-already"
-	      targetfile="${source.res}/org/dcm4cheri/dict/TagDictionary.ser">
-      <srcfiles dir="${source.etc}" includes="dictionary.xml"/>
-    </uptodate>
-  </target>	      
-
-  <!-- Compile resource files if necessary -->
-  <target name="compile-res" 
-	  depends="res-check,compile-classes" 
-	  unless="res-generated-already"> 
-    
-    <java classname="org.dcm4cheri.dict.DictionaryFactoryImpl" fork="yes">
-       <classpath>
-         <pathelement location="${build.classes}"/>
-         <pathelement path="${java.class.path}"/>
-       </classpath>
-       <arg value="${source.etc}/dictionary.xml"/>
-       <arg value="${source.res}"/>
-    </java>
-  </target>
+   <target name="check-res" depends="compile">
+      <uptodate property="uptodate-res"
+	             targetfile="${src.res}/org/dcm4cheri/dict/TagDictionary.ser">
+         <srcfiles dir="${src.etc}" includes="dictionary.xml"/>
+      </uptodate>
+   </target>
+   
+   <!-- Compile resource files if necessary -->
+   <target name="compile-res" depends="check-res" unless="uptodate-res"> 
+      <mkdir dir="${src.res}/org/dcm4cheri/dict"/>
+      <java classname="org.dcm4cheri.dict.DictionaryFactoryImpl"
+            classpathref="run.classpath"
+            fork="yes">
+         <arg value="${src.etc}/dictionary.xml"/>
+         <arg value="${src.res}"/>
+      </java>
+   </target>
       
-  <!-- ================================================================== -->
-  <!-- Build Jars                                                         -->
-  <!-- ================================================================== -->
+   <target name="prepare-res" depends="compile-res">
+      <filter token="VERSIONNAME" value="DCM4CHE${DSTAMP}"/>
+      <filter token="VERSION" value="${version.number}"/>
+      <filter token="TODAY" value="${TODAY}"/>
+      <copy todir="${build}" filtering="true">
+         <fileset dir="${src.res}"
+                  includes="**/*.mf,**/*.properties"/>
+         <fileset dir="${samples.res}"
+                  includes="**/*.mf,**/*.properties"/>
+      </copy>
+      <copy todir="${build}">
+         <fileset dir="${src.res}"
+                  excludes="*/*.nbattrs,**/*.mf,**/*.properties"/>
+         <fileset dir="${samples.res}"
+                  excludes="*/*.nbattrs,**/*.mf,**/*.properties"/>
+      </copy>
+   </target>
+   
+   <target name="test" depends="compile,prepare-res">
+      <junit printsummary="true" fork="yes" dir="${test.conf}">
+         <classpath refid="test.classpath"/>
+         <formatter type="xml" />
+         <test name="org.dcm4che.data.DcmParserTest" todir="${reports}"/>
+         <test name="org.dcm4che.data.DatasetTest" todir="${reports}"/>
+         <test name="org.dcm4che.data.DatasetSerializerTest" todir="${reports}"/>
 
-  <!-- 
-     |  Build all jar files.
-    -->
-  <target name="jars" depends="compile" description="Builds all jar files.">
-    <mkdir dir="${build.jars}"/>
-    <mkdir dir="${build.jars}/demo"/>
+         <test name="org.dcm4che.dict.TagDictionaryTest" todir="${reports}"/>
+                  
+         <test name="org.dcm4che.media.DirReaderTest" todir="${reports}"/>
+         <test name="org.dcm4che.media.DirWriterTest" todir="${reports}"/>
+         <test name="org.dcm4che.media.DirBuilderTest" todir="${reports}"/>
 
-    <!-- Build dcm4che.jar -->
-    <copy todir="${module.build}" filtering="yes"
-          file="${source.etc}/dcm4che.mf"/>
-    <jar jarfile="${build.jars}/dcm4che.jar"
-         manifest="${module.build}/dcm4che.mf">
-      <fileset dir="${source.res}">
-        <exclude name="**/#*"/>
-        <exclude name="**/.*"/>
-        <exclude name="**/*~"/>
-        <exclude name="**/CVS/**"/>
-      </fileset>
-      <fileset dir="${build.classes}">
-        <include name="org/**"/>
-      </fileset>
-    </jar>
+         <test name="org.dcm4che.net.AAssociateRQTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AAssociateACTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AAssociateRJTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.PDataTFTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AReleaseRPTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AReleaseRQTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AAbortTest" todir="${reports}"/>
+         
+         <test name="org.dcm4che.srom.SRDocumentFactoryTest" todir="${reports}"/>         
+      </junit>
+      <junitreport todir="${reports}">
+         <fileset dir="${reports}" includes="TEST-*.xml"/>
+         <report format="frames" todir="${reports}/html"/>
+      </junitreport>
+   </target>
+   
+   <target name="package" depends="compile,prepare-res">
+      <jar jarfile="${dcm4che_jar}"
+           basedir="${build}"
+           includes="org/dcm4che*/**,META-INF/services/**"
+           excludes="**/*Test*"
+           manifest="${build}/META-INF/dcm4che.mf"/>
 
-    <!-- Build dcm2xml.jar -->
-    <jar jarfile="${build.jars}/demo/dcm2xml.jar"
-         manifest="${source.demo}/data/dcm2xml.mf">
-      <fileset dir="${source.demo}/data">
-        <include name="resources/Xml2Txt.xsl"/>
-      </fileset>
-      <fileset dir="${build.classes}">
-        <include name="Dcm2Xml.class"/>
-      </fileset>
-    </jar>
+      <copy todir="${lib_out}">
+         <fileset dir="${lib}" includes="log4j.jar"/>
+      </copy>
 
-    <!-- Build xml2dcm.jar -->
-    <jar jarfile="${build.jars}/demo/xml2dcm.jar"
-         manifest="${source.demo}/data/xml2dcm.mf"
-         basedir="${build.classes}"
-         includes="Xml2Dcm.class"/>
+      <jar jarfile="${samples_out}/acr2dcm.jar"
+           basedir="${build}"
+           includes="Acr2Dcm*"
+           manifest="${build}/META-INF/dcm4che.mf"/>
 
-    <!-- Build acr2dcm.jar -->
-    <jar jarfile="${build.jars}/demo/acr2dcm.jar"
-         manifest="${source.demo}/data/acr2dcm.mf"
-         basedir="${build.classes}"
-         includes="Acr2Dcm.class"/>
+      <jar jarfile="${samples_out}/dcm2jpg.jar"
+           basedir="${build}"
+           includes="Dcm2Jpg*"
+           manifest="${build}/META-INF/dcm2jpg.mf"/>
 
-    <!-- Build dcmdir.jar -->
-    <jar jarfile="${build.jars}/demo/dcmdir.jar"
-         manifest="${source.demo}/media/dcmdir.mf">
-      <fileset dir="${source.demo}/media">
-        <include name="resources/DcmDir.xsl"/>
-        <include name="resources/DcmDir.properties"/>
-      </fileset>
-      <fileset dir="${build.classes}">
-        <include name="DcmDir.class"/>
-      </fileset>
-    </jar>
+      <jar jarfile="${samples_out}/dcm2xml.jar"
+           basedir="${build}"
+           includes="Dcm2Xml*"
+           manifest="${build}/META-INF/dcm2xml.mf"/>
 
-    <!-- Build dcmsnd.jar -->
-    <jar jarfile="${build.jars}/demo/dcmsnd.jar"
-         manifest="${source.demo}/net/dcmsnd.mf">
-      <fileset dir="${build.classes}">
-        <include name="DcmSnd*.class"/>
-        <include name="Configuration.class"/>
-      </fileset>
-      <fileset dir="${source.demo}/net">
-        <include name="resources/DcmSnd.properties"/>
-      </fileset>
-    </jar>
+      <jar jarfile="${samples_out}/xml2dcm.jar"
+           basedir="${build}"
+           includes="Xml2Dcm*"
+           manifest="${build}/META-INF/xml2dcm.mf"/>
 
-    <!-- Build mppssnd.jar -->
-    <jar jarfile="${build.jars}/demo/mppssnd.jar"
-         manifest="${source.demo}/net/mppssnd.mf">
-      <fileset dir="${build.classes}">
-        <include name="MppsSnd*.class"/>
-        <include name="Configuration.class"/>
-      </fileset>
-      <fileset dir="${source.demo}/net">
-        <include name="resources/MppsSnd.properties"/>
-      </fileset>
-    </jar>
+      <jar jarfile="${samples_out}/dcmdir.jar"
+           basedir="${build}"
+           includes="DcmDir*"
+           manifest="${build}/META-INF/dcmdir.mf"/>
 
-    <!-- Build dcmrcv.jar -->
-    <jar jarfile="${build.jars}/demo/dcmrcv.jar"
-         manifest="${source.demo}/net/dcmrcv.mf">
-      <fileset dir="${build.classes}">
-        <include name="DcmRcv*.class"/>
-        <include name="Configuration.class"/>
-     </fileset>
-      <fileset dir="${source.demo}/net">
-        <include name="resources/DcmRcv.properties"/>
-      </fileset>
-    </jar>
+      <jar jarfile="${samples_out}/dcmrcv.jar"
+           basedir="${build}"
+           includes="DcmRcv*,Configuration*"
+           manifest="${build}/META-INF/dcmrcv.mf"/>
 
-    <!-- Build imgdump.jar -->
-    <jar jarfile="${build.jars}/demo/imgdump.jar"
-         manifest="${source.demo}/imageio/imgdump.mf">
-      <fileset dir="${source.demo}/imageio">
-        <include name="resources/DcmImageReader.properties"/>
-        <include name="resources/SimpleDcmMetadata.xml"/>
-        <include name="resources/SimpleDcmMetadata.xsl"/>
-      </fileset>
-      <fileset dir="${build.classes}">
-        <include name="ImageDumper.class"/>
-        <include name="de/iftm/dcm4che/imageio/plugins/SimpleDcmMetadataFormat.class"/>
-      </fileset>
-    </jar>
+      <jar jarfile="${samples_out}/dcmsnd.jar"
+           basedir="${build}"
+           includes="DcmSnd*,Configuration*"
+           manifest="${build}/META-INF/dcmsnd.mf"/>
 
-    <!-- Build dcm2jpg.jar -->
-    <jar jarfile="${build.jars}/demo/dcm2jpg.jar"
-         manifest="${source.demo}/imageio/dcm2jpg.mf"
-         basedir="${build.classes}"
-         includes="Dcm2Jpg.class"/>
+      <jar jarfile="${samples_out}/mppssnd.jar"
+           basedir="${build}"
+           includes="MppsSnd*,Configuration*"
+           manifest="${build}/META-INF/mppssnd.mf"/>
 
-    <!-- Build imgflip.jar -->
-    <jar jarfile="${build.jars}/demo/imgflip.jar"
-         manifest="${source.demo}/imageio/imgflip.mf"
-         basedir="${build.classes}"
-         includes="ImageFlipper.class"/>
+      <jar jarfile="${samples_out}/imgdisp.jar"
+           basedir="${build}"
+           includes="ImageDisplay*,ImageBox*,*.gif"
+           manifest="${build}/META-INF/imgdisp.mf"/>
 
-    <!-- Build imgread.jar -->
-    <jar jarfile="${build.jars}/demo/imgread.jar"
-         manifest="${source.demo}/imageio/imgread.mf">
-      <fileset dir="${build.classes}">
-        <include name="ImageReadParamDemo.class"/>
-        <include name="ImagePanel.class"/>
-        <include name="ReadParamPanel.class"/>
-        <include name="ReadThread.class"/>
-      </fileset>
-    </jar>
+      <jar jarfile="${samples_out}/imgdump.jar"
+           basedir="${build}"
+           includes="ImageDumper*,SimpleDcmMetadata*,de/**"
+           manifest="${build}/META-INF/imgdump.mf"/>
+           
+      <jar jarfile="${samples_out}/imgflip.jar"
+           basedir="${build}"
+           includes="ImageFlipper*"
+           manifest="${build}/META-INF/imgflip.mf"/>
+           
+      <jar jarfile="${samples_out}/imgread.jar"
+           basedir="${build}"
+           includes="ImageReadParamDemo*"
+           manifest="${build}/META-INF/imgread.mf"/>
 
-    <!-- Build imgdisp.jar -->
-    <jar jarfile="${build.jars}/demo/imgdisp.jar"
-         manifest="${source.demo}/imgdisp/imgdisp.mf">
-      <fileset dir="${source.demo}/imgdisp">
-        <include name="resources/**"/>
-        <exclude name="**/#*"/>
-        <exclude name="**/.*"/>
-        <exclude name="**/*~"/>
-        <exclude name="**/CVS/**"/>
-      </fileset>
-      <fileset dir="${build.classes}">
-        <include name="ImageBox*.class"/>
-        <include name="ImageDisplay*.class"/>
-        <include name="ImageDisplayApplet.class"/>
-        <include name="ToolBarButton.class"/>
-      </fileset>
-    </jar>
+      <copy todir="${samples_out}">
+         <fileset dir="${samples.conf}" excludes="**/.nbattrs"/>
+         <fileset dir="${lib}" includes="getopt.jar"/>
+      </copy>
+   </target>
+   
+   <target name="check-javadoc" depends="xml2java">
+      <uptodate property="uptodate-javadoc"
+	             targetfile="${javadoc}/index.html">
+         <srcfiles dir="${src.java}" includes="org/dcm4che/**/*.java"/>
+      </uptodate>
+   </target>
 
-    <!-- Build syslog.jar -->
-    <jar jarfile="${build.jars}/demo/syslog.jar"
-         manifest="${source.demo}/syslog/syslog.mf">
-      <fileset dir="${build.classes}">
-        <include name="Syslog*.class"/>
-      </fileset>
-      <fileset dir="${source.demo}/syslog">
-        <include name="resources/Syslog.properties"/>
-      </fileset>
-    </jar>
-  </target>
+   <target name="doc" depends="check-javadoc" unless="uptodate-javadoc">
+      <javadoc destdir="${javadoc}" sourcepath="${src.java}">
+         <package name="org.dcm4che.*"/>
+      </javadoc>     
+   </target>
+   
+   <target name="publish" depends="package,doc">           
+      <copy todir="${out}">
+         <fileset dir="${doc}" excludes="**/.nbattrs"/>
+      </copy>
+      <mkdir dir="${samples_out}/data"/>
+      <copy todir="${samples_out}/data">
+         <fileset dir="${samples.java}">
+            <include name="Acr2Dcm.java"/>
+            <include name="Dcm2Xml.java"/>
+            <include name="Xml2Dcm.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="Dcm2Xml.xsl"/>
+         </fileset>
+      </copy>
 
+      <mkdir dir="${samples_out}/imageio"/>
+      <copy todir="${samples_out}/imageio">
+         <fileset dir="${samples.java}">
+            <include name="de/**/*.java"/>
+            <include name="Dcm2Jpg.java"/>
+            <include name="ImageDumper.java"/>
+            <include name="ImageFlipper.java"/>
+            <include name="ImageReadParamDemo.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="DcmImageReader.properties"/>
+            <include name="SimpleDcmMetadata.xml"/>
+            <include name="SimpleDcmMetadata.xsl"/>
+         </fileset>
+      </copy>
 
-  <!-- ================================================================== -->
-  <!-- Build documents                                                    -->
-  <!-- ================================================================== -->
+      <mkdir dir="${samples_out}/imgdisp"/>
+      <copy todir="${samples_out}/imgdisp">
+         <fileset dir="${samples.java}">
+            <include name="ImageBox.java"/>
+            <include name="ImageDisplay.java"/>
+            <include name="ImageDisplayApplet.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="open.gif"/>
+         </fileset>
+      </copy>
+      
+      <mkdir dir="${samples_out}/media"/>
+      <copy todir="${samples_out}/media">
+         <fileset dir="${samples.java}">
+            <include name="DcmDir.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="DcmDir.xsl"/>
+            <include name="DcmDir.properties"/>
+         </fileset>
+      </copy>
+      
+      <mkdir dir="${samples_out}/net"/>
+      <copy todir="${samples_out}/net">
+         <fileset dir="${samples.java}">
+            <include name="Configuration.java"/>
+            <include name="DcmRcv.java"/>
+            <include name="DcmRcvFSU.java"/>
+            <include name="DcmSnd.java"/>
+            <include name="MppsSnd.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="DcmRcv.properties"/>
+            <include name="DcmSnd.properties"/>
+            <include name="MppsSnd.properties"/>
+         </fileset>
+      </copy>
 
-  <!-- 
-     |  Create all generated documenation.
-     |
-     |  This target should depend on other docs-* targets for each 
-     |  different type of docuementation that is to be generated.
-    -->
-  <target name="docs" depends="docs-api"
-	  description="Builds all documentation."/>
-
-  <!-- Javadocs is an exception, but provide a docs-api to conform. -->
-  <target name="docs-api" depends="javadocs"/>
-
-  <!-- 
-     |  Check if we need to build javadocs 
-     |
-     |  Javadocs will only be generated if one or more .java source files
-     |  is newer than the generated index.html.
-    -->
-  <target name="javadocs-check" depends="init">
-    <!-- if index.html is newer than the sources we are up to date -->
-    <uptodate property="javadoc-generated-already"
-	      targetfile="${build.api}/index.html">
-      <srcfiles dir="${source.java}" includes="**/*.java"/>
-    </uptodate>
-
-    <!-- create the directory here to prevent install/release from failing -->
-    <mkdir dir="${build.api}"/>
-  </target>	      
-
-  <!-- Generate Javadoc if we are out of date -->
-  <target name="javadocs" 
-	  depends="javadocs-check" 
-	  unless="javadoc-generated-already">
-    <javadoc packagenames="${javadoc.packages}"
-             sourcepath="${source.java}"
-             destdir="${build.api}"
-             classpathref="javadoc.classpath"
-             windowtitle="${javadoc.windowtitle}"
-	     splitindex="${javadoc.splitindex}"
-             doctitle="${javadoc.doctitle}"
-             author="${javadoc.author}"
-             version="${javadoc.version}"
-             public="${javadoc.public}"
-             package="${javadoc.package}"
-             protected="${javadoc.protected}"
-             private="${javadoc.private}"
-             encoding="${javadoc.encoding}"
-             use="${javadoc.use}"
-	     verbose="${javadoc.verbose}"> 
-      <!-- <group title="???" packages="*"/> -->
-    </javadoc>
-  </target>
-
-
-  <!-- ================================================================== -->
-  <!-- Builds a release distribution.                                     -->
-  <!-- ================================================================== -->
-
-  <target name="release" depends="most"
-	  description="Builds a release distribution.">
-    <!-- Copy the generated libraries (lib) -->
-    <mkdir dir="${release.lib}"/>
-    <copy todir="${release.lib}" filtering="no">
-      <fileset dir="${build.jars}">
-         <include name="*.jar"/>
-      </fileset>
-    </copy>
-          
-    <copy todir="${release.root}" filtering="no">
-      <fileset dir="${module.root}">
-         <include name="README"/>
-         <include name="CHANGES"/>
-         <include name="INSTALL"/>
-         <include name="LICENSE"/>
-      </fileset>
-    </copy>
-    <!-- Zip source (lib) -->
-    <zip zipfile="${release.root}/src.zip">
-      <fileset dir="${source.java}">
-        <include name="**/*.java"/>
-      </fileset>
-      <fileset dir="${source.etc}">
-        <include name="**/*.xsl"/>
-        <include name="**/*.xml"/>
-      </fileset>
-    </zip>
-          
-    <!-- Copy the needed third party libraries (lib) -->
-    <copy todir="${release.lib}" filtering="no"
-          file="${apache.log4j.lib}/log4j.jar" />
-
-    <mkdir dir="${release.demo}"/>
-    <copy todir="${release.demo}" filtering="no"
-          file="${gnu.getopt.lib}/getopt.jar" />
-    <copy todir="${release.demo}" filtering="no">
-      <fileset dir="${build.jars}/demo">
-         <include name="*.jar"/>
-      </fileset>
-    </copy>
-    <copy todir="${release.demo}" filtering="no">
-      <fileset dir="${source.demo}/net">
-         <include name="*.cfg"/>
-         <include name="*.key"/>
-         <include name="cacerts"/>
-      </fileset>
-      <fileset dir="${source.demo}/media">
-         <include name="*.cfg"/>
-      </fileset>
-    </copy>
-
-    <!-- Copy example source -->
-    <copy todir="${release.demo}" filtering="no">
-      <fileset dir="${source.demo}">
-         <include name="**/*.java"/>
-         <include name="**/*.properties"/>
-         <include name="**/*.xml"/>
-         <include name="**/*.xsl"/>
-      </fileset>
-    </copy>
-    <!-- Out-commented Copy the generated javadocs
-    <mkdir dir="${release.module.api}"/>
-    <copy todir="${release.module.api}" filtering="no">
-      <fileset dir="${build.api}">
-         <include name="**/*"/>
-      </fileset>
-    </copy>
-    -->
-  </target>
-
-  <target name="release-archive-prepare" depends="release">
-    <mkdir dir="${module.release}"/>
-    <property name="release.archive.basename"
-	      value="${module.release}/${release.id}"/>
-  </target>
-
-  <target name="release-zip" depends="release-archive-prepare"
-	  description="Builds a ZIP release distribution.">
-    <zip zipfile="${release.archive.basename}.zip">
-      <fileset dir="${module.release}">
-        <include name="${release.id}/**"/>
-      </fileset>
-    </zip>
-  </target>
-
-  <target name="release-tar" depends="release-archive-prepare"
-	  description="Builds a TAR release distribution.">
-    <tar tarfile="${release.archive.basename}.tar" longfile="gnu"
-	 basedir="${module.release}"
-	 includes="${release.id}/**">
-    </tar>
-  </target>
-
-  <target name="release-tgz" depends="release-tar"
-	  description="Builds a TAR-GZIP release distribution.">
-    <gzip src="${release.archive.basename}.tar"
-	  zipfile="${release.archive.basename}.tgz"/>
-  </target>
-
-  <target name="release-all" depends="release-zip, release-tgz"
-	  description="Builds a distribution for each archive type."/>
-
-
-  <!-- ================================================================== -->
-  <!-- Run tests                                                          -->
-  <!-- ================================================================== -->
-
-  <target name="tests" depends="tests-junit"
-	  description="Execute all tests."/>
-
-  <target name="tests-junit" depends="jars">
-    <mkdir dir="${build.reports}"/>
-    <junit dir="${module.output}"
-	   printsummary="${junit.printsummary}" 
-	   haltonerror="${junit.haltonerror}" 
-	   haltonfailure="${junit.haltonfailure}" 
-	   fork="${junit.fork}"
-	   timeout="${junit.timeout}"
-	   jvm="${junit.jvm}">
-
-      <!-- junit.jvm.options must have a valid value -->
-      <jvmarg value="${junit.jvm.options}"/>
-      <sysproperty key="jbosstest.deploy.dir" file="${build.jars}"/>
-
-      <classpath>
-        <pathelement location="${build.classes}"/>
-        <path refid="javac.classpath"/>
-        <path refid="apache.ant.classpath"/>
-        <path refid="apache.ant.ext.classpath"/>
-      </classpath>
-
-      <formatter type="${junit.formatter.type}"
-		 usefile="${junit.formatter.usefile}"/>
-
-      <batchtest todir="${build.reports}"
-		 haltonerror="${junit.batchtest.haltonerror}" 
-		 haltonfailure="${junit.batchtest.haltonfailure}" 
-		 fork="${junit.batchtest.fork}">
-
-        <fileset dir="${build.classes}">
-          <include name="**/Test*.class"/>
-          <include name="**/*Test.class"/>
-          <include name="**/AllJUnitTests.class"/>
-        </fileset>
-      </batchtest>
-    </junit>
-  </target>
-
-
-  <!-- ================================================================== -->
-  <!-- Cleans up generated stuff                                          -->
-  <!-- ================================================================== -->
-
-  <!-- Clean up all build output -->
-  <target name="clean" depends="disable-configure, disable-init-hook, init"
-	  description="Cleans up most generated files.">
-    <delete dir="${module.build}"/>
-    <delete dir="${module.release}"/>
-    <delete dir="${module.output}"/>
-  </target>
-
-  <!-- Clean up all generated files -->
-  <target name="clobber" depends="clean"
-	  description="Cleans up all generated files.">
-    <!-- Clean up configure generated files -->
-    <delete file="${module.root}/local.properties" quiet="true"/>
-  </target>
-
-
-  <!-- ================================================================== -->
-  <!-- Other Targets                                                      -->
-  <!-- ================================================================== -->
-
-  <target name="help">
-    <projecthelp>
-      <header><![CDATA[
-  The ${module.Name} module.
-]]></header>
-      <footer><![CDATA[
-    -projecthelp for all targets
-    -help for full options
-]]></footer>
-    </projecthelp>
-  </target>
-
-  <target name="main" depends="most"
-	  description="Executes the default target (most)."/>
-    
-  <target name="all" depends="jars, docs"
-	  description="Builds everything."/>
-
-  <target name="most" depends="jars"
-	  description="Builds almost everything."/>
-
-  <target name="min" depends="compile"
-	  description="Builds a minimal subset."/>
+      <mkdir dir="${samples_out}/syslog"/>
+      <copy todir="${samples_out}/syslog">
+         <fileset dir="${samples.java}">
+            <include name="Syslog.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="Syslog.properties"/>
+         </fileset>
+      </copy>
+      
+      <zip zipfile="${out}/src.zip" 
+           basedir="${src.java}"
+           includes="**/*.java"/>
+      
+      <zip zipfile="${local_out}/dcm4che14-${version.number}.zip" 
+           basedir="${out}"
+           excludes="dcm4che/**,reports/**"/>
+      
+   </target>
 
 </project>

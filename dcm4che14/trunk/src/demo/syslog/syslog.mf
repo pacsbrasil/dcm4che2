@@ -1,2 +1,0 @@
-Main-Class: Syslog
-Class-Path: ./ ../lib/dcm4che.jar getopt.jar
