@@ -67,7 +67,7 @@ public class DatasetUtil
         Dataset ds = dof.newDataset();
         try
         {
-            ds.readDataset(bin, DcmDecodeParam.IVR_LE, -1);
+            ds.readDataset(bin, DcmDecodeParam.EVR_LE, -1);
         }
         catch (IOException e)
         {
@@ -82,7 +82,7 @@ public class DatasetUtil
             new ByteArrayOutputStream(ds.calcLength(DcmDecodeParam.IVR_LE));
         try
         {
-            ds.writeDataset(bos, DcmDecodeParam.IVR_LE);
+            ds.writeDataset(bos, DcmDecodeParam.EVR_LE);
         }
         catch (IOException e)
         {

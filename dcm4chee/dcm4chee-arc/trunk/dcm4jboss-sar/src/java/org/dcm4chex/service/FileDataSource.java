@@ -150,7 +150,7 @@ class FileDataSource implements DataSource
         ByteArrayInputStream bis = new ByteArrayInputStream(fileInfo.patAttrs);
         DcmParser parser = parserFact.newDcmParser(bis);
         parser.setDcmHandler(ds.getDcmHandler());
-        parser.parseDataset(DcmDecodeParam.IVR_LE, -1);
+        parser.parseDataset(DcmDecodeParam.EVR_LE, -1);
         bis.close();
     }
 
