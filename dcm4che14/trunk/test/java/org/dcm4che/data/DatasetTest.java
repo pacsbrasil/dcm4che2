@@ -231,7 +231,7 @@ public class DatasetTest extends TestCase {
      */
     public void testDumpDataset() throws Exception {
         testReadEVR_LE();
-        ds.dumpDataset(new FileWriter(OUT_FILE));
+        ds.dumpDataset(new FileWriter(OUT_FILE), null);
     }
 
 
