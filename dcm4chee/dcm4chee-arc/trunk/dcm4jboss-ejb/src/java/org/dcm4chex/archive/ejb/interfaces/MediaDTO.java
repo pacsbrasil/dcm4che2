@@ -1,0 +1,87 @@
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
+package org.dcm4chex.archive.ejb.interfaces;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * @author gunter.zeilinger@tiani.com
+ * @version Revision $Date$
+ * @since 14.12.2004
+ */
+
+public class MediaDTO implements Serializable {
+
+    private int pk;
+    private String filesetId;
+    private String filesetIuid;
+    private String mediaCreationRequestIuid;
+    private long mediaUsage;
+    private long createdTime;
+    private long updatedTime;
+
+    public final int getPk() {
+        return pk;
+    }
+
+    public final void setPk(int pk) {
+        this.pk = pk;
+    }
+
+    public final Date getCreatedTime() {
+        return new Date(createdTime);
+    }
+
+    public final void setCreatedTime(Date time) {
+        this.createdTime = time.getTime();
+    }
+
+    public final Date getUpdatedTime() {
+        return new Date(updatedTime);
+    }
+
+    public final void setUpdatedTime(Date time) {
+        this.updatedTime = time.getTime();
+    }
+
+    public final String getFilesetId() {
+        return filesetId;
+    }
+
+    public final void setFilesetId(String filesetId) {
+        this.filesetId = filesetId;
+    }
+
+    public final String getFilesetIuid() {
+        return filesetIuid;
+    }
+
+    public final void setFilesetIuid(String filesetIuid) {
+        this.filesetIuid = filesetIuid;
+    }
+
+    public final String getMediaCreationRequestIuid() {
+        return mediaCreationRequestIuid;
+    }
+    
+    public final void setMediaCreationRequestIuid(
+            String mediaCreationRequestIuid) {
+        this.mediaCreationRequestIuid = mediaCreationRequestIuid;
+    }
+    
+    public final long getMediaUsage() {
+        return mediaUsage;
+    }
+
+    public final void setMediaUsage(long mediaUsage) {
+        this.mediaUsage = mediaUsage;
+    }
+    
+}

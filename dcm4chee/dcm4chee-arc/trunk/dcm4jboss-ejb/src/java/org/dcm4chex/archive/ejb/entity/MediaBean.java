@@ -23,9 +23,22 @@ import org.apache.log4j.Logger;
  * 
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
+ * @jboss.audit-created-time field-name="createdTime"
+ * @jboss.audit-updated-time field-name="updatedTime"
+ * 
  * @ejb.finder
- *  signature="org.dcm4chex.archive.ejb.interface.MediaLocal findByFilesetIuid(java.lang.String iuid)"
- *  query="SELECT OBJECT(a) FROM Media AS a WHERE a.filesetIuid = ?1"
+ *  signature="java.util.Collection findAll()"
+ *  query="SELECT OBJECT(m) FROM Media AS m"
+ *  transaction-type="Supports"
+ *
+ * @ejb.finder
+ *  signature="java.util.Collection findPreparing()"
+ *  query="SELECT OBJECT(m) FROM Media AS m WHERE m.filesetIuid IS NULL AND m.mediaCreationRequestIuid IS NULL"
+ *  transaction-type="Supports"
+ *
+ * @ejb.finder
+ *  signature="java.util.Collection findBurning()"
+ *  query="SELECT OBJECT(m) FROM Media AS m WHERE m.mediaCreationRequestIuid IS NOT NULL"
  *  transaction-type="Supports"
  *
  * @author gunter.zeilinger@tiani.com
@@ -51,47 +64,73 @@ public abstract class MediaBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="fileset_iuid"
+     * @ejb.persistence
+     *  column-name="created_time"
      */
-    public abstract String getFilesetIuid();
+    public abstract java.sql.Timestamp getCreatedTime();
 
-    public abstract void setFilesetIuid(String iuid);
+    public abstract void setCreatedTime(java.sql.Timestamp time);
 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="updated_time"
+     */
+    public abstract java.sql.Timestamp getUpdatedTime();
+
+    public abstract void setUpdatedTime(java.sql.Timestamp time);
+    
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fileset_id"
      */
     public abstract String getFilesetId();
 
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setFilesetId(String id);
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="media_status"
+     * @ejb.persistence column-name="fileset_iuid"
      */
-    public abstract int getMediaStatus();
+    public abstract String getFilesetIuid();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setMediaStatus(int status);
+    public abstract void setFilesetIuid(String iuid);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="mcrq_iuid"
+     */
+    public abstract String getMediaCreationRequestIuid();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setMediaCreationRequestIuid(String iuid);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="media_usage"
+     */
+    public abstract long getMediaUsage();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setMediaUsage(long mediaUsage);
     
     /**
-     * @ejb.create-method
-     */
-    public Integer ejbCreate(String iuid, String id) throws CreateException {
-        setMediaStatus(-1);
-        setFilesetIuid(iuid);
-        setFilesetId(id);
-        return null;
-    }
+    * @ejb.create-method
+    */
+   public Integer ejbCreate() throws CreateException {
+       return null;
+   }
 
-    public void ejbPostCreate(String iuid, String id) throws CreateException {
-        log.info("Created " + this);
-    }
-
-    public String asString() {
-        return "Media[fsiuid=" + getFilesetIuid() + "fsid=" + getFilesetId()
-                + "]";
-    }
+   public void ejbPostCreate() throws CreateException {
+   }
 }

@@ -70,6 +70,11 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *  strategy="on-find"
  *  eager-load-group="*"
  * 
+ * @ejb.finder
+ *  signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
+ *  query="SELECT OBJECT(a) FROM Instance AS a WHERE a.media IS NULL AND a.series.hidden = false AND a.series.study.createdTime < ?1"
+ *  transaction-type="Supports"
+ *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
  */
