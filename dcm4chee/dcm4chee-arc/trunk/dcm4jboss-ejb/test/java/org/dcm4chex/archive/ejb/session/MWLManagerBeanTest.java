@@ -84,20 +84,22 @@ public class MWLManagerBeanTest extends TestCase
         Dataset ds = loadMWLItemFromFile();
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
         String spsId1ds = spsItem.getString(Tags.SPSID);
+        // insert first entry with sps-id -> returns contained sps-id
         String spsId1ret = mwlManager.addWorklistItem(ds);
         assertEquals(spsId1ds, spsId1ret);        
+
+        // insert second entry without sps-id -> returns new generated sps-id
         spsItem.remove(Tags.SPSID);
-        spsItem.putCS(Tags.Modality, "MR");
-        spsItem.putAE(Tags.ScheduledStationAET, "ANOTHER_STATION");
-        Date now = new Date();
-        spsItem.putDA(Tags.SPSStartDate, now);
-        spsItem.putTM(Tags.SPSStartTime, now);
         String spsId2ret = mwlManager.addWorklistItem(ds);
-        /*mwlManager.removeWorklistItem(spsId1ret);
-        Dataset dsRet = mwlManager.removeWorklistItem(spsId2ret);        
+        
+        // remove first entry
+        mwlManager.removeWorklistItem(spsId1ret);
+
+        // remove second entry -> returned entry contains generated sps-id
+        Dataset dsRet = mwlManager.removeWorklistItem(spsId2ret);                
         Dataset spsItemRet = dsRet.getItem(Tags.SPSSeq);
         String spsId2ds = spsItemRet.getString(Tags.SPSID);
-        assertEquals(spsId2ret, spsId2ds);*/
+        assertEquals(spsId2ret, spsId2ds);
     }
 
     private Dataset loadMWLItemFromFile() throws SAXException, IOException {
