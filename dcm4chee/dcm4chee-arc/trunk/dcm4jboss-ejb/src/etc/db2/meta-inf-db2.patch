@@ -1,5 +1,5 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2004-12-27 15:30:25.000000000 +0100
-+++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2004-12-27 15:33:45.000000000 +0100
+--- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2004-12-27 17:40:31.000000000 +0100
++++ target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	2004-12-27 17:40:32.000000000 +0100
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -121,9 +121,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -881,7 +892,8 @@
+@@ -871,7 +882,8 @@
  
- 	     </query>
+         </cmp-field>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="pk-sql">

@@ -130,7 +130,7 @@ public abstract class MWLManagerBean implements SessionBean {
                 }
             }
             PatientLocal patient =
-                patHome.create(ds.subSet(PATIENT_ATTRS_INC, false));
+                patHome.create(ds.subSet(PATIENT_ATTRS_INC));
             return patient;
     }
 
@@ -138,12 +138,15 @@ public abstract class MWLManagerBean implements SessionBean {
         // TODO Auto-generated method stub
         return true;
     }
+    
     /**
      * @ejb.interface-method
      */
     public String addWorklistItem(Dataset ds) {
         try {
-            MWLItemLocal mwlItem = mwlItemHome.create(ds, getPatient(ds));
+            MWLItemLocal mwlItem = mwlItemHome.create(
+                    ds.subSet(PATIENT_ATTRS_EXC, true, true),
+                    getPatient(ds));
             return mwlItem.getSpsId();
         } catch (Exception e) {
             throw new EJBException(e);

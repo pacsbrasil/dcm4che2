@@ -170,8 +170,10 @@ public abstract class StorageBean implements SessionBean {
             } catch (ObjectNotFoundException onfe) {
                 attrCoercions
                         .coerce(callingAET, calledAET, ds, coercedElements);
-                instance = instHome.create(ds.subSet(attrFilter
-                        .getInstanceFilter()), getSeries(ds, coercedElements));
+                final int[] filter = attrFilter.getInstanceFilter();
+                final boolean exclude = attrFilter.isExcludeInstanceFilter();        
+                instance = instHome.create(ds.subSet(filter, exclude, exclude),
+                        getSeries(ds, coercedElements));
             }
             FileSystemLocal fs;
             try {
@@ -204,7 +206,9 @@ public abstract class StorageBean implements SessionBean {
             series = seriesHome.findBySeriesIuid(uid);
             coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            series = seriesHome.create(ds.subSet(attrFilter.getSeriesFilter()),
+            final int[] filter = attrFilter.getSeriesFilter();
+            final boolean exclude = attrFilter.isExcludeSeriesFilter();        
+            series = seriesHome.create(ds.subSet(filter, exclude, exclude),
                     getStudy(ds, coercedElements));
         }
         return series;
@@ -222,7 +226,9 @@ public abstract class StorageBean implements SessionBean {
             study = studyHome.findByStudyIuid(uid);
             coerceStudyIdentity(study, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            study = studyHome.create(ds.subSet(attrFilter.getStudyFilter()),
+            final int[] filter = attrFilter.getStudyFilter();
+            final boolean exclude = attrFilter.isExcludeStudyFilter();        
+            study = studyHome.create(ds.subSet(filter, exclude, exclude),
                     getPatient(ds, coercedElements));
         }
 
@@ -248,8 +254,9 @@ public abstract class StorageBean implements SessionBean {
                 return patient;
             }
         }
-        PatientLocal patient = patHome.create(ds.subSet(attrFilter
-                .getPatientFilter()));
+        final int[] filter = attrFilter.getPatientFilter();
+        final boolean exclude = attrFilter.isExcludePatientFilter();        
+        PatientLocal patient = patHome.create(ds.subSet(filter, exclude, exclude));
         return patient;
     }
 

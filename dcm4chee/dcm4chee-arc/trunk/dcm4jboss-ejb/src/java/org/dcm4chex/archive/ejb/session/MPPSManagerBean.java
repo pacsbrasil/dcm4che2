@@ -98,7 +98,7 @@ public abstract class MPPSManagerBean implements SessionBean {
     public void createMPPS(String iuid, Dataset ds)
         throws DcmServiceException {
         try {
-            mppsHome.create(iuid, ds.subSet(PATIENT_ATTRS_EXC, true), getPatient(ds));
+            mppsHome.create(iuid, ds.subSet(PATIENT_ATTRS_EXC, true, true), getPatient(ds));
         } catch (CreateException ce) {
             try {
                 mppsHome.findBySopIuid(iuid);
@@ -126,7 +126,7 @@ public abstract class MPPSManagerBean implements SessionBean {
                 }
             }
             PatientLocal patient =
-                patHome.create(ds.subSet(PATIENT_ATTRS_INC, false));
+                patHome.create(ds.subSet(PATIENT_ATTRS_INC));
             return patient;
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);

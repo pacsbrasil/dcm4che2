@@ -41,8 +41,14 @@ public final class AttributeFilter {
     private int[] studyFilter;
     private int[] seriesFilter;
     private int[] instanceFilter;
+    private boolean excludePatientFilter;
+    private boolean excludeStudyFilter;
+    private boolean excludeSeriesFilter;
+    private boolean excludeInstanceFilter;
 
     private class MyHandler extends DefaultHandler {
+        private String level;
+        private boolean exclude;
         private ArrayList list = new ArrayList();
 
         public void startElement(
@@ -53,6 +59,9 @@ public final class AttributeFilter {
             throws SAXException {
             if (qName.equals("attr")) {
                 list.add(attributes.getValue("tag"));
+            } else if (qName.equals("filter")) {
+                level = attributes.getValue("level");
+                exclude = "true".equalsIgnoreCase(attributes.getValue("exclude"));
             }
         }
 
@@ -68,14 +77,20 @@ public final class AttributeFilter {
 
         public void endElement(String uri, String localName, String qName)
                 throws SAXException {
-            if (qName.equals("patient")) {
-                patientFilter = tags();
-            } else if (qName.equals("study")) {
-                studyFilter = tags();
-            } else if (qName.equals("series")) {
-                seriesFilter = tags();
-            } else if (qName.equals("instance")) {
-                instanceFilter = tags();
+            if (qName.equals("filter")) {
+	            if (level.equals("PATIENT")) {
+	                patientFilter = tags();
+	                excludePatientFilter = exclude;
+	            } else if (level.equals("STUDY")) {
+	                studyFilter = tags();
+	                excludeStudyFilter = exclude;
+	            } else if (level.equals("SERIES")) {
+	                seriesFilter = tags();
+	                excludeSeriesFilter = exclude;
+	            } else if (level.equals("IMAGE")) {
+	                instanceFilter = tags();
+	                excludeInstanceFilter = exclude;
+	            }
             }
         }
     }
@@ -92,32 +107,35 @@ public final class AttributeFilter {
         }
     }
 
-    /**
-     * @return
-     */
     public final int[] getPatientFilter() {
         return patientFilter;
     }
 
-    /**
-     * @return
-     */
     public final int[] getStudyFilter() {
         return studyFilter;
     }
 
-    /**
-     * @return
-     */
     public final int[] getSeriesFilter() {
         return seriesFilter;
     }
 
-    /**
-     * @return
-     */
     public final int[] getInstanceFilter() {
         return instanceFilter;
     }
 
+    public final boolean isExcludePatientFilter() {
+        return excludePatientFilter;
+    }
+
+    public final boolean isExcludeStudyFilter() {
+        return excludeStudyFilter;
+    }
+
+    public final boolean isExcludeSeriesFilter() {
+        return excludeSeriesFilter;
+    }
+
+    public final boolean isExcludeInstanceFilter() {
+        return excludeInstanceFilter;
+    }
 }
