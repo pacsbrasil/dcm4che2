@@ -7,6 +7,7 @@
 	<property name="version" value="0.6.0"/>
 	<property name="javac.debug" value="on"/>
 
+	<property name="bin.dir" value="${basedir}/bin"/>
 	<property name="src.dir" value="${basedir}/src"/>
 	<property name="src.java" value="${src.dir}/java"/>
 	<property name="src.etc" value="${src.dir}/etc"/>
@@ -215,10 +216,21 @@
    				<include name="bin/*.sh"/>
    				<include name="deploy/*.xml"/>
    			</fileset>
+  			<fileset dir="${basedir}">
+   				<include name="bin/*.exe"/>
+   			</fileset>
    			<fileset dir="${target.dir}">
    				<include name="lib/*"/>
    			</fileset>
-   		</copy>   		
+   		</copy>
+    	<copy todir="${dist.dir}/common">
+      		<filterset>
+        		<filter token="SERVICE" value="${dist.name}"/>
+      		</filterset>
+  			<fileset dir="${src.etc}">
+   				<include name="bin/*.bat"/>
+   			</fileset>
+	    </copy>
    		<zip
    			destfile="${target.dir}/${dist.name}.zip"
    			basedir="${target.dir}"
