@@ -276,8 +276,7 @@ class SqlBuilder {
     }
         
 	private void appendInnerJoinsToFrom(StringBuffer sb) {
-		if (from == null || from.length < 1) return;
-		if (getDatabase() == JdbcProperties.ORACLE
+		if (relations == null || getDatabase() == JdbcProperties.ORACLE
 		        || getDatabase() == JdbcProperties.HSQL) {
 			appendTo(sb,from);
 		} else {
@@ -295,7 +294,7 @@ class SqlBuilder {
 	}
 	
 	private void appendInnerJoinsToWhere(StringBuffer sb) {
-		if (from == null || !(getDatabase() == JdbcProperties.ORACLE 
+		if (relations == null || !(getDatabase() == JdbcProperties.ORACLE 
 		        || getDatabase() == JdbcProperties.HSQL)) return;
         for (int i = 0; i < relations.length; i++, i++) {
             sb.append(whereOrAnd);
