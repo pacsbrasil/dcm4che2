@@ -22,16 +22,26 @@ import org.dcm4chex.archive.web.maverick.mcmc.model.MediaData;
 /**
  * @author franz.willer
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * The Maverick controller for Media Creation Manager.
  */
 public class MCMConsoleCtrl extends Dcm4JbossFormController {
 
+	/** The name of the JMS Queue used to queue a media for creation. */
 	public static final String QUEUE = "MCMScu";
 
+	/** the view model. */
 	private MCMModel model;
+	
+	private static MCMScuDelegate delegate = null;
 
+	/**
+	 * Get the model for the view.
+	 */
     protected Object makeFormBean() {
+        if ( delegate == null ) {
+        	delegate = new MCMScuDelegate();
+        	delegate.init( getCtx().getServletConfig() );
+        }
         return MCMModel.getModel(getCtx().getRequest());
     }
 	
@@ -66,8 +76,13 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 
 
 	/**
-	 * @param action
-	 * @param request
+	 * Performs an action request.
+	 * A action request is indicated by an 'action' http parameter.
+	 * <p>
+	 * Set the MCMModel.ERROR_UNSUPPORTED_ACTION error code in model if <code>action</code> is not defined.
+	 *  
+	 * @param action	The value of action request patrameter.
+	 * @param request	The http request.
 	 */
 	private void performAction(String action, HttpServletRequest request) {
 		if ( action.equalsIgnoreCase("queue") ) {
@@ -94,7 +109,12 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 
 
 	/**
-	 * @param rq
+	 * Checks the http parameters for filter params and update the filter.
+	 * 
+	 * @param rq The http request.
+	 * 
+	 * @return true if filter has been changed.
+	 * 
 	 * @throws ParseException
 	 * 
 	 */
@@ -107,6 +127,10 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 		if ( rq.getParameter("endUpdateDate") != null ) filter.setEndUpdateDate(rq.getParameter("endUpdateDate") );
 		if ( rq.getParameter("createOrUpdateDate") != null ) filter.setCreateOrUpdateDate(rq.getParameter("createOrUpdateDate") );
 		return filter.isChanged();
+	}
+	
+	public static MCMScuDelegate getMcmScuDelegate() {
+		return delegate;
 	}
 	
 }
