@@ -49,6 +49,16 @@ import org.apache.log4j.Logger;
  */
 public class ScannerCalibration
 {
+    private static class IntPoint2D {
+        private int x, y;
+        public IntPoint2D(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+        public final int getX() { return x; }
+        public final int getY() { return y; }
+    }
 
     // Constants -----------------------------------------------------
     private final static int EXTENSION_MAX = 80;
@@ -105,7 +115,7 @@ public class ScannerCalibration
 
     // Public --------------------------------------------------------
     /**
-     *  Description of the Method
+     *  Gets the refDSI256FileName attribute of the ScannerCalibration object
      *
      * @param  f                Description of the Parameter
      * @return                  Description of the Return Value
@@ -305,6 +315,7 @@ public class ScannerCalibration
             } else {
                 log.debug("use cached ODs");
             }
+
             return cachedODs;
         } catch (IOException e) {
             throw new CalibrationException("calculateGrayscaleODs failed: ", e);
@@ -498,17 +509,17 @@ public class ScannerCalibration
             int[] tb = findBorder(vline);
             int w_outer = lr[1] - lr[0];
             int h_outer = tb[1] - tb[0];
-            w_outer = (w_outer + h_outer) / 2;//avg
-            //final int PatternBorderToPatternDistRatio = 512/136;  //3:1
+            w_outer = (w_outer + h_outer) / 2; //avg since w_outer ~= h_outer
             final int PatternNumberBoxesX = 4;
             final int PatternNumberBoxesY = 4;
             final int PatternNumberInnerBoxesX = 4;
             final int PatternNumberInnerBoxesY = 4;
+            //calc (predicted) actual dimensions in pixels
             final int AbsolutePatternSpacing = (w_outer * 16) / 512;
             final int AbsolutePatternBoxSize = (w_outer * 48) / 512;
-            int pattern_left = lr[0] + (w_outer * 136) / 512;
-            int pattern_top = tb[0] + (w_outer * 136) / 512;
-
+            final int pattern_left = lr[0] + (w_outer * 136) / 512;
+            final int pattern_top = tb[0] + (w_outer * 136) / 512;
+            
             // debug
             if (log != null && log.isDebugEnabled()) {
                 log.debug("tot width = " + w + ", tot height = " + h);
@@ -519,32 +530,51 @@ public class ScannerCalibration
                 log.debug("AbsolutePatternSpacing = " + AbsolutePatternSpacing);
                 log.debug("AbsolutePatternBoxSize = " + AbsolutePatternBoxSize);
             }
-
-            float[] px;
+            
+            float[] px = null;
             float[] samples;
             int[] box;
-            //if (portrait) {
+            final boolean portrait = (w <= h);
+            final boolean upSideDown;
+            float first, second;
+            
+            int i,j;
+            IntPoint2D p;
+            final int StepSize = AbsolutePatternBoxSize + AbsolutePatternSpacing;
+            
+            if (portrait) {
+                //sample inside left/right border to see if the image is rotated 180
+                first = average(hline, w, lr[0] + (w_outer * 80) / (2 * 512), 0, 5, 1);
+                second = average(hline, w, lr[1] - (w_outer * 80) / (2 * 512), 0, 5, 1);
+            }
+            else {
+                //sample inside top/bottom border to see if the image is rotated 180
+                first = average(vline, 1, 0, tb[0] + (h_outer * 80) / (2 * 512), 1, 5);
+                second = average(vline, 1, 0, tb[1] - (h_outer * 80) / (2 * 512), 1, 5);
+            }
+            upSideDown = (first < second) ? false : true;
+            log.debug("first = " + first + ", second = " + second);
+            //
             px = new float[PatternNumberBoxesX * PatternNumberBoxesY *
-                    PatternNumberInnerBoxesX * PatternNumberInnerBoxesY];
-            final int TotWidth = PatternNumberBoxesX * AbsolutePatternBoxSize + (PatternNumberBoxesX - 1) * AbsolutePatternSpacing;
-            int i;
-            int j;
-            for (int k = 0; k < PatternNumberBoxesX * PatternNumberBoxesY; k++) {
-                i = k / PatternNumberBoxesY;
-                j = (i % 2 == 0) ? PatternNumberBoxesY - 1 - k % PatternNumberBoxesY :
-                        k % PatternNumberBoxesY;
-                rParam.setSourceRegion(new Rectangle(pattern_left + i * (AbsolutePatternBoxSize + AbsolutePatternSpacing),
-                        pattern_top + j * (AbsolutePatternBoxSize + AbsolutePatternSpacing),
-                        AbsolutePatternBoxSize, AbsolutePatternBoxSize));
+                           PatternNumberInnerBoxesX * PatternNumberInnerBoxesY];
+            //start winding through pattern
+            for (int k=0, N=PatternNumberBoxesX*PatternNumberBoxesY; k<N; k++) {
+                p = calcBox(k, PatternNumberBoxesX, PatternNumberBoxesY, portrait, upSideDown);
+                i = p.getX();
+                j = p.getY();
+                rParam.setSourceRegion(new Rectangle(pattern_left + i * StepSize,
+                                                     pattern_top + j * StepSize,
+                                                     AbsolutePatternBoxSize, AbsolutePatternBoxSize));
                 //log.debug("i=" + i + ", j=" + j);
                 box = r.read(0, rParam).getRGB(0, 0, AbsolutePatternBoxSize, AbsolutePatternBoxSize,
-                        null, 0, AbsolutePatternBoxSize);
+                                               null, 0, AbsolutePatternBoxSize);
                 samples = sampleBoxPattern(box, AbsolutePatternBoxSize, AbsolutePatternBoxSize,
-                        PatternNumberInnerBoxesX, PatternNumberInnerBoxesY);
-                System.arraycopy(samples, 0, px, samples.length * k, samples.length);
+                                           PatternNumberInnerBoxesX, PatternNumberInnerBoxesY,
+                                           portrait, upSideDown);
+                System.arraycopy(samples, 0, px, samples.length*k, samples.length);
             }
-            /*} else {
-            }*/
+            
+            //pix
             if (log != null && log.isDebugEnabled()) {
                 StringBuffer sb = new StringBuffer("detected Grayscale 255-pxval:");
                 for (int ii = 0; ii < px.length; ++ii) {
@@ -553,6 +583,7 @@ public class ScannerCalibration
                 }
                 log.debug(sb.toString());
             }
+            
             return px;
         } finally {
             try {
@@ -560,44 +591,62 @@ public class ScannerCalibration
             } catch (IOException ignore) {}
         }
     }
-
-
-    private float[] sampleBoxPattern(int[] pixels, int width, int height, int nX, int nY)
+    
+    private IntPoint2D calcBox(int n, final int NX, final int NY, boolean portrait, boolean upSideDown)
     {
-        final int xstep = width / nX;
-        final int ystep = height / nY;
-        final float[] samples = new float[nX * nY];
-        int left = xstep / 2;
-        int top = ystep / 2;
-        int x;
-        int y;
-        int i;
-        int j;
-
-        for (int k = 0; k < samples.length; k++) {
-            i = k / nY;
-            j = (i % 2 == 0) ? nY - 1 - k % nY :
-                    k % nY;
+        int i, j;
+        if (portrait) {
+            i = n / NY;
+            j = (i % 2 == 0) ? NY - 1 - n % NY : n % NY;
+        }
+        else {
+            j = n / NX;
+            i = (j % 2 == 1) ? NX - 1 - n % NX : n % NX;
+        }
+        if (upSideDown) {
+            i = NX - 1 - i;
+            j = NY - 1 - j;
+        }
+        return new IntPoint2D(i,j);
+    }
+    
+    private float[] sampleBoxPattern(int[] pixels, final int width, final int height,
+                                     final int NX, final int NY,
+                                     final boolean portrait, final boolean upSideDown)
+    {
+        final int xstep = width/NX;
+        final int ystep = height/NY;
+        final float[] samples = new float[NX * NY];
+        int left = xstep/2, top = ystep/2;
+        int x,y;
+        int i,j;
+        IntPoint2D p;
+        
+        for (int k=0, N = samples.length; k<N; k++) {
+            p = calcBox(k, NX, NY, portrait, upSideDown);
+            i = p.getX();
+            j = p.getY();
             x = left + i * xstep;
             y = top + j * ystep;
-            samples[k] = average(pixels, width, x - 2, y - 2, 5);//(pixels[x+y*width] & 0xff) ^ 0xff
+            samples[k] = average(pixels, width,
+                                 x-width/(NX*4), y-height/(NY*4),
+                                 width/(NX*2), height/(NY*2));  //(pixels[x+y*width] & 0xff) ^ 0xff;
         }
         return samples;
     }
 
-
-    private float average(int[] rgb, int width, int x, int y, int size)
+    //(x,y) is upper-left corner of region to average
+    private float average(int[] rgb, int width, int x, int y, int sizex, int sizey)
     {
         int v = 0;
-        for (int i = x; i < x + size; ++i) {
-            for (int j = y; j < y + size; ++j) {
-                v += (rgb[i + j * width] & 0xff) ^ 0xff;
+        for (int i = x; i < x+sizex; ++i) {
+            for (int j = y; j < y+sizey; ++j) {
+                v += (rgb[i+j*width] & 0xff) ^ 0xff;
             }
         }
-        return (float) v / (size * size);
+        return (float) v / (sizex*sizey);
     }
-
-
+    
     private float average(int[] rgb, int off, int len)
     {
         int v = 0;
