@@ -373,12 +373,12 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAETs FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1"
+     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1"
      */ 
     public abstract java.util.Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
 
     /**
-     * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAETs = ?2"
+     * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
      */ 
     public abstract java.util.Set ejbSelectInstancesWithRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
 

@@ -38,7 +38,7 @@ public abstract class RetrieveCmd extends BaseCmd {
             "Patient.encodedAttributes", "Study.studyIuid",
             "Study.encodedAttributes", "Series.encodedAttributes",
             "Instance.encodedAttributes", "Instance.sopIuid",
-            "Instance.sopCuid", "Instance.retrieveAETs", "FileSystem.retrieveAETs",
+            "Instance.sopCuid", "Instance.retrieveAETs", "FileSystem.retrieveAET",
             "FileSystem.directoryPath", "File.filePath", "File.fileTsuid",
             "File.fileMd5Field", "File.fileSize"};
 

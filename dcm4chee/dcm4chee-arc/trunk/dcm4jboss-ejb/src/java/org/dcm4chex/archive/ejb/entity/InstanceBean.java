@@ -342,7 +342,7 @@ public abstract class InstanceBean implements EntityBean {
 */    }
 
     /**
-     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAETs FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
+     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
      */ 
     public abstract Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
     

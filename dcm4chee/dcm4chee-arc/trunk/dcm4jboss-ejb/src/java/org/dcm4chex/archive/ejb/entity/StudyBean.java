@@ -318,12 +318,12 @@ public abstract class StudyBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAETs FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE"
+     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE"
      */ 
     public abstract Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
     
     /**
-     * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE AND f.fileSystem.retrieveAETs = ?2"
+     * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE AND f.fileSystem.retrieveAET = ?2"
      */ 
     public abstract java.util.Set ejbSelectInstancesWithRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
 
