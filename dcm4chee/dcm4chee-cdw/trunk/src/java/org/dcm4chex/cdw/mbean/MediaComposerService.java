@@ -350,8 +350,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
             try {
                 FilesetBuilder builder = new FilesetBuilder(this, rq, attrs);
                 builder.buildFileset();                
-                DicomDirDOM dom = new DicomDirDOM(this, rq, attrs);
-                dom.insertModalitiesInStudy();
+                DicomDirDOM dom = null;
+                if (isDOMNeeded(builder)) {
+	                dom = new DicomDirDOM(this, rq, attrs);
+	                dom.insertModalitiesInStudy();
+                }
                 File fsDir = rq.getFilesetDir();
                 spoolDir.copy(mergeDir, fsDir, builder.getBuffer());
                 if (builder.isViewer()) {
@@ -405,6 +408,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 rq.cleanFiles(spoolDir);
             }
         }
+    }
+
+    private boolean isDOMNeeded(FilesetBuilder builder) {
+        return builder.isIndexFile() || builder.isWeb() || labelCreator.isActive();
     }
 
     private void finishFileset(FilesetBuilder builder, DicomDirDOM dom, MediaCreationRequest rq) throws MediaCreationException {

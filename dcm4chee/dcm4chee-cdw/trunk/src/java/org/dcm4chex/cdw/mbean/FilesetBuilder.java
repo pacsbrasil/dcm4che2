@@ -589,7 +589,8 @@ class FilesetBuilder {
                     newrq = new MediaCreationRequest(rq);
                     newrq.setFilesetDir(rootDir);
                     newrq.setVolsetSeqno(i + 1);
-                    setVolsetSeqno(comp.childs(), i + 1, dom);
+                    if (dom != null)
+                        setVolsetSeqno(comp.childs(), i + 1, dom);
                 }
                 rqList.add(newrq);
                 if (fsIDPrefix != null)
@@ -618,7 +619,8 @@ class FilesetBuilder {
             dirReader.close();
             spoolDir.delete(oldDDFile);
         }
-        dom.updateSeqNo();
+        if (dom != null)
+            dom.updateSeqNo();
         return rqList;
     }
 
