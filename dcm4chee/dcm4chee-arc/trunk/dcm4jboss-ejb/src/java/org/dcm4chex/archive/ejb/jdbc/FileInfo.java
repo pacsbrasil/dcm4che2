@@ -111,7 +111,7 @@ public class FileInfo {
     }
 
     public File toFile() {
-        String uri = "file:" + basedir + '/' + fileID;
+        String uri = (basedir.charAt(0) == '/' ? "file:" : "file:/") + basedir + '/' + fileID;
         try {
             return new File(new URI(uri));
         } catch (URISyntaxException e) {
