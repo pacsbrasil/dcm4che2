@@ -81,11 +81,6 @@
 							<input size="10" name="modality" type="text" value="{filter/modality}"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
-						<td bgcolor="eeeeee" nowrap="nowrap" >Station name: </td>
-						<td bgcolor="eeeeee">
-							<input size="10" name="stationName" type="text" value="{filter/stationName}"/>
-						</td>
-						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" nowrap="nowrap" >Station AET: </td>
 						<td bgcolor="eeeeee">
 							<input size="10" name="stationAET" type="text" value="{filter/stationAET}"/>
@@ -101,77 +96,188 @@
 				</table>
 			</td>
 		</table>
-<!-- List of working list entries ( scheduled procedur steps ) -->
-		<table width="70%" border="0" bordercolor="#ffffff" cellspacing="7" cellpadding="0">
-		<tr>	<center>
-			<td>
-				<tr>
-					<td width="100" ><h2>Patient</h2></td>
-					<td width="20" ><h2>Pat.ID</h2></td>
-					<td width="15" ><h2>ID</h2></td>
-					<td width="150" ><h2>Start Date</h2></td>
-					<td width="150" ><h2>Station Name</h2></td>
-					<td width="30" ><h2 nowrap="nowrap">Station AET</h2></td>
-					<td width="30" ><h2>Modality</h2></td>	
-					<td width="100" ><h2>Physician</h2></td>	
-					<td width="200" ><h2 nowrap="nowrap">Req. Procedure ID</h2></td>	
-					<td width="200" ><h2 nowrap="nowrap">Accession No.</h2></td>	
-					<xsl:if test="local = 'true'">
-						<td width="200" ><h2 nowrap="nowrap">Function</h2></td>	
-					</xsl:if>
-				</tr>
-					<xsl:apply-templates select="mwlEntries/item">
-						<xsl:sort data-type="number" order="ascending" select="spsID"/>
-					</xsl:apply-templates>
-			</td>	</center>
-		</tr>
-		</table>
+		<xsl:call-template name="tableheader"/>
+		<xsl:apply-templates select="mwlEntries/item">
+			<xsl:sort data-type="number" order="ascending" select="spsID"/>
+		</xsl:apply-templates>
+
 </form>
+</xsl:template>
+
+<xsl:template name="tableheader">
+		
+<!-- Header of working list entries -->
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+
+	<table border="0" cellpadding="0" cellspacing="0" width="100%">
+		<colgroup>
+			<col width="10%"/>
+			<col width="10%"/>
+			<col width="9%"/>
+			<col width="27%"/>
+			<col width="11%"/>
+			<col width="14%"/>
+			<col width="15%"/>
+			<col width="12%"/>
+		</colgroup>
+		<tr >
+			<td bgcolor="eeeeee" style="height:7px" colspan="8"></td> <!-- spacer -->
+		</tr>
+		<tr>
+			<th title="Scheduled Procedure Step ID" align="left">ID</th>
+			<th title="Requested Procedure Step ID" align="left">Req. Proc. ID</th>
+			<th title="Accession Number" align="left">Acc. No.</th>
+			<th title="Requested Procedure Description" align="left">Proc. Desc.</th>
+			<th title="Scheduled Step Start Date" align="left">Start Date</th>
+			<th title="Sched. Station: (&lt;Name&gt;-&lt;AET&gt;[&lt;Mod.&gt;]" align="left">Station</th>
+			<th title="Patient: Name and ID" align="left">Patient</th>
+			<xsl:choose>
+				<xsl:when test="local = 'true'">
+					<th nowrap="nowrap">Function</th>	
+				</xsl:when>
+				<xsl:otherwise>
+					<th >&#160;&#160;</th>
+				</xsl:otherwise>
+			</xsl:choose>
+		</tr>
+	</table>
+	
+	<table border="0" cellpadding="0" cellspacing="0" width="100%">
+		<colgroup>
+			<col width="1%"/>
+			<col width="15%"/>
+			<col width="16%"/>
+			<col width="27%"/>
+			<col width="15%"/>
+			<col width="8%"/>
+			<col width="10%"/>
+			<col width="4%"/>
+			<col width="12%"/>
+		</colgroup>
+		<tr>
+			<th align="left">&#160;&#160;</th> <!-- intend -->
+			<th title="Study Instance UID" align="left">StudyIUID</th>
+			<th title="Filler and Placer Order Number" align="left">Filler/Placer Order</th>
+			<th title="Scheduled Procedure Step Description (protocol)" align="left">SPS Desc.</th>
+			<th title="Name of the patient's referring physician" align="left">Ref. Physician</th>
+			<th title="Admission No.: Identification number of the visit" align="left">Adm. ID</th>
+			<th title="Patients Birthdate" align="left">Birthdate</th>
+			<th title="Sex of the patient" align="left">Sex</th>
+			<th align="left">&#160;&#160;</th> <!-- function -->
+		</tr>
+		<tr >
+			<td bgcolor="eeeeee" style="height:5px" colspan="9"></td> <!-- spacer -->
+		</tr>
+	</table>
+
+</table>
 
 </xsl:template>
 
-	<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.mwl.model.MWLEntry']">
+<!-- List of working list entries ( scheduled procedur steps ) -->
+
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.mwl.model.MWLEntry']">
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	
+	<table border="0" cellpadding="0" cellspacing="0" width="100%">
+		<colgroup>
+			<col width="10%"/>
+			<col width="10%"/>
+			<col width="9%"/>
+			<col width="27%"/>
+			<col width="11%"/>
+			<col width="14%"/>
+			<col width="15%"/>
+			<col width="12%"/>
+		</colgroup>
 		<tr>
-	        <td title="Patient Name" >
-				<xsl:value-of select="patientName"/>
-			</td>
-	        <td title="Patient ID" >
-				<xsl:value-of select="patientID"/>
-			</td>
-	        <td title="SPS ID" >
+	        <td align="left" title="SPS ID" >
 				<xsl:value-of select="spsID"/>
 	        </td>
-	        <td title="Start Date" >
-				<xsl:value-of select="spsStartDateTime"/>
-	        </td>
-	        <td title="Station Name" >
-				<xsl:value-of select="stationName"/>
-	        </td>
-	        <td title="Station AET" >
-				<xsl:value-of select="stationAET"/>
-	        </td>
-	        <td title="Modality" >
-				<xsl:value-of select="modality"/>
-		 	</td>
-	        <td title="Physician" >
-				<xsl:value-of select="physiciansName"/>
-		 	</td>
-	        <td title="Req. Procedure ID" >
+	        <td align="left" title="Req. Procedure ID" >
 				<xsl:value-of select="reqProcedureID"/>
 		 	</td>
-	        <td title="Accession No." >
+	        <td align="left" title="Accession No." >
 				<xsl:value-of select="accessionNumber"/>
 		 	</td>
-			<xsl:if test="/model/local = 'true'">
-				<td title="Function" >
-					<a href="mwl_console.m?action=delete&amp;spsid={spsID}">
-						<xsl:attribute name="onclick">return confirm('Delete worklist entry <xsl:value-of select="spsID"/> ?')</xsl:attribute>
-						<img src="images/loeschen.gif" alt="delete" border="0" title="Delete this worklist entry!"/>		
-					</a>
-				</td>	
-			</xsl:if>
+	        <td align="left" title="Proc. Desc.">
+				<xsl:value-of select="reqProcedureDescription"/>
+		 	</td>
+	        <td align="left" title="Start Date" >
+				<xsl:value-of select="spsStartDateTime"/>
+	        </td>
+	        <td align="left" title="Station" >
+				<xsl:if test="string-length(stationName) > 0">
+					<xsl:value-of select="stationName"/> -
+				</xsl:if>
+				<xsl:value-of select="stationAET"/>[<xsl:value-of select="modality"/>]
+	        </td>
+	        <td align="left" title="Patient" >
+				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}">
+					<xsl:value-of select="patientName"/> [<xsl:value-of select="patientID"/>]
+				</a>
+			</td>
+			<xsl:choose>
+				<xsl:when test="/model/local = 'true'">
+					<td title="Function" align="center" valign="bottom">
+						<a href="mwl_console.m?action=delete&amp;spsid={spsID}">
+							<xsl:attribute name="onclick">return confirm('Delete worklist entry <xsl:value-of select="spsID"/> ?')</xsl:attribute>
+							<img src="images/delete.gif" alt="delete" border="0" title="Delete this worklist entry!"/>		
+						</a>
+					</td>	
+				</xsl:when>
+				<xsl:otherwise>
+					<td>&#160;&#160;</td>
+				</xsl:otherwise>
+			</xsl:choose>
 		</tr>
-	</xsl:template>
+	</table>
+
+	<table border="0" cellpadding="0" cellspacing="0" width="100%">
+		<colgroup>
+			<col width="1%"/>
+			<col width="15%"/>
+			<col width="16%"/>
+			<col width="27%"/>
+			<col width="15%"/>
+			<col width="8%"/>
+			<col width="10%"/>
+			<col width="4%"/>
+			<col width="12%"/>
+		</colgroup>
+		<tr>
+			<td>&#160;&#160;</td><!-- intend -->
+	        <td title="StudyIUID">
+				<xsl:value-of select="studyUID"/>
+		 	</td>
+	        <td title="Filler/Placer Order">
+				<xsl:value-of select="fillerOrderNumber"/>/<xsl:value-of select="placerOrderNumber"/>
+		 	</td>
+	        <td title="SPS Desc.">
+				<xsl:value-of select="SPSDescription"/>
+		 	</td>
+	        <td title="Ref. Physician">
+				<xsl:value-of select="referringPhysicianName"/>
+		 	</td>
+	        <td title="Admission ID">
+				<xsl:value-of select="admissionID"/>
+		 	</td>
+	        <td title="Birthday">
+				<xsl:value-of select="patientBirthDate"/>
+		 	</td>
+	        <td title="Birthday">
+				<xsl:value-of select="patientSex"/>
+		 	</td>
+			<td>&#160;&#160;</td><!-- function -->
+		</tr>
+		<tr >
+			<td bgcolor="eeeeee" style="height:5px" colspan="8"></td> <!-- spacer -->
+		</tr>
+	</table>
+
+</table>
+</xsl:template>
 	   
 </xsl:stylesheet>
 

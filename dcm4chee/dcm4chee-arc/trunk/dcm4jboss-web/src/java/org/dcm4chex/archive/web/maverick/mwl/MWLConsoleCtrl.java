@@ -97,8 +97,6 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 	 * 
 	 * @param rq The http request.
 	 * 
-	 * @return true if filter has been changed.
-	 * 
 	 * @throws ParseException
 	 * 
 	 */
@@ -108,11 +106,15 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 		if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
 		if ( rq.getParameter("endDate") != null ) filter.setEndDate(rq.getParameter("endDate") );
 		if ( rq.getParameter("modality") != null ) filter.setModality(rq.getParameter("modality") );
-		if ( rq.getParameter("stationName") != null ) filter.setStationName(rq.getParameter("stationName") );
 		if ( rq.getParameter("stationAET") != null ) filter.setStationAET(rq.getParameter("stationAET") );
 		if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
 	}
 
+	/**
+	 * Returns the delegater that is used to query the MWLSCP or delete an MWL Entry (only if MWLSCP AET is local)
+	 * 
+	 * @return The delegator.
+	 */
 	public static MWLScuDelegate getMwlScuDelegate() {
 		return delegate;
 	}

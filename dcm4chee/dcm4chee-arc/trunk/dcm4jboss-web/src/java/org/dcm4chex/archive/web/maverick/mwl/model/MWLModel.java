@@ -7,8 +7,9 @@
 package org.dcm4chex.archive.web.maverick.mwl.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,22 +40,25 @@ public class MWLModel {
 	/** Holds the current offset for paging */
 	private int offset = 0;
 	/** Holds the limit for paging */
-	private int limit = 10;
+	private int limit = 20;
 	/** Holds the total number of results of last search. */
 	private int total = 0;
 
+	/** Holds list of MWLEntries */
 	private List mwlEntries = new ArrayList();
 
 	private MWLFilter mwlFilter;
 	
+	/** True if mwlScpAET is 'local' to allow deletion */
 	private boolean isLocal = false;
+
+	/** Comparator to sort list of SPS datasets. */
+	private Comparator comparator = new SpsDSComparator();
+	
 	/**
 	 * Creates the model.
 	 * <p>
-	 * Perform an initial media search with the default filter. <br>
-	 * (search for all media with status COLLECTING)
-	 * <p>
-	 * performs an initial availability check for MCM_SCP service.
+	 * Creates the filter instance for this model.
 	 */
 	private MWLModel() {
 		getFilter();
@@ -141,6 +145,11 @@ public class MWLModel {
 		return total;
 	}
 	
+	/**
+	 * Returns the Filter of this model.
+	 * 
+	 * @return MWLFilter instance that hold filter criteria values.
+	 */
 	public MWLFilter getFilter() {
 		if ( mwlFilter == null ) {
 			mwlFilter = new MWLFilter();
@@ -149,12 +158,21 @@ public class MWLModel {
 	}
 	
 	/**
+	 * Return a list of MWLEntries for display.
+	 * 
 	 * @return Returns the mwlEntries.
 	 */
 	public List getMwlEntries() {
 		return mwlEntries;
 	}
 	/**
+	 * Returns true if the MwlScpAET is 'local'.
+	 * <p>
+	 * <DL>
+	 * <DT>If it is local:</DT>
+	 * <DD>  1) Entries can be deleted. (shows a button in view)</DD>
+	 * <DD>  2) The query for the working list is done directly without a CFIND.</DD>
+	 * </DL>
 	 * @return Returns the isLocal.
 	 */
 	public boolean isLocal() {
@@ -162,15 +180,21 @@ public class MWLModel {
 	}
 
 	/**
+	 * Update the list of MWLEntries for the view.
+	 * <p>
+	 * The query use the search criteria values from the filter and use offset and limit for paging.
+	 * <p>
+	 * if <code>newSearch is true</code> will reset paging (set <code>offset</code> to 0!)
 	 * @param newSearch
 	 */
 	public void filterWorkList(boolean newSearch) {
-		// TODO Auto-generated method stub
+		
 		if ( newSearch ) offset = 0;
 		//_filterTest();
 		Dataset searchDS = getSearchDS( mwlFilter );
 		isLocal = MWLConsoleCtrl.getMwlScuDelegate().isLocal();
 		List l = MWLConsoleCtrl.getMwlScuDelegate().findMWLEntries( searchDS );
+		Collections.sort( l, comparator );
 		total = l.size();
 		int end;
 		if ( offset >= total ) {
@@ -190,18 +214,42 @@ public class MWLModel {
 	}
 
 	/**
-	 * @param mwlFilter2
-	 * @return
+	 * Returns the query Dataset with search criteria values from filter argument.
+	 * <p>
+	 * The Dataset contains all fields that should be in the result; 
+	 * the 'merging' fields will be set to the values from the filter.
+	 * 
+	 * @param mwlFilter2 The filter with search criteria values.
+	 * 
+	 * @return The Dataset that can be used for query.
 	 */
 	private Dataset getSearchDS(MWLFilter filter) {
 		Dataset ds = DcmObjectFactory.getInstance().newDataset();
+		//requested procedure
+		ds.putSH( Tags.RequestedProcedureID );
+		ds.putUI( Tags.StudyInstanceUID );
+		//imaging service request
+		ds.putSH( Tags.AccessionNumber, mwlFilter.getAccessionNumber() );
+		ds.putLT( Tags.ImagingServiceRequestComments );
+		ds.putPN( Tags.RequestingPhysician );
+		ds.putPN( Tags.ReferringPhysicianName );
+		ds.putLO( Tags.PlacerOrderNumber );
+		ds.putLO( Tags.FillerOrderNumber );
+		//Visit Identification
+		ds.putLO( Tags.AdmissionID );
+		//Patient Identification
+		ds.putPN( Tags.PatientName, mwlFilter.getPatientName() );
+		ds.putLO( Tags.PatientID);
+		//Patient demographic
+		ds.putDA( Tags.PatientBirthDate );
+		ds.putCS( Tags.PatientSex );
+		//Sched. procedure step seq
 		DcmElement elem = ds.putSQ( Tags.SPSSeq );
 		Dataset ds1 = elem.addNewItem();
 		ds1.putAE( Tags.ScheduledStationAET, filter.getStationAET() );
 		ds1.putSH( Tags.SPSID );
 		ds1.putCS( Tags.Modality, filter.getModality() );
 		ds1.putPN( Tags.ScheduledPerformingPhysicianName );
-		ds1.putLO( Tags.SPSDescription );
 		if ( filter.getStartDate() != null || filter.getEndDate() != null ) {
 			Date startDate = null, endDate = null;
 			if ( filter.startDateAsLong() != null ) 
@@ -214,54 +262,28 @@ public class MWLModel {
 			ds1.putDA( Tags.SPSStartDate );
 			ds1.putTM( Tags.SPSStartTime );
 		}
-		ds1.putSH( Tags.ScheduledStationName, mwlFilter.getStationName() );
-		ds.putPN( Tags.PatientName, mwlFilter.getPatientName() );
-		ds.putLO( Tags.PatientID);
-		ds.putSH( Tags.AccessionNumber, mwlFilter.getAccessionNumber() );
-		ds.putSH( Tags.RequestedProcedureID );
+		ds1.putSH( Tags.ScheduledStationName );
+		//sched. protocol code seq;
+		DcmElement spcs = ds1.putSQ( Tags.ScheduledProtocolCodeSeq );
+		Dataset dsSpcs = spcs.addNewItem();
+		dsSpcs.putSH( Tags.CodeValue );
+		dsSpcs.putLO( Tags.CodeMeaning );
+		dsSpcs.putSH( Tags.CodingSchemeDesignator );
+		// or 
+		ds1.putLO( Tags.SPSDescription );
+		
+		//Req. procedure code seq
+		DcmElement rpcs = ds.putSQ( Tags.RequestedProcedureCodeSeq );
+		Dataset dsRpcs = rpcs.addNewItem();
+		dsRpcs.putSH( Tags.CodeValue );
+		dsRpcs.putLO( Tags.CodeMeaning );
+		dsRpcs.putSH( Tags.CodingSchemeDesignator );
+		// or 
+		ds.putLO( Tags.RequestedProcedureDescription );
+
 		return ds;
 	}
 
-	private void _filterTest() {
-		int len = offset+limit;
-		total = 100;
-		if ( len > total ) len = total;
-		mwlEntries.clear();
-		for ( int i = offset ; i < len ; i++ ) {
-			mwlEntries.add( new MWLEntry( _getTestDS(i) ) );
-		}
-		
-	}
-	/**
-	 * @param i
-	 * @return
-	 */
-	private Dataset _getTestDS(int i) {
-		Dataset ds = DcmObjectFactory.getInstance().newDataset();
-		DcmElement elem = ds.putSQ( Tags.SPSSeq );
-		Dataset ds1 = elem.addNewItem();
-		ds1.putAE( Tags.ScheduledStationAET, "AET"+i );
-		ds1.putSH( Tags.SPSID, "101."+i);
-		if ( mwlFilter.getModality() == null ) {
-			ds1.putCS( Tags.Modality, i % 2 == 0 ? "MR":"CT" );
-		} else {
-			ds1.putCS( Tags.Modality, mwlFilter.getModality() );
-		}
-		ds1.putPN( Tags.ScheduledPerformingPhysicianName, "Last"+(i/3)+"^First"+(i%3));
-		ds1.putLO( Tags.SPSDescription, "desc"+i);
-		long l = System.currentTimeMillis() - i*3600000l;
-		ds1.putDT( Tags.SPSStartDateAndTime, new Date(l) );
-		if ( mwlFilter.getStationName() == null ) {
-			ds1.putSH( Tags.ScheduledStationName, ( i % 2 == 0 ? "MR":"CT") + "-Station"+(i/5) );
-		} else {
-			ds1.putSH( Tags.ScheduledStationName, mwlFilter.getStationName() );
-		}
-		ds.putPN( Tags.PatientName, mwlFilter.getPatientName()+i );
-		ds.putLO( Tags.PatientID, "pat"+i);
-		ds.putSH( Tags.AccessionNumber, "acc"+i);
-		ds.putSH( Tags.RequestedProcedureID, "req"+i);
-		return ds;
-	}
 
 	/**
 	 * Goto previous page.
@@ -283,4 +305,60 @@ public class MWLModel {
 			filterWorkList( false );
 		}
 	}
+	
+	/**
+	 * Inner class that compares two datasets for sorting Scheduled Procedure Steps 
+	 * according scheduled Procedure step start date.
+	 * 
+	 * @author franz.willer
+	 *
+	 * TODO To change the template for this generated type comment go to
+	 * Window - Preferences - Java - Code Style - Code Templates
+	 */
+	public class SpsDSComparator implements Comparator {
+
+		public SpsDSComparator() {
+			
+		}
+
+		/**
+		 * Compares the scheduled procedure step start date and time of two Dataset objects.
+		 * <p>
+		 * USe either SPSStartDateAndTime or SPSStartDate and SPSStartTime to get the date.
+		 * <p>
+		 * Use the '0' Date (new Date(0l)) if the date is not in the Dataset.
+		 * <p>
+		 * Compares its two arguments for order. Returns a negative integer, zero, or a positive integer 
+		 * as the first argument is less than, equal to, or greater than the second.
+		 * <p>
+		 * Throws an Exception if one of the arguments is null or not a Dataset object.
+		 * 
+		 * @param arg0 	First argument
+		 * @param arg1	Second argument
+		 * 
+		 * @return <0 if arg0<arg1, 0 if equal and >0 if arg0>arg1
+		 */
+		public int compare(Object arg0, Object arg1) {
+			Dataset ds1 = (Dataset) arg0;
+			Dataset ds2 = (Dataset) arg1;
+			Date d1 = _getStartDateAsLong( ds1 );
+			return d1.compareTo( _getStartDateAsLong( ds2 ) );
+		}
+
+		/**
+		 * @param ds1 The dataset
+		 * 
+		 * @return the date of this SPS Dataset.
+		 */
+		private Date _getStartDateAsLong(Dataset ds) {
+			Dataset spsItem = ds.get( Tags.SPSSeq ).getItem();//scheduled procedure step sequence item.
+			Date d = spsItem.getDate( Tags.SPSStartDateAndTime );
+			if ( d == null ) {
+				d = spsItem.getDateTime( Tags.SPSStartDate, Tags.SPSStartTime );
+			}
+			if ( d == null ) d = new Date(0l);
+			return d;
+		}
+	}
+	
 }

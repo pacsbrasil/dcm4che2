@@ -10,14 +10,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 
 /**
  * @author franz.willer
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Holds a single entry of the MWLList from the model.
+ * <p>
+ * This class is a wrapper over a Dataset to get values with getter methods for the view. 
  */
 public class MWLEntry {
 
@@ -25,7 +27,11 @@ public class MWLEntry {
 	private Dataset spsItem;
 	
 	/** The Date/Time formatter to format date/time values. */
-	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	private static final SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	/** The Date/Time formatter to format date/time values. */
+	private static final SimpleDateFormat shortDTformatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+	/** The Date formatter to format date values. */
+	private static final SimpleDateFormat dformatter = new SimpleDateFormat("yyyy/MM/dd");
 	
 	
 	public MWLEntry( Dataset ds ) {
@@ -52,23 +58,12 @@ public class MWLEntry {
 		return pn.get( PersonName.GIVEN )+" "+pn.get( PersonName.FAMILY );
 	}
 	/**
-	 * @return Returns the reqProcedureDesc.
-	 */
-	public String getReqProcedureDesc() {
-		return ds.getString( Tags.RequestedProcedureDescription );
-	}
-	/**
 	 * @return Returns the reqProcedureID.
 	 */
 	public String getReqProcedureID() {
 		return ds.getString( Tags.RequestedProcedureID );
 	}
-	/**
-	 * @return Returns the spsDesc.
-	 */
-	public String getSpsDesc() {
-		return spsItem.getString( Tags.SPSDescription );
-	}
+
 	/**
 	 * @return Returns the spsStartDateTime.
 	 */
@@ -79,7 +74,7 @@ public class MWLEntry {
 		}
 		if ( d == null ) return "";
 		
-		return formatter.format( d );
+		return shortDTformatter.format( d );
 	}
 
 	/**
@@ -104,5 +99,74 @@ public class MWLEntry {
 	}
 	public String getPatientID() {
 		return ds.getString( Tags.PatientID );
+	}
+	
+	public String getStudyUID() {
+		return ds.getString( Tags.StudyInstanceUID );
+	}
+	public String getImgServiceReqComments() {
+		return ds.getString( Tags.ImagingServiceRequestComments );
+	}
+	public String getRequestingPhysician() {
+		return ds.getString( Tags.RequestingPhysician );
+	}
+	public String getReferringPhysicianName() {
+		return ds.getString( Tags.ReferringPhysicianName );
+	}
+	public String getPlacerOrderNumber() {
+		return ds.getString( Tags.PlacerOrderNumber );
+	}
+	public String getFillerOrderNumber() {
+		return ds.getString( Tags.FillerOrderNumber );
+	}
+	//Visit Identification
+	public String getAdmissionID() {
+		return ds.getString( Tags.AdmissionID );
+	}
+	//Patient demographic
+	public String getPatientBirthDate() {
+		Date d = ds.getDate( Tags.PatientBirthDate );
+		if ( d == null ) return "";
+		return dformatter.format( d );
+	}
+	
+	public String getPatientSex() {
+		return ds.getString( Tags.PatientSex );
+	}
+	
+	public String getSPSDescription() {
+		String desc = null;
+		DcmElement spcs = spsItem.get( Tags.ScheduledProtocolCodeSeq );
+		if ( spcs != null ) {
+			desc = getCodeValues( spcs );
+		} else {
+			desc = spsItem.getString( Tags.SPSDescription );
+		}
+		return desc;
+	}
+	
+	private String getCodeValues( DcmElement elem ) {
+		int len = elem.vm();
+		Dataset dsCode;
+		StringBuffer sb = new StringBuffer();
+		for ( int i = 0 ; i < len ; i++ ) {
+			dsCode = elem.getItem( i );
+			if ( i > 0 ) sb.append("/");
+			sb.append( dsCode.getString( Tags.CodeMeaning ) ).append("[");
+			sb.append( dsCode.getString( Tags.CodeValue ) ).append("]");
+		}
+		return sb.toString();
+		
+	}
+	
+	public String getReqProcedureDescription() {
+		String desc = null;
+		DcmElement rpcs = ds.get( Tags.RequestedProcedureCodeSeq );
+		if ( rpcs != null ) {
+			desc = getCodeValues( rpcs );
+		} else {
+			desc = ds.getString( Tags.RequestedProcedureDescription );
+		}
+		return desc;
 	}
 }

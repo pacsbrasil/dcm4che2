@@ -30,8 +30,6 @@ public class MWLFilter {
 	private Long endDateAsLong;
 	/** Holds the modality of this filter. */
 	private String modality;
-	/** Holds the station name of this filter. */
-	private String stationName;
 	/** Holds the station AET of this filter. */
 	private String stationAET;
 	/** Holds the accession number of this filter. */
@@ -167,25 +165,6 @@ public class MWLFilter {
 			modality = null;
 		else 
 			modality = mod;
-	}
-	/**
-	 * returns the station name filter value.
-	 * 
-	 * @return Filter value of station name field or null.
-	 */
-	public String getStationName() {
-		return stationName;
-	}
-	
-	/**
-	 * set the filter station name.
-	 * @param name
-	 */
-	public void setStationName( String name ){
-		if ( name == null || name.trim().length() < 1 ) 
-			stationName = null;
-		else
-			stationName = name;
 	}
 	
 	/**

@@ -29,9 +29,9 @@ public class MWLScuDelegate {
 	    private static Logger log = Logger.getLogger( MWLScuDelegate.class.getName() );
 
 	    /** 
-	     * Iinitialize the WADO service delegator.
+	     * Iinitialize the MWLScu service delegator.
 	     * <p>
-	     * Set the name of the WADOService MBean with the servlet config param 'wadoServiceName'.
+	     * Set the name of the MwlScuService MBean with the servlet config param 'mwlScuServiceName'.
 	     * 
 	     * @param config The ServletConfig object.
 	     */
@@ -73,6 +73,16 @@ public class MWLScuDelegate {
 	        return resp;
 		}
 		
+		/**
+		 * Checks if the MwlScpAET is local.
+		 * <p>
+		 * This means, that the MWLSCP is in the same container.
+		 * <p>
+		 * If it runs in the same container, the query can be done directly without a CFIND.
+		 * Also we can allow deletion of MWLEntries.
+		 * 
+		 * @return true if the MWLSCP runs in the same container.
+		 */
 		public boolean isLocal() {
 			try {
 		        Object o = server.invoke(mwlScuServiceName,
@@ -88,6 +98,14 @@ public class MWLScuDelegate {
 			return false;
 		}
 		
+		/**
+		 * Deletes an MWL entry with given id.
+		 * <p>
+		 * This method should only be called if isLocal() returns true!
+		 * 
+		 * @param spsID The ID of the MWLEntry (Scheduled Procedure Step ID)
+		 * @return
+		 */
 		public boolean deleteMWLEntry( String spsID ) {
 			try {
 		        Object o = server.invoke(mwlScuServiceName,
