@@ -17,7 +17,7 @@ package org.dcm4chex.archive.common;
 public class Availability {
 
     private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
-            "OFFLINE"};
+            "OFFLINE", "UNAVAILABLE"};
 
     public static final String toString(int value) {
         return AVAILABILITY[value];
