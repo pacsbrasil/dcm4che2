@@ -417,6 +417,7 @@ public class ScannerCalibration
                 }
             }
         }
+/*        
         if (log.isDebugEnabled()) {
             StringBuffer sb = new StringBuffer("calculated GrayscaleODs:");
             for (int i = 0; i < invPx.length; ++i) {
@@ -425,7 +426,7 @@ public class ScannerCalibration
             }
             log.debug(sb.toString());
         }
-
+*/
         return result;
     }
 

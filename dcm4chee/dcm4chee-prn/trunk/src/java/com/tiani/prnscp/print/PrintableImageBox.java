@@ -199,11 +199,13 @@ class PrintableImageBox
                      + "\n\tmaxDensity: " + maxDensity
                      + "\n\tillumination: " + illumination
                      + "\n\treflectedAmbientLight: " + reflectedAmbientLight);
+/*
              StringBuffer sb = new StringBuffer("pValToDDL:");
              for (int i = 0; i < pValToDDL.length; ++i) {
                  sb.append("\n\t").append(pValToDDL[i] & 0xff);
              }
              log.debug(sb.toString());
+*/
         }
     }
 

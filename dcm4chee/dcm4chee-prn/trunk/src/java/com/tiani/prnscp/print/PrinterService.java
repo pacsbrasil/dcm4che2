@@ -2297,6 +2297,10 @@ public class PrinterService
         Chromaticity chromaticity = color.booleanValue()
                  ? Chromaticity.COLOR
                  : Chromaticity.MONOCHROME;
+        log.info("Printing " + fname);
+        if (configInfo.length() > 0) {
+            calibrate(chromaticity);
+        }
         PrintImageJob job =
                 new PrintImageJob(this, new File(fname), configInfo, chromaticity);
         PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
@@ -2304,10 +2308,6 @@ public class PrinterService
         setPrintRequestAttribute(ps, getDefaultPrinterResolution(), aset);
         setPrintRequestAttribute(ps, chromaticity, aset);
         setPrintRequestAttribute(ps, new JobName(job.getName(), null), aset);
-        log.info("Printing " + fname);
-        if (configInfo.length() > 0) {
-            calibrate(chromaticity);
-        }
         print(job, aset);
         log.info("Printed " + fname);
     }
@@ -2586,9 +2586,10 @@ public class PrinterService
                 }
             }
             invokeOnPrintSCPName("onJobStartPrinting", scheduledJob.getPath());
-            scheduledJob.initFilmBoxes(this);
             PrintService ps = getPrintService();
             PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+            Chromaticity chromaticity = toChromaticity(scheduledJob.isColor());
+            setPrintRequestAttribute(ps, chromaticity, aset);
             String resId = scheduledJob.getRequestedResolutionID();
             setPrintRequestAttribute(ps,
                     resId != null
@@ -2602,9 +2603,8 @@ public class PrinterService
             }
             setPrintRequestAttribute(ps,
                     new JobName(scheduledJob.getName(), null), aset);
-            Chromaticity chromaticity = toChromaticity(scheduledJob.isColor());
-            setPrintRequestAttribute(ps, chromaticity, aset);
             calibrate(chromaticity);
+            scheduledJob.initFilmBoxes(this);
             print(scheduledJob, aset);
             log.info("Finished processing job - " + scheduledJob.getJobID());
             try {

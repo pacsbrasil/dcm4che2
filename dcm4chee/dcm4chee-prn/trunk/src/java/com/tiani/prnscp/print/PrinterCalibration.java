@@ -40,6 +40,7 @@ public class PrinterCalibration
     // Attributes ----------------------------------------------------
     private Category log;
     private int skipNonMonotonicODs = 10;
+    private float monotonicTolerance = 0.02f;
     private int monochromeMinDensity;
     private int monochromeMaxDensity;
     private int colorMinDensity;
@@ -228,11 +229,6 @@ public class PrinterCalibration
         for (int pv = 0; pv < od.length; ++pv) {
             od[pv] = (float) density(pv, pvmax, jmin, jmax, l0, la);
         }
-             StringBuffer sb = new StringBuffer("PValToGsdfOD:");
-             for (int i = 0; i < od.length; ++i) {
-                 sb.append("\n\t").append(od[i] & 0xff);
-             }
-             log.debug(sb.toString());
         return od;
     }
 
@@ -320,27 +316,37 @@ public class PrinterCalibration
         
         // ensure monoton increasing
         float max = ddl2od[255];
+        float min = max;
         float minMax = max * (100 - skipNonMonotonicODs) / 100;
-        int minUsed = 0;
+        int minUsed = 255;
         int maxUsed = 255;
-        for (int i = 254; i > 0; --i) {
+        for (int i = 254; i >= 0; --i) {
             final float val = ddl2od[i];
-            if (val < ddl2od[i + 1]) {
-                continue;
-            }
             if (val > max) {
                 max = val;
                 minMax = max * (100 - skipNonMonotonicODs) / 100;
             }
-            if (val > minMax) {
-                maxUsed = i;
+            if (val < min) {
+                min = val;
+                minUsed = i;
+            }
+            if (val > minMax && (val - min) > monotonicTolerance) {
+                min = val;
+                minUsed = maxUsed = i;
             }
         }
-        Arrays.sort(ddl2od, 0, maxUsed);
+        Arrays.sort(ddl2od, minUsed, maxUsed+1);
         Arrays.fill(ddl2od, maxUsed+1, 256, Float.POSITIVE_INFINITY);
-        while (ddl2od[minUsed] == ddl2od[minUsed+1]) {
-            ddl2od[minUsed++] = Float.NEGATIVE_INFINITY;
-        }        
+        Arrays.fill(ddl2od, 0, minUsed, Float.NEGATIVE_INFINITY);
+        for (int ddl1 = minUsed, ddl2 = minUsed; ddl1 < maxUsed; ddl1 = ddl2) {
+            final float od1 = ddl2od[ddl1];
+            float dOD;
+            while ((dOD = ddl2od[++ddl2] - od1) == 0)
+                ;
+            for (int i = 1, n = ddl2 - ddl1; i < n; ++i) {
+                ddl2od[ddl1+i] = od1 + dOD * i / n;
+            }
+        }
         if (Chromaticity.COLOR.equals(chromaticity)) {
             colorMinDensity = (int) (ddl2od[minUsed] * 100);
             colorMaxDensity = (int) (ddl2od[maxUsed] * 100);
@@ -358,7 +364,7 @@ public class PrinterCalibration
             log.debug(prompt.toString());
         }
         log.info("Printer OD range [" + chromaticity
-            + "]: total=" + ddl2od[minUsed] + "-" + max
+            + "]: total=" + min + "-" + max
             + ", used=" + ddl2od[minUsed] + "-" + ddl2od[maxUsed]
             + ", DDL=" + (255-minUsed) + "-" + (255-maxUsed));
     }
