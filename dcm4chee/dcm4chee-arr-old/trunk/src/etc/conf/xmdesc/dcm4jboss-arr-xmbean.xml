@@ -11,8 +11,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="dcm4jboss-arr.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -65,9 +63,9 @@
       <name>NumClients</name>
       <type>int</type>
    </attribute>
-   &defattr;
+   &defaultAttributes;
 
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
 </mbean>
     

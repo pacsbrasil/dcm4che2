@@ -5,7 +5,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.3.2"/>
+	<property name="version" value="0.3.3"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
@@ -21,7 +21,9 @@
 	<property name="xdoclet.verbose" value="off"/>	
 
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-3.2.3"/>		
+	<property name="jboss.home" value="${user.home}/jboss-3.2.5"/>		
+	<property name="tomcat.dir" value="${jboss.home}/server/default/deploy/jbossweb-tomcat50.sar"/>
+	<property name="servlet-api.jar" value="${tomcat.dir}/servlet-api.jar"/>
 
 	<path id="class.path">
 		<pathelement location="${dcm4che.jar}"/>
@@ -31,6 +33,7 @@
 		<fileset dir="${jboss.home}/server/default/lib">
 			<include name="*.jar"/>
 		</fileset>
+		<pathelement location="${servlet-api.jar}"/>
 	</path>
 	
 	<path id="xdoclet.path">
