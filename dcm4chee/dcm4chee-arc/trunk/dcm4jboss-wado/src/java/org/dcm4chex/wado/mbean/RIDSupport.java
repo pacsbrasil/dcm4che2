@@ -314,7 +314,7 @@ public class RIDSupport {
 	private File renderSRFile(File inFile, File outFile ) throws IOException, TransformerException {
         outFile.getParentFile().mkdirs();
         File tmpFile = new File( outFile.toString()+".tmp");
-        //TODO tmpFile.deleteOnExit();
+        tmpFile.deleteOnExit();
         DataInputStream in = new DataInputStream(new BufferedInputStream(
                 new FileInputStream(inFile)));
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -334,7 +334,7 @@ public class RIDSupport {
         Transformer t = template.newTransformer();
         t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
         out.close();
-        //TODO tmpFile.delete();
+        tmpFile.delete();
         if ( ! outFile.exists() ) return null;
         return outFile;
 	}
