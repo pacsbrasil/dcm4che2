@@ -42,7 +42,8 @@ public class JMSDelegate {
      */
     public static final String PROPERTY_SCHEDULED_DELIVERY = "JMS_JBOSS_SCHEDULED_DELIVERY";
 
-    public static void startListening(String name, MessageListener listener) {
+    public static void startListening(String name, MessageListener listener)
+    		throws JMSException {
         if (map.containsKey(name))
             throw new IllegalStateException("Already listening on queue " + name);
         map.put(name, new JMSDelegate(name, listener));
@@ -77,7 +78,8 @@ public class JMSDelegate {
 
     private int deliveryMode = DeliveryMode.PERSISTENT;
 
-    private JMSDelegate(String name, MessageListener listener) {
+    private JMSDelegate(String name, MessageListener listener)
+    		throws JMSException {
         InitialContext iniCtx = null;
         QueueConnectionFactory qcf = null;
         try {
@@ -105,6 +107,7 @@ public class JMSDelegate {
             conn.start();
         } catch (JMSException e) {
             close();
+            throw e;
         }
     }
     

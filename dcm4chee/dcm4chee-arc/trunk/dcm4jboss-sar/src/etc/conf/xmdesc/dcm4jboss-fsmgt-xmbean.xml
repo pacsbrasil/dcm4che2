@@ -25,25 +25,14 @@
       <description>List directories/mount points on this DICOM Node.
       Use ';' on Windows and ':' on Unix-like platforms to separate
       multiple directory path names. Relative path names are
-      resolved relative to INSTALL_DIR/server/pacs/.
+      resolved relative to INSTALL_DIR/server/pacs/. '*'-suffix marks current 
+      Storage Directory used for storage of new received DICOM Instances by the
+      Storage SCP on this DICOM Node.      
       </description>
       <name>DirectoryPathList</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="archive" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getStorageDirectory"
-      setMethod="setStorageDirectory">
-      <description>Specifies Directory currently used for storage of new
-      received DICOM Instances by the Storage SCP on this DICOM Node. Must
-      be listed in DirectoryPathList.
-      </description>
-      <name>StorageDirectory</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="archive" />
+         <value value="archive*" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

@@ -45,7 +45,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 
     private String retrieveAET = "QR_SCP";
 
-    private File curDir = new File("archive");
+    private int curDirIndex = 0;
     
     private String mountFailedCheckFile = "NO_MOUNT";
 
@@ -67,18 +67,13 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         EJBHomeFactory.setEjbProviderURL(local2null(ejbProviderURL));
     }
 
-    public final String getStorageDirectory() {
-        return curDir.getPath();
-    }
-
-    public final void setStorageDirectory(String str) {
-        this.curDir = new File(str);
-    }
-
     public final String getDirectoryPathList() {
         StringBuffer sb = new StringBuffer();
         for (int i = 0, n = dirPathList.size(); i < n; i++) {
-            sb.append(dirPathList.get(i)).append(File.pathSeparatorChar);
+            sb.append(dirPathList.get(i));
+            if (i == curDirIndex)
+                sb.append('*');
+            sb.append(File.pathSeparatorChar);
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();
@@ -88,8 +83,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         StringTokenizer st = new StringTokenizer(str, File.pathSeparator);
         ArrayList list = new ArrayList();
         HashSet set = new HashSet();
-        while (st.hasMoreTokens()) {
+        int dirIndex = 0;
+        for (int i = 0; st.hasMoreTokens(); ++i) {
             String tk = st.nextToken();
+            int len = tk.length();
+            if (tk.charAt(len-1) == '*') {
+                dirIndex = i;
+                tk = tk.substring(0, len-1);
+            }                
             set.add(tk.replace(File.separatorChar, '/'));
             list.add(new File(tk));
         }
@@ -98,6 +99,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
                         "DirectoryPathList must NOT be emtpy");
         dirPathList = list;
         fsPathSet = set;
+        curDirIndex = dirIndex;
     }
 
     public final String getRetrieveAET() {
@@ -181,17 +183,18 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     }
 
     public FileSystemInfo selectStorageFileSystem() throws IOException {
+        File curDir = (File) dirPathList.get(curDirIndex);
         FileSystemInfo info = initFileSystemInfo(curDir);
         if (info.getAvailable() > highWaterMark)
             return info;
-        final int off = dirPathList.indexOf(curDir);
         for (int i = 1, n = dirPathList.size(); i < n; ++i) {
-            File dir = (File) dirPathList.get((off + i) % n);
+            int dirIndex = (curDirIndex + i) % n;
+            File dir = (File) dirPathList.get(dirIndex);
             info = initFileSystemInfo(dir);
             if (info.getAvailable() > highWaterMark) {
                 log.info("High Water Mark reached on current Storage Directory "
                         + curDir + " - switch Storage Directory to " + dir);
-                curDir = dir;
+                curDirIndex = dirIndex;
                 return info;
             }
         }
