@@ -82,13 +82,14 @@ public class PrinterService
    
    // Attributes ----------------------------------------------------   
    private ObjectName printerCalibration;
+   private ObjectName printerConfiguration;
    private PrinterCalibrationService calibrationService;
+   private PrinterConfigurationService configurationService;
    private QueueConnection conn;
    private QueueSession session;
    private String queueName;
    private long notifCount = 0;
    
-   private Dataset printerConfiguration;
    private String printerConfigurationFile = "conf/prncfg.xml";
    private int status = NORMAL;
    private String statusInfo = "NORMAL";
@@ -113,6 +114,10 @@ public class PrinterService
       return calibrationService;
    }
 
+   public PrinterConfigurationService getConfigurationService() {
+      return configurationService;
+   }
+   
    // PrinterMBean implementation -----------------------------------
    
    /** Getter for property printerCalibration.
@@ -127,6 +132,20 @@ public class PrinterService
     */
    public void setPrinterCalibration(ObjectName printerCalibration) {
       this.printerCalibration = printerCalibration;
+   }
+
+   /** Getter for property printerConfiguration.
+    * @return Value of property printerConfiguration.
+    */
+   public ObjectName getPrinterConfiguration() {
+      return printerConfiguration;
+   }
+   
+   /** Setter for property printerConfiguration.
+    * @param printerConfiguration New value of property printerConfiguration.
+    */
+   public void setPrinterConfiguration(ObjectName printerConfiguration) {
+      this.printerConfiguration = printerConfiguration;
    }
    
    /** Getter for property status.
@@ -167,50 +186,6 @@ public class PrinterService
       this.queueName = queueName;
    }
       
-   /** Getter for property printerConfigurationFile.
-    * @return Value of property printerConfigurationFile.
-    */
-   public String getPrinterConfigurationFile() {
-      return printerConfigurationFile;
-   }
-   
-   /** Setter for property printerConfigurationFile.
-    * @param printerConfigurationFile New value of property printerConfigurationFile.
-    */
-   public void setPrinterConfigurationFile(String printerConfigurationFile) {
-      this.printerConfigurationFile = printerConfigurationFile;
-      
-   }
-   
-   /** Getter for property printerConfiguration.
-    * @return Value of property printerConfiguration.
-    */
-   public Dataset getPrinterConfiguration() {
-      return printerConfiguration;
-   }
-   
-   public int countImageBoxes(String imageDisplayFormat) {
-      StringTokenizer tok = new StringTokenizer(imageDisplayFormat, ",\\");
-      try {
-         String type = tok.nextToken();
-         if (type.equals("STANDARD")) {
-            int c = Integer.parseInt(tok.nextToken());
-            int r = Integer.parseInt(tok.nextToken());
-            return c * r;
-         }
-         if (type.equals("ROW") || type.equals("COL")) {
-            int sum = 0;
-            while (tok.hasMoreTokens()) {
-               sum += Integer.parseInt(tok.nextToken());
-            }
-            return sum;
-         }
-         // TO DO support of other types: SLIDE, SUPERSLIDE, CUSTOM/i
-      } catch (RuntimeException e) {
-      }
-      throw new IllegalArgumentException(imageDisplayFormat);
-   }
-   
    // MessageListener implementation -----------------------------------
    
    public void onMessage(Message msg) {
@@ -297,7 +272,8 @@ public class PrinterService
    {
       calibrationService = (PrinterCalibrationService)
          server.getAttribute(printerCalibration, "Service");
-      loadPrinterConfiguration();
+      configurationService = (PrinterConfigurationService)
+         server.getAttribute(printerConfiguration, "Service");
       Context iniCtx = new InitialContext();
       QueueConnectionFactory qcf = 
          (QueueConnectionFactory) iniCtx.lookup("ConnectionFactory");
@@ -324,26 +300,6 @@ public class PrinterService
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   private void loadPrinterConfiguration() throws Exception {
-      boolean debug = log.isDebugEnabled();
-      // Get the system home directory
-      File f = new File(printerConfigurationFile);
-      if (!f.isAbsolute()) {
-         File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
-         f = new File(systemHomeDir, printerConfigurationFile);
-      }
-      if (debug) {
-         log.debug("Loading Printer Configuration from: "
-            + f.getCanonicalPath());
-      }
-      DcmObjectFactory dof = DcmObjectFactory.getInstance();
-      Dataset ds = dof.newDataset();
-      SAXParserFactory spf = SAXParserFactory.newInstance();
-      SAXParser sp = spf.newSAXParser();
-      sp.parse(f, ds.getSAXHandler());
-      printerConfiguration = ds;
-   }
    
    // Inner classes -------------------------------------------------
 }

@@ -117,6 +117,7 @@ public class PrintScpService
    private ImageBoxService imageBoxService = new ImageBoxService(this);
          
    private ObjectName printer;
+   private ObjectName printerConfiguration;
    private ObjectName dcmServer;
    private DcmHandler dcmHandler;
    private AcceptorPolicy policy;
@@ -173,6 +174,20 @@ public class PrintScpService
       this.printer = printer;
    }
      
+   /** Getter for property printerConfiguration.
+    * @return Value of property printerConfiguration.
+    */
+   public ObjectName getPrinterConfiguration() {
+      return printerConfiguration;
+   }
+   
+   /** Setter for property printerConfiguration.
+    * @param printerConfiguration New value of property printerConfiguration.
+    */
+   public void setPrinterConfiguration(ObjectName printerConfiguration) {
+      this.printerConfiguration = printerConfiguration;
+   }
+   
    /** Getter for property queueName.
     * @return Value of property queueName.
     */
@@ -244,6 +259,12 @@ public class PrintScpService
    }
 
    // ServiceMBeanSupport overrides -----------------------------------
+   private boolean isConfigured(String attribute) throws Exception {
+      Boolean b = (Boolean)
+         server.getAttribute(printerConfiguration, attribute);
+      return b.booleanValue();
+   }
+   
    public void startService()
    throws Exception
    {
@@ -281,12 +302,14 @@ public class PrintScpService
       services.bind(UIDs.BasicGrayscaleImageBox, imageBoxService);
       services.bind(UIDs.Printer, printerService);
       services.bind(UIDs.PresentationLUT, plutService);
-      services.bind(UIDs.PrinterConfigurationRetrieval, printerConfigService);
       policy = dcmHandler.getAcceptorPolicy();
       policy.putPresContext(UIDs.BasicGrayscalePrintManagement, ts_uids);
-      policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
-      policy.putPresContext(UIDs.PresentationLUT, ts_uids);
-      policy.putPresContext(UIDs.PrinterConfigurationRetrieval, ts_uids);
+      if (isConfigured("SupportsColor")) {
+         policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
+      }
+      if (isConfigured("SupportsPresentationLUT")) {
+         policy.putPresContext(UIDs.PresentationLUT, ts_uids);
+      }
    }
    
    public void stopService()
@@ -323,8 +346,7 @@ public class PrintScpService
    
    
    // Package protected ---------------------------------------------
- 
-   
+    
    FilmSession getFilmSession(ActiveAssociation as) {
       return (FilmSession) as.getAssociation().getProperty("FilmSession");
    }
@@ -398,50 +420,6 @@ public class PrintScpService
       return dir.delete();
    }
 
-   int countImageBoxes(String format)
-      throws DcmServiceException
-   {
-      if (format == null) {
-         throw new DcmServiceException(Status.MissingAttribute);
-      }
-      try {
-         Integer n = (Integer) server.invoke(printer, "countImageBoxes", 
-                        new Object[] { format },
-                        new String[] { "java.lang.String" });
-         return n.intValue();
-      } catch (IllegalArgumentException e) {
-         throw new DcmServiceException(Status.InvalidAttributeValue, e);
-      } catch (Exception e) {
-         throw new DcmServiceException(Status.ProcessingFailure, e);
-      }
-   }
-   
-   Dataset getPrinterConfiguration()
-      throws DcmServiceException
-   {
-      try {
-         return (Dataset) server.getAttribute(printer, "PrinterConfiguration");
-      } catch (Exception e) {
-         log.error("Failed to access printer configuration", e);
-         throw new DcmServiceException(Status.ProcessingFailure, 
-            "Failed to access printer configuration");
-      }
-   }
-      
-   Dataset getPrinterConfigurationFor(String metaSOPcuid)
-      throws DcmServiceException
-   {
-      Dataset pc = getPrinterConfiguration();
-      DcmElement sq = pc.get(Tags.PrinterConfigurationSeq);
-      for (int i = 0, n = sq.vm(); i < n; ++i) {
-         Dataset item = sq.getItem(i);
-         if (metaSOPcuid.equals(item.getString(Tags.SOPClassesSupported, 0))) {
-            return item;
-         }
-      }
-      return null;
-   }
-      
    void createPrintJob(FilmSession session, boolean all)
       throws DcmServiceException
    {
@@ -586,14 +564,6 @@ public class PrintScpService
                "Failed to access printer status");
          }
          return result;
-      }      
-   };
-
-   private DcmServiceBase printerConfigService = new DcmServiceBase(){
-      protected Dataset doNGet(ActiveAssociation as, Dimse rq, Command rspCmd)
-         throws IOException, DcmServiceException
-      {
-         return getPrinterConfiguration();
       }      
    };
 }

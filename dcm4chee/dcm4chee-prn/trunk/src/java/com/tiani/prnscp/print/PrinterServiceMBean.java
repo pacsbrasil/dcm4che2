@@ -49,6 +49,16 @@ public interface PrinterServiceMBean extends ServiceMBean {
    int WARNING = 2;
    int FAILURE = 3;
       
+   /** Getter for property printerConfiguration.
+    * @return Value of property printerConfiguration.
+    */
+   public ObjectName getPrinterConfiguration();
+   
+   /** Setter for property printerConfiguration.
+    * @param printerConfiguration New value of property printerConfiguration.
+    */
+   public void setPrinterConfiguration(ObjectName printerConfiguration);
+   
    /** Getter for property printerCalibration.
     * @return Value of property printerCalibration.
     */
@@ -83,26 +93,4 @@ public interface PrinterServiceMBean extends ServiceMBean {
     * @param queueName New value of property queueName.
     */
    void setQueueName(String queueName);
-   
-   /** Getter for property printerConfiguration.
-    * @return Value of property printerConfiguration.
-    */
-   Dataset getPrinterConfiguration();
-   
-   /** Returns number of image boxes on film box for specifed image display format.
-    * @param imageDisplayFormat image display format
-    * @return number of image boxes on film box.
-    */
-   int countImageBoxes(String imageDisplayFormat);
-   
-   /** Getter for property printerConfigurationFile.
-    * @return Value of property printerConfigurationFile.
-    */
-   String getPrinterConfigurationFile();
-   
-   /** Setter for property printerConfigurationFile.
-    * @param printerConfigurationFile New value of property printerConfigurationFile.
-    */
-   void setPrinterConfigurationFile(String printerConfigurationFile);
-   
 }

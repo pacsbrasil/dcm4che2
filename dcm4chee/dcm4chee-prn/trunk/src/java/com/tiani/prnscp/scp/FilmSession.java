@@ -63,7 +63,6 @@ class FilmSession {
    private final String imageBoxCUID;
    private final String hardcopyCUID;
    private final int imageSeqTag;
-   private final Dataset prnCfgItem;
    private final LinkedHashMap filmBoxes = new LinkedHashMap();
    private String curFilmBoxUID = null;
    private FilmBox curFilmBox = null;
@@ -90,12 +89,6 @@ class FilmSession {
       this.uid = uid;
       this.session = session;
       this.dir = dir;
-      this.prnCfgItem = scp.getPrinterConfigurationFor(metaCUID);
-      if (prnCfgItem == null) {
-         scp.getLog().warn(
-            "Could not find Printer Confguration for Meta SOP Class: "
-            + metaCUID);
-      }
       check(session, rspCmd);
    }
    
@@ -185,7 +178,7 @@ class FilmSession {
       if (!checkPrintPriority(ds.getString(Tags.PrintPriority))) {
          rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
       }
-      checkMediumType(ds.getString(Tags.MediumType));
+//      checkMediumType(ds.getString(Tags.MediumType));
       if (ds.getInt(Tags.MemoryAllocation, 0) != 0) {
          rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
       }      
@@ -197,7 +190,7 @@ class FilmSession {
          || "LOW".equals(val)
          || "MED".equals(val);
    }
-   
+/*   
    private void checkMediumType(String val)
       throws DcmServiceException
    {
@@ -212,5 +205,5 @@ class FilmSession {
          throw new DcmServiceException(Status.InvalidAttributeValue);
       }
    }
-         
+*/         
 }

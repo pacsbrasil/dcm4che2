@@ -40,6 +40,7 @@ import org.dcm4che.util.UIDGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 /**
  * <description>
@@ -119,11 +120,34 @@ class FilmBoxService extends DcmServiceBase
          throw new DcmServiceException(Status.MissingAttribute);
       }
    }       
+
+   private int countImageBoxes(String imageDisplayFormat) {
+      StringTokenizer tok = new StringTokenizer(imageDisplayFormat, ",\\");
+      try {
+         String type = tok.nextToken();
+         if (type.equals("STANDARD")) {
+            int c = Integer.parseInt(tok.nextToken());
+            int r = Integer.parseInt(tok.nextToken());
+            return c * r;
+         }
+         if (type.equals("ROW") || type.equals("COL")) {
+            int sum = 0;
+            while (tok.hasMoreTokens()) {
+               sum += Integer.parseInt(tok.nextToken());
+            }
+            return sum;
+         }
+         // TO DO support of other types: SLIDE, SUPERSLIDE, CUSTOM/i
+      } catch (RuntimeException e) {
+      }
+      throw new IllegalArgumentException(imageDisplayFormat);
+   }
+   
    
    void addRefImageBox(Dataset data, String cuid)
       throws DcmServiceException
    {
-      int n = scp.countImageBoxes(data.getString(Tags.ImageDisplayFormat));
+      int n = countImageBoxes(data.getString(Tags.ImageDisplayFormat));
       DcmElement sq = data.putSQ(Tags.RefImageBoxSeq);
       for (int i = 0; i < n; ++i) {
          Dataset item = sq.addNewItem();

@@ -74,6 +74,16 @@ public interface PrintScpServiceMBean extends ServiceMBean {
     */
    void setPrinter(ObjectName printer);
    
+   /** Getter for property printerConfiguration.
+    * @return Value of property printerConfiguration.
+    */
+   public ObjectName getPrinterConfiguration();
+   
+   /** Setter for property printerConfiguration.
+    * @param printerConfiguration New value of property printerConfiguration.
+    */
+   public void setPrinterConfiguration(ObjectName printerConfiguration);
+   
    /** Getter for property queueName.
     * @return Value of property queueName.
     *
