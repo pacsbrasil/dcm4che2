@@ -17,6 +17,7 @@ import java.io.StringWriter;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -55,6 +56,7 @@ public class PrintSCUFrame extends JFrame
     private int nextImageBoxIndex;
     private int nextAnnIndex;
     private boolean colorMode = false;
+    private boolean applySeparatePresState = false;
     private Action actConnect, actRelease, actCreateFilmSession, actDeleteFilmSession,
         actCreateFilmBox, actDeleteFilmBox, actCreateImageBox, actCreatePlut, actCreateAnnotation,
         actDeletePlut, actPrintFilmSession, actPrintFilmBox, actExit;
@@ -312,7 +314,7 @@ public class PrintSCUFrame extends JFrame
         {
             public void actionPerformed(ActionEvent e)
             {
-                File file;
+                File file, psFile = null;
                 if (chooser.showOpenDialog(PrintSCUFrame.this)
                         == JFileChooser.APPROVE_OPTION) {
                     file = chooser.getSelectedFile();
@@ -360,7 +362,12 @@ public class PrintSCUFrame extends JFrame
                         //create image box
                         Boolean burnInOverlays = getBooleanFromProperty("User.BurnInOverlays"),
                                 autoScale = getBooleanFromProperty("User.AutoScale");
-                        printSCU.setImageBox(nextImageBoxIndex++, file, null, attr,
+                        if (applySeparatePresState
+                            && chooser.showOpenDialog(PrintSCUFrame.this)
+                                == JFileChooser.APPROVE_OPTION) {
+                            psFile = chooser.getSelectedFile();
+                        }
+                        printSCU.setImageBox(nextImageBoxIndex++, file, psFile, attr,
                             (burnInOverlays != null) ? burnInOverlays.booleanValue() : false,
                             (autoScale != null) ? autoScale.booleanValue() : true);
                     }
@@ -662,6 +669,16 @@ public class PrintSCUFrame extends JFrame
         subBtnPanel.add(new JLabel("Image Box"));
         JButton btnCreateImageBox = new JButton(actCreateImageBox);
         subBtnPanel.add(btnCreateImageBox);
+        JCheckBox chkUseSeparatePresState = new JCheckBox(new AbstractAction("Apply Presentation State")
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    applySeparatePresState = !applySeparatePresState;
+                }
+            });
+        chkUseSeparatePresState.setSelected(applySeparatePresState);
+        chkUseSeparatePresState.setToolTipText("Enables you to choose a separate <i>Presentation State</i> object to apply to the chosen DICOM image");
+        subBtnPanel.add(chkUseSeparatePresState);
         
         subBtnPanel = new JPanel();
         subBtnPanel.setLayout(new GridLayout(3, 1));
