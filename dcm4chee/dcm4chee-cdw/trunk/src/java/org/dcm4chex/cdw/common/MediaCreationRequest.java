@@ -132,8 +132,8 @@ public class MediaCreationRequest implements Serializable {
     public void updateStatus(String status, String info, Logger log)
             throws IOException {
         Dataset attrs = FileUtils.readDataset(requestFile, log);
-        attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
-        attrs.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.PROC_FAILURE);
+        attrs.putCS(Tags.ExecutionStatus, status);
+        attrs.putCS(Tags.ExecutionStatusInfo, info);
         writeAttributes(attrs, log);
     }
 

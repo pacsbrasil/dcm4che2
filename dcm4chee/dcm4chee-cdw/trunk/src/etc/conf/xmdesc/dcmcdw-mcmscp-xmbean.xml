@@ -181,6 +181,17 @@
          <value value="false" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isAllowCancelAlreadyCreating"
+      setMethod="setAllowCancelAlreadyCreating">
+      <description>Description not yet written.
+      </description>
+      <name>AllowCancelAlreadyCreating</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    &defattr;
    
    <!-- Operations -->

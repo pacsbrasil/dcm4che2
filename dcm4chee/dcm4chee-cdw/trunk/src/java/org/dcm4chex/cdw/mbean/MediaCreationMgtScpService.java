@@ -69,6 +69,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     private boolean defaultIncludeDisplayApplication = false;
 
     private boolean defaultPreserveInstances = false;
+    
+    private boolean allowCancelAlreadyCreating = true;
 
     private final DcmService service = new DcmServiceBase() {
 
@@ -89,6 +91,15 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
     };
 
+    public final boolean isAllowCancelAlreadyCreating() {
+        return allowCancelAlreadyCreating;
+    }
+    
+    public final void setAllowCancelAlreadyCreating(
+            boolean allowCancelAlreadyCreating) {
+        this.allowCancelAlreadyCreating = allowCancelAlreadyCreating;
+    }
+    
     public final boolean isDefaultAllowLossyCompression() {
         return defaultAllowLossyCompression;
     }
@@ -371,13 +382,13 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             }
             break;
         case CANCEL:
-            if (ExecutionStatus.CREATING.equals(status))
-                    throw new DcmServiceException(
-                            Status.MediaCreationRequestAlreadyInProgress);
             if (ExecutionStatus.DONE.equals(status)
                     || ExecutionStatus.FAILURE.equals(status))
                     throw new DcmServiceException(
                             Status.MediaCreationRequestAlreadyCompleted);
+            if (!allowCancelAlreadyCreating && ExecutionStatus.CREATING.equals(status))
+                throw new DcmServiceException(
+                        Status.MediaCreationRequestAlreadyInProgress);
             if (f.delete())
                     throw new DcmServiceException(
                             Status.CancellationDeniedForUnspecifiedReason);
