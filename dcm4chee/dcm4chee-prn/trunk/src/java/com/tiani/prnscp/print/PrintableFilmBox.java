@@ -162,7 +162,7 @@ class PrintableFilmBox implements Printable
                 null,
                 hcFile);
 
-        String adfID = service.getGrayscaleAnnotation();
+        String adfID = service.getAnnotationForPrintImage();
         annotation = new Annotation(service, adfID, totPages);
         annotation.setSession(session);
     }
