@@ -27,6 +27,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -61,7 +62,7 @@ public class PrintSCUFrame extends JFrame
     private JFileChooser chooser = new JFileChooser();
     private DcmObjectFactory dcmFactory = DcmObjectFactory.getInstance();
     private UIDGenerator uidGen = UIDGenerator.getInstance();
-    private JPanel panel;
+    private JSplitPane panel;
     private JPanel btnPanel;
     private PropertiesPanel propPanel;
 
@@ -74,14 +75,14 @@ public class PrintSCUFrame extends JFrame
     PrintSCUFrame()
     {
         Container contentPane = this.getContentPane();
-        contentPane.add(panel = new JPanel());
-        panel.setLayout(new BorderLayout());
         btnPanel = new JPanel();
-        btnPanel.setLayout(new GridLayout(4, 3));
-        panel.add(btnPanel, BorderLayout.NORTH);
+        btnPanel.setLayout(new GridLayout(2, 3));
         propPanel = new PropertiesPanel(this, log, DEFAULT_PROPERTIES_FILE);
         JScrollPane scrollingPanel = new JScrollPane(propPanel);
-        panel.add(scrollingPanel, BorderLayout.CENTER);
+        contentPane.add(panel = new JSplitPane(
+            JSplitPane.VERTICAL_SPLIT, btnPanel, scrollingPanel));
+        btnPanel.setMinimumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT/4));
+        propPanel.setMinimumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT/8));
         //Main Menus
         JMenuBar mnubar = new JMenuBar();
         setJMenuBar(mnubar);
@@ -133,7 +134,7 @@ public class PrintSCUFrame extends JFrame
                 }
                 
                 printSCU = new PrintSCU(assocRq);
-                printSCU.setAutoRefPLUT(true); //always create when Film Box is created
+                printSCU.setAutoRefPLUT(true); //always create P-LUT when Film Box is created
                 printSCU.setCreateRQwithIUID(true);
                 printSCU.setNegotiatePLUT(true);
                 printSCU.setNegotiateAnnotation(true);
@@ -227,7 +228,7 @@ public class PrintSCUFrame extends JFrame
                 actDeleteFilmSession.setEnabled(true);
             }
         };
-        actCreateFilmSession.putValue(Action.NAME, "Create Session");
+        actCreateFilmSession.putValue(Action.NAME, "Create FilmSession");
         //Create FilmBox
         actCreateFilmBox = new AbstractAction()
         {
@@ -293,6 +294,8 @@ public class PrintSCUFrame extends JFrame
                 actCreateImageBox.setEnabled(true);
                 setEnabled(false);
                 actDeleteFilmBox.setEnabled(true);
+                actCreatePlut.setEnabled(false);
+                actDeletePlut.setEnabled(false);
             }
         };
         actCreateFilmBox.putValue(Action.NAME, "Create FilmBox");
@@ -369,6 +372,8 @@ public class PrintSCUFrame extends JFrame
                     }
                     actPrintFilmSession.setEnabled(true);
                     actPrintFilmBox.setEnabled(true);
+                    if (nextImageBoxIndex >= printSCU.countImageBoxes())
+                        setEnabled(false);
                 }
             }
         };
@@ -453,7 +458,7 @@ public class PrintSCUFrame extends JFrame
                 actCreateFilmSession.setEnabled(true);
             }
         };
-        actDeleteFilmSession.putValue(Action.NAME, "Delete Session");
+        actDeleteFilmSession.putValue(Action.NAME, "Delete FilmSession");
         //Delete FilmBox
         actDeleteFilmBox = new AbstractAction()
         {
@@ -477,6 +482,8 @@ public class PrintSCUFrame extends JFrame
                 actCreateImageBox.setEnabled(false);
                 actPrintFilmBox.setEnabled(false);
                 actPrintFilmSession.setEnabled(false);
+                actCreatePlut.setEnabled(true);
+                actDeletePlut.setEnabled(true);
             }
         };
         actDeleteFilmBox.putValue(Action.NAME, "Delete FilmBox");
@@ -498,7 +505,8 @@ public class PrintSCUFrame extends JFrame
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
-                actDeletePlut.setEnabled(false);
+                setEnabled(false);
+                actCreatePlut.setEnabled(true);
             }
         };
         actDeletePlut.putValue(Action.NAME, "Delete P-LUT");
@@ -559,32 +567,64 @@ public class PrintSCUFrame extends JFrame
         onDisconnect();
         
         //set up buttons for commands
-        btnPanel.add(new JLabel(""));
+        
+        JPanel subBtnPanel = new JPanel();
+        subBtnPanel.setLayout(new GridLayout(3, 1));
+        btnPanel.add(subBtnPanel);
+        //
+        subBtnPanel.add(new JLabel("Print Server"));
         JButton btnConnect = new JButton(actConnect);
-        btnPanel.add(btnConnect);
+        subBtnPanel.add(btnConnect);
         JButton btnRelease = new JButton(actRelease);
-        btnPanel.add(btnRelease);
+        subBtnPanel.add(btnRelease);
         
+        subBtnPanel = new JPanel();
+        subBtnPanel.setLayout(new GridLayout(3, 1));
+        btnPanel.add(subBtnPanel);
+        //
+        subBtnPanel.add(new JLabel("Film Session"));
         JButton btnCreateFilmSession = new JButton(actCreateFilmSession);
-        btnPanel.add(btnCreateFilmSession);
-        JButton btnCreateFilmBox = new JButton(actCreateFilmBox);
-        btnPanel.add(btnCreateFilmBox);
-        JButton btnCreateImageBox = new JButton(actCreateImageBox);
-        btnPanel.add(btnCreateImageBox);
-        
+        subBtnPanel.add(btnCreateFilmSession);
         JButton btnDeleteFilmSession = new JButton(actDeleteFilmSession);
-        btnPanel.add(btnDeleteFilmSession);
+        subBtnPanel.add(btnDeleteFilmSession);
+
+        subBtnPanel = new JPanel();
+        subBtnPanel.setLayout(new GridLayout(3, 1));
+        btnPanel.add(subBtnPanel);
+        //
+        subBtnPanel.add(new JLabel("Film Box"));
+        JButton btnCreateFilmBox = new JButton(actCreateFilmBox);
+        subBtnPanel.add(btnCreateFilmBox);
         JButton btnDeleteFilmBox = new JButton(actDeleteFilmBox);
-        btnPanel.add(btnDeleteFilmBox);
-        JButton btnPrintFilmSession = new JButton(actPrintFilmSession);
-        btnPanel.add(btnPrintFilmSession);
+        subBtnPanel.add(btnDeleteFilmBox);
+
+        subBtnPanel = new JPanel();
+        subBtnPanel.setLayout(new GridLayout(3, 1));
+        btnPanel.add(subBtnPanel);
+        //
+        subBtnPanel.add(new JLabel("Image Box"));
+        JButton btnCreateImageBox = new JButton(actCreateImageBox);
+        subBtnPanel.add(btnCreateImageBox);
         
-        JButton btnCreatePlut = new JButton(actCreatePlut);
-        btnPanel.add(btnCreatePlut);
-        JButton btnDeletePlut = new JButton(actDeletePlut);
-        btnPanel.add(btnDeletePlut);
+        subBtnPanel = new JPanel();
+        subBtnPanel.setLayout(new GridLayout(3, 1));
+        btnPanel.add(subBtnPanel);
+        //
+        subBtnPanel.add(new JLabel("Print"));
+        JButton btnPrintFilmSession = new JButton(actPrintFilmSession);
+        subBtnPanel.add(btnPrintFilmSession);
         JButton btnPrintFilmBox = new JButton(actPrintFilmBox);
-        btnPanel.add(btnPrintFilmBox);
+        subBtnPanel.add(btnPrintFilmBox);
+        
+        subBtnPanel = new JPanel();
+        subBtnPanel.setLayout(new GridLayout(3, 1));
+        btnPanel.add(subBtnPanel);
+        //
+        subBtnPanel.add(new JLabel("Presentation LUT"));
+        JButton btnCreatePlut = new JButton(actCreatePlut);
+        subBtnPanel.add(btnCreatePlut);
+        JButton btnDeletePlut = new JButton(actDeletePlut);
+        subBtnPanel.add(btnDeletePlut);
         
         updateFromProperties();
     }
@@ -615,7 +655,7 @@ public class PrintSCUFrame extends JFrame
         catch (IOException ioe) {
             log.warn("Could not dump attributes for " + from);
         }
-        //log.info(out.toString());
+        log.info(out.toString());
     }
 
     protected String getStringFromProperty(String propertyName)
