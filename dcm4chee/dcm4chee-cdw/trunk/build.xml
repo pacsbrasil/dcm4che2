@@ -76,6 +76,15 @@
             includes="org/dcm4chex/cdw/cdrecord/**"
          />
       </zip>
+    <zip destfile="${dist.dir}/deploy/dcm4jboss-nerocmd.sar">
+       <zipfileset dir="${src.resources}"
+          fullpath="META-INF/jboss-service.xml"
+          includes="META-INF/nerocmd-service.xml"
+       />
+       <fileset dir="${build.classes.dir}"
+          includes="org/dcm4chex/cdw/nerocmd/**"
+       />
+    </zip>
    </target>
 
     <target name="clean">

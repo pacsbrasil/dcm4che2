@@ -42,7 +42,7 @@
       <name>AETofMediaWriter</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="CDRECORD=CDRecord" />
+         <value value="CDRECORD=CDRecord,NEROCMD=NeroCmd" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
