@@ -42,9 +42,11 @@ import java.net.SocketException;
  */
 public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
 {
+    private static int instCount = 0;
+    private final String name = "UDPServer-" + ++instCount;
     private final Handler handler;
     private static final Logger log = Logger.getLogger(UDPServerImpl.class);
-    private final LF_ThreadPool threadPool = new LF_ThreadPool(this);
+    private final LF_ThreadPool threadPool = new LF_ThreadPool(this, name);
     private DatagramSocket ss;
     private int port;
 
@@ -93,7 +95,7 @@ public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
 		public void run() {
 		    threadPool.join();
 		}
-	    }).start();
+	    }, name).start();
     }
 
     public void stop()

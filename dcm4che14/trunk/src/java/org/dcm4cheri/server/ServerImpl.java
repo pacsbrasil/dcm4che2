@@ -64,9 +64,11 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     
     // Attributes ----------------------------------------------------
     static final Logger log = Logger.getLogger(ServerImpl.class);
+    private static int instCount = 0;
+    private final String name = "TCPServer-" + ++instCount;
     
     private final Handler handler;
-    private LF_ThreadPool threadPool = new LF_ThreadPool(this);
+    private LF_ThreadPool threadPool = new LF_ThreadPool(this, name);
     private ServerSocket ss;
     private int port = 104;
     private List hcl = null;
@@ -163,7 +165,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         ss = ssf.createServerSocket(port);
         new Thread(new Runnable() {
             public void run() { threadPool.join(); }
-        }).start();
+        }, name).start();
     }
     
     public void stop() {
@@ -184,7 +186,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         } catch (IOException ignore) {}*/
         ss = null;
         threadPool.shutdown();
-        threadPool = new LF_ThreadPool(this);
+        threadPool = new LF_ThreadPool(this, name);
     }
     
     // LF_ThreadPool.Handler implementation --------------------------

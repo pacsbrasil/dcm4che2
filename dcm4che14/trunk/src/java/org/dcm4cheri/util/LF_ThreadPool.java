@@ -53,16 +53,19 @@ public class LF_ThreadPool
    private int running = 0;
    private int maxRunning = 0;
    private final int instNo = ++instCount;
+   private int threadNo = 0;
+   private final String name; 
    
    // Static --------------------------------------------------------
    private static int instCount = 0;
    
    // Constructors --------------------------------------------------
-   public LF_ThreadPool(Handler handler) {
+   public LF_ThreadPool(Handler handler, String name) {
       if (handler == null)
          throw new NullPointerException();
       
       this.handler = handler;
+      this.name = name;
    }
    
    // Public --------------------------------------------------------
@@ -105,42 +108,47 @@ public class LF_ThreadPool
    
    public void join()
    {
-      while (!shutdown && (maxRunning == 0 || (waiting + running) < maxRunning))
-      {
-         synchronized (mutex)
-         {
-            while (leader != null)
-            {
-               if (log.isDebugEnabled())
-                  log.debug("" + this + " - "
-                     + Thread.currentThread().getName() + " enter wait()");
-               ++waiting;
-               try { mutex.wait(); }
-               catch (InterruptedException ie)
-               {
-                  ie.printStackTrace();
-               }
-               finally { --waiting; }
-               if (log.isDebugEnabled())
-                  log.debug("" + this + " - "
-                     + Thread.currentThread().getName() + " awaked");
-            }
-            if (shutdown)
-               return;
-
-            leader = Thread.currentThread();
-            if (log.isDebugEnabled())
-               log.debug("" + this + " - New Leader"); 
-         }
-         ++running;
-         try {  
-            do {
-               handler.run(this);
-            } while (!shutdown && leader == Thread.currentThread());
-         } catch (Throwable th) {
-            log.warn("Exception thrown in " + Thread.currentThread().getName(), th);
-            shutdown();
-         } finally { --running; }
+      log.info("Thread: " + Thread.currentThread().getName() + " JOIN ThreadPool " + name);
+      try {
+	      while (!shutdown && (maxRunning == 0 || (waiting + running) < maxRunning))
+	      {
+	         synchronized (mutex)
+	         {
+	            while (leader != null)
+	            {
+	               if (log.isDebugEnabled())
+	                  log.debug("" + this + " - "
+	                     + Thread.currentThread().getName() + " enter wait()");
+	               ++waiting;
+	               try { mutex.wait(); }
+	               catch (InterruptedException ie)
+	               {
+	                  ie.printStackTrace();
+	               }
+	               finally { --waiting; }
+	               if (log.isDebugEnabled())
+	                  log.debug("" + this + " - "
+	                     + Thread.currentThread().getName() + " awaked");
+	            }
+	            if (shutdown)
+	               return;
+	
+	            leader = Thread.currentThread();
+	            if (log.isDebugEnabled())
+	               log.debug("" + this + " - New Leader"); 
+	         }
+	         ++running;
+	         try {  
+	            do {
+	               handler.run(this);
+	            } while (!shutdown && leader == Thread.currentThread());
+	         } catch (Throwable th) {
+	            log.warn("Exception thrown in " + Thread.currentThread().getName(), th);
+	            shutdown();
+	         } finally { --running; }
+	      }
+      } finally {
+          log.info("Thread: " + Thread.currentThread().getName() + " LEFT ThreadPool " + name);
       }
    }
    
@@ -202,7 +210,7 @@ public class LF_ThreadPool
    // Protected -----------------------------------------------------
    // may be overloaded to take new thread from convential thread pool
    protected void addThread(Runnable r) {
-      new Thread(r).start();
+       new Thread(r, name + "-" + (++threadNo)).start();
    }
    
    // Private -------------------------------------------------------

@@ -51,11 +51,15 @@ final class ActiveAssociationImpl
 	// Constants -----------------------------------------------------
 
 	// Attributes ----------------------------------------------------
+    private static int instCount = 0;
+    private final String name = "ActiveAssoc-" + ++instCount;
+    
+    // Static --------------------------------------------------------
 	private final AssociationImpl assoc;
 	private final DcmServiceRegistry services;
 	private final IntHashtable2 rspDispatcher = new IntHashtable2();
 	private final IntHashtable2 cancelDispatcher = new IntHashtable2();
-	private final LF_ThreadPool threadPool = new LF_ThreadPool(this);
+	private final LF_ThreadPool threadPool = new LF_ThreadPool(this, name);
 	private boolean running = false;
 
 	// Static --------------------------------------------------------
@@ -93,7 +97,7 @@ final class ActiveAssociationImpl
 		if (running)
 			throw new IllegalStateException("Already running: " + threadPool);
 
-		new Thread(this).start();
+		new Thread(this, name).start();
 	}
 
 	public Association getAssociation() {
