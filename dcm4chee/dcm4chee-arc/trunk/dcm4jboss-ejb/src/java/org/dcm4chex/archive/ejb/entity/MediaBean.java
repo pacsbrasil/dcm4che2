@@ -143,6 +143,17 @@ public abstract class MediaBean implements EntityBean {
     public abstract void setMediaStatus(int mediaStatus);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="media_status_info"
+     */
+    public abstract String getMediaStatusInfo();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setMediaStatusInfo(String info);
+
+    /**
      * @ejb.relation
      * 	name="instance-media"
      * 	role-name="media-with-instance"

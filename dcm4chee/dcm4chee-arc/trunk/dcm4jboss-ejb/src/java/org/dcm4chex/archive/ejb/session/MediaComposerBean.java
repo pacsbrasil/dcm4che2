@@ -246,6 +246,7 @@ public abstract class MediaComposerBean implements SessionBean {
         dto.setUpdatedTime(media.getUpdatedTime());
         dto.setMediaUsage(media.getMediaUsage());
         dto.setMediaStatus(media.getMediaStatus());
+        dto.setMediaStatusInfo(media.getMediaStatusInfo());
         dto.setFilesetId(media.getFilesetId());
         dto.setFilesetIuid(media.getFilesetIuid());
         dto.setMediaCreationRequestIuid(media.getMediaCreationRequestIuid());
@@ -255,7 +256,8 @@ public abstract class MediaComposerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void setMediaCreationRequestIuid(int pk, String iuid) throws FinderException {
+    public void setMediaCreationRequestIuid(int pk, String iuid)
+    		throws FinderException {
         MediaLocal media = mediaHome.findByPrimaryKey(new Integer(pk));
         media.setMediaCreationRequestIuid(iuid);
     }
@@ -263,8 +265,10 @@ public abstract class MediaComposerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void setMediaStatus(int pk, int status) throws FinderException {
+    public void setMediaStatus(int pk, int status, String info)
+    		throws FinderException {
         MediaLocal media = mediaHome.findByPrimaryKey(new Integer(pk));
         media.setMediaStatus(status);
+        media.setMediaStatusInfo(info);
     }
 }

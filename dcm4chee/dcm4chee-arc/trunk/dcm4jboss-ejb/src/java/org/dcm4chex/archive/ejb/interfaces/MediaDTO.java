@@ -33,6 +33,7 @@ public class MediaDTO implements Serializable {
     private String filesetIuid;
     private String mediaCreationRequestIuid;
     private int mediaStatus;
+    private String mediaStatusInfo;
     private long mediaUsage;
     private long createdTime;
     private long updatedTime;
@@ -100,5 +101,13 @@ public class MediaDTO implements Serializable {
 
     public final void setMediaStatus(int mediaStatus) {
         this.mediaStatus = mediaStatus;
+    }
+    
+    public final String getMediaStatusInfo() {
+        return mediaStatusInfo;
+    }
+    
+    public final void setMediaStatusInfo(String info) {
+        this.mediaStatusInfo = info;
     }
 }

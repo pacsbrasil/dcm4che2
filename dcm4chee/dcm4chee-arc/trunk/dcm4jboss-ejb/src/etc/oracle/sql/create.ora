@@ -112,9 +112,10 @@ CREATE SEQUENCE media_pk_seq;
 CREATE TABLE media (
 	pk          	NUMBER PRIMARY KEY,
 	fileset_iuid	VARCHAR2(255) NOT NULL,
-	fileset_id		VARCHAR2(255), 
-	media_rq_iuid	VARCHAR2(255),
-	media_status	INTEGER NOT NULL,
+	fileset_id			VARCHAR2(255), 
+	media_rq_iuid		VARCHAR2(255),
+	media_status		INTEGER NOT NULL,
+	media_status_info	VARCHAR2(255),
 	media_usage		INTEGER(19) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP

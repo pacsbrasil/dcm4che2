@@ -103,14 +103,15 @@ CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 
 CREATE TABLE media (
-	pk          	SERIAL PRIMARY KEY,
-	fileset_iuid	TEXT NOT NULL,
-	fileset_id		TEXT, 
-	media_rq_iuid	TEXT,
-	media_status	INTEGER NOT NULL,
-	media_usage		INT8 NOT NULL,
-	created_time	TIMESTAMP,
-	updated_time	TIMESTAMP
+	pk          		SERIAL PRIMARY KEY,
+	fileset_iuid		TEXT NOT NULL,
+	fileset_id			TEXT, 
+	media_rq_iuid		TEXT,
+	media_status		INTEGER NOT NULL,
+	media_status_info	TEXT,
+	media_usage			INT8 NOT NULL,
+	created_time		TIMESTAMP,
+	updated_time		TIMESTAMP
 );
 CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
 CREATE INDEX media_status ON media(media_status);
