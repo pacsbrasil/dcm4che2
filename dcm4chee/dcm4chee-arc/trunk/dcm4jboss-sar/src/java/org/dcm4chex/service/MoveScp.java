@@ -21,10 +21,8 @@
 package org.dcm4chex.service;
 
 import java.io.IOException;
+import java.util.Iterator;
 
-import javax.naming.NamingException;
-
-import org.dcm4che.conf.DeviceInfo;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
@@ -35,6 +33,11 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.config.DAOFactory;
+import org.dcm4chex.config.DataAccessException;
+import org.dcm4chex.config.NetworkAEDAO;
+import org.dcm4chex.config.NetworkAEInfo;
+import org.dcm4chex.config.NetworkConnectionInfo;
 import org.jboss.logging.Logger;
 
 /**
@@ -56,20 +59,7 @@ public class MoveScp extends DcmServiceBase {
         String dest = rqCmd.getString(Tags.MoveDestination);
         Dataset rqData = rq.getDataset();
         try {
-            DeviceInfo deviceInfo = null;
-            try {
-                log.info("Query Device Info for " + dest + " from LDAP");
-                scp.getLdapConfig().connect();
-                deviceInfo = scp.getLdapConfig().getDeviceWithAET(dest);
-            } catch (NamingException e1) {
-                log.warn("Unkown Move Destination - " + dest);
-                throw new DcmServiceException(Status.MoveDestinationUnknown);
-            } catch (Exception e) {
-                log.error("QueryLDAP failed:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);
-            } finally {
-                scp.getLdapConfig().close();
-            }
+            NetworkConnectionInfo con = getNetworkConnection(dest);
             FileInfo[] fileInfo;
             try {
                 RetrieveCmd retrieveCmd =
@@ -81,7 +71,7 @@ public class MoveScp extends DcmServiceBase {
                         rq.pcid(),
                         rqCmd,
                         retrieveCmd.execute(),
-                        deviceInfo,
+                        con,
                         dest))
                     .start();
             } catch (Exception e) {
@@ -97,6 +87,31 @@ public class MoveScp extends DcmServiceBase {
             e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);
+        }
+    }
+
+    private NetworkConnectionInfo getNetworkConnection(String dest)
+        throws DcmServiceException {
+        try {
+            log.info("Query NetworkAE Info for " + dest + " from LDAP");
+            DAOFactory daoFact = DAOFactory.getLdapDAOFactory(scp.getLdapURL());
+            NetworkAEDAO aeDAO = daoFact.getNetworkAEDAO();
+            NetworkAEInfo aeInfo = aeDAO.find(dest);
+            if (aeInfo == null) {
+                log.warn("Unkown Move Destination - " + dest);
+                throw new DcmServiceException(Status.MoveDestinationUnknown);
+            }
+            Iterator it = aeInfo.getNetworkConnections().iterator();
+            if (!it.hasNext()) {
+                log.error(
+                    "No configured connection of Move Destination - " + dest);
+                throw new DcmServiceException(
+                    Status.UnableToPerformSuboperations);
+            }
+            return (NetworkConnectionInfo) it.next();
+        } catch (DataAccessException e) {
+            log.error("Query  LDAP failed", e);
+            throw new DcmServiceException(Status.UnableToPerformSuboperations);
         }
     }
 

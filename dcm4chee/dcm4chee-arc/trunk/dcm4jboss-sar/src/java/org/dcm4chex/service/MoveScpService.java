@@ -26,7 +26,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.dcm4che.conf.ldap.LdapConfig;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -54,8 +53,8 @@ public class MoveScpService
     private DcmHandler dcmHandler;
     private String dsJndiName;
     private DataSource datasource;
-    private LdapConfig ldap = new LdapConfig();
-    private MoveScp scp = new MoveScp(this);    
+    private MoveScp scp = new MoveScp(this);
+    private String ldapURL;    
 
     /**
      * @jmx.managed-attribute
@@ -88,45 +87,17 @@ public class MoveScpService
     /**
      * @jmx.managed-attribute
      */
-    public final String getLdapBaseDN() {
-        return ldap.getBaseDN();
+    public final String getLdapURL() {
+        return ldapURL;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public final void setLdapBaseDN(String baseDN) {
-        ldap.setBaseDN(baseDN);
+    public final void setLdapURL(String ldapURL) {
+        this.ldapURL = ldapURL;
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
-    public final String getLdapHost() {
-        return ldap.getHost();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public final void setLdapHost(String host) {
-        ldap.setHost(host);
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public final String getLdapPort() {
-        return ldap.getPort();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public final void setLdapPort(String port) {
-        ldap.setPort(port);
-    }
-    
     protected void startService() throws Exception {
         dcmHandler =
                 (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
@@ -162,10 +133,6 @@ public class MoveScpService
         policy.putPresContext(UIDs.PatientRootQueryRetrieveInformationModelMOVE, tsuids);
         policy.putPresContext(UIDs.StudyRootQueryRetrieveInformationModelMOVE, tsuids);
         policy.putPresContext(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE, tsuids);
-    }
-
-    public LdapConfig getLdapConfig() {
-        return ldap;
     }
 
     public DataSource getDataSource() throws NamingException {

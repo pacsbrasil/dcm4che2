@@ -21,9 +21,7 @@
     
     <attribute name="DsJndiName">java:/PostgresDS</attribute>    
 
-    <attribute name="LdapBaseDN">dc=tiani,dc=com</attribute>    
-    <attribute name="LdapHost">localhost</attribute>    
-    <attribute name="LdapPort">389</attribute>    
+    <attribute name="LdapURL">ldap://localhost:389/dc=tiani,dc=com</attribute>    
 
          
   </mbean>

@@ -34,9 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.dcm4che.conf.DeviceInfo;
-import org.dcm4che.conf.NetworkAEInfo;
-import org.dcm4che.conf.NetworkConnectionInfo;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -55,6 +52,7 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.config.NetworkConnectionInfo;
 import org.jboss.logging.Logger;
 
 /**
@@ -76,13 +74,12 @@ class MoveTask implements Runnable {
 
     private final Logger log;
     private final byte[] buffer = new byte[defaultBufferSize];
-    private final DeviceInfo deviceInfo;
     private final String moveDest;
-    private final NetworkAEInfo aeInfo;
+    private final NetworkConnectionInfo conInfo;
     private final int movePcid;
     private final Command moveRqCmd;
     private final String moveOriginatorAET;
-	private final String retrieveAET;
+    private final String retrieveAET;
     private ActiveAssociation moveAssoc;
     private final LinkedHashMap fileInfoMap = new LinkedHashMap();
     private final HashMap pcInfo = new HashMap();
@@ -99,21 +96,17 @@ class MoveTask implements Runnable {
         int movePcid,
         Command moveRqCmd,
         FileInfo[] fileInfo,
-        DeviceInfo deviceInfo,
+        NetworkConnectionInfo conInfo,
         String moveDest)
         throws DcmServiceException {
         this.log = log;
         this.moveAssoc = moveAssoc;
         this.movePcid = movePcid;
         this.moveRqCmd = moveRqCmd;
-        this.deviceInfo = deviceInfo;
+        this.conInfo = conInfo;
         this.moveDest = moveDest;
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
-		this.retrieveAET = moveAssoc.getAssociation().getCalledAET();
-        this.aeInfo = deviceInfo.getNetworkAE(moveDest);
-        if (aeInfo == null) {
-            throw new DcmServiceException(Status.ProcessingFailure);
-        }
+        this.retrieveAET = moveAssoc.getAssociation().getCalledAET();
         for (int i = 0; i < fileInfo.length; i++) {
             putFileInfo(fileInfo[i]);
         }
@@ -133,7 +126,7 @@ class MoveTask implements Runnable {
 
     private void openAssociation() throws DcmServiceException {
         try {
-            Association a = af.newRequestor(createSocket());
+            Association a = af.newRequestor(createSocket(conInfo));
             PDU ac = a.connect(createAAssociateRQ());
             if (ac instanceof AAssociateAC) {
                 storeAssoc = af.newActiveAssociation(a, null);
@@ -143,7 +136,7 @@ class MoveTask implements Runnable {
         } catch (IOException e) {}
         throw new DcmServiceException(
             Status.UnableToPerformSuboperations,
-            "Connecting " + aeInfo.getAETitle() + " failed!");
+            "Connecting " + moveDest + " failed!");
 
     }
 
@@ -171,24 +164,6 @@ class MoveTask implements Runnable {
                 af.newPresContext(rq.nextPCID(), fileInfo.sopCUID, NATIVE_TS));
         }
         return rq;
-    }
-
-    private Socket createSocket()
-        throws UnknownHostException, DcmServiceException, IOException {
-        if (!aeInfo.isInstalled(deviceInfo)) {
-            throw new DcmServiceException(
-                Status.UnableToPerformSuboperations,
-                aeInfo.getAETitle() + " not installed!");
-        }
-        NetworkConnectionInfo[] nc = aeInfo.getNetworkConnection();
-        for (int i = 0; i < nc.length; i++) {
-            if (nc[i].isInstalled(deviceInfo) && nc[i].isListening()) {
-                return createSocket(nc[i]);
-            }
-        }
-        throw new DcmServiceException(
-            Status.UnableToPerformSuboperations,
-            "No server installed at " + aeInfo.getAETitle() + "!");
     }
 
     private Socket createSocket(NetworkConnectionInfo info)
@@ -269,9 +244,7 @@ class MoveTask implements Runnable {
         storeRqCmd.putUS(
             Tags.MoveOriginatorMessageID,
             moveRqCmd.getMessageID());
-        storeRqCmd.putAE(
-            Tags.MoveOriginatorAET,
-            moveOriginatorAET);
+        storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         DataSource ds = new FileDataSource(info, buffer);
         return af.newDimse(pcid, storeRqCmd, ds);
     }
@@ -360,7 +333,7 @@ class MoveTask implements Runnable {
             "No appropriate Presentation Context for SOP Class "
                 + info.sopCUID
                 + " accepted by "
-                + aeInfo.getAETitle());
+                + moveDest);
     }
 
     private String[] compatibleTs(String ts) {
