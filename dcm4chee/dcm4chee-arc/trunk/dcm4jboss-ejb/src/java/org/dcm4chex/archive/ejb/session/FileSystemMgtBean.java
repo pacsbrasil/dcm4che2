@@ -246,10 +246,10 @@ public abstract class FileSystemMgtBean implements SessionBean {
     		tsBefore = new Timestamp( accessedBefore.longValue() );
     	}
         Collection c = getStudiesOnFilesystems( fsPathSet, tsBefore );
-        log.info("\n*****************************\nCollection of studies:"+c);
+        if ( log.isDebugEnabled() ) log.debug("Collection of studies on filesystems:"+c);
         StudyOnFileSystemLocal studyOnFs;
         StudyLocal studyLocal;
-        log.info("maxSizeToDel:"+maxSizeToDel);
+        if ( log.isDebugEnabled() ) log.debug("maxSizeToDel:"+maxSizeToDel);
         long sizeToDelete = 0L;
         for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
         	studyOnFs = (StudyOnFileSystemLocal) iter.next();
@@ -262,7 +262,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 				 ( checkExternal && studyLocal.isStudyAvailableOnExternalRetrieveAET() ) ) {
 				sizeToDelete += releaseStudy( studyOnFs );
 			}
-	        log.info("sizeToDelete:"+sizeToDelete);
+	        if ( log.isDebugEnabled() )log.debug("Released size:"+sizeToDelete);
 			if ( sizeToDelete >= maxSizeToDel ) break;
         }
     	return sizeToDelete;
@@ -288,22 +288,17 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		Set series = new HashSet();
 		for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
 			fileLocal = (FileLocal) iter.next();
-			log.info("delete file:"+fileLocal);
+			if ( log.isDebugEnabled() ) log.debug("Release file:"+fileLocal);
 			size += fileLocal.getFileSize();
 			il = fileLocal.getInstance();
 			series.add( il.getSeries() );
-			log.info("delete reference to instance");
 			fileLocal.setInstance( null );
-			log.info("update instance");
 			il.updateDerivedFields();
 		}
 		for ( Iterator iter = series.iterator() ; iter.hasNext() ; ) {
-			log.info("update series");
 			( (SeriesLocal) iter.next() ).updateDerivedFields();
 		}
-		log.info("update study");
 		studyOnFs.getStudy().updateDerivedFields();
-		log.info("remove studyOnFS");
 		this.sofHome.remove( studyOnFs.getPk() );
 		return size;
 	}

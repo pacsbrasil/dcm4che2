@@ -501,7 +501,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     public boolean isFreeDiskSpaceNecessary() throws IOException {
     	long minAvail = (long) ( (float) this.highWaterMark * freeDiskSpaceWaterMarkFactor ) * dirPathList.size();
     	long currAvail = getAvailableDiskSpace();
-    	log.info( "currAvail:"+currAvail+" < minAvail:"+minAvail);
+    	if ( log.isDebugEnabled() ) log.debug( "currAvail:"+currAvail+" < minAvail:"+minAvail);
     	return currAvail < minAvail; 
     }
     
