@@ -446,7 +446,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
        return sb;
     }
 
-    private String cmdFieldAsString() {
+    public String cmdFieldAsString() {
       switch (cmdField) {
          case C_STORE_RQ:
             return "C_STORE_RQ";
