@@ -299,7 +299,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
          l.add(new ImageTypeSpecifier(
             cmFactory.getColorModel(
                cmFactory.makeParam(theDataset,
-                  param != null ? param.getPValToDLL() : null)),
+                  param != null ? param.getPValToDDL() : null)),
             new PixelInterleavedSampleModel(this.dataType, 1, 1, 1, 1,
                new int[]{0})));
       }

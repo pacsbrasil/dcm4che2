@@ -42,23 +42,23 @@ import org.dcm4che.imageio.plugins.DcmImageReadParam;
  */
 public class DcmImageReadParamImpl extends DcmImageReadParam {
    
-   private byte[] pvalToDLL;
+   private byte[] pvalToDDL;
    
-   /** Getter for property PValToDLL.
-    * @return Value of property PValToDLL.
+   /** Getter for property PValToDDL.
+    * @return Value of property PValToDDL.
     */
-   public byte[] getPValToDLL() {
-      return pvalToDLL;
+   public byte[] getPValToDDL() {
+      return pvalToDDL;
    }
    
-   /** Setter for property PValToDLL.
-    * @param PValToDLL New value of property PValToDLL.
+   /** Setter for property PValToDDL.
+    * @param PValToDDL New value of property PValToDDL.
     */
-   public void setPValToDLL(byte[] pvalToDLL) {
-      if (pvalToDLL != null) {
-         checkLen(pvalToDLL.length);
+   public void setPValToDDL(byte[] pvalToDDL) {
+      if (pvalToDDL != null) {
+         checkLen(pvalToDDL.length);
       }
-      this.pvalToDLL = pvalToDLL;
+      this.pvalToDDL = pvalToDDL;
    }
 
    private final static void checkLen(int len) {
@@ -66,6 +66,6 @@ public class DcmImageReadParamImpl extends DcmImageReadParam {
          if (n == len) 
             return;
       }
-      throw new IllegalArgumentException("pvalToDLL length: " + len);
+      throw new IllegalArgumentException("pvalToDDL length: " + len);
    }
 }

@@ -42,14 +42,14 @@ import javax.imageio.ImageReadParam;
  */
 public abstract class DcmImageReadParam extends ImageReadParam {
       
-   /** Getter for property PValToDLL.
-    * @return Value of property PValToDLL.
+   /** Getter for property PValToDDL.
+    * @return Value of property PValToDDL.
     */
-   public abstract byte[] getPValToDLL();
+   public abstract byte[] getPValToDDL();
    
-   /** Setter for property PValToDLL.
-    * @param PValToDLL New value of property PValToDLL.
+   /** Setter for property PValToDDL.
+    * @param PValToDDL New value of property PValToDDL.
     */
-   public abstract void setPValToDLL(byte[] PValToDLL);
+   public abstract void setPValToDDL(byte[] PValToDDL);
    
 }
