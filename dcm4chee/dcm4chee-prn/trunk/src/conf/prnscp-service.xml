@@ -71,7 +71,7 @@
     <!--
     Set to true, to return success status instead of warning.
     -->
-    <attribute name="MaskWarningAsSuccess">false</attribute>    
+    <attribute name="MaskWarningAsSuccess">false</attribute>
   </mbean>
      
 </server>

@@ -478,14 +478,15 @@ class PrintableImageBox
         final int w = bi.getWidth();
         final int h = bi.getHeight();
         final int[] data = bi.getRGB(0, 0, w, h, null, 0, w);
-        if (service.isPrintColorWithPLUT()) {
+        if (service.getApplyPLUTonRGB() >= 0) {
             int count = 0;
             int shift = pValToDDL.length == 4096 ? 4 : 0;
-            for (int rgb, b, i = 0; i < data.length; ++i) {
-                b = (rgb = data[i]) & 0xff;
+            for (int rgb, i = 0; i < data.length; ++i) {
+                rgb = data[i];
                 if (service.isGray(rgb)) {
-                    b = (pValToDDL[b << shift] & 0xff);
-                    data[i] = b | (b << 8) | (b << 16);
+                    data[i] = (pValToDDL[(rgb & 0xff) << shift] & 0xff)
+                         | ((pValToDDL[(rgb >> 8 & 0xff) << shift] & 0xff) << 8)
+                         | ((pValToDDL[(rgb >> 16 & 0xff) << shift] & 0xff) << 16);
                     ++count;
                 }
             }

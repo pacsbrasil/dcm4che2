@@ -85,12 +85,19 @@
     <attribute name="PrintGrayAsColor">false</attribute>
     
     <!--
-    Specifies if gray content of color images shall be treated as P-values,
-    so P-LUTs can be applied/configured.
+    Specifies if PLUTs shall be also applied on RGB values of color images:
+    < 0 - no P-LUT will be applied,
+    = 0 - P-LUT will be only applied to pure gray values (R=G=B),
+    > 0 - P-LUT will be applied for pixels with
+          max(|R-G|,|G-B|,|B-R|) <= ApplyPLUTonRGB
     -->
-    <attribute name="PrintColorWithPLUT">true</attribute>
+    <attribute name="ApplyPLUTonRGB">10</attribute>
+
+    <!--
+    Specifies if provided Min Density values .
+    -->
     <attribute name="IgnoreMinDensity">true</attribute>
-    <attribute name="GrayMaxDiffRGB">2</attribute>
+    
     <!--
     Activate support for the Presentation LUT SOP Class.
     -->

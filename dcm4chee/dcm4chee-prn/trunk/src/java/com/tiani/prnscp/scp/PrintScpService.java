@@ -1,29 +1,23 @@
-/*
- *  *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
- *  *
- *  This file is part of dcm4che.                                            *
- *  *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *  *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *  *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+/*  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ *  This file is part of dcm4che.
+ *
+ *  This library is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package com.tiani.prnscp.scp;
 
-import com.tiani.license.LicenseStore;
-import com.tiani.prnscp.print.PrinterServiceMBean;
-import com.tiani.prnscp.print.PrinterStatus;
-import com.tiani.prnscp.print.PrinterStatusInfo;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,6 +32,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+
+import com.tiani.license.LicenseStore;
+import com.tiani.prnscp.print.PrinterServiceMBean;
+import com.tiani.prnscp.print.PrinterStatus;
+import com.tiani.prnscp.print.PrinterStatusInfo;
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.MediaDescription;
@@ -59,8 +58,8 @@ import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.server.DcmHandler;
-import org.jboss.system.server.ServerConfigLocator;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 
 /**
  *  Description of the Class
@@ -75,11 +74,11 @@ public class PrintScpService
 {
 
     // Constants -----------------------------------------------------
-    private static final String UNKNOWN = "unknown";
-    private static final String PRODUCT_UID = "1.2.40.0.13.2.1.1.2";
-    private static final String DEF_LICENSE = "conf/license.jks";
-    private static final int SHUTDOWN_DELAY_MINUTES = 20;
-    private static final Map dumpParam = new HashMap(5);
+    private final static String UNKNOWN = "unknown";
+    private final static String PRODUCT_UID = "1.2.40.0.13.2.1.1.2";
+    private final static String DEF_LICENSE = "conf/license.jks";
+    private final static int SHUTDOWN_DELAY_MINUTES = 20;
+    private final static Map dumpParam = new HashMap(5);
     static {
         dumpParam.put("maxlen", new Integer(128));
         dumpParam.put("vallen", new Integer(64));
@@ -112,8 +111,8 @@ public class PrintScpService
     private X509Certificate license;
 
     // Static --------------------------------------------------------
-    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    static final AssociationFactory asf = AssociationFactory.getInstance();
+    final static DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    final static AssociationFactory asf = AssociationFactory.getInstance();
 
 
     // Constructors --------------------------------------------------
@@ -257,6 +256,7 @@ public class PrintScpService
         this.keepSpoolFiles = keepSpoolFiles;
     }
 
+
     /**
      *  Gets the maskWarningAsSuccess attribute of the PrintScpService object
      *
@@ -277,6 +277,7 @@ public class PrintScpService
     {
         this.maskWarningAsSuccess = maskWarningAsSuccess;
     }
+
 
     /**
      *  Gets the auditCreateSession attribute of the PrintScpService object
@@ -704,8 +705,8 @@ public class PrintScpService
         throws Exception
     {
         if (getBooleanPrinterAttribute(aet, "IgnoreMinDensity")) {
-	    ds.putUS(Tags.MinDensity);
-	}
+            ds.putUS(Tags.MinDensity);
+        }
         int minDensityPrinter = getIntPrinterAttribute(aet, "getMinDensity", color);
         int minDensity = ds.getInt(Tags.MinDensity, minDensityPrinter);
         if (minDensity < minDensityPrinter) {
@@ -717,7 +718,7 @@ public class PrintScpService
             ds.remove(Tags.MinDensity);
             minDensity = minDensityPrinter;
         }
-        
+
         int maxDensityPrinter = getIntPrinterAttribute(aet, "getMaxDensity", color);
         int maxDensity = ds.getInt(Tags.MaxDensity, maxDensityPrinter);
         if (maxDensity > maxDensityPrinter) {
@@ -1030,7 +1031,7 @@ public class PrintScpService
             }
         };
 
-    private static final int[] PRINTER_MODULE_ATTRS = {
+    private final static int[] PRINTER_MODULE_ATTRS = {
             Tags.PrinterStatus,
             Tags.PrinterStatusInfo,
             Tags.PrinterName,

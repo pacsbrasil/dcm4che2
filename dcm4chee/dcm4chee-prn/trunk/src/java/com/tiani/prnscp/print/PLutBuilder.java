@@ -23,10 +23,10 @@ package com.tiani.prnscp.print;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.util.HashMap;
-
+import java.util.StringTokenizer;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -46,12 +46,13 @@ import org.dcm4che.util.UIDGenerator;
 public class PLutBuilder
 {
 
-    private final static HashMap DICOM_SHAPES = new HashMap(3);
-    static {
-        DICOM_SHAPES.put("IDENTITY", "IDENTITY");
-        DICOM_SHAPES.put("LIN_OD", "LIN OD");
-    }
-    private final static String LUT_FILE_EXT = ".lut";
+    private static final String IDENTITY = "IDENTITY";
+    private static final String LIN_OD = "LIN OD";
+    private static final String LUT_FILE_EXT = ".lut";
+    private static final String SHAPE = "shape=";
+    private static final String CENTER = "center=";
+    private static final String SLOPE = "slope=";
+    private static final String GAMMA = "gamma=";
 
     private final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -68,7 +69,6 @@ public class PLutBuilder
     /**Constructor for the PLutBuilder object */
     public PLutBuilder() { }
 
-
     /**
      *Constructor for the PLutBuilder object
      *
@@ -77,45 +77,29 @@ public class PLutBuilder
      */
     public PLutBuilder(String configInfo, String plutDir)
     {
-        shape = get("shape=", configInfo);
-        if (shape != null && !DICOM_SHAPES.containsKey(shape)) {
-            if (!toFile(plutDir, shape).isFile()) {
-                throw new IllegalArgumentException("shape:" + shape);
+        StringTokenizer tokenizer = new StringTokenizer(configInfo, ",");
+        while (tokenizer.hasMoreTokens()) {
+            String tk = tokenizer.nextToken().trim();
+            if (tk.startsWith(SHAPE)) {
+                shape = tk.substring(SHAPE.length());
+                if (!isShapePLUT() && !toFile(plutDir, shape).isFile()) {
+                    throw new IllegalArgumentException("shape:" + shape);
+                }
+            } else if (tk.startsWith(CENTER)) {
+                setCenter(Float.parseFloat(tk.substring(CENTER.length())));
+            } else if (tk.startsWith(SLOPE)) {
+                setSlope(Float.parseFloat(tk.substring(SLOPE.length())));
+            } else if (tk.startsWith(GAMMA)) {
+                setGamma(Float.parseFloat(tk.substring(GAMMA.length())));
+            } else {
+                throw new IllegalArgumentException(configInfo);
             }
         }
-        String c,s,g;
-        if ((c = get("center=", configInfo)) != null) {
-            setCenter(Float.parseFloat(c));
-        }
-        if ((s = get("slope=", configInfo)) != null) {
-            setSlope(Float.parseFloat(s));
-        }
-        if ((g = get("gamma=", configInfo)) != null) {
-            setGamma(Float.parseFloat(g));
-        }
-        if (shape == null && c == null && s == null && g == null) {
-            throw new IllegalArgumentException(configInfo);
-        }
     }
-
 
     private static File toFile(String dir, String shape)
     {
         return new File(dir, shape + LUT_FILE_EXT);
-    }
-
-
-    private static String get(String key, String s)
-    {
-        int pos = s.indexOf(key);
-        if (pos == -1) {
-            return null;
-        }
-        pos += key.length();
-        int end = s.indexOf(',', pos);
-        return end == -1
-                 ? s.substring(pos)
-                 : s.substring(pos, end);
     }
 
 
@@ -376,6 +360,9 @@ public class PLutBuilder
         return dsLut;
     }
 
+    public boolean isShapePLUT() {
+        return IDENTITY.equals(shape) || LIN_OD.equals(shape);
+    }
 
     /**
      *  Gets the shapePLUT attribute of the PLut object
@@ -384,12 +371,11 @@ public class PLutBuilder
      */
     public Dataset getShapePLUT()
     {
-        String code = (String) DICOM_SHAPES.get(shape);
-        if (code == null) {
+        if (!isShapePLUT()) {
             throw new IllegalStateException("shape=" + shape);
         }
         Dataset dsLUT = dof.newDataset();
-        dsLUT.putCS(Tags.PresentationLUTShape, code);
+        dsLUT.putCS(Tags.PresentationLUTShape, shape);
         return dsLUT;
     }
 
@@ -433,9 +419,7 @@ public class PLutBuilder
     {
         return (shape == null)
                  ? toDataset(create())
-                 : DICOM_SHAPES.containsKey(shape)
-                 ? getShapePLUT()
-                 : loadPLUT(plutDir);
+                 : isShapePLUT() ? getShapePLUT() : loadPLUT(plutDir);
     }
 
 

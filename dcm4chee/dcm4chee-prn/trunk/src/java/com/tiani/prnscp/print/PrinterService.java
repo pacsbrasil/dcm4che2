@@ -137,7 +137,7 @@ public class PrinterService
 
     private boolean ignorePrinterIsAcceptingJobs;
 
-    private boolean ignoreMinDensity = true;
+    private boolean ignoreMinDensity = false;
 
     private String printToFilePath;
 
@@ -163,9 +163,7 @@ public class PrinterService
 
     private boolean printGrayAsColor;
 
-    private boolean printColorWithPLUT;
-
-    private int grayMaxDiffRGB = 2;
+    private int applyPLUTonRGB = 10;
 
     private int maxQueuedJobCount = 10;
 
@@ -507,12 +505,23 @@ public class PrinterService
         this.ignorePrinterIsAcceptingJobs = ignorePrinterIsAcceptingJobs;
     }
 
+
+    /**
+     *  Gets the ignoreMinDensity attribute of the PrinterService object
+     *
+     * @return    The ignoreMinDensity value
+     */
     public boolean isIgnoreMinDensity()
     {
         return this.ignoreMinDensity;
     }
 
 
+    /**
+     *  Sets the ignoreMinDensity attribute of the PrinterService object
+     *
+     * @param  ignoreMinDensity  The new ignoreMinDensity value
+     */
     public void setIgnoreMinDensity(boolean ignoreMinDensity)
     {
         this.ignoreMinDensity = ignoreMinDensity;
@@ -1085,9 +1094,10 @@ public class PrinterService
     public void setFilmSizeID(String filmSizeID)
     {
         LinkedHashMap tmp = new LinkedHashMap();
-        String[] strings = toStringArray(filmSizeID);
-        for (int i = 0; i < strings.length; ++i) {
-            String s = strings[i];
+        for (StringTokenizer tokenizer =
+                new StringTokenizer(filmSizeID, "\\\r\n");
+                tokenizer.hasMoreTokens(); ) {
+            String s = tokenizer.nextToken().trim();
             int c1 = s.indexOf(':');
             int xpos = s.indexOf('x', c1 + 1);
             float[] wh = {
@@ -1219,9 +1229,10 @@ public class PrinterService
     public void setResolutionID(String resolutionID)
     {
         LinkedHashMap tmp = new LinkedHashMap();
-        String[] strings = toStringArray(resolutionID);
-        for (int i = 0; i < strings.length; ++i) {
-            String s = strings[i];
+        for (StringTokenizer tokenizer =
+                new StringTokenizer(resolutionID, "\\\r\n");
+                tokenizer.hasMoreTokens(); ) {
+            String s = tokenizer.nextToken().trim();
             int c1 = s.indexOf(':');
             int xpos = s.indexOf('x', c1 + 1);
             PrinterResolution pr = new PrinterResolution(
@@ -1456,13 +1467,18 @@ public class PrinterService
      */
     public void setPageMargin(String pageMargin)
     {
-        float[] tmp = toFloatArray(pageMargin);
-        if (tmp.length != 4) {
+        StringTokenizer stk = new StringTokenizer(pageMargin, ",; \t\r\n\\");
+        if (stk.countTokens() != 4) {
             throw new IllegalArgumentException("pageMargin: " + pageMargin);
         }
-        this.pageMargin = tmp;
+        this.pageMargin = new float[] {
+            Float.parseFloat(stk.nextToken()),
+            Float.parseFloat(stk.nextToken()),
+            Float.parseFloat(stk.nextToken()),
+            Float.parseFloat(stk.nextToken())
+        };
+        log.debug("pageMargin=" + getPageMargin());
     }
-
 
     /**
      *  Getter for property reverseLandscape.
@@ -1809,9 +1825,10 @@ public class PrinterService
     public void setConfigurationInformationForCallingAET(String ciForCallingAET)
     {
         LinkedHashMap tmp = new LinkedHashMap();
-        String[] strings = toStringArray(ciForCallingAET);
-        for (int i = 0; i < strings.length; ++i) {
-            String s = strings[i];
+        for (StringTokenizer tokenizer =
+                new StringTokenizer(ciForCallingAET, "\\\r\n");
+                tokenizer.hasMoreTokens(); ) {
+            String s = tokenizer.nextToken().trim();
             int c1 = s.indexOf(':');
             if (c1 == -1) {
                 throw new IllegalArgumentException(s);
@@ -1870,9 +1887,10 @@ public class PrinterService
     public void setAnnotationForCallingAET(String annotationForCallingAET)
     {
         LinkedHashMap tmp = new LinkedHashMap();
-        String[] strings = toStringArray(annotationForCallingAET);
-        for (int i = 0; i < strings.length; ++i) {
-            String s = strings[i];
+        for (StringTokenizer tokenizer =
+                new StringTokenizer(annotationForCallingAET, "\\\r\n");
+                tokenizer.hasMoreTokens(); ) {
+            String s = tokenizer.nextToken().trim();
             int c1 = s.indexOf(':');
             if (c1 == -1) {
                 throw new IllegalArgumentException(s);
@@ -1929,57 +1947,6 @@ public class PrinterService
     {
         long time = getCalibrationTime(color);
         return time != 0L ? new TMFormat().format(new Date(time)) : null;
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @param  text  Description of the Parameter
-     * @return       Description of the Return Value
-     */
-    private static String[] toStringArray(String text)
-    {
-        StringTokenizer stk = new StringTokenizer(text, " \t\r\n\\");
-        String[] a = new String[stk.countTokens()];
-        for (int i = 0; i < a.length; ++i) {
-            a[i] = stk.nextToken();
-        }
-        return a;
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @param  text  Description of the Parameter
-     * @return       Description of the Return Value
-     */
-    private static float[] toFloatArray(String text)
-    {
-        StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n\\");
-        float[] a = new float[stk.countTokens()];
-        for (int i = 0; i < a.length; ++i) {
-            a[i] = Float.parseFloat(stk.nextToken());
-        }
-        return a;
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @param  text  Description of the Parameter
-     * @return       Description of the Return Value
-     */
-    private static int[] toIntArray(String text)
-    {
-        StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n\\");
-        int[] a = new int[stk.countTokens()];
-        for (int i = 0; i < a.length; ++i) {
-            a[i] = Integer.parseInt(stk.nextToken());
-        }
-        return a;
     }
 
 
@@ -2116,28 +2083,6 @@ public class PrinterService
 
 
     /**
-     *  Gets the printColorWithPLUT attribute of the PrinterService object
-     *
-     * @return    The printColorWithPLUT value
-     */
-    public boolean isPrintColorWithPLUT()
-    {
-        return this.printColorWithPLUT;
-    }
-
-
-    /**
-     *  Sets the printColorWithPLUT attribute of the PrinterService object
-     *
-     * @param  printColorWithPLUT  The new printColorWithPLUT value
-     */
-    public void setPrintColorWithPLUT(boolean printColorWithPLUT)
-    {
-        this.printColorWithPLUT = printColorWithPLUT;
-    }
-
-
-    /**
      *  Gets the maxQueuedJobCount attribute of the PrinterService object
      *
      * @return    The maxQueuedJobCount value
@@ -2158,25 +2103,38 @@ public class PrinterService
         this.maxQueuedJobCount = maxQueuedJobCount;
     }
 
-    public int getGrayMaxDiffRGB()
+
+    /**
+     *  Gets the applyPLUTonRGB attribute of the PrinterService object
+     *
+     * @return    The applyPLUTonRGB value
+     */
+    public int getApplyPLUTonRGB()
     {
-        return this.grayMaxDiffRGB;
+        return this.applyPLUTonRGB;
     }
 
 
-    public void setGrayMaxDiffRGB(int grayMaxDiffRGB)
+    /**
+     *  Sets the applyPLUTonRGB attribute of the PrinterService object
+     *
+     * @param  applyPLUTonRGB  The new applyPLUTonRGB value
+     */
+    public void setApplyPLUTonRGB(int applyPLUTonRGB)
     {
-        this.grayMaxDiffRGB = grayMaxDiffRGB;
+        this.applyPLUTonRGB = applyPLUTonRGB;
     }
 
-    boolean isGray(int rgb) {
-        int b = rgb & 0xff;
-        int g = (rgb >> 8) & 0xff;
-        int r = (rgb >> 16) & 0xff;
-        return Math.abs(b-g) <= grayMaxDiffRGB
-	    && Math.abs(g-r) <= grayMaxDiffRGB
-	    && Math.abs(r-b) <= grayMaxDiffRGB;
+
+    boolean isGray(int rgb)
+    {
+        final int b = rgb & 0xff;
+        final int g = (rgb >> 8) & 0xff;
+        final int r = (rgb >> 16) & 0xff;
+        return applyPLUTonRGB >=
+                Math.max(Math.max(r, g), b) - Math.min(Math.min(r, g), b);
     }
+
 
     /**
      *  Gets the license attribute of the PrinterService object
@@ -2312,7 +2270,7 @@ public class PrinterService
                     "Calibrated Printer " + calledAET + ", chromaticity=" + chromaticity, "PrinterCalibration");
         } catch (Exception e) {
             log.warn("Failed to calibrate Printer " + calledAET
-                + ", chromaticity=" + chromaticity + ": " + e);
+                     + ", chromaticity=" + chromaticity + ": " + e);
         }
     }
 
