@@ -20,6 +20,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.File;
+import java.util.Date;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -43,6 +44,7 @@ public class FileInfo
     public final String tsUID;
     public final String md5;
     public final int size;
+    public final Date fileTime;
 
     public FileInfo(
         byte[] patAttrs,
@@ -56,7 +58,8 @@ public class FileInfo
         String fileID,
         String tsUID,
         String md5,
-        int size)
+        int size,
+        Date fileTime)
     {
         this.patAttrs = patAttrs;
         this.studyAttrs = studyAttrs;
@@ -70,6 +73,7 @@ public class FileInfo
         this.tsUID = tsUID;
         this.md5 = md5;
         this.size = size;
+        this.fileTime = fileTime;
     }
 
     public String toString()

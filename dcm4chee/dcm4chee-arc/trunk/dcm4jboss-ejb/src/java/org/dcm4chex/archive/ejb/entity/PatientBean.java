@@ -28,6 +28,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
  * @ejb.bean
@@ -157,6 +158,31 @@ public abstract class PatientBean implements EntityBean {
     public abstract byte[] getEncodedAttributes();
 
     public abstract void setEncodedAttributes(byte[] bytes);
+
+    /**
+     * @return Patient, with which this Patient was merged.
+     *
+     * @ejb:interface-method view-type="local"
+     * @ejb:relation
+     *    name="merged-patients"
+     *    role-name="dereferenced-patient"
+     *    target-role-name="dominant-patient"
+     *    target-ejb="Patient"
+     *    target-multiple="yes"
+     *    cascade-delete="yes"
+     *
+     * @jboss:relation
+     *    fk-column="merge_fk"
+     *    related-pk-field="pk"
+     */
+    public abstract PatientLocal getMergedWith();
+
+    /**
+     * @param mergedWith, Patient, with which this Patient was merged.
+     *
+     * @ejb:interface-method
+     */
+    public abstract void setMergedWith( PatientLocal mergedWith );
 
     /**
      * @ejb.interface-method view-type="local"

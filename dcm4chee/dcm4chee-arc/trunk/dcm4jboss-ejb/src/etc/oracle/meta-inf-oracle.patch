@@ -1,5 +1,5 @@
-*** target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	Tue Feb 10 14:26:58 2004
---- target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	Tue Feb 10 16:08:16 2004
+*** target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	Thu Feb 19 23:46:26 2004
+--- target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	Thu Feb 19 23:46:28 2004
 ***************
 *** 4,10 ****
   <jbosscmp-jdbc>
@@ -126,7 +126,7 @@
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 454,460 ****
+*** 459,465 ****
   
           </cmp-field>
   
@@ -134,7 +134,7 @@
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 460,467 ----
+--- 465,472 ----
   
           </cmp-field>
   
@@ -144,7 +144,7 @@
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 491,497 ****
+*** 496,502 ****
   
           </cmp-field>
   
@@ -152,7 +152,7 @@
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 498,505 ----
+--- 503,510 ----
   
           </cmp-field>
   

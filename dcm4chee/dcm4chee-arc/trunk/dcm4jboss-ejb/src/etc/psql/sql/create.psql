@@ -8,15 +8,15 @@ CREATE TABLE ae (
 CREATE TABLE move_order (
 	pk          	SERIAL PRIMARY KEY,
 	scheduled_time	TIMESTAMP,
-	priority		INT NOT NULL,
+	priority		INTEGER NOT NULL,
 	retrieve_aet    TEXT NOT NULL,
 	move_dest	    TEXT NOT NULL,
 	pat_id         	TEXT,
 	study_iuids		TEXT,
 	series_iuids	TEXT,
 	sop_iuids		TEXT,
-	failure_count	INT,
-	failure_status	INT
+	failure_count	INTEGER,
+	failure_status	INTEGER
 );
 CREATE INDEX move_sched_time ON move_order(scheduled_time);
 
@@ -31,6 +31,7 @@ CREATE INDEX code_value ON code(code_value,code_designator);
 
 CREATE TABLE patient (
 	pk          	SERIAL PRIMARY KEY,
+	merge_fk        INTEGER,
 	pat_id         	TEXT,
 	pat_id_issuer  	TEXT,
 	pat_name    	TEXT,
@@ -38,6 +39,8 @@ CREATE TABLE patient (
 	pat_sex		  	TEXT,
 	pat_attrs		BYTEA
 );
+ALTER TABLE patient ADD CONSTRAINT pat_merge_fk FOREIGN KEY (merge_fk) REFERENCES patient(pk);
+CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(UPPER(pat_name));
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
@@ -113,6 +116,7 @@ CREATE TABLE files (
 	file_tsuid      TEXT NOT NULL,
 	file_md5        TEXT,
 	file_size       INTEGER,
+	file_time		TIMESTAMP,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);

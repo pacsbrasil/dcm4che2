@@ -20,6 +20,8 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Date;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 import javax.ejb.RemoveException;
@@ -174,6 +176,17 @@ public abstract class FileBean implements EntityBean
     public abstract int getFileSize();
     public abstract void setFileSize(int size);
 
+
+    /**
+     * File Time
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="file_time"
+     */
+    public abstract java.util.Date getFileTime();
+    public abstract void setFileTime(java.util.Date time);
+
     /**
 	 * @ejb.relation
 	 * 	name="instance-files"
@@ -233,6 +246,7 @@ public abstract class FileBean implements EntityBean
         String tsuid,
         int size,
         byte[] md5,
+        Date filetime,
         InstanceLocal instance)
         throws CreateException
     {
@@ -242,6 +256,7 @@ public abstract class FileBean implements EntityBean
         setFileTsuid(tsuid);
         setFileSize(size);
         setFileMd5(md5);
+        setFileTime(filetime);
         return null;
     }
 

@@ -14,15 +14,15 @@ CREATE SEQUENCE move_order_pk_seq;
 CREATE TABLE move_order (
 	pk          	INTEGER PRIMARY KEY NOT NULL,
 	scheduled_time	TIMESTAMP,
-	priority		INT NOT NULL,
+	priority		INTEGER NOT NULL,
 	retrieve_aet    VARCHAR(254) NOT NULL,
 	move_dest	    VARCHAR(254) NOT NULL,
 	pat_id         	VARCHAR(254),
 	study_iuids		VARCHAR(254),
 	series_iuids	VARCHAR(254),
 	sop_iuids		CLOB(64000),
-	failure_count	INT,
-	failure_status	INT
+	failure_count	INTEGER,
+	failure_status	INTEGER
 );
 CREATE INDEX move_sched_time ON move_order(scheduled_time);
 
@@ -39,6 +39,7 @@ CREATE INDEX code_value ON code(code_value,code_designator);
 CREATE SEQUENCE patient_pk_seq;
 CREATE TABLE patient (
 	pk          	INTEGER PRIMARY KEY NOT NULL,
+	merge_fk        INTEGER,
 	pat_id         	VARCHAR(254),
 	pat_id_issuer  	VARCHAR(254),
 	pat_name    	VARCHAR(254),
@@ -47,6 +48,8 @@ CREATE TABLE patient (
 	pat_sex		  	VARCHAR(254),
 	pat_attrs		BLOB(64000)
 );
+ALTER TABLE patient ADD CONSTRAINT pat_merge_fk FOREIGN KEY (merge_fk) REFERENCES patient(pk);
+CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(pat_name_up);
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
@@ -128,7 +131,7 @@ CREATE TABLE files (
 	file_size       INTEGER,
 	dirpath			VARCHAR(254) NOT NULL,
 	retrieve_aets	VARCHAR(254) NOT NULL,
-	
+	file_time		TIMESTAMP,	
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 
 );
