@@ -98,12 +98,21 @@
 	<property name="target.meta-inf-psql" value="${target.xdoclet}/META-INF-psql"/>
 	<property name="target.meta-inf-oracle" value="${target.xdoclet}/META-INF-oracle"/>
 	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
+	<property name="target.res" value="${target.dir}/res"/>
+	<property name="target.res-hsql" value="${target.res}-hsql"/>
+	<property name="target.res-psql" value="${target.res}-psql"/>
+	<property name="target.res-oracle" value="${target.res}-oracle"/>
+	<property name="target.res-db2" value="${target.res}-db2"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
 	<property name="target.hsql.deploy" value="${target.dir}/hsql/deploy"/>
 	<property name="target.psql.deploy" value="${target.dir}/psql/deploy"/>
 	<property name="target.oracle.deploy" value="${target.dir}/oracle/deploy"/>
 	<property name="target.db2.deploy" value="${target.dir}/db2/deploy"/>
 	<property name="target.common.lib" value="${target.dir}/common/lib"/>	
+	<property name="target.hsql.lib" value="${target.dir}/hsql/lib"/>
+	<property name="target.psql.lib" value="${target.dir}/psql/lib"/>
+	<property name="target.oracle.lib" value="${target.dir}/oracle/lib"/>
+	<property name="target.db2.lib" value="${target.dir}/db2/lib"/>
 	<property name="target.test.web-inf" value="${target.dir}/test/WEB-INF"/>
 	<property name="target.reports" value="${target.dir}/reports"/>
 
@@ -146,6 +155,10 @@
     <target name="prepare" depends="init">
         <mkdir dir="${target.classes}"/>
         <mkdir dir="${target.java}"/>
+        <mkdir dir="${target.res-hsql}"/>
+        <mkdir dir="${target.res-psql}"/>
+        <mkdir dir="${target.res-oracle}"/>
+        <mkdir dir="${target.res-db2}"/>
         <mkdir dir="${target.meta-inf-hsql}"/>
         <mkdir dir="${target.meta-inf-psql}"/>
         <mkdir dir="${target.meta-inf-oracle}"/>
@@ -155,6 +168,10 @@
         <mkdir dir="${target.oracle.deploy}"/>
         <mkdir dir="${target.db2.deploy}"/>
         <mkdir dir="${target.common.lib}"/>
+        <mkdir dir="${target.hsql.lib}"/>
+        <mkdir dir="${target.psql.lib}"/>
+        <mkdir dir="${target.oracle.lib}"/>
+        <mkdir dir="${target.db2.lib}"/>
         <mkdir dir="${target.test.web-inf}"/>
         <mkdir dir="${target.reports}"/>
     </target>
@@ -226,7 +243,7 @@
     		targetfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
     	/>
     	<antcall target="meta-inf-psql"/>
-
+ 
     	<uptodate property="meta-inf-oracle.notRequired"
     		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
     		targetfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
@@ -239,10 +256,6 @@
     	/>
     	<antcall target="meta-inf-db2"/>
 
-        <style style="${src.etc}/jdbc-properties.xsl"
-             in="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
-             out="${target.classes}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
-        />
     </target>
 
     <target name="meta-inf-psql" unless="meta-inf-psql.notRequired">
@@ -299,31 +312,40 @@
    	</target>
    	
    <!-- =================================================================== -->
-   <!-- Creates the ejb-jar                                                 -->
+   <!-- Creates the ejb-jar and jdbc-jar                                    -->
    <!-- =================================================================== -->
     <target name="jar" depends="compile">
-     	<antcall target="ejb-jar">
+     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="hsql"/>
     	</antcall>
-    	<antcall target="ejb-jar">
+    	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="psql"/>
     	</antcall>
-    	<antcall target="ejb-jar">
+    	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="oracle"/>
     	</antcall>
-    	<antcall target="ejb-jar">
+    	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="db2"/>
     	</antcall>
     	<antcall target="lib-jar"/>
-    	<antcall target="jdbc-jar"/>
     </target>
-    <target name="ejb-jar">
+    <target name="ejb-jdbc-jar">
         <jar jarfile="${target.dir}/${db.name}/deploy/dcm4jboss-ejb-${db.name}.jar">
         	<metainf dir="${target.meta-inf}-${db.name}"/>
         	<fileset dir="${target.classes}">
                 <exclude name="**/*Test.class"/>
                 <exclude name="**/jdbc/**"/>
             </fileset>
+        </jar>
+        <style style="${src.etc}/jdbc-properties.xsl"
+             in="${target.meta-inf}-${db.name}/jbosscmp-jdbc.xml"
+             out="${target.res}-${db.name}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
+        />
+        <jar jarfile="${target.dir}/${db.name}/lib/dcm4jboss-jdbc-${db.name}.jar">
+        	<fileset dir="${target.classes}">
+                <include name="**/jdbc/*"/>
+            </fileset>
+         	<fileset dir="${target.res}-${db.name}"/>         	
         </jar>
     </target>
 
@@ -339,18 +361,7 @@
             </fileset>
         </jar>
     </target>
-        
-   <!-- =================================================================== -->
-   <!-- Creates the dcm4jboss-jdbc.jar                                      -->
-   <!-- =================================================================== -->
-    <target name="jdbc-jar">
-        <jar jarfile="${target.common.lib}/dcm4jboss-jdbc.jar">
-        	<fileset dir="${target.classes}">
-                <include name="**/jdbc/*"/>
-            </fileset>
-        </jar>
-    </target>
-    
+            
    <!-- =================================================================== -->
    <!-- Creates the test-war                                                -->
    <!-- =================================================================== -->

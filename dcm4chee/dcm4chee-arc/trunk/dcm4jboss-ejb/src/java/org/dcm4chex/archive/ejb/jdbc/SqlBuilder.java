@@ -1,21 +1,22 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
+/*
+ * $Id$ Copyright (c)
+ * 2002,2003 by TIANI MEDGRAPH AG
+ * 
  * This file is part of dcm4che.
- *
+ * 
  * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 package org.dcm4chex.archive.ejb.jdbc;
@@ -34,12 +35,17 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
  * @since 26.08.2003
  */
 class SqlBuilder {
-
+    
     public static final boolean TYPE1 = false;
     public static final boolean TYPE2 = true;
     public static final String DESC = " DESC";
     public static final String ASC = " ASC";
     public static final String[] SELECT_COUNT = { "count(*)" };
+    private static final String HSQL="Hypersonic SQL";
+	private static final String PSQL="PostgreSQL 7.2";
+	private static final String DB2="DB2";
+	private static final String ORACLE="Oracle9i";
+	private static final String DS_MAPPING="datasource-mapping";
     private String[] select;
     private String[] from;
     private String[] leftJoin;
@@ -49,6 +55,10 @@ class SqlBuilder {
     private int limit = 0;
     private int offset = 0;
 
+    private static boolean isDatabase(String mapping) {
+        return mapping.equals(JdbcProperties.getInstance().getProperty(DS_MAPPING));
+    }
+    
     public void setSelect(String[] fields) {
         select = JdbcProperties.getInstance().getProperties(fields);
     }
@@ -78,11 +88,11 @@ class SqlBuilder {
     }
 
     public final void setLimit(int limit) {
-        this.limit = limit;
+        this.limit = Math.max(0, limit);
     }
 
     public final void setOffset(int offset) {
-        this.offset = offset;
+        this.offset = Math.max(0, offset);
     }
 
     public void setRelations(String[] relations) {
@@ -136,6 +146,14 @@ class SqlBuilder {
             throw new IllegalStateException("from not initalized");
 
         StringBuffer sb = new StringBuffer("SELECT ");
+		if (limit > 0 || offset > 0) {
+			if (isDatabase(HSQL)) {            
+				sb.append(" LIMIT ");
+				sb.append(offset);
+				sb.append(" ");
+				sb.append(limit);
+			}
+		}
         appendTo(sb, select);
         sb.append(" FROM ");
         appendTo(sb, from);
@@ -157,13 +175,13 @@ class SqlBuilder {
                 sb,
                 (String[]) orderby.toArray(new String[orderby.size()]));
         }
-        if (limit > 0) {
-            sb.append(" LIMIT ");
-            sb.append(limit);
-        }
-        if (offset > 0) {
-            sb.append(" OFFSET ");
-            sb.append(offset);
+        if (limit > 0 || offset > 0) {
+            if (isDatabase(PSQL)) {            
+				sb.append(" OFFSET ");
+				sb.append(offset);
+	            sb.append(" LIMIT ");
+	            sb.append(limit);
+            }
         }
         return sb.toString();
     }
@@ -278,7 +296,7 @@ class SqlBuilder {
         if (!stk.hasMoreElements()) {
             return Calendar.YEAR;
         }
-        cal.set(Calendar.MONTH, Integer.parseInt(stk.nextToken())-1);
+        cal.set(Calendar.MONTH, Integer.parseInt(stk.nextToken()) - 1);
         if (!stk.hasMoreElements()) {
             return Calendar.MONTH;
         }
