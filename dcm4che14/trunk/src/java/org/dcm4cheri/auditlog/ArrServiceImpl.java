@@ -147,8 +147,7 @@ final class ArrServiceImpl extends DefaultHandler implements ArrService {
 		if ("".equals(el))
 			el = qname;
 		if (lastElem != null && lastElem.equals(E_ROOT) &&
-			eventSet.contains(el) &&
-			!el.equals(E_HOST) && !el.equals(E_TIMESTAMP))
+			eventSet.contains(el))
 			type = el;
 		lastElem = el;
 		/*System.out.print("<" + el);

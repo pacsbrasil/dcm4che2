@@ -184,6 +184,9 @@ public final class ISO8601DateFormat extends org.apache.log4j.helpers.ISO8601Dat
 		else if (strict) {
 			throw new ParseException("missing time zone",p);
 		}
+        else {  //not strict and missing timezone (assume this timezone)
+            off = Calendar.getInstance().get(Calendar.ZONE_OFFSET);
+        }
 		//return
 		Calendar cal = new GregorianCalendar(year,month-1,day,hour,min,sec);
         //set time to be in GMT timezone, by telling the Calendar it's offset from GMT

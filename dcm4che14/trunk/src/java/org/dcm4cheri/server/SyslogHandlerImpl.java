@@ -48,15 +48,15 @@ public class SyslogHandlerImpl implements UDPServer.Handler
     
     public final void handle(DatagramPacket datagram)
     {
-	byte[] buff = datagram.getData();
-	try {
-	    SyslogMsg msg = new SyslogMsg(buff,datagram.getLength());
-            service.process(msg.getTimestamp(), msg.getHost(), msg.getContent());
-	    //printLogMsg(msg.toString());
-	}
-	catch (SyslogMsg.InvalidSyslogMsgException e) {
-	    e.printStackTrace();
-	}
+        byte[] buff = datagram.getData();
+        try {
+            SyslogMsg msg = new SyslogMsg(buff,datagram.getLength());
+                service.process(msg.getTimestamp(), msg.getHost(), msg.getContent());
+            //printLogMsg(msg.toString());
+        }
+        catch (SyslogMsg.InvalidSyslogMsgException e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -113,7 +113,7 @@ public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
     {
 	if (ss == null)
 	    return;
-	final int BufSize = 1024;
+	final int BufSize = 32768;
 	byte[] buff = new byte[BufSize];
 	DatagramPacket dp = new DatagramPacket(buff,buff.length);
 	try {
@@ -154,3 +154,4 @@ public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
         }
     }
 }
+
