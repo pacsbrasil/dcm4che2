@@ -68,6 +68,11 @@ dcm4che API:
 + org.dcm4che.srom.*: add IconImage param to factory methodes for ImageContent
 samples:
 + dcmsnd, dcmrcv, mppssnd: change TLS related command line syntax
+distribution:
++ split distribution in 3 ZIP archives:
+  - dcm4che-##.zip - compiled jars
+  - dcm4che-apidoc-##.zip - API javadoc
+  - dcm4che-src-##.zip - source + build scripts
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1
