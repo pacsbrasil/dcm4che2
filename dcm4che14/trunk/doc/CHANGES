@@ -5,6 +5,9 @@ Revision History
 dcm4che 1.0.7 -  - Changes since dcm4che 1.0.5
 -------------------------------------------------------------------------------
 BUG FIXES:
++ class org.dcm4che.data.DcmElement: Fix
+  getInt, getInts for elements with VR=OW
+  getFloat, getFloats for elements with VR=OF
 + class org.dcm4che.data.Dataset: Fix
   writeFile(OutputStream out, DcmEncodeParam param)
   writeFile(ImageOutputStream out, DcmEncodeParam param)
@@ -21,7 +24,7 @@ ENHANCEMENTS:
   long parseDataset(String tsUID, int stopTag) throws IOException
 + add Status Code Definitions for Print Management Service Class
 + class org.dcm4che.imageio.plugin.DcmImageReader: support of P-value to
-  Device-Driver-Level transformation by DcmReadImageParam#setPValToDLL
+  Device-Driver-Level transformation by DcmReadImageParam#setPValToDDL
 
 CHANGES:
 + change schema of Implementation Version Name in META-INF/MANIFEST.MF and
@@ -31,8 +34,9 @@ CHANGES:
   org.dcm4che.data.DcmValueException, but return null or default value, if
   a decoding error occurs.
 + org.dcm4che.image.ColorModelFactory: replace DcmValueException by
-  IllegalArgumentException 
-  
+  IllegalArgumentException
++ Association#write(Dimse) now only pack Command PDV and (first) Data PDV
+  in P-DATA-TF PDU, if new property PackPDVs=true  
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.5 -  - Changes since dcm4che 1.0.4

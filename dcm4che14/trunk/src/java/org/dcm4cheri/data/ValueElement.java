@@ -568,10 +568,11 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x4F46;
         }
         public final float getFloat(int index) {
-            if (index >= vm()) {
+            final int pos = index<<2;
+            if (pos >= data.limit()) {
                 return 0.f;
             }
-            return data.getFloat(index<<2);
+            return data.getFloat(pos);
         }
         public final float[] getFloats() {
             float[] a = new float[data.limit()>>2];
@@ -636,10 +637,11 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x4F57;
         }
         public final int getInt(int index) {
-            if (index >= vm()) {
+            final int pos = index<<1;
+            if (pos >= data.limit()) {
                 return 0;
             }
-            return data.getShort(index<<1) & 0xffff;
+            return data.getShort(pos) & 0xffff;
         }
         
         public final int[] getInts() {

@@ -43,7 +43,7 @@ public class Dcm2Jpg {
       Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
       ImageReader reader = (ImageReader)iter.next();
       DcmImageReadParam param = (DcmImageReadParam) reader.getDefaultReadParam();
-      param.setPValToDLL(lut);
+      param.setPValToDDL(lut);
       ImageInputStream iis = ImageIO.createImageInputStream(src);
       BufferedImage bi;
       try {
