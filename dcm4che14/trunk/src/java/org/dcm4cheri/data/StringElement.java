@@ -82,8 +82,9 @@ abstract class StringElement extends ValueElement
         {
             public String trim(String s)
             {
+                char ch;
                 for (int r = s.length(); r > 0; --r) {
-                    if (s.charAt(r - 1) != ' ') {
+                    if ((ch = s.charAt(r - 1)) != ' ' && ch != '\0') {
                         for (int l = 0; l < r; ++l) {
                             if (s.charAt(l) != ' ') {
                                 return s.substring(l, r);
