@@ -95,7 +95,7 @@ public class DcmServerService extends ServiceMBeanSupport {
             sb.append(entry.getKey());
             sb.append('=');
             sb.append(entry.getValue());
-            sb.append('\n');
+            sb.append("\r\n");
         }
         return sb.toString();
     }
