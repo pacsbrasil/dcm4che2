@@ -137,7 +137,7 @@ public class FolderSubmitCtrl extends FolderCtrl
 
 			if (folderForm
 				.getStickyPatients()
-				.contains(new Integer(patient.getPk())))
+				.contains(String.valueOf(patient.getPk())))
 			{
 				edit.deletePatient(patient.getPk());
 			} else //deleting Studies
@@ -149,7 +149,7 @@ public class FolderSubmitCtrl extends FolderCtrl
 					study = (StudyDTO) study_iter.next();
 					if (folderForm
 						.getStickyStudies()
-						.contains(new Integer(study.getPk())))
+						.contains(String.valueOf(study.getPk())))
 					{
 						edit.deleteStudy(study.getPk());
 					} else //deleting Series
