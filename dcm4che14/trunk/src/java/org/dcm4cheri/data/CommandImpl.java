@@ -431,6 +431,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
     }
     
     private StringBuffer toStringBuffer(StringBuffer sb) {
+       String s;
        sb.append(msgID).append(':').append(cmdFieldAsString());
        if (dataSetType != NO_DATASET)
           sb.append(" with Dataset");
@@ -440,6 +441,8 @@ final class CommandImpl extends DcmObjectImpl implements Command {
           sb.append("\n\tinst:\t").append(DICT.lookup(sopInstUID));
        if (status != -1)
           sb.append("\n\tstatus:\t").append(Integer.toHexString(status));
+       if ((s = getString(Tags.MoveDestination)) != null)
+          sb.append("\n\tmove dest:\t").append(s);
        return sb;
     }
 
