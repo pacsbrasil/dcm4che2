@@ -222,6 +222,14 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
     
+    public final Date[] getDateRange() throws DcmValueException {
+        return getDateRange(0);
+    }
+    
+    public Date[] getDateRange(int index) throws DcmValueException {
+        throw new UnsupportedOperationException("" + this);
+    }
+
     protected int checkIndex(int index) {
         if (index < 0 || index >= vm()) 
             throw new IndexOutOfBoundsException(

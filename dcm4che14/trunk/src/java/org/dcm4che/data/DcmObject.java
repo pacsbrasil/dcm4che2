@@ -130,6 +130,12 @@ public interface DcmObject {
    
    Date getDateTime(int dateTag, int timeTag) throws DcmValueException;
    
+   Date[] getDateRange(int tag) throws DcmValueException;
+   
+   Date[] getDateRange(int tag, int index) throws DcmValueException;
+   
+   Date[] getDateTimeRange(int dateTag, int timeTag) throws DcmValueException;
+
    Dataset getItem(int tag);
    
    Dataset getItem(int tag, int index);

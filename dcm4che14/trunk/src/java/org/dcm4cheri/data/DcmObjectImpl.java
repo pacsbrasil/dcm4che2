@@ -261,6 +261,18 @@ abstract class DcmObjectImpl implements DcmObject {
       return e.getDate(index);
    }
    
+   public Date[] getDateRange(int tag) throws DcmValueException {
+      return getDateRange(tag, 0);
+   }
+   
+   public Date[] getDateRange(int tag, int index) throws DcmValueException {
+      DcmElement e = get(tag);
+      if (e == null || e.vm() <= index)
+         return null;
+      
+      return e.getDateRange(index);
+   }
+
    public Date[] getDates(int tag) throws DcmValueException {
       DcmElement e = get(tag);
       if (e == null)
@@ -280,6 +292,24 @@ abstract class DcmObjectImpl implements DcmObject {
          return date.getDate();
       
       return new Date(date.getDate().getTime() + time.getDate().getTime());
+   }
+   
+   public Date[] getDateTimeRange(int dateTag, int timeTag)
+   throws DcmValueException {
+      DcmElement date = get(dateTag);
+      if (date == null || date.isEmpty())
+         return null;
+      
+      Date[] dateRange = date.getDateRange();
+      DcmElement time = get(timeTag);
+      if (time == null || time.isEmpty())
+         return dateRange;
+
+      Date[] timeRange = time.getDateRange();
+      return new Date[] {
+          new Date(dateRange[0].getTime() + timeRange[0].getTime()),
+          new Date(dateRange[1].getTime() + timeRange[1].getTime())
+      };
    }
    
    public Dataset getItem(int tag) {
