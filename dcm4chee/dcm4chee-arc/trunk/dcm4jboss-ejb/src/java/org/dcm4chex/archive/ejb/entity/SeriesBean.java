@@ -37,9 +37,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
-
-/**
 
 /**
  * @ejb.bean
@@ -184,6 +183,17 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
+     * Hidden Flag
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="hidden"
+     */
+    public abstract boolean getHidden();
+
+    public abstract void setHidden(boolean hidden);
+
+    /**
      * @ejb.relation
      *  name="study-series"
      *  role-name="series-of-study"
@@ -203,6 +213,24 @@ public abstract class SeriesBean implements EntityBean {
      * @return study of this series
      */
     public abstract StudyLocal getStudy();
+
+    /**
+     * @ejb.relation
+     *  name="mpps-series"
+     *  role-name="series-of-mpps"
+     *
+     * @jboss:relation
+     *  fk-column="mpps_fk"
+     *  related-pk-field="pk"
+     * 
+     * @param study study of this series
+     */
+    public abstract void setMpps(MPPSLocal mpps);
+
+    /**
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract MPPSLocal getMpps();
 
     /**
      * @ejb.interface-method view-type="local"
@@ -288,6 +316,31 @@ public abstract class SeriesBean implements EntityBean {
         getStudy().incNumberOfStudyRelatedInstances(inc);
     }
 
+
+    /**
+     * @ejb.interface-method
+     */
+    public void hide() {
+        if (getHidden()) return;
+        StudyLocal study = getStudy();
+        study.incNumberOfStudyRelatedSeries(-1);
+        study.incNumberOfStudyRelatedInstances(
+            -getNumberOfSeriesRelatedInstances());
+        setHidden(true);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void unhide() {
+        if (!getHidden()) return;
+        StudyLocal study = getStudy();
+        study.incNumberOfStudyRelatedSeries(1);
+        study.incNumberOfStudyRelatedInstances(
+            getNumberOfSeriesRelatedInstances());
+        setHidden(false);
+    }
+    
     /**
      * @ejb.interface-method
      */

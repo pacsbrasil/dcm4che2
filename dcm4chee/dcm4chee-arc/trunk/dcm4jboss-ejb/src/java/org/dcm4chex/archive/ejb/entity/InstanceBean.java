@@ -20,10 +20,8 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -42,9 +40,9 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
-import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 
 /**
  * Instance Bean
@@ -313,7 +311,13 @@ public abstract class InstanceBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
         throws CreateException {
-        setSrCode(toCode(ds.getItem(Tags.ConceptNameCodeSeq)));
+        try {
+            setSrCode(CodeBean.valueOf(codeHome, ds.getItem(Tags.ConceptNameCodeSeq)));
+        } catch (CreateException e) {
+            throw new CreateException(e.getMessage());
+        } catch (FinderException e) {
+            throw new CreateException(e.getMessage());
+        }
         setSeries(series);
         series.incNumberOfSeriesRelatedInstances(1);
         log.info("Created " + prompt());
@@ -415,32 +419,5 @@ public abstract class InstanceBean implements EntityBean {
             + ", series->"
             + getSeries()
             + "]";
-    }
-
-    private CodeLocal toCode(Dataset item) throws CreateException {
-        if (item == null)
-            return null;
-
-        final String value = item.getString(Tags.CodeValue);
-        final String designator = item.getString(Tags.CodingSchemeDesignator);
-        final String version = item.getString(Tags.CodingSchemeVersion);
-        final String meaning = item.getString(Tags.CodeMeaning);
-        try {
-            Collection c = codeHome.findByValueAndDesignator(value, designator);
-            for (Iterator it = c.iterator(); it.hasNext();) {
-                final CodeLocal code = (CodeLocal) it.next();
-                if (version == null) {
-                    return code;
-                }
-                final String version2 = code.getCodingSchemeVersion();
-                if (version2 == null || version2.equals(version)) {
-                    return code;
-                }
-            }
-            return codeHome.create(value, designator, version, meaning);
-        } catch (FinderException e) {
-            throw new CreateException(
-                "Failed to access Code[" + value + "," + designator + "]:" + e);
-        }
     }
 }

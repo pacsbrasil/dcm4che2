@@ -19,58 +19,59 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 
 /**
- * @ejb.bean
- *  name="Code"
- *  type="CMP"
- *  view-type="local"
- *  primkey-field="pk"
- *  local-jndi-name="ejb/Code"
+ * @ejb.bean name="Code" type="CMP" view-type="local"
+ * 	primkey-field="pk"
+ * 	local-jndi-name="ejb/Code"
  * 
  * @jboss.container-configuration
- *  name="Standard CMP 2.x EntityBean with cache invalidation"
+ * 	name="Standard CMP 2.x EntityBean with cache invalidation"
+ * 
+ * @ejb.transaction type="Required"
+ * 
+ * @ejb.persistence table-name="code"
+ * 
+ * @jboss.entity-command name="hsqldb-fetch-key"
+ * 
+ * @ejb.finder
+ * 	signature="Collection findAll()"
+ * 	query="SELECT OBJECT(a) FROM Code AS a"
+ * 	transaction-type="Supports"
+ * 
+ * @ejb.finder
+ * 	signature="java.util.Collection findByValueAndDesignator(java.lang.String value, java.lang.String designator)"
+ * 	query="SELECT OBJECT(a) FROM Code AS a WHERE a.codeValue = ?1 AND a.codingSchemeDesignator = ?2"
+ *  transaction-type="Supports"
+ * 
+ * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  *  
- * @ejb.transaction 
- *  type="Required"
- * 
- * @ejb.persistence
- *  table-name="code"
- * 
- * @jboss.entity-command
- *  name="hsqldb-fetch-key"
- * 
- * @ejb.finder
- *  signature="Collection findAll()"
- *  query="SELECT OBJECT(a) FROM Code AS a"
- *  transaction-type="Supports"
- *
- * @ejb.finder
- *  signature="java.util.Collection findByValueAndDesignator(java.lang.String value, java.lang.String designator)"
- *  query="SELECT OBJECT(a) FROM Code AS a WHERE a.codeValue = ?1 AND a.codingSchemeDesignator = ?2"
- *  transaction-type="Supports"
- * 
- * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- *
  */
-public abstract class CodeBean implements EntityBean
-{
+public abstract class CodeBean implements EntityBean {
+
     private static final Logger log = Logger.getLogger(CodeBean.class);
+
     /**
      * Auto-generated Primary Key
-     *
+     * 
      * @ejb.interface-method
      * @ejb.pk-field
-     * @ejb.persistence
-     *  column-name="pk"
-     * @jboss.persistence
-     *  auto-increment="true"
-     *
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
+     *  
      */
     public abstract Integer getPk();
 
@@ -78,10 +79,9 @@ public abstract class CodeBean implements EntityBean
 
     /**
      * Code Value
-     *
+     * 
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="code_value"
+     * @ejb.persistence column-name="code_value"
      */
     public abstract String getCodeValue();
 
@@ -89,10 +89,9 @@ public abstract class CodeBean implements EntityBean
 
     /**
      * Code Value
-     *
+     * 
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="code_designator"
+     * @ejb.persistence column-name="code_designator"
      */
     public abstract String getCodingSchemeDesignator();
 
@@ -100,10 +99,9 @@ public abstract class CodeBean implements EntityBean
 
     /**
      * Code Value
-     *
+     * 
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="code_version"
+     * @ejb.persistence column-name="code_version"
      */
     public abstract String getCodingSchemeVersion();
 
@@ -111,10 +109,9 @@ public abstract class CodeBean implements EntityBean
 
     /**
      * Code Value
-     *
+     * 
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="code_meaning"
+     * @ejb.persistence column-name="code_meaning"
      */
     public abstract String getCodeMeaning();
 
@@ -124,38 +121,24 @@ public abstract class CodeBean implements EntityBean
      * 
      * @ejb.interface-method
      */
-    public String asString()
-    {
+    public String asString() {
         return prompt();
     }
 
-    private String prompt()
-    {
-        return "Code[pk="
-            + getPk()
-            + ", value="
-            + getCodeValue()
-            + ", designator="
-            + getCodingSchemeDesignator()
-            + ", version="
-            + getCodingSchemeVersion()
-            + ", meaning="
-            + getCodeMeaning()
-            + "]";
+    private String prompt() {
+        return "Code[pk=" + getPk() + ", value=" + getCodeValue()
+                + ", designator=" + getCodingSchemeDesignator() + ", version="
+                + getCodingSchemeVersion() + ", meaning=" + getCodeMeaning()
+                + "]";
     }
 
     /**
      * Create Media.
-     *
+     * 
      * @ejb.create-method
      */
-    public Integer ejbCreate(
-        String value,
-        String designator,
-        String version,
-        String meaning)
-        throws CreateException
-    {
+    public Integer ejbCreate(String value, String designator, String version,
+            String meaning) throws CreateException {
         setCodeValue(value);
         setCodingSchemeDesignator(designator);
         setCodingSchemeVersion(version);
@@ -163,19 +146,31 @@ public abstract class CodeBean implements EntityBean
         return null;
     }
 
-    public void ejbPostCreate(
-        String value,
-        String designator,
-        String version,
-        String meaning)
-        throws CreateException
-    {
+    public void ejbPostCreate(String value, String designator, String version,
+            String meaning) throws CreateException {
         log.info("Created " + prompt());
 
     }
 
-    public void ejbRemove() throws RemoveException
-    {
+    public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
+    }
+
+    static CodeLocal valueOf(CodeLocalHome codeHome, Dataset item)
+            throws CreateException, FinderException {
+        if (item == null) return null;
+
+        final String value = item.getString(Tags.CodeValue);
+        final String designator = item.getString(Tags.CodingSchemeDesignator);
+        final String version = item.getString(Tags.CodingSchemeVersion);
+        final String meaning = item.getString(Tags.CodeMeaning);
+        Collection c = codeHome.findByValueAndDesignator(value, designator);
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            final CodeLocal code = (CodeLocal) it.next();
+            if (version == null) { return code; }
+            final String version2 = code.getCodingSchemeVersion();
+            if (version2 == null || version2.equals(version)) { return code; }
+        }
+        return codeHome.create(value, designator, version, meaning);
     }
 }

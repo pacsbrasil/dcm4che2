@@ -83,25 +83,45 @@ CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
 CREATE INDEX ref_physician ON study(ref_physician_up);
 
+CREATE SEQUENCE mpps_pk_seq;
+CREATE TABLE mpps (
+	pk          	INTEGER PRIMARY KEY NOT NULL,
+	study_fk		INTEGER,
+	drcode_fk		INTEGER,
+	mpps_iuid		VARCHAR(254) NOT NULL,
+	mpps_status		VARCHAR(254),
+	mpps_attrs		BLOB(64000),
+FOREIGN KEY (study_fk) REFERENCES study(pk),
+FOREIGN KEY (drcode_fk) REFERENCES code(pk)
+);
+CREATE UNIQUE INDEX mpps_iuid ON mpps (mpps_iuid);
+CREATE INDEX mpps_study_fk ON mpps(study_fk);
+
 CREATE SEQUENCE series_pk_seq;
 CREATE TABLE series (
 	pk              INTEGER PRIMARY KEY  NOT NULL,
 	study_fk		INTEGER,
+	mpps_fk			INTEGER,
 	series_iuid     VARCHAR(254) NOT NULL,
 	series_no		VARCHAR(254),
 	modality		VARCHAR(254),
 	pps_start		TIMESTAMP,
+	pps_iuid		VARCHAR(254),
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR(254),
 	availability	INTEGER,
+	hidden			SMALLINT,
 	series_attrs	BLOB(64000),
-FOREIGN KEY (study_fk) REFERENCES study(pk)
+FOREIGN KEY (study_fk) REFERENCES study(pk),
+FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
 );
 CREATE INDEX study_fk ON series(study_fk);
+CREATE INDEX series_mpps_fk ON series(mpps_fk);
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid);
 CREATE INDEX series_no ON series(series_no);
 CREATE INDEX modality ON series(modality);
-CREATE INDEX pps_datetime ON series(pps_start);
+CREATE INDEX series_pps_start ON series(pps_start);
+CREATE INDEX series_pps_iuid ON series (pps_iuid);
 
 CREATE SEQUENCE instance_pk_seq;
 CREATE TABLE instance (
@@ -188,6 +208,7 @@ GRANT ALL PRIVILEGES ON TABLE move_order TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE code TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE patient TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE study TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE mpps TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE series TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE instance TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE files TO USER tiani;
@@ -200,6 +221,7 @@ GRANT USAGE ON SEQUENCE tiani.move_order_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.code_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.patient_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.study_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE tiani.mpps_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.series_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.instance_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.files_pk_seq TO USER tiani;

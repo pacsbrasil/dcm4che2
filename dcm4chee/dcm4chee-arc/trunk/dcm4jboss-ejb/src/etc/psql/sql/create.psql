@@ -61,8 +61,6 @@ CREATE TABLE study (
 	num_instances	INTEGER,
 	retrieve_aets	TEXT,
 	availability	INTEGER,
-	updated_time 	TIMESTAMP,
-	hidden			BOOLEAN,
 	study_attrs		BYTEA,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
@@ -76,12 +74,12 @@ CREATE INDEX ref_physician ON study(UPPER(ref_physician));
 CREATE TABLE mpps (
 	pk          	SERIAL PRIMARY KEY,
 	study_fk		INTEGER,
-	dr_code_fk		INTEGER,
+	drcode_fk		INTEGER,
 	mpps_iuid		TEXT NOT NULL,
 	mpps_status		TEXT,
 	mpps_attrs		BYTEA,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
-FOREIGN KEY (dr_code_fk) REFERENCES code(pk)
+FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
 CREATE UNIQUE INDEX mpps_iuid ON mpps (mpps_iuid);
 CREATE INDEX mpps_study_fk ON mpps(study_fk);
@@ -98,7 +96,6 @@ CREATE TABLE series (
 	num_instances	INTEGER,
 	retrieve_aets	TEXT,
 	availability	INTEGER,
-	updated_time 	TIMESTAMP,
 	hidden			BOOLEAN,
 	series_attrs	BYTEA,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
