@@ -41,8 +41,9 @@ public class RetrieveCmd extends BaseCmd {
     private static final String[] ENTITY = { "Patient", "Study", "Series",
             "Instance"};
 
-    private static final String[] LEFT_JOIN = { "File", "Instance.pk",
-    		"File.instance_fk", "FileSystem", "File.filesystem_fk", "FileSystem.pk" };
+    private static final String[] LEFT_JOIN = { 
+            "File", null, "Instance.pk", "File.instance_fk",
+            "FileSystem", null, "File.filesystem_fk", "FileSystem.pk" };
     
     private static final String[] RELATIONS = { "Patient.pk",
             "Study.patient_fk", "Study.pk", "Series.study_fk", "Series.pk",
@@ -69,29 +70,29 @@ public class RetrieveCmd extends BaseCmd {
             if (pid == null)
                     throw new IllegalArgumentException("Missing PatientID");
 
-            sqlBuilder.addWildCardMatch("Patient.patientId", SqlBuilder.TYPE2,
-                    pid, false); 
+            sqlBuilder.addWildCardMatch(null, "Patient.patientId",
+                    SqlBuilder.TYPE2, pid, false); 
         } else if ("STUDY".equals(qrLevel)) {
             String[] uid = keys.getStrings(Tags.StudyInstanceUID);
             if (uid == null || uid.length == 0)
                 throw new IllegalArgumentException("Missing StudyInstanceUID");
 
-            sqlBuilder.addListOfUidMatch("Study.studyIuid", SqlBuilder.TYPE1,
-                    uid);
+            sqlBuilder.addListOfUidMatch(null, "Study.studyIuid",
+                    SqlBuilder.TYPE1, uid);
         } else if ("SERIES".equals(qrLevel)) {
             String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
             if (uid == null || uid.length == 0)
                 throw new IllegalArgumentException("Missing SeriesInstanceUID");
 
-            sqlBuilder.addListOfUidMatch("Series.seriesIuid", SqlBuilder.TYPE1,
-                    uid);
+            sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
+                    SqlBuilder.TYPE1, uid);
         } else if ("IMAGE".equals(qrLevel)) {
             String[] uids = keys.getStrings(Tags.SOPInstanceUID);
             if (uids == null || uids.length == 0)
                 throw new IllegalArgumentException("Missing SOPInstanceUID");
 
-            sqlBuilder.addListOfUidMatch("Instance.sopIuid", SqlBuilder.TYPE1,
-                    uids);
+            sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid",
+                    SqlBuilder.TYPE1, uids);
             return new ImageRetrieveCmd(sqlBuilder.getSql(), uids);
         } else {
             throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
@@ -107,7 +108,7 @@ public class RetrieveCmd extends BaseCmd {
             uid[i] = refSOPSeq.getItem(i).getString(Tags.RefSOPInstanceUID);
         }
 
-        sqlBuilder.addListOfUidMatch("Instance.sopIuid", SqlBuilder.TYPE1,
+        sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid", SqlBuilder.TYPE1,
                 uid);
         return new RetrieveCmd(sqlBuilder.getSql());
     }

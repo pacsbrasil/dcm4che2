@@ -21,15 +21,17 @@ abstract class Match
 {
 
     private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSS''";
-    protected final String column;
+    protected String column;
     protected final boolean type2;
 
-    protected Match(String field, boolean type2)
+    protected Match(String alias, String field, boolean type2)
     {
         this.column = JdbcProperties.getInstance().getProperty(field);
         if (column == null)
             throw new IllegalArgumentException("field: " + field);
-
+        if (alias != null) {
+            this.column = alias + column.substring(column.indexOf('.'));
+        }
         this.type2 = type2;
     }
 
@@ -54,9 +56,9 @@ abstract class Match
     static class NULLValue extends Match
     {
     	private boolean inverter;
-        public NULLValue(String field, boolean inverter)
+        public NULLValue(String alias, String field, boolean inverter)
         {
-            super(field, false);
+            super(alias, field, false);
             this.inverter = inverter;
         }
 
@@ -78,9 +80,9 @@ abstract class Match
     static class SingleValue extends Match
     {
         private final String value;
-        public SingleValue(String field, boolean type2, String value)
+        public SingleValue(String alias, String field, boolean type2, String value)
         {
-            super(field, type2);
+            super(alias, field, type2);
             this.value = value;
         }
 
@@ -98,12 +100,34 @@ abstract class Match
         }
     }
 
+    static class IntValue extends Match
+    {
+        private final int value;
+        public IntValue(String alias, String field, boolean type2, int value)
+        {
+            super(alias, field, type2);
+            this.value = value;
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return false;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            sb.append(column);
+            sb.append(" = ");
+            sb.append(value);
+        }
+    }
+
     static class AppendLiteral extends Match
     {
         private final String literal;
-        public AppendLiteral(String field, boolean type2, String literal)
+        public AppendLiteral(String alias, String field, boolean type2, String literal)
         {
-            super(field, type2);
+            super(alias, field, type2);
             this.literal = literal;
         }
 
@@ -123,9 +147,9 @@ abstract class Match
     static class ListOfUID extends Match
     {
         private final String[] uids;
-        public ListOfUID(String field, boolean type2, String[] uids)
+        public ListOfUID(String alias, String field, boolean type2, String[] uids)
         {
-            super(field, type2);
+            super(alias, field, type2);
             this.uids = uids != null ? (String[]) uids.clone() : new String[0];
         }
 
@@ -153,13 +177,10 @@ abstract class Match
     {
         private final char[] wc;
         private final boolean ignoreCase;
-        public WildCard(
-            String field,
-            boolean type2,
-            String wc,
+        public WildCard(String alias, String field, boolean type2, String wc,
             boolean ignoreCase)
         {
-            super(field, type2);
+            super(alias, field, type2);
             this.wc = wc != null ? wc.toCharArray() : new char[0];
             this.ignoreCase = ignoreCase;
         }
@@ -227,9 +248,9 @@ abstract class Match
     static class Range extends Match
     {
         private final Date[] range;
-        public Range(String field, boolean type2, Date[] range)
+        public Range(String alias, String field, boolean type2, Date[] range)
         {
-            super(field, type2);
+            super(alias, field, type2);
             this.range = range != null ? (Date[]) range.clone() : null;
         }
 
@@ -265,9 +286,9 @@ abstract class Match
     static class ModalitiesInStudy extends Match
     {
         private final char[] wc;
-        public ModalitiesInStudy(String md)
+        public ModalitiesInStudy(String alias, String md)
         {
-            super("Series.modality", false);
+            super(alias, "Series.modality", false);
             this.wc = md != null ? md.toCharArray() : new char[0];
         }
 

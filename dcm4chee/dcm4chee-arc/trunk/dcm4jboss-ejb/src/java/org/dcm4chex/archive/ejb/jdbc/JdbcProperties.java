@@ -64,6 +64,8 @@ public class JdbcProperties extends Properties {
     }
 
     public String getProperty(String key) {
+        if (key == null || Character.isLowerCase(key.charAt(0)))
+                return key;
         String value = super.getProperty(key);
         if (value == null)
             throw new IllegalArgumentException("key: " + key);

@@ -41,8 +41,8 @@ public final class QueryFilesCmd extends BaseCmd {
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addSingleValueMatch("Instance.sopIuid", SqlBuilder.TYPE1,
-                iuid);
+        sqlBuilder.addSingleValueMatch(null, "Instance.sopIuid",
+                SqlBuilder.TYPE1, iuid);
         this.sql = sqlBuilder.getSql();
     }
     

@@ -17,7 +17,7 @@ CREATE INDEX ser_req_sps_id ON series_req(sps_id);
 CREATE TABLE gpsps (
 	pk              SERIAL PRIMARY KEY,
 	patient_fk      INTEGER,
-	workitemcode_fk INTEGER,
+	code_fk         INTEGER,
 	gpsps_iuid      TEXT NOT NULL,
 	start_datetime  TIMESTAMP NOT NULL,
 	end_datetime    TIMESTAMP,
@@ -26,10 +26,10 @@ CREATE TABLE gpsps (
 	in_availability INTEGER,
 	item_attrs      BYTEA,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
-FOREIGN KEY (workitemcode_fk) REFERENCES code(pk)
+FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
 CREATE INDEX gpsps_patient_fk ON gpsps(patient_fk);
-CREATE INDEX workitemcode_fk ON gpsps(workitemcode_fk);
+CREATE INDEX gpsps_code_fk ON gpsps(code_fk);
 CREATE UNIQUE INDEX gpsps_iuid ON gpsps(gpsps_iuid);
 CREATE INDEX gpsps_start_time ON gpsps(start_datetime);
 CREATE INDEX gpsps_end_time ON gpsps(end_datetime);

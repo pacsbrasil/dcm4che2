@@ -46,33 +46,33 @@ public class MPPSQueryCmd extends BaseCmd {
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addSingleValueMatch("MPPS.sopIuid",
+        sqlBuilder.addSingleValueMatch(null, "MPPS.sopIuid",
                 SqlBuilder.TYPE1,
                 filter.getSopIuid() );
         if ( filter.isEmptyAccNo() ) {
-        	sqlBuilder.addNULLValueMatch( "MPPS.accessionNumber", false );
+        	sqlBuilder.addNULLValueMatch(null, "MPPS.accessionNumber", false );
         } else {
-	        sqlBuilder.addSingleValueMatch("MPPS.accessionNumber",
+	        sqlBuilder.addSingleValueMatch(null, "MPPS.accessionNumber",
 	                SqlBuilder.TYPE2,
 	                filter.getAccessionNumber() );
         }
-        sqlBuilder.addSingleValueMatch("Patient.patientId",
+        sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
                 filter.getPatientID() );
-        sqlBuilder.addWildCardMatch("Patient.patientName",
+        sqlBuilder.addWildCardMatch(null, "Patient.patientName",
                 SqlBuilder.TYPE1,
                 filter.getPatientName(),
                 true);
-        sqlBuilder.addSingleValueMatch("MPPS.modality",
+        sqlBuilder.addSingleValueMatch(null, "MPPS.modality",
                 SqlBuilder.TYPE1,
                 filter.getModality());
-        sqlBuilder.addSingleValueMatch("MPPS.performedStationAET",
+        sqlBuilder.addSingleValueMatch(null, "MPPS.performedStationAET",
                 SqlBuilder.TYPE1,
                 filter.getStationAET());
-        sqlBuilder.addRangeMatch("MPPS.ppsStartDateTime",
+        sqlBuilder.addRangeMatch(null, "MPPS.ppsStartDateTime",
                 SqlBuilder.TYPE1,
                 filter.dateTimeRange());
-        sqlBuilder.addSingleValueMatch("MPPS.ppsStatusAsInt",
+        sqlBuilder.addSingleValueMatch(null, "MPPS.ppsStatusAsInt",
                 SqlBuilder.TYPE1,
 				filter.getStatus());
     }

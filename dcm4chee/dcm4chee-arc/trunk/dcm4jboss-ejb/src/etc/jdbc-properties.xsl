@@ -22,6 +22,9 @@
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Series']" mode="fk">
 <xsl:with-param name="fk" select="'study_fk'"/>
 </xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'SeriesRequest']" mode="fk">
+<xsl:with-param name="fk" select="'series_fk'"/>
+</xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Instance']" mode="fk">
 <xsl:with-param name="fk" select="'series_fk'"/>
 </xsl:apply-templates>
@@ -39,6 +42,21 @@
 </xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'MWLItem']" mode="fk">
 <xsl:with-param name="fk" select="'patient_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'GPSPS']" mode="fk">
+<xsl:with-param name="fk" select="'patient_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'GPSPS']" mode="fk">
+<xsl:with-param name="fk" select="'code_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'GPSPSRequest']" mode="fk">
+<xsl:with-param name="fk" select="'gpsps_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'GPSPSPerformer']" mode="fk">
+<xsl:with-param name="fk" select="'gpsps_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'GPSPSPerformer']" mode="fk">
+<xsl:with-param name="fk" select="'code_fk'"/>
 </xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'MPPS']" mode="fk">
 <xsl:with-param name="fk" select="'patient_fk'"/>

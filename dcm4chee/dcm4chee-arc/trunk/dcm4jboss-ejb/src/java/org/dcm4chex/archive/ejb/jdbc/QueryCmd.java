@@ -9,6 +9,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -37,6 +38,11 @@ public abstract class QueryCmd extends BaseCmd {
     private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
             "OFFLINE", "UNAVAILABLE"};
 
+    private static final String SR_CODE = "sr_code";
+
+    private static final String[] SERIES_REQUEST_LEFT_JOIN = {
+        "SeriesRequest", null, "Series.pk", "SeriesRequest.series_fk"};
+    
     public static QueryCmd create(Dataset keys, boolean filterResult)
             throws SQLException {
         QueryCmd cmd;
@@ -98,91 +104,100 @@ public abstract class QueryCmd extends BaseCmd {
     }
 
     protected void addPatientMatch() {
-        sqlBuilder.addWildCardMatch("Patient.patientId", SqlBuilder.TYPE2, keys
-                .getString(Tags.PatientID), false);
-        sqlBuilder.addWildCardMatch("Patient.patientName",
+        sqlBuilder.addWildCardMatch(null, "Patient.patientId", SqlBuilder.TYPE2,
+                keys.getString(Tags.PatientID), false);
+        sqlBuilder.addWildCardMatch(null, "Patient.patientName",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.PatientName),
                 true);
-        sqlBuilder.addRangeMatch("Patient.patientBirthDate",
+        sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate",
                 SqlBuilder.TYPE2,
                 keys.getDateTimeRange(Tags.PatientBirthDate,
                         Tags.PatientBirthTime));
-        sqlBuilder.addWildCardMatch("Patient.patientSex",
+        sqlBuilder.addWildCardMatch(null, "Patient.patientSex",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.PatientSex),
                 false);
     }
 
     protected void addStudyMatch() {
-        sqlBuilder.addLiteralMatch("Study.numberOfStudyRelatedSeries",
+        sqlBuilder.addLiteralMatch(null, "Study.numberOfStudyRelatedSeries",
                 SqlBuilder.TYPE1,
                 " != 0");
-        sqlBuilder.addListOfUidMatch("Study.studyIuid", SqlBuilder.TYPE1, keys
-                .getStrings(Tags.StudyInstanceUID));
-        sqlBuilder.addWildCardMatch("Study.studyId", SqlBuilder.TYPE2, keys
-                .getString(Tags.StudyID), false);
-        sqlBuilder.addRangeMatch("Study.studyDateTime", SqlBuilder.TYPE2, keys
-                .getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
-        sqlBuilder.addWildCardMatch("Study.accessionNumber",
+        sqlBuilder.addListOfUidMatch(null, "Study.studyIuid", SqlBuilder.TYPE1,
+                keys.getStrings(Tags.StudyInstanceUID));
+        sqlBuilder.addWildCardMatch(null, "Study.studyId", SqlBuilder.TYPE2,
+                keys.getString(Tags.StudyID), false);
+        sqlBuilder.addRangeMatch(null, "Study.studyDateTime", SqlBuilder.TYPE2,
+                keys.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
+        sqlBuilder.addWildCardMatch(null, "Study.accessionNumber",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.AccessionNumber),
                 false);
-        sqlBuilder.addWildCardMatch("Study.referringPhysicianName",
+        sqlBuilder.addWildCardMatch(null, "Study.referringPhysicianName",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.ReferringPhysicianName),
                 true);
-        sqlBuilder.addModalitiesInStudyMatch(keys
-                .getString(Tags.ModalitiesInStudy));
+        sqlBuilder.addModalitiesInStudyMatch(null,
+                keys.getString(Tags.ModalitiesInStudy));
     }
 
     protected void addSeriesMatch() {
-        sqlBuilder.addBooleanMatch("Series.hidden", SqlBuilder.TYPE2, false);
-        sqlBuilder.addListOfUidMatch("Series.seriesIuid",
+        sqlBuilder.addBooleanMatch(null, "Series.hidden", SqlBuilder.TYPE2,
+                false);
+        sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SeriesInstanceUID));
-        sqlBuilder.addWildCardMatch("Series.seriesNumber",
+        sqlBuilder.addWildCardMatch(null, "Series.seriesNumber",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.SeriesNumber),
                 false);
-        sqlBuilder.addWildCardMatch("Series.modality", SqlBuilder.TYPE1, keys
-                .getString(Tags.Modality), false);
-        sqlBuilder.addRangeMatch("Series.ppsStartDateTime",
+        sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
+                keys.getString(Tags.Modality), false);
+        sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime",
                 SqlBuilder.TYPE2,
                 keys.getDateRange(Tags.PPSStartDate, Tags.PPSStartTime));
+        Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
+        if (rqAttrs != null) {
+            sqlBuilder.addWildCardMatch(null,
+                    "SeriesRequest.requestedProcedureId",
+                    SqlBuilder.TYPE2,
+                    rqAttrs.getString(Tags.RequestedProcedureID),
+                    false);
+            sqlBuilder.addWildCardMatch(null,
+                    "SeriesRequest.spsId",
+                    SqlBuilder.TYPE2,
+                    rqAttrs.getString(Tags.SPSID),
+                    false);
+        }
+
     }
 
     protected void addInstanceMatch() {
-        sqlBuilder.addListOfUidMatch("Instance.sopIuid", SqlBuilder.TYPE1, keys
-                .getStrings(Tags.SOPInstanceUID));
-        sqlBuilder.addListOfUidMatch("Instance.sopCuid", SqlBuilder.TYPE1, keys
-                .getStrings(Tags.SOPClassUID));
-        sqlBuilder.addWildCardMatch("Instance.instanceNumber",
+        sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid", SqlBuilder.TYPE1,
+                keys.getStrings(Tags.SOPInstanceUID));
+        sqlBuilder.addListOfUidMatch(null, "Instance.sopCuid", SqlBuilder.TYPE1,
+                keys.getStrings(Tags.SOPClassUID));
+        sqlBuilder.addWildCardMatch(null, "Instance.instanceNumber",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.InstanceNumber),
                 false);
-        sqlBuilder.addWildCardMatch("Instance.srCompletionFlag",
+        sqlBuilder.addWildCardMatch(null, "Instance.srCompletionFlag",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.CompletionFlag),
                 false);
-        sqlBuilder.addWildCardMatch("Instance.srVerificationFlag",
+        sqlBuilder.addWildCardMatch(null, "Instance.srVerificationFlag",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.VerificationFlag),
                 false);
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
         if (code != null) {
-            sqlBuilder.addWildCardMatch("Code.codeValue",
+            sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codeValue",
                     SqlBuilder.TYPE2,
-                    code.getString(Tags.CodeValue),
-                    false);
-            sqlBuilder.addWildCardMatch("Code.codingSchemeDesignator",
+                    code.getString(Tags.CodeValue));
+            sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codingSchemeDesignator",
                     SqlBuilder.TYPE2,
-                    code.getString(Tags.CodingSchemeDesignator),
-                    false);
-            sqlBuilder.addWildCardMatch("Code.codingSchemeVersion",
-                    SqlBuilder.TYPE2,
-                    code.getString(Tags.CodingSchemeVersion),
-                    false);
+                    code.getString(Tags.CodingSchemeDesignator));
         }
     }
 
@@ -333,6 +348,13 @@ public abstract class QueryCmd extends BaseCmd {
                     "Series.study_fk"};
         }
 
+        protected String[] getLeftJoin() {
+            if  (!isMatchRequestAttributes())
+                return null;
+            sqlBuilder.setDistinct(true);
+            return SERIES_REQUEST_LEFT_JOIN;
+        }
+        
         protected void fillDataset(Dataset ds) throws SQLException {
             fillDataset(ds, 1);
             fillDataset(ds, 2);
@@ -373,10 +395,25 @@ public abstract class QueryCmd extends BaseCmd {
         }
 
         protected String[] getLeftJoin() {
-            return new String[] { 
-                    "Code", "Instance.srcode_fk", "Code.pk",
-                    "Media", "Instance.media_fk", "Media.pk",
-                    };
+            ArrayList list = new ArrayList(12);
+            if (isMatchRequestAttributes()) {
+                sqlBuilder.setDistinct(true);
+                list.add("SeriesRequest");
+                list.add(null);
+                list.add("Series.pk");
+                list.add("SeriesRequest.series_fk");
+            }
+            if (isMatchSrCode()) {
+                list.add("Code");
+                list.add(SR_CODE);
+                list.add("Instance.srcode_fk");
+                list.add("Code.pk");
+            }
+            list.add("Media");
+            list.add(null);
+            list.add("Instance.media_fk");
+            list.add("Media.pk");
+            return (String[]) list.toArray(new String[list.size()]);
         }
 
         protected String[] getRelations() {
@@ -403,5 +440,12 @@ public abstract class QueryCmd extends BaseCmd {
         return code != null
                 && (code.vm(Tags.CodeValue) > 0 || code
                         .vm(Tags.CodingSchemeDesignator) > 0);
+    }
+
+    protected boolean isMatchRequestAttributes() {
+        Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
+        return rqAttrs != null
+                && (rqAttrs.vm(Tags.RequestedProcedureID) > 0
+                        || rqAttrs.vm(Tags.SPSID) > 0);
     }
 }

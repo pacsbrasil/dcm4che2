@@ -32,7 +32,7 @@ public final class AECmd extends BaseCmd
         super(transactionIsolationLevel);
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
-        sqlBuilder.addSingleValueMatch("AE.title", SqlBuilder.TYPE1, aet);
+        sqlBuilder.addSingleValueMatch(null, "AE.title", SqlBuilder.TYPE1, aet);
     }
 
     public AEData execute() throws SQLException

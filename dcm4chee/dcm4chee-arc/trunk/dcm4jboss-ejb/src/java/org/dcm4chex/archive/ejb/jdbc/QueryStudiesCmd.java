@@ -41,8 +41,8 @@ public class QueryStudiesCmd extends BaseCmd {
 
     private static final String[] ENTITY = { "Patient"};
 
-    private static final String[] LEFT_JOIN = { "Study", "Patient.pk",
-            "Study.patient_fk",};
+    private static final String[] LEFT_JOIN = { 
+            "Study", null, "Patient.pk", "Study.patient_fk",};
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
     
@@ -51,26 +51,27 @@ public class QueryStudiesCmd extends BaseCmd {
         super(transactionIsolationLevel);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
-        sqlBuilder.addLiteralMatch("Patient.merge_fk", false, "IS NULL");
-        sqlBuilder.addWildCardMatch("Patient.patientId",
+        sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
+        sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE2,
                 filter.getString(Tags.PatientID),
                 false);
-        sqlBuilder.addWildCardMatch("Patient.patientName",
+        sqlBuilder.addWildCardMatch(null, "Patient.patientName",
                 SqlBuilder.TYPE2,
                 filter.getString(Tags.PatientName),
                 true);
-        sqlBuilder.addWildCardMatch("Study.studyId", SqlBuilder.TYPE2, filter
-                .getString(Tags.StudyID), false);
-        sqlBuilder.addSingleValueMatch("Study.studyIuid", SqlBuilder.TYPE1, filter.getString( Tags.StudyInstanceUID));
-        sqlBuilder.addRangeMatch("Study.studyDateTime",
+        sqlBuilder.addWildCardMatch(null, "Study.studyId", SqlBuilder.TYPE2,
+                filter.getString(Tags.StudyID), false);
+        sqlBuilder.addSingleValueMatch(null, "Study.studyIuid",
+                SqlBuilder.TYPE1, filter.getString( Tags.StudyInstanceUID));
+        sqlBuilder.addRangeMatch(null, "Study.studyDateTime",
                 SqlBuilder.TYPE2,
                 filter.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
-        sqlBuilder.addWildCardMatch("Study.accessionNumber",
+        sqlBuilder.addWildCardMatch(null, "Study.accessionNumber",
                 SqlBuilder.TYPE2,
                 filter.getString(Tags.AccessionNumber),
                 false);
-        sqlBuilder.addModalitiesInStudyMatch(filter
+        sqlBuilder.addModalitiesInStudyMatch(null, filter
                 .getString(Tags.ModalitiesInStudy));
     }
 

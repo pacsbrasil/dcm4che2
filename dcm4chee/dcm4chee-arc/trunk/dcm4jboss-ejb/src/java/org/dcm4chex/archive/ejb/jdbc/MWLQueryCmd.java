@@ -55,34 +55,34 @@ public class MWLQueryCmd extends BaseCmd {
         sqlBuilder.setRelations(RELATIONS);
         Dataset spsItem = keys.getItem(Tags.SPSSeq);
         if (spsItem != null) {
-            sqlBuilder.addSingleValueMatch("MWLItem.spsId",
+            sqlBuilder.addSingleValueMatch(null, "MWLItem.spsId",
                     SqlBuilder.TYPE1,
                     spsItem.getString(Tags.SPSID));
-            sqlBuilder.addRangeMatch("MWLItem.spsStartDateTime",
+            sqlBuilder.addRangeMatch(null, "MWLItem.spsStartDateTime",
                     SqlBuilder.TYPE1,
                     spsItem.getDateTimeRange(Tags.SPSStartDate,
                             Tags.SPSStartTime));
-            sqlBuilder.addSingleValueMatch("MWLItem.modality",
+            sqlBuilder.addSingleValueMatch(null, "MWLItem.modality",
                     SqlBuilder.TYPE1,
                     spsItem.getString(Tags.Modality));
-            sqlBuilder.addSingleValueMatch("MWLItem.scheduledStationAET",
+            sqlBuilder.addSingleValueMatch(null, "MWLItem.scheduledStationAET",
                     SqlBuilder.TYPE1,
                     spsItem.getString(Tags.ScheduledStationAET));
-            sqlBuilder.addWildCardMatch("MWLItem.performingPhysicianName",
+            sqlBuilder.addWildCardMatch(null, "MWLItem.performingPhysicianName",
                     SqlBuilder.TYPE2,
                     spsItem.getString(Tags.PerformingPhysicianName),
                     false);
         }
-        sqlBuilder.addSingleValueMatch("MWLItem.requestedProcedureId",
+        sqlBuilder.addSingleValueMatch(null, "MWLItem.requestedProcedureId",
                 SqlBuilder.TYPE1,
                 keys.getString(Tags.RequestedProcedureID));
-        sqlBuilder.addSingleValueMatch("MWLItem.accessionNumber",
+        sqlBuilder.addSingleValueMatch(null, "MWLItem.accessionNumber",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.AccessionNumber));
-        sqlBuilder.addSingleValueMatch("Patient.patientId",
+        sqlBuilder.addSingleValueMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
                 keys.getString(Tags.PatientID));
-        sqlBuilder.addWildCardMatch("Patient.patientName",
+        sqlBuilder.addWildCardMatch(null, "Patient.patientName",
                 SqlBuilder.TYPE1,
                 keys.getString(Tags.PatientName),
                 true);

@@ -36,11 +36,16 @@ class SqlBuilder {
     private int limit = 0;
     private int offset = 0;
     private String whereOrAnd = WHERE;
+    private boolean distinct = false;
 
     private static int getDatabase() {
         return JdbcProperties.getInstance().getDatabase();
     }
 
+    public final void setDistinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+    
     public void setSelect(String[] fields) {
         select = JdbcProperties.getInstance().getProperties(fields);
     }
@@ -59,10 +64,21 @@ class SqlBuilder {
             this.leftJoin = null;
             return;
         }
-        if (leftJoin.length % 3 != 0) {
+        if (leftJoin.length % 4 != 0) {
             throw new IllegalArgumentException("" + Arrays.asList(leftJoin));
         }
         this.leftJoin = JdbcProperties.getInstance().getProperties(leftJoin);
+        // replace table name by alias name
+        int i4;
+        String alias, col;
+        for (int i = 0, n = leftJoin.length/4; i < n; ++i) {
+            i4 = 4*i;
+            alias = this.leftJoin[i4+1];
+            if (alias != null) {
+                col = this.leftJoin[i4+3];
+                this.leftJoin[i4+3] = alias + col.substring(col.indexOf('.'));
+            }
+        }
     }
 
     public void addOrderBy(String field, String order) {
@@ -94,29 +110,29 @@ class SqlBuilder {
             matches.add(match);
     }
     
-    public void addNULLValueMatch( String field, boolean inverter ) {
-    	addMatch( new Match.NULLValue( field, inverter ) );
+    public void addNULLValueMatch(String alias, String field, boolean inverter ) {
+    	addMatch( new Match.NULLValue(alias, field, inverter ) );
     }
 
-    public void addSingleValueMatch(
-        String field,
-        boolean type2,
+    public void addIntValueMatch(String alias, String field, boolean type2,
+            int value) {
+        addMatch(new Match.IntValue(alias, field, type2, value));
+    }
+
+    public void addSingleValueMatch(String alias, String field, boolean type2,
         String value) {
-        addMatch(new Match.SingleValue(field, type2, value));
+        addMatch(new Match.SingleValue(alias, field, type2, value));
     }
 
-    public void addLiteralMatch(
-            String field,
-            boolean type2,
+    public void addLiteralMatch(String alias, String field, boolean type2,
             String literal) {
-        addMatch(new Match.AppendLiteral(field, type2, literal));
+        addMatch(new Match.AppendLiteral(alias, field, type2, literal));
     }
     
-    public void addBooleanMatch(
-            String field,
-            boolean type2,
+    public void addBooleanMatch(String alias,  String field, boolean type2,
             boolean value) {
-        addMatch(new Match.AppendLiteral(field, type2, toBooleanLiteral(value)));
+        addMatch(new Match.AppendLiteral(alias, field, type2,
+                toBooleanLiteral(value)));
     }
     
     private String toBooleanLiteral(boolean value) {
@@ -130,24 +146,23 @@ class SqlBuilder {
         }
     }
 
-    public void addListOfUidMatch(String field, boolean type2, String[] uids) {
-        addMatch(new Match.ListOfUID(field, type2, uids));
+    public void addListOfUidMatch(String alias, String field, boolean type2,
+            String[] uids) {
+        addMatch(new Match.ListOfUID(alias, field, type2, uids));
     }
 
-    public void addWildCardMatch(
-        String field,
-        boolean type2,
-        String wc,
-        boolean ignoreCase) {
-        addMatch(new Match.WildCard(field, type2, wc, ignoreCase));
+    public void addWildCardMatch(String alias, String field, boolean type2,
+        String wc, boolean ignoreCase) {
+        addMatch(new Match.WildCard(alias, field, type2, wc, ignoreCase));
     }
 
-    public void addRangeMatch(String field, boolean type2, Date[] range) {
-        addMatch(new Match.Range(field, type2, range));
+    public void addRangeMatch(String alias, String field, boolean type2,
+            Date[] range) {
+        addMatch(new Match.Range(alias, field, type2, range));
     }
 
-    public void addModalitiesInStudyMatch(String md) {
-        addMatch(new Match.ModalitiesInStudy(md));
+    public void addModalitiesInStudyMatch(String alias, String md) {
+        addMatch(new Match.ModalitiesInStudy(alias, md));
     }
 
     public String getSql() {
@@ -157,6 +172,7 @@ class SqlBuilder {
             throw new IllegalStateException("from not initalized");
 
         StringBuffer sb = new StringBuffer("SELECT ");
+        if (distinct) sb.append("DISTINCT ");
         if (limit > 0 || offset > 0) {
             switch (getDatabase()) {
                 case JdbcProperties.HSQL :
@@ -254,18 +270,26 @@ class SqlBuilder {
 
     private void appendLeftJoinToFrom(StringBuffer sb) {
         if (leftJoin == null) return;
-        for (int i = 0, n = leftJoin.length/3; i < n; ++i) {
-            final int i3 = 3*i;
+        for (int i = 0, n = leftJoin.length/4; i < n; ++i) {
+            final int i4 = 4*i;
 	        if (getDatabase() == JdbcProperties.ORACLE) {
 	            sb.append(", ");
-	            sb.append(leftJoin[i3]);            
+	            sb.append(leftJoin[i4]);
+                if (leftJoin[i4+1] != null) {
+                    sb.append(" AS ");
+                    sb.append(leftJoin[i4+1]);
+                }
 	        } else {
 		        sb.append(" LEFT JOIN ");
-		        sb.append(leftJoin[i3]);
+		        sb.append(leftJoin[i4]);
+                if (leftJoin[i4+1] != null) {
+                    sb.append(" AS ");
+                    sb.append(leftJoin[i4+1]);
+                }
 		        sb.append(" ON (");
-		        sb.append(leftJoin[i3+1]);
+		        sb.append(leftJoin[i4+2]);
 		        sb.append(" = ");
-		        sb.append(leftJoin[i3+2]);
+		        sb.append(leftJoin[i4+3]);
 		        sb.append(")");
 	        }
         }
@@ -273,13 +297,13 @@ class SqlBuilder {
 
     private void appendLeftJoinToWhere(StringBuffer sb) {
         if (leftJoin == null || getDatabase() != JdbcProperties.ORACLE) return;
-        for (int i = 0, n = leftJoin.length/3; i < n; ++i) {
-            final int i3 = 3*i;
+        for (int i = 0, n = leftJoin.length/4; i < n; ++i) {
+            final int i4 = 4*i;
 	        sb.append(whereOrAnd);
 	        whereOrAnd = AND;
-	        sb.append(leftJoin[i3+1]);
+	        sb.append(leftJoin[i4+2]);
 	        sb.append(" = ");
-	        sb.append(leftJoin[i3+2]);
+	        sb.append(leftJoin[i4+3]);
 	        sb.append("(+)");
         }
     }

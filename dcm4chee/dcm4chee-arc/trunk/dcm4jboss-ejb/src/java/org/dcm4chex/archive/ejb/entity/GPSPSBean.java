@@ -274,8 +274,7 @@ public abstract class GPSPSBean implements EntityBean {
      * @ejb.relation name="gpsps-workitemcode" role-name="gpsps-with-workitemcode"
      *               target-ejb="Code" target-role-name="workitemcode-of-gpsps"
      *               target-multiple="yes"
-     * @jboss.relation fk-column="workitemcode_fk"
-     *                 related-pk-field="pk"
+     * @jboss.relation fk-column="code_fk" related-pk-field="pk"
      */
     public abstract CodeLocal getScheduledWorkItemCode();
     public abstract void setScheduledWorkItemCode(CodeLocal code);
