@@ -160,6 +160,7 @@ public abstract class ContentManagerBean implements SessionBean {
                 DTOFactory.newStudyDTO(
                     study.getPk().intValue(),
                     study.getAttributes(),
+                    study.getModalitiesInStudy(),
                     study.getNumberOfStudyRelatedSeries(),
                     study.getNumberOfStudyRelatedInstances()));
         }
