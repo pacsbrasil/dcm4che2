@@ -464,12 +464,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public void error(Association src, IOException ioe) {
     }
 
-    public void close(Association assoc) {
-        Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
-        logInstancesStored(assoc);
+    public void closing(Association assoc) {
+    }
+
+    public void closed(Association assoc) {
+        final Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
         if (ians != null) {
-            updateDBStudiesAndSeries(ians);
+            updateDBStudiesAndSeries(ians);                    
         }
+        logInstancesStored(assoc);
         service.sendReleaseNotification(assoc);
     }
 
