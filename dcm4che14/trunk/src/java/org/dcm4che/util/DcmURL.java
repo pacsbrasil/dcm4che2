@@ -1,8 +1,5 @@
-/*$Id$*/
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
- *                                                                           *
+/*                                                                           *
+ *  Copyright (c) 2002, 2003 by TIANI MEDGRAPH AG                            *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
  *  This library is free software; you can redistribute it and/or modify it  *
@@ -18,61 +15,47 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
-
+ */
 package org.dcm4che.util;
 
 import java.util.StringTokenizer;
 
 /**
- *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.3
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @created    May, 2002
+ * @version    $Revision$ $Date$
  */
-public final class DcmURL extends Object {
-    // Constants -----------------------------------------------------    
-    public static final String ANONYMOUS = "ANONYMOUS";
-    public static final int DICOM_PORT = 104;
-    
-    private static final int DELIMITER = -1;
-    private static final int CALLED_AET = 0;
-    private static final int CALLING_AET = 1;
-    private static final int HOST = 2;
-    private static final int PORT = 3;
-    private static final int END = 4;
-    
-    private static final String[] PROTOCOLS = {
-        "dicom",
-        "dicom-tls",
-        "dicom-tls.nodes",
-        "dicom-tls.3des"
-    };
+public final class DcmURL extends Object
+{
+    // Constants -----------------------------------------------------
+    /**  Description of the Field */
+    public final static String ANONYMOUS = "ANONYMOUS";
+    /**  Description of the Field */
+    public final static int DICOM_PORT = 104;
 
-    private static final String[][] CIPHERSUITES = {
-        null,
-        new String[] {
-            "SSL_RSA_WITH_NULL_SHA", 
-            "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
-        },
-        new String[] {
-            "SSL_RSA_WITH_NULL_SHA", 
-        },
-        new String[] {
-            "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
-        }
-    };
-    
+    private final static int DELIMITER = -1;
+    private final static int CALLED_AET = 0;
+    private final static int CALLING_AET = 1;
+    private final static int HOST = 2;
+    private final static int PORT = 3;
+    private final static int END = 4;
+
     // Attributes ----------------------------------------------------
-    private String protocol;
-    private String[] cipherSuites;
+    private DcmProtocol protocol;
     private String calledAET;
     private String callingAET = ANONYMOUS;
     private String host;
     private int port = DICOM_PORT;
 
+
     // Constructors --------------------------------------------------
-    public DcmURL(String spec) {
+    /**
+     *Constructor for the DcmURL object
+     *
+     * @param  spec  Description of the Parameter
+     */
+    public DcmURL(String spec)
+    {
         parse(spec.trim());
         if (calledAET == null) {
             throw new IllegalArgumentException("Missing called AET");
@@ -82,66 +65,122 @@ public final class DcmURL extends Object {
         }
     }
 
+
+    /**
+     *Constructor for the DcmURL object
+     *
+     * @param  protocol    Description of the Parameter
+     * @param  calledAET   Description of the Parameter
+     * @param  callingAET  Description of the Parameter
+     * @param  host        Description of the Parameter
+     * @param  port        Description of the Parameter
+     */
     public DcmURL(String protocol, String calledAET, String callingAET,
-            String host, int port) {
-        this.protocol = protocol.toLowerCase();
-        this.cipherSuites = toCipherSuites(protocol);
+            String host, int port)
+    {
+        this.protocol = DcmProtocol.valueOf(protocol);
         this.calledAET = calledAET;
         this.callingAET = callingAET;
         this.host = host;
         this.port = port;
     }
-    
+
+
     // Public --------------------------------------------------------
-    public final String getProtocol() {
-        return protocol;
-    }
-    
-    public final String[] getCipherSuites() {
-        return cipherSuites;
-    }
-    
-    public final String getCallingAET() {
-        return callingAET;
-    }
-    
-    public final String getCalledAET() {
-        return calledAET;
-    }
-    
-    public final String getHost() {
-        return host;
-    }
-    
-    public final int getPort() {
-        return port;
-    }
-    
-    public String toString() {
-        return protocol + "://" + calledAET + ':' + callingAET
-                + '@' + host + ':' + port;
+    /**
+     *  Gets the protocol attribute of the DcmURL object
+     *
+     * @return    The protocol value
+     */
+    public final String getProtocol()
+    {
+        return protocol.toString();
     }
 
-    public static String[] toCipherSuites(String protocol) {
-        String tmp = protocol.toLowerCase();
-        for (int i = 0; i < PROTOCOLS.length; ++i) {
-            if (tmp.equals(PROTOCOLS[i])) {
-                return i > 0 ? (String[])CIPHERSUITES[i].clone() : null;
-            }            
-        }
-        throw new IllegalArgumentException("Unrecognized protocol: " + protocol);
+
+    /**
+     *  Gets the cipherSuites attribute of the DcmURL object
+     *
+     * @return    The cipherSuites value
+     */
+    public final String[] getCipherSuites()
+    {
+        return protocol.getCipherSuites();
     }
-    // Private -------------------------------------------------------
+
+
+    public final boolean isTLS()
+    {
+        return protocol.isTLS();
+    }
     
-    private void parse(String s) {
+    /**
+     *  Gets the callingAET attribute of the DcmURL object
+     *
+     * @return    The callingAET value
+     */
+    public final String getCallingAET()
+    {
+        return callingAET;
+    }
+
+
+    /**
+     *  Gets the calledAET attribute of the DcmURL object
+     *
+     * @return    The calledAET value
+     */
+    public final String getCalledAET()
+    {
+        return calledAET;
+    }
+
+
+    /**
+     *  Gets the host attribute of the DcmURL object
+     *
+     * @return    The host value
+     */
+    public final String getHost()
+    {
+        return host;
+    }
+
+
+    /**
+     *  Gets the port attribute of the DcmURL object
+     *
+     * @return    The port value
+     */
+    public final int getPort()
+    {
+        return port;
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @return    Description of the Return Value
+     */
+    public String toString()
+    {
+        return protocol.toString() + "://" + calledAET + ':' + callingAET
+                 + '@' + host + ':' + port;
+    }
+
+
+    // Private -------------------------------------------------------
+
+    private void parse(String s)
+    {
         int delimPos = s.indexOf("://");
         if (delimPos == -1) {
             throw new IllegalArgumentException(s);
         }
-        protocol = s.substring(0, delimPos).toLowerCase();
-        cipherSuites = toCipherSuites(protocol);
+        protocol = DcmProtocol.valueOf(s.substring(0, delimPos));
         StringTokenizer stk = new StringTokenizer(
-            s.substring(delimPos+3),":@/", true);
+                s.substring(delimPos + 3), ":@/", true);
         String tk;
         int state = CALLED_AET;
         boolean tcpPart = false;
@@ -180,3 +219,4 @@ public final class DcmURL extends Object {
         }
     }
 }
+
