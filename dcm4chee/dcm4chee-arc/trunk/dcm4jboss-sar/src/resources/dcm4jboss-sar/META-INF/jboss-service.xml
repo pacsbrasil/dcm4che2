@@ -107,7 +107,7 @@
 
     <attribute name="ForwardAETs"></attribute>
 
-    <attribute name="StorageDirs">/var/local/dcm4jboss</attribute>
+    <attribute name="StorageDirs">archive</attribute>
 
     <attribute name="CallingAETs">__any__</attribute>
 

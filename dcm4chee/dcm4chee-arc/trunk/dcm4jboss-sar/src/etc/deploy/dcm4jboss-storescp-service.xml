@@ -4,7 +4,7 @@
 
 <!-- ===================================================================== -->
 <!--                                                                       -->
-<!--  DICOM Storage Service Configuration                                   -->
+<!--  DICOM Storage Service Configuration                                  -->
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
@@ -65,6 +65,8 @@
     <!-- 
     Defines a list of directory path(s) - e.g. mounted filesystems - where
     composite object instance(s) received by this Storage SCP are stored.
+    Relative path names will be interpretated as relative to JBoss server home
+    directory (e.g.: JBOSS_HOME/server/pacs).
     At least, one directory path must be specified. Multiple values must be
     separated by ':' characters.
     If multiple directories are specified, the storage location alternates
@@ -72,7 +74,7 @@
     directory path to configure an asymetric distribution of received objects
     among different storage locations.
     -->
-    <attribute name="StorageDirs">/var/local/dcm4jboss</attribute>
+    <attribute name="StorageDirs">archive</attribute>
 
     <attribute name="CallingAETs">__any__</attribute>
 

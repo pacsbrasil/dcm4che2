@@ -1,21 +1,22 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
+/*
+ * $Id$ Copyright (c)
+ * 2002,2003 by TIANI MEDGRAPH AG
+ * 
  * This file is part of dcm4che.
- *
+ * 
  * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 package org.dcm4chex.service;
@@ -61,6 +62,7 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.jboss.logging.Logger;
+import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -78,7 +80,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Tags.SOPClassUID,
             };
 
-    private static final AssociationFactory af = AssociationFactory.getInstance();
+    private static final AssociationFactory af =
+        AssociationFactory.getInstance();
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -147,7 +150,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private File checkStorageDir(String dir) throws IOException {
-        File f = new File(dir.replace('/', File.separatorChar));
+        String path = dir.replace('/', File.separatorChar);
+        File f =
+            path.startsWith("/")
+                ? new File(path)
+                : new File(ServerConfigLocator.locate().getServerHomeDir(), path);
         if (!f.exists()) {
             log.warn("directory " + dir + " does not exist - create new one");
             if (!f.mkdirs()) {
@@ -173,7 +180,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    protected void doCStore(ActiveAssociation activeAssoc, Dimse rq, Command rspCmd)
+    protected void doCStore(
+        ActiveAssociation activeAssoc,
+        Dimse rq,
+        Command rspCmd)
         throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         InputStream in = rq.getDataAsStream();
@@ -232,7 +242,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             updateStoredStudiesInfo(assoc, ds);
         } catch (DcmServiceException e) {
-			log.warn(e.getMessage(), e);
+            log.warn(e.getMessage(), e);
             throw e;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -241,8 +251,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (storage != null) {
                 try {
                     storage.remove();
-                } catch (Exception ignore) {
-                }
+                } catch (Exception ignore) {}
             }
             in.close();
         }
@@ -330,8 +339,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         } finally {
             try {
                 dos.close();
-            } catch (IOException ignore) {
-            }
+            } catch (IOException ignore) {}
         }
     }
 
@@ -386,7 +394,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             'D',
             'E',
             'F' };
-            
+
     private String toHex(int val) {
         char[] ch8 = new char[8];
         for (int i = 8; --i >= 0; val >>= 4) {
@@ -405,26 +413,23 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             log.info("M-WRITE dir:" + dir);
         }
     } // Implementation of AssociationListener
-    public void write(Association src, PDU pdu) {
-    }
+    public void write(Association src, PDU pdu) {}
 
-    public void received(Association src, PDU pdu) {
-    }
+    public void received(Association src, PDU pdu) {}
 
-    public void write(Association src, Dimse dimse) {
-    }
+    public void write(Association src, Dimse dimse) {}
 
-    public void received(Association src, Dimse dimse) {
-    }
+    public void received(Association src, Dimse dimse) {}
 
-    public void error(Association src, IOException ioe) {
-    }
+    public void error(Association src, IOException ioe) {}
 
     public void close(Association assoc) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo != null) {
             updateStudies(storedStudiesInfo.keySet().iterator());
-            forward(forwardAETs.get(assoc.getCallingAET()), storedStudiesInfo.values().iterator());
+            forward(
+                forwardAETs.get(assoc.getCallingAET()),
+                storedStudiesInfo.values().iterator());
         }
     }
 
@@ -446,8 +451,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         try {
             storage.remove();
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) {}
     }
 
     private void updateStoredStudiesInfo(Association assoc, Dataset ds) {
@@ -499,7 +503,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (destAETs.length == 0) {
             return;
         }
-        
+
         MoveOrderQueue orderQueue;
         try {
             orderQueue = getMoveOrderQueueHome().create();
@@ -529,7 +533,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 order.setSeriesIuids(
                     refSeries.getString(Tags.SeriesInstanceUID));
                 order.setSopIuids(sopIUIDs.toString());
-                
+
                 for (int k = 0; k < destAETs.length; ++k) {
                     order.setMoveDestination(destAETs[k]);
                     try {
