@@ -59,7 +59,12 @@
     printer exceeds this 
     -->
     <attribute name="MaxQueuedJobCount">10</attribute>
-    
+
+    <!--
+    Specifies if Printer Status show warning if print job(s) in Queue.
+    -->
+    <attribute name="WarnQueuedJob">false</attribute>
+        
     <!--
     Specifies, if the state of the IPP attribute ACCEPTING_JOBS queried from
     the printer shall be ignored. Necessary with current J2SDK 1.4.1 for Linux,

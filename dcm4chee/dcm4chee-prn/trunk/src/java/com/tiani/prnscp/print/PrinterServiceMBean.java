@@ -918,7 +918,10 @@ public interface PrinterServiceMBean extends ServiceMBean
      */
     public void setMaxQueuedJobCount(int maxQueuedJobCount);
 
+	public boolean isWarnQueuedJob();
 
+	public void setWarnQueuedJob(boolean warnQueuedJob);
+	
     /**
      *  Getter for property ignorePrinterIsAcceptingJobs.
      *

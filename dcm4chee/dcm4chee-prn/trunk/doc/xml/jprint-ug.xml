@@ -1564,6 +1564,15 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
               </row>
 
               <row>
+                <entry>WarnJobQueued</entry>
+
+                <entry>false</entry>
+
+                <entry>Specifies if Printer Status show warning if print
+                job(s) in Queue.</entry>
+              </row>
+
+              <row>
                 <entry>IgnorePrinterIsAcceptingJobs</entry>
 
                 <entry>true</entry>

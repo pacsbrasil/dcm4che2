@@ -208,6 +208,8 @@ public class PrinterService
     private double chunkSize = 2.;
 
     private boolean minimizeJobsize;
+    
+    private boolean warnQueuedJob;
 
     private boolean decimateByNearestNeighbor;
 
@@ -310,7 +312,7 @@ public class PrinterService
             if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
                 return PrinterStatus.FAILURE;
             }
-            if (getQueuedJobCount() > 0
+            if (warnQueuedJob && getQueuedJobCount() > 0
                      || getCalibrationTime(color) == 0L) {
                 return PrinterStatus.WARNING;
             }
@@ -334,7 +336,7 @@ public class PrinterService
             if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
                 return PrinterStatusInfo.CHECK_PRINTER;
             }
-            if (getQueuedJobCount() > 0) {
+            if (warnQueuedJob && getQueuedJobCount() > 0) {
                 return PrinterStatusInfo.QUEUED;
             }
             if (getCalibrationTime(color) == 0L) {
@@ -510,6 +512,22 @@ public class PrinterService
         this.ignorePrinterIsAcceptingJobs = ignorePrinterIsAcceptingJobs;
     }
 
+
+	/**
+	 *  Gets the ignoreMinDensity attribute of the PrinterService object
+	 *
+	 * @return
+	 */
+	public boolean isWarnQueuedJob() {
+		return warnQueuedJob;
+	}
+
+	/**
+	 * @param warnQueuedJob
+	 */
+	public void setWarnQueuedJob(boolean warnQueuedJob) {
+		this.warnQueuedJob = warnQueuedJob;
+	}
 
     /**
      *  Gets the ignoreMinDensity attribute of the PrinterService object
