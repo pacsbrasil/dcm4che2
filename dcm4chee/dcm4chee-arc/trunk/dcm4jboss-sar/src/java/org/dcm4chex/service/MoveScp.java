@@ -61,7 +61,7 @@ public class MoveScp extends DcmServiceBase {
                     RetrieveCmd.create(scp.getDataSource(), rqData);
                 new Thread(
                     new MoveTask(
-                        log,
+                        scp,
                         assoc,
                         rq.pcid(),
                         rqCmd,

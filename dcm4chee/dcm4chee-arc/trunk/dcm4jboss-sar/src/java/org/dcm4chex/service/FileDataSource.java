@@ -1,21 +1,21 @@
 /*
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
+ * 
  * This file is part of dcm4che.
- *
+ * 
  * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 package org.dcm4chex.service;
@@ -57,11 +57,13 @@ class FileDataSource implements DataSource
 
     private final FileInfo fileInfo;
     private final byte[] buffer;
+    private final double encodingRate;
 
-    public FileDataSource(FileInfo fileInfo, byte[] buffer)
+    public FileDataSource(FileInfo fileInfo, byte[] buffer, double encodingRate)
     {
         this.fileInfo = fileInfo;
         this.buffer = buffer;
+        this.encodingRate = encodingRate;
     }
 
     public void writeTo(OutputStream out, String tsUID) throws IOException
@@ -73,6 +75,7 @@ class FileDataSource implements DataSource
             file = File.createTempFile("dcm4jboss", "dcm");
             Transcoder t = new Transcoder();
             t.setTransferSyntax(tsUID);
+            t.setEncodingRate(encodingRate);
             t.transcode(fileInfo.toFile(), file);
         } else
         {
@@ -154,8 +157,8 @@ class FileDataSource implements DataSource
     }
 
     /**
-     * @param ds
-     */
+	 * @param ds
+	 */
     private void updateAttrs(Dataset ds) throws IOException
     {
         ByteArrayInputStream bis = new ByteArrayInputStream(fileInfo.patAttrs);

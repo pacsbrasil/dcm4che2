@@ -53,6 +53,7 @@ public class MoveScpService
     private ObjectName dcmServerName;
     private DcmHandler dcmHandler;
     private String dsJndiName;
+	private double encodingRate = 2.0;
     private DataSource datasource;
     private MoveScp scp = new MoveScp(this);
 
@@ -97,6 +98,23 @@ public class MoveScpService
     public void setDsJndiName(String dsJndiName) {
         this.dsJndiName = dsJndiName;
     }
+
+	/**
+	 * @jmx.managed-attribute
+	 */
+	public double getEncodingRate()
+	{
+		return encodingRate;
+	}
+
+	/**
+	 * @jmx.managed-attribute
+	 */
+	public void setEncodingRate(double encodingRate)
+	{
+		this.encodingRate = encodingRate;
+	}
+
 
     protected void startService() throws Exception {
         dcmHandler =

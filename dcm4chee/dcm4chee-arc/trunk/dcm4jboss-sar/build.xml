@@ -175,7 +175,7 @@
         <zip zipfile="${target.deploy}/${storescp.sar}">
         	<zipfileset dir="${target.classes}">
         		<include name="**/StoreScp*"/>
-        		<include name="**/util/LocalHost.class"/>
+        		<include name="**/util/*"/>
         	</zipfileset>
         	<zipfileset dir="${target.dir}/storescp" prefix="META-INF">
         		<include name="jboss-service.xml"/>
@@ -212,7 +212,7 @@
         	<zipfileset dir="${target.classes}">
         		<include name="**/Move*"/>
         		<include name="**/FileDataSource*"/>
-        		<include name="**/util/LocalHost.class"/>
+        		<include name="**/util/*"/>
         	</zipfileset>
         	<zipfileset dir="${target.dir}/movescp" prefix="META-INF">
         		<include name="jboss-service.xml"/>

@@ -23,6 +23,7 @@
     </depends>
     
     <attribute name="DsJndiName">java:/PostgresDS</attribute>    
+    <attribute name="EncodingRate">1.0</attribute>    
          
   </mbean>
 

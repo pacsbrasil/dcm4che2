@@ -85,6 +85,7 @@ class MoveTask implements Runnable
 
     private static int defaultBufferSize = 2048;
 
+	private final MoveScpService scp;
     private final Logger log;
     private final byte[] buffer = new byte[defaultBufferSize];
     private final String moveDest;
@@ -114,7 +115,7 @@ class MoveTask implements Runnable
     }
 
     public MoveTask(
-        Logger log,
+        MoveScpService scp,
         ActiveAssociation moveAssoc,
         int movePcid,
         Command moveRqCmd,
@@ -123,7 +124,8 @@ class MoveTask implements Runnable
         String moveDest)
         throws DcmServiceException
     {
-        this.log = log;
+        this.scp = scp;
+        this.log = scp.getLog();
         this.moveAssoc = moveAssoc;
         this.movePcid = movePcid;
         this.moveRqCmd = moveRqCmd;
@@ -376,7 +378,7 @@ class MoveTask implements Runnable
             Tags.MoveOriginatorMessageID,
             moveRqCmd.getMessageID());
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        DataSource ds = new FileDataSource(info, buffer);
+        DataSource ds = new FileDataSource(info, buffer, scp.getEncodingRate());
         return af.newDimse(presCtx.pcid(), storeRqCmd, ds);
     }
 
