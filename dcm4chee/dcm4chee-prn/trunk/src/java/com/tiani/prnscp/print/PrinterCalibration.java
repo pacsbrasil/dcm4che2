@@ -29,9 +29,10 @@ import org.jboss.logging.Logger;
 /**
  *  <description>
  *
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  November 19, 2002
- * @version  $Revision$
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      April 1, 2003
+ * @created    November 19, 2002
+ * @version    $Revision$
  */
 class PrinterCalibration
 {
@@ -44,18 +45,16 @@ class PrinterCalibration
     /**  Holds value of property timeOfLastCalibration. */
     private String timeOfLastCalibration = "000000";
 
-    /**  Holds value of property grayscaleODs. */
-    private float[] stepODs;
+    private float[] ddlODs = new float[256];
 
-    private float[] ddl2od = new float[256];
-    
     private final Logger log;
 
 
     // Static --------------------------------------------------------
 
     // Constructors --------------------------------------------------
-    PrinterCalibration(Logger log) {
+    PrinterCalibration(Logger log)
+    {
         this.log = log;
     }
 
@@ -64,12 +63,12 @@ class PrinterCalibration
     /**
      *  Description of the Method
      *
-     * @param  density Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  density  Description of the Parameter
+     * @return          Description of the Return Value
      */
     public int toDDL(float density)
     {
-        int i = Arrays.binarySearch(ddl2od, density);
+        int i = Arrays.binarySearch(ddlODs, density);
         if (i >= 0) {
             return 255 - i;
         }
@@ -80,8 +79,8 @@ class PrinterCalibration
         if (i > 255) {
             return 0;
         }
-        float diff1 = ddl2od[i] - density;
-        float diff2 = density - ddl2od[i - 1];
+        float diff1 = ddlODs[i] - density;
+        float diff2 = density - ddlODs[i - 1];
         return 255 - (diff1 < diff2 ? i : i - 1);
     }
 
@@ -89,7 +88,7 @@ class PrinterCalibration
     /**
      *  Gets the identityPValToDDL attribute of the PrinterCalibration object
      *
-     * @return  The identityPValToDDL value
+     * @return    The identityPValToDDL value
      */
     public byte[] getIdentityPValToDDL()
     {
@@ -104,10 +103,10 @@ class PrinterCalibration
     /**
      *  Gets the pValToDDLwLinOD attribute of the PrinterCalibration object
      *
-     * @param  n Description of the Parameter
-     * @param  dmin Description of the Parameter
-     * @param  dmax Description of the Parameter
-     * @return  The pValToDDLwLinOD value
+     * @param  n     Description of the Parameter
+     * @param  dmin  Description of the Parameter
+     * @param  dmax  Description of the Parameter
+     * @return       The pValToDDLwLinOD value
      */
     public byte[] getPValToDDLwLinOD(int n, float dmin, float dmax)
     {
@@ -121,17 +120,17 @@ class PrinterCalibration
         }
         return lut;
     }
-    
+
 
     /**
      *  Gets the pValToDDLwGSDF attribute of the PrinterCalibration object
      *
-     * @param  n Description of the Parameter
-     * @param  dmin Description of the Parameter
-     * @param  dmax Description of the Parameter
-     * @param  l0 Description of the Parameter
-     * @param  la Description of the Parameter
-     * @return  The pValToDDLwGSDF value
+     * @param  n     Description of the Parameter
+     * @param  dmin  Description of the Parameter
+     * @param  dmax  Description of the Parameter
+     * @param  l0    Description of the Parameter
+     * @param  la    Description of the Parameter
+     * @return       The pValToDDLwGSDF value
      */
     public byte[] getPValToDDLwGSDF(int n, float dmin, float dmax,
             float l0, float la)
@@ -151,31 +150,34 @@ class PrinterCalibration
         }
         if (log.isDebugEnabled()) {
             logLut("PValToDDLwGSDF[dmin=" + dmin + ", dmax=" + dmax
-                + ", L0=" + l0 + ", La=" + la + "]:", lut);
+                     + ", L0=" + l0 + ", La=" + la + "]:", lut);
         }
         return lut;
     }
 
-    private void logLut(String prompt, byte[] lut) {
+
+    private void logLut(String prompt, byte[] lut)
+    {
         StringBuffer sb = new StringBuffer(prompt);
-        for (int i = lut.length; --i >= 0;) {
+        for (int i = lut.length; --i >= 0; ) {
             int ddl = lut[i] & 0xff;
             sb.append("\n\tpv=").append(i).append("\tddl=")
-              .append(ddl).append("\tod=").append(ddl2od[255-ddl]);
+                    .append(ddl).append("\tod=").append(ddlODs[255 - ddl]);
         }
         log.debug(sb.toString());
     }
 
+
     /**
      *  Gets the pValToDDL attribute of the PrinterCalibration object
      *
-     * @param  n Description of the Parameter
-     * @param  dmin Description of the Parameter
-     * @param  dmax Description of the Parameter
-     * @param  l0 Description of the Parameter
-     * @param  la Description of the Parameter
-     * @param  plut Description of the Parameter
-     * @return  The pValToDDL value
+     * @param  n     Description of the Parameter
+     * @param  dmin  Description of the Parameter
+     * @param  dmax  Description of the Parameter
+     * @param  l0    Description of the Parameter
+     * @param  la    Description of the Parameter
+     * @param  plut  Description of the Parameter
+     * @return       The pValToDDL value
      */
     public byte[] getPValToDDL(int n, float dmin, float dmax,
             float l0, float la, Dataset plut)
@@ -227,7 +229,7 @@ class PrinterCalibration
     /**
      *  Getter for property dateOfLastCalibration.
      *
-     * @return  Value of property dateOfLastCalibration.
+     * @return    Value of property dateOfLastCalibration.
      */
     public String getDateOfLastCalibration()
     {
@@ -238,7 +240,7 @@ class PrinterCalibration
     /**
      *  Setter for property dateOfLastCalibration.
      *
-     * @param  dateOfLastCalibration New value of property
+     * @param  dateOfLastCalibration  New value of property
      *      dateOfLastCalibration.
      */
     public void setDateOfLastCalibration(String dateOfLastCalibration)
@@ -250,7 +252,7 @@ class PrinterCalibration
     /**
      *  Getter for property timeOfLastCalibration.
      *
-     * @return  Value of property timeOfLastCalibration.
+     * @return    Value of property timeOfLastCalibration.
      */
     public String getTimeOfLastCalibration()
     {
@@ -261,7 +263,7 @@ class PrinterCalibration
     /**
      *  Setter for property timeOfLastCalibration.
      *
-     * @param  timeOfLastCalibration New value of property
+     * @param  timeOfLastCalibration  New value of property
      *      timeOfLastCalibration.
      */
     public void setTimeOfLastCalibration(String timeOfLastCalibration)
@@ -270,40 +272,40 @@ class PrinterCalibration
     }
 
 
-    /**
-     *  Getter for property GrayscaleODs.
-     *
-     * @return  Value of property GrayscaleODs.
-     */
-    public float[] getGrayscaleODs()
+    public float[] getDDLODs()
     {
-        return stepODs == null ? null : (float[]) stepODs.clone();
+        return (float[]) ddlODs.clone();
     }
 
 
-    /**
-     *  Setter for property GrayscaleODs.
-     *
-     * @param  stepODs The new grayscaleODs value
-     */
-    public void setGrayscaleODs(float[] stepODs)
+    public void setDDLODs(float[] newDDLODs)
     {
-        if (stepODs.length < 4 || stepODs.length > 256) {
-            throw new IllegalArgumentException("steps: " + stepODs.length);
+        if (newDDLODs.length != 256) {
+            throw new IllegalArgumentException("newDDLODs.length:" + newDDLODs.length);
         }
-        if (this.stepODs != null && Arrays.equals(this.stepODs, stepODs)) {
-            return;
-            // no change
+        // ensure monoton increasing
+        int iMax = 0;
+        int iMin = 0;
+        float max = newDDLODs[0];
+        float min = newDDLODs[0];
+        for (int i = 1; i < 256; ++i) {
+            final float od = newDDLODs[i];
+            if (od < min) {
+                iMin = i;
+                min = od;
+            }
+            if (od >= max) {
+                iMax = i;
+                max = od;
+            }
         }
-
-        float[] tmp = (float[]) stepODs.clone();
-        Arrays.sort(tmp);
-        if (!Arrays.equals(tmp, stepODs)) {
-            throw new IllegalArgumentException(
-                    "stepODs[" + tmp.length + "] not monotonic increasing");
+        if (iMin >= iMax) {
+            throw new IllegalArgumentException("iMin:" + iMin + ", iMax:" + iMax);
         }
-        this.stepODs = tmp;
-        initDDL2OD();
+        System.arraycopy(newDDLODs, iMin, ddlODs, iMin, iMax - iMin);
+        Arrays.fill(ddlODs, 0, iMin, min);
+        Arrays.fill(ddlODs, iMax, 256, max);
+        Arrays.sort(ddlODs, iMin, iMax);
     }
 
 
@@ -315,41 +317,11 @@ class PrinterCalibration
 
     private void check(int n, float dmin, float dmax)
     {
-        if (stepODs == null) {
-            throw new IllegalStateException("grayscaleODs not yet set");
-        }
         if (n < 8 || n > 16) {
             throw new IllegalArgumentException("n: " + n);
         }
         if (dmin > dmax) {
             throw new IllegalArgumentException("dmin: " + dmin + ", dmax: " + dmax);
-        }
-        /*
-      if (dmin < stepODs[0]) {
-         throw new IllegalArgumentException("dmin: " + dmin
-         + ", ODmin: " + stepODs[0]);
-      }
-      if (dmax > stepODs[stepODs.length-1]) {
-         throw new IllegalArgumentException("dmax: " + dmax
-         + ", ODmax: " + stepODs[stepODs.length-1]);
-      }
-       */
-    }
-
-
-    private void initDDL2OD()
-    {
-        int x[] = new int[stepODs.length];
-        for (int i = 0; i < x.length; ++i) {
-            x[i] = Math.round(255.f * i / (x.length - 1));
-        }
-        for (int j = 0, i = 0; j < 256; ++j) {
-            if (j > x[i + 1]) {
-                ++i;
-            }
-            ddl2od[j] = stepODs[i]
-                     + (stepODs[i + 1] - stepODs[i])
-                     * (j - x[i]) / (x[i + 1] - x[i]);
         }
     }
 

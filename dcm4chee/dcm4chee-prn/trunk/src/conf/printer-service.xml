@@ -291,19 +291,19 @@
         
     <!--
     Specifies name of annotation display format used for the
-    grayscale pattern prinout.
-    Usually, you need not change the default value: GRAYSCALE_1
+    print image printout.
+    Usually, you need not change the default value: NO_TITLE
     -->    
-    <attribute name="GrayscaleAnnotation">NO_TITLE</attribute>
+    <attribute name="AnnotationForPrintImage">NO_TITLE</attribute>
     
     
     <!--
-    Density mesurements of the printed gray scale pattern. Only used for the
+    Specifies Optical Density for DDL 0-255. Only effective for the
     case of manuell density mesurement using a grayscale densitometer.
-    Not effective, if semi-automatic calibration by scanned  gray scale printouts
-    is used. 
+    Not effective, if semi-automatic calibration by scanned  DSI 256
+    pattern printouts is used.
     -->    
-    <attribute name="GrayscaleODsAsText">
+    <attribute name="DDLODsAsText">
 0
 0
 0
@@ -591,25 +591,24 @@
     Specifies file name of scanned reference gray step file in calibration
     directoy (s. attribute "CalibrationDir") used for semi-automatic calibration.
     -->    
-    <attribute name="RefGrayscaleFileName">refgrayscale.jpg</attribute>
+    <attribute name="RefDSI256FileName">refDSI256.jpg</attribute>
         
     <!--
-    Activates automatic check for new scanned gray scale print out in 
+    Activates automatic check for new scanned DSI 256 pattern print out in 
     calibration from scanned in calibration directoy
     (s. attribute "CalibrationDir") - and performing a new calibration, if
-    a new scan file is found - immediately before each film/paper print.
+    a new scan file is found - immediately before each print.
     -->    
     <attribute name="AutoCalibration">false</attribute>
                             
     <!--
-    Specifies (measured) density values of scanned reference gray scale page
-    refgrayscale.jpg in calibration directoy (s. property "CalibrationDir")
-    used for semi-automatic calibration. Need not be modified as long the 
-    delivered reference gray step pattern is used: It has to be scanned and
-    stored in the calibration directoy as reference image with the filename
-    specified by attribute RefGrayscaleFileName.
+    Specifies (measured) density values of scanned reference DSI 256 pattern page
+    in calibration directoy (s. property "CalibrationDir") used for semi-automatic
+    calibration. Need not be modified as long the delivered reference DSI 256 is used:
+    It has to be scanned and stored in the calibration directoy as reference image 
+    with the filename specified by attribute RefDSI256FileName.
     -->    
-    <attribute name="RefGrayscaleODsAsText">
+    <attribute name="RefDSI256ODsAsText">
 0
 0
 0

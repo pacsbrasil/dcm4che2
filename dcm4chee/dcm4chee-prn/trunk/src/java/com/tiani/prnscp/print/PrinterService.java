@@ -232,8 +232,8 @@ public class PrinterService
     /**  Holds value of property annotationForCallingAET. */
     private LinkedHashMap annotationForCallingAETMap;
 
-    /**  Holds value of property grayscaleAnnotation. */
-    private String grayscaleAnnotation;
+    /**  Holds value of property annotationForPrintImage. */
+    private String annotationForPrintImage;
 
     /**  Holds value of property chunkSize. */
     private double chunkSize = 2.;
@@ -1319,7 +1319,7 @@ public class PrinterService
      */
     public int getMinDensity()
     {
-        float[] od = getGrayscaleODs();
+        float[] od = getDDLODs();
         return (int) (od[0] * 100);
     }
 
@@ -1331,7 +1331,7 @@ public class PrinterService
      */
     public int getMaxDensity()
     {
-        float[] od = getGrayscaleODs();
+        float[] od = getDDLODs();
         return (int) (od[od.length - 1] * 100);
     }
 
@@ -1764,57 +1764,57 @@ public class PrinterService
 
 
     /**
-     *  Getter for property grayscaleAnnotation.
+     *  Getter for property annotationForPrintImage.
      *
-     * @return    Value of property grayscaleAnnotation.
+     * @return    Value of property annotationForPrintImage.
      */
-    public String getGrayscaleAnnotation()
+    public String getAnnotationForPrintImage()
     {
-        return this.grayscaleAnnotation;
+        return this.annotationForPrintImage;
     }
 
 
     /**
-     *  Setter for property grayscaleAnnotation.
+     *  Setter for property annotationForPrintImage.
      *
-     * @param  grayscaleAnnotation  New value of property grayscaleAnnotation.
+     * @param  annotationForPrintImage  New value of property annotationForPrintImage.
      */
-    public void setGrayscaleAnnotation(String grayscaleAnnotation)
+    public void setAnnotationForPrintImage(String annotationForPrintImage)
     {
-        this.grayscaleAnnotation = grayscaleAnnotation;
+        this.annotationForPrintImage = annotationForPrintImage;
     }
 
 
     /**
-     *  Getter for property grayscaleODs.
+     *  Gets the dDLODs attribute of the PrinterService object
      *
-     * @return    Value of property grayscaleODs.
+     * @return    The dDLODs value
      */
-    public float[] getGrayscaleODs()
+    public float[] getDDLODs()
     {
-        return calibration.getGrayscaleODs();
+        return calibration.getDDLODs();
     }
 
 
     /**
-     *  Setter for property grayscaleODs.
+     *  Sets the dDLODs attribute of the PrinterService object
      *
-     * @param  grayscaleODs  New value of property grayscaleODs.
+     * @param  ods  The new dDLODs value
      */
-    public void setGrayscaleODs(float[] grayscaleODs)
+    public void setDDLODs(float[] ods)
     {
-        calibration.setGrayscaleODs(grayscaleODs);
+        calibration.setDDLODs(ods);
     }
 
 
     /**
-     *  Setter for property grayscaleODsAsText.
+     *  Sets the dDLODsAsText attribute of the PrinterService object
      *
-     * @param  grayscaleODsAsText  New value of property grayscaleODsAsText.
+     * @param  ddlODsAsText  The new dDLODsAsText value
      */
-    public void setGrayscaleODsAsText(String grayscaleODsAsText)
+    public void setDDLODsAsText(String ddlODsAsText)
     {
-        calibration.setGrayscaleODs(toFloatArray(grayscaleODsAsText));
+        calibration.setDDLODs(toFloatArray(ddlODsAsText));
     }
 
 
@@ -1908,43 +1908,42 @@ public class PrinterService
 
 
     /**
-     *  Getter for property refGrayscaleODs.
+     *  Gets the refDSI256ODs attribute of the PrinterService object
      *
-     * @return    Value of property refGrayscaleODs.
+     * @return    The refDSI256ODs value
      */
-    public float[] getRefGrayscaleODs()
+    public float[] getRefDSI256ODs()
     {
-        return scanner.getRefGrayscaleODs();
+        return scanner.getRefDSI256ODs();
     }
 
 
     /**
-     *  Setter for property refGrayscaleODs.
+     *  Sets the refDSI256ODs attribute of the PrinterService object
      *
-     * @param  refGrayscaleODs  New value of property refGrayscaleODs.
+     * @param  refODs  The new refDSI256ODs value
      */
-    public void setRefGrayscaleODs(float[] refGrayscaleODs)
+    public void setRefDSI256ODs(float[] refODs)
     {
-        scanner.setRefGrayscaleODs(refGrayscaleODs);
+        scanner.setRefDSI256ODs(refODs);
     }
 
 
     /**
-     *  Setter for property refGrayscaleODsAsText.
+     *  Sets the refDSI256ODsAsText attribute of the PrinterService object
      *
-     * @param  refGrayscaleODsAsText  New value of property
-     *      refGrayscaleODsAsText.
+     * @param  refODsAsText  The new refDSI256ODsAsText value
      */
-    public void setRefGrayscaleODsAsText(String refGrayscaleODsAsText)
+    public void setRefDSI256ODsAsText(String refODsAsText)
     {
-        setRefGrayscaleODs(toFloatArray(refGrayscaleODsAsText));
+        setRefDSI256ODs(toFloatArray(refODsAsText));
     }
 
 
     /**
-     *  Getter for property scanGrayscaleDir.
+     *  Gets the calibrationDir attribute of the PrinterService object
      *
-     * @return    Value of property scanGrayscaleDir.
+     * @return    The calibrationDir value
      */
     public String getCalibrationDir()
     {
@@ -1953,9 +1952,9 @@ public class PrinterService
 
 
     /**
-     *  Setter for property scanGrayscaleDir.
+     *  Sets the calibrationDir attribute of the PrinterService object
      *
-     * @param  scanGrayscaleDir  New value of property scanGrayscaleDir.
+     * @param  scanGrayscaleDir  The new calibrationDir value
      */
     public void setCalibrationDir(String scanGrayscaleDir)
     {
@@ -1964,24 +1963,24 @@ public class PrinterService
 
 
     /**
-     *  Getter for property refGrayscaleFileName.
+     *  Gets the refDSI256FileName attribute of the PrinterService object
      *
-     * @return    Value of property refGrayscaleFileName.
+     * @return    The refDSI256FileName value
      */
-    public String getRefGrayscaleFileName()
+    public String getRefDSI256FileName()
     {
-        return scanner.getRefGrayscaleFileName();
+        return scanner.getRefDSI256FileName();
     }
 
 
     /**
-     *  Setter for property refGrayscaleFileName.
+     *  Sets the refDSI256FileName attribute of the PrinterService object
      *
-     * @param  refGrayscaleFileName  New value of property refGrayscaleFileName.
+     * @param  fname  The new refDSI256FileName value
      */
-    public void setRefGrayscaleFileName(String refGrayscaleFileName)
+    public void setRefDSI256FileName(String fname)
     {
-        scanner.setRefGrayscaleFileName(refGrayscaleFileName);
+        scanner.setRefDSI256FileName(fname);
     }
 
 
@@ -2090,7 +2089,7 @@ public class PrinterService
         throws CalibrationException
     {
         log.info("Calibrating " + printerName);
-        setGrayscaleODs(scanner.calculateGrayscaleODs(calledAET, force));
+        setDDLODs(scanner.calculateGrayscaleODs(calledAET, force));
         setDateOfLastCalibration(scanner.getDateOfLastCalibration());
         setTimeOfLastCalibration(scanner.getTimeOfLastCalibration());
         log.info("Calibrated " + printerName);
@@ -2100,10 +2099,10 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     * @param  fname                 Description of the Parameter
-     * @param  configInfo            Description of the Parameter
-     * @exception  IOException       Description of the Exception
-     * @exception  PrintException    Description of the Exception
+     * @param  fname               Description of the Parameter
+     * @param  configInfo          Description of the Parameter
+     * @exception  IOException     Description of the Exception
+     * @exception  PrintException  Description of the Exception
      */
     public void printImage(String fname, String configInfo)
         throws IOException, PrintException

@@ -36,8 +36,8 @@ import javax.imageio.stream.ImageInputStream;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.TMFormat;
 
@@ -45,18 +45,8 @@ import org.dcm4che.util.TMFormat;
  *  <description>
  *
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created    February 22, 2003
- * @see        <related>
- * @version    $Revision$
  * @since      December 31, 2002 <p>
- *
- *      <b>Revisions:</b> <p>
- *
- *      <b>yyyymmdd author:</b>
- *      <ul>
- *        <li> explicit fix description (no line numbers but methods) go beyond
- *        the cvs commit message
- *      </ul>
+ * @version    $Revision$
  */
 public class ScannerCalibration
 {
@@ -75,8 +65,8 @@ public class ScannerCalibration
     /**  Holds value of property calibrationDir. */
     private File calibrationDir;
 
-    /**  Holds value of property refGrayscaleODs. */
-    private float[] refGrayscaleODs;
+    /**  Holds value of property refODs. */
+    private float[] refODs;
 
     /**  Holds value of property scanArea. */
     private int scanPointExtension = 50;
@@ -142,52 +132,44 @@ public class ScannerCalibration
 
 
     /**
-     *  Getter for property refFileName.
+     *  Gets the refDSI256FileName attribute of the ScannerCalibration object
      *
-     * @return    Value of property refFileName.
+     * @return    The refDSI256FileName value
      */
-    public String getRefGrayscaleFileName()
+    public String getRefDSI256FileName()
     {
         return this.refFileName;
     }
 
 
     /**
-     *  Setter for property refFileName.
+     *  Sets the refDSI256FileName attribute of the ScannerCalibration object
      *
-     * @param  refFileName  New value of property refFileName.
+     * @param  refFileName  The new refDSI256FileName value
      */
-    public void setRefGrayscaleFileName(String refFileName)
+    public void setRefDSI256FileName(String refFileName)
     {
         this.refFileName = refFileName;
     }
 
 
     /**
-     *  Getter for property refGrayscaleODs.
+     *  Gets the refDSI256ODs attribute of the ScannerCalibration object
      *
-     * @return    Value of property refGrayscaleODs.
+     * @return    The refDSI256ODs value
      */
-    public float[] getRefGrayscaleODs()
+    public float[] getRefDSI256ODs()
     {
-        return this.refGrayscaleODs;
+        return this.refODs;
     }
 
 
-    /**
-     *  Setter for property refGrayscaleODs.
-     *
-     * @param  refGrayscaleODs  New value of property refGrayscaleODs.
-     */
-    public void setRefGrayscaleODs(float[] refGrayscaleODs)
+    public void setRefDSI256ODs(float[] refODs)
     {
-        float[] tmp = (float[]) refGrayscaleODs.clone();
-        Arrays.sort(tmp);
-        if (!Arrays.equals(tmp, refGrayscaleODs)) {
-            throw new IllegalArgumentException(
-                    "refGrayscaleODs[" + tmp.length + "] not monotonic increasing");
+        if (refODs.length != 256) {
+            throw new IllegalArgumentException("refODs[" + refODs.length + "]");
         }
-        this.refGrayscaleODs = tmp;
+        this.refODs = (float[]) refODs.clone();
     }
 
 
@@ -237,7 +219,8 @@ public class ScannerCalibration
         }
         this.blackThreshold = black;
         this.whiteThreshold = white;
-    }    
+    }
+
 
     /**
      *  Getter for property scanThreshold.
@@ -298,8 +281,8 @@ public class ScannerCalibration
     public float[] calculateGrayscaleODs(String aet, boolean force)
         throws CalibrationException
     {
-        if (refGrayscaleODs == null) {
-            throw new IllegalStateException("refGrayscaleODs not initalized!");
+        if (refODs == null) {
+            throw new IllegalStateException("refODs not initalized!");
         }
         try {
             File refFile = new File(calibrationDir, refFileName);
@@ -378,18 +361,18 @@ public class ScannerCalibration
     private float[] interpolate(float[] invRefPx, float[] invPx)
         throws CalibrationException
     {
-        if (invRefPx.length != refGrayscaleODs.length) {
+        if (invRefPx.length != refODs.length) {
             throw new CalibrationException("Mismatch of detected gray steps["
                      + invRefPx.length + "] in "
                      + (lastRefFile == null ? "?" : lastRefFile.getName())
-                     + " with refGrayscaleODs float[" + refGrayscaleODs.length + "]");
+                     + " with refODs float[" + refODs.length + "]");
         }
         float[] result = new float[invPx.length];
         for (int i = 0; i < invPx.length; ++i) {
             int index = Arrays.binarySearch(invRefPx, invPx[i]);
             if (index >= 0) {
                 // exact match
-                result[i] = refGrayscaleODs[index];
+                result[i] = refODs[index];
             } else {
                 index = (-index) - 1;
                 if (index == 0) {
@@ -399,8 +382,8 @@ public class ScannerCalibration
                     // = extrapolation
                     index = invRefPx.length - 1;
                 }
-                result[i] = refGrayscaleODs[index - 1]
-                         + (refGrayscaleODs[index] - refGrayscaleODs[index - 1])
+                result[i] = refODs[index - 1]
+                         + (refODs[index] - refODs[index - 1])
                          * (invPx[i] - invRefPx[index - 1])
                          / (invRefPx[index] - invRefPx[index - 1]);
             }
@@ -417,7 +400,7 @@ public class ScannerCalibration
         return result;
     }
 
-
+/*
     private boolean isMonotonic(float[] a)
     {
         for (int i = 1; i < a.length; ++i) {
@@ -427,7 +410,7 @@ public class ScannerCalibration
         }
         return true;
     }
-
+*/
 
     private ImageReader findReader(File f)
         throws CalibrationException
@@ -505,11 +488,11 @@ public class ScannerCalibration
                 }
                 log.debug(sb.toString());
             }
-            if (!isMonotonic(px)) {
-                Arrays.sort(px);
-                log.warn("Grayscale " + f.getName()
-                          + " not monotonic increasing! Calibrate with sorted steps!");
-            }
+//            if (!isMonotonic(px)) {
+//                Arrays.sort(px);
+//                log.warn("Grayscale " + f.getName()
+//                         + " not monotonic increasing! Calibrate with sorted steps!");
+//            }
             return px;
         } finally {
             try {
@@ -615,6 +598,12 @@ public class ScannerCalibration
     }
 
     // Main --------------------------------------------------------
+    /**
+     *  Description of the Method
+     *
+     * @param  args           Description of the Parameter
+     * @exception  Exception  Description of the Exception
+     */
     public static void main(String args[])
         throws Exception
     {
@@ -628,7 +617,7 @@ public class ScannerCalibration
         Getopt g = new Getopt("probescan", args, "t:e:h", longopts, true);
         try {
             ScannerCalibration sc =
-                new ScannerCalibration(Logger.getLogger("probescan"));
+                    new ScannerCalibration(Logger.getLogger("probescan"));
             int c;
             while ((c = g.getopt()) != -1) {
                 switch (c) {
@@ -658,6 +647,7 @@ public class ScannerCalibration
         }
     }
 
+
     private final static String USAGE =
             "Usage: java -jar probescan.jar [OPTIONS] FILE\n\n" +
             "Analyses grayscale scan in specified FILE.\n" +
@@ -667,6 +657,7 @@ public class ScannerCalibration
             " -e --extension   Specifies extension of measurement area in % of\n" +
             "                  step height [default: 50]\n" +
             " -h --help        show this help and exit\n";
+
 
     private static void exit(String prompt)
     {

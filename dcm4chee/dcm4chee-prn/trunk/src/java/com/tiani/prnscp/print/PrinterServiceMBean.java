@@ -596,84 +596,83 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property measuredODs.
+     *  Gets the dDLODs attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property measuredODs.
+     * @return    The dDLODs value
      */
-    public float[] getGrayscaleODs();
+    public float[] getDDLODs();
 
 
     /**
-     *  Setter for property measuredODs.
+     *  Sets the dDLODs attribute of the PrinterServiceMBean object
      *
-     * @param  measuredODs  New value of property measuredODs.
+     * @param  ods  The new dDLODs value
      */
-    public void setGrayscaleODs(float[] measuredODs);
+    public void setDDLODs(float[] ods);
 
 
     /**
-     *  Setter for property measuredODsAsText.
+     *  Sets the dDLODsAsText attribute of the PrinterServiceMBean object
      *
-     * @param  measuredODsAsText  New value of property measuredODsAsText.
+     * @param  odsAsString  The new dDLODsAsText value
      */
-    public void setGrayscaleODsAsText(String measuredODsAsText);
+    public void setDDLODsAsText(String odsAsString);
 
 
     /**
-     *  Getter for property refGrayscaleODs.
+     *  Gets the refDSI256ODs attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property refGrayscaleODs.
+     * @return    The refDSI256ODs value
      */
-    public float[] getRefGrayscaleODs();
+    public float[] getRefDSI256ODs();
 
 
     /**
-     *  Setter for property refGrayscaleODs.
+     *  Sets the refDSI256ODs attribute of the PrinterServiceMBean object
      *
-     * @param  refGrayscaleODs  New value of property refGrayscaleODs.
+     * @param  refODs  The new refDSI256ODs value
      */
-    public void setRefGrayscaleODs(float[] refGrayscaleODs);
+    public void setRefDSI256ODs(float[] refODs);
 
 
     /**
-     *  Setter for property refGrayscaleODsAsText.
+     *  Sets the refDSI256ODsAsText attribute of the PrinterServiceMBean object
      *
-     * @param  refGrayscaleODsAsText  New value of property
-     *      refGrayscaleODsAsText.
+     * @param  refODsAsText  The new refDSI256ODsAsText value
      */
-    public void setRefGrayscaleODsAsText(String refGrayscaleODsAsText);
+    public void setRefDSI256ODsAsText(String refODsAsText);
 
 
     /**
-     *  Getter for property scanGrayscaleDir.
+     *  Gets the calibrationDir attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property scanGrayscaleDir.
+     * @return    The calibrationDir value
      */
     public String getCalibrationDir();
 
 
     /**
-     *  Setter for property scanGrayscaleDir.
+     *  Sets the calibrationDir attribute of the PrinterServiceMBean object
      *
-     * @param  scanGrayscaleDir  New value of property scanGrayscaleDir.
+     * @param  scanGrayscaleDir  The new calibrationDir value
      */
     public void setCalibrationDir(String scanGrayscaleDir);
 
 
     /**
-     *  Getter for property refFileName.
+     *  Gets the refDSI256FileName attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property refFileName.
+     * @return    The refDSI256FileName value
      */
-    public String getRefGrayscaleFileName();
+    public String getRefDSI256FileName();
 
 
     /**
-     *  Setter for property refFileName.
+     *  Sets the refDSI256FileName attribute of the PrinterServiceMBean object
      *
-     * @param  refFileName  New value of property refFileName.
+     * @param  fname  The new refDSI256FileName value
      */
-    public void setRefGrayscaleFileName(String refFileName);
+    public void setRefDSI256FileName(String fname);
 
 
     /**
@@ -791,19 +790,19 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property grayscaleAnnotation.
+     *  Getter for property annotationForPrintImage.
      *
-     * @return    Value of property grayscaleAnnotation.
+     * @return    Value of property annotationForPrintImage.
      */
-    public String getGrayscaleAnnotation();
+    public String getAnnotationForPrintImage();
 
 
     /**
-     *  Setter for property grayscaleAnnotation.
+     *  Setter for property annotationForPrintImage.
      *
-     * @param  grayscaleAnnotation  New value of property grayscaleAnnotation.
+     * @param  annotationForPrintImage  New value of property annotationForPrintImage.
      */
-    public void setGrayscaleAnnotation(String grayscaleAnnotation);
+    public void setAnnotationForPrintImage(String annotationForPrintImage);
 
 
     /**
