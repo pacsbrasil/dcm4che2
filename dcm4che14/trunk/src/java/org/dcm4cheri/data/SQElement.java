@@ -65,7 +65,7 @@ class SQElement extends DcmElementImpl {
         return (Dataset)list.get(index);
     }
     
-    public void addtem(Dataset item) {
+    public void addItem(Dataset item) {
         list.add(item);
     }
 
