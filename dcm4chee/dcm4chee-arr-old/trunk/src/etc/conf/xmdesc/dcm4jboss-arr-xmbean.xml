@@ -41,7 +41,6 @@
       <name>Port</name>
       <type>int</type>
       <descriptors>
-         <state-action-on-update value="restart"/>
          <value value="4000" />
       </descriptors>
    </attribute>
