@@ -105,7 +105,7 @@
 
     <attribute name="RetrieveAETs">QR_SCP</attribute>
 
-    <attribute name="ForwardAETs">LOCAL</attribute>
+    <attribute name="ForwardAETs"></attribute>
 
     <attribute name="StorageDirs">/var/local/dcm4jboss</attribute>
 

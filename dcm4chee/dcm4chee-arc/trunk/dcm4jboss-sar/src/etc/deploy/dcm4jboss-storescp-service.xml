@@ -38,10 +38,27 @@
 
     <!-- 
     Defines an optional list of DICOM Application Entity Title(s) to which 
-    composite object instance(s) received by this Storage SCP are forwarded.
-    Multiple values must be separated by '\' characters.
-    For each listed AET, the must be a corresponding Network configuration
-    (Host, Port) entry in the AE configuration table!
+    composite object instance(s) received by this Storage SCP are forwarded,
+    conditionally from the Application Entity Title of the Storage SCU.
+    
+    Each entry may associate zero, one or several calling AETs with one or
+    several destination AETs - with ':' as delimiter between calling AET(s) and
+    destination AET(s) and '\' as delimiter between multiple AETs. Multiple
+    entries can be separated by ',' or line breaks.
+    
+    An entry without calling AET(s) specifies default forward destination
+    AET(s), in case, that the actual calling AET of the Storage SCU does
+    not match which any calling AET specified by other entries.
+    
+    Sample:
+    <attribute name="ForwardAETs">
+    	STORE_SCU_A:DEST_AET_1\DEST_AET_2
+    	STORE_SCU_B\STORE_SCU_C:DEST_AET_3
+    	:DEST_AET_1
+    </attribute>
+	
+    For each listed Forward Destination AET, there must be a corresponding
+    Network configuration (Host, Port) entry in the AE configuration table!
 	-->
     <attribute name="ForwardAETs"></attribute>
 

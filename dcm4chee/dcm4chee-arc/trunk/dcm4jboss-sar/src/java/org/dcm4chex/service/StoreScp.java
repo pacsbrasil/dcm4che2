@@ -87,7 +87,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private final Logger log;
     private int forwardPriority = Command.LOW;
     private String retrieveAETs;
-    private String forwardAETs;
+    private ForwardAETs forwardAETs = new ForwardAETs();
     private String storageDirs;
     private File[] storageDirFiles;
 
@@ -107,11 +107,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public final String getForwardAETs() {
-        return forwardAETs;
+        ForwardAETsEditor fce = new ForwardAETsEditor();
+        fce.setValue(forwardAETs);
+        return fce.getAsText();
     }
 
     public final void setForwardAETs(String aets) {
-        this.forwardAETs = aets;
+        ForwardAETsEditor fce = new ForwardAETsEditor();
+        fce.setAsText(aets);
+        this.forwardAETs = (ForwardAETs) fce.getValue();
     }
 
     public final int getForwardPriority() {
@@ -420,9 +424,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo != null) {
             updateStudies(storedStudiesInfo.keySet().iterator());
-            if (forwardAETs != null && forwardAETs.length() != 0) {
-                forward(storedStudiesInfo.values().iterator());
-            }
+            forward(forwardAETs.get(assoc.getCallingAET()), storedStudiesInfo.values().iterator());
         }
     }
 
@@ -493,7 +495,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return delimPos == -1 ? s : s.substring(0, delimPos);
     }
 
-    private void forward(Iterator scns) {
+    private void forward(String[] destAETs, Iterator scns) {
+        if (destAETs.length == 0) {
+            return;
+        }
+        
         MoveOrderQueue orderQueue;
         try {
             orderQueue = getMoveOrderQueueHome().create();
@@ -523,9 +529,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 order.setSeriesIuids(
                     refSeries.getString(Tags.SeriesInstanceUID));
                 order.setSopIuids(sopIUIDs.toString());
-                StringTokenizer stok = new StringTokenizer(forwardAETs, "\\");
-                while (stok.hasMoreTokens()) {
-                    order.setMoveDestination(stok.nextToken());
+                
+                for (int k = 0; k < destAETs.length; ++k) {
+                    order.setMoveDestination(destAETs[k]);
                     try {
                         orderQueue.queue(order);
                     } catch (RemoteException e) {
