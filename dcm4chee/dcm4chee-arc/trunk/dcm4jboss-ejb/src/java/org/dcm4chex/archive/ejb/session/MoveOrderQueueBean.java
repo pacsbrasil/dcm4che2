@@ -19,8 +19,8 @@
  */
 package org.dcm4chex.archive.ejb.session;
 
+import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.Date;
 
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
@@ -59,16 +59,17 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
  * 
  */
 public abstract class MoveOrderQueueBean implements SessionBean {
+
     private static Logger log = Logger.getLogger(MoveOrderQueueBean.class);
+
     private MoveOrderLocalHome moveOrderHome;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            moveOrderHome =
-                (MoveOrderLocalHome) jndiCtx.lookup(
-                    "java:comp/env/ejb/MoveOrder");
+            moveOrderHome = (MoveOrderLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/MoveOrder");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -90,10 +91,9 @@ public abstract class MoveOrderQueueBean implements SessionBean {
      */
     public MoveOrderValue dequeue() {
         try {
-            Collection c = moveOrderHome.findBefore(new Date());
-            if (c.isEmpty()) {
-                return null;
-            }
+            Collection c = moveOrderHome.findBefore(new Timestamp(System
+                    .currentTimeMillis()));
+            if (c.isEmpty()) { return null; }
             MoveOrderLocal order = (MoveOrderLocal) c.iterator().next();
             MoveOrderValue value = order.getMoveOrderValue();
             order.remove();

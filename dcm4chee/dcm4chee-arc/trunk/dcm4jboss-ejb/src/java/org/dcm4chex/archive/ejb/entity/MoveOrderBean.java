@@ -50,10 +50,10 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
  *  query="SELECT OBJECT(a) FROM MoveOrder AS a"
  *
  * @ejb.finder
- *  signature="java.util.Collection findBefore(java.util.Date scheduledTime)"
+ *  signature="java.util.Collection findBefore(java.sql.Timestamp scheduledTime)"
  *  query=""
  * @jboss.query
- *  signature="java.util.Collection findBefore(java.util.Date scheduledTime)"
+ *  signature="java.util.Collection findBefore(java.sql.Timestamp scheduledTime)"
  *  query="SELECT OBJECT(a) FROM MoveOrder AS a WHERE a.scheduledTime IS NOT NULL AND a.scheduledTime < ?1 ORDER BY a.priority DESC, a.scheduledTime LIMIT 1"
  *  strategy="on-load"
  *  page-size="1"
