@@ -155,8 +155,6 @@ CREATE TABLE files (
 	file_tsuid      VARCHAR(254) NOT NULL,
 	file_md5        VARCHAR(254),
 	file_size       INTEGER,
-	dirpath			VARCHAR(254) NOT NULL,
-	retrieve_aets	VARCHAR(254) NOT NULL,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
