@@ -102,7 +102,7 @@ final class DatasetImpl extends BaseDatasetImpl
             try {
                 this.charset = Charsets.lookup(newElem.getStrings(null));
             } catch (Exception ex) {
-                log.warn("Failed to consider specified Charset!", ex);
+                log.warn("Failed to consider specified Charset!");
                 this.charset = null;
             }
         }

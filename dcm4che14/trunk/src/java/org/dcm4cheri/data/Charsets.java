@@ -50,7 +50,7 @@ class Charsets {
         return retval;
     }
 
-    private static HashMap CHARSETS = new HashMap(17);
+    private static HashMap CHARSETS = new HashMap();
     private static void put(String dcmCharset, String charsetName) {
         try {
             CHARSETS.put(dcmCharset,Charset.forName(charsetName));
@@ -71,6 +71,18 @@ class Charsets {
         put("ISO_IR 148","ISO-8859-9");
         put("ISO_IR 13","EUC-JP");
         put("ISO_IR 166","TIS-620");
+        CHARSETS.put("ISO 2022 IR 6",ASCII);
+        CHARSETS.put("ISO 2022 IR 100",ISO_8859_1);
+        put("ISO 2022 IR 101","ISO-8859-2");
+        put("ISO 2022 IR 109","ISO-8859-3");
+        put("ISO 2022 IR 110","ISO-8859-4");
+        put("ISO 2022 IR 144","ISO-8859-5");
+        put("ISO 2022 IR 127","ISO-8859-6");
+        put("ISO 2022 IR 126","ISO-8859-7");
+        put("ISO 2022 IR 138","ISO-8859-8");
+        put("ISO 2022 IR 148","ISO-8859-9");
+        put("ISO 2022 IR 13","EUC-JP");
+        put("ISO 2022 IR 166","TIS-620");
     }    
 
     /** Private constructor */
