@@ -17,11 +17,8 @@ default-transform-type="xslt">
 
   <commands>
     <command name="folder">
-      <controller
-      class="org.dcm4chex.archive.web.maverick.FolderCtrl" />
-
+      <controller class="org.dcm4chex.archive.web.maverick.FolderCtrl" />
       <view ref="folder" />
-	  <view name="ae" type="redirect" path="folder.m"/>
     </command>
 
     <command name="foldersubmit">
@@ -29,6 +26,7 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.FolderSubmitCtrl" />
 
       <view ref="folder" />
+	  <view name="ae" type="redirect" path="AEEdit.m"/>
     </command>
 
     <command name="expandPat">

@@ -20,9 +20,15 @@
 package org.dcm4chex.archive.web.maverick;
 
 
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
+import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
+import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.infohazard.maverick.ctl.ThrowawayBean2;
 
 /**
@@ -42,7 +48,29 @@ public class AEEditCtrl extends ThrowawayBean2
 	
 	public List getAEs() 
 	{
-		return null;
+		try
+		{
+			return lookupContentManager().getAes();
+		} catch (RemoteException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return new ArrayList();
+		} catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return new ArrayList();			
+		}
+	}
+	
+	private ContentManager lookupContentManager() throws Exception
+	{
+		ContentManagerHome home =
+			(ContentManagerHome) EJBHomeFactory.getFactory().lookup(
+					ContentManagerHome.class,
+					ContentManagerHome.JNDI_NAME);
+		return home.create();
 	}
 
 }

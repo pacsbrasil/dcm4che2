@@ -57,7 +57,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 return query(false);
             }
             if (rq.getParameter("ae") != null) {
-            	return delete();                
+            	return AE;                
             }
             if (rq.getParameter("del") != null) {
                 return delete();                

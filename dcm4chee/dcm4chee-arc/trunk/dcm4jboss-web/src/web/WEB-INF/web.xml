@@ -46,7 +46,7 @@
 		-->
 		<init-param>
 			<param-name>limitTransformsParam</param-name>
-			<param-value>maxTransforms</param-value>
+			<param-value>t</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>

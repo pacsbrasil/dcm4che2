@@ -35,6 +35,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.dcm4chex.archive.ejb.entity.AEBean;
+import org.dcm4chex.archive.ejb.interfaces.AELocal;
 import org.dcm4chex.archive.ejb.interfaces.AELocalHome;
 import org.dcm4chex.archive.ejb.interfaces.DTOFactory;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -44,6 +46,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.CountStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 
@@ -232,7 +235,12 @@ public abstract class ContentManagerBean implements SessionBean {
     	try 
 		{
 			ArrayList ret =new ArrayList();
-			ret.addAll(aeHome.findAll());
+			for (Iterator i=aeHome.findAll().iterator();i.hasNext();)
+			{
+				AELocal ae = (AELocal)i.next(); 
+				AEData aeDTO = new AEData(ae.getTitle(), ae.getHostName(), ae.getPort(), ae.getCipherSuites());
+				ret.add(aeDTO);
+			}		
     		return ret;
     	} catch (FinderException e) {
     		throw new EJBException(e);
