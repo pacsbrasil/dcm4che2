@@ -84,6 +84,7 @@
 		<xsl:apply-templates select="SUID"/>
 		<xsl:apply-templates select="AccessionNumber"/>
 		<xsl:apply-templates select="Patient"/>
+		<xsl:apply-templates select="Description"/>
 		<xsl:apply-templates select="User"/>
 	</xsl:template>
 	<!-- ActorStartStop -->
@@ -96,7 +97,7 @@
 	<!-- ActorConfig -->
 	<xsl:template match="ActorConfig">
 		<span class="event">ActorConfig</span><br/><br/>
-		<xsl:if test="Description"><b>Description: </b><xsl:value-of select="Description"/><br/></xsl:if>
+		<xsl:apply-templates select="Description"/>
 		<xsl:apply-templates select="User"/>
 		<xsl:if test="ConfigType"><b>ConfigType:</b><br/><xsl:value-of select="ConfigType"/><br/></xsl:if>
 	</xsl:template>
@@ -116,6 +117,7 @@
 		<span class="event">PatientRecord</span><br/><br/>
 		<xsl:apply-templates select="ObjectAction"/>
 		<xsl:apply-templates select="Patient"/>
+		<xsl:apply-templates select="Description"/>
 		<xsl:apply-templates select="User"/>
 	</xsl:template>
 	<xsl:template match="Patient">
@@ -160,6 +162,7 @@
 	<xsl:template match="StudyDeleted">
 		<span class="event-important">StudyDeleted</span><br/><br/>
 		<xsl:call-template name="InstancesActionType"/>
+		<xsl:apply-templates select="Description"/>
 	</xsl:template>
 	<!-- DICOMQuery -->
 	<xsl:template match="DicomQuery">
@@ -176,7 +179,7 @@
 		<span class="event-alert">SecurityAlert</span><br/><br/>
 		<xsl:apply-templates select="AlertType"/>
 		<xsl:apply-templates select="User"/>
-		<xsl:if test="Description"><b>Description: </b><xsl:value-of select="Description"/><br/></xsl:if>
+		<xsl:apply-templates select="Description"/>
 	</xsl:template>
 	<!-- UserAuthenticated -->
 	<xsl:template match="UserAuthenticated">
@@ -265,6 +268,7 @@
 		</xsl:choose>
 		<br/>
 	</xsl:template>
+	<xsl:template match="Description"><b>Description: </b><xsl:value-of select="."/><br/></xsl:template>
 	<!-- The 5.4 xml schema provides no definition for the content for these -->
 	<xsl:template match="Usage"><b>Usage: </b><xsl:value-of select="."/><br/></xsl:template> <!-- used instead of declaring an empty UsageType named template -->
 	<xsl:template match="LocalUser"><b>LocalUser: </b><xsl:value-of select="."/><br/></xsl:template>
