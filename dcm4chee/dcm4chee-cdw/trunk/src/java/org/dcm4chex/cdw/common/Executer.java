@@ -26,21 +26,21 @@ public class Executer {
     private final Logger log;
     private final Process child;
     
-    public Executer(String[] cmdarray,  Logger log) throws IOException {
+    public Executer(Logger log, String[] cmdarray,  OutputStream stdout, OutputStream stderr) throws IOException {
         this.log = log;
         this.cmd = StringUtils.toString(cmdarray, ' ');
         log.debug("invoke: " + cmd);
         this.child = Runtime.getRuntime().exec(cmdarray);
+        startCopy(child.getInputStream(), stdout);
+        startCopy(child.getErrorStream(), stderr);
     }
 
     public final String cmd() {        
         return cmd;
     }
     
-    public int waitFor(OutputStream stdout, OutputStream stderr) 
+    public int waitFor() 
     		throws InterruptedException {
-        startCopy(child.getInputStream(), stdout);
-        startCopy(child.getErrorStream(), stderr);
         log.debug("wait for: " + cmd);
         int exit = child.waitFor();
         log.debug("exit[" + exit + "]: " + cmd);
@@ -56,7 +56,6 @@ public class Executer {
 	                while ((len = in.read(buf)) != -1)
 	                    if (out != null)
 	                        out.write(buf, 0, len);
-	                out.close();
                 } catch (IOException e) {
                     log.warn("i/o error reading stdout/stderr of " + cmd, e);
                 }

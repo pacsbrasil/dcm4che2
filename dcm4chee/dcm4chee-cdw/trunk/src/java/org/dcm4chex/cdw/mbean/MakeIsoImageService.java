@@ -80,10 +80,8 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
 
     public MakeIsoImageService() {
         File homedir = ServerConfigLocator.locate().getServerHomeDir();
-        File confdir = new File(homedir, "conf");
-        sortFile = new File(confdir, "mkisofs.sort");
-        File logdir = new File(homedir, "log");
-        logFile = new File(logdir, "mkisofs.log");
+        sortFile = new File(homedir, "conf" + File.separatorChar + "mkisofs.sort");
+        logFile = new File(homedir, "log" + File.separatorChar + "mkisofs.log");
     }
 
     public final boolean isKeepSpoolFiles() {
@@ -202,7 +200,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
             cmd.add(isoImageFile.getAbsolutePath());
             cmd.add(srcDir.getAbsolutePath());
             String[] a = (String[]) cmd.toArray(new String[cmd.size()]);
-            exitCode = new Executer(a, log).waitFor(null, null);
+            exitCode = new Executer(log, a, null, null).waitFor();
         } catch (InterruptedException e) {
             throw new IOException(e.getMessage());
         } finally {

@@ -51,7 +51,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     private static final String[] CUIDS = { UIDs.MediaCreationManagementSOPClass};
 
     private boolean keepSpoolFiles = false;
-    
+
     private String defaultMediaApplicationProfile = "STD-GEN-CD";
 
     private String defaultRequestPriority = Priority.LOW;
@@ -108,19 +108,20 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     public final String getDefaultMediaApplicationProfile() {
         return defaultMediaApplicationProfile;
     }
-/*
-    public final boolean isSupportedApplicationProfile(String profile) {
-        try {
-            new URL(MediaApplicationProfile.toURI(profile)).openConnection();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-*/
+
+    /*
+     public final boolean isSupportedApplicationProfile(String profile) {
+     try {
+     new URL(MediaApplicationProfile.toURI(profile)).openConnection();
+     return true;
+     } catch (Exception e) {
+     return false;
+     }
+     }
+     */
     public final void setDefaultMediaApplicationProfile(String profile) {
-//        if (!isSupportedApplicationProfile(profile))
-//                throw new IllegalArgumentException("profile:" + profile);
+        //        if (!isSupportedApplicationProfile(profile))
+        //                throw new IllegalArgumentException("profile:" + profile);
         this.defaultMediaApplicationProfile = profile;
     }
 
@@ -253,11 +254,13 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         Dataset info = rq.getDataset();
-        if (log.isDebugEnabled())
-            logDataset("N-Create Information:\n",
-                    info.subSet(new int[]{Tags.RefSOPSeq}, true), 
-                    "\n" + info.get(Tags.RefSOPSeq));
-        
+        if (log.isDebugEnabled()) {
+            DcmElement refSOPs = info.get(Tags.RefSOPSeq);
+            String prompt = refSOPs == null ? "N-Create Information:\n"
+                    : "N-Create Information:\n(0008,1199) SQ #-1 *"
+                            + refSOPs.vm() + " // Referenced SOP Sequence\n";
+            logDataset(prompt, info.subSet(new int[] { Tags.RefSOPSeq}, true));
+        }
         checkCreateAttributes(info, rspCmd);
         String iuid = rspCmd.getAffectedSOPInstanceUID();
         File f = spoolDir.getMediaCreationRequestFile(iuid);
@@ -279,12 +282,11 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         return info;
     }
 
-    private void logDataset(String prefix, Dataset ds, String suffix) {
+    private void logDataset(String prefix, Dataset ds) {
         try {
             StringWriter w = new StringWriter();
             w.write(prefix);
             ds.dumpDataset(w, null);
-            w.write(suffix);
             log.debug(w.toString());
         } catch (Exception e) {
             log.warn("Failed to dump dataset", e);
@@ -360,11 +362,11 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                             ExecutionStatusInfo.DUPL_REF_INST);
             String profile = item
                     .getString(Tags.RequestedMediaApplicationProfile);
-/*            if (profiles.add(profile))
-                    if (!isSupportedApplicationProfile(profile))
-                            throw new MediaCreationException(
-                                    ExecutionStatusInfo.NOT_SUPPORTED);
-*/
+            /*            if (profiles.add(profile))
+             if (!isSupportedApplicationProfile(profile))
+             throw new MediaCreationException(
+             ExecutionStatusInfo.NOT_SUPPORTED);
+             */
             File f = spoolDir.getInstanceFile(iuid);
             if (!f.exists())
                     throw new MediaCreationException(
@@ -377,8 +379,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         Command rqCmd = rq.getCommand();
         Dataset actionInfo = rq.getDataset();
         if (log.isDebugEnabled())
-            logDataset("N-Action Information:\n", actionInfo, "");
-        
+                logDataset("N-Action Information:\n", actionInfo);
+
         String iuid = rqCmd.getAffectedSOPInstanceUID();
 
         File f = spoolDir.getMediaCreationRequestFile(iuid);
@@ -417,35 +419,35 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             }
             try {
                 checkRequest(attrs);
-	            mcrq.setPriority(priority);
-	            mcrq.setNumberOfCopies(numberOfCopies);
-	            mcrq.setFilesetID(attrs.getString(Tags.StorageMediaFileSetID));
-	            attrs.putIS(Tags.NumberOfCopies, numberOfCopies);
-	            attrs.putCS(Tags.RequestPriority, priority);
-	            attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
-	            attrs.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.QUEUED_BUILD);
-	            try {
+                mcrq.setPriority(priority);
+                mcrq.setNumberOfCopies(numberOfCopies);
+                mcrq.setFilesetID(attrs.getString(Tags.StorageMediaFileSetID));
+                attrs.putIS(Tags.NumberOfCopies, numberOfCopies);
+                attrs.putCS(Tags.RequestPriority, priority);
+                attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
+                attrs.putCS(Tags.ExecutionStatusInfo,
+                        ExecutionStatusInfo.QUEUED_BUILD);
+                try {
                     mcrq.writeAttributes(attrs, log);
                 } catch (IOException e) {
-    	            throw new DcmServiceException(Status.ProcessingFailure, e);
+                    throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
-	            try {
-	                JMSDelegate.getInstance().queueForMediaComposer(log, mcrq);
-	            } catch (JMSException e) {
-	                throw new MediaCreationException(
-	                        ExecutionStatusInfo.PROC_FAILURE, e);
-	            }
+                try {
+                    JMSDelegate.getInstance().queueForMediaComposer(log, mcrq);
+                } catch (JMSException e) {
+                    throw new MediaCreationException(
+                            ExecutionStatusInfo.PROC_FAILURE, e);
+                }
             } catch (MediaCreationException e) {
-	            attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
-	            attrs.putCS(Tags.ExecutionStatusInfo, e.getStatusInfo());
-	            try {
+                attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
+                attrs.putCS(Tags.ExecutionStatusInfo, e.getStatusInfo());
+                try {
                     mcrq.writeAttributes(attrs, log);
                 } catch (IOException ioe) {
                     // error already logged
                 }
-                if (!keepSpoolFiles)
-                    spoolDir.deleteRefInstances(attrs);
-	            throw new DcmServiceException(Status.ProcessingFailure, e);
+                if (!keepSpoolFiles) spoolDir.deleteRefInstances(attrs);
+                throw new DcmServiceException(Status.ProcessingFailure, e);
             }
             break;
         case CANCEL:

@@ -143,6 +143,17 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isLogEnabled"
+      setMethod="setLogEnabled">
+      <description>Log to server/dcmcdw/log/cdrecord.log.
+      </description>
+      <name>LogEnabled</name>
+      <type>boolean</type>      
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    
    <!-- Operations -->
    &defaultOperations;

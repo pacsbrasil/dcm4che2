@@ -100,8 +100,8 @@ class FilesetBuilder {
             HashMap patRecs = new HashMap();
             HashMap styRecs = new HashMap();
             HashMap serRecs = new HashMap();
-            File readmeFile =
-                	new File(rootDir, service.getFileSetDescriptorFile());
+            File readmeFile = new File(rootDir, service
+                    .getFileSetDescriptorFile());
             DirWriter dirWriter = dbf.newDirWriter(ddFile, rootDir.getName(),
                     rq.getFilesetID(), readmeFile, service
                             .getCharsetOfFileSetDescriptorFile(), null);
@@ -192,11 +192,11 @@ class FilesetBuilder {
     private void makeSymLink(File src, File dst) throws IOException {
         String[] cmd = new String[] { "ln", "-s", src.getAbsolutePath(),
                 dst.getAbsolutePath()};
-        Executer ex = new Executer(cmd, log);
         try {
-            if (ex.waitFor(null, null) == 0) return;
-        } catch (InterruptedException e) {}
-        throw new IOException(ex.cmd() + " failed!");
+            if (new Executer(log, cmd, null, null).waitFor() == 0) return;
+        } catch (InterruptedException e) {
+        }
+        throw new IOException(StringUtils.toString(cmd, ' ') + " failed!");
     }
 
 }
