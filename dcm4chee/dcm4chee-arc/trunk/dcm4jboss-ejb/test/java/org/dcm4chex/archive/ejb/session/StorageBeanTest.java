@@ -25,6 +25,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 
@@ -87,15 +88,12 @@ public class StorageBeanTest extends TestCase {
         }
         MessageDigest md = MessageDigest.getInstance("MD5");
         Dataset ds = loadDataset(file, md);
-        storage.store(
-            CALLING_AET,
-            CALLED_AET,
-            ds,
-            RETRIEVE_AET,
-            "/",
-            path.substring(1),
-            (int) file.length(),
-            md.digest());
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        ds.putAE(PrivateTags.CallingAET, CALLING_AET);
+        ds.putAE(PrivateTags.CalledAET, CALLED_AET);
+        ds.putAE(Tags.RetrieveAET, RETRIEVE_AET);        
+        storage.store(ds, "/", path.substring(1), (int) file.length(),
+        		md.digest());
     }
 
     private Dataset loadDataset(File file, MessageDigest md)

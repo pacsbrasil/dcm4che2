@@ -60,19 +60,28 @@ CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
 CREATE INDEX ref_physician ON study(ref_physician);
+CREATE INDEX study_created ON study(created_time);
 
 CREATE TABLE mpps (
-	pk          	IDENTITY PRIMARY KEY,
-	patient_fk      INTEGER,
-	drcode_fk		INTEGER,
-	mpps_iuid		VARCHAR(256) NOT NULL,
-	mpps_status		INTEGER,
-	mpps_attrs		VARBINARY,
+	pk          		IDENTITY PRIMARY KEY,
+	patient_fk      	INTEGER,
+	drcode_fk			INTEGER,
+	mpps_iuid			VARCHAR(256) NOT NULL,
+	pps_start			TIMESTAMP,
+	station_aet			VARCHAR(256),
+	modality	    	VARCHAR(256),
+	accession_no		VARCHAR(256),
+	mpps_status			INTEGER NOT NULL,
+	mpps_attrs			VARBINARY,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
 CREATE UNIQUE INDEX mpps_iuid ON mpps (mpps_iuid);
 CREATE INDEX mpps_patient_fk ON study(patient_fk);
+CREATE INDEX mpps_pps_start ON mpps (pps_start);
+CREATE INDEX mpps_station_aet ON mpps (station_aet);
+CREATE INDEX mpps_modality ON mpps (modality);
+CREATE INDEX mpps_accession_no ON mpps (accession_no);	
 
 CREATE TABLE series (
 	pk              IDENTITY PRIMARY KEY,
@@ -84,6 +93,7 @@ CREATE TABLE series (
 	pps_start		TIMESTAMP,
 	pps_iuid		VARCHAR(256),
 	num_instances	INTEGER,
+	src_aet			VARCHAR(256),
 	ext_retr_aet	VARCHAR(256),
 	retrieve_aets	VARCHAR(256),
 	fileset_iuid	VARCHAR(256),
@@ -103,6 +113,8 @@ CREATE INDEX series_no ON series(series_no);
 CREATE INDEX modality ON series(modality);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
+CREATE INDEX series_src_aet ON series (src_aet);
+CREATE INDEX series_created ON series(created_time);
 
 CREATE TABLE media (
 	pk          		IDENTITY PRIMARY KEY,

@@ -21,4 +21,6 @@ public class PrivateTags {
     public static final int StudyPk = 0x00430011;
     public static final int SeriesPk = 0x00430012;
     public static final int InstancePk = 0x00430013;
+    public static final int CallingAET = 0x00430014;
+    public static final int CalledAET = 0x00430015;
 }

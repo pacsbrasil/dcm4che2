@@ -28,6 +28,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -145,14 +146,13 @@ public class AttributeCoercions {
         }
     }
 
-    public void coerce(
-        String callingAET,
-        String calledAET,
-        Dataset ds,
-        Dataset coercedElements) {
+    public void coerce(Dataset ds, Dataset coercedElements) {
+    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        final String callingAET = ds.getString(PrivateTags.CallingAET);
+		final String calledAET = ds.getString(PrivateTags.CalledAET);
         for (int i = 0, n = list.size(); i < n; ++i) {
             Entry entry = (Entry) list.get(i);
-            if (entry.condition.match(callingAET, calledAET, ds)) {
+			if (entry.condition.match(callingAET, calledAET, ds)) {
                 entry.coercion.coerce(ds, coercedElements);
             }
         }

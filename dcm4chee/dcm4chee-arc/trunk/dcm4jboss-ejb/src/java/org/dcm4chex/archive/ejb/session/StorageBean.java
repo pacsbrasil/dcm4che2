@@ -34,6 +34,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
@@ -53,37 +54,21 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 /**
  * Storage Bean
  * 
- * @ejb.bean name="Storage"
- *      type="Stateless"
- *      view-type="remote"
- *      jndi-name="ejb/Storage"
+ * @ejb.bean name="Storage" type="Stateless" view-type="remote" 
+ * 			 jndi-name="ejb/Storage"
  * @ejb.transaction-type type="Container"
  * @ejb.transaction type="Required"
  * 
- * @ejb.ejb-ref ejb-name="Patient"
- *              view-type="local"
- *              ref-name="ejb/Patient"
- * @ejb.ejb-ref ejb-name="Study"
- *              view-type="local"
- *              ref-name="ejb/Study"
- * @ejb.ejb-ref ejb-name="Series"
- *              view-type="local"
- *              ref-name="ejb/Series"
- * @ejb.ejb-ref ejb-name="Instance"
- *              view-type="local"
- *              ref-name="ejb/Instance"
- * @ejb.ejb-ref ejb-name="File"
- *              view-type="local"
- *              ref-name="ejb/File"
- * @ejb.ejb-ref ejb-name="FileSystem"
- *              view-type="local"
- *              ref-name="ejb/FileSystem"
+ * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
+ * @ejb.ejb-ref ejb-name="Study"  view-type="local" ref-name="ejb/Study"
+ * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
+ * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
+ * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
+ * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
  * 
- * @ejb.env-entry name="AttributeFilterConfigURL"
- *                type="java.lang.String"
+ * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  *                value="resource:dcm4jboss-attribute-filter.xml"
- * @ejb.env-entry name="AttributeCoercionConfigURL"
- *                type="java.lang.String"
+ * @ejb.env-entry name="AttributeCoercionConfigURL" type="java.lang.String"
  *                value="resource:dcm4jboss-attribute-coercion.xml"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
@@ -163,10 +148,8 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public org.dcm4che.data.Dataset store(java.lang.String callingAET,
-            java.lang.String calledAET, org.dcm4che.data.Dataset ds,
-            java.lang.String retrieveAET, java.lang.String dirpath,
-            java.lang.String fileid, int size,
+    public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
+            java.lang.String dirpath, java.lang.String fileid, int size,
             byte[] md5) throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -180,7 +163,7 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                attrCoercions.coerce(callingAET, calledAET, ds, coercedElements);
+                attrCoercions.coerce(ds, coercedElements);
                 final int[] filter = attrFilter.getInstanceFilter();
                 instance = instHome.create(ds.subSet(filter),
                         getSeries(ds, coercedElements));
@@ -189,7 +172,7 @@ public abstract class StorageBean implements SessionBean {
             try {
                 fs = fileSystemHome.findByDirectoryPath(dirpath);
             } catch (ObjectNotFoundException onfe) {
-                fs = fileSystemHome.create(dirpath, retrieveAET);
+                fs = fileSystemHome.create(dirpath, ds.getString(Tags.RetrieveAET));
             }
             instance.setAvailability(Availability.ONLINE);
             instance.addRetrieveAET(fs.getRetrieveAET());

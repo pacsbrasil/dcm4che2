@@ -37,6 +37,8 @@
         <attr tag="00400244"/> <!-- Performed Procedure Step Start Date -->
         <attr tag="00400245"/> <!-- Performed Procedure Step Start Time -->
         <attr tag="00400275"/> <!-- Request Attributes Sequence -->
+        <attr tag="00430010"/> <!-- Private Creator ID: dcm4che/archive -->
+        <attr tag="00430014"/> <!-- Calling AET (dcm4che/archive private Tag)-->
     </filter>
     <filter level="IMAGE">
         <attr tag="00080005"/> <!-- Specific Character Set -->

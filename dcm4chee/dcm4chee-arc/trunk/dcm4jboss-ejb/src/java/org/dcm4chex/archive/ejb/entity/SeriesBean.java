@@ -38,10 +38,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
- * @ejb.bean name="Series"
- *           type="CMP"
- *           view-type="local"
- *           primkey-field="pk"
+ * @ejb.bean name="Series" type="CMP" view-type="local" primkey-field="pk"
  *           local-jndi-name="ejb/Series"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="series"
@@ -54,19 +51,22 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *             transaction-type="Supports"
  *             
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.SeriesLocal findBySeriesIuid(java.lang.String uid)"
- *             query="SELECT OBJECT(a) FROM Series AS a WHERE a.seriesIuid = ?1"
+ *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.seriesIuid = ?1"
  *             transaction-type="Supports"
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.SeriesLocal findBySeriesIuid(java.lang.String uid)"
  *              strategy="on-find"
  *              eager-load-group="*"
  *              
  * @ejb.finder signature="java.util.Collection findByPpsIuid(java.lang.String uid)"
- *             query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid = ?1"
+ *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid = ?1"
  *             transaction-type="Supports"
  * 
- * @ejb.finder signature="java.util.Collection findWithNoPpsIuid()"
- *             query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid IS NULL"
+ * @ejb.finder signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
+ *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND s.createdTime < ?2"
  *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
+ *              strategy="on-find"
+ *              eager-load-group="*"
  * 
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
  *              query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
@@ -77,9 +77,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
  * 
- * @ejb.ejb-ref ejb-name="MPPS" 
- *              view-type="local"
- *              ref-name="ejb/MPPS"
+ * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS"
  * 
  */
 public abstract class SeriesBean implements EntityBean {
@@ -236,6 +234,13 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="src_aet"
+     */
+    public abstract String getSourceAET();
+    public abstract void setSourceAET(String aet);
+
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="ext_retr_aet"
      */
     public abstract String getExternalRetrieveAET();
@@ -348,9 +353,6 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract java.util.Collection getInstances();
 
-//    public void ejbLoad() {
-//        retrieveAETSet = null;
-//    }
 
     /**
      * Create series.
@@ -359,7 +361,8 @@ public abstract class SeriesBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, StudyLocal study)
             throws CreateException {
-//        retrieveAETSet = null;
+    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
+    	setSourceAET(ds.getString(PrivateTags.CallingAET));
         setAttributes(ds);
         return null;
     }
@@ -554,14 +557,15 @@ public abstract class SeriesBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.SeriesPk, getPk().intValue());
+            ds.putAE(PrivateTags.CallingAET, getSourceAET());
             ds.putIS(Tags.NumberOfSeriesRelatedInstances,
                     getNumberOfSeriesRelatedInstances());
             ds.putSH(Tags.StorageMediaFileSetID, getFilesetId());
             ds.putUI(Tags.StorageMediaFileSetUID, getFilesetIuid());
             DatasetUtils.putRetrieveAET(ds, getRetrieveAETs(),
             		getExternalRetrieveAET());
-            ds.putCS(Tags.InstanceAvailability, Availability
-                    .toString(getAvailabilitySafe()));
+            ds.putCS(Tags.InstanceAvailability,
+            		Availability.toString(getAvailabilitySafe()));
         }
         return ds;
     }

@@ -35,6 +35,7 @@ import org.apache.cactus.ServletTestCase;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -48,6 +49,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  */
 public class SeriesBeanTest extends ServletTestCase {
 
+    public static final String AET = "MODALITY_AET";
     public static final String PID = "P-999999";
     public static final String PNAME = "Test^SeriesBean";
     public static final String SUID = "1.2.40.0.13.1.1.9999";
@@ -73,6 +75,8 @@ public class SeriesBeanTest extends ServletTestCase {
         seriesHome = (SeriesLocalHome) ctx.lookup("java:comp/env/ejb/Series");
         ctx.close();
         Dataset ds = dof.newDataset();
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        ds.putAE(PrivateTags.CallingAET, AET);
         ds.putLO(Tags.PatientID, PID);
         ds.putPN(Tags.PatientName, PNAME);
         ds.putUI(Tags.StudyInstanceUID, SUID);
