@@ -35,6 +35,10 @@ public final class FileDTO implements Serializable {
     
     private int status;
 
+	public static final int FAILED_TO_COMPRESS = 1;
+
+	public static final int FAILED_TO_CHECK = 2;
+
     /**
      * @return Returns the pk.
      */
