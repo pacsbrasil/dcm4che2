@@ -65,9 +65,17 @@ public interface PixelData
         throws IOException;
 
     /**
+     * Reset the read position of the backing <code>ImageInputStream</code> and
+     * state of this instance to the initial read position
+     * @throws IOException On I/O error -- a seek to beginning of stream was not
+     *      was not possible
+     */
+    public void resetStream()
+        throws IOException;
+
+    /**
      * If a sample can't be read, the state of the contained <code>ImageInputStream</code> is
-     * not disturbed (beyond the effect of trying to readXX() and getting an
-     * IOException)
+     * not disturbed (beyond any effect of trying to read and getting an IOException)
      * @return The next sample value from the underlying <code>ImageInputStream</code>
      * @throws IOException If underlying <code>ImageInputStream</code> has an I/O problem
      */
@@ -84,7 +92,7 @@ public interface PixelData
         throws IOException;
     /**
      * Skip the specified number of samples from the current position in the stream.
-     * @param n Number of samples to skip. The behaviour of this method is undefined
+     * @param n Number of samples to skip. The behavior of this class is undefined
      *          for negative values of <code>n</code> or if an IOException occurs.
      * @throws IOException On I/O error
      */
