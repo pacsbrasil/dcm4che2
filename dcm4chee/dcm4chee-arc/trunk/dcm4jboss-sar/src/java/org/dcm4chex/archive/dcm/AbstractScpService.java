@@ -28,8 +28,6 @@ import org.dcm4che.server.DcmHandler;
 import org.dcm4cheri.util.StringUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
-import EDU.oswego.cs.dl.util.concurrent.Semaphore;
-
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$ $Date$

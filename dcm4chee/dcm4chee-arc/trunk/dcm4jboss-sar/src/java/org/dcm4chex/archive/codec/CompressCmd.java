@@ -138,6 +138,7 @@ public abstract class CompressCmd extends CodecCmd {
     
     public static byte[] compressFile(File inFile, File outFile, String tsuid)
     		throws Exception {
+        log.info("M-READ file:" + inFile);
     	InputStream in = new BufferedInputStream(new FileInputStream(inFile));
     	try {
     		DcmParser p = DcmParserFactory.getInstance().newDcmParser(in);
@@ -165,10 +166,10 @@ public abstract class CompressCmd extends CodecCmd {
                 in.skip(p.getReadLength() - read);
                 p.parseDataset(decParam, -1);
                 ds.subSet(Tags.PixelData, -1).writeDataset(dos, encParam);
-                return md.digest();
             } finally {
                 dos.close();
             }
+            return md.digest();
     	} finally {
     		in.close();
     	}
