@@ -14,6 +14,7 @@
 	<property name="src.etc" value="${src.dir}/etc"/>
 
 	<property name="target.dir" value="${basedir}/target"/>
+	<property name="target.bin" value="${target.dir}/bin"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
 	<property name="target.deploy" value="${target.dir}/deploy"/>
 	<property name="target.lib" value="${target.dir}/lib"/>
@@ -55,6 +56,8 @@
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/deploy/dcm4jboss-ejb-hsql.jar"/>
 		<pathelement location="${lib.dir}/mogio.jar"/>
+		<pathelement location="${jboss.home}/bin/twiddle.jar"/>
+		<pathelement location="${jboss.home}/client/jmx-rmi-connector-client.jar"/>
 		<fileset dir="${jboss.home}/lib">
 			<include name="*.jar"/>
 		</fileset>
@@ -78,6 +81,7 @@
     <!-- =================================================================== -->
     <target name="prepare" depends="init">
         <mkdir dir="${target.classes}"/>
+        <mkdir dir="${target.bin}"/>
         <mkdir dir="${target.lib}"/>
         <mkdir dir="${target.deploy}"/>
         <mkdir dir="${dist.dir}"/>
@@ -110,8 +114,12 @@
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
         	</manifest>
-        	<fileset dir="${target.classes}"/>
+        	<fileset dir="${target.classes}" excludes="org/jboss/**"/>
         </jar>
+   		<zip destfile="${target.bin}/twiddle.jar">
+   			<zipfileset src="${jboss.home}/bin/twiddle.jar" excludes="org/jboss/console/twiddle/Twiddle.class"/>
+   			<fileset dir="${target.classes}" includes="org/jboss/**"/>
+   		</zip>
     </target>
 
  
@@ -145,43 +153,6 @@
    				<include name="db2/**"/>
    			</fileset>
    		</copy>
-   		<copy todir="${dist.dir}/hsql">
-  			<fileset dir="${src.etc}">
-   				<include name="conf/xmdesc/*.xml"/>
-  			</fileset>
-   		</copy>
-   		<copy todir="${dist.dir}/psql">
-  			<fileset dir="${src.etc}">
-   				<include name="conf/xmdesc/*.xml"/>
-  			</fileset>
-   		</copy>
-   		<replace dir="${dist.dir}/psql/conf/xmdesc"
-   			token="DefaultDS" 
-   			value="PostgresDS"/>
-   		<copy todir="${dist.dir}/mysql">
-  			<fileset dir="${src.etc}">
-   				<include name="conf/xmdesc/*.xml"/>
-  			</fileset>
-   		</copy>
-   		<replace dir="${dist.dir}/mysql/conf/xmdesc"
-   			token="DefaultDS" 
-   			value="MySqlDS"/>
-   		<copy todir="${dist.dir}/oracle">
-  			<fileset dir="${src.etc}">
-   				<include name="conf/xmdesc/*.xml"/>
-  			</fileset>
-   		</copy>
-   		<replace dir="${dist.dir}/oracle/conf/xmdesc"
-   			token="DefaultDS" 
-   			value="OracleDS"/>
-   		<copy todir="${dist.dir}/db2">
-  			<fileset dir="${src.etc}">
-   				<include name="conf/xmdesc/*.xml"/>
-  			</fileset>
-   		</copy>
-   		<replace dir="${dist.dir}/db2/conf/xmdesc"
-   			token="DefaultDS" 
-   			value="DB2DS"/>
    		<copy todir="${dist.dir}/common">
    			<fileset dir="${dcm4che.home}">
    				<include name="lib/dcm4che.jar"/>
@@ -201,6 +172,7 @@
    				<include name="bin/*"/>
    				<include name="conf/cacerts.jks"/>
    				<include name="conf/identity.p12"/>
+  				<include name="conf/xmdesc/*.xml"/>
    				<include name="deploy/*.xml"/>
    				<include name="deploy/jms/*.xml"/>
    			</fileset>
@@ -220,6 +192,7 @@
    				<include name="lib/*"/>
    			</fileset>
    			<fileset dir="${target.dir}">
+   				<include name="bin/*"/>
    				<include name="lib/*"/>
    			</fileset>
    		</copy>
@@ -271,6 +244,7 @@
 				<exclude name="bin/*.sh"/>
 				<exclude name="bin/run.log"/>
 				<exclude name="bin/run.conf"/>
+				<exclude name="bin/twiddle.jar"/>
 				<include name="lib/*"/>
 				<include name="client/getopt.jar"/>
 				<include name="client/jbossall-client.jar"/>
