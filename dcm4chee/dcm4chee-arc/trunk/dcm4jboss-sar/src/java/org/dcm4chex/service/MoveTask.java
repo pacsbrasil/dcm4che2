@@ -187,7 +187,7 @@ class MoveTask implements Runnable
         for (int i = 0; i < fileInfoArray.length; i++)
         {
             FileInfo[] fileInfo = fileInfoArray[i];
-            FileSelection selection = selector.select(fileInfo);
+            FileSelection selection = selector.select(fileInfo, retrieveAET);
             if (selection != null)
             {
                 toRetrieve.add(selection);

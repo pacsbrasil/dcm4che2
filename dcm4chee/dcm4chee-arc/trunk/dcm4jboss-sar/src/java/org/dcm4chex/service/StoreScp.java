@@ -225,6 +225,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             updateStoredStudiesInfo(assoc.getAssociation(), ds);
         } catch (DcmServiceException e) {
+			log.warn(e.getMessage(), e);
             throw e;
         } catch (Exception e) {
             log.error(e.getMessage(), e);

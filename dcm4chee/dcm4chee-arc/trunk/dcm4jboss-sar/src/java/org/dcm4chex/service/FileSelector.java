@@ -20,11 +20,13 @@
 
 package org.dcm4chex.service;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.PresContext;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
 /**
@@ -41,24 +43,27 @@ final class FileSelector
         this.as = as;
     }
 
-    public FileSelection select(FileInfo[] infos)
+    public FileSelection select(FileInfo[] infos, String retrieveAET)
     {
         FileSelection retval = null;
         List pcList = as.listAcceptedPresContext(infos[0].sopCUID);
         int score = 0;
-        for (int i = 0, n = pcList.size(); i < n; ++i)
+		for (int fileIndex = 0; fileIndex < infos.length; ++fileIndex)
         {
-            PresContext pc = (PresContext) pcList.get(i);
-            for (int j = 0; j < infos.length; ++j)
-            {
-                FileInfo fileInfo = infos[0];
-                int tmp = score(fileInfo.tsUID, pc.getTransferSyntaxUID());
-                if (tmp > score)
-                {
-                    retval = new FileSelection(fileInfo, pc);
-                    score = tmp;
-                }
-            }
+			FileInfo fileInfo = infos[fileIndex];
+			String[] fileRetrieveAETs = StringUtils.split(fileInfo.retrieveAETs, '\\');
+			if (Arrays.asList(fileRetrieveAETs).indexOf(retrieveAET) != -1) {
+				for (int pcIndex = 0, n = pcList.size(); pcIndex < n; ++pcIndex)
+	            {
+					PresContext pc = (PresContext) pcList.get(pcIndex);
+	                int tmp = score(fileInfo.tsUID, pc.getTransferSyntaxUID());
+	                if (tmp > score)
+	                {
+	                    retval = new FileSelection(fileInfo, pc);
+	                    score = tmp;
+	                }
+	            }
+			}
         }
         return retval;
     }

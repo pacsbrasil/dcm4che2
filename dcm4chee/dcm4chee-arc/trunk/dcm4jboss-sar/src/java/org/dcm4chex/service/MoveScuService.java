@@ -73,6 +73,7 @@ public class MoveScuService
     private long[] retryIntervalls = {
     };
     private MoveOrderQueue queue;
+    private boolean running = false;
 
     /**
      * @jmx.managed-attribute
@@ -129,14 +130,24 @@ public class MoveScuService
      * @jmx.managed-operation
      */
     public void run() {
-        MoveOrderValue order;
-        while ((order = fetchNextOrder()) != null) {
-            try {
-                process(order);
-            } catch (Exception e) {
-                log.error("Failed to invoke " + order);
-                queueFailedMoveOrder(order, INVOKE_FAILED_STATUS);
-            }
+        synchronized(this) {
+	        if (running) {
+	            return;
+	        }
+	        running = true;
+        }
+        try {
+	        MoveOrderValue order;
+	        while ((order = fetchNextOrder()) != null) {
+	            try {
+	                process(order);
+	            } catch (Exception e) {
+	                log.error("Failed to invoke " + order);
+	                queueFailedMoveOrder(order, INVOKE_FAILED_STATUS);
+	            }
+	        }
+        } finally {
+            running = false;
         }
     }
 
@@ -192,7 +203,7 @@ public class MoveScuService
         }
     }
 
-    private synchronized MoveOrderValue fetchNextOrder() {
+    private MoveOrderValue fetchNextOrder() {
         try {
             if (queue == null) {
                 MoveOrderQueueHome home =
@@ -208,7 +219,7 @@ public class MoveScuService
         }
     }
 
-    private synchronized void queueFailedMoveOrder(
+    private void queueFailedMoveOrder(
         MoveOrderValue order,
         int failureStatus) {
         Date newScheduledTime = null;

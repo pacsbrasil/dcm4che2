@@ -1,7 +1,7 @@
 <project name="dcm4jboss-sar" default="jar">
 	<property file="build.properties"/>
 	<property name="javac.debug" value="on"/>
-	<property name="version" value="0.1.0"/>
+	<property name="version" value="0.2.0"/>
 
 	<property name="dist.db2" value="dcm4jboss-db2-${version}"/>
 	<property name="dist.psql" value="dcm4jboss-psql-${version}"/>

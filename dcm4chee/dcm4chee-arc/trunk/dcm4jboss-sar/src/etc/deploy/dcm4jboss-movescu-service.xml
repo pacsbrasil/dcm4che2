@@ -16,7 +16,7 @@
 	name="dcm4chex:service=MoveScu,aet=MOVE_SCU">
 
     <!-- Do NOT uncomment this line if the service is deployed
-    in the same jboss instance as the Storage EJB. Otherwise
+    in the same jboss instance as the MoveQueue EJB. Otherwise
     in VM calls to go over RMI!
         
     <attribute name="EjbProviderURL">jnp://localhost:1099</attribute>
@@ -29,17 +29,32 @@
 	-->
     <attribute name="DataSource">java:/PostgresDS</attribute>    
 
+    <!-- 
+    Specifies number of intervalls of retries of failed Move Requests.
+    Number of comma separated intervall time entries defines number of 
+    retries.  Time values can be specified in milliseconds (##), seconds (##s),
+    minutes (##m), hours (##h) and days (##d);
+	-->
     <attribute name="RetryIntervalls">1m,10m,1h,6h,1d</attribute>    
 
   </mbean>
 
   <mbean code="org.jboss.varia.scheduler.Scheduler" 
 	 name="dcm4chex:service=Scheduler,name=Scheduler of MoveScu">
-    <attribute name="StartAtStartup">true</attribute>
+        
+    <!-- 
+    Value must match with name attribute of MoveScuService mbean (s.above)!
+	-->
     <attribute name="SchedulableMBean">dcm4chex:service=MoveScu,aet=MOVE_SCU</attribute>
+
+    <!-- 
+    Specifies intervall in milliseconds for polling for new Move Orders in DB.
+	-->
+    <attribute name="SchedulePeriod">10000</attribute>
+
+    <attribute name="StartAtStartup">true</attribute>
     <attribute name="SchedulableMBeanMethod">run</attribute>
     <attribute name="InitialStartDate">NOW</attribute>
-    <attribute name="SchedulePeriod">10000</attribute>
     <attribute name="InitialRepetitions">-1</attribute>
   </mbean>
 
