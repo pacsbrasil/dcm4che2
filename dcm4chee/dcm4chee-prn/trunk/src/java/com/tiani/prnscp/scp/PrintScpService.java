@@ -212,6 +212,13 @@ public class PrintScpService
       return filter;
    }
 
+   private NotificationFilter makeNotificationFilter(String type1, String type2) {
+      NotificationFilterSupport filter = new NotificationFilterSupport();
+      filter.enableType(type1);
+      filter.enableType(type2);
+      return filter;
+   }
+   
    // ServiceMBeanSupport overrides -----------------------------------
    public void startService()
    throws Exception
@@ -231,7 +238,10 @@ public class PrintScpService
       cleardir(spoolDir);
       
       server.addNotificationListener(getServiceName(), printer,
-         makeNotificationFilter(PrinterServiceMBean.NOTIF_PENDING), null);
+         makeNotificationFilter(
+            PrinterServiceMBean.NOTIF_SCHEDULE_COLOR,
+            PrinterServiceMBean.NOTIF_SCHEDULE_GRAY),
+         null);
       server.addNotificationListener(printer, printingListener, 
          makeNotificationFilter(PrinterServiceMBean.NOTIF_PRINTING), null);
       server.addNotificationListener(printer, doneListener, 
@@ -473,7 +483,9 @@ public class PrintScpService
             storePrint(jobdir, session, session.getCurrentFilmBox());
          }
          Notification notif = new Notification(
-               PrinterServiceMBean.NOTIF_PENDING, 
+            session.isColor()
+               ? PrinterServiceMBean.NOTIF_SCHEDULE_COLOR
+               : PrinterServiceMBean.NOTIF_SCHEDULE_GRAY, 
                this, numCreatedJobs, jobdir.getPath());
          Dataset sessionAttr = dof.newDataset();
          sessionAttr.putAll(session.getAttributes());

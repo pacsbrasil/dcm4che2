@@ -26,6 +26,12 @@
     <attribute name="SupportsColor">true</attribute>
     
     <!--
+    Specifies if color printing mode of the printer shall be also used for
+    printing of monochrome (=grayscale) images.
+    -->
+    <attribute name="PrintGrayAsColor">false</attribute>
+    
+    <!--
     Activate support for the Presentation LUT SOP Class.
     -->
     <attribute name="SupportsPresentationLUT">true</attribute>

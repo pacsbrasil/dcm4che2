@@ -48,7 +48,8 @@ import java.io.IOException;
  */
 public interface PrinterServiceMBean extends ServiceMBean {
    
-   String NOTIF_PENDING = "tiani.prnscp.pending";
+   String NOTIF_SCHEDULE_COLOR = "tiani.prnscp.schedule.color";
+   String NOTIF_SCHEDULE_GRAY = "tiani.prnscp.schedule.gray";
    String NOTIF_PRINTING = "tiani.prnscp.printing";
    String NOTIF_DONE = "tiani.prnscp.done";
    String NOTIF_FAILURE = "tiani.prnscp.failure";
@@ -826,5 +827,17 @@ public interface PrinterServiceMBean extends ServiceMBean {
     *
     */
    public void setPuzzleScalePackageSize10000(int puzzleScalePackageSize10000);
+   
+   /** Getter for property printGrayAsColor.
+    * @return Value of property printGrayAsColor.
+    *
+    */
+   public boolean isPrintGrayAsColor();
+   
+   /** Setter for property printGrayAsColor.
+    * @param printGrayAsColor New value of property printGrayAsColor.
+    *
+    */
+   public void setPrintGrayAsColor(boolean printGrayAsColor);
    
 }

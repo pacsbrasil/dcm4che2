@@ -69,7 +69,7 @@ class FilmBox {
    
    // Constructors --------------------------------------------------
    public FilmBox(PrintScpService scp, String uid, Dataset dataset,
-         Command rspCmd, HashMap pluts)
+         Command rspCmd, HashMap pluts, Dataset sessionAttr)
       throws DcmServiceException
    {
       this.scp = scp;
@@ -77,6 +77,8 @@ class FilmBox {
       this.dataset = dataset;
       checkCreateData(dataset, rspCmd);
       addPLUT(dataset, pluts);
+      sessionAttr.putCS(Tags.RequestedResolutionID,
+         dataset.getString(Tags.RequestedResolutionID));
    }
    
    // Public --------------------------------------------------------
@@ -88,12 +90,15 @@ class FilmBox {
       return dataset;
    }
 
-   public void updateAttributes(Dataset modification, Command rspCmd, HashMap pluts)
+   public void updateAttributes(Dataset modification, Command rspCmd, 
+         HashMap pluts, Dataset sessionAttr)
       throws DcmServiceException
    {
 //      check(modification, rspCmd);
       addPLUT(modification, pluts);
       dataset.putAll(modification);
+      sessionAttr.putCS(Tags.RequestedResolutionID,
+         dataset.getString(Tags.RequestedResolutionID));
    }
 
    public void setImageBox(String imageBoxUID, Dataset imageBox, HashMap pluts)

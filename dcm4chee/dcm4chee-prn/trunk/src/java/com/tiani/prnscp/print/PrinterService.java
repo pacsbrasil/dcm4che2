@@ -51,6 +51,7 @@ import javax.print.attribute.Attribute;
 import javax.print.attribute.AttributeSet;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Chromaticity;
 import javax.print.attribute.standard.PrinterResolution;
 import javax.print.event.PrintJobAttributeEvent;
 import javax.print.event.PrintJobAttributeListener;
@@ -1024,6 +1025,9 @@ public class PrinterService
       /** Holds value of property puzzleScalePackageSize10000. */
       private int puzzleScalePackageSize10000;
       
+      /** Holds value of property printGrayAsColor. */
+      private boolean printGrayAsColor;
+      
    /** Getter for property LUTs.
     * @return Value of property LUTs.
     */
@@ -1309,7 +1313,7 @@ public class PrinterService
    public void printGrayscaleWithLinDDL() throws PrintException, IOException {
       log.info("Printing grayscale [LIN DDL]");
       print(new Grayscale(this, calibration.getIdentityPValToDDL(),
-         printerName + "[LIN DDL]"), null);
+         printerName + "[LIN DDL]"), null, false);
       log.info("Printed grayscale [LIN DDL]");
    }
    
@@ -1318,7 +1322,7 @@ public class PrinterService
       print(new Grayscale(this, calibration.getPValToDDLwGSDF(8,
                minDensity/100.f, maxDensity/100.f,
                illumination, reflectedAmbientLight),
-            printerName + "[GSDF]"), null);
+            printerName + "[GSDF]"), null, false);
       log.info("Printed grayscale [GSDF]");
    }
    
@@ -1326,7 +1330,7 @@ public class PrinterService
       log.info("Printing grayscale [LIN OD]");
       print(new Grayscale(this, calibration.getPValToDDLwLinOD(8,
                minDensity/100.f, maxDensity/100.f),
-            printerName + "[LIN OD]"), null);
+            printerName + "[LIN OD]"), null, false);
       log.info("Printed grayscale [LIN OD]");
    }
    
@@ -1343,9 +1347,15 @@ public class PrinterService
    throws Exception {
       scheduler = new Thread(this);
       scheduler.start();
+      if (scanner.getScanDir(printerName).mkdirs()) {
+         log.warn(
+            "Created new sub-directory " + scanner.getScanDir(printerName) +
+            " for gray step print outs of printer " +  printerName + 
+            " for printer calibration.");
+      }
       if (printGrayscaleAtStartup) {
          printGrayscaleWithLinDDL();
-      }
+      }      
    }
    
    public void stopService()
@@ -1412,8 +1422,9 @@ public class PrinterService
          new Notification(NOTIF_PRINTING, this, ++notifCount, job));
       Dataset sessionAttr = (Dataset)notif.getUserData();
       try {
-         long mil = System.currentTimeMillis(); 
-         print(new Films(this, jobDir, sessionAttr), sessionAttr);
+         long mil = System.currentTimeMillis();
+         boolean color = notif.getType().equals(NOTIF_SCHEDULE_COLOR);
+         print(new Films(this, jobDir, sessionAttr), sessionAttr, color);
          log.info("Finished processing job - " + jobID);
          log.info("Finished processing job in "+(System.currentTimeMillis()-mil));
          sendNotification(
@@ -1492,10 +1503,26 @@ public class PrinterService
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+   private void setPrintRequestAttribute(PrintService ps, Attribute attr,
+      PrintRequestAttributeSet aset)
+   {
+      if (ps.isAttributeValueSupported(attr,
+         DocFlavor.SERVICE_FORMATTED.PAGEABLE, aset))
+      {
+         aset.add(attr);
+      } else {
+         log.warn("Attribute " +  attr + " not supported by printer " 
+            + printerName);            
+      }
+   }
    
-   private void print(Pageable printData, Dataset sessionAttr)
+   private void print(Pageable printData, Dataset sessionAttr, boolean color)
       throws PrintException
    {
+      PrintService ps = getPrintService();
+      if (ps == null) {
+         throw new PrintException("Failed to access Printer " + printerName);
+      }
       if (autoCalibration) {
          try {
             calibrate(false);
@@ -1503,24 +1530,25 @@ public class PrinterService
             log.warn("Calibration fails, continue printing", e);
          }
       }
-      PrintService ps = getPrintService();
-      if (ps == null) {
-         throw new PrintException("Failed to access Printer " + printerName);
-      }
       PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
       if (printToFile) {
-        aset.add(new Destination(toFile(printToFilePath).toURI()));
+         setPrintRequestAttribute(ps, 
+            new Destination(toFile(printToFilePath).toURI()), aset);
       }
-      if (ps.isAttributeCategorySupported(PrinterResolution.class)) {
-         String id = sessionAttr == null ? null
-            : sessionAttr.getString(Tags.RequestedResolutionID);
-         PrinterResolution res = id != null
-            ? (PrinterResolution) this.resolutionIDMap.get(id)
-            : getDefaultPrinterResolution();
-         if (res != null) {
-            aset.add(res);
-         }
+      String resId = sessionAttr == null ? null
+         : sessionAttr.getString(Tags.RequestedResolutionID);
+      PrinterResolution res = resId != null
+         ? (PrinterResolution) this.resolutionIDMap.get(resId)
+         : getDefaultPrinterResolution();
+      if (res != null) {
+         setPrintRequestAttribute(ps, res, aset);
       }
+      setPrintRequestAttribute(ps, 
+         color || printGrayAsColor
+            ? Chromaticity.COLOR
+            : Chromaticity.MONOCHROME,
+         aset);
+         
       DocPrintJob pj = ps.createPrintJob();         
       Doc doc = new SimpleDoc(printData, 
          DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
@@ -1837,6 +1865,22 @@ public class PrinterService
     */
    public void setPuzzleScalePackageSize10000(int puzzleScalePackageSize10000) {
        this.puzzleScalePackageSize10000 = puzzleScalePackageSize10000;
+   }
+   
+   /** Getter for property printGrayAsColor.
+    * @return Value of property printGrayAsColor.
+    *
+    */
+   public boolean isPrintGrayAsColor() {
+      return this.printGrayAsColor;
+   }
+   
+   /** Setter for property printGrayAsColor.
+    * @param printGrayAsColor New value of property printGrayAsColor.
+    *
+    */
+   public void setPrintGrayAsColor(boolean printGrayAsColor) {
+      this.printGrayAsColor = printGrayAsColor;
    }
    
    // Inner classes -------------------------------------------------

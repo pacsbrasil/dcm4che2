@@ -60,9 +60,7 @@ class FilmSession {
    private final File dir;
    private final String uid;
    private final Dataset session;
-   private final String imageBoxCUID;
-   private final String hardcopyCUID;
-   private final int imageSeqTag;
+   private final boolean color;
    private final LinkedHashMap filmBoxes = new LinkedHashMap();
    private String curFilmBoxUID = null;
    private FilmBox curFilmBox = null;
@@ -75,17 +73,7 @@ class FilmSession {
       throws DcmServiceException
    {
       this.scp = scp;
-      if (metaCUID.equals(UIDs.BasicGrayscalePrintManagement)) {
-         imageBoxCUID = UIDs.BasicGrayscaleImageBox;
-         hardcopyCUID = UIDs.HardcopyGrayscaleImageStorage;
-         imageSeqTag = Tags.BasicGrayscaleImageSeq;
-      } else if (metaCUID.equals(UIDs.BasicColorPrintManagement)) {
-         imageBoxCUID = UIDs.BasicColorImageBox;
-         hardcopyCUID = UIDs.HardcopyColorImageStorage;
-         imageSeqTag = Tags.BasicColorImageSeq;
-      } else {
-         throw new DcmServiceException(Status.ProcessingFailure);
-      }
+      this.color = metaCUID.equals(UIDs.BasicColorPrintManagement);
       this.uid = uid;
       this.session = session;
       this.dir = dir;
@@ -108,17 +96,21 @@ class FilmSession {
    public Dataset getAttributes() {
       return session;
    }
+   
+   public boolean isColor() {
+      return color;
+   }
 
    public String getImageBoxCUID() {
-      return imageBoxCUID;
+      return color 
+         ? UIDs.BasicColorImageBox 
+         : UIDs.BasicGrayscaleImageBox;
    }
    
    public String getHardcopyCUID() {
-      return hardcopyCUID;
-   }
-   
-   public int getImageSeqTag() {
-      return imageSeqTag;
+      return color 
+         ? UIDs.HardcopyColorImageStorage 
+         : UIDs.HardcopyGrayscaleImageStorage;
    }
 
    public void updateAttributes(Dataset modification, Command rspCmd)
@@ -159,7 +151,7 @@ class FilmSession {
       if (curFilmBox == null) {
          throw new IllegalStateException();
       }
-      curFilmBox.updateAttributes(filmbox, rspCmd, pluts);
+      curFilmBox.updateAttributes(filmbox, rspCmd, pluts, session);
    }
    
    public void deleteFilmBox() {

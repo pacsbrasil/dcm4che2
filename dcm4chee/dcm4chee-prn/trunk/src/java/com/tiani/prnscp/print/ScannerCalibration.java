@@ -220,14 +220,28 @@ class ScannerCalibration {
       return new TMFormat().format(new Date(lastScanFileModified));
    }
    
+   public File getScanDir(String printer) {
+      if (calibrationDir == null) {
+         throw new IllegalStateException("calibrationDir not initalized!");
+      }
+      char[] a = printer.toCharArray();
+      for (int i = 0; i < a.length; ++i) {
+         char c = a[i];
+         if (!((c >= 'A' && c <= 'Z')
+            || (c >= 'a' && c <= 'z')
+            || (c >= '0' && c <= '9')))
+         {
+            a[i] = '_';
+         }
+      }
+      return new File(calibrationDir, new String(a));
+   }
+   
    public float[] calculateGrayscaleODs(String printer, boolean force)
       throws CalibrationException
    {
       if (refGrayscaleODs == null) {
          throw new IllegalStateException("refGrayscaleODs not initalized!");
-      }
-      if (calibrationDir == null) {
-         throw new IllegalStateException("calibrationDir not initalized!");
       }
       try {
          File refFile = new File(calibrationDir, refFileName);
@@ -235,7 +249,7 @@ class ScannerCalibration {
             throw new FileNotFoundException(
                "Could not find file " + refFile);
          }
-         File scanDir = new File(calibrationDir, printer);
+         File scanDir = getScanDir(printer);
          if (!scanDir.isDirectory()) {
             throw new FileNotFoundException(
                "Could not find directory " + scanDir);

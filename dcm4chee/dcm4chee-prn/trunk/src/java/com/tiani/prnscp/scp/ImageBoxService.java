@@ -98,7 +98,9 @@ class ImageBoxService extends DcmServiceBase
          FilmSession session = scp.getFilmSession(as);
          HashMap pluts = scp.getPresentationLUTs(as);
          checkRefImageBoxSeq(cuid, boxuid, session);
-         int stopTag = session.getImageSeqTag();
+         int stopTag = session.isColor()
+            ? Tags.BasicColorImageSeq
+            : Tags.BasicGrayscaleImageSeq;
          DcmParser parser = dpf.newDcmParser(in);
          Dataset box = dof.newDataset();
          parser.setDcmHandler(box.getDcmHandler());
