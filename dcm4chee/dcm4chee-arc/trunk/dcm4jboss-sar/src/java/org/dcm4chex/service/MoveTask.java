@@ -85,7 +85,7 @@ class MoveTask implements Runnable
 
     private static int defaultBufferSize = 2048;
 
-	private final MoveScpService scp;
+    private final MoveScpService scp;
     private final Logger log;
     private final byte[] buffer = new byte[defaultBufferSize];
     private final String moveDest;
@@ -244,7 +244,8 @@ class MoveTask implements Runnable
                 for (int i = 0, n = tsList.size(); i < n; ++i)
                 {
                     String tsuid = (String) tsList.get(i);
-                    if (assoc.getAcceptedPresContext(cuid, tsuid) != null) {
+                    if (assoc.getAcceptedPresContext(cuid, tsuid) != null)
+                    {
                         int tmp = score(bitsAlloc, fileInfo, tsuid);
                         if (score < tmp)
                         {
@@ -378,7 +379,8 @@ class MoveTask implements Runnable
             Tags.MoveOriginatorMessageID,
             moveRqCmd.getMessageID());
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        DataSource ds = new FileDataSource(info, buffer, scp.getCompressionRate());
+        DataSource ds =
+            new FileDataSource(info, buffer, scp.getCompressionRatio());
         return af.newDimse(presCtx.pcid(), storeRqCmd, ds);
     }
 
