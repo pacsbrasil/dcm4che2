@@ -174,6 +174,9 @@ public class PrinterService
    
    /** Holds value of property decimateCropBehavior. */
    private String decimateCropBehavior;
+      
+   /** Holds value of property graySteps. */
+   private int graySteps;
 
    /** Holds value of property grayStepGap. */
    private double grayStepGap;
@@ -182,7 +185,7 @@ public class PrinterService
    private String statusInfo = "NORMAL";
 
    private final PrinterCalibration calibration = new PrinterCalibration();
-   private final ScannerCalibration scanner = new ScannerCalibration();
+   private final ScannerCalibration scanner = new ScannerCalibration(log);
    
    private long notifCount = 0;
    private LinkedList highPriorQueue = new LinkedList();
@@ -742,36 +745,26 @@ public class PrinterService
       return CODE_STRING[status];
    }
    
-   /** Getter for property odSteps.
-    * @return Value of property odSteps.
+   /** Getter for property grayStepODs.
+    * @return Value of property grayStepODs.
     */
-   public float[] getODSteps() {
-      return calibration.getODSteps();
+   public float[] getGrayStepODs() {
+      return calibration.getGrayStepODs();
    }
    
-   /** Setter for property odSteps.
-    * @param odSteps New value of property odSteps.
+   /** Setter for property grayStepODs.
+    * @param grayStepODs New value of property grayStepODs.
     */
-   public void setODSteps(float[] odSteps) {
-      calibration.setODSteps(odSteps);
-      log.info(toString("set ODSteps=[", odSteps, "]"));
+   public void setGrayStepODs(float[] grayStepODs) {
+      calibration.setGrayStepODs(grayStepODs);
    }
    
-   static String toString(String prefix, float[] a, String suffix) {
-      StringBuffer sb = new StringBuffer(prefix);
-      for (int i = 0; i < a.length; ++i) {
-         sb.append(a[i]).append(", ");
-      }
-      sb.setLength(sb.length() - 2);
-      sb.append(suffix);
-      return sb.toString();
-   }      
-      
-   /** Setter for property measuredODsAsText.
-    * @param measuredODsAsText New value of property measuredODsAsText.
+
+   /** Setter for property grayStepODsAsText.
+    * @param grayStepODsAsText New value of property grayStepODsAsText.
     */
-   public void setODStepsAsText(String measuredODsAsText) {
-      calibration.setODSteps(toFloatArray(measuredODsAsText));
+   public void setGrayStepODsAsText(String grayStepODsAsText) {
+      calibration.setGrayStepODs(toFloatArray(grayStepODsAsText));
    }
    
    private static float[] toFloatArray(String text) {
@@ -786,16 +779,19 @@ public class PrinterService
    /** Getter for property graySteps.
     * @return Value of property graySteps.
     */
-   public int getScanGraySteps() {
-      return scanner.getScanGraySteps();
-   }   
-
+   public int getGraySteps() {
+      return graySteps;
+   }
+   
    /** Setter for property graySteps.
     * @param graySteps New value of property graySteps.
     */
-   public void setScanGraySteps(int graySteps) {
-      scanner.setScanGraySteps(graySteps);
-   }   
+   public void setGraySteps(int graySteps) {
+      if (graySteps < 4 || graySteps > 64) {
+         throw new IllegalArgumentException("steps: " + graySteps);
+      }
+      this.graySteps = graySteps;
+   }
    
    /** Getter for property grayStepGap.
     * @return Value of property grayStepGap.
@@ -815,13 +811,14 @@ public class PrinterService
     * @return Value of property refGrayStepFile.
     */
    public String getRefGrayStepFile() {
-      return scanner.getRefGrayStepFile().getAbsolutePath();
+      File f = scanner.getRefGrayStepFile();
+      return f != null ? f.getAbsolutePath() : "";
    }
    
    /** Setter for property refGrayStepFile.
     * @param refGrayStepFile New value of property refGrayStepFile.
     */
-   public void setRefGrayStepFile(String refGrayStepFile) {
+   public void setRefGrayStepFile(String refGrayStepFile) {      
       scanner.setRefGrayStepFile(toFile(refGrayStepFile));
    }
    
@@ -860,34 +857,6 @@ public class PrinterService
       scanner.setScanGrayStepDir(toFile(scanGrayStepDir));
    }
    
-   /** Getter for property scanBorderThreshold.
-    * @return Value of property scanBorderThreshold.
-    */
-   public int getScanBorderThreshold() {
-      return scanner.getScanBorderThreshold();
-   }
-   
-   /** Setter for property scanBorderThreshold.
-    * @param scanBorderThreshold New value of property scanBorderThreshold.
-    */
-   public void setScanBorderThreshold(int scanBorderThreshold) {
-      scanner.setScanBorderThreshold(scanBorderThreshold);
-   }
-   
-   /** Getter for property scanGradientThreshold.
-    * @return Value of property scanGradientThreshold.
-    */
-   public int getScanGradientThreshold() {
-      return scanner.getScanGradientThreshold();
-   }
-   
-   /** Setter for property scanGradientThreshold.
-    * @param scanGradientThreshold New value of property scanGradientThreshold.
-    */
-   public void setScanGradientThreshold(int scanGradientThreshold) {
-      scanner.setScanGradientThreshold(scanGradientThreshold);
-   }
-   
    /** Getter for property scanArea.
     * @return Value of property scanArea.
     */
@@ -900,6 +869,20 @@ public class PrinterService
     */
    public void setScanPointExtension(String extension) {
       scanner.setScanPointExtension(extension);
+   }
+   
+   /** Getter for property scanThreshold.
+    * @return Value of property scanThreshold.
+    */
+   public String getScanThreshold() {
+      return scanner.getScanThreshold();
+   }
+   
+   /** Setter for property scanThreshold.
+    * @param scanThreshold New value of property scanThreshold.
+    */
+   public void setScanThreshold(String scanThreshold) {
+      scanner.setScanThreshold(scanThreshold);
    }
    
    public void printGraySteps() throws PrintException {
@@ -926,8 +909,10 @@ public class PrinterService
             getDefaultFilmSizeID()));
    }
    
-   public void calibrate() throws IOException {
-      setODSteps(scanner.calcScanGrayStepODs());
+   public void calibrate() throws CalibrationException {
+      log.info("Calibrating...");
+      setGrayStepODs(scanner.calculateGrayStepODs());
+      log.info("Calibrated");
    }
    
    // ServiceMBeanSupport overrides ------------------------------------
@@ -1091,6 +1076,9 @@ public class PrinterService
    
    // Package protected ---------------------------------------------
    static File toFile(String path) {
+      if (path == null || path.trim().length() == 0) {
+         return null;
+      }
       File f = new File(path);
       if (f.isAbsolute()) {
          return f;
@@ -1201,7 +1189,6 @@ public class PrinterService
             Graphics2D g2d = (Graphics2D) g;
             double w = pf.getImageableWidth();
             double h = pf.getImageableHeight();
-            int graySteps = scanner.getScanGraySteps();
             double d = h / graySteps - grayStepGap * PTS_PER_MM;
             g2d.setFont(new Font("Serif", Font.PLAIN, FONT_SIZE));
             g2d.translate(pf.getImageableX(), pf.getImageableY());

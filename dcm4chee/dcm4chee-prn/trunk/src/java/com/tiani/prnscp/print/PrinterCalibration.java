@@ -48,7 +48,7 @@ class PrinterCalibration
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   private float[] odSteps;
+   private float[] stepODs;
    private float[] ddl2od = new float[256];
    
    // Static --------------------------------------------------------
@@ -146,28 +146,28 @@ class PrinterCalibration
    }
    
    
-   public float[] getODSteps() {
-      return odSteps == null ? null : (float[]) odSteps.clone();
+   public float[] getGrayStepODs() {
+      return stepODs == null ? null : (float[]) stepODs.clone();
    }
    
-   /** Setter for property odSteps.
-    * @param odSteps New value of property odSteps.
+   /** Setter for property stepODs.
+    * @param stepODs New value of property stepODs.
     */
-   public void setODSteps(float[] newODSteps) {
-      if (newODSteps.length < 2 || newODSteps.length > 65) {
-         throw new IllegalArgumentException("steps: " + newODSteps.length);
+   public void setGrayStepODs(float[] stepODs) {
+      if (stepODs.length < 4 || stepODs.length > 64) {
+         throw new IllegalArgumentException("steps: " + stepODs.length);
       }
-      if (odSteps != null && Arrays.equals(odSteps, newODSteps)) {
+      if (this.stepODs != null && Arrays.equals(this.stepODs, stepODs)) {
          return; // no change
       }
       
-      float[] tmp = (float[])newODSteps.clone();
+      float[] tmp = (float[])stepODs.clone();
       Arrays.sort(tmp);
-      if (!Arrays.equals(tmp, newODSteps)) {
+      if (!Arrays.equals(tmp, stepODs)) {
          throw new IllegalArgumentException(
-         "odSteps[" + tmp.length + "] not monotonic increasing");
+            "stepODs[" + tmp.length + "] not monotonic increasing");
       }
-      this.odSteps = tmp;
+      this.stepODs = tmp;
       initDLL2OD();
    }
    // Package protected ---------------------------------------------
@@ -177,8 +177,8 @@ class PrinterCalibration
    // Private -------------------------------------------------------
    
    private void check(int n, float dmin, float dmax) {
-      if (odSteps == null) {
-         throw new IllegalStateException("ODSteps not yet set");
+      if (stepODs == null) {
+         throw new IllegalStateException("grayStepODs not yet set");
       }
       if (n < 8 || n > 16) {
          throw new IllegalArgumentException("n: " + n);
@@ -187,19 +187,19 @@ class PrinterCalibration
          throw new IllegalArgumentException("dmin: " + dmin + ", dmax: " + dmax);
       }
       /*
-      if (dmin < odSteps[0]) {
+      if (dmin < stepODs[0]) {
          throw new IllegalArgumentException("dmin: " + dmin
-         + ", ODmin: " + odSteps[0]);
+         + ", ODmin: " + stepODs[0]);
       }
-      if (dmax > odSteps[odSteps.length-1]) {
+      if (dmax > stepODs[stepODs.length-1]) {
          throw new IllegalArgumentException("dmax: " + dmax
-         + ", ODmax: " + odSteps[odSteps.length-1]);
+         + ", ODmax: " + stepODs[stepODs.length-1]);
       }
        */
    }
    
    private void initDLL2OD() {
-      int x[] = new int[odSteps.length];
+      int x[] = new int[stepODs.length];
       for (int i = 0; i < x.length; ++i) {
          x[i] = Math.round(255.f * i / (x.length - 1));
       }
@@ -207,8 +207,8 @@ class PrinterCalibration
          if (j > x[i+1]) {
             ++i;
          }
-         ddl2od[j] = odSteps[i]
-            + (odSteps[i+1] - odSteps[i])
+         ddl2od[j] = stepODs[i]
+            + (stepODs[i+1] - stepODs[i])
             * (j - x[i]) / (x[i+1] - x[i]);
       }
    }

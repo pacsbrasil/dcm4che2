@@ -370,27 +370,27 @@ public interface PrinterServiceMBean extends ServiceMBean {
    /** Getter for property measuredODs.
     * @return Value of property measuredODs.
     */
-   public float[] getODSteps();
+   public float[] getGrayStepODs();
    
    /** Setter for property measuredODs.
     * @param measuredODs New value of property measuredODs.
     */
-   public void setODSteps(float[] measuredODs);
+   public void setGrayStepODs(float[] measuredODs);
    
    /** Setter for property measuredODsAsText.
     * @param measuredODsAsText New value of property measuredODsAsText.
     */
-   public void setODStepsAsText(String measuredODsAsText);
+   public void setGrayStepODsAsText(String measuredODsAsText);
    
    /** Getter for property graySteps.
     * @return Value of property graySteps.
     */
-   public int getScanGraySteps();
+   public int getGraySteps();
    
    /** Setter for property graySteps.
     * @param graySteps New value of property graySteps.
     */
-   public void setScanGraySteps(int graySteps);
+   public void setGraySteps(int graySteps);
    
    /** Getter for property grayStepGap.
     * @return Value of property grayStepGap.
@@ -437,16 +437,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setScanGrayStepDir(String scanGrayStepDir);
    
-   /** Getter for property scanBorderThreshold.
-    * @return Value of property scanBorderThreshold.
-    */
-   public int getScanBorderThreshold();
-   
-   /** Setter for property scanBorderThreshold.
-    * @param scanBorderThreshold New value of property scanBorderThreshold.
-    */
-   public void setScanBorderThreshold(int scanBorderThreshold);
-   
    /** Getter for property scanPointExtension.
     * @return Value of property scanPointExtension.
     */
@@ -460,12 +450,12 @@ public interface PrinterServiceMBean extends ServiceMBean {
    /** Getter for property scanGradientThreshold.
     * @return Value of property scanGradientThreshold.
     */
-   public int getScanGradientThreshold();
+   public String getScanThreshold();
    
    /** Setter for property scanGradientThreshold.
     * @param scanGradientThreshold New value of property scanGradientThreshold.
     */
-   public void setScanGradientThreshold(int scanGradientThreshold);
+   public void setScanThreshold(String scanGradientThreshold);
    
    public void printGraySteps() throws PrintException;
    
@@ -473,6 +463,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
    
    public void printGrayStepsWithLinOD() throws PrintException;
    
-   public void calibrate() throws IOException;
+   public void calibrate() throws CalibrationException;
    
 }
