@@ -291,6 +291,14 @@
            <fileset dir="${build.classes.dir}" includes="MppsSnd*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="MppsSnd*"/>
       </jar>
+    <jar jarfile="${build.bin.dir}/movescu.jar">
+      	<manifest>
+				<attribute name="Main-Class" value="MoveScu"/>
+				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
+	    	</manifest>
+         <fileset dir="${build.classes.dir}" includes="MoveScu*,Configuration*"/>
+         <fileset dir="${build.res.dir}" includes="MoveScu*"/>
+    </jar>
       <jar jarfile="${build.bin.dir}/mvstudy.jar">
         	<manifest>
 				<attribute name="Main-Class" value="MoveStudy"/>
@@ -459,6 +467,7 @@
             <include name="DcmRcvFSU.java"/>
             <include name="DcmSnd.java"/>
             <include name="MppsSnd.java"/>
+            <include name="MoveScu.java"/>
             <include name="MoveStudy.java"/>
             <include name="Hl7Snd.java"/>
             <include name="Hl7Rcv.java"/>
