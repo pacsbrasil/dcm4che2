@@ -52,6 +52,13 @@ dcm4che API:
   throw IllegalValueException
 + org.dcm4che.data.DcmObject#get??(tag, index)
   return null/0, if index >= vm(), instead throw RuntimeException
++ org.dcm4che.net.AcceptorPolicy: rename map related insert methods from 
+    addXX to putXX. Also allows null value -> remove a previous added item
+    from the map. -> eliminate redundant removeXXX methodes.
++ org.dcm4che.net.AcceptorPolicy#setAsyncOpsWindow(AsyncOpsWindow) removed,
+    use setAsyncOpsWindow(int, int) instead
++ org.dcm4che.net.AcceptorPolicy#addRoleSelection(RoleSelection) ->
+    #addRoleSelection(String uid, boolean scu, boolean scp) 
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1

@@ -377,8 +377,8 @@ public class DcmRcv extends DcmServiceBase {
             cfg.getProperty("calling-aets", null, "<any>", null)));
         policy.setMaxPDULength(
             Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
-        policy.setAsyncOpsWindow(fact.newAsyncOpsWindow(
-            Integer.parseInt(cfg.getProperty("max-op-invoked", "0")),1));
+        policy.setAsyncOpsWindow(
+            Integer.parseInt(cfg.getProperty("max-op-invoked", "0")),1);
         for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
             String key = (String)it.nextElement();
             if (key.startsWith("pc.")) {
@@ -394,7 +394,7 @@ public class DcmRcv extends DcmServiceBase {
         for (int i = 0; i < tsUIDs.length; ++i) {
             tsUIDs[i] = UIDs.forName(tsNames[i]);
         }
-        policy.addPresContext(as, tsUIDs);
+        policy.putPresContext(as, tsUIDs);
         services.bind(as, this);
     }
     

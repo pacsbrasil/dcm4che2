@@ -46,8 +46,6 @@ public interface AcceptorPolicy
     
    void setAsyncOpsWindow(int maxOpsInvoked, int maxOpsPerformed);
    
-   void setAsyncOpsWindow(AsyncOpsWindow aow);
-   
    void setImplClassUID(String implClassUID);
 
    String getImplClassUID();
@@ -74,31 +72,27 @@ public interface AcceptorPolicy
    
    String[] getCallingAETs();
    
-   AcceptorPolicy addPolicyForCalledAET(String aet, AcceptorPolicy policy);
+   AcceptorPolicy putPolicyForCalledAET(String aet, AcceptorPolicy policy);
    
    AcceptorPolicy getPolicyForCalledAET(String aet);
    
-   AcceptorPolicy addPolicyForCallingAET(String aet, AcceptorPolicy policy);
+   AcceptorPolicy putPolicyForCallingAET(String aet, AcceptorPolicy policy);
 
    AcceptorPolicy getPolicyForCallingAET(String aet);
 
-   PresContext addPresContext(String asuid, String[] tsuids);
+   PresContext putPresContext(String asuid, String[] tsuids);
 
-   PresContext getPresContext(String as);
+   PresContext getPresContext(String asuid);
 
-   PresContext removePresContext(String as);
-      
-   RoleSelection addRoleSelection(RoleSelection rs);
+   RoleSelection putRoleSelection(String uid, boolean scu, boolean scp);
    
    RoleSelection getRoleSelection(String uid);
 
    RoleSelection removeRoleSelection(String uid);
 
-   ExtNegotiator addExtNegPolicy(String uid, ExtNegotiator en);
+   ExtNegotiator putExtNegPolicy(String uid, ExtNegotiator en);
    
    ExtNegotiator getExtNegPolicy(String uid);
-
-   ExtNegotiator removeExtNegPolicy(String uid);
    
    PDU negotiate(AAssociateRQ rq);
   
