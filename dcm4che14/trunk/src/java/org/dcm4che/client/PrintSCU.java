@@ -523,8 +523,6 @@ public class PrintSCU {
         Dimse rsp = requestor.invokeAndWaitForRSP(
             pcidPrint, nActionRQ);
         Command nActionRSP = rsp.getCommand();
-        curFilmBoxIUID = null;
-        curFilmBox = null;
         return checkStatus(nActionRSP);
     }
 
@@ -539,8 +537,6 @@ public class PrintSCU {
         Dimse rsp = requestor.invokeAndWaitForRSP(
             pcidPrint, nActionRQ);
         Command nActionRSP = rsp.getCommand();
-        curFilmBoxIUID = null;
-        curFilmBox = null;
         return checkStatus(nActionRSP);
     }
 }
