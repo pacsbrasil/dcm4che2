@@ -33,9 +33,6 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.config.DAOFactory;
-import org.dcm4chex.config.DataAccessException;
-import org.dcm4chex.config.NetworkAEDAO;
 import org.dcm4chex.config.NetworkAEInfo;
 import org.dcm4chex.config.NetworkConnectionInfo;
 import org.jboss.logging.Logger;
@@ -92,11 +89,7 @@ public class MoveScp extends DcmServiceBase {
 
     private NetworkConnectionInfo getNetworkConnection(String dest)
         throws DcmServiceException {
-        try {
-            log.info("Query NetworkAE Info for " + dest + " from LDAP");
-            DAOFactory daoFact = DAOFactory.getLdapDAOFactory(scp.getLdapURL());
-            NetworkAEDAO aeDAO = daoFact.getNetworkAEDAO();
-            NetworkAEInfo aeInfo = aeDAO.find(dest);
+            NetworkAEInfo aeInfo = scp.findNetworkAE(dest);
             if (aeInfo == null) {
                 log.warn("Unkown Move Destination - " + dest);
                 throw new DcmServiceException(Status.MoveDestinationUnknown);
@@ -109,10 +102,6 @@ public class MoveScp extends DcmServiceBase {
                     Status.UnableToPerformSuboperations);
             }
             return (NetworkConnectionInfo) it.next();
-        } catch (DataAccessException e) {
-            log.error("Query  LDAP failed", e);
-            throw new DcmServiceException(Status.UnableToPerformSuboperations);
-        }
     }
 
 }

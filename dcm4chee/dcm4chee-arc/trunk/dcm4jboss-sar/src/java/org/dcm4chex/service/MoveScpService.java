@@ -26,10 +26,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
+import org.dcm4chex.config.NetworkAEInfo;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -42,23 +45,34 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class MoveScpService
     extends ServiceMBeanSupport
-    implements org.dcm4chex.service.MoveScpServiceMBean
-{
-    private final static String[] NATIVE_TS = {
-            UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian
-            };
-                
+    implements org.dcm4chex.service.MoveScpServiceMBean {
+    private final static String[] NATIVE_TS =
+        { UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian };
+
+    private ObjectName deviceConfigName;
     private ObjectName dcmServerName;
     private DcmHandler dcmHandler;
     private String dsJndiName;
     private DataSource datasource;
     private MoveScp scp = new MoveScp(this);
-    private String ldapURL;    
 
     /**
      * @jmx.managed-attribute
      */
+    public ObjectName getDeviceConfigName() {
+        return deviceConfigName;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setDeviceConfigName(ObjectName deviceConfigName) {
+        this.deviceConfigName = deviceConfigName;
+    }
+
+    /**
+      * @jmx.managed-attribute
+      */
     public ObjectName getDcmServerName() {
         return dcmServerName;
     }
@@ -83,24 +97,10 @@ public class MoveScpService
     public void setDsJndiName(String dsJndiName) {
         this.dsJndiName = dsJndiName;
     }
-        
-    /**
-     * @jmx.managed-attribute
-     */
-    public final String getLdapURL() {
-        return ldapURL;
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public final void setLdapURL(String ldapURL) {
-        this.ldapURL = ldapURL;
-    }
 
     protected void startService() throws Exception {
         dcmHandler =
-                (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
+            (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
         bindDcmServices();
         updatePolicy(NATIVE_TS);
     }
@@ -111,28 +111,35 @@ public class MoveScpService
         dcmHandler = null;
     }
 
-    private void bindDcmServices()
-    {
+    private void bindDcmServices() {
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelMOVE, scp);
         services.bind(UIDs.StudyRootQueryRetrieveInformationModelMOVE, scp);
-        services.bind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE, scp);
+        services.bind(
+            UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE,
+            scp);
     }
 
-    private void unbindDcmServices()
-    {
+    private void unbindDcmServices() {
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND, null);
         services.bind(UIDs.StudyRootQueryRetrieveInformationModelFIND, null);
-        services.bind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND, null);
+        services.bind(
+            UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND,
+            null);
     }
 
-    private void updatePolicy(String[] tsuids)
-    {
+    private void updatePolicy(String[] tsuids) {
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
-        policy.putPresContext(UIDs.PatientRootQueryRetrieveInformationModelMOVE, tsuids);
-        policy.putPresContext(UIDs.StudyRootQueryRetrieveInformationModelMOVE, tsuids);
-        policy.putPresContext(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE, tsuids);
+        policy.putPresContext(
+            UIDs.PatientRootQueryRetrieveInformationModelMOVE,
+            tsuids);
+        policy.putPresContext(
+            UIDs.StudyRootQueryRetrieveInformationModelMOVE,
+            tsuids);
+        policy.putPresContext(
+            UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE,
+            tsuids);
     }
 
     public DataSource getDataSource() throws NamingException {
@@ -147,6 +154,21 @@ public class MoveScpService
             }
         }
         return datasource;
+    }
+
+    public NetworkAEInfo findNetworkAE(String dest)
+        throws DcmServiceException {
+        try {
+            log.info("Query NetworkAE Info for " + dest + " from LDAP");
+            return (NetworkAEInfo) server.invoke(
+                deviceConfigName,
+                "findNetworkAE",
+                new Object[] { dest },
+                new String[] { String.class.getName()});
+        } catch (Exception e) {
+            log.error("Query  NetworkAE failed", e);
+            throw new DcmServiceException(Status.UnableToPerformSuboperations);
+        }
     }
 
 }

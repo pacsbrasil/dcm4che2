@@ -24,8 +24,11 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.dcm4chex.config.DAOFactory;
+import org.dcm4chex.config.DataAccessException;
 import org.dcm4chex.config.DeviceDAO;
 import org.dcm4chex.config.DeviceInfo;
+import org.dcm4chex.config.NetworkAEDAO;
+import org.dcm4chex.config.NetworkAEInfo;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -42,51 +45,60 @@ public class DeviceConfigService
 
     private String ldapURL = "ldap://localhost:389/dc=tiani,dc=com";
     private DAOFactory daoFactory;
-	private DeviceDAO deviceDAO;
-	private DeviceInfo deviceInfo;
+    private DeviceDAO deviceDAO;
+    private NetworkAEDAO aeDAO;
+    private DeviceInfo deviceInfo;
     private String deviceName;
- 
+
     /**
-	 * @jmx.managed-attribute
-	 */
+     * @jmx.managed-attribute
+     */
     public String getLdapURL() {
         return ldapURL;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
+     * @jmx.managed-attribute
+     */
     public void setLdapURL(String ldapURL) {
         this.ldapURL = ldapURL;
     }
 
-	/**
-	 * @jmx.managed-attribute
-	 */
-	 public DeviceInfo getDeviceInfo() {
-		 return deviceInfo;
-	 }
+    /**
+     * @jmx.managed-attribute
+     */
+    public DeviceInfo getDeviceInfo() {
+        return deviceInfo;
+    }
 
     protected ObjectName getObjectName(MBeanServer beanSrv, ObjectName name)
         throws MalformedObjectNameException {
         deviceName = name.getKeyProperty("device");
         if (deviceName == null) {
-            throw new MalformedObjectNameException("Missing property device:" + name);
+            throw new MalformedObjectNameException(
+                "Missing property device:" + name);
         }
         return name;
     }
 
-     protected void startService() throws Exception {
-		daoFactory = DAOFactory.getLdapDAOFactory(ldapURL);
-		deviceDAO = daoFactory.getDeviceDAO();
-		deviceInfo = deviceDAO.find(deviceName);
-		deviceInfo.setInstalled(true);
-		deviceDAO.commit(deviceInfo);
+    protected void startService() throws Exception {
+        daoFactory = DAOFactory.getLdapDAOFactory(ldapURL);
+        deviceDAO = daoFactory.getDeviceDAO();
+        aeDAO = daoFactory.getNetworkAEDAO();
+        deviceInfo = deviceDAO.find(deviceName);
+        deviceInfo.setInstalled(true);
+        deviceDAO.commit(deviceInfo);
     }
 
-     protected void stopService() throws Exception {
-		deviceInfo.setInstalled(false);
-		deviceDAO.commit(deviceInfo);
+    protected void stopService() throws Exception {
+        deviceInfo.setInstalled(false);
+        deviceDAO.commit(deviceInfo);
     }
 
+    /**
+     * @jmx.managed-operation
+     */
+    public NetworkAEInfo findNetworkAE(String dest) throws DataAccessException {
+        return aeDAO.find(dest);
+    }
 }

@@ -23,6 +23,7 @@ import java.beans.PropertyEditor;
 import java.io.File;
 import java.security.GeneralSecurityException;
 
+import javax.management.ObjectName;
 import javax.net.ServerSocketFactory;
 
 import org.dcm4che.net.AcceptorPolicy;
@@ -52,6 +53,7 @@ public class DcmServerService
     extends ServiceMBeanSupport
     implements HandshakeFailedListener, org.dcm4chex.service.DcmServerServiceMBean {
 
+    private ObjectName deviceConfigName;               
     private ServerFactory sf = ServerFactory.getInstance();
     private AssociationFactory af = AssociationFactory.getInstance();
     private AcceptorPolicy policy = af.newAcceptorPolicy();
@@ -69,6 +71,20 @@ public class DcmServerService
     private File lastCacertsFile;
     private long lastCacertsFileModified;
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public ObjectName getDeviceConfigName() {
+        return deviceConfigName;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setDeviceConfigName(ObjectName deviceConfigName) {
+        this.deviceConfigName = deviceConfigName;
+    }
+    
     /**
      * @jmx.managed-attribute
      */

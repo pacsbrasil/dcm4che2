@@ -14,6 +14,10 @@
 
   <mbean code="org.dcm4chex.service.DcmServerService" 
          name="dcm4chex:service=DcmServer,name=DCMSRV">
+
+    <depends optional-attribute-name="DeviceConfigName">
+        dcm4chex:service=DeviceConfig,device=PACS_TIANI
+    </depends>
          
     <!--
     Set maximal number of simultaneously conncected DICOM clients.

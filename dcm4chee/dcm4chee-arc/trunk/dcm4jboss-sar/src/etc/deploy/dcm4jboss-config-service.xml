@@ -12,17 +12,11 @@
 
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
-  <mbean code="org.dcm4chex.service.MoveScpService" 
-         name="dcm4chex:service=MoveScp">
+  <mbean code="org.dcm4chex.service.DeviceConfigService" 
+         name="dcm4chex:service=DeviceConfig,device=PACS_TIANI">
 
-    <depends optional-attribute-name="DeviceConfigName">
-        dcm4chex:service=DeviceConfig,device=PACS_TIANI
-    </depends>
-    <depends optional-attribute-name="DcmServerName">
-        dcm4chex:service=DcmServer,name=DCMSRV
-    </depends>
-    
-    <attribute name="DsJndiName">java:/PostgresDS</attribute>    
+    <attribute name="LdapURL">ldap://cn=admin,dc=tiani,dc=com:admin@localhost:389/dc=tiani,dc=com</attribute>    
+
          
   </mbean>
 

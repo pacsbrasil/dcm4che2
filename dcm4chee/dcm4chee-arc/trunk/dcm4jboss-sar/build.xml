@@ -10,6 +10,8 @@
 	<property name="findscp.sar" value="dcm4jboss-findscp.sar"/>
 	<property name="movescp.jar" value="dcm4jboss-movescp.jar"/>
 	<property name="movescp.sar" value="dcm4jboss-movescp.sar"/>
+	<property name="config.jar" value="dcm4jboss-config.jar"/>
+	<property name="config.sar" value="dcm4jboss-config.sar"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
 	<property name="src.java" value="${src.dir}/java"/>
@@ -92,6 +94,7 @@
         <mkdir dir="${target.dir}/storescp"/>
         <mkdir dir="${target.dir}/findscp"/>
         <mkdir dir="${target.dir}/movescp"/>
+        <mkdir dir="${target.dir}/config"/>
     </target>
 
     <!-- =================================================================== -->
@@ -136,7 +139,7 @@
    	<!-- build sars                                        -->
    	<!-- =================================================================== -->
    
-   	<target name="sar" depends="dcmsrv-sar,storescp-sar,findscp-sar,movescp-sar"/>
+   	<target name="sar" depends="dcmsrv-sar,storescp-sar,findscp-sar,movescp-sar,config-sar"/>
 
     <target name="dcmsrv-sar" depends="compile">
         <copy file="${src.deploy}/dcm4jboss-dcmsrv-service.xml" 
@@ -209,11 +212,29 @@
         	</zipfileset>        	
         </zip>
     </target>   
+
+    <target name="config-sar" depends="compile">
+        <copy file="${src.deploy}/dcm4jboss-config-service.xml" 
+            tofile="${target.dir}/config/jboss-service.xml">
+            <filterset>
+                <filter token="ARCHIVES" value="dcmcfg.jar"/>
+            </filterset>
+        </copy>  
+        <zip zipfile="${target.deploy}/${config.sar}">
+        	<zipfileset dir="${target.classes}">
+        		<include name="**/DeviceConfig*"/>
+        	</zipfileset>
+        	<zipfileset dir="${target.dir}/config" prefix="META-INF">
+        		<include name="jboss-service.xml"/>
+        	</zipfileset>        	
+        </zip>
+    </target>   
    	<!-- =================================================================== -->
    	<!-- deploy sars                                                         -->
    	<!-- =================================================================== -->
    
    	<target name="deploy" depends="sar">
+    	<copy file="${target.deploy}/dcm4jboss-config.sar" todir="${jboss.conf}/deploy"/>
     	<copy file="${target.deploy}/dcm4jboss-dcmsrv.sar" todir="${jboss.conf}/deploy"/>
     	<copy file="${target.deploy}/dcm4jboss-storescp.sar" todir="${jboss.conf}/deploy"/>
     	<copy file="${target.deploy}/dcm4jboss-findscp.sar" todir="${jboss.conf}/deploy"/>
@@ -229,6 +250,7 @@
     	<delete file="${jboss.conf}/deploy/dcm4jboss-storescp.sar"/>
     	<delete file="${jboss.conf}/deploy/dcm4jboss-findscp.sar"/>
     	<delete file="${jboss.conf}/deploy/dcm4jboss-movescp.sar"/>
+    	<delete file="${jboss.conf}/deploy/dcm4jboss-config.sar"/>
    	</target>
 
    	<!-- =================================================================== -->
