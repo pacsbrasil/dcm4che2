@@ -81,6 +81,7 @@ all
 ;preemptive.tools.* 
 javax.*
 org.*
+com.tiani.prnscp.client.*
 
 -ExcludeClasses: =================================
 ;; this option is DEPRECATED

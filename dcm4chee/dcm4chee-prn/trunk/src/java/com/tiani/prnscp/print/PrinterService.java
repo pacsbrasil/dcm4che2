@@ -153,6 +153,38 @@ public class PrinterService
    /** Holds value of property trimBoxDensity. */
    private String trimBoxDensity;
    
+   /** Holds value of property trimBoxThickness. */
+   private float trimBoxThickness;
+
+   /** Holds value of property colorVis. */
+   private String colorVis;
+
+   /** Holds value of property colorAllOfPage. */
+   private String colorAllOfPage;
+
+   /** Holds value of property colorTrimBox. */
+   private String colorTrimBox;
+
+   /** Holds value of property spaceBetweenVisW. */
+   private float spaceBetweenVisW;
+
+   /** Holds value of property spaceBetweenVisH. */
+   private float spaceBetweenVisH;
+
+   /** Holds value of property useBorderDensForGrid. */
+   private boolean useBorderDensForGrid;
+
+   /** Holds value of property puzzleScaleStartSize. */
+   private int puzzleScaleStartSize;
+
+   private int[] puzzleScalePackageSize = new int[11];
+
+   /** Holds value of property printGrayAsColor. */
+   private boolean printGrayAsColor;
+
+   /** Holds value of property maxQueuedJobCount. */
+   private int maxQueuedJobCount;
+
    /** Holds value of property minDensity. */
    private int minDensity;
    
@@ -284,9 +316,13 @@ public class PrinterService
       }
    }
 
-   protected int[] getPuzzleScalePackSize(){return PuzzleScalePackageSize;}
+   int[] getPuzzleScalePackSize(){
+      return puzzleScalePackageSize;
+   }
    
-   protected Logger getLogger(){return log;}
+   protected Logger getLogger(){
+      return log;
+   }
    
    private PrintService getPrintService() throws PrintException {
       if (printService != null) {
@@ -974,38 +1010,6 @@ public class PrinterService
          }
       };
                            
-      /** Holds value of property trimBoxThickness. */
-      private float trimBoxThickness;
-      
-      /** Holds value of property colorVis. */
-      private String colorVis;
-      
-      /** Holds value of property colorAllOfPage. */
-      private String colorAllOfPage;
-      
-      /** Holds value of property colorTrimBox. */
-      private String colorTrimBox;
-      
-      /** Holds value of property spaceBetweenVisW. */
-      private float spaceBetweenVisW;
-      
-      /** Holds value of property spaceBetweenVisH. */
-      private float spaceBetweenVisH;
-      
-      /** Holds value of property useBorderDensForGrid. */
-      private boolean useBorderDensForGrid;
-      
-      /** Holds value of property puzzleScaleStartSize. */
-      private int puzzleScaleStartSize;
-
-      private int[] PuzzleScalePackageSize = new int[11];
-      
-      /** Holds value of property printGrayAsColor. */
-      private boolean printGrayAsColor;
-      
-      /** Holds value of property maxQueuedJobCount. */
-      private int maxQueuedJobCount;
-      
    /** Getter for property LUTs.
     * @return Value of property LUTs.
     */
@@ -1326,10 +1330,8 @@ public class PrinterService
       scheduler = new Thread(this);
       scheduler.start();
       if (scanner.getScanDir(printerName).mkdirs()) {
-         log.warn(
-            "Created new sub-directory " + scanner.getScanDir(printerName) +
-            " for gray step print outs of printer " +  printerName + 
-            " for printer calibration.");
+         log.warn("Created new calibration sub-directory "
+            + scanner.getScanDir(printerName));
       }
       if (printGrayscaleAtStartup) {
          printGrayscaleWithLinDDL();
@@ -1695,19 +1697,27 @@ public class PrinterService
     *
     */
    public String getPuzzleScalePackageSize() {
-       return "" + PuzzleScalePackageSize[0] + ","+PuzzleScalePackageSize[1] + ","+PuzzleScalePackageSize[2]
-                 + ","+PuzzleScalePackageSize[3] + ","+PuzzleScalePackageSize[4] + ","+PuzzleScalePackageSize[5]
-                 + ","+PuzzleScalePackageSize[6] + ","+PuzzleScalePackageSize[7] + ","+PuzzleScalePackageSize[8]
-                 + ","+PuzzleScalePackageSize[9] + ","+PuzzleScalePackageSize[10];
+       return "" 
+          + puzzleScalePackageSize[0] + ","
+          + puzzleScalePackageSize[1] + ","
+          + puzzleScalePackageSize[2] + ","
+          + puzzleScalePackageSize[3] + ","
+          + puzzleScalePackageSize[4] + ","
+          + puzzleScalePackageSize[5] + ","
+          + puzzleScalePackageSize[6] + ","
+          + puzzleScalePackageSize[7] + ","
+          + puzzleScalePackageSize[8] + ","
+          + puzzleScalePackageSize[9] + ","
+          + puzzleScalePackageSize[10];
    }
    
    public void setPuzzleScalePackageSize(String str) {
       StringTokenizer tk = new StringTokenizer(str, "\\");
       if (tk.countTokens() != 11) {
-         throw new IllegalArgumentException("PuzzleScalePackageSize: (need 11 values)" + str);
+         throw new IllegalArgumentException("puzzleScalePackageSize: (need 11 values)" + str);
       }
       for(int i=0;i<11;i++){
-          PuzzleScalePackageSize[i] = Integer.parseInt(tk.nextToken().toString());
+          puzzleScalePackageSize[i] = Integer.parseInt(tk.nextToken().toString());
       }
    }
    
@@ -1729,7 +1739,6 @@ public class PrinterService
    
    /** Getter for property maxQueuedJobCount.
     * @return Value of property maxQueuedJobCount.
-    *
     */
    public int getMaxQueuedJobCount() {
        return this.maxQueuedJobCount;
@@ -1737,7 +1746,6 @@ public class PrinterService
    
    /** Setter for property maxQueuedJobCount.
     * @param maxQueuedJobCount New value of property maxQueuedJobCount.
-    *
     */
    public void setMaxQueuedJobCount(int maxQueuedJobCount) {
        this.maxQueuedJobCount = maxQueuedJobCount;

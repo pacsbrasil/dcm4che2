@@ -14,6 +14,7 @@
   <property name="jboss.dist" value="${user.home}/jboss-3.0.4"/>
   <property name="jboss.lib" value="${jboss.dist}/lib"/>
   <property name="jboss.conf" value="default"/>
+  <property name="jboss.client" value="${jboss.dist}/client"/>
   <property name="jboss.server" value="${jboss.dist}/server/${jboss.conf}"/>
   <property name="jboss.server.deploy" value="${jboss.server}/deploy"/>
   <property name="jboss.server.lib" value="${jboss.server}/lib"/>
@@ -23,11 +24,13 @@
   <property name="src.dir" value="${basedir}/src"/>
   <property name="src.java" value="${src.dir}/java"/>
   <property name="src.conf" value="${src.dir}/conf"/>
+  <property name="src.res" value="${src.dir}/resources"/>
   <property name="build.dir" value="${basedir}/build"/>
 
   <property name="build.classes.dir" value="${build.dir}/classes"/>
   <property name="build.deploy.dir" value="${build.dir}/deploy"/>
   <property name="build.lib.dir" value="${build.dir}/lib"/>
+  <property name="build.bin.dir" value="${build.dir}/bin"/>
 
   <property name="dist.name" value="${name}-${version}"/>
   <property name="dist.dir" value="${build.dir}/${dist.name}"/>
@@ -37,6 +40,7 @@
     <pathelement location="${jboss.lib}/jboss-common.jar"/>
     <pathelement location="${jboss.lib}/jboss-system.jar"/>
     <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
+    <pathelement location="${jboss.client}/jmx-rmi-connector-client.jar"/>
     <pathelement location="${build.classes.dir}"/>
   </path>
 
@@ -113,12 +117,12 @@
                includes="jboss-service.xml"
       />
       <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/**"
+               includes="com/tiani/prnscp/scp/**,com/tiani/prnscp/print/**"
       />
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar"/>
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar"/>
   
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
@@ -133,11 +137,21 @@
     <mkdir dir="${build.lib.dir}"/>
     <jar jarfile="${build.lib.dir}/prnscp.jar">
       <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/**"
+               includes="com/tiani/prnscp/scp/**,com/tiani/prnscp/print/**"
       />
     </jar>
   </target>
 
+  <target name="print-grayscale-jar" depends="compile">
+    <mkdir dir="${build.bin.dir}"/>
+    <jar jarfile="${build.bin.dir}/print-grayscale.jar"
+         manifest="${src.res}/META-INF/print-grayscale.mf">
+      <fileset dir="${build.classes.dir}"
+               includes="com/tiani/prnscp/client/**"
+      />
+    </jar>
+  </target>
+  
   <target name="dasho-prnscp-jar" depends="compile" if="dasho.jar">
     <copy file="prnscp-${os.name}.dop" todir="${build.dir}">
       <filterset>
@@ -152,6 +166,7 @@
          failonerror="true"
          maxmemory="128m"
          >
+       <arg value="-f"/> 
        <arg value="prnscp-${os.name}.dop"/> 
        <classpath>
          <path refid="build.path" />
@@ -209,6 +224,8 @@
         <include name="bin/*.jar"/>
         <include name="bin/*.sh"/>
         <include name="bin/*.bat"/>
+        <include name="client/jnp-client.jar"/>
+        <include name="client/jmx-rmi-connector-client.jar"/>
         <include name="lib/concurrent.jar"/>        
         <include name="lib/getopt.jar"/>        
         <include name="lib/gnu-regexp.jar"/>        
@@ -223,11 +240,22 @@
         <include name="bin/*.sh"/>
         <include name="bin/*.bat"/>
       </fileset>
+      <fileset dir="${src.dir}">
+        <include name="bin/JavaService.exe"/>
+        <include name="bin/*.sh"/>
+        <include name="bin/*.bat"/>
+      </fileset>
+      <fileset dir="${build.dir}">
+        <include name="bin/*.jar"/>
+      </fileset>
     </copy>
     <copy todir="${dist.dir}/server/default">
       <fileset dir="${jboss.dist}/server/minimal">
         <include name="conf/*"/>
         <include name="lib/*"/>
+      </fileset>
+      <fileset dir="${jboss.dist}/server/default">
+        <include name="deploy/jmx-rmi-adaptor.sar/**"/>
       </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>

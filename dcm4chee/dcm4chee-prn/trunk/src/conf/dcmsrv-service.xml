@@ -30,7 +30,58 @@
 
   <mbean code="org.dcm4chex.service.DcmServerService" 
          name="dcm4chex:service=DcmServer">
+         
+    <!--
+    Set maximal number of simultaneously conncected DICOM clients.
+    -->
+    <attribute name="MaxClients">10</attribute>
+    
+    <!--
+    Specifies TCP port on which the DICOM server is listening.
+    -->
     <attribute name="Port">6104</attribute>
+    
+    <!--
+    Specifies Called AETs, which the DICOM server shall accept.
+    Multiple values can be specified, must be separated by 
+    '\' characters. Use the single value "any" to accept any Called AET
+    in the A-ASSOCIATE RQ.    
+    -->
+    <attribute name="CalledAETs">TIANI_PRINT</attribute>
+    
+    <!--
+    Specifies Calling AETs, which the DICOM server shall accept.
+    Multiple values can be specified, must be separated by 
+    '\' characters. Use the single value "any" to accept any Calling AET
+    in the A-ASSOCIATE RQ.    
+    -->
+    <attribute name="CallingAETs">any</attribute>
+    
+    <!--
+    Specifies Timeout in ms, the DICOM server will wait after accepting the
+    TCP connect for the A-ASSOCIATE RQ. "0" means, there is no Timeout,
+    so the server would wait as long the TCP connection will not be closed from
+    the peer application.
+    -->
+    <attribute name="RqTimeout">5000</attribute>
+    
+    <!--
+    Specifies Timeout in ms, the DICOM server will wait after the receive of
+    DIMSE message on an established association. "0" means, there is no Timeout.
+    -->
+    <attribute name="DimseTimeout">60000</attribute>
+    
+    <!--
+    Specifies Timeout in ms, the DICOM server will wait after sending
+    a A-RELEASE RQ or an A-ABORT RQ for DIMSE message on an established
+    association.  "0" means, there is no Timeout.
+    -->
+    <attribute name="SoCloseDelay">500</attribute>
+    
+    <!--
+    Specifies maximal PDU package length for receiving PDUs.
+    -->
+    <attribute name="MaxPDULength">16352</attribute>
   </mbean>
 
 </server>
