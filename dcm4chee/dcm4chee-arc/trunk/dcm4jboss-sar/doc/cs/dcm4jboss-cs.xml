@@ -636,8 +636,8 @@
         <title>Application Data Flow</title>
 
         <para>dcm4che is logically divided in three different DICOM
-        Application Entities (Storage Server, Query/Retrieve Server and MPPS
-        Manager).</para>
+        Application Entities: Storage Server, Query/Retrieve Server and MPPS
+        Manager.</para>
 
         <para>The Application Entities detailed in the Application Data Flow
         Diagram are all Java Enterprise Application and are designed to run in
@@ -2472,13 +2472,8 @@
         <section>
           <title>Local AE Titles</title>
 
-          <para>Each connected printer must be bound to a different local AET.
-          If no connected printer is bound to the Called AET in the
-          Association Request of the Print SCU, only acceptance of the
-          Presentation Context for Verification SOP Class will be returned in
-          the Association Acceptance Response (A-ASSOCIATE-AC).</para>
-
-          <para>As a default, only one connected printer is configured:<table>
+          <para>The mapping from AE Title to TCP/IP addresses and ports is
+          configurable through web interface.<table>
               <title>AE Title Configuration Table</title>
 
               <tgroup align="left" cols="3">
@@ -2500,11 +2495,27 @@
 
                 <tbody>
                   <row>
-                    <entry>jPrint</entry>
+                    <entry>dcm4che Storage Server</entry>
 
-                    <entry>TIANI_PRINT</entry>
+                    <entry>STORE_SCP</entry>
 
-                    <entry>6104</entry>
+                    <entry>2351</entry>
+                  </row>
+
+                  <row>
+                    <entry>dcm4che Query/Retrieve Server</entry>
+
+                    <entry>QR_SCP</entry>
+
+                    <entry>2351</entry>
+                  </row>
+
+                  <row>
+                    <entry>dcm4che MPPS Manager</entry>
+
+                    <entry>MPPS_MGR</entry>
+
+                    <entry>2351</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -2522,11 +2533,9 @@
       <section>
         <title>Parameters</title>
 
-        <para>A large number of parameters related to Print Management,
-        Communications and general operation can be configured. The following
-        table shows those configuration parameters relevant to DICOM
-        communication. Refer to the jPrint Service Manual for details on
-        general configuration capabilities.</para>
+        <para>The following table shows the dcm4che configuration parameters
+        relevant to DICOM communication. Refer to the dcm4che Service Manual
+        for details on general configuration capabilities.</para>
 
         <para><table>
             <title>Configuration Parameter Table</title>
@@ -2557,7 +2566,16 @@
                 </row>
 
                 <row>
-                  <entry>Max PDU Receive Size</entry>
+                  <entry>Time-out waiting for acceptance or rejection Response
+                  to an Association Open Request.</entry>
+
+                  <entry>No</entry>
+
+                  <entry>No Time-out</entry>
+                </row>
+
+                <row>
+                  <entry>Maximum PDU size the AE can receive</entry>
 
                   <entry>Yes</entry>
 
@@ -2565,10 +2583,7 @@
                 </row>
 
                 <row>
-                  <entry>Max PDU Send Size (If the receiver supports a smaller
-                  Max PDU Receive Size then the Max PDU Send Size will be
-                  reduced accordingly for the duration of the
-                  Association.)</entry>
+                  <entry>Maximum PDU size the AE can send</entry>
 
                   <entry>No</entry>
 
@@ -2576,42 +2591,20 @@
                 </row>
 
                 <row>
-                  <entry>Time-out to receive the Association Request
-                  (A-ASSOCIATE RQ), after accepting the TCP connect from the
-                  Print SCU.</entry>
+                  <entry>Number of simultaneous Associations by Service and/or
+                  SOP Class</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>5s</entry>
+                  <entry>5</entry>
                 </row>
 
                 <row>
-                  <entry>Delay for TCP close after sending A-RELEASE RSP (or
-                  A-ABORT RQ) to the Print SCU.</entry>
+                  <entry>Listening Port</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>0.5s</entry>
-                </row>
-
-                <row>
-                  <entry>Maximum number of simultaneous Associations</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>10</entry>
-                </row>
-
-                <row>
-                  <entry>Supported Transfer Syntaxes</entry>
-
-                  <entry>No</entry>
-
-                  <entry><simplelist type="vert">
-                      <member>Implicit VR Little Endian</member>
-
-                      <member>Explicit VR Little Endian</member>
-                    </simplelist></entry>
+                  <entry>2351</entry>
                 </row>
 
                 <row>
@@ -2624,402 +2617,189 @@
                 </row>
 
                 <row>
-                  <entry>Supported TLS ciphersuites</entry>
+                  <entry>Accepted Called AETs</entry>
 
                   <entry>Yes</entry>
 
-                  <entry><simplelist type="vert">
-                      <member>RSA_WITH_NULL_SHA
-                      RSA_WITH_3DES_EDE_CBC_SHA</member>
-                    </simplelist></entry>
+                  <entry>STORE_SCP, QR_SCP, MPPS_MGR</entry>
                 </row>
 
                 <row>
-                  <entry>Certificates of trusted Certification
-                  Authorities</entry>
+                  <entry>Accepted Calling AETs</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>Tiani License CA</entry>
+                  <entry>Any</entry>
                 </row>
 
                 <row>
-                  <entry>Certificate and private key for TLS
-                  authentication</entry>
+                  <entry>Storage Directory Path Prefix</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>= User License</entry>
+                  <entry>\var\dcm4che\archive</entry>
                 </row>
 
                 <row>
-                  <entry spanname="c1-c3">Printer specific Parameters - may
-                  differ for connected Printers</entry>
-                </row>
-
-                <row>
-                  <entry>Called AET associated with this Printer</entry>
+                  <entry>Create and Update DICOMDIR in Storage
+                  Directories</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>TIANI_PRINT</entry>
+                  <entry>On</entry>
                 </row>
 
                 <row>
-                  <entry>Printer Name</entry>
+                  <entry>Spooling of received MPPS messages</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>MINOLTA</entry>
+                  <entry>On</entry>
                 </row>
 
                 <row>
-                  <entry>Manufacturer</entry>
+                  <entry>MPPS Spool Directory</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>Minolta</entry>
+                  <entry>On</entry>
                 </row>
 
                 <row>
-                  <entry>Manufacturer Model Name</entry>
+                  <entry>Generation of JPEG icons for received images</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>CF 9001</entry>
+                  <entry>On</entry>
                 </row>
 
                 <row>
-                  <entry>Device Serial Number</entry>
+                  <entry>Icon Storage Directory Path Prefix</entry>
 
                   <entry>Yes</entry>
 
-                  <entry></entry>
+                  <entry>\var\dcm4che\icon</entry>
                 </row>
 
                 <row>
-                  <entry>Software Version</entry>
+                  <entry>Max. Icon Height</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>EFI Fiery X3e</entry>
+                  <entry>128</entry>
                 </row>
 
                 <row>
-                  <entry>Maximum number of Jobs in printer queue</entry>
+                  <entry>Max. Icon Widtht</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>10</entry>
+                  <entry>128</entry>
                 </row>
 
                 <row>
-                  <entry>Supports Color</entry>
+                  <entry>Retrieve DICOM Objects as received (=Deactivates
+                  update of Patient Information from database)</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>true</entry>
+                  <entry>Off</entry>
                 </row>
 
                 <row>
-                  <entry>Supports Grayscale</entry>
+                  <entry>DICOM over TLS</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>true</entry>
+                  <entry>Off</entry>
                 </row>
 
                 <row>
-                  <entry>Supports Presentation LUT</entry>
+                  <entry>Require Client Authentification</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>true</entry>
+                  <entry>-</entry>
                 </row>
 
                 <row>
-                  <entry>Supports Annotation Box</entry>
+                  <entry>Accepted TLS Ciphers</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>true</entry>
+                  <entry>-</entry>
                 </row>
 
                 <row>
-                  <entry>Max Number Of Copies</entry>
+                  <entry>Storage Server Host</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>99</entry>
+                  <entry>localhost</entry>
                 </row>
 
                 <row>
-                  <entry>Medium Type (if not specified by Print SCU)</entry>
+                  <entry>Storage Server Port</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>PAPER</entry>
+                  <entry>2351</entry>
                 </row>
 
                 <row>
-                  <entry>Supported Medium Types</entry>
+                  <entry>Query/Retrieve Server Host</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>PAPER</entry>
+                  <entry>localhost</entry>
                 </row>
 
                 <row>
-                  <entry>Session Label (if not specified by Print SCU)</entry>
+                  <entry>Query/Retrieve Server Port</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>print job for CALLING_AET</entry>
+                  <entry>2351</entry>
                 </row>
 
                 <row>
-                  <entry>Orientation (if not specified by Print SCU)</entry>
+                  <entry>MPPS Manager Host</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>PORTRAIT</entry>
+                  <entry>localhost</entry>
                 </row>
 
                 <row>
-                  <entry>Supported Display Formats</entry>
+                  <entry>MPPS Manager Port</entry>
 
                   <entry>Yes</entry>
 
-                  <entry><para>Orientation PORTRAIT:<simplelist type="vert">
-                      <member>STANDARD\1,1</member>
-
-                      <member>STANDARD\1,2</member>
-
-                      <member>STANDARD\2,2</member>
-
-                      <member>STANDARD\2,3</member>
-
-                      <member>STANDARD\3,3</member>
-
-                      <member>STANDARD\3,4</member>
-
-                      <member>STANDARD\3,5</member>
-
-                      <member>STANDARD\4,4</member>
-
-                      <member>STANDARD\4,5</member>
-
-                      <member>STANDARD\4,6</member>
-
-                      <member>STANDARD\5,5</member>
-
-                      <member>STANDARD\5,6</member>
-
-                      <member>STANDARD\6,6</member>
-                    </simplelist></para><para>Orientation
-                  LANDSCAPE:<simplelist type="vert">
-                      <member>STANDARD\1,1</member>
-
-                      <member>STANDARD\2,1</member>
-
-                      <member>STANDARD\2,2</member>
-
-                      <member>STANDARD\3,2</member>
-
-                      <member>STANDARD\3,3</member>
-
-                      <member>STANDARD\4,3</member>
-
-                      <member>STANDARD\5,3</member>
-
-                      <member>STANDARD\4,4</member>
-
-                      <member>STANDARD\5,4</member>
-
-                      <member>STANDARD\6,4</member>
-
-                      <member>STANDARD\5,5</member>
-
-                      <member>STANDARD\6,5</member>
-
-                      <member>STANDARD\6,6</member>
-                    </simplelist></para></entry>
+                  <entry>2351</entry>
                 </row>
 
                 <row>
-                  <entry>Film Size ID (if not specified by Print SCU)</entry>
+                  <entry>MPPS Spool Directory</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>A4</entry>
+                  <entry>\var\dcm4che\spool</entry>
                 </row>
 
                 <row>
-                  <entry>Supported Film Size IDs</entry>
+                  <entry>MPPS Poll Intervall</entry>
 
                   <entry>Yes</entry>
 
-                  <entry><simplelist type="vert">
-                      <member>A4</member>
-
-                      <member>A3</member>
-
-                      <member>8INX10IN</member>
-
-                      <member>8_5INX11IN</member>
-
-                      <member>10INX12IN</member>
-
-                      <member>10INX14IN</member>
-
-                      <member>11INX14IN</member>
-
-                      <member>11INX17IN</member>
-
-                      <member>14INX14IN</member>
-
-                      <member>14INX17IN</member>
-
-                      <member>24CMX24CM</member>
-
-                      <member>24CMX30CM</member>
-                    </simplelist></entry>
+                  <entry>10 s</entry>
                 </row>
 
                 <row>
-                  <entry>Magnification Type (if not specified by Print
-                  SCU)</entry>
+                  <entry>MPPS Poll Connection Retry Intervall</entry>
 
                   <entry>Yes</entry>
 
-                  <entry>BILINEAR</entry>
-                </row>
-
-                <row>
-                  <entry>Supported Magnification Types</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry><simplelist type="vert">
-                      <member>BILINEAR</member>
-
-                      <member>REPLICATE</member>
-
-                      <member>NONE</member>
-                    </simplelist></entry>
-                </row>
-
-                <row>
-                  <entry>Decimate Crop Behavior (if not specified by Print
-                  SCU)</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>DECIMATE</entry>
-                </row>
-
-                <row>
-                  <entry>Border Density (if not specified by Print
-                  SCU)</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>WHITE</entry>
-                </row>
-
-                <row>
-                  <entry>Trim (if not specified by Print SCU)</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>true</entry>
-                </row>
-
-                <row>
-                  <entry>Illumination (if not specified by Print SCU)</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>150</entry>
-                </row>
-
-                <row>
-                  <entry>Reflected Ambient Light (if not specified by Print
-                  SCU)</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>0</entry>
-                </row>
-
-                <row>
-                  <entry>Configuration Information (if not specified by Print
-                  SCU)</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>shape=IDENTITY</entry>
-                </row>
-
-                <row>
-                  <entry>Supported Configuration Information</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry><simplelist type="vert">
-                      <member>shape=IDENTITY</member>
-
-                      <member>shape=LIN_OD</member>
-
-                      <member>shape=PHILIPS</member>
-
-                      <member>gamma=&lt;g&gt;</member>
-
-                      <member>center=&lt;c&gt;,slope=&lt;s&gt;</member>
-
-                      <member>center=&lt;c&gt;,slope=&lt;s&gt;,gamma=&lt;g&gt;</member>
-                    </simplelist></entry>
-                </row>
-
-                <row>
-                  <entry>Annotation Display Format (if not specified by Print
-                  SCU)</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>TITLE</entry>
-                </row>
-
-                <row>
-                  <entry>Supported Annotation Display Format IDs</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry><simplelist type="vert">
-                      <member>TITLE</member>
-
-                      <member>NO_TITLE</member>
-                    </simplelist></entry>
-                </row>
-
-                <row>
-                  <entry>Resolution ID (if not specified by Print SCU)</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry>STANDARD</entry>
-                </row>
-
-                <row>
-                  <entry>Supported Resolution IDs</entry>
-
-                  <entry>Yes</entry>
-
-                  <entry><simplelist type="vert">
-                      <member>STANDARD:600x600dpi</member>
-
-                      <member>HIGH:1200x1200dpi</member>
-                    </simplelist></entry>
+                  <entry>100 s</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -3029,15 +2809,15 @@
   </section>
 
   <section>
-    <title>Media Storage</title>
+    <title>Media Interchange</title>
 
-    <para>jPrint does not support Media Storage.</para>
+    <para>dm4che does not support Media Storage.</para>
   </section>
 
   <section>
     <title>Support of Extended Character Sets</title>
 
-    <para>jPrint supports ISO_IR 100 (ISO 8859-1 Latin 1) as an extended
+    <para>dm4che supports ISO_IR 100 (ISO 8859-1 Latin 1) as an extended
     character set.</para>
   </section>
 
@@ -3047,23 +2827,33 @@
     <section>
       <title>Security Profiles</title>
 
-      <para>jPrint can be configured to use secure DICOM communication in
-      conformance with the Basic TLS Secure Transport Connection
-      Profile.</para>
+      <para>dcm4che supports secure DICOM communication in conformance with
+      the Basic TLS Secure Transport Connection Profile. At default
+      configuration, the TLS option is deactivated.</para>
     </section>
 
     <section>
       <title>Association Level Security</title>
 
-      <para>jPrint can be configured to accept Association Requests from only
+      <para>dcm4che can be configured to accept Association Requests from only
       a limited list of Calling AE Titles and to check that the Association
       requester specifies the correct Called AE Title.</para>
 
       <para>In the default configuration, Association requests with any
-      Calling AET and any Called AET will be accepted. However, if no
-      connected printer is configured for the Called AET, only acceptance of
-      the Presentation Context for Verification SOP Class will be returned in
-      the Association Acceptance Response (A-ASSOCIATE AC).</para>
+      Calling AET and any Called AET will be accepted. However, if the Called
+      AET is not correspondent to any of the actual DICOM server AETs, only
+      acceptance of the Presentation Context for Verification SOP Class will
+      be returned in the Association Acceptance Response (A-ASSOCIATE
+      AC).</para>
+    </section>
+
+    <section>
+      <title>Application Level Security</title>
+
+      <para>dcm4che web module can be configured to require user
+      authentication in order to access to the user interface functionalities.
+      Different level of user authorization and profiling can also be
+      specified through the web module configuration file(s). </para>
     </section>
   </section>
 
@@ -3073,350 +2863,158 @@
     <section>
       <title>Created IOD Instances</title>
 
-      <para>jPrint creates the following IOD types of instances: Image Boxes,
-      Annotation Boxes, Print Jobs, Printer, and Printer Configuration. The
-      attributes of the created IODs are described in <xref
-      linkend="s-sop-spec-conf" />.</para>
+      <para>TO BE DONE</para>
+
+      <para></para>
     </section>
-
-    <section>
-      <title>Used Fields in IOD by Application</title>
-
-      <para>The usage of attributes received in the IODs sent by the Print SCU
-      is described in <xref linkend="s-sop-spec-conf" />.</para>
-    </section>
-
-    <section>
-      <title>Attribute Mapping</title>
-
-      <para>The following table is a mapping of attributes that can be set by
-      different Print IODs. If more than one IOD is setting the same element,
-      then the value will be overwritten by the IOD's value in order shown,
-      from left to right, such that the Printer Configuration (PC) specific
-      element values that are in lowest order might be overwritten by another
-      IOD.</para>
-
-      <table>
-        <title>jPrint Attribute Mapping</title>
-
-        <tgroup align="left" cols="6">
-          <colspec colwidth="200" />
-
-          <colspec align="center" colwidth="60" />
-
-          <colspec align="center" colwidth="15" />
-
-          <colspec align="center" colwidth="15" />
-
-          <colspec align="center" colwidth="15" />
-
-          <colspec align="center" colwidth="15" />
-
-          <thead>
-            <row>
-              <entry>Attribute Name</entry>
-
-              <entry>Tag</entry>
-
-              <entry>PC</entry>
-
-              <entry>FS</entry>
-
-              <entry>FB</entry>
-
-              <entry>IB</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>Medium Type</entry>
-
-              <entry>(2000,0030)</entry>
-
-              <entry>X</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Image Display Format</entry>
-
-              <entry>(2010,0010)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Annotation Display Format ID</entry>
-
-              <entry>(2010,0030)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Film Orientation</entry>
-
-              <entry>(2010,0040)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Film Size ID</entry>
-
-              <entry>(2010,0050)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Border Density</entry>
-
-              <entry>(2010,0100)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Trim</entry>
-
-              <entry>(2010,0140)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Illumination</entry>
-
-              <entry>(2010,015E)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Reflected Ambient Light</entry>
-
-              <entry>(2010,0160)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Requested Resolution ID</entry>
-
-              <entry>(2020,0050)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>Magnification Type</entry>
-
-              <entry>(2010,0060)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry>X</entry>
-            </row>
-
-            <row>
-              <entry>Min Density</entry>
-
-              <entry>(2010,0120)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry>X</entry>
-            </row>
-
-            <row>
-              <entry>Max Density</entry>
-
-              <entry>(2010,0130)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry>X</entry>
-            </row>
-
-            <row>
-              <entry>Configuration Information</entry>
-
-              <entry>(2010,0150)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-
-              <entry>X</entry>
-            </row>
-
-            <row>
-              <entry>Requested Decimate/Crop Behavior</entry>
-
-              <entry>(2020,0040)</entry>
-
-              <entry>X</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry>X</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-
-      <para>Print Management IODs Abbreviations:<variablelist>
-          <varlistentry>
-            <term>PC</term>
-
-            <listitem>
-              <para>Printer Configuration</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>FS</term>
-
-            <listitem>
-              <para>Film Session</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>FB</term>
-
-            <listitem>
-              <para>Film Box</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>IB</term>
-
-            <listitem>
-              <para>Image Box</para>
-            </listitem>
-          </varlistentry>
-        </variablelist></para>
-    </section>
-
-    <section>
-      <title>Coerced/Modified Fields</title>
-
-      <para>jPrint will truncate attribute values received from the Print
-      Composer (SCU) if the value length is longer than the maximum length
-      permitted by the attribute VR.</para>
-    </section>
-
-    <section>
-      <title>Data Dictionary</title>
-
-      <para>No private attributes are defined.</para>
-    </section>
-
-    <section>
-      <title>Controlled Terminology</title>
-
-      <para>jPrint is not using any Codes (SNOMED) or Controlled Terminology,
-      such as the use of the DICOM Content Mapping Resource (DCMR).</para>
-    </section>
-
-    <section>
-      <title>Gray Scale Standard Display Function</title>
-
-      <para>jPrint supports the Grayscale Standard Display Function (GSDF) as
-      described in PS 3.14, for the Printer Calibration and Hardcopy Image
-      Consistency.</para>
-    </section>
-
-    <section>
-      <title>Standard Extended/Specialized/Private SOPs</title>
-
-      <para>jPrint does not claim conformance to any Extended, Specialized, or
-      Private SOP Classes.</para>
-    </section>
-
-    <section>
-      <title>Private Transfer Syntaxes</title>
-
-      <para>jPrint does not employ any Private Transfer Syntaxes.</para>
-    </section>
+  </section>
+
+  <section>
+    <title>Appendix A. Implementation Statements of IHE Integration
+    Profiles</title>
+
+    <para><phrase> dcm4che has implemented the following DICOM service classes
+    and HL7 messages:</phrase></para>
+
+    <itemizedlist>
+      <listitem>
+        <para>DICOM XY Image Storage SCU+SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Grayscale Softcopy Presentation State Storage
+        SCU+SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Key Object Selection Document SCU+SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Basic Text SR Storage SCU+SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Enhanced SR Storage SCU+SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Comprehensive SR Storage SCU+SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Storage Commitment Push Model SOP Class SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Modality Performed Procedure Step SOP Class SCU+SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Study Root Query/Retrieve Information Model - FIND
+        SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>DICOM Study Root Query/Retrieve Information Model - MOVE
+        SCP</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ADT^A02 (Patient Transfer) message receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ADT^A03 (Patient Discharge) message receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ADT^A06 (Change an Outpatient to an Inpatient) message
+        receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ADT^A07 (Change an Inpatient to an Outpatient) message
+        receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ADT^A08 (Update Patient Information) message receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ADT^A40 (Merge Patient Internal ID) message receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ADT^A12 (Cancel Patient Transfer) message receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ADT^A13 (Cancel Patient Discharge) message receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ORM (Procedure Scheduled) message receive</para>
+      </listitem>
+
+      <listitem>
+        <para>HL7 ORM (Procedure Updated) message receive </para>
+      </listitem>
+    </itemizedlist>
+
+    <para>according to the following IHE Integration Profiles:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Scheduled Workflow Integration Profile</para>
+      </listitem>
+
+      <listitem>
+        <para>Patient Information Reconciliation Integration Profile</para>
+      </listitem>
+
+      <listitem>
+        <para>Consistent Presentation of Images Integration Profile</para>
+      </listitem>
+
+      <listitem>
+        <para>Access to Radiology Information Integration Profile</para>
+      </listitem>
+
+      <listitem>
+        <para>Key Image Note Integration Profile</para>
+      </listitem>
+
+      <listitem>
+        <para>Simple Image and Numeric Report Integration Profile </para>
+      </listitem>
+
+      <listitem>
+        <para>Basic Security Intergration Profile</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>and supports the following IHE Actors:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Image Manager/Image Archive</para>
+      </listitem>
+
+      <listitem>
+        <para>Performed Procedure Step Manager</para>
+      </listitem>
+
+      <listitem>
+        <para>Report Repository </para>
+      </listitem>
+
+      <listitem>
+        <para>Secure Node</para>
+      </listitem>
+    </itemizedlist>
+
+    <para><phrase> </phrase></para>
   </section>
 </article>
