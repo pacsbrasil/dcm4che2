@@ -28,13 +28,18 @@ import org.dcm4che.util.TMFormat;
 import org.jboss.logging.Logger;
 
 import java.awt.image.BufferedImage;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageReadParam;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  * <description>
@@ -273,7 +278,7 @@ class ScannerCalibration {
             if (log != null && log.isDebugEnabled()) {
                log.debug("analysing " + refFile.getName());
             }
-            cachedRefData = analyse(ImageIO.read(refFile));
+            cachedRefData = analyse(refFile);
             lastRefFile = refFile;
             lastRefFileModified = refFile.lastModified();
             cachedODs = null;
@@ -290,7 +295,7 @@ class ScannerCalibration {
             if (log != null && log.isDebugEnabled()) {
                log.debug("analysing " + scanFiles[0].getName());
             }
-            cachedScanData = analyse(ImageIO.read(scanFiles[0]));
+            cachedScanData = analyse(scanFiles[0]);
             lastScanFile = scanFiles[0];
             lastScanFileModified = scanFiles[0].lastModified();
             cachedODs = null;
@@ -314,13 +319,6 @@ class ScannerCalibration {
       } catch (IOException e) {
          throw new CalibrationException("calculateGrayscaleODs failed: ", e);
       }
-   }
-   
-   float[] calculateGrayscaleODs(BufferedImage refGrayscaleImage,
-                                BufferedImage grayscaleImage)
-      throws CalibrationException
-   {
-      return interpolate(analyse(refGrayscaleImage), analyse(grayscaleImage));
    }
    
    private float[] interpolate(float[] invRefPx, float[] invPx)
@@ -383,68 +381,92 @@ class ScannerCalibration {
       }
    }
 
-            
-   private float[] analyse(BufferedImage bi)
+   private ImageReader findReader(File f)
       throws CalibrationException
    {
-      int w = bi.getWidth();
-      int h = bi.getHeight();
-      int x0 = w / 2;
-      int y0 = h / 2; 
-      int[] hline = bi.getRGB(0, y0, w, 1, null, 0, w);
-      int[] vline = bi.getRGB(x0, 0, 1, h, null, 0, 1);
-      int[] lr = findBorder(hline);
-      int[] tb = findBorder(vline);
-      int hgrad = gradient(hline, lr);
-      int vgrad = gradient(vline, tb);
-      boolean portrait = Math.abs(vgrad) > Math.abs(hgrad);
-      if (log != null && log.isDebugEnabled()) {
-         log.debug("detected Border[left=" + lr[0] + ", right=" + lr[1]
-            + ", top=" + tb[0] + ", bottom=" + tb[1] + "], Gradient["
-            + (portrait ? (vgrad > 0 ? "bottom-top" : "top-bottom")
-                        : (hgrad > 0 ? "right-left" : "left-right"))
-            + "]");
+      String fname = f.getName();
+      String fileSuffix = fname.substring(fname.lastIndexOf('.')+1);
+      Iterator it = ImageIO.getImageReadersBySuffix(fileSuffix);
+      if (!it.hasNext()) {
+         throw new CalibrationException("Unsupported Image Format " + f);
       }
-      int n = portrait
-         ? findSteps(vline, tb[0], tb[1], vgrad > 0)
-         : findSteps(hline, lr[0], lr[1], hgrad > 0);
-      float[] px = new float[n];
-      if (portrait) {
-      // top to bottom orientation
-         int h1 = tb[1] - tb[0];
-         int dw = (lr[1] - lr[0]) * scanPointExtension[0] / 100 + 1;
-         int dh = h1 * scanPointExtension[1] / (100 * n) + 1;
-         int x1 = (lr[0] + lr[1] - dw) / 2;
-         int y = tb[0] + (h1 / n - dh) / 2;
-         int[] buf = new int[dw * dh];
-      
-         for (int i = 0; i < n; ++i) {
-            px[vgrad > 0 ? n - i - 1 : i] =
-               average(bi.getRGB(x1, y + h1 * i/n, dw, dh, buf, 0, dw));
+      return (ImageReader) it.next();
+   }
+   
+   private float[] analyse(File f)
+      throws CalibrationException, IOException
+   {
+      ImageReader r = findReader(f);
+      ImageInputStream in = ImageIO.createImageInputStream(f);
+      try {
+         BufferedImage bi;
+         ImageReadParam rParam = r.getDefaultReadParam();
+         r.setInput(in);
+         int w = r.getWidth(0);
+         int h = r.getHeight(0);
+         int x0 = w / 2;
+         int y0 = h / 2; 
+         rParam.setSourceRegion(new Rectangle(0, y0, w, 1));
+         int[] hline = r.read(0, rParam).getRGB(0, 0, w, 1, null, 0, w);
+         rParam.setSourceRegion(new Rectangle(x0, 0, 1, h));
+         int[] vline = r.read(0, rParam).getRGB(0, 0, 1, h, null, 0, 1);
+         int[] lr = findBorder(hline);
+         int[] tb = findBorder(vline);
+         int hgrad = gradient(hline, lr);
+         int vgrad = gradient(vline, tb);
+         boolean portrait = Math.abs(vgrad) > Math.abs(hgrad);
+         if (log != null && log.isDebugEnabled()) {
+            log.debug("detected Border[left=" + lr[0] + ", right=" + lr[1]
+               + ", top=" + tb[0] + ", bottom=" + tb[1] + "], Gradient["
+               + (portrait ? (vgrad > 0 ? "bottom-top" : "top-bottom")
+                           : (hgrad > 0 ? "right-left" : "left-right"))
+               + "]");
          }
-      } else {
-         // left to right orientation
-         int w1 = lr[1] - lr[0];
-         int dw = w1 * scanPointExtension[1] / (100 * n) + 1;
-         int dh = (tb[1] - tb[0]) * scanPointExtension[0] / 100 + 1;
-         int x = lr[0] + (w1/ n - dw) / 2;
-         int y1 = (tb[0] + tb[1] - dh) / 2;
-         int[] buf = new int[dw * dh];
-         
-         for (int i = 0; i < n; ++i) {
-            px[hgrad > 0 ? n - i - 1 : i] =
-               average(bi.getRGB(x + w1 * i/n, y1, dw, dh, buf, 0, dw));
+         int n = portrait
+            ? findSteps(vline, tb[0], tb[1], vgrad > 0)
+            : findSteps(hline, lr[0], lr[1], hgrad > 0);
+         float[] px = new float[n];
+         if (portrait) {
+         // top to bottom orientation
+            int h1 = tb[1] - tb[0];
+            int dw = (lr[1] - lr[0]) * scanPointExtension[0] / 100 + 1;
+            int dh = h1 * scanPointExtension[1] / (100 * n) + 1;
+            int x1 = (lr[0] + lr[1] - dw) / 2;
+            int y = tb[0] + (h1 / n - dh) / 2;
+            int[] buf = new int[dw * dh];
+
+            for (int i = 0; i < n; ++i) {
+               rParam.setSourceRegion(new Rectangle(x1, y + h1 * i/n, dw, dh));
+               px[vgrad > 0 ? n - i - 1 : i] =
+                  average(r.read(0, rParam).getRGB(0, 0, dw, dh, buf, 0, dw));
+            }
+         } else {
+            // left to right orientation
+            int w1 = lr[1] - lr[0];
+            int dw = w1 * scanPointExtension[1] / (100 * n) + 1;
+            int dh = (tb[1] - tb[0]) * scanPointExtension[0] / 100 + 1;
+            int x = lr[0] + (w1/ n - dw) / 2;
+            int y1 = (tb[0] + tb[1] - dh) / 2;
+            int[] buf = new int[dw * dh];
+
+            for (int i = 0; i < n; ++i) {
+              rParam.setSourceRegion(new Rectangle(x + w1 * i/n, y1, dw, dh));
+              px[hgrad > 0 ? n - i - 1 : i] =
+                  average(r.read(0, rParam).getRGB(0, 0, dw, dh, buf, 0, dw));
+            }
          }
+         if (log != null && log.isDebugEnabled()) {
+            StringBuffer sb = new StringBuffer("detected Grayscale 255-pxval:");
+            for (int i = 0; i < px.length; ++i) { 
+               sb.append("\r\n\t");
+               sb.append(px[i]);
+            }
+            log.debug(sb.toString());
+         }
+         return px;
+      } finally {
+         try { in.close(); } catch (IOException ignore) {}
       }
-      if (log != null && log.isDebugEnabled()) {
-         StringBuffer sb = new StringBuffer("detected Grayscale 255-pxval:");
-         for (int i = 0; i < px.length; ++i) { 
-            sb.append("\r\n\t");
-            sb.append(px[i]);
-         }
-         log.debug(sb.toString());
-      }
-      return px;
    }
    
    private float average(int[] rgb) {
