@@ -260,6 +260,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTLSConfigName"
+      setMethod="setTLSConfigName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>TLSConfigName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chex:service=TLSConfig" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAuditLoggerName"
       setMethod="setAuditLoggerName">
       <description>Used internally - do NOT modify.

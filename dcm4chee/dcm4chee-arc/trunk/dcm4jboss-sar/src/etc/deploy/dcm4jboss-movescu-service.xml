@@ -6,6 +6,9 @@
 	     name="dcm4chex:service=MoveScu"
 	     xmbean-dd="xmdesc/dcm4jboss-movescu-xmbean.xml">
     <depends>
+      dcm4chex:service=TLSConfig
+    </depends>
+    <depends>
       dcm4chex:service=Queue,name=MoveScu
     </depends>
     <depends>

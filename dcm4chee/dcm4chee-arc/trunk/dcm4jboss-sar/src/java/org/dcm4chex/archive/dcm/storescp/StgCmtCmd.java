@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Socket;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -241,7 +240,8 @@ class StgCmtCmd {
 
     private void sendResult() {
         try {
-            Association assoc = aFact.newRequestor(createSocket());
+            Association assoc = aFact.newRequestor(
+                    service.createSocket(aeData));
             assoc.setAcTimeout(service.getAcTimeout());
             //            assoc.setDimseTimeout(service.getDimseTimeout());
             //            assoc.setSoCloseDelay(service.getSoCloseDelay());
@@ -300,15 +300,5 @@ class StgCmtCmd {
         RoleSelection rs = ac.getRoleSelection(UIDs.StorageCommitmentPushModel);
         return ac.getPresContext(1).result() == PresContext.ACCEPTANCE
                 && rs != null && rs.scp();
-    }
-
-    private Socket createSocket() throws IOException {
-        String[] cipherSuites = aeData.getCipherSuites();
-        if (cipherSuites == null || cipherSuites.length == 0) {
-            return new Socket(aeData.getHostName(), aeData.getPort());
-        } else {
-            return service.getSocketFactory(cipherSuites).createSocket(
-                    aeData.getHostName(), aeData.getPort());
-        }
     }
 }

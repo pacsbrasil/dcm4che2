@@ -44,6 +44,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -96,6 +97,8 @@ public class IANScuService extends ServiceMBeanSupport implements
     private static final int PCID_SCN = 3;
 
     private static final String DEFAULT_CALLING_AET = "IAN_SCU";
+
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
     private ObjectName storeScpServiceName;
 
@@ -209,6 +212,14 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
         this.storeScpServiceName = storeScpServiceName;
+    }
+
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
     protected void startService() throws Exception {
@@ -399,8 +410,8 @@ public class IANScuService extends ServiceMBeanSupport implements
         return scn;
     }
 
-    private Socket createSocket(AEData ianSCP) throws IOException {
-        return new Socket(ianSCP.getHostName(), ianSCP.getPort());
+    Socket createSocket(AEData aeData) throws IOException {
+        return tlsConfig.createSocket(aeData);
     }
 
     void logDataset(String prompt, Dataset ds) {

@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.mbean;
 
+import java.net.Socket;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -346,6 +347,14 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
                 && !supressLogForAETs.contains(node.getAET())) {
             logger.logDicomQuery(keys, node, cuid);
         }        
+    }
+    
+    public void logSecurityAlert(String alertType, Socket socket, String aet,
+            String description) {
+        if (getState() == STARTED && !supressLogForAETs.contains(aet)) {
+            logger.logSecurityAlert(alertType, alf.newRemoteUser(alf
+                    .newRemoteNode(socket, aet)), description);
+        }
     }
     
     private void logActorStartStop(String action) {

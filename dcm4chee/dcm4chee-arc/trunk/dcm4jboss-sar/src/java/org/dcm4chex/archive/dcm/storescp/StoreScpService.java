@@ -9,6 +9,8 @@
 
 package org.dcm4chex.archive.dcm.storescp;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import javax.management.JMException;
@@ -18,14 +20,15 @@ import javax.management.ObjectName;
 
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
-import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
+import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
@@ -84,6 +87,8 @@ public class StoreScpService extends AbstractScpService {
             UIDs.RTTreatmentSummaryRecordStorage, UIDs.RawDataStorage};
 
     private ObjectName fileSystemMgtName;
+
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
     private boolean acceptStorageCommitment = true;
 
@@ -114,6 +119,14 @@ public class StoreScpService extends AbstractScpService {
     private StoreScp scp = new StoreScp(this);
 
     private StgCmtScp stgCmtScp = new StgCmtScp(this);
+
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
+    }
 
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
@@ -428,5 +441,9 @@ public class StoreScpService extends AbstractScpService {
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
+    }
+
+    Socket createSocket(AEData aeData) throws IOException {
+        return tlsConfig.createSocket(aeData);
     }
 }

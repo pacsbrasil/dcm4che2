@@ -9,7 +9,6 @@
 package org.dcm4chex.archive.dcm.movescu;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.sql.SQLException;
 
 import org.dcm4che.data.Command;
@@ -138,7 +137,7 @@ class MoveCmd implements Runnable, DimseListener {
 
     private ActiveAssociation openAssociation(AEData moveSCP)
             throws IOException {
-        Association a = af.newRequestor(createSocket(moveSCP));
+        Association a = af.newRequestor(service.createSocket(moveSCP));
         a.setAcTimeout(service.getAcTimeout());
         a.setDimseTimeout(service.getDimseTimeout());
         a.setSoCloseDelay(service.getSoCloseDelay());
@@ -163,10 +162,6 @@ class MoveCmd implements Runnable, DimseListener {
                     "Presentation Context for Retrieve rejected by " + moveSCP);
         }
         return aa;
-    }
-
-    private Socket createSocket(AEData moveSCP) throws IOException {
-        return new Socket(moveSCP.getHostName(), moveSCP.getPort());
     }
 
 }

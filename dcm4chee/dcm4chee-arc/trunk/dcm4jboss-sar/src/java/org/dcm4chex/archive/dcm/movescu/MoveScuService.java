@@ -8,7 +8,9 @@
  ******************************************/
 package org.dcm4chex.archive.dcm.movescu;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,14 +18,12 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
+import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -48,6 +48,8 @@ public class MoveScuService extends ServiceMBeanSupport implements
         dumpParam.put("prefix", "\t");
     }
 
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
+
     private String callingAET = DEF_CALLING_AET;
 
     private String calledAET = DEF_CALLED_AET;
@@ -58,16 +60,20 @@ public class MoveScuService extends ServiceMBeanSupport implements
 
     private int soCloseDelay;
 
-    private String dsJndiName = "java:/DefaultDS";
-
-    private DataSource datasource;
-
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
     private PooledExecutor pool = new PooledExecutor();
 
     public MoveScuService() {
         pool.waitWhenBlocked();
+    }
+
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
     public final String getCalledAET() {
@@ -102,40 +108,12 @@ public class MoveScuService extends ServiceMBeanSupport implements
         this.soCloseDelay = soCloseDelay;
     }
     
-    public final String getDataSourceJndiName() {
-        return dsJndiName;
-    }
-
-    public final void setDataSourceJndiName(String jndiName) {
-        this.dsJndiName = jndiName;
-    }
-
     public final int getConcurrency() {
         return pool.getMaximumPoolSize();
     }
 
     public final void setConcurrency(int concurrency) {
         pool.setMaximumPoolSize(concurrency);
-    }
-
-    public DataSource getDataSource() throws ConfigurationException {
-        if (datasource == null) {
-            try {
-                Context jndiCtx = new InitialContext();
-                try {
-                    datasource = (DataSource) jndiCtx.lookup(dsJndiName);
-                } finally {
-                    try {
-                        jndiCtx.close();
-                    } catch (NamingException ignore) {
-                    }
-                }
-            } catch (NamingException ne) {
-                throw new ConfigurationException(
-                        "Failed to access Data Source: " + dsJndiName, ne);
-            }
-        }
-        return datasource;
     }
 
     public String getRetryIntervalls() {
@@ -201,5 +179,9 @@ public class MoveScuService extends ServiceMBeanSupport implements
         } catch (Exception e) {
             log.warn("Failed to dump dataset", e);
         }
+    }
+
+    Socket createSocket(AEData aeData) throws IOException {
+        return tlsConfig.createSocket(aeData);
     }
 }

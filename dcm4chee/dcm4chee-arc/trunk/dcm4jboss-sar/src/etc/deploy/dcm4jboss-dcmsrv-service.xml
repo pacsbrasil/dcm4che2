@@ -6,6 +6,9 @@
          name="dcm4chex:service=DcmServer"
          xmbean-dd="xmdesc/dcm4jboss-dcmsrv-xmbean.xml">
     <depends>
+      dcm4chex:service=TLSConfig
+    </depends>
+    <depends>
       dcm4chex:service=AuditLogger
     </depends>
   </mbean>

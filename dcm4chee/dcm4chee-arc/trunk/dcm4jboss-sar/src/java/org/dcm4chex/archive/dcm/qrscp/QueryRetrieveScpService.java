@@ -9,6 +9,8 @@
 
 package org.dcm4chex.archive.dcm.qrscp;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -76,6 +79,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private String retrieveTransactionIsolationLevel;
     
     private ObjectName fileSystemMgtName;
+
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
     private boolean sendPendingMoveRSP = true;
 
@@ -106,6 +111,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private FindScp findScp = new FindScp(this);
 
     private MoveScp moveScp = new MoveScp(this);
+
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
+    }
 
     public final String getQueryTransactionIsolationLevel() {
         return transactionIsolationLevelAsString(QueryCmd.transactionIsolationLevel);
@@ -366,5 +379,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
+    }
+
+    Socket createSocket(AEData aeData) throws IOException {
+        return tlsConfig.createSocket(aeData);
     }
 }

@@ -37,6 +37,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -76,6 +77,8 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     private static final String[] EMPTY = {};
 
     private static final int[] IUID = { Tags.SOPInstanceUID};
+
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
@@ -133,6 +136,14 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         this.mppsScpServiceName = mppsScpServiceName;
     }
 
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
+    }
+    
     public final String getCallingAET() {
         return callingAET;
     }
@@ -294,8 +305,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         }
     }
 
-    private Socket createSocket(AEData mppsSCP) throws IOException {
-        return new Socket(mppsSCP.getHostName(), mppsSCP.getPort());
+    Socket createSocket(AEData aeData) throws IOException {
+        return tlsConfig.createSocket(aeData);
     }
-
 }

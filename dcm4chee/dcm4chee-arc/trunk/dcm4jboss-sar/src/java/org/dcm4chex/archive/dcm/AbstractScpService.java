@@ -1,37 +1,19 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 package org.dcm4chex.archive.dcm;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
@@ -40,8 +22,6 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
 import EDU.oswego.cs.dl.util.concurrent.Semaphore;
@@ -187,45 +167,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             log.warn("Failed to dump dataset", e);
         }
     }
-
-    public ServerSocketFactory getServerSocketFactory(String[] cipherSuites) {
-        try {
-            return (ServerSocketFactory) server.invoke(dcmServerName,
-                    "getServerSocketFactory", new Object[] { cipherSuites},
-                    new String[] { String[].class.getName(),});
-        } catch (InstanceNotFoundException e) {
-            throw new ConfigurationException(e);
-        } catch (MBeanException e) {
-            throw new ConfigurationException(e);
-        } catch (ReflectionException e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
-    public SocketFactory getSocketFactory(String[] cipherSuites) {
-        try {
-            return (SocketFactory) server.invoke(dcmServerName,
-                    "getSocketFactory", new Object[] { cipherSuites},
-                    new String[] { String[].class.getName(),});
-        } catch (InstanceNotFoundException e) {
-            throw new ConfigurationException(e);
-        } catch (MBeanException e) {
-            throw new ConfigurationException(e);
-        } catch (ReflectionException e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
-    public Socket createSocket(AEData aeData) throws IOException {
-        String[] cipherSuites = aeData.getCipherSuites();
-        if (cipherSuites == null || cipherSuites.length == 0) {
-            return new Socket(aeData.getHostName(), aeData.getPort());
-        } else {
-            return getSocketFactory(cipherSuites).createSocket(
-                    aeData.getHostName(), aeData.getPort());
-        }
-    }
-
 
     public Semaphore getCodecSemaphore() throws Exception {
         return (Semaphore) server.invoke(dcmServerName,
