@@ -64,7 +64,7 @@
       setMethod="setConcurrency">
       <description>Maximal number of concurrent invoked Move Requests.
       </description>
-      <name>concurrency</name>
+      <name>Concurrency</name>
       <type>int</type>
       <descriptors>
          <value value="1" />
