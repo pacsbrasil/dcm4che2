@@ -33,10 +33,7 @@ import java.io.InputStream;
 
 import java.io.OutputStream;
 import java.io.Writer;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
@@ -61,10 +58,8 @@ import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.image.ColorModelFactory;
-import org.dcm4che.util.UIDGenerator;
 
 import org.xml.sax.ContentHandler;
 import javax.xml.transform.Transformer;
