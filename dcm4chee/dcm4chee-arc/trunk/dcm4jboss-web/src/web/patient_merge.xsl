@@ -16,7 +16,7 @@
            <table border="0">
 					<tr>
 				        <td class="label" title="Patient ID" >
-							Select Patient
+							Select dominant Patient
 						</td>
 					</tr>	
 					<tr>
