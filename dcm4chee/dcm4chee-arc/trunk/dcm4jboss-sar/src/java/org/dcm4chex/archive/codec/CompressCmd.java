@@ -344,14 +344,15 @@ public abstract class CompressCmd extends CodecCmd {
     }
 
     private ColorModel getColorModel() {
+        
         if (samples == 3) {
             return new ComponentColorModel(ColorSpace
-                    .getInstance(ColorSpace.CS_sRGB), new int[] { bitsStored,
-                    bitsStored, bitsStored}, false, false, ColorModel.OPAQUE,
+                    .getInstance(ColorSpace.CS_sRGB), new int[] { bitsUsed,
+                    bitsUsed, bitsUsed}, false, false, ColorModel.OPAQUE,
                     dataType);
         } else {
             return new ComponentColorModel(ColorSpace
-                    .getInstance(ColorSpace.CS_GRAY), new int[] { bitsStored},
+                    .getInstance(ColorSpace.CS_GRAY), new int[] { bitsUsed},
                     false, false, ColorModel.OPAQUE, dataType);
         }
     }

@@ -9,6 +9,7 @@
 package org.dcm4chex.archive.mbean;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class CompressionService extends TimerSupport {
 
+    private static final String _DCM = ".dcm";
+    
     private long taskInterval = 0L;
 
     private int disabledStartHour;
@@ -53,6 +56,14 @@ public class CompressionService extends TimerSupport {
     private int limitNumberOfFilesPerTask;
 
     private boolean verifyCompression;
+
+    private Integer listenerID;
+
+    private ObjectName fileSystemMgtName;
+
+    private File tmpDir = new File("tmp");
+
+    private long keepTempFileIfVerificationFails = 0L;    
 
     private List compressionRuleList = new ArrayList();
 
@@ -64,6 +75,7 @@ public class CompressionService extends TimerSupport {
 
     private final NotificationListener delayedCompressionListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
+            checkForTempFilesToDelete();
             Calendar cal = Calendar.getInstance();
             int hour = cal.get(Calendar.HOUR_OF_DAY);
             if (isDisabled(hour)) {
@@ -81,10 +93,6 @@ public class CompressionService extends TimerSupport {
         }
     };
 
-    private Integer listenerID;
-
-    private ObjectName fileSystemMgtName;
-
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
@@ -92,12 +100,20 @@ public class CompressionService extends TimerSupport {
     public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
         this.fileSystemMgtName = fileSystemMgtName;
     }
-
+    
+    public final String getKeepTempFileIfVerificationFails() {
+        return RetryIntervalls.formatInterval(keepTempFileIfVerificationFails);
+    }
+    
+    public final void setKeepTempFileIfVerificationFails(String interval) {
+        this.keepTempFileIfVerificationFails = 
+                RetryIntervalls.parseInterval(interval);
+    }
+    
     public final String getTaskInterval() {
         String s = RetryIntervalls.formatIntervalZeroAsNever(taskInterval);
-        if (disabledEndHour != -1)
-            s += "!" + disabledStartHour + "-" + disabledEndHour;
-        return s;
+        return (disabledEndHour == -1) ? s : s + "!" + disabledStartHour + "-"
+                + disabledEndHour;
     }
 
     public void setTaskInterval(String interval) {
@@ -125,7 +141,7 @@ public class CompressionService extends TimerSupport {
         this.compressionRuleList.clear();
         if (rules == null || rules.trim().length() < 1)
             return;
-        StringTokenizer st = new StringTokenizer(rules, ",");
+        StringTokenizer st = new StringTokenizer(rules, ",;\n\r\t ");
         while (st.hasMoreTokens()) {
             compressionRuleList.add(new CompressionRule(st.nextToken()));
         }
@@ -134,10 +150,8 @@ public class CompressionService extends TimerSupport {
     public final String getCompressionRules() {
         StringBuffer sb = new StringBuffer();
         Iterator iter = this.compressionRuleList.iterator();
-        if (iter.hasNext())
-            sb.append(((CompressionRule) iter.next()).toString());
         while (iter.hasNext()) {
-            sb.append(",").append(((CompressionRule) iter.next()).toString());
+            sb.append(((CompressionRule) iter.next())).append("\r\n");
         }
         return sb.toString();
     }
@@ -166,31 +180,59 @@ public class CompressionService extends TimerSupport {
         CodecCmd.setMaxConcurrentCodec(maxConcurrentCodec);
     }
 
-    /**
-     * @throws FinderException
-     * @throws RemoteException
-     * 
-     */
+    public final void setTempDir( String dirPath ) {
+        tmpDir = new File(dirPath);
+    }
+    
+    public final String getTempDir() {
+        return tmpDir.toString();
+    }
+        
+    public void checkForTempFilesToDelete() {
+        if (keepTempFileIfVerificationFails <= 0)
+            return;
+        File absTmpDir = FileUtils.resolve(tmpDir);
+        if (!absTmpDir.isDirectory())
+            return;
+        final long before = System.currentTimeMillis() - keepTempFileIfVerificationFails;
+        File[] files = absTmpDir.listFiles(new FileFilter(){
+            public boolean accept(File f) {
+                return f.getName().endsWith(_DCM) && f.lastModified() < before;
+            }});
+        for (int i = 0; i < files.length; i++) {
+            if (log.isDebugEnabled())
+                log.debug("M-DELETE " + files[i]);
+            if (!files[i].delete())
+                log.warn("Failed to M-DELETE " + files[i]);
+        }        
+    }
+    
     public void checkForFilesToCompress() throws RemoteException,
             FinderException {
         log.info("Check For Files To Compress on attached filesystems!");
+        String cuid;
         Timestamp before;
         CompressionRule info;
         FileDTO[] files;
         int limit = limitNumberOfFilesPerTask;
-        String[] fsdir = getFileSystemDirPaths();
+        String[] fsdirs = getFileSystemDirPaths();
         FileSystemMgt fsMgt = newFileSystemMgt();
         try {
-            for (int j = 0, len = compressionRuleList.size(); j < len && limit > 0; j++) {
-                info = (CompressionRule) compressionRuleList.get(j);
+            for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
+                info = (CompressionRule) compressionRuleList.get(i);
+                cuid = info.getCUID();
                 before = new Timestamp(System.currentTimeMillis() - info.getDelay());
-                files = fsMgt.findToCompress(info.getAETs(), fsdir, before, limit);
-                if (files != null) {
-                    log.info("Compress " + files.length + " files for " + info);
-                    doCompress(fsMgt, files, info);
-                    limit -= files.length;
-                } else {
-                    log.info("No files to compress for " + info);
+                for (int j = 0; j < fsdirs.length; j++) {
+                    files = fsMgt.findFilesToCompress(fsdirs[j],
+                            info.getCUID(), before, limit);
+                    if (files.length > 0) {
+                        log.debug("Compress " + files.length + " files on filesystem "
+                                + fsdirs[j] + " triggered by " + info);
+                        for (int k = 0; k < files.length; k++) {
+                            doCompress(fsMgt, files[k], info);
+                        }
+                        limit -= files.length;
+                    }
                 }
             }
         } finally {
@@ -210,99 +252,81 @@ public class CompressionService extends TimerSupport {
         }
     }
 
-     private void doCompress(FileSystemMgt fsMgt, FileDTO[] files, CompressionRule info) {
-        if (files.length < 1)
-            return;
-        File srcFile, destFile;
-        String destPath;
-        File tmpDir = FileUtils.toFile("tmp", "checks");// tmp directory in ServerHomeDir
-        tmpDir.mkdir();
-        File tmpFile;
-        int[] ia = new int[1];
-        byte[] md5;
-        for (int i = 0, len = files.length; i < len; i++) {
-            srcFile = FileUtils.toFile(files[i].getDirectoryPath(), files[i]
-                    .getFilePath());
-            destFile = getDestFile(srcFile);
-            if (log.isDebugEnabled())
-                log.debug("Compress file " + srcFile + " to " + destFile
-                        + " with CODEC:" + info.getCodec() + "("
-                        + info.getTransferSyntax() + ")");
-            try {
-                md5 = CompressCmd.compressFile(srcFile, destFile, info
-                        .getTransferSyntax(), ia);
-                boolean check = true;
-                if (verifyCompression) {
-                    tmpFile = File.createTempFile("check", null, tmpDir);
-                    tmpFile.deleteOnExit();
-                    byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
-                            tmpFile, files[i].getFileTsuid(), ia[0]);
-                    if (!Arrays.equals(dec_md5, files[i].getFileMd5())) {
-                        log.warn("File MD5 check failed for src file "
-                                + srcFile + "! Check pixel matrix now.");
-                        if (!FileUtils.equalsPixelData(srcFile, tmpFile)) {
-                            check = false;
-                        }
+     private void doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
+            CompressionRule info) {
+        File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
+        File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
+                .getFilePath());
+        File destFile = incFileName(srcFile);
+        if (log.isDebugEnabled())
+            log.debug("Compress file " + srcFile + " to " + destFile
+                    + " with CODEC:" + info.getCodec() + "("
+                    + info.getTransferSyntax() + ")");
+        try {
+            int[] pxvalVR = new int[1];
+            byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
+                    .getTransferSyntax(), pxvalVR);
+            if (verifyCompression) {
+                File absTmpDir = FileUtils.resolve(tmpDir);
+                if (absTmpDir.mkdirs())
+                    log.info("Create directory for decompressed files");
+                File decFile = new File(absTmpDir,
+                        srcFile.getPath().substring(1).replace(File.separatorChar, '-')
+                        + _DCM);
+                byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
+                        decFile, fileDTO.getFileTsuid(), pxvalVR[0]);
+                if (!Arrays.equals(dec_md5, fileDTO.getFileMd5())) {
+                    log.info("File MD5 check failed for src file " + srcFile
+                            + "! Check pixel matrix now.");
+                    if (!FileUtils.equalsPixelData(srcFile, decFile)) {
+                        log.warn("Pixel matrix after decompression differs from original file "
+                                        + srcFile
+                                        + "! Keep original uncompressed file.");
+                        destFile.delete();
+                        fsMgt.setFileStatus(fileDTO.getPk(),
+                                FileDTO.VERIFY_COMPRESS_FAILED);
+                        if (keepTempFileIfVerificationFails <= 0L)
+                            decFile.delete();
+                        return;
                     }
-                    if (tmpFile.exists())
-                        tmpFile.delete();
                 }
-                if (check) {
-                    destPath = new File(files[i].getFilePath()).getParent()
-                            + File.separatorChar + destFile.getName();
-                    if (log.isDebugEnabled())
-                        log.debug("replaceFile " + srcFile + " with "
-                                + destFile + " ! destPath:" + destPath);
-                    fsMgt.replaceFile(files[i].getPk(),
-                            destPath, info.getTransferSyntax(),
-                            (int) destFile.length(), md5);
-                } else {
-                    log.error("Pixel matrix of compressed file differs from original ("
-                                    + srcFile + ")! compressed file removed!");
-                    destFile.delete();
-                    fsMgt.setFileStatus(files[i].getPk(),
-                            FileDTO.VERIFY_COMPRESS_FAILED);
-                }
-            } catch (Exception x) {
-                log.error("Can't compress file:" + srcFile, x);
-                if (destFile.exists())
-                    destFile.delete();
-                try {
-                    fsMgt.setFileStatus(files[i].getPk(),
-                            FileDTO.COMPRESS_FAILED);
-                } catch (Exception x1) {
-                    log.error("Failed to set FAILED_TO_COMPRESS for file "
-                            + srcFile);
-                }
+                decFile.delete();
+            }
+            final int baseDirPathLength = baseDir.getPath().length();
+            final String destFilePath = destFile.getPath().substring(
+                    baseDirPathLength + 1).replace(File.separatorChar, '/');
+            if (log.isDebugEnabled())
+                log.debug("replace File " + srcFile + " with " + destFile);
+            fsMgt.replaceFile(fileDTO.getPk(), destFilePath, info
+                    .getTransferSyntax(), (int) srcFile.length(), md5);
+        } catch (Exception x) {
+            log.error("Can't compress file:" + srcFile, x);
+            if (destFile.exists())
+                destFile.delete();
+            try {
+                fsMgt.setFileStatus(fileDTO.getPk(), FileDTO.COMPRESS_FAILED);
+            } catch (Exception x1) {
+                log.error("Failed to set FAILED_TO_COMPRESS for file "
+                        + srcFile);
             }
         }
-
     }
 
-    /**
-     * @param srcFile
-     * @return
-     */
-    private File getDestFile(File src) {
+    private File incFileName(File src) {
         File path = src.getParentFile();
         long fnAsInt = Long.parseLong(src.getName(), 16);
-        File f = new File(path, Long.toHexString(++fnAsInt).toUpperCase());
-        while (f.exists()) {
-            f = new File(path, Long.toHexString(++fnAsInt).toUpperCase());
-        }
+        File f;
+        do {
+            f = new File(path, Long.toHexString(++fnAsInt).toUpperCase());            
+        } while (f.exists());
         return f;
     }
 
-    /**
-     * @param hour
-     * @return
-     */
-    protected boolean isDisabled(int hour) {
-        if (disabledEndHour >= disabledStartHour) {
-            return hour >= disabledStartHour && hour <= disabledEndHour;
-        } else {
-            return !(hour > disabledEndHour && hour < disabledStartHour);
-        }
+    private boolean isDisabled(int hour) {
+        if (disabledEndHour == -1) return false;
+        boolean sameday = disabledStartHour <= disabledEndHour;
+        boolean inside = hour >= disabledStartHour && hour < disabledEndHour; 
+        return sameday ? inside : !inside;
     }
 
     protected void startService() throws Exception {
@@ -328,24 +352,19 @@ public class CompressionService extends TimerSupport {
     }
 
     public class CompressionRule {
-        String[] aets;
-        long delay;
+        String cuid;
         int codec;
+        long delay;
         public CompressionRule(String s) {
-            int pos = s.indexOf('/');
-            int pos1 = s.indexOf(']');
-            if (pos == -1 || pos1 < pos || s.charAt(0) != '[') {
-                throw new IllegalArgumentException(
-                        "Wrong format! Use [<AET>|<AET2>/<delay>]<codec>");
-            }
-            aets = StringUtils.split(s.substring(1, pos), '|');
-            delay = RetryIntervalls.parseInterval(s.substring(pos + 1, pos1));
-            codec = Arrays.asList(CODEC_NAMES).indexOf(
-                    s.substring(pos1 + 1).trim());
+            String[] a = StringUtils.split(s, ':');
+            if (a.length != 3)
+                throw new IllegalArgumentException("Wrong format - " + s);
+            cuid = a[0];
+            getCUID(); // check cuid
+            codec = Arrays.asList(CODEC_NAMES).indexOf(a[1]);
             if (codec == -1)
-                throw new IllegalArgumentException("Wrong CODEC name "
-                        + s.substring(pos1 + 1).trim()
-                        + "! Use JPLL, JLSL or J2KR!");
+                throw new IllegalArgumentException("Unrecognized codec - " + a[1]);
+            delay = RetryIntervalls.parseInterval(a[2]);
         }
 
         /**
@@ -358,8 +377,8 @@ public class CompressionService extends TimerSupport {
         /**
          * @return
          */
-        public String[] getAETs() {
-            return aets;
+        public String getCUID() {
+            return Character.isDigit(cuid.charAt(0)) ? cuid : UIDs.forName(cuid);
         }
 
         /**
@@ -377,8 +396,8 @@ public class CompressionService extends TimerSupport {
         }
 
         public String toString() {
-            return "[" + StringUtils.toString(aets, '|') + "/"
-                    + RetryIntervalls.formatInterval(delay) + "]" + getCodec();
+            return cuid + ":" + getCodec() + ':'
+                    + RetryIntervalls.formatInterval(delay);
         }
     }
 }

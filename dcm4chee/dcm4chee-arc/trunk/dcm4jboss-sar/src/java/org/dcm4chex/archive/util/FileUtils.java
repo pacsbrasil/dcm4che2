@@ -13,7 +13,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteOrder;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
@@ -84,33 +87,43 @@ public class FileUtils {
     	try {
     		InputStream in2 = new BufferedInputStream(new FileInputStream(f2));
     		try {    			
+                Dataset attrs = DcmObjectFactory.getInstance().newDataset();
     	    	DcmParserFactory pf = DcmParserFactory.getInstance();
 				DcmParser p1 = pf.newDcmParser(in1);
     	    	DcmParser p2 = pf.newDcmParser(in2);
+                p1.setDcmHandler(attrs.getDcmHandler());
     			p1.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
     			p2.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-    			int toRead = p1.getReadLength();
-    			if (toRead < 0 || toRead != p2.getReadLength()) {
+                int bitsAlloc = attrs.getInt(Tags.BitsAllocated, 8);
+                int bitsStored = attrs.getInt(Tags.BitsStored, bitsAlloc);
+    			int totLen = p1.getReadLength();
+    			if (totLen < 0 || totLen != p2.getReadLength()) {
     				return false;
     			}
     			byte[] b1 = new byte[BUFFER_SIZE];
     			byte[] b2 = new byte[BUFFER_SIZE];
-    			int len, len2;
-    			while (toRead > 0) {
-    				toRead -= len = in1.read(b1, 0, Math.min(toRead, BUFFER_SIZE));
-    				if (len < 0) // EOF
-    					return false;
-    				int off = 0;
-    				while (off < len) {
-    					off += len2 = in2.read(b2, off, len - off);
-	    				if (len2 < 0) // EOF
-	    					return false;
-    				}
-    		        for (int i=0; i<len; i++)
-    		            if (b1[i] != b2[i])
-    		                return false;
-    			}
-    			return true;
+                int[] mask = { 0xff, 0xff };
+                int len, len2;
+                if (bitsAlloc == 16 && bitsStored < 16) {
+                    mask[p1.getDcmDecodeParam().byteOrder == ByteOrder.LITTLE_ENDIAN ? 1 : 0]
+                            = 0xff >>> (16 - bitsStored);
+                } 
+                int pos = 0;
+                while (pos < totLen) {
+                    len = in1.read(b1, 0, Math.min(totLen - pos, BUFFER_SIZE));
+                    if (len < 0) // EOF
+                        return false;
+                    int off = 0;
+                    while (off < len) {
+                        off += len2 = in2.read(b2, off, len - off);
+                        if (len2 < 0) // EOF
+                            return false;
+                    }
+                    for (int i=0; i<len; i++, pos++)
+                        if (((b1[i] - b2[i]) & mask[pos & 1]) != 0)
+                            return false;
+                }
+                return true;
     		} finally {
     			in2.close();
     		}
