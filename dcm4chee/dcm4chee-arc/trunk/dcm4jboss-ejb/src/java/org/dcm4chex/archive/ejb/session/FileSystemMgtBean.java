@@ -70,7 +70,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 
 	private FileSystemLocalHome fileSystemHome;
 
-    private FileSystemMgtSupportLocalHome freeDiskSpacerHome;
+    private FileSystemMgtSupportLocalHome fileSystemMgtSupportHome;
     
 	public void setSessionContext(SessionContext ctx) {
 		Context jndiCtx = null;
@@ -84,7 +84,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 					.lookup("java:comp/env/ejb/File");
 			this.fileSystemHome = (FileSystemLocalHome) jndiCtx
 					.lookup("java:comp/env/ejb/FileSystem");
-           this.freeDiskSpacerHome = (FileSystemMgtSupportLocalHome) jndiCtx
+            this.fileSystemMgtSupportHome = (FileSystemMgtSupportLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/FileSystemMgtSupport");
 		} catch (NamingException e) {
 			throw new EJBException(e);
@@ -103,7 +103,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		sofHome = null;
 		fileHome = null;
 		fileSystemHome = null;
-        freeDiskSpacerHome = null;
+        fileSystemMgtSupportHome = null;
 	}
 
 	/**
@@ -274,7 +274,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
             EJBException, RemoveException, CreateException {
         Collection c = getStudiesOnFilesystems(fsPathSet, tsBefore);
         long sizeToDelete = 0L;
-        FileSystemMgtSupportLocal spacer = freeDiskSpacerHome.create();
+        FileSystemMgtSupportLocal spacer = fileSystemMgtSupportHome.create();
         try {
             for (Iterator iter = c.iterator(); iter.hasNext()
                     && sizeToDelete < maxSizeToDel;) {
@@ -282,15 +282,6 @@ public abstract class FileSystemMgtBean implements SessionBean {
                         .next();
                 sizeToDelete += spacer.releaseStudy(studyOnFs, checkUncommited,
                         checkOnMedia, checkExternal);
-/*                StudyLocal studyLocal = studyOnFs.getStudy();
-                if ((checkOnMedia && studyLocal.isStudyAvailableOnMedia())
-                        || (checkExternal && studyLocal
-                                .isStudyExternalRetrievable())) {
-                    sizeToDelete += spacer.releaseStudy(studyOnFs);
-                } else if (checkUncommited
-                        && studyLocal.getNumberOfCommitedInstances() == 0) {
-                    sizeToDelete += spacer.deleteStudy(studyOnFs);
-                }*/
             }
         } finally {
             spacer.remove();
