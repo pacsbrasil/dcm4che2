@@ -116,18 +116,18 @@ public abstract class ContentEditBean implements SessionBean {
      * @throws CreateException
      * @ejb.interface-method
      */
-    public void createPatient(Dataset ds) throws CreateException {
-        patHome.create(ds);
+    public Dataset createPatient(Dataset ds) throws CreateException {
+        return patHome.create(ds).getAttributes(true);
     }
 
     /**
      * @throws CreateException
      * @ejb.interface-method
      */
-    public void createStudy(Dataset ds, int patPk) throws CreateException {
+    public Dataset createStudy(Dataset ds, int patPk) throws CreateException {
     	try {
 	        PatientLocal patient = patHome.findByPrimaryKey(new Integer(patPk));
-	        studyHome.create(ds, patient);
+	        return studyHome.create(ds, patient).getAttributes(true);
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -138,10 +138,10 @@ public abstract class ContentEditBean implements SessionBean {
      * @throws CreateException
      * @ejb.interface-method
      */
-    public void createSeries(Dataset ds, int studyPk) throws CreateException {
+    public Dataset createSeries(Dataset ds, int studyPk) throws CreateException {
     	try {
 	        StudyLocal study = studyHome.findByPrimaryKey(new Integer(studyPk));
-	        seriesHome.create(ds, study);
+	        return seriesHome.create(ds, study).getAttributes(true);
         } catch (FinderException e) {
             throw new EJBException(e);
         }
