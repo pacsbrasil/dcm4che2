@@ -21,6 +21,8 @@ import javax.jms.QueueSession;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.logging.Logger;
+
 /**
  * @author gunter.zeilinter@tiani.com
  * @version $Revision$ $Date$
@@ -122,32 +124,36 @@ public class JMSDelegate {
         }
     }
 
-    public void queueForMediaComposer(MediaCreationRequest rq)
+    public void queueForMediaComposer(Logger log, MediaCreationRequest rq)
             throws JMSException {
-        queueFor(rq, composerQueue);
+        queueFor(log, rq, composerQueue, " to Media Composer");
     }
 
-    public void queueForMediaWriter(MediaCreationRequest rq)
+    public void queueForMediaWriter(Logger log, MediaCreationRequest rq)
             throws JMSException {
-        queueFor(rq, writerQueue);
+        queueFor(log, rq, writerQueue, " to Media Writer");
     }
 
-    public void queueForMakeIsoImage(MediaCreationRequest rq)
+    public void queueForMakeIsoImage(Logger log, MediaCreationRequest rq)
             throws JMSException {
-        queueFor(rq, mkisofsQueue);
+        queueFor(log, rq, mkisofsQueue, " to Make ISO Image");
     }
 
-    private void queueFor(MediaCreationRequest request, Queue queue)
+    private void queueFor(Logger log, MediaCreationRequest rq, Queue queue, String toDest)
             throws JMSException {
         QueueSession session = null;
         QueueSender send = null;
+        log.info("Forwarding " + rq + toDest);
         try {
             session = conn.createQueueSession(false,
                     QueueSession.AUTO_ACKNOWLEDGE);
             send = session.createSender(queue);
-            ObjectMessage msg = session.createObjectMessage(request);
-            send.send(msg, DeliveryMode.PERSISTENT, toJMSPriority(request
+            ObjectMessage msg = session.createObjectMessage(rq);
+            send.send(msg, DeliveryMode.PERSISTENT, toJMSPriority(rq
                     .getPriority()), 0);
+        } catch (JMSException e) {
+            log.error("Failed to forward " + rq + toDest, e);
+            throw e;
         } finally {
             if (send != null) {
                 try {

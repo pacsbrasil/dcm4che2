@@ -51,6 +51,15 @@ public class ExecutionStatusInfo {
     
     public static final String UNKNOWN = "UNKNOWN";
 
+    // defined by TIANI 
+    public static final String QUEUED_BUILD = "QUEUED_BUILD";
+
+    public static final String BUILDING = "BUILDING";
+
+    public static final String QUEUED_MKISOFS = "QUEUED_MKISOFS";
+
+    public static final String MKISOFS = "MKISOFS";
+    
     private ExecutionStatusInfo() {}
 
 }

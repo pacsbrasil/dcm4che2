@@ -357,13 +357,13 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 throw new DcmServiceException(Status.ProcessingFailure, ioe);
             }
             try {
-                log.info("Forwarding " + mcrq + " to Media Composer");
-                JMSDelegate.getInstance().queueForMediaComposer(mcrq);
+                JMSDelegate.getInstance().queueForMediaComposer(log, mcrq);
             } catch (JMSException e) {
-                log.error("Failed to forward " + mcrq + " to Media Composer", e);
+                attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
+                attrs.putCS(Tags.ExecutionStatusInfo,
+                        ExecutionStatusInfo.PROC_FAILURE);
                 try {
-                    mcrq.updateStatus(ExecutionStatus.FAILURE,
-                            ExecutionStatusInfo.PROC_FAILURE, log);
+                    mcrq.writeAttributes(attrs, log);
                 } catch (IOException ioe) {
                 }
                 spoolDir.deleteRefInstances(attrs);

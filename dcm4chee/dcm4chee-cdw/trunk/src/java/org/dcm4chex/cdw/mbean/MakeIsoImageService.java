@@ -16,11 +16,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
@@ -131,57 +132,57 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
             String volsetId, int volsetSeqno, int volsetSize)
             throws IOException {
         File tmpSortFile = null;
-        ArrayList cmd = new ArrayList();
-        cmd.add("mkisofs");
-        cmd.add("-f"); // follow symbolic links
-        cmd.add("-iso-level");
-        cmd.add(String.valueOf(isoLevel));
-        if (rockRidge) cmd.add("-r");
-        if (joliet) cmd.add("-J");
-        if (volId != null && volId.length() != 0) {
-            cmd.add("-V");
-            cmd.add(volId);
-        }
-        if (volsetInfoEnabled) {
-            if (volsetId.length() != 0) {
-                cmd.add("-volset");
-                cmd.add(volsetId);
-            }
-            cmd.add("-volset-seqno");
-            cmd.add(String.valueOf(volsetSeqno));
-            cmd.add("-volset-size");
-            cmd.add(String.valueOf(volsetSize));
-        }
-        if (logEnabled) {
-            cmd.add("-log-file");
-            cmd.add(logFile.getAbsolutePath());
-        } else {
-            cmd.add("-q");
-        }
-        if (sortEnabled) {
-            tmpSortFile = makeSortFile(srcDir);
-            cmd.add("-sort");
-            cmd.add(tmpSortFile.getAbsolutePath());
-        }
-        cmd.add("-o");
-        cmd.add(isoImageFile.getAbsolutePath());
-        cmd.add(srcDir.getAbsolutePath());
-        String[] a = (String[]) cmd.toArray(new String[cmd.size()]);
-        if (log.isDebugEnabled())
-                log.debug("invoke: " + StringUtils.toString(a, ' '));
         int exitCode;
         try {
+            ArrayList cmd = new ArrayList();
+            cmd.add("mkisofs");
+            cmd.add("-f"); // follow symbolic links
+            cmd.add("-iso-level");
+            cmd.add(String.valueOf(isoLevel));
+            if (rockRidge) cmd.add("-r");
+            if (joliet) cmd.add("-J");
+            if (volId != null && volId.length() != 0) {
+                cmd.add("-V");
+                cmd.add(volId);
+            }
+            if (volsetInfoEnabled) {
+                if (volsetId.length() != 0) {
+                    cmd.add("-volset");
+                    cmd.add(volsetId);
+                }
+                cmd.add("-volset-seqno");
+                cmd.add(String.valueOf(volsetSeqno));
+                cmd.add("-volset-size");
+                cmd.add(String.valueOf(volsetSize));
+            }
+            if (logEnabled) {
+                cmd.add("-log-file");
+                cmd.add(logFile.getAbsolutePath());
+            } else {
+                cmd.add("-q");
+            }
+            if (sortEnabled) {
+                tmpSortFile = makeSortFile(srcDir);
+                cmd.add("-sort");
+                cmd.add(tmpSortFile.getAbsolutePath());
+            }
+            cmd.add("-o");
+            cmd.add(isoImageFile.getAbsolutePath());
+            cmd.add(srcDir.getAbsolutePath());
+            String[] a = (String[]) cmd.toArray(new String[cmd.size()]);
+            if (log.isDebugEnabled())
+                    log.debug("invoke: " + StringUtils.toString(a, ' '));
             Process p = Runtime.getRuntime().exec(a);
             exitCode = p.waitFor();
             if (log.isDebugEnabled())
                     log.debug("finished: " + StringUtils.toString(a, ' '));
-        } catch (Exception e) {
-            throw new IOException("mkisofs " + srcDir + " failed:" + e);
+        } catch (InterruptedException e) {
+            throw new IOException(e.getMessage());
         } finally {
             if (tmpSortFile != null) tmpSortFile.delete();
         }
         if (exitCode != 0) { throw new IOException("mkisofs " + srcDir
-                + " returns " + exitCode); }
+                        + " returns " + exitCode); }
     }
 
     private File makeSortFile(File srcDir) throws IOException {
@@ -221,7 +222,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         JMSDelegate.getInstance().setMakeIsoImageListener(null);
     }
 
-    private void process(MediaCreationRequest rq) {
+    protected void process(MediaCreationRequest rq) {
         boolean cleanup = true;
         try {
             log.info("Start processing " + rq);
@@ -229,33 +230,78 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
                 log.info("" + rq + " was canceled");
                 return;
             }
-
-            rq.setIsoImageFile(new File(rq.getFilesetDir().getParent(), rq
-                    .getFilesetDir().getName()
-                    + _ISO));
+            Dataset attrs;
             try {
+                attrs = rq.readAttributes(log);
+            } catch (IOException e1) {
+                // error already logged
+                return;
+            }
+            String status = attrs.getString(Tags.ExecutionStatus);
+            if (ExecutionStatus.FAILURE.equals(status)) {
+                log.info("" + rq + " already failed");
+                return;
+            }
+            if (rq.getVolsetSeqno() == 1) {
+                attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
+                attrs.putCS(Tags.ExecutionStatusInfo,
+                        ExecutionStatusInfo.MKISOFS);
+                try {
+                    rq.writeAttributes(attrs, log);
+                } catch (IOException e) {
+                    // error already logged
+                    return;
+                }
+            }
+            try {
+                rq.setIsoImageFile(new File(rq.getFilesetDir().getParent(), rq
+                        .getFilesetDir().getName()
+                        + _ISO));
                 makeIsoImage(rq.getFilesetDir(), rq.getIsoImageFile(), rq
                         .getFilesetID(), rq.getVolsetID(), rq.getVolsetSeqno(),
                         rq.getVolsetSize());
-
-                log.info("Forwarding " + rq + " to Media Writer");
-                JMSDelegate.getInstance().queueForMediaWriter(rq);
+                if (rq.isCanceled()) {
+                    log.info("" + rq + " was canceled");
+                    return;
+                }
+                try {
+                    attrs = rq.readAttributes(log);
+                } catch (IOException e) {
+                    // error already logged
+                    return;
+                }
+                status = attrs.getString(Tags.ExecutionStatus);
+                if (ExecutionStatus.FAILURE.equals(status)) {
+                    log.info("" + rq + " already failed");
+                    return;
+                }
+                if (rq.getVolsetSeqno() == 1) {
+                    attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
+                    attrs.putCS(Tags.ExecutionStatusInfo,
+                            ExecutionStatusInfo.QUEUED);
+                    try {
+                        rq.writeAttributes(attrs, log);
+                    } catch (IOException e) {
+                        // error already logged
+                        return;
+                    }
+                }
+                JMSDelegate.getInstance().queueForMediaWriter(log, rq);
                 cleanup = false;
-                return;
-            } catch (IOException e) {
+            } catch (Exception e) {
+                if (rq.isCanceled()) {
+                    log.info("" + rq + " was canceled");
+                    return;
+                }
                 log.error("Failed to process " + rq, e);
-            } catch (JMSException e) {
-                log.error("Failed to forward " + rq + " to Media Writer", e);
-            }
-            if (rq.isCanceled()) {
-                log.info("" + rq + " was canceled");
-                return;
-            }
-            try {
-                rq.updateStatus(ExecutionStatus.FAILURE,
-                        ExecutionStatusInfo.PROC_FAILURE, log);
-            } catch (IOException e) {
-                log.error("Failed to process " + rq, e);
+                attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
+                attrs.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.PROC_FAILURE);
+                try {
+                    rq.writeAttributes(attrs, log);
+                } catch (IOException e1) {
+                    // error already logged
+                    return;
+                }
             }
         } finally {
             if (cleanup) rq.cleanFiles(log);
