@@ -95,7 +95,12 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getAffectedSOPClassUID(),
             rqCmd.getAffectedSOPInstanceUID(),
             defStatus);
-        doCStore(assoc, rq, rspCmd);
+        try {
+            doCStore(assoc, rq, rspCmd);
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
         assoc.getAssociation().write(rsp);
     }
@@ -108,7 +113,14 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getMessageID(),
             rqCmd.getAffectedSOPClassUID(),
             defStatus);
-        doMultiRsp(assoc, rq, rspCmd, doCGet(assoc, rq, rspCmd));
+        try {
+            doMultiRsp(assoc, rq, rspCmd, doCGet(assoc, rq, rspCmd));
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
+        Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
+        assoc.getAssociation().write(rsp);
     }
     
     public void c_find(ActiveAssociation assoc, Dimse rq)
@@ -119,7 +131,14 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getMessageID(),
             rqCmd.getAffectedSOPClassUID(),
             defStatus);
-        doMultiRsp(assoc, rq, rspCmd, doCFind(assoc, rq, rspCmd));
+        try {
+            doMultiRsp(assoc, rq, rspCmd, doCFind(assoc, rq, rspCmd));
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
+        Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
+        assoc.getAssociation().write(rsp);
     }
     
     public void c_move(ActiveAssociation assoc, Dimse rq)
@@ -130,7 +149,14 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getMessageID(),
             rqCmd.getAffectedSOPClassUID(),
             defStatus);
-        doMultiRsp(assoc, rq, rspCmd, doCMove(assoc, rq, rspCmd));
+        try {
+            doMultiRsp(assoc, rq, rspCmd, doCMove(assoc, rq, rspCmd));
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
+        Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
+        assoc.getAssociation().write(rsp);
     }
     
     public void c_echo(ActiveAssociation assoc, Dimse rq)
@@ -141,7 +167,12 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getMessageID(),
             rqCmd.getAffectedSOPClassUID(),
             defStatus);
-        doCEcho(assoc, rq, rspCmd);
+        try {
+            doCEcho(assoc, rq, rspCmd);
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
         assoc.getAssociation().write(rsp);
     }
@@ -155,7 +186,13 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getAffectedSOPClassUID(),
             rqCmd.getAffectedSOPInstanceUID(),
             defStatus);
-        Dataset rspData = doNEventReport(assoc, rq, rspCmd);
+        Dataset rspData = null;
+        try {
+            rspData = doNEventReport(assoc, rq, rspCmd);
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
     }
@@ -169,7 +206,13 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getRequestedSOPClassUID(),
             rqCmd.getRequestedSOPInstanceUID(),
             defStatus);
-        Dataset rspData = doNGet(assoc, rq, rspCmd);
+        Dataset rspData = null;
+        try {
+            rspData = doNGet(assoc, rq, rspCmd);
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
     }
@@ -179,11 +222,17 @@ public class DcmServiceBase implements DcmService {
         Command rqCmd = rq.getCommand();
         Command rspCmd = objFact.newCommand();
         rspCmd.initNSetRSP(
-        rqCmd.getMessageID(),
-        rqCmd.getRequestedSOPClassUID(),
-        rqCmd.getRequestedSOPInstanceUID(),
-        0);
-        Dataset rspData = doNSet(assoc, rq, rspCmd);
+            rqCmd.getMessageID(),
+            rqCmd.getRequestedSOPClassUID(),
+            rqCmd.getRequestedSOPInstanceUID(),
+            0);
+        Dataset rspData = null;
+        try {
+            rspData = doNSet(assoc, rq, rspCmd);
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
     }
@@ -197,7 +246,13 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getRequestedSOPClassUID(),
             rqCmd.getRequestedSOPInstanceUID(),
             defStatus);
-        Dataset rspData = doNAction(assoc, rq, rspCmd);
+        Dataset rspData = null;
+        try {
+            rspData = doNAction(assoc, rq, rspCmd);
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
     }
@@ -211,7 +266,13 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getAffectedSOPClassUID(),
             createUID(rqCmd.getAffectedSOPInstanceUID()),
             defStatus);
-        Dataset rspData = doNCreate(assoc, rq, rspCmd);
+        Dataset rspData = null;
+        try {
+            rspData = doNCreate(assoc, rq, rspCmd);
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
     }
@@ -225,7 +286,13 @@ public class DcmServiceBase implements DcmService {
             rqCmd.getRequestedSOPClassUID(),
             rqCmd.getRequestedSOPInstanceUID(),
             defStatus);
-        Dataset rspData = doNDelete(assoc, rq, rspCmd);
+        Dataset rspData = null;
+        try {
+            rspData = doNDelete(assoc, rq, rspCmd);
+        } catch (DcmServiceException e) {
+            rspCmd.putUS(Tags.Status, e.getStatus());
+            rspCmd.putLO(Tags.ErrorComment, e.getErrorComment());
+        }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
     }
@@ -234,92 +301,91 @@ public class DcmServiceBase implements DcmService {
     
     // Protected -----------------------------------------------------
     protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-    throws IOException {
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
     }
     
     protected MultiDimseRsp doCGet(ActiveAssociation assoc, Dimse rq,
-    Command rspCmd)
-    throws IOException {
+        Command rspCmd)
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
-    Command rspCmd)
-    throws IOException {
+        Command rspCmd)
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     protected MultiDimseRsp doCMove(ActiveAssociation assoc, Dimse rq,
-    Command rspCmd)
-    throws IOException {
+        Command rspCmd)
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     protected void doCEcho(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-    throws IOException {
+    throws IOException, DcmServiceException {
         //      rq.getDataset(); // read out dataset
     }
     
     protected Dataset doNEventReport(ActiveAssociation assoc, Dimse rq,
-    Command rspCmd)
-    throws IOException {
+        Command rspCmd)
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     protected Dataset doNGet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-    throws IOException {
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-    throws IOException {
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     protected Dataset doNAction(ActiveAssociation assoc, Dimse rq,
-    Command rspCmd)
-    throws IOException {
+        Command rspCmd)
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
-    Command rspCmd)
-    throws IOException {
+        Command rspCmd)
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     protected Dataset doNDelete(ActiveAssociation assoc, Dimse rq,
-    Command rspCmd)
-    throws IOException {
+        Command rspCmd)
+    throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
         return null;
     }
     
     // Private -------------------------------------------------------
     private void doMultiRsp(ActiveAssociation assoc, Dimse rq, Command rspCmd,
-    MultiDimseRsp mdr)
-    throws IOException {
+        MultiDimseRsp mdr)
+    throws IOException, DcmServiceException {
         if (mdr == null) {
-            assoc.getAssociation().write(fact.newDimse(rq.pcid(), rspCmd));
             return;
         }
         try {
             assoc.addCancelListener(rspCmd.getMessageIDToBeingRespondedTo(),
-            mdr.getCancelListener());
-            do {
+                mdr.getCancelListener());
+            while (rspCmd.isPending()) {
                 Dataset rspData = mdr.next(assoc, rq, rspCmd);
                 Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
                 assoc.getAssociation().write(rsp);
-            } while (rspCmd.isPending());
+            }
         } finally {
             mdr.release();
         }
@@ -333,7 +399,8 @@ public class DcmServiceBase implements DcmService {
     public static interface MultiDimseRsp {
         DimseListener getCancelListener();
         
-        Dataset next(ActiveAssociation assoc, Dimse rq, Command rspCmd);
+        Dataset next(ActiveAssociation assoc, Dimse rq, Command rspCmd)
+        throws DcmServiceException;
         
         void release();
     }
