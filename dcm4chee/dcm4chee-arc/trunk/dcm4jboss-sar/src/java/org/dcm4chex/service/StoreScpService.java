@@ -296,6 +296,20 @@ public class StoreScpService
     /**
      * @jmx.managed-attribute
      */
+    public final int getUpdateDatabaseMaxRetries() {
+        return scp.getUpdateDatabaseMaxRetries();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setUpdateDatabaseMaxRetries(int updateDatabaseMaxRetries) {
+        scp.setUpdateDatabaseMaxRetries(updateDatabaseMaxRetries);
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
     public String getRetrieveAETs() {
         return scp.getRetrieveAETs();
     }

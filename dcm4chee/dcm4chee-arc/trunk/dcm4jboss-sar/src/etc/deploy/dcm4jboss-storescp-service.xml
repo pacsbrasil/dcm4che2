@@ -76,6 +76,12 @@
     -->
     <attribute name="StorageDirs">archive</attribute>
 
+    <!--
+    Defines maximal number of retries to update DB records for new received
+    objects, before a Processing Failure is returned to the Storage SCU. 
+    -->
+    <attribute name="UpdateDatabaseMaxRetries">2</attribute>
+
     <attribute name="CallingAETs">__any__</attribute>
 
     <attribute name="ComputedRadiographyImageStorage">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>

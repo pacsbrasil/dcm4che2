@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.3.5"/>
+	<property name="version" value="0.3.6"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
@@ -260,6 +260,7 @@
 				<include name="lib/bsh-core-1.3.0.jar"/>
 				<include name="lib/bsh-deployer.jar"/>
 				<include name="lib/hsqldb.jar"/>
+				<include name="lib/hsqldb-plugin.jar"/>
 				<include name="lib/javax.servlet.jar"/>
 				<include name="lib/jboss-common-jdbc-wrapper.jar"/>
 				<include name="lib/jboss-j2ee.jar"/>

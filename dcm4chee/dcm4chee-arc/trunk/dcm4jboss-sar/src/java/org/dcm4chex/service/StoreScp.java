@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.ejb.CreateException;
+
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -88,6 +90,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
     private final Logger log;
+    private int updateDatabaseMaxRetries = 2;
     private int forwardPriority = 0;
     private String retrieveAETs;
     private ForwardAETs forwardAETs = new ForwardAETs();
@@ -171,6 +174,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return f;
     }
 
+    public final int getUpdateDatabaseMaxRetries() {
+        return updateDatabaseMaxRetries;
+    }
+
+    public final void setUpdateDatabaseMaxRetries(int updateDatabaseMaxRetries) {
+        this.updateDatabaseMaxRetries = updateDatabaseMaxRetries;
+    }
+
     void checkReadyToStart() {
         if (storageDirFiles == null || storageDirFiles.length == 0) {
             throw new IllegalStateException("No Storage Directory configured!");
@@ -187,10 +198,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         InputStream in = rq.getDataAsStream();
-        Storage storage = null;
         Association assoc = activeAssoc.getAssociation();
         try {
-            storage = getStorageHome().create();
             DcmDecodeParam decParam =
                 DcmDecodeParam.valueOf(rq.getTransferSyntaxUID());
             Dataset ds = objFact.newDataset();
@@ -211,19 +220,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             File file = makeFile(dir, today, ds);
             MessageDigest md = MessageDigest.getInstance("MD5");
             storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
-            String dirPath =
+
+            final String dirPath =
                 dir.getCanonicalPath().replace(File.separatorChar, '/');
-            String filePath =
+            final String filePath =
                 file.getCanonicalPath().replace(
                     File.separatorChar,
                     '/').substring(
                     dirPath.length() + 1);
             Dataset coercedElements =
-                storage.store(
-                    assoc.getCallingAET(),
-                    assoc.getCalledAET(),
+                updateDB(
+                    assoc,
                     ds,
-                    retrieveAETs,
                     dirPath,
                     filePath,
                     (int) file.length(),
@@ -248,12 +256,62 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             log.error(e.getMessage(), e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         } finally {
-            if (storage != null) {
-                try {
-                    storage.remove();
-                } catch (Exception ignore) {}
-            }
             in.close();
+        }
+    }
+
+    private Dataset updateDB(
+        Association assoc,
+        Dataset ds,
+        String dirPath,
+        String filePath,
+        int fileLength,
+        byte[] md5)
+        throws
+            DcmServiceException,
+            RemoteException,
+            CreateException,
+            HomeFactoryException {
+        Storage storage = getStorageHome().create();
+        try {
+            int retry = 0;
+            for (;;) {
+                try {
+                    return storage.store(
+                        assoc.getCallingAET(),
+                        assoc.getCalledAET(),
+                        ds,
+                        retrieveAETs,
+                        dirPath,
+                        filePath,
+                        fileLength,
+                        md5);
+                } catch (Exception e) {
+                    if (retry++ >= updateDatabaseMaxRetries) {
+                        log.error(
+                            "failed to update DB with entries for received "
+                                + dirPath
+                                + "/"
+                                + filePath,
+                            e);
+                        throw new DcmServiceException(
+                            Status.ProcessingFailure,
+                            e);
+                    }
+                    log.warn(
+                        "failed to update DB with entries for received "
+                            + dirPath
+                            + "/"
+                            + filePath
+                            + " - retry",
+                        e);
+                }
+            }
+        } finally {
+            try {
+                storage.remove();
+            } catch (Exception ignore) {
+            }
         }
     }
 
@@ -339,7 +397,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         } finally {
             try {
                 dos.close();
-            } catch (IOException ignore) {}
+            } catch (IOException ignore) {
+            }
         }
     }
 
@@ -413,47 +472,52 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             log.info("M-WRITE dir:" + dir);
         }
     } // Implementation of AssociationListener
-    public void write(Association src, PDU pdu) {}
+    public void write(Association src, PDU pdu) {
+    }
 
-    public void received(Association src, PDU pdu) {}
+    public void received(Association src, PDU pdu) {
+    }
 
-    public void write(Association src, Dimse dimse) {}
+    public void write(Association src, Dimse dimse) {
+    }
 
-    public void received(Association src, Dimse dimse) {}
+    public void received(Association src, Dimse dimse) {
+    }
 
-    public void error(Association src, IOException ioe) {}
+    public void error(Association src, IOException ioe) {
+    }
 
     public void close(Association assoc) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo != null) {
-//            updateStudies(storedStudiesInfo.keySet().iterator());
+            //            updateStudies(storedStudiesInfo.keySet().iterator());
             forward(
                 forwardAETs.get(assoc.getCallingAET()),
                 storedStudiesInfo.values().iterator());
         }
     }
-/*
-    private void updateStudies(Iterator suids) {
-        Storage storage;
-        try {
-            storage = getStorageHome().create();
-        } catch (Exception e) {
-            log.error("Failed to update Studies", e);
-            return;
-        }
-        while (suids.hasNext()) {
-            final String suid = (String) suids.next();
+    /*
+        private void updateStudies(Iterator suids) {
+            Storage storage;
             try {
-                storage.updateStudy(suid);
+                storage = getStorageHome().create();
             } catch (Exception e) {
-                log.error("Failed to update Study with UID:" + suid, e);
+                log.error("Failed to update Studies", e);
+                return;
             }
+            while (suids.hasNext()) {
+                final String suid = (String) suids.next();
+                try {
+                    storage.updateStudy(suid);
+                } catch (Exception e) {
+                    log.error("Failed to update Study with UID:" + suid, e);
+                }
+            }
+            try {
+                storage.remove();
+            } catch (Exception ignore) {}
         }
-        try {
-            storage.remove();
-        } catch (Exception ignore) {}
-    }
-*/
+    */
     private void updateStoredStudiesInfo(Association assoc, Dataset ds) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo == null) {

@@ -107,6 +107,8 @@
 
     <attribute name="ForwardAETs"></attribute>
 
+    <attribute name="UpdateDatabaseMaxRetries">2</attribute>
+
     <attribute name="StorageDirs">archive</attribute>
 
     <attribute name="CallingAETs">__any__</attribute>
