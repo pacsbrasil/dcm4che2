@@ -59,6 +59,7 @@ class StgCmtScp extends DcmServiceBase {
         throws IOException, DcmServiceException {
         Command cmd = rq.getCommand();
         Dataset data = rq.getDataset();
+        service.logDataset("StgCmt Request:\n", data);
         if (!UIDs
             .StorageCommitmentPushModelSOPInstance
             .equals(cmd.getRequestedSOPInstanceUID())) {

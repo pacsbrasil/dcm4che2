@@ -25,6 +25,7 @@ import java.io.IOException;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
@@ -39,19 +40,51 @@ class MPPSScp extends DcmServiceBase {
     public MPPSScp(MPPSScpService service) {
         this.service = service;
     }
-    
-	protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
-			Command rspCmd) throws IOException, DcmServiceException {
-		Dataset ds = rq.getDataset();
-		return ds;
-	}
 
-	protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-			throws IOException, DcmServiceException {
-		Dataset ds = rq.getDataset();
-		return ds;
-	}
+    protected Dataset doNCreate(
+        ActiveAssociation assoc,
+        Dimse rq,
+        Command rspCmd)
+        throws IOException, DcmServiceException {
+        Command cmd = rq.getCommand();
+        Dataset mpps = rq.getDataset();
+        service.logDataset("Create MPPS:\n", mpps);
+        if (service.isForward()) {
+            Association a = assoc.getAssociation();
+            a.putProperty(
+                "MPPSForwardCmd-" + cmd.getMessageID(),
+                new MPPSForwardCmd.NCreate(
+                    service,
+                    rspCmd.getAffectedSOPInstanceUID(),
+                    mpps));
+        }
+        return null;
+    }
 
-	protected void doAfterRsp(ActiveAssociation assoc, Dimse rsp) {
-	}
+    protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
+        throws IOException, DcmServiceException {
+        Command cmd = rq.getCommand();
+        Dataset mpps = rq.getDataset();
+        service.logDataset("Set MPPS:\n", mpps);
+        if (service.isForward()) {
+            Association a = assoc.getAssociation();
+            a.putProperty(
+                "MPPSForwardCmd-" + cmd.getMessageID(),
+                new MPPSForwardCmd.NSet(
+                    service,
+                    cmd.getRequestedSOPInstanceUID(),
+                    mpps));
+        }
+        return null;
+    }
+
+    protected void doAfterRsp(ActiveAssociation assoc, Dimse rsp) {
+        Association a = assoc.getAssociation();
+        Command cmd = rsp.getCommand();
+        String key = "MPPSForwardCmd-" + cmd.getMessageIDToBeingRespondedTo();
+        MPPSForwardCmd forwardCmd = (MPPSForwardCmd) a.getProperty(key);
+        if (forwardCmd != null) {
+            forwardCmd.execute();            
+        }
+    }
 }

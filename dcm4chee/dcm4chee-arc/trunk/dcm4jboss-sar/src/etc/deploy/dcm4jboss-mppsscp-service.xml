@@ -19,6 +19,14 @@
 
     <attribute name="TransferSyntaxes">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
 
+	<!--
+	Specifies time-out in ms for receiving the A-ASSOCIATE-AC PDU after
+	transmission of the A-ASSOCIATE-RQ to open an association
+	to the MPPS SCP specified by attribute ForwardAET for forwarding
+	the received N-CREATE/N-SET MPPS messages.
+	-->
+    <attribute name="AcTimeout">5000</attribute>
+
     <attribute name="ForwardAET"></attribute>
 </mbean>
 

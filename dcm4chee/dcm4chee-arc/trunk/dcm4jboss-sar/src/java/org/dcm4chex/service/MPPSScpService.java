@@ -47,9 +47,24 @@ public class MPPSScpService
     private DataSourceFactory dsf = new DataSourceFactory(log);
     private MPPSScp mppsScp = new MPPSScp(this);
     private String[] callingAETs;
+    private int acTimeout = 5000;
     private String forwardAET;
     private String tsUIDs;
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public final int getAcTimeout() {
+        return acTimeout;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setAcTimeout(int acTimeout) {
+        this.acTimeout = acTimeout;
+    }
+    
     /**
      * @jmx.managed-attribute
      */
@@ -165,5 +180,9 @@ public class MPPSScpService
             UIDs.ModalityPerformedProcedureStep,
             tsUIDs);
         return policy;
+    }
+
+    boolean isForward() {
+        return forwardAET != null && forwardAET.length() != 0;
     }
 }
