@@ -7,11 +7,8 @@
    <description>Move SCU Service to process Move Orders</description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate"
-         persistPeriod="10"
-         persistLocation="${jboss.server.data.dir}"
-         persistName="dcm4jboss-movescu.ser"/>
-      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+      <persistence persistPolicy="OnUpdate" />
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
    <class>org.dcm4chex.archive.dcm.movescu.MoveScuService</class>

@@ -7,11 +7,8 @@
    <description>DICOM Modality Performed Procedure Step SCP</description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate"
-         persistPeriod="10"
-         persistLocation="${jboss.server.data.dir}"
-         persistName="dcm4jboss-mppsscp.ser"/>
-      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+      <persistence persistPolicy="OnUpdate" />
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
    <class>org.dcm4chex.archive.dcm.mppsscp.MPPSScpService</class>
