@@ -165,7 +165,7 @@ public abstract class MediaComposerBean implements SessionBean {
 
         splitTooLargeStudies( collector, maxMediaUsage, prefix );
         
-        List mediaCollection = (List) mediaHome.findByStatus( MediaDTO.COLLECTING );
+        List mediaCollection = (List) mediaHome.findByStatus( MediaDTO.OPEN );
         Comparator comp = new Comparator() {
     		public int compare(Object arg0, Object arg1) {
     			MediaLocal ml1 = (MediaLocal) arg0;
@@ -283,7 +283,7 @@ public abstract class MediaComposerBean implements SessionBean {
 	private MediaLocal createMedia(String prefix) throws CreateException {
 		MediaLocal ml = mediaHome.create( UIDGenerator.getInstance().createUID() );
 		ml.setFilesetId( prefix+ml.getPk() );
-		ml.setMediaStatus( MediaDTO.COLLECTING );
+		ml.setMediaStatus( MediaDTO.OPEN );
 		if ( log.isInfoEnabled() ) log.info("New media created:"+ml.getFilesetId() );
 		return ml;
 	}

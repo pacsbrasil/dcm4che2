@@ -32,7 +32,7 @@ public class MCMModel {
 	 * <p>
 	 * This value is used in xsl to create queue action button for a media with this status.
 	 */
-	public static final String STATI_FOR_QUEUE = String.valueOf( MediaDTO.COLLECTING );
+	public static final String STATI_FOR_QUEUE = String.valueOf( MediaDTO.OPEN );
 	
 	/** Errorcode: no error */
     public static final String NO_ERROR ="OK";
@@ -180,10 +180,9 @@ public class MCMModel {
 				total = lookupMediaComposer().findByUpdatedTime( col, start, end, stati, 
  						new Integer( offset ), new Integer( limit ), filter.isDescent() );
 			} else {
-				lookupMediaComposer().getWithStatus( MediaDTO.COLLECTING );
+				lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
 			}
 			
-			//lookupMediaComposer().getWithStatus( MediaDTO.COLLECTING );
 			mediaList = new MediaList( col );
 			col.clear();
 		} catch ( Exception x ) {

@@ -21,12 +21,11 @@ public class MediaDTO implements Serializable {
 
     private static final long serialVersionUID = 3545516192564721461L;
 
-    public static final int COLLECTING = 0;
+    public static final int OPEN = 0;
     public static final int QUEUED = 1;
     public static final int PROCESSING = 2;
     public static final int COMPLETED = 3;
-    public static final int QUEUE_ERROR = -1;
-    public static final int CREATE_ERROR = -2;
+    public static final int ERROR = -1;
 
     private int pk;
     private String filesetId;

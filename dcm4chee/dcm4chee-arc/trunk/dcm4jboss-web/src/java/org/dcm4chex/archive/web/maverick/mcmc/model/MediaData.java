@@ -206,12 +206,11 @@ public class MediaData {
 	 */
 	private static Collection _getMediaStatusList() {
 		mapDefinedStati = new HashMap();//TODO get from MediaDTO!
-		mapDefinedStati.put( new Integer(MediaDTO.COLLECTING), new MediaStatus( MediaDTO.COLLECTING, "COLLECTING" ) );
+		mapDefinedStati.put( new Integer(MediaDTO.OPEN), new MediaStatus( MediaDTO.OPEN, "OPEN" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.QUEUED), new MediaStatus( MediaDTO.QUEUED, "QUEUED" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.PROCESSING), new MediaStatus( MediaDTO.PROCESSING, "PROCESSING" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.COMPLETED), new MediaStatus( MediaDTO.COMPLETED, "COMPLETED" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.QUEUE_ERROR), new MediaStatus( MediaDTO.QUEUE_ERROR, "QUEUE ERROR" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.CREATE_ERROR), new MediaStatus( MediaDTO.CREATE_ERROR, "CREATE ERROR" ) );
+		mapDefinedStati.put( new Integer(MediaDTO.ERROR), new MediaStatus( MediaDTO.ERROR, "ERROR" ) );
 		return mapDefinedStati.values();
 	}
 	

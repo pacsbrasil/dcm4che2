@@ -26,7 +26,7 @@ public class MCMFilter {
 	/** Identifier for searching all media stati. */
 	public static final String MEDIA_TYPE_ALL = "-all-";
 	/** The default stati to search for. (COLLECTING) */
-	public static final String MEDIA_TYPE_DEFAULT = String.valueOf( MediaDTO.COLLECTING );
+	public static final String MEDIA_TYPE_DEFAULT = String.valueOf( MediaDTO.OPEN );
 
 	/** The Date/Time formatter to parse input field values. (dd.MM.yyyy) */
 	private static final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
