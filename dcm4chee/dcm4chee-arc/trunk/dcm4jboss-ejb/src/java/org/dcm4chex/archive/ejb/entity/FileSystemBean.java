@@ -58,20 +58,20 @@ public abstract class FileSystemBean implements EntityBean {
     public Integer ejbCreate(
         String dirpath,
         String aets,
-        long used,
-        long hwm)
+        long diskUsage,
+        long highwater)
         throws CreateException
     {
 		setDirectoryPath(dirpath);      
 		setRetrieveAETs(aets);      
-        setUsed(used);
-        setHighWaterMark(hwm);
+        setDiskUsage(diskUsage);
+        setHighWaterMark(highwater);
         return null;
     }
 
     public void ejbPostCreate(String dirpath,
             String aets,
-            long used,
+            long diskUsage,
             long total)
         throws CreateException
     {
@@ -91,9 +91,9 @@ public abstract class FileSystemBean implements EntityBean {
             + getDirectoryPath()
             + ", retrieveAETs="
             + getRetrieveAETs()
-            + ", used="
-            + getUsed()
-            + ", hwm="
+            + ", diskUsage="
+            + getDiskUsage()
+            + ", highwaterMark="
             + getHighWaterMark()
             + "]";
     }
@@ -144,21 +144,21 @@ public abstract class FileSystemBean implements EntityBean {
 	 * 
      * @ejb.interface-method
 	 * @ejb.persistence
-	 * 	column-name="used"
+	 * 	column-name="disk_usage"
 	 */
-    public abstract long getUsed();
+    public abstract long getDiskUsage();
 
     /**
      * @ejb.interface-method
      */ 
-    public abstract void setUsed(long size);
+    public abstract void setDiskUsage(long size);
 
     /**
 	 * High Water Mark
 	 * 
      * @ejb.interface-method
 	 * @ejb.persistence
-	 * 	column-name="hwm"
+	 * 	column-name="highwater_mark"
 	 */
     public abstract long getHighWaterMark();
 
@@ -172,6 +172,6 @@ public abstract class FileSystemBean implements EntityBean {
      */ 
     public long getAvailable() {
         final long hwm = getHighWaterMark();
-        return hwm == 0 ? 0 : hwm - getUsed();
+        return hwm == 0 ? 0 : hwm - getDiskUsage();
     }
 }

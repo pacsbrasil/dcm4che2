@@ -120,7 +120,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public FileSystemDTO addFileSystem(FileSystemDTO dto) throws CreateException {
-        return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAETs(), dto.getUsed(), dto.getHighWaterMark()));
+        return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAETs(), dto.getDiskUsage(), dto.getHighWaterMark()));
     }
 
     /**
@@ -133,7 +133,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
             return getFileSystem(dto.getDirectoryPath());
         } catch (ObjectNotFoundException e) {
             try {
-                return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAETs(), dto.getUsed(), dto.getHighWaterMark()));
+                return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAETs(), dto.getDiskUsage(), dto.getHighWaterMark()));
             } catch (CreateException e1) {
                 throw new EJBException(e1);
             }
@@ -200,7 +200,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
         dto.setPk(fs.getPk().intValue());
         dto.setDirectoryPath(fs.getDirectoryPath());
         dto.setRetrieveAETs(fs.getRetrieveAETs());
-        dto.setUsed(fs.getUsed());
+        dto.setDiskUsage(fs.getDiskUsage());
         dto.setHighWaterMark(fs.getHighWaterMark());
         return dto;
     }

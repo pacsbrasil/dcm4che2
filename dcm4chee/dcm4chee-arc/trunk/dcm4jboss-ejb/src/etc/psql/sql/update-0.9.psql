@@ -38,8 +38,8 @@ CREATE TABLE filesystem (
 	pk          	SERIAL PRIMARY KEY,
 	dirpath			TEXT NOT NULL,
 	retrieve_aets	TEXT NOT NULL,
-	used			BIGINT DEFAULT 0 NOT NULL,
-	hwm				BIGINT DEFAULT 0 NOT NULL
+	disk_usage		BIGINT DEFAULT 0 NOT NULL,
+	highwater_mark	BIGINT DEFAULT 0 NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
 

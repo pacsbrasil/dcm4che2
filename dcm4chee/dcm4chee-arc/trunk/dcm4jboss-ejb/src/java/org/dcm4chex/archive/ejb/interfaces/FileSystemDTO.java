@@ -25,7 +25,7 @@ public class FileSystemDTO implements Serializable {
 
     private String retrieveAETs;
 
-    private long used;
+    private long diskUsage;
 
     private long highWaterMark;
 
@@ -34,7 +34,7 @@ public class FileSystemDTO implements Serializable {
         sb.append("FileSystem[pk=").append(pk);
         sb.append(", dir=").append(directoryPath);
         sb.append(", aets=").append(retrieveAETs);
-        sb.append(", used=").append(used / 1000000f);
+        sb.append(", diskUsage=").append(diskUsage / 1000000f);
         sb.append("MB, highwater=").append(highWaterMark / 1000000f);
         sb.append("MB]");
         return sb;
@@ -80,15 +80,15 @@ public class FileSystemDTO implements Serializable {
         this.retrieveAETs = retrieveAETs;
     }
 
-    public final long getUsed() {
-        return used;
+    public final long getDiskUsage() {
+        return diskUsage;
     }
 
-    public final void setUsed(long used) {
-        this.used = used;
+    public final void setDiskUsage(long diskUsage) {
+        this.diskUsage = diskUsage;
     }
 
     public final long getAvailable() {
-        return highWaterMark > 0 ? highWaterMark - used : Long.MAX_VALUE;
+        return highWaterMark > 0 ? highWaterMark - diskUsage : Long.MAX_VALUE;
     }
 }

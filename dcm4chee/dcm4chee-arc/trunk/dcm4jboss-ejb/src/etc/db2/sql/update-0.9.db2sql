@@ -3,8 +3,10 @@
 CONNECT TO tiani;
 SET CURRENT SCHEMA TIANI;
 
-DROP TABLE move_order;
-DROP SEQUENCE move_order_pk_seq;
+-- >> necessary for update from < 0.8.4
+-- DROP TABLE move_order;
+-- DROP SEQUENCE move_order_pk_seq;
+-- <<
 
 DROP TABLE mwl_item;
 CREATE TABLE mwl_item (
@@ -40,36 +42,73 @@ ALTER TABLE series
 ALTER TABLE series
 	ADD COLUMN updated_time TIMESTAMP;
 
+
 CREATE SEQUENCE filesystem_pk_seq;
 CREATE TABLE filesystem (
 	pk              INTEGER PRIMARY KEY  NOT NULL,
 	dirpath			VARCHAR(254) NOT NULL,
 	retrieve_aets	VARCHAR(254) NOT NULL,
-	used			BIGINT DEFAULT 0 NOT NULL,
-	hwm				BIGINT DEFAULT 0 NOT NULL
+	disk_usage		BIGINT DEFAULT 0 NOT NULL,
+	highwater_mark	BIGINT DEFAULT 0 NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
 
-GRANT ALL PRIVILEGES ON TABLE filesystem TO USER tiani;
-GRANT USAGE ON SEQUENCE filesystem_pk_seq TO USER tiani;
+-- >> use clipboard table to extract normalized fields from old files table to new filesystem table
+CREATE TABLE clipboard (
+	pk				INTEGER GENERATED ALWAYS AS IDENTITY
+						(START WITH 1, INCREMENT BY 1) PRIMARY KEY,
+    dirpath			VARCHAR(254) NOT NULL,
+	retrieve_aets	VARCHAR(254) NOT NULL,
+	pk2				INTEGER
+);
 
-ALTER TABLE files
-	ADD COLUMN filesystem_fk INTEGER;
+INSERT INTO clipboard (dirpath, retrieve_aets)
+	SELECT DISTINCT dirpath, retrieve_aets FROM files;
+
+INSERT INTO filesystem (pk, dirpath, retrieve_aets)
+	SELECT pk, dirpath, retrieve_aets FROM clipboard;
+
+-- Increment sequence to next pk
+UPDATE clipboard SET pk2 = NEXTVAL FOR filesystem_pk_seq;
+	
+DROP TABLE clipboard;
+-- <<
+
+-- >> create and populate new files table
+CREATE TABLE newfiles (
+	pk              INTEGER PRIMARY KEY  NOT NULL,
+	instance_fk     INTEGER,
+	filesystem_fk	INTEGER,
+	filepath		VARCHAR(254) NOT NULL,
+	file_tsuid      VARCHAR(254) NOT NULL,
+	file_md5        VARCHAR(254),
+	file_size       INTEGER
+);
+
+-- if INSERT fails for to many files records, separate inserts by files.pk range
+INSERT INTO newfiles (
+	pk, instance_fk, filesystem_fk, filepath, file_tsuid, file_md5, file_size
+) SELECT
+	files.pk, files.instance_fk, filesystem.pk, files.filepath, files.file_tsuid, files.file_md5, file_size 
+FROM files, filesystem WHERE filesystem.dirpath = files.dirpath;
+
+DROP TABLE files;
+
+RENAME TABLE newfiles to files;
+
+ALTER TABLE files 
+	ADD CONSTRAINT instance_fk FOREIGN KEY (instance_fk) REFERENCES instance(pk);
 ALTER TABLE files 
 	ADD CONSTRAINT filesystem_fk FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk);
-
+CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
+-- <<
 
--- Will fail if more than one dirpath was used! 
--- INSERT INTO filesystem (pk, dirpath, retrieve_aets)
---	SELECT DISTINCT 1, dirpath, retrieve_aets FROM files;
--- VALUES nextval FOR filesystem_pk_seq;
-	
--- UPDATE files SET filesystem_fk=1;
 
--- Check archive function before drop columns!
--- Following statement also seems not to work at DB2 v8.1!
--- ALTER TABLE files DROP COLUMN dirpath;
--- ALTER TABLE files DROP COLUMN retrieve_aets;
+GRANT ALL PRIVILEGES ON TABLE files TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE filesystem TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE mwl_item TO USER tiani;
+
+GRANT USAGE ON SEQUENCE filesystem_pk_seq TO USER tiani;
 
 TERMINATE;

@@ -125,8 +125,8 @@ CREATE TABLE filesystem (
 	pk              IDENTITY PRIMARY KEY,
 	dirpath			VARCHAR(256) NOT NULL,
 	retrieve_aets	VARCHAR(256) NOT NULL,
-	used			BIGINT DEFAULT 0 NOT NULL,
-	hwm				BIGINT DEFAULT 0 NOT NULL
+	disk_usage		BIGINT DEFAULT 0 NOT NULL,
+	highwater_mark	BIGINT DEFAULT 0 NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
 
