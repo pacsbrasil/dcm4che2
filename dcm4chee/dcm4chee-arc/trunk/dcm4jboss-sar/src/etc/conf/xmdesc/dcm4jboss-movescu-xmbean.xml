@@ -73,40 +73,5 @@
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Used internally.</description>
-      <name>queueMoveOrder</name>
-      <parameter>
-	      <name>retrieveAET</name>
-	      <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-	      <name>moveDestination</name>
-	      <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-	      <name>priority</name>
-	      <type>int</type>
-      </parameter>
-      <parameter>
-	      <name>patientId</name>
-	      <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-	      <name>studyIuids</name>
-	      <type>[Ljava.lang.String;</type>
-      </parameter>
-      <parameter>
-	      <name>seriesIuids</name>
-	      <type>[Ljava.lang.String;</type>
-      </parameter>
-      <parameter>
-	      <name>sopIuids</name>
-	      <type>[Ljava.lang.String;</type>
-      </parameter>
-      <parameter>
-	      <name>scheduledTime</name>
-	      <type>long</type>
-      </parameter>
-   </operation>
+   
 </mbean>

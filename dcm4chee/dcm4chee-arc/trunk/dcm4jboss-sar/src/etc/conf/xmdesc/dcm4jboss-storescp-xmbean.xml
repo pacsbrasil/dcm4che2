@@ -85,30 +85,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getForwardingRules"
-      setMethod="setForwardingRules">
-      <description>List of forwarding rules.
-      Format:=['['CONDITION[,..]']'](AET[,..]|'NONE')
-      CONDITION:=(calling|called)[!]=AET['|'..]   
-      </description>
-      <name>ForwardingRules</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2]SAMPLE_SCP3,SAMPLE_SCP4;NONE" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getForwardPriority"
-      setMethod="setForwardPriority">
-      <description>Forwarding Priority. 0=medium, 1=high, 2=low.
-      </description>
-      <name>ForwardPriority</name>
-      <type>int</type>
-      <descriptors>
-         <value value="0" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getStorageRules"
       setMethod="setStorageRules">
       <description>List of storage rules.
@@ -337,5 +313,14 @@
 
    <!-- Operations -->
    &defaultOperations;
+
+   <!-- Notifications -->
+   <notification>
+      <description>Emitted after association release with collected info
+      about received objects in that association
+      </description>
+      <name>javax.management.Notification</name>
+      <notification-type>org.dcm4chex.archive.dcm.storescp</notification-type>
+   </notification>
 </mbean>
 

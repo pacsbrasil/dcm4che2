@@ -9,6 +9,7 @@
 package org.dcm4chex.archive.config;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -24,13 +25,15 @@ import org.dcm4cheri.util.StringUtils;
  */
 public class ForwardingRules {
 
+    
+private static final long MS_PER_HOUR = 3600000L;
     static final String NONE = "NONE";
 
     static final String[] EMPTY = {};
 
     private final ArrayList list = new ArrayList();
 
-    private static final class Entry {
+    public static final class Entry {
 
         final Condition condition;
 
@@ -54,6 +57,9 @@ public class ForwardingRules {
                 String[] aets = (second.length() == 0 || NONE
                         .equalsIgnoreCase(second)) ? EMPTY : StringUtils.split(
                         second, ',');
+                for (int i = 0; i < aets.length; i++) {
+                    checkAET(aets[i]);
+                }
                 list.add(new Entry(cond, aets));
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(tk);
@@ -61,6 +67,41 @@ public class ForwardingRules {
         }
     }
 
+    private static void checkAET(String s) {
+        int delim = s.lastIndexOf('!');
+        if (delim == -1) return;
+        int hypen = s.lastIndexOf('-');
+        int start = Integer.parseInt(s.substring(delim+1, hypen));
+        int end = Integer.parseInt(s.substring(hypen+1));
+        if (start < 0 || end > 24 || start >= end)
+            throw new IllegalArgumentException();
+    }
+
+    public static String toAET(String s) {
+        int delim = s.lastIndexOf('!');
+        return delim == -1 ? s : s.substring(0,delim);
+    }
+
+    public static long toScheduledTime(String s) {
+        int delim = s.lastIndexOf('!');
+        if (delim != -1) {
+	        Calendar cal = Calendar.getInstance();
+	        long now = cal.getTimeInMillis();
+	        cal.set(Calendar.MILLISECOND, 0);
+	        cal.set(Calendar.SECOND, 0);
+	        cal.set(Calendar.MINUTE, 0);
+	        cal.set(Calendar.HOUR_OF_DAY, 0);
+	        long date = cal.getTimeInMillis();
+	        long time = now - date;
+	        int hypen = s.lastIndexOf('-');
+	        long start = Integer.parseInt(s.substring(delim+1, hypen)) * MS_PER_HOUR;
+	        long end = Integer.parseInt(s.substring(hypen+1)) * MS_PER_HOUR;
+	        if (time > start && time < end)
+	            return date + end;
+        }
+        return 0L;
+    }
+    
     public String[] getForwardDestinationsFor(Association assoc) {
         Map param = Condition.toParam(assoc, null);
         for (Iterator it = list.iterator(); it.hasNext();) {
@@ -69,7 +110,7 @@ public class ForwardingRules {
         }
         return EMPTY;
     }
-
+    
     public String toString() {
         if (list.isEmpty()) return "";
         StringBuffer sb = new StringBuffer();

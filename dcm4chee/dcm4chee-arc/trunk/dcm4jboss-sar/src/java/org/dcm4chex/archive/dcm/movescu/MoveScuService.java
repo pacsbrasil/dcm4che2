@@ -55,11 +55,11 @@ public class MoveScuService extends ServiceMBeanSupport implements
     }
     
     public final int getConcurrency() {
-        return pool.getMinimumPoolSize();
+        return pool.getMaximumPoolSize();
     }
 
     public final void setConcurrency(int concurrency) {
-        pool.setMinimumPoolSize(concurrency);
+        pool.setMaximumPoolSize(concurrency);
     }
     
     public DataSource getDataSource() throws ConfigurationException {

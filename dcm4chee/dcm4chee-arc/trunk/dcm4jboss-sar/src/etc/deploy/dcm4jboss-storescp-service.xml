@@ -8,11 +8,5 @@
     <depends>
       dcm4chex:service=DcmServer
     </depends>
-	<depends>
-	  dcm4chex:service=Queue,name=MoveScu
-	</depends>
-	<depends>
-	  jboss.mq:service=InvocationLayer,type=JVM
-	</depends>
   </mbean>
 </server>

@@ -16,12 +16,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.management.Notification;
+
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
-import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.StorageRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -33,6 +35,8 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  */
 public class StoreScpService extends AbstractScpService {
 
+    public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.storescp";
+    
     private static final String[] IMAGE_CUIDS = {
             UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
             UIDs.ComputedRadiographyImageStorage,
@@ -132,22 +136,6 @@ public class StoreScpService extends AbstractScpService {
 
     public void setCompressionRules(String rules) {
         scp.setCompressionRules(new CompressionRules(rules));
-    }
-
-    public final String getForwardingRules() {
-        return scp.getForwardingRules().toString();
-    }
-
-    public void setForwardingRules(String rules) {
-        scp.setForwardingRules(new ForwardingRules(rules));
-    }
-
-    public int getForwardPriority() {
-        return scp.getForwardPriority();
-    }
-
-    public void setForwardPriority(int forwardPriority) {
-        scp.setForwardPriority(forwardPriority);
     }
 
     public final int getUpdateDatabaseMaxRetries() {
@@ -380,5 +368,12 @@ public class StoreScpService extends AbstractScpService {
         if (acceptStorageCommitment)
                 policy.putPresContext(UIDs.StorageCommitmentPushModel,
                         getTransferSyntaxUIDs());
+    }
+    
+    void sendReleaseNotification(Association assoc) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(EVENT_TYPE, this, eventID);
+        notif.setUserData(assoc);
+        super.sendNotification(notif);
     }
 }

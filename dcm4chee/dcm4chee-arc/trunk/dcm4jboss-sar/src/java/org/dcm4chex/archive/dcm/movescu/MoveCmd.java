@@ -64,7 +64,7 @@ class MoveCmd implements Runnable, DimseListener {
     }
 
     public void run() {
-        if (log.isDebugEnabled()) log.debug("Start processing " + order);
+        log.info("Start processing " + order);
         ActiveAssociation moveAssoc = null;
         try {
             moveAssoc = openAssociation(queryAEData(order.getRetrieveAET()));
@@ -104,8 +104,7 @@ class MoveCmd implements Runnable, DimseListener {
         final int status = cmd.getStatus();
         switch (status) {
         case Status.Success:
-            if (log.isDebugEnabled())
-                    log.debug("Finished processing " + order);
+            log.info("Finished processing " + order);
             return;
         case Status.Pending:
             return;

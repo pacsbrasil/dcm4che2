@@ -19,7 +19,6 @@ import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.ejb.CreateException;
-import javax.jms.JMSException;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
@@ -53,15 +51,12 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
-import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.StorageRules;
-import org.dcm4chex.archive.dcm.movescu.MoveOrder;
 import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -71,12 +66,8 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
-    private static final String ALL = "ALL";
-
     private static final AuditLoggerFactory alf = AuditLoggerFactory
             .getInstance();
-
-    private static final String STORESCP = "org.dcm4chex.service.StoreScp";
 
     private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID,};
@@ -93,10 +84,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private int bufferSize = 512;
 
     private int updateDatabaseMaxRetries = 2;
-
-    private int forwardPriority = 0;
-
-    private ForwardingRules forwardingRules = new ForwardingRules("");
 
     private CompressionRules compressionRules = new CompressionRules("");
 
@@ -131,22 +118,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setCompressionRules(CompressionRules compressionRules) {
         this.compressionRules = compressionRules;
-    }
-
-    public final ForwardingRules getForwardingRules() {
-        return forwardingRules;
-    }
-
-    public final void setForwardingRules(ForwardingRules forwardingRules) {
-        this.forwardingRules = forwardingRules;
-    }
-
-    public final int getForwardPriority() {
-        return forwardPriority;
-    }
-
-    public final void setForwardPriority(int forwardPriority) {
-        this.forwardPriority = forwardPriority;
     }
 
     public final int getBufferSize() {
@@ -467,20 +438,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public void close(Association assoc) {
         logInstancesStored(assoc);
-        Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
-        if (storedStudiesInfo != null) {
-            forward(forwardingRules.getForwardDestinationsFor(assoc),
-                    storedStudiesInfo.values().iterator());
-        }
+        service.sendReleaseNotification(assoc);
     }
 
     private void updateStoredStudiesInfo(Association assoc, Dataset ds) {
-        Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
+        Map storedStudiesInfo = (Map) assoc.getProperty(StoreScpService.EVENT_TYPE);
         if (storedStudiesInfo == null) {
-            assoc.putProperty(STORESCP, storedStudiesInfo = new HashMap());
+            assoc.putProperty(StoreScpService.EVENT_TYPE, storedStudiesInfo = new HashMap());
         }
-        Dataset refSOP = getRefImageSeq(ds,
+        Dataset refSOP = getRefSOPSeq(ds,
                 getRefSeriesSeq(ds, storedStudiesInfo)).addNewItem();
+        refSOP.putAE(Tags.RetrieveAET, service.getRetrieveAET());
+        refSOP.putCS(Tags.InstanceAvailability, "ONLINE");
         refSOP.putUI(Tags.RefSOPClassUID, ds.getString(Tags.SOPClassUID));
         refSOP.putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
     }
@@ -490,14 +459,24 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         Dataset info = (Dataset) storedStudiesInfo.get(siud);
         if (info != null) { return info.get(Tags.RefSeriesSeq); }
         storedStudiesInfo.put(siud, info = dof.newDataset());
+        // provide SCN Type 2 attributes
         info.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
         info.putPN(Tags.PatientName, ds.getString(Tags.PatientName));
         info.putSH(Tags.StudyID, ds.getString(Tags.StudyID));
+        
         info.putUI(Tags.StudyInstanceUID, siud);
+        DcmElement ppsSeq = info.putSQ(Tags.RefPPSSeq);
+        Dataset pps = ds.getItem(Tags.RefPPSSeq);
+        if (pps != null) {
+            // add IAN Type 2 Attribute
+            if (!pps.contains(Tags.PerformedWorkitemCodeSeq))
+                pps.putSQ(Tags.PerformedWorkitemCodeSeq);
+            ppsSeq.addItem(pps);
+        }
         return info.putSQ(Tags.RefSeriesSeq);
     }
 
-    private DcmElement getRefImageSeq(Dataset ds, DcmElement seriesSq) {
+    private DcmElement getRefSOPSeq(Dataset ds, DcmElement seriesSq) {
         final String siud = ds.getString(Tags.SeriesInstanceUID);
         Dataset info;
         for (int i = 0, n = seriesSq.vm(); i < n; ++i) {
@@ -507,53 +486,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         info = seriesSq.addNewItem();
         info.putUI(Tags.SeriesInstanceUID, siud);
-        return info.putSQ(Tags.RefImageSeq);
+        return info.putSQ(Tags.RefSOPSeq);
     }
 
     private static String firstOf(String s, char delim) {
         int delimPos = s.indexOf(delim);
         return delimPos == -1 ? s : s.substring(0, delimPos);
-    }
-
-    private void forward(String[] destAETs, Iterator scns) {
-        if (destAETs.length == 0) { return; }
-
-        String[] studyIUIDs = new String[1];
-        String[] seriesIUIDs = new String[1];
-        ArrayList sopIUIDs = new ArrayList();
-        while (scns.hasNext()) {
-            Dataset scn = (Dataset) scns.next();
-            studyIUIDs[0] = scn.getString(Tags.StudyInstanceUID);
-            DcmElement refSeriesSeq = scn.get(Tags.RefSeriesSeq);
-            for (int i = 0, n = refSeriesSeq.vm(); i < n; ++i) {
-                Dataset refSeries = refSeriesSeq.getItem(i);
-                seriesIUIDs[0] = refSeries.getString(Tags.SeriesInstanceUID);
-                DcmElement refSOPSeq = refSeries.get(Tags.RefImageSeq);
-                for (int j = 0, m = refSOPSeq.vm(); j < m; ++j) {
-                    sopIUIDs.add(refSOPSeq.getItem(j)
-                            .getString(Tags.RefSOPInstanceUID));
-                }
-                String[] iuids = (String[]) sopIUIDs
-                        .toArray(new String[sopIUIDs.size()]);
-                for (int k = 0; k < destAETs.length; ++k) {
-                    try {
-                        MoveOrder order = new MoveOrder(service
-                                .getRetrieveAET(), destAETs[k],
-                                forwardPriority, null, studyIUIDs, seriesIUIDs,
-                                iuids);
-                        JMSDelegate
-                                .getInstance(MoveOrder.QUEUE)
-                                .queueMessage(order,
-                                        JMSDelegate
-                                                .toJMSPriority(forwardPriority),
-                                        0L);
-                    } catch (JMSException e) {
-                        service.getLog()
-                                .error("Failed to queue move order:", e);
-                    }
-                }
-            }
-        }
     }
 
     void updateInstancesStored(Association assoc, Dataset ds) {
