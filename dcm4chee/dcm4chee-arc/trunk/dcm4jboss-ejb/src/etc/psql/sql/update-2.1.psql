@@ -5,7 +5,7 @@ ALTER TABLE series ADD COLUMN ext_retr_aet	TEXT;
 
 ALTER TABLE media ADD COLUMN created_time TIMESTAMP;
 ALTER TABLE media ADD COLUMN updated_time TIMESTAMP;
-ALTER TABLE media ADD COLUMN media_usage DEFAULT 0 BIGINT NOT NULL;
+ALTER TABLE media ADD COLUMN media_usage INT8 DEFAULT 0 NOT NULL;
 ALTER TABLE media ADD COLUMN media_rq_iuid TEXT;
 ALTER TABLE media ADD COLUMN media_status_info TEXT;
 
