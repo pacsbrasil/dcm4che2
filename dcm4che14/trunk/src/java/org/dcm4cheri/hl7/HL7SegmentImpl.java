@@ -43,6 +43,7 @@ import java.util.ResourceBundle;
  * </ul>
  */
 public class HL7SegmentImpl extends HL7FieldsImpl
+implements HL7Segment
 {
    // Constants -----------------------------------------------------   
    private static final int MIN_LEN = 4;
@@ -76,7 +77,7 @@ public class HL7SegmentImpl extends HL7FieldsImpl
    
    // Public --------------------------------------------------------
    public String id() {
-      return id();
+      return id;
    }
    
    public String get(int seq, int rep) {

@@ -5,6 +5,9 @@ Revision History
 dcm4che 1.0.4 -  - Changes since dcm4che 1.0.3
 -------------------------------------------------------------------------------
 BUG FIXES:
++ org.dcm4che.hl7.HL7Segment#id(): Fix StackOverflowError
++ org.dcm4che.net.ActiveAssociation: Fix wrong dispatch of N_CREATE_RQ dimse
+  to DcmServiceBase#n_action handler
 + org.dcm4che.srom.SRDocumentFactory#newSRDocument(Dataset):
   Fix NullPointerException for Datasets without
   Content Template Sequence (0040,A504)

@@ -199,7 +199,7 @@ implements ActiveAssociation, LF_ThreadPool.Handler
                break;
             case Command.N_CREATE_RQ:
                services.lookup(cmd.getAffectedSOPClassUID())
-                        .n_action(this, dimse);
+                        .n_create(this, dimse);
                break;
             case Command.N_DELETE_RQ:
                services.lookup(cmd.getRequestedSOPClassUID())

@@ -21,7 +21,7 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che;
+package org.dcm4che.hl7;
 
 import junit.framework.*;
 
@@ -41,12 +41,7 @@ public class PackageTest extends Object {
     
     public static Test suite() {
         TestSuite suite= new TestSuite();
-        suite.addTest(org.dcm4che.data.PackageTest.suite());
-        suite.addTest(org.dcm4che.dict.PackageTest.suite());
-        suite.addTest(org.dcm4che.hl7.PackageTest.suite());
-        suite.addTest(org.dcm4che.media.PackageTest.suite());
-        suite.addTest(org.dcm4che.net.PackageTest.suite());
-        suite.addTest(org.dcm4che.srom.PackageTest.suite());
+        suite.addTest(HL7MessageTest.suite());
         return suite;
     }
 }

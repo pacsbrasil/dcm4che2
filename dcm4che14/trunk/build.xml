@@ -4,7 +4,7 @@
 
    <property name="name" value="dcm4che"/>
    <property name="version" value="1.0.4"/>
-   <property name="javac.debug" value="off"/>
+   <property name="javac.debug" value="on"/>
    
    <target name="init">
       <tstamp/>
@@ -170,6 +170,8 @@
          
          <test name="org.dcm4che.srom.SRDocumentFactoryTest" todir="${build.reports.dir}"/>
          <test name="org.dcm4che.srom.ReferencedContentTest" todir="${build.reports.dir}"/>
+
+         <test name="org.dcm4che.hl7.HL7MessageTest" todir="${build.reports.dir}"/>
       </junit>
       <junitreport todir="${build.reports.dir}">
          <fileset dir="${build.reports.dir}" includes="TEST-*.xml"/>
