@@ -15,7 +15,10 @@ import java.util.Map;
 
 import javax.management.ObjectName;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
@@ -47,8 +50,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian,};
 
-    protected final static AssociationFactory asf = AssociationFactory.getInstance();
+    public static final DcmParserFactory paf = DcmParserFactory.getInstance();
+    
+    public static final AssociationFactory asf = AssociationFactory.getInstance();
 
+    public static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+
+    public static final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+    
     protected ObjectName dcmServerName;
 
     protected ObjectName auditLogName;
@@ -82,14 +91,13 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
     
     public final void setCalledAETs(String calledAETs) {
-        if (getState() == STARTED)
-            disableService();
+        disableService();
         this.calledAETs = StringUtils.split(calledAETs, '\\');
-        if (getState() == STARTED)
-            enableService();
+        enableService();
     }
 
     protected void enableService() {
+        if (dcmHandler == null) return;
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
         for (int i = 0; i < calledAETs.length; ++i) {
             AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
@@ -113,6 +121,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     private void disableService() {
+        if (dcmHandler == null) return;
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
         for (int i = 0; i < calledAETs.length; ++i) {
             AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
@@ -132,8 +141,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public final void setCallingAETs(String callingAETs) {
         this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null 
                 : StringUtils.split(callingAETs, '\\');
-        if (getState() == STARTED)
-            enableService();
+        enableService();
     }
     
     public final boolean isAcceptExplicitVRLE() {
@@ -142,8 +150,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public final void setAcceptExplicitVRLE(boolean acceptExplicitVRLE) {
         this.acceptExplicitVRLE = acceptExplicitVRLE;
-        if (getState() == STARTED)
-            enableService();
+        enableService();
     }
     
     protected void startService() throws Exception {

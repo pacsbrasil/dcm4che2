@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<server>
+    <classpath codebase="lib" archives="dcm4jboss.jar"/>
+    <mbean code="org.dcm4chex.archive.dcm.stgcmt.StgCmtScuScpService"
+        name="dcm4chex:service=StgCmtScuScp" xmbean-dd="xmdesc/dcm4jboss-stgcmt-xmbean.xml">
+        <depends>dcm4chex:service=DcmServer</depends>
+        <depends>dcm4chex:service=FileSystemMgt</depends>
+        <depends>dcm4chex:service=Queue,name=StgCmtScuScp</depends>
+        <depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
+    </mbean>
+</server>

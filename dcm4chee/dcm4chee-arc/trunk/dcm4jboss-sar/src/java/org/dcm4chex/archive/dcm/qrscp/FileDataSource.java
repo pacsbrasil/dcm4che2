@@ -20,9 +20,7 @@ import javax.imageio.stream.FileImageInputStream;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmEncodeParam;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
@@ -36,11 +34,6 @@ import org.dcm4chex.archive.util.FileUtils;
  * @since 18.09.2003
  */
 class FileDataSource implements DataSource {
-
-    private static final DcmParserFactory parserFact =
-        DcmParserFactory.getInstance();
-    private static final DcmObjectFactory objFact =
-        DcmObjectFactory.getInstance();
 
     private final QueryRetrieveScpService service;
     private final FileInfo fileInfo;
@@ -62,8 +55,8 @@ class FileDataSource implements DataSource {
         service.getLog().info("M-READ file:" + file);
         FileImageInputStream fiis = new FileImageInputStream(file);
         try {
-            DcmParser parser = parserFact.newDcmParser(fiis);
-            Dataset ds = objFact.newDataset();
+            DcmParser parser = QueryRetrieveScpService.paf.newDcmParser(fiis);
+            Dataset ds = QueryRetrieveScpService.dof.newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
             updateAttrs(ds, fileInfo.patAttrs);
@@ -129,12 +122,9 @@ class FileDataSource implements DataSource {
         }
     }
 
-    /**
-     * @param ds
-     */
     private void updateAttrs(Dataset ds, byte[] attrs) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(attrs);
-        DcmParser parser = parserFact.newDcmParser(bis);
+        DcmParser parser = QueryRetrieveScpService.paf.newDcmParser(bis);
         parser.setDcmHandler(ds.getDcmHandler());
         parser.parseDataset(DcmDecodeParam.EVR_LE, -1);
         bis.close();

@@ -201,7 +201,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEG2000Lossless(boolean accept) {
         this.acceptJPEG2000Lossless = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptJPEG2000Lossy() {
@@ -210,7 +210,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEG2000Lossy(boolean accept) {
         this.acceptJPEG2000Lossy = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptJPEGBaseline() {
@@ -219,7 +219,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGBaseline(boolean accept) {
         this.acceptJPEGBaseline = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptJPEGExtended() {
@@ -228,7 +228,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGExtended(boolean accept) {
         this.acceptJPEGExtended = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptJPEGLossless14() {
@@ -237,7 +237,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLossless14(boolean accept) {
         this.acceptJPEGLossless14 = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptJPEGLossless() {
@@ -246,7 +246,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLossless(boolean accept) {
         this.acceptJPEGLossless = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptJPEGLSLossless() {
@@ -255,7 +255,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLSLossless(boolean accept) {
         this.acceptJPEGLSLossless = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptJPEGLSLossy() {
@@ -264,7 +264,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLSLossy(boolean accept) {
         this.acceptJPEGLSLossy = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptRLELossless() {
@@ -273,7 +273,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptRLELossless(boolean accept) {
         this.acceptRLELossless = accept;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final int getBufferSize() {

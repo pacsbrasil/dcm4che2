@@ -159,7 +159,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptPatientRootFind(boolean patientRootFind) {
         this.patientRootFind = patientRootFind;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptPatientRootMove() {
@@ -168,7 +168,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptPatientRootMove(boolean patientRootMove) {
         this.patientRootMove = patientRootMove;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptPatientStudyOnlyFind() {
@@ -177,7 +177,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptPatientStudyOnlyFind(boolean patientStudyOnlyFind) {
         this.patientStudyOnlyFind = patientStudyOnlyFind;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptPatientStudyOnlyMove() {
@@ -186,7 +186,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptPatientStudyOnlyMove(boolean patientStudyOnlyMove) {
         this.patientStudyOnlyMove = patientStudyOnlyMove;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptStudyRootFind() {
@@ -195,7 +195,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptStudyRootFind(boolean studyRootFind) {
         this.studyRootFind = studyRootFind;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final boolean isAcceptStudyRootMove() {
@@ -204,7 +204,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setAcceptStudyRootMove(boolean studyRootMove) {
         this.studyRootMove = studyRootMove;
-        if (getState() == STARTED) enableService();
+        enableService();
     }
 
     public final int getAcTimeout() {

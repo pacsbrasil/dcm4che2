@@ -28,22 +28,18 @@ import java.util.Map;
 
 import javax.ejb.CreateException;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
@@ -71,18 +67,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final long MEGA = 1000000L;
 
-    private static final AuditLoggerFactory alf = AuditLoggerFactory
-            .getInstance();
-
     private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
-
-    private static final AssociationFactory af = AssociationFactory
-            .getInstance();
-
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
-    private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
     private final StoreScpService service;
 
@@ -214,7 +200,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq
                     .getTransferSyntaxUID());
             Dataset ds = objFact.newDataset();
-            DcmParser parser = pf.newDcmParser(in);
+            DcmParser parser = StoreScpService.paf.newDcmParser(in);
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
             service.logDataset("Dataset:\n", ds);
@@ -645,7 +631,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (ian != null) {
             return ian.get(Tags.RefSeriesSeq);
         }
-        ians.put(siud, ian = dof.newDataset());
+        ians.put(siud, ian = StoreScpService.dof.newDataset());
         // provide SCN Type 2 attributes
         ian.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
         ian.putPN(Tags.PatientName, ds.getString(Tags.PatientName));
@@ -688,9 +674,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 stored = null;
             }
             if (stored == null) {
-                stored = alf.newInstancesAction("Create", suid, alf.newPatient(
-                        ds.getString(Tags.PatientID), ds
-                                .getString(Tags.PatientName)));
+                stored = StoreScpService.alf.newInstancesAction("Create", suid,
+                        StoreScpService.alf.newPatient(
+                            ds.getString(Tags.PatientID), 
+                            ds.getString(Tags.PatientName)));
                 stored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
                 assoc.putProperty("InstancesStored", stored);
             }
@@ -705,8 +692,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         InstancesAction stored = (InstancesAction) assoc
                 .getProperty("InstancesStored");
         if (stored != null) {
-            service.logInstancesStored(alf.newRemoteNode(assoc.getSocket(),
-                    assoc.getCallingAET()), stored);
+            service.logInstancesStored(
+                    StoreScpService.alf.newRemoteNode(assoc.getSocket(),
+                            assoc.getCallingAET()), stored);
         }
         assoc.putProperty("InstancesStored", null);
     }

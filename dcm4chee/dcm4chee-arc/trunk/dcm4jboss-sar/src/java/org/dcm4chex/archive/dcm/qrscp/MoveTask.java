@@ -26,7 +26,6 @@ import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
@@ -37,7 +36,6 @@ import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DataSource;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
@@ -71,11 +69,6 @@ class MoveTask implements Runnable {
         return UIDs.ExplicitVRLittleEndian.equals(uid)
                 || UIDs.ImplicitVRLittleEndian.equals(uid);
     }
-
-    private static final AssociationFactory af = AssociationFactory
-            .getInstance();
-
-    private static final DcmObjectFactory of = DcmObjectFactory.getInstance();
 
     private static final UIDDictionary uidDict = DictionaryFactory
             .getInstance().getDefaultUIDDictionary();
@@ -180,7 +173,7 @@ class MoveTask implements Runnable {
         PDU ac = null;
         Association a = null;
         try {
-            a = af.newRequestor(service.createSocket(aeData));
+            a = QueryRetrieveScpService.asf.newRequestor(service.createSocket(aeData));
             a.setAcTimeout(service.getAcTimeout());
             ac = a.connect(createAAssociateRQ());
         } catch (IOException e) {
@@ -196,12 +189,12 @@ class MoveTask implements Runnable {
             throw new DcmServiceException(Status.UnableToPerformSuboperations,
                     prompt);
         }
-        storeAssoc = af.newActiveAssociation(a, null);
+        storeAssoc = QueryRetrieveScpService.asf.newActiveAssociation(a, null);
         storeAssoc.start();
     }
 
     private AAssociateRQ createAAssociateRQ() {
-        AAssociateRQ rq = af.newAAssociateRQ();
+        AAssociateRQ rq = QueryRetrieveScpService.asf.newAAssociateRQ();
         rq.setCalledAET(moveDest);
         rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
 
@@ -214,12 +207,12 @@ class MoveTask implements Runnable {
             if (tsuids == null) {
                 tsuids = new HashSet();
                 cuidMap.put(fileInfo.sopCUID, tsuids);
-                rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
-                        NATIVE_LE_TS));
+                rq.addPresContext(QueryRetrieveScpService.asf.newPresContext(
+                        rq.nextPCID(), cuid, NATIVE_LE_TS));
             }
             if (!isNativeLittleEndianTS(tsuid) && tsuids.add(tsuid))
-                rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
-                        new String[] { tsuid }));
+                rq.addPresContext(QueryRetrieveScpService.asf.newPresContext(
+                        rq.nextPCID(), cuid, new String[] { tsuid }));
         }
         return rq;
     }
@@ -350,8 +343,8 @@ class MoveTask implements Runnable {
             }
         } else {
             try {
-                a.abort(af.newAAbort(AAbort.SERVICE_PROVIDER,
-                        AAbort.REASON_NOT_SPECIFIED));
+                a.abort(QueryRetrieveScpService.asf.newAAbort(
+                        AAbort.SERVICE_PROVIDER, AAbort.REASON_NOT_SPECIFIED));
             } catch (IOException ignore) {
             }
         }
@@ -424,14 +417,14 @@ class MoveTask implements Runnable {
                                     + " accepted by " + moveDest);
             }
         }
-        Command storeRqCmd = of.newCommand();
+        Command storeRqCmd = QueryRetrieveScpService.dof.newCommand();
         storeRqCmd.initCStoreRQ(assoc.nextMsgID(), info.sopCUID, info.sopIUID,
                 moveRqCmd.getInt(Tags.Priority, Command.MEDIUM));
         storeRqCmd
                 .putUS(Tags.MoveOriginatorMessageID, moveRqCmd.getMessageID());
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         DataSource ds = new FileDataSource(service, info, buffer);
-        return af.newDimse(presCtx.pcid(), storeRqCmd, ds);
+        return QueryRetrieveScpService.asf.newDimse(presCtx.pcid(), storeRqCmd, ds);
     }
 
     private void notifyMovePending(Command fwdMoveRspCmd) {
@@ -446,7 +439,7 @@ class MoveTask implements Runnable {
                         : Status.Success;
         Dataset ds = null;
         if (!failedIUIDs.isEmpty()) {
-            ds = of.newDataset();
+            ds = QueryRetrieveScpService.dof.newDataset();
             ds.putUI(Tags.FailedSOPInstanceUIDList, (String[]) failedIUIDs
                     .toArray(new String[failedIUIDs.size()]));
         }
@@ -459,7 +452,7 @@ class MoveTask implements Runnable {
                     : makeMoveRsp(status);
             try {
                 moveAssoc.getAssociation()
-                        .write(af.newDimse(movePcid, cmd, ds));
+                        .write(QueryRetrieveScpService.asf.newDimse(movePcid, cmd, ds));
             } catch (Exception e) {
                 log.info("Failed to send Move RSP to Move Originator:", e);
                 moveAssoc = null;
@@ -468,7 +461,7 @@ class MoveTask implements Runnable {
     }
 
     private Command makeMoveRsp(Command fwdMoveRspCmd) {
-        Command rspCmd = of.newCommand();
+        Command rspCmd = QueryRetrieveScpService.dof.newCommand();
         rspCmd.initCMoveRSP(moveRqCmd.getMessageID(), moveRqCmd
                 .getAffectedSOPClassUID(), fwdMoveRspCmd.getStatus());
         rspCmd.putUS(Tags.NumberOfRemainingSubOperations, remaining
@@ -483,7 +476,7 @@ class MoveTask implements Runnable {
     }
 
     private Command makeMoveRsp(int status) {
-        Command rspCmd = of.newCommand();
+        Command rspCmd = QueryRetrieveScpService.dof.newCommand();
         rspCmd.initCMoveRSP(moveRqCmd.getMessageID(), moveRqCmd
                 .getAffectedSOPClassUID(), status);
         if (remaining > 0) {
