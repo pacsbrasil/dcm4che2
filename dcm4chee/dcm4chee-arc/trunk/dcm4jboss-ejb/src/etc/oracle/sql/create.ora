@@ -46,7 +46,6 @@ CREATE TABLE patient (
 	pat_attrs		LONG RAW,
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
-ALTER TABLE patient ADD CONSTRAINT pat_merge_fk FOREIGN KEY (merge_fk) REFERENCES patient(pk);
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(UPPER(pat_name));
@@ -95,6 +94,7 @@ CREATE SEQUENCE series_pk_seq;
 CREATE TABLE series (
 	pk              NUMBER PRIMARY KEY,
 	study_fk		INTEGER,
+	mpps_fk			INTEGER,
 	series_iuid     VARCHAR2(255) NOT NULL,
 	series_no		VARCHAR2(255),
 	modality		VARCHAR2(255),
@@ -178,7 +178,7 @@ CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 CREATE INDEX mwl_pat_id ON mwl_item(pat_id);
 CREATE INDEX mwl_pat_name ON mwl_item(UPPER(pat_name));
 
-CREATE SEQUENCE audit_pk_seq;
+CREATE SEQUENCE audit_record_pk_seq;
 CREATE TABLE audit_record(
 	pk 				NUMBER PRIMARY KEY,
 	msg_type 		VARCHAR2(255),
