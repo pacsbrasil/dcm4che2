@@ -3,7 +3,8 @@
 	<xsl:output method="xml"
 		doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-        indent = "yes"/>
+        indent="yes"
+        encoding="ISO-8859-1"/>
 	
 	<xsl:template match="/">
 		<html>

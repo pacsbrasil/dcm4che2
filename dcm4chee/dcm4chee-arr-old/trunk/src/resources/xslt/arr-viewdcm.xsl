@@ -2,7 +2,9 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html"
 		doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
-		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
+		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+        indent="yes"
+        encoding="ISO-8859-1"/>
 	
 	<xsl:template match="/">
 		<html>

@@ -1,11 +1,7 @@
 package org.dcm4chex.arr.ejb.session;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
 import java.text.ParsePosition;
 import java.util.Arrays;
 import java.util.Date;
@@ -17,6 +13,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.util.ISO8601DateFormat;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -85,26 +82,12 @@ final class ArrMsgParserImpl extends DefaultHandler implements ArrMsgParser {
 	}
 
 	/**
-	* @see org.dcm4che.arr.ArrMsgParser#parse(File)
-	*/
-	public int parse(File file)
-		throws ArrInputException
-	{
-		try {
-			return parse(new FileInputStream(file));
-		}
-		catch (FileNotFoundException fnf) {
-			throw new ArrInputException("File not found", fnf);
-		}
-	}
-
-	/**
 	* @see org.dcm4che.arr.ArrMsgParser#parse(String)
 	*/
 	public int parse(String str)
 		throws ArrInputException
 	{
-		return parse(new ByteArrayInputStream(str.getBytes()));
+		return parse(new InputSource(new StringReader(str)));
 	}
 
 	/**
@@ -112,7 +95,7 @@ final class ArrMsgParserImpl extends DefaultHandler implements ArrMsgParser {
 	*
 	* @see org.dcm4che.arr.ArrMsgParser#parse(InputStream)
 	*/
-	public int parse(InputStream is)
+	public int parse(InputSource is)
 		throws ArrInputException
 	{
         timeStamp = null;
