@@ -9,6 +9,9 @@
 <xsl:value-of select="jbosscmp-jdbc/defaults/datasource-mapping"/>
 <xsl:text>
 </xsl:text>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Patient']" mode="fk">
+<xsl:with-param name="fk" select="'merge_fk'"/>
+</xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Study']" mode="fk">
 <xsl:with-param name="fk" select="'patient_fk'"/>
 </xsl:apply-templates>

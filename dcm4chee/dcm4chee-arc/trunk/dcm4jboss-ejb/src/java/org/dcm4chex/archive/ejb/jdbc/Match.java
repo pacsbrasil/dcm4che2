@@ -102,6 +102,7 @@ abstract class Match
         protected void appendBodyTo(StringBuffer sb)
         {
             sb.append(column);
+            sb.append(" ");
             sb.append(literal);
         }
     }

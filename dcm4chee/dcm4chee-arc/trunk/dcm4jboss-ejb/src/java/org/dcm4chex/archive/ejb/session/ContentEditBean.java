@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
@@ -123,6 +124,14 @@ public abstract class ContentEditBean implements SessionBean {
         instHome = null;
     }
 
+    /**
+     * @throws CreateException
+     * @ejb.interface-method
+     */
+    public void createPatient(PatientDTO pat) throws CreateException {
+        patHome.create(DTO2Dataset.toDataset(pat));
+    }
+    
     /**
      * @ejb.interface-method
      */

@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4cheri.util.DatasetUtils;
@@ -43,35 +42,26 @@ public class QueryStudiesCmd extends BaseCmd {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private static final String[] SELECT_ATTRIBUTE =
-        {
-            "Patient.pk",
-            "Patient.encodedAttributes",
-            "Study.pk",
-            "Study.encodedAttributes",
-            "Study.modalitiesInStudy",
-            "Study.numberOfStudyRelatedSeries",
-            "Study.numberOfStudyRelatedInstances",
-            "Study.retrieveAETs",
-            "Study.availability"};
-            
-    private static final String[] ENTITY = { "Patient", "Study" };
+    private static final String[] SELECT_ATTRIBUTE = { "Patient.pk",
+            "Patient.encodedAttributes", "Study.pk", "Study.encodedAttributes",
+            "Study.modalitiesInStudy", "Study.numberOfStudyRelatedSeries",
+            "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
+            "Study.availability" };
 
-    private static final String[] RELATIONS =
-        { "Patient.pk", "Study.patient_fk", };
+    private static final String[] ENTITY = { "Patient" };
+
+    private static final String[] LEFT_JOIN = { "Study", "Patient.pk",
+            "Study.patient_fk", };
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    public QueryStudiesCmd(
-        DataSource ds,
-        StudyFilterDTO filter,
-        int offset,
-        int limit)
-        throws SQLException {
+    public QueryStudiesCmd(DataSource ds, StudyFilterDTO filter, int offset,
+            int limit) throws SQLException {
         super(ds);
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
-        sqlBuilder.setRelations(RELATIONS);
+        sqlBuilder.setLeftJoin(LEFT_JOIN);
+        sqlBuilder.addLiteralMatch("Patient.merge_fk", false, "IS NULL");
         sqlBuilder.setStudyFilterMatch(filter);
         sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Patient.pk", SqlBuilder.ASC);
@@ -88,29 +78,25 @@ public class QueryStudiesCmd extends BaseCmd {
             while (next()) {
                 int patPk = rs.getInt(1);
                 if (pat == null || pat.getPk() != patPk) {
-                    result.add(
-                        pat = DTOFactory.newPatientDTO(patPk, toDataset(2)));
+                    byte[] patAttrs = rs.getBytes(2);
+
+                    result.add(pat = DTOFactory.newPatientDTO(patPk,
+                            DatasetUtils.fromByteArray(patAttrs,
+                                    DcmDecodeParam.EVR_LE)));
                 }
-                int styPk = rs.getInt(3);
-                pat.getStudies().add(
-                    DTOFactory.newStudyDTO(
-                        styPk,
-                        toDataset(4),
-                        rs.getString(5),
-                        rs.getInt(6),
-                        rs.getInt(7),
-                        rs.getString(8),
-                        rs.getInt(9)));
+                byte[] styAttrs = rs.getBytes(4);
+                if (styAttrs != null) {
+                    pat.getStudies().add(
+                            DTOFactory.newStudyDTO(rs.getInt(3), DatasetUtils
+                                    .fromByteArray(styAttrs,
+                                            DcmDecodeParam.EVR_LE), rs
+                                    .getString(5), rs.getInt(6), rs.getInt(7),
+                                    rs.getString(8), rs.getInt(9)));
+                }
             }
             return result;
         } finally {
             close();
         }
-    }
-
-    private Dataset toDataset(int column) throws SQLException {
-        return DatasetUtils.fromByteArray(
-            rs.getBytes(column),
-            DcmDecodeParam.EVR_LE);
     }
 }
