@@ -71,24 +71,27 @@ public class DcmServiceException extends Exception {
         return status;
     }
 
-    public void setErrorID(int errorID) {
+    public DcmServiceException setErrorID(int errorID) {
         this.errorID = errorID;
+        return this;
     }
 
     public int getErrorID() {
         return errorID;
     }
 
-    public void setEventTypeID(int eventTypeID) {
+    public DcmServiceException setEventTypeID(int eventTypeID) {
         this.eventTypeID = eventTypeID;
+        return this;
     }
 
     public int getEventTypeID() {
         return eventTypeID;
     }
 
-    public void setActionTypeID(int actionTypeID) {
+    public DcmServiceException setActionTypeID(int actionTypeID) {
         this.actionTypeID = actionTypeID;
+        return this;
     }
 
     public int getActionTypeID() {
