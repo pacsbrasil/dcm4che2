@@ -260,7 +260,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             super(backend);
             this.tags = (int[]) tags.clone();
             this.exclude = exclude;
-            Arrays.sort(tags);
+            Arrays.sort(this.tags);
         }
         
         protected boolean filter(int tag) {

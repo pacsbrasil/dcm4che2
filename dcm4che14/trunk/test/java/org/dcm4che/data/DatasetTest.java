@@ -445,7 +445,33 @@ public class DatasetTest extends TestCase {
         assertEquals(13, ds.size());
     }
 
-
+    private static final int[] SUBSET12 = {
+            Tags.ScheduledStationAET,
+            Tags.ImageType,
+            Tags.ImagePosition, 
+            Tags.AnchorPoint, 
+            Tags.TableOfYBreakPoints,
+            Tags.OtherPatientIDs,
+            Tags.OtherPatientNames, 
+            Tags.AccessionNumber, 
+            Tags.OverlayOrigin,
+            Tags.StudyTime,
+            Tags.RefSamplePositions,
+            Tags.TextValue
+    };
+    
+    public void testSubSet2() throws Exception {
+        putStrings();
+        Dataset sub12 = ds.subSet(SUBSET12);
+        assertEquals(12, sub12.size());
+        assertEquals(21, ds.size());
+        sub12.clear();
+        assertTrue(sub12.isEmpty());
+        assertEquals(0, sub12.size());
+        assertEquals(9, ds.size());
+    }
+ 
+    
     /**
      *  A unit test for JUnit
      *
