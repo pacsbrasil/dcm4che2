@@ -21,10 +21,6 @@
 
 	<property name="dist.name" value="dcm4jboss-${version}"/>
 	<property name="dist.dir" value="${target.dir}/${dist.name}"/>
-	<property name="dist.common" value="${dist.dir}/common"/>
-	<property name="dist.hsql" value="${dist.dir}/hsql"/>
-	<property name="dist.psql" value="${dist.dir}/psql"/>
-	<property name="dist.db2" value="${dist.dir}/db2"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -200,8 +196,8 @@
    			<fileset dir="${dcm4che.home}">
    				<include name="lib/dcm4che.jar"/>
    			</fileset>
-  			<fileset dir="${dcm4jboss-ejb.src}/etc">
-   				<include name="conf/*.xml"/>
+  			<fileset dir="${src.etc}">
+   				<include name="deploy/*.xml"/>
    			</fileset>
    			<fileset dir="${target.dir}">
    				<include name="lib/*"/>
