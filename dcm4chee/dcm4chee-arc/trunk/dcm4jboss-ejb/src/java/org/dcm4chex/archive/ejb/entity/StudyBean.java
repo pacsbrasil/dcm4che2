@@ -380,10 +380,10 @@ public abstract class StudyBean implements EntityBean {
         final int numS = ejbSelectNumberOfStudyRelatedSeries(pk);
         if (getNumberOfStudyRelatedSeries() != numS)
             setNumberOfStudyRelatedSeries(numS);        
-        final int numI = numS > 0 ? 0 : ejbSelectNumberOfStudyRelatedInstances(pk);
+        final int numI = numS > 0 ? ejbSelectNumberOfStudyRelatedInstances(pk) : 0;
         if (getNumberOfStudyRelatedInstances() != numI)
             setNumberOfStudyRelatedInstances(numI);
-        final String mds = numS > 0 ? "" : toString(ejbSelectModalityInStudies(pk));
+        final String mds = numS > 0 ? toString(ejbSelectModalityInStudies(pk)) : "";
         if (!mds.equals(getModalitiesInStudy()))
             setModalitiesInStudy(mds);
         String aets = "";
