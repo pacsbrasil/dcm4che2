@@ -19,9 +19,9 @@ import java.io.Serializable;
 public final class MoveOrder implements Serializable {
 
     static final long serialVersionUID = 1747095661098930967L;
-    
+
     public static final String QUEUE = "MoveScu";
-    
+
     private String retrieveAET;
 
     private String moveDestination;
@@ -66,8 +66,9 @@ public final class MoveOrder implements Serializable {
         sb.append(moveDestination);
         sb.append(", qrscp=").append(retrieveAET);
         sb.append(", priority=").append(priority);
-        sb.append(", failureStatus=").append(failureStatus);
-        sb.append(", failureCount=").append(failureCount);
+        sb.append(", failureStatus=").append(Integer.toHexString(failureStatus)
+                .toUpperCase());
+        sb.append("H, failureCount=").append(failureCount);
         sb.append("]");
         return sb.toString();
     }

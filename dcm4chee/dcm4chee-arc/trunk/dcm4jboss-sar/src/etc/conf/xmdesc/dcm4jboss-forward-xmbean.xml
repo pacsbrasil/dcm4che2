@@ -26,13 +26,14 @@
       getMethod="getForwardingRules"
       setMethod="setForwardingRules">
       <description>List of forwarding rules.
-      Format:=['['CONDITION[,..]']'](AET[,..]|'NONE')
-      CONDITION:=(calling|called)[!]=AET['|'..]   
+      Format:=['['CONDITION[,..]']'](AET['!'INTERVAL][,..]|'NONE')
+      CONDITION:=(calling|called)[!]=AET['|'..]
+      INTERVAL:=FROM'-'TO
       </description>
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2]SAMPLE_SCP3,SAMPLE_SCP4;NONE" />
+         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2]SAMPLE_SCP3,SAMPLE_SCP4!8-16;NONE" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

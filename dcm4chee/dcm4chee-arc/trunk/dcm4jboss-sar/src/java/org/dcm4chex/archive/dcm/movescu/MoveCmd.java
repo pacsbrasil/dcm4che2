@@ -83,6 +83,7 @@ class MoveCmd implements Runnable, DimseListener {
         } catch (Exception e) {
             log.warn("Failed to invoke C-MOVE-RQ for " + order, e);
             order.setFailureStatus(INVOKE_FAILED_STATUS);
+            order.setFailureCount(order.getFailureCount()+1);
             service.queueFailedMoveOrder(order);
         } finally {
             if (moveAssoc != null) try {
@@ -115,6 +116,7 @@ class MoveCmd implements Runnable, DimseListener {
             order.setSopIuids(failedUIDs);
         }
         order.setFailureStatus(status);
+        order.setFailureCount(order.getFailureCount()+1);
         service.queueFailedMoveOrder(order);
     }
 
@@ -135,7 +137,7 @@ class MoveCmd implements Runnable, DimseListener {
         Association a = af.newRequestor(createSocket(moveSCP));
         AAssociateRQ rq = af.newAAssociateRQ();
         rq.setCalledAET(moveSCP.getTitle());
-        rq.setCallingAET(service.getAET());
+        rq.setCallingAET(service.getCallingAET());
         rq.addPresContext(af.newPresContext(PCID,
                 UIDs.StudyRootQueryRetrieveInformationModelMOVE,
                 NATIVE_TS));

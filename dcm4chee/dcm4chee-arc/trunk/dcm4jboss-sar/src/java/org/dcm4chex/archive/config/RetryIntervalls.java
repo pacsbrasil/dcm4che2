@@ -6,7 +6,7 @@
  *  See terms of license at gnu.org.      *
  *                                        *
  ******************************************/
-package org.dcm4chex.archive.dcm.movescu;
+package org.dcm4chex.archive.config;
 
 import java.util.StringTokenizer;
 
@@ -16,9 +16,16 @@ import java.util.StringTokenizer;
  * @version $Revision$ $Date$
  * @since 17.12.2003
  */
-final class RetryIntervalls {
+public final class RetryIntervalls {
+
+    private static final long MS_PER_MIN = 60000L;
+
+    private static final long MS_PER_HOUR = 60 * MS_PER_MIN;
+
+    private static final long MS_PER_DAY = 24 * MS_PER_HOUR;
 
     private final int[] counts;
+
     private final long[] intervalls;
 
     public RetryIntervalls() {
@@ -41,22 +48,26 @@ final class RetryIntervalls {
 
     private void init(int i, String item) {
         final int x = item.indexOf('x');
-        intervalls[i] =
-            parseMilliseconds(x != -1 ? item.substring(x + 1) : item);
-        counts[i] =
-            x != -1 ? Math.max(1, Integer.parseInt(item.substring(0, x))) : 1;
+        intervalls[i] = parseMilliseconds(x != -1 ? item.substring(x + 1)
+                : item);
+        counts[i] = x != -1 ? Math.max(1, Integer
+                .parseInt(item.substring(0, x))) : 1;
     }
 
     public String toString() {
-        if (counts.length == 0) {
-            return "";
-        }
+        if (counts.length == 0) { return ""; }
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < counts.length; i++) {
             sb.append(counts[i]);
             sb.append('x');
-            sb.append(intervalls[i] / 1000);
-            sb.append("s,");
+            if (intervalls[i] % MS_PER_DAY == 0)
+                sb.append(intervalls[i] / MS_PER_DAY).append("d,");
+            else if (intervalls[i] % MS_PER_HOUR == 0)
+                sb.append(intervalls[i] / MS_PER_HOUR).append("h,");
+            else if (intervalls[i] % MS_PER_MIN == 0)
+                sb.append(intervalls[i] / MS_PER_MIN).append("m,");
+            else
+                sb.append(intervalls[i] / 1000).append("s,");
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();
@@ -66,15 +77,15 @@ final class RetryIntervalls {
         int len = text.length();
         long k = 1L;
         switch (text.charAt(len - 1)) {
-            case 'd' :
-                k *= 24;
-            case 'h' :
-                k *= 60;
-            case 'm' :
-                k *= 60;
-            case 's' :
-                k *= 1000;
-                --len;
+        case 'd':
+            k *= 24;
+        case 'h':
+            k *= 60;
+        case 'm':
+            k *= 60;
+        case 's':
+            k *= 1000;
+            --len;
         }
         return k * Long.parseLong(text.substring(0, len));
     }
@@ -82,9 +93,7 @@ final class RetryIntervalls {
     public long getIntervall(int failureCount) {
         int countDown = failureCount;
         for (int i = 0; i < counts.length; ++i) {
-            if ((countDown -= counts[i]) <= 0) {
-                return intervalls[i];
-            }
+            if ((countDown -= counts[i]) <= 0) { return intervalls[i]; }
         }
         return -1L;
     }

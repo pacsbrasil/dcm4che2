@@ -35,6 +35,8 @@ public class Condition {
 
     public static final String PMI = "pmi";
 
+    public static final String IMGTYPE = "imgtype";
+    
     private static final int EXPECT_KEY = 0;
 
     private static final int EXPECT_EQUAL = 1;
@@ -51,17 +53,18 @@ public class Condition {
 
     public static Map toParam(Association assoc, Dataset ds) {
         Map retval = new HashMap();
-        putInto(retval, CALLING, assoc.getCallingAET());
-        putInto(retval, CALLED, assoc.getCalledAET());
+        putInto(retval, CALLING, new String[]{assoc.getCallingAET()});
+        putInto(retval, CALLED, new String[]{assoc.getCalledAET()});
         if (ds != null) {
-	        putInto(retval, CUID, ds.getString(Tags.SOPClassUID));
-	        putInto(retval, PMI, ds.getString(Tags.PhotometricInterpretation));
+	        putInto(retval, CUID, ds.getStrings(Tags.SOPClassUID));
+	        putInto(retval, PMI, ds.getStrings(Tags.PhotometricInterpretation));
+	        putInto(retval, IMGTYPE, ds.getStrings(Tags.ImageType));
         }
         return retval;
     }
 
-    private static void putInto(Map retval, String key, String val) {
-        if (val != null && val.length() != 0) retval.put(key, val);
+    private static void putInto(Map retval, String key, String[] val) {
+        if (val != null && val.length != 0) retval.put(key, val);
     }
 
     private HashMap map = new HashMap();
@@ -123,13 +126,20 @@ public class Condition {
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
             String key = (String) entry.getKey();
-            String val = (String) entry.getValue();
+            String[] val = (String[]) entry.getValue();
             HashSet set = (HashSet) map.get(key);
-            if (set != null && !set.contains(val)) return false;
+            if (set != null && !containsAny(set, val)) return false;
             HashSet antiset = (HashSet) map.get(key + '!');
-            if (antiset != null && antiset.contains(val)) return false;
+            if (antiset != null && containsAny(antiset, val)) return false;
         }
         return true;
+    }
+
+    private boolean containsAny(HashSet set, String[] val) {
+        if (val != null)
+	        for (int i = 0; i < val.length; i++)
+	            if (set.contains(val[i])) return true;
+        return false;
     }
 
     public String toString() {

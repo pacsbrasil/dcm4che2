@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.management.Notification;
+import javax.management.NotificationFilter;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -35,8 +36,17 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  */
 public class StoreScpService extends AbstractScpService {
 
+    public static final String IANS_KEY = "ians";
+
     public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.storescp";
-    
+
+    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return EVENT_TYPE.equals(notif.getType());
+        }
+    };
+
     private static final String[] IMAGE_CUIDS = {
             UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
             UIDs.ComputedRadiographyImageStorage,
@@ -105,7 +115,7 @@ public class StoreScpService extends AbstractScpService {
     private StoreScp scp = new StoreScp(this);
 
     private StgCmtScp stgCmtScp = new StgCmtScp(this);
-    
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -171,8 +181,7 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final String getRetrieveAETs() {
-        if (retrieveAETSet == null)
-            return null;
+        if (retrieveAETSet == null) return null;
         StringBuffer sb = new StringBuffer();
         Iterator it = retrieveAETSet.iterator();
         sb.append(it.next());
@@ -192,11 +201,12 @@ public class StoreScpService extends AbstractScpService {
     final Set getRetrieveAETSet() {
         return retrieveAETSet;
     }
-    
+
     final String[] getRetrieveAETArray() {
-        return (String[]) retrieveAETSet.toArray(new String[retrieveAETSet.size()]);
+        return (String[]) retrieveAETSet.toArray(new String[retrieveAETSet
+                .size()]);
     }
-    
+
     final String getRetrieveAET() {
         return (String) retrieveAETSet.iterator().next();
     }
@@ -369,7 +379,7 @@ public class StoreScpService extends AbstractScpService {
                 policy.putPresContext(UIDs.StorageCommitmentPushModel,
                         getTransferSyntaxUIDs());
     }
-    
+
     void sendReleaseNotification(Association assoc) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(EVENT_TYPE, this, eventID);

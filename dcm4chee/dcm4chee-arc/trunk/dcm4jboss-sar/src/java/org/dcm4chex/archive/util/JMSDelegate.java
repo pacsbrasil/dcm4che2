@@ -63,7 +63,7 @@ public class JMSDelegate {
 
     private final Queue queue;
 
-    private int deliveryMode = DeliveryMode.NON_PERSISTENT;
+    private int deliveryMode = DeliveryMode.PERSISTENT;
 
     public JMSDelegate(String qname) {
         this.qname = qname;

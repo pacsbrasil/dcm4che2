@@ -206,7 +206,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
                     ds.putAll(coercedElements);
                 }
-                updateStoredStudiesInfo(assoc, ds);
+                updateIANInfo(assoc, ds);
                 updateInstancesStored(assoc, ds);
             } catch (DuplicateStorageException e) {
                 service.getLog().warn("ignore attempt to store instance[uid="
@@ -441,39 +441,39 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         service.sendReleaseNotification(assoc);
     }
 
-    private void updateStoredStudiesInfo(Association assoc, Dataset ds) {
-        Map storedStudiesInfo = (Map) assoc.getProperty(StoreScpService.EVENT_TYPE);
-        if (storedStudiesInfo == null) {
-            assoc.putProperty(StoreScpService.EVENT_TYPE, storedStudiesInfo = new HashMap());
+    private void updateIANInfo(Association assoc, Dataset ds) {
+        Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
+        if (ians == null) {
+            assoc.putProperty(StoreScpService.IANS_KEY, ians = new HashMap());
         }
-        Dataset refSOP = getRefSOPSeq(ds,
-                getRefSeriesSeq(ds, storedStudiesInfo)).addNewItem();
+        Dataset refSOP = getRefSOPSeq(ds, getRefSeriesSeq(ds, ians))
+                .addNewItem();
         refSOP.putAE(Tags.RetrieveAET, service.getRetrieveAET());
         refSOP.putCS(Tags.InstanceAvailability, "ONLINE");
         refSOP.putUI(Tags.RefSOPClassUID, ds.getString(Tags.SOPClassUID));
         refSOP.putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
     }
 
-    private DcmElement getRefSeriesSeq(Dataset ds, Map storedStudiesInfo) {
+    private DcmElement getRefSeriesSeq(Dataset ds, Map ians) {
         final String siud = ds.getString(Tags.StudyInstanceUID);
-        Dataset info = (Dataset) storedStudiesInfo.get(siud);
-        if (info != null) { return info.get(Tags.RefSeriesSeq); }
-        storedStudiesInfo.put(siud, info = dof.newDataset());
+        Dataset ian = (Dataset) ians.get(siud);
+        if (ian != null) { return ian.get(Tags.RefSeriesSeq); }
+        ians.put(siud, ian = dof.newDataset());
         // provide SCN Type 2 attributes
-        info.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
-        info.putPN(Tags.PatientName, ds.getString(Tags.PatientName));
-        info.putSH(Tags.StudyID, ds.getString(Tags.StudyID));
-        
-        info.putUI(Tags.StudyInstanceUID, siud);
-        DcmElement ppsSeq = info.putSQ(Tags.RefPPSSeq);
+        ian.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
+        ian.putPN(Tags.PatientName, ds.getString(Tags.PatientName));
+        ian.putSH(Tags.StudyID, ds.getString(Tags.StudyID));
+
+        ian.putUI(Tags.StudyInstanceUID, siud);
+        DcmElement ppsSeq = ian.putSQ(Tags.RefPPSSeq);
         Dataset pps = ds.getItem(Tags.RefPPSSeq);
         if (pps != null) {
             // add IAN Type 2 Attribute
             if (!pps.contains(Tags.PerformedWorkitemCodeSeq))
-                pps.putSQ(Tags.PerformedWorkitemCodeSeq);
+                    pps.putSQ(Tags.PerformedWorkitemCodeSeq);
             ppsSeq.addItem(pps);
         }
-        return info.putSQ(Tags.RefSeriesSeq);
+        return ian.putSQ(Tags.RefSeriesSeq);
     }
 
     private DcmElement getRefSOPSeq(Dataset ds, DcmElement seriesSq) {
@@ -482,7 +482,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         for (int i = 0, n = seriesSq.vm(); i < n; ++i) {
             info = seriesSq.getItem(i);
             if (siud.equals(info.getString(Tags.SeriesInstanceUID))) { return info
-                    .get(Tags.RefImageSeq); }
+                    .get(Tags.RefSOPSeq); }
         }
         info = seriesSq.addNewItem();
         info.putUI(Tags.SeriesInstanceUID, siud);

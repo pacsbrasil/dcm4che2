@@ -14,7 +14,7 @@
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
-   <class>org.dcm4chex.archive.dcm.movescu.MoveSCUService</class>
+   <class>org.dcm4chex.archive.dcm.movescu.MoveScuService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -23,11 +23,11 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getAET"
-      setMethod="setAET">
+      getMethod="getCallingAET"
+      setMethod="setCallingAET">
       <description>(Calling) AET of Move SCU.
       </description>
-      <name>AET</name>
+      <name>CallingAET</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="MOVE_SCU" />

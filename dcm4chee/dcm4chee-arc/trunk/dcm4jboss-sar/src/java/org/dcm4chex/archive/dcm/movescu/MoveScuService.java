@@ -18,6 +18,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
@@ -34,7 +35,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
 
     private static final String DEFAULT_AET = "MOVE_SCU";
 
-    private String aet = DEFAULT_AET;
+    private String callingAET = DEFAULT_AET;
 
     private String dsJndiName = "java:/DefaultDS";
 
@@ -90,12 +91,12 @@ public class MoveScuService extends ServiceMBeanSupport implements
         retryIntervalls = new RetryIntervalls(text);
     }
 
-    public String getAET() {
-        return aet;
+    public String getCallingAET() {
+        return callingAET;
     }
 
-    public void setAET(String aet) {
-        this.aet = aet;
+    public void setCallingAET(String aet) {
+        this.callingAET = aet;
     }    
 
     protected void startService() throws Exception {

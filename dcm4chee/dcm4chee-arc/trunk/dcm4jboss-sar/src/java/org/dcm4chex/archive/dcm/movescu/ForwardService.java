@@ -15,7 +15,6 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.management.Notification;
-import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -43,13 +42,6 @@ public class ForwardService extends ServiceMBeanSupport implements
 
     private ForwardingRules forwardingRules = new ForwardingRules("");
 
-    private final NotificationFilter filter = new NotificationFilter() {
-
-        public boolean isNotificationEnabled(Notification notif) {
-            return StoreScpService.EVENT_TYPE.equals(notif.getType());
-        }
-    };
-
     public final String getForwardingRules() {
         return forwardingRules.toString();
     }
@@ -75,36 +67,39 @@ public class ForwardService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        server.addNotificationListener(storeScpServiceName, this, filter, null);
+        server.addNotificationListener(storeScpServiceName,
+                this,
+                StoreScpService.NOTIF_FILTER,
+                null);
     }
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
                 this,
-                filter,
+                StoreScpService.NOTIF_FILTER,
                 null);
     }
 
     public void handleNotification(Notification notif, Object handback) {
         Association assoc = (Association) notif.getUserData();
-        Map storedStudiesInfo = (Map) assoc
-                .getProperty(StoreScpService.EVENT_TYPE);
-        if (storedStudiesInfo != null) {
+        Map ians = (Map) assoc
+                .getProperty(StoreScpService.IANS_KEY);
+        if (ians != null) {
             String[] destAETs = forwardingRules
                     .getForwardDestinationsFor(assoc);
-            if (destAETs.length != 0) forward(destAETs, storedStudiesInfo);
+            if (destAETs.length != 0) forward(destAETs, ians);
         }
     }
 
-    private void forward(String[] destAETs, Map storedStudiesInfo) {
+    private void forward(String[] destAETs, Map ians) {
         String[] studyIUIDs = new String[1];
         String[] seriesIUIDs = new String[1];
         ArrayList sopIUIDs = new ArrayList();
         Dataset refSOP = null;
-        for (Iterator it = storedStudiesInfo.values().iterator(); it.hasNext();) {
-            Dataset info = (Dataset) it.next();
-            studyIUIDs[0] = info.getString(Tags.StudyInstanceUID);
-            DcmElement refSeriesSeq = info.get(Tags.RefSeriesSeq);
+        for (Iterator it = ians.values().iterator(); it.hasNext();) {
+            Dataset ian = (Dataset) it.next();
+            studyIUIDs[0] = ian.getString(Tags.StudyInstanceUID);
+            DcmElement refSeriesSeq = ian.get(Tags.RefSeriesSeq);
             for (int i = 0, n = refSeriesSeq.vm(); i < n; ++i) {
                 Dataset refSeries = refSeriesSeq.getItem(i);
                 seriesIUIDs[0] = refSeries.getString(Tags.SeriesInstanceUID);
@@ -117,11 +112,11 @@ public class ForwardService extends ServiceMBeanSupport implements
                         .toArray(new String[sopIUIDs.size()]);
                 sopIUIDs.clear();
                 for (int k = 0; k < destAETs.length; ++k) {
+                    MoveOrder order = new MoveOrder(refSOP
+                            .getString(Tags.RetrieveAET), ForwardingRules
+                            .toAET(destAETs[k]), forwardPriority, null,
+                            studyIUIDs, seriesIUIDs, iuids);
                     try {
-                        MoveOrder order = new MoveOrder(refSOP
-                                .getString(Tags.RetrieveAET), ForwardingRules
-                                .toAET(destAETs[k]), forwardPriority, null,
-                                studyIUIDs, seriesIUIDs, iuids);
                         final long scheduledTime = ForwardingRules
                                 .toScheduledTime(destAETs[k]);
                         log.info("Scheduling "
@@ -135,7 +130,7 @@ public class ForwardService extends ServiceMBeanSupport implements
                                                 .toJMSPriority(forwardPriority),
                                         scheduledTime);
                     } catch (JMSException e) {
-                        log.error("Failed to queue move order:", e);
+                        log.error("Failed to schedule " + order, e);
                     }
                 }
             }
