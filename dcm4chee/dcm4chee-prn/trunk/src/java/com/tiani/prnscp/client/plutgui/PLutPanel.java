@@ -74,7 +74,7 @@ public class PLutPanel extends JPanel
     private final static int CHANGING_SLOPE = 2;
     private final static int CHANGING_GAMMA = 4;
     private int changingParam;
-    private boolean logHisto = true;
+    private boolean logHisto = false;
 
 
     PLutPanel(ImagePanel imgPanel)
@@ -224,8 +224,7 @@ public class PLutPanel extends JPanel
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.WHITE);
-        Rectangle2D rect = new Rectangle2D.Float(0, 0, getWidth(), getHeight());
-        g2.fill(rect);
+        g2.fill(new Rectangle2D.Float(0, 0, getWidth(), getHeight()));
         if (imgPanel.getBI() != null) {
             //draw the window range, which is the P-LUTs range
             drawPLut(g2, true);
@@ -330,7 +329,7 @@ public class PLutPanel extends JPanel
         int winMin = imgPanel.getWindowMin();
         int winMax = imgPanel.getWindowMax();
         final boolean winDefined = (winMin < winMax);
-        int startInd, endInd;
+        final int startInd, endInd;
         
         if (!winDefined) {
             winMin = binMin;
@@ -344,28 +343,25 @@ public class PLutPanel extends JPanel
             if (startInd == endInd) {
                 return; // do nothing
             }
-            if (startInd < 0)
-                startInd = 0;
-            if (endInd >= NUM_BINS)
-                endInd = NUM_BINS - 1;
         }
         
-        final int PLutMax = 255;
+        final int plutMax = 255;
         int sum = 0;
         
-        for (int i = startInd; i <= endInd; i++) {
+        for (int i = Math.max(0, startInd); i <= endInd && i < histo.length; i++)
             sum += histo[i];
-        }
         
-        final int TotSum = sum;
-        final float f = (float) PLutMax / TotSum;
+        final int totSum = sum;
+        final float f = (float) plutMax / totSum;
+        final float fPLUT = (float) (plut.length - 1) / (endInd - startInd);
         int n, v;
         int lastind = startInd;
         
         sum = 0;
         for (int i = startInd; i <= endInd; i++) {
-            sum += histo[i];
-            n = (int) ((float) (i - startInd) * (plut.length - 1) / (endInd - startInd));
+            if (i >= 0 && i < histo.length)
+                sum += histo[i];
+            n = (int) ((i - startInd) * fPLUT);
             v = (int) (f * sum + 0.5);
             for (int j = lastind + 1; j <= n; j++) {
                 plut[j] = v;
@@ -382,18 +378,18 @@ public class PLutPanel extends JPanel
         int curveColor;
         BufferedImage bi = imgPanel.getBI();
         ColorModel cm = bi.getColorModel();
-        ColorModelParam cmParam = imgPanel.getColorModelParam();
+        final ColorModelParam cmParam = imgPanel.getColorModelParam();
         final float f = (float) binRange / (NUM_BINS - 1);
         final double logHistMax = Math.log(histoMax+1);
+        
         for (int i = 0; i < NUM_BINS; i++) {
-            int index,packed=0;
             int dx = (int) ((getWidth() - 1) * 
                 (logHisto
                 ? (Math.log(histo[i]+1) / logHistMax)
                 : ((double) histo[i] / histoMax)));
             curveColor = cm.getRGB(
-                packed = cmParam.toPixelValueRaw(
-                    index = ((int) (i * f + 0.5) + binMin)));
+                cmParam.toPixelValueRaw(
+                    ((int) (i * f + 0.5) + binMin)));
             g.setColor(Color.BLACK);
             g.drawLine(dx, (int) (binH * i), dx, (int) (binH * (i + 1)) - 1);
             // g.drawRect( 0, (int) (binH * i), dx, (int) binH);
