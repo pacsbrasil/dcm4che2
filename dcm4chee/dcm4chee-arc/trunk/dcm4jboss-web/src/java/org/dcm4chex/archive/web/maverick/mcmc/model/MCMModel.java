@@ -177,21 +177,23 @@ public class MCMModel {
 				//perform get media creation status if filter contains PROCESSING media status.
 				MCMConsoleCtrl.getMcmScuDelegate().updateMediaStatus();
 			}
-			if ( MCMFilter.CREATED_FILTER.equals( filter.getCreateOrUpdateDate() ) ) {
-				start = filter.startCreationAsLong();
-				end = filter.endCreationAsLong();
+			if ( MCMFilter.DATE_FILTER_ALL.equals( filter.getCreateOrUpdateDate() ) ) {
 				total = lookupMediaComposer().findByCreatedTime( col, start, end, stati, 
-				 						new Integer( offset ), new Integer( limit ), filter.isDescent() );
-				
-			} else if ( MCMFilter.UPDATED_FILTER.equals( filter.getCreateOrUpdateDate() ) ) {
-				start = filter.startUpdateAsLong();
-				end = filter.endUpdateAsLong();
-				total = lookupMediaComposer().findByUpdatedTime( col, start, end, stati, 
  						new Integer( offset ), new Integer( limit ), filter.isDescent() );
 			} else {
-				lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
+				start = filter.startDateAsLong();
+				end = filter.endDateAsLong();
+				if ( MCMFilter.CREATED_FILTER.equals( filter.getCreateOrUpdateDate() ) ) {
+					total = lookupMediaComposer().findByCreatedTime( col, start, end, stati, 
+				 						new Integer( offset ), new Integer( limit ), filter.isDescent() );
+				
+				} else if ( MCMFilter.UPDATED_FILTER.equals( filter.getCreateOrUpdateDate() ) ) {
+					total = lookupMediaComposer().findByUpdatedTime( col, start, end, stati, 
+	 						new Integer( offset ), new Integer( limit ), filter.isDescent() );
+				} else {
+					lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
+				}
 			}
-			
 			mediaList = new MediaList( col );
 			col.clear();
 		} catch ( Exception x ) {

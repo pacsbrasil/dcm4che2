@@ -62,23 +62,39 @@
 				</table>
 				<table border="0" width="100%" cellpadding="0" cellspacing="0" bgcolor="eeeeee">
 					<tr>
-						<td width="20" bgcolor="eeeeee"></td>
+						<td width="20" bgcolor="eeeeee">&#160;</td>
 						<td width="130" bgcolor="eeeeee" class="label">Media Status</td>
-						<td width="20" bgcolor="eeeeee" >
-							<input type="radio" name="createOrUpdateDate" value="create">
-								<xsl:if test="filter/createOrUpdateDate = 'create'">
-	                  				<xsl:attribute name="checked">true</xsl:attribute>
-								</xsl:if>
-							</input>
+						<td width="20" bgcolor="eeeeee">&#160;</td>
+						<td width="20" bgcolor="eeeeee" colspan="4" align="center">
+							<table>
+								<td>Date:</td>
+								<td>
+									<input type="radio" name="createOrUpdateDate" value="all">
+										<xsl:if test="filter/createOrUpdateDate = 'all'">
+			                  				<xsl:attribute name="checked">true</xsl:attribute>
+										</xsl:if>
+									</input>
+								</td>
+								<td>all</td>
+								<td>
+									<input type="radio" name="createOrUpdateDate" value="create">
+										<xsl:if test="filter/createOrUpdateDate = 'create'">
+			                  				<xsl:attribute name="checked">true</xsl:attribute>
+										</xsl:if>
+									</input>
+								</td>
+								<td nowrap="">Creation date</td>
+								<td>
+									<input type="radio" name="createOrUpdateDate" value="update">
+										<xsl:if test="filter/createOrUpdateDate = 'update'">
+			                  				<xsl:attribute name="checked">true</xsl:attribute>
+										</xsl:if>
+									</input>
+								</td>
+								<td nowrap="">Update date</td>
+							</table>
 						</td> 
-						<td width="130" bgcolor="eeeeee" class="label">Creation date (yyyy/MM/dd):</td>
-						<td width="90" bgcolor="eeeeee">
-							<input size="10" name="startCreationDate" type="text" value="{filter/startCreationDate}"/>
-			      		</td>
-						<td width="10" bgcolor="eeeeee" class="label">-</td>
-						<td width="90" bgcolor="eeeeee">
-							<input size="10" name="endCreationDate" type="text" value="{filter/endCreationDate}"/>
-						</td>
+
 			      		<xsl:choose>
 							<xsl:when test="/model/mcmNotAvail = 'true'">
 								<td width="60%" bgcolor="eeeeee" rowspan="2" align="center">
@@ -105,7 +121,7 @@
 						</xsl:choose>
 					</tr>
 					<tr>
-						<td width="10" bgcolor="eeeeee" ></td>
+						<td width="20" bgcolor="eeeeee" ></td>
 						<td width="130" bgcolor="eeeeee">
 							<select size="1" name="mediaStatus" title="Media Status:">
 								<xsl:for-each select="filter/mediaStatusList/item">
@@ -127,23 +143,19 @@
 								</option>
 							</select>
 						</td>
-						<td width="20" bgcolor="eeeeee" >
-							<input type="radio" name="createOrUpdateDate" value="update">
-								<xsl:if test="filter/createOrUpdateDate = 'update'">
-	                  				<xsl:attribute name="checked">true</xsl:attribute>
-								</xsl:if>
-							</input>
-						</td> 
-						<td width="130" bgcolor="eeeeee" class="label">Update date (yyyy/MM/dd):
-						</td>
-			      		<td width="90" bgcolor="eeeeee">
-			        		<input size="10" name="startUpdateDate" type="text" value="{filter/startUpdateDate}"/>
+						<td width="20" bgcolor="eeeeee" />
+
+						<td width="90" bgcolor="eeeeee">
+							<input size="10" name="startDate" type="text" value="{filter/startDate}"/>
 			      		</td>
 						<td width="10" bgcolor="eeeeee" class="label">-</td>
-			      		<td width="90" bgcolor="eeeeee"> 
-			        		<input size="10" name="endUpdateDate" type="text" value="{filter/endUpdateDate}"/>
-			      		</td>
-						<td width="60%" bgcolor="eeeeee"></td>
+						<td width="90" bgcolor="eeeeee">
+							<input size="10" name="endDate" type="text" value="{filter/endDate}"/>
+						</td>
+						<td bgcolor="eeeeee">&#160;(yyyy/MM/dd)</td>
+
+						<td width="60%" bgcolor="eeeeee" />
+						<td width="100%" bgcolor="eeeeee" />
 			      	</tr>
 			      	<tr height="10">
 						<td width="10" bgcolor="eeeeee" />

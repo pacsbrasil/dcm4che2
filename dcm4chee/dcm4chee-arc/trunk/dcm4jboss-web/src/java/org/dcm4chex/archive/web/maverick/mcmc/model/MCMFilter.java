@@ -19,6 +19,8 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
  */
 public class MCMFilter {
 
+	/** Identifier for searching not in a time range. */
+	public static final String DATE_FILTER_ALL = "all";
 	/** Identifier for searching within a creation time range. */
 	public static final String CREATED_FILTER = "create";
 	/** Identifier for searching within a update time range. */
@@ -33,25 +35,17 @@ public class MCMFilter {
 	/** Collection with all defined media stati. (defined in MediaData) */ 
 	private Collection mediaStatusList = null;
 	/** holds the 'left' string value of creation time range. */
-	private String startCreationDate = "";
+	private String startDate = "";
 	/** holds the 'right' string value of creation time range. */
-	private String endCreationDate = "";
-	/** holds the 'left' string value of update time range. */
-	private String startUpdateDate = "";
-	/** holds the 'right' string value of update time range. */
-	private String endUpdateDate = "";
+	private String endDate = "";
 	/** holds the 'left' Long value of creation time range. (null if string value is empty) */
-	private Long startCreationAsLong;
+	private Long startDateAsLong;
 	/** holds the 'right' Long value of creation time range. (null if string value is empty) */
-	private Long endCreationAsLong;
-	/** holds the 'left' Long value of update time range. (null if string value is empty) */
-	private Long startUpdateAsLong;
-	/** holds the 'right' Long value of update time range. (null if string value is empty) */
-	private Long endUpdateAsLong;
+	private Long endDateAsLong;
 	/** holds the selected status for this filter */
 	private String selectedStatus = "0";
-	/** holds the switch between search of 'created' or 'updated' time range. */ 
-	private String createOrUpdateDate = "create";
+	/** holds the switch between search of 'all', 'created' or 'updated' time range. */ 
+	private String createOrUpdateDate = "all";
 	/** Change status of this filter. */
 	private boolean isChanged;
 	/** holds sort order of this filter. */
@@ -77,8 +71,8 @@ public class MCMFilter {
 	/**
 	 * @return Returns the endCreationDate.
 	 */
-	public String getEndCreationDate() {
-		return endCreationDate;
+	public String getEndDate() {
+		return endDate;
 	}
 	/**
 	 * Set the end creation date.
@@ -86,43 +80,18 @@ public class MCMFilter {
 	 * Set both <code>endCreationDate and endCreationAsLong</code>.<br>
 	 * If the parameter is null or empty, both values are set to <code>null</code>
 	 * 
-	 * @param endCreationDate The endCreatenDate to set.
+	 * @param endDate The endCreatenDate to set.
 	 * 
 	 * @throws ParseException If param is not a date/time string of format specified in formatter.
 	 */
-	public void setEndCreationDate(String endCreationDate) throws ParseException {
-		if ( ! check( this.endCreationDate, endCreationDate ) ) return;
-		if ( endCreationDate == null || endCreationDate.trim().length() < 1 ) {
-			this.endCreationAsLong = null;
-			this.endCreationDate = null;
+	public void setEndDate(String endDate) throws ParseException {
+		if ( ! check( this.endDate, endDate ) ) return;
+		if ( endDate == null || endDate.trim().length() < 1 ) {
+			this.endDateAsLong = null;
+			this.endDate = null;
 		} else {
-			this.endCreationAsLong = new Long( formatter.parse( endCreationDate ).getTime() );
-			this.endCreationDate = endCreationDate;
-		}
-	}
-	/**
-	 * @return Returns the endUpdateDate.
-	 */
-	public String getEndUpdateDate() {
-		return endUpdateDate;
-	}
-	/**
-	 * Set the end update date.
-	 * <p>
-	 * Set both <code>endUpdateDate and endUpdateAsLong</code>.<br>
-	 * If the parameter is null or empty, both values are set to <code>null</code>
-	 *
-	 * @param endUpdateDate The endUpdateDate to set.
-	 * @throws ParseException
-	 */
-	public void setEndUpdateDate(String endUpdateDate) throws ParseException {
-		if ( ! check( this.endUpdateDate, endUpdateDate ) ) return;
-		if ( endUpdateDate == null || endUpdateDate.trim().length() < 1 ) {
-			this.endUpdateAsLong = null;
-			this.endUpdateDate = null;
-		} else {
-			this.endUpdateAsLong = new Long( formatter.parse( endUpdateDate ).getTime() );
-			this.endUpdateDate = endUpdateDate;
+			this.endDateAsLong = new Long( formatter.parse( endDate ).getTime() );
+			this.endDate = endDate;
 		}
 	}
 	/**
@@ -138,37 +107,12 @@ public class MCMFilter {
 		check( this.selectedStatus, selectedStatus );
 		this.selectedStatus = selectedStatus;
 	}
-	/**
-	 * @return Returns the startUpdateDate.
-	 */
-	public String getStartUpdateDate() {
-		return startUpdateDate;
-	}
-	/**
-	 * Set the start update date.
-	 * <p>
-	 * Set both <code>startUpdateDate and startUpdateAsLong</code>.<br>
-	 * If the parameter is null or empty, both values are set to <code>null</code>
-	 * 
-	 * @param startUpdateDate The startUpdateDate to set.
-	 * @throws ParseException
-	 */
-	public void setStartUpdateDate(String startUpdateDate) throws ParseException {
-		if ( ! check( this.startUpdateDate, startUpdateDate ) ) return;
-		if ( startUpdateDate == null || startUpdateDate.trim().length() < 1 ) {
-			this.startUpdateAsLong = null;
-			this.startUpdateDate = null;
-		} else {
-			this.startUpdateAsLong = new Long( formatter.parse( startUpdateDate ).getTime() );
-			this.startUpdateDate = startUpdateDate;
-		}
-	}
 
 	/**
 	 * @return Returns the startCreationDate.
 	 */
-	public String getStartCreationDate() {
-		return startCreationDate;
+	public String getStartDate() {
+		return startDate;
 	}
 	/**
 	 * Set the start creation date.
@@ -179,17 +123,17 @@ public class MCMFilter {
 	 * @param startCreationDate The startCreationDate to set.
 	 * @throws ParseException
 	 */
-	public void setStartCreationDate(String startCreationDate) throws ParseException {
-		check( this.startCreationDate, startCreationDate );
-		this.startCreationDate = startCreationDate;
+	public void setStartDate(String startCreationDate) throws ParseException {
+		check( this.startDate, startCreationDate );
+		this.startDate = startCreationDate;
 
-		if ( ! check( this.startCreationDate, startCreationDate ) ) return;
+		if ( ! check( this.startDate, startCreationDate ) ) return;
 		if ( startCreationDate == null || startCreationDate.trim().length() < 1 ) {
-			this.startCreationAsLong = null;
-			this.startCreationDate = null;
+			this.startDateAsLong = null;
+			this.startDate = null;
 		} else {
-			this.startCreationAsLong = new Long( formatter.parse( startCreationDate ).getTime() );
-			this.startCreationDate = startCreationDate;
+			this.startDateAsLong = new Long( formatter.parse( startCreationDate ).getTime() );
+			this.startDate = startCreationDate;
 		}
 	
 	}
@@ -252,26 +196,14 @@ public class MCMFilter {
 	/**
 	 * @return Returns the endCreationAsLong.
 	 */
-	public Long endCreationAsLong() {
-		return endCreationAsLong;
-	}
-	/**
-	 * @return Returns the endUpdateAsLong.
-	 */
-	public Long endUpdateAsLong() {
-		return endUpdateAsLong;
+	public Long endDateAsLong() {
+		return endDateAsLong;
 	}
 	/**
 	 * @return Returns the startCreationAsLong.
 	 */
-	public Long startCreationAsLong() {
-		return startCreationAsLong;
-	}
-	/**
-	 * @return Returns the startUpdateAsLong.
-	 */
-	public Long startUpdateAsLong() {
-		return startUpdateAsLong;
+	public Long startDateAsLong() {
+		return startDateAsLong;
 	}
 
 	/**
@@ -298,8 +230,7 @@ public class MCMFilter {
 		StringBuffer sb = new StringBuffer();
 		sb.append("MCMFilter: mediaStatus:").append(selectedStatus);
 		sb.append(" createOrUpdateDate:").append(createOrUpdateDate);
-		sb.append(" createDate:").append(startCreationDate).append(" - ").append(endCreationDate);
-		sb.append(" updateDate:").append(startUpdateDate).append(" - ").append(endUpdateDate);
+		sb.append(" searchDate:").append(startDate).append(" - ").append(endDate);
 		sb.append(" Descent:").append(isDescent());
 		sb.append(" changed:").append(isChanged);
 		return sb.toString();
