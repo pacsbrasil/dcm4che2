@@ -33,6 +33,7 @@ public class PatientDTO implements Serializable
 
 	public static final String DATE_FORMAT = "yyyy/MM/dd";
 	private int pk;
+	private String specificCharacterSet=null;
 	private String patientID=null;
 	private String issuerOfPatientID=null;
 	private String patientName=null;
@@ -207,4 +208,16 @@ public class PatientDTO implements Serializable
         this.issuerOfPatientID = issuerOfPatientID;
     }
 
+	/**
+	 * @return Returns the specificCharacterSet.
+	 */
+	public final String getSpecificCharacterSet() {
+		return specificCharacterSet;
+	}
+	/**
+	 * @param specificCharacterSet The specificCharacterSet to set.
+	 */
+	public final void setSpecificCharacterSet(String specificCharacterSet) {
+		this.specificCharacterSet = specificCharacterSet;
+	}
 }

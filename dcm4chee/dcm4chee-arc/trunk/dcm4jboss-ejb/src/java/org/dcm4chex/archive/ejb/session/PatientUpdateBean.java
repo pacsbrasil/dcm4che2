@@ -106,6 +106,13 @@ public abstract class PatientUpdateBean implements SessionBean {
         priorPat.setMergedWith(dominantPat);
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public void updatePatient(PatientDTO dto) {
+    	updateOrCreate(dto);
+    }
+    
     private PatientLocal updateOrCreate(PatientDTO dto) {
         try {
             Collection c =
@@ -137,24 +144,24 @@ public abstract class PatientUpdateBean implements SessionBean {
 
     private void update(PatientLocal pat, PatientDTO dto) {
         boolean modified = false;
-        if (toModify(pat.getIssuerOfPatientId(), dto.getIssuerOfPatientID())) {
+        if (needUpdate(pat.getIssuerOfPatientId(), dto.getIssuerOfPatientID())) {
             pat.setIssuerOfPatientId(dto.getIssuerOfPatientID());
             modified = true;
         }
 
-        if (toModify(pat.getPatientName(), dto.getPatientName())) {
+        if (needUpdate(pat.getPatientName(), dto.getPatientName())) {
             pat.setPatientName(dto.getPatientName());
             modified = true;
         }
 
-        if (toModify(pat.getPatientSex(), dto.getPatientSex())) {
+        if (needUpdate(pat.getPatientSex(), dto.getPatientSex())) {
             pat.setPatientSex(dto.getPatientSex());
             modified = true;
         }
         final String newBirthDate = dto.getPatientBirthDate();
         if (newBirthDate != null) {
             Date oldDate = pat.getPatientBirthDate();
-            if (newBirthDate.length() > 0) {
+            if (newBirthDate.length() != 0) {
                 try {
                     Date newDate =
                         new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
@@ -176,10 +183,14 @@ public abstract class PatientUpdateBean implements SessionBean {
         }
     }
 
-    static boolean toModify(String oldVal, String newVal) {
-        return !(
-            newVal == null
-                || (oldVal == null ? newVal.length() == 0 : oldVal.equals(newVal)));
+    static boolean needUpdate(String toUpdate, String newVal) {
+    	if (newVal == null) { // no update
+    		return false;
+    	}
+    	if (toUpdate == null) {
+    		return newVal.length() != 0;
+    	}
+        return !toUpdate.equals(newVal);
     }
 
     static boolean isNullOrEmpty(String s) {

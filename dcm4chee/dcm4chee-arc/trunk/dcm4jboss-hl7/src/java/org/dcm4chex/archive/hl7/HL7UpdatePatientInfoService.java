@@ -18,13 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.dcm4chex.archive.hl7;
+import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
+import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 
 import ca.uhn.hl7v2.app.Application;
 import ca.uhn.hl7v2.app.ApplicationException;
 import ca.uhn.hl7v2.app.DefaultApplication;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.Segment;
-
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
@@ -32,26 +33,34 @@ import ca.uhn.hl7v2.model.Segment;
  * 
  * @jmx.mbean extends="org.dcm4chex.archive.hl7.HL7AcceptServiceMBean"
  */
-public class HL7UpdatePatientInfoService
-    extends HL7AcceptService
-    implements org.dcm4chex.archive.hl7.HL7UpdatePatientInfoServiceMBean {
-
-    private final Application handler = new DefaultApplication() {
-        public Message processMessage(Message in) throws ApplicationException {
-            Message out = null;
-            try {
-                //get default ACK
-                out = makeACK((Segment) in.get("MSH"));
-            } catch (Exception e) {
-                throw new ApplicationException(
-                    "Couldn't create response message: " + e.getMessage());
-            }
-            return out;
-        }
-    };
-
-    protected Application getApplication() {
-        return handler;
-    }
-
+public class HL7UpdatePatientInfoService extends HL7AcceptService
+		implements
+			org.dcm4chex.archive.hl7.HL7UpdatePatientInfoServiceMBean {
+	private final Application handler = new DefaultApplication() {
+		public Message processMessage(Message in) throws ApplicationException {
+			Message out = null;
+			PatientDTO dto = null;
+			try {
+				Segment msh = (Segment) in.get("MSH");
+				Segment pid = (Segment) in.get("PID");
+				dto = HL7Utils.makePatientIODFromPID(msh, pid);
+				PatientUpdate update = getPatientUpdateHome().create();
+				try {
+					update.updatePatient(dto);
+				} finally {
+					update.remove();
+				}
+				//get default ACK
+				out = makeACK(msh);
+			} catch (Exception e) {
+				log.error("Failed to update " + dto, e);
+				throw new ApplicationException(
+						"Couldn't create response message: " + e.getMessage());
+			}
+			return out;
+		}
+	};
+	protected Application getApplication() {
+		return handler;
+	}
 }

@@ -42,6 +42,7 @@ public final class DTOFactory {
     public static PatientDTO newPatientDTO(int pk, Dataset ds) {
         PatientDTO pat = new PatientDTO();
         pat.setPk(pk);
+        pat.setSpecificCharacterSet(ds.getString(Tags.SpecificCharacterSet, ""));
         pat.setPatientID(ds.getString(Tags.PatientID, ""));
         pat.setIssuerOfPatientID(ds.getString(Tags.IssuerOfPatientID, ""));
         pat.setPatientName(ds.getString(Tags.PatientName, ""));

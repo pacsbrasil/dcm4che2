@@ -31,8 +31,18 @@ public class DTO2Dataset
 	public static Dataset toDataset(PatientDTO patient)
 	{
 	    Dataset ds = dofFactory.newDataset();
-	    ds.putLO(Tags.PatientID, patient.getPatientID());
-	    ds.putLO(Tags.IssuerOfPatientID, patient.getIssuerOfPatientID());
+	    String s = patient.getSpecificCharacterSet();
+	    if (s != null && s.length() != 0) {
+	    	ds.putCS(Tags.SpecificCharacterSet, s);
+	    }
+	    s = patient.getPatientID();
+	    if (s != null && s.length() != 0) {
+	    	ds.putLO(Tags.PatientID, s);
+	    }
+	    s = patient.getIssuerOfPatientID();
+	    if (s != null && s.length() != 0) {
+	    	ds.putLO(Tags.IssuerOfPatientID, s);
+	    }
 	    updateDataset(ds, patient);
 	    return ds;
 	}
@@ -41,8 +51,6 @@ public class DTO2Dataset
 		Dataset toUpdate,
 		PatientDTO patient) //works by reference
 	{
-		// note:Patient ID's couldn't be updated
-
 		toUpdate.putPN(Tags.PatientName, patient.getPatientName());
 
 		try
