@@ -232,7 +232,7 @@ public abstract class AbstractModel {
      * @return 
      */
     public boolean containsPK( int pk ) {
-    	return getChildsPK().contains( new Integer( pk ) );
+    	return childPKs().contains( new Integer( pk ) );
     }
     
     /**
@@ -242,7 +242,7 @@ public abstract class AbstractModel {
      * 
      * @return List of childs pk's.
      */
-    public List getChildsPK(){
+    public List childPKs(){
     	if ( childsPK != null ) return childsPK;
     	childsPK = new ArrayList();
     	Iterator iter = getChilds().iterator();
