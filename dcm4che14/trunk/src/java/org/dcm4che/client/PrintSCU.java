@@ -772,7 +772,7 @@ public class PrintSCU {
             requestor.invokeAndWaitForRSP(
                 pcidPrint,
                 nSetRQ,
-                new PrintSCUDataSource(this, imageBox, file, true));
+                new PrintSCUDataSource(this, imageBox, file, new File(file.getParent() + "/xlut_p03.pre"), true));
         return checkStatus(rsp.getCommand());
     }
 

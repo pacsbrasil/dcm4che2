@@ -52,8 +52,8 @@ public class PixelDataDescription
         this.cols = desc.getCols();
         this.rows = desc.getRows();
         this.nf = desc.getNumberOfFrames();
-        this.ba = desc.getBitsAllocated();
-        this.bs = desc.getBitsStored();
+        this.ba = bitsAllocated;
+        this.bs = bitsStored;
         this.hb = bs - 1;
         this.spp = desc.getSamplesPerPixel();
         this.frameSize = cols * rows;
@@ -116,6 +116,16 @@ public class PixelDataDescription
         else
             pixelDataLen = pixelDataLen >>> 3;
         return ((pixelDataLen & 0x1) == 0) ? pixelDataLen : pixelDataLen + 1;
+    }
+
+    public int maxPossibleStoredValue()
+    {
+        return (signed) ? (1 << (bs - 1)) - 1 : (1 << bs) - 1;
+    }
+
+    public int minPossibleStoredValue()
+    {
+        return (signed) ? -maxPossibleStoredValue() - 1 : 0;
     }
 
     public int getBitsAllocated() {
