@@ -10,11 +10,44 @@ import org.apache.log4j.*;
 
 public class PLutGUIFrame extends JFrame
 {
+    private final int DEF_WIDTH = 800, DEF_HEIGHT = 600;
+    PLutGUIPanel guiPanel;
+    
     PLutGUIFrame()
     {
         Container panel = this.getContentPane();
-        panel.add(new PLutGUIPanel());
-        setSize(new Dimension(800,600));
+        guiPanel = new PLutGUIPanel();
+        panel.add(guiPanel);
+        //menu
+        JMenuBar mnubar = new JMenuBar();
+        JMenu mnuFile = new JMenu("File");
+        Action actOpenImg = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    JFileChooser chooser = new JFileChooser();
+                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
+                    if(returnVal == JFileChooser.APPROVE_OPTION) {
+                        guiPanel.setImage(chooser.getSelectedFile());
+                    }
+                }
+            };
+        actOpenImg.putValue(Action.NAME,"Open");
+        Action actExit = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    System.exit(0);
+                }
+            };
+        actExit.putValue(Action.NAME,"Exit");
+        JMenuItem mnuOpenImg = new JMenuItem(actOpenImg);
+        mnuFile.add(mnuOpenImg);
+        JMenuItem mnuExit = new JMenuItem(actExit);
+        mnuFile.add(mnuExit);
+        mnubar.add(mnuFile);
+        setJMenuBar(mnubar);
+        setSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
     }
     
     public static void main(String[] args)

@@ -30,7 +30,16 @@ public class ImagePanel extends JPanel
         //get reader
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         reader = (ImageReader) iter.next();
-        try {fis = new FileImageInputStream(image);}catch(Exception e) {}
+        if (image != null)
+            setImage(image);
+    }
+    
+    public void setImage(File newImg)
+    {
+        try {
+            fis = new FileImageInputStream(newImg);
+        }
+        catch(Exception e) {}
         reader.setInput(fis);
     }
     

@@ -10,6 +10,8 @@ import java.io.*;
 
 public class PLutGUIPanel extends JPanel
 {
+    ImagePanel imgPanel;
+    PLutPanel plutPanel;
     
     PLutGUIPanel()
     {
@@ -19,10 +21,10 @@ public class PLutGUIPanel extends JPanel
         //set layout
         setLayout(gridbag);
         //read img
-        final String TEST = "../../../dcm4che14/test/conf/data/MRABDO";
+        final String TEST = "../dcm4che14/test/conf/data/MRABDO";
         //
-        ImagePanel imgPanel = new ImagePanel(new File(TEST));
-        PLutPanel plutPanel = new PLutPanel(imgPanel);
+        imgPanel = new ImagePanel(new File(TEST));
+        plutPanel = new PLutPanel(imgPanel);
         //add image panel
         //plutPanel.setPreferredSize(new Dimension(300,600));
         c.fill = GridBagConstraints.BOTH;
@@ -38,6 +40,11 @@ public class PLutGUIPanel extends JPanel
         //c.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints(plutPanel,c);
         add(plutPanel);
+    }
+    
+    public void setImage(File newImg)
+    {
+        imgPanel.setImage(newImg);
     }
     
     public void paintComponent(Graphics g)

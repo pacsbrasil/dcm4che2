@@ -35,7 +35,7 @@ public class PLutPanel extends JPanel
         addMouseMotionListener(new MouseInputAdapter()
             {
                 private int lastx, lasty;
-                private final int Delta = 4;
+                private final int Delta = 1;
                 
                 private void update(MouseEvent e)
                 {
@@ -54,13 +54,13 @@ public class PLutPanel extends JPanel
                     int dy = e.getY() - lasty;
                     update(e);
                     if (dy < -Delta) {
-                        enh -= 0.2f;
+                        enh -= 0.05f;
                         if (enh<0) enh = 0;
                         plutGen.setEnhance(enh);
                         updatePLut();
                     }
                     else if (dy > Delta) {
-                        enh += 0.2f;
+                        enh += 0.05f;
                         plutGen.setEnhance(enh);
                         updatePLut();
                     }
@@ -84,7 +84,8 @@ public class PLutPanel extends JPanel
     {
         int[] iplut = plutGen.create();
         for (int i=0; i<plut.length; i++) {
-            plut[i] = (byte)iplut[i];
+            plut[i] = iplut[i];
+            if (plut[i]<0) System.out.println("<0 "+ iplut[i] + " " + i);
         }
         imgPanel.setPLut(plut);
         repaint();
@@ -102,7 +103,26 @@ public class PLutPanel extends JPanel
         g2.drawString("center = " + String.valueOf(cntr), 10, 10);
         g2.drawString("enhance = " + String.valueOf(enh), 10, 20);
         //drawHisto();
-        //drawPLut();
+        drawPLut(g2);
+    }
+    
+    private void drawPLut(Graphics2D g)
+    {
+        final float fx = (float)(getWidth()-1)/255f;
+        final float fy = (float)(getHeight()-1)/(float)(plut.length-1);
+        //System.out.println("fx="+fx+"fy="+fy);
+        int lastx = 0, lasty = 0;
+        int x, y;
+        
+        g.setColor(Color.BLUE);
+        for (int i=0; i<plut.length; i++) {
+            x = (int)(plut[i]*fx);
+            y = (int)(i*fy);
+            //System.out.println("fx="+plut[i]+"fy="+y);
+            g.drawLine(lastx, lasty, x, y);
+            lastx = x;
+            lasty = y;
+        }
     }
 }
 
