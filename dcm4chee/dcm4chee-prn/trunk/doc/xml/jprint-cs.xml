@@ -17,18 +17,18 @@
 
     <para>jPrint is a multi-modality print manager and server which can be
     used to connect any one of a wide variety of paper printers to a DICOM
-    v3.0 network. They system can simultaneously receive images and associated
+    v3.0 network. The system can simultaneously receive images and associated
     printing parameters from multiple imaging scanners and reviewing
     workstations, while automatically transferring image data and instructions
     to connected paper printers.</para>
 
     <para>Before sending the images to be printed, jPrint will apply image
-    processing, using presentation parameters and LUT to improve the image
+    processing, using presentation parameters and a LUT to improve the image
     presentation quality and consistency.</para>
 
     <para>jPrint supports the IHE Consistent Presentation of Images
     Integration Profile as the IHE Print Server Actor and the IHE Basic
-    Security Integration Profile as IHE Secure Node Actor.</para>
+    Security Integration Profile as an IHE Secure Node Actor.</para>
 
     <para>jPrint supports following network services:<table><title>NETWORK
     SERVICES</title><tgroup align="left" cols="3"><colspec colname="c1" /><colspec
@@ -75,10 +75,11 @@
       intended.</para>
 
       <para>The scope of this Conformance Statement is to facilitate
-      communication with TIANI and other vendors Medical equipment. The
+      communication with TIANI and other vendors&#39; medical equipment. The
       Conformance Statement should be read and understood in conjunction with
       the DICOM Standard [DICOM]. However, by itself it is not guaranteed to
-      ensure the desired interoperability and a successful interconnectivity.</para>
+      ensure the desired interoperability and successful interconnectivity
+      with existing DICOM systems.</para>
 
       <para>The user should be aware of the following important issues:</para>
 
@@ -86,7 +87,7 @@
         <listitem>
           <para>The comparison of different conformance statements is the
           first step towards assessing interconnectivity between TIANI and
-          non- TIANI equipment.</para>
+          non-TIANI equipment.</para>
         </listitem>
 
         <listitem>
@@ -153,9 +154,9 @@
 
         <para>jPrint consists of one server application and several
         calibration and configuration utilities. User interactions are only
-        need for the initial configuration of jPrint and regularly calibration
-        of connected Printers. The server applications is usually configured
-        to run as Windows NT/2000/XP or Unix Startup Service.</para>
+        needed for the initial configuration of jPrint and regular calibration
+        of any connected Printers. The server application is usually
+        configured to run as Windows NT/2000/XP or Unix Startup Service.</para>
 
         <para>jPrint uses the DICOM Basic Print Management Meta SOP Class to
         receive studies for printing on connected paper printers. Multiple
@@ -164,9 +165,9 @@
         <para><figure><title>Application Data Flow Diagram</title><mediaobject><imageobject><imagedata
         fileref="../img/jPrint.gif" /></imageobject></mediaobject></figure></para>
 
-        <para>jPrint is receiving the Images with the Presentation and
-        Annotation information, it apply it on the images and create a
-        print-job within the print queue, containing one or more film pages
+        <para>jPrint receives the Images with the Presentation and Annotation
+        information which is applied to the images, creating a print-job
+        within the print queue. The print job contains one or more film pages
         composed from images selected by the client Print SCU.</para>
       </section>
 
@@ -179,35 +180,35 @@
           <para>jPrint acquires the images and presentation information from
           the connected Print Composer (SCU). Studies are temporarily stored
           on disk. The images are then processed and formatted and finally
-          send as a print-job to the connected Printer(s).</para>
+          send as a print-job to the connected printer(s).</para>
 
-          <para>If several Printers are connected to jPrint, each Printer is
+          <para>If several printers are connected to jPrint, each printer is
           addressable by the Print SCU via a different Called AET.</para>
 
-          <para>If several Print Composers (SCU) requests printing on the same
-          Printer simultaneously, jPrint will serialize the requests; the
-          printer itself receives one print-job after one on its queue. If the
-          number of print-jobs within the printer queue exceeds a configurable
-          limit, jPrint defers the transmission of further print-jobs to the
-          Printer, until the number of print-jobs within the queue decreases
-          below this limit.</para>
+          <para>If several Print Composers (SCU) request printing on the same
+          printer simultaneously, jPrint will serialize the requests; the
+          printer itself receives one print-job at a time from it&#39;s queue.
+          If the number of print-jobs within the printer queue exceeds a
+          configurable limit, jPrint defers the transmission of further
+          print-jobs to the printer, until the number of print-jobs within the
+          queue decreases below this limit.</para>
 
-          <para>If the Printer is operating normally, then the pages described
-          in the print-job will be printed. Changes in the Printer operation
+          <para>If the printer is operating normally, then the pages described
+          in the print-job will be printed. Changes in the printer operation
           status will be detected and can be queried by the Print SCU using
           the N-GET service of the Printer SOP Class at any time.</para>
 
           <para>To achieve best hard copy presentation quality and
           consistency, the connected Printers must be calibrated at regular
-          intervals. jPrint supports calibration by manually measurements
-          using a gray scale densitometer or semi-automatic calibration, that
-          only requires the user to scan a current gray scale print-out of the
-          printer and a reference gray scale page and put the resulting JPEG
+          intervals. jPrint supports calibration by manual measurements using
+          a gray scale densitometer or semi-automatic calibration, that only
+          requires the user to scan a current gray scale print-out of the
+          printer and a reference gray scale page, placing the resulting JPEG
           files into a configuration folder. The jPrint Service Manual
-          describes in details the jPrint calibration of connected Printers to
-          the DICOM GSDF curve.</para>
+          describes the jPrint calibration of connected printers to the DICOM
+          GSDF curve in detail.</para>
 
-          <para>jPrint includes</para>
+          <para>jPrint includes:</para>
 
           <itemizedlist>
             <listitem>
@@ -241,8 +242,9 @@
 
           <para>Before any actual (gray scale) printing is performed,
           connected printers shall be calibrated. Otherwise jPrint cannot
-          achieve conformance of printing according the DICOM Grayscale
-          Standard Display Function (GSDF):<figure><title>Printer Calibration</title><mediaobject><imageobject><imagedata
+          achieve conformance to printing consistency described by the DICOM
+          Grayscale Standard Display Function (GSDF):<figure><title>Printer
+          Calibration</title><mediaobject><imageobject><imagedata
           fileref="../img/jPrint2.gif" /></imageobject></mediaobject></figure></para>
 
           <para>The sequence of DICOM services used by the Print Composer
@@ -253,12 +255,12 @@
           Request with P-LUT</title><mediaobject><imageobject><imagedata
           fileref="../img/jPrint3.gif" /></imageobject></mediaobject></figure></para>
 
-          <para>jPrint also supports Print Requests on Film Session level:<figure><title>Film
+          <para>jPrint also supports Print Requests on the Film Session level:<figure><title>Film
           Session Print Request with P-LUT</title><mediaobject><imageobject><imagedata
           fileref="../img/jPrint4.gif" /></imageobject></mediaobject></figure></para>
 
           <para>The Print Composer may query the Printer Status using N-GET of
-          the Printer SOP Class at any time it is needed during the Print
+          the Printer SOP Class any time it is needed during the Print
           sequence:<figure><title>Query Printer Status</title><mediaobject><imageobject><imagedata
           fileref="../img/jPrint5.gif" /></imageobject></mediaobject></figure></para>
         </section>
@@ -471,15 +473,16 @@
               <para>A remote peer DICOM Application Entity, acting as an Print
               SCU, establishes an association with jPrint that accepts these
               Associations for the purpose of receiving images and image
-              presentation related data for image processing and printing it
-              on the connected paper printer, associated with the Called AET
-              used in the association request by the Print SCU.</para>
+              presentation related data for image processing and printing on
+              the connected paper printer, associated with the Called AET used
+              in the association request by the Print SCU.</para>
 
-              <para>At default configuration any Calling AET and any Called
-              AET will be accepted. But if no printer is associated with the
-              Called AET, only a Presentation Context for the Verification SOP
-              Class will be accepted and the SCU can only verify the DICOM
-              Association, but cannot invoke any print related DICOM service.</para>
+              <para>In the default configuration any Calling AET and any
+              Called AET will be accepted. But if no printer is associated
+              with the Called AET, only a Presentation Context for the
+              Verification SOP Class will be accepted and the SCU can only
+              verify the DICOM Association, but cannot invoke any print
+              related DICOM service.</para>
 
               <para>When an association has been established the Sequencing of
               Real-World Activities is as described in <xref
@@ -708,7 +711,7 @@
 
                 <para>jPrint provides standard conformance to the DICOM
                 Verification Service Class as a SCP. The status code for the
-                C-ECHO is in the following table:</para>
+                C-ECHO is described in the following table:</para>
 
                 <table>
                   <title>C-Echo Response Status Handling Behavior</title>
@@ -877,10 +880,10 @@
                     truncate if &#62; 64 characters</entry><entry>Warning
                     (0116H)</entry></row></tbody></tgroup></table></para>
 
-                    <para>jPrint behavior and specific status codes sent for
-                    the N-CREATE of a specific Film Session is described in
-                    the following table:<table><title>Basic Film Session SOP
-                    Class N-CREATE Response Status Handling Behavior</title><tgroup
+                    <para>jPrint behavior and the specific status codes sent
+                    for the N-CREATE of a specific Film Session is described
+                    in the following table:<table><title>Basic Film Session
+                    SOP Class N-CREATE Response Status Handling Behavior</title><tgroup
                     cols="4"><colspec colwidth="40" /><colspec colwidth="80" /><colspec
                     colwidth="40" /><thead><row valign="middle"><entry>Service
                     Status</entry><entry>Further Meaning</entry><entry>Error
@@ -902,14 +905,14 @@
                     <title>Film Session SOP Class Operations for N-SET</title>
 
                     <para>jPrint provides the support for the Film Session
-                    attributes sent by the N-SET DIMSE service identically as
-                    it is described for the Film Session with N-CREATE, <xref
+                    attributes sent by the N-SET DIMSE service exactly as it
+                    is described for the Film Session with N-CREATE, <xref
                     linkend="t-session-ncreate" />.</para>
 
-                    <para>jPrint behavior and specific status codes sent for
-                    the N-SET of a specific Film Session is described in the
-                    following table:<table><title>Basic Film Session SOP Class
-                    N-SET Response Status Handling Behavior</title><tgroup
+                    <para>jPrint behavior and the specific status codes sent
+                    for the N-SET of a specific Film Session is described in
+                    the following table:<table><title>Basic Film Session SOP
+                    Class N-SET Response Status Handling Behavior</title><tgroup
                     cols="4"><colspec colwidth="40" /><colspec colwidth="80" /><colspec
                     colwidth="40" /><thead><row valign="middle"><entry>Service
                     Status</entry><entry>Further Meaning</entry><entry>Error
@@ -930,10 +933,10 @@
                   <section>
                     <title>Film Session SOP Class Operations for N-DELETE</title>
 
-                    <para>jPrint behavior and specific status codes sent for
-                    the N-DELETE of a specific Film Session is described in
-                    the following table:<table><title>Basic Film Session SOP
-                    Class N-DELETE Response Status Handling Behavior</title><tgroup
+                    <para>jPrint behavior and the specific status codes sent
+                    for the N-DELETE of a specific Film Session is described
+                    in the following table:<table><title>Basic Film Session
+                    SOP Class N-DELETE Response Status Handling Behavior</title><tgroup
                     cols="4"><colspec colwidth="40" /><colspec colwidth="80" /><colspec
                     colwidth="40" /><thead><row valign="middle"><entry>Service
                     Status</entry><entry>Further Meaning</entry><entry>Error
@@ -951,10 +954,10 @@
                     submitting a print job to print all the films of the film
                     session in the order that they were received.</para>
 
-                    <para>jPrint behavior and specific status codes sent for
-                    the N-ACTION of a specific Film Session is described in
-                    the following table:<table><title>Basic Film Session SOP
-                    Class N-ACTION Response Status Handling Behavior</title><tgroup
+                    <para>jPrint behavior and the specific status codes sent
+                    for the N-ACTION of a specific Film Session is described
+                    in the following table:<table><title>Basic Film Session
+                    SOP Class N-ACTION Response Status Handling Behavior</title><tgroup
                     cols="4"><colspec colwidth="40" /><colspec colwidth="80" /><colspec
                     colwidth="40" /><thead><row valign="middle"><entry>Service
                     Status</entry><entry>Further Meaning</entry><entry>Error
@@ -1058,30 +1061,31 @@
                     Instance UID</entry><entry>Mandatory if sequence is
                     present, no default</entry><entry>Failure (0106H)</entry></row></tbody></tgroup></table></para>
 
-                    <para>jPrint defines two Annotation Display Formats at
+                    <para>jPrint defines two Annotation Display Formats in the
                     default configuration:<table id="t-adf"><title>Predefined
                     Annotation Display Formats</title><tgroup align="left"
                     cols="3"><colspec colwidth="60" /><colspec align="center"
                     colwidth="40" /><thead><row><entry>ID</entry><entry>#
                     Boxes</entry><entry>Layout</entry></row></thead><tbody><row><entry>TITLE</entry><entry>5</entry><entry>Prints
-                    a centered text string in larger font at the top, and four
-                    text strings in smaller fonts at the corners of the page.</entry></row><row><entry>NO_TITLE</entry><entry>4</entry><entry>Prints
+                    a centered text string in a larger font at the top, and
+                    four text strings in smaller fonts at the corners of the
+                    page.</entry></row><row><entry>NO_TITLE</entry><entry>4</entry><entry>Prints
                     only the four text strings in smaller fonts at the corners
                     of the page.</entry></row></tbody></tgroup></table></para>
 
-                    <para>The annotation display formats also defines default
+                    <para>The annotation display format also defines default
                     contents for the created Annotation Boxes, which is
-                    printed, if the Print SCU does not set the content of the
+                    printed if the Print SCU does not set the content of the
                     box using the N-SET service of the Basic Annotation Box
                     SOP Class.</para>
 
                     <para>The layout of the two predefined Annotation Display
-                    Formats may be modified, as well as additional Annotation
-                    Display Formats may be defined by jPrint configuration
-                    files.</para>
+                    Formats may be modified and additional Annotation Display
+                    Formats may be defined by jPrint configuration files as
+                    well.</para>
 
-                    <para>At default configuration, jPrint defines 4 local
-                    P-LUTs, which a Print SCU with no support of the
+                    <para>In the default configuration, jPrint defines four
+                    local P-LUTs, which a Print SCU with no support of the
                     Presentation LUT SOP Class can select by Configuration
                     Information values:</para>
 
@@ -1112,7 +1116,7 @@
                           <row>
                             <entry>MIDTONE</entry>
 
-                            <entry>Applies a S-shaped P-LUT, which increase
+                            <entry>Applies a S-shaped P-LUT, which increases
                             the contrast in the middle range of gray shades.</entry>
                           </row>
 
@@ -1120,16 +1124,16 @@
                             <entry>LIGHTEN</entry>
 
                             <entry>Applies a gamma-shaped P-LUT with gamma
-                            &#62; 1, which increase the contrast for dark gray
-                            shades and lighten the image as a whole.</entry>
+                            &#62; 1, which increases the contrast for dark
+                            gray shades and lightens the image as a whole.</entry>
                           </row>
 
                           <row>
                             <entry>DARKEN</entry>
 
                             <entry>Applies a gamma-shaped P-LUT with gamma
-                            &#60; 1, which increase the contrast for light
-                            gray shades and darken the image as a whole.</entry>
+                            &#60; 1, which increases the contrast for light
+                            gray shades and darkens the image as a whole.</entry>
                           </row>
                         </tbody>
                       </tgroup>
@@ -1142,7 +1146,7 @@
                     <note>
                       <para>The selection of (jPrint) local P-LUTs via the
                       Configuration Information value is automatically
-                      disabled, if the Print Composer (SCU) make use of the
+                      disabled, if the Print Composer (SCU) makes use of the
                       DICOM Presentation LUT SOP Class. The described
                       mechanism should only be used for printing from Print
                       SCUs without P-LUT support!</para>
@@ -1152,14 +1156,14 @@
                     attribute, a Print SCU can select the resolution at which
                     images on the page are to be printed. At default
                     configuration, jPrint supports the two Resolution IDs
-                    defined by DICOM - the specified printer resolution values
-                    must be adjusted to the supported print resolutions of
+                    defined by DICOM. The specified printer resolution values
+                    must be adjusted to the supported print resolutions of any
                     connected printers:<table id="t-resolution-id"><title>Predefined
                     Resolution IDs</title><tgroup align="left" cols="2"><colspec
                     colwidth="70" /><colspec colwidth="70" /><thead><row><entry>ID</entry><entry>Resolution</entry></row></thead><tbody><row><entry>STANDARD</entry><entry>600x600dpi</entry></row><row><entry>HIGH</entry><entry>1200x1200dpi</entry></row></tbody></tgroup></table></para>
 
-                    <para>Also additional Resolution IDs may be defined in
-                    jPrint configuration files.</para>
+                    <para>Also, additional Resolution IDs may be defined in
+                    jPrint&#39;s configuration files.</para>
 
                     <note>
                       <para>jPrint does NOT support printing with non-squared
@@ -1170,9 +1174,9 @@
                       by one Basic Film Session N-ACTION DIMSE).</para>
                     </note>
 
-                    <para>jPrint behavior and specific status codes sent for
-                    the N-CREATE of a specific Film Box is described in the
-                    following table:<table><title>Basic Film Box SOP Class
+                    <para>jPrint behavior and the specific status codes sent
+                    for the N-CREATE of a specific Film Box is described in
+                    the following table:<table><title>Basic Film Box SOP Class
                     N-CREATE Response Status Handling Behavior</title><tgroup
                     align="left" cols="4"><colspec colwidth="40" /><colspec
                     colwidth="80" /><colspec colwidth="40" /><thead><row
@@ -1201,8 +1205,8 @@
                   <section>
                     <title>Basic Film Box SOP Class Operations for N-SET</title>
 
-                    <para>jPrint provides the support for the following Film
-                    Box attributes sent by the N-SET DIMSE service:</para>
+                    <para>jPrint provides support for the following Film Box
+                    attributes sent by the N-SET DIMSE service:</para>
 
                     <table>
                       <title>Basic Film Box SOP Class N-SET Request Attributes</title>
@@ -1385,8 +1389,8 @@
                       </tgroup>
                     </table>
 
-                    <para>jPrint behavior and specific status codes sent for
-                    the N-SET of a specific Film Box is described in the
+                    <para>jPrint behavior and the specific status codes sent
+                    for the N-SET of a specific Film Box is described in the
                     following table:</para>
 
                     <table>
@@ -1553,7 +1557,7 @@
                       <title>Film Box SOP Class Operations for N-ACTION</title>
 
                       <para>jPrint provides the support for submitting the
-                      print job for printing the specific Film Box..</para>
+                      print job to print a specific Film Box.</para>
 
                       <para>The specific behavior and status codes sent for
                       the N-ACTION of the specific Film Box is described in
@@ -1932,7 +1936,7 @@
                     <title>Magnification Type NONE defines Requested
                     Decimate/Crop Behavior</title>
 
-                    <para>If Image Box (or containing Film Box) attribute
+                    <para>If the Image Box (or containing Film Box) attribute
                     Magnification Type is NONE, the Requested Decimate/Crop
                     Behavior is assumed to be CROP, ignoring the actual value
                     of the Requested Decimate/Crop Behavior attribute provided
@@ -1943,8 +1947,8 @@
                     <title>Magnification Type NONE with Pixel Aspect Ration
                     not 1:1</title>
 
-                    <para>Pixel Aspect Ratio will always be considered, also
-                    if the Image Box (or containing Film Box) attribute
+                    <para>The Pixel Aspect Ratio will always be considered
+                    even if the Image Box (or containing Film Box) attribute
                     Magnification Type is NONE. In that case, only the number
                     columns of the printed pixel matrix is identical with the
                     number of columns of the received Image Data, and the
@@ -1959,14 +1963,14 @@
                     <para>If a Requested Image Size is provided by the Print
                     SCU, the Requested Decimate/Crop Behavior is assumed to be
                     DECIMATE, ignoring the actual value of the Requested
-                    Decimate/Crop Behavior attribute. Also a provided
-                    Magnification Type NONE will be replaced by BILINEAR in
+                    Decimate/Crop Behavior attribute. Also, a provided
+                    Magnification Type of NONE will be replaced by BILINEAR in
                     this case.</para>
                   </formalpara>
 
-                  <para>jPrint behavior and specific status codes sent for the
-                  N-SET of a specific Image Box is described in the following
-                  table:</para>
+                  <para>jPrint behavior and the specific status codes sent for
+                  the N-SET of a specific Image Box is described in the
+                  following table:</para>
 
                   <table>
                     <title>Basic Grayscale Image Box SOP Class N-SET Response
@@ -2090,7 +2094,7 @@
                     <title>Specific Conformance for Printer N-GET Status</title>
 
                     <para>The Print SCU uses the Printer SOP Class N-GET
-                    operation to obtain information about the current Printer
+                    operation to obtain information about the current printer
                     status. The attributes obtained via N-GET are listed in
                     the following table:</para>
 
@@ -2254,7 +2258,7 @@
                             <entry>0000H</entry>
 
                             <entry>The request to get printer status
-                            information was success.</entry>
+                            information was successfull.</entry>
                           </row>
 
                           <row>
@@ -2357,25 +2361,26 @@
                 </table>
 
                 <para>The specific SOP Conformance statement for Basic Color
-                Print Management Meta SOP Class components Basic Film Session,
-                Basic Film Session and Printer, which are also components of
-                the Basic Grayscale Print Management Meta SOP Class components
-                are described in <xref linkend="s-gray-meta-sop" />.</para>
+                Print Management Meta SOP Class components which include the
+                Basic Film Session, Basic Film Box, and Printer SOP Classes
+                (which are also components of the Basic Grayscale Print
+                Management Meta SOP Class) are described in <xref
+                linkend="s-gray-meta-sop" />.</para>
 
                 <note>
                   <para>Currently, there is no Standard Display Function for
-                  Hard- and Softcopy of Color Images defined by DICOM. There
-                  is also no proprietary way to calibrate jPrint for Color
-                  Print implemented. Hence quality and consistency of color
+                  Hard- or Softcopies of Color Images defined by DICOM. There
+                  is also no proprietary mechanism to calibrate jPrint for
+                  Color Printing. Hence quality and consistency of color
                   prints cannot be guaranteed by the usage of jPrint, but are
                   dependent on the characteristic of the connected color
-                  printer.</para>
+                  printer(s).</para>
                 </note>
 
                 <section>
                   <title>Specific Conformance for Color Image Box SOP Class</title>
 
-                  <para>print provides the following support for the
+                  <para>jPrint provides the following support for the
                   attributes contained in the N-SET DIMSE Service of the Basic
                   Color Image Box SOP Class:</para>
 
@@ -2605,9 +2610,9 @@
                     </tgroup>
                   </table>
 
-                  <para>jPrint behavior and specific status codes sent for the
-                  N-SET of a specific Image Box is described in the following
-                  table:</para>
+                  <para>jPrint behavior and the specific status codes sent for
+                  the N-SET of a specific Image Box is described in the
+                  following table:</para>
 
                   <table>
                     <title>Basic Color Image Box SOP Class N-SET Response
@@ -2704,8 +2709,8 @@
 
                 <para>jPrint creates the Basic Annotation Box SOP instance at
                 the time the Basic Film Box SOP instance is created, based on
-                the value of the attribute Annotation Display Format ID
-                (2010,0030) of the Basic Film Box.</para>
+                the value of the Annotation Display Format ID (2010,0030)
+                attribute of the Basic Film Box.</para>
 
                 <para>The created Basic Annotation Box SOP instance can be
                 updated with the N-SET DIMSE service. The following table
@@ -2770,8 +2775,8 @@
                   </tgroup>
                 </table>
 
-                <para>jPrint behavior and specific status codes sent for the
-                N-SET of a specific Annotation Box is described in the
+                <para>jPrint behavior and the specific status codes sent for
+                the N-SET of a specific Annotation Box is described in the
                 following table:</para>
 
                 <table>
@@ -2867,19 +2872,19 @@
               <section>
                 <title>Specific Conformance for Presentation LUT Box SOP Class</title>
 
-                <para>jPrint supports the Presentation LUT SOP class as SCP.
-                Print SCU may negotiate this support and create a Presentation
-                LUT instance prior to the creation of Film Boxes or Image
-                Boxes. Multiple Presentation LUT instances are supported in an
-                association, but only one instance will be supported for each
-                image.</para>
+                <para>jPrint supports the Presentation LUT SOP class as an
+                SCP. Print SCUs may negotiate this support and create a
+                Presentation LUT instance prior to the creation of Film Boxes
+                or Image Boxes. Multiple Presentation LUT instances are
+                supported in an association, but only one instance will be
+                supported for each image.</para>
 
-                <para>The SCU shall send either Presentation LUT Sequence or
-                the Presentation LUT Shape. These values are mutually
+                <para>The SCU shall send either the Presentation LUT Sequence
+                or the Presentation LUT Shape. These values are mutually
                 exclusive and the action will result in an error if neither or
                 both are present. The presence of the Presentation LUT
                 instance overrides any data set in the Configuration
-                Information attribute (2010,0150) of the Film Box or Image
+                Information (2010,0150) attribute of the Film Box or Image
                 Box.</para>
 
                 <para>jPrint provides support for the following DIMSE
@@ -3099,10 +3104,10 @@
                   <title>Presentation LUT SOP class operation for N-DELETE</title>
 
                   <para>When a N-DELETE DIMSE service is requested with a
-                  specific Presentation LUT SOP instance, jPrint will not
-                  delete the specified Presentation LUT SOP instance as long
-                  as there are outstanding references to it. Otherwise, it
-                  deletes the specified Presentation LUT SOP instance.</para>
+                  specific Presentation LUT SOP Instance, jPrint will not
+                  delete the specified Presentation LUT SOP Instance as long
+                  as there are outstanding references to it. Otherwise, the
+                  specified Presentation LUT SOP Instance is deleted.</para>
                 </section>
 
                 <section>
@@ -3117,20 +3122,20 @@
                   values from the standard Presentation (P-value) space to the
                   Optical Density space.</para>
 
-                  <para>jPrint supports calibration by manually measurements
+                  <para>jPrint supports calibration by manual measurements
                   using a grayscale densitometer or semi-automatic
                   calibration, that only requires the user to scan a current
-                  grayscale print-out of the printer and a reference grayscale
-                  page and put the resulting JPEG files into a configuration
-                  folder. The jPrint Service Manual describes in details the
-                  jPrint calibration of connected Printers to the DICOM GSDF
-                  curve.</para>
+                  grayscale print-out from the printer and a reference
+                  grayscale page and put the resulting JPEG files into a
+                  configuration folder. The jPrint Service Manual describes
+                  the jPrint calibration of connected Printers to the DICOM
+                  GSDF curve in detail.</para>
 
                   <note>
                     <para>Presentation LUT SOP class can only be used for
                     Grayscale Print Management. Currently, there is no
-                    definition/support for color print consistence/calibration
-                    provided by DICOM/jPrint.</para>
+                    definition/support for color print consistency/calibration
+                    provided by either DICOM or jPrint.</para>
                   </note>
                 </section>
               </section>
@@ -3179,10 +3184,9 @@
           Presentation Context for Verification SOP Class will be returned in
           the Association Acceptance Response (A-ASSOCIATE-AC).</para>
 
-          <para>At default, only one connected printer is configured:
-          <table><title>AE Title Configuration Table</title><tgroup
-          align="left" cols="3"><colspec colwidth="100" /><colspec
-          colwidth="100" /><colspec colwidth="100" /><thead><row><entry>Application
+          <para>As a default, only one connected printer is configured:<table><title>AE
+          Title Configuration Table</title><tgroup align="left" cols="3"><colspec
+          colwidth="100" /><colspec colwidth="100" /><colspec colwidth="100" /><thead><row><entry>Application
           Entity</entry><entry>Default AE Title</entry><entry>Default TCP/IP
           Port</entry></row></thead><tbody><row><entry>jPrint</entry><entry>TIANI_PRINT</entry><entry>6104</entry></row></tbody></tgroup></table></para>
         </section>
@@ -3190,7 +3194,7 @@
         <section>
           <title>Remote AE Title</title>
 
-          <para>At default configuration, Association Requests with any
+          <para>In the default configuration, Association Requests with any
           Calling AET will be accepted.</para>
         </section>
       </section>
@@ -3201,8 +3205,8 @@
         <para>A large number of parameters related to Print Management,
         Communications and general operation can be configured. The following
         table shows those configuration parameters relevant to DICOM
-        communication. See the jPrint Service Manual for details on general
-        configuration capabilities.</para>
+        communication. Refer to the jPrint Service Manual for details on
+        general configuration capabilities.</para>
 
         <para><table><title>Configuration Parameter Table</title><tgroup
         align="left" cols="3"><colspec align="left" colname="c1" /><colspec
@@ -3286,7 +3290,7 @@
   <section>
     <title>Support of Extended Character Sets</title>
 
-    <para>jPrint supports ISO_IR 100 (ISO 8859-1 Latin 1) as extended
+    <para>jPrint supports ISO_IR 100 (ISO 8859-1 Latin 1) as an extended
     character set.</para>
   </section>
 
@@ -3307,11 +3311,11 @@
       a limited list of Calling AE Titles and to check that the Association
       requester specifies the correct Called AE Title.</para>
 
-      <para>At default configuration, Association requests with any Calling
-      AET and any Called AET will be accepted. But if no connected printer is
-      configured for the Called AET, only acceptance of the Presentation
-      Context for Verification SOP Class will be returned in the Association
-      Acceptance Response (A-ASSOCIATE AC).</para>
+      <para>In the default configuration, Association requests with any
+      Calling AET and any Called AET will be accepted. However, if no
+      connected printer is configured for the Called AET, only acceptance of
+      the Presentation Context for Verification SOP Class will be returned in
+      the Association Acceptance Response (A-ASSOCIATE AC).</para>
     </section>
   </section>
 
@@ -3337,12 +3341,12 @@
     <section>
       <title>Attribute Mapping</title>
 
-      <para>The following table is a mapping table of attributes that can be
-      set by different Print IODs. If more then one IOD is setting the same
-      element, then the value will be over-written by the IOD s value in the
-      order from left to right, such that the Printer Configuration (PC)
-      specific element values is in lowest order might be overwritten by any
-      other IOD.</para>
+      <para>The following table is a mapping of attributes that can be set by
+      different Print IODs. If more than one IOD is setting the same element,
+      then the value will be overwritten by the IOD&#39;s value in order
+      shown, from left to right, such that the Printer Configuration (PC)
+      specific element values that are in lowest order might be overwritten by
+      another IOD.</para>
 
       <table>
         <title>jPrint Attribute Mapping</title>
@@ -3629,7 +3633,7 @@
     <section>
       <title>Standard Extended/Specialized/Private SOPs</title>
 
-      <para>jPrint does not claim conformance to any Extended, Specialized or
+      <para>jPrint does not claim conformance to any Extended, Specialized, or
       Private SOP Classes.</para>
     </section>
 
