@@ -11,6 +11,7 @@ package org.dcm4chex.archive.ejb.session;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -27,6 +28,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -71,6 +73,36 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	private FileSystemLocalHome fileSystemHome;
 
     private FileSystemMgtSupportLocalHome fileSystemMgtSupportHome;
+    
+    private static final String[] IMAGE_CUIDS = {
+        UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
+        UIDs.ComputedRadiographyImageStorage,
+        UIDs.DigitalXRayImageStorageForPresentation,
+        UIDs.DigitalXRayImageStorageForProcessing,
+        UIDs.DigitalMammographyXRayImageStorageForPresentation,
+        UIDs.DigitalMammographyXRayImageStorageForProcessing,
+        UIDs.DigitalIntraoralXRayImageStorageForPresentation,
+        UIDs.DigitalIntraoralXRayImageStorageForProcessing,
+        UIDs.CTImageStorage, UIDs.UltrasoundMultiframeImageStorageRetired,
+        UIDs.UltrasoundMultiframeImageStorage, UIDs.MRImageStorage,
+        UIDs.EnhancedMRImageStorage,
+        UIDs.NuclearMedicineImageStorageRetired,
+        UIDs.UltrasoundImageStorageRetired, UIDs.UltrasoundImageStorage,
+        UIDs.SecondaryCaptureImageStorage,
+        UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
+        UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
+        UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
+        UIDs.MultiframeColorSecondaryCaptureImageStorage,
+        UIDs.XRayAngiographicImageStorage,
+        UIDs.XRayRadiofluoroscopicImageStorage,
+        UIDs.XRayAngiographicBiPlaneImageStorageRetired,
+        UIDs.NuclearMedicineImageStorage, UIDs.VLImageStorageRetired,
+        UIDs.VLMultiframeImageStorageRetired,
+        UIDs.VLEndoscopicImageStorage, UIDs.VLMicroscopicImageStorage,
+        UIDs.VLSlideCoordinatesMicroscopicImageStorage,
+        UIDs.VLPhotographicImageStorage,
+        UIDs.PositronEmissionTomographyImageStorage, UIDs.RTImageStorage,};
+    
     
 	public void setSessionContext(SessionContext ctx) {
 		Context jndiCtx = null;
@@ -137,13 +169,14 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
 	 */
-	public FileDTO[] findToCompress(String tsuid, String cuid, String srcaet,
+	public FileDTO[] findToCompress(String[] tsuid, String[] srcaet,
 			String dirPath, Timestamp before, int limit) throws FinderException {
 		log.debug("Querying for files to compress in " + dirPath);
-		Collection c = fileHome.findToCompress(tsuid, cuid, srcaet, dirPath, before, limit);
+		Collection c = fileHome.listFilesToCompress(tsuid, IMAGE_CUIDS, srcaet, dirPath, before, limit);
 		log.debug("Found " + c.size()+ " files to compress in " + dirPath);
 		return toFileDTOs(c);
 	}
+
 
 	/**
 	 * @ejb.interface-method
