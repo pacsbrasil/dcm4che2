@@ -1,0 +1,147 @@
+Revision History
+=================
+
+-------------------------------------------------------------------------------
+dcm4che 1.0.3 -  - Changes since dcm4che 1.0.2
+-------------------------------------------------------------------------------
+BUG FIXES:
+org.dcm4cheri.data
++ Fix DcmStreamHandlerImpl#fragment (=> error writing encapsed pixel data)
++ Fix value of Command#C_CANCEL_RQ
++ Fix DcmElement#addItem for SQ Elements (UnsupportedOperationException)
+org.dcm4cheri.srom
++ Fix KeyObjectImpl#sopInstanceRefListToSQ (ClassCastException srom->Dataset)
++ Fix RefSOPImpl#toDataset (SOPInstanceUID <-> SOPClassUID)
+samples:
++ Fix build.xml to include missing .class into imgread.jar & imgdisp.jar
++ DcmRcv: Fix write to file - wasn't MT safe
+
+ENHANCEMENTS:
+dcm4che API:
++ add org.dcm4che.data.DcmObject#getDateRange
++ add org.dcm4che.data.DcmObject#getDateTimeRange
++ add org.dcm4che.data.DcmObject#setPrivateCreatorID (access private attributs)
++ add org.dcm4che.data.DcmObject#getPrivateCreatorID
++ org.dcm4che.data.DcmObject#put??(tag, value) except value=null 
++ add org.dcm4che.data.Tags#valueOf(short,short)
++ add org.dcm4che.data.DcmElement#getDateRange
++ add org.dcm4che.media.DirBuilder#getDirWriter
++ add org.dcm4che.net.FutureRSP#listPending
++ add org.dcm4che.net.DcmServiceBase.MultiDimseRsp#release
++ add org.dcm4che.net.DcmServiceBase#doAfterRsp
++ add org.dcm4che.net.Association#getAAssociateRQ
++ add org.dcm4che.net.Association#getAAssociateAC
++ add org.dcm4che.net.Association#getAAssociateRJ
++ add org.dcm4che.net.Association#getAAbort
++ add org.dcm4che.net.DcmServiceException
++ add org.dcm4che.net.AAssociateAC#countAcceptedPresContext
++ add org.dcm4che.net.AAssociation#countAcceptedPresContext
++ add org.dcm4che.net.AAssociation#listAcceptedPresContext
++ add org.dcm4che.net.AAssociation#putProperty
++ add org.dcm4che.net.AAssociation#getProperty
++ make org.dcm4cheri.data.DcmParserImpl tolerant for redundant
+  Sequence Delimiter Items of Sequences with explicit length encoding
++ add org.dcm4che.data.FileMetaInfo#getImplementationClassUID
++ add org.dcm4che.data.FileMetaInfo#getImplementationVersionName
++ add org.dcm4che.dict.Status
++ add org.dcm4che.srom.IconImage
++ extends org.dcm4che.util.DcmURL for dicom-tls
+
+
+CHANGES:
+dcm4che API:
++ rename org.dcm4che.net.Factory to org.dcm4che.net.AssociationFactory
++ relax VR value check for most VR types to log warning insteed
+  throw IllegalValueException
++ org.dcm4che.data.DcmObject#get??(tag, index)
+  return null/0, if index >= vm(), instead throw RuntimeException
++ org.dcm4che.net.AcceptorPolicy: rename map related insert methods from 
+    addXX to putXX. Also allows null value -> remove a previous added item
+    from the map. -> eliminate redundant removeXXX methodes.
++ org.dcm4che.net.AcceptorPolicy#setAsyncOpsWindow(AsyncOpsWindow) removed,
+    use setAsyncOpsWindow(int, int) instead
++ org.dcm4che.net.AcceptorPolicy#addRoleSelection(RoleSelection) ->
+    #addRoleSelection(String uid, boolean scu, boolean scp)
++ org.dcm4che.util.SSLContextAdapter:
+   make enabledCipherSuites param of SocketFactory instead of Adapter,
+   add support of pkcs12 keystore
++ org.dcm4che.srom.*: add IconImage param to factory methodes for ImageContent
+samples:
++ dcmsnd, dcmrcv, mppssnd: change TLS related command line syntax
+distribution:
++ split distribution in 3 ZIP archives:
+  - dcm4che-##.zip - compiled jars
+  - dcm4che-apidoc-##.zip - API javadoc
+  - dcm4che-src-##.zip - source + build scripts
+
+-------------------------------------------------------------------------------
+dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1
+-------------------------------------------------------------------------------
+DISTRIBUTION:
++ demo -> samples
++ include javadoc
+
+BUG FIXES:
+org.dcm4cheri.data
++ Fix DcmObject.putUT (inserted element returned wrong vr(=UL))
++ Fix BaseDatasetImpl.calcLength (ArrayOutOfBoundsException if #groups=8^n)
+org.dcm4che.imageio.plugins.DcmMetadataFormat*
+  Add missing definitions for "pos" attribute of elements "elm", "item", "frag"
+org.dcm4cheri.media:
++ Fix DirBuilderImpl to merge PATIENT/STUDY/SERIES records with
+  same primary key
+samples/dcmdir:
++ Fix remove operation (ArrayOutOfBoundsException)
++ Fix load of readme file configuration parameter
+
+ENHANCEMENTS:
+dcm4che API:
++ add org.dcm4che.data.DicomObject#vm(int)
+dcmdir sample:
++ command -c create root directory, if no such directory exists
++ add command -P dir-file: purge records from existing DICOMDIR file,
+  with referenced files do not exist anymore
+
+CHANGES:
+dcm4che API:
++ org.dcm4cheri.data.Dataset#subset -> #subSet: adjust method name and
+  semantic according java.util.SortedSet#subSet
+dcm4che Impl:
++ DcmImageReaderConf: change default resource location of properties from
+  /resources/DcmImageReader.properties to /DcmImageReader.properties
+samples:
++ change resource location of Resource Bundles from
+  resources/BUNDLE.properties to BUNDLE.properties
+
+-------------------------------------------------------------------------------
+dcm4che 1.0.1 -  - Changes since dcm4che 1.0.0
+-------------------------------------------------------------------------------
+dcmrcv Sample Application:
++ change default File ID scheme in dcmrcv demo application
+  from StudyDate,SeriesNumber,InstanceNumber
+  to StudyDate,StudyID,SeriesNumber,InstanceNumber
++ change(generalize) commandline syntax for replacing attribute values in
+  received objects to --set=TAG:VAL.
+dcmsnd Sample Application:
++ change(generalize) commandline syntax for replacing attribute values in
+  transmitted objects to --set=TAG:VAL.
++ add --poll-dir option (may be used for as DICOM router - in combination with
+  dcmrcv --dest DIR).
+new syslog Sample Application:
++ to send/generate syslog messages
+new mppssnd Sample Application:
++ to send MPPS messages to remote DICOM node
+new Image I/O compatible DICOM ImageWriter (contributed by Dr. Hacklaender)
++ org.dcm4che.imageio.plugins.DcmImageWriteParam
++ org.dcm4cheri.imageio.plugins.DcmImageWriteParamImpl
++ org.dcm4cheri.imageio.plugins.DcmImageWriter
++ org.dcm4cheri.imageio.plugins.DcmImageWriterSpi
+new simple HL7 Parser:
++ org.dcm4che.hl7.*
++ org.dcm4cheri.hl7.*
+dcm4che API:
++ org.dcm4cheri.data.DicomObject#getInteger
+
+Bug Fixes:
++ org.dcm4cheri.data.DicomObjectImpl#putAll - did not insert any element
++ org.dcm4cheri.data.DicomObjectImpl#getDateTime
