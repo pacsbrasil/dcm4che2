@@ -426,13 +426,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public void close(Association assoc) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo != null) {
-            updateStudies(storedStudiesInfo.keySet().iterator());
+//            updateStudies(storedStudiesInfo.keySet().iterator());
             forward(
                 forwardAETs.get(assoc.getCallingAET()),
                 storedStudiesInfo.values().iterator());
         }
     }
-
+/*
     private void updateStudies(Iterator suids) {
         Storage storage;
         try {
@@ -453,7 +453,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             storage.remove();
         } catch (Exception ignore) {}
     }
-
+*/
     private void updateStoredStudiesInfo(Association assoc, Dataset ds) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo == null) {
