@@ -214,10 +214,11 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
                         + ", filter:" + filterEl);
                 return el;
             }
-            if (filterEl.isEmpty()) {
+            Dataset item = filterEl.getItem();
+            if (item == null || item.isEmpty()) {
                 return el;
             }
-            return new FilterSQElement((SQElement)el, filterEl.getItem());
+            return new FilterSQElement((SQElement)el, item);
         }
     }
  
