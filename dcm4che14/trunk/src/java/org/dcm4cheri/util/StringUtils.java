@@ -1,25 +1,22 @@
-/*$Id$*/
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
- *                                                                           *
- *  This file is part of dcm4che.                                            *
- *                                                                           *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
+/* $Id$
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>
+ *
+ *  This file is part of dcm4che.
+ *
+ *  This library is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 package org.dcm4cheri.util;
 
@@ -30,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 
 /**
  *
@@ -272,33 +270,47 @@ public class StringUtils {
         throw new IllegalArgumentException("VR:" + VRs.toString(vr));
     }
 
-    static final String[] NULL_STRINGS = {};
-    public static String[] toStringArray(String s, char delim) {
-        if (s == null || s.length() == 0) {
-            return NULL_STRINGS;
+    static final String[] EMPTY_STRING_ARRAY = {};
+    public static String[] split(String s, char delim) {
+        if (s == null) {
+            return null;
         }
-        char[] c = s.toCharArray();
-        int n = 1;
-        for (int i = 0; i < c.length; ++i) {
-            if (c[i] == delim) {
-                ++n;
-            };
+        if (s.length() == 0) {
+            return EMPTY_STRING_ARRAY;
         }
-        String[] array = new String[n];
-        int offset = 0;
-        int index = 0;
-        for (int i = 0; i < c.length; ++i) {
-            if (c[i] == delim) {
-                array[index++] = new String(c,offset,i-offset);
-                offset = i+1;
-            };
+        int end = s.indexOf(delim);
+        if (end == -1) {
+            return new String[]{s};
         }
-        array[index] = new String(c,offset,c.length-offset);
-        return array;
+        ArrayList list = new ArrayList();
+        int start = 0;
+        do {
+            list.add(s.substring(start, end));
+            start = end + 1;
+        } while ((end = s.indexOf(delim, start)) != -1);
+        list.add(s.substring(start));
+        return (String[]) list.toArray(new String[list.size()]);
+    }
+    
+    public static String toString(String[] a, char delim) {
+        if (a == null) {
+            return null;
+        }
+        if (a.length == 0) {
+            return "";
+        }
+        if (a.length == 1) {
+            return a[0];
+        }
+        StringBuffer sb = new StringBuffer(a[0]);
+        for (int i = 1; i < a.length; ++i) {
+            sb.append(delim).append(a[i]);
+        }
+        return sb.toString();
     }
     
     public static byte[] parseAT(String str) {
-        String[] a = toStringArray(str,'\\');
+        String[] a = split(str,'\\');
         byte[] b = new byte[a.length * 4];
         ByteBuffer bb = ByteBuffer.wrap(b, 0, b.length)
                 .order(ByteOrder.LITTLE_ENDIAN);
@@ -311,7 +323,7 @@ public class StringUtils {
     }
     
     public static byte[] parseFD(String str) {
-        String[] a = toStringArray(str,'\\');
+        String[] a = split(str,'\\');
         byte[] b = new byte[a.length * 8];
         ByteBuffer bb = ByteBuffer.wrap(b, 0, b.length)
                 .order(ByteOrder.LITTLE_ENDIAN);
@@ -321,7 +333,7 @@ public class StringUtils {
     }
     
     public static byte[] parseFL(String str) {
-        String[] a = toStringArray(str,'\\');
+        String[] a = split(str,'\\');
         byte[] b = new byte[a.length * 4];
         ByteBuffer bb = ByteBuffer.wrap(b, 0, b.length)
                 .order(ByteOrder.LITTLE_ENDIAN);
@@ -352,7 +364,7 @@ public class StringUtils {
     }
 
     public static byte[] parseSS_US(String str) {
-        String[] a = toStringArray(str,'\\');
+        String[] a = split(str,'\\');
         byte[] b = new byte[a.length * 2];
         ByteBuffer bb = ByteBuffer.wrap(b, 0, b.length)
                 .order(ByteOrder.LITTLE_ENDIAN);
@@ -362,7 +374,7 @@ public class StringUtils {
     }
     
     public static byte[] parseSL_UL(String str) {
-        String[] a = toStringArray(str,'\\');
+        String[] a = split(str,'\\');
         byte[] b = new byte[a.length * 4];
         ByteBuffer bb = ByteBuffer.wrap(b, 0, b.length)
                 .order(ByteOrder.LITTLE_ENDIAN);
