@@ -969,7 +969,7 @@
   <element tag="(0040,0012)" name="Pre-Medication" vr="LO" vm="1" key="PreMedication" />
   <element tag="(0040,0020)" name="Scheduled Procedure Step Status" vr="CS" vm="1" key="SPSStatus" />
   <element tag="(0040,0100)" name="Scheduled Procedure Step Sequence" vr="SQ" vm="1" key="SPSSeq" />
-  <element tag="(0040,0220)" name="Referenced Standalone SOP Instance Sequence" vr="SQ" vm="1" key="RefStandaloneSOPInstanceSeq" />
+  <element tag="(0040,0220)" name="Referenced Non-Image Composite SOP Instance Sequence" vr="SQ" vm="1" key="RefNonImageCompositeSOPInstanceSeq" />
   <element tag="(0040,0241)" name="Performed Station AE Title" vr="AE" vm="1" key="PerformedStationAET" />
   <element tag="(0040,0242)" name="Performed Station Name" vr="SH" vm="1" key="PerformedStationName" />
   <element tag="(0040,0243)" name="Performed Location" vr="SH" vm="1" key="PerformedLocation" />
@@ -985,6 +985,7 @@
   <element tag="(0040,0270)" name="Scheduled Step Attributes Sequence" vr="SQ" vm="1" key="ScheduledStepAttributesSeq" />
   <element tag="(0040,0275)" name="Request Attributes Sequence" vr="SQ" vm="1" key="RequestAttributesSeq" />
   <element tag="(0040,0280)" name="Comments on the Performed Procedure Steps" vr="ST" vm="1" key="PPSComments" />
+  <element tag="(0040,0281)" name="Performed Procedure Step Discontinuation Reason Code Sequence" vr="SQ" vm="1" key="PPSDiscontinuationReasonCodeSeq" />
   <element tag="(0040,0293)" name="Quantity Sequence" vr="SQ" vm="1" key="QuantitySeq" />
   <element tag="(0040,0294)" name="Quantity" vr="DS" vm="1" key="Quantity" />
   <element tag="(0040,0295)" name="Measuring Units Sequence" vr="SQ" vm="1" key="MeasuringUnitsSeq" />
