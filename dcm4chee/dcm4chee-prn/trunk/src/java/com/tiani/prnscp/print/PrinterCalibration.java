@@ -48,7 +48,7 @@ class PrinterCalibration
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   private float[] measuredODs;
+   private float[] odSteps;
    private float[] ddl2od = new float[256];
    
    // Static --------------------------------------------------------
@@ -146,28 +146,28 @@ class PrinterCalibration
    }
    
    
-   public float[] getMeasuredODs() {
-      return (float[]) measuredODs.clone();
+   public float[] getODSteps() {
+      return odSteps == null ? null : (float[]) odSteps.clone();
    }
    
-   /** Setter for property measuredODs.
-    * @param measuredODs New value of property measuredODs.
+   /** Setter for property odSteps.
+    * @param odSteps New value of property odSteps.
     */
-   public void setMeasuredODs(float[] newMeasuredODs) {
-      if (newMeasuredODs.length < 2 || newMeasuredODs.length > 65) {
-         throw new IllegalArgumentException("steps: " + newMeasuredODs.length);
+   public void setODSteps(float[] newODSteps) {
+      if (newODSteps.length < 2 || newODSteps.length > 65) {
+         throw new IllegalArgumentException("steps: " + newODSteps.length);
       }
-      if (measuredODs != null && Arrays.equals(measuredODs, newMeasuredODs)) {
+      if (odSteps != null && Arrays.equals(odSteps, newODSteps)) {
          return; // no change
       }
       
-      float[] tmp = (float[])newMeasuredODs.clone();
+      float[] tmp = (float[])newODSteps.clone();
       Arrays.sort(tmp);
-      if (!Arrays.equals(tmp, newMeasuredODs)) {
+      if (!Arrays.equals(tmp, newODSteps)) {
          throw new IllegalArgumentException(
-         "measuredODs[" + tmp.length + "] not monotonic increasing");
+         "odSteps[" + tmp.length + "] not monotonic increasing");
       }
-      this.measuredODs = tmp;
+      this.odSteps = tmp;
       initDLL2OD();
    }
    // Package protected ---------------------------------------------
@@ -177,8 +177,8 @@ class PrinterCalibration
    // Private -------------------------------------------------------
    
    private void check(int n, float dmin, float dmax) {
-      if (measuredODs == null) {
-         throw new IllegalStateException("MeasuredODs not yet set");
+      if (odSteps == null) {
+         throw new IllegalStateException("ODSteps not yet set");
       }
       if (n < 8 || n > 16) {
          throw new IllegalArgumentException("n: " + n);
@@ -186,18 +186,20 @@ class PrinterCalibration
       if (dmin > dmax) {
          throw new IllegalArgumentException("dmin: " + dmin + ", dmax: " + dmax);
       }
-      if (dmin < measuredODs[0]) {
+      /*
+      if (dmin < odSteps[0]) {
          throw new IllegalArgumentException("dmin: " + dmin
-         + ", ODmin: " + measuredODs[0]);
+         + ", ODmin: " + odSteps[0]);
       }
-      if (dmax > measuredODs[measuredODs.length-1]) {
+      if (dmax > odSteps[odSteps.length-1]) {
          throw new IllegalArgumentException("dmax: " + dmax
-         + ", ODmax: " + measuredODs[measuredODs.length-1]);
+         + ", ODmax: " + odSteps[odSteps.length-1]);
       }
+       */
    }
    
    private void initDLL2OD() {
-      int x[] = new int[measuredODs.length];
+      int x[] = new int[odSteps.length];
       for (int i = 0; i < x.length; ++i) {
          x[i] = Math.round(255.f * i / (x.length - 1));
       }
@@ -205,8 +207,8 @@ class PrinterCalibration
          if (j > x[i+1]) {
             ++i;
          }
-         ddl2od[j] = measuredODs[i]
-            + (measuredODs[i+1] - measuredODs[i])
+         ddl2od[j] = odSteps[i]
+            + (odSteps[i+1] - odSteps[i])
             * (j - x[i]) / (x[i+1] - x[i]);
       }
    }
@@ -240,7 +242,7 @@ class PrinterCalibration
       double lnj4 = lnj2 * lnj2;
       double lnj5 = lnj2 * lnj3;
       return Math.pow(10, (A0 + A1*lnj + A2*lnj2 + A3*lnj3 + A4*lnj4)
-      / (1 + B1*lnj + B2*lnj2 + B3*lnj3 + B4*lnj4 + B5*lnj5));
+                    / (1 + B1*lnj + B2*lnj2 + B3*lnj3 + B4*lnj4 + B5*lnj5));
    }
    
    private static final double C0 = 71.498068;

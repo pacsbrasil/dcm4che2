@@ -219,7 +219,7 @@ public class PrinterService
          try {
             getPrintService(); // to register Attribute Listener
          } catch (PrintException e) {
-            log.warn(e);
+            log.warn(e, e);
          }
       }
    }
@@ -238,6 +238,7 @@ public class PrinterService
          if (services[i].getName().equals(printerName)) {
             printService = services[i];
             printService.addPrintServiceAttributeListener(this);
+            return printService;
          }
       }
       throw new PrintException("Failed to access Printer " + printerName);
@@ -741,25 +742,36 @@ public class PrinterService
       return CODE_STRING[status];
    }
    
-   /** Getter for property measuredODs.
-    * @return Value of property measuredODs.
+   /** Getter for property odSteps.
+    * @return Value of property odSteps.
     */
-   public float[] getMeasuredODs() {
-      return calibration.getMeasuredODs();
+   public float[] getODSteps() {
+      return calibration.getODSteps();
    }
    
-   /** Setter for property measuredODs.
-    * @param measuredODs New value of property measuredODs.
+   /** Setter for property odSteps.
+    * @param odSteps New value of property odSteps.
     */
-   public void setMeasuredODs(float[] measuredODs) {
-      calibration.setMeasuredODs(measuredODs);
+   public void setODSteps(float[] odSteps) {
+      calibration.setODSteps(odSteps);
+      log.info(toString("set ODSteps=[", odSteps, "]"));
    }
+   
+   static String toString(String prefix, float[] a, String suffix) {
+      StringBuffer sb = new StringBuffer(prefix);
+      for (int i = 0; i < a.length; ++i) {
+         sb.append(a[i]).append(", ");
+      }
+      sb.setLength(sb.length() - 2);
+      sb.append(suffix);
+      return sb.toString();
+   }      
       
    /** Setter for property measuredODsAsText.
     * @param measuredODsAsText New value of property measuredODsAsText.
     */
-   public void setMeasuredODsAsText(String measuredODsAsText) {
-      calibration.setMeasuredODs(toFloatArray(measuredODsAsText));
+   public void setODStepsAsText(String measuredODsAsText) {
+      calibration.setODSteps(toFloatArray(measuredODsAsText));
    }
    
    private static float[] toFloatArray(String text) {
@@ -803,14 +815,14 @@ public class PrinterService
     * @return Value of property refGrayStepFile.
     */
    public String getRefGrayStepFile() {
-      return scanner.getRefGrayStepFile();
+      return scanner.getRefGrayStepFile().getAbsolutePath();
    }
    
    /** Setter for property refGrayStepFile.
     * @param refGrayStepFile New value of property refGrayStepFile.
     */
    public void setRefGrayStepFile(String refGrayStepFile) {
-      scanner.setRefGrayStepFile(refGrayStepFile);
+      scanner.setRefGrayStepFile(toFile(refGrayStepFile));
    }
    
    /** Getter for property refGrayStepODs.
@@ -838,14 +850,14 @@ public class PrinterService
     * @return Value of property scanGrayStepDir.
     */
    public String getScanGrayStepDir() {
-      return scanner.getScanGrayStepDir();
+      return scanner.getScanGrayStepDir().getAbsolutePath();
    }
    
    /** Setter for property scanGrayStepDir.
     * @param scanGrayStepDir New value of property scanGrayStepDir.
     */
    public void setScanGrayStepDir(String scanGrayStepDir) {
-      scanner.setScanGrayStepDir(scanGrayStepDir);
+      scanner.setScanGrayStepDir(toFile(scanGrayStepDir));
    }
    
    /** Getter for property scanBorderThreshold.
@@ -912,6 +924,10 @@ public class PrinterService
          toPrintRequestAttributeSet(
             getFilmOrientation(),
             getDefaultFilmSizeID()));
+   }
+   
+   public void calibrate() throws IOException {
+      setODSteps(scanner.calcScanGrayStepODs());
    }
    
    // ServiceMBeanSupport overrides ------------------------------------
@@ -1006,37 +1022,45 @@ public class PrinterService
    }
    
    public void attributeUpdate(PrintServiceAttributeEvent psae) {
-      log.info(toMsg("printServiceAttributeUpdate: ", psae.getAttributes()));
+      if (log.isDebugEnabled())
+         log.debug(toMsg("printServiceAttributeUpdate: ", psae.getAttributes()));
    }
    
    // PrintJobAttributeListener implementation -------------------------   
    public void attributeUpdate(PrintJobAttributeEvent pjae) {
-      log.info(toMsg("printJobAttributeUpdate: ", pjae.getAttributes()));
+      if (log.isDebugEnabled())
+      log.debug(toMsg("printJobAttributeUpdate: ", pjae.getAttributes()));
    }
    
    // PrintJobListener implementation -------------------------   
    public void printDataTransferCompleted(PrintJobEvent pje) {
-      log.info(toMsg("printDataTransferCompleted: ", pje));
+      if (log.isDebugEnabled())
+         log.debug(toMsg("printDataTransferCompleted: ", pje));
    }
    
    public void printJobCanceled(PrintJobEvent pje) {
-      log.info(toMsg("printJobCanceled: ", pje));
+      if (log.isDebugEnabled())
+         log.debug(toMsg("printJobCanceled: ", pje));
    }
    
    public void printJobCompleted(PrintJobEvent pje) {
-      log.info(toMsg("printJobCompleted: ", pje));
+      if (log.isDebugEnabled())
+         log.debug(toMsg("printJobCompleted: ", pje));
    }
    
    public void printJobFailed(PrintJobEvent pje) {
-      log.info(toMsg("printJobFailed: ", pje));
+      if (log.isDebugEnabled())
+         log.info(toMsg("printJobFailed: ", pje));
    }
    
    public void printJobNoMoreEvents(PrintJobEvent pje) {
-      log.info(toMsg("printJobNoMoreEvents: ", pje));
+      if (log.isDebugEnabled())
+         log.debug(toMsg("printJobNoMoreEvents: ", pje));
    }
    
    public void printJobRequiresAttention(PrintJobEvent pje) {
-      log.info(toMsg("printJobRequiresAttention: ", pje));
+      if (log.isDebugEnabled())
+         log.debug(toMsg("printJobRequiresAttention: ", pje));
    }
       
    private void doPrint(File jobDir, Dataset sessionAttr)
@@ -1114,9 +1138,9 @@ public class PrinterService
          x2 = pageMargin[2];
          y2 = pageMargin[3];
       } else {
-         y1 = pageMargin[0];
+         y2 = pageMargin[0];
          x1 = pageMargin[1];
-         y2 = pageMargin[2];
+         y1 = pageMargin[2];
          x2 = pageMargin[3];
       }
          
@@ -1183,8 +1207,8 @@ public class PrinterService
             g2d.translate(pf.getImageableX(), pf.getImageableY());
             Rectangle2D rect = new Rectangle2D.Double();
             for (int i = 0; i < graySteps; ++i) {
-               double y = h * i / graySteps;
-               int pv = Math.round(255.f * i / (graySteps-1));
+               double y = h * i / graySteps + grayStepGap * PTS_PER_MM;
+               int pv = Math.round(255.f * (graySteps - i - 1) / (graySteps-1));
                int ddl = pvToDDL[pv] & 0xff;
 
                // fill step

@@ -57,16 +57,16 @@ class ScannerCalibration {
    private int scanGraySteps = 32;
    
    /** Holds value of property scanGrayStepDir. */
-   private String scanGrayStepDir;
+   private File scanGrayStepDir;
 
    /** Holds value of property refGrayStepFile. */
-   private String refGrayStepFile;
+   private File refGrayStepFile;
    
    /** Holds value of property refGrayStepODs. */
    private float[] refGrayStepODs;
    
    /** Holds value of property scanBorderThreshold. */
-   private int scanBorderThreshold = 50;
+   private int scanBorderThreshold = 10;
    
    /** Holds value of property scanGradientThreshold. */
    private int scanGradientThreshold = 50;
@@ -100,28 +100,28 @@ class ScannerCalibration {
    /** Getter for property refGrayStepFile.
     * @return Value of property refGrayStepFile.
     */
-   public String getRefGrayStepFile() {
+   public File getRefGrayStepFile() {
       return this.refGrayStepFile;
    }
    
    /** Setter for property refGrayStepFile.
     * @param refGrayStepFile New value of property refGrayStepFile.
     */
-   public void setRefGrayStepFile(String refGrayStepFile) {
+   public void setRefGrayStepFile(File refGrayStepFile) {
       this.refGrayStepFile = refGrayStepFile;
    }
    
    /** Getter for property scanGrayStepDir.
     * @return Value of property scanGrayStepDir.
     */
-   public String getScanGrayStepDir() {
+   public File getScanGrayStepDir() {
       return this.scanGrayStepDir;
    }
    
    /** Setter for property scanGrayStepDir.
     * @param scanGrayStepDir New value of property scanGrayStepDir.
     */
-   public void setScanGrayStepDir(String scanGrayStepDir) {
+   public void setScanGrayStepDir(File scanGrayStepDir) {
       this.scanGrayStepDir = scanGrayStepDir;
    }
    
@@ -199,11 +199,13 @@ class ScannerCalibration {
       if (scanGrayStepDir == null) {
          throw new IllegalStateException("scanGrayStepDir not initalized!");
       }
-      File refImageFile = PrinterService.toFile(refGrayStepFile);
-      File scanDir = PrinterService.toFile(scanGrayStepDir);
-      File[] imageFiles = scanDir.listFiles();
+      if (!scanGrayStepDir.isDirectory()) {
+         throw new FileNotFoundException("scanGrayStepDir " + scanGrayStepDir
+            + " is not a directory!");
+      }
+      File[] imageFiles = scanGrayStepDir.listFiles();
       if (imageFiles.length == 0) {
-         throw new FileNotFoundException("empty scanGrayStepDir " + scanDir);
+         throw new FileNotFoundException("empty scanGrayStepDir " + scanGrayStepDir);
       }
       Arrays.sort(imageFiles,
          new Comparator() {
@@ -213,7 +215,7 @@ class ScannerCalibration {
             }
          });
        
-      return calcODs(ImageIO.read(refImageFile), ImageIO.read(imageFiles[0]));
+      return calcODs(ImageIO.read(refGrayStepFile), ImageIO.read(imageFiles[0]));
    }
    
    float[] calcODs(BufferedImage refGrayStepImage, BufferedImage grayStepImage)
@@ -251,17 +253,17 @@ class ScannerCalibration {
       int x0 = w / 2;
       int y0 = h / 2;
       int[] border = { 0, 0, w - 1, h - 1 };
-      int threshold = 255 * scanBorderThreshold / 100;
-      while ((bi.getRGB(border[0], y0) & 0xff) > threshold
+      int borderMaxPxVal = 255 - 255 * scanBorderThreshold / 100;
+      while ((bi.getRGB(border[0], y0) & 0xff) > borderMaxPxVal
             && border[0] < border[2])
          ++border[0];
-      while ((bi.getRGB(x0, border[1]) & 0xff) > threshold
+      while ((bi.getRGB(x0, border[1]) & 0xff) > borderMaxPxVal
             && border[1] < border[3])
          ++border[1];
-      while ((bi.getRGB(border[2], y0) & 0xff) > threshold
+      while ((bi.getRGB(border[2], y0) & 0xff) > borderMaxPxVal
             && border[0] < border[2])
          --border[2];
-      while ((bi.getRGB(x0, border[3]) & 0xff) > threshold
+      while ((bi.getRGB(x0, border[3]) & 0xff) > borderMaxPxVal
             && border[1] < border[3])
          --border[3];
       if (border[0] >= border[2] || border[1] >= border[3]) {

@@ -28,6 +28,8 @@ import org.jboss.system.ServiceMBean;
 import javax.management.ObjectName;
 import javax.print.PrintException;
 
+import java.io.IOException;
+
 /**
  * <description>
  *
@@ -368,17 +370,17 @@ public interface PrinterServiceMBean extends ServiceMBean {
    /** Getter for property measuredODs.
     * @return Value of property measuredODs.
     */
-   public float[] getMeasuredODs();
+   public float[] getODSteps();
    
    /** Setter for property measuredODs.
     * @param measuredODs New value of property measuredODs.
     */
-   public void setMeasuredODs(float[] measuredODs);
+   public void setODSteps(float[] measuredODs);
    
    /** Setter for property measuredODsAsText.
     * @param measuredODsAsText New value of property measuredODsAsText.
     */
-   public void setMeasuredODsAsText(String measuredODsAsText);
+   public void setODStepsAsText(String measuredODsAsText);
    
    /** Getter for property graySteps.
     * @return Value of property graySteps.
@@ -470,5 +472,7 @@ public interface PrinterServiceMBean extends ServiceMBean {
    public void printGrayStepsWithGSDF() throws PrintException;
    
    public void printGrayStepsWithLinOD() throws PrintException;
+   
+   public void calibrate() throws IOException;
    
 }
