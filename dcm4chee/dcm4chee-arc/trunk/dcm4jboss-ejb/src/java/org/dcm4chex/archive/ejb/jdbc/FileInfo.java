@@ -27,56 +27,70 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 
 /**
- * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- *
+ * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
+ *  
  */
 public class FileInfo {
+
     public static final Comparator ASC_ORDER = new Comparator() {
+
         public int compare(Object o1, Object o2) {
             return ((FileInfo) o1).pk - ((FileInfo) o2).pk;
         }
     };
+
     public static final Comparator DESC_ORDER = new Comparator() {
+
         public int compare(Object o1, Object o2) {
             return ((FileInfo) o2).pk - ((FileInfo) o1).pk;
         }
     };
+
     public final int pk;
+
     public final byte[] patAttrs;
+
     public final byte[] studyAttrs;
+
     public final byte[] seriesAttrs;
+
     public final byte[] instAttrs;
+
+    public final String patID;
+
+    public final String patName;
+
+    public final String studyIUID;
+
     public final String sopIUID;
+
     public final String sopCUID;
+
     public final String retrieveAETs;
+
     public final String basedir;
+
     public final String fileID;
+
     public final String tsUID;
+
     public final String md5;
+
     public final int size;
 
-    public FileInfo(
-        int pk,
-        byte[] patAttrs,
-        byte[] studyAttrs,
-        byte[] seriesAttrs,
-        byte[] instAttrs,
-        String sopIUID,
-        String sopCUID,
-        String retrieveAETs,
-        String basedir,
-        String fileID,
-        String tsUID,
-        String md5,
-        int size) {
+    public FileInfo(int pk, String patID, String patName, byte[] patAttrs,
+            String studyIUID, byte[] studyAttrs, byte[] seriesAttrs,
+            byte[] instAttrs, String sopIUID, String sopCUID,
+            String retrieveAETs, String basedir, String fileID, String tsUID,
+            String md5, int size) {
         this.pk = pk;
+        this.patID = patID;
+        this.patName = patName;
         this.patAttrs = patAttrs;
+        this.studyIUID = studyIUID;
         this.studyAttrs = studyAttrs;
         this.seriesAttrs = seriesAttrs;
         this.instAttrs = instAttrs;
@@ -91,20 +105,9 @@ public class FileInfo {
     }
 
     public String toString() {
-        return "FileInfo[pk="
-            + pk
-            + "iuid="
-            + sopIUID
-            + ", cuid="
-            + sopCUID
-            + ", retrieveAETs="
-            + retrieveAETs
-            + ", basedir="
-            + basedir
-            + ", fileid="
-            + fileID
-            + ", tsuid="
-            + tsUID;
+        return "FileInfo[pk=" + pk + "iuid=" + sopIUID + ", cuid=" + sopCUID
+                + ", retrieveAETs=" + retrieveAETs + ", basedir=" + basedir
+                + ", fileid=" + fileID + ", tsuid=" + tsUID;
     }
 
     public File toFile() {
@@ -116,36 +119,16 @@ public class FileInfo {
         }
     }
 
-    public Dataset getPatientAttrs() {
-        return DatasetUtils.fromByteArray(patAttrs, DcmDecodeParam.IVR_LE);
-    }
-
-    public Dataset getStudyAttrs() {
-        return DatasetUtils.fromByteArray(studyAttrs, DcmDecodeParam.IVR_LE);
-    }
-
-    public Dataset getSeriesAttrs() {
-        return DatasetUtils.fromByteArray(seriesAttrs, DcmDecodeParam.IVR_LE);
-    }
-
-    public Dataset getInstanceAttrs() {
-        return DatasetUtils.fromByteArray(instAttrs, DcmDecodeParam.IVR_LE);
-    }
-
     public Set getRetrieveAETSet() {
-        return new HashSet(
-            Arrays.asList(StringUtils.split(retrieveAETs, '\\')));
+        return new HashSet(Arrays.asList(StringUtils.split(retrieveAETs, '\\')));
     }
 
-    public byte[] getFileMd5()
-    {
+    public byte[] getFileMd5() {
         char[] md5Hex = md5.toCharArray();
         byte[] retval = new byte[16];
-        for (int i = 0; i < retval.length; i++)
-        {
-            retval[i] =
-                (byte) ((Character.digit(md5Hex[i << 1], 16) << 4)
-                    + Character.digit(md5Hex[(i << 1) + 1], 16));
+        for (int i = 0; i < retval.length; i++) {
+            retval[i] = (byte) ((Character.digit(md5Hex[i << 1], 16) << 4) + Character
+                    .digit(md5Hex[(i << 1) + 1], 16));
         }
         return retval;
     }
