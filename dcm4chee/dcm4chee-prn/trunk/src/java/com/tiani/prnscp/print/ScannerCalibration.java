@@ -398,6 +398,10 @@ public class ScannerCalibration
         /*if (refODs == null) {
             refODs = readODs(getRefODsFile());
             Arrays.sort(refODs);
+        }
+        if (invRefPx == null) {
+            invRefPx = analyse(getRefDSI256File());
+            Arrays.sort(invRefPx);
         }*/
         
         if (refODs == null || invRefPx == null) {
@@ -473,7 +477,7 @@ public class ScannerCalibration
             }
             log.debug(sb.toString());
         }
-*/
+        */
         return result;
     }
 
