@@ -132,7 +132,7 @@
    				<include name="*/sql/*"/>
    				<include name="*/conf/login-config.xml"/>
    				<include name="*/deploy/*-ds.xml"/>
-   				<include name="hsql/data/hypersonic/localDB.script"/>
+   				<include name="hsql/data/hypersonic/localDB.*"/>
    			</fileset>
    			<fileset dir="${dcm4jboss-arr.home}/target">
    				<include name="common/**"/>
