@@ -135,7 +135,7 @@ public class MediaCreationMgtScu {
     private String profile;
 
     public static void main(String args[]) throws Exception {
-        Getopt g = new Getopt("mcmscu", args, "c::a::x::g::hv", LONG_OPTS);
+        Getopt g = new Getopt("mcmscu", args, "caxgu:hv", LONG_OPTS);
 
         Configuration cfg = new Configuration(MediaCreationMgtScu.class
                 .getResource("mcmscu.cfg"));
@@ -151,7 +151,9 @@ public class MediaCreationMgtScu {
             case 'g':
                 cmd |= c == 'c' ? CREATE : c == 'a' ? SCHEDULE
                         : c == 'x' ? CANCEL : GET;
-                if (g.getOptarg() != null) iuid = g.getOptarg();
+                break;
+            case 'u':
+                iuid = g.getOptarg();
                 break;
             case 2:
                 cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
@@ -201,7 +203,7 @@ public class MediaCreationMgtScu {
                     if (createAttrs != null)
                         iuid = scu.create(iuid, createAttrs);
                     if (iuid != null) {
-                        if ((cmd & SCHEDULE) != 0) scu.schedule(iuid);
+                        if ((cmd & SCHEDULE) != 0) scu.initiate(iuid);
                         if ((cmd & CANCEL) != 0) scu.cancel(iuid);
                         if ((cmd & GET) != 0) scu.get(iuid);
                     }
@@ -442,9 +444,6 @@ public class MediaCreationMgtScu {
 
     private void action(int msgid, String iuid, int actionid, Dataset attrs)
             throws InterruptedException, IOException {
-        log.info("Creating Media Creation Request[iuid:" + iuid + "]:\n"
-                + attrs);
-        checkAssoc();
         if (!checkPC(PCID_MCM, "noPCMcm")) return;
 
         FutureRSP futureRsp = assoc.invoke(aFact.newDimse(PCID_MCM, oFact
@@ -461,8 +460,8 @@ public class MediaCreationMgtScu {
                         + dataRsp);
     }
 
-    public void schedule(String iuid) throws InterruptedException, IOException {
-        log.info("Scheduling Media Creation Request[iuid:" + iuid + "]\n:"
+    public void initiate(String iuid) throws InterruptedException, IOException {
+        log.info("Initiate Media Creation Request[iuid:" + iuid + "]\n:"
                 + actionAttrs);
         action(3, iuid, INITIATE_MEDIA_CREATION, actionAttrs);
     }
