@@ -285,11 +285,22 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean addRetrieveAET(String aet) {
+        log.debug(
+            "series[pk="
+                + getPk()
+                + "]: update retrieveAETs "
+                + getRetrieveAETs()
+                + " with "
+                + aet);
         if (getRetrieveAETSet().contains(aet)) {
             return false;
         }
         if (!areAllInstancesRetrieveableFrom(aet)) {
-            log.warn("areAllInstancesRetrieveableFrom(" + aet + ")->false - " + prompt());
+            log.debug(
+                "series[pk="
+                    + getPk()
+                    + "]: not all Instances retrieveable from "
+                    + aet);
             return false;
         }
         retrieveAETSet.add(aet);
@@ -299,6 +310,11 @@ public abstract class SeriesBean implements EntityBean {
         } else {
             setRetrieveAETs(prev + '\\' + aet);
         }
+        log.debug(
+            "series[pk="
+                + getPk()
+                + "]: updated retrieveAETs to "
+                + getRetrieveAETs());
         return true;
     }
 
@@ -308,7 +324,6 @@ public abstract class SeriesBean implements EntityBean {
             InstanceLocal instance = (InstanceLocal) it.next();
             if (!instance.getRetrieveAETSet()
                 .contains(aet)) {
-                log.warn("instance " + instance + " retrieveAETs: " + instance.getRetrieveAETSet() + " does not contain " + aet);
                 return false;
             }
         }

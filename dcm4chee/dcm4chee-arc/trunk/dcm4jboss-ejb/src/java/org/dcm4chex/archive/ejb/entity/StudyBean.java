@@ -309,11 +309,22 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean addRetrieveAET(String aet) {
+        log.debug(
+            "study[pk="
+                + getPk()
+                + "]: update retrieveAETs "
+                + getRetrieveAETs()
+                + " with "
+                + aet);
         if (getRetrieveAETSet().contains(aet)) {
             return false;
         }
         if (!areAllSeriesRetrieveableFrom(aet)) {
-            log.warn("areAllSeriesRetrieveableFrom(" + aet + ")->false - " + prompt());
+            log.debug(
+                "study[pk="
+                    + getPk()
+                    + "]: not all Series retrieveable from "
+                    + aet);
             return false;
         }
         retrieveAETSet.add(aet);
@@ -323,6 +334,11 @@ public abstract class StudyBean implements EntityBean {
         } else {
             setRetrieveAETs(prev + '\\' + aet);
         }
+        log.debug(
+            "study[pk="
+                + getPk()
+                + "]: updated retrieveAETs to "
+                + getRetrieveAETs());
         return true;
     }
 
@@ -331,13 +347,6 @@ public abstract class StudyBean implements EntityBean {
         for (Iterator it = c.iterator(); it.hasNext();) {
             SeriesLocal series = (SeriesLocal) it.next();
             if (!series.getRetrieveAETSet().contains(aet)) {
-                log.warn(
-                        "series "
-                        + series
-                        + " retrieveAETs: "
-                        + series.getRetrieveAETSet()
-                        + " does not contain "
-                        + aet);
                 return false;
             }
         }
@@ -363,13 +372,12 @@ public abstract class StudyBean implements EntityBean {
             modalitySet = new HashSet();
             String mds = getModalitiesInStudy();
             if (mds != null) {
-                modalitySet.addAll(
-                    Arrays.asList(StringUtils.split(mds, '\\')));
+                modalitySet.addAll(Arrays.asList(StringUtils.split(mds, '\\')));
             }
         }
         return modalitySet;
     }
-        
+
     /**
      * @ejb.interface-method
      */
@@ -386,7 +394,6 @@ public abstract class StudyBean implements EntityBean {
         }
         return true;
     }
-
 
     /**
      * 
