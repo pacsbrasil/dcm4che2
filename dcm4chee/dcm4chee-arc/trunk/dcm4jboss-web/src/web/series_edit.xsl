@@ -132,10 +132,10 @@
       <td align="left">
 	    <xsl:choose>
 		 	<xsl:when test="../seriesPk = -1">
-				<input type="submit" name="submit" value="Add Series" />									
+				<input type="submit" name="submit" value="Add Series" onclick="return checkNotEmpty(this.form.modality.value, 'Modality')" />									
 			</xsl:when>
 			<xsl:otherwise>
-				<input type="submit" name="submit" value="Update" />
+				<input type="submit" name="submit" value="Update" onclick="return checkNotEmpty(this.form.modality.value, 'Modality')" />
 			</xsl:otherwise>
 	    </xsl:choose>
         <input type="submit" name="cancel" value="Cancel"/>
