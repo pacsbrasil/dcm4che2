@@ -1,11 +1,11 @@
-#Override with your dcm4jboss-ejb working directory
-dcm4jboss-ejb.dir=../dcm4jboss-ejb
+#Override with your dcm4che dist location
+dcm4che.home=../dcm4che14/build
 
 #Override with your JBoss dist location
-jboss.dir=${user.home}/jboss-3.2.3		
+jboss.dir=/usr/jboss
 
-#Override with your Maverick dist location
-maverick.dir=../maverick
+#Maverik
+maverick.dir=/usr/local/maverick
 
-#Override with your Domify dist location
-opt-domify.dir=../opt-domify
+#opt-domify
+opt-domify.dir=/usr/local/opt-domify

@@ -78,7 +78,7 @@
       </html>
    </xsl:template>
 
-   <xsl:template match="model">
+   <xsl:template match="model/patient">
       <form action="patientUpdate.m" method="post" target="folder">
          <input name="pk" type="hidden" value="{pk}" />
 
@@ -89,7 +89,7 @@
 
             <tr>
                <td>
-                  <input size="25" name="patientID" type="text" value="{patientID}" />
+                  <input size="25" name="patientID" type="text" value="{patientID}"  readonly="readonly"/>
                </td>
             </tr>
 

@@ -135,90 +135,11 @@ public class PatientDTO implements Serializable
 		this.studies = studies;
 	}
 
-	/**
-	 * Sets the bith day of week of this patient. <br>The internal rapresentation of the birth date is modified
-	 * according to this day.
-	 * 
-	 * @param patientBirthDay
-	 *                    The patientBirthDay to set.
-	 */
-	public final void setPatientBirthDay(String patientBirthDay)
-	{
-		if (patientBirthDay == null || patientBirthDay.length()==0)
-			this.patientBirthDate = null;
-		else
-			try
-			{
-				Calendar c = Calendar.getInstance();
-				if (getPatientBirthDate() != null)
-					c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
-				c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(patientBirthDay));
-				this.patientBirthDate = new SimpleDateFormat(DATE_FORMAT).format(c.getTime());
-			}
-			catch (Throwable e)
-			{
-				// Does Nothing
-			}
-	}
-
-	/**
-	 * @param patientBirthMonth
-	 *                    The patientBirthMonth to set.
-	 */
-	public final void setPatientBirthMonth(String patientBirthMonth)
-	{
-		if (patientBirthMonth == null || patientBirthMonth.length()==0)
-			this.patientBirthDate = null;
-		else
-			try
-			{
-				if (getPatientBirthDate() != null)
-				{
-					Calendar c = Calendar.getInstance();
-					if (getPatientBirthDate() != null)
-						c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
-					c.set(Calendar.MONTH, Integer.parseInt(patientBirthMonth)-1);
-					this.patientBirthDate = new SimpleDateFormat(DATE_FORMAT).format(c.getTime());
-				}
-			}
-			catch (Throwable e)
-			{
-				// Does Nothing
-			}
-	}
-
-	/**
-	 * @param patientBirthYear
-	 *                    The patientBirthYear to set.
-	 */
-	public final void setPatientBirthYear(String patientBirthYear)
-	{
-		if (patientBirthYear == null || patientBirthYear.length()==0)
-			this.patientBirthDate = null;
-		else
-			try
-			{
-				if (getPatientBirthDate() != null)
-				{
-					Calendar c = Calendar.getInstance();
-					if (getPatientBirthDate() != null)
-						c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
-					c.set(Calendar.YEAR, Integer.parseInt(patientBirthYear));
-					this.patientBirthDate = new SimpleDateFormat(DATE_FORMAT).format(c.getTime());
-				}
-			}
-			catch (Throwable e)
-			{
-				// Does Nothing
-			}
-	}
-
 	public final String getPatientBirthDay()
 	{
 		String res = null;
 		try
 		{
-
 			Calendar c = Calendar.getInstance();
 			if (getPatientBirthDate() != null)
 			{

@@ -72,14 +72,14 @@ default-transform-type="xslt">
     
     <command name="patientEdit">
         <controller class="org.dcm4chex.archive.web.maverick.PatientEditCtrl" />    
-	    <view name="patient_edit">
+	    <view name="success">
     	  <transform path="patient_edit.xsl" />
 	    </view>
      </command>
 
     <command name="patientUpdate">
         <controller class="org.dcm4chex.archive.web.maverick.PatientUpdateCtrl" />    
-	    <view type="redirect" path="folder.m" name="patient_update"/>        
+	    <view type="redirect" path="folder.m" name="success"/>        
      </command>
      
   </commands>

@@ -18,32 +18,32 @@ package org.dcm4chex.archive.web.maverick;
 
 
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.infohazard.maverick.ctl.ThrowawayBean2;
 import org.infohazard.maverick.ctl.ThrowawayFormBeanUser;
 
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class PatientUpdateCtrl extends ThrowawayFormBeanUser
+public class PatientUpdateCtrl extends ThrowawayBean2
 {
-	static final String PATIENT_PK_PARAMETER = "pk";
-	static final String PATIENT_UPDATE = "patient_update";	
+	private int pk;
+	private String patientName=null;
+	private String patientSex=null;
+	private String patientBirthDay;
+	private String patientBirthMonth;
+	private String patientBirthYear;
 	
-	protected Object makeFormBean()
-	{
-		FolderForm form =	(FolderForm) getCtx().getRequest().getSession().getAttribute(FolderForm.FOLDER_ATTRNAME);
-		int pk =  getCtx().getRequest().getParameter(PATIENT_PK_PARAMETER)!=null ? Integer.parseInt(getCtx().getRequest().getParameter(PATIENT_PK_PARAMETER)):-1;
-		return form.getPatientByPk(pk);
-	}
-
 	protected String perform() throws Exception
 	{
 		executeUpdate();
-		return PATIENT_UPDATE;
+		return SUCCESS;
 	}
 
 	private ContentEdit lookupContentEdit() throws Exception
@@ -59,8 +59,16 @@ public class PatientUpdateCtrl extends ThrowawayFormBeanUser
 	{
 		try
 		{
-			PatientDTO to_update = (PatientDTO)getForm();
+			PatientDTO to_update = FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(pk);
+			to_update.setPatientSex(patientSex);
+			to_update.setPatientName(patientName);
 			
+			Calendar c = Calendar.getInstance();
+			c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(patientBirthDay));
+			c.set(Calendar.MONTH, Integer.parseInt(patientBirthMonth)-1);
+			c.set(Calendar.YEAR, Integer.parseInt(patientBirthYear));			
+			
+			to_update.setPatientBirthDate( new SimpleDateFormat(PatientDTO.DATE_FORMAT).format(c.getTime()));
 			//updating data model
 			ContentEdit ce = lookupContentEdit();
 			ce.updatePatient(to_update);
@@ -76,4 +84,52 @@ public class PatientUpdateCtrl extends ThrowawayFormBeanUser
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * @param patientBirthDay The patientBirthDay to set.
+	 */
+	public final void setPatientBirthDay(String patientBirthDay)
+	{
+		this.patientBirthDay = patientBirthDay;
+	}
+
+	/**
+	 * @param patientBirthMonth The patientBirthMonth to set.
+	 */
+	public final void setPatientBirthMonth(String patientBirthMonth)
+	{
+		this.patientBirthMonth = patientBirthMonth;
+	}
+
+	/**
+	 * @param patientBirthYear The patientBirthYear to set.
+	 */
+	public final void setPatientBirthYear(String patientBirthYear)
+	{
+		this.patientBirthYear = patientBirthYear;
+	}
+
+	/**
+	 * @param patientName The patientName to set.
+	 */
+	public final void setPatientName(String patientName)
+	{
+		this.patientName = patientName;
+	}
+
+	/**
+	 * @param patientSex The patientSex to set.
+	 */
+	public final void setPatientSex(String patientSex)
+	{
+		this.patientSex = patientSex;
+	}
+
+	/**
+	 * @param pk The pk to set.
+	 */
+	public final void setPk(int pk)
+	{
+		this.pk = pk;
+	}
+
 }

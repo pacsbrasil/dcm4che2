@@ -60,7 +60,7 @@ import org.dcm4chex.archive.ejb.jdbc.RetrievePatientDatasetCmd;
  *  type="Container"
  * 
  * @ejb.transaction 
- *  type="NotSupported"
+ *  type="Required"
  * 
  * @ejb.ejb-ref
  *  ejb-name="Patient" 
@@ -130,18 +130,6 @@ public abstract class ContentEditBean implements SessionBean {
 
     /**
      * @ejb.interface-method
-     */
-    public int countStudies(StudyFilterDTO filter) {
-        try {
-            return new CountStudiesCmd(ds, filter).execute();
-        } catch (SQLException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     * @ejb.transaction type=" RequiresNew"
      */
     public void  updatePatient(PatientDTO to_update) 
 	{
