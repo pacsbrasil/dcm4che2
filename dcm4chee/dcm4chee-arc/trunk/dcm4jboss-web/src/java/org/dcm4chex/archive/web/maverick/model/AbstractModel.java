@@ -59,8 +59,12 @@ public abstract class AbstractModel {
     }
 
     protected String getDate(int dateTag) {
-        final Date d = ds.getDate(dateTag);
-        return d == null ? null : new SimpleDateFormat(DATE_FORMAT).format(d);
+        try {
+	        final Date d = ds.getDate(dateTag);
+	        return d == null ? null : new SimpleDateFormat(DATE_FORMAT).format(d);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     protected void setDate(int dateTag, String s) {
@@ -77,12 +81,16 @@ public abstract class AbstractModel {
     }
 
     protected String getDateTime(int dateTag, int timeTag) {
-        final Date d = ds.getDateTime(dateTag, timeTag);
-        if (d == null) return null;
-        String s = new SimpleDateFormat(DATETIME_FORMAT).format(d);
-        while (s.endsWith("00"))
-            s = s.substring(0, s.length() - 3);
-        return s;
+        try {
+	        final Date d = ds.getDateTime(dateTag, timeTag);
+	        if (d == null) return null;
+	        String s = new SimpleDateFormat(DATETIME_FORMAT).format(d);
+	        while (s.endsWith("00"))
+	            s = s.substring(0, s.length() - 3);
+	        return s;
+	    } catch (IllegalArgumentException e) {
+	        return null;
+	    }
     }
 
     protected void setDateTime(int dateTag, int timeTag, String s) {
@@ -107,17 +115,21 @@ public abstract class AbstractModel {
     }
 
     protected String getDateRange(int dateTag) {
-        Date[] range = ds.getDateRange(dateTag);
-        if (range == null || range.length == 0)
+        try {
+	        Date[] range = ds.getDateRange(dateTag);
+	        if (range == null || range.length == 0)
+	            return null;
+	        SimpleDateFormat f = new SimpleDateFormat(DATE_FORMAT);
+	        StringBuffer sb = new StringBuffer();
+	        if (range[0] != null)
+	            sb.append(f.format(range[0]));
+	        sb.append('-');
+	        if (range[1] != null)
+	            sb.append(f.format(range[1]));
+	        return sb.toString();
+        } catch (IllegalArgumentException e) {
             return null;
-        SimpleDateFormat f = new SimpleDateFormat(DATE_FORMAT);
-        StringBuffer sb = new StringBuffer();
-        if (range[0] != null)
-            sb.append(f.format(range[0]));
-        sb.append('-');
-        if (range[1] != null)
-            sb.append(f.format(range[1]));
-        return sb.toString();
+        }
     }
 
     protected void setDateRange(int dateTag, String s) {
