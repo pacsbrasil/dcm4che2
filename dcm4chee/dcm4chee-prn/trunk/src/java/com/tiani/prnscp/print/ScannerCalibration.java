@@ -72,7 +72,7 @@ public class ScannerCalibration
     private int scanPointExtension = 50;
 
     /**  Holds value of property blackThreshold. */
-    private int blackThreshold = 180;
+    private int blackThreshold = 190;
 
     /**  Holds value of property whiteThreshold. */
     private int whiteThreshold = 220;
@@ -425,7 +425,7 @@ public class ScannerCalibration
     }
 
 
-    private float[] analyse(File f)
+    private float[] analyse_old(File f)
         throws CalibrationException, IOException
     {
         ImageReader r = findReader(f);
@@ -501,7 +501,132 @@ public class ScannerCalibration
         }
     }
 
+    //preconditions: start in [0..arr.length-1], end in [start..arr.length]
+    private int[] subarray(int[] arr, int start, int end)
+    {
+        if (start > end || start < 0 || end < 0
+                || start >= arr.length || end > arr.length)
+            throw new IllegalArgumentException("illegal start=" + start + ", end=" + end);
+        int[] subarr = new int[end-start];
+        int index = 0;
+        for (int i=start; i<end;  i++)
+            subarr[index++] = arr[i];
+        return subarr;
+    }
 
+    private float[] analyse(File f)
+        throws CalibrationException, IOException
+    {
+        ImageReader r = findReader(f);
+        ImageInputStream in = ImageIO.createImageInputStream(f);
+        try {
+            BufferedImage bi;
+            ImageReadParam rParam = r.getDefaultReadParam();
+            r.setInput(in);
+            int w = r.getWidth(0);
+            int h = r.getHeight(0);
+            int x0 = w / 2;
+            int y0 = h / 2;
+            rParam.setSourceRegion(new Rectangle(0, y0, w, 1));
+            int[] hline = r.read(0, rParam).getRGB(0, 0, w, 1, null, 0, w);
+            rParam.setSourceRegion(new Rectangle(x0, 0, 1, h));
+            int[] vline = r.read(0, rParam).getRGB(0, 0, 1, h, null, 0, 1);
+            int[] lr = findBorder(hline);
+            int[] tb = findBorder(vline);
+            int w_outer = lr[1] - lr[0];
+            int h_outer = tb[1] - tb[0];
+            w_outer = (w_outer + h_outer) / 2; //avg
+            //final int PatternBorderToPatternDistRatio = 512/136;  //3:1
+            final int PatternNumberBoxesX = 4;
+            final int PatternNumberBoxesY = 4;
+            final int PatternNumberInnerBoxesX = 4;
+            final int PatternNumberInnerBoxesY = 4;
+            final int AbsolutePatternSpacing = (w_outer * 16) / 512;
+            final int AbsolutePatternBoxSize = (w_outer * 48) / 512;
+            int pattern_left = lr[0] + (w_outer * 136) / 512;
+            int pattern_top = tb[0] + (w_outer * 136) / 512;
+            
+            // debug
+            if (log != null && log.isDebugEnabled()) {
+                log.debug("tot width = " + w + ", tot height = " + h);
+                log.debug("lr = " + lr[0] + "," + lr[1]);
+                log.debug("tb = " + tb[0] + "," + tb[1]);
+                log.debug("w outer = " + w_outer);
+                log.debug("h outer = " + h_outer);
+                log.debug("AbsolutePatternSpacing = " + AbsolutePatternSpacing);
+                log.debug("AbsolutePatternBoxSize = " + AbsolutePatternBoxSize);
+            }
+            
+            float[] px;
+            float[] samples;
+            int[] box;
+            //if (portrait) {
+                px = new float[PatternNumberBoxesX * PatternNumberBoxesY *
+                               PatternNumberInnerBoxesX * PatternNumberInnerBoxesY];
+                final int TotWidth = PatternNumberBoxesX*AbsolutePatternBoxSize + (PatternNumberBoxesX-1)*AbsolutePatternSpacing;
+                int i,j;
+                for (int k=0; k<PatternNumberBoxesX*PatternNumberBoxesY; k++) {
+                    i = k / PatternNumberBoxesY;
+                    j = (i % 2 == 0) ? PatternNumberBoxesY - 1 - k % PatternNumberBoxesY :
+                                       k % PatternNumberBoxesY;
+                    rParam.setSourceRegion(new Rectangle(pattern_left + i * (AbsolutePatternBoxSize + AbsolutePatternSpacing),
+                                                         pattern_top + j * (AbsolutePatternBoxSize + AbsolutePatternSpacing),
+                                                         AbsolutePatternBoxSize, AbsolutePatternBoxSize));
+                    //log.debug("i=" + i + ", j=" + j);
+                    box = r.read(0, rParam).getRGB(0, 0, AbsolutePatternBoxSize, AbsolutePatternBoxSize,
+                                                       null, 0, AbsolutePatternBoxSize);
+                    samples = sampleBoxPattern(box, AbsolutePatternBoxSize, AbsolutePatternBoxSize,
+                                     PatternNumberInnerBoxesX, PatternNumberInnerBoxesY);
+                    System.arraycopy(samples, 0, px, samples.length*k, samples.length);
+                }
+            /*} else {
+            }*/
+            if (log != null && log.isDebugEnabled()) {
+                StringBuffer sb = new StringBuffer("detected Grayscale 255-pxval:");
+                for (int ii = 0; ii < px.length; ++ii) {
+                    sb.append("\r\n\t");
+                    sb.append(px[ii]);
+                }
+                log.debug(sb.toString());
+            }
+            return px;
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ignore) {}
+        }
+    }
+    
+    private float[] sampleBoxPattern(int[] pixels, int width, int height, int nX, int nY)
+    {
+        final int xstep = width/nX;
+        final int ystep = height/nY;
+        final float[] samples = new float[nX * nY];
+        int left = xstep/2, top = ystep/2;
+        int x,y;
+        int i,j;
+        
+        for (int k=0; k<samples.length; k++) {
+            i = k / nY;
+            j = (i % 2 == 0) ? nY - 1 - k % nY :
+                               k % nY;
+            x = left + i * xstep;
+            y = top + j * ystep;
+            samples[k] = average(pixels,width,x-2,y-2,5); //(pixels[x+y*width] & 0xff) ^ 0xff
+        }
+        return samples;
+    }
+
+    private float average(int[] rgb, int width, int x, int y, int size)
+    {
+        int v = 0;
+        for (int i = x; i < x+size; ++i) {
+            for (int j = y; j < y+size; ++j) {
+                v += (rgb[i+j*width] & 0xff) ^ 0xff;
+            }
+        }
+        return (float) v / (size*size);
+    }
     private float average(int[] rgb, int off, int len)
     {
         int v = 0;
@@ -524,6 +649,22 @@ public class ScannerCalibration
         }
         if ((b[1] - b[0]) * 100 < rgb.length * BORDER_MIN) {
             throw new CalibrationException("Failed to detect border");
+        }
+        return b;
+    }
+
+    private int[] findInnerBorder(int[] rgb)
+        throws CalibrationException
+    {
+        int[] b = {1, rgb.length-1};
+        while (b[0] < b[1] && (rgb[b[0]] & 0xff) < whiteThreshold) {
+            ++b[0];
+        }
+        while (b[0] < b[1] && (rgb[b[1] - 1] & 0xff) < whiteThreshold) {
+            --b[1];
+        }
+        if ((b[1] - b[0]) * 100 < rgb.length * BORDER_MIN) {
+            throw new CalibrationException("Failed to detect inner border");
         }
         return b;
     }
