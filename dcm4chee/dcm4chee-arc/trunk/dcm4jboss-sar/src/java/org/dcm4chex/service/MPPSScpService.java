@@ -171,7 +171,7 @@ public class MPPSScpService
         services.unbind(UIDs.ModalityPerformedProcedureStep);
     }
 
-    protected AcceptorPolicy getAcceptorPolicy()
+    protected AcceptorPolicy makeAcceptorPolicy()
     {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
         policy.setCallingAETs(callingAETs);

@@ -101,8 +101,6 @@ class MoveTask implements Runnable {
 
     private final String moveOriginatorAET;
 
-    private final String retrieveAET;
-
     private ActiveAssociation moveAssoc;
 
     private final ArrayList failedIUIDs = new ArrayList();
@@ -152,7 +150,6 @@ class MoveTask implements Runnable {
         this.aeData = aeData;
         this.moveDest = moveDest;
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
-        this.retrieveAET = moveAssoc.getAssociation().getCalledAET();
         if ((remaining = fileInfo.length) > 0) {
             notifyMovePending(null);
             prepareRetrieveInfo(fileInfo);
@@ -436,7 +433,7 @@ class MoveTask implements Runnable {
         Set aets = new HashSet();
         for (int i = 0; i < instFiles.length; ++i) {
             Set tmp = instFiles[i].getRetrieveAETSet();
-            if (tmp.contains(retrieveAET)) { // local accessable
+            if (tmp.contains(service.getAET())) { // local accessable
                 toRetrieve.add(instFiles[i]);
                 return null;
             }

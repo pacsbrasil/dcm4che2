@@ -142,7 +142,7 @@ public class MWLFindScpService
         services.unbind(UIDs.ModalityWorklistInformationModelFIND);
     }
 
-    protected AcceptorPolicy getAcceptorPolicy()
+    protected AcceptorPolicy makeAcceptorPolicy()
     {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
         policy.setCallingAETs(callingAETs);

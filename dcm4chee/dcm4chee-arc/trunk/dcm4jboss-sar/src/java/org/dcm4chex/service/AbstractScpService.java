@@ -43,6 +43,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.service.util.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -52,56 +53,57 @@ import org.jboss.system.ServiceMBeanSupport;
  * @version $Revision$ $Date$
  * @since 31.08.2003
  */
-abstract class AbstractScpService extends ServiceMBeanSupport
-{
+abstract class AbstractScpService extends ServiceMBeanSupport {
+
     private final static Map dumpParam = new HashMap(5);
     static {
         dumpParam.put("maxlen", new Integer(128));
         dumpParam.put("vallen", new Integer(64));
         dumpParam.put("prefix", "\t");
     }
-    final static AssociationFactory asf =
-        AssociationFactory.getInstance();
+
+    final static AssociationFactory asf = AssociationFactory.getInstance();
 
     protected ObjectName dcmServerName;
+
     protected DcmHandler dcmHandler;
-    protected String aet;
+
+    protected String[] aet;
+
     protected AuditLogger auditLogger;
 
     protected ObjectName getObjectName(MBeanServer server, ObjectName name)
-        throws MalformedObjectNameException
-    {
-        aet = name.getKeyProperty("aet");
+            throws MalformedObjectNameException {
+        aet = StringUtils.split(name.getKeyProperty("aet"), '\\');
         return name;
     }
-    
+
     public final String getAET() {
-        return aet;
+        return aet[0];
     }
 
     public final AuditLogger getAuditLogger() {
         return auditLogger;
     }
 
-    protected void startService() throws Exception
-    {
-        auditLogger = (AuditLogger) server.getAttribute(dcmServerName, "AuditLogger");
-        dcmHandler =
-            (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
+    protected void startService() throws Exception {
+        auditLogger = (AuditLogger) server.getAttribute(dcmServerName,
+                "AuditLogger");
+        dcmHandler = (DcmHandler) server.getAttribute(dcmServerName,
+                "DcmHandler");
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
-        updatePolicy();
+        updatePolicy(makeAcceptorPolicy());
     }
 
-    protected void updatePolicy()
-    {
-        dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(
-            aet,
-            getAcceptorPolicy());
+    protected void updatePolicy(AcceptorPolicy policy) {
+        for (int i = 0; i < aet.length; ++i) {
+            dcmHandler.getAcceptorPolicy()
+                    .putPolicyForCalledAET(aet[i], policy);
+        }
     }
 
-    protected void stopService() throws Exception
-    {
-        dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aet, null);
+    protected void stopService() throws Exception {
+        updatePolicy(null);
         unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
     }
@@ -110,33 +112,23 @@ abstract class AbstractScpService extends ServiceMBeanSupport
 
     protected abstract void unbindDcmServices(DcmServiceRegistry services);
 
-    protected abstract AcceptorPolicy getAcceptorPolicy();
+    protected abstract AcceptorPolicy makeAcceptorPolicy();
 
-    protected static void putPresContext(
-        AcceptorPolicy policy,
-        String asuid,
-        String ts)
-    {
-        if (ts == null || ts.length() == 0) {
-            return;
-        }
+    protected static void putPresContext(AcceptorPolicy policy, String asuid,
+            String ts) {
+        if (ts == null || ts.length() == 0) { return; }
         StringTokenizer stk = new StringTokenizer(ts, ", -");
-        if (stk.hasMoreTokens())
-        {
+        if (stk.hasMoreTokens()) {
             String[] tsuids = new String[stk.countTokens()];
-            for (int i = 0; i < tsuids.length; i++)
-            {
+            for (int i = 0; i < tsuids.length; i++) {
                 tsuids[i] = UIDs.forName(stk.nextToken());
             }
             policy.putPresContext(asuid, tsuids);
         }
     }
 
-    void logDataset(String prompt, Dataset ds)
-    {
-        if (!log.isDebugEnabled()) {
-            return;
-        }
+    void logDataset(String prompt, Dataset ds) {
+        if (!log.isDebugEnabled()) { return; }
         try {
             StringWriter w = new StringWriter();
             w.write(prompt);
@@ -149,13 +141,9 @@ abstract class AbstractScpService extends ServiceMBeanSupport
 
     public ServerSocketFactory getServerSocketFactory(String[] cipherSuites) {
         try {
-            return (ServerSocketFactory) server.invoke(
-                dcmServerName,
-                "getServerSocketFactory",
-                new Object[] { cipherSuites },
-                new String[] {
-                        String[].class.getName(),
-                });
+            return (ServerSocketFactory) server.invoke(dcmServerName,
+                    "getServerSocketFactory", new Object[] { cipherSuites},
+                    new String[] { String[].class.getName(),});
         } catch (InstanceNotFoundException e) {
             throw new ConfigurationException(e);
         } catch (MBeanException e) {
@@ -167,13 +155,9 @@ abstract class AbstractScpService extends ServiceMBeanSupport
 
     public SocketFactory getSocketFactory(String[] cipherSuites) {
         try {
-            return (SocketFactory) server.invoke(
-                    dcmServerName,
-                    "getSocketFactory",
-                    new Object[] { cipherSuites },
-                    new String[] {
-                            String[].class.getName(),
-                    });
+            return (SocketFactory) server.invoke(dcmServerName,
+                    "getSocketFactory", new Object[] { cipherSuites},
+                    new String[] { String[].class.getName(),});
         } catch (InstanceNotFoundException e) {
             throw new ConfigurationException(e);
         } catch (MBeanException e) {
@@ -189,8 +173,7 @@ abstract class AbstractScpService extends ServiceMBeanSupport
             return new Socket(aeData.getHostName(), aeData.getPort());
         } else {
             return getSocketFactory(cipherSuites).createSocket(
-                    aeData.getHostName(),
-                    aeData.getPort());
+                    aeData.getHostName(), aeData.getPort());
         }
     }
 

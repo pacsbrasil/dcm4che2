@@ -300,7 +300,7 @@ public class QueryRetrieveScpService
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
     }
 
-    protected AcceptorPolicy getAcceptorPolicy() {
+    protected AcceptorPolicy makeAcceptorPolicy() {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
         policy.setCallingAETs(callingAETs);
         putPresContext(

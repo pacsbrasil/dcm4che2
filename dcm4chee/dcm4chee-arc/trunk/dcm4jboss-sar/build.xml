@@ -165,6 +165,9 @@
         <jar jarfile="${target.lib}/dcm4jboss.jar">
         	<manifest>
         		<attribute name="Class-Path" value="dcm4che.jar dcm4jboss-ejb-client.jar dcm4jboss-jdbc.jar"/>
+				<attribute name="Implementation-Title" value="dcm4jboss"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
         	</manifest>
         	<fileset dir="${target.classes}"/>
         </jar>

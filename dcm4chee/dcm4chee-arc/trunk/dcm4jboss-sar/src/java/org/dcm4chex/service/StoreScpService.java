@@ -1465,7 +1465,7 @@ public class StoreScpService
         dcmHandler.removeAssociationListener(scp);
     }
 
-    protected AcceptorPolicy getAcceptorPolicy() {
+    protected AcceptorPolicy makeAcceptorPolicy() {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
         policy.setCallingAETs(callingAETs);
         putPresContext(
