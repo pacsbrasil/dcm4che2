@@ -32,6 +32,8 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
+import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
@@ -82,8 +84,12 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *  transaction-type="Supports"
  * 
  * @jboss.query 
- * 	signature="int ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(java.lang.Integer pk)"
- * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1" AND i.externalRetrieveAET IS NULL"
+ * 	signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
+ *  query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
+ * 
+ * @jboss.query 
+ * 	signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
+ *  query="SELECT COUNT(i) FROM Series s, IN(s.instances) i WHERE s.pk = ?1 AND i.media.mediaStatus = ?2"
  * 
  * @jboss.query 
  * 	signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
@@ -397,15 +403,13 @@ public abstract class SeriesBean implements EntityBean {
             throws CreateException {
         updateMpps();
         setStudy(study);
-//        study.addModalityInStudy(getModality());
-//        study.incNumberOfStudyRelatedSeries(1);
         log.info("Created " + prompt());
     }
 
     /**
      * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1"
      */ 
-    public abstract java.util.Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
+    public abstract java.util.Set ejbSelectInternalRetrieveAETs(Integer pk) throws FinderException;
 
     /**
      * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Series s, IN(s.instances) i WHERE s.pk = ?1"
@@ -413,15 +417,20 @@ public abstract class SeriesBean implements EntityBean {
     public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk) throws FinderException;
     
     /**
-     * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
+     * @ejb.select query="SELECT DISTINCT i.media FROM Series s, IN(s.instances) i WHERE s.pk = ?1 AND i.media.mediaStatus = ?2"
      */ 
-    public abstract java.util.Set ejbSelectInstancesWithRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
+    public abstract java.util.Set ejbSelectMediaWithStatus(Integer pk, int status) throws FinderException;
 
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(Integer pk) throws FinderException;
-        
+    public abstract int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(Integer pk, int status) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
+
     /**
      * @ejb.select query=""
      */ 
@@ -443,21 +452,31 @@ public abstract class SeriesBean implements EntityBean {
         String aets = "";
         int availability = 0;
         if (numI > 0) {
-	        Set aetSet = ejbSelectRetrieveAETs(pk);
-	        for (Iterator it = aetSet.iterator(); it.hasNext();) {
+            StringBuffer sb = new StringBuffer();
+	        Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
+	        if (iAetSet.remove(null))
+	            log.warn("Series[iuid=" + getSeriesIuid()
+	                    + "] contains Instance(s) with unspecified Retrieve AET");
+	        for (Iterator it = iAetSet.iterator(); it.hasNext();) {
 	            final String aet = (String) it.next();
-	            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
-	                it.remove();
+	            if (ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(pk, aet) == numI)
+	                sb.append(aet).append('\\');
 	        }
-	        aets = toString(aetSet, "] contains Instance(s) with unspecified Retrieve AET");
-	        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
-	            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
-	            if (extAetSet.size() == 1) {
-	                final String extAet = (String) extAetSet.iterator().next();
-	                if (extAet != null && extAet.length() != 0)
-	                    aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;                
-	            }
-	        }
+            Set eAetSet = ejbSelectExternalRetrieveAETs(pk);
+            if (eAetSet.size() == 1 && !eAetSet.contains(null))
+                sb.append(eAetSet.iterator().next()).append('\\');
+            if (sb.length() > 0) {
+                sb.setLength(sb.length() - 1);
+                aets = sb.toString();
+            }
+            if (ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
+                Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
+                if (c.size() == 1) {
+                    MediaLocal media = (MediaLocal) c.iterator().next();
+                    setFilesetId(media.getFilesetId());
+                    setFilesetIuid(media.getFilesetIuid());
+                }
+            }
 	        availability = ejbSelectAvailability(pk);
         }
         if (!aets.equals(getRetrieveAETs()))
@@ -466,13 +485,6 @@ public abstract class SeriesBean implements EntityBean {
             setAvailability(availability);
     }
 
-    private String toString(Set s, String warning) {
-        if (s.remove(null))
-            log.warn("Series[iuid=" + getSeriesIuid() + warning); 
-        String[] a = (String[]) s.toArray(new String[s.size()]);
-        return StringUtils.toString(a, '\\');
-    }
-    
     private void updateMpps() {
         final String ppsiuid = getPpsIuid();
         MPPSLocal mpps = null;

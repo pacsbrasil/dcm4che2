@@ -24,6 +24,8 @@ import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
+import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
@@ -59,8 +61,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *  eager-load-group="*"
  * 
  * @jboss.query 
- * 	signature="int ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(java.lang.Integer pk)"
- * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1" AND i.externalRetrieveAET IS NULL"
+ * 	signature="int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
+ *  query="SELECT COUNT(DISTINCT i) FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
  * 
  * @jboss.query 
  * 	signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
@@ -69,6 +71,10 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.query 
  * 	signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
  * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
+ * 
+ * @jboss.query 
+ * 	signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
+ *  query="SELECT COUNT(i) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND i.media.mediaStatus = ?2"
  * 
  * @jboss.query 
  * 	signature="int ejbSelectAvailability(java.lang.Integer pk)"
@@ -336,7 +342,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE"
      */ 
-    public abstract Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
+    public abstract Set ejbSelectInternalRetrieveAETs(Integer pk) throws FinderException;
     
     /**
      * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND s.hidden = FALSE"
@@ -344,19 +350,24 @@ public abstract class StudyBean implements EntityBean {
     public abstract java.util.Set ejbSelectExternalRetrieveAETs(Integer pk) throws FinderException;
     
     /**
-     * @ejb.select query=""
+     * @ejb.select query="SELECT DISTINCT i.media FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1 AND i.media.mediaStatus = ?2"
      */ 
-    public abstract int ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(Integer pk) throws FinderException;
-
-    /**
-     * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE AND f.fileSystem.retrieveAET = ?2"
-     */ 
-    public abstract java.util.Set ejbSelectInstancesWithRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
+    public abstract java.util.Set ejbSelectMediaWithStatus(Integer pk, int status) throws FinderException;
 
     /**
      * @ejb.select query="SELECT DISTINCT s.modality FROM Study st, IN(st.series) s WHERE s.hidden = FALSE AND st.pk = ?1"
      */ 
     public abstract Set ejbSelectModalityInStudies(Integer pk) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(Integer pk, int status) throws FinderException;
+    
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
 
     /**
      * @ejb.select query=""
@@ -380,45 +391,63 @@ public abstract class StudyBean implements EntityBean {
         final Integer pk = getPk();
         final int numS = ejbSelectNumberOfStudyRelatedSeries(pk);
         if (getNumberOfStudyRelatedSeries() != numS)
-            setNumberOfStudyRelatedSeries(numS);        
-        final int numI = numS > 0 ? ejbSelectNumberOfStudyRelatedInstances(pk) : 0;
+            setNumberOfStudyRelatedSeries(numS);
+        final int numI = numS > 0 ? ejbSelectNumberOfStudyRelatedInstances(pk)
+                : 0;
         if (getNumberOfStudyRelatedInstances() != numI)
             setNumberOfStudyRelatedInstances(numI);
-        final String mds = numS > 0 ? toString(ejbSelectModalityInStudies(pk), 
-                "] contains Series with unspecified Modality") : "";
+        String mds = "";
+        if (numS > 0) {
+            Set c = ejbSelectModalityInStudies(pk);
+            if (c.remove(null))
+	            log.warn("Study[iuid=" + getStudyIuid()
+	                    + "] contains Series with unspecified Modality");
+            if (!c.isEmpty()) {
+                Iterator it = c.iterator();
+                StringBuffer sb = new StringBuffer((String) it.next());
+                while (it.hasNext())
+                    sb.append('\\').append(it.next());
+                mds = sb.toString();
+            }
+        }
         if (!mds.equals(getModalitiesInStudy()))
             setModalitiesInStudy(mds);
         String aets = "";
         int availability = 0;
         if (numI > 0) {
-	        Set aetSet = ejbSelectRetrieveAETs(pk);
-	        for (Iterator it = aetSet.iterator(); it.hasNext();) {
-	            final String aet = (String) it.next();
-	            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
-	                it.remove();
-	        }
-	        aets = toString(aetSet, "] contains Instance(s) with unspecified Retrieve AET");
-	        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
-	            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
-	            if (extAetSet.size() == 1) {
-	                final String extAet = (String) extAetSet.iterator().next();
-	                if (extAet != null && extAet.length() != 0)
-	                    aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;                
-	            }
-	        }
-	        availability = ejbSelectAvailability(pk);
+            StringBuffer sb = new StringBuffer();
+            Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
+            if (iAetSet.remove(null))
+                log.warn("Study[iuid=" + getStudyIuid()
+                        + "] contains Instance(s) with unspecified Retrieve AET");
+            for (Iterator it = iAetSet.iterator(); it.hasNext();) {
+                final String aet = (String) it.next();
+                if (ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(
+                        pk, aet) == numI)
+                    sb.append(aet).append('\\');
+            }
+            Set eAetSet = ejbSelectExternalRetrieveAETs(pk);
+            if (eAetSet.size() == 1 && !eAetSet.contains(null))
+                sb.append(eAetSet.iterator().next()).append('\\');
+            if (sb.length() > 0) {
+                sb.setLength(sb.length() - 1);
+                aets = sb.toString();
+            }
+            if (ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(pk,
+                    MediaDTO.COMPLETED) == numI) {
+                Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
+                if (c.size() == 1) {
+                    MediaLocal media = (MediaLocal) c.iterator().next();
+                    setFilesetId(media.getFilesetId());
+                    setFilesetIuid(media.getFilesetIuid());
+                }
+            }
+            availability = ejbSelectAvailability(pk);
         }
         if (!aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
         if (getAvailability() != availability)
             setAvailability(availability);
-    }
-
-    private String toString(Set s, String warning) {
-        if (s.remove(null))
-            log.warn("Study[iuid=" + getStudyIuid() + warning); 
-        String[] a = (String[]) s.toArray(new String[s.size()]);
-        return StringUtils.toString(a, '\\');
     }
 
     /**
