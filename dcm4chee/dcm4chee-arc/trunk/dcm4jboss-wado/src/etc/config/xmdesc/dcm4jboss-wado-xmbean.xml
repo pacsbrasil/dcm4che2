@@ -18,8 +18,6 @@
       <name>WADOService</name>
    </constructor>
 
-   <!-- Attributes -->
-
    <attribute access="read-write"
       getMethod="getCacheRoot"
       setMethod="setCacheRoot">
@@ -28,7 +26,7 @@
       <name>CacheRoot</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="/var/iconcache" />
+         <value value="/var/wadocache" />
       </descriptors>
    </attribute>
  
