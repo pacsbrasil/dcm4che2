@@ -3,7 +3,7 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 
-    <property name="version" value="0.9.1"/>
+    <property name="version" value="0.9.2"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
 
     <!-- Override with your JBoss server bundle dist location -->
@@ -13,7 +13,7 @@
     <property name="fop.home" value="${user.home}/fop-0.20.5"/>
 
     <!-- Override with your dcm4che dist location -->
-	<property name="dcm4che.home" value="../dcm4che14/build/dcm4che-1.1.1"/>
+	<property name="dcm4che.home" value="../dcm4che14/build/dcm4che-1.1.2"/>
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>	
 
     <property name="src.dir" value="${basedir}/src/java"/>
@@ -104,7 +104,7 @@
    		<fixcrlf srcdir="${src.etc}/bin" destdir="target/${dist.name}/bin"
        		eol="lf" 
        		eof="remove"
-       		includes="*.sh"
+       		includes="*.sh,*.conf"
    		/>
    		<property name="dist.standalone" value="${dist.name}"/>
    		<zip destfile="${build.dir}/${dist.standalone}.zip">
@@ -114,6 +114,7 @@
 				<include name="bin/install_service.bat"/>
 				<include name="bin/fop.sh"/>
 				<include name="bin/fop.bat"/>
+				<include name="bin/run.conf"/>
 				<include name="bin/xalan.sh"/>
 				<include name="bin/xalan.bat"/>
    			</zipfileset>	
@@ -144,7 +145,6 @@
 			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
 				<include name="bin/run.bat"/>
-				<include name="bin/run.conf"/>
 				<include name="bin/run.sh"/>
 				<include name="bin/run.jar"/>
 				<include name="bin/shutdown.jar"/>

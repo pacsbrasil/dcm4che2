@@ -279,7 +279,7 @@ public class StoreScpService extends AbstractScpService {
         DcmParser parser = pf.newDcmParser(in);
         parser.setDcmHandler(ds.getDcmHandler());
         parser.parseDataset(decParam, Tags.PixelData);
-        checkDataset(rqCmd, ds);
+        checkDataset(rqCmd, ds, parser);
         ds.setFileMetaInfo(dof.newFileMetaInfo(cuid, iuid, fileTS));
         File file = spoolDir.getInstanceFile(iuid);
         File md5file = FileUtils.makeMD5File(file);
@@ -355,7 +355,7 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    private void checkDataset(Command rqCmd, Dataset ds)
+    private void checkDataset(Command rqCmd, Dataset ds, DcmParser parser)
             throws DcmServiceException {
         for (int i = 0; i < TYPE1_ATTR.length; ++i) {
             if (ds.vm(TYPE1_ATTR[i]) <= 0) { throw new DcmServiceException(
@@ -370,6 +370,26 @@ public class StoreScpService extends AbstractScpService {
                 .getString(Tags.SOPClassUID))) { throw new DcmServiceException(
                 Status.DataSetDoesNotMatchSOPClassError,
                 "SOP Class UID in Dataset differs from Affected SOP Class UID"); }
+        if (parser.getReadTag() != Tags.PixelData) return;
+        final int alloc = ds.getInt(Tags.BitsAllocated, 8);
+        if (alloc != 8 && alloc != 16)
+            throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "Illegal Value of Bits Allocated: " + alloc);            
+        final int pixelDataLength = parser.getReadLength();
+        if (pixelDataLength == -1) return;
+        final int rows = ds.getInt(Tags.Rows, 0);
+        final int columns = ds.getInt(Tags.Columns, 0);
+        final int frames = ds.getInt(Tags.NumberOfFrames, 1);
+        final int samples = ds.getInt(Tags.SamplesPerPixel, 1);
+        if (rows * columns * frames * samples * alloc / 8 > pixelDataLength) {
+            throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "Pixel Data Length[" + pixelDataLength
+                    +"] < Rows[" + rows + "]xColumns[" + columns
+                    +"]xFrames[" + frames + "]xSamples[" + samples
+                    +"]xBytes[" + (alloc/8) + "]");            
+        }
     }
 
     private void copy(InputStream in, OutputStream out, int totLen,
