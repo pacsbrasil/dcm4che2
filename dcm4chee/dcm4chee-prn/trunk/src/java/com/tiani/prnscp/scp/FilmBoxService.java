@@ -24,6 +24,7 @@ package com.tiani.prnscp.scp;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -60,6 +61,7 @@ class FilmBoxService extends DcmServiceBase
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   private final DcmObjectFactory dof = DcmObjectFactory.getInstance();
    private final PrintScpService scp;
    
    // Static --------------------------------------------------------
@@ -81,7 +83,11 @@ class FilmBoxService extends DcmServiceBase
          String aet = as.getAssociation().getCalledAET();
          String uid = rspCmd.getAffectedSOPInstanceUID();
          Dataset ds = rq.getDataset(); // read out dataset
-         scp.getLog().info("Creating Film Box[uid=" + uid + "]");         
+         if (ds == null) {
+            scp.getLog().warn("Create Film Box without attributes");
+            ds = dof.newDataset();
+         }
+        scp.getLog().info("Creating Film Box[uid=" + uid + "]");         
          FilmSession session = scp.getFilmSession(as);
          HashMap pluts = scp.getPresentationLUTs(as);
          checkRefFilmSession(ds, session);

@@ -24,6 +24,7 @@ package com.tiani.prnscp.scp;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
@@ -64,6 +65,7 @@ class FilmSessionService
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   private final DcmObjectFactory dof = DcmObjectFactory.getInstance();
    private final PrintScpService scp;
    
    // Static --------------------------------------------------------
@@ -104,7 +106,11 @@ class FilmSessionService
    {
       try {
          String uid = rspCmd.getAffectedSOPInstanceUID();
-         Dataset ds = rq.getDataset(); // read out dataset
+         Dataset ds = rq.getDataset(); // read out dataset 
+         if (ds == null) {
+            scp.getLog().warn("Create Film Session without attributes");
+            ds = dof.newDataset();
+         }
          Association a = as.getAssociation();
          String aet = a.getCalledAET();
          AAssociateRQ aarq = a.getAAssociateRQ();
