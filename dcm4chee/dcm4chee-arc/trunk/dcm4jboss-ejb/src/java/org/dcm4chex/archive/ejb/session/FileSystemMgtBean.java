@@ -46,7 +46,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
  *  type="Container"
  * 
  * @ejb.transaction 
- *  type="Supports"
+ *  type="Required"
  * 
  * @ejb.ejb-ref
  *  ejb-name="File"

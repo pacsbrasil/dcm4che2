@@ -53,6 +53,11 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *  transaction-type="Supports"
  * 
  * @jboss.query 
+ *  signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
+ *  strategy="on-find"
+ *  eager-load-group="*"
+ * 
+ * @jboss.query 
  * 	signature="long ejbSelectSumFileLength(org.dcm4chex.archive.ejb.interfaces.FileSystemLocal fs)"
  * 	query="SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem = ?1"
  */

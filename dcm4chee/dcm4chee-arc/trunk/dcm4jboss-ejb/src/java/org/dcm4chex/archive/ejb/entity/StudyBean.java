@@ -53,6 +53,11 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *  query="SELECT OBJECT(a) FROM Study AS a WHERE a.studyIuid = ?1"
  *  transaction-type="Supports"
  *
+ * @jboss.query
+ *  signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
+ *  strategy="on-find"
+ *  eager-load-group="*"
+ * 
  * @jboss.query 
  * 	signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
  * 	query="SELECT COUNT(s) FROM Series s WHERE s.hidden = FALSE AND s.study.pk = ?1"

@@ -50,7 +50,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  *  type="Container"
  * 
  * @ejb.transaction 
- *  type="NotSupported"
+ *  type="Required"
  * 
  * @ejb.ejb-ref
  *  ejb-name="Patient" 

@@ -47,6 +47,11 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *  query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1"
  *  transaction-type="Supports"
  *
+ * @jboss.query
+ *  signature="java.util.Collection findByPatientId(java.lang.String pid)"
+ *  strategy="on-find"
+ *  eager-load-group="*"
+ * 
  * @ejb.finder
  *  signature="java.util.Collection findByPatientIdWithIssuer(java.lang.String pid, java.lang.String issuer)"
  *  query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND (a.issuerOfPatientId IS NULL OR a.issuerOfPatientId = ?2)"

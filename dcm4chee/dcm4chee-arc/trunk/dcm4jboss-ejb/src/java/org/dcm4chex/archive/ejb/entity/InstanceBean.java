@@ -64,6 +64,11 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *  query="SELECT OBJECT(a) FROM Instance AS a WHERE a.sopIuid = ?1"
  *  transaction-type="Supports"
  * 
+ * @jboss.query
+ *  signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
+ *  strategy="on-find"
+ *  eager-load-group="*"
+ * 
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
  */
