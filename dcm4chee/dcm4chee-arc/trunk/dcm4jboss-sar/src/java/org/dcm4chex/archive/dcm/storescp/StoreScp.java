@@ -62,6 +62,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.StorageRules;
@@ -82,6 +83,7 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
+    private static final String ALL = "ALL";
     private static final AuditLoggerFactory alf = AuditLoggerFactory
             .getInstance();
 
@@ -111,20 +113,26 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private StorageRules storageRules = new StorageRules("archive");
 
-    private HashSet warningAsSuccessSet = new HashSet();
+    private HashSet coerceWarnCallingAETs = new HashSet();
 
     public StoreScp(StoreScpService service) {
         this.service = service;
     }
 
-    public final String[] getMaskWarningAsSuccessForCallingAETs() {
-        return (String[]) warningAsSuccessSet
-                .toArray(new String[warningAsSuccessSet.size()]);
+    public final String getCoerceWarnCallingAETs() {
+        if (coerceWarnCallingAETs.isEmpty()) return "NONE";
+        StringBuffer sb = new StringBuffer();
+        Iterator it = coerceWarnCallingAETs.iterator();
+        sb.append(it.next());
+        while (it.hasNext())
+            sb.append(',').append(it.next());        
+        return sb.toString();
     }
 
-    public final void setMaskWarningAsSuccessForCallingAETs(String[] aets) {
-        warningAsSuccessSet.clear();
-        warningAsSuccessSet.addAll(Arrays.asList(aets));
+    public final void setCoerceWarnCallingAETs(String aets) {
+        coerceWarnCallingAETs.clear();
+        if ("NONE".equals(aets)) return;
+        coerceWarnCallingAETs.addAll(Arrays.asList(StringUtils.split(aets, ',')));
     }
 
     public final CompressionRules getCompressionRules() {
@@ -176,7 +184,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     void checkReadyToStart() {
-        if (service.getRetrieveAETs().length == 0)
+        if (service.getRetrieveAETs() == null)
                 throw new IllegalStateException("No Retrieve AET configured!");
     }
 
@@ -219,7 +227,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 Dataset coercedElements = updateDB(assoc, ds, dirPath,
                         filePath, (int) file.length(), md.digest());
                 if (coercedElements.isEmpty()
-                        || warningAsSuccessSet.contains(assoc.getCallingAET())) {
+                        || !coerceWarnCallingAETs.contains(assoc.getCallingAET())) {
                     rspCmd.putUS(Tags.Status, Status.Success);
                 } else {
                     int[] coercedTags = new int[coercedElements.size()];
@@ -276,7 +284,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             for (;;) {
                 try {
                     return storage.store(assoc.getCallingAET(), assoc
-                            .getCalledAET(), ds, service.getRetrieveAETs(),
+                            .getCalledAET(), ds, service.getRetrieveAETArray(),
                             dirPath, filePath, fileLength, md5);
                 } catch (DuplicateStorageException e) {
                     throw e;

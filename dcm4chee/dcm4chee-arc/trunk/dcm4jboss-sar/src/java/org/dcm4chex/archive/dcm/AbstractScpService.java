@@ -44,6 +44,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -77,9 +78,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected DcmHandler dcmHandler;
 
-    protected String[] calledAETs = {};
+    protected String calledAETs;
 
-    protected String[] callingAETs = { ANY };
+    protected String callingAETs;
     
     protected boolean acceptExplicitVRLE = true;
     
@@ -129,11 +130,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return datasource;
     }
 
-    public final String[] getCalledAETs() {
+    public final String getCalledAETs() {
         return calledAETs;
     }
     
-    public final void setCalledAETs(String[] calledAETs) {
+    public final void setCalledAETs(String calledAETs) {
         if (getState() == STARTED)
             updatePolicy(null);
         this.calledAETs = calledAETs;
@@ -145,12 +146,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             updatePolicy(makeAcceptorPolicy());
     }
 
-    public final String[] getCallingAETs() {
-        return callingAETs;
+    public final String getCallingAETs() {
+        return callingAETs != null ? callingAETs : ANY;
     }
 
-    public final void setCallingAETs(String[] callingAETs) {
-        this.callingAETs = callingAETs;
+    public final void setCallingAETs(String callingAETs) {
+        this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null : callingAETs;
         updatePolicy();
     }
     
@@ -173,8 +174,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     protected void updatePolicy(AcceptorPolicy policy) {
-        for (int i = 0; i < calledAETs.length; ++i) {
-            dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(calledAETs[i],
+        String[] aets = StringUtils.split(calledAETs, ',');
+        for (int i = 0; i < aets.length; ++i) {
+            dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aets[i],
                     policy);
         }
     }
@@ -193,7 +195,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     
     protected AcceptorPolicy makeAcceptorPolicy() {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
-        policy.setCallingAETs(isAcceptAnyCallingAET() ? null : callingAETs);
+        policy.setCallingAETs(callingAETs != null ? StringUtils.split(callingAETs,',') : null);
         initPresContexts(policy);
         return policy;        
     }
@@ -206,12 +208,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         for (int i = 0; i < asuids.length; i++)
 	        policy.putPresContext(asuids[i], tsuids);
     }        
-    
-    private final boolean isAcceptAnyCallingAET() {
-        for (int i = 0; i < callingAETs.length; i++)
-	        if (ANY.equalsIgnoreCase(callingAETs[i])) return true;
-	    return callingAETs.length == 0;
-    }
     
     public void logDataset(String prompt, Dataset ds) {
         if (!log.isDebugEnabled()) { return; }

@@ -451,8 +451,7 @@ class MoveTask implements Runnable {
         for (int i = 0; i < instFiles.length; ++i) {
             Set fileAETs = getRemoteRetrieveAETSet(instFiles[i]);
             // test if local accessable
-            Set localAETs = new HashSet(Arrays
-                    .asList(service.getRetrieveAETs()));
+            Set localAETs = new HashSet(service.getRetrieveAETSet());
             localAETs.retainAll(fileAETs);
             if (!localAETs.isEmpty()) {
                 toRetrieve.add(instFiles[i]);

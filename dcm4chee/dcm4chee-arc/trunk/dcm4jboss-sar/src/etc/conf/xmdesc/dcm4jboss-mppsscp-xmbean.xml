@@ -25,10 +25,10 @@
    <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
-      <description>Accepted Called AETs.
+      <description>Comma separated List of Accepted Called AETs.
       </description>
       <name>CalledAETs</name>
-      <type>[Ljava.lang.String;</type>
+      <type>java.lang.String</type>
       <descriptors>
          <value value="MPPS_SCP" />
       </descriptors>
@@ -36,10 +36,11 @@
    <attribute access="read-write"
       getMethod="getCallingAETs"
       setMethod="setCallingAETs">
-      <description>Accepted Calling AETs. "ANY" = accept any.
+      <description>Comma separated List of Accepted Calling AETs.
+      "ANY" = accept any.
       </description>
       <name>CallingAETs</name>
-      <type>[Ljava.lang.String;</type>
+      <type>java.lang.String</type>
       <descriptors>
          <value value="ANY" />
       </descriptors>

@@ -23,35 +23,37 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getCallingAETs"
-      setMethod="setCallingAETs">
-      <description>Accepted Calling AETs. "ANY" = accept any.
-      </description>
-      <name>CallingAETs</name>
-      <type>[Ljava.lang.String;</type>
-      <descriptors>
-         <value value="ANY" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
-      <description>Accepted Called AETs.
+      <description>Comma separated List of Accepted Called AETs.
       </description>
       <name>CalledAETs</name>
-      <type>[Ljava.lang.String;</type>
+      <type>java.lang.String</type>
       <descriptors>
          <value value="QR_SCP" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getCallingAETs"
+      setMethod="setCallingAETs">
+      <description>Comma separated List of Accepted Calling AETs.
+      "ANY" = accept any.
+      </description>
+      <name>CallingAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ANY" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getRetrieveAETs"
       setMethod="setRetrieveAETs">
-      <description>RetrieveAETs associated with local accessable Files.
+      <description>Comma separated list of RetrieveAETs associated
+      with local accessable Files.
       Usually equal or a sub-set of accepted Called AETs.
       </description>
       <name>RetrieveAETs</name>
-      <type>[Ljava.lang.String;</type>
+      <type>java.lang.String</type>
       <descriptors>
          <value value="QR_SCP" />
       </descriptors>

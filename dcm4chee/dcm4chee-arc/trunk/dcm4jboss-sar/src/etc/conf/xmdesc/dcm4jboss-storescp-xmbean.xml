@@ -23,47 +23,49 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getCallingAETs"
-      setMethod="setCallingAETs">
-      <description>Accepted Calling AETs. "ANY" = accept any.
-      </description>
-      <name>CallingAETs</name>
-      <type>[Ljava.lang.String;</type>
-      <descriptors>
-         <value value="ANY" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getMaskWarningAsSuccessForCallingAETs"
-      setMethod="setMaskWarningAsSuccessForCallingAETs">
-      <description>Comma separated list of AETs of Storage SCUs, to which a success
-      status shall be replied in the case of Coercion of Data Elements
-      instead the warning status according DICOM. "NONE" = no Calling AET.
-      </description>
-      <name>MaskWarningAsSuccessForCallingAETs</name>
-      <type>[Ljava.lang.String;</type>
-      <descriptors>
-         <value value="NONE" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
-      <description>Accepted Called AETs.
+      <description>Comma separated List of Accepted Called AETs.
       </description>
       <name>CalledAETs</name>
-      <type>[Ljava.lang.String;</type>
+      <type>java.lang.String</type>
       <descriptors>
          <value value="STORE_SCP" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getCallingAETs"
+      setMethod="setCallingAETs">
+      <description>Comma separated List of Accepted Calling AETs.
+      "ANY" = accept any.
+      </description>
+      <name>CallingAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ANY" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCoerceWarnCallingAETs"
+      setMethod="setCoerceWarnCallingAETs">
+      <description>Comma separated list of AETs of Storage SCUs, to which
+      a warning status B000 is returned if Data Elements was coerced.
+      "NONE" = none Calling AET.
+      </description>
+      <name>CoerceWarnCallingAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getRetrieveAETs"
       setMethod="setRetrieveAETs">
-      <description>RetrieveAETs associated with stored DICOM objects.
+      <description>Comma separated list of RetrieveAETs associated with
+      stored DICOM objects.
       </description>
       <name>RetrieveAETs</name>
-      <type>[Ljava.lang.String;</type>
+      <type>java.lang.String</type>
       <descriptors>
          <value value="QR_SCP" />
       </descriptors>

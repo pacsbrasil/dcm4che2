@@ -22,11 +22,17 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.ExtNegotiator;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
@@ -39,7 +45,7 @@ import org.dcm4chex.archive.exceptions.UnkownAETException;
  */
 public class QueryRetrieveScpService extends AbstractScpService {
 
-    private String[] retrieveAETs = {};
+    private Set retrieveAETSet;
 
     private boolean sendPendingMoveRSP = true;
 
@@ -71,14 +77,27 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private MoveScp moveScp = new MoveScp(this);
 
-    public final String[] getRetrieveAETs() {
-        return retrieveAETs;
+    public final String getRetrieveAETs() {
+        StringBuffer sb = new StringBuffer();
+        Iterator it = retrieveAETSet.iterator();
+        sb.append(it.next());
+        while (it.hasNext())
+            sb.append(',').append(it.next());
+        return sb.toString();
     }
 
-    public final void setRetrieveAETs(String[] retrieveAETs) {
-        this.retrieveAETs = retrieveAETs;
+    public final void setRetrieveAETs(String aets) {
+        String[] a = StringUtils.split(aets, ',');
+        if (a.length == 0) { throw new IllegalArgumentException(
+        "Missing Retrieve AET"); }
+        this.retrieveAETSet = Collections.unmodifiableSet(new HashSet(Arrays
+                .asList(a)));
     }
 
+    final Set getRetrieveAETSet() {
+        return retrieveAETSet;
+    }
+    
     public final boolean isAcceptPatientRootFind() {
         return patientRootFind;
     }

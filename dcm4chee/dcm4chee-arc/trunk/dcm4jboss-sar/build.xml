@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.8.2"/>
+	<property name="version" value="0.8.3"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="bin.dir" value="${basedir}/bin"/>
@@ -227,6 +227,7 @@
 				<include name="bin/*"/>
 				<exclude name="bin/run.log"/>
 				<include name="lib/*"/>
+				<include name="client/getopt.jar"/>
 				<include name="client/jbossall-client.jar"/>
 				<include name="client/log4j.jar"/>
 			</zipfileset>

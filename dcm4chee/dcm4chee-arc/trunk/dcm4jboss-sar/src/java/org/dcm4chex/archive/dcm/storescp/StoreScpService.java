@@ -24,12 +24,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.StorageRules;
@@ -120,12 +122,12 @@ public class StoreScpService extends AbstractScpService {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
-    public String[] getMaskWarningAsSuccessForCallingAETs() {
-        return scp.getMaskWarningAsSuccessForCallingAETs();
+    public String getCoerceWarnCallingAETs() {
+        return scp.getCoerceWarnCallingAETs();
     }
 
-    public void setMaskWarningAsSuccessForCallingAETs(String[] aets) {
-        scp.setMaskWarningAsSuccessForCallingAETs(aets);
+    public void setCoerceWarnCallingAETs(String aets) {
+        scp.setCoerceWarnCallingAETs(aets);
     }
 
     public String getStorageRules() {
@@ -192,22 +194,33 @@ public class StoreScpService extends AbstractScpService {
         this.soCloseDelay = soCloseDelay;
     }
 
-    public final String[] getRetrieveAETs() {
-        return (String[]) retrieveAETSet.toArray(new String[retrieveAETSet
-                .size()]);
+    public final String getRetrieveAETs() {
+        if (retrieveAETSet == null)
+            return null;
+        StringBuffer sb = new StringBuffer();
+        Iterator it = retrieveAETSet.iterator();
+        sb.append(it.next());
+        while (it.hasNext())
+            sb.append(',').append(it.next());
+        return sb.toString();
     }
 
-    public final void setRetrieveAETs(String[] aets) {
-        if (aets.length == 0) { throw new IllegalArgumentException(
+    public final void setRetrieveAETs(String aets) {
+        String[] a = StringUtils.split(aets, ',');
+        if (a.length == 0) { throw new IllegalArgumentException(
                 "Missing Retrieve AET"); }
         this.retrieveAETSet = Collections.unmodifiableSet(new HashSet(Arrays
-                .asList(aets)));
+                .asList(a)));
     }
 
     final Set getRetrieveAETSet() {
         return retrieveAETSet;
     }
-
+    
+    final String[] getRetrieveAETArray() {
+        return (String[]) retrieveAETSet.toArray(new String[retrieveAETSet.size()]);
+    }
+    
     final String getRetrieveAET() {
         return (String) retrieveAETSet.iterator().next();
     }
