@@ -478,19 +478,31 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(ValueElement.createOB(tag, value));
     }
 
-    public DcmElement setOBf(int tag) {
+    public DcmElement setOBsq(int tag) {
         return set(FragmentElement.createOB(tag));
     }    
 
-    public DcmElement setOW(int tag, byte[] value, ByteOrder byteOrder) {
-        return set(ValueElement.createOW(tag, value, byteOrder));
+    public DcmElement setOF(int tag, float[] value) {
+        return set(ValueElement.createOF(tag, value));
+    }
+
+    public DcmElement setOF(int tag, ByteBuffer value) {
+        return set(ValueElement.createOF(tag, value));
+    }
+
+    public DcmElement setOFsq(int tag) {
+        return set(FragmentElement.createOF(tag));
+    }    
+
+    public DcmElement setOW(int tag, short[] value) {
+        return set(ValueElement.createOW(tag, value));
     }
 
     public DcmElement setOW(int tag, ByteBuffer value) {
         return set(ValueElement.createOW(tag, value));
     }
 
-    public DcmElement setOWf(int tag) {
+    public DcmElement setOWsq(int tag) {
         return set(FragmentElement.createOW(tag));
     }    
 
@@ -677,7 +689,7 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(ValueElement.createUN(tag, value));
     }
 
-    public DcmElement setUNf(int tag) {
+    public DcmElement setUNsq(int tag) {
         return set(FragmentElement.createUN(tag));
     }    
     
@@ -719,14 +731,16 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
          return set(StringElement.createUT(tag, values, getCharset()));
     }
     
-    public DcmElement setXXf(int tag, int vr) {
+    public DcmElement setXXsq(int tag, int vr) {
         switch (vr) {
             case VRs.OB:
-                return setOBf(tag);
+                return setOBsq(tag);
+            case VRs.OF:
+                return setOFsq(tag);
             case VRs.OW:
-                return setOWf(tag);
+                return setOWsq(tag);
             case VRs.UN:
-                return setUNf(tag);
+                return setUNsq(tag);
             default:
                 throw new IllegalArgumentException(Tags.toString(tag)
                                     + " " + VRs.toString(vr));
@@ -761,6 +775,8 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
                 return set(StringElement.createLT(tag, value));
             case VRs.OB:
                 return set(ValueElement.createOB(tag, value));
+            case VRs.OF:
+                return set(ValueElement.createOF(tag, value));
             case VRs.OW:
                 return set(ValueElement.createOW(tag, value));
             case VRs.PN:

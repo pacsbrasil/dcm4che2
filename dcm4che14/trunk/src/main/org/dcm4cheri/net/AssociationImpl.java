@@ -41,6 +41,7 @@ final class AssociationImpl implements Association {
     private final DimseWriterImpl writer;
     private DimseDispatcher dispatcher;
     private int msgID = 0;
+    private final byte[] b10 = new byte[10];
 
     /** Creates a new instance of AssociationImpl */
     public AssociationImpl(Socket s, boolean requestor,
@@ -68,7 +69,7 @@ final class AssociationImpl implements Association {
     
     public final PDU connect(AAssociateRQ rq, int timeout) throws IOException {
         fsm.write(rq);
-        return fsm.read(timeout);
+        return fsm.read(timeout, b10);
     }
     
     public final Dimse read(int timeout) throws IOException  {
@@ -88,7 +89,7 @@ final class AssociationImpl implements Association {
 
     public final PDU release(int timeout) throws IOException {
         fsm.write(AReleaseRQImpl.getInstance());
-        return fsm.read(timeout);
+        return fsm.read(timeout, b10);
     }
 
     public final void abort(AAbort aa) throws IOException {

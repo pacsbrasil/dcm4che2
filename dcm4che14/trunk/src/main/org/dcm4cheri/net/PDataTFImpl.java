@@ -36,7 +36,7 @@ import java.util.*;
 final class PDataTFImpl implements PDataTF {
 
     private static final int DEF_MAX_LENGTH = 0xFFFF;
-    private static final int MIN_MAX_LENGTH = 0x00FF;
+    private static final int MIN_MAX_LENGTH = 128;
     private final byte[] buf;
     private int pdulen;
     private int wpos;

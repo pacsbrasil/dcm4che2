@@ -216,7 +216,19 @@
   <element tag="(0008,2244)" name="Transducer Orientation Sequence" vr="SQ" vm="1" key="TransducerOrientationSeq" />
   <element tag="(0008,2246)" name="Transducer Orientation Modifier Sequence" vr="SQ" vm="1" key="TransducerOrientationModifierSeq" />
   <element tag="(0008,4000)" name="(Study) Comments (Retired)" vr="LT" vm="1" key="StudyCommentsRetired" retired="true"/>  
-   
+  <element tag="(0008,9007)" name="Frame Type" vr="CS" vm="4" key="FrameType" />
+  <element tag="(0008,9121)" name="Referenced Raw Data Sequence" vr="SQ" vm="1" key="RefRawDataSeq" />
+  <element tag="(0008,9123)" name="Creator-Version UID" vr="UI" vm="1" key="CreatorVersionUID" />
+  <element tag="(0008,9124)" name="Derivation Image Sequence" vr="SQ" vm="1" key="DerivationImageSeq" />
+  <element tag="(0008,9092)" name="Referring Image Evidence Sequence" vr="SQ" vm="1" key="ReferringImageEvidenceSeq" />
+  <element tag="(0008,9154)" name="Source Image Evidence Sequence" vr="SQ" vm="1" key="SourceImageEvidenceSeq" />
+  <element tag="(0008,9205)" name="Pixel Presentation" vr="CS" vm="1" key="PixelPresentation" />
+  <element tag="(0008,9206)" name="Volumetric Properties CS" vm="1" key="VolumetricProperties" />
+  <element tag="(0008,9207)" name="Volume Based Calculation Technique" vr="CS" vm="1" key="VolumeBasedCalculationTechnique" />
+  <element tag="(0008,9208)" name="Complex Image Component" vr="CS" vm="1" key="ComplexImageComponent" />
+  <element tag="(0008,9209)" name="Acquisition Contrast" vr="CS" vm="1" key="AcquisitionContrast" />
+  <element tag="(0008,9215)" name="Derivation Code Sequence" vr="SQ" vm="1" key="DerivationCodeSeq" />
+  <element tag="(0008,9237)" name="Referenced Grayscale Presentation State Sequence" vr="SQ" vm="1" key="RefGrayscalePresentationStateSeq" />
   <element tag="(0010,0010)" name="Patient's Name" vr="PN" vm="1" key="PatientName" />
   <element tag="(0010,0020)" name="Patient ID" vr="LO" vm="1" key="PatientID" />
   <element tag="(0010,0021)" name="Issuer of Patient ID" vr="LO" vm="1" key="IssuerOfPatientID" />
@@ -411,8 +423,8 @@
   <element tag="(0018,1242)" name="Actual Frame Duration" vr="IS" vm="1" key="ActualFrameDuration" />
   <element tag="(0018,1243)" name="Count Rate" vr="IS" vm="1" key="CountRate" />
   <element tag="(0018,1244)" name="Preferred Playback Sequencing" vr="US" vm="1" key="PreferredPlaybackSequencing" />
-  <element tag="(0018,1250)" name="Receiving Coil" vr="SH" vm="1" key="ReceivingCoil" />
-  <element tag="(0018,1251)" name="Transmitting Coil" vr="SH" vm="1" key="TransmittingCoil" />
+  <element tag="(0018,1250)" name="Receive Coil Name" vr="SH" vm="1" key="ReceiveCoilName" />
+  <element tag="(0018,1251)" name="Transmit Coil Name" vr="SH" vm="1" key="TransmitCoilName" />
   <element tag="(0018,1260)" name="Plate Type" vr="SH" vm="1" key="PlateType" />
   <element tag="(0018,1261)" name="Phosphor Type" vr="LO" vm="1" key="PhosphorType" />
   <element tag="(0018,1300)" name="Scan Velocity" vr="DS" vm="1" key="ScanVelocity" />
@@ -565,7 +577,140 @@
   <element tag="(0018,7065)" name="Phototimer Setting" vr="DS" vm="1" key="PhototimerSetting" />
   <element tag="(0018,8150)" name="Exposure Time in uS" vr="DS" vm="1" key="ExposureTimeInuS" />
   <element tag="(0018,8151)" name="X-Ray Tube Current in uA" vr="DS" vm="1" key="XRayTubeCurrentInuA" />
-  
+  <element tag="(0018,9004)" name="Content Qualification" vr="CS" vm="1" key="ContentQualification" />
+  <element tag="(0018,9005)" name="Pulse Sequence Name" vr="SH" vm="1" key="PulseSequenceName" />
+  <element tag="(0018,9006)" name="MR Imaging Modifier Sequence" vr="SQ" vm="1" key="MRImagingModifierSeq" />
+  <element tag="(0018,9008)" name="Echo Pulse Sequence" vr="CS" vm="1" key="EchoPulseSeq" />
+  <element tag="(0018,9009)" name="Inversion Recovery" vr="CS" vm="1" key="InversionRecovery" />
+  <element tag="(0018,9010)" name="Flow Compensation" vr="CS" vm="1" key="FlowCompensation" />
+  <element tag="(0018,9011)" name="Multiple Spin Echo" vr="CS" vm="1" key="MultipleSpinEcho" />
+  <element tag="(0018,9012)" name="Multi-planar Excitation" vr="CS" vm="1" key="MultiPlanarExcitation" />
+  <element tag="(0018,9014)" name="Phase Contrast" vr="CS" vm="1" key="PhaseContrast" />
+  <element tag="(0018,9015)" name="Time of Flight Contrast" vr="CS" vm="1" key="TimeOfFlightContrast" />
+  <element tag="(0018,9016)" name="Spoiling" vr="CS" vm="1" key="Spoiling" />
+  <element tag="(0018,9017)" name="Steady State Pulse Sequence" vr="CS" vm="1" key="SteadyStatePulseSeq" />
+  <element tag="(0018,9018)" name="Echo Planar Pulse Sequence" vr="CS" vm="1" key="EchoPlanarPulseSeq" />
+  <element tag="(0018,9019)" name="Tag Angle First Axis" vr="FD" vm="1" key="TagAngleFirstAxis" />
+  <element tag="(0018,9020)" name="Magnetization Transfer" vr="CS" vm="1" key="MagnetizationTransfer" />
+  <element tag="(0018,9021)" name="T2 Preparation" vr="CS" vm="1" key="T2Preparation" />
+  <element tag="(0018,9022)" name="Blood Signal Nulling" vr="CS" vm="1" key="BloodSignalNulling" />
+  <element tag="(0018,9024)" name="Saturation Recovery" vr="CS" vm="1" key="SaturationRecovery" />
+  <element tag="(0018,9025)" name="Spectrally Selected Suppression" vr="CS" vm="1" key="SpectrallySelectedSuppression" />
+  <element tag="(0018,9026)" name="Spectrally Selected Excitation" vr="CS" vm="1" key="SpectrallySelectedExcitation" />
+  <element tag="(0018,9027)" name="Spatial Pre-saturation" vr="CS" vm="1" key="SpatialPreSaturation" />
+  <element tag="(0018,9028)" name="Tagging" vr="CS" vm="1" key="Tagging" />
+  <element tag="(0018,9029)" name="Oversampling Phase" vr="CS" vm="1" key="OversamplingPhase" />
+  <element tag="(0018,9030)" name="Tag Spacing First Dimension" vr="FD" vm="1" key="TagSpacingFirstDimension" />
+  <element tag="(0018,9032)" name="Geometry of k-Space Traversal" vr="CS" vm="1" key="GeometryOfKSpaceTraversal" />
+  <element tag="(0018,9033)" name="Segmented k-Space Traversal" vr="CS" vm="1" key="SegmentedKSpaceTraversal" />
+  <element tag="(0018,9034)" name="Rectilinear Phase Encode Reordering" vr="CS" vm="1" key="RectilinearPhaseEncodeReordering" />
+  <element tag="(0018,9035)" name="Tag Thickness" vr="FD" vm="1" key="TagThickness" />
+  <element tag="(0018,9036)" name="Partial Fourier Direction" vr="CS" vm="1" key="PartialFourierDirection" />
+  <element tag="(0018,9037)" name="Gating Synchronization Technique" vr="CS" vm="1" key="GatingSynchronizationTechnique" />
+  <element tag="(0018,9041)" name="Receive Coil Manufacturer Name" vr="LO" vm="1" key="ReceiveCoilManufacturerName" />
+  <element tag="(0018,9042)" name="MR Receive Coil Sequence" vr="SQ" vm="1" key="MRReceiveCoilSeq" />
+  <element tag="(0018,9043)" name="Receive Coil Type" vr="CS" vm="1" key="ReceiveCoilType" />
+  <element tag="(0018,9044)" name="Quadrature Receive Coil" vr="CS" vm="1" key="QuadratureReceiveCoil" />
+  <element tag="(0018,9045)" name="Multi-Coil Definition Sequence" vr="SQ" vm="1" key="MultiCoilDefinitionSeq" />
+  <element tag="(0018,9046)" name="Multi-Coil Configuration" vr="LO" vm="1" key="MultiCoilConfiguration" />
+  <element tag="(0018,9047)" name="Multi-Coil Element Name" vr="SH" vm="1" key="MultiCoilElementName" />
+  <element tag="(0018,9048)" name="Multi-Coil Element Used" vr="CS" vm="1" key="MultiCoilElementUsed" />
+  <element tag="(0018,9049)" name="MR Transmit Coil Sequence" vr="SQ" vm="1" key="MRTransmitCoilSeq" />
+  <element tag="(0018,9050)" name="Transmit Coil Manufacturer Name" vr="LO" vm="1" key="TransmitCoilManufacturerName" />
+  <element tag="(0018,9051)" name="Transmit Coil Type" vr="CS" vm="1" key="TransmitCoilType" />
+  <element tag="(0018,9052)" name="Spectral Width" vr="FD" vm="1-2" key="SpectralWidth" />
+  <element tag="(0018,9053)" name="Chemical Shift Reference" vr="FD" vm="1-2" key="ChemicalShiftReference" />
+  <element tag="(0018,9054)" name="Volume Localization Technique" vr="CS" vm="1" key="VolumeLocalizationTechnique" />
+  <element tag="(0018,9058)" name="MR Acquisition Frequency Encoding Steps" vr="US" vm="1" key="MRAcquisitionFrequencyEncodingSteps" />
+  <element tag="(0018,9059)" name="De-coupling" vr="CS" vm="1" key="DeCoupling" />
+  <element tag="(0018,9060)" name="De-coupled Nucleus" vr="CS" vm="1-2" key="DeCoupledNucleus" />
+  <element tag="(0018,9061)" name="De-coupling Frequency" vr="FD" vm="1-2" key="DeCouplingFrequency" />
+  <element tag="(0018,9062)" name="De-coupling Method" vr="CS" vm="1" key="DeCouplingMethod" />
+  <element tag="(0018,9063)" name="De-coupling Chemical Shift Reference" vr="FD" vm="1-2" key="DeCouplingChemicalShiftReference" />
+  <element tag="(0018,9064)" name="k-space Filtering" vr="CS" vm="1" key="KSpaceFiltering" />
+  <element tag="(0018,9065)" name="Time Domain Filtering" vr="CS" vm="1-2" key="TimeDomainFiltering" />
+  <element tag="(0018,9066)" name="Number of Zero fills" vr="US" vm="1-2" key="NumberOfZeroFills" />
+  <element tag="(0018,9067)" name="Baseline Correction" vr="CS" vm="1" key="BaselineCorrection" />
+  <element tag="(0018,9070)" name="Cardiac R-R Interval Specified" vr="FD" vm="1 " key="CardiacRRIntervalSpecified" />
+  <element tag="(0018,9073)" name="Acquisition Duration" vr="FD" vm="1" key="AcquisitionDuration" />
+  <element tag="(0018,9074)" name="Frame Acquisition Datetime" vr="DT" vm="1" key="FrameAcquisitionDatetime" />
+  <element tag="(0018,9075)" name="Diffusion Directionality" vr="CS" vm="1" key="DiffusionDirectionality" />
+  <element tag="(0018,9076)" name="Diffusion Gradient Direction Sequence" vr="SQ" vm="1" key="DiffusionGradientDirectionSeq" />
+  <element tag="(0018,9077)" name="Parallel Acquisition" vr="CS" vm="1" key="ParallelAcquisition" />
+  <element tag="(0018,9078)" name="Parallel Acquisition Technique" vr="CS" vm="1" key="ParallelAcquisitionTechnique" />
+  <element tag="(0018,9079)" name="Inversion Times" vr="FD" vm="1-n" key="InversionTimes" />
+  <element tag="(0018,9080)" name="Metabolite Map Description" vr="ST" vm="1" key="MetaboliteMapDescription" />
+  <element tag="(0018,9081)" name="Partial Fourier" vr="CS" vm="1" key="PartialFourier" />
+  <element tag="(0018,9082)" name="Effective Echo Time" vr="FD" vm="1" key="EffectiveEchoTime" />
+  <element tag="(0018,9084)" name="Chemical Shift Sequence" vr="SQ" vm="1" key="ChemicalShiftSeq" />
+  <element tag="(0018,9085)" name="Cardiac Signal Source" vr="CS" vm="1" key="CardiacSignalSource" />
+  <element tag="(0018,9087)" name="Diffusion b-value" vr="FD" vm="1" key="DiffusionBValue" />
+  <element tag="(0018,9089)" name="Diffusion Gradient Orientation" vr="FD" vm="3" key="DiffusionGradientOrientation" />
+  <element tag="(0018,9090)" name="Velocity Encoding Direction" vr="FD" vm="3" key="VelocityEncodingDirection" />
+  <element tag="(0018,9091)" name="Velocity Encoding Minimum Value" vr="FD" vm="1" key="VelocityEncodingMinimumValue" />
+  <element tag="(0018,9093)" name="Number of k-Space Trajectories" vr="US" vm="1" key="NumberOfKSpaceTrajectories" />
+  <element tag="(0018,9094)" name="Coverage of k-Space" vr="CS" vm="1" key="CoverageOfKSpace" />
+  <element tag="(0018,9095)" name="Spectroscopy Acquisition Phase Rows" vr="UL" vm="1" key="SpectroscopyAcquisitionPhaseRows" />
+  <element tag="(0018,9096)" name="Parallel Reduction Factor In-plane" vr="FD" vm="1" key="ParallelReductionFactorInPlane" />
+  <element tag="(0018,9098)" name="Transmitter Frequency" vr="FD" vm="1-2" key="TransmitterFrequency" />
+  <element tag="(0018,9100)" name="Resonant Nucleus" vr="CS" vm="1-2" key="ResonantNucleus" />
+  <element tag="(0018,9101)" name="Frequency Correction" vr="CS" vm="1" key="FrequencyCorrection" />
+  <element tag="(0018,9103)" name="MR Spectroscopy FOV/Geometry Sequence" vr="SQ" vm="1" key="MRSpectroscopyFOVGeometrySeq" />
+  <element tag="(0018,9104)" name="Slab Thickness" vr="FD" vm="1" key="SlabThickness" />
+  <element tag="(0018,9105)" name="Slab Orientation" vr="FD" vm="3" key="SlabOrientation" />
+  <element tag="(0018,9106)" name="Mid Slab Position" vr="FD" vm="3" key="MidSlabPosition" />
+  <element tag="(0018,9107)" name="MR Spatial Saturation Sequence" vr="SQ" vm="1" key="MRSpatialSaturationSeq" />
+  <element tag="(0018,9112)" name="MR Timing and Related Parameters Sequence" vr="SQ" vm="1" key="MRTimingAndRelatedParametersSeq" />
+  <element tag="(0018,9114)" name="MR Echo Sequence" vr="SQ" vm="1" key="MREchoSeq" />
+  <element tag="(0018,9115)" name="MR Modifier Sequence" vr="SQ" vm="1" key="MRModifierSeq" />
+  <element tag="(0018,9117)" name="MR Diffusion Sequence" vr="SQ" vm="1" key="MRDiffusionSeq" />
+  <element tag="(0018,9118)" name="Cardiac Trigger Sequence" vr="SQ" vm="1" key="CardiacTriggerSeq" />
+  <element tag="(0018,9119)" name="MR Averages Sequence" vr="SQ" vm="1" key="MRAveragesSeq" />
+  <element tag="(0018,9125)" name="MR FOV/Geometry Sequence" vr="SQ" vm="1" key="MRFOVGeometrySeq" />
+  <element tag="(0018,9127)" name="Spectroscopy Acquisition Data Columns" vr="UL" vm="1" key="SpectroscopyAcquisitionDataColumns" />
+  <element tag="(0018,9126)" name="Volume Localization Sequence" vr="SQ" vm="1" key="VolumeLocalizationSeq" />
+  <element tag="(0018,9147)" name="Diffusion Anisotropy Type" vr="CS" vm="1" key="DiffusionAnisotropyType" />
+  <element tag="(0018,9151)" name="Frame Reference Datetime" vr="DT" vm="1" key="FrameReferenceDatetime" />
+  <element tag="(0018,9152)" name="Metabolite Map Sequence" vr="SQ" vm="1" key="MetaboliteMapSeq" />
+  <element tag="(0018,9155)" name="Parallel Reduction Factor out-of-plane" vr="FD" vm="1" key="ParallelReductionFactorOutOfPlane" />
+  <element tag="(0018,9159)" name="Spectroscopy Acquisition Out-of-plane Phase Steps" vr="UL" vm="1" key="SpectroscopyAcquisitionOutOfPlanePhaseSteps" />
+  <element tag="(0018,9166)" name="Bulk Motion Status" vr="CS" vm="1" key="BulkMotionStatus" />
+  <element tag="(0018,9168)" name="Parallel Reduction Factor Second In-plane" vr="FD" vm="1" key="ParallelReductionFactorSecondInPlane" />
+  <element tag="(0018,9169)" name="Cardiac Beat Rejection Technique" vr="CS" vm="1" key="CardiacBeatRejectionTechnique" />
+  <element tag="(0018,9170)" name="Respiratory Motion Compensation" vr="CS" vm="1" key="RespiratoryMotionCompensation" />
+  <element tag="(0018,9171)" name="Respiratory Signal Source" vr="CS" vm="1" key="RespiratorySignalSource" />
+  <element tag="(0018,9172)" name="Bulk Motion Compensation Technique" vr="CS" vm="1" key="BulkMotionCompensationTechnique" />
+  <element tag="(0018,9173)" name="Bulk Motion Signal" vr="CS" vm="1" key="BulkMotionSignal" />
+  <element tag="(0018,9174)" name="Applicable Safety Standard Agency" vr="CS" vm="1" key="ApplicableSafetyStandardAgency" />
+  <element tag="(0018,9175)" name="Applicable Safety Standard Version" vr="LO" vm="1" key="ApplicableSafetyStandardVersion" />
+  <element tag="(0018,9176)" name="Operation Mode Sequence" vr="SQ" vm="1" key="OperationModeSeq" />
+  <element tag="(0018,9177)" name="Operating Mode Type" vr="CS" vm="1" key="OperatingModeType" />
+  <element tag="(0018,9178)" name="Operation Mode" vr="CS" vm="1" key="OperationMode" />
+  <element tag="(0018,9179)" name="Specific Absorption Rate Definition" vr="CS" vm="1" key="SpecificAbsorptionRateDefinition" />
+  <element tag="(0018,9180)" name="Gradient Output Type" vr="CS" vm="1" key="GradientOutputType" />
+  <element tag="(0018,9181)" name="Specific Absorption Rate Value" vr="FD" vm="1" key="SpecificAbsorptionRateValue" />
+  <element tag="(0018,9182)" name="Gradient Output" vr="FD" vm="1" key="GradientOutput" />
+  <element tag="(0018,9183)" name="Flow Compensation Direction" vr="CS" vm="1" key="FlowCompensationDirection" />
+  <element tag="(0018,9184)" name="Tagging Delay" vr="FD" vm="1" key="TaggingDelay" />
+  <element tag="(0018,9195)" name="Chemical Shifts Minimum Integration Limit" vr="FD" vm="1" key="ChemicalShiftsMinimumIntegrationLimit" />
+  <element tag="(0018,9196)" name="Chemical Shifts Maximum Integration Limit" vr="FD" vm="1" key="ChemicalShiftsMaximumIntegrationLimit" />
+  <element tag="(0018,9197)" name="MR Velocity Encoding Sequence" vr="SQ" vm="1" key="MRVelocityEncodingSeq" />
+  <element tag="(0018,9198)" name="First Order Phase Correction" vr="CS" vm="1" key="FirstOrderPhaseCorrection" />
+  <element tag="(0018,9199)" name="Water Referenced Phase Correction" vr="CS" vm="1" key="WaterReferencedPhaseCorrection" />
+  <element tag="(0018,9200)" name="MR Spectroscopy Acquisition Type" vr="CS" vm="1" key="MRSpectroscopyAcquisitionType" />
+  <element tag="(0018,9214)" name="Respiratory Motion Status" vr="CS" vm="1" key="RespiratoryMotionStatus" />
+  <element tag="(0018,9217)" name="Velocity Encoding Maximum Value" vr="FD" vm="1" key="VelocityEncodingMaximumValue" />
+  <element tag="(0018,9218)" name="Tag Spacing Second Dimension" vr="SS" vm="1" key="TagSpacingSecondDimension" />
+  <element tag="(0018,9219)" name="Tag Angle Second Axis" vr="SS" vm="1" key="TagAngleSecondAxis" />
+  <element tag="(0018,9220)" name="Frame Acquisition Duration" vr="FD" vm="1" key="FrameAcquisitionDuration" />
+  <element tag="(0018,9226)" name="MR Image Frame Type Sequence" vr="SQ" vm="1" key="MRImageFrameTypeSeq" />
+  <element tag="(0018,9227)" name="MR Spectroscopy Frame Type Sequence" vr="SQ" vm="1" key="MRSpectroscopyFrameTypeSeq" />
+  <element tag="(0018,9231)" name="MR Acquisition Phase Encoding Steps in-plane" vr="US" vm="1" key="MRAcquisitionPhaseEncodingStepsInPlane" />
+  <element tag="(0018,9232)" name="MR Acquisition Phase Encoding Steps out-of-plane" vr="US" vm="1" key="MRAcquisitionPhaseEncodingStepsOutOfPlane" />
+  <element tag="(0018,9234)" name="Spectroscopy Acquisition Phase Columns" vr="UL" vm="1" key="SpectroscopyAcquisitionPhaseColumns" />
+  <element tag="(0018,9236)" name="Cardiac Motion Status" vr="CS" vm="1" key="CardiacMotionStatus" />
+  <element tag="(0018,9239)" name="Specific Absorption Rate Sequence" vr="SQ" vm="1" key="SpecificAbsorptionRateSeq" />
+
   <element tag="(0020,000D)" name="Study Instance UID" vr="UI" vm="1" key="StudyInstanceUID" />
   <element tag="(0020,000E)" name="Series Instance UID" vr="UI" vm="1" key="SeriesInstanceUID" />
   <element tag="(0020,0010)" name="Study ID" vr="SH" vm="1" key="StudyID" />
@@ -620,7 +765,30 @@
   <element tag="(0020,4000)" name="Image Comments" vr="LT" vm="1" key="ImageComments" />
   <element tag="(0020,5000)" name="Original Image Identification (Retired)" vr="LO" vm="1" key="OriginalImageIdentificationRetired" retired="true" />
   <element tag="(0020,5002)" name="Original Image Identification Nomenclature (Retired)" vr="LO" vm="1" key="OriginalImageIdentificationNomenclatureRetired" retired="true" />
-  
+  <element tag="(0020,9056)" name="Stack ID" vr="SH" vm="1" key="StackID" />
+  <element tag="(0020,9057)" name="In-Stack Position Number" vr="UL" vm="1" key="InStackPositionNumber" />
+  <element tag="(0020,9071)" name="Frame Anatomy Sequence" vr="SQ" vm="1" key="FrameAnatomySeq" />
+  <element tag="(0020,9072)" name="Frame Laterality" vr="CS" vm="1" key="FrameLaterality" />
+  <element tag="(0020,9111)" name="Frame Content Sequence" vr="SQ" vm="1" key="FrameContentSeq" />
+  <element tag="(0020,9113)" name="Plane Position Sequence" vr="SQ" vm="1" key="PlanePositionSeq" />
+  <element tag="(0020,9116)" name="Plane Orientation Sequence" vr="SQ" vm="1" key="PlaneOrientationSeq" />
+  <element tag="(0020,9128)" name="Temporal Position Index" vr="UL" vm="1" key="TemporalPositionIndex" />
+  <element tag="(0020,9153)" name="Trigger Delay Time" vr="FD" vm="1" key="TriggerDelayTime" />
+  <element tag="(0020,9156)" name="Frame Acquisition Number" vr="US" vm="1" key="FrameAcquisitionNumber" />
+  <element tag="(0020,9157)" name="Dimension Index Values" vr="UL" vm="1-n" key="DimensionIndexValues" />
+  <element tag="(0020,9158)" name="Frame Comments" vr="LT" vm="1" key="FrameComments" />
+  <element tag="(0020,9161)" name="Concatenation UID" vr="UI" vm="1" key="ConcatenationUID" />
+  <element tag="(0020,9162)" name="In-concatenation Number" vr="US" vm="1" key="InConcatenationNumber" />
+  <element tag="(0020,9163)" name="In-concatenation Total Number" vr="US" vm="1" key="InConcatenationTotalNumber" />
+  <element tag="(0020,9164)" name="Dimension Organization UID" vr="UI" vm="1" key="DimensionOrganizationUID" />
+  <element tag="(0020,9165)" name="Dimension Index Pointer" vr="AT" vm="1" key="DimensionIndexPointer" />
+  <element tag="(0020,9167)" name="Functional Group Sequence Pointer" vr="AT" vm="1" key="FunctionalGroupSequencePointer" />
+  <element tag="(0020,9213)" name="Dimension Index Private Creator" vr="LO" vm="1" key="DimensionIndexPrivateCreator" />
+  <element tag="(0020,9221)" name="Dimension Organization Sequence" vr="SQ" vm="1" key="DimensionOrganizationSeq" />
+  <element tag="(0020,9222)" name="Dimension Sequence" vr="SQ" vm="1" key="DimensionSeq" />
+  <element tag="(0020,9228)" name="Concatenation Frame Offset Number" vr="UL" vm="1" key="ConcatenationFrameOffsetNumber" />
+  <element tag="(0020,9238)" name="Functional Group Private Creator" vr="LO" vm="1" key="FunctionalGroupPrivateCreator" />
+
   <element tag="(0028,0002)" name="Samples per Pixel" vr="US" vm="1" key="SamplesPerPixel" />
   <element tag="(0028,0005)" name="Image Dimensions (Retired)" key="ImageDimensionsRetired" retired="true" />
   <element tag="(0028,0004)" name="Photometric Interpretation" vr="CS" vm="1" key="PhotometricInterpretation" />
@@ -703,6 +871,15 @@
   <element tag="(0028,6114)" name="Mask Sub-pixel Shift" vr="FL" vm="2" key="MaskSubPixelShift" />
   <element tag="(0028,6120)" name="TID Offset" vr="SS" vm="1" key="TIDOffset" />
   <element tag="(0028,6190)" name="Mask Operation Explanation" vr="ST" vm="1" key="MaskOperationExplanation" />
+  <element tag="(0028,9001)" name="Data Point Rows" vr="UL" vm="1" key="DataPointRows" />
+  <element tag="(0028,9002)" name="Data Point Columns" vr="UL" vm="1" key="DataPointColumns" />
+  <element tag="(0028,9003)" name="Signal Domain" vr="CS" vm="1-2" key="SignalDomain" />
+  <element tag="(0028,9099)" name="Largest Monochrome Pixel Value" vr="US" vm="1" key="LargestMonochromePixelValue" />
+  <element tag="(0028,9108)" name="Data Representation" vr="CS" vm="1" key="DataRepresentation" />
+  <element tag="(0028,9110)" name="Pixel Matrix Sequence" vr="SQ" vm="1" key="PixelMatrixSeq" />
+  <element tag="(0028,9132)" name="Frame VOI LUT Sequence" vr="SQ" vm="1" key="FrameVOILUTSeq" />
+  <element tag="(0028,9145)" name="Pixel Value Transformation Sequence" vr="SQ" vm="1" key="PixelValueTransformationSeq" />
+  <element tag="(0028,9235)" name="Signal Domain Rows" vr="CS" vm="1" key="SignalDomainRows" />
 
   <element tag="(0032,000A)" name="Study Status ID" vr="CS" vm="1" key="StudyStatusID" />
   <element tag="(0032,000C)" name="Study Priority ID" vr="CS" vm="1" key="StudyPriorityID" />
@@ -913,6 +1090,13 @@
   <element tag="(0040,DB0C)" name="Template Extension Organization UID" vr="UI" vm="1" key="TemplateExtensionOrganizationUID" />
   <element tag="(0040,DB0D)" name="Template Extension Creator UID" vr="UI" vm="1" key="TemplateExtensionCreatorUID" />
   <element tag="(0040,DB73)" name="Referenced Content Item Identifier" vr="UL" vm="1-n" key="RefContentItemIdentifier" />
+  <element tag="(0040,9096)" name="Real World Value Mapping Sequence" vr="SQ" vm="1" key="RealWorldValueMappingSeq" />
+  <element tag="(0040,9210)" name="LUT Label" vr="SS" vm="1" key="LUTLabel" />
+  <element tag="(0040,9211)" name="Real World Value LUT Last Value Mapped" vr="US/SS" vm="1" key="RealWorldValueLUTLastValueMappedUS" />
+  <element tag="(0040,9212)" name="Real World Value LUT Data" vr="FD" vm="1-n" key="RealWorldValueLUTData" />
+  <element tag="(0040,9216)" name="Real World Value LUT First Value Mapped" vr="US/SS" vm="1" key="RealWorldValueLUTFirstValueMappedUS" />
+  <element tag="(0040,9224)" name="Real World Value Intercept" vr="FD" vm="1" key="RealWorldValueIntercept" />
+  <element tag="(0040,9225)" name="Real World Value Slope" vr="FD" vm="1" key="RealWorldValueSlope" />
 
   <element tag="(0050,0004)" name="Calibration Image" vr="CS" vm="1" key="CalibrationImage" />
   <element tag="(0050,0010)" name="Device Sequence" vr="SQ" vm="1" key="DeviceSeq" />
@@ -1406,7 +1590,7 @@
   <element tag="(300A,00C2)" name="Beam Name" vr="LO" vm="1" key="BeamName" />
   <element tag="(300A,00C3)" name="Beam Description" vr="ST" vm="1" key="BeamDescription" />
   <element tag="(300A,00C4)" name="Beam Type" vr="CS" vm="1" key="BeamType" />
- <element tag="(300A,00C6)" name="Radiation Type" vr="CS" vm="1" key="RadiationType" />
+  <element tag="(300A,00C6)" name="Radiation Type" vr="CS" vm="1" key="RadiationType" />
   <element tag="(300A,00C8)" name="Reference Image Number" vr="IS" vm="1" key="ReferenceImageNumber" />
   <element tag="(300A,00CA)" name="Planned Verification Image Sequence" vr="SQ" vm="1" key="PlannedVerificationImageSeq" />
   <element tag="(300A,00CC)" name="Imaging Device-Specific Acquisition Parameters" vr="LO" vm="1-n" key="ImagingDeviceSpecificAcquisitionParameters" />
@@ -1654,6 +1838,9 @@
   <element tag="(50xx,2610)" name="Referenced Overlay Group" vr="US" vm="1" key="RefOverlayGroup" />
   <element tag="(50xx,3000)" name="Curve Data" vr="OB,OW" vm="1" key="CurveData" />
 
+  <element tag="(5200,9229)" name="Shared Functional Groups Sequence" vr="SQ" vm="1" key="SharedFunctionalGroupsSeq" />
+  <element tag="(5200,9230)" name="Per-frame Functional Groups Sequence" vr="SQ" vm="1" key="PerFrameFunctionalGroupsSeq" />
+
   <element tag="(5400,0100)" name="Waveform Sequence" vr="SQ" vm="1" key="WaveformSeq" />
   <element tag="(5400,0110)" name="Channel Minimum Value" vr="OW,OB" vm="1" key="ChannelMinimumValue" />
   <element tag="(5400,0112)" name="Channel Maximum Value" vr="OW,OB" vm="1" key="ChannelMaximumValue" />
@@ -1662,6 +1849,9 @@
   <element tag="(5400,100A)" name="Waveform Padding Value" vr="OW,OB" vm="1" key="WaveformPaddingValue" />
   <element tag="(5400,1010)" name="Waveform Data" vr="OW,OB" vm="1" key="WaveformData" />
 
+  <element tag="(5600,0010)" name="First Order Phase Correction Angle" vr="OF" vm="1" key="FirstOrderPhaseCorrectionAngle" />
+  <element tag="(5600,0020)" name="Spectroscopy Data" vr="OF" vm="1" key="SpectroscopyData" />
+  
   <element tag="(60xx,0010)" name="Overlay Rows" vr="US" vm="1" key="OverlayRows" />
   <element tag="(60xx,0011)" name="Overlay Columns" vr="US" vm="1" key="OverlayColumns" />
   <element tag="(60xx,0012)" name="Overlay Planes" vr="US" vm="1" key="OverlayPlanes" />
@@ -1776,6 +1966,8 @@
   <uid value="1.2.840.10008.5.1.4.1.1.3" name="Ultrasound Multi-frame Image Storage (Retired)" key="UltrasoundMultiframeImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.3.1" name="Ultrasound Multi-frame Image Storage" key="UltrasoundMultiframeImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.4" name="MR Image Storage" key="MRImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.4.1" name="Enhanced MR Image Storage" key="EnhancedMRImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.4.2" name="MR Spectroscopy Storage" key="MRSpectroscopyStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.5" name="Nuclear Medicine Image Storage (Retired)" key="NuclearMedicineImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.6" name="Ultrasound Image Storage (Retired)" key="UltrasoundImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.6.1" name="Ultrasound Image Storage" key="UltrasoundImageStorage" />
@@ -1799,6 +1991,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.12.2" name="X-Ray Radiofluoroscopic Image Storage" key="XRayRadiofluoroscopicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.3" name="X-Ray Angiographic Bi-Plane Image Storage (Retired)" key="XRayAngiographicBiPlaneImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.20" name="Nuclear Medicine Image Storage" key="NuclearMedicineImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.66" name="Raw Data Storage" key="RawDataStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1" name="VL Image Storage (Retired)" key="VLImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.2" name="VL Multi-frame Image Storage (Retired)" key="VLMultiframeImageStorageRetired" retired="true" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.1" name="VL Endoscopic Image Storage" key="VLEndoscopicImageStorage" />

@@ -69,7 +69,7 @@ public class AReleaseRQTest extends ExtTestCase {
         InputStream in = new FileInputStream(A_RELEASE_RQ);
         AReleaseRQ pdu = null;
         try {
-            pdu = (AReleaseRQ)fact.readFrom(in);            
+            pdu = (AReleaseRQ)fact.readFrom(in, null);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }

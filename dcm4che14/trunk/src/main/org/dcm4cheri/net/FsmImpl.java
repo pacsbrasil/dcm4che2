@@ -87,13 +87,20 @@ final class FsmImpl {
         return state;
     }
     
-    final int getMaxLength() {
+    final int getWriteMaxLength() {
         if (ac == null || rq == null) {
             throw new IllegalStateException(state.toString());
         }
         return requestor ? ac.getMaxLength() : rq.getMaxLength();
     }
     
+    final int getReadMaxLength() {
+        if (ac == null || rq == null) {
+            throw new IllegalStateException(state.toString());
+        }
+        return requestor ? rq.getMaxLength() : ac.getMaxLength();
+    }
+
     final String getAcceptedTransferSyntaxUID(int pcid) {
         if (ac == null) {
             throw new IllegalStateException(state.toString());
@@ -137,12 +144,12 @@ final class FsmImpl {
         }
     }
 
-    public PDU read(int timeout) throws PDUException, IOException {
+    public PDU read(int timeout, byte[] buf) throws PDUException, IOException {
         synchronized (in) {
             s.setSoTimeout(timeout);
             UnparsedPDUImpl raw = null;
             try {
-                raw = new UnparsedPDUImpl(in);
+                raw = new UnparsedPDUImpl(in, buf);
             } catch (IOException e) {
                 changeState(STA1);
                 throw e;

@@ -181,6 +181,9 @@ public interface VRMap {
     <xsl:apply-templates select="element[starts-with(@vr, 'OB')][translate(@tag,'x0123456789ABCDEF','0FFFFFFFFFFFFFFFF') = $mask]">
         <xsl:with-param name="vr" select="'OB'"/>
     </xsl:apply-templates>
+    <xsl:apply-templates select="element[starts-with(@vr, 'OF')][translate(@tag,'x0123456789ABCDEF','0FFFFFFFFFFFFFFFF') = $mask]">
+        <xsl:with-param name="vr" select="'OF'"/>
+    </xsl:apply-templates>
     <xsl:apply-templates select="element[starts-with(@vr, 'OW')][translate(@tag,'x0123456789ABCDEF','0FFFFFFFFFFFFFFFF') = $mask]">
         <xsl:with-param name="vr" select="'OW'"/>
     </xsl:apply-templates>

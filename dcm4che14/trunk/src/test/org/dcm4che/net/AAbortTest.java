@@ -72,7 +72,7 @@ public class AAbortTest extends ExtTestCase {
         InputStream in = new FileInputStream(A_ABORT);
         AAbort pdu = null;
         try {
-            pdu = (AAbort)fact.readFrom(in);            
+            pdu = (AAbort)fact.readFrom(in, null);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }

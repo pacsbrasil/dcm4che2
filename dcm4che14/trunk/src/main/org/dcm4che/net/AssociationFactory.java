@@ -80,7 +80,7 @@ public abstract class AssociationFactory {
             boolean scu, boolean scp);    
     public abstract ExtNegotiation newExtNegotiation(String uid, byte[] info);    
 
-    public abstract PDU readFrom(InputStream in) throws IOException;
+    public abstract PDU readFrom(InputStream in, byte[] buf) throws IOException;
 
     public abstract Association newRequestor(Socket s, AssociationListener l)
             throws IOException;

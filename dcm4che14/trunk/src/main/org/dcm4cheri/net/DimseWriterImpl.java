@@ -54,7 +54,7 @@ final class DimseWriterImpl {
             throw new IllegalStateException();
         }
         if (pDataTF == null) {
-            pDataTF = new PDataTFImpl(fsm.getMaxLength());
+            pDataTF = new PDataTFImpl(fsm.getWriteMaxLength());
         }
         pDataTF.openPDV(pcid, cmd = true);
         OutputStream out = new PDataTFOutputStream();

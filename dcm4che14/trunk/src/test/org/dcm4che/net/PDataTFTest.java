@@ -104,7 +104,7 @@ public class PDataTFTest extends ExtTestCase {
         InputStream in1 = new FileInputStream(P_DATA_TF1);
         PDataTF pdu1 = null;
         try {
-            pdu1 = (PDataTF)fact.readFrom(in1);            
+            pdu1 = (PDataTF)fact.readFrom(in1, null);            
         } finally {
             try { in1.close(); } catch (IOException ignore) {}
         }
@@ -134,7 +134,7 @@ public class PDataTFTest extends ExtTestCase {
         InputStream in2 = new FileInputStream(P_DATA_TF2);
         PDataTF pdu2 = null;
         try {
-            pdu2 = (PDataTF)fact.readFrom(in2);            
+            pdu2 = (PDataTF)fact.readFrom(in2, null);            
         } finally {
             try { in2.close(); } catch (IOException ignore) {}
         }

@@ -78,6 +78,8 @@ public class StringUtils {
                 return promptFL(bb);
             case VRs.OB: case VRs.UN:
                 return promptBytes(bb.array(), bb.arrayOffset(), bb.limit());
+            case VRs.OF:
+                return promptOF(bb);
             case VRs.OW:
                 return promptOW(bb);
             case VRs.SL:
@@ -132,6 +134,10 @@ public class StringUtils {
             sb.append('\\').append(bb.getFloat());
 
         return sb.toString();        
+    }
+
+    public static String promptOF(ByteBuffer bb) {
+        return promptFL(bb);
     }
     
     public static String promptOW(ByteBuffer bb) {
@@ -217,6 +223,8 @@ public class StringUtils {
                 return parseFL(str);
             case VRs.OB: case VRs.UN:
                 return parseBytes(str);
+            case VRs.OF:
+                return parseOF(str);
             case VRs.OW:
                 return parseOW(str);
             case VRs.SS: case VRs.US:
@@ -284,6 +292,10 @@ public class StringUtils {
             bb.putFloat(Float.parseFloat(a[i]));
         return b;
     }
+
+    public static byte[] parseOF(String str) {
+        return parseFL(str);
+    }
     
     public static byte[] parseBytes(String str) {
         byte[] b = new byte[(str.length()+1)/3];
@@ -301,6 +313,7 @@ public class StringUtils {
         }
         return b;
     }
+
     public static byte[] parseSS_US(String str) {
         String[] a = toStringArray(str,'\\');
         byte[] b = new byte[a.length * 2];

@@ -69,7 +69,7 @@ public class AReleaseRPTest extends ExtTestCase {
         InputStream in = new FileInputStream(A_RELEASE_RP);
         AReleaseRP pdu = null;
         try {
-            pdu = (AReleaseRP)fact.readFrom(in);            
+            pdu = (AReleaseRP)fact.readFrom(in, null);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }

@@ -524,8 +524,50 @@ abstract class ValueElement extends DcmElementImpl {
         return new FD(tag, setDoubles(a));
     }
 
-    // OW, OB, UN -------------------------------------------------------------
+    // OF, OW, OB, UN -------------------------------------------------------------
             
+    private static final class OF extends ValueElement {
+        OF(int tag, ByteBuffer data) {
+            super(tag, data);
+        }
+        public final int vr() {
+            return 0x4F46;
+        }
+        public final float getFloat(int index) {
+            return data.getFloat(index<<2);
+        }       
+        public final float[] getFloats() {
+            float[] a = new float[data.limit()>>2];
+            for (int i = 0; i < a.length; ++i)
+                a[i] = getFloat(i);
+            return a;
+        }
+        protected void swapOrder() {
+            swapInts(data);
+        }
+    }
+    static DcmElement createOF(int tag) {
+        return new OF(tag, EMPTY_VALUE);
+    }
+
+    static DcmElement createOF(int tag, float[] v) {
+        ByteBuffer buf = ByteBuffer.allocate(v.length << 2);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        for (int i = 0; i < v.length; ++i) {
+            buf.putFloat(v[i]);
+        }
+        return new OF(tag, buf);
+    }
+
+    static DcmElement createOF(int tag, ByteBuffer data) {
+        if ((data.limit() & 3) != 0) {
+            log.warning("Ignore illegal value of " + Tags.toString(tag)
+                + " OW #" + data.limit());
+            return new OF(tag, EMPTY_VALUE);
+        }
+        return new OF(tag, data);
+    }
+
     private static final class OW extends ValueElement {
        OW(int tag, ByteBuffer data) {
             super(tag, data);
@@ -534,10 +576,10 @@ abstract class ValueElement extends DcmElementImpl {
             return 0x4F57;
         }
         public final int getInt(int index) {
-            return data.getInt(index<<2);
+            return data.getShort(index<<1) & 0xffff;
         }       
         public final int[] getInts() {
-            int[] a = new int[vm()];
+            int[] a = new int[data.limit()>>1];
             for (int i = 0; i < a.length; ++i)
                 a[i] = getInt(i);
             return a;
@@ -550,10 +592,13 @@ abstract class ValueElement extends DcmElementImpl {
         return new OW(tag, EMPTY_VALUE);
     }
 
-    static DcmElement createOW(int tag, byte[] v, ByteOrder byteOrder) {
-        if ((v.length & 1) != 0)
-            throw new IllegalArgumentException("odd value length: " + v.length);
-        return new OW(tag, ByteBuffer.wrap(v).order(byteOrder));
+    static DcmElement createOW(int tag, short[] v) {
+        ByteBuffer buf = ByteBuffer.allocate(v.length << 1);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        for (int i = 0; i < v.length; ++i) {
+            buf.putShort(v[i]);
+        }
+        return new OW(tag, buf);
     }
 
     static DcmElement createOW(int tag, ByteBuffer data) {

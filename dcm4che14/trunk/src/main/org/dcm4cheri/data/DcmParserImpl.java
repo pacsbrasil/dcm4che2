@@ -536,7 +536,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
 
                 if (rLen == -1 || rVR == VRs.SQ) {
                     switch (rVR) {
-                        case VRs.SQ: case VRs.OB: case VRs.OW: case VRs.UN:
+                        case VRs.SQ:
+                        case VRs.OB: case VRs.OF: case VRs.OW:
+                        case VRs.UN:
                             break;
                         default:
                             throw new DcmParseException(logMsg());
@@ -612,7 +614,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                 if (itemlen == -1)
                     return parseUNItem(id, itemlen);
                 // fall through
-            case VRs.OB: case VRs.OW:
+            case VRs.OB: case VRs.OF: case VRs.OW:
                 return readFragment(id, itemlen);
             default:
                 throw new RuntimeException(logMsg());

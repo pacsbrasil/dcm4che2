@@ -38,22 +38,28 @@ final class UnparsedPDUImpl {
     private final int len;
     
     /** Creates a new instance of RawPDU */
-    public UnparsedPDUImpl(InputStream in) throws IOException {
-        byte[] h = new byte[6];
-        readFully(in, h, 0, 6);
-        this.type = h[0] & 0xFF;
-        this.len = ((h[2] & 0xff) << 24)
-                | ((h[3] & 0xff) << 16)
-                | ((h[4] & 0xff) << 8)
-                | ((h[5] & 0xff) << 0);
+    public UnparsedPDUImpl(InputStream in, byte[] buf) throws IOException {
+        if (buf == null || buf.length < 6) {
+            buf = new byte[10];
+        }
+        readFully(in, buf, 0, 6);
+        this.type = buf[0] & 0xFF;
+        this.len = ((buf[2] & 0xff) << 24)
+                | ((buf[3] & 0xff) << 16)
+                | ((buf[4] & 0xff) << 8)
+                | ((buf[5] & 0xff) << 0);
         if ((len & 0xFFFFFFFF) > MAX_LENGTH) {
             skipFully(in, len & 0xFFFFFFFFL);
             this.buf = null;
             return;
         }
-        this.buf = new byte[6 + len];
-        System.arraycopy(h, 0, buf, 0, 6);
-        readFully(in, buf, 6, len);
+        if (buf.length < 6 + len) {
+            this.buf = new byte[6 + len];
+            System.arraycopy(buf, 0, this.buf, 0, 6);
+        } else {
+            this.buf = buf;
+        }
+        readFully(in, this.buf, 6, len);
     }
 
     public final int type() {

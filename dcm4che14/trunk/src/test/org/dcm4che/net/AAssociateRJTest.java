@@ -73,7 +73,7 @@ public class AAssociateRJTest extends ExtTestCase {
         InputStream in = new FileInputStream(A_ASSOCIATE_RJ);
         AAssociateRJ pdu = null;
         try {
-            pdu = (AAssociateRJ)fact.readFrom(in);            
+            pdu = (AAssociateRJ)fact.readFrom(in, null);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }

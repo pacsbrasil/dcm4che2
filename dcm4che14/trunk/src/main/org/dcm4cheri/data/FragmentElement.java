@@ -82,11 +82,6 @@ abstract class FragmentElement extends DcmElementImpl {
         list.add(data != null ? data : EMPTY_VALUE);
     }
 
-    public void addDataFragment(byte[] data, ByteOrder byteOrder) {
-        list.add(data != null ? ByteBuffer.wrap(data).order(byteOrder)
-                              : EMPTY_VALUE);
-    }
-
     protected void swapOrder(ByteBuffer data) {
         data.order(swap(data.order()));
     }
@@ -104,6 +99,32 @@ abstract class FragmentElement extends DcmElementImpl {
         return new FragmentElement.OB(tag);
     }
  
+    private static final class OF extends FragmentElement {
+        OF(int tag) {
+            super(tag);
+        }
+        public final int vr() {
+            return VRs.OF;
+        }
+
+        public void addDataFragment(ByteBuffer data) {
+            if ((data.limit() & 3) != 0) {
+                log.warning("Ignore odd length fragment of "
+                    + Tags.toString(tag) + " OF #" + data.limit());
+                data = null;
+            }
+            super.addDataFragment(data);
+        }
+
+        protected void swapOrder(ByteBuffer data) {
+            swapInts(data);
+        }
+    }
+
+    public static DcmElement createOF(int tag) {
+        return new FragmentElement.OF(tag);
+    }
+
     private static final class OW extends FragmentElement {
         OW(int tag) {
             super(tag);
@@ -112,13 +133,6 @@ abstract class FragmentElement extends DcmElementImpl {
             return VRs.OW;
         }
 
-        public void addDataFragment(byte[] data, ByteOrder byteOrder) {
-            if (data != null && (data.length & 1) != 0)
-                throw new IllegalArgumentException("odd fragment length: "
-                        + data.length);
-            super.addDataFragment(data, byteOrder);
-        }
-        
         public void addDataFragment(ByteBuffer data) {
             if ((data.limit() & 1) != 0) {
                 log.warning("Ignore odd length fragment of "

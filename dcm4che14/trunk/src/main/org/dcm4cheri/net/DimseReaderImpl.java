@@ -42,7 +42,7 @@ final class DimseReaderImpl {
     
     private PDataTF pDataTF = null;
     private PDataTF.PDV pdv = null;
-//    private PDataTFInputStream pDataTFin = null;
+    private byte[] buf = null;
 
     /** Creates a new instance of DimseReader */
     public DimseReaderImpl(FsmImpl fsm) {
@@ -133,7 +133,10 @@ final class DimseReaderImpl {
     }
 
     private boolean nextPDataTF() throws IOException {
-        PDU pdu = fsm.read(timeout);
+        if (buf == null) {
+            buf = new byte[fsm.getReadMaxLength() + 6];
+        }
+        PDU pdu = fsm.read(timeout, buf);
         if (pdu instanceof PDataTF) {
             pDataTF = (PDataTF)pdu;
             return true;

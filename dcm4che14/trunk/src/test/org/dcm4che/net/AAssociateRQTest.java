@@ -105,7 +105,7 @@ public class AAssociateRQTest extends AAssociateRQACTest {
         InputStream in = new FileInputStream(A_ASSOCIATE_RQ);
         AAssociateRQ pdu = null;
         try {
-            pdu = (AAssociateRQ)fact.readFrom(in);            
+            pdu = (AAssociateRQ)fact.readFrom(in, null);            
         } finally {
             try { in.close(); } catch (IOException ignore) {}
         }

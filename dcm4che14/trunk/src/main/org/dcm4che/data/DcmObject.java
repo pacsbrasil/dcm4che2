@@ -208,13 +208,23 @@ public interface DcmObject {
     
     public DcmElement setLT(int tag, String[] values);
     
+    public DcmElement setOB(int tag, byte[] value);
+
     public DcmElement setOB(int tag, ByteBuffer value);
 
-    public DcmElement setOBf(int tag);
+    public DcmElement setOBsq(int tag);
     
+    public DcmElement setOF(int tag, float[] value);
+
+    public DcmElement setOF(int tag, ByteBuffer value);
+
+    public DcmElement setOFsq(int tag);
+
+    public DcmElement setOW(int tag, short[] value);
+
     public DcmElement setOW(int tag, ByteBuffer value);
 
-    public DcmElement setOWf(int tag);
+    public DcmElement setOWsq(int tag);
 
     public DcmElement setPN(int tag);
     
@@ -290,7 +300,7 @@ public interface DcmObject {
 
     public DcmElement setUN(int tag, byte[] value);
 
-    public DcmElement setUNf(int tag);
+    public DcmElement setUNsq(int tag);
     
     public DcmElement setUS(int tag);
     
@@ -310,6 +320,6 @@ public interface DcmObject {
 
     public DcmElement setXX(int tag, int vr, ByteBuffer bytes);
     
-    public DcmElement setXXf(int tag, int vr);
+    public DcmElement setXXsq(int tag, int vr);
 }
 

@@ -92,9 +92,9 @@ public final class AssociationFactoryImpl extends AssociationFactory {
         return new ExtNegotiationImpl(uid, info);
     }
     
-    public PDU readFrom(InputStream in)
+    public PDU readFrom(InputStream in, byte[] buf)
             throws IOException, PDUException {
-        UnparsedPDUImpl raw = new UnparsedPDUImpl(in);
+        UnparsedPDUImpl raw = new UnparsedPDUImpl(in, buf);
         switch (raw.type()) {
             case 1:
                 return AAssociateRQImpl.parse(raw);

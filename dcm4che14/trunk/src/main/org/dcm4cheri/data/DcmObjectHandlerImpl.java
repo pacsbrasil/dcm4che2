@@ -128,7 +128,7 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
 
     public void startSequence(int length) throws IOException {
         seqStack.add(vr == VRs.SQ ? curDcmObject.setSQ(tag)
-                                      : curDcmObject.setXXf(tag, vr));
+                                      : curDcmObject.setXXsq(tag, vr));
     }
 
     public void endSequence(int length) throws IOException {
