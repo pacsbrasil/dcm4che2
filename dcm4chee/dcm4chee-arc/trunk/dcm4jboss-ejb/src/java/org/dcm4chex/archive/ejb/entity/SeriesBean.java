@@ -494,9 +494,9 @@ public abstract class SeriesBean implements EntityBean {
             availability = Math.max(availability, instance.getAvailabilitySafe());
         }
         if (availability != getAvailabilitySafe()) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
