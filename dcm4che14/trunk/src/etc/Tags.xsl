@@ -117,7 +117,40 @@ public class Tags {
 
     public static String toString(int tag) {
         return toString(new StringBuffer(11),tag).toString();
-    }    
+    }
+    
+    public static int valueOf(String s) {
+        char[] a = s.toCharArray();
+        if (a.length != 11 || a[0] != '(' || a[4] != ',' || a[10] != ')') {
+            return -1;
+        }
+        int d1 = digit(a[1]);
+        int d2 = digit(a[2]);
+        int d3 = digit(a[3]);
+        int d4 = digit(a[4]);
+        int d5 = digit(a[6]);
+        int d6 = digit(a[7]);
+        int d7 = digit(a[8]);
+        int d8 = digit(a[9]);
+        if ((d1 | d2 | d3 | d4 | d5 | d6 | d7 | d8) < 0) {
+            return -1;
+        }
+        return (d1 &lt;&lt; 28)
+            | (d2 &lt;&lt; 24)
+            | (d3 &lt;&lt; 20)
+            | (d4 &lt;&lt; 16)
+            | (d5 &lt;&lt; 12)
+            | (d6 &lt;&lt; 8)
+            | (d7 &lt;&lt; 4)
+            | (d8 &lt;&lt; 0);
+    }
+
+    private static int digit(char c) {
+        return (c >= '0' && c <= '9') ? (c - '0')
+            : (c >= 'A' && c <= 'F') ? (c - 'A')
+            : (c >= 'a' && c <= 'f') ? (c - 'a')
+            : -1;
+    }
 
 </xsl:text>
 <xsl:apply-templates select="dictionary/elements/element"/>
