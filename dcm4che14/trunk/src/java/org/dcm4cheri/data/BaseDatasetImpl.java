@@ -59,8 +59,6 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
     private int grCount = 0;
     protected int totLen = 0;
     
-    public abstract void setPrivateCreatorID(String privateCreatorID);
-    
     public final Dataset setFileMetaInfo(FileMetaInfo fmi) {
         this.fmi = fmi;
         return this;

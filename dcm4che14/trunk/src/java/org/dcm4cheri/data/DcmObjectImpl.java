@@ -58,7 +58,7 @@ abstract class DcmObjectImpl implements DcmObject {
     DictionaryFactory.getInstance().getDefaultUIDDictionary();
     
     protected static final Logger log =
-        Logger.getLogger("dcm4che.data.DcmObject");
+    Logger.getLogger("dcm4che.data.DcmObject");
     
     protected ArrayList list = new ArrayList();
     private static final int MIN_TRUNCATE_STRING_LEN = 16;
@@ -73,6 +73,10 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public String getPrivateCreatorID() {
         return null;
+    }
+    
+    public void setPrivateCreatorID(String privateCreatorID) {
+        throw new UnsupportedOperationException();
     }
     
     public Charset getCharset() {
@@ -92,40 +96,76 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public boolean contains(int tag) {
+        if (Tags.isPrivate(tag)) {
+            try {
+                tag = adjustPrivateTag(tag, false);
+            } catch (DcmValueException e) {
+                log.warn("Could not access Creator ID", e);
+                return false;
+            }
+            if (tag == 0) {
+                return false;
+            }
+        }
         return Collections.binarySearch(list, new DcmElementImpl(tag)) >= 0;
     }
     
     public int vm(int tag) {
+        if (Tags.isPrivate(tag)) {
+            try {
+                tag = adjustPrivateTag(tag, false);
+            } catch (DcmValueException e) {
+                log.warn("Could not access Creator ID", e);
+                return -1;
+            }
+            if (tag == 0) {
+                return -1;
+            }
+        }
         int index = Collections.binarySearch(list, new DcmElementImpl(tag));
         return index >= 0 ? ((DcmElement)list.get(index)).vm() : -1;
     }
     
+    private int adjustPrivateTag(int tag, boolean create)
+    throws DcmValueException {
+        String creatorID = getPrivateCreatorID();
+        // no adjustments, if creatorID not set
+        if (creatorID == null) {
+            return tag;
+        }
+        int gr = tag & 0xffff0000;
+        int el = 0x10;
+        int index = Collections.binarySearch(list,
+        new DcmElementImpl(gr | el));
+        if (index >= 0) {
+            DcmElement elm = (DcmElement)list.get(index);
+            while (++index < list.size()) {
+                if (creatorID.equals(elm.getString(getCharset()))) {
+                    return gr | (el << 8) | (tag & 0xff);
+                }
+                elm = (DcmElement)list.get(index);
+                if (elm.tag() != (gr | ++el)) {
+                    break;
+                }
+            }
+        }
+        if (!create) {
+            return 0;
+        }
+        doPut(StringElement.createLO(gr | el, creatorID, getCharset()));
+        return gr | (el << 8) | (tag & 0xff);
+    }
+    
     public DcmElement get(int tag) {
         if (Tags.isPrivate(tag)) {
-            String creatorID = getPrivateCreatorID();
-            if (creatorID != null) {
-                int gr = tag & 0xffff0000;
-                int index = Collections.binarySearch(list,
-                        new DcmElementImpl(gr | 0x10));
-                if (index < 0) {
-                    return null;
-                }
-                DcmElement elm = (DcmElement)list.get(index);
-                try {
-                    while (!creatorID.equals(elm.getString(null))) {
-                        if (++index >= list.size()) {
-                            return null;
-                        }
-                        elm = (DcmElement)list.get(index);
-                        if ((elm.tag() & 0xffffff00) != gr) {
-                            return null;
-                        }
-                    }
-                    tag = gr | ((elm.tag() & 0xff) << 8) | (tag & 0xff);
-                } catch (DcmValueException e) {
-                    log.warn("Could not access " + elm, e);
-                    return null;
-                }
+            try {
+                tag = adjustPrivateTag(tag, false);
+            } catch (DcmValueException e) {
+                log.warn("Could not access Creator ID", e);
+                return null;
+            }
+            if (tag == 0) {
+                return null;
             }
         }
         int index = Collections.binarySearch(list, new DcmElementImpl(tag));
@@ -362,15 +402,29 @@ abstract class DcmObjectImpl implements DcmObject {
         if ((newElem.tag() & 0xffff) == 0)
             return newElem;
         
+        if (Tags.isPrivate(newElem.tag())) {
+            try {
+                ((DcmElementImpl)newElem).tag =
+                adjustPrivateTag(newElem.tag(), true);
+            } catch (DcmValueException e) {
+                log.warn("Could not access creator ID - ignore " + newElem, e);
+                return newElem;
+            }
+        }
+        return doPut(newElem);
+    }
+    
+    private DcmElement doPut(DcmElement newElem) {
         final int size = list.size();
-        if (size == 0 || newElem.compareTo(list.get(size-1)) > 0)
+        if (size == 0 || newElem.compareTo(list.get(size-1)) > 0) {
             list.add(newElem);
-        else {
+        } else {
             int index = Collections.binarySearch(list, newElem);
-            if (index >= 0)
+            if (index >= 0) {
                 list.set(index, newElem);
-            else
+            } else {
                 list.add(-(index+1),newElem);
+            }
         }
         return newElem;
     }

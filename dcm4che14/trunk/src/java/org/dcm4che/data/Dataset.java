@@ -50,10 +50,6 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public interface Dataset extends DcmObject, Serializable {
     
-   void setPrivateCreatorID(String privateCreatorID);
-
-   String getPrivateCreatorID();
-   
    Dataset setFileMetaInfo(FileMetaInfo fmi);
    
    FileMetaInfo getFileMetaInfo();

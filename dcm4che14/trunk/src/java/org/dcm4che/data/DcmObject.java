@@ -37,11 +37,23 @@ import org.xml.sax.helpers.DefaultHandler;
 /** Defines common behavior of <code>Command</code>, <code>Dataset</code>,
  * and <code>FileMetaInfo</code> container objects.
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
- * @see "DICOM Part 5: Data Structures and Encoding, 6.2 Value Representation"
+ * @see "DICOM Part 5: Data Structures and Encoding, 7. The Data Set"
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$ $Date$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20020722 gunter:</b>
+ * <ul>
+ * <li> add Private Data Elements access functions:<br>
+ *      consider new Private Creator ID property
+ * </ul>
  */
 public interface DcmObject {
+   
+   void setPrivateCreatorID(String privateCreatorID);
+
+   String getPrivateCreatorID();
    
    Charset getCharset();
    

@@ -312,6 +312,37 @@ public class DatasetTest extends TestCase {
       assertEquals(13, ds.size());
    }
    
+   public void testSetPrivateCreatorID() throws Exception {
+       ds.putSH(0x00090666, "DIRECT666");
+       ds.putSH(0x00090777, "DIRECT777");
+       ds.putSH(0x00090999, "DIRECT999");
+       assertEquals("DIRECT666", ds.getString(0x00090666));
+       assertEquals("DIRECT777", ds.getString(0x00090777));
+       assertEquals("DIRECT999", ds.getString(0x00090999));
+       ds.setPrivateCreatorID("CREATOR_ID1");
+       assertEquals("CREATOR_ID1", ds.getPrivateCreatorID());
+       ds.putSH(0x00090666, "ADJUSTED666");
+       assertEquals("ADJUSTED666", ds.getString(0x00090666));
+       assertEquals("ADJUSTED666", ds.getString(0x00090066));
+       ds.putSH(0x00090777, "ADJUSTED777");
+       assertEquals("ADJUSTED777", ds.getString(0x00090777));
+       assertEquals("ADJUSTED777", ds.getString(0x00090077));
+       ds.setPrivateCreatorID("CREATOR_ID2");
+       assertEquals("CREATOR_ID2", ds.getPrivateCreatorID());
+       assertNull(ds.getString(0x00090066));
+       assertNull(ds.getString(0x00090077));       
+       ds.putSH(0x00090999, "ADJUSTED999");
+       assertEquals("ADJUSTED999", ds.getString(0x00090999));
+       assertEquals("ADJUSTED999", ds.getString(0x00090099));
+       ds.setPrivateCreatorID(null);
+       assertNull(ds.getPrivateCreatorID());
+       assertEquals("CREATOR_ID1", ds.getString(0x00090010));
+       assertEquals("ADJUSTED666", ds.getString(0x00091066));
+       assertEquals("ADJUSTED777", ds.getString(0x00091077));
+       assertEquals("CREATOR_ID2", ds.getString(0x00090011));
+       assertEquals("ADJUSTED999", ds.getString(0x00091199));
+   }
+   
    private void assertEquals(String[] expected, String[] value) {
       assertNotNull(value);
       assertEquals(expected.length, value.length);
