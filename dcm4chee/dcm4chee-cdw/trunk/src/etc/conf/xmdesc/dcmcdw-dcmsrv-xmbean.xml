@@ -38,10 +38,10 @@
       getMethod="getAETofMediaWriter"
       setMethod="setAETofMediaWriter">
       <description>Associate accepted Called AETs to Media Writer Names.
+      Use ',' to separate multiple entries.
       </description>
       <name>AETofMediaWriter</name>
       <type>java.lang.String</type>
-      <!-- use &#10; to separate multiple entries -->
       <descriptors>
          <value value="CDRECORD=CDRecord" />
       </descriptors>

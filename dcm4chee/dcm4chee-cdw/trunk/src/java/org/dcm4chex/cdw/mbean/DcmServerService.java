@@ -80,7 +80,7 @@ public class DcmServerService extends ServiceMBeanSupport {
     public void setAETofMediaWriter(String s) {
         Properties p = new Properties();
         try {
-            p.load(new ByteArrayInputStream(s.getBytes()));
+            p.load(new ByteArrayInputStream(s.replace(',','\n').getBytes()));
         } catch (IOException e) {
             throw new IllegalArgumentException(s);
         }
@@ -95,7 +95,7 @@ public class DcmServerService extends ServiceMBeanSupport {
             sb.append(entry.getKey());
             sb.append('=');
             sb.append(entry.getValue());
-            sb.append("\r\n");
+            sb.append(',');
         }
         return sb.toString();
     }
