@@ -6,6 +6,7 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:internal="urn:my-internal-data">
 
+   <xsl:variable name="page_title">Error:<xsl:apply-templates select="model/errorType"/></xsl:variable>
    <xsl:include href  = "page.xsl" />
 
    <xsl:template match="model">

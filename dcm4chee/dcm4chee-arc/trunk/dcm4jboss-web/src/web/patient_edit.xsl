@@ -64,66 +64,38 @@
 
    <xsl:output method="html" indent="yes" encoding="ISO-8859-1" />
 
-   <xsl:template match="/">
-      <html>
-         <head>
-            <title>Edit Patient</title>
-            <link rel="stylesheet" href="stylesheet.css" type="text/css" />
-			<script language="JavaScript">window.name = "patient_edit";</script>
-         </head>
-
-         <body>
-            <xsl:apply-templates select="model" />
-         </body>
-      </html>
-   </xsl:template>
+   <xsl:variable name="page_title">Patient Edit</xsl:variable>
+   <xsl:include href  = "page.xsl" />
 
    <xsl:template match="model/patient">
       <form action="patientUpdate.m" method="post">
          <input name="pk" type="hidden" value="{pk}" />
 
-         <table bgcolor="#eeeeee" border="0" width="100%">
+		   <table border="1" cellspacing="0" cellpadding="0" width="100%"><tr><td>
+           <table border="0">
             <tr>
-               <td class="title">Patient Edit</td>
-            </tr>
-            <tr>
-               <td>&nbsp;</td>
-            </tr>
-            <tr>
-               <td class="label">Patient ID:</td>
-            </tr>
-
-            <tr>
+               <td class="label" bgcolor="#eeeeee">Patient ID:</td>
                <td>
                   <input size="25" name="patientID" type="text" value="{patientID}"  disabled="disabled"/>
                </td>
             </tr>
 
             <tr>
-               <td class="label">Patient Name:</td>
-            </tr>
-
-            <tr>
+               <td class="label" bgcolor="#eeeeee">Patient Name:</td>
                <td>
                   <input size="25" name="patientName" type="text" value="{patientName}" />
                </td>
             </tr>
 
             <tr>
-               <td class="label">Patient Sex:</td>
-            </tr>
-
-            <tr>
+               <td class="label" bgcolor="#eeeeee">Patient Sex:</td>
                <td>
                   <input size="3" name="patientSex" type="text" value="{patientSex}" />
                </td>
             </tr>
 
             <tr>
-               <td class="label">Patient Birth Date:</td>
-            </tr>
-
-            <tr>
+               <td class="label" bgcolor="#eeeeee">Patient Birth Date:</td>
                <td>
 
                   <input size="4" name="patientBirthYear" type="text" value="{patientBirthYear}" />
@@ -153,6 +125,7 @@
                </td>
             </tr>
          </table>
+         </td></tr></table>
       </form>
    </xsl:template>
 

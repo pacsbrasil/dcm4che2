@@ -2,7 +2,8 @@
 	<xsl:template match="/">
 			<html>
 			<head>
-				<title>Study Navigator</title>
+				<title><xsl:copy-of select="$page_title" /></title>
+				<script language = "JavaScript" src= "dcm4che.js"/>
 				<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
 			</head>
 			<body>

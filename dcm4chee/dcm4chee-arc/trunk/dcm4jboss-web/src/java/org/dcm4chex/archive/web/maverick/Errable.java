@@ -6,21 +6,56 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.infohazard.maverick.ctl.ThrowawayBean2;
+
 /**
  * @author umberto.cappellini@tiani.com
  * Created: Feb 24, 2004 - 11:16:30 AM
  * Module: dcm4jboss-web
  * 
  */
-public interface Errable
+public abstract class Errable extends ThrowawayBean2
 {
 	public static String ERROR_VIEW = "error";
 
-	public static String DEFAULT_TYPE = "Unknown Error";
-	public static String DEFAULT_MESSAGE = "An Unrecognized Error Has Been Thrown";
-	public static String DEFAULT_BACK_URL = "default.jsp";
+	protected String errorType="Unknown Error";
+	protected String message= "An Unrecognized Error Has Been Thrown";
+	protected String backURL = "default.jsp";
 	
-	public String getMessage();
-	public String getErrorType();
-	public String getBackURL();
+	/**
+	 * @return Returns the backURL.
+	 */
+	public final String getBackURL()
+	{
+		return backURL;
+	}
+
+	/**
+	 * @return Returns the errorType.
+	 */
+	public final String getErrorType()
+	{
+		return errorType;
+	}
+
+	/**
+	 * @return Returns the message.
+	 */
+	public final String getMessage()
+	{
+		return message;
+	}
+	
+	protected AEManager lookupAEManager() throws Exception
+	{
+		AEManagerHome home =
+			(AEManagerHome) EJBHomeFactory.getFactory().lookup(
+					AEManagerHome.class,
+					AEManagerHome.JNDI_NAME);
+		return home.create();
+	}		
+	
 }

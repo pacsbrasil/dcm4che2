@@ -6,11 +6,12 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:internal="urn:my-internal-data">
 
+   <xsl:variable name="page_title">AE Edit</xsl:variable>
    <xsl:include href  = "page.xsl" />
 
    <xsl:template match="model/AE">
-			<form action="aesubmit.m" method="post">
-			<input type="hidden" name="oldtitle" value="{title}"/>
+			<form action="aeeditsubmit.m" method="post">
+			<input type="hidden" name="pk" value="{pk}"/>
 			<table border="1" cellspacing="0" cellpadding="0" width="100%"><tr><td>
 				<table border="0">
 					<tr>

@@ -82,29 +82,50 @@ default-transform-type="xslt">
 	    <view type="redirect" path="folder.m" name="success"/>        
      </command>
 
+	<!-- ****** AE related commands ******-->
+
     <command name="ae">
-        <controller class="org.dcm4chex.archive.web.maverick.AEListCtrl" />    
+        <controller class="org.dcm4chex.archive.web.maverick.ae.AEListCtrl" />    
 	    <view name="success">
     	  <transform path="ae_list.xsl" />
 	    </view>
      </command>
 
     <command name="aeedit">
-        <controller class="org.dcm4chex.archive.web.maverick.AEEditCtrl" />    
-	    <view name="edit">
+        <controller class="org.dcm4chex.archive.web.maverick.ae.AEEditCtrl" />    
+	    <view name="success">
     	  <transform path="ae_edit.xsl" />
 	    </view>
-	    <view name="new">
+      <view ref="error" />
+     </command>
+
+    <command name="aeeditsubmit">
+        <controller class="org.dcm4chex.archive.web.maverick.ae.AEEditSubmitCtrl" />    
+	    <view name="success" type="redirect" path="ae.m"/>
+        <view ref="error" />
+     </command>
+     
+    <command name="aenew">
+    	<controller class="org.dcm4chex.archive.web.maverick.ae.AENewCtrl" />    
+	    <view name="success">
     	  <transform path="ae_new.xsl" />
 	    </view>
       <view ref="error" />
      </command>
 
-    <command name="aesubmit">
-        <controller class="org.dcm4chex.archive.web.maverick.AESubmitCtrl" />    
-	    <view name="success" type="redirect" path="ae.m"/>
-        <view ref="error" />
+    <command name="aenewsubmit">
+        <controller class="org.dcm4chex.archive.web.maverick.ae.AENewSubmitCtrl" />    
+        <view name="success" type="redirect" path="ae.m"/>
+      <view ref="error" />
      </command>
+
+    <command name="aedelete">
+    	<controller class="org.dcm4chex.archive.web.maverick.ae.AEDeleteCtrl" />    
+	    <view name="success" type="redirect" path="ae.m"/>
+	    <view ref="error" />
+     </command>
+
+	<!-- ****** END AE related commands ******-->
      
   </commands>
 </maverick>

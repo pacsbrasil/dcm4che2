@@ -6,10 +6,11 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:internal="urn:my-internal-data">
 
+   <xsl:variable name="page_title">New AE</xsl:variable>
    <xsl:include href  = "page.xsl" />
 
    <xsl:template match="model/AE">
-			<form action="aesubmit.m" method="post">
+			<form action="aenewsubmit.m" method="post">
 			<table border="1" cellspacing="0" cellpadding="0" width="100%"><tr><td>
 				<table border="0">
 					<tr>
@@ -46,12 +47,6 @@
 			</td></tr></table>
 			</form>
    </xsl:template>
-	<xsl:template match="model/errorType">
-	</xsl:template>
-	<xsl:template match="model/message">
-	</xsl:template>
-	<xsl:template match="model/backURL">
-	</xsl:template>
 </xsl:stylesheet>
 
 

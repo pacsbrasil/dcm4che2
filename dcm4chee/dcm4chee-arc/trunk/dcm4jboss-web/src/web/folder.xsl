@@ -11,6 +11,7 @@
 	encoding="ISO-8859-1"
 	/>
 	
+   <xsl:variable name="page_title">Patient List</xsl:variable>
 	<xsl:include href  = "page.xsl" />
 	
 	<xsl:template match="model">
@@ -57,8 +58,14 @@
 								</input>
 							  <input type="submit" name="send" value="Send" disabled="disabled"/>
 							  <input type="submit" name="move" value="Move" disabled="disabled"/>
-							  <input type="submit" name="merge" value="Merge" disabled="disabled"/>
-							  <input type="submit" name="del" value="Del" onclick="return confirm('Are you sure you want to delete?')">
+							  
+							  <input type="submit" name="merge" value="Merge"  onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+								</input>							  
+								
+							  	<input type="submit" name="del" value="Del" onclick="return confirm('Are you sure you want to delete?')">
 								<xsl:if test="total &lt;= 0">
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>

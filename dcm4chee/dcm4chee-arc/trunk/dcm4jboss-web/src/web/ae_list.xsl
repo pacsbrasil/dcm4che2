@@ -6,6 +6,7 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:internal="urn:my-internal-data">
 
+   <xsl:variable name="page_title">AE List</xsl:variable>
    <xsl:include href  = "page.xsl" />
 
    <xsl:template match="model">
@@ -21,7 +22,7 @@
 					<xsl:apply-templates select="AEs/item"/>
 					<tr>
 						<td>
-							  <a href="aeedit.m?call=new">Add New AE</a>						
+							  <a href="aenew.m">Add New AE</a>						
 						</td>
 					</tr>
 				</table>
@@ -43,10 +44,10 @@
 					<xsl:value-of select="cipherSuites"/>
 	        </td>
 			<td>
-					<a href="aeedit.m?title={title}&amp;hostName={hostName}&amp;port={port}&amp;cipherSuites={cipherSuites}&amp;call=edit">Edit</a>
+					<a href="aeedit.m?pk={pk}">Edit</a>
 	        </td>
 			<td>
-					<a href="aesubmit.m?title={title}&amp;delete=true" onclick="return confirm('Are you sure you want to delete?')">Delete</a>					
+					<a href="aedelete.m?pk={pk}" onclick="return confirm('Are you sure you want to delete?')">Delete</a>					
 			</td>
 		</tr>
 	</xsl:template>
