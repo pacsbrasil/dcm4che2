@@ -480,6 +480,7 @@ public class DcmSnd implements PollDirSrv.Handler {
                             parser.getReadVR(),
                             parser.getReadLength());
                         writeValueTo(out, false);
+						parser.parseHeader();
                     }
                     if (parser.getReadTag() != Tags.SeqDelimitationItem) {
                         throw new DcmParseException("Unexpected Tag:"
