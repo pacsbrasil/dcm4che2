@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -53,6 +54,7 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
@@ -80,9 +82,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Tags.SOPClassUID,
             };
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    static final AssociationFactory af = AssociationFactory.getInstance();
 
-    private static final DcmParserFactory pf = DcmParserFactory.getInstance();
+    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+
+    static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
     private StorageHome storageHome;
 
@@ -90,18 +94,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private final DataSourceFactory dsf;
     private String ejbHostName;
     private int forwardPriority = Command.LOW;
-    private String aet;
-    private String[] retrieveAETs;
-    private String[] forwardAETs;
-    private String[] storageDirs;
+    private String retrieveAETs;
+    private String forwardAETs;
+    private String storageDirs;
+    private File[] storageDirFiles;
 
     public StoreScp(Logger log, DataSourceFactory dsf) {
         this.log = log;
         this.dsf = dsf;
-    }
-
-    public void setAET(String aet) {
-        this.aet = aet;
     }
 
     public String getEjbHostName() {
@@ -112,22 +112,22 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.ejbHostName = ejbHostName;
     }
 
-    public final String[] getRetrieveAETs() {
+    public final String getRetrieveAETs() {
         return retrieveAETs;
     }
 
-    public final void setRetrieveAETs(String[] aets) {
-        if (aets == null || aets.length == 0) {
+    public final void setRetrieveAETs(String aets) {
+        if (aets == null || aets.length() == 0) {
             throw new IllegalArgumentException();
         }
         this.retrieveAETs = aets;
     }
 
-    public final String[] getForwardAETs() {
+    public final String getForwardAETs() {
         return forwardAETs;
     }
 
-    public final void setForwardAETs(String[] aets) {
+    public final void setForwardAETs(String aets) {
         this.forwardAETs = aets;
     }
 
@@ -139,22 +139,28 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.forwardPriority = forwardPriority;
     }
 
-    public final String[] getStorageDirs() {
+    public final String getStorageDirs() {
         return storageDirs;
     }
 
-    public final void setStorageDirs(String[] dirs) throws IOException {
-        if (dirs == null || dirs.length == 0) {
+    public final void setStorageDirs(String dirs) throws IOException {
+        if (dirs == null) {
             throw new IllegalArgumentException();
         }
-        for (int i = 0; i < dirs.length; i++) {
-            dirs[i] = checkStorageDir(dirs[i]);
+        StringTokenizer stok = new StringTokenizer(dirs, ", ");
+        File[] tmp = new File[stok.countTokens()];
+        if (tmp.length == 0) {
+            throw new IllegalArgumentException(dirs);
         }
-        this.storageDirs = (String[]) dirs.clone();
+        for (int i = 0; i < tmp.length; i++) {
+            tmp[i] = checkStorageDir(stok.nextToken());
+        }
+        this.storageDirs = dirs;
+        this.storageDirFiles = tmp;
     }
 
-    private String checkStorageDir(String dir) throws IOException {
-        File f = new File(dir);
+    private File checkStorageDir(String dir) throws IOException {
+        File f = new File(dir.replace('/', File.separatorChar));
         if (!f.exists()) {
             log.warn("directory " + dir + " does not exist - create new one");
             if (!f.mkdirs()) {
@@ -168,14 +174,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             log.error(prompt);
             throw new IOException(prompt);
         }
-        return f.getCanonicalPath();
+        return f;
     }
 
     void checkReadyToStart() {
-        if (storageDirs == null || storageDirs.length == 0) {
+        if (storageDirFiles == null || storageDirFiles.length == 0) {
             throw new IllegalStateException("No Storage Directory configured!");
         }
-        if (retrieveAETs == null || retrieveAETs.length == 0) {
+        if (retrieveAETs == null || retrieveAETs.trim().length() == 0) {
             throw new IllegalStateException("No Retrieve AET configured!");
         }
     }
@@ -201,38 +207,39 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             checkDataset(ds);
 
             Calendar today = Calendar.getInstance();
-            final int day = today.get(Calendar.DAY_OF_MONTH);
-            String basedir = storageDirs[day % storageDirs.length];
-            String[] fileIDs =
-                {
-                    String.valueOf(today.get(Calendar.YEAR)),
-                    toDec(today.get(Calendar.MONTH) + 1),
-                    toDec(day),
-                    toHex(ds.getString(Tags.StudyInstanceUID).hashCode()),
-                    toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()),
-                    toHex(ds.getString(Tags.SOPInstanceUID).hashCode())};
-            File file = toFile(basedir, fileIDs);
-            file.getParentFile().mkdirs();
+            File dir =
+                storageDirFiles[today.get(Calendar.DAY_OF_MONTH)
+                    % storageDirFiles.length];
+            File file = makeFile(dir, today, ds);
             MessageDigest md = MessageDigest.getInstance("MD5");
             storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
-            storage.store(
-                ds,
-                retrieveAETs,
-                basedir.replace(File.separatorChar, '/'),
-                fileIDs[0]
-                    + '/'
-                    + fileIDs[1]
-                    + '/'
-                    + fileIDs[2]
-                    + '/'
-                    + fileIDs[3]
-                    + '/'
-                    + fileIDs[4]
-                    + '/'
-                    + fileIDs[5],
-                (int) file.length(),
-                md.digest());
-            rspCmd.putUS(Tags.Status, Status.Success);
+            String dirPath =
+                dir.getCanonicalPath().replace(File.separatorChar, '/');
+            String filePath =
+                file.getCanonicalPath().replace(
+                    File.separatorChar,
+                    '/').substring(
+                    dirPath.length() + 1);
+            Dataset coercedElements =
+                storage.store(
+                    ds,
+                    retrieveAETs,
+                    dirPath,
+                    filePath,
+                    (int) file.length(),
+                    md.digest());
+            if (coercedElements.isEmpty()) {
+                rspCmd.putUS(Tags.Status, Status.Success);
+            } else {
+                int[] coercedTags = new int[coercedElements.size()];
+                Iterator it = coercedElements.iterator();
+                for (int i = 0; i < coercedTags.length; i++) {
+                    coercedTags[i] = ((DcmElement) it.next()).tag();
+                }
+                rspCmd.putAT(Tags.OffendingElement, coercedTags);
+                rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
+                ds.putAll(coercedElements);
+            }
             updateStoredStudiesInfo(assoc.getAssociation(), ds);
         } catch (DcmServiceException e) {
             throw e;
@@ -243,10 +250,35 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (storage != null) {
                 try {
                     storage.remove();
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
             in.close();
         }
+    }
+
+    private File makeFile(File basedir, Calendar today, Dataset ds) {
+        File dir =
+            new File(
+                basedir,
+                String.valueOf(today.get(Calendar.YEAR))
+                    + File.separator
+                    + toDec(today.get(Calendar.MONTH) + 1)
+                    + File.separator
+                    + toDec(today.get(Calendar.DAY_OF_MONTH))
+                    + File.separator
+                    + toHex(ds.getString(Tags.StudyInstanceUID).hashCode())
+                    + File.separator
+                    + toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        int hash = ds.getString(Tags.SOPInstanceUID).hashCode();
+        File f;
+        while ((f = new File(dir, toHex(hash))).exists()) {
+            ++hash;
+        }
+        return f;
     }
 
     private File toFile(String basedir, String[] fileIDs) {
@@ -264,7 +296,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     + fileIDs[4]);
         File file;
         while ((file = new File(dir, fileIDs[5])).exists()) {
-            fileIDs[5] = toHex(Integer.parseInt(fileIDs[5], 16) + 1);
+            fileIDs[5] = toHex((int) Long.parseLong(fileIDs[5], 16) + 1);
         }
         return file;
     }
@@ -291,7 +323,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             } finally {
                 try {
                     jndiCtx.close();
-                } catch (NamingException ignore) {}
+                } catch (NamingException ignore) {
+                }
             }
         }
         return storageHome;
@@ -322,7 +355,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         } finally {
             try {
                 dos.close();
-            } catch (IOException ignore) {}
+            } catch (IOException ignore) {
+            }
         }
     }
 
@@ -377,7 +411,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             'D',
             'E',
             'F' };
-
     private String toHex(int val) {
         char[] ch8 = new char[8];
         for (int i = 8; --i >= 0; val >>= 4) {
@@ -395,22 +428,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (dir.mkdir()) {
             log.info("M-WRITE dir:" + dir);
         }
+    } // Implementation of AssociationListener
+    public void write(Association src, PDU pdu) {
     }
 
-    // Implementation of AssociationListener
-    public void write(Association src, PDU pdu) {}
+    public void received(Association src, PDU pdu) {
+    }
 
-    public void received(Association src, PDU pdu) {}
+    public void write(Association src, Dimse dimse) {
+    }
 
-    public void write(Association src, Dimse dimse) {}
+    public void received(Association src, Dimse dimse) {
+    }
 
-    public void received(Association src, Dimse dimse) {}
-
-    public void error(Association src, IOException ioe) {}
-
-    // preload ForwardTask class to avoid NullPointerException
-    // by jboss's UnifiedClassLoader called from close() 
-    private final Class clazz = ForwardTask.class;
+    public void error(Association src, IOException ioe) {
+    }
 
     public void close(Association assoc) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
@@ -418,7 +450,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             return;
         }
         updateStudies(storedStudiesInfo);
-        if (forwardAETs != null && forwardAETs.length != 0) {
+        if (forwardAETs != null && forwardAETs.length() != 0) {
             AEData retrieveAE = null;
             try {
                 retrieveAE = getRetrieveAE();
@@ -432,7 +464,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 try {
                     new ForwardTask(
                         log,
-                        aet,
+                        assoc.getCalledAET(),
                         retrieveAE,
                         storedStudiesInfo.values(),
                         forwardAETs,
@@ -465,7 +497,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         try {
             storage.remove();
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
     }
 
     private void updateStoredStudiesInfo(Association assoc, Dataset ds) {
@@ -510,11 +543,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private AEData getRetrieveAE() throws SQLException, NamingException {
         AEData aeData = null;
-        for (int i = 0; aeData == null && i < retrieveAETs.length; i++) {
-            aeData = queryAEData(retrieveAETs[i]);
-            if (aeData == null) {
-                log.warn("Unkown Retrieve AET " + retrieveAETs[i]);
+        StringTokenizer stok = new StringTokenizer(retrieveAETs, "\\");
+        while (stok.hasMoreTokens()) {
+            String aet = stok.nextToken();
+            aeData = queryAEData(aet);
+            if (aeData != null) {
+                return aeData;
             }
+            log.warn("Unkown Retrieve AET " + aet);
         }
         return aeData;
     }

@@ -75,7 +75,10 @@ class FileDataSource implements DataSource
             Dataset ds = objFact.newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-            updateAttrs(ds);
+            updateAttrs(ds, fileInfo.patAttrs);
+            updateAttrs(ds, fileInfo.studyAttrs);
+            updateAttrs(ds, fileInfo.seriesAttrs);
+            updateAttrs(ds, fileInfo.instAttrs);
             ds.writeDataset(out, enc);
             if (parser.getReadTag() == Tags.PixelData)
             {
@@ -145,9 +148,9 @@ class FileDataSource implements DataSource
     /**
 	 * @param ds
 	 */
-    private void updateAttrs(Dataset ds) throws IOException
+    private void updateAttrs(Dataset ds, byte[] attrs) throws IOException
     {
-        ByteArrayInputStream bis = new ByteArrayInputStream(fileInfo.patAttrs);
+        ByteArrayInputStream bis = new ByteArrayInputStream(attrs);
         DcmParser parser = parserFact.newDcmParser(bis);
         parser.setDcmHandler(ds.getDcmHandler());
         parser.parseDataset(DcmDecodeParam.EVR_LE, -1);

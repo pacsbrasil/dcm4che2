@@ -22,8 +22,6 @@ package org.dcm4chex.service;
 
 import java.beans.PropertyEditor;
 
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.dcm4che.dict.UIDs;
@@ -243,14 +241,6 @@ public class QueryRetrieveScpService
      */
     public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
         moveScp.setSendPendingMoveRSP(sendPendingMoveRSP);
-    }
-
-    protected ObjectName getObjectName(MBeanServer server, ObjectName name)
-        throws MalformedObjectNameException
-    {
-        super.getObjectName(server, name);
-        findScp.setAET(aet);
-        return name;
     }
 
     protected void bindDcmServices(DcmServiceRegistry services)

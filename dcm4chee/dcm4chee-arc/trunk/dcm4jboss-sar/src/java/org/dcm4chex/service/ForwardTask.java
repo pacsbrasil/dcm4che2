@@ -25,18 +25,17 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
@@ -53,13 +52,10 @@ final class ForwardTask implements Runnable, DimseListener {
     private static final String[] NATIVE_TS =
         { UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian };
     private static final int PCID = 1;
-    private static final AssociationFactory af =
-        AssociationFactory.getInstance();
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private final Logger log;
     private final Collection storedStudiesInfo;
-    private final String[] destAETs;
+    private final String destAETs;
     private final ActiveAssociation moveAssoc;
     private final int priority;
 
@@ -68,12 +64,12 @@ final class ForwardTask implements Runnable, DimseListener {
         String callingAET,
         AEData moveSCP,
         Collection storedStudiesInfo,
-        String[] destAETs,
+        String destAETs,
         int priority)
         throws UnknownHostException, IOException {
         this.log = log;
         this.storedStudiesInfo = storedStudiesInfo;
-        this.destAETs = (String[]) destAETs.clone();
+        this.destAETs = destAETs;
         this.moveAssoc = openAssociation(callingAET, moveSCP);
         this.priority = priority;
     }
@@ -82,12 +78,12 @@ final class ForwardTask implements Runnable, DimseListener {
         String callingAET,
         AEData moveSCP)
         throws UnknownHostException, IOException {
-        Association a = af.newRequestor(createSocket(moveSCP));
-        AAssociateRQ rq = af.newAAssociateRQ();
+        Association a = StoreScp.af.newRequestor(createSocket(moveSCP));
+        AAssociateRQ rq = StoreScp.af.newAAssociateRQ();
         rq.setCalledAET(moveSCP.getTitle());
         rq.setCallingAET(callingAET);
         rq.addPresContext(
-            af.newPresContext(
+            StoreScp.af.newPresContext(
                 PCID,
                 UIDs.StudyRootQueryRetrieveInformationModelMOVE,
                 NATIVE_TS));
@@ -95,7 +91,7 @@ final class ForwardTask implements Runnable, DimseListener {
         if (!(ac instanceof AAssociateAC)) {
             throw new IOException("Association not accepted by " + moveSCP);
         }
-        ActiveAssociation aa = af.newActiveAssociation(a, null);
+        ActiveAssociation aa = StoreScp.af.newActiveAssociation(a, null);
         aa.start();
         if (a.getAcceptedTransferSyntaxUID(PCID) == null) {
             try {
@@ -129,8 +125,9 @@ final class ForwardTask implements Runnable, DimseListener {
                     sopIUIDs[j] =
                         refSOPSeq.getItem(j).getString(Tags.RefSOPInstanceUID);
                 }
-                for (int k = 0; k < destAETs.length; ++k) {
-                    doMove(studyIUID, serIUID, sopIUIDs, destAETs[k]);
+                StringTokenizer stok = new StringTokenizer(destAETs, "\\");
+                while (stok.hasMoreTokens()) {
+                    doMove(studyIUID, serIUID, sopIUIDs, stok.nextToken());
                 }
             }
         }
@@ -141,19 +138,19 @@ final class ForwardTask implements Runnable, DimseListener {
         String seriesIUID,
         String[] sopIUIDs,
         String moveDest) {
-        Command cmd = dof.newCommand();
+        Command cmd = StoreScp.dof.newCommand();
         cmd.initCMoveRQ(
             moveAssoc.getAssociation().nextMsgID(),
             UIDs.StudyRootQueryRetrieveInformationModelMOVE,
             priority,
             moveDest);
-        Dataset ds = dof.newDataset();
+        Dataset ds = StoreScp.dof.newDataset();
         ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         ds.putUI(Tags.StudyInstanceUID, studyIUID);
         ds.putUI(Tags.SeriesInstanceUID, seriesIUID);
         ds.putUI(Tags.SOPInstanceUID, sopIUIDs);
         try {
-            moveAssoc.invoke(af.newDimse(PCID, cmd, ds), this);
+            moveAssoc.invoke(StoreScp.af.newDimse(PCID, cmd, ds), this);
         } catch (Exception e) {
             log.error(
                 "Failed to invoke move for forwarding "

@@ -23,8 +23,6 @@ package org.dcm4chex.service;
 import java.beans.PropertyEditor;
 import java.io.IOException;
 
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.dcm4che.dict.UIDs;
@@ -273,28 +271,28 @@ public class StoreScpService
     /**
      * @jmx.managed-attribute
      */
-    public String[] getStorageDirs() {
+    public String getStorageDirs() {
         return scp.getStorageDirs();
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public void setStorageDirs(String[] dirs) throws IOException {
+    public void setStorageDirs(String dirs) throws IOException {
         scp.setStorageDirs(dirs);
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public String[] getForwardAETs() {
+    public String getForwardAETs() {
         return scp.getForwardAETs();
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public void setForwardAETs(String[] aets) {
+    public void setForwardAETs(String aets) {
         scp.setForwardAETs(aets);
     }
 
@@ -315,14 +313,14 @@ public class StoreScpService
     /**
      * @jmx.managed-attribute
      */
-    public String[] getRetrieveAETs() {
+    public String getRetrieveAETs() {
         return scp.getRetrieveAETs();
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public void setRetrieveAETs(String[] aets) {
+    public void setRetrieveAETs(String aets) {
         scp.setRetrieveAETs(aets);
     }
 
@@ -1358,15 +1356,6 @@ public class StoreScpService
         super.startService();
     }
 
-    protected ObjectName getObjectName(MBeanServer server, ObjectName name)
-        throws MalformedObjectNameException
-    {
-        super.getObjectName(server, name);
-        scp.setAET(aet);
-        return name;
-    }
-
-    
     protected void bindDcmServices(DcmServiceRegistry services) {
         for (int i = 0; i < STORAGE_AS.length; ++i) {
             services.bind(STORAGE_AS[i], scp);

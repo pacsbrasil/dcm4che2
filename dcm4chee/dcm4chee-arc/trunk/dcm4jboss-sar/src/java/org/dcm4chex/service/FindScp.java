@@ -44,18 +44,12 @@ import org.jboss.logging.Logger;
 public class FindScp extends DcmServiceBase {
     private final Logger log;
     private final DataSourceFactory dsf;
-    private String aet;
 
     public FindScp(Logger log, DataSourceFactory dsf) {
         this.log = log;
         this.dsf = dsf;
     }
 
-    public final void setAET(String aet)
-    {
-        this.aet = aet;
-    }
-    
     protected MultiDimseRsp doCFind(
         ActiveAssociation assoc,
         Dimse rq,
@@ -102,7 +96,6 @@ public class FindScp extends DcmServiceBase {
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
                 Dataset data = queryCmd.getDataset();
-                data.putAE(Tags.RetrieveAET, aet);
                 return data;
             } catch (SQLException e) {
                 log.error("Retrieve DB record failed:", e);
