@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.2.0"/>
+	<property name="version" value="0.3.0"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
@@ -79,7 +79,6 @@
 	</path>
 	
 	<property name="src.java" value="${basedir}/src/java"/>
-	<property name="src.conf" value="${basedir}/src/conf"/>
 	<property name="src.etc" value="${basedir}/src/etc"/>
 	<property name="etc.db2" value="${src.etc}/db2"/>
 	<property name="test.dir" value="${basedir}/test"/>

@@ -1,3 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dcm4jboss-attribute-coercions>
+<!-- Example #1 --> 
+  <if>
+    <param name="calling-aet">ANONYMOUS</param>
+  </if>
+  <then>
+<!-- Patient's Name -->
+    <attr tag="(0010,0010)">Ymous^Anon</attr>
+  </then>
+
+<!-- Example #2 --> 
+  <if>
+    <param name="called-aet">STORE_SCP</param>
+<!-- No Performed Procedure Step Start Date -->
+    <attr tag="(0040,0244)"/>
+  </if>
+  <then>
+<!-- Performed Procedure Step Start Date = Series Date -->
+    <attr tag="(0040,0244)">$(0008,0021)</attr>
+<!-- Performed Procedure Step Start Time = Series Time -->
+    <attr tag="(0040,0245)">$(0008,0031)</attr>
+  </then>
+  
+<!-- Example #3 --> 
+  <lut name="PatientPosition">
+    <item key="HFP">Head First-Prone</item>
+    <item key="HFS">Head First-Supine</item>
+    <item key="HFDR">Head First-Decubitus Right</item>
+    <item key="HFDL">Head First-Decubitus Left</item>
+    <item key="FFDR">Feet First-Decubitus Right</item>
+    <item key="FFDL">Feet First-Decubitus Left</item>
+    <item key="FFP">Feet First-Prone</item>
+    <item key="FFS">Feet First-Supine</item>
+  </lut>
+  <if>
+    <param name="called-aet">STORE_SCP</param>
+<!-- Manufacturer -->
+    <attr tag="(0010,0010)">GE MEDICAL SYSTEMS</attr>
+<!-- Manufacturer's Model Name -->
+    <attr tag="(0008,1090)">RHAPSODE</attr>
+  </if>
+  <then>
+<!-- Series Description = Patient Position, Contrast/Bolus Agent Contrast/Bolus Route -->
+    <attr tag="(0008,103E)">$(0018,5100)[0]{PatientPosition}, $(0018,0010)[0] $(0018,1040)[0]</attr>
+  </then>
 </dcm4jboss-attribute-coercions>

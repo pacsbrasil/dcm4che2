@@ -19,7 +19,7 @@
  */
 package org.dcm4chex.archive.ejb.conf;
 
-import java.util.Properties;
+import java.util.Hashtable;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -35,16 +35,16 @@ public class CoercionCondition {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     Dataset condition = dof.newDataset();
-    Properties props = new Properties();
+    Hashtable params = new Hashtable();
 
     public boolean match(String callingAET, String calledAET, Dataset ds) {
-        return matchProperty("calling-aet", callingAET)
-            && matchProperty("called-aet", calledAET)
-            && ds.match(condition, false);
+        return matchParam("calling-aet", callingAET)
+            && matchParam("called-aet", calledAET)
+            && ds.match(condition, false, false);
     }
     
-    protected boolean matchProperty(String name, String value) {
-        String s = props.getProperty(name);
+    protected boolean matchParam(String name, String value) {
+        String s = (String) params.get(name);
         return s == null || s.length() == 0 || s.equals(value);
     }
 }
