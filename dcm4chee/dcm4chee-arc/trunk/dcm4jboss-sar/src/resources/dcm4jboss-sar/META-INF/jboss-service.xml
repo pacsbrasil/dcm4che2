@@ -105,6 +105,8 @@
 
     <attribute name="RetrieveAETs">QR_SCP</attribute>
 
+    <attribute name="MaskWarningAsSuccessForCallingAETs"></attribute>
+
     <attribute name="ForwardAETs"></attribute>
 
     <attribute name="UpdateDatabaseMaxRetries">2</attribute>

@@ -30,9 +30,11 @@ import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -58,12 +60,12 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueue;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueueHome;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.util.*;
 import org.jboss.logging.Logger;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -97,6 +99,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private ForwardAETs forwardAETs = new ForwardAETs();
     private String storageDirs;
     private File[] storageDirFiles;
+    private String maskWarningAsSuccessForCallingAETs = "";
+    private HashSet warningAsSuccessSet = new HashSet();
 
     public StoreScp(Logger log) {
         this.log = log;
@@ -111,6 +115,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             throw new IllegalArgumentException();
         }
         this.retrieveAETs = aets;
+    }
+
+    public final String getMaskWarningAsSuccessForCallingAETs() {
+        return maskWarningAsSuccessForCallingAETs;
+    }
+
+    public final void setMaskWarningAsSuccessForCallingAETs(String aets) {
+        maskWarningAsSuccessForCallingAETs = aets;
+        warningAsSuccessSet.clear();
+        if (aets != null && aets.trim().length() != 0) {
+            warningAsSuccessSet.addAll(
+                Arrays.asList(StringUtils.split(aets.trim(), '\\')));
+        }
     }
 
     public final String getForwardAETs() {
@@ -238,7 +255,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     filePath,
                     (int) file.length(),
                     md.digest());
-            if (coercedElements.isEmpty()) {
+            if (coercedElements.isEmpty()
+                || warningAsSuccessSet.contains(assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
             } else {
                 int[] coercedTags = new int[coercedElements.size()];
@@ -253,11 +271,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             updateStoredStudiesInfo(assoc, ds);
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
-            deleteFailedStorage(file);            
+            deleteFailedStorage(file);
             throw e;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            deleteFailedStorage(file);            
+            deleteFailedStorage(file);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         } finally {
             in.close();
@@ -265,7 +283,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void deleteFailedStorage(File file) {
-        if (file == null) return;
+        if (file == null)
+            return;
         log.info("M-DELETE file:" + file);
         file.delete();
     }
@@ -320,8 +339,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         } finally {
             try {
                 storage.remove();
-            } catch (Exception ignore) {
-            }
+            } catch (Exception ignore) {}
         }
     }
 
@@ -410,8 +428,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         } finally {
             try {
                 dos.close();
-            } catch (IOException ignore) {
-            }
+            } catch (IOException ignore) {}
         }
     }
 
@@ -485,52 +502,25 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             log.info("M-WRITE dir:" + dir);
         }
     } // Implementation of AssociationListener
-    public void write(Association src, PDU pdu) {
-    }
+    public void write(Association src, PDU pdu) {}
 
-    public void received(Association src, PDU pdu) {
-    }
+    public void received(Association src, PDU pdu) {}
 
-    public void write(Association src, Dimse dimse) {
-    }
+    public void write(Association src, Dimse dimse) {}
 
-    public void received(Association src, Dimse dimse) {
-    }
+    public void received(Association src, Dimse dimse) {}
 
-    public void error(Association src, IOException ioe) {
-    }
+    public void error(Association src, IOException ioe) {}
 
     public void close(Association assoc) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo != null) {
-            //            updateStudies(storedStudiesInfo.keySet().iterator());
             forward(
                 forwardAETs.get(assoc.getCallingAET()),
                 storedStudiesInfo.values().iterator());
         }
     }
-    /*
-        private void updateStudies(Iterator suids) {
-            Storage storage;
-            try {
-                storage = getStorageHome().create();
-            } catch (Exception e) {
-                log.error("Failed to update Studies", e);
-                return;
-            }
-            while (suids.hasNext()) {
-                final String suid = (String) suids.next();
-                try {
-                    storage.updateStudy(suid);
-                } catch (Exception e) {
-                    log.error("Failed to update Study with UID:" + suid, e);
-                }
-            }
-            try {
-                storage.remove();
-            } catch (Exception ignore) {}
-        }
-    */
+
     private void updateStoredStudiesInfo(Association assoc, Dataset ds) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo == null) {
@@ -622,4 +612,5 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
         }
     }
+
 }

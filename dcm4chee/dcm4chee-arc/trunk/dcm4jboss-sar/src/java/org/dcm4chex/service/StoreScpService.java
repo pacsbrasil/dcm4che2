@@ -28,7 +28,6 @@ import javax.management.ObjectName;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4chex.archive.util.*;
 import org.dcm4chex.service.util.AETsEditor;
 
 /**
@@ -42,6 +41,7 @@ public class StoreScpService
     extends AbstractScpService
     implements org.dcm4chex.service.StoreScpServiceMBean {
 
+    
     private final static String[] STORAGE_AS =
         {
             UIDs.ComputedRadiographyImageStorage,
@@ -250,6 +250,20 @@ public class StoreScpService
      */
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getMaskWarningAsSuccessForCallingAETs() {
+        return scp.getMaskWarningAsSuccessForCallingAETs();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setMaskWarningAsSuccessForCallingAETs(String aets) {
+        scp.setMaskWarningAsSuccessForCallingAETs(aets);
     }
 
     /**

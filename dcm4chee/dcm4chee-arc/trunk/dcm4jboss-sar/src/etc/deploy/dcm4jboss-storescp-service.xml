@@ -36,6 +36,14 @@
 	-->
     <attribute name="RetrieveAETs">QR_SCP</attribute>
 
+	<!--
+	Defines an optional list of DICOM Application Entity Title(s) of
+	Storage SCUs, to which a success status shall be replied in the case
+	of Coercion of Data Elements - instead the warning status according DICOM.
+	Multiple values must be separated by '\' characters.
+	-->
+    <attribute name="MaskWarningAsSuccessForCallingAETs"></attribute>
+    
     <!-- 
     Defines an optional list of DICOM Application Entity Title(s) to which 
     composite object instance(s) received by this Storage SCP are forwarded,
