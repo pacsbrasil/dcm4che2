@@ -133,9 +133,16 @@ abstract class MPPSForwardCmd {
     }
 
     private Socket createSocket() throws IOException {
-        return new Socket(aeData.getHostName(), aeData.getPort());
+        String[] cipherSuites = aeData.getCipherSuites();
+        if (cipherSuites == null || cipherSuites.length == 0) {
+            return new Socket(aeData.getHostName(), aeData.getPort());
+        } else {
+            return service.getSocketFactory(cipherSuites).createSocket(
+                    aeData.getHostName(),
+                    aeData.getPort());
+        }
     }
-
+    
     protected abstract Command makeCommand(Association as);
 
     static final class NCreate extends MPPSForwardCmd {

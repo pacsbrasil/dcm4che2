@@ -22,7 +22,6 @@ package org.dcm4chex.service;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -170,8 +169,7 @@ class MoveTask implements Runnable {
         return rq;
     }
 
-    private Socket createSocket()
-    throws DcmServiceException, UnknownHostException, IOException {
+    private Socket createSocket() throws IOException {
         String[] cipherSuites = aeData.getCipherSuites();
         if (cipherSuites == null || cipherSuites.length == 0) {
             return new Socket(aeData.getHostName(), aeData.getPort());

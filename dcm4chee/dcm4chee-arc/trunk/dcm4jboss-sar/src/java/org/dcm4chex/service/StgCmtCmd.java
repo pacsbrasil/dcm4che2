@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -342,8 +341,7 @@ class StgCmtCmd {
             && rs.scp();
     }
 
-    private Socket createSocket()
-        throws DcmServiceException, UnknownHostException, IOException {
+    private Socket createSocket() throws IOException {
         String[] cipherSuites = aeData.getCipherSuites();
         if (cipherSuites == null || cipherSuites.length == 0) {
             return new Socket(aeData.getHostName(), aeData.getPort());
