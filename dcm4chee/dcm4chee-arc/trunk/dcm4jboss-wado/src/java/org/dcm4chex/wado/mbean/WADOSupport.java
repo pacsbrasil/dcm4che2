@@ -176,6 +176,8 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 				} else {
 					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns );
 				}
+			} else {
+				return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get jpeg from requested object");
 			}
 		}
 		if ( file != null ) {
@@ -309,7 +311,13 @@ private BufferedImage getImage(File file, int frame, String rows, String columns
     ImageReader reader = (ImageReader) it.next();
     ImageInputStream in = new FileImageInputStream( file );
     reader.setInput( in );
-	BufferedImage bi = reader.read( frame );
+    BufferedImage bi = null;
+    try {
+    	bi = reader.read( frame );
+    } catch ( Exception x ) {
+    	if (log.isDebugEnabled()) log.debug("Cant read image:", x);
+    	return null;
+    }
 	if ( rows != null || columns != null ) {
 		bi = resize( bi, rows, columns );
 	}
