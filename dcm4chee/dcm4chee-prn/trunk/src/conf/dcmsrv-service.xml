@@ -106,7 +106,7 @@
     Defines file containing key used in SSL handshake, when running in TLS mode.
     Relative path names are resolved using jboss server directory as base directory.
     -->
-    <attribute name="KeyFile">conf/license.p12</attribute>
+    <attribute name="KeyFile">conf/license.jks</attribute>
     
     <!--
     Defines password for access to key file, specified by attribute KeyFile 

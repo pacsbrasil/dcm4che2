@@ -49,7 +49,7 @@
     Defines file containing license. Relative path names are resolved 
     using jboss server directory as base directory.
     -->
-    <attribute name="LicenseFile">conf/license.p12</attribute>
+    <attribute name="LicenseFile">conf/license.jks</attribute>
     
     <!--
     Defines password for access to license file, specified by attribute LicenseFile 

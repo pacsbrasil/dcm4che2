@@ -6,6 +6,10 @@ dcm4che.home=../dcm4che14/build
 # of dcm4jboss [http://sourceforge.org/projects/dcm4che]
 dcm4jboss.home=../dcm4jboss/build
 
+# set property "license.home" to the path of your installation directory
+# of license module
+license.home=../license/build
+
 # set property "jboss.home" to the path of your installation directory
 # of JBoss [http://sourceforge.org/projects/jboss]
 jboss.home=C:/jboss-3.0.4

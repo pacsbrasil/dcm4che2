@@ -18,6 +18,10 @@
   <property name="dcm4jboss.home" value="../dcm4jboss/build"/>
   <property name="dcmsrv.jar" value="${dcm4jboss.home}/lib/dcmsrv.jar"/>
   <property name="auditlog.jar" value="${dcm4jboss.home}/lib/auditlog.jar"/>
+
+  <!-- Override with your license dist location -->
+  <property name="license.home" value="../license/build"/>
+  <property name="check-license.jar" value="${license.home}/lib/check-license.jar"/>
   
   <!-- Override with your JBoss/Web server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-3.0.6"/>
@@ -65,6 +69,7 @@
 
   <path id="build.path">
     <pathelement location="${dcm4che.jar}"/>
+    <pathelement location="${check-license.jar}"/>
     <pathelement location="${jboss.bin}/run.jar"/>
     <pathelement location="${jboss.lib}/jboss-common.jar"/>
     <pathelement location="${jboss.lib}/jboss-system.jar"/>
@@ -83,6 +88,8 @@
     <available property="jboss.present" file="${jboss.lib}/jboss-system.jar" />
     <antcall target="fail_if_no_jboss"/>
     <available property="fop.present" file="${fop.jar}" />
+    <available property="license.present" file="${check-license.jar}" />
+    <antcall target="fail_if_no_license"/>
   </target>
 
   <target name="fetch"
@@ -101,6 +108,10 @@
   <target name="fail_if_no_jboss" unless="jboss.present">
     <fail message="jboss.home=${jboss.home} is not a valid JBoss dist directory"/>
   </target>
+  
+  <target name="fail_if_no_license" unless="license.present">
+    <fail message="license.home=${license.home} is not a valid License dist directory"/>
+  </target>
 
   <target name="init" depends="check-env">
     <echo message="user.home = ${user.home}"/>
@@ -108,6 +119,7 @@
     <echo message="ant.home = ${ant.home}"/>
     <echo message="dcm4che.home = ${dcm4che.home}"/>
     <echo message="dcm4jboss.home = ${dcm4jboss.home}"/>
+    <echo message="license.home = ${license.home}"/>
     <echo message="jboss.home = ${jboss.home}"/>
     <echo message="fop.home = ${fop.home}"/>
     <echo message="docbook-xsl.dist = ${docbook-xsl.dist}"/>
@@ -170,7 +182,7 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, eval-scan-jar, view-plut-jar, check-license-jar"/>
+  <target name="jar" depends="prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, eval-scan-jar, view-plut-jar"/>
   
   <target name="prnscp-jar" depends="compile" unless="dasho.jar">
     <mkdir dir="${build.lib.dir}"/>
@@ -278,25 +290,6 @@
     </jar>
   </target>
   -->
-  <target name="check-license-jar" depends="compile">
-    <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/check-license.jar">
-        <manifest>
-            <attribute
-                name="Main-Class"
-                value="com.tiani.license.LicenseStore"
-            />
-        </manifest>
-        <fileset dir="${build.classes.dir}">
-          <include name="com/tiani/license/LicenseStore*"/>
-          <include name="com/tiani/license/MACReader*"/>          
-        </fileset>
-        <fileset dir="${src.res}">
-           <include name="com/tiani/license/ProductUIDs.properties"/>          
-        </fileset>
-    </jar>
-  </target>
-  
   <target name="dasho-prnscp-jar" depends="compile" if="dasho.jar">
     <copy file="prnscp-${os.name}.dop" todir="${build.dir}">
       <filterset>
@@ -358,6 +351,9 @@
         <fileset dir="${dcm4jboss.home}">
             <include name="lib/auditlog.jar"/>
             <include name="lib/dcmsrv.jar"/>
+        </fileset>
+        <fileset dir="${license.home}">
+            <include name="lib/check-license.jar"/>
         </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>
@@ -453,6 +449,7 @@
         <include name="doc/*"/>
       </fileset>
     </copy>
+    <copy file="${check-license.jar}" todir="${dist.dir}/bin"/>
     <copy file="${jboss.home}/server/default/conf/jboss-minimal.xml"
         tofile="${dist.dir}/server/default/conf/jboss-service.xml"/>
     <copy todir="${dist.dir}">
@@ -471,6 +468,9 @@
         <fileset dir="${dcm4jboss.home}">
             <include name="lib/auditlog.jar"/>
             <include name="lib/dcmsrv.jar"/>
+        </fileset>
+        <fileset dir="${license.home}">
+            <include name="lib/check-license.jar"/>
         </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>
