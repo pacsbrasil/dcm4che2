@@ -28,6 +28,9 @@
  */
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.io.File;
+import java.net.URI;
+
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
@@ -68,5 +71,14 @@ public class FileInfo
         this.status = status;
         this.fsIUID = fsIUID;
     }
+    
+	public File toFile() {
+		try {
+			return new File(new URI("file:" + mnt + "/" + fpath));
+		} catch (Exception e) {
+			throw new IllegalStateException("" + this);
+		}
+		
+	}
 
 }
