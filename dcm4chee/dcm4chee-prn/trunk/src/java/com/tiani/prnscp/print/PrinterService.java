@@ -1978,7 +1978,7 @@ public class PrinterService extends ServiceMBeanSupport implements
                     + ", chromaticity=" + chromaticity, "PrinterCalibration");
         } catch (Exception e) {
             log.warn("Failed to calibrate Printer " + calledAET
-                    + ", chromaticity=" + chromaticity + ": " + e);
+                    + ", chromaticity=" + chromaticity, e);
         }
     }
 

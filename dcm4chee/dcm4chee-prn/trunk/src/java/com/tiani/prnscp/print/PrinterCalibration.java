@@ -345,22 +345,16 @@ public class PrinterCalibration
         Arrays.fill(ddl2od, maxUsed+1, 256, Float.POSITIVE_INFINITY);
         Arrays.fill(ddl2od, 0, minUsed, Float.NEGATIVE_INFINITY);
 
-	if (smoothODs) {
-	    for (int ddl1 = minUsed, ddl2 = minUsed;
-		 ddl1 < maxUsed; 
-		 ddl1 = ddl2) {
-		final float od1 = ddl2od[ddl1];
-		float dOD;
-		while ((dOD = ddl2od[++ddl2] - od1) == 0)
-		    ;
-		if (ddl2 > maxUsed) {
-		    throw new RuntimeException("ddl2[" + ddl2 + "] > maxUsed["
-					       + maxUsed + "]");
-		}
-		for (int i = 1, n = ddl2 - ddl1; i < n; ++i) {
-		    ddl2od[ddl1+i] = od1 + dOD * i / n;
-		}
-	    }
+		if (smoothODs) {
+		    for (int ddl1 = minUsed, ddl2 = minUsed; ddl1 < maxUsed; ddl1 = ddl2) {
+				final float od1 = ddl2od[ddl1];
+				float dOD = 0;
+				while ((dOD = ddl2od[++ddl2] - od1) == 0)
+				    if (ddl2 == maxUsed) break;
+				for (int i = 1, n = ddl2 - ddl1; i < n; ++i) {
+				    ddl2od[ddl1+i] = od1 + dOD * i / n;
+				}
+		    }
         }
         if (Chromaticity.COLOR.equals(chromaticity)) {
             colorMinDensity = (int) (ddl2od[minUsed] * 100);
