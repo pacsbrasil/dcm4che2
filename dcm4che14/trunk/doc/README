@@ -3,10 +3,8 @@ Communications in Medicine) standard, which addresses the exchange of digital
 information between medical imaging equipment.
 
 Additionally to the core library, which is splitted into a specification part 
-and the (reference) implementation, prepared to may be proposed as Java
-Specification Request (JSR) at Sun's Java Community Process (JCP) sometime,
-it also contains (sample) applications which are useful for (end-)users on its
-own. 
+and the (reference) implementation, it also contains (sample) applications
+which are useful for (end-)users on its own. 
 
 dcm4che 1.x is a complete rewrite of dcm4che 0.9.9 for java 1.4 (J2SE 1.4).
 dcm4che 1.x only contains the DICOM core implementation.
@@ -21,10 +19,7 @@ dcm4che 0.x.x are
 + support of asynchrone operation mode
 :
 
-But I have not yet found any time to update the documentation to v1.x -
-and I am afraid, that I will not find time until October 2002, when I have
-to pass IHE Connectathon in Chicago
-(s. http://www.rsna.org/IHE/participation/index.shtml) with the system.
+But I have not yet found any time to update the documentation to v1.x.
 So, I can only invite everyone, to improve the documentation by his/her own 
 contributions.  
 
