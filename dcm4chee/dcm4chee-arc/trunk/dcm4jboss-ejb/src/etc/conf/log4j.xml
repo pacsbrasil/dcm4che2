@@ -199,11 +199,12 @@
    </category>
 
    <!-- Decrease the priority threshold for the org.dcm4cheri.util category
-   		for monitoring thread pool behavior -->
+   		for monitoring thread pool behavior
    <category name="org.dcm4cheri.util">
       <priority value="DEBUG"/>
    </category>
-
+ -->
+ 
    <!-- Limit the org.apache category to INFO -->
    <category name="org.apache">
       <priority value="INFO"/>
