@@ -89,8 +89,7 @@ public final class DirBuilderFactoryImpl extends DirBuilderFactory {
                 filesetID, descriptorFile, specCharset, encParam);
     }
 
-    public DirBuilder newDirBuilder(DirWriter writer, DirBuilderPref pref)
-            throws IOException {
+    public DirBuilder newDirBuilder(DirWriter writer, DirBuilderPref pref) {
         return new DirBuilderImpl(writer, pref);
     }
     

@@ -301,13 +301,7 @@ public class DcmDir {
       if (ds == null) {
          map.put(type, ds = objFact.newDataset());
       }
-      int tag;
-      try {
-         tag = Tags.forName(key.substring(pos2+1));
-      } catch (NoSuchFieldException e) {
-         throw new IllegalArgumentException("Unkown tag name in dcmdir.cfg - "
-               + key.substring(pos2+1));
-      }
+      int tag = Tags.forName(key.substring(pos2+1));
       ds.putXX(tag, VRMap.DEFAULT.lookup(tag));
    }
       
