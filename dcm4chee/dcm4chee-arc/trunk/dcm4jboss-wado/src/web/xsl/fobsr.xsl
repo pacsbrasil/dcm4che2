@@ -3,7 +3,10 @@
     xmlns:fo="http://www.w3.org/1999/XSL/Format" version="1.0">
     <xsl:output method="xml" indent="yes" media-type="text/xml-fo"/>
     <xsl:include href="common.xsl"/>
-    <xsl:variable name="StudyInstanceUID" select="dicomfile/dataset/attr[@tag='0020000D']"/>
+    <xsl:variable name="SR_1" select="'1.2.840.10008.5.1.4.1.1.88.11'"/><!-- BasicTextSR -->
+    <xsl:variable name="SR_2" select="'1.2.840.10008.5.1.4.1.1.88.22'"/><!-- EnhancedSR -->
+    <xsl:variable name="SR_3" select="'1.2.840.10008.5.1.4.1.1.88.33'"/><!-- ComprehensiveSR -->
+    <xsl:variable name="SR_4" select="'1.2.840.10008.5.1.4.1.1.88.59'"/><!-- KeyObjectSelectionDocument -->
     
     <!-- the stylesheet processing entry point -->
 	<xsl:template match="/">
@@ -11,6 +14,7 @@
 	</xsl:template>
     
     <xsl:template match="dataset">
+    	<xsl:variable name="cuid" select="attr[@tag='00080016']"/>
         <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
             <fo:layout-master-set>
                 <fo:simple-page-master master-name="page" page-height="297mm" page-width="210mm"
@@ -82,7 +86,19 @@
 							</fo:table-row>
 						</fo:table-body>
 					</fo:table>
-	  				<xsl:apply-templates select="attr[@tag='0040A730']/item" mode="content"/>
+					<xsl:choose>
+						<xsl:when test="$cuid=$SR_1 or $cuid=$SR_2 or $cuid=$SR_3 or $cuid=$SR_4">
+		  					<xsl:apply-templates select="attr[@tag='0040A730']/item" mode="content"/>
+						</xsl:when>
+						<xsl:when test="$cuid='1.2.840.10008.5.1.4.1.1.11.1'"><!-- GrayscaleSoftcopyPresentationStateStorage -->
+						</xsl:when>
+						<xsl:otherwise> <!-- image -->
+		            		<fo:block font-size="10pt" text-align="center">
+		                		Image instance:<xsl:value-of select="attr[@tag='00080018']"/>
+		            		</fo:block>
+						
+						</xsl:otherwise>
+		  			</xsl:choose>
 			   </fo:flow>
             </fo:page-sequence>
         </fo:root>
