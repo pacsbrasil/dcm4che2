@@ -239,6 +239,11 @@
       <return-type>boolean</return-type>
    </operation>
    <operation impact="INFO">
+      <description>Used internally</description>
+      <name>getFileSystemDirPaths</name>
+      <return-type>[Ljava.lang.String;</return-type>
+   </operation>
+   <operation impact="INFO">
       <description>Show Available Disk Space on Local File Systems</description>
       <name>showAvailableDiskSpace</name>
       <return-type>java.lang.String</return-type>
@@ -266,7 +271,7 @@
       </parameter>
       <return-type>java.lang.Object</return-type>
    </operation>
-   <operation impact="ACTION">
+   <operation impact="INFO">
       <description>Check if it is necessary to free disk space.
       </description>
       <name>isFreeDiskSpaceNecessary</name>

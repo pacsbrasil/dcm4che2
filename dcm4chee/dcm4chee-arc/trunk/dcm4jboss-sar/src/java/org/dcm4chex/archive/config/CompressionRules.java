@@ -30,12 +30,11 @@ public class CompressionRules {
 
     static final int J2LL = 1;
 
-    static final int JPLS = 2;
+    static final int JLSL = 2;
 
     static final int J2KR = 3;
 
-    static final String[] CODES = { "NONE", "JPEGLossless", "JPEGLSLossless",
-            "JPEG2000Lossless"};
+    static final String[] CODES = { "NONE", "JPLL", "JLSL", "J2KR"};
 
     static final String[] TSUIDS = { null, UIDs.JPEGLossless,
             UIDs.JPEGLSLossless, UIDs.JPEG2000Lossless,};

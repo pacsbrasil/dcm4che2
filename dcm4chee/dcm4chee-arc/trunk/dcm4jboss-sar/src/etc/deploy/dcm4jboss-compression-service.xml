@@ -6,7 +6,9 @@
 	name="tiani.archive:service=CompressionService"
 	xmbean-dd="xmdesc/dcm4jboss-compression-xmbean.xml">
 
-    <depends>tiani.archive:service=FileSystemMgt</depends>
+    <depends>
+    	tiani.archive:service=FileSystemMgt
+    </depends>    
   </mbean>
 
 </server>

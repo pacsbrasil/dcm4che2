@@ -85,12 +85,12 @@
       <description>List of image compression rules.
       Format:=['['CONDITION[,..]']']COMPRESSION
       CONDITION:=(calling|called|pmi|cuid|imgtype)[!]=value['|'...]    
-      COMPRESSION:=(NONE|JPEGLossless|JPEGLSLossless|JPEG2000Lossless)
+      COMPRESSION:=(NONE|JPLL|JLSL|J2KR)
       </description>
       <name>CompressionRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JPEGLSLossless;NONE" />
+         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JLSL;NONE" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

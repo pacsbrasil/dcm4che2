@@ -20,10 +20,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.RemoveException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 
@@ -36,7 +32,6 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -366,6 +361,10 @@ public class FileSystemMgtService extends TimerSupport {
     public final boolean isLocalFileSystem(String fsdir) {
         return fsPathSet.contains(fsdir) || rofsPathSet.contains(fsdir);
     }
+    
+    public final String[] getFileSystemDirPaths() {
+        return (String[]) fsPathSet.toArray(new String[fsPathSet.size()]);
+    }    
 
     protected void startService() throws Exception {
          super.startService();
