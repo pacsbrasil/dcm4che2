@@ -38,9 +38,11 @@ final class ArrServiceImpl extends DefaultHandler implements ArrService {
 	private static final String E_ROOT = "IHEYr4";
 	private static final String E_TIMESTAMP = "TimeStamp";
 	private static final String E_HOST = "Host";
-
+    
 	private SAXParserFactory f = SAXParserFactory.newInstance();
 	private SAXParser parser = null;
+
+    private int retcode;
 
 	private String type = null;
 	private String host = null;
@@ -59,10 +61,10 @@ final class ArrServiceImpl extends DefaultHandler implements ArrService {
 		throws ArrInputException
 	{
 		try {
-		f.setNamespaceAware(true);
-		f.setValidating(validating);
-			parser = f.newSAXParser();
-		//parser.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
+			f.setNamespaceAware(true);
+			f.setValidating(validating);
+				parser = f.newSAXParser();
+			//parser.setProperty(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
 		}
 		catch (SAXException se) {
 			throw new ArrInputException("SAX parser exception", se);
@@ -75,11 +77,11 @@ final class ArrServiceImpl extends DefaultHandler implements ArrService {
 	/**
 	* @see org.dcm4che.arr.ArrService#parse(File)
 	*/
-	public void parse(File file)
+	public int parse(File file)
 		throws ArrInputException
 	{
 		try {
-			parse(new FileInputStream(file));
+			return parse(new FileInputStream(file));
 		}
 		catch (FileNotFoundException fnf) {
 			throw new ArrInputException("File not found", fnf);
@@ -89,10 +91,10 @@ final class ArrServiceImpl extends DefaultHandler implements ArrService {
 	/**
 	* @see org.dcm4che.arr.ArrService#parse(String)
 	*/
-	public void parse(String str)
+	public int parse(String str)
 		throws ArrInputException
 	{
-		parse(new ByteArrayInputStream(str.getBytes()));
+		return parse(new ByteArrayInputStream(str.getBytes()));
 	}
 
 	/**
@@ -100,9 +102,13 @@ final class ArrServiceImpl extends DefaultHandler implements ArrService {
 	*
 	* @see org.dcm4che.arr.ArrService#parse(InputStream)
 	*/
-	public void parse(InputStream is)
+	public int parse(InputStream is)
 		throws ArrInputException
 	{
+        timeStamp = null;
+        host = null;
+        type = null;
+        retcode = 0;
 		try {
 			parser.parse(is, this);
 		}
@@ -112,6 +118,12 @@ final class ArrServiceImpl extends DefaultHandler implements ArrService {
 		catch (SAXException se) {
 			throw new ArrInputException("SAX parser exception", se);
 		}
+        finally {
+            //check for unparsed elements and set bitfields appropriately
+            if (type==null || host==null || timeStamp==null)
+                retcode = retcode | ArrService.INVALID_INCOMPLETE;
+            return retcode;
+        }
 	}
 
 	public void startDocument()
@@ -183,9 +195,25 @@ final class ArrServiceImpl extends DefaultHandler implements ArrService {
         chrBuff = null;
     }
 
-    public void error(SAXParseException e)
+    /**
+     * Treat errors as invalid schema
+     */
+    public void error(SAXParseException spe)
+        throws SAXException
     {
-    	System.out.println("\n<<"+e.toString()+">>");
+        //System.out.println("\n<<"+e.toString()+">>");
+        retcode = retcode | ArrService.INVALID_SCHEMA;
+    }
+    
+    /**
+     * Treat any fatal error as violation of well-formed contraint.
+     * Throw SAX parser exception back up to SAXParser::parse() invoker
+     */
+    public void fatalError(SAXParseException spe)
+        throws SAXException
+    {
+        retcode = retcode | ArrService.INVALID_XML;
+        throw spe;
     }
 
     public String getType()

@@ -14,11 +14,15 @@ import org.xml.sax.SAXException;
  * to parse a IHE audit message.
  */
 public interface ArrService {
-	void parse(File file)
+    public static final int INVALID_XML = 1;        //not well-formed xml data (or complete garbage)
+    public static final int INVALID_SCHEMA = 2;     //xml data is well-formed, but data does not validate
+    public static final int INVALID_INCOMPLETE = 4; //could not interpret some/all information such as Hostname, TimeStamp, or Type
+
+	int parse(File file)
 		throws ArrInputException;
-	void parse(String xmlData)
+	int parse(String xmlData)
 		throws ArrInputException;
-	void parse(InputStream is)
+	int parse(InputStream is)
 		throws ArrInputException;
 
 	/**
@@ -42,3 +46,4 @@ public interface ArrService {
 	 */
 	Date getTimeStamp();
 }
+
