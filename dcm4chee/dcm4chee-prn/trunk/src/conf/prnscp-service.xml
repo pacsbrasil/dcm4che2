@@ -10,7 +10,7 @@
 
 <server>
 
-  <classpath codebase="lib" archives="dcm4che.jar,prnscp.jar"/>
+  <classpath codebase="lib" archives="@ARCHIVES@"/>
 
   <mbean code="com.tiani.prnscp.print.PrinterService" 
          name="dcm4chex:service=Printer,aet=TIANI_PRINT">
@@ -123,6 +123,8 @@
     -->
     <attribute name="BorderDensity">WHITE</attribute>
       
+    
+    <attribute name="useBorderDensForGrid">true</attribute>
     <!--
     Defines the default Empty Image Density identifier that is used when the
     Print SCU does not specify Empty Image Density.
