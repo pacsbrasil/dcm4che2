@@ -184,6 +184,17 @@ public abstract class GPSPSBean implements EntityBean {
     public abstract void setSopIuid(String iuid);
 
     /**
+     * @ejb.persistence column-name="gpsps_tuid"
+     * @ejb.interface-method
+     */
+    public abstract String getTransactionUid();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setTransactionUid(String iuid);
+
+    /**
      * @ejb.interface-method
      * @ejb.persistence column-name="start_datetime"
      */
@@ -198,6 +209,7 @@ public abstract class GPSPSBean implements EntityBean {
     public abstract void setExpectedCompletionDateTime(java.sql.Timestamp time);
     
     /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="gpsps_status"
      */
     public abstract int getGpspsStatusAsInt();

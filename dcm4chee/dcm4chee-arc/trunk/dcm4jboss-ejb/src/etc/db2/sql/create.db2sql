@@ -263,6 +263,7 @@ CREATE TABLE gpsps (
 	patient_fk      INTEGER,
 	code_fk         INTEGER,
 	gpsps_iuid      VARCHAR(254) NOT NULL,
+	gpsps_tuid      VARCHAR(254),
 	start_datetime  TIMESTAMP NOT NULL,
 	end_datetime    TIMESTAMP,
 	gpsps_status    INTEGER,
@@ -275,6 +276,7 @@ FOREIGN KEY (code_fk) REFERENCES code(pk)
 CREATE INDEX gpsps_patient_fk ON gpsps(patient_fk);
 CREATE INDEX gpsps_code_fk ON gpsps(code_fk);
 CREATE UNIQUE INDEX gpsps_iuid ON gpsps(gpsps_iuid);
+CREATE INDEX gpsps_tuid ON gpsps(gpsps_tuid);
 CREATE INDEX gpsps_start_time ON gpsps(start_datetime);
 CREATE INDEX gpsps_end_time ON gpsps(end_datetime);
 CREATE INDEX gpsps_status ON gpsps(gpsps_status);

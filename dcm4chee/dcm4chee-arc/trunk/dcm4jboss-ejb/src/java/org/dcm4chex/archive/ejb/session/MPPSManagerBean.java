@@ -141,6 +141,21 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public Dataset getMPPS(String iuid) throws FinderException {
+        try {
+            final MPPSLocal mpps = mppsHome.findBySopIuid(iuid);
+            final PatientLocal pat = mpps.getPatient();
+            Dataset attrs = mpps.getAttributes();            
+			attrs.putAll(pat.getAttributes(false));
+			return attrs;
+        } catch (ObjectNotFoundException e) {
+            return null;
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
     public void updateMPPS(Dataset ds)
         throws DcmServiceException {
         MPPSLocal mpps;
