@@ -25,6 +25,8 @@ package com.tiani.prnscp.print;
 import org.dcm4che.data.Dataset;
 import org.jboss.system.ServiceMBean;
 
+import javax.management.ObjectName;
+
 /**
  * <description>
  *
@@ -46,34 +48,39 @@ public interface PrinterServiceMBean extends ServiceMBean {
    int NORMAL  = 1;
    int WARNING = 2;
    int FAILURE = 3;
+      
+   /** Getter for property printerCalibration.
+    * @return Value of property printerCalibration.
+    */
+   ObjectName getPrinterCalibration();
+   
+   /** Setter for property printerCalibration.
+    * @param printerCalibration New value of property printerCalibration.
+    */
+   void setPrinterCalibration(ObjectName printerCalibration);
    
    /** Getter for property status.
     * @return Value of property status.
-    *
     */
    int getStatusID();
    
    /** Getter for code string for property status.
     * @return String value of property status.
-    *
     */
    String getStatus();
        
    /** Getter for property statusInfo.
     * @return Value of property statusInfo.
-    *
     */
    String getStatusInfo();
    
    /** Getter for property queueName.
     * @return Value of property queueName.
-    *
     */
    String getQueueName();
    
    /** Setter for property queueName.
     * @param queueName New value of property queueName.
-    *
     */
    void setQueueName(String queueName);
    
@@ -90,14 +97,12 @@ public interface PrinterServiceMBean extends ServiceMBean {
    
    /** Getter for property printerConfigurationFile.
     * @return Value of property printerConfigurationFile.
-    *
     */
-   public String getPrinterConfigurationFile();
+   String getPrinterConfigurationFile();
    
    /** Setter for property printerConfigurationFile.
     * @param printerConfigurationFile New value of property printerConfigurationFile.
-    *
     */
-   public void setPrinterConfigurationFile(String printerConfigurationFile);
+   void setPrinterConfigurationFile(String printerConfigurationFile);
    
 }

@@ -81,6 +81,8 @@ public class PrinterService
    };
    
    // Attributes ----------------------------------------------------   
+   private ObjectName printerCalibration;
+   private PrinterCalibrationService calibrationService;
    private QueueConnection conn;
    private QueueSession session;
    private String queueName;
@@ -106,8 +108,26 @@ public class PrinterService
    public String getName() {
       return "Printer";
    }
-   
+      
+   public PrinterCalibrationService getCalibrationService() {
+      return calibrationService;
+   }
+
    // PrinterMBean implementation -----------------------------------
+   
+   /** Getter for property printerCalibration.
+    * @return Value of property printerCalibration.
+    */
+   public ObjectName getPrinterCalibration() {
+      return printerCalibration;
+   }
+   
+   /** Setter for property printerCalibration.
+    * @param printerCalibration New value of property printerCalibration.
+    */
+   public void setPrinterCalibration(ObjectName printerCalibration) {
+      this.printerCalibration = printerCalibration;
+   }
    
    /** Getter for property status.
     * @return Value of property status.
@@ -275,6 +295,8 @@ public class PrinterService
    public void startService()
       throws Exception
    {
+      calibrationService = (PrinterCalibrationService)
+         server.getAttribute(printerCalibration, "Service");
       loadPrinterConfiguration();
       Context iniCtx = new InitialContext();
       QueueConnectionFactory qcf = 
