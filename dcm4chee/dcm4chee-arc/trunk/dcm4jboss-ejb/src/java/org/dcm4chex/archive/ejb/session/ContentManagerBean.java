@@ -170,7 +170,7 @@ public abstract class ContentManagerBean implements SessionBean {
                     study.getNumberOfStudyRelatedSeries(),
                     study.getNumberOfStudyRelatedInstances(),
                     study.getRetrieveAETs(),
-                    study.getAvailability()));
+                    study.getAvailabilitySafe()));
         }
         return result;
     }
@@ -191,7 +191,7 @@ public abstract class ContentManagerBean implements SessionBean {
                     series.getAttributes(),
                     series.getNumberOfSeriesRelatedInstances(),
                     series.getRetrieveAETs(),
-                    series.getAvailability()));
+                    series.getAvailabilitySafe()));
         }
         return result;
     }
@@ -212,8 +212,8 @@ public abstract class ContentManagerBean implements SessionBean {
                     inst.getAttributes(),
                     inst.getRetrieveAETs(),
                     inst.getFiles().size(),
-                    inst.getAvailability(),
-                    inst.getCommitment()));
+                    inst.getAvailabilitySafe(),
+                    inst.getCommitmentSafe()));
         }
         return result;
     }

@@ -23,6 +23,7 @@ ALTER TABLE series
 	ADD COLUMN pps_iuid VARCHAR(254);
 ALTER TABLE series
 	ADD COLUMN hidden SMALLINT;
+UPDATE series SET hidden = 0;
 ALTER TABLE series
 	ADD CONSTRAINT mpps_fk FOREIGN KEY (mpps_fk) REFERENCES mpps(pk);
 CREATE INDEX series_mpps_fk ON series(mpps_fk);

@@ -213,23 +213,43 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * Instance Availability
      *
-     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="availability"
      */
     public abstract int getAvailability();
 
+    /**
+     * @ejb.interface-method
+     */
+    public int getAvailabilitySafe() {
+        try {
+            return getAvailability();
+        } catch (NullPointerException npe) {
+            return 0;
+        }
+    }
+    
     public abstract void setAvailability(int availability);
 
     /**
      * Storage Commitment
      *
-     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="commitment"
      */
     public abstract boolean getCommitment();
 
+    /**
+     * @ejb.interface-method
+     */
+    public boolean getCommitmentSafe() {
+        try {
+            return getCommitment();
+        } catch (NullPointerException npe) {
+            return false;
+        }
+    }
+    
     /**
      * @ejb.interface-method
      */
@@ -335,7 +355,7 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean updateAvailability(int availability) {
-        if (availability != getAvailability()) {
+        if (availability != getAvailabilitySafe()) {
             setAvailability(availability);
             return true;
         }

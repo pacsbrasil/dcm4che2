@@ -194,11 +194,21 @@ public abstract class StudyBean implements EntityBean {
     /**
      * Instance Availability
      *
-     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="availability"
      */
     public abstract int getAvailability();
+
+    /**
+     * @ejb.interface-method
+     */
+    public int getAvailabilitySafe() {
+        try {
+            return getAvailability();
+        } catch (NullPointerException npe) {
+            return 0;
+        }
+    }
 
     public abstract void setAvailability(int availability);
     
@@ -369,9 +379,9 @@ public abstract class StudyBean implements EntityBean {
         int availability = 0;
         for (Iterator it = c.iterator(); it.hasNext();) {
             SeriesLocal series = (SeriesLocal) it.next();
-            availability = Math.max(availability, series.getAvailability());            
+            availability = Math.max(availability, series.getAvailabilitySafe());            
         }
-        if (availability != getAvailability()) {
+        if (availability != getAvailabilitySafe()) {
             setAvailability(availability);
             return true;
         }

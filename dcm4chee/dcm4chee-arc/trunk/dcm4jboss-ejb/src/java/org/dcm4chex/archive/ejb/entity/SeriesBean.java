@@ -228,23 +228,43 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * Instance Availability
      *
-     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="availability"
      */
     public abstract int getAvailability();
 
+    /**
+     * @ejb.interface-method
+     */
+    public int getAvailabilitySafe() {
+        try {
+            return getAvailability();
+        } catch (NullPointerException npe) {
+            return 0;
+        }
+    }
+    
     public abstract void setAvailability(int availability);
 
     /**
      * Hidden Flag
      *
-     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="hidden"
      */
     public abstract boolean getHidden();
 
+    /**
+     * @ejb.interface-method
+     */
+    public boolean getHiddenSafe() {
+        try {
+            return getHidden();
+        } catch (NullPointerException npe) {
+            return false;
+        }
+    }
+    
     public abstract void setHidden(boolean hidden);
 
     /**
@@ -385,7 +405,7 @@ public abstract class SeriesBean implements EntityBean {
     public void incNumberOfSeriesRelatedInstances(int inc) {
         setNumberOfSeriesRelatedInstances(
             getNumberOfSeriesRelatedInstances() + inc);
-        if (!getHidden()) {
+        if (!getHiddenSafe()) {
             getStudy().incNumberOfStudyRelatedInstances(inc);
         }
     }
@@ -394,7 +414,7 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public void hide() {
-        if (getHidden())
+        if (getHiddenSafe())
             return;
         StudyLocal study = getStudy();
         study.incNumberOfStudyRelatedSeries(-1);
@@ -407,7 +427,7 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public void unhide() {
-        if (!getHidden())
+        if (!getHiddenSafe())
             return;
         StudyLocal study = getStudy();
         study.incNumberOfStudyRelatedSeries(1);
@@ -471,9 +491,9 @@ public abstract class SeriesBean implements EntityBean {
         int availability = 0;
         for (Iterator it = c.iterator(); it.hasNext();) {
             InstanceLocal instance = (InstanceLocal) it.next();
-            availability = Math.max(availability, instance.getAvailability());
+            availability = Math.max(availability, instance.getAvailabilitySafe());
         }
-        if (availability != getAvailability()) {
+        if (availability != getAvailabilitySafe()) {
             return false;
         }
         return true;
