@@ -1420,9 +1420,8 @@ public class StoreScpService
     }
 }
 
-    protected void bindDcmServices()
+    protected void bindDcmServices(DcmServiceRegistry services)
     {
-        DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
         for (int i = 0; i < STORAGE_AS.length; ++i)
         {
             services.bind(STORAGE_AS[i], scp);
@@ -1430,9 +1429,8 @@ public class StoreScpService
         dcmHandler.addAssociationListener(scp);
     }
 
-    protected void unbindDcmServices()
+    protected void unbindDcmServices(DcmServiceRegistry services)
     {
-        DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
         for (int i = 0; i < STORAGE_AS.length; ++i)
         {
             services.unbind(STORAGE_AS[i]);

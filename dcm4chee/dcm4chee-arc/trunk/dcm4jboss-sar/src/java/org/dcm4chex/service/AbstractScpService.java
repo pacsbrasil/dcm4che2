@@ -29,6 +29,7 @@ import javax.management.ObjectName;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -57,7 +58,7 @@ abstract class AbstractScpService extends ServiceMBeanSupport
     {
         dcmHandler =
             (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
-        bindDcmServices();
+        bindDcmServices(dcmHandler.getDcmServiceRegistry());
         updatePolicy();
     }
 
@@ -71,13 +72,13 @@ abstract class AbstractScpService extends ServiceMBeanSupport
     protected void stopService() throws Exception
     {
         dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aet, null);
-        unbindDcmServices();
+        unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
     }
 
-    protected abstract void bindDcmServices();
+    protected abstract void bindDcmServices(DcmServiceRegistry services);
 
-    protected abstract void unbindDcmServices();
+    protected abstract void unbindDcmServices(DcmServiceRegistry services);
 
     protected abstract AcceptorPolicy getAcceptorPolicy();
 

@@ -239,10 +239,8 @@ public class QueryRetrieveScpService
         return name;
     }
 
-    protected void bindDcmServices()
+    protected void bindDcmServices(DcmServiceRegistry services)
     {
-        DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
-
         services.bind(
             UIDs.PatientRootQueryRetrieveInformationModelFIND,
             findScp);
@@ -260,21 +258,15 @@ public class QueryRetrieveScpService
             moveScp);
     }
 
-    protected void unbindDcmServices()
+    protected void unbindDcmServices(DcmServiceRegistry services)
     {
-        DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
+        services.unbind(UIDs.PatientRootQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.StudyRootQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
 
-        services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND, null);
-        services.bind(UIDs.StudyRootQueryRetrieveInformationModelFIND, null);
-        services.bind(
-            UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND,
-            null);
-
-        services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND, null);
-        services.bind(UIDs.StudyRootQueryRetrieveInformationModelFIND, null);
-        services.bind(
-            UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND,
-            null);
+        services.unbind(UIDs.PatientRootQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.StudyRootQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
     }
 
     protected AcceptorPolicy getAcceptorPolicy()
