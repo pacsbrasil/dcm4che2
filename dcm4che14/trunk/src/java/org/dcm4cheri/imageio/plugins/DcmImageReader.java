@@ -240,7 +240,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
    private float pixelRatio() {
       int[] ratio = theDataset.getInts(Tags.PixelAspectRatio);
       if (ratio != null && ratio.length == 2) {
-         if (ratio[0] == ratio[1]) {
+         if (ratio[0] == ratio[1] || ratio[0] <= 0 || ratio[1] <= 0 ) {
             return 1.f; // accept 0/0
          }
          return ratio[1] / (float) ratio[0];
@@ -251,6 +251,9 @@ public class DcmImageReader extends javax.imageio.ImageReader {
          if (spacing == null || spacing.length != 2) {
             return 1.f;
          }
+      }
+      if (spacing[0] == spacing[1] || spacing[0] <= 0 || spacing[1] <= 0 ) {
+          return 1.f; 
       }
       return spacing[1] / spacing[0];
   }
