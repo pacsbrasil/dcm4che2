@@ -48,9 +48,10 @@ public class DatasetUtils {
 
     public static Dataset fromByteArray(
         byte[] data,
-        DcmDecodeParam decodeParam) {
+        DcmDecodeParam decodeParam, Dataset ds) {
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
-        Dataset ds = dof.newDataset();
+        if (ds == null)
+            ds = dof.newDataset();
         try {
             ds.readDataset(bin, decodeParam, -1);
         } catch (IOException e) {
