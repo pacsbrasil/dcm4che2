@@ -286,7 +286,7 @@
       </jar>
       <jar jarfile="${build.samples.dir}/printscu.jar"
            manifest="${build.res.dir}/META-INF/printscu.mf">
-           <fileset dir="${build.classes.dir}" includes="org/dcm4che/client/printscu/*"/>
+           <fileset dir="${build.classes.dir}" includes="org/dcm4che/tools/printscu/*"/>
       </jar>
    </target>
    

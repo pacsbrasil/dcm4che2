@@ -1,4 +1,4 @@
-package org.dcm4che.client.printscu;
+package org.dcm4che.tools.printscu;
 
 import java.io.BufferedInputStream;
 import java.io.File;

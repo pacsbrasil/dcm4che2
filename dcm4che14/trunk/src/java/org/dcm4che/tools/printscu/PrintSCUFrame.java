@@ -1,4 +1,4 @@
-package org.dcm4che.client.printscu;
+package org.dcm4che.tools.printscu;
 
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
