@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 
 import javax.ejb.CreateException;
@@ -16,6 +17,7 @@ import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -55,6 +57,38 @@ public abstract class FileBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(FileBean.class);
 
+    private static final String[] COMPRESSABLE_TRANSFER_SYNTAX = new String[] {
+            UIDs.ImplicitVRLittleEndian, UIDs.ExplicitVRLittleEndian };
+
+    private static final String[] IMAGE_CUIDS = {
+            UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
+            UIDs.ComputedRadiographyImageStorage,
+            UIDs.DigitalXRayImageStorageForPresentation,
+            UIDs.DigitalXRayImageStorageForProcessing,
+            UIDs.DigitalMammographyXRayImageStorageForPresentation,
+            UIDs.DigitalMammographyXRayImageStorageForProcessing,
+            UIDs.DigitalIntraoralXRayImageStorageForPresentation,
+            UIDs.DigitalIntraoralXRayImageStorageForProcessing,
+            UIDs.CTImageStorage, UIDs.UltrasoundMultiframeImageStorageRetired,
+            UIDs.UltrasoundMultiframeImageStorage, UIDs.MRImageStorage,
+            UIDs.EnhancedMRImageStorage,
+            UIDs.NuclearMedicineImageStorageRetired,
+            UIDs.UltrasoundImageStorageRetired, UIDs.UltrasoundImageStorage,
+            UIDs.SecondaryCaptureImageStorage,
+            UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
+            UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
+            UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
+            UIDs.MultiframeColorSecondaryCaptureImageStorage,
+            UIDs.XRayAngiographicImageStorage,
+            UIDs.XRayRadiofluoroscopicImageStorage,
+            UIDs.XRayAngiographicBiPlaneImageStorageRetired,
+            UIDs.NuclearMedicineImageStorage, UIDs.VLImageStorageRetired,
+            UIDs.VLMultiframeImageStorageRetired,
+            UIDs.VLEndoscopicImageStorage, UIDs.VLMicroscopicImageStorage,
+            UIDs.VLSlideCoordinatesMicroscopicImageStorage,
+            UIDs.VLPhotographicImageStorage,
+            UIDs.PositronEmissionTomographyImageStorage, UIDs.RTImageStorage, };
+
     /**
      * Auto-generated Primary Key
      * 
@@ -74,7 +108,7 @@ public abstract class FileBean implements EntityBean {
     public abstract java.sql.Timestamp getCreatedTime();
 
     public abstract void setCreatedTime(java.sql.Timestamp time);
-    
+
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="md5_check_time"
@@ -85,7 +119,7 @@ public abstract class FileBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setTimeOfLastMd5Check(java.sql.Timestamp time);
-    
+
     /**
      * File Path (relative path to Directory).
      * 
@@ -188,7 +222,7 @@ public abstract class FileBean implements EntityBean {
         InstanceLocal inst = getInstance();
         return inst == null || inst.getFiles().size() > 1;
     }
-    
+
     /**
      * @ejb.interface-method
      * @jboss.method-attributes read-only="true"
@@ -219,62 +253,60 @@ public abstract class FileBean implements EntityBean {
                 + ", tsuid=" + getFileTsuid() + ", filesystem->"
                 + getFileSystem() + ", inst->" + getInstance() + "]";
     }
+
     /**
      * @ejb.home-method
      */
-    public java.util.Collection ejbHomeListFilesToCompress(java.lang.String[] tsuid, 
-			java.lang.String[] cuid, java.lang.String[] srcaet, java.lang.String dirPath,
-			java.sql.Timestamp before, int limit) throws FinderException {
-// generate JBossQL query
-    	if ( log.isDebugEnabled() ) log.debug("listFilesToCompress for "+dirPath+" before "+ before.toGMTString());
-		int i = 0;
-		int argsCount = 2;
-		if (before != null)
-		    ++argsCount;
-		Object[] args = new Object[argsCount];
-		StringBuffer jbossQl = new StringBuffer("SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND ");
-		addIN( jbossQl, "f.fileTsuid", tsuid );
-		addIN( jbossQl, "f.instance.sopCuid", cuid );
-		addIN( jbossQl, "f.instance.series.sourceAET", srcaet );
-		args[i++] = dirPath;
-		jbossQl.append( "f.fileSystem.directoryPath = ?1 AND ");
-		if ( before != null ) {
-			args[i++] = before;
-		    jbossQl.append( "(f.createdTime IS NULL OR f.createdTime < ?"+i+")");
-		}
-		args[i++] = new Integer( limit );
-		jbossQl.append(" LIMIT ?").append(i);
-		if (log.isDebugEnabled())
-		    log.debug("Execute JBossQL: " + jbossQl+"\nargs:1="+args[0]+" 2="+args[1]+" 3="+args[2]);
-		// call dynamic-ql query
-		return ejbSelectGeneric(jbossQl.toString(), args);
+    public java.util.Collection ejbHomeQueryFilesToCompress(String[] srcaet,
+            String[] dirPaths, Timestamp before, int limit)
+            throws FinderException {
+        // generate JBossQL query
+        int i = 0;
+        int argsCount = before != null ? 2 : 1;
+        Object[] args = new Object[argsCount];
+        StringBuffer jbossQl = new StringBuffer(
+                "SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND ");
+        addIN(jbossQl, "f.fileTsuid", COMPRESSABLE_TRANSFER_SYNTAX);
+        addIN(jbossQl, "f.instance.sopCuid", IMAGE_CUIDS);
+        addIN(jbossQl, "f.instance.series.sourceAET", srcaet);
+        addIN(jbossQl, "f.fileSystem.directoryPath", dirPaths);
+        if (before != null) {
+            args[i++] = before;
+            jbossQl.append("(f.createdTime IS NULL OR f.createdTime < ?" + i
+                    + ")");
+        }
+        args[i++] = new Integer(limit);
+        jbossQl.append(" LIMIT ?").append(i);
+        if (log.isDebugEnabled())
+            log.debug("Execute JBossQL: " + jbossQl);
+        // call dynamic-ql query
+        return ejbSelectGeneric(jbossQl.toString(), args);
     }
-/*
-SELECT OBJECT(f) FROM File AS f WHERE f.fileTsuid IN ('1.2.840.10008.1.2.2', '1.2.840.10008.1.2.1', '1.2.840.10008.1.2') AND f.instance.sopCuid IN ('1.2.840.10008.5.1.4.1.1.2', '1.2.840.10008.5.1.4.1.1.2.1', '1.2.840.10008.5.1.4.1.1.4.1', '1.2.840.10008.5.1.4.1.1.4', '1.2.840.10008.5.1.4.1.1.4.2', '1.2.840.10008.5.1.4.1.1.7.4', '1.2.840.10008.5.1.4.1.1.77.1') AND f.instance.series.sourceAET = 'DB2_PACS_TIANI' AND f.fileSystem.directoryPath = ?1 AND (f.createdTime IS NULL OR f.createdTime < ?2) AND  LIMIT ?3
- */
-private void addIN( StringBuffer jbossQl, String col,  Object[] values ) {
-if ( values != null ) {
-    jbossQl.append(col);
-    if ( values.length == 1 ) {
-    	jbossQl.append(" = '").append(values[0]).append("' AND ");
-    } else {
-    	jbossQl.append(" IN ('").append(values[0]);
-        for (int i = 1; i < values.length; i++) {
-    		jbossQl.append("', '").append(values[i]);
-    	}            
-    	jbossQl.append("') AND ");
+
+    /*
+     SELECT OBJECT(f) FROM File AS f WHERE f.fileTsuid IN ('1.2.840.10008.1.2.2', '1.2.840.10008.1.2.1', '1.2.840.10008.1.2') AND f.instance.sopCuid IN ('1.2.840.10008.5.1.4.1.1.2', '1.2.840.10008.5.1.4.1.1.2.1', '1.2.840.10008.5.1.4.1.1.4.1', '1.2.840.10008.5.1.4.1.1.4', '1.2.840.10008.5.1.4.1.1.4.2', '1.2.840.10008.5.1.4.1.1.7.4', '1.2.840.10008.5.1.4.1.1.77.1') AND f.instance.series.sourceAET = 'DB2_PACS_TIANI' AND f.fileSystem.directoryPath = ?1 AND (f.createdTime IS NULL OR f.createdTime < ?2) AND  LIMIT ?3
+     */
+    private void addIN(StringBuffer jbossQl, String col, Object[] values) {
+        if (values != null) {
+            jbossQl.append(col);
+            if (values.length == 1) {
+                jbossQl.append(" = '").append(values[0]).append("' AND ");
+            } else {
+                jbossQl.append(" IN ('").append(values[0]);
+                for (int i = 1; i < values.length; i++) {
+                    jbossQl.append("', '").append(values[i]);
+                }
+                jbossQl.append("') AND ");
+            }
+        }
     }
-}
-}
 
-/**
-* @ejb.select query=""
-*  transaction-type="Supports"
-*/ 
-public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
-	throws FinderException;
-
-
+    /**
+     * @ejb.select query=""
+     *  transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
+            throws FinderException;
 
     /**
      * Create file.
