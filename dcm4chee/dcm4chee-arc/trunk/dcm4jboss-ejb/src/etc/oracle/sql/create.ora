@@ -1,9 +1,12 @@
+CREATE SEQUENCE ae_pk_seq;
 CREATE TABLE ae (
-	aet          	VARCHAR2(255) PRIMARY KEY,
+	pk          	NUMBER PRIMARY KEY,
+	aet          	VARCHAR2(255) NOT NULL,
 	hostname     	VARCHAR2(255) NOT NULL,
 	port			INTEGER NOT NULL,
 	cipher_suites  	VARCHAR2(255)
 );
+CREATE UNIQUE INDEX aet ON ae(aet);
 
 CREATE SEQUENCE move_pk_seq;
 CREATE TABLE move_order (

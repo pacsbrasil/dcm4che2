@@ -6,6 +6,17 @@ ALTER TABLE patient
 	ADD CONSTRAINT pat_merge_fk FOREIGN KEY (merge_fk) REFERENCES patient(pk);
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 
+DROP TABLE ae ;
+CREATE SEQUENCE ae_pk_seq;
+CREATE TABLE ae (
+	pk          	INTEGER PRIMARY KEY NOT NULL,
+	aet          	VARCHAR(254) NOT NULL,
+	hostname     	VARCHAR(254) NOT NULL,
+	port			INTEGER NOT NULL,
+	cipher_suites  	VARCHAR(254)
+);
+CREATE UNIQUE INDEX aet ON ae(aet);
+
 CREATE TABLE users(
 	user_id		VARCHAR(254) PRIMARY KEY,
 	passwd 		VARCHAR(254)
@@ -20,6 +31,8 @@ INSERT INTO users VALUES('admin','admin');
 INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebAdmin');
 
+GRANT ALL PRIVILEGES ON TABLE ae TO USER tiani;
+GRANT USAGE ON SEQUENCE tiani.ae_pk_seq TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE users TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE roles TO USER tiani;
 

@@ -9,6 +9,16 @@ CREATE TABLE users(
 	passwd 		TEXT
 );
 
+DROP TABLE ae; 
+CREATE TABLE ae (
+	pk          	SERIAL PRIMARY KEY,
+	aet          	TEXT NOT NULL,
+	hostname     	TEXT NOT NULL,
+	port			INTEGER NOT NULL,
+	cipher_suites  	TEXT
+);
+CREATE UNIQUE INDEX aet ON ae(aet);
+
 CREATE TABLE roles(
 	user_id		TEXT,
 	roles	 	TEXT,

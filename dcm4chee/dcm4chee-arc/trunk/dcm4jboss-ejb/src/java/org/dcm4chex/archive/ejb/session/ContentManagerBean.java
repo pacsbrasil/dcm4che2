@@ -26,10 +26,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -37,8 +35,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.dcm4chex.archive.ejb.interfaces.AELocal;
-import org.dcm4chex.archive.ejb.interfaces.AELocalHome;
 import org.dcm4chex.archive.ejb.interfaces.DTOFactory;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
@@ -47,7 +43,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.CountStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 
@@ -89,11 +84,6 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  *  view-type="local"
  *  ref-name="ejb/Instance" 
  *
- * @ejb.ejb-ref
- *  ejb-name="AE" 
- *  view-type="local"
- *  ref-name="ejb/AE" 
- *
  * @ejb:resource-ref
  *  res-name="jdbc/DefaultDS"
  *  res-type="javax.sql.DataSource"
@@ -110,7 +100,6 @@ public abstract class ContentManagerBean implements SessionBean
 	private PatientLocalHome patHome;
 	private StudyLocalHome studyHome;
 	private SeriesLocalHome seriesHome;
-	private AELocalHome aeHome;
 
 	public void setSessionContext(SessionContext arg0)
 		throws EJBException, RemoteException
@@ -126,7 +115,6 @@ public abstract class ContentManagerBean implements SessionBean
 				(StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
 			seriesHome =
 				(SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
-			aeHome = (AELocalHome) jndiCtx.lookup("java:comp/env/ejb/AE");
 		} catch (NamingException e)
 		{
 			throw new EJBException(e);
@@ -247,79 +235,4 @@ public abstract class ContentManagerBean implements SessionBean
 		return result;
 	}
 
-	/**
-	 * @ejb.interface-method
-	 */
-	public List getAes() throws EJBException
-	{
-		try
-		{
-			ArrayList ret = new ArrayList();
-			for (Iterator i = aeHome.findAll().iterator(); i.hasNext();)
-			{
-				AELocal ae = (AELocal) i.next();
-				AEData aeDTO =
-					new AEData(
-						ae.getTitle(),
-						ae.getHostName(),
-						ae.getPort(),
-						ae.getCipherSuites());
-				ret.add(aeDTO);
-			}
-			return ret;
-		} catch (FinderException e)
-		{
-			throw new EJBException(e);
-		}
-	}
-	
-	/**
-	 * @ejb.interface-method
-	 */
-	public void updateAE(String oldAETitle, AEData newAE) throws Exception
-	{
-			AELocal ae = aeHome.findByPrimaryKey(oldAETitle);
-			//FinderException has not been thrown, means ae exists
-
-			if (newAE.getTitle().equals(oldAETitle)) //ae title hasn't been modified
-			{
-				ae.setHostName(newAE.getHostName());
-				ae.setPort(newAE.getPort());
-				ae.setCipherSuites(newAE.getCipherSuitesAsString());
-			}
-			else //AE title has been modified.
-			{	
-				aeHome.remove(oldAETitle);
-				this.newAE(newAE);
-			}
-	}
-
-	/**
-	 * @ejb.interface-method
-	 */
-	public void newAE(AEData newAE) throws Exception
-	{
-		aeHome.create(
-				newAE.getTitle(),
-				newAE.getHostName(),
-				newAE.getPort(),
-				newAE.getCipherSuitesAsString());
-	}
-
-	/**
-	 * @ejb.interface-method
-	 */
-	public void removeAE(String aeTitle) throws Exception
-	{
-		try
-		{
-			aeHome.remove(aeTitle);
-		}
-		catch (RemoveException e)
-		{
-			throw new Exception(e);
-		}
-	}
-	
-	
 }

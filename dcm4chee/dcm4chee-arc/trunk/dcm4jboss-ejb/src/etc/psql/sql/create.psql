@@ -1,10 +1,12 @@
 
 CREATE TABLE ae (
-	aet          	TEXT PRIMARY KEY,
+	pk          	SERIAL PRIMARY KEY,
+	aet          	TEXT NOT NULL,
 	hostname     	TEXT NOT NULL,
 	port			INTEGER NOT NULL,
 	cipher_suites  	TEXT
 );
+CREATE UNIQUE INDEX aet ON ae(aet);
 
 CREATE TABLE move_order (
 	pk          	SERIAL PRIMARY KEY,

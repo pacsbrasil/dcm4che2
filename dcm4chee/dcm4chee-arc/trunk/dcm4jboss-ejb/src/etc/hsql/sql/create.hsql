@@ -1,9 +1,11 @@
 CREATE TABLE ae (
-	aet          	VARCHAR(256) PRIMARY KEY,
+	pk          	IDENTITY PRIMARY KEY,
+	aet          	VARCHAR(256) NOT NULL,
 	hostname     	VARCHAR(256) NOT NULL,
 	port			INTEGER NOT NULL,
 	cipher_suites  	VARCHAR(256)
 );
+CREATE UNIQUE INDEX aet ON ae(aet);
 
 CREATE TABLE move_order (
 	pk          	IDENTITY PRIMARY KEY,

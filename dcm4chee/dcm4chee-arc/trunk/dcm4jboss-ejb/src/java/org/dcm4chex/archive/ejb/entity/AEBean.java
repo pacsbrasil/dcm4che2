@@ -33,9 +33,12 @@ import org.apache.log4j.Logger;
  * @ejb.bean
  *  name="AE"
  *  type="CMP"
- *  primkey-field="title"
  *  view-type="local"
+ *  primkey-field="pk"
  *  local-jndi-name="ejb/AE"
+ * 
+ * @jboss.container-configuration
+ *  name="Standard CMP 2.x EntityBean with cache invalidation"
  * 
  * @ejb.transaction 
  *  type="Required"
@@ -43,11 +46,18 @@ import org.apache.log4j.Logger;
  * @ejb.persistence
  *  table-name="ae"
  * 
+ * @jboss.entity-command
+ *  name="hsqldb-fetch-key"
+ * 
  * @ejb.finder
  *  signature="Collection findAll()"
  *  query="SELECT OBJECT(a) FROM AE AS a"
  *  transaction-type="Supports"
- *
+ * @jboss.query
+ *  signature="Collection findAll()"
+ *  strategy="on-find"
+ *  eager-load-group="*"
+*
  * @ejb.finder
  *  signature="org.dcm4chex.archive.ejb.interfaces.AELocal findByAET(java.lang.String aet)"
  *  query="SELECT OBJECT(a) FROM AE AS a WHERE a.title = ?1"
@@ -60,10 +70,22 @@ public abstract class AEBean implements EntityBean
     private static final Logger log = Logger.getLogger(AEBean.class);
 
     /**
-     * Application Entity Title
+     * Auto-generated Primary Key
      *
      * @ejb.interface-method
      * @ejb.pk-field
+     * @ejb.persistence
+     *  column-name="pk"
+     * @jboss.persistence
+     *  auto-increment="true"
+     *
+     */
+    public abstract Integer getPk();
+
+    /**
+     * Application Entity Title
+     *
+     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="aet"
      */
@@ -113,7 +135,7 @@ public abstract class AEBean implements EntityBean
     /**
      * @ejb.create-method
      */
-    public String ejbCreate(
+    public Integer ejbCreate(
         String title,
         String hostname,
         int port,

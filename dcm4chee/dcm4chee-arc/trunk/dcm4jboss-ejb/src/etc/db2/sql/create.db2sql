@@ -3,12 +3,15 @@ CONNECT TO tiani;
 
 SET CURRENT SCHEMA TIANI;
 
+CREATE SEQUENCE ae_pk_seq;
 CREATE TABLE ae (
-	aet          	VARCHAR(254) PRIMARY KEY NOT NULL,
+	pk          	INTEGER PRIMARY KEY NOT NULL,
+	aet          	VARCHAR(254) NOT NULL,
 	hostname     	VARCHAR(254) NOT NULL,
 	port			INTEGER NOT NULL,
 	cipher_suites  	VARCHAR(254)
 );
+CREATE UNIQUE INDEX aet ON ae(aet);
 
 CREATE SEQUENCE move_order_pk_seq;
 CREATE TABLE move_order (
@@ -188,6 +191,7 @@ GRANT ALL PRIVILEGES ON TABLE mwl_item TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE users TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE roles TO USER tiani;
 
+GRANT USAGE ON SEQUENCE tiani.ae_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.move_order_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.code_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE tiani.patient_pk_seq TO USER tiani;
