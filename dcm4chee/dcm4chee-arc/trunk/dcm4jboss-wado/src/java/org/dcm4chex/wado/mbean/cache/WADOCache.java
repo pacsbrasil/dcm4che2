@@ -204,4 +204,32 @@ public interface WADOCache {
 	 */
 	long getFreeSpace();
 	
+	/**
+	 * Returns true if a client redirect should be used if requewsted DICOM object is not local.
+	 * 
+	 * @return True if client redirect should be used..
+	 */
+	public boolean isClientRedirect();
+	
+	/**
+	 * Set the flag to determine if a client redirect should be used if  the requested DICOM object is not local.
+	 * 
+	 * @param clientRedirect True for client side redirect, false for server side redirect.
+	 */
+	public void setClientRedirect(boolean clientRedirect);
+
+	/**
+	 * Returns true if a server side redirect should be cached.
+	 * 
+	 * @return True if a server side redirected request should be cached.
+	 */
+	public boolean isRedirectCaching();
+
+	/**
+	 * Set the flag if caching is enabled for server side redirect.
+	 * 
+	 * @param redirectCaching True to enable caching.
+	 */
+	public void setRedirectCaching(boolean redirectCaching);
+	
 }

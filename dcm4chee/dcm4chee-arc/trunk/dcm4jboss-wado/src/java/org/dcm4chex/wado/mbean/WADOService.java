@@ -29,8 +29,8 @@ public class WADOService extends ServiceMBeanSupport  {
 	private WADOCache cache = WADOCacheImpl.getInstance();
 	private WADOSupport support = new WADOSupport( this.server );
 	
-	private static final long GBYTE = 1000000000L;
-	private static final long MBYTE = 1000000L;
+	private static final long GIGA = 1000000000L;
+	private static final long MEGA = 1000000L;
 	
 	public void setCacheRoot( String newRoot ) {
 		cache.setCacheRoot( newRoot );
@@ -41,19 +41,44 @@ public class WADOService extends ServiceMBeanSupport  {
 	}
 	
 	public void setMinFreeSpace( long minFree ) {
-		cache.setMinFreeSpace( minFree );
+		cache.setMinFreeSpace( minFree * MEGA );
 	}
 	
 	public long getMinFreeSpace() {
-		return cache.getMinFreeSpace();
+		return cache.getMinFreeSpace() / MEGA;
 	}
 
 	public void setPreferredFreeSpace( long minFree ) {
-		cache.setPreferredFreeSpace( minFree );
+		cache.setPreferredFreeSpace( minFree * MEGA );
 	}
 	
 	public long getPreferredFreeSpace() {
-		return cache.getPreferredFreeSpace();
+		return cache.getPreferredFreeSpace() / MEGA;
+	}
+	
+	/**
+	 * @return Returns the clientRedirect.
+	 */
+	public boolean isClientRedirect() {
+		return cache.isClientRedirect();
+	}
+	/**
+	 * @param clientRedirect The clientRedirect to set.
+	 */
+	public void setClientRedirect(boolean clientRedirect) {
+		cache.setClientRedirect( clientRedirect );
+	}
+	/**
+	 * @return Returns the redirectCaching.
+	 */
+	public boolean isRedirectCaching() {
+		return cache.isRedirectCaching();
+	}
+	/**
+	 * @param redirectCaching The redirectCaching to set.
+	 */
+	public void setRedirectCaching(boolean redirectCaching) {
+		cache.setRedirectCaching( redirectCaching );
 	}
 	
 	/**
@@ -134,11 +159,11 @@ public class WADOService extends ServiceMBeanSupport  {
 	 * @return The size with unit. e.g. 2GB
 	 */
 	private String getSizeWithUnit(long size) {
-		if ( size >= GBYTE ){
-				return (size/GBYTE)+" GB";
-		} else if ( size > MBYTE ) {
-			if ( (size % MBYTE) == 0 ) {
-				return (size/MBYTE)+" MB";
+		if ( size >= GIGA ){
+				return (size/GIGA)+" GB";
+		} else if ( size > MEGA ) {
+			if ( (size % MEGA) == 0 ) {
+				return (size/MEGA)+" MB";
 			} else {
 				return (size/1000L)+" KB";
 			}

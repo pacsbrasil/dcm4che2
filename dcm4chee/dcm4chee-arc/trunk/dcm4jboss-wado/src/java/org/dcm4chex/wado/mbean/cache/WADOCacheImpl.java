@@ -29,6 +29,7 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
 public class WADOCacheImpl implements WADOCache {
 
 	public static final String DEFAULT_CACHE_ROOT = "/wadocache";
+
 	private static WADOCacheImpl singleton = null;
 	
 	/** the root folder where this cache stores the image files. */
@@ -38,10 +39,16 @@ public class WADOCacheImpl implements WADOCache {
 	private String cacheRootCfgString = null;
 	
 	/** holds the min cache size. */
-	long preferredFreeSpace = 300000000;
+	private long preferredFreeSpace = 300000000;
 
 	/** holds the max cache size. */
-	long minFreeSpace = 200000000;
+	private long minFreeSpace = 200000000;
+	
+	/** Flag to indicate if client side redirection should be used if DICOM object is not locally available. */
+	private boolean clientRedirect = false;
+	
+	/** Flag to indicate if caching should be used in case of server side redirect, */
+	private boolean redirectCaching = true;
 	
 	/** Buffer size for read/write */
 	private static final int BUF_LEN = 65536;
@@ -413,6 +420,30 @@ public class WADOCacheImpl implements WADOCache {
 			cacheRoot.mkdirs();
 		
 	}
+	/**
+	 * @return Returns the clientRedirect.
+	 */
+	public boolean isClientRedirect() {
+		return clientRedirect;
+	}
+	/**
+	 * @param clientRedirect The clientRedirect to set.
+	 */
+	public void setClientRedirect(boolean clientRedirect) {
+		this.clientRedirect = clientRedirect;
+	}
+	/**
+	 * @return Returns the redirectCaching.
+	 */
+	public boolean isRedirectCaching() {
+		return redirectCaching;
+	}
+	/**
+	 * @param redirectCaching The redirectCaching to set.
+	 */
+	public void setRedirectCaching(boolean redirectCaching) {
+		this.redirectCaching = redirectCaching;
+	}
 	
 	/**
 	 * Returns the File object references the file where the image is placed within this cache.
@@ -474,8 +505,10 @@ public class WADOCacheImpl implements WADOCache {
 		try {
 			JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
 			enc.encode(bi);
-		}
-		finally {
+		} catch ( IOException x ) {
+			if ( file.exists() ) file.delete();
+			throw x;
+		} finally {
 			out.close();
 		}
 	}
@@ -491,7 +524,5 @@ public class WADOCacheImpl implements WADOCache {
 		//TODO real work!
 		return null;
 	}
-
-
 
 }
