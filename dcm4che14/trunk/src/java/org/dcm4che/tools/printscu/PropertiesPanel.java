@@ -99,6 +99,7 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
         DEFAULTS.put("CalledAET", "TIANI_PRINT");
         DEFAULTS.put("Port", "6104");
         DEFAULTS.put("FilmBox.ImageDisplayFormat", "STANDARD\\1,1");
+        DEFAULTS.put("FilmBox.AnnotationDisplayFormatID", "TITLE");
     }
 
     private static final String[] PRINT_PRIORITY = {
@@ -160,7 +161,7 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
       "Always","IfNonLinear","No"
     };
     private static final String[] VERBOSE = {
-      "0","1","2","3","4","5"
+      "0","1","2","3","4","5","6"
     };
 
     private PrintSCUFrame printSCUFrame;
@@ -220,10 +221,12 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
                 choices = SEND_ASPECTRATIO;
             else if (prop.equals("User.BurnInInfo"))
                 choices = BURNIN_INFO;
+            else if (prop.equals("Verbose"))
+                choices = VERBOSE;
             else
                 return;
             value = (String)JOptionPane.showInputDialog(printSCUFrame,
-                "Choose a value", prop, JOptionPane.QUESTION_MESSAGE,
+                "Choose a value:", prop, JOptionPane.QUESTION_MESSAGE,
                 null, choices, choices[0]);
             if (value != null) {
                 table.setValueAt(value, row, 1);
@@ -256,7 +259,7 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
         String prop = (String)model.getValueAt(row, 0);
         String data = (String)model.getValueAt(row, 1);
         props.put(prop, data);
-        printSCUFrame.updateFromProperties();
+        printSCUFrame.propertyChanged(prop);
     }
 
     private Properties loadProperties(File file) {
@@ -273,12 +276,8 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
         return props;
     }
 
-    public String getProperty(String key)
+    String getProperty(String key)
     {
         return props.getProperty(key);
-    }
-
-    public int getIntProperty(String key) {
-        return Integer.parseInt(props.getProperty(key));
     }
 }

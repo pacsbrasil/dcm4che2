@@ -3,7 +3,6 @@ package org.dcm4che.tools.printscu;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 
-import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -53,10 +52,11 @@ public class PrintSCUFrame extends JFrame
     private AssociationRequestor assocRq = new AssociationRequestor();
     private PrintSCU printSCU;
     private String curPLutUid;
-    private int nextImageBoxIndex = 0;
+    private int nextImageBoxIndex;
+    private int nextAnnIndex;
     private boolean colorMode = false;
     private Action actConnect, actRelease, actCreateFilmSession, actDeleteFilmSession,
-        actCreateFilmBox, actDeleteFilmBox, actCreateImageBox, actCreatePlut,
+        actCreateFilmBox, actDeleteFilmBox, actCreateImageBox, actCreatePlut, actCreateAnnotation,
         actDeletePlut, actPrintFilmSession, actPrintFilmBox, actExit;
     private File lastFile = null; //for JFileChooser to remember last dir
     private JFileChooser chooser = new JFileChooser();
@@ -148,11 +148,13 @@ public class PrintSCUFrame extends JFrame
                     e1.printStackTrace();
                     return;
                 }
+                setEnabled(false);
                 actCreateFilmSession.setEnabled(true);
                 actRelease.setEnabled(true);
             }
         };
         actConnect.putValue(Action.NAME, "Connect");
+
         //Release
         actRelease = new AbstractAction()
         {
@@ -173,11 +175,12 @@ public class PrintSCUFrame extends JFrame
                     return;
                 }
                 printSCU = null;
-                nextImageBoxIndex = 0;
                 onDisconnect();
+                actConnect.setEnabled(true);
             }
         };
         actRelease.putValue(Action.NAME, "Release");
+
         //Create Session
         actCreateFilmSession = new AbstractAction()
         {
@@ -185,9 +188,10 @@ public class PrintSCUFrame extends JFrame
             {
                 Dataset attr = dcmFactory.newDataset();
                 String prop;
+                Integer propInt;
                 
-                if ((prop = getStringFromProperty("Session.NumberOfCopies")) != null)
-                    attr.putIS(Tags.NumberOfCopies, propPanel.getIntProperty("Session.NumberOfCopies"));
+                if ((propInt = getIntegerFromProperty("Session.NumberOfCopies")) != null)
+                    attr.putIS(Tags.NumberOfCopies, propInt.intValue());
                 if ((prop = getStringFromProperty("Session.PrintPriority")) != null)
                     attr.putCS(Tags.PrintPriority, prop);
                 if ((prop = getStringFromProperty("Session.MediumType")) != null)
@@ -196,8 +200,8 @@ public class PrintSCUFrame extends JFrame
                     attr.putCS(Tags.FilmDestination, prop);
                 if ((prop = getStringFromProperty("Session.FilmSessionLabel")) != null)
                     attr.putLO(Tags.FilmSessionLabel, prop);
-                if ((prop = getStringFromProperty("Session.MemoryAllocation")) != null)
-                    attr.putIS(Tags.MemoryAllocation, propPanel.getIntProperty("Session.MemoryAllocation"));
+                if ((propInt = getIntegerFromProperty("Session.MemoryAllocation")) != null)
+                    attr.putIS(Tags.MemoryAllocation, propInt.intValue());
                 if ((prop = getStringFromProperty("Session.OwnerID")) != null)
                     attr.putSH(Tags.OwnerID, prop);
 
@@ -229,6 +233,7 @@ public class PrintSCUFrame extends JFrame
             }
         };
         actCreateFilmSession.putValue(Action.NAME, "Create FilmSession");
+
         //Create FilmBox
         actCreateFilmBox = new AbstractAction()
         {
@@ -238,7 +243,6 @@ public class PrintSCUFrame extends JFrame
                 String prop;
                 Integer propInt;
                 
-                //printSCU.setAutoRefPLUT(true);
                 if ((prop = getStringFromProperty("FilmBox.ImageDisplayFormat")) != null)
                     attr.putST(Tags.ImageDisplayFormat, prop);
                 if ((prop = getStringFromProperty("FilmBox.FilmOrientation")) != null)
@@ -291,14 +295,18 @@ public class PrintSCUFrame extends JFrame
                     e1.printStackTrace();
                     return;
                 }
+                nextImageBoxIndex = 0;
+                nextAnnIndex = 0;
                 actCreateImageBox.setEnabled(true);
                 setEnabled(false);
                 actDeleteFilmBox.setEnabled(true);
                 actCreatePlut.setEnabled(false);
                 actDeletePlut.setEnabled(false);
+                actCreateAnnotation.setEnabled(true);
             }
         };
         actCreateFilmBox.putValue(Action.NAME, "Create FilmBox");
+
         //Create ImageBox
         actCreateImageBox = new AbstractAction()
         {
@@ -377,7 +385,41 @@ public class PrintSCUFrame extends JFrame
                 }
             }
         };
-        actCreateImageBox.putValue(Action.NAME, "Create ImageBox");
+        actCreateImageBox.putValue(Action.NAME, "Add ImageBox");
+
+        //Create Annotation
+        actCreateAnnotation = new AbstractAction()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                Dataset attr = dcmFactory.newDataset();
+                
+                String text = (String)JOptionPane.showInputDialog(PrintSCUFrame.this,
+                    "Enter annotation text:", "Text" + (nextAnnIndex + 1));
+                if (text == null)
+                    return;
+
+                try {
+                    printSCU.setAnnotationBox(nextAnnIndex++, text);
+                }
+                catch (InterruptedException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+                catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+                catch (DcmServiceException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+                if (nextAnnIndex >= printSCU.countAnnotationBoxes())
+                    setEnabled(false);
+            }
+        };
+        actCreateAnnotation.putValue(Action.NAME, "Add Annotation");
+
         //Create P-LUT
         actCreatePlut = new AbstractAction()
         {
@@ -400,10 +442,12 @@ public class PrintSCUFrame extends JFrame
                 catch (FileNotFoundException e1) {
                     JOptionPane.showMessageDialog(PrintSCUFrame.this,
                         "Could not open file: " + file);
+                    return;
                 }
                 catch (IOException e1) {
                     JOptionPane.showMessageDialog(PrintSCUFrame.this,
                         "Could not read file: " + file);
+                    return;
                 }
                 
                 try {
@@ -429,6 +473,7 @@ public class PrintSCUFrame extends JFrame
             }
         };
         actCreatePlut.putValue(Action.NAME, "Create P-LUT");
+
         //Delete FilmSession
         actDeleteFilmSession = new AbstractAction()
         {
@@ -446,19 +491,20 @@ public class PrintSCUFrame extends JFrame
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
-                nextImageBoxIndex = 0;
                 setEnabled(false);
                 actCreateFilmBox.setEnabled(false);
                 actDeleteFilmBox.setEnabled(false);
                 actCreateImageBox.setEnabled(false);
                 actCreatePlut.setEnabled(false);
                 actDeletePlut.setEnabled(false);
+                actCreateAnnotation.setEnabled(false);
                 actPrintFilmSession.setEnabled(false);
                 actPrintFilmBox.setEnabled(false);
                 actCreateFilmSession.setEnabled(true);
             }
         };
         actDeleteFilmSession.putValue(Action.NAME, "Delete FilmSession");
+
         //Delete FilmBox
         actDeleteFilmBox = new AbstractAction()
         {
@@ -476,7 +522,6 @@ public class PrintSCUFrame extends JFrame
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
-                nextImageBoxIndex = 0;
                 setEnabled(false);
                 actCreateFilmBox.setEnabled(true);
                 actCreateImageBox.setEnabled(false);
@@ -484,9 +529,11 @@ public class PrintSCUFrame extends JFrame
                 actPrintFilmSession.setEnabled(false);
                 actCreatePlut.setEnabled(true);
                 actDeletePlut.setEnabled(true);
+                actCreateAnnotation.setEnabled(false);
             }
         };
         actDeleteFilmBox.putValue(Action.NAME, "Delete FilmBox");
+
         //Delete P-LUT
         actDeletePlut = new AbstractAction()
         {
@@ -510,6 +557,7 @@ public class PrintSCUFrame extends JFrame
             }
         };
         actDeletePlut.putValue(Action.NAME, "Delete P-LUT");
+
         //Print FilmSession
         actPrintFilmSession = new AbstractAction()
         {
@@ -536,6 +584,7 @@ public class PrintSCUFrame extends JFrame
             }
         };
         actPrintFilmSession.putValue(Action.NAME, "Print FilmSession");
+
         //Print FilmBox
         actPrintFilmBox = new AbstractAction()
         {
@@ -567,11 +616,9 @@ public class PrintSCUFrame extends JFrame
         onDisconnect();
         
         //set up buttons for commands
-        
         JPanel subBtnPanel = new JPanel();
         subBtnPanel.setLayout(new GridLayout(3, 1));
         btnPanel.add(subBtnPanel);
-        //
         subBtnPanel.add(new JLabel("Print Server"));
         JButton btnConnect = new JButton(actConnect);
         subBtnPanel.add(btnConnect);
@@ -581,7 +628,6 @@ public class PrintSCUFrame extends JFrame
         subBtnPanel = new JPanel();
         subBtnPanel.setLayout(new GridLayout(3, 1));
         btnPanel.add(subBtnPanel);
-        //
         subBtnPanel.add(new JLabel("Film Session"));
         JButton btnCreateFilmSession = new JButton(actCreateFilmSession);
         subBtnPanel.add(btnCreateFilmSession);
@@ -591,7 +637,15 @@ public class PrintSCUFrame extends JFrame
         subBtnPanel = new JPanel();
         subBtnPanel.setLayout(new GridLayout(3, 1));
         btnPanel.add(subBtnPanel);
-        //
+        subBtnPanel.add(new JLabel("Presentation LUT"));
+        JButton btnCreatePlut = new JButton(actCreatePlut);
+        subBtnPanel.add(btnCreatePlut);
+        JButton btnDeletePlut = new JButton(actDeletePlut);
+        subBtnPanel.add(btnDeletePlut);
+        
+        subBtnPanel = new JPanel();
+        subBtnPanel.setLayout(new GridLayout(3, 1));
+        btnPanel.add(subBtnPanel);
         subBtnPanel.add(new JLabel("Film Box"));
         JButton btnCreateFilmBox = new JButton(actCreateFilmBox);
         subBtnPanel.add(btnCreateFilmBox);
@@ -601,7 +655,6 @@ public class PrintSCUFrame extends JFrame
         subBtnPanel = new JPanel();
         subBtnPanel.setLayout(new GridLayout(3, 1));
         btnPanel.add(subBtnPanel);
-        //
         subBtnPanel.add(new JLabel("Image Box"));
         JButton btnCreateImageBox = new JButton(actCreateImageBox);
         subBtnPanel.add(btnCreateImageBox);
@@ -609,35 +662,57 @@ public class PrintSCUFrame extends JFrame
         subBtnPanel = new JPanel();
         subBtnPanel.setLayout(new GridLayout(3, 1));
         btnPanel.add(subBtnPanel);
-        //
+        subBtnPanel.add(new JLabel("Annotation"));
+        JButton btnCreateAnnotation = new JButton(actCreateAnnotation);
+        subBtnPanel.add(btnCreateAnnotation);
+        
+        subBtnPanel = new JPanel();
+        subBtnPanel.setLayout(new GridLayout(3, 1));
+        btnPanel.add(subBtnPanel);
         subBtnPanel.add(new JLabel("Print"));
         JButton btnPrintFilmSession = new JButton(actPrintFilmSession);
         subBtnPanel.add(btnPrintFilmSession);
         JButton btnPrintFilmBox = new JButton(actPrintFilmBox);
         subBtnPanel.add(btnPrintFilmBox);
         
-        subBtnPanel = new JPanel();
-        subBtnPanel.setLayout(new GridLayout(3, 1));
-        btnPanel.add(subBtnPanel);
-        //
-        subBtnPanel.add(new JLabel("Presentation LUT"));
-        JButton btnCreatePlut = new JButton(actCreatePlut);
-        subBtnPanel.add(btnCreatePlut);
-        JButton btnDeletePlut = new JButton(actDeletePlut);
-        subBtnPanel.add(btnDeletePlut);
-        
-        updateFromProperties();
+        //update from all properties
+        propertyChanged(null);
     }
 
-    public void updateFromProperties()
+    //propertyName == null, means all need to be updated
+    public void propertyChanged(String propertyName)
     {
         //Verbose
-        Boolean verbose;
-        if ((verbose = (Boolean)getFromProperty("Verbose", Boolean.class)) != null)
-            log.setLevel((verbose.booleanValue()) ? Level.ALL : Level.WARN);
-        else
-            log.setLevel(Level.WARN);
-        //
+        if (propertyName == null || "Verbose".equals(propertyName)) {
+            Integer verbose;
+            if ((verbose = getIntegerFromProperty("Verbose")) != null) {
+                switch (verbose.intValue()) {
+                    case 0:
+                        log.setLevel(Level.OFF);
+                        break;
+                    case 1:
+                        log.setLevel(Level.FATAL);
+                        break;
+                    case 2:
+                        log.setLevel(Level.ERROR);
+                        break;
+                    case 3:
+                        log.setLevel(Level.WARN);
+                        break;
+                    case 4:
+                        log.setLevel(Level.INFO);
+                        break;
+                    case 5:
+                        log.setLevel(Level.DEBUG);
+                        break;
+                    case 6:
+                        log.setLevel(Level.ALL);
+                        break;
+                }
+            }
+            else
+                log.setLevel(Level.WARN);
+        }
     }
 
     PrintSCUFrame(String title)
@@ -737,6 +812,7 @@ public class PrintSCUFrame extends JFrame
         actCreateFilmBox.setEnabled(false);
         actCreateImageBox.setEnabled(false);
         actCreatePlut.setEnabled(false);
+        actCreateAnnotation.setEnabled(false);
         actPrintFilmSession.setEnabled(false);
         actPrintFilmBox.setEnabled(false);
         actDeleteFilmSession.setEnabled(false);
