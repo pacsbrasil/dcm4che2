@@ -39,10 +39,10 @@ import java.io.IOException;
  *   
  * <p><b>Revisions:</b>
  *
- * <p><b>yyyymmdd author:</b>
+ * <p><b>20020715 gunter:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
- *            beyond the cvs commit message
+ * <li> add MultiDimseRsp#release and invoke it from #doMultiRsp to
+ *      enable release of resources used by MultiDimseRsp
  * </ul>
  */
 public class DcmServiceBase implements DcmService
@@ -338,13 +338,17 @@ public class DcmServiceBase implements DcmService
          assoc.getAssociation().write(fact.newDimse(rq.pcid(), rspCmd));
          return;
       }
-      assoc.addCancelListener(rspCmd.getMessageIDToBeingRespondedTo(),
-            mdr.getCancelListener());
-      do {
-         Dataset rspData = mdr.next(assoc, rq, rspCmd);
-         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
-         assoc.getAssociation().write(rsp);
-      } while (rspCmd.isPending());
+      try {
+          assoc.addCancelListener(rspCmd.getMessageIDToBeingRespondedTo(),
+                mdr.getCancelListener());
+          do {
+             Dataset rspData = mdr.next(assoc, rq, rspCmd);
+             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+             assoc.getAssociation().write(rsp);
+          } while (rspCmd.isPending());
+      } finally {
+          mdr.release();
+      }
    }
       
    private static String createUID(String uid)
@@ -358,5 +362,7 @@ public class DcmServiceBase implements DcmService
       DimseListener getCancelListener();
 
       Dataset next(ActiveAssociation assoc, Dimse rq, Command rspCmd);   
+
+      void release();   
    }
 }
