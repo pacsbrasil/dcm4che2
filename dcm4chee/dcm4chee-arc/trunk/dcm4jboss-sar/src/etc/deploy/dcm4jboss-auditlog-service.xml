@@ -15,7 +15,7 @@
    <mbean code="org.dcm4chex.service.AuditLoggerService" 
          name="dcm4chex:service=AuditLogger,actorName=PACS_TIANI">
     <attribute name="SyslogHost">localhost</attribute>
-    <attribute name="SyslogPort">4000</attribute>
+    <attribute name="SyslogPort">514</attribute>
     <attribute name="Facility">authpriv</attribute>         
   </mbean>
 

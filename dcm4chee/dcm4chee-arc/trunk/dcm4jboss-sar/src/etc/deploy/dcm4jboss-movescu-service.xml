@@ -61,6 +61,7 @@
 	as the MoveOrderQueue EJB!
 	-->
     <depends>jboss.j2ee:jndiName=ejb/MoveOrderQueue,service=EJB</depends>
+    <depends>jboss.j2ee:jndiName=ejb/MoveOrder,service=EJB</depends>
         
     <!-- 
     Value must match with name attribute of MoveScuService mbean (s.above)!

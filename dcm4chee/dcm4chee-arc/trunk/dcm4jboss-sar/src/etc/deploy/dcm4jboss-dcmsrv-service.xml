@@ -15,6 +15,10 @@
 <mbean code="org.dcm4chex.service.DcmServerService" 
     name="dcm4chex:service=DcmServer,name=DCMSRV">
 
+	<!-- Comment out the dependency to the AuditLogger service
+	to deactivate emission of syslog audit trail messages for
+	DICOM transactions
+	-->
     <depends optional-attribute-name="AuditLoggerName">
       dcm4chex:service=AuditLogger,actorName=PACS_TIANI
     </depends>
