@@ -1,6 +1,11 @@
 <project name="dcm4jboss-ejb" default="jar">
+	<!-- Allow user to adjust build properties without
+	modifying this build script.
+	--> 
 	<property file="build.properties"/>
-	<property name="version" value="DEV"/>
+
+	<property name="version" value="0.2.0"/>
+	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
     <!--property name="datasource.mapping" value="mySQL"/-->
@@ -10,11 +15,19 @@
     <!--property name="datasource.name" value="java:/PostgresDS"/-->
 			
     <!-- Override with your dcm4che dist location -->
-	<property name="dcm4che.home" value="${user.home}/work/dcm4che14/build"/>		
+	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
+    <!-- Override with your XDoclet bundle dist location -->
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
+	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
+
+    <!-- Override with your Cactus bundle dist location -->
+    <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.5"/>
+    <property name="cactus.lib" value="${cactus.home}/lib"/>
+
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-3.2.2"/>		
+	<property name="jboss.home" value="${user.home}/jboss-3.2.3"/>		
 	<property name="jboss.conf" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.conf}/deploy"/>		
 	<property name="ejb.jar" value="${jboss.conf}/lib/jboss-j2ee.jar"/>		
@@ -34,8 +47,6 @@
 		<pathelement location="${dcm4che.jar}"/>
 	</path>
 	
-    <!-- Override with your XDoclet bundle dist location -->
-	<property name="xdoclet.home" value="${user.home}/xdoclet"/>
 	<path id="xdoclet.path">
 		<fileset dir="${xdoclet.home}/lib">
 			<include name="*.jar"/>
@@ -43,9 +54,6 @@
 		<path refid="base.path"/>
 	</path>
 	
-    <!-- Override with your Cactus bundle dist location -->
-    <property name="cactus.home" value="${user.home}/jakarta-cactus"/>
-    <property name="cactus.lib" value="${cactus.home}/lib"/>
 	<fileset id="cactus.container.jars" dir="${cactus.lib}">
       	<include name="aspectjrt-*.jar"/>
         <include name="cactus-*.jar"/>
@@ -86,8 +94,10 @@
 	<property name="target.meta-inf-psql" value="${target.xdoclet}/META-INF-psql"/>
 	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
-	<property name="target.deploy" value="${target.dir}/deploy"/>
-	<property name="target.lib" value="${target.dir}/lib"/>	
+	<property name="target.hsql.deploy" value="${target.dir}/hsql/deploy"/>
+	<property name="target.psql.deploy" value="${target.dir}/psql/deploy"/>
+	<property name="target.db2.deploy" value="${target.dir}/db2/deploy"/>
+	<property name="target.common.lib" value="${target.dir}/common/lib"/>	
 	<property name="target.test.web-inf" value="${target.dir}/test/WEB-INF"/>
 	<property name="target.reports" value="${target.dir}/reports"/>
 
@@ -133,8 +143,10 @@
         <mkdir dir="${target.meta-inf-hsql}"/>
         <mkdir dir="${target.meta-inf-psql}"/>
         <mkdir dir="${target.meta-inf-db2}"/>
-        <mkdir dir="${target.deploy}"/>
-        <mkdir dir="${target.lib}"/>
+        <mkdir dir="${target.hsql.deploy}"/>
+        <mkdir dir="${target.psql.deploy}"/>
+        <mkdir dir="${target.db2.deploy}"/>
+        <mkdir dir="${target.common.lib}"/>
         <mkdir dir="${target.test.web-inf}"/>
         <mkdir dir="${target.reports}"/>
     </target>
@@ -279,7 +291,7 @@
     	<antcall target="jdbc-jar"/>
     </target>
     <target name="ejb-jar">
-        <jar jarfile="${target.deploy}/dcm4jboss-ejb-${db.name}.jar">
+        <jar jarfile="${target.dir}/${db.name}/deploy/dcm4jboss-ejb-${db.name}.jar">
         	<metainf dir="${target.meta-inf}-${db.name}"/>
         	<fileset dir="${target.classes}">
                 <exclude name="**/*Test.class"/>
@@ -290,10 +302,10 @@
     </target>
 
    <!-- =================================================================== -->
-   <!-- Creates the ejb-lib-jar                                          -->
+   <!-- Creates the ejb-lib-jar                                             -->
    <!-- =================================================================== -->
     <target name="lib-jar">
-        <jar jarfile="${target.lib}/dcm4jboss-ejb-client.jar">
+        <jar jarfile="${target.common.lib}/dcm4jboss-ejb-client.jar">
         	<fileset dir="${target.classes}">
                 <include name="**/interfaces/*"/>
                 <exclude name="**/interfaces/*Local*"/>
@@ -302,10 +314,10 @@
     </target>
         
    <!-- =================================================================== -->
-   <!-- Creates the dcm4jboss-jdbc.jar                                  -->
+   <!-- Creates the dcm4jboss-jdbc.jar                                      -->
    <!-- =================================================================== -->
     <target name="jdbc-jar">
-        <jar jarfile="${target.lib}/dcm4jboss-jdbc.jar">
+        <jar jarfile="${target.common.lib}/dcm4jboss-jdbc.jar">
         	<fileset dir="${target.classes}">
                 <include name="**/jdbc/*"/>
             </fileset>
@@ -322,7 +334,7 @@
             </filterset>
 		</copy>    		
         <war
-            warfile="${target.deploy}/test.war"
+            warfile="${target.psql.deploy}/test.war"
             webxml="${target.test.web-inf}/web.xml"
         >
             <classes dir="${target.classes}">
@@ -337,8 +349,8 @@
    	<!-- Deploy                                          	                 -->
    	<!-- =================================================================== -->
     <target name="deploy" depends="jar, test-war">
-    	<copy file="${target.deploy}/dcm4jboss-ejb.jar" todir="${jboss.deploy}"/>
-    	<copy file="${target.deploy}/test.war" todir="${jboss.deploy}"/>
+    	<copy file="${target.psql.deploy}/dcm4jboss-ejb.jar" todir="${jboss.deploy}"/>
+    	<copy file="${target.psql.deploy}/test.war" todir="${jboss.deploy}"/>
     </target>
     
    	<!-- =================================================================== -->

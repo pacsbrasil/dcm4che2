@@ -1,7 +1,11 @@
 <project name="dcm4jboss-sar" default="jar">
+	<!-- Allow user to adjust build properties without
+	modifying this build script.
+	--> 
 	<property file="build.properties"/>
-	<property name="javac.debug" value="on"/>
+	
 	<property name="version" value="0.2.0"/>
+	<property name="javac.debug" value="on"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
 	<property name="src.java" value="${src.dir}/java"/>
@@ -23,23 +27,27 @@
 	<property name="dist.db2" value="${dist.dir}/db2"/>
 
     <!-- Override with your dcm4che dist location -->
-	<property name="dcm4che.home" value="${user.home}/work/dcm4che14/build"/>		
+	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your dcm4jboss-ejb dist location -->
-	<property name="dcm4jboss-ejb.home" value="${user.home}/work/dcm4jboss-ejb"/>		
+	<property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
 	<property name="dcm4jboss-ejb.target" value="${dcm4jboss-ejb.home}/target"/>		
 	<property name="dcm4jboss-ejb.src" value="${dcm4jboss-ejb.home}/src"/>		
 
+    <!-- Override with your XDoclet bundle dist location -->
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
+	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
+
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-3.2.2"/>		
-	<property name="jboss.conf" value="${jboss.home}/server/pacs"/>		
+	<property name="jboss.home" value="${user.home}/jboss-3.2.3"/>		
+	<property name="jboss.conf" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.conf}/deploy"/>		
 
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
-		<pathelement location="${dcm4jboss-ejb.target}/lib/dcm4jboss-jdbc.jar"/>
-		<pathelement location="${dcm4jboss-ejb.target}/deploy/dcm4jboss-ejb-psql.jar"/>
+		<pathelement location="${dcm4jboss-ejb.target}/common/lib/dcm4jboss-jdbc.jar"/>
+		<pathelement location="${dcm4jboss-ejb.target}/hsql/deploy/dcm4jboss-ejb-hsql.jar"/>
 		<fileset dir="${jboss.home}/lib">
 			<include name="*.jar"/>
 		</fileset>
@@ -49,9 +57,8 @@
 	</path>
 
     <!-- Override with your XDoclet bundle dist location -->
-	<property name="xdoclet.home" value="${user.home}/xdoclet"/>
 	<path id="xdoclet.path">
-		<fileset dir="${xdoclet.home}/lib">
+		<fileset dir="${xdoclet.lib}">
 			<include name="*.jar"/>
 		</fileset>
 		<path refid="base.path"/>
@@ -85,10 +92,7 @@
         <mkdir dir="${target.java}"/>
         <mkdir dir="${target.lib}"/>
         <mkdir dir="${target.deploy}"/>
-        <mkdir dir="${dist.common}"/>
-        <mkdir dir="${dist.hsql}"/>
-        <mkdir dir="${dist.psql}"/>
-        <mkdir dir="${dist.db2}"/>
+        <mkdir dir="${dist.dir}"/>
    </target>
 
     <!-- =================================================================== -->
@@ -177,59 +181,27 @@
    	<!-- =================================================================== -->
    
    	<target name="dist" depends="jar">
-   		<copy todir="${dist.common}">
+   		<copy todir="${dist.dir}">
+   			<fileset dir="${dcm4jboss-ejb.target}">
+   				<include name="common/**"/>
+   				<include name="hsql/**"/>
+   				<include name="psql/**"/>
+   				<include name="db2/**"/>
+   				<exclude name="**/test.war"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.src}/etc">
+   				<include name="*/sql/create.*"/>
+   				<include name="*/deploy/*-ds.xml"/>
+   				<include name="psql/lib/*.jar"/>
+   				<include name="hsql/data/hypersonic/localDB.script"/>
+   			</fileset>
+   		</copy>
+   		<copy todir="${dist.dir}/common">
    			<fileset dir="${dcm4che.home}">
    				<include name="lib/dcm4che.jar"/>
    			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.target}">
-   				<include name="lib/dcm4jboss-ejb-client.jar"/>
-   				<include name="lib/dcm4jboss-jdbc.jar"/>
-   			</fileset>
-   			<fileset dir="${src.etc}">
-   				<include name="deploy/*.xml"/>
-   			</fileset>
    			<fileset dir="${target.dir}">
-   				<include name="lib/dcm4jboss.jar"/>
-   			</fileset>
-   		</copy>
-   		<copy todir="${dist.hsql}">
-   			<fileset dir="${dcm4jboss-ejb.target}">
-   				<include name="deploy/dcm4jboss-ejb-hsql.jar"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src}/etc">
-   				<include name="deploy/hsqldb-ds.xml"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src}">
-   				<include name="sql/create.hsql"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src}/sql">
-   				<include name="data/hypersonic/localDB.script"/>
-   			</fileset>
-   		</copy>
-   		<copy todir="${dist.psql}">
-   			<fileset dir="${dcm4jboss-ejb.target}">
-   				<include name="deploy/dcm4jboss-ejb-psql.jar"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src}/etc">
-   				<include name="deploy/postgres-ds.xml"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.home}">
-   				<include name="lib/postgresql.jar"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src}">
-   				<include name="sql/create.psql"/>
-   			</fileset>
-   		</copy>
-   		<copy todir="${dist.db2}">
-   			<fileset dir="${dcm4jboss-ejb.target}">
-   				<include name="deploy/dcm4jboss-ejb-db2.jar"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src}/etc">
-   				<include name="deploy/db2-ds.xml"/>
-   				<include name="conf/standardjbosscmp-jdbc.xml"/>
-   			</fileset>
-   			<fileset dir="${dcm4jboss-ejb.src}">
-   				<include name="sql/create.db2sql"/>
+   				<include name="lib/*"/>
    			</fileset>
    		</copy>
    		<zip
