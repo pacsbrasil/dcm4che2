@@ -31,17 +31,25 @@
    </attribute>
 
    <attribute access="read-write"
-      getMethod="getMwlScpAET"
-      setMethod="setMwlScpAET">
-      <description>The modality work list AET (for find).
+      getMethod="getCalledAET"
+      setMethod="setCalledAET">
+      <description>The modality work list AET (for find). Use "LOCAL",
+      if DICOM MWL is provided by the archive and can be accessed
+      directly from the database. 
       </description>
-      <name>MWL_AET</name>
+      <name>CalledAET</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PACS_TIANI" />
+         <value value="LOCAL" />
       </descriptors>
    </attribute>
    
+   <attribute access="read-only" getMethod="isLocal">
+      <description>true if CalledAET = "LOCAL".
+      </description>
+      <name>Local</name>
+      <type>boolean</type>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getAcTimeout"

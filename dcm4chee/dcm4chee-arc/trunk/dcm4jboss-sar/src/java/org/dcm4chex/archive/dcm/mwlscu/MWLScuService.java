@@ -42,20 +42,18 @@ import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer
- *
+ * @version $Revision$ $Date$
  * MBean to configure and service modality worklist managment issues.
  * <p>
  * 
  */
 public class MWLScuService extends ServiceMBeanSupport {
-	
-	
+		
 	/** Holds the calling AET. */
 	private String callingAET;
 
 	/** Holds the AET of modality worklist service. */
-	private String mwlSCPAET;
-
+	private String calledAET;
 	
 	/** Holds Association timeout in ms. */
 	private int acTimeout;
@@ -72,8 +70,8 @@ public class MWLScuService extends ServiceMBeanSupport {
 	/** DICOM priority. Used for move and media creation action. */
 	private int priority = 0;
 
-	private static final AssociationFactory aFact = AssociationFactory.getInstance();
-    private static final DcmObjectFactory oFact = DcmObjectFactory.getInstance();
+    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
+        UIDs.ImplicitVRLittleEndian};
 
 	private MWLManager mwlManager;
     
@@ -83,7 +81,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @return The calling AET.
 	 */
-	public String getCallingAET() {
+	public final String getCallingAET() {
 		return callingAET;
 	}
 	
@@ -92,7 +90,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @param aet The calling AET to set.
 	 */
-	public void setCallingAET( String aet ) {
+	public final void setCallingAET( String aet ) {
 		callingAET = aet;
 	}
 	
@@ -101,8 +99,8 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @return The retrieve AET.
 	 */
-	public String getMwlScpAET() {
-		return mwlSCPAET;
+	public final String getCalledAET() {
+		return calledAET;
 	}
 	
 	/**
@@ -110,8 +108,12 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @param aet The retrieve AET to set.
 	 */
-	public void setMwlScpAET( String aet ) {
-		mwlSCPAET = aet;
+	public final void setCalledAET( String aet ) {
+		calledAET = aet;
+	}
+	
+	public final boolean isLocal() {
+		return "LOCAL".equalsIgnoreCase(calledAET);
 	}
 	
 	
@@ -120,7 +122,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @return Returns the acTimeout.
 	 */
-	public int getAcTimeout() {
+	public final int getAcTimeout() {
 		return acTimeout;
 	}
 	/**
@@ -128,7 +130,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @param acTimeout The acTimeout in ms.
 	 */
-	public void setAcTimeout(int acTimeout) {
+	public final void setAcTimeout(int acTimeout) {
 		this.acTimeout = acTimeout;
 	}
 	
@@ -137,7 +139,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @return Returns the dimseTimeout.
 	 */
-	public int getDimseTimeout() {
+	public final int getDimseTimeout() {
 		return dimseTimeout;
 	}
 	
@@ -146,7 +148,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @param dimseTimeout The dimseTimeout in ms.
 	 */
-	public void setDimseTimeout(int dimseTimeout) {
+	public final void setDimseTimeout(int dimseTimeout) {
 		this.dimseTimeout = dimseTimeout;
 	}
 	
@@ -155,7 +157,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @return Returns the soCloseDelay.
 	 */
-	public int getSoCloseDelay() {
+	public final int getSoCloseDelay() {
 		return soCloseDelay;
 	}
 	
@@ -164,7 +166,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @param delay Socket close delay in ms.
 	 */
-	public void setSoCloseDelay( int delay ) {
+	public final void setSoCloseDelay( int delay ) {
 		soCloseDelay = delay;
 	}
 
@@ -174,7 +176,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @return Returns the maxPDUlen.
 	 */
-	public int getMaxPDUlen() {
+	public final int getMaxPDUlen() {
 		return maxPDUlen;
 	}
 	
@@ -183,7 +185,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @param maxPDUlen The maxPDUlen in bytes.
 	 */
-	public void setMaxPDUlen(int maxPDUlen) {
+	public final void setMaxPDUlen(int maxPDUlen) {
 		this.maxPDUlen = maxPDUlen;
 	}
 
@@ -195,7 +197,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @return Returns the priority.
 	 */
-	public int getPriority() {
+	public final int getPriority() {
 		return priority;
 	}
 	
@@ -204,7 +206,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * 
 	 * @param priority The priority to set.
 	 */
-	public void setPriority(int priority) {
+	public final void setPriority(int priority) {
 		if ( priority < 0 || priority > 2 ) priority = 0;
 		this.priority = priority;
 	}
@@ -239,7 +241,7 @@ public class MWLScuService extends ServiceMBeanSupport {
      * Get a list of work list entries.
 	 */
 	public List findMWLEntries( Dataset searchDS ) {
-		if ( "local".equalsIgnoreCase( this.getMwlScpAET() ) ) {
+		if ( isLocal() ) {
 			return findMWLEntriesLocal( searchDS );
 		} else {
 			return findMWLEntriesFromAET( searchDS );
@@ -271,21 +273,21 @@ public class MWLScuService extends ServiceMBeanSupport {
     	List list = new ArrayList();
     	try {
 //get association for mwl find.    		
-    		AEData aeData = new AECmd( this.getMwlScpAET() ).execute();
+    		AEData aeData = new AECmd( calledAET ).execute();
 			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getCFINDAssocReq() );
 			if ( assoc == null ) {
-				log.error( "Couldnt open association! AET:"+getMwlScpAET()+" host:"+aeData.getHostName()+":"+aeData.getPort() );
+				log.error( "Couldnt open association to " + aeData );
 				return list;
 			}
 			Association as = assoc.getAssociation();
 			if (as.getAcceptedTransferSyntaxUID(1) == null) {
-            	log.error(getMwlScpAET()+" doesnt support CFIND request!", null );
+            	log.error(calledAET +" doesnt support CFIND request!", null );
 				return list;
 			}
-//send media creation request.			
-			Command cmd = oFact.newCommand();
+//send mwl cfind request.			
+			Command cmd = DcmObjectFactory.getInstance().newCommand();
             cmd.initCFindRQ(1, UIDs.ModalityWorklistInformationModelFIND, getPriority() );
-            Dimse mcRQ = aFact.newDimse(1, cmd, searchDS);
+            Dimse mcRQ = AssociationFactory.getInstance().newDimse(1, cmd, searchDS);
             if ( log.isDebugEnabled() ) log.debug("make CFIND req:"+mcRQ);
             FutureRSP rsp = assoc.invoke(mcRQ);
             Dimse dimse = rsp.get();
@@ -325,6 +327,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * @throws GeneralSecurityException
 	 */
 	private ActiveAssociation openAssoc( String host, int port, AAssociateRQ assocRQ ) throws IOException, GeneralSecurityException {
+		AssociationFactory aFact = AssociationFactory.getInstance();
 		Association assoc = aFact.newRequestor( new Socket( host, port ) );
 		assoc.setAcTimeout(acTimeout);
 		assoc.setDimseTimeout(dimseTimeout);
@@ -345,14 +348,14 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * @return Association for media creation.
 	 */
 	private AAssociateRQ getCFINDAssocReq() {
+		AssociationFactory aFact = AssociationFactory.getInstance();
     	AAssociateRQ assocRQ = aFact.newAAssociateRQ();
-    	assocRQ.setCalledAET( this.getMwlScpAET() );
-    	assocRQ.setCallingAET( getCallingAET() );
+    	assocRQ.setCalledAET( calledAET );
+    	assocRQ.setCallingAET( callingAET );
     	assocRQ.setMaxPDULength( maxPDUlen );
     	assocRQ.addPresContext(aFact.newPresContext(1,
                 UIDs.ModalityWorklistInformationModelFIND,
-                new String[]{UIDs.forName("ExplicitVRLittleEndian"),
-        					 UIDs.forName("ImplicitVRLittleEndian")} ));
+                NATIVE_TS ));
     	return assocRQ;
 	}
 	
