@@ -199,6 +199,11 @@
             
         </ejbdoclet>
 
+        <style style="${src.etc}/jdbc-properties.xsl"
+             in="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
+             out="${target.classes}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
+        />
+
     	<uptodate property="meta-inf-db2.notRequired"
     		srcfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
     		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
@@ -276,9 +281,6 @@
    <!-- =================================================================== -->
     <target name="jdbc-jar">
         <jar jarfile="${target.lib}/dcm4jboss-jdbc.jar">
-        	<metainf dir="${target.meta-inf-psql}">
-	        	<include name="jbosscmp-jdbc.xml"/>
-	        </metainf>
         	<fileset dir="${target.classes}">
                 <include name="**/jdbc/*"/>
             </fileset>
