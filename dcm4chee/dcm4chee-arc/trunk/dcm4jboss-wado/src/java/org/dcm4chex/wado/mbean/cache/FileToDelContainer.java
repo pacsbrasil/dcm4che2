@@ -53,8 +53,9 @@ public class FileToDelContainer {
 	 * 
 	 * @param dir
 	 */
-	private void searchDirectory(File dir) {
+	public void searchDirectory(File dir) {
 		File[] files = dir.listFiles();
+		if (files == null) return;
 		for ( int i = 0, len = files.length ; i < len ; i++ ) {
 			if ( files[i].isFile() ) {
 				addFile( files[i] );
