@@ -78,6 +78,7 @@ public class PrinterService
    private int status = NORMAL;
    private String statusInfo = "NORMAL";
    
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -133,7 +134,7 @@ public class PrinterService
       }
       this.queueName = queueName;
    }
-   
+      
    // MessageListener implementation -----------------------------------
    
    public void onMessage(Message msg) {
@@ -146,7 +147,7 @@ public class PrinterService
          numberOfCopies = msg.getIntProperty("NumberOfCopies"); 
          mediumType = msg.getStringProperty("MediumType"); 
          filmDestination = msg.getStringProperty("FilmDestination");          
-      } catch (JMSException e) {
+     } catch (JMSException e) {
          log.error("Failed to read JMS messsage:", e);
          return;
       }
@@ -175,8 +176,25 @@ public class PrinterService
                              - ((File)o2).lastModified());
                }
             });
+         printing = true;
          // TO DO
-         Thread.sleep(10000); // simulate Print Process
+         
+         // simulate Print Process
+         new Thread(new Runnable() {
+             public void run() {
+                 try {
+                    Thread.sleep(10000);
+                 } catch (InterruptedException ignore) {}
+                 setPrinting(false);
+             }
+         }).start();
+         
+         // wait until setPrinting(false) by PrintJobListener
+         synchronized (this) {
+             while (printing) {
+                 wait();             
+             }
+         }
          
          log.info("Finished processing job - " + job);
          sendNotification(
@@ -188,6 +206,13 @@ public class PrinterService
             new PrintJobNotification(this, ++notifCount, job,
                PrintJobNotification.FAILURE));
       }
+      printing = false;
+   }
+
+   private boolean printing = false;
+   private synchronized void setPrinting(boolean printing) {
+       this.printing = printing;
+       notify();
    }
    
    // ServiceMBeanSupport overrides ------------------------------------
