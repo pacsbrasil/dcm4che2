@@ -8,11 +8,6 @@
 <xsl:include href="page.xsl"/>
 
 <xsl:template match="model">
-	<xsl:choose>
-		<xsl:when test="errorCode = 'moveError'">
-			<font size="3" color="ff0000">Warning: Move not possible with your selection!</font>
-		</xsl:when>
-	</xsl:choose>
 	<form action="foldersubmit.m" method="get" name="myForm">
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td valign="top">
