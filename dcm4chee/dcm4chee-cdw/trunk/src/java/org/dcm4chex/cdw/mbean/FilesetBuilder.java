@@ -99,6 +99,8 @@ class FilesetBuilder {
 
     private boolean viewer;
 
+    private final FilesetComponent fsRoot = new FilesetComponent(null, null, null);
+   
     private static String toHex(int val) {
         char[] ch8 = new char[8];
         for (int i = 8; --i >= 0; val >>= 4)
@@ -112,6 +114,15 @@ class FilesetBuilder {
         return new String[] { "DICOM", toHex(pid.hashCode()),
                 toHex(suid.hashCode()), toHex(seruid.hashCode()),
                 toHex(iuid.hashCode()),};
+    }
+    
+    private static final class Pair {
+        final DirRecord rec;
+        final FilesetComponent comp;
+        Pair(DirRecord rec, FilesetComponent comp) {
+            this.rec = rec;
+            this.comp = comp;
+        }
     }
 
     public FilesetBuilder(MediaComposerService service,
@@ -209,24 +220,39 @@ class FilesetBuilder {
             String suid = ds.getString(Tags.StudyInstanceUID);
             String seruid = ds.getString(Tags.SeriesInstanceUID);
             fileIDs = makeFileIDs(pid, suid, seruid, iuid);
-            DirRecord serRec = (DirRecord) serRecs.get(seruid);
+            Pair serRec = (Pair) serRecs.get(seruid);
             if (serRec == null) {
-                DirRecord styRec = (DirRecord) styRecs.get(suid);
+                Pair styRec = (Pair) styRecs.get(suid);
                 if (styRec == null) {
-                    DirRecord patRec = (DirRecord) patRecs.get(pid);
+                    Pair patRec = (Pair) patRecs.get(pid);
                     if (patRec == null) {
-                        patRec = dirWriter.add(null, "PATIENT", recFact
-                                .makeRecord(DirRecord.PATIENT, ds));
+                        patRec = new Pair(dirWriter.add(null,
+                                "PATIENT", recFact.makeRecord(
+                                        DirRecord.PATIENT, ds)),
+                                new FilesetComponent(pid, ds
+                                        .getString(Tags.PatientName),
+                                        new String[]{ fileIDs[0], fileIDs[1] }));
                         patRecs.put(pid, patRec);
+                        fsRoot.addChild(patRec.comp);
                     }
-                    styRec = dirWriter.add(patRec, "STUDY", recFact.makeRecord(
-                            DirRecord.STUDY, ds));
+                    styRec = new Pair(dirWriter.add(
+                            patRec.rec, "STUDY", recFact.makeRecord(
+                                    DirRecord.STUDY, ds)), new FilesetComponent(suid,
+                            ds.getDateTime(Tags.StudyDate, Tags.StudyTime), new String[]{ fileIDs[0], fileIDs[1], fileIDs[2] }));
                     styRecs.put(suid, styRec);
+                    patRec.comp.addChild(styRec.comp);
                 }
-                serRec = dirWriter.add(styRec, "SERIES", recFact.makeRecord(
-                        DirRecord.SERIES, ds));
+                serRec = new Pair(dirWriter.add(
+                        styRec.rec, "SERIES", recFact.makeRecord(
+                                DirRecord.SERIES, ds)), new FilesetComponent(seruid,
+                        ds.getInteger(Tags.SeriesNumber), new String[]{ fileIDs[0], fileIDs[1], fileIDs[2], fileIDs[3]}));
                 serRecs.put(seruid, serRec);
+                styRec.comp.addChild(serRec.comp);
             }
+            FilesetComponent comp = new FilesetComponent(iuid, ds
+                    .getInteger(Tags.InstanceNumber), fileIDs);
+            comp.incSize(src.length());
+            serRec.comp.addChild(comp);
             String recType = DirBuilderFactory.getRecordType(cuid);
             Dataset rec = recFact.makeRecord(recType, ds);
             if (DirRecord.IMAGE.equals(recType)) {
@@ -255,14 +281,19 @@ class FilesetBuilder {
                                         + src);
                     } else {
                         try {
-                            mkJpegs(fileIDs);
+                            fileIDs[0] = "IHE_PDI";
+                            File jpegDir = new File(rq.getFilesetDir(), StringUtils.toString(fileIDs,
+                                    File.separatorChar));
+                            fileIDs[0] = "DICOM";
+                            mkJpegs(jpegDir, comp);
                         } catch (Exception e) {
                             log.warn("Failed to generate jpeg from " + src, e);
                         }
                     }
                 }
             }
-            dirWriter.add(serRec, recType, rec, fileIDs, cuid, iuid, tsuid);
+            dirWriter.add(serRec.rec, recType, rec, fileIDs, cuid, iuid,
+                    tsuid);
         } finally {
             try {
                 in.close();
@@ -281,11 +312,8 @@ class FilesetBuilder {
             move(src, dest);
     }
 
-    private void mkJpegs(String[] fileIDs) throws IOException {
-        fileIDs[0] = "IHE_PDI";
-        File dir = new File(rq.getFilesetDir(), StringUtils.toString(fileIDs,
-                File.separatorChar));
-        fileIDs[0] = "DICOM";
+    private void mkJpegs(File dir, FilesetComponent comp)
+            throws IOException {
         dir.mkdirs();
         int w0 = reader.getWidth(0);
         int h0 = reader.getHeight(0);
@@ -335,6 +363,7 @@ class FilesetBuilder {
                 out.close();
             }
             bi.flush();
+            comp.incSize(dest.length());
         }
     }
 
@@ -401,7 +430,7 @@ class FilesetBuilder {
          */
 
         if (iconPixelData == null || iconPixelData.length != w * h)
-            iconPixelData = new byte[w * h];
+                iconPixelData = new byte[w * h];
         Dataset iconItem = dof.newDataset();
 
         if ("PALETTE COLOR".equals(pmi)) {
