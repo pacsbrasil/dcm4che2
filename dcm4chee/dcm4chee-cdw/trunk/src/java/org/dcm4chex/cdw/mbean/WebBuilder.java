@@ -16,7 +16,9 @@ import java.util.Iterator;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -74,6 +76,9 @@ class WebBuilder {
 
     private final MediaCreationRequest rq;
 
+    private static final int[] RQ_TAGS = { Tags.IncludeNonDICOMObjects,
+            Tags.IncludeDisplayApplication,};
+
     static {
         try {
             dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
@@ -103,7 +108,7 @@ class WebBuilder {
             appendAttrs(root, fsinfo.getFileMetaInfo());
             appendAttrs(root, fsinfo);
             appendRecords(root, reader.getFirstRecord());
-            appendAttrs(root, attrs);
+            appendAttrs(root, attrs.subSet(RQ_TAGS));
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
@@ -139,11 +144,19 @@ class WebBuilder {
 
     private void appendAttr(Element parent, DcmElement dcmElm, Charset cs)
             throws DcmValueException {
-        if (dcmElm.hasItems() || dcmElm.isEmpty()) return;
+        if (dcmElm.isEmpty() || dcmElm.tag() == Tags.IconImageSeq) return;
         Element elm = doc.createElement("attr");
-        String text = StringUtils.toString(dcmElm.getStrings(cs), '/');
         elm.setAttribute("tag", Tags.toString(dcmElm.tag()));
-        elm.appendChild(doc.createTextNode(text));
+        if (dcmElm.hasItems())
+            for (int i = 0, n = dcmElm.vm(); i < n; ++i) {
+                Element item = doc.createElement("item");
+                appendAttrs(item, dcmElm.getItem(i));
+                elm.appendChild(item);
+            }
+        else {
+            String text = StringUtils.toString(dcmElm.getStrings(cs), '/');
+            elm.appendChild(doc.createTextNode(text));
+        }
         parent.appendChild(elm);
     }
 
@@ -162,8 +175,9 @@ class WebBuilder {
 
     public void toXML(File out) throws MediaCreationException {
         try {
-            tf.newTransformer().transform(new DOMSource(doc),
-                    new StreamResult(out));
+            Transformer tr = tf.newTransformer();
+            tr.setOutputProperty(OutputKeys.INDENT, "yes");
+            tr.transform(new DOMSource(doc), new StreamResult(out));
         } catch (TransformerConfigurationException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);

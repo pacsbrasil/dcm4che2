@@ -42,12 +42,16 @@
       <attr tag="(0008,0031)"/>
 <!-- Modality -->
       <attr tag="(0008,0060)"/>
+<!-- Manufacturer -->
+      <attr tag="(0008,0070)"/>
 <!-- Institution Name -->
       <attr tag="(0008,0080)"/>
 <!-- Institution Address -->
       <attr tag="(0008,0081)"/>
 <!-- Performing Physicians  Name -->
       <attr tag="(0008,1050)"/>
+<!-- Manufacturer's Model Name -->
+      <attr tag="(0008,1090)"/>
 <!-- Referenced Performed Procedure Step Sequence -->
       <attr tag="(0008,1111)"/>
 <!-- Series Instance UID -->
@@ -146,7 +150,7 @@
       <attr tag="(0020,0013)"/>
 <!-- RT Plan Label -->
       <attr tag="(300A,0002)"/>
-<!-- (300A,0006) -->
+<!-- RT Plan Date -->
       <attr tag="(300A,0006)"/>
 <!-- RT Plan Time -->
       <attr tag="(300A,0007)"/>

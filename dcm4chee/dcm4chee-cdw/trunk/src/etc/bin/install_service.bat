@@ -42,7 +42,7 @@ echo Could not locate %TOOLS_JAR%. Unexpected results may occur.
 echo Make sure that JAVA_HOME points to a JDK and not a JRE.
 
 :install
-JavaService.exe -install "DICOM CD Writer" "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -params -c dcmcdw -stop org.jboss.Main -method systemExit  -out %DIRNAME%..\server\dcmcdw\log\install_service.log -current %DIRNAME%
+JavaService.exe -install "DICOM CD Writer" "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -params -c dcmcdw -stop org.jboss.Main -method systemExit -current %DIRNAME%
 goto eof
 
 :uninstall

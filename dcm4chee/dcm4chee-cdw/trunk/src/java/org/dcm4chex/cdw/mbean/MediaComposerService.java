@@ -224,7 +224,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        log.info("load " + WebBuilder.class.getName());
+        log.info("initialize " + WebBuilder.class.getName());
         JMSDelegate.getInstance().setMediaComposerListener(listener);
     }
 

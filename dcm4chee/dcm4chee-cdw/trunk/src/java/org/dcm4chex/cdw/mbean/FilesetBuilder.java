@@ -230,21 +230,26 @@ class FilesetBuilder {
                                     .warn("Cannot generate icon from compressed image "
                                             + src);
                         } else {
-                            iconItem = mkIconItem(ds);
+                            try {
+	                            iconItem = mkIconItem(ds);
+	                        } catch (IOException e) {
+	                            log.warn("Failed to generate icon from " + src, e);
+	                        }
                         }
                 if (iconItem != null)
                         rec.putSQ(Tags.IconImageSeq).addItem(iconItem);
-                if (isWeb()) {
+	            if (isWeb()) {
                     if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                             && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
                         log
                                 .warn("Cannot generate jpeg from compressed DICOM image "
                                         + src);
                     } else {
-                        fileIDs[0] = "IHE_PDI";
-                        mkJpegs(new File(rootDir, StringUtils.toString(fileIDs,
-                                File.separatorChar)));
-                        fileIDs[0] = "DICOM";
+                        try {
+                            mkJpegs(fileIDs);
+                        } catch (IOException e) {
+                            log.warn("Failed to generate jpeg from " + src, e);
+                        }
                     }
                 }
             }
@@ -267,9 +272,12 @@ class FilesetBuilder {
             move(src, dest);
     }
 
-    private void mkJpegs(File dir) throws IOException {
-        if (!dir.exists() && !dir.mkdirs())
-                throw new IOException("Failed to mkdirs " + dir);
+    private void mkJpegs(String[] fileIDs) throws IOException {
+        fileIDs[0] = "IHE_PDI";
+        File dir = new File(rq.getFilesetDir(), StringUtils.toString(fileIDs,
+                File.separatorChar));
+        fileIDs[0] = "DICOM";
+        dir.mkdirs();
         int w0 = reader.getWidth(0);
         int h0 = reader.getHeight(0);
         float ratio = reader.getAspectRatio(0);
@@ -350,8 +358,8 @@ class FilesetBuilder {
 
         if (iconPixelData == null || iconPixelData.length != w * h)
                 iconPixelData = new byte[w * h];
-        for (int x = 0, i = 0; x < w; ++x)
-            for (int y = 0; y < h; ++y, ++i)
+        for (int y = 0, i = 0; y < h; ++y)
+            for (int x = 0; x < w; ++x, ++i)
                 iconPixelData[i] = (byte) iconBI.getRGB(x, y);
 
         Dataset iconItem = dof.newDataset();
