@@ -193,7 +193,7 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar, list-printers-jar, plut-jar, probescan-jar, localhost-jar"/>
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, plut-jar, probescan-jar, localhost-jar"/>
   
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
@@ -213,22 +213,22 @@
     </jar>
   </target>
 
-  <target name="print-grayscale-jar" depends="compile">
+  <target name="print-image-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/print-grayscale.jar">
+    <jar jarfile="${build.bin.dir}/print-image.jar">
         <manifest>
             <attribute
                 name="Main-Class"
-                value="com.tiani.prnscp.client.PrintGrayscaleWithLinDDL"
+                value="com.tiani.prnscp.client.PrintImage"
             />
             <attribute
                 name="Class-Path"
-                value="../client/jnp-client.jar ../client/jmx-rmi-connector-client.jar ../lib/jboss-common.jar ../lib/jboss-jmx.jar ../server/default/lib/log4j.jar"
+                value="../lib/getopt.jar ../client/jnp-client.jar ../client/jmx-rmi-connector-client.jar ../lib/jboss-common.jar ../lib/jboss-jmx.jar ../server/default/lib/log4j.jar"
             />
         </manifest>
         <fileset
            dir="${build.classes.dir}"
-           includes="com/tiani/prnscp/client/PrintGrayscaleWithLinDDL*"
+           includes="com/tiani/prnscp/client/PrintImage*"
         />
     </jar>
   </target>
