@@ -8,11 +8,13 @@
  ******************************************/
 package org.dcm4chex.archive.hl7;
 
+import java.io.StringWriter;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -84,4 +86,17 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
     protected void stopService() throws Exception {
         registerService(null);
     }
+
+    public void logDataset(String prompt, Dataset ds) {
+        if (!log.isDebugEnabled()) { return; }
+        try {
+            StringWriter w = new StringWriter();
+            w.write(prompt);
+            ds.dumpDataset(w, null);
+            log.debug(w.toString());
+        } catch (Exception e) {
+            log.warn("Failed to dump dataset", e);
+        }
+    }
+
 }

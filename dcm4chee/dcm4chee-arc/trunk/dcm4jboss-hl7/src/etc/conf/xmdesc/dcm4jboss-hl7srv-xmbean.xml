@@ -51,7 +51,7 @@
       <name>NoopMessageTypes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ADT^A02,ADT^A03,ADT^A06,ADT^A07,ADT^A12,ADT^A13,ORM^O01" />
+         <value value="ADT^A02,ADT^A03,ADT^A06,ADT^A07,ADT^A12,ADT^A13" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

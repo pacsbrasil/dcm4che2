@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<server>
+  <classpath codebase="lib" archives="dcm4jboss-hl7.jar"/>
+  <mbean code="org.dcm4chex.archive.hl7.ORMService" 
+         name="tiani.archive:service=HL7Service,type=ORM"
+         xmbean-dd="xmdesc/dcm4jboss-hl7orm-xmbean.xml">
+    <depends>
+      tiani.archive:service=HL7Server
+    </depends>
+  </mbean>
+</server>
