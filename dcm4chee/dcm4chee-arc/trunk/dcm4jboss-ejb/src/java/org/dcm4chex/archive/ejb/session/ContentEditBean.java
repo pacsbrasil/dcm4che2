@@ -171,7 +171,9 @@ public abstract class ContentEditBean implements SessionBean
 				}
 				catch (ParseException e) { }//do nothing
 			}
-
+			else if (patientLocal.getPatientBirthDate() != null)
+				patientLocal.setPatientBirthDate(null);
+			
 			//dataset retrieve &update
 			Dataset oldPat =
 				new RetrievePatientDatasetCmd(ds, to_update.getPatientID())
