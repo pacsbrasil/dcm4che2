@@ -117,6 +117,17 @@ public abstract class FileBean implements EntityBean {
     public abstract void setFileMd5Field(String md5);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="file_status"
+     */
+    public abstract String getFileStatus();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setFileStatus(int status);
+
+    /**
      * MD5 checksum in binary format
      * 
      * @ejb.interface-method
@@ -214,13 +225,13 @@ public abstract class FileBean implements EntityBean {
 			java.lang.String[] cuid, java.lang.String[] srcaet, java.lang.String dirPath,
 			java.sql.Timestamp before, int limit) throws FinderException {
 // generate JBossQL query
-    	if ( log.isDebugEnabled() ) log.debug("listFilesToCompress for "+dirPath+" before "+before.toGMTString());
+    	if ( log.isDebugEnabled() ) log.debug("listFilesToCompress for "+dirPath+" before "+ before.toGMTString());
 		int i = 0;
 		int argsCount = 2;
 		if (before != null)
 		    ++argsCount;
 		Object[] args = new Object[argsCount];
-		StringBuffer jbossQl = new StringBuffer("SELECT OBJECT(f) FROM File AS f WHERE ");
+		StringBuffer jbossQl = new StringBuffer("SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND ");
 		addIN( jbossQl, "f.fileTsuid", tsuid );
 		addIN( jbossQl, "f.instance.sopCuid", cuid );
 		addIN( jbossQl, "f.instance.series.sourceAET", srcaet );
@@ -276,6 +287,7 @@ public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
         setFileTsuid(tsuid);
         setFileSize(size);
         setFileMd5(md5);
+        setFileStatus(0);
         return null;
     }
 

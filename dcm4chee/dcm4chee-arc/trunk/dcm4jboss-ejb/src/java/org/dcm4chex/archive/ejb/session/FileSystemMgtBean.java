@@ -192,6 +192,13 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
 	 */
+	public void setFileStatus(int pk, int status) throws FinderException {
+		fileHome.findByPrimaryKey(new Integer(pk)).setFileStatus(status);
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
 	public FileSystemDTO addFileSystem(FileSystemDTO dto)
 			throws CreateException {
 		return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto
