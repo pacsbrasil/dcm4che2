@@ -118,7 +118,7 @@ abstract class MPPSForwardCmd {
 
     private AAssociateRQ makeAAssociateRQ() {
         AAssociateRQ rq = aFact.newAAssociateRQ();
-        rq.setCallingAET(aeData.getTitle());
+        rq.setCallingAET(service.getAET());
         rq.setCalledAET(aeData.getTitle());
         rq.addPresContext(
             aFact.newPresContext(
