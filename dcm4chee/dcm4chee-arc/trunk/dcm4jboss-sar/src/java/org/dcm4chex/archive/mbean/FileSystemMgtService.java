@@ -58,6 +58,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 
     private Set fsPathSet = Collections.singleton("archive");
 
+    private List rodirPathList = Collections.EMPTY_LIST;
+
+    private Set rofsPathSet = Collections.EMPTY_SET;
+
     private String retrieveAET = "QR_SCP";
 
     private int curDirIndex = 0;
@@ -132,6 +136,36 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         curDirIndex = dirIndex;
     }
 
+    public final String getReadOnlyDirectoryPathList() {
+        if (rodirPathList.isEmpty())
+            return "NONE";
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0, n = rodirPathList.size(); i < n; i++) {
+            sb.append(rodirPathList.get(i)).append(File.pathSeparatorChar);
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
+    public final void setReadOnlyDirectoryPathList(String str) {
+        if ("NONE".equals(str)) {
+            rodirPathList = Collections.EMPTY_LIST;
+            rofsPathSet = Collections.EMPTY_SET;
+            return;
+        }
+        StringTokenizer st = new StringTokenizer(str, File.pathSeparator);
+        ArrayList list = new ArrayList();
+        HashSet set = new HashSet();
+        int dirIndex = 0;
+        for (int i = 0; st.hasMoreTokens(); ++i) {
+            String tk = st.nextToken();
+            set.add(tk.replace(File.separatorChar, '/'));
+            list.add(new File(tk));
+        }
+        rodirPathList = list;
+        rofsPathSet = set;
+    }
+    
     public final String getRetrieveAET() {
         return retrieveAET;
     }
@@ -313,7 +347,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     
 
     public final boolean isLocalFileSystem(String fsdir) {
-        return fsPathSet.contains(fsdir);
+        return fsPathSet.contains(fsdir) || rofsPathSet.contains(fsdir);
     }
 
     private FileSystemMgt newFileSystemMgt() {

@@ -4,7 +4,7 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Scheduler for purgeFiles() of File System Management Service</description>
+   <description>Scheduler for burnMedia() of Media Creation Mgt. SCU</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate" />
@@ -22,23 +22,35 @@
    <attribute access="read-write"
       getMethod="getSchedulePeriod"
       setMethod="setSchedulePeriod">
-      <description>Intervall in ms the DB is checked for unreferenced File records.
+      <description>Intervall in ms the DB is queried for Media to burn. 
       </description>
       <name>SchedulePeriod</name>
       <type>long</type>
       <descriptors>
-         <value value="60000" />
+         <value value="3600000" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isStartAtStartup"
+      setMethod="setStartAtStartup">
+      <description>Specifies if this scheduler is started automatically
+      during system startup.
+      </description>
+      <name>StartAtStartup</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getSchedulableMBean"
       setMethod="setSchedulableMBean">
-      <description>Used internally - do NOT modify.
+      <description>Associated Media Creation Mgt. SCU - do NOT modify.
       </description>
       <name>SchedulableMBean</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="tiani.archive:service=FileSystemMgt" />
+         <value value="tiani.archive:service=MCMScu" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -49,18 +61,7 @@
       <name>SchedulableMBeanMethod</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="purgeFiles" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isStartAtStartup"
-      setMethod="setStartAtStartup">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>StartAtStartup</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
+         <value value="burnMedia" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

@@ -22,7 +22,7 @@
    <attribute access="read-write"
       getMethod="getDirectoryPathList"
       setMethod="setDirectoryPathList">
-      <description>List directories/mount points on this DICOM Node.
+      <description>List storage directories/mount points on this DICOM Node.
       Use ';' on Windows and ':' on Unix-like platforms to separate
       multiple directory path names. Relative path names are
       resolved relative to INSTALL_DIR/server/pacs/. '*'-suffix marks current 
@@ -33,6 +33,21 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="archive*" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getReadOnlyDirectoryPathList"
+      setMethod="setReadOnlyDirectoryPathList">
+      <description>List readonly directories/mount points on this DICOM Node.
+      Use ';' on Windows and ':' on Unix-like platforms to separate
+      multiple directory path names. Relative path names are
+      resolved relative to INSTALL_DIR/server/pacs/. NONE = no readonly
+      directory/mount point.
+      </description>
+      <name>ReadOnlyDirectoryPathList</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

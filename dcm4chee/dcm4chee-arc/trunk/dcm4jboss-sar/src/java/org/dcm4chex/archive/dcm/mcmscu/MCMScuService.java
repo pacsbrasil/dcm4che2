@@ -915,16 +915,16 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     }
     
     /**
-     * Schedule all media with status COLLECTING and an age greater than <code>maxMediaAge</code>.
+     * Initiate creation of Media with studies older than MaxStudyAge.
      * 
-     * @return Number of media scheduled.
+     * @return Number of media creations initiated.
      * 
      * @throws RemoteException
      * @throws FinderException
      * @throws HomeFactoryException
      * @throws CreateException
      */
-    public int scheduleCollectingMedia() throws RemoteException, FinderException, HomeFactoryException, CreateException {
+    public int burnMedia() throws RemoteException, FinderException, HomeFactoryException, CreateException {
     	int nrOfMedia = 0;
     	Collection c = lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
     	long maxAgeDate = System.currentTimeMillis() - ( maxStudyAge - minStudyAge ) * ONE_DAY_IN_MILLIS;//media is created after minStudyAge -> max media age is maxStudyAge-minStudyAge

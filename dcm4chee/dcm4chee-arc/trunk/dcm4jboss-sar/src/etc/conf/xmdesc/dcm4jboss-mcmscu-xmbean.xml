@@ -184,7 +184,7 @@
       <name>IncludeNonDicomObj</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NO" />
+         <value value="MD5_SUM" />
       </descriptors>
    </attribute>
    
@@ -211,7 +211,7 @@
    </operation>
 
    <operation impact="ACTION">
-      <description>Collect studies to medias</description>
+      <description>Associate studies older than MinStudyAge to media</description>
       <name>collectStudies</name>
       <return-type>int</return-type>
    </operation>
@@ -223,9 +223,9 @@
    </operation>
 
    <operation impact="ACTION">
-      <description>Schedule all media with status COLLECTING and an age greater than maxMediaAge.
+      <description>Initiate creation of Media with studies older than MaxStudyAge.
       </description>
-      <name>scheduleCollectingMedia</name>
+      <name>burnMedia</name>
       <return-type>int</return-type>
    </operation>
    
