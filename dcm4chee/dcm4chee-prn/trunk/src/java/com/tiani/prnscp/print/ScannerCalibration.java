@@ -24,6 +24,7 @@ import gnu.getopt.LongOpt;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -562,9 +563,11 @@ public class ScannerCalibration
             final int w = r.getWidth(0);
             final int h = r.getHeight(0);
             rParam.setSourceRegion(new Rectangle(0, h / 2, w, 1));
-            int[] hline = r.read(0, rParam).getRGB(0, 0, w, 1, null, 0, w);
+            int[] hline = (bi = r.read(0, rParam)).getRGB(0, 0, w, 1, null, 0, w);
             rParam.setSourceRegion(new Rectangle(w / 2, 0, 1, h));
             int[] vline = r.read(0, rParam).getRGB(0, 0, 1, h, null, 0, 1);
+            final boolean mono = (bi.getType() == BufferedImage.TYPE_BYTE_GRAY
+                                  || bi.getType() == BufferedImage.TYPE_USHORT_GRAY);
             int[] lr = findBorder(hline);
             int[] tb = findBorder(vline);
             final int wOuter = lr[1] - lr[0];
@@ -576,6 +579,7 @@ public class ScannerCalibration
             //find orientation scanned in portrait/landscape and if up-side-down
             float sample = -1;
             boolean foundOrient = false;
+            
             for (int side = 0; side < 4; side++) {
                 switch (side) {
                     case 0://left
@@ -633,6 +637,7 @@ public class ScannerCalibration
                     NUM_INNER_BOXES_X * NUM_INNER_BOXES_Y];
             //start winding through pattern
             Point pt;
+            
             for (int k = 0, n = NUM_BOXES_X * NUM_BOXES_Y; k < n; k++) {
                 pt = calcBox(k, NUM_BOXES_X, NUM_BOXES_Y, portrait, upSideDown);
                 rParam.setSourceRegion(new Rectangle(
@@ -640,8 +645,15 @@ public class ScannerCalibration
                         patternTop + pt.y * stepSizeY,
                         absPatternBoxSizeX, absPatternBoxSizeY));
                 //log.debug("i=" + i + ", j=" + j);
-                box = r.read(0, rParam).getRGB(0, 0, absPatternBoxSizeX, absPatternBoxSizeY,
-                        null, 0, absPatternBoxSizeX);
+                if (mono) {
+                    Raster ras = r.read(0, rParam).getRaster();
+                    box = ras.getSamples(0, 0, absPatternBoxSizeX, absPatternBoxSizeY,
+                                         0, (int[])null);
+                }
+                else {
+                    box = r.read(0, rParam).getRGB(0, 0, absPatternBoxSizeX, absPatternBoxSizeY,
+                                                   null, 0, absPatternBoxSizeX);
+                }
                 samples = sampleBoxPattern(box, absPatternBoxSizeX, absPatternBoxSizeY,
                         NUM_INNER_BOXES_X, NUM_INNER_BOXES_Y,
                         portrait, upSideDown);
