@@ -44,9 +44,10 @@ import org.jboss.logging.Logger;
 /**
  *  <description>
  *
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  January 28, 2003
- * @version  $Revision$
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      March 30, 2003
+ * @created    January 28, 2003
+ * @version    $Revision$
  */
 class PrintableFilmBox implements Printable
 {
@@ -60,8 +61,6 @@ class PrintableFilmBox implements Printable
     private final PageFormat pageFormat;
     private final Annotation annotation;
     private final int totPages;
-    private final File hcDir;
-    private final String callingAET;
     private final PrintableImageBox[] imageBoxes;
     private final int rows;
     private final int columns;
@@ -73,13 +72,13 @@ class PrintableFilmBox implements Printable
     /**
      *  Constructor for the PrintableFilmBox object
      *
-     * @param  service Description of the Parameter
-     * @param  hcDir Description of the Parameter
-     * @param  spFile Description of the Parameter
-     * @param  totPages Description of the Parameter
-     * @param  session Description of the Parameter
-     * @param  callingAET Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  service          Description of the Parameter
+     * @param  hcDir            Description of the Parameter
+     * @param  spFile           Description of the Parameter
+     * @param  totPages         Description of the Parameter
+     * @param  session          Description of the Parameter
+     * @param  callingAET       Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public PrintableFilmBox(PrinterService service, File hcDir, File spFile,
             int totPages, Dataset session, String callingAET)
@@ -87,8 +86,6 @@ class PrintableFilmBox implements Printable
     {
         this.service = service;
         this.log = service.getLog();
-        this.hcDir = hcDir;
-        this.callingAET = callingAET;
         this.totPages = totPages;
         Dataset storedPrint = dof.newDataset();
         InputStream in = new BufferedInputStream(new FileInputStream(spFile));
@@ -100,6 +97,11 @@ class PrintableFilmBox implements Printable
             } catch (IOException ignore) {}
         }
         Dataset filmbox = storedPrint.getItem(Tags.FilmBoxContentSeq);
+        // set Filmbox Configuration Information if not provided.
+        if (filmbox.getString(Tags.ConfigurationInformation) == null) {
+            filmbox.putLO(Tags.ConfigurationInformation,
+                    service.getLUTForCallingAET(callingAET));
+        }
         this.pageFormat = toPageFormat(filmbox);
         // parse ImageDisplayFormat
         String displayFormat = filmbox.getString(Tags.ImageDisplayFormat);
@@ -110,12 +112,14 @@ class PrintableFilmBox implements Printable
         DcmElement imageBoxContentSeq = storedPrint.get(Tags.ImageBoxContentSeq);
         this.imageBoxes = new PrintableImageBox[imageBoxContentSeq.vm()];
         for (int i = 0; i < imageBoxes.length; ++i) {
+            Dataset imageBox = imageBoxContentSeq.getItem(i);
+            Dataset refImage = imageBox.getItem(Tags.RefImageSeq);
+            File hcFile = new File(hcDir, refImage.getString(Tags.RefSOPInstanceUID));
             imageBoxes[i] = new PrintableImageBox(service,
                     filmbox,
-                    imageBoxContentSeq.getItem(i),
-                    storedPrint.get(Tags.PresentationLUTContentSeq),
-                    hcDir,
-                    callingAET);
+                    imageBox,
+                    storedPrint,
+                    hcFile);
         }
 
         String adfID = filmbox.getString(Tags.AnnotationDisplayFormatID,
@@ -127,6 +131,41 @@ class PrintableFilmBox implements Printable
 
     }
 
+
+    /**
+     *Constructor for the PrintableFilmBox object
+     *
+     * @param  service          Description of the Parameter
+     * @param  hcFile           Description of the Parameter
+     * @param  config           Description of the Parameter
+     * @param  session          Description of the Parameter
+     * @exception  IOException  Description of the Exception
+     */
+    public PrintableFilmBox(PrinterService service, File hcFile, String config)
+        throws IOException
+    {
+        this.service = service;
+        this.log = service.getLog();
+        this.totPages = 1;
+        Dataset session = dof.newDataset();
+        session.putLO(Tags.FilmSessionLabel, hcFile.getName() + "[" + config + "]");
+        Dataset filmbox = dof.newDataset();
+        filmbox.putLO(Tags.ConfigurationInformation, config);
+        this.pageFormat = toPageFormat(filmbox);
+        this.rows = 1;
+        this.columns = 1;
+
+        this.imageBoxes = new PrintableImageBox[1];
+        this.imageBoxes[0] = new PrintableImageBox(service,
+                filmbox,
+                filmbox,
+                null,
+                hcFile);
+
+        String adfID = service.getGrayscaleAnnotation();
+        annotation = new Annotation(service, adfID, totPages);
+        annotation.setSession(session);
+    }
 
     // Public --------------------------------------------------------
     private PageFormat toPageFormat(Dataset filmbox)
@@ -150,7 +189,7 @@ class PrintableFilmBox implements Printable
     /**
      *  Gets the pageFormat attribute of the PrintableFilmBox object
      *
-     * @return  The pageFormat value
+     * @return    The pageFormat value
      */
     public PageFormat getPageFormat()
     {
@@ -168,11 +207,11 @@ class PrintableFilmBox implements Printable
     /**
      *  Description of the Method
      *
-     * @param  g Description of the Parameter
-     * @param  pf Description of the Parameter
-     * @param  pageIndex Description of the Parameter
-     * @return  Description of the Return Value
-     * @exception  PrinterException Description of the Exception
+     * @param  g                     Description of the Parameter
+     * @param  pf                    Description of the Parameter
+     * @param  pageIndex             Description of the Parameter
+     * @return                       Description of the Return Value
+     * @exception  PrinterException  Description of the Exception
      */
     public int print(Graphics g, PageFormat pf, int pageIndex)
         throws PrinterException

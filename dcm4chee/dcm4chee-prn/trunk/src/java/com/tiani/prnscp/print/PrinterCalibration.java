@@ -180,6 +180,9 @@ class PrinterCalibration
     public byte[] getPValToDDL(int n, float dmin, float dmax,
             float l0, float la, Dataset plut)
     {
+        if (plut == null) {
+            return getIdentityPValToDDL();
+        }
         String shape = plut.getString(Tags.PresentationLUTShape);
         if (shape != null) {
             if ("IDENTITY".equals(shape)) {

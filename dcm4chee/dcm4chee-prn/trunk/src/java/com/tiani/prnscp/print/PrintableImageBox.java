@@ -86,7 +86,6 @@ class PrintableImageBox
     private final boolean debug;
 
     private final File hcFile;
-    private final String callingAET;
     private final Color borderDensityColor;
     private final Color trimColor;
     private final int pos;
@@ -123,23 +122,18 @@ class PrintableImageBox
      * @param  service Description of the Parameter
      * @param  filmbox Description of the Parameter
      * @param  imageBox Description of the Parameter
-     * @param  pLutSeq Description of the Parameter
-     * @param  hcDir Description of the Parameter
-     * @param  callingAET Description of the Parameter
+     * @param  storedPrint Description of the Parameter
+     * @param  hcFile Description of the Parameter
      * @exception  IOException Description of the Exception
      */
     public PrintableImageBox(PrinterService service, Dataset filmbox,
-            Dataset imageBox, DcmElement pLutSeq, File hcDir, String callingAET)
+            Dataset imageBox, Dataset storedPrint, File hcFile)
         throws IOException
     {
         this.log = service.getLog();
         this.debug = log.isDebugEnabled();
         this.service = service;
-
-        Dataset refImage = imageBox.getItem(Tags.RefImageSeq);
-        this.hcFile = new File(hcDir, refImage.getString(Tags.RefSOPInstanceUID));
-        this.callingAET = callingAET;
-
+        this.hcFile = hcFile;
         this.pos = imageBox.getInt(Tags.ImagePositionOnFilm, 1);
         this.crop = PrinterService.CROP.equals(
                 imageBox.getString(Tags.RequestedDecimateCropBehavior,
@@ -175,11 +169,11 @@ class PrintableImageBox
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         this.reader = (ImageReader) iter.next();
         this.readParam = (DcmImageReadParam) reader.getDefaultReadParam();
-        initReadParam(filmbox, imageBox, pLutSeq);
+        initReadParam(filmbox, imageBox, storedPrint);
     }
 
 
-    private void initReadParam(Dataset filmbox, Dataset imageBox, DcmElement pLutSeq)
+    private void initReadParam(Dataset filmbox, Dataset imageBox, Dataset storedPrint)
         throws IOException
     {
         int minDensity = filmbox.getInt(Tags.MinDensity, service.getMinDensity());
@@ -195,7 +189,7 @@ class PrintableImageBox
                 maxDensity / 100.f,
                 illumination,
                 reflectedAmbientLight,
-                getPLUT(filmbox, imageBox, pLutSeq));
+                getPLUT(filmbox, imageBox, storedPrint));
         if (REVERSE.equals(imageBox.getString(Tags.Polarity))) {
             byte tmp;
             for (int i = 0, j = pValToDDL.length - 1; i < j; ++i, --j) {
@@ -215,47 +209,50 @@ class PrintableImageBox
     }
 
 
-    private Dataset getPLUT(Dataset filmbox, Dataset imageBox, DcmElement pLutSeq)
+    private Dataset getPLUT(Dataset filmbox, Dataset imageBox, Dataset storedPrint)
         throws IOException
     {
-        Dataset pLUT;
-        Dataset refPLUT = imageBox.getItem(Tags.RefPresentationLUTSeq);
-        if (refPLUT == null) {
-            refPLUT = filmbox.getItem(Tags.RefPresentationLUTSeq);
+        Dataset pLUT = null;
+        if (storedPrint != null) {
+            DcmElement pLutSeq = storedPrint.get(Tags.PresentationLUTContentSeq);
+            Dataset refPLUT = imageBox.getItem(Tags.RefPresentationLUTSeq);
+            if (refPLUT == null) {
+                refPLUT = filmbox.getItem(Tags.RefPresentationLUTSeq);
+            }
+            if (refPLUT != null) {
+                String uid = refPLUT.getString(Tags.RefSOPInstanceUID);
+                if (debug) {
+                    log.debug("ImageBox #" + pos
+                             + ": Take PLUT[" + uid + "] from Stored Print");
+                }
+                for (int i = 0; i < pLutSeq.vm(); ++i) {
+                    pLUT = pLutSeq.getItem(i);
+                    if (uid.equals(pLUT.getString(Tags.SOPInstanceUID))) {
+                        return pLUT;
+                    }
+                }
+                throw new RuntimeException(
+                        "Could not find PLUT[" + uid + "] in Stored Print");
+            }
         }
-        if (refPLUT != null) {
-            String uid = refPLUT.getString(Tags.RefSOPInstanceUID);
+        String configInfo = imageBox.getString(Tags.ConfigurationInformation,
+                filmbox.getString(Tags.ConfigurationInformation));
+        if (configInfo != null) {
+            pLUT = dof.newDataset();
+            File pLutFile = new File(service.getLUTDir(),
+                    configInfo + PrinterService.LUT_FILE_EXT);
             if (debug) {
                 log.debug("ImageBox #" + pos
-                         + ": Take PLUT[" + uid + "] from Stored Print");
+                         + ": Load PLUT[" + configInfo + "] from file - " + pLutFile);
             }
-            for (int i = 0; i < pLutSeq.vm(); ++i) {
-                pLUT = pLutSeq.getItem(i);
-                if (uid.equals(pLUT.getString(Tags.SOPInstanceUID))) {
-                    return pLUT;
-                }
-            }
-            throw new RuntimeException(
-                    "Could not find PLUT[" + uid + "] in Stored Print");
-        }
-
-        String configInfo = imageBox.getString(Tags.ConfigurationInformation,
-                filmbox.getString(Tags.ConfigurationInformation,
-                service.getLUTForCallingAET(callingAET)));
-        pLUT = dof.newDataset();
-        File pLutFile = new File(service.getLUTDir(),
-                configInfo + PrinterService.LUT_FILE_EXT);
-        if (debug) {
-            log.debug("ImageBox #" + pos
-                     + ": Load PLUT[" + configInfo + "] from file - " + pLutFile);
-        }
-        InputStream in = new BufferedInputStream(new FileInputStream(pLutFile));
-        try {
-            pLUT.readFile(in, FileFormat.DICOM_FILE, -1);
-        } finally {
+            InputStream in = new BufferedInputStream(new FileInputStream(pLutFile));
             try {
-                in.close();
-            } catch (IOException ignore) {}
+                pLUT.readFile(in, FileFormat.DICOM_FILE, -1);
+            } finally {
+                try {
+                    in.close();
+                } catch (IOException ignore) {}
+            }
         }
         return pLUT;
     }

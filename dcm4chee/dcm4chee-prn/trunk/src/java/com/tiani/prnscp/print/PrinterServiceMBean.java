@@ -20,7 +20,6 @@
 package com.tiani.prnscp.print;
 
 import java.io.IOException;
-
 import javax.management.ObjectName;
 import javax.print.PrintException;
 
@@ -30,9 +29,10 @@ import org.jboss.system.ServiceMBean;
 /**
  *  <description>
  *
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  November 3, 2003
- * @version  $Revision$
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      March 30, 2003
+ * @created    November 3, 2003
+ * @version    $Revision$
  */
 public interface PrinterServiceMBean extends ServiceMBean
 {
@@ -42,7 +42,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property printSCP.
      *
-     * @return  Value of property printSCP.
+     * @return    Value of property printSCP.
      */
     public ObjectName getPrintSCP();
 
@@ -50,7 +50,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property printSCP.
      *
-     * @param  printSCP New value of property printSCP.
+     * @param  printSCP  New value of property printSCP.
      */
     public void setPrintSCP(ObjectName printSCP);
 
@@ -58,7 +58,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property availablePrinters.
      *
-     * @return  Value of property availablePrinters.
+     * @return    Value of property availablePrinters.
      */
     public String[] getAvailablePrinters();
 
@@ -66,7 +66,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property printerName.
      *
-     * @return  Value of property printerName.
+     * @return    Value of property printerName.
      */
     public String getPrinterName();
 
@@ -74,7 +74,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property printerName.
      *
-     * @param  printerName The new printerName value
+     * @param  printerName  The new printerName value
      */
     public void setPrinterName(String printerName);
 
@@ -82,7 +82,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property manufacturer.
      *
-     * @return  Value of property manufacturer.
+     * @return    Value of property manufacturer.
      */
     public String getManufacturer();
 
@@ -90,7 +90,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property manufacturer.
      *
-     * @param  manufacturer New value of property manufacturer.
+     * @param  manufacturer  New value of property manufacturer.
      */
     public void setManufacturer(String manufacturer);
 
@@ -98,7 +98,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property manufacturerModelName.
      *
-     * @return  Value of property manufacturerModelName.
+     * @return    Value of property manufacturerModelName.
      */
     public String getManufacturerModelName();
 
@@ -106,7 +106,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property manufacturerModelName.
      *
-     * @param  manufacturerModelName New value of property
+     * @param  manufacturerModelName  New value of property
      *      manufacturerModelName.
      */
     public void setManufacturerModelName(String manufacturerModelName);
@@ -115,7 +115,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property deviceSerialNumber.
      *
-     * @return  Value of property deviceSerialNumber.
+     * @return    Value of property deviceSerialNumber.
      */
     public String getDeviceSerialNumber();
 
@@ -123,7 +123,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property softwareVersion.
      *
-     * @return  Value of property softwareVersion.
+     * @return    Value of property softwareVersion.
      */
     public String getSoftwareVersion();
 
@@ -131,7 +131,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property softwareVersion.
      *
-     * @param  softwareVersion New value of property softwareVersion.
+     * @param  softwareVersion  New value of property softwareVersion.
      */
     public void setSoftwareVersion(String softwareVersion);
 
@@ -139,7 +139,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property deviceSerialNumber.
      *
-     * @param  deviceSerialNumber New value of property deviceSerialNumber.
+     * @param  deviceSerialNumber  New value of property deviceSerialNumber.
      */
     public void setDeviceSerialNumber(String deviceSerialNumber);
 
@@ -147,7 +147,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property supportedAttributeValues.
      *
-     * @return  Value of property supportedAttributeValues.
+     * @return    Value of property supportedAttributeValues.
      */
     public String[] getSupportedAttributeValues();
 
@@ -155,7 +155,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property printServiceAttributes.
      *
-     * @return  Value of property printServiceAttributes.
+     * @return    Value of property printServiceAttributes.
      */
     public String[] getPrintServiceAttributes();
 
@@ -163,7 +163,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property printToFile.
      *
-     * @return  Value of property printToFile.
+     * @return    Value of property printToFile.
      */
     public String getPrintToFilePath();
 
@@ -171,7 +171,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property printToFile.
      *
-     * @param  printToFile New value of property printToFile.
+     * @param  printToFile  New value of property printToFile.
      */
     public void setPrintToFilePath(String printToFile);
 
@@ -179,7 +179,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property printToFile.
      *
-     * @return  Value of property printToFile.
+     * @return    Value of property printToFile.
      */
     public boolean isPrintToFile();
 
@@ -187,7 +187,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property printToFile.
      *
-     * @param  printToFile New value of property printToFile.
+     * @param  printToFile  New value of property printToFile.
      */
     public void setPrintToFile(boolean printToFile);
 
@@ -195,7 +195,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property supportsColor.
      *
-     * @return  Value of property supportsColor.
+     * @return    Value of property supportsColor.
      */
     public boolean isSupportsColor();
 
@@ -203,7 +203,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property supportsColor.
      *
-     * @param  supportsColor New value of property supportsColor.
+     * @param  supportsColor  New value of property supportsColor.
      */
     public void setSupportsColor(boolean supportsColor);
 
@@ -211,7 +211,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property supportsPresentationLUT.
      *
-     * @return  Value of property supportsPresentationLUT.
+     * @return    Value of property supportsPresentationLUT.
      */
     public boolean isSupportsPresentationLUT();
 
@@ -219,7 +219,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property supportsPresentationLUT.
      *
-     * @param  supportsPresentationLUT New value of property
+     * @param  supportsPresentationLUT  New value of property
      *      supportsPresentationLUT.
      */
     public void setSupportsPresentationLUT(boolean supportsPresentationLUT);
@@ -228,7 +228,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property supportsAnnotationBox.
      *
-     * @return  Value of property supportsAnnotationBox.
+     * @return    Value of property supportsAnnotationBox.
      */
     public boolean isSupportsAnnotationBox();
 
@@ -236,7 +236,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property supportsAnnotationBox.
      *
-     * @param  supportsAnnotationBox New value of property
+     * @param  supportsAnnotationBox  New value of property
      *      supportsAnnotationBox.
      */
     public void setSupportsAnnotationBox(boolean supportsAnnotationBox);
@@ -245,7 +245,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Gets the dateFormat attribute of the PrinterServiceMBean object
      *
-     * @return  The dateFormat value
+     * @return    The dateFormat value
      */
     public String getDateFormat();
 
@@ -253,7 +253,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Sets the dateFormat attribute of the PrinterService object
      *
-     * @param  dateFormat The new dateFormat value
+     * @param  dateFormat  The new dateFormat value
      */
     public void setDateFormat(String dateFormat);
 
@@ -261,7 +261,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Gets the timeFormat attribute of the PrinterService object
      *
-     * @return  The timeFormat value
+     * @return    The timeFormat value
      */
     public String getTimeFormat();
 
@@ -269,7 +269,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Sets the timeFormat attribute of the PrinterService object
      *
-     * @param  timeFormat The new timeFormat value
+     * @param  timeFormat  The new timeFormat value
      */
     public void setTimeFormat(String timeFormat);
 
@@ -277,7 +277,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Gets the sessionLabel attribute of the PrinterServiceMBean object
      *
-     * @return  The sessionLabel value
+     * @return    The sessionLabel value
      */
     public String getSessionLabel();
 
@@ -285,7 +285,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Sets the sessionLabel attribute of the PrinterServiceMBean object
      *
-     * @param  sessionLabel The new sessionLabel value
+     * @param  sessionLabel  The new sessionLabel value
      */
     public void setSessionLabel(String sessionLabel);
 
@@ -293,7 +293,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Gets the maxNumberOfCopies attribute of the PrinterServiceMBean object
      *
-     * @return  The maxNumberOfCopies value
+     * @return    The maxNumberOfCopies value
      */
     public int getMaxNumberOfCopies();
 
@@ -301,7 +301,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Sets the maxNumberOfCopies attribute of the PrinterServiceMBean object
      *
-     * @param  maxNumberOfCopies The new maxNumberOfCopies value
+     * @param  maxNumberOfCopies  The new maxNumberOfCopies value
      */
     public void setMaxNumberOfCopies(int maxNumberOfCopies);
 
@@ -309,7 +309,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property mediaType.
      *
-     * @return  Value of property mediaType.
+     * @return    Value of property mediaType.
      */
     public String getMediumType();
 
@@ -317,7 +317,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property mediaType.
      *
-     * @param  mediaType New value of property mediaType.
+     * @param  mediaType  New value of property mediaType.
      */
     public void setMediumType(String mediaType);
 
@@ -325,7 +325,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property reverseLandscap.
      *
-     * @return  Value of property reverseLandscap.
+     * @return    Value of property reverseLandscap.
      */
     public boolean isReverseLandscape();
 
@@ -333,7 +333,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property reverseLandscape.
      *
-     * @param  reverseLandscape New value of property reverseLandscape.
+     * @param  reverseLandscape  New value of property reverseLandscape.
      */
     public void setReverseLandscape(boolean reverseLandscape);
 
@@ -341,7 +341,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property defaultLandscapee.
      *
-     * @return  Value of property defaultLandscape.
+     * @return    Value of property defaultLandscape.
      */
     public boolean isDefaultPortrait();
 
@@ -349,7 +349,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property defaultLandscape.
      *
-     * @param  defaultLandscape New value of property defaultLandscape.
+     * @param  defaultLandscape  New value of property defaultLandscape.
      */
     public void setDefaultPortrait(boolean defaultLandscape);
 
@@ -357,7 +357,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property defaultFilmOrientation.
      *
-     * @return  Value of property defaultFilmOrientation.
+     * @return    Value of property defaultFilmOrientation.
      */
     public String getDefaultFilmOrientation();
 
@@ -365,7 +365,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property displayFormat.
      *
-     * @return  Value of property displayFormat.
+     * @return    Value of property displayFormat.
      */
     public String getDisplayFormat();
 
@@ -373,7 +373,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property displayFormat.
      *
-     * @param  displayFormat New value of property displayFormat.
+     * @param  displayFormat  New value of property displayFormat.
      */
     public void setDisplayFormat(String displayFormat);
 
@@ -381,7 +381,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property filmSizeID.
      *
-     * @return  Value of property filmSizeID.
+     * @return    Value of property filmSizeID.
      */
     public String getFilmSizeID();
 
@@ -389,7 +389,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property filmSizeID.
      *
-     * @param  filmSizeID New value of property filmSizeID.
+     * @param  filmSizeID  New value of property filmSizeID.
      */
     public void setFilmSizeID(String filmSizeID);
 
@@ -397,7 +397,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property resolutionID.
      *
-     * @return  Value of property resolutionID.
+     * @return    Value of property resolutionID.
      */
     public String getResolutionID();
 
@@ -405,7 +405,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property resolutionID.
      *
-     * @param  resolutionID New value of property resolutionID.
+     * @param  resolutionID  New value of property resolutionID.
      */
     public void setResolutionID(String resolutionID);
 
@@ -413,7 +413,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property magnificationType.
      *
-     * @return  Value of property magnificationType.
+     * @return    Value of property magnificationType.
      */
     public String getMagnificationType();
 
@@ -421,7 +421,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property magnificationType.
      *
-     * @param  magnificationType New value of property magnificationType.
+     * @param  magnificationType  New value of property magnificationType.
      */
     public void setMagnificationType(String magnificationType);
 
@@ -429,7 +429,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property decimateCropBehavior.
      *
-     * @return  Value of property decimateCropBehavior.
+     * @return    Value of property decimateCropBehavior.
      */
     public String getDecimateCropBehavior();
 
@@ -437,7 +437,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property decimateCropBehavior.
      *
-     * @param  decimateCropBehavior New value of property decimateCropBehavior.
+     * @param  decimateCropBehavior  New value of property decimateCropBehavior.
      */
     public void setDecimateCropBehavior(String decimateCropBehavior);
 
@@ -445,7 +445,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property borderDensity.
      *
-     * @return  Value of property borderDensity.
+     * @return    Value of property borderDensity.
      */
     public String getBorderDensity();
 
@@ -453,7 +453,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property borderDensity.
      *
-     * @param  borderDensity New value of property borderDensity.
+     * @param  borderDensity  New value of property borderDensity.
      */
     public void setBorderDensity(String borderDensity);
 
@@ -461,7 +461,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Gets the trim attribute of the PrinterService object
      *
-     * @return  The trim value
+     * @return    The trim value
      */
     public String getTrim();
 
@@ -469,7 +469,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Sets the trim attribute of the PrinterService object
      *
-     * @param  trim The new trim value
+     * @param  trim  The new trim value
      */
     public void setTrim(String trim);
 
@@ -477,7 +477,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property minDensity.
      *
-     * @return  Value of property minDensity.
+     * @return    Value of property minDensity.
      */
     public int getMinDensity();
 
@@ -485,7 +485,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property maxDensity.
      *
-     * @return  Value of property maxDensity.
+     * @return    Value of property maxDensity.
      */
     public int getMaxDensity();
 
@@ -493,7 +493,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property borderThickness.
      *
-     * @return  Value of property borderThickness.
+     * @return    Value of property borderThickness.
      */
     public float getBorderThickness();
 
@@ -501,7 +501,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property borderThickness.
      *
-     * @param  borderThickness New value of property borderThickness.
+     * @param  borderThickness  New value of property borderThickness.
      */
     public void setBorderThickness(float borderThickness);
 
@@ -509,7 +509,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property margin.
      *
-     * @return  Value of property margin.
+     * @return    Value of property margin.
      */
     public String getPageMargin();
 
@@ -517,7 +517,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property margin.
      *
-     * @param  margin New value of property margin.
+     * @param  margin  New value of property margin.
      */
     public void setPageMargin(String margin);
 
@@ -525,7 +525,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property illumination.
      *
-     * @return  Value of property illumination.
+     * @return    Value of property illumination.
      */
     public int getIllumination();
 
@@ -533,7 +533,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property illumination.
      *
-     * @param  illumination New value of property illumination.
+     * @param  illumination  New value of property illumination.
      */
     public void setIllumination(int illumination);
 
@@ -541,7 +541,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property reflectedAmbientLight.
      *
-     * @return  Value of property reflectedAmbientLight.
+     * @return    Value of property reflectedAmbientLight.
      */
     public int getReflectedAmbientLight();
 
@@ -549,7 +549,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property reflectedAmbientLight.
      *
-     * @param  reflectedAmbientLight New value of property
+     * @param  reflectedAmbientLight  New value of property
      *      reflectedAmbientLight.
      */
     public void setReflectedAmbientLight(int reflectedAmbientLight);
@@ -558,7 +558,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property defaultMediumType.
      *
-     * @return  Value of property defaultMediumType.
+     * @return    Value of property defaultMediumType.
      */
     public String getDefaultMediumType();
 
@@ -566,7 +566,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property defaultMagnificationType.
      *
-     * @return  Value of property defaultMagnificationType.
+     * @return    Value of property defaultMagnificationType.
      */
     public String getDefaultMagnificationType();
 
@@ -574,7 +574,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property defaultResolutionID.
      *
-     * @return  Value of property defaultResolutionID.
+     * @return    Value of property defaultResolutionID.
      */
     public String getDefaultResolutionID();
 
@@ -582,7 +582,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for code string for property status.
      *
-     * @return  String value of property status.
+     * @return    String value of property status.
      */
     PrinterStatus getStatus();
 
@@ -590,7 +590,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property statusInfo.
      *
-     * @return  Value of property statusInfo.
+     * @return    Value of property statusInfo.
      */
     PrinterStatusInfo getStatusInfo();
 
@@ -598,7 +598,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property measuredODs.
      *
-     * @return  Value of property measuredODs.
+     * @return    Value of property measuredODs.
      */
     public float[] getGrayscaleODs();
 
@@ -606,7 +606,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property measuredODs.
      *
-     * @param  measuredODs New value of property measuredODs.
+     * @param  measuredODs  New value of property measuredODs.
      */
     public void setGrayscaleODs(float[] measuredODs);
 
@@ -614,47 +614,15 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property measuredODsAsText.
      *
-     * @param  measuredODsAsText New value of property measuredODsAsText.
+     * @param  measuredODsAsText  New value of property measuredODsAsText.
      */
     public void setGrayscaleODsAsText(String measuredODsAsText);
 
 
     /**
-     *  Getter for property grayscales.
-     *
-     * @return  Value of property grayscales.
-     */
-    public int getGrayscales();
-
-
-    /**
-     *  Setter for property grayscales.
-     *
-     * @param  grayscales New value of property grayscales.
-     */
-    public void setGrayscales(int grayscales);
-
-
-    /**
-     *  Getter for property grayscaleGap.
-     *
-     * @return  Value of property grayscaleGap.
-     */
-    public float getGrayscaleGap();
-
-
-    /**
-     *  Setter for property grayscaleGap.
-     *
-     * @param  grayscaleGap New value of property grayscaleGap.
-     */
-    public void setGrayscaleGap(float grayscaleGap);
-
-
-    /**
      *  Getter for property refGrayscaleODs.
      *
-     * @return  Value of property refGrayscaleODs.
+     * @return    Value of property refGrayscaleODs.
      */
     public float[] getRefGrayscaleODs();
 
@@ -662,7 +630,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property refGrayscaleODs.
      *
-     * @param  refGrayscaleODs New value of property refGrayscaleODs.
+     * @param  refGrayscaleODs  New value of property refGrayscaleODs.
      */
     public void setRefGrayscaleODs(float[] refGrayscaleODs);
 
@@ -670,7 +638,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property refGrayscaleODsAsText.
      *
-     * @param  refGrayscaleODsAsText New value of property
+     * @param  refGrayscaleODsAsText  New value of property
      *      refGrayscaleODsAsText.
      */
     public void setRefGrayscaleODsAsText(String refGrayscaleODsAsText);
@@ -679,7 +647,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property scanGrayscaleDir.
      *
-     * @return  Value of property scanGrayscaleDir.
+     * @return    Value of property scanGrayscaleDir.
      */
     public String getCalibrationDir();
 
@@ -687,7 +655,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property scanGrayscaleDir.
      *
-     * @param  scanGrayscaleDir New value of property scanGrayscaleDir.
+     * @param  scanGrayscaleDir  New value of property scanGrayscaleDir.
      */
     public void setCalibrationDir(String scanGrayscaleDir);
 
@@ -695,7 +663,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property refFileName.
      *
-     * @return  Value of property refFileName.
+     * @return    Value of property refFileName.
      */
     public String getRefGrayscaleFileName();
 
@@ -703,7 +671,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property refFileName.
      *
-     * @param  refFileName New value of property refFileName.
+     * @param  refFileName  New value of property refFileName.
      */
     public void setRefGrayscaleFileName(String refFileName);
 
@@ -711,7 +679,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property scanPointExtension.
      *
-     * @return  Value of property scanPointExtension.
+     * @return    Value of property scanPointExtension.
      */
     public int getScanPointExtension();
 
@@ -719,7 +687,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property scanPointExtension.
      *
-     * @param  extension New value of property scanPointExtension.
+     * @param  extension  New value of property scanPointExtension.
      */
     public void setScanPointExtension(int extension);
 
@@ -727,7 +695,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property scanGradientThreshold.
      *
-     * @return  Value of property scanGradientThreshold.
+     * @return    Value of property scanGradientThreshold.
      */
     public String getScanThreshold();
 
@@ -735,7 +703,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property scanGradientThreshold.
      *
-     * @param  scanGradientThreshold New value of property
+     * @param  scanGradientThreshold  New value of property
      *      scanGradientThreshold.
      */
     public void setScanThreshold(String scanGradientThreshold);
@@ -744,7 +712,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property annotationDir.
      *
-     * @return  Value of property annotationDir.
+     * @return    Value of property annotationDir.
      */
     public String getAnnotationDir();
 
@@ -752,7 +720,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property annotationDir.
      *
-     * @param  annotationDir New value of property annotationDir.
+     * @param  annotationDir  New value of property annotationDir.
      */
     public void setAnnotationDir(String annotationDir);
 
@@ -760,7 +728,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property lutDir.
      *
-     * @return  Value of property lutDir.
+     * @return    Value of property lutDir.
      */
     public String getLUTDir();
 
@@ -768,7 +736,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property lutDir.
      *
-     * @param  lutDir New value of property lutDir.
+     * @param  lutDir  New value of property lutDir.
      */
     public void setLUTDir(String lutDir);
 
@@ -776,7 +744,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property annotationDisplayFormatIDs.
      *
-     * @return  Value of property annotationDisplayFormatIDs.
+     * @return    Value of property annotationDisplayFormatIDs.
      */
     public String[] getAnnotationDisplayFormatIDs();
 
@@ -784,7 +752,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property LUTs.
      *
-     * @return  Value of property LUTs.
+     * @return    Value of property LUTs.
      */
     public String[] getLUTs();
 
@@ -792,7 +760,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property lutForCallingAET.
      *
-     * @return  Value of property lutForCallingAET.
+     * @return    Value of property lutForCallingAET.
      */
     public String getLUTForCallingAET();
 
@@ -800,7 +768,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property lutForCallingAET.
      *
-     * @param  lutForCallingAET New value of property lutForCallingAET.
+     * @param  lutForCallingAET  New value of property lutForCallingAET.
      */
     public void setLUTForCallingAET(String lutForCallingAET);
 
@@ -808,7 +776,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property annotationForCallingAET.
      *
-     * @return  Value of property annotationForCallingAET.
+     * @return    Value of property annotationForCallingAET.
      */
     public String getAnnotationForCallingAET();
 
@@ -816,7 +784,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property annotationForCallingAET.
      *
-     * @param  annotationForCallingAET New value of property
+     * @param  annotationForCallingAET  New value of property
      *      annotationForCallingAET.
      */
     public void setAnnotationForCallingAET(String annotationForCallingAET);
@@ -825,7 +793,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property grayscaleAnnotation.
      *
-     * @return  Value of property grayscaleAnnotation.
+     * @return    Value of property grayscaleAnnotation.
      */
     public String getGrayscaleAnnotation();
 
@@ -833,7 +801,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property grayscaleAnnotation.
      *
-     * @param  grayscaleAnnotation New value of property grayscaleAnnotation.
+     * @param  grayscaleAnnotation  New value of property grayscaleAnnotation.
      */
     public void setGrayscaleAnnotation(String grayscaleAnnotation);
 
@@ -841,8 +809,8 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Gets the supportsFilmSizeID attribute of the PrinterServiceMBean object
      *
-     * @param  filmSizeID Description of the Parameter
-     * @return  The supportsFilmSizeID value
+     * @param  filmSizeID  Description of the Parameter
+     * @return             The supportsFilmSizeID value
      */
     public boolean isSupportsFilmSizeID(String filmSizeID);
 
@@ -851,9 +819,9 @@ public interface PrinterServiceMBean extends ServiceMBean
      *  Gets the supportsDisplayFormat attribute of the PrinterServiceMBean
      *  object
      *
-     * @param  displayFormat Description of the Parameter
-     * @param  filmOrientation Description of the Parameter
-     * @return  The supportsDisplayFormat value
+     * @param  displayFormat    Description of the Parameter
+     * @param  filmOrientation  Description of the Parameter
+     * @return                  The supportsDisplayFormat value
      */
     public boolean isSupportsDisplayFormat(String displayFormat, String filmOrientation);
 
@@ -862,8 +830,8 @@ public interface PrinterServiceMBean extends ServiceMBean
      *  Gets the supportsMagnificationType attribute of the PrinterServiceMBean
      *  object
      *
-     * @param  magnificationType Description of the Parameter
-     * @return  The supportsMagnificationType value
+     * @param  magnificationType  Description of the Parameter
+     * @return                    The supportsMagnificationType value
      */
     public boolean isSupportsMagnificationType(String magnificationType);
 
@@ -871,8 +839,8 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Gets the supportsMediumType attribute of the PrinterServiceMBean object
      *
-     * @param  mediumType Description of the Parameter
-     * @return  The supportsMediumType value
+     * @param  mediumType  Description of the Parameter
+     * @return             The supportsMediumType value
      */
     public boolean isSupportsMediumType(String mediumType);
 
@@ -881,8 +849,8 @@ public interface PrinterServiceMBean extends ServiceMBean
      *  Gets the supportsResolutionID attribute of the PrinterServiceMBean
      *  object
      *
-     * @param  resolutionID Description of the Parameter
-     * @return  The supportsResolutionID value
+     * @param  resolutionID  Description of the Parameter
+     * @return               The supportsResolutionID value
      */
     public boolean isSupportsResolutionID(String resolutionID);
 
@@ -891,8 +859,8 @@ public interface PrinterServiceMBean extends ServiceMBean
      *  Gets the supportsConfigurationInformation attribute of the
      *  PrinterServiceMBean object
      *
-     * @param  configInfo Description of the Parameter
-     * @return  The supportsConfigurationInformation value
+     * @param  configInfo  Description of the Parameter
+     * @return             The supportsConfigurationInformation value
      */
     public boolean isSupportsConfigurationInformation(String configInfo);
 
@@ -901,8 +869,8 @@ public interface PrinterServiceMBean extends ServiceMBean
      *  Gets the supportsAnnotationDisplayFormatID attribute of the
      *  PrinterServiceMBean object
      *
-     * @param  annotationID Description of the Parameter
-     * @return  The supportsAnnotationDisplayFormatID value
+     * @param  annotationID  Description of the Parameter
+     * @return               The supportsAnnotationDisplayFormatID value
      */
     public boolean isSupportsAnnotationDisplayFormatID(String annotationID);
 
@@ -910,8 +878,8 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @param  annotationID Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  annotationID  Description of the Parameter
+     * @return               Description of the Return Value
      */
     public int countAnnotationBoxes(String annotationID);
 
@@ -919,7 +887,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property dateOfLastCalibration.
      *
-     * @return  Value of property dateOfLastCalibration.
+     * @return    Value of property dateOfLastCalibration.
      */
     public String getDateOfLastCalibration();
 
@@ -927,7 +895,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property dateOfLastCalibration.
      *
-     * @param  dateOfLastCalibration New value of property
+     * @param  dateOfLastCalibration  New value of property
      *      dateOfLastCalibration.
      */
     public void setDateOfLastCalibration(String dateOfLastCalibration);
@@ -936,7 +904,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property timeOfLastCalibration.
      *
-     * @return  Value of property timeOfLastCalibration.
+     * @return    Value of property timeOfLastCalibration.
      */
     public String getTimeOfLastCalibration();
 
@@ -944,7 +912,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property timeOfLastCalibration.
      *
-     * @param  timeOfLastCalibration New value of property
+     * @param  timeOfLastCalibration  New value of property
      *      timeOfLastCalibration.
      */
     public void setTimeOfLastCalibration(String timeOfLastCalibration);
@@ -953,7 +921,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property autoCalibration.
      *
-     * @return  Value of property autoCalibration.
+     * @return    Value of property autoCalibration.
      */
     public boolean isAutoCalibration();
 
@@ -961,32 +929,15 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property autoCalibration.
      *
-     * @param  autoCalibration New value of property autoCalibration.
+     * @param  autoCalibration  New value of property autoCalibration.
      */
     public void setAutoCalibration(boolean autoCalibration);
 
 
     /**
-     *  Getter for property printGrayscaleAtStartup.
-     *
-     * @return  Value of property printGrayscaleAtStartup.
-     */
-    public boolean isPrintGrayscaleAtStartup();
-
-
-    /**
-     *  Setter for property printGrayscaleAtStartup.
-     *
-     * @param  printGrayscaleAtStartup New value of property
-     *      printGrayscaleAtStartup.
-     */
-    public void setPrintGrayscaleAtStartup(boolean printGrayscaleAtStartup);
-
-
-    /**
      *  Getter for property printGrayAsColor.
      *
-     * @return  Value of property printGrayAsColor.
+     * @return    Value of property printGrayAsColor.
      */
     public boolean isPrintGrayAsColor();
 
@@ -994,7 +945,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property printGrayAsColor.
      *
-     * @param  printGrayAsColor New value of property printGrayAsColor.
+     * @param  printGrayAsColor  New value of property printGrayAsColor.
      */
     public void setPrintGrayAsColor(boolean printGrayAsColor);
 
@@ -1002,7 +953,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property maxQueuedJobCount.
      *
-     * @return  Value of property maxQueuedJobCount.
+     * @return    Value of property maxQueuedJobCount.
      */
     public int getMaxQueuedJobCount();
 
@@ -1010,7 +961,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property maxQueuedJobCount.
      *
-     * @param  maxQueuedJobCount New value of property maxQueuedJobCount.
+     * @param  maxQueuedJobCount  New value of property maxQueuedJobCount.
      */
     public void setMaxQueuedJobCount(int maxQueuedJobCount);
 
@@ -1018,7 +969,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property ignorePrinterIsAcceptingJobs.
      *
-     * @return  Value of property ignorePrinterIsAcceptingJobs.
+     * @return    Value of property ignorePrinterIsAcceptingJobs.
      */
     public boolean isIgnorePrinterIsAcceptingJobs();
 
@@ -1026,7 +977,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property ignorePrinterIsAcceptingJobs.
      *
-     * @param  ignorePrinterIsAcceptingJobs New value of property
+     * @param  ignorePrinterIsAcceptingJobs  New value of property
      *      ignorePrinterIsAcceptingJobs.
      */
     public void setIgnorePrinterIsAcceptingJobs(boolean ignorePrinterIsAcceptingJobs);
@@ -1035,7 +986,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property supportsMonochrome.
      *
-     * @return  Value of property supportsMonochrome.
+     * @return    Value of property supportsMonochrome.
      */
     public boolean isSupportsGrayscale();
 
@@ -1043,7 +994,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property supportsMonochrome.
      *
-     * @param  supportsMonochrome New value of property supportsMonochrome.
+     * @param  supportsMonochrome  New value of property supportsMonochrome.
      */
     public void setSupportsGrayscale(boolean supportsMonochrome);
 
@@ -1051,7 +1002,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property chunkSize.
      *
-     * @return  Value of property chunkSize.
+     * @return    Value of property chunkSize.
      */
     public double getChunkSize();
 
@@ -1059,7 +1010,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property chunkSize.
      *
-     * @param  chunkSize New value of property chunkSize.
+     * @param  chunkSize  New value of property chunkSize.
      */
     public void setChunkSize(double chunkSize);
 
@@ -1067,7 +1018,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property minimizeJobsize.
      *
-     * @return  Value of property minimizeJobsize.
+     * @return    Value of property minimizeJobsize.
      */
     public boolean isMinimizeJobsize();
 
@@ -1075,7 +1026,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property minimizeJobsize.
      *
-     * @param  minimizeJobsize New value of property minimizeJobsize.
+     * @param  minimizeJobsize  New value of property minimizeJobsize.
      */
     public void setMinimizeJobsize(boolean minimizeJobsize);
 
@@ -1083,7 +1034,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Getter for property decimateByNearestNeighbor.
      *
-     * @return  Value of property decimateByNearestNeighbor.
+     * @return    Value of property decimateByNearestNeighbor.
      */
     public boolean isDecimateByNearestNeighbor();
 
@@ -1091,7 +1042,7 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Setter for property decimateByNearestNeighbor.
      *
-     * @param  decimateByNearestNeighbor New value of property
+     * @param  decimateByNearestNeighbor  New value of property
      *      decimateByNearestNeighbor.
      */
     public void setDecimateByNearestNeighbor(boolean decimateByNearestNeighbor);
@@ -1100,38 +1051,8 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @exception  PrintException Description of the Exception
-     * @exception  IOException Description of the Exception
-     */
-    public void printGrayscaleWithLinDDL()
-        throws PrintException, IOException;
-
-
-    /**
-     *  Description of the Method
-     *
-     * @exception  PrintException Description of the Exception
-     * @exception  IOException Description of the Exception
-     */
-    public void printGrayscaleWithGSDF()
-        throws PrintException, IOException;
-
-
-    /**
-     *  Description of the Method
-     *
-     * @exception  PrintException Description of the Exception
-     * @exception  IOException Description of the Exception
-     */
-    public void printGrayscaleWithLinOD()
-        throws PrintException, IOException;
-
-
-    /**
-     *  Description of the Method
-     *
-     * @param  force Description of the Parameter
-     * @exception  CalibrationException Description of the Exception
+     * @param  force                     Description of the Parameter
+     * @exception  CalibrationException  Description of the Exception
      */
     public void calibrate(boolean force)
         throws CalibrationException;
@@ -1140,9 +1061,21 @@ public interface PrinterServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @param  color Description of the Parameter
-     * @param  job Description of the Parameter
-     * @param  sessionAttr Description of the Parameter
+     * @param  fname               Description of the Parameter
+     * @param  configInfo          Description of the Parameter
+     * @exception  IOException     Description of the Exception
+     * @exception  PrintException  Description of the Exception
+     */
+    public void printImage(String fname, String configInfo)
+        throws IOException, PrintException;
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  color        Description of the Parameter
+     * @param  job          Description of the Parameter
+     * @param  sessionAttr  Description of the Parameter
      */
     public void scheduleJob(Boolean color, String job, Dataset sessionAttr);
 }

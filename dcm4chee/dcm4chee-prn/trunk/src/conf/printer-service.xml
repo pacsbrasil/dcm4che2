@@ -296,23 +296,6 @@
     -->    
     <attribute name="GrayscaleAnnotation">NO_TITLE</attribute>
     
-    <!--
-    Specifies number of gray steps in printed grayscale pattern.
-    Usually, you need not change the default value: 64
-    -->    
-    <attribute name="Grayscales">64</attribute>
-    
-    <!--
-    Specifies gap width in pts between two gray steps in printed gray scale
-    pattern.
-    Usually, you need not change the default value: 2
-    -->    
-    <attribute name="GrayscaleGap">1</attribute>
-
-    <!--
-    Activates automatic print of the gray scale pattern at every server start-up.
-    -->    
-    <attribute name="PrintGrayscaleAtStartup">false</attribute>    
     
     <!--
     Density mesurements of the printed gray scale pattern. Only used for the

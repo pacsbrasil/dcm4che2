@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.print.Pageable;
 import java.awt.print.Paper;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
@@ -77,6 +78,7 @@ import org.jboss.system.server.ServerConfigLocator;
  *  <description>
  *
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      March 30, 2003
  * @created    November 3, 2002
  * @version    $Revision$ <b>Revisions:</b> <p>
  */
@@ -204,19 +206,10 @@ public class PrinterService
     /**  Holds value of property decimateCropBehavior. */
     private String decimateCropBehavior = DECIMATE;
 
-    /**  Holds value of property grayscales. */
-    private int grayscales = 32;
-
-    /**  Holds value of property grayscaleGap. */
-    private float grayscaleGap = 1;
-
     /**  Holds value of property autoCalibration. */
     private boolean autoCalibration = false;
 
     private boolean calibrationErr = false;
-
-    /**  Holds value of property printGrayscaleAtStartup. */
-    private boolean printGrayscaleAtStartup = false;
 
     /**  Holds value of property printToFile. */
     private boolean printToFile = false;
@@ -253,7 +246,7 @@ public class PrinterService
 
     private final PrinterCalibration calibration = new PrinterCalibration(log);
     private final ScannerCalibration scanner =
-        new ScannerCalibration(log.getCategory());
+            new ScannerCalibration(log.getCategory());
 
     private long notifCount = 0;
     private LinkedList highPriorQueue = new LinkedList();
@@ -1915,53 +1908,6 @@ public class PrinterService
 
 
     /**
-     *  Getter for property grayscales.
-     *
-     * @return    Value of property grayscales.
-     */
-    public int getGrayscales()
-    {
-        return grayscales;
-    }
-
-
-    /**
-     *  Setter for property grayscales.
-     *
-     * @param  grayscales  New value of property grayscales.
-     */
-    public void setGrayscales(int grayscales)
-    {
-        if (grayscales < 4 || grayscales > 128) {
-            throw new IllegalArgumentException("grayscales: " + grayscales);
-        }
-        this.grayscales = grayscales;
-    }
-
-
-    /**
-     *  Getter for property grayscaleGap.
-     *
-     * @return    Value of property grayscaleGap.
-     */
-    public float getGrayscaleGap()
-    {
-        return grayscaleGap;
-    }
-
-
-    /**
-     *  Setter for property grayscaleGap.
-     *
-     * @param  grayscaleGap  New value of property grayscaleGap.
-     */
-    public void setGrayscaleGap(float grayscaleGap)
-    {
-        this.grayscaleGap = grayscaleGap;
-    }
-
-
-    /**
      *  Getter for property refGrayscaleODs.
      *
      * @return    Value of property refGrayscaleODs.
@@ -2106,29 +2052,6 @@ public class PrinterService
 
 
     /**
-     *  Getter for property printGrayscaleAtStartup.
-     *
-     * @return    Value of property printGrayscaleAtStartup.
-     */
-    public boolean isPrintGrayscaleAtStartup()
-    {
-        return this.printGrayscaleAtStartup;
-    }
-
-
-    /**
-     *  Setter for property printGrayscaleAtStartup.
-     *
-     * @param  printGrayscaleAtStartup  New value of property
-     *      printGrayscaleAtStartup.
-     */
-    public void setPrintGrayscaleAtStartup(boolean printGrayscaleAtStartup)
-    {
-        this.printGrayscaleAtStartup = printGrayscaleAtStartup;
-    }
-
-
-    /**
      *  Gets the printerCalibration attribute of the PrinterService object
      *
      * @return    The printerCalibration value
@@ -2160,59 +2083,6 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     * @exception  PrintException  Description of the Exception
-     * @exception  IOException     Description of the Exception
-     */
-    public void printGrayscaleWithLinDDL()
-        throws PrintException, IOException
-    {
-        log.info("Printing grayscale [LIN DDL]");
-        print(new Grayscale(this, calibration.getIdentityPValToDDL(),
-                printerName + "[LIN DDL]"), null, false);
-        log.info("Printed grayscale [LIN DDL]");
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @exception  PrintException  Description of the Exception
-     * @exception  IOException     Description of the Exception
-     */
-    public void printGrayscaleWithGSDF()
-        throws PrintException, IOException
-    {
-        log.info("Printing grayscale [GSDF]");
-        float[] od = getGrayscaleODs();
-        print(new Grayscale(this, calibration.getPValToDDLwGSDF(8,
-                od[0], od[od.length - 1],
-                illumination, reflectedAmbientLight),
-                printerName + "[GSDF]"), null, false);
-        log.info("Printed grayscale [GSDF]");
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @exception  PrintException  Description of the Exception
-     * @exception  IOException     Description of the Exception
-     */
-    public void printGrayscaleWithLinOD()
-        throws PrintException, IOException
-    {
-        log.info("Printing grayscale [LIN OD]");
-        float[] od = getGrayscaleODs();
-        print(new Grayscale(this, calibration.getPValToDDLwLinOD(8,
-                od[0], od[od.length - 1]),
-                printerName + "[LIN OD]"), null, false);
-        log.info("Printed grayscale [LIN OD]");
-    }
-
-
-    /**
-     *  Description of the Method
-     *
      * @param  force                     Description of the Parameter
      * @exception  CalibrationException  Description of the Exception
      */
@@ -2226,6 +2096,33 @@ public class PrinterService
         log.info("Calibrated " + printerName);
     }
 
+
+    /**
+     *  Description of the Method
+     *
+     * @param  fname                 Description of the Parameter
+     * @param  configInfo            Description of the Parameter
+     * @exception  IOException       Description of the Exception
+     * @exception  PrintException    Description of the Exception
+     */
+    public void printImage(String fname, String configInfo)
+        throws IOException, PrintException
+    {
+        PrintImageJob job = new PrintImageJob(this, new File(fname), configInfo);
+        PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+        PrintService ps = getPrintService();
+        setPrintRequestAttribute(ps, getDefaultPrinterResolution(), aset);
+        setPrintRequestAttribute(ps,
+                printGrayAsColor
+                 ? Chromaticity.COLOR
+                 : Chromaticity.MONOCHROME,
+                aset);
+        log.info("Printing " + fname);
+        setPrintRequestAttribute(ps,
+                new JobName(job.getName(), null), aset);
+        print(job, aset, autoCalibration && configInfo.length() > 0);
+        log.info("Printed " + fname);
+    }
 
     // ServiceMBeanSupport overrides ------------------------------------
     /**
@@ -2260,9 +2157,6 @@ public class PrinterService
         if (scanner.getScanDir(calledAET).mkdirs()) {
             log.warn("Created new calibration sub-directory "
                      + scanner.getScanDir(calledAET));
-        }
-        if (printGrayscaleAtStartup) {
-            printGrayscaleWithLinDDL();
         }
         putAcceptorPolicy(getAcceptorPolicy());
     }
@@ -2335,8 +2229,8 @@ public class PrinterService
      */
     public void scheduleJob(Boolean color, String job, Dataset sessionAttr)
     {
-        PageableJob pageableJob =
-                new PageableJob(job, sessionAttr, color.booleanValue());
+        ScheduledJob pageableJob =
+                new ScheduledJob(job, sessionAttr, color.booleanValue());
         log.info("Scheduling job - " + pageableJob.getJobID());
         String sessionLabel = sessionAttr.getString(Tags.FilmSessionLabel);
         if (sessionLabel == null) {
@@ -2364,7 +2258,7 @@ public class PrinterService
         log.info("Scheduler Started");
         while (scheduler != null) {
             try {
-                PageableJob job;
+                ScheduledJob job;
                 synchronized (queueMonitor) {
                     while ((job = nextJobFromQueue()) == null) {
                         queueMonitor.wait();
@@ -2403,22 +2297,22 @@ public class PrinterService
     }
 
 
-    private PageableJob nextJobFromQueue()
+    private ScheduledJob nextJobFromQueue()
     {
         if (!highPriorQueue.isEmpty()) {
-            return (PageableJob) highPriorQueue.removeFirst();
+            return (ScheduledJob) highPriorQueue.removeFirst();
         }
         if (!medPriorQueue.isEmpty()) {
-            return (PageableJob) medPriorQueue.removeFirst();
+            return (ScheduledJob) medPriorQueue.removeFirst();
         }
         if (!lowPriorQueue.isEmpty()) {
-            return (PageableJob) lowPriorQueue.removeFirst();
+            return (ScheduledJob) lowPriorQueue.removeFirst();
         }
         return null;
     }
 
 
-    private void processJob(PageableJob pageableJob)
+    private void processJob(ScheduledJob scheduledJob)
     {
         try {
             synchronized (printerMonitor) {
@@ -2428,17 +2322,37 @@ public class PrinterService
                     printerMonitor.wait();
                 }
             }
-            invokeOnPrintSCP("onJobStartPrinting", pageableJob.getJob());
-            pageableJob.initFilmBoxes(this);
-            print(pageableJob, pageableJob.getSession(), pageableJob.isColor());
-            log.info("Finished processing job - " + pageableJob.getJobID());
+            invokeOnPrintSCP("onJobStartPrinting", scheduledJob.getJob());
+            scheduledJob.initFilmBoxes(this);
+            PrintService ps = getPrintService();
+            PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+            String resId = scheduledJob.getRequestedResolutionID();
+            setPrintRequestAttribute(ps,
+                    resId != null
+                     ? (PrinterResolution) this.resolutionIDMap.get(resId)
+                     : getDefaultPrinterResolution(),
+                    aset);
+            setPrintRequestAttribute(ps,
+                    scheduledJob.isColor() || printGrayAsColor
+                     ? Chromaticity.COLOR
+                     : Chromaticity.MONOCHROME,
+                    aset);
+            int copies = scheduledJob.getCopies();
+            if (copies > 1) {
+                setPrintRequestAttribute(ps, new Copies(copies), aset);
+                setPrintRequestAttribute(ps, SheetCollate.COLLATED, aset);
+            }
+            setPrintRequestAttribute(ps,
+                    new JobName(scheduledJob.getName(), null), aset);
+            print(scheduledJob, aset, autoCalibration);
+            log.info("Finished processing job - " + scheduledJob.getJobID());
             try {
-                invokeOnPrintSCP("onJobDone", pageableJob.getJob());
+                invokeOnPrintSCP("onJobDone", scheduledJob.getJob());
             } catch (Exception ignore) {}
         } catch (Throwable e) {
-            log.error("Failed processing job - " + pageableJob.getJobID(), e);
+            log.error("Failed processing job - " + scheduledJob.getJobID(), e);
             try {
-                invokeOnPrintSCP("onJobFailed", pageableJob.getJob());
+                invokeOnPrintSCP("onJobFailed", scheduledJob.getJob());
             } catch (Throwable ignore) {}
         }
     }
@@ -2597,11 +2511,12 @@ public class PrinterService
     }
 
 
-    private void print(Pageable printData, Dataset sessionAttr, boolean color)
+    private void print(Pageable printData, PrintRequestAttributeSet aset,
+            boolean calibrate)
         throws PrintException
     {
         PrintService ps = getPrintService();
-        if (autoCalibration) {
+        if (calibrate) {
             try {
                 calibrate(false);
                 calibrationErr = false;
@@ -2610,34 +2525,10 @@ public class PrinterService
                 calibrationErr = true;
             }
         }
-        PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+
         if (printToFile) {
             setPrintRequestAttribute(ps,
                     new Destination(toFile(printToFilePath).toURI()), aset);
-        }
-        String resId = sessionAttr == null ? null
-                 : sessionAttr.getString(Tags.RequestedResolutionID);
-        PrinterResolution res = resId != null
-                 ? (PrinterResolution) this.resolutionIDMap.get(resId)
-                 : getDefaultPrinterResolution();
-        if (res != null) {
-            setPrintRequestAttribute(ps, res, aset);
-        }
-        setPrintRequestAttribute(ps,
-                color || printGrayAsColor
-                 ? Chromaticity.COLOR
-                 : Chromaticity.MONOCHROME,
-                aset);
-        int copies = sessionAttr == null ? 1
-                 : sessionAttr.getInt(Tags.NumberOfCopies, 1);
-        if (copies > 1) {
-            setPrintRequestAttribute(ps, new Copies(copies), aset);
-            setPrintRequestAttribute(ps, SheetCollate.COLLATED, aset);
-        }
-        String jobName = sessionAttr == null ? null
-                 : sessionAttr.getString(Tags.FilmSessionLabel);
-        if (jobName != null) {
-            setPrintRequestAttribute(ps, new JobName(jobName, null), aset);
         }
 
         DocPrintJob pj = ps.createPrintJob();
