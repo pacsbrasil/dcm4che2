@@ -72,7 +72,7 @@ public class ScannerCalibration
 
     private int scanPointExtension = 50;
 
-    private int scanThreshold = 200;
+    private int borderThreshold = 200;
 
     private File scanDir;
 
@@ -214,27 +214,27 @@ public class ScannerCalibration
 
 
     /**
-     *  Setter for property scanThreshold.
+     *  Setter for property borderThreshold.
      *
-     * @param  threshold  New value of property scanThreshold.
+     * @param  threshold  New value of property borderThreshold.
      */
     public void setScanThreshold(int threshold)
     {
         if (threshold < THRESHOLD_MIN && threshold < THRESHOLD_MAX) {
             throw new IllegalArgumentException("threshold: " + threshold);
         }
-        this.scanThreshold = threshold;
+        this.borderThreshold = threshold;
     }
 
 
     /**
-     *  Getter for property scanThreshold.
+     *  Getter for property borderThreshold.
      *
-     * @return    Value of property scanThreshold.
+     * @return    Value of property borderThreshold.
      */
     public int getScanThreshold()
     {
-        return scanThreshold;
+        return borderThreshold;
     }
 
 
@@ -414,80 +414,97 @@ public class ScannerCalibration
             BufferedImage bi;
             ImageReadParam rParam = r.getDefaultReadParam();
             r.setInput(in);
-            int w = r.getWidth(0);
-            int h = r.getHeight(0);
-            int x0 = w / 2;
-            int y0 = h / 2;
-            rParam.setSourceRegion(new Rectangle(0, y0, w, 1));
+            final int w = r.getWidth(0);
+            final int h = r.getHeight(0);
+            rParam.setSourceRegion(new Rectangle(0, h / 2, w, 1));
             int[] hline = r.read(0, rParam).getRGB(0, 0, w, 1, null, 0, w);
-            rParam.setSourceRegion(new Rectangle(x0, 0, 1, h));
+            rParam.setSourceRegion(new Rectangle(w / 2, 0, 1, h));
             int[] vline = r.read(0, rParam).getRGB(0, 0, 1, h, null, 0, 1);
             int[] lr = findBorder(hline);
             int[] tb = findBorder(vline);
-            int w_outer = lr[1] - lr[0];
-            int h_outer = tb[1] - tb[0];
+            final int wOuter = lr[1] - lr[0];
+            final int hOuter = tb[1] - tb[0];
+            
+            boolean portrait = true;
+            boolean upSideDown = false;
+            
+            //find orientation scanned in portrait/landscape and if up-side-down
+            float sample = -1;
+            boolean foundOrient = false;
+            for (int side = 0; side<4; side++) {
+                switch (side) {
+                    case 0: //left
+                        sample = average(hline, w, lr[0] + (wOuter * 80) / (2 * 512), 0, 5, 1);
+                        break;
+                    case 1: //right
+                        sample = average(hline, w, lr[1] - (wOuter * 80) / (2 * 512), 0, 5, 1);
+                        break;
+                    case 2: //top
+                        sample = average(vline, 1, 0, tb[0] + (hOuter * 80) / (2 * 512), 1, 5);
+                        break;
+                    case 3: //bottom
+                        sample = average(vline, 1, 0, tb[1] - (hOuter * 80) / (2 * 512), 1, 5);
+                        break;
+                }
+                if (sample < ((borderThreshold & 0xff) ^ 0xff)) {
+                    foundOrient = true;
+                    portrait = (side < 2);
+                    upSideDown = (side % 2 == 1);
+                    break;
+                }
+            }
+            //precondition check
+            if (!foundOrient)
+                throw new CalibrationException("Can not determine pattern orientation");
 
-            // TODO fails if Pixel or Pattern Ratio not 1:1 [GZ]
-            w_outer = (w_outer + h_outer) / 2;//avg since w_outer ~= h_outer
             //calc (predicted) actual dimensions in pixels
-            final int absPatternSpacing = (w_outer * 16) / 512;
-            final int absPatternBoxSize = (w_outer * 48) / 512;
-            final int pattern_left = lr[0] + (w_outer * 136) / 512;
-            final int pattern_top = tb[0] + (w_outer * 136) / 512;
-
-            float[] px = null;
+            final int absPatternSpacingX = (wOuter * 16) / 512;
+            final int absPatternBoxSizeX = (wOuter * 48) / 512;
+            final int absPatternSpacingY = (hOuter * 16) / 512;
+            final int absPatternBoxSizeY = (hOuter * 48) / 512;
+            final int patternLeft = lr[0] + (wOuter * 136) / 512;
+            final int patternTop = tb[0] + (hOuter * 136) / 512;
+            final int stepSizeX = absPatternBoxSizeX + absPatternSpacingX;
+            final int stepSizeY = absPatternBoxSizeY + absPatternSpacingY;
+            
+            float[] px;
             float[] samples;
             int[] box;
-
-            // TODO fails if Pattern is printed in LANDSCAPE format [GZ]
-            final boolean portrait = (w <= h);
-            final boolean upSideDown;
-            float first;
-            float second;
-            Point pt;
-            final int stepSize = absPatternBoxSize + absPatternSpacing;
-
-            if (portrait) {
-                //sample inside left/right border to see if the image is rotated 180
-                first = average(hline, w, lr[0] + (w_outer * 80) / (2 * 512), 0, 5, 1);
-                second = average(hline, w, lr[1] - (w_outer * 80) / (2 * 512), 0, 5, 1);
-            } else {
-                //sample inside top/bottom border to see if the image is rotated 180
-                first = average(vline, 1, 0, tb[0] + (h_outer * 80) / (2 * 512), 1, 5);
-                second = average(vline, 1, 0, tb[1] - (h_outer * 80) / (2 * 512), 1, 5);
-            }
-            upSideDown = (first < second) ? false : true;
+            
             // debug
             if (log.isDebugEnabled()) {
-                log.debug("tot width = " + w + ", tot height = " + h);
-                log.debug("lr = " + lr[0] + "," + lr[1]);
-                log.debug("tb = " + tb[0] + "," + tb[1]);
-                log.debug("w outer = " + w_outer);
-                log.debug("h outer = " + h_outer);
-                log.debug("absPatternSpacing = " + absPatternSpacing);
-                log.debug("absPatternBoxSize = " + absPatternBoxSize);
-                log.debug("first = " + first + ", second = " + second);
+                log.debug("total image width = " + w + ", total image height = " + h);
+                log.debug("left/right = " + lr[0] + "," + lr[1]);
+                log.debug("top/bottom = " + tb[0] + "," + tb[1]);
+                log.debug("w outer = " + wOuter);
+                log.debug("h outer = " + hOuter);
+                log.debug("absPatternSpacingX = " + absPatternSpacingX);
+                log.debug("absPatternBoxSizeX = " + absPatternBoxSizeX);
+                log.debug("absPatternSpacingY = " + absPatternSpacingY);
+                log.debug("absPatternBoxSizeY = " + absPatternSpacingY);
             }
-            //
+            
+            //allocate array to hold values for each pattern sample
             px = new float[NUM_BOXES_X * NUM_BOXES_Y *
                     NUM_INNER_BOXES_X * NUM_INNER_BOXES_Y];
             //start winding through pattern
+            Point pt;
             for (int k = 0, n = NUM_BOXES_X * NUM_BOXES_Y; k < n; k++) {
                 pt = calcBox(k, NUM_BOXES_X, NUM_BOXES_Y, portrait, upSideDown);
                 rParam.setSourceRegion(new Rectangle(
-                        pattern_left + pt.x * stepSize,
-                        pattern_top + pt.y * stepSize,
-                        absPatternBoxSize, absPatternBoxSize));
+                        patternLeft + pt.x * stepSizeX,
+                        patternTop + pt.y * stepSizeY,
+                        absPatternBoxSizeX, absPatternBoxSizeY));
                 //log.debug("i=" + i + ", j=" + j);
-                box = r.read(0, rParam).getRGB(0, 0, absPatternBoxSize, absPatternBoxSize,
-                        null, 0, absPatternBoxSize);
-                samples = sampleBoxPattern(box, absPatternBoxSize, absPatternBoxSize,
+                box = r.read(0, rParam).getRGB(0, 0, absPatternBoxSizeX, absPatternBoxSizeY,
+                        null, 0, absPatternBoxSizeX);
+                samples = sampleBoxPattern(box, absPatternBoxSizeX, absPatternBoxSizeY,
                         NUM_INNER_BOXES_X, NUM_INNER_BOXES_Y,
                         portrait, upSideDown);
                 System.arraycopy(samples, 0, px, samples.length * k, samples.length);
             }
 
-            //pix
+            //debug
             if (log.isDebugEnabled()) {
                 StringBuffer sb = new StringBuffer("detected Grayscale 255-pxval:");
                 for (int ii = 0; ii < px.length; ++ii) {
@@ -525,13 +542,12 @@ public class ScannerCalibration
     }
 
 
-    // TODO should consider scanExtension attribute [GZ]
     private float[] sampleBoxPattern(int[] pixels, final int width, final int height,
             final int nx, final int ny,
             final boolean portrait, final boolean upSideDown)
     {
-        final int xstep = width / nx;
-        final int ystep = height / ny;
+        final int xstep = width / nx, sampleXStep = (width * scanPointExtension) / (nx * 100);
+        final int ystep = height / ny, sampleYStep = (height * scanPointExtension) / (ny * 100);
         final float[] samples = new float[nx * ny];
         int left = xstep / 2;
         int top = ystep / 2;
@@ -544,8 +560,10 @@ public class ScannerCalibration
             x = left + pt.x * xstep;
             y = top + pt.y * ystep;
             samples[k] = average(pixels, width,
-                    x - width / (nx * 4), y - height / (ny * 4),
-                    width / (nx * 2), height / (ny * 2));//(pixels[x+y*width] & 0xff) ^ 0xff;
+                    x - sampleXStep / 2,
+                    y - sampleYStep / 2,
+                    sampleXStep,
+                    sampleYStep); //(pixels[x+y*width] & 0xff) ^ 0xff;
         }
         return samples;
     }
@@ -566,11 +584,11 @@ public class ScannerCalibration
     private int[] findBorder(int[] rgb)
         throws CalibrationException
     {
-        int[] b = {0, rgb.length};
-        while (b[0] < b[1] && (rgb[b[0]] & 0xff) > scanThreshold) {
+        int[] b = { (int)(rgb.length*0.03), (int)(rgb.length*(1-0.03)) };
+        while (b[0] < b[1] && (rgb[b[0]] & 0xff) > borderThreshold) {
             ++b[0];
         }
-        while (b[0] < b[1] && (rgb[b[1] - 1] & 0xff) > scanThreshold) {
+        while (b[0] < b[1] && (rgb[b[1] - 1] & 0xff) > borderThreshold) {
             --b[1];
         }
         if ((b[1] - b[0]) * 100 < rgb.length * BORDER_MIN) {
