@@ -6,11 +6,12 @@
  */
 package org.dcm4chex.wado.web;
 
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,6 +32,7 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	private String reqType;
 	private Map headerMap;
 	private Map paramMap;
+	private List allowedContentTypes = null;
 
 	private String reqURL;
 
@@ -57,8 +59,28 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 			if ( log.isDebugEnabled() ) log.debug("header: "+key+"="+request.getHeader(key) );
 			headerMap.put( key, request.getHeader(key) );
 		}
+		setAllowedContentTypes( request.getHeader("accept") );
+		
 	}
 	
+	/**
+	 * @param accept
+	 */
+	private void setAllowedContentTypes(String accept ) {
+		List l = null;
+		String s;
+		if ( accept != null) {
+			l = new ArrayList();
+			StringTokenizer st = new StringTokenizer( accept, ",");
+			while ( st.hasMoreElements() ) {
+				s = st.nextToken();
+				if ( s.indexOf(";") != -1 ) s = s.substring( 0, s.indexOf(";") );//ignore quality value
+				l.add( s.trim() );
+			}
+		}
+		allowedContentTypes = l;
+	}
+
 	/**
 	 * Returns the requestType parameter of the http request.
 	 * 
@@ -73,8 +95,7 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 	 * @see org.dcm4chex.wado.common.RIDRequestObject#getAllowedContentTypes()
 	 */
 	public List getAllowedContentTypes() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.allowedContentTypes;
 	}
 
 	/**

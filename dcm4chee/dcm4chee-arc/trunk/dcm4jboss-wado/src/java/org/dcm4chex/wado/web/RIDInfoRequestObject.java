@@ -13,6 +13,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.dcm4che.util.ISO8601DateFormat;
 import org.dcm4chex.wado.common.RIDRequestObject;
 
 /**
@@ -96,6 +97,29 @@ public class RIDInfoRequestObject extends BasicRequestObjectImpl implements
 			
 		if ( ! getSupportedInformationTypes().contains( getRequestType() ) )
 			return RIDRequestObject.RID_REQUEST_NOT_SUPPORTED;
+		
+		try {
+			Integer.parseInt( this.mostRecentResults );
+		} catch ( Exception x ) {
+			return RIDRequestObject.INVALID_RID_URL;//not an integer string
+		}
+		
+		if ( this.lowerDateTime != null ) {
+			try {
+				new ISO8601DateFormat().parse( lowerDateTime );			
+			} catch ( Exception x ) {
+				return RIDRequestObject.INVALID_RID_URL;//invalid date/time string
+			}
+		}
+
+		if ( this.upperDateTime != null ) {
+			try {
+				new ISO8601DateFormat().parse( upperDateTime );			
+			} catch ( Exception x ) {
+				return RIDRequestObject.INVALID_RID_URL;//invalid date/time string
+			}
+		}
+		
 		return RIDRequestObject.SUMMERY_INFO;
 	}
 	/**

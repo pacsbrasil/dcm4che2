@@ -6,7 +6,6 @@ import javax.servlet.ServletConfig;
 import org.apache.log4j.Logger;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.RIDResponseObject;
-import org.dcm4chex.wado.common.WADOResponseObject;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /*
