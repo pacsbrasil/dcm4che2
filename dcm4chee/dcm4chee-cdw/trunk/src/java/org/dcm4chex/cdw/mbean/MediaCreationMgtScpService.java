@@ -426,7 +426,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 mcrq.setMediaWriterName(lookupMediaWriterName(assoc
                         .getAssociation().getCalledAET()));
                 mcrq.setPriority(priority);
-                mcrq.setNumberOfCopies(numberOfCopies);
+                mcrq.setRemainingCopies(numberOfCopies);
                 mcrq.setFilesetID(attrs.getString(Tags.StorageMediaFileSetID));
                 mcrq.setVolsetID(attrs.getString(Tags.StorageMediaFileSetID));
                 attrs.putIS(Tags.NumberOfCopies, numberOfCopies);
@@ -440,7 +440,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
                 try {
-                    JMSDelegate.getInstance("MediaComposer").queue(log, mcrq);
+                    JMSDelegate.getInstance("MediaComposer").queue(log, mcrq, 0L);
                 } catch (JMSException e) {
                     throw new MediaCreationException(
                             ExecutionStatusInfo.PROC_FAILURE, e);

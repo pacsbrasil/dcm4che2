@@ -394,12 +394,16 @@ class DicomDirDOM {
 
     public void createWeb(MediaCreationRequest rq)
             throws MediaCreationException {
+        log.info("Creating HTML content for " + rq);
         xslt(webTpl, new StreamResult(new File(rq.getFilesetDir(), IHE_PDI
                 + File.separatorChar + INDEX_HTM)), rq);
+        log.info("Created HTML content for " + rq);
     }
 
     public void createLabel(MediaCreationRequest rq, ContentHandler handler)
             throws MediaCreationException {
+        log.info("Creating Label for " + rq);
         xslt(labelTpl, new SAXResult(handler), rq);
+        log.info("Created Label for " + rq);
     }
 }

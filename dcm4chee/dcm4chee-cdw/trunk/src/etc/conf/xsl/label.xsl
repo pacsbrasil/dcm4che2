@@ -45,7 +45,7 @@
           <fo:block-container position="absolute" top="42mm" left="5mm" right="40mm" bottom="80mm">
 <!-- Include IHE Logo -->
             <fo:block text-align="center">
-              <fo:external-graphic src="ihe_logo.gif"/>
+              <fo:external-graphic src="ihe_logo.jpg"/>
             </fo:block>
           </fo:block-container>
 <!-- if Include Display Application -->

@@ -11,6 +11,7 @@ package org.dcm4chex.cdw.common;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.dcm4cheri.util.StringUtils;
@@ -27,19 +28,36 @@ public class Executer {
     private final String cmd;
 
     private final Process child;
-    
+
     private final Thread stdoutReader;
 
     private final Thread stderrReader;
-    
+
+    private static String[] tokenize(String cmd) {
+        StringTokenizer st = new StringTokenizer(cmd);
+        String[] cmdarray = new String[st.countTokens()];
+        for (int i = 0; i < cmdarray.length; i++)
+            cmdarray[i] = st.nextToken();
+        return cmdarray;
+    }
+
+    public Executer(String cmd) throws IOException {
+        this(cmd, null, null);
+    }
+
     public Executer(String[] cmdarray) throws IOException {
         this(cmdarray, null, null);
     }
-    
-    public Executer(String[] cmdarray, OutputStream stdout, OutputStream stderr) throws IOException {
+
+    public Executer(String cmd, OutputStream stdout, OutputStream stderr)
+            throws IOException {
+        this(tokenize(cmd), null, null);
+    }
+
+    public Executer(String[] cmdarray, OutputStream stdout, OutputStream stderr)
+            throws IOException {
         this.cmd = StringUtils.toString(cmdarray, ' ');
-        if (log.isDebugEnabled())
-            log.debug("invoke: " + cmd);
+        if (log.isDebugEnabled()) log.debug("invoke: " + cmd);
         this.child = Runtime.getRuntime().exec(cmdarray);
         this.stdoutReader = startCopy(child.getInputStream(), stdout);
         this.stderrReader = startCopy(child.getErrorStream(), stderr);
@@ -53,8 +71,7 @@ public class Executer {
         stdoutReader.join();
         stderrReader.join();
         int exit = child.waitFor();
-        if (log.isDebugEnabled())
-            log.debug("exit(" + exit + "): " + cmd);
+        if (log.isDebugEnabled()) log.debug("exit(" + exit + "): " + cmd);
         return exit;
     }
 

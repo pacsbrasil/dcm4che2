@@ -35,6 +35,12 @@ public class JMSDelegate {
 
     static final String CONNECTION_FACTORY = "java:ConnectionFactory";
 
+    /**
+     * JBoss-vendor specific property for scheduling a JMS message. In
+     * milliseconds since January 1, 1970.
+     */
+    public static final String PROPERTY_SCHEDULED_DELIVERY = "JMS_JBOSS_SCHEDULED_DELIVERY";
+    
     static int toJMSPriority(String dcmPriority) {
         if (dcmPriority.equals(Priority.LOW)) return 3;
         if (dcmPriority.equals(Priority.HIGH)) return 5;
@@ -96,7 +102,7 @@ public class JMSDelegate {
     }
 
 
-    public void queue(Logger log, MediaCreationRequest rq)
+    public void queue(Logger log, MediaCreationRequest rq, long scheduledTime)
             throws JMSException {
         QueueSession session = null;
         QueueSender send = null;
@@ -106,6 +112,8 @@ public class JMSDelegate {
                     QueueSession.AUTO_ACKNOWLEDGE);
             send = session.createSender(queue);
             ObjectMessage msg = session.createObjectMessage(rq);
+            if (scheduledTime > 0L)
+                msg.setLongProperty(PROPERTY_SCHEDULED_DELIVERY, scheduledTime);
             send.send(msg, DeliveryMode.PERSISTENT, toJMSPriority(rq
                     .getPriority()), 0);
         } catch (JMSException e) {

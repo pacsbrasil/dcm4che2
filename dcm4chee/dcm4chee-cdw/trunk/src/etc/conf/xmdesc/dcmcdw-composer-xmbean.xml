@@ -26,29 +26,6 @@
    </constructor>
 
    <!-- Attributes -->
-	&defaultAttributes;
-   <attribute access="read-write"
-      getMethod="getSpoolDirName"
-      setMethod="setSpoolDirName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>SpoolDirName</name>
-      <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcmcdw:service=SpoolDir" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isKeepSpoolFiles"
-      setMethod="setKeepSpoolFiles">
-      <description>Keep spool files (for debugging) in failure case.
-      </description>
-      <name>KeepSpoolFiles</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false" />
-      </descriptors>
-   </attribute>
    <attribute access="read-write"
       getMethod="getMediaCapacity"
       setMethod="setMediaCapacity">
@@ -58,6 +35,18 @@
       <type>java.lang.String</type>      
       <descriptors>
          <value value="700MB" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCreateLabel"
+      setMethod="setCreateLabel">
+      <description>Controls creation of Media Label file.
+      Enumerated Values: NO|PS|PDF.
+      </description>
+      <name>CreateLabel</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="NO" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -118,6 +107,32 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getValuesForIncludeMd5Sums"
+      setMethod="setValuesForIncludeMd5Sums">
+      <description>Comma separated list of values for flag
+      "Include Non-DICOM Objects" (2200,0008), to include
+      MD5 checksums.
+      </description>
+      <name>ValuesForIncludeMd5Sums</name>
+      <type>[Ljava.lang.String;</type>      
+      <descriptors>
+         <value value="MD5_SUMS" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getValuesForIncludeWeb"
+      setMethod="setValuesForIncludeWeb">
+      <description>Comma separated list of values for flag
+      "Include Non-DICOM Objects" (2200,0008), to include
+      Web presentations.
+      </description>
+      <name>ValuesForIncludeWeb</name>
+      <type>[Ljava.lang.String;</type>      
+      <descriptors>
+         <value value="FOR_PHYSICIAN,FOR_PATIENT,FOR_TEACHING,FOR_RESEARCH" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getJpegWidth"
       setMethod="setJpegWidth">
       <description>Maximal Width of generated JPEG images for web representation.
@@ -140,15 +155,16 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getCreateLabel"
-      setMethod="setCreateLabel">
-      <description>Controls creation of Media Label file.
-      Enumerated Values: NO|PS|PDF.
+      getMethod="isIncludeDisplayApplicationOnAllMedia"
+      setMethod="setIncludeDisplayApplicationOnAllMedia">
+      <description>Controls if in the case of Media Splitting an
+      included Display Application is only burned on the first 
+      media or on all.
       </description>
-      <name>CreateLabel</name>
-      <type>java.lang.String</type>      
+      <name>IncludeDisplayApplicationOnAllMedia</name>
+      <type>boolean</type>      
       <descriptors>
-         <value value="NO" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -164,6 +180,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isKeepSpoolFiles"
+      setMethod="setKeepSpoolFiles">
+      <description>Keep spool files (for debugging) in failure case.
+      </description>
+      <name>KeepSpoolFiles</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isLogXml"
       setMethod="setLogXml">
       <description>Log XML representation of DICOMDIR to 
@@ -175,6 +202,18 @@
          <value value="false" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getSpoolDirName"
+      setMethod="setSpoolDirName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>SpoolDirName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="dcmcdw:service=SpoolDir" />
+      </descriptors>
+   </attribute>
+	&defaultAttributes;
    
    <!-- Operations -->
    &defaultOperations;

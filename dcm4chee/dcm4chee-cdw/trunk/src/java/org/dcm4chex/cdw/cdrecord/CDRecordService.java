@@ -17,16 +17,17 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
+import javax.jms.JMSException;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.cdw.common.AbstractMediaWriterService;
 import org.dcm4chex.cdw.common.Executer;
+import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
+import org.dcm4chex.cdw.common.FileUtils;
+import org.dcm4chex.cdw.common.JMSDelegate;
 import org.dcm4chex.cdw.common.MediaCreationException;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
 import org.jboss.system.server.ServerConfigLocator;
@@ -39,8 +40,10 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class CDRecordService extends AbstractMediaWriterService {
 
-    
-private static final int MIN_GRACE_TIME = 2;
+    private static final int MIN_RETRY_INTERVAL = 10;
+
+    private static final int MIN_GRACE_TIME = 2;
+
     private static final String TAO = "tao";
 
     private static final String DAO = "dao";
@@ -55,8 +58,8 @@ private static final int MIN_GRACE_TIME = 2;
 
     private static final String RAW16 = "raw16";
 
-    private static final String[] WRITE_MODES =
-        { TAO, DAO, SAO, RAW, RAW96R, RAW96P, RAW16 };
+    private static final String[] WRITE_MODES = { TAO, DAO, SAO, RAW, RAW96R,
+            RAW96P, RAW16};
 
     private static final String DATA = "data";
 
@@ -70,10 +73,16 @@ private static final int MIN_GRACE_TIME = 2;
 
     private static final String XAMIX = "xamix";
 
-    private static final String[] TRACK_TYPES =
-        { DATA, MODE2, XA, XA1, XA2, XAMIX };
+    private static final String[] TRACK_TYPES = { DATA, MODE2, XA, XA1, XA2,
+            XAMIX};
 
-    private String device = "0,0";
+    private String cdrecordCmd = "cdrecord";
+
+    private String device = "0,0,0";
+
+    private String drivePath;
+
+    private File driveDir;
 
     private int writeSpeed = 24;
 
@@ -91,50 +100,100 @@ private static final int MIN_GRACE_TIME = 2;
 
     private boolean eject = true;
 
+    private int numberOfRetries = 0;
+
+    private int retryInterval = 60;
+
+    private boolean verify = false;
+
+    private boolean mount = false;
+
     private boolean logEnabled = false;
-    
+
     private int graceTime = MIN_GRACE_TIME;
 
     private int pauseTime = 10;
 
     private final File logFile;
-    
+
     protected ObjectName labelPrintName;
 
     public CDRecordService() {
         File homedir = ServerConfigLocator.locate().getServerHomeDir();
-        logFile =
-            new File(homedir, "log" + File.separatorChar + "cdrecord.log");
+        logFile = new File(homedir, "log" + File.separatorChar + "cdrecord.log");
     }
 
     public final ObjectName getLabelPrintName() {
         return labelPrintName;
     }
-    
+
     public final void setLabelPrintName(ObjectName labelPrintName) {
         this.labelPrintName = labelPrintName;
     }
-    
+
+    public final String getDriveLetterOrMountDirectory() {
+        return drivePath;
+    }
+
+    public final void setDriveLetterOrMountDirectory(String drivePath) {
+        boolean mount = drivePath.charAt(0) == '/';
+        if (!mount && drivePath.charAt(1) == ':')
+                throw new IllegalArgumentException("drivePath: " + drivePath);
+        this.drivePath = drivePath;
+        this.driveDir = new File(drivePath);
+        this.mount = mount;
+    }
+
+    public final int getNumberOfRetries() {
+        return numberOfRetries;
+    }
+
+    public final void setNumberOfRetries(int numberOfRetries) {
+        if (numberOfRetries < 0)
+                throw new IllegalArgumentException("numberOfRetries:"
+                        + numberOfRetries);
+        this.numberOfRetries = numberOfRetries;
+    }
+
+    public final int getRetryInterval() {
+        return retryInterval;
+    }
+
+    public final void setRetryInterval(int retryInterval) {
+        if (retryInterval < MIN_RETRY_INTERVAL)
+                throw new IllegalArgumentException("retryInterval:"
+                        + retryInterval);
+        this.retryInterval = retryInterval;
+    }
+
+    public final boolean isVerify() {
+        return verify;
+    }
+
+    public final void setVerify(boolean verify) {
+        this.verify = verify;
+    }
+
     public final int getGraceTime() {
         return graceTime;
     }
-    
+
     public final void setGraceTime(int graceTime) {
         if (graceTime < MIN_GRACE_TIME)
-            throw new IllegalArgumentException("graceTime: " + graceTime);
+                throw new IllegalArgumentException("graceTime: " + graceTime);
         this.graceTime = graceTime;
     }
-    
+
     public final int getPauseTime() {
         return pauseTime;
     }
-    
+
     public final void setPauseTime(int pauseTime) {
         if (pauseTime < 0)
-            throw new IllegalArgumentException("pauseTime: " + pauseTime);
+                throw new IllegalArgumentException("pauseTime: " + pauseTime);
         this.pauseTime = pauseTime;
     }
-        
+
     public final boolean isPadding() {
         return padding;
     }
@@ -181,7 +240,7 @@ private static final int MIN_GRACE_TIME = 2;
 
     public final void setTrackType(String trackType) {
         if (Arrays.asList(TRACK_TYPES).indexOf(trackType) == -1)
-            throw new IllegalArgumentException("trackType:" + trackType);
+                throw new IllegalArgumentException("trackType:" + trackType);
         this.trackType = trackType;
     }
 
@@ -191,7 +250,7 @@ private static final int MIN_GRACE_TIME = 2;
 
     public final void setWriteMode(String writeMode) {
         if (Arrays.asList(WRITE_MODES).indexOf(writeMode) == -1)
-            throw new IllegalArgumentException("writeMode:" + writeMode);
+                throw new IllegalArgumentException("writeMode:" + writeMode);
         this.writeMode = writeMode;
     }
 
@@ -201,7 +260,7 @@ private static final int MIN_GRACE_TIME = 2;
 
     public final void setWriteSpeed(int writeSpeed) {
         if (writeSpeed < 0)
-            throw new IllegalArgumentException("writeSpeed:" + writeSpeed);
+                throw new IllegalArgumentException("writeSpeed:" + writeSpeed);
         this.writeSpeed = writeSpeed;
     }
 
@@ -213,6 +272,14 @@ private static final int MIN_GRACE_TIME = 2;
         this.device = device;
     }
 
+    public final String getCdrecordCmd() {
+        return cdrecordCmd;
+    }
+
+    public final void setCdrecordCmd(String command) {
+        this.cdrecordCmd = command;
+    }
+
     public final boolean isLogEnabled() {
         return logEnabled;
     }
@@ -222,59 +289,95 @@ private static final int MIN_GRACE_TIME = 2;
     }
 
     protected void handle(MediaCreationRequest rq, Dataset attrs)
-        throws MediaCreationException, IOException {
+            throws MediaCreationException, IOException {
         if (!checkDrive())
-            throw new MediaCreationException(
-                ExecutionStatusInfo.CHECK_MCD_SRV,
-                "Drive Check failed");
+                throw new MediaCreationException(
+                        ExecutionStatusInfo.CHECK_MCD_SRV, "Drive Check failed");
         int tot = attrs.getInt(Tags.TotalNumberOfPiecesOfMediaCreated, 0);
-        for(int i = 0; i < rq.getNumberOfCopies(); ++i, ++tot) {
-            if (i > 0) {
-	            if (rq.isCanceled()) {
-	                log.info("" + rq + " was canceled");
-	                return;
-	            }
-	            attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated, tot);
-	            rq.writeAttributes(attrs, log);                
+        int remaining = rq.getRemainingCopies();
+        while (remaining > 0) {
+            if (!checkDisk()) {
+                eject();
+                retry(rq, attrs, "No or Wrong Media");
+                return;
             }
-	        if (!checkDisk()) {
-	            eject();
-	            throw new MediaCreationException(
-	                ExecutionStatusInfo.OUT_OF_SUPPLIES,
-	                "No or Wrong Media");
-	        }
-	        if (!appendEnabled && hasTOC()) {
-	            eject();
-	            throw new MediaCreationException(
-	                ExecutionStatusInfo.OUT_OF_SUPPLIES,
-	                "Media not empty");
-	        }
-	        burn(rq.getIsoImageFile());
-	        if (rq.getLabelFile() != null)
-	            printLabel(rq);
-	        try {
-	            Thread.sleep(pauseTime * 1000L);
-	        } catch (InterruptedException e) {
-	            log.warn("Pause after burn was interrupted:", e);
-	        }
+            if (!appendEnabled && hasTOC()) {
+                eject();
+                retry(rq, attrs, "Media not empty");
+                return;
+            }
+            try {
+                log.info("Burning " + rq);
+                burn(rq.getIsoImageFile());
+                log.info("Burned " + rq);
+                if (verify) {
+                    log.info("Verifying " + rq);
+                    verify(rq.getFilesetDir());
+                    log.info("Verified " + rq);
+                    if (eject) eject();
+                }
+                if (rq.getLabelFile() != null) printLabel(rq);
+            } catch (MediaCreationException e) {
+                eject();
+                throw e;
+            }
+            if (rq.isCanceled()) {
+                log.info("" + rq + " was canceled");
+                return;
+            }
+            attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated, ++tot);
+            rq.setRemainingCopies(--remaining);
+            if (remaining > 0) rq.writeAttributes(attrs, log);
+            try {
+                Thread.sleep(pauseTime * 1000L);
+            } catch (InterruptedException e) {
+                log.warn("Pause after burn was interrupted:", e);
+            }
         }
     }
 
-    private void printLabel(MediaCreationRequest rq) throws MediaCreationException {
+    private void retry(MediaCreationRequest rq, Dataset attrs, String msg)
+            throws MediaCreationException, IOException {
+        if (rq.getRetries() >= numberOfRetries)
+                throw new MediaCreationException(
+                        ExecutionStatusInfo.OUT_OF_SUPPLIES, msg);
+        log.warn(msg + " - retry in " + retryInterval + "s.");
+        rq.setRetries(rq.getRetries() + 1);
+        attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
+        attrs.putCS(Tags.ExecutionStatusInfo,
+                ExecutionStatusInfo.OUT_OF_SUPPLIES);
+        rq.writeAttributes(attrs, log);
         try {
-            server.invoke(labelPrintName, "print", new Object[] { rq },
-                    new String[]{MediaCreationRequest.class.getName()});
-        } catch (InstanceNotFoundException e) {
-            throw new MediaCreationException(
-                    ExecutionStatusInfo.PROC_FAILURE,
-                    e);
-        } catch (MBeanException e) {
-            throw new MediaCreationException(
-                    ExecutionStatusInfo.PROC_FAILURE,
-                    e);
-        } catch (ReflectionException e) {
-            throw new MediaCreationException(
-                    ExecutionStatusInfo.PROC_FAILURE,
+            JMSDelegate.getInstance(rq.getMediaWriterName()).queue(log, rq,
+                    System.currentTimeMillis() + retryInterval * 1000L);
+        } catch (JMSException e) {
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE, e);
+        }
+        
+    }
+
+    private void verify(File fsDir) throws MediaCreationException {
+        if (mount) mount();
+        try {
+            if (!FileUtils.verify(driveDir, fsDir, log)) { throw new MediaCreationException(
+                    ExecutionStatusInfo.PROC_FAILURE, "Verification failed!"); }
+        } catch (IOException e) {
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    "Verification failed:", e);
+        } finally {
+            if (mount) umount();
+        }
+    }
+
+    private void printLabel(MediaCreationRequest rq)
+            throws MediaCreationException {
+        try {
+            server.invoke(labelPrintName,
+                    "print",
+                    new Object[] { rq},
+                    new String[] { MediaCreationRequest.class.getName()});
+        } catch (Exception e) {
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
         }
     }
@@ -284,46 +387,38 @@ private static final int MIN_GRACE_TIME = 2;
         OutputStream logout = null;
         try {
             ArrayList cmd = new ArrayList();
-            cmd.add("cdrecord");
+            cmd.add(cdrecordCmd = "cdrecord");
             cmd.add("dev=" + device);
             cmd.add("speed=" + writeSpeed);
             cmd.add("gracetime=" + graceTime);
-            if (simulate)
-                cmd.add("-dummy");
-            if (eject)
-                cmd.add("-eject");
-            if (!TAO.equals(writeMode))
-                cmd.add("-" + writeMode);
-            if (multiSession)
-                cmd.add("-multi");
+            if (simulate) cmd.add("-dummy");
+            if (eject && !verify) cmd.add("-eject");
+            if (!TAO.equals(writeMode)) cmd.add("-" + writeMode);
+            if (multiSession) cmd.add("-multi");
             cmd.add("-s");
             cmd.add(padding ? "-pad" : "-nopad");
             cmd.add("-" + trackType);
             cmd.add(isoImageFile.getAbsolutePath());
             String[] cmdarray = (String[]) cmd.toArray(new String[cmd.size()]);
             if (logEnabled)
-                logout =
-                    new BufferedOutputStream(new FileOutputStream(logFile));
+                    logout = new BufferedOutputStream(new FileOutputStream(
+                            logFile));
             exitCode = new Executer(cmdarray, logout, null).waitFor();
         } catch (InterruptedException e) {
-            throw new MediaCreationException(
-                ExecutionStatusInfo.PROC_FAILURE,
-                e);
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    e);
         } catch (IOException e) {
-            throw new MediaCreationException(
-                ExecutionStatusInfo.PROC_FAILURE,
-                e);
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    e);
         } finally {
-            if (logout != null)
-                try {
-                    logout.close();
-                } catch (IOException ignore) {}
+            if (logout != null) try {
+                logout.close();
+            } catch (IOException ignore) {
+            }
         }
-        if (exitCode != 0) {
-            throw new MediaCreationException(
-                ExecutionStatusInfo.MCD_FAILURE,
-                "cdrecord " + isoImageFile + " returns " + exitCode);
-        }
+        if (exitCode != 0) { throw new MediaCreationException(
+                ExecutionStatusInfo.MCD_FAILURE, "cdrecord " + isoImageFile
+                        + " returns " + exitCode); }
     }
 
     public boolean checkDrive() throws MediaCreationException {
@@ -339,35 +434,59 @@ private static final int MIN_GRACE_TIME = 2;
     }
 
     public void eject() {
-        String[] cmdarray = { "cdrecord", "dev=" + device, "-eject" };
+        String[] cmdarray = { "cdrecord", "dev=" + device, "-eject"};
         try {
             int exit = new Executer(cmdarray, null, null).waitFor();
             if (exit != 0)
-                log.warn("Failed to eject Media: exit(" + exit + ")");
+                    log.warn("Failed to eject Media: exit(" + exit + ")");
         } catch (Exception e) {
             log.warn("Failed to eject Media:", e);
         }
     }
 
+    public void mount() throws MediaCreationException {
+        String[] cmdArray = { "mount", drivePath};
+        int exit = 0;
+        try {
+            exit = new Executer(cmdArray).waitFor();
+        } catch (Exception e) {
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    "mount " + drivePath + " failed:", e);
+        }
+        if (exit != 0)
+                throw new MediaCreationException(
+                        ExecutionStatusInfo.PROC_FAILURE, "mount " + drivePath
+                                + " failed: exit(" + exit + ")");
+    }
+
+    public boolean umount() {
+        String[] cmdArray = { "umount", "-l", drivePath};
+        try {
+            int exit = new Executer(cmdArray).waitFor();
+            if (exit == 0) return true;
+            log.warn("umount -l " + drivePath + " failed: exit(" + exit + ")");
+        } catch (Exception e) {
+            log.warn("umount -l " + drivePath + " failed:", e);
+        }
+        return false;
+    }
+
     private boolean cdrecord(String option, String match)
-        throws MediaCreationException {
-        String[] cmdarray = { "cdrecord", "dev=" + device, option };
+            throws MediaCreationException {
+        String[] cmdarray = { "cdrecord", "dev=" + device, option};
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             Executer ex = new Executer(cmdarray, stdout, null);
             int exit = ex.waitFor();
             String result = stdout.toString();
-            if (log.isDebugEnabled())
-                log.debug("cdrecord stdout: " + result);
+            if (log.isDebugEnabled()) log.debug("cdrecord stdout: " + result);
             return exit == 0 && result.indexOf(match) != -1;
         } catch (InterruptedException e) {
-            throw new MediaCreationException(
-                ExecutionStatusInfo.PROC_FAILURE,
-                e);
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    e);
         } catch (IOException e) {
-            throw new MediaCreationException(
-                ExecutionStatusInfo.PROC_FAILURE,
-                e);
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    e);
         }
     }
 }

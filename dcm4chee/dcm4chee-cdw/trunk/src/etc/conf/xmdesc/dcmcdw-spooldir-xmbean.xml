@@ -39,6 +39,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getNumberOfArchiveBuckets"
+      setMethod="setNumberOfArchiveBuckets">
+      <description>Number of Sub Directories for storage of temporary Files.      
+      </description>
+      <name>NumberOfArchiveBuckets</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="37" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getPurgeMediaCreationRequestsAfter"
       setMethod="setPurgeMediaCreationRequestsAfter">
       <description>Persistence duration for Media Creation Requests

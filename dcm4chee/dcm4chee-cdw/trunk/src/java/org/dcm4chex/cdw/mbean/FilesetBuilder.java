@@ -16,12 +16,18 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +71,10 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  */
 class FilesetBuilder {
 
+    private static final String EXT_MD5 = ".MD5";
+
+    private static final String MD5_SUMS = "MD5_SUMS";
+
     private static final String DICOM = "DICOM";
 
     private static final String IHE_PDI = "IHE_PDI";
@@ -97,7 +107,13 @@ class FilesetBuilder {
 
     private final boolean preserveInstances;
 
-    private final String web;
+    private final String nonDICOM;
+
+    private final boolean viewer;
+
+    private final boolean web;
+
+    private final boolean md5sums;
 
     private BufferedImage imageBI;
 
@@ -107,12 +123,12 @@ class FilesetBuilder {
 
     private byte[] iconPixelData;
 
-    private boolean viewer;
-
     private final FilesetComponent fsRoot = FilesetComponent
             .makeRootFilesetComponent();
 
     private final Dataset recFilter = dof.newDataset();
+
+    private final byte[] bbuf = new byte[512];
 
     private static String toHex(int val) {
         char[] ch8 = new char[8];
@@ -155,11 +171,18 @@ class FilesetBuilder {
                 .getString(Tags.PreserveCompositeInstancesAfterMediaCreation));
         this.viewer = Flag.isYes(attrs
                 .getString(Tags.IncludeDisplayApplication));
-        this.web = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
+        this.nonDICOM = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
+        this.web = service.includeWeb(nonDICOM);
+        this.md5sums = service.includeMd5Sums(nonDICOM);
+
     }
 
     final boolean isWeb() {
-        return !"NO".equals(web);
+        return web;
+    }
+
+    final boolean isMd5Sums() {
+        return md5sums;
     }
 
     final boolean isViewer() {
@@ -173,23 +196,30 @@ class FilesetBuilder {
             File readmeFile = new File(rootDir, service
                     .getFileSetDescriptorFile());
             DirWriter dirWriter = dbf.newDirWriter(rq.getDicomDirFile(),
-                    rootDir.getName(), rq.getFilesetID(), readmeFile, service
-                            .getCharsetOfFileSetDescriptorFile(), null);
+                    rootDir.getName(),
+                    rq.getFilesetID(),
+                    readmeFile,
+                    service.getCharsetOfFileSetDescriptorFile(),
+                    null);
             HashMap patRecs = new HashMap();
             HashMap styRecs = new HashMap();
             HashMap serRecs = new HashMap();
             try {
                 DcmElement refSOPs = attrs.get(Tags.RefSOPSeq);
                 for (int i = 0, n = refSOPs.vm(); i < n; ++i) {
-                    addFile(rootDir, refSOPs.getItem(i), dirWriter, patRecs,
-                            styRecs, serRecs);
+                    addFile(rootDir,
+                            refSOPs.getItem(i),
+                            dirWriter,
+                            patRecs,
+                            styRecs,
+                            serRecs);
                 }
 
             } finally {
                 dirWriter.close();
             }
             mergeDir(service.getMergeDir(), rootDir);
-            if (isWeb()) {
+            if (web) {
                 (new File(rootDir, IHE_PDI)).mkdir();
                 mergeDir(service.getMergeDirWeb(), rootDir);
             }
@@ -249,22 +279,24 @@ class FilesetBuilder {
                     Pair patRec = (Pair) patRecs.get(pid);
                     if (patRec == null) {
                         patRec = new Pair(dirWriter.add(null,
-                                DirRecord.PATIENT, recFact.makeRecord(
-                                        DirRecord.PATIENT, ds)),
-                                FilesetComponent.makePatientFilesetComponent(
-                                        ds, toFilePath(fileIDs, 2)));
+                                DirRecord.PATIENT,
+                                recFact.makeRecord(DirRecord.PATIENT, ds)),
+                                FilesetComponent
+                                        .makePatientFilesetComponent(ds,
+                                                toFilePath(fileIDs, 2)));
                         patRecs.put(pid, patRec);
                         fsRoot.addChild(patRec.comp);
                     }
                     styRec = new Pair(dirWriter.add(patRec.rec,
-                            DirRecord.STUDY, recFact.makeRecord(
-                                    DirRecord.STUDY, ds)), FilesetComponent
-                            .makeStudyFilesetComponent(ds, toFilePath(fileIDs,
-                                    3)));
+                            DirRecord.STUDY,
+                            recFact.makeRecord(DirRecord.STUDY, ds)),
+                            FilesetComponent.makeStudyFilesetComponent(ds,
+                                    toFilePath(fileIDs, 3)));
                     styRecs.put(suid, styRec);
                     patRec.comp.addChild(styRec.comp);
                 }
-                serRec = new Pair(dirWriter.add(styRec.rec, DirRecord.SERIES,
+                serRec = new Pair(dirWriter.add(styRec.rec,
+                        DirRecord.SERIES,
                         recFact.makeRecord(DirRecord.SERIES, ds)),
                         FilesetComponent.makeSeriesFilesetComponent(ds,
                                 toFilePath(fileIDs, 4)));
@@ -282,8 +314,7 @@ class FilesetBuilder {
                 if (iconItem == null && service.isCreateIcon())
                         if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                                 && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
-                            log
-                                    .warn("Cannot generate icon from compressed image "
+                            log.info("Generation from icons from compressed image not supported"
                                             + src);
                         } else {
                             try {
@@ -295,11 +326,10 @@ class FilesetBuilder {
                         }
                 if (iconItem != null)
                         rec.putSQ(Tags.IconImageSeq).addItem(iconItem);
-                if (isWeb()) {
+                if (web) {
                     if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                             && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
-                        log
-                                .warn("Cannot generate jpeg from compressed DICOM image "
+                        log.info("Generation from jpeg from compressed image not supported"
                                         + src);
                     } else {
                         try {
@@ -326,10 +356,19 @@ class FilesetBuilder {
         File dest = new File(rootDir, StringUtils.toString(fileIDs,
                 File.separatorChar));
         mkParentDir(dest);
-        if (preserveInstances)
+        if (preserveInstances) {
             makeSymLink(src, dest);
-        else
+            if (md5sums)
+                    makeSymLink(FileUtils.makeMD5File(src), FileUtils
+                            .makeMD5File(dest));
+        } else {
             move(src, dest);
+            File md5src = FileUtils.makeMD5File(src);
+            if (md5sums)
+                move(md5src, FileUtils.makeMD5File(dest));
+            else
+                md5src.delete();
+        }
     }
 
     private String toFilePath(String[] fileIDs, int n) {
@@ -560,6 +599,9 @@ class FilesetBuilder {
                     rootDir = mkRootDir(spoolDir, false);
                     moveComponents(comp.childs(), rootDir);
                     mergeDir(service.getMergeDir(), rootDir);
+                    if (viewer
+                            && service.isIncludeDisplayApplicationOnAllMedia())
+                            mergeDir(service.getMergeDirViewer(), rootDir);
                     newrq = new MediaCreationRequest(rq);
                     newrq.setFilesetDir(rootDir);
                     newrq.setVolsetSeqno(i + 1);
@@ -571,10 +613,14 @@ class FilesetBuilder {
                 File newReadmeFile = new File(rootDir, service
                         .getFileSetDescriptorFile());
                 DirWriter dirWriter = dbf.newDirWriter(newrq.getDicomDirFile(),
-                        rootDir.getName(), newrq.getFilesetID(), newReadmeFile,
-                        service.getCharsetOfFileSetDescriptorFile(), null);
+                        rootDir.getName(),
+                        newrq.getFilesetID(),
+                        newReadmeFile,
+                        service.getCharsetOfFileSetDescriptorFile(),
+                        null);
                 try {
-                    copyPatientDirRecords(comp.root().childs(), dirWriter,
+                    copyPatientDirRecords(comp.root().childs(),
+                            dirWriter,
                             dirReader);
                 } finally {
                     dirWriter.close();
@@ -590,24 +636,26 @@ class FilesetBuilder {
 
     private void setVolsetSeqno(List comps, int seqNo, DicomDirDOM dom) {
         for (int i = 0, n = comps.size(); i < n; ++i) {
-            FilesetComponent comp = (FilesetComponent) comps.get(i);            
-	        switch (comp.level()) {
-	        case FilesetComponent.PATIENT:
-	            dom.setPatientSeqNo(comp.id(), seqNo);
-	            break;
-	        case FilesetComponent.STUDY:
-	            dom.setStudySeqNo(comp.parent().id(), comp.id(), seqNo);
-	            break;
-	        case FilesetComponent.SERIES:
-	            dom.setSeriesSeqNo(comp.parent().parent().id(), comp.parent().id(),
-	                    comp.id(), seqNo);
-	            break;
-	        case FilesetComponent.INSTANCE:
-	            dom.setInstanceSeqNo(comp.parent().parent().parent().id(), comp
-	                    .parent().parent().id(), comp.parent().id(), comp.id(),
-	                    seqNo);
-	            break;
-	        }
+            FilesetComponent comp = (FilesetComponent) comps.get(i);
+            switch (comp.level()) {
+            case FilesetComponent.PATIENT:
+                dom.setPatientSeqNo(comp.id(), seqNo);
+                break;
+            case FilesetComponent.STUDY:
+                dom.setStudySeqNo(comp.parent().id(), comp.id(), seqNo);
+                break;
+            case FilesetComponent.SERIES:
+                dom.setSeriesSeqNo(comp.parent().parent().id(), comp.parent()
+                        .id(), comp.id(), seqNo);
+                break;
+            case FilesetComponent.INSTANCE:
+                dom.setInstanceSeqNo(comp.parent().parent().parent().id(),
+                        comp.parent().parent().id(),
+                        comp.parent().id(),
+                        comp.id(),
+                        seqNo);
+                break;
+            }
         }
     }
 
@@ -633,8 +681,10 @@ class FilesetBuilder {
                     log.debug(" into " + comp + " on Media #" + fsList.size());
         }
         for (int i = 0, n = childs.size(); i < n; ++i)
-            split((FilesetComponent) childs.get(i), freeSizeFirst,
-                    freeSizeOther, fsList);
+            split((FilesetComponent) childs.get(i),
+                    freeSizeFirst,
+                    freeSizeOther,
+                    fsList);
     }
 
     private String getFilesetIDPrefix() {
@@ -675,9 +725,11 @@ class FilesetBuilder {
             FilesetComponent pat = (FilesetComponent) pats.get(i);
             recFilter.clear();
             recFilter.putLO(Tags.PatientID, pat.id());
-            DirRecord srcPatRec = dirReader.getFirstRecordBy(null, recFilter,
+            DirRecord srcPatRec = dirReader.getFirstRecordBy(null,
+                    recFilter,
                     false);
-            DirRecord dstPatRec = dirWriter.add(null, srcPatRec.getType(),
+            DirRecord dstPatRec = dirWriter.add(null,
+                    srcPatRec.getType(),
                     srcPatRec.getDataset());
             copyStudyDirRecords(pat.childs(), dirWriter, srcPatRec, dstPatRec);
         }
@@ -691,7 +743,8 @@ class FilesetBuilder {
             recFilter.putUI(Tags.StudyInstanceUID, sty.id());
             DirRecord srcRec = srcPatRec
                     .getFirstChildBy(null, recFilter, false);
-            DirRecord dstRec = dirWriter.add(dstPatRec, srcRec.getType(),
+            DirRecord dstRec = dirWriter.add(dstPatRec,
+                    srcRec.getType(),
                     srcRec.getDataset());
             copySeriesDirRecords(sty.childs(), dirWriter, srcRec, dstRec);
         }
@@ -705,7 +758,8 @@ class FilesetBuilder {
             recFilter.putUI(Tags.SeriesInstanceUID, ser.id());
             DirRecord srcRec = srcStyRec
                     .getFirstChildBy(null, recFilter, false);
-            DirRecord dstRec = dirWriter.add(dstStyRec, srcRec.getType(),
+            DirRecord dstRec = dirWriter.add(dstStyRec,
+                    srcRec.getType(),
                     srcRec.getDataset());
             copyInstanceDirRecords(ser.childs(), dirWriter, srcRec, dstRec);
         }
@@ -720,12 +774,80 @@ class FilesetBuilder {
             DirRecord srcRec = srcSerRec
                     .getFirstChildBy(null, recFilter, false);
             Dataset ds = srcRec.getDataset();
-            DirRecord dstRec = dirWriter.add(dstSerRec, srcRec.getType(), ds,
-                    ds.getStrings(Tags.RefFileID), ds
-                            .getString(Tags.RefSOPClassUIDInFile), ds
-                            .getString(Tags.RefSOPInstanceUIDInFile), ds
-                            .getString(Tags.RefSOPTransferSyntaxUIDInFile));
+            DirRecord dstRec = dirWriter.add(dstSerRec,
+                    srcRec.getType(),
+                    ds,
+                    ds.getStrings(Tags.RefFileID),
+                    ds.getString(Tags.RefSOPClassUIDInFile),
+                    ds.getString(Tags.RefSOPInstanceUIDInFile),
+                    ds.getString(Tags.RefSOPTransferSyntaxUIDInFile));
         }
     }
 
+    void createMd5Sums(MediaCreationRequest rq) throws MediaCreationException {
+        if (!md5sums) return;
+        try {
+            char[] cbuf = new char[32];
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            File rootDir = rq.getFilesetDir();
+            String[] subDirs = rootDir.list();
+            File md5sums = new File(rootDir, MD5_SUMS);
+            int strip = rootDir.toURI().toString().length();
+            log.info("Creating MD5 sums for " + rq);
+            Writer out = new BufferedWriter(new FileWriter(md5sums));
+            try {
+                for (int i = 0; i < subDirs.length; i++) {
+                    writeMd5Sums(out,
+                            new File(rootDir, subDirs[i]),
+                            strip,
+                            digest,
+                            cbuf);
+                }
+            } finally {
+                out.close();
+            }
+        } catch (Exception e) {
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    e);
+        }
+        log.info("Created MD5 sums for " + rq);
+    }
+
+    private void writeMd5Sums(Writer out, File fileOrDir, int strip,
+            MessageDigest digest, char[] cbuf) throws IOException {
+        if (fileOrDir.isDirectory()) {
+            String[] files = fileOrDir.list();
+            for (int i = 0; i < files.length; i++) {
+                writeMd5Sums(out,
+                        new File(fileOrDir, files[i]),
+                        strip,
+                        digest,
+                        cbuf);
+            }
+        } else {
+            String fname = fileOrDir.getName();
+            if (fname.endsWith(EXT_MD5)) return;
+            File md5file = new File(fileOrDir.getParent(), fname + EXT_MD5);
+            if (md5file.exists()) {
+                Reader in = new FileReader(md5file);
+                try {
+                    in.read(cbuf);
+                } finally {
+                    in.close();
+                }
+                log.debug("M-DELETE " + md5file);
+                md5file.delete();
+            } else {
+                FileUtils.md5sum(fileOrDir, cbuf, digest, bbuf);
+            }
+            out.write(cbuf);
+            out.write(' ');
+            out.write(' ');
+            String uri = fileOrDir.toURI().toString();
+            out.write(uri, strip, uri.length() - strip);
+            out.write('\r');
+            out.write('\n');
+        }
+
+    }
 }

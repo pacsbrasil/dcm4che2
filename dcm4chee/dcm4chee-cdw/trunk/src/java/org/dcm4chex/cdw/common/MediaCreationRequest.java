@@ -24,20 +24,22 @@ import org.jboss.logging.Logger;
  */
 public class MediaCreationRequest implements Serializable {
 
+    static final long serialVersionUID = -8360703394721035942L;
+    
     private final File requestFile;
 
     private String mediaWriterName;
 
     private String priority = Priority.LOW;
 
-    private int numberOfCopies = 1;
+    private int remainingCopies = 1;
 
     private File filesetDir;
 
     private File isoImageFile;
 
     private File labelFile;
-    
+
     private String medium;
 
     private String filesetID = "";
@@ -48,6 +50,8 @@ public class MediaCreationRequest implements Serializable {
 
     private int volsetSize = 1;
 
+    private int retries = 0;
+
     public MediaCreationRequest(File requestFile) {
         this.requestFile = requestFile;
     }
@@ -56,7 +60,7 @@ public class MediaCreationRequest implements Serializable {
         this.requestFile = other.requestFile;
         this.mediaWriterName = other.mediaWriterName;
         this.priority = other.priority;
-        this.numberOfCopies = other.numberOfCopies;
+        this.remainingCopies = other.remainingCopies;
         this.filesetDir = other.filesetDir;
         this.isoImageFile = other.isoImageFile;
         this.labelFile = other.labelFile;
@@ -65,11 +69,13 @@ public class MediaCreationRequest implements Serializable {
         this.volsetID = other.volsetID;
         this.volsetSeqno = other.volsetSeqno;
         this.volsetSize = other.volsetSize;
+        this.retries = other.retries;
     }
-    
+
     public final File getDicomDirFile() {
         if (filesetDir == null)
-            throw new IllegalStateException("FilesetDir not yet initialized");
+                throw new IllegalStateException(
+                        "FilesetDir not yet initialized");
         return new File(filesetDir, "DICOMDIR");
     }
 
@@ -81,12 +87,12 @@ public class MediaCreationRequest implements Serializable {
         this.mediaWriterName = mediaWriterName;
     }
 
-    public final int getNumberOfCopies() {
-        return numberOfCopies;
+    public final int getRemainingCopies() {
+        return remainingCopies;
     }
 
-    public final void setNumberOfCopies(int copies) {
-        this.numberOfCopies = copies;
+    public final void setRemainingCopies(int copies) {
+        this.remainingCopies = copies;
     }
 
     public final String getMedium() {
@@ -165,16 +171,23 @@ public class MediaCreationRequest implements Serializable {
         this.volsetSize = volsetSize;
     }
 
+    public final int getRetries() {
+        return retries;
+    }
+
+    public final void setRetries(int retries) {
+        this.retries = retries;
+    }
+
     public final boolean isCanceled() {
         return !requestFile.exists();
     }
 
     public String toString() {
-        return "MediaCreationRequest[mediaWriter=" + mediaWriterName
-        		+ ", rquid=" + requestFile.getName() + ", fsuid="
-                + (filesetDir == null ? "" : filesetDir.getName()) + ", fsid="
-                + (filesetID == null ? "" : filesetID) + ", seqNo="
-                + volsetSeqno + ", tot=" + volsetSize + "]";
+        return "MCRQ@" + mediaWriterName
+                + "[" + requestFile.getName() + "]-Disk#" + volsetSeqno
+                + "/" + volsetSize + "[" + filesetID + "/"
+                + (filesetDir == null ? "" : filesetDir.getName()) + "]";
     }
 
     public Dataset readAttributes(Logger log) throws IOException {
@@ -196,7 +209,7 @@ public class MediaCreationRequest implements Serializable {
     public boolean cleanFiles(Logger log) {
         boolean retval = true;
         if (labelFile != null && labelFile.exists())
-            retval = FileUtils.delete(labelFile, log);
+                retval = FileUtils.delete(labelFile, log);
         if (isoImageFile != null && isoImageFile.exists())
                 retval = FileUtils.delete(isoImageFile, log) && retval;
         if (filesetDir != null && filesetDir.exists())

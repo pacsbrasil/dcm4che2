@@ -8,7 +8,7 @@
 
 <mbean>
    <description>Media Writer Service for using cdrecord
-   [http://freshmeat.net/projects/cdrecord/]
+   [http://www.fokus.gmd.de/research/cc/glone/employees/joerg.schilling/private/cdrecord.html]
    </description>
 
    <descriptors>
@@ -27,41 +27,43 @@
    </constructor>
 
    <!-- Attributes -->
-   &defaultAttributes;
    <attribute access="read-write"
-      getMethod="getLabelPrintName"
-      setMethod="setLabelPrintName">
-      <description>Used internally - do NOT modify.
+      getMethod="getCdrecordCmd"
+      setMethod="setCdrecordCmd">
+      <description>Executable command to invoke cdrecord.
       </description>
-      <name>LabelPrintName</name>
-      <type>javax.management.ObjectName</type>      
+      <name>CdrecordCmd</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="dcmcdw:service=LabelPrint" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isKeepSpoolFiles"
-      setMethod="setKeepSpoolFiles">
-      <description>Keep spool files (for debugging).
-      </description>
-      <name>KeepSpoolFiles</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false" />
+         <value value="cdrecord" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getDevice"
       setMethod="setDevice">
       <description>SCSI address of the CD/DVD-Recorder.
-      Syntax: scsibus,target,lun or target,lun.
+      Syntax: scsibus,target,lun.
       Run cdrecord -scanbus to list SCSI addresses of all
       SCSI devices on all SCSI busses.
       </description>
       <name>Device</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="0,0" />
+         <value value="0,0,0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDriveLetterOrMountDirectory"
+      setMethod="setDriveLetterOrMountDirectory">
+      <description>Drive Letter (Win32) or Mount Point (Linux)
+     (e.g.: "X:", "/cdw"). On Linux, there must be also a corresponding
+     entry configured in /etc/fstab
+     (e.g.: "/dev/cdw /cdw iso9660 ro,user,noauto 0 0").
+      </description>
+      <name>DriveLetterOrMountDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="/cdw" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -88,16 +90,14 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPauseTime"
-      setMethod="setPauseTime">
-      <description>Minimal Pause time between successive writes. Useful in case
-      of media splitting and multiple copies, to have time for manual
-      media exchange.
+      getMethod="isSimulate"
+      setMethod="setSimulate">
+      <description>Only simulate write process (laser is turned off).
       </description>
-      <name>PauseTime</name>
-      <type>int</type>      
+      <name>Simulate</name>
+      <type>boolean</type>
       <descriptors>
-         <value value="10" />
+         <value value="false" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -158,14 +158,37 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isSimulate"
-      setMethod="setSimulate">
-      <description>Only simulate write process (laser is turned off).
+      getMethod="getNumberOfRetries"
+      setMethod="setNumberOfRetries">
+      <description>Number of retries, if out of supplies.
       </description>
-      <name>Simulate</name>
+      <name>NumberOfRetries</name>
+      <type>int</type>
+      <descriptors>
+         <value value="5" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getRetryInterval"
+      setMethod="setRetryInterval">
+      <description>Interval of retries in seconds.
+      </description>
+      <name>RetryInterval</name>
+      <type>int</type>
+      <descriptors>
+         <value value="60" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isVerify"
+      setMethod="setVerify">
+      <description>Check MD5 sums of written files or - if MD5_SUMS was not
+      included - compare files on media with source files after write process.
+      </description>
+      <name>Verify</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -180,6 +203,30 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getPauseTime"
+      setMethod="setPauseTime">
+      <description>Minimal Pause time between successive writes. Useful in case
+      of media splitting and multiple copies, to have time for manual
+      media exchange.
+      </description>
+      <name>PauseTime</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="10" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isKeepSpoolFiles"
+      setMethod="setKeepSpoolFiles">
+      <description>Keep spool files (for debugging).
+      </description>
+      <name>KeepSpoolFiles</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isLogEnabled"
       setMethod="setLogEnabled">
       <description>Log to server/dcmcdw/log/cdrecord.log.
@@ -190,6 +237,18 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getLabelPrintName"
+      setMethod="setLabelPrintName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>LabelPrintName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="dcmcdw:service=LabelPrint" />
+      </descriptors>
+   </attribute>
+   &defaultAttributes;
    
    <!-- Operations -->
    &defaultOperations;
@@ -211,5 +270,14 @@
    <operation impact="ACTION">
       <description>Eject Media</description>
       <name>eject</name>
+   </operation>
+   <operation impact="ACTION">
+      <description>Mount Media</description>
+      <name>mount</name>
+   </operation>
+   <operation impact="ACTION">
+      <description>Unmount Media</description>
+      <name>umount</name>
+      <return-type>boolean</return-type>
    </operation>
 </mbean>

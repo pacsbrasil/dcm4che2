@@ -12,9 +12,13 @@ import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 
 import org.dcm4che.data.Command;
@@ -31,6 +35,7 @@ import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
+import org.dcm4chex.cdw.common.FileUtils;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -82,7 +87,7 @@ public class StoreScpService extends AbstractScpService {
 
     private boolean acceptJPEGBaseline = true;
 
-    private boolean acceptJPEGExtended = false;
+    private boolean acceptJPEGExtended = true;
 
     private boolean acceptJPEGLossless14 = false;
 
@@ -253,60 +258,87 @@ public class StoreScpService extends AbstractScpService {
         putPresContexts(IMAGE_CUIDS, null);
         putPresContexts(OTHER_CUIDS, null);
     }
-
+    
     private void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws DcmServiceException, IOException {
         InputStream in = rq.getDataAsStream();
+        Command rqCmd = rq.getCommand();
+        String cuid = rqCmd.getAffectedSOPClassUID();
+        String iuid = rqCmd.getAffectedSOPInstanceUID();
+        String tsuid = rq.getTransferSyntaxUID();
+        DcmDecodeParam decParam = DcmDecodeParam.valueOf(tsuid);
+        String fileTS = decParam.encapsulated ? tsuid : UIDs.ExplicitVRLittleEndian;
+        DcmEncodeParam encParam = DcmEncodeParam.valueOf(fileTS);
+        Dataset ds = dof.newDataset();
+        DcmParser parser = pf.newDcmParser(in);
+        parser.setDcmHandler(ds.getDcmHandler());
+        parser.parseDataset(decParam, Tags.PixelData);
+        checkDataset(rqCmd, ds);
+        ds.setFileMetaInfo(dof.newFileMetaInfo(cuid, iuid, fileTS));
+        File file = spoolDir.getInstanceFile(iuid);
+        File md5file = FileUtils.makeMD5File(file);
         try {
-            Command rqCmd = rq.getCommand();
-            String cuid = rqCmd.getAffectedSOPClassUID();
-            String iuid = rqCmd.getAffectedSOPInstanceUID();
-            String tsuid = rq.getTransferSyntaxUID();
-            DcmDecodeParam decParam = DcmDecodeParam.valueOf(tsuid);
-            String fileTS = decParam.encapsulated ? tsuid : UIDs.ExplicitVRLittleEndian;
-            DcmEncodeParam encParam = DcmEncodeParam.valueOf(fileTS);
-            Dataset ds = dof.newDataset();
-            DcmParser parser = pf.newDcmParser(in);
-            parser.setDcmHandler(ds.getDcmHandler());
-            parser.parseDataset(decParam, Tags.PixelData);
-            checkDataset(rqCmd, ds);
-            ds.setFileMetaInfo(dof.newFileMetaInfo(cuid, iuid, fileTS));
-            File f = spoolDir.getInstanceFile(iuid);
-            log.info("M-WRITE " + f);
-            OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
+            log.info("M-WRITE " + file);
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            OutputStream out = new BufferedOutputStream(new DigestOutputStream(new FileOutputStream(file), digest));
             try {
                 ds.writeFile(out, encParam);
-                if (parser.getReadTag() != Tags.PixelData) return;
-                int len = parser.getReadLength();
-                byte[] buffer = new byte[bufferSize];
-                if (decParam.encapsulated) {
-                    ds.writeHeader(out, encParam, Tags.PixelData, VRs.OB, -1);
-                    parser.parseHeader();
-                    while (parser.getReadTag() == Tags.Item) {
-                        len = parser.getReadLength();
-                        ds.writeHeader(out, encParam, Tags.Item, VRs.NONE, len);
-                        copy(in, out, len, buffer);
-                        parser.parseHeader();
-                    }
-                    ds.writeHeader(out, encParam, Tags.SeqDelimitationItem,
-                            VRs.NONE, 0);
-                } else {
-                    ds.writeHeader(out, encParam, Tags.PixelData, parser
-                            .getReadVR(), len);
-                    copy(in, out, len, buffer);
+                if (parser.getReadTag() == Tags.PixelData) {
+	                writePixelData(in, encParam, ds, parser, out);
+	                parser.parseDataset(decParam, -1);
+	                ds.subSet(Tags.PixelData, -1).writeDataset(out, encParam);
                 }
-                parser.parseDataset(decParam, -1);
-                ds.subSet(Tags.PixelData, -1).writeDataset(out, encParam);
             } finally {
                 try {
                     out.close();
                 } catch (IOException ignore) {
                 }
             }
+            log.info("M-WRITE " + md5file);
+            Writer md5out = new FileWriter(md5file);            
+            try {
+                md5out.write(FileUtils.toHexChars(digest.digest()));
+            } finally {
+                try {
+                    md5out.close();
+                } catch (IOException ignore) {
+                }
+            }
         } catch (Throwable t) {
+            log.error("Processing Failure during receive of instance[uid="
+                    + iuid + "]:", t);
+            if (md5file.exists()) {
+                log.debug("M-DELETE " + md5file);
+                md5file.delete();
+            }
+            if (file.exists()) {
+                log.debug("M-DELETE " + file);
+                file.delete();
+            }
             throw new DcmServiceException(Status.ProcessingFailure, t);
         } finally {
             in.close();
+        }
+    }
+
+    private void writePixelData(InputStream in, DcmEncodeParam encParam, Dataset ds, DcmParser parser, OutputStream out) throws IOException {
+        int len = parser.getReadLength();
+        byte[] buffer = new byte[bufferSize];
+        if (encParam.encapsulated) {
+            ds.writeHeader(out, encParam, Tags.PixelData, VRs.OB, -1);
+            parser.parseHeader();
+            while (parser.getReadTag() == Tags.Item) {
+                len = parser.getReadLength();
+                ds.writeHeader(out, encParam, Tags.Item, VRs.NONE, len);
+                copy(in, out, len, buffer);
+                parser.parseHeader();
+            }
+            ds.writeHeader(out, encParam, Tags.SeqDelimitationItem,
+                    VRs.NONE, 0);
+        } else {
+            ds.writeHeader(out, encParam, Tags.PixelData, parser
+                    .getReadVR(), len);
+            copy(in, out, len, buffer);
         }
     }
 

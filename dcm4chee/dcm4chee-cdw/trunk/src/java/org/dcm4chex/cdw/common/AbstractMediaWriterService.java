@@ -64,6 +64,7 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
     }
 
     protected void process(MediaCreationRequest rq) {
+        boolean cleanup = true;
         try {
             log.info("Start processing " + rq);
             if (rq.isCanceled()) {
@@ -84,20 +85,21 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
             }
             try {
                 handle(rq, attrs);
-                log.info("Finished processing " + rq);
-                DcmElement sq = attrs.get(Tags.RefStorageMediaSeq);
-                if (sq == null) sq = attrs.putSQ(Tags.RefStorageMediaSeq);
-                Dataset item = sq.addNewItem();
-                item.putSH(Tags.StorageMediaFileSetID, rq.getFilesetID());
-                item.putUI(Tags.StorageMediaFileSetUID, rq.getFilesetDir()
-                        .getName());
-                attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated, rq
-                        .getVolsetSeqno()
-                        * rq.getNumberOfCopies());
-                if (rq.getVolsetSeqno() == rq.getVolsetSize()) {
-                    attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.DONE);
-                    attrs.putCS(Tags.ExecutionStatusInfo,
-                            ExecutionStatusInfo.NORMAL);
+                if (rq.getRemainingCopies() == 0) {
+                    log.info("Finished processing " + rq);
+	                DcmElement sq = attrs.get(Tags.RefStorageMediaSeq);
+	                if (sq == null) sq = attrs.putSQ(Tags.RefStorageMediaSeq);
+	                Dataset item = sq.addNewItem();
+	                item.putSH(Tags.StorageMediaFileSetID, rq.getFilesetID());
+	                item.putUI(Tags.StorageMediaFileSetUID, rq.getFilesetDir()
+	                        .getName());
+	                if (rq.getVolsetSeqno() == rq.getVolsetSize()) {
+	                    attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.DONE);
+	                    attrs.putCS(Tags.ExecutionStatusInfo,
+	                            ExecutionStatusInfo.NORMAL);
+	                }
+                } else {
+                    cleanup = false;
                 }
             } catch (MediaCreationException e) {
                 log.error("Failed to process " + rq, e);
@@ -112,7 +114,7 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
         } catch (IOException e) {
             // error already logged
         } finally {
-            if (!keepSpoolFiles) rq.cleanFiles(log);
+            if (cleanup && !keepSpoolFiles) rq.cleanFiles(log);
         }
 
     }

@@ -73,7 +73,6 @@ class LabelCreator {
         File f = new File(rq.getFilesetDir().getParent(), rq
                 .getFilesetDir().getName()
                 + ext);
-        log.info("Creating Label to for " + rq);
         rq.setLabelFile(f);
         OutputStream out;
         try {

@@ -9,10 +9,8 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.io.File;
-import java.io.FileFilter;
 
 import org.dcm4chex.cdw.common.FileUtils;
-
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -23,7 +21,7 @@ import org.jboss.system.server.ServerConfigLocator;
  *
  */
 public class SpoolDirService extends ServiceMBeanSupport {
-    
+
     private static final long MS_PER_MINUTE = 60000L;
 
     private static final long MS_PER_HOUR = MS_PER_MINUTE * 60;
@@ -45,7 +43,9 @@ public class SpoolDirService extends ServiceMBeanSupport {
     private long purgePreservedInstancesAfter = MS_PER_DAY;
 
     private long purgeTemporaryFilesAfter = MS_PER_HOUR;
-    
+
+    private int numberOfArchiveBuckets = 37;
+
     public final String getDirectoryPath() {
         return directoryPath;
     }
@@ -69,6 +69,17 @@ public class SpoolDirService extends ServiceMBeanSupport {
         if (!dir.isDirectory() || !dir.canWrite())
                 throw new IllegalArgumentException("" + dir
                         + " is not a writable directory!");
+    }
+
+    public final int getNumberOfArchiveBuckets() {
+        return numberOfArchiveBuckets;
+    }
+
+    public final void setNumberOfArchiveBuckets(int numberOfArchiveBuckets) {
+        if (numberOfArchiveBuckets < 1 || numberOfArchiveBuckets > 1000)
+                throw new IllegalArgumentException("numberOfArchiveBuckets:"
+                        + numberOfArchiveBuckets + " is not between 1 and 1000");
+        this.numberOfArchiveBuckets = numberOfArchiveBuckets;
     }
 
     public final String getPurgePreservedInstancesAfter() {
@@ -96,7 +107,10 @@ public class SpoolDirService extends ServiceMBeanSupport {
     }
 
     public File getInstanceFile(String iuid) {
-        return new File(new File(dir, ARCHIVE), iuid);
+        final int i = (iuid.hashCode() & 0x7FFFFFFF) % numberOfArchiveBuckets;
+        File bucket = new File(new File(dir, ARCHIVE), String.valueOf(i));
+        if (bucket.mkdirs()) log.debug("M-WRITE " + bucket);
+        return new File(bucket, iuid);
     }
 
     public File getMediaCreationRequestFile(String iuid) {
@@ -114,30 +128,39 @@ public class SpoolDirService extends ServiceMBeanSupport {
     }
 
     public void purgeExpiredMediaCreationRequests() {
-        deleteFiles(REQUEST, purgeMediaCreationRequestsAfter);
+        if (purgePreservedInstancesAfter == 0) return;
+        deleteFilesModifiedBefore(new File(dir, REQUEST), System
+                .currentTimeMillis()
+                - purgeMediaCreationRequestsAfter);
     }
 
     public void purgeExpiredPreservedInstances() {
-        deleteFiles(ARCHIVE, purgePreservedInstancesAfter);
+        if (purgePreservedInstancesAfter == 0) return;
+        File subdir = new File(dir, ARCHIVE);
+        String[] ss = subdir.list();
+        if (ss == null) return;
+        final long modifiedBefore = System.currentTimeMillis()
+                - purgePreservedInstancesAfter;
+        for (int i = 0; i < ss.length; i++)
+            deleteFilesModifiedBefore(new File(subdir, ss[i]), modifiedBefore);
     }
-    
-    public void purgeResidualTemporaryFiles() {
-        deleteFiles(MEDIA, purgeTemporaryFilesAfter);
-    }
-    
-    private void deleteFiles(String subdir, long after) {
-        if (after == 0) return;
-        final long modifiedBefore = System.currentTimeMillis() - after;
-        File d = new File(dir, subdir);
-        File[] files = d.listFiles(new FileFilter(){
 
-            public boolean accept(File pathname) {
-                
-                return pathname.lastModified() <= modifiedBefore;
-            }});
-        if (files != null)
-            for (int i = 0; i < files.length; i++)
-                FileUtils.delete(files[i], log);
+    public void purgeResidualTemporaryFiles() {
+        if (purgePreservedInstancesAfter == 0) return;
+        deleteFilesModifiedBefore(new File(dir, MEDIA), System
+                .currentTimeMillis()
+                - purgeTemporaryFilesAfter);
+    }
+
+    private void deleteFilesModifiedBefore(File subdir, long modifiedBefore) {
+        String[] ss = subdir.list();
+        if (ss == null) return;
+        for (int i = 0, n = ss.length; i < n; i++) {
+            File f = new File(subdir, ss[i]);
+            if (f.lastModified() <= modifiedBefore) {
+                FileUtils.delete(f, log);
+            }
+        }
     }
 
     static String timeAsString(long ms) {
