@@ -15,6 +15,10 @@
 <mbean code="org.dcm4chex.service.DcmServerService" 
     name="dcm4chex:service=DcmServer,name=DCMSRV">
 
+    <depends optional-attribute-name="AuditLoggerName">
+      dcm4chex:service=AuditLogger,name=AUDITLOG
+    </depends>
+
     <!--
     Set maximal number of simultaneously conncected DICOM clients.
     -->
@@ -24,6 +28,7 @@
     Specifies if server running in tls mode:
     dicom           native dicom
     dicom-tls       dicom over TLS
+    dicom-tls.aes   dicom over TLS with AES 128 CBC or triple DES EDE CBC encryption
     dicom-tls.3des  dicom over TLS with triple DES EDE CBC encryption
     dicom-tls.nodes dicom over TLS without encryption
     -->
@@ -68,26 +73,24 @@
     <attribute name="PackPDVs">false</attribute>
     
     <!--
-    Defines file containing key used in SSL handshake, when running in TLS mode.
-    Relative path names are resolved using jboss server directory as base directory.
+    Defines URL of key store containing key used in SSL handshake, when running in TLS mode.
     -->
-    <attribute name="KeyFile">conf/tls/identity.p12</attribute>
+    <attribute name="KeyStoreURL">resource:identity.p12</attribute>
     
     <!--
-    Defines password for access to key file, specified by attribute KeyFile 
+    Defines password for access to key store, specified by attribute KeyStoreURL 
     -->
-    <attribute name="KeyPasswd">passwd</attribute>
+    <attribute name="KeyStorePassword">passwd</attribute>
     
    <!--
-    Defines file containing accepted certificates, when running in TLS mode
-    Relative path names are resolved using jboss server directory as base directory.
+    Defines URL of trust store containing accepted certificates, when running in TLS mode
     -->
-    <attribute name="CacertsFile">conf/tls/cacerts.jks</attribute>
+    <attribute name="TrustStoreURL">resource:cacerts.jks</attribute>
     
     <!--
-    Defines password for access to cacerts file, specified by attribute CacertsFile 
+    Defines password for access to trust store, specified by attribute TrustStoreURL 
     -->
-    <attribute name="CacertsPasswd">passwd</attribute>
+    <attribute name="TrustStorePassword">passwd</attribute>
 </mbean>
 
 

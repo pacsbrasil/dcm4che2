@@ -216,6 +216,8 @@
   			<fileset dir="${src.etc}">
    				<include name="bin/*.sh"/>
    				<include name="bin/*.bat"/>
+   				<include name="conf/cacerts.jks"/>
+   				<include name="conf/identity.p12"/>
    				<include name="deploy/*.xml"/>
    			</fileset>
   			<fileset dir="${basedir}">
