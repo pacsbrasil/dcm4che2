@@ -22,7 +22,6 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.data.Command;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.Dimse;
@@ -150,22 +149,7 @@ implements DimseListener, AssociationListener, FutureRSP {
    private Dimse doGet() throws IOException {
       if (exception != null)
          throw exception;
-      else {
-      	// workaround for dimseReceived for last RSP may
-      	// be called BEFORE dimseReceived of former pending RSP
-	     switch (rsp.getCommand().getCommandField()) {
-			case Command.C_GET_RSP:
-			case Command.C_FIND_RSP:
-			case Command.C_MOVE_RSP:
-				try {
-					Thread.sleep(getFindRSPdelay);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}			
-	     } 
-
-         return rsp;
-      }
+      return rsp;
    }
    // Inner classes -------------------------------------------------
 }

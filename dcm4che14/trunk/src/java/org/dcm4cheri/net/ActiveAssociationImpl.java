@@ -40,6 +40,7 @@ import java.io.IOException;
  *
  * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author  <a href="mailto:umberto.cappellini@chello.at">Umberto Cappellini</a>
  * @version $Revision$ $Date$
  *   
  */
@@ -249,10 +250,9 @@ final class ActiveAssociationImpl
 				l = (DimseListener) rspDispatcher.remove(msgID);
 				rspDispatcher.notify();
 			}
+			if (l != null)
+				l.dimseReceived(assoc, dimse);
 		}
-
-		if (l != null)
-			l.dimseReceived(assoc, dimse);
 	}
 
 	private void handleCancel(Dimse dimse) {
