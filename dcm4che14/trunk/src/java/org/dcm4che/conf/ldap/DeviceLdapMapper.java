@@ -22,17 +22,21 @@ package org.dcm4che.conf.ldap;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.text.MessageFormat;
 
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.dcm4che.conf.ConfigInfo;
 import org.dcm4che.conf.DeviceInfo;
+import org.dcm4che.conf.JavaObjectInfo;
 import org.dcm4che.conf.NetworkAEInfo;
 import org.dcm4che.conf.NetworkConnectionInfo;
 import org.dcm4che.conf.NodeCertificateInfo;
@@ -43,11 +47,9 @@ import org.dcm4che.conf.NodeCertificateInfo;
  * @since 05.09.2003
  */
 public class DeviceLdapMapper extends ConfigLdapMapper {
-    private final NodeCertificateLdapMapper certMapper;
-    
-    public DeviceLdapMapper(InitialDirContext ctx) {
-        super(ctx);
-        certMapper = new NodeCertificateLdapMapper(ctx);
+
+    public DeviceLdapMapper(InitialDirContext ctx, String baseDN) {
+        super(ctx, baseDN);
     }
 
     public DeviceInfo load(String dn) throws NamingException {
@@ -67,54 +69,84 @@ public class DeviceLdapMapper extends ConfigLdapMapper {
                     DICOM_THIS_NODE_CERTIFICATE_REFERENCE,
                     DICOM_INSTALLED });
 
-        NetworkConnectionLdapMapper ncMapper = new NetworkConnectionLdapMapper(ctx);
+        SearchControls ctls = new SearchControls();
+        ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
+        ctls.setReturningAttributes(new String[0]);
+        ctls.setReturningObjFlag(false);
+        NetworkConnectionLdapMapper ncMapper =
+            new NetworkConnectionLdapMapper(ctx, baseDN);
         for (NamingEnumeration ne =
-            ctx.search(
-                dn,
-                matchObjectClass(DICOM_NETWORK_CONNECTION),
-                new String[0]);
+            ctx.search(dn, MATCH_NETWORK_CONNECTION, ctls);
             ne.hasMore();
             ) {
             SearchResult sr = (SearchResult) ne.next();
-            device.addNetworkConnection(ncMapper.load(sr.getName() + "," + device.getDN()));
+            device.addNetworkConnection(ncMapper.load(sr.getName() + "," + dn));
         }
-        
-        NetworkAELdapMapper aeMapper = new NetworkAELdapMapper(ctx);
-        for (NamingEnumeration ne =
-            ctx.search(dn, matchObjectClass(DICOM_NETWORK_AE), new String[0]);
+
+        NetworkAELdapMapper aeMapper = new NetworkAELdapMapper(ctx, baseDN);
+        aeMapper.setDevice(device);
+        for (NamingEnumeration ne = ctx.search(dn, MATCH_NETWORK_AE, ctls);
             ne.hasMore();
             ) {
             SearchResult sr = (SearchResult) ne.next();
-            device.addNetworkAE(aeMapper.load(sr.getName() + "," + device.getDN()));
+            device.addNetworkAE(aeMapper.load(sr.getName() + "," + dn));
         }
 
         return device;
     }
 
-    public static final String DICOM_NETWORK_AE = "dicomNetworkAE";
-    public static final String DICOM_NETWORK_CONNECTION =
-        "dicomNetworkConnection";
+    public DeviceInfo findDeviceByName(String name) throws NamingException {
+        SearchControls ctls = new SearchControls();
+        ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        ctls.setCountLimit(1);
+        //        ctls.setReturningAttributes(new String[0]);
+        //        ctls.setReturningObjFlag(false);
+        String filter =
+            MessageFormat.format(MATCH_DEVICE_BY_NAME, new String[] { name });
+        NamingEnumeration answer =
+            ctx.search(getDicomDevicesDN(), filter, ctls);
+        if (!answer.hasMore()) {
+            throw new NameNotFoundException();
+        }
+        SearchResult sr = (SearchResult) answer.next();
+        return load(sr.getName() + "," + getDicomDevicesDN());
+    }
+
+    public DeviceInfo findDeviceByAET(String aet) throws NamingException {
+        String dn = findNetworkAEDNByAET(aet);
+        return load(dn.substring(dn.indexOf(',') + 1));
+    }
 
     public void store(String parentDN, DeviceInfo device)
         throws NamingException {
         store(parentDN, device, new String[] { TOP, DICOM_DEVICE, PKI_USER });
-        createNetworkConnections(device.getNetworkConnection(), device.getDN());
-        createNetworkAE(device.getNetworkAE(), device.getDN());
+        storeRelatedDeviceDescription(device.getRelatedDeviceDescription());
+        storeNetworkConnections(device.getNetworkConnection(), device.getDN());
+        storeNetworkAE(device.getNetworkAE(), device.getDN());
     }
 
-    private void createNetworkAE(NetworkAEInfo[] ae, String deviceDN)
+    private void storeRelatedDeviceDescription(JavaObjectInfo[] infos)
         throws NamingException {
-        NetworkAELdapMapper aeMapper = new NetworkAELdapMapper(ctx);
+        JavaObjectLdapMapper joMapper = new JavaObjectLdapMapper(ctx, baseDN);
+        for (int i = 0; i < infos.length; i++) {
+            joMapper.store(infos[i]);
+        }
+    }
+
+    private void storeNetworkAE(NetworkAEInfo[] ae, String deviceDN)
+        throws NamingException {
+        NetworkAELdapMapper aeMapper = new NetworkAELdapMapper(ctx, baseDN);
         for (int i = 0; i < ae.length; i++) {
             aeMapper.store(deviceDN, ae[i]);
         }
     }
 
-    private void createNetworkConnections(
+    private void storeNetworkConnections(
         NetworkConnectionInfo[] nc,
         String deviceDN)
         throws NamingException {
-        NetworkConnectionLdapMapper ncMapper = new NetworkConnectionLdapMapper(ctx);
+        NetworkConnectionLdapMapper ncMapper =
+            new NetworkConnectionLdapMapper(ctx, baseDN);
         for (int i = 0; i < nc.length; i++) {
             ncMapper.store(deviceDN, nc[i]);
         }
@@ -139,7 +171,7 @@ public class DeviceLdapMapper extends ConfigLdapMapper {
         putAttribute(
             attrs,
             DICOM_RELATED_DEVICE_REFERENCE,
-            device.getRelatedDeviceReference());
+            device.getRelatedDeviceDescription());
         putAttribute(
             attrs,
             DICOM_AUTHORIZED_NODE_CERTIFICATE_REFERENCE,
@@ -198,15 +230,27 @@ public class DeviceLdapMapper extends ConfigLdapMapper {
         else if (attrID.equalsIgnoreCase(DICOM_INSTALLED))
             device.setInstalled(Boolean.valueOf((String) value).booleanValue());
         else if (attrID.equalsIgnoreCase(DICOM_RELATED_DEVICE_REFERENCE))
-            device.addRelatedDeviceReference((String) value);
+            device.addRelatedDeviceDescription(
+                getRelatedDeviceDescription((String) value));
         else if (
             attrID.equalsIgnoreCase(
                 DICOM_AUTHORIZED_NODE_CERTIFICATE_REFERENCE)) {
-            device.addAuthorizedNodeCertificate(certMapper.load((String) value));
+            device.addAuthorizedNodeCertificate(
+                getNodeCertificate((String) value));
         } else if (
             attrID.equalsIgnoreCase(DICOM_THIS_NODE_CERTIFICATE_REFERENCE)) {
-            device.addThisNodeCertificate(certMapper.load((String) value));
+            device.addThisNodeCertificate(getNodeCertificate((String) value));
         }
+    }
+
+    private NodeCertificateInfo getNodeCertificate(String dn)
+        throws NamingException {
+        return new NodeCertificateLdapMapper(ctx, baseDN).load(dn);
+    }
+
+    private JavaObjectInfo getRelatedDeviceDescription(String dn)
+        throws NamingException {
+        return new JavaObjectLdapMapper(ctx, baseDN).load(dn);
     }
 
 }

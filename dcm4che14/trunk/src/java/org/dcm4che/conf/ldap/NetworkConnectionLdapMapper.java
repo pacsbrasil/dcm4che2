@@ -34,8 +34,8 @@ import org.dcm4che.conf.NetworkConnectionInfo;
  */
 public class NetworkConnectionLdapMapper extends ConfigLdapMapper {
 
-    public NetworkConnectionLdapMapper(InitialDirContext ctx) {
-        super(ctx);
+    public NetworkConnectionLdapMapper(InitialDirContext ctx, String baseDN) {
+        super(ctx, baseDN);
     }
 
     public NetworkConnectionInfo load(String dn) throws NamingException {

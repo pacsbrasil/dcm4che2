@@ -24,10 +24,13 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.dcm4che.conf.ConfigInfo;
+import org.dcm4che.conf.DeviceInfo;
 import org.dcm4che.conf.NetworkAEInfo;
+import org.dcm4che.conf.NetworkConnectionInfo;
 import org.dcm4che.conf.TransferCapabilityInfo;
 
 /**
@@ -37,47 +40,65 @@ import org.dcm4che.conf.TransferCapabilityInfo;
  */
 public class NetworkAELdapMapper extends ConfigLdapMapper {
 
-    private final NetworkConnectionLdapMapper ncMapper;
-    
-    public NetworkAELdapMapper(InitialDirContext ctx) {
-        super(ctx);
-        ncMapper = new NetworkConnectionLdapMapper(ctx);
+    private DeviceInfo device;
 
+    public NetworkAELdapMapper(InitialDirContext ctx, String baseDN) {
+        super(ctx, baseDN);
+    }
+
+    void setDevice(DeviceInfo device) {
+        this.device = device;
     }
 
     public NetworkAEInfo load(String dn) throws NamingException {
-        NetworkAEInfo aeInfo = (NetworkAEInfo) load(
-            dn,
-            new NetworkAEInfo(),
-            new String[] {
-                DICOM_AE_TITLE,
-                DICOM_DESCRIPTION,
-                DICOM_VENDOR_DATA,
-                DICOM_APPLICATION_CLUSTER,
-                DICOM_PEER_AE_TITLE,
-                DICOM_ASSOCIATION_ACCEPTOR,
-                DICOM_ASSOCIATION_INITIATOR,
-                DICOM_NETWORK_CONNECTION_REFERENCE,
-                DICOM_INSTALLED });
-                
-        TransferCapabilityLdapMapper tcMapper = new TransferCapabilityLdapMapper(ctx);                
+        NetworkAEInfo aeInfo =
+            (NetworkAEInfo) load(dn,
+                new NetworkAEInfo(),
+                new String[] {
+                    DICOM_AE_TITLE,
+                    DICOM_DESCRIPTION,
+                    DICOM_VENDOR_DATA,
+                    DICOM_APPLICATION_CLUSTER,
+                    DICOM_PEER_AE_TITLE,
+                    DICOM_ASSOCIATION_ACCEPTOR,
+                    DICOM_ASSOCIATION_INITIATOR,
+                    DICOM_NETWORK_CONNECTION_REFERENCE,
+                    DICOM_INSTALLED });
+
+        SearchControls ctls = new SearchControls();
+        ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
+        ctls.setReturningAttributes(new String[0]);
+        ctls.setReturningObjFlag(false);
+        TransferCapabilityLdapMapper tcMapper =
+            new TransferCapabilityLdapMapper(ctx, baseDN);
         for (NamingEnumeration ne =
-            ctx.search(dn, matchObjectClass(DICOM_TRANSFER_CAPABILITY), new String[0]);
+            ctx.search(dn, MATCH_TRANSFER_CAPABILITY, ctls);
             ne.hasMore();
             ) {
             SearchResult sr = (SearchResult) ne.next();
-            aeInfo.addTransferCapability(tcMapper.load(sr.getName() + "," + aeInfo.getDN()));
+            aeInfo.addTransferCapability(
+                tcMapper.load(sr.getName() + "," + dn));
         }
         return aeInfo;
     }
 
-    public void store(String parentDN, NetworkAEInfo ae) throws NamingException {
+    public NetworkAEInfo findNetworkAEByAET(String aet) throws NamingException {
+        return load(findNetworkAEDNByAET(aet));
+    }
+
+
+    public void store(String parentDN, NetworkAEInfo ae)
+        throws NamingException {
         store(parentDN, ae, new String[] { TOP, DICOM_NETWORK_AE });
         storeTransferCapability(ae.getTransferCapability(), ae.getDN());
     }
 
-    private void storeTransferCapability(TransferCapabilityInfo[] tc, String aeDN) throws NamingException {
-        TransferCapabilityLdapMapper tcMapper = new TransferCapabilityLdapMapper(ctx);
+    private void storeTransferCapability(
+        TransferCapabilityInfo[] tc,
+        String aeDN)
+        throws NamingException {
+        TransferCapabilityLdapMapper tcMapper =
+            new TransferCapabilityLdapMapper(ctx, baseDN);
         for (int i = 0; i < tc.length; i++) {
             tcMapper.store(aeDN, tc[i]);
         }
@@ -90,11 +111,23 @@ public class NetworkAELdapMapper extends ConfigLdapMapper {
         putAttribute(attrs, DICOM_AE_TITLE, ae.getAETitle());
         putAttribute(attrs, DICOM_DESCRIPTION, ae.getDescription());
         putAttribute(attrs, DICOM_VENDOR_DATA, ae.getVendorData());
-        putAttribute(attrs, DICOM_APPLICATION_CLUSTER, ae.getApplicationCluster());
+        putAttribute(
+            attrs,
+            DICOM_APPLICATION_CLUSTER,
+            ae.getApplicationCluster());
         putAttribute(attrs, DICOM_PEER_AE_TITLE, ae.getPeerAeTitle());
-        putAttribute(attrs, DICOM_ASSOCIATION_ACCEPTOR, new Boolean(ae.isAssociationAcceptor()));
-        putAttribute(attrs, DICOM_ASSOCIATION_INITIATOR, new Boolean(ae.isAssociationInitiator()));
-        putAttribute(attrs, DICOM_NETWORK_CONNECTION_REFERENCE, ae.getNetworkConnection());
+        putAttribute(
+            attrs,
+            DICOM_ASSOCIATION_ACCEPTOR,
+            new Boolean(ae.isAssociationAcceptor()));
+        putAttribute(
+            attrs,
+            DICOM_ASSOCIATION_INITIATOR,
+            new Boolean(ae.isAssociationInitiator()));
+        putAttribute(
+            attrs,
+            DICOM_NETWORK_CONNECTION_REFERENCE,
+            ae.getNetworkConnection());
         putAttribute(attrs, DICOM_INSTALLED, ae.isInstalled());
     }
 
@@ -128,7 +161,19 @@ public class NetworkAELdapMapper extends ConfigLdapMapper {
         else if (attrID.equalsIgnoreCase(DICOM_INSTALLED))
             ae.setInstalled(Boolean.valueOf((String) value));
         else if (attrID.equalsIgnoreCase(DICOM_NETWORK_CONNECTION_REFERENCE)) {
-            ae.addNetworkConnection(ncMapper.load((String) value));
+            ae.addNetworkConnection(getNetworkConnection((String) value));
         }
+    }
+
+    private NetworkConnectionInfo getNetworkConnection(String dn)
+        throws NamingException {
+        if (device != null) {
+            NetworkConnectionInfo[] nc = device.getNetworkConnection();
+            for (int i = 0; i < nc.length; i++) {
+                if (dn.equals(nc[i].getDN()))
+                    return nc[i];
+            }
+        }
+        return new NetworkConnectionLdapMapper(ctx, baseDN).load(dn);
     }
 }

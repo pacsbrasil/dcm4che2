@@ -20,6 +20,9 @@
 
 package org.dcm4che.conf.ldap;
 
+import java.text.MessageFormat;
+
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -90,30 +93,49 @@ public abstract class ConfigLdapMapper {
 
     public static final String USER_CERTIFICATE = "userCertificate;binary";
 
-    protected static final String SEARCH_DICOM_CONFIGURATION =
+    public static final String DICOM_CONFIGURATION = "DICOM Configuration";
+    public static final String DEVICES = "Devices";
+    public static final String UNIQUE_AE_TITLES_REGISTRY =
+        "Unique AE Titles Registry";
+
+    protected static final String MATCH_DICOM_CONFIGURATION =
         "(&(objectclass=dicomConfigurationRoot)(cn=DICOM Configuration))";
-    protected static final String SEARCH_DEVICE_BY_NAME =
-        "(&(objectclass=dicomDevice)(dicomDeviceName=%1))";
+    protected static final String MATCH_DEVICE_BY_NAME =
+        "(&(objectclass=dicomDevice)(dicomDeviceName={0}))";
+    protected static final String MATCH_NETWORK_AE_BY_AET =
+        "(&(objectclass=dicomNetworkAE)(dicomAETitle={0}))";
+    protected static final String MATCH_NETWORK_AE =
+        "(objectclass=dicomNetworkAE)";
+    protected static final String MATCH_NETWORK_CONNECTION =
+        "(objectclass=dicomNetworkConnection)";
+    protected static final String MATCH_TRANSFER_CAPABILITY =
+        "(objectclass=dicomTransferCapability)";
 
     protected final InitialDirContext ctx;
+    protected final String baseDN;
     protected String dicomConfigurationDN;
 
-    protected ConfigLdapMapper(InitialDirContext ctx) {
+    protected ConfigLdapMapper(InitialDirContext ctx, String baseDN) {
         if (ctx == null)
             throw new NullPointerException("ctx");
+        if (baseDN == null)
+            throw new NullPointerException("baseDN");
 
         this.ctx = ctx;
+        this.baseDN = baseDN;
     }
 
-    public String getDicomConfigurationDN(String baseDN)
-        throws NamingException {
+    public String getDicomConfigurationDN() throws NamingException {
         if (dicomConfigurationDN == null) {
             SearchControls ctls = new SearchControls();
             ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            ctls.setCountLimit(1);
+            ctls.setReturningAttributes(new String[0]);
+            ctls.setReturningObjFlag(false);
             NamingEnumeration answer =
-                ctx.search(baseDN, SEARCH_DICOM_CONFIGURATION, ctls);
+                ctx.search(baseDN, MATCH_DICOM_CONFIGURATION, ctls);
             if (!answer.hasMore()) {
-                throw new RuntimeException("DicomConfiguratio Not Found");
+                throw new NameNotFoundException();
             }
             SearchResult sr = (SearchResult) answer.next();
             dicomConfigurationDN = sr.getName() + "," + baseDN;
@@ -121,8 +143,78 @@ public abstract class ConfigLdapMapper {
         return dicomConfigurationDN;
     }
 
-    public String getDicomDevicesDN(String baseDN) throws NamingException {
-        return "cn=Devices," + getDicomConfigurationDN(baseDN);
+    public String getDicomDevicesDN() throws NamingException {
+        return "cn=Devices," + getDicomConfigurationDN();
+    }
+
+    public String getAetRegistryDN() throws NamingException {
+        return "cn=Unique AE Titles Registry," + getDicomConfigurationDN();
+    }
+
+    protected String findNetworkAEDNByAET(String aet) throws NamingException {
+        SearchControls ctls = new SearchControls();
+        ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        ctls.setCountLimit(1);
+        ctls.setReturningAttributes(new String[0]);
+        ctls.setReturningObjFlag(false);
+        String filter =
+            MessageFormat.format(MATCH_NETWORK_AE_BY_AET, new String[] { aet });
+        NamingEnumeration answer =
+            ctx.search(getDicomDevicesDN(), filter, ctls);
+        if (!answer.hasMore()) {
+            throw new NameNotFoundException();
+        }
+        SearchResult sr = (SearchResult) answer.next();
+        return sr.getName() + "," + getDicomDevicesDN();
+    }
+
+    public void initDicomConfiguration(String parentDN)
+        throws NamingException {
+        dicomConfigurationDN =
+            initSubcontext(
+                parentDN,
+                COMMON_NAME,
+                DICOM_CONFIGURATION,
+                new String[] { TOP, DICOM_CONFIGURATION_ROOT });
+        initSubcontext(
+            dicomConfigurationDN,
+            COMMON_NAME,
+            DEVICES,
+            new String[] { TOP, DICOM_DEVICES_ROOT });
+        initSubcontext(
+            dicomConfigurationDN,
+            COMMON_NAME,
+            UNIQUE_AE_TITLES_REGISTRY,
+            new String[] { TOP, DICOM_UNIQUE_AE_TITLES_REGISTRY_ROOT });
+    }
+
+    private String initSubcontext(
+        String parentDN,
+        String attrId,
+        String attrVal,
+        String[] objclassIDs)
+        throws NamingException {
+        Attributes attrs = new BasicAttributes(true); // case-ignore
+        Attribute objclass = new BasicAttribute(OBJECTCLASS);
+        for (int i = 0; i < objclassIDs.length; i++) {
+            objclass.add(objclassIDs[i]);
+        }
+        attrs.put(attrId, attrVal);
+        String dn = attrId + "=" + attrVal + "," + parentDN;
+        ctx.createSubcontext(dn, attrs).close();
+        return dn;
+    }
+
+    public void registerAET(String aet) throws NamingException {
+        initSubcontext(
+            getAetRegistryDN(),
+            DICOM_AE_TITLE,
+            aet,
+            new String[] { TOP, DICOM_UNIQUE_AE_TITLE });
+    }
+
+    public void unregisterAET(String aet) throws NamingException {
+        ctx.unbind(DICOM_AE_TITLE + "=" + aet + "," + getAetRegistryDN());
     }
 
     protected ConfigInfo load(String dn, ConfigInfo info, String[] attrIDs)
@@ -213,12 +305,6 @@ public abstract class ConfigLdapMapper {
             }
             attrs.put(attr);
         }
-    }
-
-    protected static Attributes matchObjectClass(String objclass) {
-        Attributes attrs = new BasicAttributes(true); // case-ignore
-        attrs.put(OBJECTCLASS, objclass);
-        return attrs;
     }
 
     protected void putAttribute(

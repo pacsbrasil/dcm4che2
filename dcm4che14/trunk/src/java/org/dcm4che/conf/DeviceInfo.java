@@ -35,7 +35,7 @@ public class DeviceInfo extends ConfigInfo {
     private String manufacturerModelName;
     private ArrayList versions = new ArrayList(1);
     private ArrayList types = new ArrayList(1);
-    private ArrayList relDeviceRef = new ArrayList(1);
+    private ArrayList relDeviceDesc = new ArrayList(1);
     private ArrayList authNodeCerts = new ArrayList();
     private ArrayList thisNodeCerts = new ArrayList();
     private ArrayList vendorData = new ArrayList();
@@ -58,7 +58,7 @@ public class DeviceInfo extends ConfigInfo {
             + "\n\tprimaryDeviceType="
             + types
             + "\n\trelatedDeviceReference="
-            + relDeviceRef
+            + relDeviceDesc
             + "\n\tauthorizedNodeCertificate="
             + authNodeCerts
             + "\n\tthisNodeCertificate="
@@ -156,23 +156,23 @@ public class DeviceInfo extends ConfigInfo {
         return !types.isEmpty();
     }
 
-    public String[] getRelatedDeviceReference() {
-        return (String[]) relDeviceRef.toArray(new String[relDeviceRef.size()]);
+    public JavaObjectInfo[] getRelatedDeviceDescription() {
+        return (JavaObjectInfo[]) relDeviceDesc.toArray(new JavaObjectInfo[relDeviceDesc.size()]);
     }
 
-    public void addRelatedDeviceReference(String dn) {
-        if (dn == null)
-            throw new NullPointerException("dn");
+    public void addRelatedDeviceDescription(JavaObjectInfo info) {
+        if (info == null)
+            throw new NullPointerException("info");
 
-        relDeviceRef.add(dn);
+        relDeviceDesc.add(info);
     }
 
-    public boolean removeRelatedDeviceReference(String dn) {
-        return relDeviceRef.remove(dn);
+    public boolean removeRelatedDeviceDescription(JavaObjectInfo info) {
+        return relDeviceDesc.remove(info);
     }
 
     public boolean hasRelatedDeviceReference() {
-        return !relDeviceRef.isEmpty();
+        return !relDeviceDesc.isEmpty();
     }
 
     public NodeCertificateInfo[] getAuthorizedNodeCertificate() {

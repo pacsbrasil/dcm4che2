@@ -44,8 +44,8 @@ public class NodeCertificateLdapMapper extends ConfigLdapMapper {
 
     private CertificateFactory certFact;
 
-    public NodeCertificateLdapMapper(InitialDirContext ctx) {
-        super(ctx);
+    public NodeCertificateLdapMapper(InitialDirContext ctx, String baseDN) {
+        super(ctx, baseDN);
         try {
             certFact = CertificateFactory.getInstance("X509");
         } catch (CertificateException e) {

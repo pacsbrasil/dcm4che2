@@ -23,28 +23,25 @@ package org.dcm4che.conf;
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$
- * @since 04.09.2003
+ * @since 10.09.2003
  */
-public abstract class ConfigInfo {
+public class JavaObjectInfo extends ConfigInfo {
+    
+    Object obj;
 
-    private String dn;
-    
-    protected ConfigInfo() {}
-    
-    protected ConfigInfo(String dn) {
-        if (dn == null)
-            throw new NullPointerException("dn");
-        setDN(dn); 
+    public JavaObjectInfo(String dn) {
+        super(dn);        
     }
 
-    public void setDN(String dn) {
-        this.dn = dn;
-    }
-    
-    public String getDN() {
-        return dn;
+    public Object getObject() {
+        return obj;
     }
 
-    public abstract boolean isValid();
+    public void setObject(Object obj) {
+        this.obj = obj;
+    }
 
+    public boolean isValid() {
+        return obj != null;
+    }
 }

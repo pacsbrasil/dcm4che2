@@ -34,8 +34,8 @@ import org.dcm4che.conf.TransferCapabilityInfo;
  */
 public class TransferCapabilityLdapMapper extends ConfigLdapMapper {
 
-    public TransferCapabilityLdapMapper(InitialDirContext ctx) {
-        super(ctx);
+    public TransferCapabilityLdapMapper(InitialDirContext ctx, String baseDN) {
+        super(ctx, baseDN);
     }
 
     public TransferCapabilityInfo load(String dn) throws NamingException {
