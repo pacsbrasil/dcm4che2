@@ -43,8 +43,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
  */
 public class FileBeanTest extends ServletTestCase
 {
-
-    public static final String AET = "FILE_BEAN_TEST_AET";
+    public static final String HOST_NAME = "hostname";
+    public static final String MNT = "/var/local/archive";
     public static final String PATH_ = "2003/07/11/12345678/9ABCDEF0/";
     public static final String TSUID = "1.2.40.0.13.1.1.9999.3";
     public static final long SIZE = 567890L;
@@ -70,7 +70,7 @@ public class FileBeanTest extends ServletTestCase
         filePks = new Object[5];
         for (int i = 0; i < filePks.length; ++i)
         {
-            FileLocal file = fileHome.create(AET, PATH_ + i, TSUID, SIZE, MD5, null);
+            FileLocal file = fileHome.create(HOST_NAME, MNT, PATH_ + i, TSUID, SIZE, MD5, null);
             filePks[i] = file.getPrimaryKey();
         }
     }
@@ -95,9 +95,9 @@ public class FileBeanTest extends ServletTestCase
         super(arg0);
     }
 
-    public void testFindByRetrieveAet() throws Exception
+    public void testFindByHostName() throws Exception
     {
-        Collection c = fileHome.findByRetrieveAet(AET);
+        Collection c = fileHome.findByHostName(HOST_NAME);
         assertEquals(filePks.length, c.size());
     }
 }

@@ -151,7 +151,8 @@ public abstract class StorageBean implements SessionBean
      */
     public int store(
         Dataset ds,
-        String aet,
+        String host,
+        String mnt,
         String path,
         long size,
         byte[] md5)
@@ -175,7 +176,7 @@ public abstract class StorageBean implements SessionBean
                 instance = instHome.create(ds, getSeries(ds, modified));
             }
             FileLocal file =
-                fileHome.create(aet, path, tsuid, size, md5, instance);
+                fileHome.create(host, mnt, path, tsuid, size, md5, instance);
             return modified.isEmpty()
                 ? Status.Success
                 : Status.CoercionOfDataElements;

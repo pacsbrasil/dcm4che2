@@ -57,10 +57,12 @@ public abstract class RetrieveCmd extends BaseCmd {
         {
             "Instance.sopIuid",
             "Instance.sopCuid",
-            "File.retrieveAet",
+            "File.hostName",
+            "File.mountPoint",
             "File.filePath",
             "File.fileTsuid",
             "File.fileMd5Field",
+            "File.fileSize",
             "Media.filesetIuid" };
 
     private static final String[] FK =
@@ -110,8 +112,10 @@ public abstract class RetrieveCmd extends BaseCmd {
                         rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
-                        rs.getInt(7),
-                        rs.getString(8)));
+                        rs.getString(7),
+                        rs.getLong(8),
+                        rs.getInt(9),
+                        rs.getString(10)));
             }
             return (FileInfo[]) result.toArray(new FileInfo[result.size()]);
         } finally {

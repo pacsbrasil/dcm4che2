@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
@@ -55,10 +56,10 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 public class StorageBeanTest extends TestCase
 {
 
-    public static final String AET = "TEST_AET";
     public static final String DIR = "storage";
 
     private Storage storage;
+    private String host;
 
     public static void main(String[] args)
     {
@@ -74,6 +75,8 @@ public class StorageBeanTest extends TestCase
         StorageHome home = (StorageHome) ctx.lookup(StorageHome.JNDI_NAME);
         ctx.close();
         storage = home.create();
+        String tmp = InetAddress.getLocalHost().getHostName();
+        host = tmp.substring(tmp.lastIndexOf(".")+1);
     }
 
     /*
@@ -111,7 +114,7 @@ public class StorageBeanTest extends TestCase
         }
         MessageDigest md = MessageDigest.getInstance("MD5");
         Dataset ds = loadDataset(file, md);
-        storage.store(ds, AET, path.substring(1), file.length(), md.digest());
+        storage.store(ds, host, "/", path.substring(1), file.length(), md.digest());
     }
 
     private Dataset loadDataset(File file, MessageDigest md) throws IOException

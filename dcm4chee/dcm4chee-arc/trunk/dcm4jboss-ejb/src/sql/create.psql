@@ -51,7 +51,7 @@ FOREIGN KEY (study_fk) REFERENCES study(pk)
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid);
 CREATE INDEX series_no ON series(series_no);
 CREATE INDEX modality ON series(modality);
-CREATE INDEX pps_datetime ON series(pps_datetime);
+CREATE INDEX pps_datetime ON series(pps_start);
 
 CREATE TABLE instance (
 	pk              SERIAL PRIMARY KEY,
@@ -85,7 +85,8 @@ CREATE TABLE file (
 	pk              SERIAL PRIMARY KEY,
 	instance_fk     INTEGER,
 	media_fk        INTEGER,
-	retrieve_aet	TEXT NOT NULL,
+	host_name		TEXT NOT NULL,
+	mnt				TEXT NOT NULL,
 	file_path		TEXT NOT NULL,
 	file_tsuid      TEXT NOT NULL,
 	file_md5        TEXT,
@@ -94,4 +95,4 @@ CREATE TABLE file (
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (media_fk)  	REFERENCES media(pk)
 );
-CREATE INDEX retrieve_aet ON file(retrieve_aet);
+CREATE INDEX host_name ON file(host_name);

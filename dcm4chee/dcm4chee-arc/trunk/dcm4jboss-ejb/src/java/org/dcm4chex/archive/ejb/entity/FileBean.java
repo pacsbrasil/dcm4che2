@@ -60,15 +60,14 @@ import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
  *  transaction-type="Supports"
  *
  * @ejb.finder
- *  signature="java.util.Collection findByRetrieveAet(java.lang.String aet)"
- *  query="SELECT OBJECT(a) FROM File AS a WHERE a.retrieveAet = ?1"
+ *  signature="java.util.Collection findByHostName(java.lang.String aet)"
+ *  query="SELECT OBJECT(a) FROM File AS a WHERE a.hostName = ?1"
  *  transaction-type="Supports"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public abstract class FileBean implements EntityBean
-{
+public abstract class FileBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(FileBean.class);
 
@@ -88,17 +87,27 @@ public abstract class FileBean implements EntityBean
     public abstract void setPk(Integer pk);
 
     /**
-     * AET associated with file(-system) location
+     * Host name
      *
      * @ejb.interface-method
      * @ejb.persistence
-     *  column-name="retrieve_aet"
+     *  column-name="host_name"
      */
-    public abstract String getRetrieveAet();
-    public abstract void setRetrieveAet(String aet);
+    public abstract String getHostName();
+    public abstract void setHostName(String host);
 
     /**
-     * File Path
+     * Mount Point
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="mnt"
+     */
+    public abstract String getMountPoint();
+    public abstract void setMountPoint(String mount);
+
+    /**
+     * File Path relative to mount point
      *
      * @ejb.interface-method
      * @ejb.persistence
@@ -132,12 +141,10 @@ public abstract class FileBean implements EntityBean
      *
      * @ejb.interface-method
      */
-    public byte[] getFileMd5()
-    {
+    public byte[] getFileMd5() {
         char[] md5Hex = getFileMd5Field().toCharArray();
         byte[] md5 = new byte[16];
-        for (int i = 0; i < md5.length; i++)
-        {
+        for (int i = 0; i < md5.length; i++) {
             md5[i] =
                 (byte) ((Character.digit(md5Hex[i >> 1], 16) << 4)
                     + Character.digit(md5Hex[(i >> 1) + 1], 16));
@@ -145,15 +152,12 @@ public abstract class FileBean implements EntityBean
         return md5;
     }
 
-    public void setFileMd5(byte[] md5)
-    {
-        if (md5.length != 16)
-        {
+    public void setFileMd5(byte[] md5) {
+        if (md5.length != 16) {
             throw new IllegalArgumentException("md5.length=" + md5.length);
         }
         char[] md5Hex = new char[32];
-        for (int i = 0; i < md5.length; i++)
-        {
+        for (int i = 0; i < md5.length; i++) {
             md5Hex[i << 1] = Character.forDigit((md5[i] >> 4) & 0xf, 16);
             md5Hex[(i << 1) + 1] = Character.forDigit(md5[i] & 0xf, 16);
         }
@@ -226,18 +230,18 @@ public abstract class FileBean implements EntityBean
      * 
      * @ejb.interface-method
      */
-    public String asString()
-    {
+    public String asString() {
         return prompt();
     }
 
-    private String prompt()
-    {
+    private String prompt() {
         InstanceLocal inst = getInstance();
         return "File[pk="
             + getPk()
-            + ", aet="
-            + getRetrieveAet()
+            + ", host="
+            + getHostName()
+            + ", mnt="
+            + getMountPoint()
             + ", path="
             + getFilePath()
             + ", status="
@@ -257,15 +261,16 @@ public abstract class FileBean implements EntityBean
      * @ejb.create-method
      */
     public Integer ejbCreate(
-        String aet,
+        String host,
+        String mnt,
         String path,
         String tsuid,
         long size,
         byte[] md5,
         InstanceLocal instance)
-        throws CreateException
-    {
-        setRetrieveAet(aet);
+        throws CreateException {
+        setHostName(host);
+        setMountPoint(mnt);
         setFilePath(path);
         setFileTsuid(tsuid);
         setFileSize(size);
@@ -280,14 +285,12 @@ public abstract class FileBean implements EntityBean
         long size,
         byte[] md5,
         InstanceLocal instance)
-        throws CreateException
-    {
+        throws CreateException {
         setInstance(instance);
         log.info("Created " + prompt());
     }
 
-    public void ejbRemove() throws RemoveException
-    {
+    public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
     }
 }

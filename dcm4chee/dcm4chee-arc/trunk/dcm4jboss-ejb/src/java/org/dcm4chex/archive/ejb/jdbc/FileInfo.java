@@ -36,29 +36,35 @@ public class FileInfo
 {
     public final String sopIUID;
     public final String sopCUID;
-    public final String aet;
+    public final String host;
+    public final String mnt;
     public final String fpath;
     public final String tsUID;
     public final String md5;
+    public final long size;
     public final int status;
     public final String fsIUID;
 
     public FileInfo(
         String sopIUID,
         String sopCUID,
-        String aet,
+        String host,
+        String mnt,
         String fpath,
         String tsUID,
         String md5,
+        long size,
         int status,
         String fsIUID)
     {
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
-        this.aet = aet;
+        this.host = host;
+        this.mnt = mnt;
         this.fpath = fpath;
         this.tsUID = tsUID;
         this.md5 = md5;
+        this.size = size;
         this.status = status;
         this.fsIUID = fsIUID;
     }
