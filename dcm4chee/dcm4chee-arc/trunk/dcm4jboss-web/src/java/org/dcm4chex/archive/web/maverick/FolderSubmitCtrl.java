@@ -73,6 +73,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     || rq.getParameter("merge.x") != null) { return MERGE; }
             if (rq.getParameter("move") != null
                     || rq.getParameter("move.x") != null) { return move(); }
+            if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) ); 
+            if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) ); 
+
             return FOLDER;
         } catch (Exception e) {
             e.printStackTrace();
@@ -711,7 +714,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		    			return l;
 	    		}
     		} else { //search in next tree segment.
- 				List l1 = findModelPath( model.getChilds(), iPk, depth-1 );
+ 				List l1 = findModelPath( model.listOfChilds(), iPk, depth-1 );
 				if ( l1 != null ) {
 					l.add( model );
 					l.addAll( l1 );

@@ -123,6 +123,10 @@ public class FolderForm {
     
     /** Base URL for WADO service. Used for image view */
     private String wadoBaseURL;
+
+	private boolean showStudyIUID;
+
+	private boolean showSeriesIUID;
     
 
 	/**
@@ -484,4 +488,31 @@ public class FolderForm {
                 }
         }
     }
+	/**
+	 * @param b
+	 */
+	public void setShowStudyIUID(boolean b) {
+		showStudyIUID = b;
+		
+	}
+	/**
+	 * @return Returns the showStudyIUID.
+	 */
+	public boolean isShowStudyIUID() {
+		return showStudyIUID;
+	}
+	/**
+	 * @param b
+	 */
+	public void setShowSeriesIUID(boolean b) {
+		showSeriesIUID = b;
+		
+	}
+	/**
+	 * @return Returns the showStudyIUID.
+	 */
+	public boolean isShowSeriesIUID() {
+		return showSeriesIUID;
+	}
+
 }
