@@ -59,9 +59,13 @@ import java.io.FileInputStream;
 import java.nio.ByteOrder;
 import java.net.Socket;
 import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.PropertyResourceBundle;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.security.GeneralSecurityException;
 
@@ -75,86 +79,8 @@ import gnu.getopt.LongOpt;
 public class DcmSnd {
    
    // Constants -----------------------------------------------------
-   private static final String[] IMAGE_STORE_AS = {
-      UIDs.ComputedRadiographyImageStorage,
-      UIDs.DigitalXRayImageStorageForPresentation,
-      UIDs.DigitalXRayImageStorageForProcessing,
-      UIDs.DigitalMammographyXRayImageStorageForPresentation,
-      UIDs.DigitalMammographyXRayImageStorageForProcessing,
-      UIDs.DigitalIntraoralXRayImageStorageForPresentation,
-      UIDs.DigitalIntraoralXRayImageStorageForProcessing,
-      UIDs.CTImageStorage,
-      UIDs.UltrasoundMultiframeImageStorageRetired,
-      UIDs.UltrasoundMultiframeImageStorage,
-      UIDs.MRImageStorage,
-      UIDs.EnhancedMRImageStorage,
-      UIDs.NuclearMedicineImageStorageRetired,
-      UIDs.UltrasoundImageStorageRetired,
-      UIDs.UltrasoundImageStorage,
-      UIDs.SecondaryCaptureImageStorage,
-      UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
-      UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
-      UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
-      UIDs.MultiframeColorSecondaryCaptureImageStorage,
-      UIDs.XRayAngiographicImageStorage,
-      UIDs.XRayRadiofluoroscopicImageStorage,
-      UIDs.XRayAngiographicBiPlaneImageStorageRetired,
-      UIDs.NuclearMedicineImageStorage,
-      UIDs.VLImageStorageRetired,
-      UIDs.VLMultiframeImageStorageRetired,
-      UIDs.VLEndoscopicImageStorage,
-      UIDs.VLMicroscopicImageStorage,
-      UIDs.VLSlideCoordinatesMicroscopicImageStorage,
-      UIDs.VLPhotographicImageStorage,
-      UIDs.PositronEmissionTomographyImageStorage,
-      UIDs.RTImageStorage,
-      UIDs.HardcopyGrayscaleImageStorage,
-      UIDs.HardcopyColorImageStorage,
-   };
-   
-   private static final String[] NON_IMAGE_STORE_AS = {
-      UIDs.StandaloneOverlayStorage,
-      UIDs.StandaloneCurveStorage,
-      UIDs.TwelveLeadECGWaveformStorage,
-      UIDs.GeneralECGWaveformStorage,
-      UIDs.AmbulatoryECGWaveformStorage,
-      UIDs.HemodynamicWaveformStorage,
-      UIDs.CardiacElectrophysiologyWaveformStorage,
-      UIDs.BasicVoiceAudioWaveformStorage,
-      UIDs.StandaloneModalityLUTStorage,
-      UIDs.StandaloneVOILUTStorage,
-      UIDs.GrayscaleSoftcopyPresentationStateStorage,
-      UIDs.RawDataStorage,
-      UIDs.BasicTextSR,
-      UIDs.EnhancedSR,
-      UIDs.ComprehensiveSR,
-      UIDs.KeyObjectSelectionDocument,
-      UIDs.StandalonePETCurveStorage,
-      UIDs.RTDoseStorage,
-      UIDs.RTStructureSetStorage,
-      UIDs.RTBeamsTreatmentRecordStorage,
-      UIDs.RTPlanStorage,
-      UIDs.RTTreatmentSummaryRecordStorage,
-      UIDs.BasicStudyContentNotification,
-      UIDs.StoredPrintStorage,
-   };
-   
-   private static final String[] DEF_TS = {
-      UIDs.ImplicitVRLittleEndian,
-   };
-   
-   private static final String[] NATIVE_TS = {
-      UIDs.ExplicitVRLittleEndian,
-      UIDs.ImplicitVRLittleEndian,
-   };
-   
-   private static final String[] JPEG_LL_TS = {
-      UIDs.JPEGLossless,
-   };
-   
-   private static final String[] JPEG_BL_TS = {
-      UIDs.JPEGBaseline,
-   };
+   private static final String[] DEF_TS = { UIDs.ImplicitVRLittleEndian };
+   private static final int PCID_ECHO = 1;
    
    // Attributes ----------------------------------------------------
    private static ResourceBundle messages = ResourceBundle.getBundle(
@@ -181,105 +107,83 @@ public class DcmSnd {
    private SSLContextAdapter tls = null;
    
    // Static --------------------------------------------------------
+   private static final LongOpt[] LONG_OPTS = new LongOpt[] {
+      new LongOpt("prior-high", LongOpt.NO_ARGUMENT, null, 'P'),
+      new LongOpt("prior-low", LongOpt.NO_ARGUMENT, null, 'p'),
+      new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("repeat-dimse", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("repeat-assoc", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
+      new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
+   };
+   
    public static void main(String args[]) throws Exception {
-      LongOpt[] longopts = new LongOpt[] {
-         new LongOpt("async", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
-         new LongOpt("prior-high", LongOpt.NO_ARGUMENT, null, 'P'),
-         new LongOpt("prior-low", LongOpt.NO_ARGUMENT, null, 'p'),
-         new LongOpt("tls", LongOpt.NO_ARGUMENT, null, 's'),
-         new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 'b'),
-         new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 'L'),
-         new LongOpt("repeat-dimse", LongOpt.REQUIRED_ARGUMENT, null, 'r'),
-         new LongOpt("repeat-assoc", LongOpt.REQUIRED_ARGUMENT, null, 'R'),
-         new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
-         new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
-      };
-
-      Getopt g = new Getopt("dcmsnd", args, "", longopts, true);
+      Getopt g = new Getopt("dcmsnd", args, "", LONG_OPTS);
       
-      DcmSnd dcmsnd = new DcmSnd();
-      String num = null;
-      try {
-         int c;
-         while ((c = g.getopt()) != -1) {
-            switch (c) {
-               case 'a':
-                  dcmsnd.assocRQ.setAsyncOpsWindow(
-                        aFact.newAsyncOpsWindow(
-                           Integer.parseInt(num = g.getOptarg()), 1));
-                  break;
-               case 's':
-                  dcmsnd.initTLS();
-                  break;
-               case 'L':
-                  dcmsnd.assocRQ.setMaxLength(
-                        Integer.parseInt(num = g.getOptarg()));
-                  break;
-               case 'b':
-                  dcmsnd.bufferSize =
-                     Integer.parseInt(num = g.getOptarg()) & 0xfffffffe;
-                  break;
-               case 'r':
-                  dcmsnd.repeatSingle = Integer.parseInt(num = g.getOptarg());
-                  break;
-               case 'R':
-                  dcmsnd.repeatWhole = Integer.parseInt(num = g.getOptarg());
-                  break;
-               case 'P':
-                  dcmsnd.priority = Command.HIGH;
-                  break;
-               case 'p':
-                  dcmsnd.priority = Command.LOW;
-                  break;
-               case 'v':
-                  exit(messages.getString("version"), false);
-               case 'h':
-                  exit(messages.getString("usage"), false);
-               case '?':
-                  exit(null, true);
-                  break;
-            }
+      Properties cfg = loadConfig();
+      int c;
+      while ((c = g.getopt()) != -1) {
+         switch (c) {
+            case 0:
+               cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
+               break;
+            case 'P':
+               cfg.put("prior", "1");
+               break;
+            case 'p':
+               cfg.put("prior", "2");
+               break;
+            case 'v':
+               exit(messages.getString("version"), false);
+            case 'h':
+               exit(messages.getString("usage"), false);
+            case '?':
+               exit(null, true);
+               break;
          }
-      } catch (NumberFormatException nfe) {
-         exit(MessageFormat.format(messages.getString("errnum"),
-               new Object[]{ num }), true);
       }
       int optind = g.getOptind();
       int argc = args.length - optind;
       if (argc == 0) {
          exit(messages.getString("missing"), true);
       }
-      
+//      listConfig(cfg);
       try {
-         dcmsnd.setUrl(new DcmURL(args[optind]));
+         DcmSnd dcmsnd = new DcmSnd(cfg, new DcmURL(args[optind]), argc == 1);
+         if (argc == 1) {
+            dcmsnd.echo();
+         }
+         else {
+            dcmsnd.send(args, optind+1);
+         }
+      } catch (IllegalArgumentException e) {
+         exit(e.getMessage(), true);
       }
-      catch (IllegalArgumentException iae) {
-         exit(MessageFormat.format(messages.getString("errurl"),
-               new Object[]{ args[optind] }), true);
-      }
-      
-      if (argc == 1) {
-         dcmsnd.echo();
-      }
-      else {
-         dcmsnd.send(args, optind+1);
-      }
-    }
-       
+   }
+
    // Constructors --------------------------------------------------
    
-   // Public --------------------------------------------------------
-   public void setUrl(DcmURL url) {
+   DcmSnd(Properties cfg, DcmURL url, boolean echo) {
       this.url = url;
-      assocRQ.setCallingAET(url.getCallingAET());
-      assocRQ.setCalledAET(url.getCalledAET());
+      this.priority = Integer.parseInt(cfg.getProperty("prior", "0"));
+      this.bufferSize = Integer.parseInt(cfg.getProperty("buf-len", "2048"))
+            & 0xfffffffe;
+      this.repeatWhole = Integer.parseInt(cfg.getProperty("repeat-assoc", "1"));
+      this.repeatSingle = Integer.parseInt(cfg.getProperty("repeat-dimse", "1"));
+      initAssocRQ(cfg, url, echo);
+      initTLS(cfg);
    }
-   
+       
+   // Public --------------------------------------------------------
    public void echo()
    throws InterruptedException, IOException, GeneralSecurityException {
-      final int pcid = 1;
-      assocRQ.addPresContext(
-      aFact.newPresContext(pcid, UIDs.Verification, DEF_TS));
       long t1 = System.currentTimeMillis();
       int count = 0;
       for (int i = 0; i < repeatWhole; ++i) {
@@ -289,12 +193,12 @@ public class DcmSnd {
          if (assocAC instanceof AAssociateAC) {
             ActiveAssociation active = aFact.newActiveAssociation(assoc, null);
             active.start();
-            if (assoc.getAcceptedTransferSyntaxUID(pcid) == null) {
+            if (assoc.getAcceptedTransferSyntaxUID(PCID_ECHO) == null) {
                System.out.println(messages.getString("noPCEcho"));
             }
             else for (int j = 0; j < repeatSingle; ++j, ++count) {
                active.invoke(
-                     aFact.newDimse(pcid, dFact.newCommand().initCEchoRQ(j)),
+                     aFact.newDimse(PCID_ECHO, dFact.newCommand().initCEchoRQ(j)),
                      null);
 //               Dimse rsp = assoc.read(dimseTO);
             }
@@ -313,28 +217,6 @@ public class DcmSnd {
       if (bufferSize > 0) {
          buffer = new byte[bufferSize];
       }
-      int pcid = 1;
-      for (int i = 0; i < IMAGE_STORE_AS.length; ++i) {
-         assocRQ.addPresContext(aFact.newPresContext(
-         pcid, IMAGE_STORE_AS[i], NATIVE_TS));
-         ++pcid;
-         ++pcid;
-         assocRQ.addPresContext(aFact.newPresContext(
-         pcid, IMAGE_STORE_AS[i], JPEG_LL_TS));
-         ++pcid;
-         ++pcid;
-         assocRQ.addPresContext(aFact.newPresContext(
-         pcid, IMAGE_STORE_AS[i], JPEG_BL_TS));
-         ++pcid;
-         ++pcid;
-      }
-      for (int i = 0; i < NON_IMAGE_STORE_AS.length; ++i) {
-         assocRQ.addPresContext(aFact.newPresContext(
-         pcid, NON_IMAGE_STORE_AS[i], NATIVE_TS));
-         ++pcid;
-         ++pcid;
-      }
-      
       long t1 = System.currentTimeMillis();
       Result res = new Result();
       for (int i = 0; i < repeatWhole; ++i) {
@@ -599,14 +481,6 @@ public class DcmSnd {
       }
    }
       
-   private static void exit(String prompt, boolean error) {
-       if (prompt != null)
-         System.err.println(prompt);
-       if (error)
-          System.err.println(messages.getString("try"));
-       System.exit(1);
-    }
-   
    private Socket newSocket(String host, int port)
    throws IOException, GeneralSecurityException {
       if (tls != null) {
@@ -616,31 +490,118 @@ public class DcmSnd {
       }
    }
    
-   private void initTLS() throws GeneralSecurityException, IOException {
-      InputStream in = DcmSnd.class.getResourceAsStream("dcmsnd.tls");
-      ResourceBundle rb;
+   private static Properties loadConfig() {
+      InputStream in = DcmSnd.class.getResourceAsStream("dcmsnd.cfg");
       try {
-         rb = new PropertyResourceBundle(in);
+         Properties retval = new Properties();
+         retval.load(in);
+         return retval;
+      } catch (Exception e) {
+         throw new RuntimeException("Could not read dcmsnd.cfg", e);
       } finally {
-         try { in.close(); } catch (IOException ignore) {}
+         if (in != null) {
+            try { in.close(); } catch (IOException ignore) {}
+         }
       }
-      tls = SSLContextAdapter.getInstance();
-      tls.setEnabledCipherSuites(tokenize(rb.getString("tls.cipher")));
-      char[] keypasswd = rb.getString("tls.key.passwd").toCharArray();
-      tls.setKey(tls.loadKeyStore(
-      DcmSnd.class.getResource(rb.getString("tls.key")), keypasswd),
-      keypasswd);
-      tls.setTrust(tls.loadKeyStore(
-      DcmSnd.class.getResource(rb.getString("tls.cacerts")),
-      rb.getString("tls.cacerts.passwd").toCharArray()));
+   }            
+
+   private static void listConfig(Properties cfg) {
+      for (int i = 0, n = LONG_OPTS.length - 2; i < n; ++i) {
+         System.out.print(LONG_OPTS[i].getName());
+         System.out.print('=');
+         System.out.println(cfg.getProperty(LONG_OPTS[i].getName(),""));
+      }
+   }
+
+   private static void exit(String prompt, boolean error) {
+      if (prompt != null)
+         System.err.println(prompt);
+      if (error)
+         System.err.println(messages.getString("try"));
+      System.exit(1);
    }
    
-   private String[] tokenize(String s) {
+   private static List tokenize(Properties cfg, String s, List result) {
       StringTokenizer stk = new StringTokenizer(s, ", ");
-      String[] retval = new String[stk.countTokens()];
-      for (int i = 0; i < retval.length; ++i)
-         retval[i] = stk.nextToken();
-      return retval;
+      while (stk.hasMoreTokens()) {
+         String tk = stk.nextToken();
+         if (tk.startsWith("$")) {
+            tokenize(cfg, cfg.getProperty(tk.substring(1),""), result);
+         } else {
+            result.add(tk);
+         }
+      }
+      return result;
    }
    
+   private static String replace(String val, String from, String to) {
+      return from.equals(val) ? to : val;
+   }
+   
+   private static final String[] EMPTY_STRING_ARRAY = {};
+   private static String[] tokenize(Properties cfg, String s) {
+      return s != null ? (String[])tokenize(cfg, s, new LinkedList())
+                                       .toArray(EMPTY_STRING_ARRAY)
+                       : null;
+   }
+   
+   private final void initAssocRQ(Properties cfg, DcmURL url, boolean echo) {      
+      assocRQ.setCalledAET(url.getCalledAET());
+      assocRQ.setCallingAET(url.getCallingAET());
+      assocRQ.setMaxPDULength(
+            Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
+      assocRQ.setAsyncOpsWindow(aFact.newAsyncOpsWindow(
+            Integer.parseInt(cfg.getProperty("max-op-invoked", "0")),1));
+      if (echo) {
+         assocRQ.addPresContext(
+            aFact.newPresContext(PCID_ECHO, UIDs.Verification, DEF_TS));
+         return;
+      }
+      for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
+         String key = (String)it.nextElement();
+         if (key.startsWith("pc.")) {
+            initPresContext(Integer.parseInt(key.substring(3)),
+               tokenize(cfg, cfg.getProperty(key), new LinkedList()));
+         }
+      }
+   }
+      
+   private final void initPresContext(int pcid, List val) {
+      try {
+         Iterator it = val.iterator();
+         String as = UIDs.forName((String)it.next());
+         String[] tsUIDs = new String[val.size()-1];
+         for (int i = 0; i < tsUIDs.length; ++i) {
+            tsUIDs[i] = UIDs.forName((String)it.next());
+         }
+         assocRQ.addPresContext(aFact.newPresContext(pcid, as, tsUIDs));
+      } catch (NoSuchFieldException nfe) {
+         throw new IllegalArgumentException(
+            "Illegal entry in dcmsnd.cfg - " + nfe.getMessage());
+      }
+   }
+   
+   private final void initTLS(Properties cfg) {
+      try {
+         String[] chiperSuites = tokenize(cfg,
+               replace(cfg.getProperty("tls", ""), "<none>", ""));
+         if (chiperSuites.length == 0)
+            return;
+
+         tls = SSLContextAdapter.getInstance();
+         tls.setEnabledCipherSuites(chiperSuites);
+         char[] keypasswd = cfg.getProperty("key-passwd","dcm4che").toCharArray();
+         tls.setKey(
+            tls.loadKeyStore(
+               DcmSnd.class.getResource(cfg.getProperty("tls-key","dcmsnd.key")),
+               keypasswd),
+            keypasswd);
+         tls.setTrust(tls.loadKeyStore(
+            DcmSnd.class.getResource(cfg.getProperty("tls-cacerts", "cacerts")),
+            cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
+      } catch (Exception ex) {
+         throw new RuntimeException("Could not initalize TLS configuration - "
+               + ex.getMessage());
+      }
+   }
 }

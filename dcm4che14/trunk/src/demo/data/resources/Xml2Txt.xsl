@@ -156,7 +156,7 @@
         <xsl:with-param name="name" select="concat('Item-',@id)"/>
     </xsl:call-template>
     <xsl:apply-templates select="elm">
-        <xsl:with-param name="level" select="concat($level,'&lt;')"/>
+        <xsl:with-param name="level" select="concat($level,'&gt;')"/>
     </xsl:apply-templates>
     <xsl:if test="@len = -1">
         <xsl:call-template name="promptLine">

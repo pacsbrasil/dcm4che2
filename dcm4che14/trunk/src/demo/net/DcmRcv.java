@@ -319,13 +319,13 @@ public class DcmRcv extends DcmServiceBase {
       for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
          String key = (String)it.nextElement();
          if (key.startsWith("pc.")) {
-            initPresContext(cfg,
+            initPresContext(
                tokenize(cfg, cfg.getProperty(key), new LinkedList()));
          }
       }
    }
    
-   private final void initPresContext(Properties cfg, List val) {
+   private final void initPresContext(List val) {
       try {
          Iterator it = val.iterator();
          String as = UIDs.forName((String)it.next());
