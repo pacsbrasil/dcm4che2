@@ -27,6 +27,7 @@ package org.dcm4che.srom;
 import org.dcm4che.data.Dataset;
 
 import java.util.Date;
+import org.apache.log4j.Logger;
 
 /** The <code>Content</code> interface is the primary datatype for the entire
  * SR Object Model. It represents a single <i>Content Item</i> in the
@@ -39,6 +40,7 @@ import java.util.Date;
  */
 public interface Content {
         
+    static final Logger log = Logger.getLogger(Content.class);
     // Constants -----------------------------------------------------
     
     /** Enumeration of <i>Relationship Types</i> between the (enclosing)
@@ -94,6 +96,10 @@ public interface Content {
          * a valid code value.
          */
         public static RelationType valueOf(String s) {
+            if (s == null || s.length() == 0) {
+                log.warn("Missing Relation Type - assume CONTAINS");
+                s = "CONTAINS";
+            }
             RelationType type = (RelationType)TYPES.get(s);
             if (type == null)
                 throw new IllegalArgumentException(s);
