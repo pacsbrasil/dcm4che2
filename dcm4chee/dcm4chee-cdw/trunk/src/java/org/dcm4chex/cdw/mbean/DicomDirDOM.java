@@ -11,6 +11,7 @@ package org.dcm4chex.cdw.mbean;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -63,7 +64,7 @@ class DicomDirDOM {
     private static final String DICOMDIR = "DICOMDIR";
 
     private static final String SEQNO = "seqno";
-
+    
     private static final String IHE_PDI = "IHE_PDI";
 
     private static final String INDEX_HTM = "INDEX.HTM";
@@ -373,6 +374,8 @@ class DicomDirDOM {
             t.setParameter("fsid", rq.getFilesetID());
             t.setParameter("seqno", String.valueOf(rq.getVolsetSeqno()));
             t.setParameter("size", String.valueOf(rq.getVolsetSize()));
+            t.setParameter("today", new SimpleDateFormat("yyyyMMdd")
+                    .format(rq.getTimestamp()));
             t.transform(new DOMSource(doc), result);
         } catch (TransformerConfigurationException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,

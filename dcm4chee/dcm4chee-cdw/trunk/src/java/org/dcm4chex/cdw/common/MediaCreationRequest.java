@@ -11,6 +11,7 @@ package org.dcm4chex.cdw.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -27,12 +28,12 @@ import org.jboss.logging.Logger;
  */
 public class MediaCreationRequest implements Serializable {
 
-    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
-    static final long serialVersionUID = -8360703394721035942L;
+    static final long serialVersionUID = -6377946755804233232L;
     
     private final File requestFile;
 
+    private final Date timestamp;
+    
     private String mediaWriterName;
 
     private String priority = Priority.LOW;
@@ -61,10 +62,12 @@ public class MediaCreationRequest implements Serializable {
 
     public MediaCreationRequest(File requestFile) {
         this.requestFile = requestFile;
+        this.timestamp = new Date();
     }
 
     public MediaCreationRequest(MediaCreationRequest other) {
         this.requestFile = other.requestFile;
+        this.timestamp = other.timestamp;
         this.mediaWriterName = other.mediaWriterName;
         this.priority = other.priority;
         this.remainingCopies = other.remainingCopies;
@@ -91,6 +94,10 @@ public class MediaCreationRequest implements Serializable {
         return mediaWriterName;
     }
 
+    public final Date getTimestamp() {
+        return timestamp;
+    }
+    
     public final void setMediaWriterName(String mediaWriterName) {
         this.mediaWriterName = mediaWriterName;
     }
@@ -212,7 +219,7 @@ public class MediaCreationRequest implements Serializable {
 
     public Dataset readAttributes(Logger log) throws IOException {
         if (log.isDebugEnabled()) log.debug("M-READ " + requestFile);
-        Dataset ds = dof.newDataset();
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
         try {
             ds.readFile(requestFile, FileFormat.DICOM_FILE, Tags.PixelData);
         } catch (IOException e) {
