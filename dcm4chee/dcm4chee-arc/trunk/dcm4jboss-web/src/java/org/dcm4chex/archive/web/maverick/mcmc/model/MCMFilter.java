@@ -27,8 +27,8 @@ public class MCMFilter {
 	public static final String UPDATED_FILTER = "update";
 	/** Identifier for searching all media stati. */
 	public static final String MEDIA_TYPE_ALL = "-all-";
-	/** The default stati to search for. (COLLECTING) */
-	public static final String[] MEDIA_TYPE_DEFAULT = new String[]{ String.valueOf( MediaDTO.OPEN ) } ;
+	
+	public static final int[] DEFAULT_MEDIA_STATI = new int[]{ MediaDTO.OPEN, MediaDTO.ERROR }; 
 
 	/** The Date/Time formatter to parse input field values. (dd.MM.yyyy) */
 	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
@@ -43,9 +43,9 @@ public class MCMFilter {
 	/** holds the 'right' Long value of creation time range. (null if string value is empty) */
 	private Long endDateAsLong;
 	/** holds the selected stati for this filter. <code>null</code> means all! */
-	private int[] selectedStati = new int[]{ MediaDTO.OPEN };
+	private int[] selectedStati = null;
 	/** holds the selected stati for this filter in a string. Therefore all selected stati are concat seperated with '|' or -all-(MEDIA_TYPE_ALL) */
-	private String selectedStatiAsString = String.valueOf( MediaDTO.OPEN );
+	private String selectedStatiAsString = null;
 	/** holds the switch between search of 'all', 'created' or 'updated' time range. */ 
 	private String createOrUpdateDate = "all";
 	/** Change status of this filter. */
@@ -59,6 +59,7 @@ public class MCMFilter {
 	 * Set the Collection of defined media stati.
 	 */
 	public MCMFilter() { 
+		this.setDefaultSelectedStati();
 		mediaStatusList = MediaData.DEFINED_MEDIA_STATI;//List of all (in MediaData) defined media stati.
 	}
 	
@@ -135,8 +136,17 @@ public class MCMFilter {
 	}
 	
 	public void setDefaultSelectedStati() {
-		selectedStati = new int[]{ MediaDTO.OPEN };
-		selectedStatiAsString = String.valueOf( MediaDTO.OPEN );
+		selectedStati = DEFAULT_MEDIA_STATI;
+		if ( selectedStati != null ) {
+			selectedStatiAsString = String.valueOf( MediaDTO.OPEN );
+			StringBuffer sb = new StringBuffer();
+			for ( int i = 0, len = selectedStati.length ; i < len ; i++ ) { 
+				sb.append(' ').append(selectedStati[i]).append('|');//' ' needed because in xslt this will prevent matching 1 with -1.
+			}
+			selectedStatiAsString = sb.toString();
+		} else {
+			selectedStatiAsString = MCMFilter.MEDIA_TYPE_ALL;
+		}
 	}
 
 	/**
