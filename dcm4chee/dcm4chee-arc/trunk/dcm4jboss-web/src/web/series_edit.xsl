@@ -130,7 +130,14 @@
     </tr>
     <tr>
       <td align="left">
-        <input type="submit" name="submit" value="Update"/>
+	    <xsl:choose>
+		 	<xsl:when test="../seriesPk = -1">
+				<input type="submit" name="submit" value="Add Series" />									
+			</xsl:when>
+			<xsl:otherwise>
+				<input type="submit" name="submit" value="Update" />
+			</xsl:otherwise>
+	    </xsl:choose>
         <input type="submit" name="cancel" value="Cancel"/>
       </td>
     </tr>
