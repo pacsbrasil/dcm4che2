@@ -33,6 +33,7 @@ import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.PrintQuality;
 
+import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
 
 /**
@@ -136,7 +137,27 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     private Media media = null;
 
     private PrintQuality printQuality = null;
+    
+    private boolean useExternalPrintUtility = false;
+    
+    private String printUtilityCommandLine = "acroread /t/h/p %s";
 
+    public final String getPrintUtilityCommandLine() {
+        return printUtilityCommandLine;
+    }
+    
+    public final void setPrintUtilityCommandLine(String externalCommand) {
+        this.printUtilityCommandLine = externalCommand;
+    }
+    
+    public final boolean isUseExternalPrintUtility() {
+        return useExternalPrintUtility;
+    }
+    
+    public final void setUseExternalPrintUtility(boolean useExternalCommand) {
+        this.useExternalPrintUtility = useExternalCommand;
+    }
+    
     public final String getChromaticity() {
         return toString(chromaticity);
     }
@@ -189,9 +210,20 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     public void print(MediaCreationRequest rq) throws IOException, PrintException {
         log.info("Prepare printing Label for " + rq);
         File file = rq.getLabelFile();
-        String fname = file.getName();
-        DocFlavor flavor = fname.endsWith(".ps") ? DocFlavor.INPUT_STREAM.POSTSCRIPT
-                : fname.endsWith(".pdf") ? DocFlavor.INPUT_STREAM.PDF : null;
+        String fpath = file.getPath();
+        if (useExternalPrintUtility) {
+            String cmd = printUtilityCommandLine.replaceFirst("%s", fpath);
+            Executer exe = new Executer(cmd);
+            try {
+                int exit = exe.waitFor();
+                if (exit == 0) return;
+                throw new PrintException(cmd + " exit with " + exit);
+            } catch (InterruptedException e1) {
+                throw new PrintException(cmd + " throws " + e1);
+            }
+        }
+        DocFlavor flavor = fpath.endsWith(".ps") ? DocFlavor.INPUT_STREAM.POSTSCRIPT
+                : fpath.endsWith(".pdf") ? DocFlavor.INPUT_STREAM.PDF : null;
         PrintService printer = lookupPrintService(flavor);
         DocPrintJob pj = printer.createPrintJob();
         BufferedInputStream in = new BufferedInputStream(new FileInputStream(

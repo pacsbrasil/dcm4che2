@@ -72,6 +72,30 @@
          <value value="*" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isUseExternalPrintUtility"
+      setMethod="setUseExternalPrintUtility">
+      <description>If true, the generated label is printed using an
+      external 
+      </description>
+      <name>UseExternalPrintUtility</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPrintUtilityCommandLine"
+      setMethod="setPrintUtilityCommandLine">
+      <description>Command Line to launch External Print Utility.
+      %s will be replaced by label file path.
+      </description>
+      <name>PrintUtilityCommandLine</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="acroread /t/h/p %s" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
    
    <!-- Operations -->
