@@ -1,36 +1,39 @@
 BUILD INSTRUCTIONS FOR DCM4CHE:
 ===============================
 
-In order to build dcm4che you have to download
-and install:
-- Ant 1.5.x (from http://jakarta.apache.org/ant)
+In order to build dcm4che you have to download and install:
+- Ant 1.6.x (from http://ant.apache.org)
+- JUnit 3.8.x (from http://junit.org)
 
-Create an environment variable pointing to
-the Ant home directory (ANT_HOME) or create a
-shell script calling "$ANT_HOME/bin/ant" or
-"%ANT_HOME%\bin\ant" and start the Ant script with:
-   $ANT_HOME/bin/ant release
-or the script - with this directory as working directory.
+Create an environment variable pointing to the Ant home directory (ANT_HOME)
+and add the $ANT_HOME/bin directory to your PATH.
 
-To run the JUnit tests:
+Copy junit.jar from the JUnit package into $ANT_HOME/lib/.
 
-$ANT_HOME/bin/ant test
+Change the working directory to the root directory of the
+dcm4che source distribution.
 
-, you have to copy lib/junit.jar to $ANT_HOME/lib,
-and you may also need to download the test data before,
-which are only available directly from the 
-project CVS at sourceforge:
+Run
 
-At first time, connecting to the project CVS, you have to login by
+>ant release
 
-cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
-  login
+to build all dcm4che components.
 
-password:<enter>
+Before you can run the JUnit tests by
+
+>ant test
+
+, you need to download the test data, which are only available directly
+from the project CVS repository at sourceforge:
+
+At first time, connecting to the project CVS repository, you have to login by
+
+>cvs -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che login
+CVS password:<enter>
 
 , before you can checkout the testdata:
 
-cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
+>cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
   checkout dcm4che14/test/conf/data
 
 
