@@ -21,9 +21,21 @@ public class ODCurveGUIFrame extends JFrame
     private ODCurveGUIFrame()
     {
         Container contentPane = getContentPane();
-        //menu
+        //set layout
+        contentPane.setLayout(new BorderLayout());
+        //curve panel
+        curvePanel = new ODCurveGUIPanel(this);
+        legendPanel = new ButtonLegendPanel(curvePanel);
+        legendPanel.setMinimumSize(new Dimension(DEF_WIDTH / 4, DEF_HEIGHT));
+        JLabel lbl = new JLabel("Loaded Curves");
+        //legendPanel.add(lbl);
+        curvePanel.setLegend(legendPanel);
+        contentPane.add(curvePanel, BorderLayout.CENTER);
+        contentPane.add(legendPanel, BorderLayout.EAST);
+        //setup menus
         JMenuBar mnubar = new JMenuBar();
         JMenu mnuCurve = new JMenu("Curve");
+        //create "curve -> load" curve menu
         Action actLoadCurve = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
@@ -50,22 +62,36 @@ public class ODCurveGUIFrame extends JFrame
                     }
                 }
             };
-        actLoadCurve.putValue(Action.NAME,"Load...");
+        actLoadCurve.putValue(Action.NAME," Load...");
         JMenuItem mnuLoadCurve = new JMenuItem(actLoadCurve);
         mnuCurve.add(mnuLoadCurve);
+        //create "curve -> reset" curve menu
+        Action actReset = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    curvePanel.reset();
+                    validate();
+                }
+            };
+        actReset.putValue(Action.NAME, "Reset");
+        JMenuItem mnuReset = new JMenuItem(actReset);
+        mnuCurve.add(mnuReset);
+        //create "curve -> exit" curve menu
+        Action actExit = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    System.exit(0);
+                }
+            };
+        actExit.putValue(Action.NAME, "Exit");
+        JMenuItem mnuExit = new JMenuItem(actExit);
+        mnuCurve.add(mnuExit);
+        //add curve
         mnubar.add(mnuCurve);
+        //set menubar
         setJMenuBar(mnubar);
-        //set layout
-        contentPane.setLayout(new BorderLayout());
-        //curve panel
-        curvePanel = new ODCurveGUIPanel();
-        legendPanel = new ButtonLegendPanel(curvePanel);
-        legendPanel.setMinimumSize(new Dimension(DEF_WIDTH / 4, DEF_HEIGHT));
-        JLabel lbl = new JLabel("Loaded Curves");
-        //legendPanel.add(lbl);
-        curvePanel.setLegend(legendPanel);
-        contentPane.add(curvePanel, BorderLayout.CENTER);
-        contentPane.add(legendPanel, BorderLayout.EAST);
         //set size
         setSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
         validate();

@@ -25,7 +25,7 @@ public class ButtonLegendPanel extends JPanel
     ButtonLegendPanel(final ButtonLegendCallback cb)
     {
         keys = new LinkedList();
-        setLayout(new GridLayout(10, 1));
+        setLayout(new GridLayout(8, 1));
         callback = cb;
     }
     
@@ -67,5 +67,6 @@ public class ButtonLegendPanel extends JPanel
             i.next();
             i.remove();
         }
+        this.removeAll();
     }
 }

@@ -24,19 +24,21 @@ public class ODCurveGUIPanel extends JPanel
             }
         };
     private final Color CURVE_OP_COLOR = new Color(200, 255, 255);
+    private final int NUM_OD_ENTRIES = 256;
 
     private int nextColor = 0;
     private ScannerCalibration sc = new ScannerCalibration(Logger.getRootLogger());
-    private final int NumODEntries = 256;
     private ODCurve refCurve = null;
     private File refCurveFile = null;
     private float maxODAllCurves = 0;
     private Collection curves;
     private ODCurve opResultCurve = null;
     private ButtonLegendPanel legendPanel;
+    private Container frParent;
     
-    ODCurveGUIPanel()
+    ODCurveGUIPanel(Container parent)
     {
+        frParent = parent;
         curves = new LinkedList();
     }
     
@@ -57,7 +59,7 @@ public class ODCurveGUIPanel extends JPanel
         g2.setColor(Color.WHITE);
         g2.fillRect(0, 0, getWidth(), getHeight());
 
-        //graph
+        //graph bounds
         final Rectangle rect = new Rectangle(50, 50,
                                              getWidth() - 100, getHeight() - 100);
 
@@ -70,7 +72,7 @@ public class ODCurveGUIPanel extends JPanel
 
         //draw axis labels
         AffineTransform savedTx = g2.getTransform();
-        g2.translate((int)rect.getX() - 2, (int)(rect.getY() + rect.getHeight()));
+        g2.translate((int)rect.getX() - 4, (int)(rect.getY() + rect.getHeight()));
         g2.transform(rot90);
         g2.drawString(YLabel, 1, 0);
         //g2.drawChars("Optical Density (OD)".toCharArray(), 0, "Optical Density (OD)".length(),0,0);
@@ -113,10 +115,20 @@ public class ODCurveGUIPanel extends JPanel
             }
 
             //draw all other curves
+            ODCurve selectedCurve = null, acurve;
             i = curves.iterator();
-            while (i.hasNext())
-                ((ODCurve)i.next()).draw(g2, rect, maxODAllCurves);
+            while (i.hasNext()) {
+                acurve = (ODCurve)i.next();
+                if (!acurve.isSelected())
+                    acurve.draw(g2, rect, maxODAllCurves);
+                else
+                    selectedCurve = acurve;
+            }
+            // draw reference curve
             refCurve.draw(g2, rect, maxODAllCurves);
+            // draw selected curve last
+            if (selectedCurve != null)
+                selectedCurve.draw(g2, rect, maxODAllCurves);
         }
     }
     
@@ -138,30 +150,40 @@ public class ODCurveGUIPanel extends JPanel
         repaint();
     }
     
+    public void reset()
+    {
+        curves = new LinkedList();
+        legendPanel.removeAllKeys();
+        legendPanel.removeKey(refCurve);
+        refCurve = null;
+        refCurveFile = null;
+        opResultCurve = null;
+        nextColor = 0;
+        sc = new ScannerCalibration(Logger.getRootLogger());
+        ((ODCurveGUIFrame)frParent).validate();
+    }
+    
     void loadScannedImageCurve(File file)
         throws IOException, CalibrationException
     {
         File dirfile = file.getParentFile();
+        
+        //when setting the scan directory, make sure that the referenced OD is
+        // the same, otherwise reset by removing all curves and reload a new
+        // reference curve before adding this one
         sc.setScanDir(dirfile);
+        if (refCurve != null && !refCurveFile.equals(sc.getRefODsFile())) {
+            reset();
+        }
         
         float[] calcdOds = sc.calculateGrayscaleODs();
-        
-        //make sure that the referenced OD is the same, otherwise reset by
-        // removing all curves and reload a new reference curve before adding
-        // this one
-        if (refCurve != null && !refCurveFile.equals(sc.getRefODsFile())) {
-            curves = new LinkedList();
-            legendPanel.removeAllKeys();
-            legendPanel.removeKey(refCurve);
-            refCurve = null;
-            sc = new ScannerCalibration(Logger.getRootLogger());
-        }
         
         //if reference curve used wasn't loaded, load it now
         if (refCurve == null) {
             refCurve = new ODCurve(sc.getRefODs(), Color.BLACK);
             refCurveFile = sc.getRefODsFile();
-            legendPanel.addKey("Ref: " + refCurveFile.getName(), Color.BLACK, refCurve);
+            legendPanel.addKey("Ref: " + refCurveFile.getName(),
+                               Color.BLACK, refCurve);
         }
         
         //create a curve and add it

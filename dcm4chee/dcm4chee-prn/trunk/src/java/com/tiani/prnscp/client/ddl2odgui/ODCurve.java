@@ -57,6 +57,11 @@ public class ODCurve
         this.selected = selected;
     }
     
+    public boolean isSelected()
+    {
+        return selected;
+    }
+    
     public void draw(Graphics2D g, Rectangle rect, float maxOD)
     {
         final int x0 = (int)rect.getX();
@@ -78,6 +83,7 @@ public class ODCurve
             lastx = x;
             lasty = y;
         }
+        g.setStroke(new BasicStroke(1));
         if (selected) {
             for (int i=0; i<ods.length; i++) {
                 x = x0 + (int)((ods.length - 1 - i) * fx + 0.5f);
