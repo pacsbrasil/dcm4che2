@@ -31,6 +31,8 @@ package org.dcm4chex.archive.ejb.jdbc;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import javax.sql.DataSource;
 
@@ -51,15 +53,18 @@ public abstract class RetrieveCmd extends BaseCmd {
         { "PATIENT", "STUDY", "SERIES", "IMAGE" };
 
     private static final String[] ENTITY =
-        { "Patient", "Study", "Series", "Instance", "File", "Node" };
+        { "Patient", "Study", "Series", "Instance", "Node", "File" };
 
     private static final String[] SELECT_ATTRIBUTE =
         {
             "Patient.encodedAttributes",
+            "Study.encodedAttributes",
+            "Series.encodedAttributes",
+            "Instance.encodedAttributes",
             "Instance.sopIuid",
             "Instance.sopCuid",
             "Node.retrieveAET",
-            "Node.uri",
+            "Node.URI",
             "File.filePath",
             "File.fileTsuid",
             "File.fileMd5Field",
@@ -108,26 +113,41 @@ public abstract class RetrieveCmd extends BaseCmd {
         sqlBuilder.setRelations(RELATIONS);
     }
 
-    public FileInfo[] execute() throws SQLException {
+    public FileInfo[][] execute() throws SQLException {
         try {
             execute(sqlBuilder.getSql());
-            ArrayList result = new ArrayList();
+            LinkedHashMap map = new LinkedHashMap();
+            ArrayList list;
             while (next()) {
-                result.add(
-                    new FileInfo(
+                FileInfo info = new FileInfo(
                         rs.getBytes(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(4),
+                        rs.getBytes(2),
+                        rs.getBytes(3),
+                        rs.getBytes(4),
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
                         rs.getString(8),
-                        rs.getLong(9),
-                        rs.getInt(10),
-                        rs.getString(11)));
+                        rs.getString(9),
+                        rs.getString(10),
+                        rs.getString(11),
+                        rs.getLong(12),
+                        rs.getInt(13),
+                        rs.getString(14));
+                list = (ArrayList) map.get(info.sopIUID);
+                if (list == null) {
+                    map.put(info.sopIUID, list = new ArrayList());
+                }
+                list.add(info);
             }
-            return (FileInfo[]) result.toArray(new FileInfo[result.size()]);
+            FileInfo[][] result = new FileInfo[map.size()][];
+            Iterator it = map.values().iterator();
+            for (int i = 0; i < result.length; i++) {
+                list = (ArrayList) it.next();
+                result[i] =
+                    (FileInfo[]) list.toArray(new FileInfo[list.size()]);
+            }
+            return result;
         } finally {
             close();
         }

@@ -56,7 +56,7 @@ class SqlBuilder {
         if (leftJoin.length != 3) {
             throw new IllegalArgumentException("" + Arrays.asList(leftJoin));
         }
-        leftJoin = JdbcProperties.getInstance().getProperties(leftJoin);
+        this.leftJoin = JdbcProperties.getInstance().getProperties(leftJoin);
     }
 
     public void setRelations(String[] relations) {

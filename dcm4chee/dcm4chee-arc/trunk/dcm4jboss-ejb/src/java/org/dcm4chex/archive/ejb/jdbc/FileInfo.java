@@ -29,17 +29,26 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4cheri.util.DatasetUtils;
+
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public class FileInfo {
+public class FileInfo
+{
     public final byte[] patAttrs;
+    public final byte[] studyAttrs;
+    public final byte[] seriesAttrs;
+    public final byte[] instAttrs;
     public final String sopIUID;
     public final String sopCUID;
     public final String retrieveAET;
@@ -53,6 +62,9 @@ public class FileInfo {
 
     public FileInfo(
         byte[] patAttrs,
+        byte[] studyAttrs,
+        byte[] seriesAttrs,
+        byte[] instAttrs,
         String sopIUID,
         String sopCUID,
         String retrieveAET,
@@ -62,8 +74,12 @@ public class FileInfo {
         String md5,
         long size,
         int status,
-        String fsIUID) {
+        String fsIUID)
+    {
         this.patAttrs = patAttrs;
+        this.studyAttrs = studyAttrs;
+        this.seriesAttrs = seriesAttrs;
+        this.instAttrs = instAttrs;
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
         this.retrieveAET = retrieveAET;
@@ -76,22 +92,66 @@ public class FileInfo {
         this.fsIUID = fsIUID;
     }
 
-    public File toFile() {
-        try {
+    public String toString()
+    {
+        return "FileInfo[iuid="
+            + sopIUID
+            + ", cuid="
+            + sopCUID
+            + ", aet="
+            + retrieveAET
+            + ", uri="
+            + uri
+            + ", fpath="
+            + fpath
+            + ", tsuid="
+            + tsUID
+            + ", status="
+            + status;
+    }
+
+    public File toFile()
+    {
+        try
+        {
             URI tmp = new URI(uri);
             String myHost = InetAddress.getLocalHost().getHostName();
             if (!"file".equalsIgnoreCase(tmp.getScheme())
-                || !myHost.equalsIgnoreCase(tmp.getHost())) {
+                || !myHost.equalsIgnoreCase(tmp.getHost()))
+            {
                 throw new IllegalStateException("" + this);
             }
             return new File(new URI("file:" + tmp.getPath() + fpath));
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException e)
+        {
             throw new IllegalStateException("" + this);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e)
+        {
             throw new IllegalStateException("" + this);
-        } catch (UnknownHostException e) {
-			throw new RuntimeException(e);
-		}
+        } catch (UnknownHostException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Dataset getPatientAttrs() throws IOException
+    {
+        return DatasetUtils.fromByteArray(patAttrs, DcmDecodeParam.IVR_LE);
+    }
+
+    public Dataset getStudyAttrs() throws IOException
+    {
+        return DatasetUtils.fromByteArray(studyAttrs, DcmDecodeParam.IVR_LE);
+    }
+
+    public Dataset getSeriesAttrs() throws IOException
+    {
+        return DatasetUtils.fromByteArray(seriesAttrs, DcmDecodeParam.IVR_LE);
+    }
+
+    public Dataset getInstanceAttrs() throws IOException
+    {
+        return DatasetUtils.fromByteArray(instAttrs, DcmDecodeParam.IVR_LE);
     }
 
 }
