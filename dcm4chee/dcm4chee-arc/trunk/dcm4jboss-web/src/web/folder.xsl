@@ -11,58 +11,58 @@
 <xsl:include href="page.xsl"/>
 
 <xsl:template match="model">
-	<form action="foldersubmit.m" method="post">
+	<form action="foldersubmit.m" method="post" name="myForm">
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td valign="top">
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
-					<td bgcolor="#eeeeee" align="center">Displaying studies
-<b>
-						<xsl:value-of select="offset + 1"/>
-							</b>
-to
-<b>
-								<xsl:choose>
-									<xsl:when test="offset + limit &lt; total">
-										<xsl:value-of select="offset + limit"/>
-									</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of select="total"/>												
-										</xsl:otherwise>
-								</xsl:choose>
-							</b>
-of
-<b>
-								<xsl:value-of select="total"/>
-							</b>matching studies.
+					<td bgcolor="eeeeee" align="center">Displaying studies
+						<b>
+							<xsl:value-of select="offset + 1"/>
+						</b>
+							to
+						<b>
+							<xsl:choose>
+								<xsl:when test="offset + limit &lt; total">
+									<xsl:value-of select="offset + limit"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="total"/>												
+								</xsl:otherwise>
+							</xsl:choose>
+						</b>
+							of
+						<b>
+							<xsl:value-of select="total"/>
+						</b>matching studies.
  					</td>
 
-					<td width="150" bgcolor="#eeeeee">
+					<td width="150" bgcolor="eeeeee">
 					</td>
-					<td width="40" bgcolor="#eeeeee">
+					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Search" name="filter" src="images/search.gif" border="0"/>
 					</td>
-					<td width="40" bgcolor="#eeeeee">
+					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Prev" name="prev" src="images/preview.gif" alt="preview" border="0">
 							<xsl:if test="offset = 0">
                   <xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
 					</td>
-					<td width="40" bgcolor="#eeeeee">
+					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Next" name="next" src="images/next.gif" alt="next" border="0">
 							<xsl:if test="offset + limit &gt;= total">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
 					</td>
-					<td width="40" bgcolor="#eeeeee">
+					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0" onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
 					</td>
-					<td width="42" bgcolor="#eeeeee">
+					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0" onclick="return confirm('Are you sure you want to delete?')">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -71,39 +71,39 @@ of
 					</td>
 				</table>
 				<table border="0" width="100%" cellpadding="0" cellspacing="0">
-					<td bgcolor="#eeeeee" color="#eeeeee" class="label">Patient Name:
+					<td bgcolor="eeeeee" class="label">Patient Name:
 					</td>
-					<td bgcolor="#eeeeee" color="#eeeeee">
+					<td bgcolor="eeeeee">
 						<input size="10" name="patientName" type="text" value="{patientName}"/>
       		</td>
-					<td bgcolor="#eeeeee" color="#eeeeee" class="label">Patient ID:
+					<td bgcolor="eeeeee" class="label">Patient ID:
 					</td>
-					<td bgcolor="#eeeeee" color="#eeeeee">
+					<td bgcolor="eeeeee">
 						<input size="10" name="patientID" type="text" value="{patientID}"/>
 					</td>
-					<td bgcolor="#eeeeee" color="#eeeeee" class="label">Study ID:
+					<td bgcolor="eeeeee" class="label">Study ID:
 					</td>
-      		<td bgcolor="#eeeeee" color="#eeeeee">
+      		<td bgcolor="eeeeee">
         		<input size="10" name="studyID" type="text" value="{studyID}"/>
       		</td>
-					<td bgcolor="#eeeeee" color="#eeeeee" class="label">Study Date:
+					<td bgcolor="eeeeee" class="label">Study Date:
 					</td>
-      		<td bgcolor="#eeeeee" color="#eeeeee"> 
+      		<td bgcolor="eeeeee"> 
         		<input size="10" name="studyDateRange" type="text" value="{studyDateRange}"/>
       		</td>
-      		<td bgcolor="#eeeeee" color="#eeeeee" class="label">Accession No.:
+      		<td bgcolor="eeeeee" class="label">Accession No.:
 					</td>
-      		<td bgcolor="#eeeeee" color="#eeeeee">
+      		<td bgcolor="eeeeee">
         		<input size="10" name="accessionNumber" type="text" value="{accessionNumber}"/>
       		</td>
-      		<td bgcolor="#eeeeee" color="#eeeeee" class="label">Modality:
+      		<td bgcolor="eeeeee" class="label">Modality:
 					</td>
-      		<td bgcolor="#eeeeee" color="#eeeeee">
+      		<td bgcolor="eeeeee">
         		<input size="10" name="modality" type="text" value="{modality}"/>
       		</td>
 				</table>
 					<xsl:call-template name="overview"/>
-   			<table bgcolor="#bbbbbb" border="0" cellpadding="0" cellspacing="0" width="100%">
+   			<table bgcolor="bbbbbb" border="0" cellpadding="0" cellspacing="0" width="100%">
 					<tr>
 						<td>
 							<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -171,7 +171,7 @@ of
 			<col width="4%"/>
 			<col width="4%"/>
 			<col width="3%"/>
-		
+
 </colgroup>
 		<tr bgcolor="eeeeee">
 			<td bgcolor="00eeee">
@@ -265,7 +265,7 @@ of
 
 <xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.PatientDTO']">
 	<tr>
-      <table width="100%" callpadding="0" callspacing="0" border="0">
+      <table width="100%" callpadding="1" callspacing="1" border="0">
 		<colgroup>
 			<col width="1%"/>
 			<col width="29%"/>
