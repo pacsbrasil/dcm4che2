@@ -259,9 +259,9 @@ public abstract class MediaWriterServiceSupport extends
                 return false;
             }
             try {
-                log.info("Start Burning " + rq);
+                log.info("Burning " + rq);
                 burn(rq.getIsoImageFile());
-                log.info("Finished Burning " + rq);
+                log.info("Burned " + rq);
                 if (verify) {
                     load();
                     if (mountTime > 0) {
@@ -271,9 +271,9 @@ public abstract class MediaWriterServiceSupport extends
                             log.warn("Mount Time was interrupted:", e);
                         }
                     }
-                    log.info("Start Verifying " + rq);
+                    log.info("Verifying " + rq);
                     verify(rq.getFilesetDir());
-                    log.info("Finsihed Verifying " + rq);
+                    log.info("Verified " + rq);
                     if (eject) eject();
                 }
             } catch (MediaCreationException e) {
@@ -294,6 +294,7 @@ public abstract class MediaWriterServiceSupport extends
                 log.warn("Pause before next burn was interrupted:", e);
             }
         }
+        log.info("Finished Creating Media for " + rq);
         return true;
     }
 

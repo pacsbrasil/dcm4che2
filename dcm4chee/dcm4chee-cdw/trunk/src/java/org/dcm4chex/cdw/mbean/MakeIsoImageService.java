@@ -327,7 +327,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
                 }
                 log.info("Finished Creating ISO 9660 image for " + rq);
                 JMSDelegate.queue(rq.getMediaWriterName(),
-                        "Schedule Writing Media for " + rq, log, rq, 0L);
+                        "Schedule Creating Media for " + rq, log, rq, 0L);
                 cleanup = false;
             } catch (Exception e) {
                 if (rq.isCanceled()) {
