@@ -223,7 +223,7 @@
   <element tag="(0008,9092)" name="Referring Image Evidence Sequence" vr="SQ" vm="1" key="ReferringImageEvidenceSeq" />
   <element tag="(0008,9154)" name="Source Image Evidence Sequence" vr="SQ" vm="1" key="SourceImageEvidenceSeq" />
   <element tag="(0008,9205)" name="Pixel Presentation" vr="CS" vm="1" key="PixelPresentation" />
-  <element tag="(0008,9206)" name="Volumetric Properties CS" vm="1" key="VolumetricProperties" />
+  <element tag="(0008,9206)" name="Volumetric Properties" vr="CS" vm="1" key="VolumetricProperties" />
   <element tag="(0008,9207)" name="Volume Based Calculation Technique" vr="CS" vm="1" key="VolumeBasedCalculationTechnique" />
   <element tag="(0008,9208)" name="Complex Image Component" vr="CS" vm="1" key="ComplexImageComponent" />
   <element tag="(0008,9209)" name="Acquisition Contrast" vr="CS" vm="1" key="AcquisitionContrast" />
@@ -1049,6 +1049,36 @@
   <element tag="(0040,2017)" name="Filler Order Number / Imaging Service Request" vr="LO" vm="1" key="FillerOrderNumber" />
   <element tag="(0040,2400)" name="Imaging Service Request Comments" vr="LT" vm="1" key="ImagingServiceRequestComments" />
   <element tag="(0040,3001)" name="Confidentiality Constraint on Patient Data Description" vr="LO" vm="1" key="ConfidentialityPatientData" />
+  <element tag="(0040,4001)" name="General Purpose Scheduled Procedure Step Status" vr="CS" vm="1" key="GPSPSStatus" />
+  <element tag="(0040,4002)" name="General Purpose Performed Procedure Step Status" vr="CS" vm="1" key="GPPPSStatus" />
+  <element tag="(0040,4003)" name="General Purpose Scheduled Procedure Step Priority" vr="CS" vm="1" key="GPSPSPriority" />
+  <element tag="(0040,4004)" name="Scheduled Processing Applications Code Sequence" vr="SQ" vm="1" key="ScheduledProcessingApplicationsCodeSeq" />
+  <element tag="(0040,4005)" name="Scheduled Procedure Step Start Date and Time" vr="DT" vm="1" key="SPSStartDateAndTime" />
+  <element tag="(0040,4006)" name="Multiple Copies Flag" vr="CS" vm="1" key="MultipleCopiesFlag" />
+  <element tag="(0040,4007)" name="Performed Processing Applications Code Sequence" vr="SQ" vm="1" key="PerformedProcessingApplicationsCodeSeq" />
+  <element tag="(0040,4009)" name="Human Performer Code Sequence" vr="SQ" vm="1" key="HumanPerformerCodeSeq" />
+  <element tag="(0040,4011)" name="Expected Completion Date and Time" vr="DT" vm="1" key="ExpectedCompletionDateAndTime" />
+  <element tag="(0040,4015)" name="Resulting General Purpose Performed Procedure Steps Sequence" vr="SQ" vm="1" key="ResultingGPPPSSeq" />
+  <element tag="(0040,4016)" name="Referenced General Purpose Scheduled Procedure Step Sequence" vr="SQ" vm="1" key="RefGPSPSSeq" />
+  <element tag="(0040,4018)" name="Scheduled Workitem Code Sequence" vr="SQ" vm="1" key="ScheduledWorkitemCodeSeq" />
+  <element tag="(0040,4019)" name="Performed Workitem Code Sequence" vr="SQ" vm="1" key="PerformedWorkitemCodeSeq" />
+  <element tag="(0040,4020)" name="Input Availability Flag" vr="CS" vm="1" key="InputAvailabilityFlag" />
+  <element tag="(0040,4021)" name="Input Information Sequence" vr="SQ" vm="1" key="InputInformationSeq" />
+  <element tag="(0040,4022)" name="Relevant Information Sequence" vr="SQ" vm="1" key="RelevantInformationSeq" />
+  <element tag="(0040,4023)" name="Referenced General Purpose Scheduled Procedure Step Transaction UID" vr="UI" vm="1" key="RefGPSPSTransactionUID" />
+  <element tag="(0040,4025)" name="Scheduled Station Name Code Sequence" vr="SQ" vm="1" key="ScheduledStationNameCodeSeq" />
+  <element tag="(0040,4026)" name="Scheduled Station Class Code Sequence" vr="SQ" vm="1" key="ScheduledStationClassCodeSeq" />
+  <element tag="(0040,4027)" name="Scheduled Station Geographic Location Code Sequence" vr="SQ" vm="1" key="ScheduledStationGeographicLocationCodeSeq" />
+  <element tag="(0040,4028)" name="Performed Station Name Code Sequence" vr="SQ" vm="1" key="PerformedStationNameCodeSeq" />
+  <element tag="(0040,4029)" name="Performed Station Class Code Sequence" vr="SQ" vm="1" key="PerformedStationClassCodeSeq" />
+  <element tag="(0040,4030)" name="Performed Station Geographic Location Code Sequence" vr="SQ" vm="1" key="PerformedStationGeographicLocationCodeSeq" />
+  <element tag="(0040,4031)" name="Requested Subsequent Workitem Code Sequence" vr="SQ" vm="1" key="RequestedSubsequentWorkitemCodeSeq" />
+  <element tag="(0040,4032)" name="Non-DICOM Output Code Sequence" vr="SQ" vm="1" key="NonDICOMOutputCodeSeq" />
+  <element tag="(0040,4033)" name="Output Information Sequence" vr="SQ" vm="1" key="OutputInformationSeq" />
+  <element tag="(0040,4034)" name="Scheduled Human Performers Sequence" vr="SQ" vm="1" key="ScheduledHumanPerformersSeq" />
+  <element tag="(0040,4035)" name="Actual Human Performers Sequence" vr="SQ" vm="1" key="ActualHumanPerformersSeq" />
+  <element tag="(0040,4036)" name="Human Performer's Organization" vr="LO" vm="1" key="HumanPerformerOrganization" />
+  <element tag="(0040,4037)" name="Human Performer's Name" vr="PN" vm="1" key="HumanPerformerName" />
   <element tag="(0040,8302)" name="Entrance Dose in mGy" vr="DS" vm="1" key="EntranceDoseInmGy" />
   <element tag="(0040,A010)" name="Relationship Type" vr="CS" vm="1" key="RelationshipType" />
   <element tag="(0040,A027)" name="Verifying Organization" vr="LO" vm="1" key="VerifyingOrganization" />
