@@ -47,7 +47,7 @@
    <path id="base.path">
       <pathelement location="${lib.dir}/getopt.jar" />
       <pathelement location="${lib.dir}/log4j.jar" />
-      <pathelement location="${lib.dir}/junit.jar" />
+      <pathelement location="${lib.dir}/majix.jar" />
       <pathelement location="${build.classes.dir}" />
       <pathelement location="${build.res.dir}" />
       <pathelement location="${test.conf.dir}" />
