@@ -116,6 +116,8 @@ class DicomDirDOM {
 
     private final Logger log;
     
+    private final boolean debug;
+    
     static {
         try {
             dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
@@ -136,7 +138,12 @@ class DicomDirDOM {
             Dataset attrs) throws MediaCreationException {
         this.service = service;
         this.log = service.getLog();
+        this.debug = log.isDebugEnabled();
         this.doc = dom.createDocument(null, ROOT_ELM, null);
+        if (debug) {
+            service.logMemoryUsage();
+            log.debug("Creating DicomDirDOM for " + rq);
+        }
         DirReader reader = null;
         try {
             reader = dbf.newDirReader(new File(rq.getFilesetDir(), DICOMDIR));
@@ -146,6 +153,10 @@ class DicomDirDOM {
             appendAttrs(root, fsinfo);
             appendRecords(root, reader.getFirstRecord());
             appendAttrs(root, attrs.subSet(new int[] { Tags.RefSOPSeq}, true));
+            if (debug) {
+                service.logMemoryUsage();
+                log.debug("Created DicomDirDOM for " + rq);
+            }
         } catch (Throwable e) {
             log.error("Create DicomDirDOM failed:", e);
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,

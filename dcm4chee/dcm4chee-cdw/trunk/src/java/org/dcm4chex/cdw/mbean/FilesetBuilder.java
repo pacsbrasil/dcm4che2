@@ -342,7 +342,7 @@ class FilesetBuilder {
             }
             dirWriter.add(serRec.rec, recType, rec, fileIDs, cuid, iuid, tsuid);
             if (debug)
-                logMemoryUsage();            
+                service.logMemoryUsage();            
         } finally {
             try {
                 in.close();
@@ -366,13 +366,6 @@ class FilesetBuilder {
             else
                 spoolDir.delete(md5src);
         }
-    }
-
-    private void logMemoryUsage() {
-        Runtime rt = Runtime.getRuntime();
-        log.debug("Memory total:" + (rt.totalMemory()/1000000L)
-                + "MB, free:" + (rt.freeMemory()/1000000L)
-                + "MB");
     }
 
     private String toFilePath(String[] fileIDs, int n) {

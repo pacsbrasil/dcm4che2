@@ -337,7 +337,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
             rq.writeAttributes(attrs, log);
             try {
                 FilesetBuilder builder = new FilesetBuilder(this, rq, attrs);
-                builder.buildFileset();
+                builder.buildFileset();                
                 DicomDirDOM dom = new DicomDirDOM(this, rq, attrs);
                 dom.insertModalitiesInStudy();
                 File fsDir = rq.getFilesetDir();
@@ -494,5 +494,12 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     final boolean isArchiveHighWater() {
         return spoolDir.isArchiveHighWater();
+    }
+
+    void logMemoryUsage() {
+        Runtime rt = Runtime.getRuntime();
+        log.debug("Memory total:" + (rt.totalMemory()/1000000L)
+                + "MB, free:" + (rt.freeMemory()/1000000L)
+                + "MB");
     }
 }
