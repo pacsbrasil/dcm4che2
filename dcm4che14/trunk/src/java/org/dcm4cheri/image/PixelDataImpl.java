@@ -73,7 +73,9 @@ public class PixelDataImpl
     private int ovlData[][][];
 
     //readSample(), stream-related fields
-    private int bOff = 16;  //bit off within cw
+    private final long initialReadPos;
+    private final PixelDataStreamMark initialStreamState;
+    private int bOff;  //bit off within cw
     private int bMask;  //mask of bits 'bOff' to 16 (inclusive) of 'cw'
     private int cw;  //current word (last one read)
     private long samplesPassed = 0;
@@ -96,6 +98,14 @@ public class PixelDataImpl
     PixelDataImpl(Dataset ds, ImageInputStream in, ByteOrder byteOrder, int pixelDataVr)
     {
         data = ovlData = null;
+        try {
+            initialReadPos = in.getStreamPosition();
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("Could not determine current position in stream");
+        }
+        bOff = 16; //cause next word to be read
+        initialStreamState = new PixelDataStreamMark(bOff, cw, bMask, 0);
         if((pmi = ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2")) == null)
             throw new IllegalArgumentException("No photometric interpretation");
         if((ba = ds.getInt(Tags.BitsAllocated, -1)) == -1)
@@ -130,7 +140,7 @@ public class PixelDataImpl
         sampleMaskLS = 32 - hb - 1;
         sampleMaskRS = 32 - bs;
         //masks and shifts for getting overlay bits from an int containing a cell
-        hOvlMask = (1 << ba) - 1 - ((1 << hb + 1) - 1);
+        hOvlMask = (1 << ba) - (1 << hb + 1);
         hOvlMaskRS = bs;
         lOvlMask = (1 << (hb + 1) - bs) - 1;
         //set byte-order
@@ -245,7 +255,7 @@ public class PixelDataImpl
 
     public void mark()
     {
-        mark();
+        in.mark();
         markStack.push(new PixelDataStreamMark(bOff, cw, bMask, samplesPassed));
     }
 
@@ -254,13 +264,23 @@ public class PixelDataImpl
     {
         PixelDataStreamMark mark;
         if (markStack.size() != 0) {
-            reset();
+            in.reset();
             mark = (PixelDataStreamMark)markStack.pop();
             bOff = mark.offset;
             cw = mark.currentWord;
             bMask = mark.mask;
             samplesPassed = mark.samplesPassed;
         }
+    }
+
+    public void resetStream()
+        throws IOException
+    {
+        in.seek(initialReadPos);
+        bOff = initialStreamState.offset;
+        cw = initialStreamState.currentWord;
+        bMask = initialStreamState.mask;
+        samplesPassed = initialStreamState.samplesPassed;
     }
 
     /**
@@ -277,14 +297,16 @@ public class PixelDataImpl
         int sampleIndex = (byPlane) ? (pixel / frameSize) * samplesPerFrame
                                       + (pixel % frameSize) * spp + band
                                     : pixel * spp + band;
-        if (sampleIndex - samplesPassed < 0)
-            throw new IllegalArgumentException("Can not seek backwards (current"
-                + " sample: " + samplesPassed + ", sample needed: " + sampleIndex);
-        int sample = 0;
         mark();
-        skipSamples(sampleIndex - samplesPassed);
-        sample = readSample();
-        reset();
+        int sample = 0;
+        try {
+            resetStream();
+            skipSamples(sampleIndex);
+            sample = readSample();
+        }
+        finally {
+            reset();
+        }
         return sample;
     }
 
