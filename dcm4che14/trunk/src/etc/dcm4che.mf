@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: log4j.jar
-
-Name: org/dcm4cheri
-Implementation-Vendor: TIANI MEDGRAPH AG (gunter.zeilinger@tiani.com)
-Implementation-Version: 1.0 [build: DEV]
-Implementation-Title: tiani.dcm4che
-
