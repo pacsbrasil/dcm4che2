@@ -25,9 +25,6 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.logging.Logger;
 
 /**
@@ -69,9 +66,7 @@ class StgCmtScuScp extends DcmServiceBase {
             AEData aeData = new AECmd(aet).execute();
             if (aeData == null) { throw new DcmServiceException(
                     Status.ProcessingFailure, "Failed to resolve AET:" + aet); }
-            FileInfo[][] fileInfos = RetrieveCmd.create(data.get(Tags.RefSOPSeq)).execute();
-            StgCmtOrder order = new StgCmtOrder(data, aeData, a.getCalledAET(), fileInfos);
-            JMSDelegate.queue(StgCmtScuScpService.QUEUE, order, 0, 0);
+            service.queueStgCmtOrder(a.getCalledAET(), aet, data, true);
         } catch (SQLException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         } catch (JMSException e) {

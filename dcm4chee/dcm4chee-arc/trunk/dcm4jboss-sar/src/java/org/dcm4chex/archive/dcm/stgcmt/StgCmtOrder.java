@@ -9,12 +9,8 @@
 package org.dcm4chex.archive.dcm.stgcmt;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -23,33 +19,28 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
  */
 class StgCmtOrder implements Serializable {
 
-    private static final long serialVersionUID = 3258129137502991415L;
+    private static final long serialVersionUID = 3256442495255525432L;
+
+    public static final String QUEUE = "StgCmtScuScp";
+
+    private final String callingAET;
+
+    private final String calledAET;
 
     private final Dataset actionInfo;
 
-    private final AEData calledAE;
-
-    private final String callingAET;
+    private final boolean scpRole;
 
     private int failureCount;
 
     private int failureStatus;
 
-    private final HashMap fileInfos;
-
-    public StgCmtOrder(Dataset actionInfo, AEData calledAE, String callingAET,
-            FileInfo[][] fileInfos) {
-        this.actionInfo = actionInfo;
-        this.calledAE = calledAE;
+    public StgCmtOrder(String callingAET, String calledAET, Dataset actionInfo,
+            boolean scpRole) {
         this.callingAET = callingAET;
-        if (fileInfos != null) {
-            this.fileInfos = new HashMap();
-            for (int i = 0; i < fileInfos.length; i++) {
-                this.fileInfos.put(fileInfos[i][0].sopIUID, fileInfos[i]);
-            }
-        } else {
-            this.fileInfos = null;
-        }
+        this.calledAET = calledAET;
+        this.actionInfo = actionInfo;
+        this.scpRole = scpRole;
     }
 
     public final int getFailureCount() {
@@ -71,16 +62,16 @@ class StgCmtOrder implements Serializable {
     public final Dataset getActionInfo() {
         return actionInfo;
     }
-
-    public final Map getFileInfos() {
-        return fileInfos;
-    }
     
-    public final AEData getCalledAE() {
-        return calledAE;
+    public final String getCalledAET() {
+        return calledAET;
     }
     
     public final String getCallingAET() {
         return callingAET;
+    }
+    
+    public final boolean isScpRole() {
+        return scpRole;
     }
 }

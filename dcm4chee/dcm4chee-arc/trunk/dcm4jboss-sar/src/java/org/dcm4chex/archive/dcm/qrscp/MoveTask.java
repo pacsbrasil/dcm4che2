@@ -21,11 +21,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
@@ -42,6 +42,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
+import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
@@ -58,9 +59,6 @@ import org.jboss.logging.Logger;
  * @since 16.09.2003
  */
 class MoveTask implements Runnable {
-
-    private final static AuditLoggerFactory alf = AuditLoggerFactory
-            .getInstance();
 
     private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian };
@@ -106,6 +104,10 @@ class MoveTask implements Runnable {
     private ActiveAssociation storeAssoc;
 
     private InstancesAction instancesAction;
+    
+    private Dataset stgCmtActionInfo;
+
+    private DcmElement refSOPSeq;
 
     private RemoteNode remoteNode;
 
@@ -153,19 +155,26 @@ class MoveTask implements Runnable {
             if (!toRetrieve.isEmpty()) {
                 openAssociation();
                 initInstancesAction(fileInfo[0][0]);
+                initStgCmtActionInfo();
             }
             moveAssoc.addCancelListener(moveRqCmd.getMessageID(),
                     cancelListener);
         }
     }
 
+    private void initStgCmtActionInfo() {
+        stgCmtActionInfo = QueryRetrieveScpService.dof.newDataset();
+        stgCmtActionInfo.putUI(Tags.TransactionUID, UIDGenerator.getInstance().createUID());
+        this.refSOPSeq = stgCmtActionInfo.putSQ(Tags.RefSOPSeq);
+    }
+
     private void initInstancesAction(FileInfo info) {
-        instancesAction = alf.newInstancesAction("Access", info.studyIUID, alf
+        instancesAction = QueryRetrieveScpService.alf.newInstancesAction("Access", info.studyIUID, QueryRetrieveScpService.alf
                 .newPatient(info.patID, info.patName));
-        instancesAction.setUser(alf.newRemoteUser(alf.newRemoteNode(moveAssoc
+        instancesAction.setUser(QueryRetrieveScpService.alf.newRemoteUser(QueryRetrieveScpService.alf.newRemoteNode(moveAssoc
                 .getAssociation().getSocket(), moveAssoc.getAssociation()
                 .getCallingAET())));
-        remoteNode = alf.newRemoteNode(storeAssoc.getAssociation().getSocket(),
+        remoteNode = QueryRetrieveScpService.alf.newRemoteNode(storeAssoc.getAssociation().getSocket(),
                 storeAssoc.getAssociation().getCalledAET());
     }
 
@@ -308,12 +317,14 @@ class MoveTask implements Runnable {
                     case Status.Success:
                         ++completed;
                         updateInstancesAction(fileInfo);
+                        updateStgCmtActionInfo(fileInfo);
                         break;
                     case Status.CoercionOfDataElements:
                     case Status.DataSetDoesNotMatchSOPClassWarning:
                     case Status.ElementsDiscarded:
                         ++warnings;
                         updateInstancesAction(fileInfo);
+                        updateStgCmtActionInfo(fileInfo);
                         break;
                     default:
                         failedIUIDs.add(iuid);
@@ -358,6 +369,9 @@ class MoveTask implements Runnable {
         }
         service.logInstancesSent(remoteNode, instancesAction);
         updateStudyAccessTime(studyInfos);
+        String stgCmtAET = service.getStgCmtAET(moveDest);
+        if (stgCmtAET != null)
+            service.queueStgCmtOrder(moveCalledAET, stgCmtAET, stgCmtActionInfo);
     }
 
     private FileSystemMgtHome getFileSystemMgtHome()
@@ -398,6 +412,12 @@ class MoveTask implements Runnable {
         instancesAction.addSOPClassUID(fileInfo.sopCUID);
         instancesAction.addStudyInstanceUID(fileInfo.studyIUID);
         instancesAction.incNumberOfInstances(1);
+    }
+
+    private void updateStgCmtActionInfo(FileInfo fileInfo) {
+        Dataset item = refSOPSeq.addNewItem();
+        item.putUI(Tags.RefSOPClassUID, fileInfo.sopCUID);
+        item.putUI(Tags.RefSOPInstanceUID, fileInfo.sopIUID);
     }
 
     private Dimse makeCStoreRQ(FileInfo info, byte[] buffer)

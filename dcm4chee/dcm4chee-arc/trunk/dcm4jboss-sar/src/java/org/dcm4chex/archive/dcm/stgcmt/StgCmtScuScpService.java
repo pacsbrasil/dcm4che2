@@ -18,7 +18,9 @@ import java.net.Socket;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
@@ -52,8 +54,11 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -66,8 +71,6 @@ import org.dcm4chex.archive.util.JMSDelegate;
  */
 public class StgCmtScuScpService extends AbstractScpService implements
         MessageListener {
-
-    static final String QUEUE = "StgCmtScuScp";
 
     private static final int INVOKE_FAILED_STATUS = -1;
 
@@ -169,13 +172,19 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
+    public void queueStgCmtOrder(String calling, String called,
+            Dataset actionInfo, boolean scpRole) throws JMSException {
+        StgCmtOrder order = new StgCmtOrder(calling, called, actionInfo, scpRole);
+        JMSDelegate.queue(StgCmtOrder.QUEUE, order, 0, 0);        
+    }
+    
     protected void startService() throws Exception {
         super.startService();
-        JMSDelegate.startListening(QUEUE, this);
+        JMSDelegate.startListening(StgCmtOrder.QUEUE, this);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.stopListening(QUEUE);
+        JMSDelegate.stopListening(StgCmtOrder.QUEUE);
         super.stopService();
     }
 
@@ -184,7 +193,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         try {
             StgCmtOrder order = (StgCmtOrder) om.getObject();
             log.info("Start processing " + order);
-            final int status = process(order);
+            final int status = order.isScpRole() ? process(order) : invoke(order);
             if (status == 0) {
                 log.info("Finished processing " + order);
                 return;
@@ -197,7 +206,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 log.error("Give up to process " + order);
             } else {
                 log.warn("Failed to process " + order + ". Scheduling retry.");
-                JMSDelegate.queue(QUEUE, order, 0, System.currentTimeMillis()
+                JMSDelegate.queue(StgCmtOrder.QUEUE, order, 0, System
+                        .currentTimeMillis()
                         + delay);
             }
         } catch (JMSException e) {
@@ -207,6 +217,11 @@ public class StgCmtScuScpService extends AbstractScpService implements
                     e);
         }
 
+    }
+
+    private int invoke(StgCmtOrder order) {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
     private int process(StgCmtOrder order) {
@@ -220,8 +235,19 @@ public class StgCmtScuScpService extends AbstractScpService implements
             log.error("Failed to access Storage EJB", e);
         }
         Dataset actionInfo = order.getActionInfo();
-        Map fileInfos = order.getFileInfos();
         DcmElement refSOPSeq = actionInfo.get(Tags.RefSOPSeq);
+        Map fileInfos = null;
+        if (storage != null) {
+            try {
+                FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).execute();
+                fileInfos = new HashMap();
+                for (int i = 0; i < aa.length; i++) {
+                    fileInfos.put(aa[i][0].sopIUID, aa[i]);
+                }
+            } catch (SQLException e) {
+                log.error("Failed to query DB", e);
+            }
+        }
         Dataset eventInfo = dof.newDataset();
         eventInfo.putUI(Tags.TransactionUID, actionInfo
                 .getString(Tags.TransactionUID));
@@ -229,7 +255,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         DcmElement failedSOPSeq = eventInfo.putSQ(Tags.FailedSOPSeq);
         for (int i = 0, n = refSOPSeq.vm(); i < n; ++i) {
             Dataset refSOP = refSOPSeq.getItem(i);
-            if (storage != null
+            if (storage != null && fileInfos != null
                     && (failureReason = commit(storage, refSOP, fileInfos)) == Status.Success) {
                 successSOPSeq.addItem(refSOP);
             } else {
@@ -240,7 +266,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
         if (failedSOPSeq.isEmpty()) {
             eventInfo.remove(Tags.FailedSOPSeq);
         }
-        return sendResult(order.getCalledAE(), order.getCallingAET(), eventInfo);
+        return sendResult(order.getCalledAET(), order.getCallingAET(),
+                eventInfo);
     }
 
     private int commit(Storage storage, Dataset refSOP, Map fileInfos) {
@@ -326,14 +353,19 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
-    private ActiveAssociation openAssociation(AEData calledAE,
-            String callingAET, boolean scp) throws IOException {
-        Association a = asf.newRequestor(createSocket(calledAE));
+    private ActiveAssociation openAssociation(String calledAET,
+            String callingAET, boolean scp) throws IOException, SQLException,
+            UnkownAETException {
+        AEData ae = new AECmd(calledAET).execute();
+        if (ae == null) {
+            throw new UnkownAETException(calledAET);
+        }
+        Association a = asf.newRequestor(createSocket(ae));
         a.setAcTimeout(acTimeout);
         a.setDimseTimeout(dimseTimeout);
         a.setSoCloseDelay(soCloseDelay);
         AAssociateRQ rq = asf.newAAssociateRQ();
-        rq.setCalledAET(calledAE.getTitle());
+        rq.setCalledAET(calledAET);
         rq.setCallingAET(callingAET);
         rq.addPresContext(asf.newPresContext(1,
                 UIDs.StorageCommitmentPushModel, NATIVE_LE_TS));
@@ -342,7 +374,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                     UIDs.StorageCommitmentPushModel, false, true));
         PDU pdu = a.connect(rq);
         if (!(pdu instanceof AAssociateAC)) {
-            throw new IOException("Association not accepted by " + calledAE);
+            throw new IOException("Association not accepted by " + calledAET);
         }
         ActiveAssociation aa = asf.newActiveAssociation(a, null);
         aa.start();
@@ -360,12 +392,14 @@ public class StgCmtScuScpService extends AbstractScpService implements
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        throw new IOException("Storage Commitment Service rejected by " + calledAE);
+        throw new IOException("Storage Commitment Service rejected by "
+                + calledAET);
     }
 
-    private int sendResult(AEData calledAE, String callingAET, Dataset eventInfo) {
+    private int sendResult(String calledAET, String callingAET,
+            Dataset eventInfo) {
         try {
-            ActiveAssociation aa = openAssociation(calledAE, callingAET, true);
+            ActiveAssociation aa = openAssociation(calledAET, callingAET, true);
             try {
                 Command cmd = dof.newCommand();
                 cmd.initNEventReportRQ(1, UIDs.StorageCommitmentPushModel,
@@ -377,7 +411,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 Command rspCmd = rsp.get().getCommand();
                 final int status = rspCmd.getStatus();
                 if (status != Status.Success) {
-                    log.warn("" + calledAE
+                    log.warn("" + calledAET
                             + " returns N-EVENT-REPORT with error status: "
                             + rspCmd);
                 }
@@ -386,12 +420,13 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 try {
                     aa.release(false);
                 } catch (Exception e) {
-                    log.warn("release association to " + calledAE + " failed:",
+                    log.warn(
+                            "release association to " + calledAET + " failed:",
                             e);
                 }
             }
         } catch (Exception e) {
-            log.error("sending storage commitment result to " + calledAE
+            log.error("sending storage commitment result to " + calledAET
                     + " failed:", e);
             return INVOKE_FAILED_STATUS;
         }

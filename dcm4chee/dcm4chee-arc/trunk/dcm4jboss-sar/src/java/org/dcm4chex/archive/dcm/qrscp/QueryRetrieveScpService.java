@@ -15,7 +15,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import javax.management.JMException;
 import javax.management.ObjectName;
 
 import org.dcm4che.auditlog.InstancesAction;
@@ -31,6 +36,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
@@ -75,12 +81,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private ArrayList sendNoPixelDataToAETs = new ArrayList();
     
+    private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
+    
     private String queryTransactionIsolationLevel;
 
     private String retrieveTransactionIsolationLevel;
     
     private ObjectName fileSystemMgtName;
 
+    private ObjectName stgCmtScuScpName;
+    
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
     private boolean sendPendingMoveRSP = true;
@@ -129,6 +139,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
+    public final ObjectName getStgCmtScuScpName() {
+        return stgCmtScuScpName;
+    }
+    
+    public final void setStgCmtScuScpName(ObjectName stgCmtScuScpName) {
+        this.stgCmtScuScpName = stgCmtScuScpName;
+    }
+    
     public final String getQueryTransactionIsolationLevel() {
         return transactionIsolationLevelAsString(QueryCmd.transactionIsolationLevel);
     }
@@ -274,6 +292,41 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
     
+    public final String getRequestStgCmtFromAETs() {
+        if (requestStgCmtFromAETs.isEmpty()) return "NONE";        
+        StringBuffer sb = new StringBuffer();
+        Iterator it = requestStgCmtFromAETs.entrySet().iterator();
+        while (it.hasNext()) {
+            final Map.Entry entry = (Entry) it.next();
+            final String key = (String) entry.getKey();
+            final String value = (String) entry.getValue();
+            sb.append(key);
+            if (!key.equals(value))
+                sb.append(':').append(value);
+            sb.append('\\');
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
+    public final void setRequestStgCmtFromAETs(String aets) {
+        requestStgCmtFromAETs.clear();
+        if (aets != null && aets.length() > 0 
+                && !aets.equalsIgnoreCase("NONE")) {
+            String[] a = StringUtils.split(aets, '\\');
+            String s;
+            int c;
+            for (int i = 0; i < a.length; i++) {
+                s = a[i];
+                c = s.indexOf(':');
+                if (c == -1)
+                    requestStgCmtFromAETs.put(s, s);
+                else if (c > 0 && c < s.length() -1)
+                    requestStgCmtFromAETs.put(s.substring(0, c), s.substring(c+1));
+            }
+        }
+    }
+    
     public final int getBufferSize() {
         return bufferSize;
     }
@@ -354,6 +407,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
     boolean isWithoutPixelData(String moveDest) {
         return sendNoPixelDataToAETs.contains(moveDest);
     }
+    
+    String getStgCmtAET(String moveDest) {
+        return (String) requestStgCmtFromAETs.get(moveDest);
+    }    
 
     void logInstancesSent(RemoteNode node, InstancesAction action) {
         if (auditLogName == null) return;
@@ -383,5 +440,17 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     Socket createSocket(AEData aeData) throws IOException {
         return tlsConfig.createSocket(aeData);
+    }
+
+    public void queueStgCmtOrder(String calling, String called,
+            Dataset actionInfo) {
+        try {
+            server.invoke(stgCmtScuScpName, "queueStgCmtOrder", new Object[] {
+                    calling, called, actionInfo, null }, new String[] {
+                    String.class.getName(), String.class.getName(),
+                    Dataset.class.getName(), FileInfo[][].class.getName() });
+        } catch (JMException e) {
+            log.error("Failed to queue Storage C0mmitment Request", e);
+        }
     }
 }
