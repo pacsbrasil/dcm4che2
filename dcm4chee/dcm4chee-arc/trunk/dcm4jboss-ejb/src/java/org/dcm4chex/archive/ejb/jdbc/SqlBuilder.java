@@ -278,7 +278,7 @@ class SqlBuilder {
         if (!stk.hasMoreElements()) {
             return Calendar.YEAR;
         }
-        cal.set(Calendar.MONTH, Integer.parseInt(stk.nextToken()));
+        cal.set(Calendar.MONTH, Integer.parseInt(stk.nextToken())-1);
         if (!stk.hasMoreElements()) {
             return Calendar.MONTH;
         }

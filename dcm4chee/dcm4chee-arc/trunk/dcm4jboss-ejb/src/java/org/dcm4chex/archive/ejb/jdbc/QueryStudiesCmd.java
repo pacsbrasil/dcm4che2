@@ -53,6 +53,7 @@ public class QueryStudiesCmd extends BaseCmd {
             "Study.modalitiesInStudy",
             "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances",
+            "Study.retrieveAETs"
             };
     private static final String[] ENTITY = { "Patient", "Study" };
 
@@ -74,7 +75,7 @@ public class QueryStudiesCmd extends BaseCmd {
         sqlBuilder.setStudyFilterMatch(filter);
         sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Patient.pk", SqlBuilder.ASC);
-        sqlBuilder.addOrderBy("Study.studyDateTime", SqlBuilder.DESC);
+        sqlBuilder.addOrderBy("Study.studyDateTime", SqlBuilder.ASC);
         sqlBuilder.setOffset(offset);
         sqlBuilder.setLimit(limit);
     }
@@ -99,7 +100,8 @@ public class QueryStudiesCmd extends BaseCmd {
                         toDataset(rs.getBytes(4)),
                         rs.getString(5),
                         rs.getInt(6),
-                        rs.getInt(7)));
+                        rs.getInt(7),
+                        rs.getString(8)));
             }
             return result;
         } finally {

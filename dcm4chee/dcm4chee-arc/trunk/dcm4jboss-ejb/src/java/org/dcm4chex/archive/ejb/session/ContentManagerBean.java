@@ -154,6 +154,7 @@ public abstract class ContentManagerBean implements SessionBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="Required"
      */
     public List listStudiesOfPatient(int patientPk) throws FinderException {
         Collection c =
@@ -167,13 +168,15 @@ public abstract class ContentManagerBean implements SessionBean {
                     study.getAttributes(),
                     study.getModalitiesInStudy(),
                     study.getNumberOfStudyRelatedSeries(),
-                    study.getNumberOfStudyRelatedInstances()));
+                    study.getNumberOfStudyRelatedInstances(),
+                    study.getRetrieveAETs()));
         }
         return result;
     }
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="Required"
      */
     public List listSeriesOfStudy(int studyPk) throws FinderException {
         Collection c =
@@ -185,13 +188,15 @@ public abstract class ContentManagerBean implements SessionBean {
                 DTOFactory.newSeriesDTO(
                     series.getPk().intValue(),
                     series.getAttributes(),
-                    series.getNumberOfSeriesRelatedInstances()));
+                    series.getNumberOfSeriesRelatedInstances(),
+                    series.getRetrieveAETs()));
         }
         return result;
     }
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="Required"
      */
     public List listInstancesOfSeries(int seriesPk) throws FinderException {
         Collection c =
@@ -202,7 +207,9 @@ public abstract class ContentManagerBean implements SessionBean {
             result.add(
                 DTOFactory.newInstanceDTO(
                     inst.getPk().intValue(),
-                    inst.getAttributes()));
+                    inst.getAttributes(),
+                    inst.getRetrieveAETs(),
+                    inst.getFiles().size()));
         }
         return result;
     }

@@ -30,6 +30,7 @@ import java.util.List;
  * @since 14.01.2004
  */
 public class StudyDTO implements Serializable {
+
     public static final String DATETIME_FORMAT = "yyyy/MM/dd hh:mm";
 
     private int pk;
@@ -41,6 +42,7 @@ public class StudyDTO implements Serializable {
     private String modalitiesInStudy;
     private int numberOfSeries;
     private int numberOfInstances;
+    private String retrieveAETs;
     private List series = new ArrayList();
 
     /**
@@ -183,4 +185,17 @@ public class StudyDTO implements Serializable {
         this.numberOfSeries = numberOfSeries;
     }
 
+    /**
+     * @return
+     */
+    public String getRetrieveAETs() {
+        return retrieveAETs;
+    }
+
+    /**
+     * @param retrieveAETs
+     */
+    public void setRetrieveAETs(String retrieveAETs) {
+        this.retrieveAETs = retrieveAETs;
+    }
 }

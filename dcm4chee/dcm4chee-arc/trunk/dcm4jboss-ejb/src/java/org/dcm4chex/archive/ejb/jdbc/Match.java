@@ -73,7 +73,7 @@ abstract class Match
 
         public boolean isUniveralMatch()
         {
-            return value == null;
+            return value == null || value.length() == 0;
         }
 
         protected void appendBodyTo(StringBuffer sb)
@@ -237,7 +237,7 @@ abstract class Match
 
         public boolean isUniveralMatch()
         {
-            return md == null;
+            return md == null || md.length() == 0;
         }
 
         protected void appendBodyTo(StringBuffer sb)

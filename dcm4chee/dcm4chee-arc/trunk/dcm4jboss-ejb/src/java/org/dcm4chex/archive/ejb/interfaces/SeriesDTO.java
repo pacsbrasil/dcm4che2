@@ -31,14 +31,48 @@ import java.util.List;
  */
 public class SeriesDTO implements Serializable {
 
+    public static final String DATETIME_FORMAT = "yyyy/MM/dd hh:mm";
+
     private int pk;
     private String seriesNumber;
     private String seriesIUID;
     private String modality;
     private String seriesDescription;
+    private String seriesDateTime;
+    private String bodyPartExamined;
+    private String laterality;
     private int numberOfInstances;
+    private String retrieveAETs;
     private List instances = new ArrayList();
     
+    /**
+     * @return
+     */
+    public final String getLaterality() {
+        return laterality;
+    }
+
+    /**
+     * @param laterality
+     */
+    public final void setLaterality(String laterality) {
+        this.laterality = laterality;
+    }
+
+    /**
+     * @return
+     */
+    public final String getSeriesDateTime() {
+        return seriesDateTime;
+    }
+
+    /**
+     * @param seriesDateTime
+     */
+    public final void setSeriesDateTime(String seriesDateTime) {
+        this.seriesDateTime = seriesDateTime;
+    }
+
     /**
      * @return
      */
@@ -65,6 +99,20 @@ public class SeriesDTO implements Serializable {
      */
     public final void setModality(String modality) {
         this.modality = modality;
+    }
+
+    /**
+     * @return
+     */
+    public final String getBodyPartExamined() {
+        return bodyPartExamined;
+    }
+
+    /**
+     * @param bodyPartExamined
+     */
+    public final void setBodyPartExamined(String bodyPartExamined) {
+        this.bodyPartExamined = bodyPartExamined;
     }
 
     /**
@@ -137,4 +185,17 @@ public class SeriesDTO implements Serializable {
         this.seriesNumber = seriesNumber;
     }
 
+    /**
+     * @return
+     */
+    public String getRetrieveAETs() {
+        return retrieveAETs;
+    }
+
+    /**
+     * @param retrieveAETs
+     */
+    public void setRetrieveAETs(String retrieveAETs) {
+        this.retrieveAETs = retrieveAETs;
+    }
 }
