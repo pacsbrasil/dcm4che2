@@ -31,6 +31,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 
 import ca.uhn.hl7v2.app.Connection;
 import ca.uhn.hl7v2.app.HL7Service;
@@ -53,7 +54,7 @@ import ca.uhn.hl7v2.parser.GenericParser;
  */
 class HL7Server extends HL7Service {
 
-    private final org.jboss.logging.Logger log;
+    private final HL7ServerService service;
     
     private int port = 2300;
     private ServerSocketFactory ssf = ServerSocketFactory.getDefault();
@@ -62,9 +63,9 @@ class HL7Server extends HL7Service {
      * Creates a new instance of SimpleServer that listens
      * on the given port.  Exceptions are logged using ca.uhn.hl7v2.Log;
      */
-    public HL7Server(org.jboss.logging.Logger log) {
+    public HL7Server(HL7ServerService service) {
         super(new GenericParser(), LowerLayerProtocol.makeLLP());
-        this.log = log;
+        this.service = service;
     }
 
     /**
@@ -75,11 +76,14 @@ class HL7Server extends HL7Service {
         try {
             ServerSocket ss = ssf.createServerSocket(port);
 //            ss.setSoTimeout(3000);
-            log.info("SimpleServer running on port " + ss.getLocalPort());
+            service.getLog().info("HL7 Server running on port " + ss.getLocalPort());
             while (keepRunning()) {
                 try {
                     Socket newSocket = ss.accept();
-                    log.info("Accepted connection from " + newSocket.getInetAddress().getHostAddress());
+                    if (newSocket instanceof SSLSocket) {
+                        service.handshake((SSLSocket) newSocket);
+                    }
+                    service.getLog().info("Accepted connection from " + newSocket.getInetAddress().getHostAddress());
                     Connection conn = new Connection(parser, this.llp, newSocket);
                     newConnection(conn);
                 }
@@ -87,40 +91,28 @@ class HL7Server extends HL7Service {
                     //ignore - just timed out waiting for connection
                 }
                 catch (Exception e) {
-                    log.error( "Error while accepting connections: ", e);
+                    service.getLog().error( "Error while accepting connections: ", e);
                 }
             }
 
             ss.close();
         }
         catch (Exception e) {
-            log.error(e);
+            service.getLog().error(e);
         }
     }
-    /**
-     * @return Returns the port.
-     */
     public final int getPort() {
         return port;
     }
 
-    /**
-     * @param port The port to set.
-     */
     public final void setPort(int port) {
         this.port = port;
     }
 
-    /**
-     * @return Returns the ssf.
-     */
     public final ServerSocketFactory getServerSocketFactory() {
         return ssf;
     }
 
-    /**
-     * @param ssf The ssf to set.
-     */
     public final void setServerSocketFactory(ServerSocketFactory ssf) {
         this.ssf = ssf;
     }

@@ -3,6 +3,9 @@
 	
 	<property name="javac.debug" value="on"/>
 	
+	<property name="dcm4che.home" value="../dcm4che14/build"/>		
+	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
+
 	<property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
 	<property name="dcm4jboss-ejb.lib" value="${dcm4jboss-ejb.home}/target/common/lib"/>		
 	<property name="ejb-client.jar" value="dcm4jboss-ejb-client.jar" />
@@ -25,6 +28,7 @@
 	<property name="target.lib" value="${target}/lib"/>
 	
 	<path id="class.path">
+		<pathelement location="${dcm4che.jar}"/>
 		<pathelement location="${hapi.home}/${hapi.jar}"/>
 		<pathelement location="${dcm4jboss-ejb.lib}/${ejb-client.jar}"/>
 		<fileset dir="${jboss.lib}">
