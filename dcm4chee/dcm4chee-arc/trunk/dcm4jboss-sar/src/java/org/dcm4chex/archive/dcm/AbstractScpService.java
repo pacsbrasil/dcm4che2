@@ -174,7 +174,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     protected void updatePolicy(AcceptorPolicy policy) {
-        String[] aets = StringUtils.split(calledAETs, ',');
+        String[] aets = StringUtils.split(calledAETs, '\\');
         for (int i = 0; i < aets.length; ++i) {
             dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aets[i],
                     policy);
@@ -195,7 +195,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     
     protected AcceptorPolicy makeAcceptorPolicy() {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
-        policy.setCallingAETs(callingAETs != null ? StringUtils.split(callingAETs,',') : null);
+        policy.setCallingAETs(callingAETs != null ? StringUtils.split(callingAETs,'\\') : null);
         initPresContexts(policy);
         return policy;        
     }

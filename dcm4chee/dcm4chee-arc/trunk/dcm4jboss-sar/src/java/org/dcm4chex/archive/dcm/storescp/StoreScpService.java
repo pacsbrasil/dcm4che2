@@ -86,19 +86,19 @@ public class StoreScpService extends AbstractScpService {
 
     private boolean acceptJPEGBaseline = true;
 
-    private boolean acceptJPEGExtended = false;
+    private boolean acceptJPEGExtended = true;
 
-    private boolean acceptJPEGLossless14 = true;
+    private boolean acceptJPEGLosslessFOP = true;
 
     private boolean acceptJPEGLossless = true;
 
-    private boolean acceptJPEGLSLossless = false;
+    private boolean acceptJPEGLSLossless = true;
 
-    private boolean acceptJPEGLSLossy = false;
+    private boolean acceptJPEGLSLossy = true;
 
-    private boolean acceptJPEG2000Lossless = false;
+    private boolean acceptJPEG2000Lossless = true;
 
-    private boolean acceptJPEG2000Lossy = false;
+    private boolean acceptJPEG2000Lossy = true;
 
     private boolean acceptRLELossless = false;
 
@@ -168,6 +168,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setUpdateDatabaseMaxRetries(updateDatabaseMaxRetries);
     }
 
+    public final int getMaxCountUpdateDatabaseRetries() {
+        return scp.getMaxCountUpdateDatabaseRetries();
+    }
+
+    public final void resetMaxCountUpdateDatabaseRetries() {
+        scp.setMaxCountUpdateDatabaseRetries(0);
+    }
+    
     public final int getAcTimeout() {
         return acTimeout;
     }
@@ -196,8 +204,8 @@ public class StoreScpService extends AbstractScpService {
         return acceptStorageCommitment;
     }
 
-    public void setAcceptStorageCommitment(boolean storageCommitmentPushModel) {
-        this.acceptStorageCommitment = storageCommitmentPushModel;
+    public void setAcceptStorageCommitment(boolean accept) {
+        this.acceptStorageCommitment = accept;
         updatePolicy();
     }
 
@@ -205,8 +213,8 @@ public class StoreScpService extends AbstractScpService {
         return acceptJPEG2000Lossless;
     }
 
-    public final void setAcceptJPEG2000Lossless(boolean acceptJPEG2000Lossless) {
-        this.acceptJPEG2000Lossless = acceptJPEG2000Lossless;
+    public final void setAcceptJPEG2000Lossless(boolean accept) {
+        this.acceptJPEG2000Lossless = accept;
         updatePolicy();
     }
 
@@ -214,8 +222,8 @@ public class StoreScpService extends AbstractScpService {
         return acceptJPEG2000Lossy;
     }
 
-    public final void setAcceptJPEG2000Lossy(boolean acceptJPEG2000Lossy) {
-        this.acceptJPEG2000Lossy = acceptJPEG2000Lossy;
+    public final void setAcceptJPEG2000Lossy(boolean accept) {
+        this.acceptJPEG2000Lossy = accept;
         updatePolicy();
     }
 
@@ -223,8 +231,8 @@ public class StoreScpService extends AbstractScpService {
         return acceptJPEGBaseline;
     }
 
-    public final void setAcceptJPEGBaseline(boolean acceptJPEGBaseline) {
-        this.acceptJPEGBaseline = acceptJPEGBaseline;
+    public final void setAcceptJPEGBaseline(boolean accept) {
+        this.acceptJPEGBaseline = accept;
         updatePolicy();
     }
 
@@ -232,8 +240,8 @@ public class StoreScpService extends AbstractScpService {
         return acceptJPEGExtended;
     }
 
-    public final void setAcceptJPEGExtended(boolean acceptJPEGExtended) {
-        this.acceptJPEGExtended = acceptJPEGExtended;
+    public final void setAcceptJPEGExtended(boolean accept) {
+        this.acceptJPEGExtended = accept;
         updatePolicy();
     }
 
@@ -241,17 +249,17 @@ public class StoreScpService extends AbstractScpService {
         return acceptJPEGLossless;
     }
 
-    public final void setAcceptJPEGLossless(boolean acceptJPEGLossless) {
-        this.acceptJPEGLossless = acceptJPEGLossless;
+    public final void setAcceptJPEGLossless(boolean accept) {
+        this.acceptJPEGLossless = accept;
         updatePolicy();
     }
 
-    public final boolean isAcceptJPEGLossless14() {
-        return acceptJPEGLossless14;
+    public final boolean isAcceptJPEGLosslessFOP() {
+        return acceptJPEGLosslessFOP;
     }
 
-    public final void setAcceptJPEGLossless14(boolean acceptJPEGLossless14) {
-        this.acceptJPEGLossless14 = acceptJPEGLossless14;
+    public final void setAcceptJPEGLosslessFOP(boolean accept) {
+        this.acceptJPEGLosslessFOP = accept;
         updatePolicy();
     }
 
@@ -259,8 +267,8 @@ public class StoreScpService extends AbstractScpService {
         return acceptJPEGLSLossless;
     }
 
-    public final void setAcceptJPEGLSLossless(boolean acceptJPEGLSLossless) {
-        this.acceptJPEGLSLossless = acceptJPEGLSLossless;
+    public final void setAcceptJPEGLSLossless(boolean accept) {
+        this.acceptJPEGLSLossless = accept;
         updatePolicy();
     }
 
@@ -268,8 +276,8 @@ public class StoreScpService extends AbstractScpService {
         return acceptJPEGLSLossy;
     }
 
-    public final void setAcceptJPEGLSLossy(boolean acceptJPEGLSLossy) {
-        this.acceptJPEGLSLossy = acceptJPEGLSLossy;
+    public final void setAcceptJPEGLSLossy(boolean accept) {
+        this.acceptJPEGLSLossy = accept;
         updatePolicy();
     }
 
@@ -277,8 +285,8 @@ public class StoreScpService extends AbstractScpService {
         return acceptRLELossless;
     }
 
-    public final void setAcceptRLELossless(boolean acceptRLELossless) {
-        this.acceptRLELossless = acceptRLELossless;
+    public final void setAcceptRLELossless(boolean accept) {
+        this.acceptRLELossless = accept;
         updatePolicy();
     }
 
@@ -336,10 +344,10 @@ public class StoreScpService extends AbstractScpService {
         if (acceptJPEG2000Lossless) {
             list.add(UIDs.JPEG2000Lossless);
         }
-        if (acceptJPEGLossless14) {
+        if (acceptJPEGLossless) {
             list.add(UIDs.JPEGLossless14);
         }
-        if (acceptJPEGLossless) {
+        if (acceptJPEGLosslessFOP) {
             list.add(UIDs.JPEGLossless);
         }
         if (acceptRLELossless) {

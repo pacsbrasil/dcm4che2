@@ -25,7 +25,8 @@
    <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
-      <description>Comma separated List of Accepted Called AETs.
+      <description>Accepted Called AET(s).
+      Separate multiple values by '\'(backslash). 
       </description>
       <name>CalledAETs</name>
       <type>java.lang.String</type>
@@ -36,8 +37,8 @@
    <attribute access="read-write"
       getMethod="getCallingAETs"
       setMethod="setCallingAETs">
-      <description>Comma separated List of Accepted Calling AETs.
-      "ANY" = accept any.
+      <description>Accepted Calling AETs.
+      "ANY" = accept any. Separate multiple values by '\'(backslash). 
       </description>
       <name>CallingAETs</name>
       <type>java.lang.String</type>
@@ -48,9 +49,9 @@
    <attribute access="read-write"
       getMethod="getCoerceWarnCallingAETs"
       setMethod="setCoerceWarnCallingAETs">
-      <description>Comma separated list of AETs of Storage SCUs, to which
+      <description>List of AETs of Storage SCUs, to which
       a warning status B000 is returned if Data Elements was coerced.
-      "NONE" = none Calling AET.
+      "NONE" = none Calling AET. Separate multiple values by '\'(backslash). 
       </description>
       <name>CoerceWarnCallingAETs</name>
       <type>java.lang.String</type>
@@ -84,6 +85,14 @@
          <value value="2" />
       </descriptors>
    </attribute>
+   <attribute access="read-only"
+      getMethod="getMaxCountUpdateDatabaseRetries">
+      <description>Maximal number of actually performed retries to update DB records for new received
+      objects.
+      </description>
+      <name>MaxCountUpdateDatabaseRetries</name>
+      <type>int</type>
+   </attribute>   
    <attribute access="read-write"
       getMethod="isAcceptStorageCommitment"
       setMethod="setAcceptStorageCommitment">
@@ -114,7 +123,7 @@
       <name>AcceptJPEG2000Lossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -125,7 +134,7 @@
       <name>AcceptJPEG2000Lossy</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -136,7 +145,7 @@
       <name>AcceptJPEGLSLossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -147,13 +156,13 @@
       <name>AcceptJPEGLSLossy</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="isAcceptJPEGLossless"
       setMethod="setAcceptJPEGLossless">
-      <description>Accept DICOM images encoded in JPEG Lossless First-Order Prediction Transfer Syntax.
+      <description>Accept DICOM images encoded in JPEG Lossless Transfer Syntax.
       </description>
       <name>AcceptJPEGLossless</name>
       <type>boolean</type>
@@ -162,14 +171,14 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAcceptJPEGLossless14"
-      setMethod="setAcceptJPEGLossless14">
-      <description>Accept DICOM images encoded in JPEG Lossless (Process 14) Transfer Syntax.
+      getMethod="isAcceptJPEGLosslessFOP"
+      setMethod="setAcceptJPEGLosslessFOP">
+      <description>Accept DICOM images encoded in JPEG Lossless First-Order Prediction Transfer Syntax.
       </description>
-      <name>AcceptJPEGLossless14</name>
+      <name>AcceptJPEGLosslessFOP</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -191,7 +200,7 @@
       <name>AcceptJPEGExtended</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -320,6 +329,11 @@
    &defaultAttributes;
 
    <!-- Operations -->
+   <operation impact="ACTION">
+     <description>Reset MaxCountUpdateDatabaseRetries to 0.</description>
+     <name>resetMaxCountUpdateDatabaseRetries</name>
+     <return-type>void</return-type>
+	</operation>
    &defaultOperations;
 
    <!-- Notifications -->

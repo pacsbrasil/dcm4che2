@@ -184,6 +184,7 @@
    				<include name="lib/*"/>
    			</fileset>
    		</copy>
+   		<mkdir dir="${dist.dir}/common/data/jbossmq/file"/>
    		<unzip src="${hapi.zip}" dest="${dist.dir}/common/lib"/>
    		<zip
    			destfile="${target.dir}/${dist.name}.zip"
