@@ -125,8 +125,6 @@ public class MoveStudy
         assocRQ.setCallingAET(url.getCallingAET());
         assocRQ.setMaxPDULength(
                 Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
-        assocRQ.setAsyncOpsWindow(af.newAsyncOpsWindow(
-                Integer.parseInt(cfg.getProperty("max-op-invoked", "0")), 1));
         assocRQ.addPresContext(af.newPresContext(PCID_FIND,
                 UIDs.StudyRootQueryRetrieveInformationModelFIND, TS));
         assocRQ.addPresContext(af.newPresContext(PCID_MOVE,
