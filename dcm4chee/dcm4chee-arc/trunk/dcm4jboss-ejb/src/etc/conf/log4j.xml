@@ -16,6 +16,9 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
+   <renderer renderedClass="org.dcm4che.data.Dataset" renderingClass="org.dcm4che.log.DatasetRenderer" />
+
+
    <!-- ================================= -->
    <!-- Preserve messages in a local file -->
    <!-- ================================= -->
@@ -23,6 +26,7 @@
    <!-- A time/date based rolling appender -->
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+<!--      <param name="Threshold" value="WARN"/> -->
       <param name="File" value="${jboss.server.home.dir}/log/server.log"/>
       <param name="Append" value="false"/>
 
@@ -42,6 +46,30 @@
           -->
       </layout>
    </appender>
+
+   <!-- A File appender to seperate according MDC key-value pair; using here to seperate by calling AET -->
+
+<!-- e.g. AET SIEMENS_CT 
+   <appender name="AET_SIEMENS_CT" class="org.jboss.logging.appender.DailyRollingFileAppender">
+      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+      <param name="Threshold" value="INFO"/>
+      <param name="File" value="${jboss.server.home.dir}/log/siemens_ct.log"/>
+      <param name="Append" value="false"/>
+
+      <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+
+      <layout class="org.apache.log4j.PatternLayout">
+         <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
+      </layout>
+
+	<filter class="org.dcm4che.log.MDCFilter">
+	      <param name="Key" value="calling"/>
+	      <param name="Value" value="SIEMENS_CT"/>
+	      <param name="AcceptOnMatch" value="true"/>
+	</filter>
+	<filter class="org.apache.log4j.varia.DenyAllFilter" />
+   </appender>
+-->
 
    <!-- A size based file rolling appender
    <appender name="FILE" class="org.jboss.logging.appender.RollingFileAppender">
@@ -201,7 +229,7 @@
    <!-- Decrease the priority threshold for the org.dcm4cheri.util category
    		for monitoring thread pool behavior
    <category name="org.dcm4cheri.util">
-      <priority value="DEBUG"/>
+      <priority value="INFO"/>
    </category>
  -->
  
@@ -218,7 +246,7 @@
 
    <!-- Decrease the priority threshold for the org.jboss.varia category
    <category name="org.jboss.varia">
-     <priority value="DEBUG"/>
+     <priority value="INFO"/>
    </category>
    -->
 
@@ -284,6 +312,7 @@
    <root>
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="FILE"/>
+<!--      <appender-ref ref="AET_SIEMENS_CT"/> -->
    </root>
 
    <!-- Clustering logging -->
@@ -310,5 +339,5 @@
      <appender-ref ref="CLUSTER"/>
    </category>
    -->
-
+   
 </log4j:configuration>
