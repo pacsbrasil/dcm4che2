@@ -182,7 +182,7 @@
 					<td width="10" ><h2>Action</h2></td>	
 				</tr>
 					<xsl:apply-templates select="mediaList/item">
-						<xsl:sort data-type="text" order="ascending" select="title"/>
+						<xsl:sort data-type="number" order="descending" select="mediaPk"/>
 					</xsl:apply-templates>
 			</td>	</center>
 		</tr>
