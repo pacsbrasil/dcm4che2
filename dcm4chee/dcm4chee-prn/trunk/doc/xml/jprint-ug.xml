@@ -178,8 +178,8 @@ linkend="check-license.jar"
 
 === License #1 ===
 
-Subject: CN=Gunter Zeilinger, OU=Development, O=Tiani Medgraph AG, L=Brunn am Gebirge, ST=Lower Austria, C=AT
-Issuer: CN=Tiani License CA, OU=Development, O=Tiani Medgraph AG, L=Brunn am Gebirge, ST=Lower Austria, C=AT
+Subject: CN=Gunter Zeilinger, OU=Development, O=Tiani Medgraph AG, L=Brunn am Gebirge, ...
+Issuer: CN=Tiani License CA, OU=Development, O=Tiani Medgraph AG, L=Brunn am Gebirge, ...
 Validity        ok
         Not Before: Sat Apr 12 23:55:42 CEST 2003
         Not After:  Fri Apr 07 23:55:42 CEST 2023
@@ -286,7 +286,7 @@ role="bold"
 
 15:32:26,548 INFO  [Server] JBoss Release: JBoss-3.0.7 CVSTag=JBoss_3_0_7
 :
-15:32:41,590 INFO  [Server] JBoss (MX MicroKernel) [3.0.7 (CVSTag=JBoss_3_0_7 Date=200304081816)] Started in 0m:14s:950ms</programlisting
+15:32:41,590 INFO  [Server] JBoss (MX MicroKernel) [..] Started in 0m:14s:950ms</programlisting
 ><para
 >On WINDOWS you can start the server by enter</para
 ><programlisting
@@ -300,7 +300,8 @@ role="bold"
 ><para
 >in the console output - otherwise the warning:</para
 ><programlisting
->15:32:41,383 WARN  [PrintScpService] No valid Licensedetected - shutdown server in 20 minutes!</programlisting
+>15:32:41,383 WARN  [PrintScpService] No valid Licensedetected
+                                     - shutdown server in 20 minutes!</programlisting
 ><para
 >You will get (2) warnings:</para
 ><programlisting
@@ -2467,10 +2468,24 @@ colwidth="180"
 {with &#60;g&#62; in interval [0.1,10]}</literallayout
 ></entry
 ><entry
-><literallayout
->applies a LUT based on f(x) ~ x^(1/g):
-g &#62; 1 will increase the contrast in the dark and lighten the image as a whole,
-g &#60; 1 will increase the contrast of brighten parts and darken then image as a whole.</literallayout
+>applies a LUT based on f(x) ~ x^(1/g):<variablelist
+><varlistentry
+><term
+>g &#62; 1</term
+><listitem
+><para
+>will increase the contrast in the dark and lighten the image as a whole,</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+>g &#60; 1</term
+><listitem
+><para
+>will increase the contrast of brighten parts and darken then image as a whole.</para
+></listitem
+></varlistentry
+></variablelist
 ></entry
 ></row
 ><row
@@ -2651,7 +2666,55 @@ linkend="AnnotationForCallingAET"
 >Usually, annotations are printed near the page margin, surrounding the printed image(s). You can specify an inset of the aera, which shall be used for the image(s) to print, from the actual printable area on the page (s. Print Service Attribute <link
 linkend="PageMargin"
 >PageMargin</link
->). E.g. <filename
+>):</para
+><table
+><title
+>Inset Properties</title
+><tgroup
+cols="2"
+><colspec
+colwidth="80"
+></colspec
+><thead
+><row
+><entry
+align="center"
+>Property</entry
+><entry
+align="center"
+>Description</entry
+></row
+></thead
+><tbody
+><row
+><entry
+>inset.left</entry
+><entry
+>Defines width of border in points, left from the printed image(s) to the left margin of the printable aera on the page.</entry
+></row
+><row
+><entry
+>inset.right</entry
+><entry
+>Defines width of border in points, right from the printed image(s) to the right margin of the printable aera on the page.</entry
+></row
+><row
+><entry
+>inset.top</entry
+><entry
+>Defines height of border in points, above the printed image(s) to the top margin of the printable aera on the page.</entry
+></row
+><row
+><entry
+>inset.bottom</entry
+><entry
+>Defines height of border in points, below the printed image(s) to the bottom margin of the printable aera on the page.</entry
+></row
+></tbody
+></tgroup
+></table
+><para
+>E.g. <filename
 >server/default/conf/annotation/TITLE.5.adf</filename
 ></para
 ><programlisting
@@ -2668,188 +2731,374 @@ inset.bottom=20</programlisting
 >OR</emphasis
 > the full height of the aera reserved for the image(s) may be used.</para
 ><para
->The properties with 1,2,... <replaceable
->&#60;N&#62;</replaceable
-> as key, specifies the default content of the first, second, .. N-th text field (=Annotation Box) of the defined Annotation Display Format. Properties with a key name prefixed by a text field number only concern that text field. E.g. <filename
->server/default/conf/annotation/TITLE.5.adf</filename
-></para
-><programlisting
->1=Default Title
-1.font.size=16
-1.x=center
-1.y=top-2
-1.align=center
-1.valign=bottom</programlisting
-><para
->defines <literal
->Default Title</literal
-> as default content of the first text field, which shall be printed with a font size of 16 points, horizontial centered with the bottom line of the text 2 points above the top of the aera reserved for the printed image(s).</para
-><para
->Non-prefixed key names define global properties, which may be overwritten by corresponding text field specific properties. E.g. <filename
->server/default/conf/annotation/TITLE.5.adf</filename
-></para
-><programlisting
->font.name=Serif
-font.size=8
-font.style=plain
-font.color=black</programlisting
-><para
->defines Serif 8 plain style, color black as default font. In the example above, the size of the font used for the first annotation box was overwritten to be 16 points, so <literal
->Default Title</literal
-> will be printed in Serif 16 plain style, color black.</para
-><table
-id="adf-properties"
+><xref
+linkend="fig-adf-inset"
+></xref
+>shows the rectangle aera for the printed image with a border for locating annotations on the page with portait orientation defined by the Print Service Attribute <link
+linkend="PageMargin"
+>PageMargin</link
+> and the <literal
+>inset.</literal
+><replaceable
+>*</replaceable
+> properties.</para
+><figure
+id="fig-adf-inset"
 ><title
->Defined ADF Properties</title
+>Annotation Locations</title
+><mediaobject
+><imageobject
+><imagedata
+fileref="../img/jPrint-ug2.gif"
+></imagedata
+></imageobject
+></mediaobject
+></figure
+><para
+>Annotations can be located around the 4 edge points of the rectangle and around the 4 center points of the rectangle sides. Although possible, it&#39;s not quite useful to locate an annotion in the center of the rectangle, because there it overlaps with the printed image(s).</para
+><para
+>Annotation Boxes defined by an Annotation Display Format are serially numbered, starting with 1. Properties specific to an annotation box, as its <literal
+>x</literal
+> and <literal
+>y</literal
+> properties defining its location, are prefixed with the number (#) of the box. The location of the annotation text also depends on the specified horizontal and vertical alignment for that box.</para
+><table
+><title
+>Annotation Location and Alignment Properties</title
 ><tgroup
-cols="4"
+cols="2"
 ><colspec
-colwidth="100"
-></colspec
-><colspec
-colwidth="150"
-></colspec
-><colspec
-colwidth="40"
+colwidth="80"
 ></colspec
 ><thead
 ><row
 ><entry
->Key</entry
+align="center"
+>Property</entry
 ><entry
->Value Range</entry
-><entry
->Default Value</entry
-><entry
+align="center"
 >Description</entry
 ></row
 ></thead
 ><tbody
 ><row
 ><entry
->insert.left</entry
+>#.x</entry
 ><entry
->&#62;= 0</entry
-><entry
->0</entry
-><entry
-morerows="3"
->The inset of the aera in points (1/72 inch), which shall be used for the image(s) to print, from the actual printable area on the page.</entry
+>Specifies the x position of annotation box # on the page. Possible values are <literal
+>left</literal
+>, <literal
+>center </literal
+> or <literal
+>right</literal
+>. An offset can be specified by appending the code value with <literal
+>+</literal
+> (=shift to right) or <literal
+>-</literal
+> (=shift to left) and its magnitude in points (1 point = 1/72 inch).</entry
 ></row
 ><row
 ><entry
->insert.right</entry
+>#.y</entry
 ><entry
->&#62;= 0</entry
-><entry
->0</entry
+>Specifies the y position of annotation box # on the page. Possible values are <literal
+>top</literal
+>, <literal
+>center</literal
+> or <literal
+>bottom</literal
+>. An offset can be specified by appending the code value with <literal
+>+</literal
+> (=shift down) or <literal
+>-</literal
+> (=shift up) and its magnitude in points (1 point = 1/72 inch).</entry
 ></row
 ><row
 ><entry
->insert.top</entry
+>#.align</entry
 ><entry
->&#62;= 0</entry
-><entry
->0</entry
-></row
-><row
-><entry
->insert.bottom</entry
-><entry
->&#62;= 0</entry
-><entry
->0</entry
-></row
-><row
-><entry
->&#60;i&#62;</entry
-><entry
->text</entry
-><entry
+><para
+>Specifies the horizonal alignment of the content of annotation box #. Possible values are <literal
+>left</literal
+>, <literal
+>center</literal
+> or <literal
+>right</literal
+>:</para
+> <inlinemediaobject
+><imageobject
+><imagedata
+fileref="../img/jPrint-ug4.gif"
+></imagedata
+></imageobject
+></inlinemediaobject
 ></entry
-><entry
->Default content of &#60;i&#62;. annotation box</entry
 ></row
 ><row
 ><entry
->[&#60;i&#62;.]font.name</entry
+>#.valign</entry
 ><entry
->Serif, SansSerif, ...? (printer dependent)</entry
-><entry
->Serif</entry
-><entry
-morerows="3"
->Name, point size, style and color of the font used to print the annotation text. Used as global properties or as specific for a individual Annotation Box.</entry
-></row
-><row
-><entry
->[&#60;i&#62;.]font.size</entry
-><entry
->6-48? (printer dependent)</entry
-><entry
->10</entry
-></row
-><row
-><entry
->[&#60;i&#62;.]font.style</entry
-><entry
->plain, italic, bold, italic+bold</entry
-><entry
->plain</entry
-></row
-><row
-><entry
->[&#60;i&#62;.]font.color</entry
-><entry
->black, blue, cyan, gray, green, magenta, orange, pink, red, white, yellow</entry
-><entry
->black</entry
-></row
-><row
-><entry
->&#60;i&#62;.x[(+|-)&#60;off&#62;]</entry
-><entry
->left, center, right</entry
-><entry
->left</entry
-><entry
->Defines horizontal location of &#60;i&#62;.Annotation Box on the page. The optional offset &#60;off&#62; specifies the distance from the left or right image area border in points. A postive value corresponds a shift to right.</entry
-></row
-><row
-><entry
->&#60;i&#62;.y[(+|-)&#60;off&#62;]</entry
-><entry
->top, center, bottom</entry
-><entry
->bottom</entry
-><entry
->Defines vertical location of &#60;i&#62;.Annotation Box on the page. The optional offset &#60;off&#62; specifies the distance from the top or bottom image area border in points. A postive value corresponds a shift down.</entry
-></row
-><row
-><entry
->[&#60;i&#62;.]align</entry
-><entry
->left, center, right</entry
-><entry
->left</entry
-><entry
->Defines horizontal alignment of the text relatively to its horizontal location.</entry
-></row
-><row
-><entry
->[&#60;i&#62;.]valign</entry
-><entry
->top, center, top</entry
-><entry
->top</entry
-><entry
->Defines vertical alignment of the text relatively to its vertical location.</entry
+><para
+>Specifies the vertical alignment of the content of annotation box #.. Possible values are <literal
+>top</literal
+>, <literal
+>center</literal
+> or <literal
+>bottom</literal
+>.</para
+><inlinemediaobject
+><imageobject
+><imagedata
+fileref="../img/jPrint-ug3.gif"
+></imagedata
+></imageobject
+></inlinemediaobject
+></entry
 ></row
 ></tbody
 ></tgroup
 ></table
+><para
+>Typicially, annotations are positioned outside of the rectangle aera for the printed image(s). That constrains the configurable horizontal and vertical alignment and the direction (=sign) of an optional location shift (=offset) dependend on the configured location:</para
+><table
+><title
+>Alignment and Offset Constrains for Annotation Box Positions</title
+><tgroup
+cols="2"
+><colspec
+colwidth="100"
+></colspec
+><colspec
+colwidth="100"
+></colspec
+><thead
+><row
+><entry
+align="center"
+>Position</entry
+><entry
+align="center"
+>Alignment</entry
+></row
+></thead
+><tbody
+><row
+><entry
+><literallayout
+>#.x=left[-offset]
+#.y=top[-offset]</literallayout
+></entry
+><entry
+><literallayout
+>#.align=right
+or
+#.valign=bottom</literallayout
+></entry
+></row
+><row
+><entry
+><literallayout
+>#.x=center
+#.y=top[-offset]</literallayout
+></entry
+><entry
+><literallayout
+>#.valign=bottom</literallayout
+></entry
+></row
+><row
+><entry
+><literallayout
+>#.x=right[+offset]
+#.y=top[-offset]</literallayout
+></entry
+><entry
+><literallayout
+>#.align=left
+or
+#.valign=bottom</literallayout
+></entry
+></row
+><row
+><entry
+><literallayout
+>#.x=left[-offset]
+#.y=center</literallayout
+></entry
+><entry
+><literallayout
+>#.align=right</literallayout
+></entry
+></row
+><row
+><entry
+><literallayout
+>#.x=right[+offset]
+#.y=center</literallayout
+></entry
+><entry
+><literallayout
+>#.align=left</literallayout
+></entry
+></row
+><row
+><entry
+><literallayout
+>#.x=left[-offset]
+#.y=bottom[+offset]</literallayout
+></entry
+><entry
+><literallayout
+>#.align=right
+or
+#.valign=top</literallayout
+></entry
+></row
+><row
+><entry
+><literallayout
+>#.x=center
+#.y=bottom[+offset]</literallayout
+></entry
+><entry
+><literallayout
+>#.valign=top</literallayout
+></entry
+></row
+><row
+><entry
+><literallayout
+>#.x=right[+offset]
+#.y=bottom[+offset]</literallayout
+></entry
+><entry
+><literallayout
+>#.align=left
+or
+#.valign=top</literallayout
+></entry
+></row
+></tbody
+></tgroup
+></table
+><para
+>Further ADF properties specifies the default content of the annotation box and the font name, size and color to render the text.</para
+><table
+><title
+>Further Annotation Properties</title
+><tgroup
+cols="2"
+><colspec
+colwidth="80"
+></colspec
+><thead
+><row
+><entry
+align="center"
+>Property</entry
+><entry
+align="center"
+>Description</entry
+></row
+></thead
+><tbody
+><row
+><entry
+>#</entry
+><entry
+>Specifies the default content (text) of this annotation box. The text may embed strings of the form <replaceable
+>$KEYWORD$</replaceable
+> which are replaced by its corresponding value. See <xref
+linkend="keyword-substitution"
+></xref
+>.</entry
+></row
+><row
+><entry
+>[#.]font.name</entry
+><entry
+>Specifies Font (family) name, used for text rendering. Possible values are printer dependend, but at least <literal
+>Serif</literal
+> and <literal
+>SansSerif</literal
+> are supported by any printer (driver).</entry
+></row
+><row
+><entry
+>[#.]font.size</entry
+><entry
+>Specifies Font point size used for text rendering. Possible values are printer dependend, but font sizes between 8 and 24 should be supported by any printer (driver).</entry
+></row
+><row
+><entry
+>[#.]font.style</entry
+><entry
+>Specifies font style used for text rendering. Possible values: <literal
+>plain</literal
+>, <literal
+>italic</literal
+>, <literal
+>bold</literal
+>, <literal
+>italic+bold</literal
+></entry
+></row
+><row
+><entry
+>[#.]font.color</entry
+><entry
+>Specifies color used for text rendering. Possible values: <literal
+>black</literal
+>, <literal
+>blue</literal
+>, <literal
+>cyan</literal
+>, <literal
+>gray</literal
+>, <literal
+>green</literal
+>, <literal
+>magenta</literal
+>, <literal
+>orange</literal
+>, <literal
+>pink</literal
+>, <literal
+>red</literal
+>, <literal
+>white</literal
+>, <literal
+>yellow</literal
+>.</entry
+></row
+></tbody
+></tgroup
+></table
+><para
+>Font attributes can be specified individually for each annotation box (=with the #. key prefix) or globally for all annotation boxes (without #. key prefix), wheras the individually specified value overwrites a possible global specified value for the same attribute.</para
+><para
+>E.g. <filename
+>server/default/conf/annotation/TITLE.5.adf</filename
+></para
+><programlisting
+>font.name=Serif
+font.size=8
+font.style=plain
+font.color=black
+
+1=Default Title
+1.font.size=16
+1.x=center
+1.y=top-2
+1.align=center
+1.valign=bottom</programlisting
+><para
+>defines Serif 8 plain style, color black as default font. The size of the font used for the first annotation box is overwritten to be 16 points, so <literal
+>Default Title</literal
+> - specified as default content - will be printed in Serif 16 plain style, color black, horizontial centered with the bottom line of the text 2 points above the top of the aera reserved for the printed image(s).</para
 ></section
 ><section
+id="keyword-substitution"
 ><title
 >Keyword substitution</title
 ><para
@@ -3410,7 +3659,7 @@ $ java -jar print-image.jar -a <replaceable
 >Enter as value of <literal
 >Illumination</literal
 > the same as configured in <link
-linkend="printer"
+linkend="printer-service"
 ><filename
 >server/default/deploy/printer-service.xml</filename
 ></link
