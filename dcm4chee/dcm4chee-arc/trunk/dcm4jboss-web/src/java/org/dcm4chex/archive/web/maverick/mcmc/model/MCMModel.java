@@ -166,7 +166,7 @@ public class MCMModel {
 			}
 			if ( ! mcmNotAvail && ( stati == null || stati.intValue() == MediaDTO.PROCESSING ) ) {
 				//perform get media creation status if filter contains PROCESSING media status.
-				MCMConsoleCtrl.getMcmScuDelegate().getMediaCreationStatus();
+				MCMConsoleCtrl.getMcmScuDelegate().updateMediaStatus();
 			}
 			if ( MCMFilter.CREATED_FILTER.equals( filter.getCreateOrUpdateDate() ) ) {
 				start = filter.startCreationAsLong();

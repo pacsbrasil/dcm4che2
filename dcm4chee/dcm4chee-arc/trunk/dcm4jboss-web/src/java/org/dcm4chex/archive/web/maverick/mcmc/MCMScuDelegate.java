@@ -56,16 +56,16 @@ public class MCMScuDelegate {
 		 * 
 		 * @return The WADO response object.
 		 */
-		public String getMediaCreationStatus() {
+		public String updateMediaStatus() {
 			String resp = null;
 			try {
 		        Object o = server.invoke(mcmScuServiceName,
-		                "getMediaCreationStatus",
+		                "updateMediaStatus",
 		                null,
 		                null );
 		        resp = (String) o;
 			} catch ( Exception x ) {
-				log.error( "Exception occured in getMediaCreationStatus: "+x.getMessage(), x );
+				log.error( "Exception occured in updateMediaStatus: "+x.getMessage(), x );
 			}
 	        return resp;
 		}
