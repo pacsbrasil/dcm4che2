@@ -35,8 +35,8 @@ import java.net.URI;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public class FileInfo
-{
+public class FileInfo {
+    public final byte[] patAttrs;
     public final String sopIUID;
     public final String sopCUID;
     public final String host;
@@ -49,6 +49,7 @@ public class FileInfo
     public final String fsIUID;
 
     public FileInfo(
+        byte[] patAttrs,
         String sopIUID,
         String sopCUID,
         String host,
@@ -58,8 +59,8 @@ public class FileInfo
         String md5,
         long size,
         int status,
-        String fsIUID)
-    {
+        String fsIUID) {
+        this.patAttrs = patAttrs;
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
         this.host = host;
@@ -71,14 +72,14 @@ public class FileInfo
         this.status = status;
         this.fsIUID = fsIUID;
     }
-    
-	public File toFile() {
-		try {
-			return new File(new URI("file:" + mnt + "/" + fpath));
-		} catch (Exception e) {
-			throw new IllegalStateException("" + this);
-		}
-		
-	}
+
+    public File toFile() {
+        try {
+            return new File(new URI("file:" + mnt + "/" + fpath));
+        } catch (Exception e) {
+            throw new IllegalStateException("" + this);
+        }
+
+    }
 
 }

@@ -131,6 +131,7 @@ class SqlBuilder {
         sb.append(leftJoin[1]);
         sb.append(" = ");
         sb.append(leftJoin[2]);
+        sb.append(")");
     }
 
     private void appendFkTo(StringBuffer sb) {

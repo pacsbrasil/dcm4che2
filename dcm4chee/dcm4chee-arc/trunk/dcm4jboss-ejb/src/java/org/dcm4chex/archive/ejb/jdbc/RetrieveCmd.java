@@ -55,6 +55,7 @@ public abstract class RetrieveCmd extends BaseCmd {
 
     private static final String[] SELECT_ATTRIBUTE =
         {
+            "Patient.encodedAttributes",
             "Instance.sopIuid",
             "Instance.sopCuid",
             "File.hostName",
@@ -63,6 +64,7 @@ public abstract class RetrieveCmd extends BaseCmd {
             "File.fileTsuid",
             "File.fileMd5Field",
             "File.fileSize",
+            "File.fileStatus",
             "Media.filesetIuid" };
 
     private static final String[] FK =
@@ -72,7 +74,8 @@ public abstract class RetrieveCmd extends BaseCmd {
             "Instance.series_fk",
             "File.instance_fk" };
 
-    public static RetrieveCmd create(DataSource ds, Dataset keys) throws SQLException {
+    public static RetrieveCmd create(DataSource ds, Dataset keys)
+        throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
             case 0 :
@@ -106,16 +109,17 @@ public abstract class RetrieveCmd extends BaseCmd {
             while (next()) {
                 result.add(
                     new FileInfo(
-                        rs.getString(1),
+                        rs.getBytes(1),
                         rs.getString(2),
                         rs.getString(3),
                         rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
-                        rs.getLong(8),
-                        rs.getInt(9),
-                        rs.getString(10)));
+                        rs.getString(8),
+                        rs.getLong(9),
+                        rs.getInt(10),
+                        rs.getString(11)));
             }
             return (FileInfo[]) result.toArray(new FileInfo[result.size()]);
         } finally {

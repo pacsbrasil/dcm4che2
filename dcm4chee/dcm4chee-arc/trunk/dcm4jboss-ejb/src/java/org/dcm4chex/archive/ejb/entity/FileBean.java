@@ -279,7 +279,8 @@ public abstract class FileBean implements EntityBean {
     }
 
     public void ejbPostCreate(
-        String aet,
+        String host,
+        String mnt,
         String path,
         String tsuid,
         long size,

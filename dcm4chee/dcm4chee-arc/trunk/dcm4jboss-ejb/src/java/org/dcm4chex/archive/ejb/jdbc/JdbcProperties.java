@@ -21,6 +21,8 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.SAXParser;
@@ -37,38 +39,62 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class JdbcProperties extends Properties {
 
+    private static final int NONE = -1;
+    private static final int EJB_NAME = 0;
+    private static final int TABLE_NAME = 1;
+    private static final int FIELD_NAME = 2;
+    private static final int COLUMN_NAME = 3;
+    private static final String ENTITY = "entity";
+
     private class SAXHandler extends DefaultHandler {
-        private char[] ch;
+        private final String[] QNAMES = {
+            "ejb-name",        
+            "table-name",
+            "field-name",
+            "column-name",
+        };
+        private List QNAMES_AS_LIST = Arrays.asList(QNAMES);
+        private int curEl = NONE;
+        private StringBuffer text = new StringBuffer();
         private String ejb;
         private String field;
         private boolean inEntity = false;
-        private int length;
-        private int start;
         private String table;
+
         public void characters(char[] ch, int start, int length)
             throws SAXException {
-            this.ch = ch;
-            this.start = start;
-            this.length = length;
+            if (curEl != NONE) {
+                for (int i = 0; i < length; i++) {
+                    text.append(ch[start + i]);
+                }
+            }
         }
 
         public void endElement(String uri, String localName, String qName)
             throws SAXException {
-            if (!inEntity) {
-                if (qName.equals(DATASOURCE))
-                    put(DATASOURCE, text());
-                return;
+            if (inEntity) {
+                switch (curEl) {
+                    case NONE:
+                        if (ENTITY.equals(qName)) {
+                            inEntity = false;
+                        }
+                        break;
+                    case EJB_NAME :
+                        ejb = text.toString();
+                        break;
+                    case TABLE_NAME :
+                        put(ejb, table = text.toString());
+                        break;
+                    case FIELD_NAME :
+                        field = text.toString();
+                        break;
+                    case COLUMN_NAME :
+                        put(ejb + '.' + field, table + '.' + text.toString());
+                        break;
+                }
             }
-            if (qName.equals(EJB_NAME))
-                ejb = text();
-            else if (qName.equals(TABLE_NAME))
-                put(ejb, table = text());
-            else if (qName.equals(FIELD_NAME))
-                field = text();
-            else if (qName.equals(COLUMN_NAME))
-                put(ejb + '.' + field, table + '.' + text());
-            else if (qName.equals(ENTITY))
-                inEntity = false;
+            text.setLength(0);
+            curEl = NONE;
         }
 
         public void startElement(
@@ -77,38 +103,37 @@ public class JdbcProperties extends Properties {
             String qName,
             Attributes attributes)
             throws SAXException {
-            if (qName.equals(ENTITY))
-                inEntity = true;
+            if (inEntity) {
+                curEl = QNAMES_AS_LIST.indexOf(qName);
+            } else {
+                inEntity = ENTITY.equals(qName);
+            }
         }
 
-        private String text() {
-            return new String(ch, start, length);
-        }
     }
-    private static final String COLUMN_NAME = "column-name";
-    private static final String EJB_NAME = "ejb-name";
-    private static final String ENTITY = "entity";
-    private static final String FIELD_NAME = "field-name";
-    private static final String DATASOURCE = "datasource";
-
     private static final String[] FK_FIELDS =
         {
-            "Study", "patient_fk",
-            "Series", "study_fk",
-            "Instance", "series_fk",
-            "Instance", "srcode_fk",
-            "File", "instance_fk",
-            "File", "media_fk",
-        };
+            "Study",
+            "patient_fk",
+            "Series",
+            "study_fk",
+            "Instance",
+            "series_fk",
+            "Instance",
+            "srcode_fk",
+            "File",
+            "instance_fk",
+            "File",
+            "media_fk",
+            };
     private static final JdbcProperties instance = new JdbcProperties();
     private static final String JBOSSCMP_JDBC_XML =
         "META-INF/jbosscmp-jdbc.xml";
-    private static final String TABLE_NAME = "table-name";
-    
+
     public static JdbcProperties getInstance() {
         return instance;
     }
-    
+
     public String[] getProperties(String[] keys, int length) {
         String[] values = new String[length];
         for (int i = 0; i < length; i++)
