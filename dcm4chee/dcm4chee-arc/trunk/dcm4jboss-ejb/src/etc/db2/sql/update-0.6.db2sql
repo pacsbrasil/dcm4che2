@@ -11,12 +11,16 @@ CREATE INDEX pat_merge_fk ON patient(merge_fk);
 
 ALTER TABLE study
 	ADD COLUMN availability INTEGER;
+UPDATE study SET availability = 0;
 ALTER TABLE series
 	ADD COLUMN availability INTEGER;
+UPDATE series SET availability = 0;
 ALTER TABLE instance
 	ADD COLUMN availability INTEGER;
+UPDATE instance SET availability = 0;
 ALTER TABLE instance
 	ADD COLUMN commitment SMALLINT;
+UPDATE instance SET commitment = 0;
 
 DROP TABLE ae ;
 CREATE SEQUENCE ae_pk_seq;
