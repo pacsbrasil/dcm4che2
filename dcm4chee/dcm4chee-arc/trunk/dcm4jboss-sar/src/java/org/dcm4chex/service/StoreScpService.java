@@ -20,17 +20,12 @@
 
 package org.dcm4chex.service;
 
-import java.beans.PropertyEditor;
-import java.io.File;
-import java.io.IOException;
-
 import javax.management.ObjectName;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
-import org.dcm4chex.service.util.ConfigFileEditor;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -137,20 +132,6 @@ public class StoreScpService
     /**
      * @jmx.managed-attribute
      */
-    public String getRetrieveAET() {
-        return scp.getRetrieveAET();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setRetrieveAET(String retrieveAET) {
-        scp.setRetrieveAET(retrieveAET);
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
     public String getProviderURL() {
         return scp.getProviderURL();
     }
@@ -166,34 +147,23 @@ public class StoreScpService
     /**
      * @jmx.managed-attribute
      */
-    public String getArchiveDir()
+    public String getMountPoint()
     {
-        PropertyEditor pe = new ConfigFileEditor();
-        pe.setValue(scp.getArchiveDir());
-        return pe.getAsText();
+        return scp.getMountPoint();
     }
 
 
     /**
      * @jmx.managed-attribute
      */
-    public void setArchiveDir(String archiveDir)
+    public void setMountPoint(String mnt)
     {
-        PropertyEditor pe = new ConfigFileEditor();
-        pe.setAsText(archiveDir);
-        scp.setArchiveDir((File) pe.getValue());
+        scp.setMountPoint(mnt);
     }
             
     protected void startService() throws Exception {
-        File archiveDir = scp.getArchiveDir();
-        if (!archiveDir.exists()) {
-            log.warn("Creating archive directory - "
-                     + archiveDir.getCanonicalPath());
-            archiveDir.mkdirs();
-        }
-        if (!archiveDir.isDirectory() || !archiveDir.canWrite()) {
-            throw new IOException("No writeable archiveDir directory - "
-                     + archiveDir);
+        if (scp.getMountPoint() == null) {
+            throw new IllegalStateException("MountPoint not configured");
         }
         dcmHandler =
                 (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");

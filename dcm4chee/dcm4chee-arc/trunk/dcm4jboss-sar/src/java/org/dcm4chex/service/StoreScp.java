@@ -26,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
@@ -86,8 +88,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private final StoreScpService scp;
     private final Logger log;
+    private String host;
+    private String mnt;
     private File archiveDir;
-    private String retrieveAET;
     private String providerURL;
 
     public StoreScp(StoreScpService scp) {
@@ -103,20 +106,25 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.providerURL = providerURL;
     }
 
-    public String getRetrieveAET() {
-        return retrieveAET;
+    public String getMountPoint() {
+        return mnt;
     }
 
-    public void setRetrieveAET(String retrieveAET) {
-        this.retrieveAET = retrieveAET;
+    public void setMountPoint(String mnt) {        
+        try {
+            File tmp = new File(new URI("file:" + mnt));
+            if (!tmp.isDirectory() || tmp.canWrite()) {
+                throw new IllegalArgumentException("mnt:" + mnt + " not a writeable directory");                
+            }
+            this.archiveDir = tmp;
+            this.mnt = mnt;
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("mnt:" + mnt);
+        }
     }
 
     public File getArchiveDir() {
         return archiveDir;
-    }
-
-    public void setArchiveDir(File archiveDir) {
-        this.archiveDir = archiveDir;
     }
 
     protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
@@ -172,7 +180,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 + "/"
                 + file.getName();
         Storage storage = storageHome().create();
-        storage.store(ds, retrieveAET, path, file.length(), md5);
+        storage.store(ds, host, mnt, path, file.length(), md5);
         storage.remove();
     }
 

@@ -21,7 +21,12 @@
 package org.dcm4chex.service;
 
 import javax.management.ObjectName;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
+import org.dcm4che.conf.ldap.LdapConfig;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -36,18 +41,21 @@ import org.jboss.system.ServiceMBeanSupport;
  * @version $Revision$
  * @since 31.08.2003
  */
-public class QueryScpService
+public class MoveScpService
     extends ServiceMBeanSupport
-    implements org.dcm4chex.service.QueryScpServiceMBean
+    implements org.dcm4chex.service.MoveScpServiceMBean
 {
     private final static String[] NATIVE_TS = {
             UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian
             };
-            
+                
     private ObjectName dcmServerName;
     private DcmHandler dcmHandler;
-    private QueryScp scp = new QueryScp(this);
+    private String dsJndiName;
+    private DataSource datasource;
+    private LdapConfig ldap = new LdapConfig();
+    private MoveScp scp = new MoveScp(this);    
 
     /**
      * @jmx.managed-attribute
@@ -66,15 +74,57 @@ public class QueryScpService
     /**
      * @jmx.managed-attribute
      */
-    public String getDatasource() {
-        return scp.getDsJndiName();
+    public String getDsJndiName() {
+        return dsJndiName;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public void setDatasource(String datasource) {
-        scp.setDsJndiName(datasource);
+    public void setDsJndiName(String dsJndiName) {
+        this.dsJndiName = dsJndiName;
+    }
+        
+    /**
+     * @jmx.managed-attribute
+     */
+    public final String getLdapBaseDN() {
+        return ldap.getBaseDN();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setLdapBaseDN(String baseDN) {
+        ldap.setBaseDN(baseDN);
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final String getLdapHost() {
+        return ldap.getHost();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setLdapHost(String host) {
+        ldap.setHost(host);
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final String getLdapPort() {
+        return ldap.getPort();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setLdapPort(String port) {
+        ldap.setPort(port);
     }
     
     protected void startService() throws Exception {
@@ -93,9 +143,9 @@ public class QueryScpService
     private void bindDcmServices()
     {
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
-        services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND, scp);
-        services.bind(UIDs.StudyRootQueryRetrieveInformationModelFIND, scp);
-        services.bind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND, scp);
+        services.bind(UIDs.PatientRootQueryRetrieveInformationModelMOVE, scp);
+        services.bind(UIDs.StudyRootQueryRetrieveInformationModelMOVE, scp);
+        services.bind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE, scp);
     }
 
     private void unbindDcmServices()
@@ -109,9 +159,27 @@ public class QueryScpService
     private void updatePolicy(String[] tsuids)
     {
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
-        policy.putPresContext(UIDs.PatientRootQueryRetrieveInformationModelFIND, tsuids);
-        policy.putPresContext(UIDs.StudyRootQueryRetrieveInformationModelFIND, tsuids);
-        policy.putPresContext(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND, tsuids);
+        policy.putPresContext(UIDs.PatientRootQueryRetrieveInformationModelMOVE, tsuids);
+        policy.putPresContext(UIDs.StudyRootQueryRetrieveInformationModelMOVE, tsuids);
+        policy.putPresContext(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE, tsuids);
+    }
+
+    public LdapConfig getLdapConfig() {
+        return ldap;
+    }
+
+    public DataSource getDataSource() throws NamingException {
+        if (datasource == null) {
+            Context jndiCtx = new InitialContext();
+            try {
+                datasource = (DataSource) jndiCtx.lookup(dsJndiName);
+            } finally {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {}
+            }
+        }
+        return datasource;
     }
 
 }

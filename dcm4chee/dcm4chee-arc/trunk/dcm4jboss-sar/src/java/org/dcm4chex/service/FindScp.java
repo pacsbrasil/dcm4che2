@@ -46,8 +46,8 @@ import org.jboss.logging.Logger;
  * @version $Revision$
  * @since 31.08.2003
  */
-public class QueryScp extends DcmServiceBase {
-    private final QueryScpService scp;
+public class FindScp extends DcmServiceBase {
+    private final FindScpService scp;
     private final Logger log;
     private DataSource datasource;
     private String dsJndiName;
@@ -60,7 +60,7 @@ public class QueryScp extends DcmServiceBase {
         this.dsJndiName = dsJndiName;
     }
 
-    public QueryScp(QueryScpService scp) {
+    public FindScp(FindScpService scp) {
         this.scp = scp;
         this.log = scp.getLog();
     }

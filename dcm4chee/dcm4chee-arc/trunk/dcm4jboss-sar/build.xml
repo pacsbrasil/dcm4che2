@@ -6,8 +6,8 @@
 	<property name="dcmsrv.sar" value="dcm4jboss-dcmsrv.sar"/>
 	<property name="storescp.jar" value="dcm4jboss-storescp.jar"/>
 	<property name="storescp.sar" value="dcm4jboss-storescp.sar"/>
-	<property name="queryscp.jar" value="dcm4jboss-queryscp.jar"/>
-	<property name="queryscp.sar" value="dcm4jboss-queryscp.sar"/>
+	<property name="findscp.jar" value="dcm4jboss-findscp.jar"/>
+	<property name="findscp.sar" value="dcm4jboss-findscp.sar"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
 	<property name="src.java" value="${src.dir}/java"/>
@@ -127,7 +127,7 @@
    	<!-- build sars                                        -->
    	<!-- =================================================================== -->
    
-   	<target name="sar" depends="dcmsrv-sar,storescp-sar,queryscp-sar"/>
+   	<target name="sar" depends="dcmsrv-sar,storescp-sar,findscp-sar"/>
 
     <target name="dcmsrv-sar" depends="compile">
         <copy file="${src.deploy}/dcm4jboss-dcmsrv-service.xml" 
@@ -165,18 +165,18 @@
         </zip>
     </target>   
 
-    <target name="queryscp-sar" depends="compile">
-        <copy file="${src.deploy}/dcm4jboss-queryscp-service.xml" 
-            tofile="${target.dir}/queryscp/jboss-service.xml">
+    <target name="findscp-sar" depends="compile">
+        <copy file="${src.deploy}/dcm4jboss-findscp-service.xml" 
+            tofile="${target.dir}/findscp/jboss-service.xml">
             <filterset>
                 <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-jdbc.jar"/>
             </filterset>
         </copy>  
-        <zip zipfile="${target.deploy}/${queryscp.sar}">
+        <zip zipfile="${target.deploy}/${findscp.sar}">
         	<zipfileset dir="${target.classes}">
-        		<include name="**/QueryScp*"/>
+        		<include name="**/FindScp*"/>
         	</zipfileset>
-        	<zipfileset dir="${target.dir}/queryscp" prefix="META-INF">
+        	<zipfileset dir="${target.dir}/findscp" prefix="META-INF">
         		<include name="jboss-service.xml"/>
         	</zipfileset>        	
         </zip>
@@ -188,7 +188,7 @@
    	<target name="deploy" depends="sar">
     	<copy file="${target.deploy}/dcm4jboss-dcmsrv.sar" todir="${jboss.conf}/deploy"/>
     	<copy file="${target.deploy}/dcm4jboss-storescp.sar" todir="${jboss.conf}/deploy"/>
-    	<copy file="${target.deploy}/dcm4jboss-queryscp.sar" todir="${jboss.conf}/deploy"/>
+    	<copy file="${target.deploy}/dcm4jboss-findscp.sar" todir="${jboss.conf}/deploy"/>
    	</target>
 
    	<!-- =================================================================== -->
@@ -198,7 +198,7 @@
    	<target name="undeploy">
     	<delete file="${jboss.conf}/deploy/dcm4jboss-dcmsrv.sar"/>
     	<delete file="${jboss.conf}/deploy/dcm4jboss-storescp.sar"/>
-    	<delete file="${jboss.conf}/deploy/dcm4jboss-queryscp.sar"/>
+    	<delete file="${jboss.conf}/deploy/dcm4jboss-findscp.sar"/>
    	</target>
 
    	<!-- =================================================================== -->

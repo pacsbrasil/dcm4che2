@@ -4,7 +4,7 @@
 
 <!-- ===================================================================== -->
 <!--                                                                       -->
-<!--  DICOM Storage Service Configuration                                   -->
+<!--  DICOM Query Service Configuration                                   -->
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
@@ -12,22 +12,22 @@
 
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
-  <mbean code="org.dcm4chex.service.StoreScpService" 
-         name="dcm4chex:service=StoreScp">
+  <mbean code="org.dcm4chex.service.QueryScpService" 
+         name="dcm4chex:service=QueryScp">
 
     <depends optional-attribute-name="DcmServerName">
         dcm4chex:service=DcmServer,name=DCMSRV
     </depends>
     
-    <!-- Do NOT uncomment this line if the service is deployed
-    in the same jboss instance as the Storage EJB. Otherwise
-    in VM calls to go over RMI!
-        
-    <attribute name="ProviderURL">localhost</attribute>
-    -->
-
     <attribute name="MountPoint">/var/local/dcm4che/arch1</attribute>
-    
+
+    <attribute name="DsJndiName">java:/PostgresDS</attribute>    
+
+    <attribute name="LdapBaseDN">dc=tiani,dc=com</attribute>    
+    <attribute name="LdapHost">localhost</attribute>    
+    <attribute name="LdapPort">389</attribute>    
+
+         
   </mbean>
 
 </server>
