@@ -38,7 +38,7 @@ class FilesetComponent implements Comparable {
 
     private final String id;
 
-    private final Comparable comparable;
+    private final String comparable;
 
     private FilesetComponent parent = null;
 
@@ -46,7 +46,7 @@ class FilesetComponent implements Comparable {
 
     private long size = 0L;
 
-    private final String[] fileIDs;
+    private final String filePath;
 
     private final int level;
 
@@ -62,6 +62,10 @@ class FilesetComponent implements Comparable {
         return parent != null ? parent.root() : this;
     }
 
+    public final FilesetComponent parent() {
+        return parent;
+    }
+
     public final List childs() {
         return Collections.unmodifiableList(childs);
     }
@@ -70,46 +74,40 @@ class FilesetComponent implements Comparable {
         return id;
     }
 
-    public final String[] fileIDs() {
-        return (String[]) fileIDs.clone();
-    }
-
     private static String padWithLeadingZeros(String s) {
         return "0000000000".substring(Math.min(10, s.length())) + s;
     }
 
     public static FilesetComponent makeRootFilesetComponent() {
-        return new FilesetComponent(null, null, new String[0], ROOT);
+        return new FilesetComponent(null, null, "", ROOT);
     }
 
     public static FilesetComponent makePatientFilesetComponent(Dataset ds,
-            String[] fileIDs) {
-        return new FilesetComponent(ds.getString(Tags.PatientID), ds
-                .getString(Tags.PatientName), new String[] { fileIDs[0],
-                fileIDs[1]}, PATIENT);
+            String filePath) {
+        return new FilesetComponent(ds.getString(Tags.PatientID), ds.getString(
+                Tags.PatientName, ""), filePath, PATIENT);
     }
 
     public static FilesetComponent makeStudyFilesetComponent(Dataset ds,
-            String[] fileIDs) {
+            String filePath) {
         return new FilesetComponent(ds.getString(Tags.StudyInstanceUID), ds
-                .getDateTime(Tags.StudyDate, Tags.StudyTime), new String[] {
-                fileIDs[0], fileIDs[1], fileIDs[2]}, STUDY);
+                .getString(Tags.StudyDate, "")
+                + ds.getString(Tags.StudyTime, ""), filePath, STUDY);
     }
 
     public static FilesetComponent makeSeriesFilesetComponent(Dataset ds,
-            String[] fileIDs) {
+            String filePath) {
         return new FilesetComponent(ds.getString(Tags.SeriesInstanceUID), ds
-                .getString(Tags.Modality)
+                .getString(Tags.Modality, "")
                 + padWithLeadingZeros(ds.getString(Tags.SeriesNumber, "")),
-                new String[] { fileIDs[0], fileIDs[1], fileIDs[2], fileIDs[3]},
-                SERIES);
+                filePath, SERIES);
     }
 
     public static FilesetComponent makeInstanceFilesetComponent(Dataset ds,
-            String[] fileIDs) {
+            String filePath) {
         return new FilesetComponent(ds.getString(Tags.SOPInstanceUID),
                 padWithLeadingZeros(ds.getString(Tags.InstanceNumber, "")),
-                (String[]) fileIDs.clone(), INSTANCE);
+                filePath, INSTANCE);
     }
 
     public String toString() {
@@ -123,11 +121,11 @@ class FilesetComponent implements Comparable {
                         : "") + "]";
     }
 
-    private FilesetComponent(String id, Comparable comparable,
-            String[] fileIDs, int level) {
+    private FilesetComponent(String id, String comparable, String filePath,
+            int level) {
         this.id = id;
         this.comparable = comparable;
-        this.fileIDs = fileIDs;
+        this.filePath = filePath;
         this.level = level;
     }
 
@@ -136,8 +134,6 @@ class FilesetComponent implements Comparable {
     }
 
     public int compareTo(Object o) {
-        if (comparable == null || ((FilesetComponent) o).comparable == null)
-                return 0;
         return comparable.compareTo(((FilesetComponent) o).comparable);
     }
 
@@ -178,9 +174,13 @@ class FilesetComponent implements Comparable {
     }
 
     private FilesetComponent newFilesetComponent() {
-        FilesetComponent result = new FilesetComponent(id, comparable, fileIDs,
-                level);
+        FilesetComponent result = new FilesetComponent(id, comparable,
+                filePath, level);
         if (parent != null) parent.newFilesetComponent().addChild(result);
         return result;
+    }
+
+    public String getFilePath() {
+        return filePath;
     }
 }

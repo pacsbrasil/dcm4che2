@@ -28,6 +28,7 @@ import org.dcm4chex.cdw.common.ConfigurationException;
 import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
+import org.dcm4chex.cdw.common.Flag;
 import org.dcm4chex.cdw.common.JMSDelegate;
 import org.dcm4chex.cdw.common.MediaCreationException;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
@@ -53,8 +54,6 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private static final long GB = 1073741824L;
 
     private static final long MIN_MEDIA_SIZE = 1048576L;
-    
-    private static final long MIN_HTML_SIZE = 1024L;
 
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
@@ -68,19 +67,9 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private final File mergeDirViewer;
 
     private final File mergeDirWeb;
-    
-    private final long mergeDirSize;
-
-    private final long mergeDirViewerSize;
-
-    private final long mergeDirWebSize;
 
     private long mediaCapacity = 700 * MB;
 
-    private long maxHtmlSize = 1 * MB;
-    
-    private boolean includeDisplayApplicationOnlyOnFirstMedia = true;    
-    
     private String fileSetDescriptorFile = "README.TXT";
 
     private String charsetOfFileSetDescriptorFile = "ISO_IR 100";
@@ -125,13 +114,6 @@ public class MediaComposerService extends ServiceMBeanSupport {
         checkExists(mergeDir = new File(datadir, "mergedir"));
         checkExists(mergeDirViewer = new File(datadir, "mergedir-viewer"));
         checkExists(mergeDirWeb = new File(datadir, "mergedir-web"));
-        try {
-            mergeDirSize = sizeOf(mergeDir);
-            mergeDirViewerSize = sizeOf(mergeDirViewer);
-            mergeDirWebSize = sizeOf(mergeDirWeb);
-        } catch (Exception e) {
-            throw new ConfigurationException(e);
-        }
         Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
         if (!it.hasNext())
                 throw new ConfigurationException("DICOM Image Reader not found");
@@ -183,11 +165,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
         else
             throw new IllegalArgumentException(s);
         try {
-            return (long) (Float.parseFloat(s.substring(0,
-                    s.length() - 2)) * u);
+            return (long) (Float.parseFloat(s.substring(0, s.length() - 2)) * u);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(s);
-        }        
+        }
     }
 
     public final String getMediaCapacity() {
@@ -203,30 +184,6 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 throw new IllegalArgumentException("mediaCapacity:"
                         + mediaCapacity);
         this.mediaCapacity = mediaCapacity;
-    }
-
-    public final String getMaxHtmlSize() {
-        return formatSize(maxHtmlSize);
-    }
-
-    public final void setMaxHtmlSize(String maxHtmlSize) {
-        setMaxHtmlSize(parseSize(maxHtmlSize));
-    }
-
-    private void setMaxHtmlSize(long maxHtmlSize) {
-        if (maxHtmlSize < MIN_HTML_SIZE)
-            throw new IllegalArgumentException("maxHtmlSize:"
-                    + maxHtmlSize);
-        this.maxHtmlSize = maxHtmlSize;
-    }
-
-    public final boolean isIncludeDisplayApplicationOnlyOnFirstMedia() {
-        return includeDisplayApplicationOnlyOnFirstMedia;
-    }
-
-    public final void setIncludeDisplayApplicationOnlyOnFirstMedia(boolean includeDisplayApplicationOnlyOnFirstMedia) {
-        this.includeDisplayApplicationOnlyOnFirstMedia =
-            includeDisplayApplicationOnlyOnFirstMedia;
     }
 
     public final boolean isKeepSpoolFiles() {
@@ -347,47 +304,42 @@ public class MediaComposerService extends ServiceMBeanSupport {
             rq.writeAttributes(attrs, log);
             try {
                 FilesetBuilder builder = new FilesetBuilder(this, rq, attrs);
-                List rqList = builder.build();
-                for (int i = 0, n = rqList.size(); i < n; ++i) {
-                    MediaCreationRequest rq1 = (MediaCreationRequest) rqList.get(i);
-	                DicomDirDOM dom = new DicomDirDOM(this, rq1, attrs);
-	                if (logXml) dom.toXML(xmlFile);
-	                dom.createIndex();
-	                if (builder.isWeb()) dom.createWeb();
-	                final long fsSize = sizeOf(rq1.getFilesetDir());
-	                if (fsSize > mediaCapacity)
-	                        throw new MediaCreationException(
-	                                ExecutionStatusInfo.SET_OVERSIZED,
-	                                "File-set size: " + formatSize(fsSize)
-	                                        + " exceeds Media Capacity: "
-	                                        + formatSize(mediaCapacity));
-	                if (rq.isCanceled()) {
-	                    log.info("" + rq + " was canceled");
-	                    return;
-	                }
-	                attrs = rq1.readAttributes(log);
-	                String status = attrs.getString(Tags.ExecutionStatus);
-	                if (ExecutionStatus.FAILURE.equals(status)) {
-	                    log.info("" + rq1 + " already failed");
-	                    return;
-	                }
-	                if (rq1.getVolsetSeqno() == 1) {
-	                    attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
-	                    attrs.putCS(Tags.ExecutionStatusInfo,
-	                            makeIsoImage ? ExecutionStatusInfo.QUEUED_MKISOFS
-	                                    : ExecutionStatusInfo.QUEUED);
-	                    rq1.writeAttributes(attrs, log);
-	                }
-	                try {
-	                    JMSDelegate.getInstance(
-	                            makeIsoImage ? "MakeIsoImage" : "MediaWriter")
-	                            .queue(log, rq1);
-	                    cleanup = false;
-	                } catch (JMSException e) {
-	                    throw new MediaCreationException(
-	                            ExecutionStatusInfo.PROC_FAILURE, e);
-	                }
+                builder.buildFileset();
+                DicomDirDOM dom = new DicomDirDOM(this, rq, attrs);
+                if (builder.isWeb()) dom.createWeb(rq);
+                final long fsSize = sizeOf(rq.getFilesetDir());
+                if (fsSize > mediaCapacity) {
+                    if (!Flag.isYes(attrs.getString(Tags.AllowMediaSplitting))) { 
+                        throw new MediaCreationException(
+                            ExecutionStatusInfo.SET_OVERSIZED,
+                            "File-set size: " + formatSize(fsSize)
+                                    + " exceeds Media Capacity: "
+                                    + formatSize(mediaCapacity)); }
+                    final long sizeOfNonDicomContent = fsSize
+                            - builder.sizeOfDicomContent();
+                    if (sizeOfNonDicomContent > mediaCapacity) {
+                        throw new MediaCreationException(
+                            ExecutionStatusInfo.SET_OVERSIZED,
+                            "Size of Non-DICOM Content: "
+                                    + formatSize(sizeOfNonDicomContent)
+                                    + " exceeds Media Capacity: "
+                                    + formatSize(mediaCapacity)); }
+                    List rqList = builder.splitMedia(mediaCapacity
+                            - sizeOfNonDicomContent, mediaCapacity
+                            - rq.getDicomDirFile().length(), dom);
+                    if (logXml) dom.toXML(xmlFile);
+                    for (int i = 0, n = rqList.size(); i < n; ++i) {
+                        MediaCreationRequest rq1 =(MediaCreationRequest) rqList.get(i);
+                        dom.createIndex(rq1);
+                        if (!forward(rq1))
+                                return;
+                    }
+                } else {
+                    if (logXml) dom.toXML(xmlFile);
+                    dom.createIndex(rq);
+                    if (!forward(rq)) return;
                 }
+                cleanup = false;
             } catch (MediaCreationException e) {
                 if (rq.isCanceled()) {
                     log.info("" + rq + " was canceled");
@@ -408,6 +360,36 @@ public class MediaComposerService extends ServiceMBeanSupport {
         }
     }
 
+    private boolean forward(MediaCreationRequest rq)
+            throws IOException, MediaCreationException {
+        if (rq.isCanceled()) {
+            log.info("" + rq + " was canceled");
+            return false;
+        }
+        Dataset attrs = rq.readAttributes(log);
+        String status = attrs.getString(Tags.ExecutionStatus);
+        if (ExecutionStatus.FAILURE.equals(status)) {
+            log.info("" + rq + " already failed");
+            return false;
+        }
+        if (rq.getVolsetSeqno() == 1) {
+            attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
+            attrs.putCS(Tags.ExecutionStatusInfo,
+                    makeIsoImage ? ExecutionStatusInfo.QUEUED_MKISOFS
+                            : ExecutionStatusInfo.QUEUED);
+            rq.writeAttributes(attrs, log);
+        }
+        try {
+            JMSDelegate.getInstance(
+                    makeIsoImage ? "MakeIsoImage" : "MediaWriter").queue(log,
+                    rq);
+        } catch (JMSException e) {
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    e);
+        }
+        return true;
+    }
+
     private long sizeOf(File file) throws MediaCreationException {
         String[] cmdarray = { "mkisofs", "-quiet", "-print-size",
                 file.getAbsolutePath()};
@@ -424,14 +406,5 @@ public class MediaComposerService extends ServiceMBeanSupport {
                     e);
         }
     }
-    
-    final long freeSizeOnMedia(boolean web, boolean viewer) {
-        long free = mediaCapacity - mergeDirSize;
-        if (web)
-            free -= mergeDirWebSize + maxHtmlSize;
-        if (viewer)
-            free -= mergeDirViewerSize;
-        return free;
-    }
-    
+
 }

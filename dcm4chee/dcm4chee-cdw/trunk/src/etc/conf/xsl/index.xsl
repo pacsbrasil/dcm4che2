@@ -2,7 +2,9 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:output method="ht" encoding="ISO-8859-1" indent="yes" doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
 <xsl:include href="common.xsl"/>
-
+<xsl:param name="seqno" select="1"/>
+<xsl:param name="size" select="1"/>
+<xsl:param name="fsid" select="''"/>
 <xsl:template match="/">
 	<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
@@ -31,7 +33,7 @@
 						</li>
 					</ul>
 				</li>
-				<xsl:if test="dicomdir/attr[@tag='(2200,0008)']!='NO'">
+				<xsl:if test="dicomdir/attr[@tag='(2200,0008)']!='NO' and $seqno = 1">
 					<li>
 						<p>a <a href="IHE_PDI/INDEX.HTM">link</a> to an entry point for accessing the
 							web content of the IHE_PDI directory.</p>
@@ -48,7 +50,7 @@
 						If there is web-viewable content that is not importable by a Portable Media Importer,
 						a note describing this situation shall be included as part of the manifest.</p>
 				</li>
-				<xsl:if test="dicomdir/attr[@tag='(2200,0009)']!='NO'">
+				<xsl:if test="dicomdir/attr[@tag='(2200,0009)']!='NO' and $seqno = 1">
 					<li>
 						<p>a link to a launch point for a DICOM viewer, if present on the interchange media.</p>
 					</li>
@@ -60,7 +62,12 @@
 </xsl:template>
 
 <xsl:template match="dicomdir">
-	<h3>Manifest of DICOM Media <xsl:value-of select="attr[@tag='(0004,1130)']"/></h3>
+	<h3>Manifest of DICOM Media #<xsl:value-of select="$seqno"/>
+	<xsl:text> of </xsl:text>
+	<xsl:value-of select="$size"/>
+	<xsl:text> - </xsl:text>
+	<xsl:value-of select="$fsid"/>
+	</h3>
 	<table cellpadding="0" cellspacing="0" border="0" bgcolor="#C0C0C0" width="100%">
 		<tr>
 			<td>
@@ -104,67 +111,96 @@
 </xsl:template>
 
 <xsl:template match="record[@type='PATIENT']">
+	<xsl:variable name="bgcolor">
+		<xsl:choose>
+			<xsl:when test="record/record/record[@seqno=$seqno]">#FFE4EE</xsl:when>
+			<xsl:otherwise>#CCCCCC</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<tr>
-		<td bgcolor="#FFE4EE" colspan="4">
+		<td bgcolor="{$bgcolor}" colspan="4">
 			<xsl:call-template name="formatPN">
 				<xsl:with-param name="pn" select="attr[@tag='(0010,0010)']"/>
 			</xsl:call-template>
 		</td>
-		<td bgcolor="#FFE4EE">
+		<td bgcolor="{$bgcolor}">
 			<xsl:call-template name="formatDate">
 				<xsl:with-param name="date" select="attr[@tag='(0010,0030)']"/>
 			</xsl:call-template>
 		</td>
-		<td bgcolor="#FFE4EE">
+		<td bgcolor="{$bgcolor}">
 			<xsl:value-of select="attr[@tag='(0010,0040)']"/>
 		</td>
 	</tr>
 	<xsl:apply-templates select="record[@type='STUDY']">
+		<xsl:with-param name="patbgcolor" select="$bgcolor"/>
 		<xsl:sort data-type="text" order="ascending" select="attr[@tag='(0008,0020)']"/>
 	</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="record[@type='STUDY']">
+	<xsl:param name="patbgcolor"/>
+	<xsl:variable name="bgcolor">
+		<xsl:choose>
+			<xsl:when test="record/record[@seqno=$seqno]">#E4EEFF</xsl:when>
+			<xsl:otherwise>#CCCCCC</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<tr>
 		<xsl:if test="position()=1">
-			<td bgcolor="#FFE4EE" rowspan="{last()+count(../record/record)}">&#160;</td>
+			<td bgcolor="{$patbgcolor}" rowspan="{last()+count(../record/record)}">&#160;</td>
 		</xsl:if>
-		<td bgcolor="#E4EEFF" colspan="2">
+		<td bgcolor="{$bgcolor}" colspan="2">
 			<xsl:call-template name="formatDate">
 				<xsl:with-param name="date" select="attr[@tag='(0008,0020)']"/>
 			</xsl:call-template>
 		</td>
-		<td bgcolor="#E4EEFF" colspan="2">
+		<td bgcolor="{$bgcolor}" colspan="2">
 			<xsl:value-of select="attr[@tag='(0008,1030)']"/>
 		</td>
-		<td bgcolor="#E4EEFF">
+		<td bgcolor="{$bgcolor}">
 			<xsl:value-of select="count(record/record)"/>
 		</td>
 	</tr>
 	<xsl:apply-templates select="record[@type='SERIES']">
+		<xsl:with-param name="stybgcolor" select="$bgcolor"/>
 		<xsl:sort data-type="text" order="ascending" select="attr[@tag='(0008,0060)']"/>
 	</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="record[@type='SERIES']">
+	<xsl:param name="stybgcolor"/>
+	<xsl:variable name="bgcolor">
+		<xsl:choose>
+			<xsl:when test="record[@seqno=$seqno]">#EEFFE4</xsl:when>
+			<xsl:otherwise>#CCCCCC</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<tr>
 		<xsl:if test="position()=1">
-			<td bgcolor="#E4EEFF" rowspan="{last()}">&#160;</td>
+			<td bgcolor="{$stybgcolor}" rowspan="{last()}">&#160;</td>
 		</xsl:if>
-		<td bgcolor="#EEFFE4">
+		<td bgcolor="{$bgcolor}">
 			<xsl:value-of select="attr[@tag='(0008,0060)']"/>
 		</td>
-		<td bgcolor="#EEFFE4" colspan="2">
-			<xsl:variable name="dir">
-				<xsl:call-template name="parentDir">
-					<xsl:with-param name="file" select="record/attr[@tag='(0004,1500)']"/>
-				</xsl:call-template>
-			</xsl:variable>
-			<a href="{$dir}">
-				<xsl:value-of select="$dir"/>
-			</a>
+		<td bgcolor="{$bgcolor}" colspan="2">
+			<xsl:choose>
+				<xsl:when test="record[@seqno=$seqno]">
+					<xsl:variable name="dir">
+						<xsl:call-template name="parentDir">
+							<xsl:with-param name="file" select="record/attr[@tag='(0004,1500)']"/>
+						</xsl:call-template>
+					</xsl:variable>
+					<a href="{$dir}">
+						<xsl:value-of select="$dir"/>
+					</a>
+				</xsl:when>
+				<xsl:otherwise>
+					DICOM Media #<xsl:value-of select="@seqno"/>
+				</xsl:otherwise>
+			</xsl:choose>
 		</td>
-		<td bgcolor="#EEFFE4">
+		<td bgcolor="{$bgcolor}">
 			<xsl:value-of select="count(record)"/>
 		</td>
 	</tr>

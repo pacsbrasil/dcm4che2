@@ -97,8 +97,6 @@ class FilesetBuilder {
 
     private final boolean preserveInstances;
 
-    private final boolean splitMedia;
-
     private final String web;
 
     private BufferedImage imageBI;
@@ -158,16 +156,17 @@ class FilesetBuilder {
         this.viewer = Flag.isYes(attrs
                 .getString(Tags.IncludeDisplayApplication));
         this.web = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
-        this.splitMedia = Flag.isYes(attrs.getString(Tags.AllowMediaSplitting));
     }
 
     final boolean isWeb() {
         return !"NO".equals(web);
     }
 
-    public List build() throws MediaCreationException {
-        ArrayList result = new ArrayList();
-        result.add(rq);
+    final boolean isViewer() {
+        return viewer;
+    }
+
+    public void buildFileset() throws MediaCreationException {
         try {
             File rootDir = mkRootDir(spoolDir, false);
             rq.setFilesetDir(rootDir);
@@ -195,20 +194,14 @@ class FilesetBuilder {
                 mergeDir(service.getMergeDirWeb(), rootDir);
             }
             if (viewer) mergeDir(service.getMergeDirViewer(), rootDir);
-            if (fsRoot.size() > service.freeSizeOnMedia(isWeb(), viewer)) {
-                if (!splitMedia)
-                        throw new MediaCreationException(
-                                ExecutionStatusInfo.SET_OVERSIZED,
-                                "File-set size exceeds Media Capacity: "
-                                        + service.getMediaCapacity());
-                log.info("Start splitting " + rq + " to several media.");
-                splitMedia(result);
-            }
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
         }
-        return result;
+    }
+
+    public long sizeOfDicomContent() {
+        return fsRoot.size();
     }
 
     private void mergeDir(File src, File dest) throws IOException {
@@ -259,26 +252,27 @@ class FilesetBuilder {
                                 DirRecord.PATIENT, recFact.makeRecord(
                                         DirRecord.PATIENT, ds)),
                                 FilesetComponent.makePatientFilesetComponent(
-                                        ds, fileIDs));
+                                        ds, toFilePath(fileIDs, 2)));
                         patRecs.put(pid, patRec);
                         fsRoot.addChild(patRec.comp);
                     }
                     styRec = new Pair(dirWriter.add(patRec.rec,
                             DirRecord.STUDY, recFact.makeRecord(
                                     DirRecord.STUDY, ds)), FilesetComponent
-                            .makeStudyFilesetComponent(ds, fileIDs));
+                            .makeStudyFilesetComponent(ds, toFilePath(fileIDs,
+                                    3)));
                     styRecs.put(suid, styRec);
                     patRec.comp.addChild(styRec.comp);
                 }
                 serRec = new Pair(dirWriter.add(styRec.rec, DirRecord.SERIES,
                         recFact.makeRecord(DirRecord.SERIES, ds)),
-                        FilesetComponent
-                                .makeSeriesFilesetComponent(ds, fileIDs));
+                        FilesetComponent.makeSeriesFilesetComponent(ds,
+                                toFilePath(fileIDs, 4)));
                 serRecs.put(seruid, serRec);
                 styRec.comp.addChild(serRec.comp);
             }
             FilesetComponent comp = FilesetComponent
-                    .makeInstanceFilesetComponent(ds, fileIDs);
+                    .makeInstanceFilesetComponent(ds, toFilePath(fileIDs, 5));
             comp.incSize(src.length());
             serRec.comp.addChild(comp);
             String recType = DirBuilderFactory.getRecordType(cuid);
@@ -314,7 +308,7 @@ class FilesetBuilder {
                                     StringUtils.toString(fileIDs,
                                             File.separatorChar));
                             fileIDs[0] = DICOM;
-                            mkJpegs(jpegDir, comp);
+                            mkJpegs(jpegDir);
                         } catch (Exception e) {
                             log.warn("Failed to generate jpeg from " + src, e);
                         }
@@ -338,7 +332,14 @@ class FilesetBuilder {
             move(src, dest);
     }
 
-    private void mkJpegs(File dir, FilesetComponent comp) throws IOException {
+    private String toFilePath(String[] fileIDs, int n) {
+        StringBuffer sb = new StringBuffer(fileIDs[0]);
+        for (int i = 1; i < n; ++i)
+            sb.append(File.separatorChar).append(fileIDs[i]);
+        return sb.toString();
+    }
+
+    private void mkJpegs(File dir) throws IOException {
         dir.mkdirs();
         int w0 = reader.getWidth(0);
         int h0 = reader.getHeight(0);
@@ -388,7 +389,6 @@ class FilesetBuilder {
                 out.close();
             }
             bi.flush();
-            comp.incSize(dest.length());
         }
     }
 
@@ -540,17 +540,9 @@ class FilesetBuilder {
         throw new IOException(StringUtils.toString(cmd, ' ') + " failed!");
     }
 
-    private void splitMedia(ArrayList rqList) throws MediaCreationException,
-            IOException {
+    public ArrayList splitMedia(long freeSizeFirst, long freeSizeOther,
+            DicomDirDOM dom) throws MediaCreationException, IOException {
         File ddFile = rq.getDicomDirFile();
-        long freeSizeFirst = service.freeSizeOnMedia(isWeb(), viewer)
-                - ddFile.length();
-        long freeSizeOther = service.freeSizeOnMedia(isWeb(), viewer
-                && !service.isIncludeDisplayApplicationOnlyOnFirstMedia())
-                - ddFile.length();
-        if (debug)
-                log.debug("freeSizeFirst=" + freeSizeFirst + ", freeSizeOther="
-                        + freeSizeOther);
         ArrayList fsList = new ArrayList();
         split(fsRoot, freeSizeFirst, freeSizeOther, fsList);
         rq.setVolsetSize(fsList.size());
@@ -558,6 +550,7 @@ class FilesetBuilder {
         File oldDDFile = new File(rq.getFilesetDir(), "DICOMDIR.old");
         move(ddFile, oldDDFile);
         DirReader dirReader = dbf.newDirReader(oldDDFile);
+        ArrayList rqList = new ArrayList();
         try {
             for (int i = 0, n = fsList.size(); i < n; ++i) {
                 FilesetComponent comp = (FilesetComponent) fsList.get(i);
@@ -567,20 +560,14 @@ class FilesetBuilder {
                     rootDir = mkRootDir(spoolDir, false);
                     moveComponents(comp.childs(), rootDir);
                     mergeDir(service.getMergeDir(), rootDir);
-                    if (isWeb()) {
-                        (new File(rootDir, IHE_PDI)).mkdir();
-                        mergeDir(service.getMergeDirWeb(), rootDir);
-                    }
-                    if (viewer
-                            && !service
-                                    .isIncludeDisplayApplicationOnlyOnFirstMedia())
-                            mergeDir(service.getMergeDirViewer(), rootDir);
                     newrq = new MediaCreationRequest(rq);
                     newrq.setFilesetDir(rootDir);
                     newrq.setVolsetSeqno(i + 1);
-                    rqList.add(newrq);
+                    setVolsetSeqno(comp.childs(), i + 1, dom);
                 }
-                newrq.setFilesetID(fsIDPrefix + (i + 1));
+                rqList.add(newrq);
+                if (fsIDPrefix != null)
+                        newrq.setFilesetID(fsIDPrefix + (i + 1));
                 File newReadmeFile = new File(rootDir, service
                         .getFileSetDescriptorFile());
                 DirWriter dirWriter = dbf.newDirWriter(newrq.getDicomDirFile(),
@@ -596,6 +583,31 @@ class FilesetBuilder {
         } finally {
             dirReader.close();
             FileUtils.delete(oldDDFile, log);
+        }
+        dom.updateSeqNo();
+        return rqList;
+    }
+
+    private void setVolsetSeqno(List comps, int seqNo, DicomDirDOM dom) {
+        for (int i = 0, n = comps.size(); i < n; ++i) {
+            FilesetComponent comp = (FilesetComponent) comps.get(i);            
+	        switch (comp.level()) {
+	        case FilesetComponent.PATIENT:
+	            dom.setPatientSeqNo(comp.id(), seqNo);
+	            break;
+	        case FilesetComponent.STUDY:
+	            dom.setStudySeqNo(comp.parent().id(), comp.id(), seqNo);
+	            break;
+	        case FilesetComponent.SERIES:
+	            dom.setSeriesSeqNo(comp.parent().parent().id(), comp.parent().id(),
+	                    comp.id(), seqNo);
+	            break;
+	        case FilesetComponent.INSTANCE:
+	            dom.setInstanceSeqNo(comp.parent().parent().parent().id(), comp
+	                    .parent().parent().id(), comp.parent().id(), comp.id(),
+	                    seqNo);
+	            break;
+	        }
         }
     }
 
@@ -626,27 +638,21 @@ class FilesetBuilder {
     }
 
     private String getFilesetIDPrefix() {
+        if (rq.getFilesetID().length() == 0) return null;
         String prefix = rq.getFilesetID() + '_';
         int maxSuffixLen = String.valueOf(rq.getVolsetSize()).length();
-        return prefix.substring(Math
-                .max(0, prefix.length() + maxSuffixLen - 16));
+        return prefix
+                .substring(0, Math.min(prefix.length(), 16 - maxSuffixLen));
     }
 
     private void moveComponents(List comps, File newRootDir) throws IOException {
         for (int i = 0, n = comps.size(); i < n; ++i) {
             FilesetComponent comp = (FilesetComponent) comps.get(i);
-            String[] fileIDs = comp.fileIDs();
-            move(fileIDs, newRootDir);
-            if (isWeb()) {
-                fileIDs[0] = IHE_PDI;
-                move(fileIDs, newRootDir);
-                fileIDs[0] = DICOM;
-            }
+            move(comp.getFilePath(), newRootDir);
         }
     }
 
-    private void move(String[] fileIDs, File newRootDir) throws IOException {
-        String filepath = StringUtils.toString(fileIDs, File.separatorChar);
+    private void move(String filepath, File newRootDir) throws IOException {
         File src = new File(rq.getFilesetDir(), filepath);
         if (!src.exists()) return;
         File dest = new File(newRootDir, filepath);
