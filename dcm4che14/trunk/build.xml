@@ -219,7 +219,7 @@
 
       <jar jarfile="${samples_out}/imgdisp.jar"
            basedir="${build}"
-           includes="ImageDisplay*,ImageBox*,*.gif"
+           includes="ImageDisplay*,ToolBarButton*,ImageBox*,*.gif"
            manifest="${build}/META-INF/imgdisp.mf"/>
 
       <jar jarfile="${samples_out}/imgdump.jar"
@@ -234,7 +234,7 @@
            
       <jar jarfile="${samples_out}/imgread.jar"
            basedir="${build}"
-           includes="ImageReadParamDemo*"
+           includes="ImageReadParamDemo*,ReadThread*,ReadParamPanel*,ImagePanel*"
            manifest="${build}/META-INF/imgread.mf"/>
 
       <copy todir="${samples_out}">

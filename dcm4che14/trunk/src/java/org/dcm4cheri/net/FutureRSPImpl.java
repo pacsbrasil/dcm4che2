@@ -30,6 +30,9 @@ import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Simplifeid and specialized version of
@@ -59,6 +62,7 @@ implements DimseListener, AssociationListener, FutureRSP {
    private boolean closed = false;
    private boolean ready = false;
    private Dimse rsp = null;
+   private final ArrayList pending = new ArrayList();
    private IOException exception = null;
    
    // Static --------------------------------------------------------
@@ -91,6 +95,10 @@ implements DimseListener, AssociationListener, FutureRSP {
       return doGet();
    }
    
+   public synchronized List listPending() {
+      return Collections.unmodifiableList(pending);      
+   }
+   
    public synchronized IOException getException() {
       return exception;
    }
@@ -105,8 +113,11 @@ implements DimseListener, AssociationListener, FutureRSP {
    
    // DimseListener implementation ---------------------------------
    public void dimseReceived(Association assoc, Dimse dimse) {
-      if (!dimse.getCommand().isPending())
+      if (dimse.getCommand().isPending()) {
+          pending.add(dimse);
+      } else {
          set(dimse);
+      }
    }
    
    // AssociationListener implementation ----------------------------

@@ -62,12 +62,16 @@ package org.dcm4che.dict;
 /** Provides tag constants.
  *
  * @author gunter zeilinger
- * @version 1.0.1
+ * @version 1.0.3
  */
 public class Tags {
 
     /** Private constructor */
     private Tags() {
+    }
+    
+    public static boolean isPrivate(int tag) {
+        return (tag &amp; 0x00010000) != 0;
     }
 
     public static StringBuffer toHexString(StringBuffer sb, int v, int l) {

@@ -23,6 +23,7 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Simplified and specialized version of
@@ -49,6 +50,8 @@ public interface FutureRSP {
    void setException(IOException ex);
    
    Dimse get() throws InterruptedException, IOException;
+   
+   List listPending(); 
    
    IOException getException();
    

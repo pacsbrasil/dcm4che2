@@ -59,6 +59,15 @@ final class DatasetImpl extends BaseDatasetImpl
     DatasetImpl(Dataset parent) {
         this.parent = parent;
     }
+
+    public void setPrivateCreatorID(String privateCreatorID) {
+        this.privateCreatorID = privateCreatorID;
+    }       
+
+    public String getPrivateCreatorID() {
+        return privateCreatorID != null ? privateCreatorID
+                : parent != null ? parent.getPrivateCreatorID() : null;
+    }
     
     public Charset getCharset() {
         return charset != null ? charset

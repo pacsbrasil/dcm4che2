@@ -102,6 +102,14 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     public Dataset getParent() {
         return backend.getParent();
     }
+
+    public void setPrivateCreatorID(String privateCreatorID) {
+        backend.setPrivateCreatorID(privateCreatorID);
+    }       
+
+    public String getPrivateCreatorID() {
+        return backend.getPrivateCreatorID();
+    }
     
     public long getItemOffset() {
         return backend.getItemOffset();

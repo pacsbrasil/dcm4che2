@@ -7,13 +7,18 @@ dcm4che 1.0.3 -  - Changes since dcm4che 1.0.2
 BUG FIXES:
 org.dcm4cheri.data
 + Fix DcmStreamHandlerImpl#fragment (=> error writing encapsed pixel data)
+samples:
++ Fix build.xml to include missing .class into imgread.jar & imgdisp.jar
 
 ENHANCEMENTS:
 dcm4che API:
 + add org.dcm4che.data.DcmObject#getDateRange
 + add org.dcm4che.data.DcmObject#getDateTimeRange
 + add org.dcm4che.data.DcmElement#getDateRange
++ add org.dcm4che.data.Dataset#setPrivateCreatorID (access private attributs)
++ add org.dcm4che.data.Dataset#getPrivateCreatorID
 + add org.dcm4che.media.DirBuilder#getDirWriter
++ add org.dcm4che.net.FutureRSP#listPending
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1
