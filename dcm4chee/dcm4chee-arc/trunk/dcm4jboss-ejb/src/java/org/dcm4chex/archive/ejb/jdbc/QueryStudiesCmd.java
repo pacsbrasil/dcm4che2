@@ -19,10 +19,19 @@
  */
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4chex.archive.ejb.interfaces.DTOFactory;
+import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 
 /**
@@ -33,22 +42,77 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
  */
 public class QueryStudiesCmd extends BaseCmd {
 
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+
     private static final String[] SELECT_ATTRIBUTE =
         {
             "Patient.pk",
             "Patient.encodedAttributes",
             "Study.pk",
             "Study.encodedAttributes",
-            "Study.numberOfStudyRelatedSeries", 
-            "Study.numberOfStudyRelatedInstances", 
-};
-    /**
-     * @param ds
-     * @throws SQLException
-     */
-    public QueryStudiesCmd(DataSource ds, StudyFilterDTO filter) throws SQLException {
+            "Study.numberOfStudyRelatedSeries",
+            "Study.numberOfStudyRelatedInstances",
+            };
+    private static final String[] ENTITY = { "Patient", "Study" };
+
+    private static final String[] RELATIONS =
+        { "Patient.pk", "Study.patient_fk", };
+
+    private final SqlBuilder sqlBuilder = new SqlBuilder();
+
+    public QueryStudiesCmd(
+        DataSource ds,
+        StudyFilterDTO filter,
+        int offset,
+        int limit)
+        throws SQLException {
         super(ds);
-        // TODO Auto-generated constructor stub
+        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
+        sqlBuilder.setFrom(ENTITY);
+        sqlBuilder.setRelations(RELATIONS);
+        sqlBuilder.setStudyFilterMatch(filter);
+        sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
+        sqlBuilder.addOrderBy("Patient.pk", SqlBuilder.ASC);
+        sqlBuilder.addOrderBy("Study.studyDateTime", SqlBuilder.DESC);
+        sqlBuilder.setOffset(offset);
+        sqlBuilder.setLimit(limit);
     }
 
+    public List execute() throws SQLException {
+        try {
+            execute(sqlBuilder.getSql());
+            ArrayList result = new ArrayList();
+            PatientDTO pat = null;
+            while (next()) {
+                int patPk = rs.getInt(1);
+                if (pat == null || pat.getPk() != patPk) {
+                    result.add(
+                        DTOFactory.newPatientDTO(
+                            patPk,
+                            toDataset(rs.getBytes(2))));
+                }
+                int styPk = rs.getInt(3);
+                pat.getStudies().add(
+                    DTOFactory.newStudyDTO(
+                        styPk,
+                        toDataset(rs.getBytes(4)),
+                        rs.getInt(5),
+                        rs.getInt(6)));
+            }
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    private static Dataset toDataset(byte[] data) {
+        ByteArrayInputStream bin = new ByteArrayInputStream(data);
+        Dataset ds = dof.newDataset();
+        try {
+            ds.readDataset(bin, DcmDecodeParam.EVR_LE, -1);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+        return ds;
+    }
 }

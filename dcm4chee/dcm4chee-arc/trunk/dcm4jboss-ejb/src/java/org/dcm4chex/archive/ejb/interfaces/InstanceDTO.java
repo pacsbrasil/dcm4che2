@@ -28,18 +28,10 @@ import java.io.Serializable;
  * @since 14.01.2004
  */
 public class InstanceDTO implements Serializable {
-    private Integer pk;
+    private int pk;
     private String instanceNumber;
     private String sopIUID;
     private String sopCUID;
-
-    /**
-     * @param local
-     */
-    public InstanceDTO(InstanceLocal local) {
-        
-        // TODO Auto-generated constructor stub
-    }
 
     /**
      * @return
@@ -58,14 +50,14 @@ public class InstanceDTO implements Serializable {
     /**
      * @return
      */
-    public final Integer getPk() {
+    public final int getPk() {
         return pk;
     }
 
     /**
      * @param pk
      */
-    public final void setPk(Integer pk) {
+    public final void setPk(int pk) {
         this.pk = pk;
     }
 

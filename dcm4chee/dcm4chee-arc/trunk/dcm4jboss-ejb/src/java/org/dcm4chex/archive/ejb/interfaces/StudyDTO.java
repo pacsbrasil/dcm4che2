@@ -29,8 +29,9 @@ import java.util.List;
  * @since 14.01.2004
  */
 public class StudyDTO implements Serializable {
+    public static final String DATETIME_FORMAT = "YYYY/MM/dd hh:mm";
 
-    private Integer pk;
+    private int pk;
     private String accessionNumber;
     private String studyID;
     private String studyIUID;
@@ -41,13 +42,6 @@ public class StudyDTO implements Serializable {
     private int numberOfInstances;
     private List series;
 
-    /**
-     * @param local
-     */
-    public StudyDTO(StudyLocal local) {
-        
-        // TODO Auto-generated constructor stub
-    }
     /**
      * @return
      */
@@ -79,14 +73,14 @@ public class StudyDTO implements Serializable {
     /**
      * @return
      */
-    public final Integer getPk() {
+    public final int getPk() {
         return pk;
     }
 
     /**
      * @param pk
      */
-    public final void setPk(Integer pk) {
+    public final void setPk(int pk) {
         this.pk = pk;
     }
 

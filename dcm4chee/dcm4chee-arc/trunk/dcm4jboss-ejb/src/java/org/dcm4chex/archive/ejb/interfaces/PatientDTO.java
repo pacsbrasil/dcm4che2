@@ -30,24 +30,25 @@ import java.util.List;
  */
 public class PatientDTO implements Serializable {
 
-    private Integer pk;
+    public static final String DATE_FORMAT = "YYYY/MM/dd";
+    private int pk;
     private String patientID;
     private String patientName;
     private String patientSex;
-    private DateAsString patientBirthDate;
+    private String patientBirthDate;
     private List studies;
     
     /**
      * @return
      */
-    public final DateAsString getPatientBirthDate() {
+    public final String getPatientBirthDate() {
         return patientBirthDate;
     }
 
     /**
      * @param patientBirthDate
      */
-    public final void setPatientBirthDate(DateAsString patientBirthDate) {
+    public final void setPatientBirthDate(String patientBirthDate) {
         this.patientBirthDate = patientBirthDate;
     }
 
@@ -96,14 +97,14 @@ public class PatientDTO implements Serializable {
     /**
      * @return
      */
-    public final Integer getPk() {
+    public final int getPk() {
         return pk;
     }
 
     /**
      * @param pk
      */
-    public final void setPk(Integer pk) {
+    public final void setPk(int pk) {
         this.pk = pk;
     }
 

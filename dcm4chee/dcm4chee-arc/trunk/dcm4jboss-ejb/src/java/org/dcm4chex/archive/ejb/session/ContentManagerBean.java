@@ -20,6 +20,7 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,16 +35,15 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.dcm4chex.archive.ejb.interfaces.InstanceDTO;
+import org.dcm4chex.archive.ejb.interfaces.DTOFactory;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.SeriesDTO;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.StudyDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.ejb.jdbc.CountStudiesCmd;
 
 /**
  * 
@@ -94,6 +94,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  */
 public abstract class ContentManagerBean implements SessionBean {
 
+    private DataSource ds;
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
     private SeriesLocalHome seriesHome;
@@ -103,8 +104,7 @@ public abstract class ContentManagerBean implements SessionBean {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            DataSource ds = 
-                (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
+            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
             patHome =
                 (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
             studyHome =
@@ -133,7 +133,11 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public int countStudies(StudyFilterDTO filter) {
-        return 0;
+        try {
+            return new CountStudiesCmd(ds, filter).execute();
+        } catch (SQLException e) {
+            throw new EJBException(e);
+        }
     }
 
     /**
@@ -142,39 +146,57 @@ public abstract class ContentManagerBean implements SessionBean {
     public List listPatients(StudyFilterDTO filter, int offset, int maxCount) {
         return null;
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public List listStudiesOfPatient(Integer patientPk) throws FinderException {
-        Collection c = patHome.findByPrimaryKey(patientPk).getStudies();
+    public List listStudiesOfPatient(int patientPk) throws FinderException {
+        Collection c =
+            patHome.findByPrimaryKey(new Integer(patientPk)).getStudies();
         List result = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
-            result.add(new StudyDTO((StudyLocal)it.next()));            
+            StudyLocal study = (StudyLocal) it.next();
+            result.add(
+                DTOFactory.newStudyDTO(
+                    study.getPk().intValue(),
+                    study.getAttributes(),
+                    study.getNumberOfStudyRelatedSeries(),
+                    study.getNumberOfStudyRelatedInstances()));
         }
         return result;
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public List listSeriesOfStudy(Integer studyPk) throws FinderException {
-        Collection c = studyHome.findByPrimaryKey(studyPk).getSeries();
+    public List listSeriesOfStudy(int studyPk) throws FinderException {
+        Collection c =
+            studyHome.findByPrimaryKey(new Integer(studyPk)).getSeries();
         List result = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
-            result.add(new SeriesDTO((SeriesLocal)it.next()));            
+            SeriesLocal series = (SeriesLocal) it.next();
+            result.add(
+                DTOFactory.newSeriesDTO(
+                    series.getPk().intValue(),
+                    series.getAttributes(),
+                    series.getNumberOfSeriesRelatedInstances()));
         }
         return result;
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public List listInstancesOfSeries(Integer seriesPk) throws FinderException {
-        Collection c = seriesHome.findByPrimaryKey(seriesPk).getInstances();
+    public List listInstancesOfSeries(int seriesPk) throws FinderException {
+        Collection c =
+            seriesHome.findByPrimaryKey(new Integer(seriesPk)).getInstances();
         List result = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
-            result.add(new InstanceDTO((InstanceLocal)it.next()));            
+            InstanceLocal inst = (InstanceLocal) it.next();
+            result.add(
+                DTOFactory.newInstanceDTO(
+                    inst.getPk().intValue(),
+                    inst.getAttributes()));
         }
         return result;
     }

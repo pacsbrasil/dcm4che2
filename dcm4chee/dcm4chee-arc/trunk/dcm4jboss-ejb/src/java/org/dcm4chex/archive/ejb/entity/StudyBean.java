@@ -154,6 +154,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * Number Of Study Related Series
      *
+     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="num_series"
      * 
@@ -165,6 +166,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * Number Of Study Related Instances
      *
+     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="num_instances"
      * 

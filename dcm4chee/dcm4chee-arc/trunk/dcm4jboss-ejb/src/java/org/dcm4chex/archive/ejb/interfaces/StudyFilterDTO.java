@@ -33,7 +33,7 @@ public class StudyFilterDTO implements Serializable {
     private String patientName;
     private String accessionNumber;
     private String studyID;
-    private String studyDateTime;
+    private String studyDateRange;
     private String modality;
     /**
      * @return
@@ -94,15 +94,15 @@ public class StudyFilterDTO implements Serializable {
     /**
      * @return
      */
-    public final String getStudyDateTime() {
-        return studyDateTime;
+    public final String getStudyDateRange() {
+        return studyDateRange;
     }
 
     /**
      * @param studyDateTime
      */
-    public final void setStudyDateTime(String studyDateTime) {
-        this.studyDateTime = studyDateTime;
+    public final void setStudyDateRange(String studyDateRange) {
+        this.studyDateRange = studyDateRange;
     }
 
     /**
@@ -118,5 +118,4 @@ public class StudyFilterDTO implements Serializable {
     public final void setStudyID(String studyID) {
         this.studyID = studyID;
     }
-
 }

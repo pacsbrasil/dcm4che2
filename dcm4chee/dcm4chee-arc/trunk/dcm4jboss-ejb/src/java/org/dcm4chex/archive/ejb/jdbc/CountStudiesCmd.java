@@ -33,18 +33,30 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
  */
 public class CountStudiesCmd extends BaseCmd {
 
-    private static final String[] SELECT_ATTRIBUTE =
-        {
-            "count(*)" };
-            
-    private final StudyFilterToSQL sql;
-    /**
-     * @param ds
-     * @throws SQLException
-     */
-    public CountStudiesCmd(DataSource ds, StudyFilterDTO filter) throws SQLException {
+    private static final String[] SELECT_ATTRIBUTE = { "count(*)" };
+    private static final String[] ENTITY = { "Patient", "Study" };
+
+    private static final String[] RELATIONS =
+        { "Patient.pk", "Study.patient_fk", };
+
+    private final SqlBuilder sqlBuilder = new SqlBuilder();
+
+    public CountStudiesCmd(DataSource ds, StudyFilterDTO filter)
+        throws SQLException {
         super(ds);
-        sql = new StudyFilterToSQL(filter, SELECT_ATTRIBUTE);
+        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
+        sqlBuilder.setFrom(ENTITY);
+        sqlBuilder.setRelations(RELATIONS);
+        sqlBuilder.setStudyFilterMatch(filter);
     }
 
+    public int execute() throws SQLException {
+        try {
+            execute(sqlBuilder.getSql());
+            next();
+            return rs.getInt(1);
+        } finally {
+            close();
+        }
+    }
 }

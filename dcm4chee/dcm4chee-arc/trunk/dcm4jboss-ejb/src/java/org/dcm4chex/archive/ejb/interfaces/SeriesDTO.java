@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class SeriesDTO implements Serializable {
 
-    private Integer pk;
+    private int pk;
     private String seriesNumber;
     private String seriesIUID;
     private String modality;
@@ -38,14 +38,6 @@ public class SeriesDTO implements Serializable {
     private int numberOfInstances;
     private List instances;
     
-    /**
-     * @param local
-     */
-    public SeriesDTO(SeriesLocal local) {
-        
-        // TODO Auto-generated constructor stub
-    }
-
     /**
      * @return
      */
@@ -91,14 +83,14 @@ public class SeriesDTO implements Serializable {
     /**
      * @return
      */
-    public final Integer getPk() {
+    public final int getPk() {
         return pk;
     }
 
     /**
      * @param pk
      */
-    public final void setPk(Integer pk) {
+    public final void setPk(int pk) {
         this.pk = pk;
     }
 
