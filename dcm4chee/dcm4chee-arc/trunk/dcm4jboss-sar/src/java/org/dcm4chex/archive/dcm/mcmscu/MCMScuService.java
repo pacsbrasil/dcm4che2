@@ -381,7 +381,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	}
 	
 	/**
-	 * Returns 'NO' if the media should not contain none DICOM objects or the named type of none DICOM object like html, image.
+	 * Returns 'NO' if the media should not contain none DICOM objects or the named type of none DICOM object.
 	 * 
 	 * @return The type of none DICOM Objects to include or NO.
 	 */
@@ -391,14 +391,13 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	/**
 	 * Set the type of none DICOM object that should be included by media creation.
 	 * <p>
-	 * Use NONE if no such objects should be included.
+	 * Use NO if no such objects should be included.
 	 * <p>
 	 * Set the value to NO if argument is null!
 	 * 
 	 * @param includeNonDICOMObj The flag value to set.
 	 */
 	public void setIncludeNonDICOMObj(String includeNonDICOMObj) {
-		if ( includeNonDICOMObj == null ) includeNonDICOMObj = "NO";
 		this.includeNonDICOMObj = includeNonDICOMObj;
 	}
 	
