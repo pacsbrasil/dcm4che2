@@ -278,6 +278,18 @@ abstract class DcmObjectImpl implements DcmObject {
         return e.getInts();
     }
     
+    public Float getFloat(int tag) throws DcmValueException {
+        return getFloat(tag, 0);
+    }
+    
+    public Float getFloat(int tag, int index) throws DcmValueException {
+        DcmElement e = get(tag);
+        if (e == null || e.vm() <= index)
+            return null;
+        
+        return new Float(e.getFloat(index));
+    }
+    
     public float getFloat(int tag, float defVal) throws DcmValueException {
         return getFloat(tag, 0, defVal);
     }
@@ -297,6 +309,18 @@ abstract class DcmObjectImpl implements DcmObject {
             return null;
         
         return e.getFloats();
+    }
+    
+    public Double getDouble(int tag) throws DcmValueException {
+        return getDouble(tag, 0);
+    }
+    
+    public Double getDouble(int tag, int index) throws DcmValueException {
+        DcmElement e = get(tag);
+        if (e == null || e.vm() <= index)
+            return null;
+        
+        return new Double(e.getDouble(index));
     }
     
     public double getDouble(int tag, double defVal) throws DcmValueException {

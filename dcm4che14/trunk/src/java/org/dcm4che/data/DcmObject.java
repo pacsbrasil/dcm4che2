@@ -119,12 +119,20 @@ public interface DcmObject {
    
    int[] getInts(int tag) throws DcmValueException;
    
+   Float getFloat(int tag) throws DcmValueException;
+   
+   Float getFloat(int tag, int index) throws DcmValueException;
+   
    float getFloat(int tag, float defVal) throws DcmValueException;
    
    float getFloat(int tag, int index, float defVal)
    throws DcmValueException;
    
    float[] getFloats(int tag) throws DcmValueException;
+   
+   Double getDouble(int tag) throws DcmValueException;
+   
+   Double getDouble(int tag, int index) throws DcmValueException;
    
    double getDouble(int tag, double defVal)
    throws DcmValueException;
