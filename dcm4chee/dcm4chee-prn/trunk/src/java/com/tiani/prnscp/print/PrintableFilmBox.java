@@ -264,12 +264,12 @@ class PrintableFilmBox implements Printable
     private Rectangle2D getImageBoxRect(int imagePos, Rectangle2D filmboxRect)
     {
         double border = service.getBorderThickness() * PrinterService.PTS_PER_MM;
-        double w = filmboxRect.getWidth() / columns - border * (columns - 1);
-        double h = filmboxRect.getHeight() / rows - border * (rows - 1);
+        double w = (filmboxRect.getWidth() - border * (columns - 1)) / columns;
+        double h = (filmboxRect.getHeight() - border * (rows - 1)) / rows;
         int xPos = (imagePos - 1) % columns;
         int yPos = (imagePos - 1) / columns;
-        double x = w * xPos + border * xPos;
-        double y = h * yPos + border * yPos;
+        double x = (w + border) * xPos;
+        double y = (h + border) * yPos;
         return new Rectangle2D.Double(x, y, w, h);
     }
 
