@@ -239,6 +239,11 @@
            <fileset dir="${build.classes.dir}" includes="MppsSnd*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="MppsSnd*"/>
       </jar>
+      <jar jarfile="${build.samples.dir}/syslog.jar"
+           manifest="${build.res.dir}/META-INF/syslog.mf">
+           <fileset dir="${build.classes.dir}" includes="Syslog*"/>
+           <fileset dir="${build.res.dir}" includes="Syslog*"/>
+      </jar>
       <jar jarfile="${build.samples.dir}/imgdisp.jar"
            manifest="${build.res.dir}/META-INF/imgdisp.mf">
            <fileset dir="${build.classes.dir}" includes="ImageDisplay*,ToolBarButton*,ImageBox*"/>

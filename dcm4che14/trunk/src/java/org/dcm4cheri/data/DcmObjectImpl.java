@@ -58,7 +58,7 @@ abstract class DcmObjectImpl implements DcmObject {
     DictionaryFactory.getInstance().getDefaultUIDDictionary();
     
     protected static final Logger log =
-    Logger.getLogger("dcm4che.data.DcmObject");
+        Logger.getLogger(DcmObjectImpl.class);
     
     protected ArrayList list = new ArrayList();
     private static final int MIN_TRUNCATE_STRING_LEN = 16;
