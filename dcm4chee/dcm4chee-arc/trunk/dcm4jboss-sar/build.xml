@@ -34,16 +34,24 @@
     <!-- Override with your dcm4jboss-web dist location -->
 	<property name="dcm4jboss-web.home" value="../dcm4jboss-web"/>		
 	<property name="dcm4jboss-web.target" value="${dcm4jboss-web.home}/target"/>		
+	<available file="${dcm4jboss-web.home}" property="dcm4jboss-web.home.present"/>
 
     <!-- Override with your dcm4jboss-arr dist location -->
 	<property name="dcm4jboss-arr.home" value="../dcm4jboss-arr"/>		
 
-    <!-- Override with your dcm4jboss-arr dist location -->
+    <!-- Override with your dcm4jboss-hl7 dist location -->
 	<property name="dcm4jboss-hl7.home" value="../dcm4jboss-hl7"/>		
+	<available file="${dcm4jboss-hl7.home}" property="dcm4jboss-hl7.home.present"/>
 
     <!-- Override with your hapi ZIP location -->
 	<property name="hapi.zip" value="../hapi/dist/hapi-0.4.2.zip"/>		
+	<available file="${hapi.zip}" property="hapi.zip.present"/>
 
+    <!-- Override with your dcm4jboss-wado dist location -->
+	<property name="dcm4jboss-wado.home" value="../dcm4jboss-wado"/>		
+	<property name="dcm4jboss-wado.target" value="${dcm4jboss-wado.home}/target"/>		
+	<available file="${dcm4jboss-wado.home}" property="dcm4jboss-wado.home.present"/>
+	
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-3.2.6"/>		
 	<property name="jboss.server" value="${jboss.home}/server"/>		
@@ -165,9 +173,6 @@
    			<fileset dir="${dcm4jboss-ejb.home}">
    				<include name="test/data/mwlitem.xml"/>
    			</fileset>
-   			<fileset dir="${dcm4jboss-web.target}">
-   				<include name="deploy/*.war"/>
-   			</fileset>
   			<fileset dir="${src.etc}">
    				<include name="bin/*"/>
    				<include name="conf/cacerts.jks"/>
@@ -180,13 +185,6 @@
    				<include name="conf/xmdesc/*.xml"/>
    				<include name="deploy/*.xml"/>
    			</fileset>
-  			<fileset dir="${dcm4jboss-hl7.home}/target">
-   				<include name="lib/dcm4jboss-hl7.jar"/>
-   			</fileset>
-  			<fileset dir="${dcm4jboss-hl7.home}/src/etc">
-   				<include name="deploy/*.xml"/>
-   				<include name="conf/xmdesc/*.xml"/>
-   			</fileset>
   			<fileset dir="${basedir}">
    				<include name="bin/*"/>
    				<include name="lib/*"/>
@@ -196,12 +194,23 @@
    				<include name="lib/*"/>
    			</fileset>
    		</copy>
+
+   		<!-- WEB -->
+   		<antcall target="web-dist"/>
+   		<!-- HL7 -->
+   		<antcall target="hl7-dist"/>
+   		<!-- WADO -->
+   		<antcall target="wado-dist"/>
+   			
+<!--
    		<unzip src="${hapi.zip}" dest="${dist.dir}/common/lib"/>
+-->
    		<zip
    			destfile="${target.dir}/${dist.name}.zip"
    			basedir="${target.dir}"
    			includes="${dist.name}/**"
    		/>
+
    		<antcall target="standalone-dist">
       		<param name="db.name" value="hsql"/>
     	</antcall>
@@ -291,8 +300,38 @@
 			</zipfileset>
 		</zip>
    	</target>
+
+    <!-- WEB distribution -->
+    <target name="web-dist" if="dcm4jboss-web.home.present">
+    	<echo>Deploy WEB</echo>
+   		<copy todir="${dist.dir}/common">
+   			<fileset dir="${dcm4jboss-web.target}">
+   				<include name="deploy/*.war"/>
+   			</fileset>
+   		</copy>
+    </target>
 	
-    
+    <!-- HL7 distribution -->
+    <target name="hl7-dist" if="dcm4jboss-hl7.home.present">
+    	<echo>Deploy HL7</echo>
+   		<copy todir="${dist.dir}/common">
+  			<fileset dir="${dcm4jboss-hl7.home}/target">
+   				<include name="lib/dcm4jboss-hl7.jar"/>
+   			</fileset>
+  			<fileset dir="${dcm4jboss-hl7.home}/src/etc">
+   				<include name="deploy/*.xml"/>
+   				<include name="conf/xmdesc/*.xml"/>
+   			</fileset>
+   		</copy>
+    </target>
+	
+    <!-- WADO distribution -->
+    <target name="wado-dist" if="dcm4jboss-wado.home.present">
+    	<echo>Deploy WADO</echo>
+		<ant antfile="${dcm4jboss-wado.home}/build.xml" target="deploy" inheritAll="false" >
+			<property name="deploy.root" value="${dist.dir}/common"/>
+		</ant>
+    </target>
    	<!-- =================================================================== -->
    	<!-- Cleans up the current build                                         -->
    	<!-- =================================================================== -->
