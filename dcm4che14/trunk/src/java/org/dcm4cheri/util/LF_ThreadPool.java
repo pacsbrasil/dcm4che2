@@ -52,9 +52,10 @@ public class LF_ThreadPool
    private int waiting = 0;
    private int running = 0;
    private int maxRunning = 0;
+   private int maxWaiting = -1;
    private final int instNo = ++instCount;
    private int threadNo = 0;
-   private final String name; 
+   private final String name;
    
    // Static --------------------------------------------------------
    private static int instCount = 0;
@@ -97,6 +98,19 @@ public class LF_ThreadPool
       this.maxRunning = maxRunning;
    }
    
+   public int getMaxWaiting()
+   {
+      return maxWaiting;
+   }
+   
+   public void setMaxWaiting(int maxWaiting)
+   {
+      if (maxWaiting < -1)
+         throw new IllegalArgumentException("maxWaiting: " + maxWaiting);
+            
+      this.maxWaiting = maxWaiting;
+   }
+   
    public String toString()
    {
       return "LF_ThreadPool-" + instNo + "[leader:"
@@ -110,7 +124,8 @@ public class LF_ThreadPool
    {
       log.info("Thread: " + Thread.currentThread().getName() + " JOIN ThreadPool " + name);
       try {
-	      while (!shutdown && (maxRunning == 0 || (waiting + running) < maxRunning))
+	      while (!shutdown && (maxWaiting == -1 || waiting < maxWaiting)
+	              && (maxRunning == 0 || (waiting + running) < maxRunning))
 	      {
 	         synchronized (mutex)
 	         {

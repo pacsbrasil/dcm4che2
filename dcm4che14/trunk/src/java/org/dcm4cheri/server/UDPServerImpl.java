@@ -72,6 +72,20 @@ public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
 	return threadPool.running()-1;
     }
 
+    public void setMaxIdleThreads(int max)
+    {
+	threadPool.setMaxWaiting(max);
+    }
+
+    public int getMaxIdleThreads()
+    {
+	return threadPool.getMaxWaiting();
+    }
+
+    public int getNumIdleThreads()
+    {
+	return threadPool.waiting();
+    }
     /**
      * @deprecated use {@link #setPort}, {@link #start()} 
      */

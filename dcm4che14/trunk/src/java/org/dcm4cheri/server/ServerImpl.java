@@ -148,6 +148,18 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         return threadPool.running()-1;
     }
     
+    public void setMaxIdleThreads(int max) {
+        threadPool.setMaxWaiting(max);
+    }
+
+    public int getMaxIdleThreads() {
+        return threadPool.getMaxWaiting();
+    }
+
+    public int getNumIdleThreads() {
+        return threadPool.waiting();
+    }
+    
     public void start(int port) throws IOException {
         start(port, ServerSocketFactory.getDefault());
     }

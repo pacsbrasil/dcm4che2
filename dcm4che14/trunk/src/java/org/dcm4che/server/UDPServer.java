@@ -44,6 +44,12 @@ public interface UDPServer {
     int getMaxClients();
     
     int getNumClients();
+
+    void setMaxIdleThreads(int max);
+    
+    int getMaxIdleThreads();
+    
+    int getNumIdleThreads();
     
     /**
      * @deprecated use {@link #setPort}, {@link #start()} 

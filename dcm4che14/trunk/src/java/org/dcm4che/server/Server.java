@@ -59,19 +59,20 @@ public interface Server
 
     void removeHandshakeCompletedListener(HandshakeCompletedListener listener);
 
-
     void removeHandshakeFailedListener(HandshakeFailedListener listener);
-
 
     void setMaxClients(int max);
 
-
     int getMaxClients();
-
 
     int getNumClients();
 
-
+    void setMaxIdleThreads(int max);
+    
+    int getMaxIdleThreads();
+    
+    int getNumIdleThreads();
+    
     /**
      * @param  port             Description of the Parameter
      * @exception  IOException  Description of the Exception
