@@ -41,7 +41,7 @@ import java.util.Comparator;
  *            beyond the cvs commit message
  * </ul>
  */
-public interface PollDir
+public interface PollDirSrv
 {
    interface Handler
    {

@@ -22,7 +22,7 @@
 
 package org.dcm4cheri.server;
 
-import org.dcm4che.server.PollDir;
+import org.dcm4che.server.PollDirSrv;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -50,14 +50,14 @@ import org.apache.log4j.NDC;
  *            beyond the cvs commit message
  * </ul>
  */
-public class PollDirImpl implements PollDir
+public class PollDirSrvImpl implements PollDirSrv
 {
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   static final Logger log = Logger.getLogger("dcm4che.server.PollDir");
+   static final Logger log = Logger.getLogger("dcm4che.server.PollDirSrv");
    private static int instCount = 0;
-   private String name = "PollDir-" + ++instCount;
+   private String name = "PollDirSrv-" + ++instCount;
 
    private final Handler handler;
    private Timer timer = null;
@@ -88,7 +88,7 @@ public class PollDirImpl implements PollDir
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   public PollDirImpl(Handler handler) {
+   public PollDirSrvImpl(Handler handler) {
       if (handler == null)
          throw new NullPointerException();
       
@@ -101,7 +101,7 @@ public class PollDirImpl implements PollDir
          : name + "[poll " + pollDir + " all " + (pollPeriod/1000f) + " s]";
    }
       
-   // PollDir implementation ----------------------------------------
+   // PollDirSrv implementation ----------------------------------------
    public void setSortCrit(Comparator sortCrit) {
       this.sortCrit = sortCrit;
    }

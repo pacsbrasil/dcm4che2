@@ -23,8 +23,8 @@
 
 import org.dcm4che.util.SyslogWriter;
 
-import org.dcm4che.server.PollDir;
-import org.dcm4che.server.PollDirFactory;
+import org.dcm4che.server.PollDirSrv;
+import org.dcm4che.server.PollDirSrvFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,7 +41,7 @@ import gnu.getopt.LongOpt;
  *
  * @author  gunter.zeilinger@tiani.com
  */
-public class Syslog implements PollDir.Handler {
+public class Syslog implements PollDirSrv.Handler {
    
    // Constants -----------------------------------------------------
    
@@ -53,7 +53,7 @@ public class Syslog implements PollDir.Handler {
    private boolean stdout = false;
    private boolean quite = false;
    private int level = SyslogWriter.LOG_NOTICE;
-   private final PollDir pollDir;
+   private final PollDirSrv pollDirSrv;
    
    // Static --------------------------------------------------------
    private static final LongOpt[] LONG_OPTS = new LongOpt[] {
@@ -86,13 +86,13 @@ public class Syslog implements PollDir.Handler {
                pollDir = new File(g.getOptarg());
                break;
             case 'D':
-               syslog.pollDir.setDoneDir(new File(g.getOptarg()));
+               syslog.pollDirSrv.setDoneDir(new File(g.getOptarg()));
                break;
             case 'T':
                pollPeriod = Integer.parseInt(g.getOptarg()) * 1000L;
                break;
             case 'M':
-               syslog.pollDir.setDeltaLastModified(
+               syslog.pollDirSrv.setDeltaLastModified(
                      Integer.parseInt(g.getOptarg()) * 1000L);
                break;
             case 'p':
@@ -141,16 +141,16 @@ public class Syslog implements PollDir.Handler {
       }
       
       if (pollDir != null) {
-         syslog.pollDir.start(pollDir, pollPeriod);
+         syslog.pollDirSrv.start(pollDir, pollPeriod);
       }
    }
 
    // Constructors --------------------------------------------------
    public Syslog() {
-      this.pollDir = PollDirFactory.getInstance().newPollDir(this);
+      this.pollDirSrv = PollDirSrvFactory.getInstance().newPollDirSrv(this);
    }
           
-   // PollDir.Handler Implementation  -------------------------------
+   // PollDirSrv.Handler Implementation  -------------------------------
    public void openSession() throws Exception {
    }
    

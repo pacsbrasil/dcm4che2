@@ -22,8 +22,8 @@
 
 package org.dcm4cheri.server;
 
-import org.dcm4che.server.PollDir;
-import org.dcm4che.server.PollDirFactory;
+import org.dcm4che.server.PollDirSrv;
+import org.dcm4che.server.PollDirSrvFactory;
 
 /**
  * <description> 
@@ -40,11 +40,11 @@ import org.dcm4che.server.PollDirFactory;
  *            beyond the cvs commit message
  * </ul>
  */
-public class PollDirFactoryImpl extends PollDirFactory
+public class PollDirSrvFactoryImpl extends PollDirSrvFactory
 {
    
-   public PollDir newPollDir(PollDir.Handler handler)
+   public PollDirSrv newPollDirSrv(PollDirSrv.Handler handler)
    {
-      return new PollDirImpl(handler);
+      return new PollDirSrvImpl(handler);
    }
 }

@@ -539,6 +539,14 @@
       </fileset>
     </copy>
           
+    <copy todir="${release.root}" filtering="no">
+      <fileset dir="${module.root}">
+         <include name="README"/>
+         <include name="CHANGES"/>
+         <include name="INSTALL"/>
+         <include name="LICENSE"/>
+      </fileset>
+    </copy>
     <!-- Zip source (lib) -->
     <zip zipfile="${release.root}/src.zip">
       <fileset dir="${source.java}">

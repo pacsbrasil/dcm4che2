@@ -116,8 +116,7 @@ public class DcmRcv extends DcmServiceBase {
       new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("rsp-delay", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("set.PatientID", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("set.PatientName", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("set", LongOpt.REQUIRED_ARGUMENT, null, 's'),
       new LongOpt("fs-id", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("fs-uid", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("fs-file-id", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -132,6 +131,15 @@ public class DcmRcv extends DcmServiceBase {
       new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
    };
    
+   private static void set(Configuration cfg, String s) {
+      int pos = s.indexOf(':');
+      if (pos == -1) {
+         cfg.put("set." + s,"");
+      } else {
+         cfg.put("set." + s.substring(0,pos), s.substring(pos+1));
+      }
+   }
+   
    public static void main(String args[]) throws Exception {
       Getopt g = new Getopt("dcmrcv", args, "", LONG_OPTS);
       
@@ -145,6 +153,9 @@ public class DcmRcv extends DcmServiceBase {
                break;
             case 3:
                cfg.put(LONG_OPTS[g.getLongind()].getName(), "<yes>");
+               break;
+            case 's':
+               set(cfg,  g.getOptarg());
                break;
             case 'v':
                exit(messages.getString("version"), false);

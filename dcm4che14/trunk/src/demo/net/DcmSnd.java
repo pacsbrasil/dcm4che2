@@ -48,6 +48,8 @@ import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
+import org.dcm4che.server.PollDirSrv;
+import org.dcm4che.server.PollDirSrvFactory;
 import org.dcm4che.util.SSLContextAdapter;
 import org.dcm4che.util.DcmURL;
 
@@ -77,7 +79,7 @@ import org.apache.log4j.Logger;
  *
  * @author  gunter.zeilinger@tiani.com
  */
-public class DcmSnd {
+public class DcmSnd implements PollDirSrv.Handler {
    
    // Constants -----------------------------------------------------
    private static final String[] DEF_TS = { UIDs.ImplicitVRLittleEndian };
@@ -96,6 +98,11 @@ public class DcmSnd {
    private static final DcmParserFactory pFact =
          DcmParserFactory.getInstance();
 
+   private static final int ECHO = 0;
+   private static final int SEND = 1;
+   private static final int POLL = 2;
+
+   private final int mode;
    private DcmURL url = null;
    private int repeatSingle = 1;
    private int repeatWhole = 1;
@@ -108,6 +115,12 @@ public class DcmSnd {
    private byte[] buffer = null;
    private SSLContextAdapter tls = null;
    private Dataset overwrite = oFact.newDataset();
+   private PollDirSrv pollDirSrv = null;
+   private File pollDir = null;
+   private long pollPeriod = 5000L;
+   private ActiveAssociation activeAssociation = null;
+   private int sentCount = 0;
+   private long sentBytes = 0L;
    
    // Static --------------------------------------------------------
    private static final LongOpt[] LONG_OPTS = new LongOpt[] {
@@ -116,19 +129,32 @@ public class DcmSnd {
       new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("set.PatientID", LongOpt.REQUIRED_ARGUMENT, null, 2),
-      new LongOpt("set.PatientName", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("set", LongOpt.REQUIRED_ARGUMENT, null, 's'),
       new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("poll-dir", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("poll-period", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("poll-retry-open", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("poll-delta-last-modified", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("poll-done-dir", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("repeat-dimse", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("repeat-assoc", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
       new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
    };
    
+   private static void set(Configuration cfg, String s) {
+      int pos = s.indexOf(':');
+      if (pos == -1) {
+         cfg.put("set." + s,"");
+      } else {
+         cfg.put("set." + s.substring(0,pos), s.substring(pos+1));
+      }
+   }
+
    public static void main(String args[]) throws Exception {
       Getopt g = new Getopt("dcmsnd", args, "", LONG_OPTS);
       
@@ -147,6 +173,9 @@ public class DcmSnd {
             case 'p':
                cfg.put("prior", "2");
                break;
+            case 's':
+               set(cfg,  g.getOptarg());
+               break;
             case 'v':
                exit(messages.getString("version"), false);
             case 'h':
@@ -163,13 +192,8 @@ public class DcmSnd {
       }
 //      listConfig(cfg);
       try {
-         DcmSnd dcmsnd = new DcmSnd(cfg, new DcmURL(args[optind]), argc == 1);
-         if (argc == 1) {
-            dcmsnd.echo();
-         }
-         else {
-            dcmsnd.send(args, optind+1);
-         }
+         DcmSnd dcmsnd = new DcmSnd(cfg, new DcmURL(args[optind]), argc);
+         dcmsnd.execute(args, optind+1);
       } catch (IllegalArgumentException e) {
          exit(e.getMessage(), true);
       }
@@ -177,41 +201,65 @@ public class DcmSnd {
 
    // Constructors --------------------------------------------------
    
-   DcmSnd(Configuration cfg, DcmURL url, boolean echo) {
+   DcmSnd(Configuration cfg, DcmURL url, int argc) {
       this.url = url;
       this.priority = Integer.parseInt(cfg.getProperty("prior", "0"));
       this.bufferSize = Integer.parseInt(cfg.getProperty("buf-len", "2048"))
             & 0xfffffffe;
       this.repeatWhole = Integer.parseInt(cfg.getProperty("repeat-assoc", "1"));
       this.repeatSingle = Integer.parseInt(cfg.getProperty("repeat-dimse", "1"));
-      initAssocRQ(cfg, url, echo);
+      this.mode = argc > 1 ? SEND : initPollDirSrv(cfg) ? POLL : ECHO;
+      initAssocRQ(cfg, url, mode == ECHO);
       initTLS(cfg);
       initOverwrite(cfg);
    }
        
    // Public --------------------------------------------------------
+   public void execute(String[] args, int offset)
+   throws InterruptedException, IOException, GeneralSecurityException {
+      switch (mode) {
+         case ECHO:
+            echo();
+            break;
+         case SEND:
+            send(args, offset);
+            break;
+         case POLL:
+            poll();
+            break;
+         default:
+            throw new RuntimeException("Illegal mode: " + mode);
+      }
+   }
+   private ActiveAssociation openAssoc()
+   throws IOException, GeneralSecurityException {
+      Association assoc = aFact.newRequestor(
+         newSocket(url.getHost(), url.getPort()));
+      PDU assocAC = assoc.connect(assocRQ, assocTO);
+      if (!(assocAC instanceof AAssociateAC)) {
+         return null;
+      }
+      ActiveAssociation retval = aFact.newActiveAssociation(assoc, null);
+      retval.start();
+      return retval;
+   }
+   
    public void echo()
    throws InterruptedException, IOException, GeneralSecurityException {
       long t1 = System.currentTimeMillis();
       int count = 0;
       for (int i = 0; i < repeatWhole; ++i) {
-         Association assoc = aFact.newRequestor(
-            newSocket(url.getHost(), url.getPort()));
-         PDU assocAC = assoc.connect(assocRQ, assocTO);
-         if (assocAC instanceof AAssociateAC) {
-            ActiveAssociation active = aFact.newActiveAssociation(assoc, null);
-            active.start();
-            if (assoc.getAcceptedTransferSyntaxUID(PCID_ECHO) == null) {
+         ActiveAssociation active = openAssoc();
+         if (active != null) {
+            if (active.getAssociation().getAcceptedTransferSyntaxUID(PCID_ECHO)
+                     == null) {
                log.error(messages.getString("noPCEcho"));
             }
             else for (int j = 0; j < repeatSingle; ++j, ++count) {
-               active.invoke(
-                     aFact.newDimse(PCID_ECHO, oFact.newCommand().initCEchoRQ(j)),
-                     null);
-//               Dimse rsp = assoc.read(dimseTO);
+               active.invoke( aFact.newDimse(PCID_ECHO,
+                  oFact.newCommand().initCEchoRQ(j)), null);
             }
             active.release(true);
-//            PDU releaseRP = assoc.release(releaseTO);
          }
       }
       long dt = System.currentTimeMillis() - t1;
@@ -226,16 +274,11 @@ public class DcmSnd {
          buffer = new byte[bufferSize];
       }
       long t1 = System.currentTimeMillis();
-      Result res = new Result();
       for (int i = 0; i < repeatWhole; ++i) {
-         Association assoc = aFact.newRequestor(
-               newSocket(url.getHost(), url.getPort()));
-         PDU assocAC = assoc.connect(assocRQ, assocTO);
-         if (assocAC instanceof AAssociateAC) {
-            ActiveAssociation active = aFact.newActiveAssociation(assoc, null);
-            active.start();
+         ActiveAssociation active = openAssoc();
+         if (active != null) {
             for (int k = offset; k < args.length; ++k) {
-               send(active, new File(args[k]), res);
+               send(active, new File(args[k]));
             }
             active.release(true);
          }
@@ -244,35 +287,56 @@ public class DcmSnd {
       log.info(
          MessageFormat.format(messages.getString("storeDone"),
             new Object[]{
-               new Integer(res.sentCount),
-               new Long(res.sentBytes),
+               new Integer(sentCount),
+               new Long(sentBytes),
                new Long(dt),
-               new Float(res.sentBytes/(1.024f*dt)),
+               new Float(sentBytes/(1.024f*dt)),
       }));
    }
    
-   // Private -------------------------------------------------------
-   private class Result {
-      int sentCount;
-      long sentBytes;
-//      long wait4Rsp;
+   public void poll() {
+      pollDirSrv.start(pollDir, pollPeriod);
    }
    
-   private void send(ActiveAssociation active, File file, Result res)
+   // PollDirSrv.Handler implementation --------------------------------
+   public void openSession() throws Exception {
+      activeAssociation = openAssoc();
+      if (activeAssociation == null) {
+         throw new IOException("Could not open association");
+      }
+   }
+
+   public void process(File file) throws Exception {
+      send(activeAssociation, file);
+   }
+   
+   public void closeSession() {
+      if (activeAssociation != null) {
+         try {
+            activeAssociation.release(true);
+         } catch (Exception e) {
+            log.warn("release association throws:", e);
+         }
+         activeAssociation = null;
+      }
+   }
+      
+   // Private -------------------------------------------------------   
+   private void send(ActiveAssociation active, File file)
    throws InterruptedException, IOException {
       if (!file.isDirectory()) {
          for (int i = 0; i < repeatSingle; ++i) {
-            sendFile(active, file, res);
+            sendFile(active, file);
          }
          return;
       }
       File[] list = file.listFiles();
       for (int i = 0; i < list.length; ++i) {
-         send(active, list[i], res);
+         send(active, list[i]);
       }
    }
    
-   private void sendFile(ActiveAssociation active, File file, Result res)
+   private void sendFile(ActiveAssociation active, File file)
    throws InterruptedException, IOException {
       InputStream in = null;
       DcmParser parser = null;
@@ -301,7 +365,7 @@ public class DcmSnd {
       }
       try {
          if (ds != null) {
-            sendDataset(active, file, parser, ds, res);
+            sendDataset(active, file, parser, ds);
             
          }
       } finally {
@@ -312,7 +376,7 @@ public class DcmSnd {
    }
    
    private boolean sendDataset(ActiveAssociation active, File file,
-         DcmParser parser, Dataset ds, Result res)
+         DcmParser parser, Dataset ds)
    throws InterruptedException, IOException {
       String sopInstUID = ds.getString(Tags.SOPInstanceUID);
       if (sopInstUID == null) {
@@ -357,8 +421,8 @@ public class DcmSnd {
             oFact.newCommand().initCStoreRQ(assoc.nextMsgID(),
                   sopClassUID, sopInstUID, priority),
             new MyDataSource(parser, ds, buffer)), null);
-      res.sentBytes += parser.getStreamPosition();
-      ++res.sentCount;
+      sentBytes += parser.getStreamPosition();
+      ++sentCount;
       return true;
    }
 
@@ -531,6 +595,34 @@ public class DcmSnd {
       }
    }
    
+   private boolean initPollDirSrv(Configuration cfg) {
+      String pollDirName = cfg.getProperty("poll-dir", "", "<none>", "");
+      if (pollDirName.length() == 0) {
+         return false;
+      }
+      
+      pollDir = new File(pollDirName);
+      if (!pollDir.isDirectory()) {
+         throw new IllegalArgumentException("Not a directory - " + pollDirName);
+      }
+      pollPeriod = 1000L * Integer.parseInt(
+            cfg.getProperty("poll-period", "5"));
+      pollDirSrv = PollDirSrvFactory.getInstance().newPollDirSrv(this);
+      pollDirSrv.setOpenRetryPeriod(1000L * Integer.parseInt(
+            cfg.getProperty("poll-retry-open", "60")) * 1000L);
+      pollDirSrv.setDeltaLastModified(1000L * Integer.parseInt(
+            cfg.getProperty("poll-delta-last-modified", "3")));
+      String doneDirName = cfg.getProperty("poll-done-dir", "", "<none>", "");
+      if (doneDirName.length() != 0) {
+         File doneDir = new File(doneDirName);
+         if (!doneDir.isDirectory()) {
+            throw new IllegalArgumentException("Not a directory - " + doneDirName);
+         }
+         pollDirSrv.setDoneDir(doneDir);
+      }
+      return true;
+   }
+
    private void initTLS(Configuration cfg) {
       try {
          String[] chiperSuites = cfg.tokenize(
@@ -554,4 +646,5 @@ public class DcmSnd {
                + ex.getMessage());
       }
    }
+   
 }

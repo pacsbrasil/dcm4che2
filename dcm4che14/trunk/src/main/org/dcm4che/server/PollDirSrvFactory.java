@@ -41,21 +41,21 @@ import org.dcm4che.net.DcmServiceRegistry;
  *            beyond the cvs commit message
  * </ul>
  */
-public abstract class PollDirFactory {
+public abstract class PollDirSrvFactory {
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
    // Static --------------------------------------------------------
-   public static PollDirFactory getInstance() {
-      return (PollDirFactory)Implementation.findFactory(
-            "dcm4che.server.PollDirFactory");
+   public static PollDirSrvFactory getInstance() {
+      return (PollDirSrvFactory)Implementation.findFactory(
+            "dcm4che.server.PollDirSrvFactory");
    }
       
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
-   public abstract PollDir newPollDir(PollDir.Handler handler);
+   public abstract PollDirSrv newPollDirSrv(PollDirSrv.Handler handler);
    
    // Package protected ---------------------------------------------
    
