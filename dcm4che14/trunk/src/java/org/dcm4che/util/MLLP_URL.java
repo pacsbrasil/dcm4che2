@@ -21,7 +21,7 @@ package org.dcm4che.util;
 
 /**
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created    May, 2002
+ * @since    May, 2002
  * @version    $Revision$ $Date$
  */
 public final class MLLP_URL extends Object

@@ -38,7 +38,7 @@ import org.dcm4che.Implementation;
  * <description>
  *
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created    June, 2002
+ * @since    June, 2002
  * @version    $Revision$ $Date$
  */
 public abstract class SSLContextAdapter

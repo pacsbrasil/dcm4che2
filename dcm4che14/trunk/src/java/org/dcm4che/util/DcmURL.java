@@ -22,7 +22,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created    May, 2002
+ * @since    May, 2002
  * @version    $Revision$ $Date$
  */
 public final class DcmURL extends Object

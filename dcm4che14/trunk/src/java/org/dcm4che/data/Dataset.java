@@ -36,7 +36,7 @@ import org.xml.sax.ContentHandler;
  *  Defines behavior of <code>Dataset</code> container objects.
  *
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  March, 2002
+ * @since  March, 2002
  * @see  "DICOM Part 5: Data Structures and Encoding, 7. The Data Set"
  * @version  $Revision$ $Date$ <p>
  *

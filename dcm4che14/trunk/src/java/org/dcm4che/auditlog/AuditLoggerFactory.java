@@ -1,7 +1,5 @@
-/*$Id$*/
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>*
+/*                                                                           *
+ *  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG                             *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -18,39 +16,149 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
-
+ */
 package org.dcm4che.auditlog;
+import java.net.Socket;
+import org.apache.log4j.Category;
 
 import org.dcm4che.Implementation;
-import java.net.Socket;
 
-public abstract class AuditLoggerFactory {
+/**
+ *  Description of the Class
+ *
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      August 27, 2002
+ * @version    $Revision$ $Date$
+ */
+public abstract class AuditLoggerFactory
+{
     // Constants -----------------------------------------------------
-    
+
     // Constructor ---------------------------------------------------
-    public static AuditLoggerFactory getInstance() {
-        return (AuditLoggerFactory)Implementation.findFactory(
-        "dcm4che.auditlog.AuditLoggerFactory");
+    /**
+     *  Gets the instance attribute of the AuditLoggerFactory class
+     *
+     * @return    The instance value
+     */
+    public static AuditLoggerFactory getInstance()
+    {
+        return (AuditLoggerFactory) Implementation.findFactory(
+                "dcm4che.auditlog.AuditLoggerFactory");
     }
-    
+
     // Public --------------------------------------------------------
+    /**
+     *  Description of the Method
+     *
+     * @return    Description of the Return Value
+     */
     public abstract AuditLogger newAuditLogger();
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  log  Description of the Parameter
+     * @return      Description of the Return Value
+     */
+    public abstract AuditLogger newAuditLogger(Category log);
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  id    Description of the Parameter
+     * @param  name  Description of the Parameter
+     * @return       Description of the Return Value
+     */
     public abstract Patient newPatient(String id, String name);
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  ip     Description of the Parameter
+     * @param  hname  Description of the Parameter
+     * @param  aet    Description of the Parameter
+     * @return        Description of the Return Value
+     */
     public abstract RemoteNode newRemoteNode(
-                                String ip, String hname, String aet);
-    
+            String ip, String hname, String aet);
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  socket  Description of the Parameter
+     * @param  aet     Description of the Parameter
+     * @return         Description of the Return Value
+     */
     public abstract RemoteNode newRemoteNode(Socket socket, String aet);
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  name  Description of the Parameter
+     * @return       Description of the Return Value
+     */
     public abstract User newLocalUser(String name);
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  rnode  Description of the Parameter
+     * @return        Description of the Return Value
+     */
     public abstract User newRemoteUser(RemoteNode rnode);
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  name  Description of the Parameter
+     * @return       Description of the Return Value
+     */
+    public abstract Destination newLocalPrinter(String name);
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  rnode  Description of the Parameter
+     * @return        Description of the Return Value
+     */
+    public abstract Destination newRemotePrinter(RemoteNode rnode);
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  action   Description of the Parameter
+     * @param  suid     Description of the Parameter
+     * @param  patient  Description of the Parameter
+     * @return          Description of the Return Value
+     */
     public abstract InstancesAction newInstancesAction(String action,
             String suid, Patient patient);
 
+
+    /**
+     *  Description of the Method
+     *
+     * @param  patient  Description of the Parameter
+     * @return          Description of the Return Value
+     */
+    public abstract MediaDescription newMediaDescription(Patient patient);
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  validating  Description of the Parameter
+     * @return             Description of the Return Value
+     */
     public abstract ArrService newArrService(boolean validating);
 }
+

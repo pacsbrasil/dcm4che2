@@ -13,7 +13,6 @@ package org.dcm4che.util;
  *
  * @author  Josh Bloch
  * @version 1.3, 12/03/01
- * @see     Preferences
  * @since   1.4
  */
 public class Base64 {
@@ -107,7 +106,7 @@ public class Base64 {
      * Translates the specified Base64 string (as per Preferences.get(byte[]))
      * into a byte array.
      * 
-     * @throw IllegalArgumentException if <tt>s</tt> is not a valid Base64
+     * @throws IllegalArgumentException if <tt>s</tt> is not a valid Base64
      *        string.
      */
     public static byte[] base64ToByteArray(String s) {
@@ -118,7 +117,7 @@ public class Base64 {
      * Translates the specified "aternate representation" Base64 string
      * into a byte array.
      * 
-     * @throw IllegalArgumentException or ArrayOutOfBoundsException
+     * @throws IllegalArgumentException or ArrayOutOfBoundsException
      *        if <tt>s</tt> is not a valid alternate representation
      *        Base64 string.
      */

@@ -1,6 +1,5 @@
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
+/*                                                                           *
+ *  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG                             *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -17,47 +16,36 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
-
+ */
 package org.dcm4cheri.auditlog;
+
+import java.io.IOException;
+import java.net.UnknownHostException;
+
+import org.apache.log4j.Category;
 
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.MediaDescription;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.auditlog.User;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.util.SyslogWriter;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-
-import org.apache.log4j.Logger;
-
 /**
- * <description>
- *
- * @see <related>
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @version $Revision$ $Date$
- * @since August 22, 2002
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      August 22, 2002
+ * @version    $Revision$ $Date$
  */
-class AuditLoggerImpl implements AuditLogger {
-    
+class AuditLoggerImpl implements AuditLogger
+{
+
     // Constants -----------------------------------------------------
-    private static final Logger log = Logger.getLogger(AuditLoggerImpl.class);    
-            
+    private final Category log;
+
     // Variables -----------------------------------------------------
     private final SyslogWriter writer = new SyslogWriter();
-    
+
     private boolean actorStartStop = true;
     private boolean instancesStored = true;
     private boolean beginStoringInstances = true;
@@ -66,269 +54,494 @@ class AuditLoggerImpl implements AuditLogger {
     private boolean securityAlert = true;
     private boolean userAuthenticated = true;
     private boolean actorConfig = true;
-    
+    private boolean logExport = true;
+
     // Constructors --------------------------------------------------
-    
+    AuditLoggerImpl(Category log)
+    {
+        this.log = log;
+    }
+
     // Methods -------------------------------------------------------
-    public void setSyslogHost(String syslogHost) throws UnknownHostException {
+    /**
+     *  Sets the syslogHost attribute of the AuditLoggerImpl object
+     *
+     * @param  syslogHost                The new syslogHost value
+     * @exception  UnknownHostException  Description of the Exception
+     */
+    public void setSyslogHost(String syslogHost)
+        throws UnknownHostException
+    {
         writer.setSyslogHost(syslogHost);
     }
-    
-    public String getSyslogHost() {
+
+
+    /**
+     *  Gets the syslogHost attribute of the AuditLoggerImpl object
+     *
+     * @return    The syslogHost value
+     */
+    public String getSyslogHost()
+    {
         return writer.getSyslogHost();
     }
-    
-    public void setSyslogPort(int syslogPort) {
+
+
+    /**
+     *  Sets the syslogPort attribute of the AuditLoggerImpl object
+     *
+     * @param  syslogPort  The new syslogPort value
+     */
+    public void setSyslogPort(int syslogPort)
+    {
         writer.setSyslogPort(syslogPort);
     }
-    
-    public int getSyslogPort() {
+
+
+    /**
+     *  Gets the syslogPort attribute of the AuditLoggerImpl object
+     *
+     * @return    The syslogPort value
+     */
+    public int getSyslogPort()
+    {
         return writer.getSyslogPort();
     }
-    
-    public String getFacility() {
+
+
+    /**
+     *  Gets the facility attribute of the AuditLoggerImpl object
+     *
+     * @return    The facility value
+     */
+    public String getFacility()
+    {
         return writer.getFacilityAsString();
     }
-    
-    public void setFacility(String facility) {
+
+
+    /**
+     *  Sets the facility attribute of the AuditLoggerImpl object
+     *
+     * @param  facility  The new facility value
+     */
+    public void setFacility(String facility)
+    {
         writer.setFacility(facility);
     }
 
-    public void logActorStartStop(String actorName, String action, User user) {
+
+    /**
+     *  Description of the Method
+     *
+     * @param  actorName  Description of the Parameter
+     * @param  action     Description of the Parameter
+     * @param  user       Description of the Parameter
+     */
+    public void logActorStartStop(String actorName, String action, User user)
+    {
         if (!actorStartStop) {
             return;
         }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
-                IHEYr4.newActorStartStop(actorName, action, user,
+                    IHEYr4.newActorStartStop(actorName, action, user,
                     writer.getLocalHostName(), millis).toString(),
-                 millis);
+                    millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
     }
 
+
+    /**
+     *  Description of the Method
+     *
+     * @param  rnode                      Description of the Parameter
+     * @param  instanceActionDescription  Description of the Parameter
+     */
     public void logInstancesStored(RemoteNode rnode,
-            InstancesAction instanceActionDescription) {
+            InstancesAction instanceActionDescription)
+    {
         if (!instancesStored) {
             return;
         }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
-                IHEYr4.newInstancesStored(rnode, instanceActionDescription,
+                    IHEYr4.newInstancesStored(rnode, instanceActionDescription,
                     writer.getLocalHostName(), millis).toString(),
-                 millis);
+                    millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  rnode                      Description of the Parameter
+     * @param  instanceActionDescription  Description of the Parameter
+     */
     public void logBeginStoringInstances(RemoteNode rnode,
-            InstancesAction instanceActionDescription) {
+            InstancesAction instanceActionDescription)
+    {
         if (!beginStoringInstances) {
             return;
         }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
-                IHEYr4.newBeginStoringInstances(rnode, instanceActionDescription,
+                    IHEYr4.newBeginStoringInstances(rnode, instanceActionDescription,
                     writer.getLocalHostName(), millis).toString(),
-                 millis);
+                    millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
     }
 
+
+    /**
+     *  Description of the Method
+     *
+     * @param  rnode                      Description of the Parameter
+     * @param  instanceActionDescription  Description of the Parameter
+     */
     public void logInstancesSent(RemoteNode rnode,
-            InstancesAction instanceActionDescription) {
+            InstancesAction instanceActionDescription)
+    {
         if (!instancesSent) {
             return;
         }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
-                IHEYr4.newInstancesSent(rnode, instanceActionDescription,
+                    IHEYr4.newInstancesSent(rnode, instanceActionDescription,
                     writer.getLocalHostName(), millis).toString(),
-                 millis);
+                    millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
     }
-    
-    public void logDicomQuery(Dataset keys, RemoteNode requestor, String cuid) {
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  keys       Description of the Parameter
+     * @param  requestor  Description of the Parameter
+     * @param  cuid       Description of the Parameter
+     */
+    public void logDicomQuery(Dataset keys, RemoteNode requestor, String cuid)
+    {
         if (!dicomQuery) {
             return;
         }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
-                IHEYr4.newDicomQuery(keys, requestor, cuid,
+                    IHEYr4.newDicomQuery(keys, requestor, cuid,
                     writer.getLocalHostName(), millis).toString(),
-                 millis);
+                    millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
     }
 
+
+    /**
+     *  Description of the Method
+     *
+     * @param  alertType    Description of the Parameter
+     * @param  user         Description of the Parameter
+     * @param  description  Description of the Parameter
+     */
     public void logSecurityAlert(String alertType, User user,
-            String description) {
+            String description)
+    {
         if (!securityAlert) {
             return;
         }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
-                IHEYr4.newSecurityAlert(alertType, user, description,
+                    IHEYr4.newSecurityAlert(alertType, user, description,
                     writer.getLocalHostName(), millis).toString(),
-                millis);
+                    millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
     }
 
-    public void logUserAuthenticated(String localUserName, String action) {
+
+    /**
+     *  Description of the Method
+     *
+     * @param  localUserName  Description of the Parameter
+     * @param  action         Description of the Parameter
+     */
+    public void logUserAuthenticated(String localUserName, String action)
+    {
         if (!userAuthenticated) {
             return;
         }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
-                IHEYr4.newUserAuthenticated(localUserName, action,
+                    IHEYr4.newUserAuthenticated(localUserName, action,
                     writer.getLocalHostName(), millis).toString(),
-                millis);
+                    millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  description  Description of the Parameter
+     * @param  user         Description of the Parameter
+     * @param  configType   Description of the Parameter
+     */
     public void logActorConfig(String description, User user,
-            String configType) {
+            String configType)
+    {
         if (!actorConfig) {
             return;
         }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
-                IHEYr4.newActorConfig(description, user, configType,
+                    IHEYr4.newActorConfig(description, user, configType,
                     writer.getLocalHostName(), millis).toString(),
-                millis);
+                    millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
-    }    
-    
-    /** Getter for property actorStartStop.
-     * @return Value of property actorStartStop.
+    }
+
+
+    /**
+     * Getter for property actorStartStop.
+     *
+     * @return    Value of property actorStartStop.
      */
-    public boolean isLogActorStartStop() {
+    public boolean isLogActorStartStop()
+    {
         return actorStartStop;
     }
-    
-    /** Setter for property actorStartStop.
-     * @param actorStartStop New value of property actorStartStop.
+
+
+    /**
+     * Setter for property actorStartStop.
+     *
+     * @param  actorStartStop  New value of property actorStartStop.
      */
-    public void setLogActorStartStop(boolean actorStartStop) {
+    public void setLogActorStartStop(boolean actorStartStop)
+    {
         this.actorStartStop = actorStartStop;
     }
-    
-    /** Getter for property instancesStored.
-     * @return Value of property instancesStored.
+
+
+    /**
+     * Getter for property instancesStored.
+     *
+     * @return    Value of property instancesStored.
      */
-    public boolean isLogInstancesStored() {
+    public boolean isLogInstancesStored()
+    {
         return instancesStored;
     }
-    
-    /** setLogter for property instancesStored.
-     * @param instancesStored New value of property instancesStored.
+
+
+    /**
+     * setLogter for property instancesStored.
+     *
+     * @param  instancesStored  New value of property instancesStored.
      */
-    public void setLogInstancesStored(boolean instancesStored) {
+    public void setLogInstancesStored(boolean instancesStored)
+    {
         this.instancesStored = instancesStored;
     }
-    
-    /** Getter for property beginStoringInstances.
-     * @return Value of property beginStoringInstances.
+
+
+    /**
+     * Getter for property beginStoringInstances.
+     *
+     * @return    Value of property beginStoringInstances.
      */
-    public boolean isLogBeginStoringInstances() {
+    public boolean isLogBeginStoringInstances()
+    {
         return beginStoringInstances;
     }
-    
-    /** Setter for property beginStoringInstances.
-     * @param beginStoringInstances New value of property beginStoringInstances.
+
+
+    /**
+     * Setter for property beginStoringInstances.
+     *
+     * @param  beginStoringInstances  New value of property beginStoringInstances.
      */
-    public void setLogBeginStoringInstances(boolean beginStoringInstances) {
+    public void setLogBeginStoringInstances(boolean beginStoringInstances)
+    {
         this.beginStoringInstances = beginStoringInstances;
     }
-    
-    /** Getter for property instancesSent.
-     * @return Value of property instancesSent.
+
+
+    /**
+     * Getter for property instancesSent.
+     *
+     * @return    Value of property instancesSent.
      */
-    public boolean isLogInstancesSent() {
+    public boolean isLogInstancesSent()
+    {
         return instancesSent;
     }
-    
-    /** Setter for property instancesSent.
-     * @param instancesSent New value of property instancesSent.
+
+
+    /**
+     * Setter for property instancesSent.
+     *
+     * @param  instancesSent  New value of property instancesSent.
      */
-    public void setLogInstancesSent(boolean instancesSent) {
+    public void setLogInstancesSent(boolean instancesSent)
+    {
         this.instancesSent = instancesSent;
     }
-    
-    /** Getter for property dicomQuery.
-     * @return Value of property dicomQuery.
+
+
+    /**
+     * Getter for property dicomQuery.
+     *
+     * @return    Value of property dicomQuery.
      */
-    public boolean isLogDicomQuery() {
+    public boolean isLogDicomQuery()
+    {
         return dicomQuery;
     }
-    
-    /** Setter for property dicomQuery.
-     * @param dicomQuery New value of property dicomQuery.
+
+
+    /**
+     * Setter for property dicomQuery.
+     *
+     * @param  dicomQuery  New value of property dicomQuery.
      */
-    public void setLogDicomQuery(boolean dicomQuery) {
+    public void setLogDicomQuery(boolean dicomQuery)
+    {
         this.dicomQuery = dicomQuery;
     }
-    
-    /** Getter for property securityAlert.
-     * @return Value of property securityAlert.
+
+
+    /**
+     * Getter for property securityAlert.
+     *
+     * @return    Value of property securityAlert.
      */
-    public boolean isLogSecurityAlert() {
+    public boolean isLogSecurityAlert()
+    {
         return securityAlert;
     }
-    
-    /** Setter for property securityAlert.
-     * @param securityAlert New value of property securityAlert.
+
+
+    /**
+     * Setter for property securityAlert.
+     *
+     * @param  securityAlert  New value of property securityAlert.
      */
-    public void setLogSecurityAlert(boolean securityAlert) {
+    public void setLogSecurityAlert(boolean securityAlert)
+    {
         this.securityAlert = securityAlert;
     }
-    
-    /** Getter for property userAuthenticated.
-     * @return Value of property userAuthenticated.
+
+
+    /**
+     * Getter for property userAuthenticated.
+     *
+     * @return    Value of property userAuthenticated.
      */
-    public boolean isLogUserAuthenticated() {
+    public boolean isLogUserAuthenticated()
+    {
         return userAuthenticated;
     }
-    
-    /** Setter for property userAuthenticated.
-     * @param userAuthenticated New value of property userAuthenticated.
+
+
+    /**
+     * Setter for property userAuthenticated.
+     *
+     * @param  userAuthenticated  New value of property userAuthenticated.
      */
-    public void setLogUserAuthenticated(boolean userAuthenticated) {
+    public void setLogUserAuthenticated(boolean userAuthenticated)
+    {
         this.userAuthenticated = userAuthenticated;
     }
-    
-    /** Getter for property actorConfig.
-     * @return Value of property actorConfig.
+
+
+    /**
+     * Getter for property actorConfig.
+     *
+     * @return    Value of property actorConfig.
      */
-    public boolean isLogActorConfig() {
+    public boolean isLogActorConfig()
+    {
         return actorConfig;
     }
-    
-    /** Setter for property actorConfig.
-     * @param actorConfig New value of property actorConfig.
+
+
+    /**
+     * Setter for property actorConfig.
+     *
+     * @param  actorConfig  New value of property actorConfig.
      */
-    public void setLogActorConfig(boolean actorConfig) {
+    public void setLogActorConfig(boolean actorConfig)
+    {
         this.actorConfig = actorConfig;
     }
-    
+
+
+    /**
+     *  Gets the logExport attribute of the AuditLoggerImpl object
+     *
+     * @return    The logExport value
+     */
+    public boolean isLogExport()
+    {
+        return logExport;
+    }
+
+
+    /**
+     *  Sets the logExport attribute of the AuditLoggerImpl object
+     *
+     * @param  logExport  The new logExport value
+     */
+    public void setLogExport(boolean logExport)
+    {
+        this.logExport = logExport;
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  media  Description of the Parameter
+     * @param  user   Description of the Parameter
+     */
+    public void logExport(MediaDescription media, User user)
+    {
+        if (!logExport) {
+            return;
+        }
+        try {
+            long millis = System.currentTimeMillis();
+            writer.write(SyslogWriter.LOG_INFO,
+                    IHEYr4.newExport(media, user,
+                    writer.getLocalHostName(), millis).toString(),
+                    millis);
+        } catch (IOException e) {
+            log.error("Could not write to syslog:", e);
+        }
+    }
 }
+

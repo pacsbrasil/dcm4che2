@@ -1,7 +1,5 @@
-/*$Id$*/
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>*
+/*                                                                           *
+ *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG                             *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -18,64 +16,184 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
-
+ */
 package org.dcm4cheri.auditlog;
+import java.net.Socket;
+import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
+import org.dcm4che.auditlog.ArrInputException;
+import org.dcm4che.auditlog.ArrService;
 
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.Destination;
 import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.MediaDescription;
 import org.dcm4che.auditlog.Patient;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.auditlog.User;
-import org.dcm4che.auditlog.ArrService;
-import org.dcm4che.auditlog.ArrInputException;
-import java.net.Socket;
 
-public class AuditLoggerFactoryImpl extends AuditLoggerFactory {
-        
-    // Constants -----------------------------------------------------
-    
-    // Constructor ---------------------------------------------------
-    
+/**
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      August 27, 2002
+ * @version    $Revision$ $Date$
+ */
+
+public class AuditLoggerFactoryImpl extends AuditLoggerFactory
+{
+
     // Public --------------------------------------------------------
-    public AuditLogger newAuditLogger() {
-        return new AuditLoggerImpl();
+    /**
+     *  Description of the Method
+     *
+     * @return    Description of the Return Value
+     */
+    public AuditLogger newAuditLogger()
+    {
+        return new AuditLoggerImpl(Logger.getLogger(AuditLogger.class));
     }
-    
-    public Patient newPatient(String id, String name) {
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  log  Description of the Parameter
+     * @return      Description of the Return Value
+     */
+    public AuditLogger newAuditLogger(Category log)
+    {
+        return new AuditLoggerImpl(log);
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  id    Description of the Parameter
+     * @param  name  Description of the Parameter
+     * @return       Description of the Return Value
+     */
+    public Patient newPatient(String id, String name)
+    {
         return new PatientImpl(id, name);
     }
-    
-    public RemoteNode newRemoteNode(String ip, String hname, String aet) {
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  ip     Description of the Parameter
+     * @param  hname  Description of the Parameter
+     * @param  aet    Description of the Parameter
+     * @return        Description of the Return Value
+     */
+    public RemoteNode newRemoteNode(String ip, String hname, String aet)
+    {
         return new RemoteNodeImpl(ip, hname, aet);
     }
-    
-    public RemoteNode newRemoteNode(Socket socket, String aet) {
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  socket  Description of the Parameter
+     * @param  aet     Description of the Parameter
+     * @return         Description of the Return Value
+     */
+    public RemoteNode newRemoteNode(Socket socket, String aet)
+    {
         return new RemoteNodeImpl(socket, aet);
     }
 
-    
-    public User newLocalUser(String name) {
+
+    /**
+     *  Description of the Method
+     *
+     * @param  name  Description of the Parameter
+     * @return       Description of the Return Value
+     */
+    public User newLocalUser(String name)
+    {
         return new LocalUserImpl(name);
     }
-    
-    public User newRemoteUser(RemoteNode rnode) {
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  rnode  Description of the Parameter
+     * @return        Description of the Return Value
+     */
+    public User newRemoteUser(RemoteNode rnode)
+    {
         return new RemoteUserImpl(rnode);
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  name  Description of the Parameter
+     * @return       Description of the Return Value
+     */
+    public Destination newLocalPrinter(String name)
+    {
+        return new LocalPrinterImpl(name);
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  rnode  Description of the Parameter
+     * @return        Description of the Return Value
+     */
+    public Destination newRemotePrinter(RemoteNode rnode)
+    {
+        return new RemotePrinterImpl(rnode);
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  action   Description of the Parameter
+     * @param  suid     Description of the Parameter
+     * @param  patient  Description of the Parameter
+     * @return          Description of the Return Value
+     */
     public InstancesAction newInstancesAction(String action, String suid,
-            Patient patient) {
+            Patient patient)
+    {
         return new InstancesActionImpl(action, suid, patient);
     }
 
-    public ArrService newArrService(boolean validating) {
-    	try {
-		return new ArrServiceImpl(validating);
-	}
-	catch (ArrInputException e) {
-		return null;
-	}
+
+    /**
+     *  Description of the Method
+     *
+     * @param  patient  Description of the Parameter
+     * @return          Description of the Return Value
+     */
+    public MediaDescription newMediaDescription(Patient patient)
+    {
+        return new MediaDescriptionImpl(patient);
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  validating  Description of the Parameter
+     * @return             Description of the Return Value
+     */
+    public ArrService newArrService(boolean validating)
+    {
+        try {
+            return new ArrServiceImpl(validating);
+        } catch (ArrInputException e) {
+            return null;
+        }
     }
 }
+

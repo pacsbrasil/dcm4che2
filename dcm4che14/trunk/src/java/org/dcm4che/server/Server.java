@@ -31,7 +31,7 @@ import org.dcm4che.util.HandshakeFailedListener;
  * <description>
  *
  * @author     <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- * @created    May, 2002
+ * @since    May, 2002
  * @version    $Revision$ $Date$
  */
 public interface Server
@@ -40,7 +40,7 @@ public interface Server
      *  Description of the Interface
      *
      * @author     gunter
-     * @created    May, 2002
+     * @since    May, 2002
      */
     interface Handler
     {

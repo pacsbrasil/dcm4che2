@@ -20,7 +20,7 @@ package org.dcm4che.util;
 
 /**
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created    March 4, 2003
+ * @since    March 4, 2003
  * @version    $Revision$ $Date$
  */
 public class MLLP_Protocol
