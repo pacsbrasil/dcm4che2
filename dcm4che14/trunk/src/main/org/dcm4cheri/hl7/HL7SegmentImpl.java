@@ -91,6 +91,14 @@ public class HL7SegmentImpl extends HL7FieldsImpl
       return super.get(new int[]{ seq, rep-1, comp-1, sub-1 });
    }
    
+   public int size(int seq, int rep) {
+      return super.size(new int[]{ seq, rep-1 });
+   }
+
+   public int size(int seq, int rep, int comp) {
+      return super.size(new int[]{ seq, rep-1, comp-1 });
+   }
+   
    StringBuffer toVerboseStringBuffer(StringBuffer sb) {
       sb.append(id).append(" - ").append(getName(id, ""));
       for (int i = 1, n = size(); i < n; ++i) {

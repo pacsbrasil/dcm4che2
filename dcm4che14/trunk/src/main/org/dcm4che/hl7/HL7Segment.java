@@ -53,6 +53,12 @@ public interface HL7Segment
    
    int size();
 
+   int size(int seq);
+
+   int size(int seq, int rep);
+
+   int size(int seq, int rep, int comp);
+
    String toString();
    
    String toVerboseString();

@@ -60,8 +60,20 @@ class HL7FieldsImpl implements HL7Fields
          return "";
       }
          
+      public int size() {
+         return 0;
+      }
+      
       public String get(int[] index) {
          return "";
+      }
+      
+      public int size(int index) {
+         return 0;
+      }
+         
+      public int size(int[] index) {
+         return 0;
       }
       
       public void writeTo(ByteArrayOutputStream out) {
@@ -95,6 +107,35 @@ class HL7FieldsImpl implements HL7Fields
    public int size() {
       initSubFields();
       return subFields.length;
+   }
+
+   public int size(int index) {
+     if (delim.length == 0) {
+         throw new IllegalArgumentException("delim.length == 0");
+     }
+     initSubFields();
+     return index < subFields.length ? subFields[index].size() : 0;
+   }
+
+   public int size(int[] index) {
+      if (index.length > delim.length) {
+         throw new IllegalArgumentException("index.length[" + index.length
+               + "] > delim.length[" + delim.length + "]");
+      }
+      switch (index.length) {
+         case 0:
+            return size();
+         case 1:
+            return size(index[0]);
+         default:
+            initSubFields();
+            if (index[0] >= subFields.length) {
+               return 0;
+            }
+            int[] index_1 = new int[index.length-1];
+            System.arraycopy(index, 1, index_1, 0, index_1.length);
+            return subFields[index[0]].size(index_1);
+      }
    }
 
    public void writeTo(ByteArrayOutputStream out) {

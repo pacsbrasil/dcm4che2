@@ -48,6 +48,12 @@ public interface HL7Fields
    
    String get(int[] index);
 
+   int size();
+   
+   int size(int index);
+   
+   int size(int[] index);
+
    void writeTo(ByteArrayOutputStream out);
 
    void writeTo(int index, ByteArrayOutputStream out);
