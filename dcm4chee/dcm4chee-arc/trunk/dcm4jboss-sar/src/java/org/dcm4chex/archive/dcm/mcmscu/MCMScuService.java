@@ -871,7 +871,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     private AAssociateRQ getAssocReq(String calledAET, String cuid) {
 		AssociationFactory aFact = AssociationFactory.getInstance();
     	AAssociateRQ assocRQ = aFact.newAAssociateRQ();
-    	assocRQ.setCalledAET( getRetrieveAET() );
+    	assocRQ.setCalledAET( calledAET );
     	assocRQ.setCallingAET( getCallingAET() );
     	assocRQ.setMaxPDULength( maxPDUlen );
     	assocRQ.addPresContext(aFact.newPresContext(1,
