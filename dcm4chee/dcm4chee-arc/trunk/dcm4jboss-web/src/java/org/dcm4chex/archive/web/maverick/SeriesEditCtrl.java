@@ -61,8 +61,14 @@ public class SeriesEditCtrl extends Dcm4JbossController {
     }
     
     public SeriesModel getSeries() {
-        return FolderForm.getFolderForm(getCtx().getRequest())
+    	return seriesPk == -1 ? newSeries() :  FolderForm.getFolderForm(getCtx().getRequest())
                 .getSeriesByPk(patPk, studyPk, seriesPk);
     }
 
+    private SeriesModel newSeries() {
+    	SeriesModel seriesModel = new SeriesModel();
+    	seriesModel.setSpecificCharacterSet("ISO_IR 100");
+    	return seriesModel;
+    }
+    
 }
