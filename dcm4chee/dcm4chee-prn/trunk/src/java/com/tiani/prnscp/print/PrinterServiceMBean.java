@@ -895,6 +895,10 @@ public interface PrinterServiceMBean extends ServiceMBean
      */
     public void setPrintGrayAsColor(boolean printGrayAsColor);
 
+	public int getConvertColorModel();
+	
+	public void setConvertColorModel(int convertColorModel);
+    
     public int getApplyPLUTonRGB();
 
     public void setApplyPLUTonRGB(int applyPLUTonRGB);

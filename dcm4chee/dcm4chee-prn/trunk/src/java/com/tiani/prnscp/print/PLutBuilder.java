@@ -45,7 +45,8 @@ import org.dcm4che.util.UIDGenerator;
 public class PLutBuilder
 {
 
-    private static final String IDENTITY = "IDENTITY";
+    private static final String NULL = "NULL";
+	private static final String IDENTITY = "IDENTITY";
     private static final String LIN_OD = "LIN OD";
     private static final String LUT_FILE_EXT = ".lut";
     private static final String SHAPE = "shape=";
@@ -360,7 +361,7 @@ public class PLutBuilder
     }
 
     public boolean isShapePLUT() {
-        return IDENTITY.equals(shape) || LIN_OD.equals(shape);
+        return IDENTITY.equals(shape) || LIN_OD.equals(shape) || NULL.equals(shape);
     }
 
     /**

@@ -12,7 +12,7 @@ license.home=../license/build
 
 # set property "jboss.home" to the path of your installation directory
 # of JBoss [http://sourceforge.org/projects/jboss]
-jboss.home=C:/jboss-3.0.4
+jboss.home=C:/jboss-3.2.5
 
 # set property "docbook-xsl.home" to the path of your installation directory
 # of DocBook XSL Stylesheets [http://sourceforge.net/projects/docbook]

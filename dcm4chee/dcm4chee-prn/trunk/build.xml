@@ -458,7 +458,7 @@
         <include name="lib/jboss-common.jar"/>
         <include name="lib/jboss-jmx.jar"/>
         <include name="lib/jboss-system.jar"/>
-        <include name="lib/jdom.jar"/>
+        <include name="lib/dom4j.jar"/>
         <include name="lib/log4j-boot.jar"/>
         <include name="server/default/conf/jndi.properties"/>
         <include name="server/default/conf/xmdesc/*"/>

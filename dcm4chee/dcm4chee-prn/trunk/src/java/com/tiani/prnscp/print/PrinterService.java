@@ -175,6 +175,8 @@ public class PrinterService extends ServiceMBeanSupport implements
     private String trim = NO;
 
     private boolean printGrayAsColor;
+    
+    private int convertColorModel = 0;
 
     private int applyPLUTonRGB = 10;
 
@@ -1803,6 +1805,14 @@ public class PrinterService extends ServiceMBeanSupport implements
         this.printGrayAsColor = printGrayAsColor;
     }
 
+	public int getConvertColorModel() {
+		return convertColorModel;
+	}
+	
+	public void setConvertColorModel(int convertColorModel) {
+		this.convertColorModel = convertColorModel;
+	}
+    
     /**
      *  Gets the maxQueuedJobCount attribute of the PrinterService object
      *
@@ -2458,4 +2468,5 @@ public class PrinterService extends ServiceMBeanSupport implements
         return IconLoader.getInstance().load(
                 new File(toFile(annotationDir), fname));
     }
+    
 }

@@ -90,6 +90,22 @@
     <attribute name="PrintGrayAsColor">false</attribute>
     
     <!--
+    Specifies if GrayScale Images are converted using the specified
+    color model before printing.
+    0 = no conversion (use Index Color Model with gray Palette)
+    1 = TYPE_INT_RGB
+    2 = TYPE_INT_ARGB
+    3 = TYPE_INT_ARGB_PRE
+    4 = TYPE_INT_BGR
+    5 = TYPE_3BYTE_BGR
+    6 = TYPE_4BYTE_ABGR
+    7 = TYPE_4BYTE_ABGR_PRE
+    8 = TYPE_USHORT_565_RGB
+    9 = TYPE_USHORT_555_RGB    
+    -->
+    <attribute name="ConvertColorModel">0</attribute>
+    
+    <!--
     Specifies if PLUTs shall be also applied on RGB values of color images:
     < 0 - no P-LUT will be applied,
     = 0 - P-LUT will be only applied to pure gray values (R=G=B),

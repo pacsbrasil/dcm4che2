@@ -269,6 +269,9 @@ public class PrinterCalibration
             if ("LIN OD".equals(shape)) {
                 return getPValToDDLwLinOD(chromaticity, n, dmin, dmax);
             }
+            if ("NULL".equals(shape)) {
+                return getIdentityPValToDDL();
+            }
             throw new IllegalArgumentException("LUTShape: " + shape);
         }
         Dataset item = plut.getItem(Tags.PresentationLUTSeq);

@@ -194,12 +194,12 @@ class PrintableImageBox
                      + "\n\tmaxDensity: " + maxDensity
                      + "\n\tillumination: " + illumination
                      + "\n\treflectedAmbientLight: " + reflectedAmbientLight);
-            if (debug) {
+            if (log.isTraceEnabled()) {
                 StringBuffer sb = new StringBuffer("pValToDDL:");
 		        for (int i = 0; i < pValToDDL.length; ++i) {
 		            sb.append("\n\t").append(pValToDDL[i] & 0xff);
 		        }
-		        log.debug(sb.toString());
+		        log.trace(sb.toString());
             }
         }
     }
@@ -454,7 +454,11 @@ class PrintableImageBox
             }
             readParam.setSourceRegion(chunkRect);
             BufferedImage bi = reader.read(0, readParam);
-            if (!(bi.getColorModel() instanceof IndexColorModel)) {
+            if (bi.getColorModel() instanceof IndexColorModel) {
+            	if (service.getConvertColorModel() > 0) {
+            		bi = convertBI(bi, service.getConvertColorModel());
+            	}
+            } else {
                 bi = rgbPVtoDDL(bi);
             }
             if (scaleBi) {
@@ -468,7 +472,23 @@ class PrintableImageBox
             logMemoryUsage();
         }
     }
-    
+
+    private BufferedImage convertBI(BufferedImage src, int imageType) {
+		if (debug)
+			log.debug("Converting BufferImage to type: " + imageType);
+        BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(),
+                imageType);
+        Graphics2D big = dst.createGraphics();
+        try {
+            big.drawImage(src, 0, 0, null);
+        } finally {
+            big.dispose();
+        }
+		if (debug)
+			log.debug("Converted BufferImage to type: " + imageType);
+        return dst;
+    }
+ 
     private BufferedImage rgbPVtoDDL(BufferedImage bi) {
         final int w = bi.getWidth();
         final int h = bi.getHeight();
