@@ -92,9 +92,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	}
 	
 	/**
-	 * Returns the retrieve AET defined in this MBean.
-	 * <p>
-	 * This AET performs the move operation.
+	 * Returns the AET that holds the work list (Modality Work List SCP).
 	 * 
 	 * @return The retrieve AET.
 	 */
@@ -187,7 +185,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	/**
 	 * Returns the DICOM priority as int value.
 	 * <p>
-	 * This value is used for CFIN.
+	 * This value is used for CFIND.
 	 * 0..MED, 1..HIGH, 2..LOW
 	 * 
 	 * @return Returns the priority.
@@ -207,16 +205,13 @@ public class MWLScuService extends ServiceMBeanSupport {
 	}
 	
 	/**
-	 * Start listening to the JMS queue deined in <code>QUEUE</code>
-	 * <p>
-	 * This queue is used to receive media creation request from scheduler or web interface.
+	 * 
 	 */
     protected void startService() throws Exception {
         super.startService();
     }
 
 	/**
-	 * Stop listening to the JMS queue deined in <code>QUEUE</code>
 	 * 
 	 */
     protected void stopService() throws Exception {
@@ -225,16 +220,9 @@ public class MWLScuService extends ServiceMBeanSupport {
 
     
     /**
-     * Process the media creation request.
-     * <DL>
-     * <DD>1) Send media creation request to <code>mcMScpAET</code>. </DD>
-     * <DD>2) Send N-Action command for media creation to <code>mcMScpAET</code>. </DD>
-     * </DL>
-     * <p>
-     * 
-	 * @param mediaDTO The MediaDTO object to process.
+     * Get a list of work list entries.
 	 */
-	private List getMWLList() {
+	public List getMWLList() {
     	ActiveAssociation assoc = null;
     	String iuid = null;
     	List list = new ArrayList();
@@ -256,9 +244,12 @@ public class MWLScuService extends ServiceMBeanSupport {
             cmd.initCFindRQ(1, UIDs.ModalityWorklistInformationModelFIND, getPriority() );
             Dataset ds = getMWLReqDS();
             Dimse mcRQ = aFact.newDimse(1, cmd, ds);
+            if ( log.isDebugEnabled() ) log.debug("make CFIND req:"+mcRQ);
             FutureRSP rsp = assoc.invoke(mcRQ);
             Dimse dimse = rsp.get();
+            if ( log.isDebugEnabled() ) log.debug("CFIND resp:"+dimse);
             List pending = rsp.listPending();
+            if ( log.isDebugEnabled() ) log.debug("CFIND pending:"+pending);
             Iterator iter = pending.iterator();
             while ( iter.hasNext() ) {
             	list.add( ( (Dimse) iter.next()).getDataset() );
