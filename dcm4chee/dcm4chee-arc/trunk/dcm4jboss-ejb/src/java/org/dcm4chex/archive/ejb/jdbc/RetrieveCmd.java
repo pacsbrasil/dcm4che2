@@ -32,6 +32,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.sql.DataSource;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -68,17 +70,17 @@ public abstract class RetrieveCmd extends BaseCmd {
             "Instance.series_fk",
             "File.instance_fk" };
 
-    public static RetrieveCmd create(Dataset keys) throws SQLException {
+    public static RetrieveCmd create(DataSource ds, Dataset keys) throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
             case 0 :
-                return new PatientRetrieveCmd(keys);
+                return new PatientRetrieveCmd(ds, keys);
             case 1 :
-                return new StudyRetrieveCmd(keys);
+                return new StudyRetrieveCmd(ds, keys);
             case 2 :
-                return new SeriesRetrieveCmd(keys);
+                return new SeriesRetrieveCmd(ds, keys);
             case 3 :
-                return new ImageRetrieveCmd(keys);
+                return new ImageRetrieveCmd(ds, keys);
             default :
                 throw new IllegalArgumentException(
                     "QueryRetrieveLevel=" + qrLevel);
@@ -87,7 +89,8 @@ public abstract class RetrieveCmd extends BaseCmd {
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    private RetrieveCmd() throws SQLException {
+    private RetrieveCmd(DataSource ds) throws SQLException {
+        super(ds);
         sqlBuilder.setSelect(SELECT_ATTRIBUTE, SELECT_ATTRIBUTE.length);
         sqlBuilder.setFrom(ENTITY, ENTITY.length);
         sqlBuilder.setLeftJoin("Media", "File.media_fk");
@@ -117,7 +120,8 @@ public abstract class RetrieveCmd extends BaseCmd {
     }
 
     static class PatientRetrieveCmd extends RetrieveCmd {
-        PatientRetrieveCmd(Dataset keys) throws SQLException {
+        PatientRetrieveCmd(DataSource ds, Dataset keys) throws SQLException {
+            super(ds);
             String pid = keys.getString(Tags.PatientID);
             if (pid == null)
                 throw new IllegalArgumentException("Missing PatientID");
@@ -131,7 +135,8 @@ public abstract class RetrieveCmd extends BaseCmd {
     }
 
     static class StudyRetrieveCmd extends RetrieveCmd {
-        StudyRetrieveCmd(Dataset keys) throws SQLException {
+        StudyRetrieveCmd(DataSource ds, Dataset keys) throws SQLException {
+            super(ds);
             String[] uid = keys.getStrings(Tags.StudyInstanceUID);
             if (uid.length == 0)
                 throw new IllegalArgumentException("Missing StudyInstanceUID");
@@ -144,7 +149,8 @@ public abstract class RetrieveCmd extends BaseCmd {
     }
 
     static class SeriesRetrieveCmd extends RetrieveCmd {
-        SeriesRetrieveCmd(Dataset keys) throws SQLException {
+        SeriesRetrieveCmd(DataSource ds, Dataset keys) throws SQLException {
+            super(ds);
             String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
             if (uid.length == 0)
                 throw new IllegalArgumentException("Missing SeriesInstanceUID");
@@ -157,7 +163,8 @@ public abstract class RetrieveCmd extends BaseCmd {
     }
 
     static class ImageRetrieveCmd extends RetrieveCmd {
-        ImageRetrieveCmd(Dataset keys) throws SQLException {
+        ImageRetrieveCmd(DataSource ds, Dataset keys) throws SQLException {
+            super(ds);
             String[] uid = keys.getStrings(Tags.SOPInstanceUID);
             if (uid.length == 0)
                 throw new IllegalArgumentException("Missing SOPInstanceUID");

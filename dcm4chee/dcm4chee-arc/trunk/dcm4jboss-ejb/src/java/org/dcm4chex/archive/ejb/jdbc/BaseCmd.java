@@ -50,13 +50,10 @@ public abstract class BaseCmd {
     protected Statement stmt;
     protected ResultSet rs = null;
 
-    protected BaseCmd() throws SQLException {
+    protected BaseCmd(DataSource ds) throws SQLException {
         InitialContext ctx = null;
         try {
             ctx = new InitialContext();
-            DataSource ds =
-                (DataSource) ctx.lookup(
-                    JdbcProperties.getInstance().getProperty("datasource"));
             con = ds.getConnection();
             stmt = con.createStatement();
         } catch (SQLException e) {

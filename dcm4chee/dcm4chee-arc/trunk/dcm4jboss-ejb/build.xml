@@ -82,6 +82,7 @@
 	<property name="target.meta-inf" value="${target.xdoclet}/META-INF"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
 	<property name="target.deploy" value="${target.dir}/deploy"/>
+	<property name="target.client" value="${target.dir}/client"/>	
 	<property name="target.test.web-inf" value="${target.dir}/test/WEB-INF"/>
 	<property name="target.reports" value="${target.dir}/reports"/>
 
@@ -126,6 +127,7 @@
         <mkdir dir="${target.java}"/>
         <mkdir dir="${target.meta-inf}"/>
         <mkdir dir="${target.deploy}"/>
+        <mkdir dir="${target.client}"/>
         <mkdir dir="${target.test.web-inf}"/>
         <mkdir dir="${target.reports}"/>
     </target>
@@ -215,13 +217,40 @@
    <!-- =================================================================== -->
    <!-- Creates the ejb-jar                                                 -->
    <!-- =================================================================== -->
-    <target name="jar" depends="compile">
-        <jar jarfile="${target.deploy}/${dist}.jar">
+    <target name="jar" depends="ejb-jar,client-jar,jdbc-jar"/>
+    <target name="ejb-jar" depends="compile">
+        <jar jarfile="${target.deploy}/dcm4jboss-ejb.jar">
         	<metainf dir="${target.meta-inf}"/>
         	<fileset dir="${target.classes}">
                 <exclude name="**/*Test.class"/>
+                <exclude name="**/jdbc/**"/>
             </fileset>
         	<fileset dir="${src.conf}"/>
+        </jar>
+    </target>
+
+   <!-- =================================================================== -->
+   <!-- Creates the ejb-client-jar                                          -->
+   <!-- =================================================================== -->
+    <target name="client-jar" depends="compile">
+        <jar jarfile="${target.client}/dcm4jboss-ejb-client.jar">
+        	<fileset dir="${target.classes}">
+                <include name="**/interfaces/Storage*"/>
+            </fileset>
+        </jar>
+    </target>
+        
+   <!-- =================================================================== -->
+   <!-- Creates the dcm4jboss-jdbc.jar                                  -->
+   <!-- =================================================================== -->
+    <target name="jdbc-jar" depends="compile">
+        <jar jarfile="${target.client}/dcm4jboss-jdbc.jar">
+        	<metainf dir="${target.meta-inf}">
+	        	<include name="jbosscmp-jdbc.xml"/>
+	        </metainf>
+        	<fileset dir="${target.classes}">
+                <include name="**/jdbc/*"/>
+            </fileset>
         </jar>
     </target>
     
@@ -250,7 +279,7 @@
    	<!-- Deploy                                          	                 -->
    	<!-- =================================================================== -->
     <target name="deploy" depends="jar, test-war">
-    	<copy file="${target.deploy}/${dist}.jar" todir="${jboss.deploy}"/>
+    	<copy file="${target.deploy}/dcm4jboss-ejb.jar" todir="${jboss.deploy}"/>
     	<copy file="${target.deploy}/test.war" todir="${jboss.deploy}"/>
     </target>
     
@@ -259,7 +288,7 @@
    	<!-- =================================================================== -->
     <target name="undeploy">
     	<delete file="${jboss.deploy}/test.war"/>
-    	<delete file="${jboss.deploy}/${dist}.jar"/>
+    	<delete file="${jboss.deploy}/dcm4jboss-ejb.jar"/>
     </target>
 
    	<!-- =================================================================== -->

@@ -28,18 +28,27 @@
  */
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Iterator;
+
+import javax.sql.DataSource;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.ejb.util.DatasetUtil;
+import org.dcm4che.dict.VRs;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
 public abstract class QueryCmd extends BaseCmd {
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     private static final String[] QRLEVEL =
         { "PATIENT", "STUDY", "SERIES", "IMAGE" };
 
@@ -56,17 +65,17 @@ public abstract class QueryCmd extends BaseCmd {
     private static final String[] FK =
         { "Study.patient_fk", "Series.study_fk", "Instance.series_fk" };
 
-    public static QueryCmd create(Dataset keys) throws SQLException {
+    public static QueryCmd create(DataSource ds, Dataset keys) throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
             case 0 :
-                return new PatientQueryCmd(keys);
+                return new PatientQueryCmd(ds, keys);
             case 1 :
-                return new StudyQueryCmd(keys);
+                return new StudyQueryCmd(ds, keys);
             case 2 :
-                return new SeriesQueryCmd(keys);
+                return new SeriesQueryCmd(ds, keys);
             case 3 :
-                return new ImageQueryCmd(keys);
+                return new ImageQueryCmd(ds, keys);
             default :
                 throw new IllegalArgumentException(
                     "QueryRetrieveLevel=" + qrLevel);
@@ -76,7 +85,8 @@ public abstract class QueryCmd extends BaseCmd {
     protected final Dataset keys;
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    protected QueryCmd(Dataset keys) throws SQLException {
+    protected QueryCmd(DataSource ds, Dataset keys) throws SQLException {
+        super(ds);
         this.keys = keys;
         // ensure keys contains (8,0005) for use as result filter  
         if (!keys.contains(Tags.SpecificCharacterSet)) {
@@ -205,26 +215,56 @@ public abstract class QueryCmd extends BaseCmd {
         }
     }
 
-    public abstract Dataset getDataset() throws SQLException;
+    public Dataset getDataset() throws SQLException, IOException {
+        Dataset ds = dof.newDataset();
+        fillDataset(ds);
+        adjustDataset(ds, keys);
+        return ds;
+    }
+
+    private void adjustDataset(Dataset ds, Dataset keys) {
+        for (Iterator it = keys.iterator(); it.hasNext();) {
+            DcmElement key = (DcmElement) it.next();
+            final int tag = key.tag();            
+            if (tag == Tags.SpecificCharacterSet)
+                continue;
+            
+            final int vr = key.vr();
+            DcmElement el = ds.get(tag);
+            if (el == null) {
+                ds.putXX(tag, vr);
+                continue;
+            }
+            if (vr == VRs.SQ) {
+                Dataset keyItem = key.getItem();
+                if (keyItem != null) {
+                    for (int i = 0, n = el.vm(); i < n; ++i) {
+                        adjustDataset(el.addNewItem(), keyItem);
+                    }
+                }
+            }
+        }
+    }
+
+    protected abstract void fillDataset(Dataset ds) throws SQLException, IOException;
 
     static class PatientQueryCmd extends QueryCmd {
-        PatientQueryCmd(Dataset keys) throws SQLException {
-            super(keys);
+        PatientQueryCmd(DataSource ds, Dataset keys) throws SQLException {
+            super(ds, keys);
             sqlBuilder.setSelect(SELECT_ATTRIBUTE, 1);
             sqlBuilder.setFrom(ENTITY, 1);
             addPatientMatch();
         }
 
-        public Dataset getDataset() throws SQLException {
-            Dataset ds = DatasetUtil.fromByteArray(rs.getBytes(1));
+        protected void fillDataset(Dataset ds) throws IOException, SQLException {
+            ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
             ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
-            return ds.subSet(keys);
         }
     }
 
     static class StudyQueryCmd extends QueryCmd {
-        StudyQueryCmd(Dataset keys) throws SQLException {
-            super(keys);
+        StudyQueryCmd(DataSource ds, Dataset keys) throws SQLException {
+            super(ds, keys);
             sqlBuilder.setSelect(SELECT_ATTRIBUTE, 2);
             sqlBuilder.setFrom(ENTITY, 2);
             sqlBuilder.setFk(FK, 1);
@@ -232,17 +272,16 @@ public abstract class QueryCmd extends BaseCmd {
             addStudyMatch();
         }
 
-        public Dataset getDataset() throws SQLException {
-            Dataset ds = DatasetUtil.fromByteArray(rs.getBytes(1));
-            ds.putAll(DatasetUtil.fromByteArray(rs.getBytes(2)));
+        protected void fillDataset(Dataset ds) throws IOException, SQLException {
+            ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
+            ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
-            return ds.subSet(keys);
         }
     }
 
     static class SeriesQueryCmd extends QueryCmd {
-        SeriesQueryCmd(Dataset keys) throws SQLException {
-            super(keys);
+        SeriesQueryCmd(DataSource ds, Dataset keys) throws SQLException {
+            super(ds, keys);
             sqlBuilder.setSelect(SELECT_ATTRIBUTE, 3);
             sqlBuilder.setFrom(ENTITY, 3);
             sqlBuilder.setFk(FK, 2);
@@ -251,18 +290,17 @@ public abstract class QueryCmd extends BaseCmd {
             addSeriesMatch();
         }
 
-        public Dataset getDataset() throws SQLException {
-            Dataset ds = DatasetUtil.fromByteArray(rs.getBytes(1));
-            ds.putAll(DatasetUtil.fromByteArray(rs.getBytes(2)));
-            ds.putAll(DatasetUtil.fromByteArray(rs.getBytes(3)));
+        protected void fillDataset(Dataset ds) throws IOException, SQLException {
+            ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
+            ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
+            ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
-            return ds.subSet(keys);
         }
     }
 
     static class ImageQueryCmd extends QueryCmd {
-        ImageQueryCmd(Dataset keys) throws SQLException {
-            super(keys);
+        ImageQueryCmd(DataSource ds, Dataset keys) throws SQLException {
+            super(ds, keys);
             sqlBuilder.setSelect(SELECT_ATTRIBUTE, 4);
             sqlBuilder.setFrom(ENTITY, 4);
             if (isMatchSrCode()) {
@@ -275,14 +313,12 @@ public abstract class QueryCmd extends BaseCmd {
             addInstanceMatch();
         }
 
-        public Dataset getDataset() throws SQLException {
-            int index = 1;
-            Dataset ds = DatasetUtil.fromByteArray(rs.getBytes(1));
-            ds.putAll(DatasetUtil.fromByteArray(rs.getBytes(2)));
-            ds.putAll(DatasetUtil.fromByteArray(rs.getBytes(3)));
-            ds.putAll(DatasetUtil.fromByteArray(rs.getBytes(4)));
+        protected void fillDataset(Dataset ds) throws IOException, SQLException {
+            ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
+            ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
+            ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));
+            ds.putAll(toDataset(rs.getBytes(4)).subSet(keys));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-            return ds.subSet(keys);
         }
     }
 
@@ -293,4 +329,10 @@ public abstract class QueryCmd extends BaseCmd {
                 || code.vm(Tags.CodingSchemeDesignator) > 0);
     }
 
+    private static Dataset toDataset(byte[] data) throws IOException {
+        ByteArrayInputStream bin = new ByteArrayInputStream(data);
+        Dataset ds = dof.newDataset();
+        ds.readDataset(bin, DcmDecodeParam.IVR_LE, -1);
+        return ds;
+    }
 }

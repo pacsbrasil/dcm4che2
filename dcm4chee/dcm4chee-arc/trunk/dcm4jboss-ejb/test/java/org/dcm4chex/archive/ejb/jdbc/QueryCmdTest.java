@@ -28,6 +28,10 @@
  */
 package org.dcm4chex.archive.ejb.jdbc;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+
 import org.apache.cactus.ServletTestCase;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -39,6 +43,7 @@ import org.dcm4che.dict.Tags;
  */
 public class QueryCmdTest extends ServletTestCase
 {
+    private static final String DATASOURCE = "java:/PostgresDS";
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     
     public static void main(String[] args)
@@ -46,8 +51,13 @@ public class QueryCmdTest extends ServletTestCase
         junit.textui.TestRunner.run(QueryCmdTest.class);
     }
 
+    private DataSource ds;
     protected void setUp() throws Exception
     {
+        Context ctx = new InitialContext();
+        ds = (DataSource) ctx.lookup(DATASOURCE);
+        ctx.close();
+        
     }
 
     /*
@@ -70,7 +80,7 @@ public class QueryCmdTest extends ServletTestCase
         keys.putPN(Tags.PatientName);
         keys.putDA(Tags.PatientBirthDate);
         keys.putCS(Tags.PatientSex, "F");
-        QueryCmd cmd = QueryCmd.create(keys);
+        QueryCmd cmd = QueryCmd.create(ds, keys);
         cmd.execute();
         try {
             while (cmd.next())
@@ -93,7 +103,7 @@ public class QueryCmdTest extends ServletTestCase
         keys.putDA(Tags.StudyDate, "19970811");
         keys.putTM(Tags.StudyTime);
         keys.putCS(Tags.ModalitiesInStudy, "US");
-        QueryCmd cmd = QueryCmd.create(keys);
+        QueryCmd cmd = QueryCmd.create(ds, keys);
         cmd.execute();
         try {
             while (cmd.next())
@@ -113,7 +123,7 @@ public class QueryCmdTest extends ServletTestCase
         keys.putDA(Tags.SeriesDate);
         keys.putTM(Tags.SeriesTime);
         keys.putCS(Tags.Modality, "US");
-        QueryCmd cmd = QueryCmd.create(keys);
+        QueryCmd cmd = QueryCmd.create(ds, keys);
         cmd.execute();
         try {
             while (cmd.next())
@@ -132,7 +142,7 @@ public class QueryCmdTest extends ServletTestCase
         keys.putUI(Tags.SOPInstanceUID);
         keys.putUI(Tags.SOPClassUID);
         keys.putIS(Tags.InstanceNumber, "1");
-        QueryCmd cmd = QueryCmd.create(keys);
+        QueryCmd cmd = QueryCmd.create(ds, keys);
         cmd.execute();
         try {
             while (cmd.next())
