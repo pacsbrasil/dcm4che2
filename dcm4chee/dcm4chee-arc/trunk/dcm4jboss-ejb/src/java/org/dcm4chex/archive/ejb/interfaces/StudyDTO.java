@@ -20,6 +20,7 @@
 package org.dcm4chex.archive.ejb.interfaces;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ import java.util.List;
  * @since 14.01.2004
  */
 public class StudyDTO implements Serializable {
-    public static final String DATETIME_FORMAT = "YYYY/MM/dd hh:mm";
+    public static final String DATETIME_FORMAT = "yyyy/MM/dd hh:mm";
 
     private int pk;
     private String accessionNumber;
@@ -40,7 +41,7 @@ public class StudyDTO implements Serializable {
     private String modalitiesInStudy;
     private int numberOfSeries;
     private int numberOfInstances;
-    private List series;
+    private List series = new ArrayList();
 
     /**
      * @return

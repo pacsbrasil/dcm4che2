@@ -20,6 +20,7 @@
 package org.dcm4chex.archive.ejb.interfaces;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,13 +31,13 @@ import java.util.List;
  */
 public class PatientDTO implements Serializable {
 
-    public static final String DATE_FORMAT = "YYYY/MM/dd";
+    public static final String DATE_FORMAT = "yyyy/MM/dd";
     private int pk;
     private String patientID;
     private String patientName;
     private String patientSex;
     private String patientBirthDate;
-    private List studies;
+    private List studies = new ArrayList();
     
     /**
      * @return

@@ -35,7 +35,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
-import org.dcm4chex.archive.ejb.util.DatasetUtil;
+import org.dcm4chex.archive.util.DatasetUtil;
 
 /**
 
@@ -222,12 +222,14 @@ public abstract class SeriesBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, StudyLocal study)
         throws CreateException {
         setStudy(study);
+        study.addModalityInStudy(getModality());
         study.incNumberOfStudyRelatedSeries(1);
         log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
+        // study.updateModalitiesInStudy();?
         getStudy().incNumberOfStudyRelatedSeries(-1);
     }
 

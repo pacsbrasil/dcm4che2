@@ -44,6 +44,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.jdbc.CountStudiesCmd;
+import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 
 /**
  * 
@@ -54,7 +55,7 @@ import org.dcm4chex.archive.ejb.jdbc.CountStudiesCmd;
  * @ejb.bean
  *  name="ContentManager"
  *  type="Stateless"
- *  view-type="local"
+ *  view-type="remote"
  *  jndi-name="ejb/ContentManager"
  * 
  * @ejb.transaction-type 
@@ -143,8 +144,12 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List listPatients(StudyFilterDTO filter, int offset, int maxCount) {
-        return null;
+    public List listPatients(StudyFilterDTO filter, int offset, int limit) {
+        try {
+            return new QueryStudiesCmd(ds, filter, offset, limit).execute();
+        } catch (SQLException e) {
+            throw new EJBException(e);
+        }
     }
 
     /**

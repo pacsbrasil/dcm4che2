@@ -50,6 +50,7 @@ public final class DTOFactory {
     public static StudyDTO newStudyDTO(
         int pk,
         Dataset ds,
+        String modsInStudy,
         int numSeries,
         int numInst) {
         StudyDTO study = new StudyDTO();
@@ -62,6 +63,7 @@ public final class DTOFactory {
                 ds.getDateTime(Tags.StudyDate, Tags.StudyTime),
                 StudyDTO.DATETIME_FORMAT));
         study.setStudyDescription(ds.getString(Tags.StudyDescription, ""));
+        study.setModalitiesInStudy(modsInStudy);
         study.setNumberOfSeries(numSeries);
         study.setNumberOfInstances(numInst);
         return study;

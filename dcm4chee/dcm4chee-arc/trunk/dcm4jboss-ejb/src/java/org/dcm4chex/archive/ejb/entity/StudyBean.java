@@ -26,9 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -37,7 +35,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
-import org.dcm4chex.archive.ejb.util.DatasetUtil;
+import org.dcm4chex.archive.util.DatasetUtil;
 
 /**
  * @ejb.bean
@@ -76,9 +74,11 @@ public abstract class StudyBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(StudyBean.class);
     private Set retrieveAETSet;
+    private Set modalitySet;
 
     public void unsetEntityContext() {
         retrieveAETSet = null;
+        modalitySet = null;
     }
 
     /**
@@ -336,23 +336,48 @@ public abstract class StudyBean implements EntityBean {
     }
 
     /**
-     * @ejb.select
-     *  query="SELECT s.modality FROM Study AS a, IN(a.series) s"
-     */
-    public abstract Set ejbSelectModalitiesInStudy() throws FinderException;
-
-    /**
      * Modalities In Study
      *
      * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="mods_in_study"
      */
-    public Set getModalitiesInStudy() {
-        try {
-            return ejbSelectModalitiesInStudy();
-        } catch (FinderException e) {
-            throw new EJBException(e);
+    public abstract String getModalitiesInStudy();
+
+    public abstract void setModalitiesInStudy(String mds);
+
+    /**
+     * @ejb.interface-method
+     */
+    public Set getModalitySet() {
+        if (modalitySet == null) {
+            modalitySet = new HashSet();
+            String mds = getModalitiesInStudy();
+            if (mds != null) {
+                modalitySet.addAll(
+                    Arrays.asList(StringUtils.split(mds, '\\')));
+            }
         }
+        return modalitySet;
     }
+        
+    /**
+     * @ejb.interface-method
+     */
+    public boolean addModalityInStudy(String md) {
+        if (getModalitySet().contains(md)) {
+            return false;
+        }
+        modalitySet.add(md);
+        String prev = getModalitiesInStudy();
+        if (prev == null || prev.length() == 0) {
+            setModalitiesInStudy(md);
+        } else {
+            setModalitiesInStudy(prev + '\\' + md);
+        }
+        return true;
+    }
+
 
     /**
      * 

@@ -29,6 +29,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -42,7 +43,7 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
-import org.dcm4chex.archive.ejb.util.DatasetUtil;
+import org.dcm4chex.archive.util.DatasetUtil;
 
 /**
  * Instance Bean
@@ -237,8 +238,8 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.relation
-     *  name="instance-file"
-     *  role-name="instance-in-file"
+     *  name="instance-files"
+     *  role-name="instance-in-files"
      *    
      * @ejb.interface-method view-type="local"
      * 
@@ -283,8 +284,7 @@ public abstract class InstanceBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
         throws CreateException {
-        setSrCode(
-            DatasetUtil.toCode(ds.getItem(Tags.ConceptNameCodeSeq), codeHome));
+        setSrCode(toCode(ds.getItem(Tags.ConceptNameCodeSeq)));
         setSeries(series);
         series.incNumberOfSeriesRelatedInstances(1);
         log.info("Created " + prompt());
@@ -383,5 +383,32 @@ public abstract class InstanceBean implements EntityBean {
                 (String[]) resultAetSet.toArray(
                     new String[resultAetSet.size()]),
                 '\\'));
+    }
+
+    private CodeLocal toCode(Dataset item) throws CreateException {
+        if (item == null)
+            return null;
+
+        final String value = item.getString(Tags.CodeValue);
+        final String designator = item.getString(Tags.CodingSchemeDesignator);
+        final String version = item.getString(Tags.CodingSchemeVersion);
+        final String meaning = item.getString(Tags.CodeMeaning);
+        try {
+            Collection c = codeHome.findByValueAndDesignator(value, designator);
+            for (Iterator it = c.iterator(); it.hasNext();) {
+                final CodeLocal code = (CodeLocal) it.next();
+                if (version == null) {
+                    return code;
+                }
+                final String version2 = code.getCodingSchemeVersion();
+                if (version2 == null || version2.equals(version)) {
+                    return code;
+                }
+            }
+            return codeHome.create(value, designator, version, meaning);
+        } catch (FinderException e) {
+            throw new CreateException(
+                "Failed to access Code[" + value + "," + designator + "]:" + e);
+        }
     }
 }

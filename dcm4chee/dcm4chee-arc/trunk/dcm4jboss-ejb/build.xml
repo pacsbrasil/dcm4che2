@@ -4,15 +4,17 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.3.5"/>
+	<property name="version" value="0.4.0"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
     <!--property name="datasource.mapping" value="mySQL"/-->
     <!--property name="datasource.mapping" value="PostgreSQL 7.2"/-->
+	<!--property name="datasource.mapping" value="Oracle9i"/-->
     <property name="datasource.name" value="java:/DefaultDS"/>
     <!--property name="datasource.name" value="java:/MySqlDS"/-->
     <!--property name="datasource.name" value="java:/PostgresDS"/-->
+	<!--property name="datasource.name" value="java:/OracleDS"/-->
 			
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -81,6 +83,7 @@
 	<property name="src.java" value="${basedir}/src/java"/>
 	<property name="src.etc" value="${basedir}/src/etc"/>
 	<property name="etc.db2" value="${src.etc}/db2"/>
+	<property name="etc.oracle" value="${src.etc}/oracle"/>
 	<property name="test.dir" value="${basedir}/test"/>
 	<property name="test.java" value="${test.dir}/java"/>
 	<property name="test.web-inf" value="${test.dir}/WEB-INF"/>
@@ -93,10 +96,12 @@
 	<property name="target.meta-inf" value="${target.xdoclet}/META-INF"/>
 	<property name="target.meta-inf-hsql" value="${target.xdoclet}/META-INF-hsql"/>
 	<property name="target.meta-inf-psql" value="${target.xdoclet}/META-INF-psql"/>
+	<property name="target.meta-inf-oracle" value="${target.xdoclet}/META-INF-oracle"/>
 	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
 	<property name="target.hsql.deploy" value="${target.dir}/hsql/deploy"/>
 	<property name="target.psql.deploy" value="${target.dir}/psql/deploy"/>
+	<property name="target.oracle.deploy" value="${target.dir}/oracle/deploy"/>
 	<property name="target.db2.deploy" value="${target.dir}/db2/deploy"/>
 	<property name="target.common.lib" value="${target.dir}/common/lib"/>	
 	<property name="target.test.web-inf" value="${target.dir}/test/WEB-INF"/>
@@ -143,9 +148,11 @@
         <mkdir dir="${target.java}"/>
         <mkdir dir="${target.meta-inf-hsql}"/>
         <mkdir dir="${target.meta-inf-psql}"/>
+        <mkdir dir="${target.meta-inf-oracle}"/>
         <mkdir dir="${target.meta-inf-db2}"/>
         <mkdir dir="${target.hsql.deploy}"/>
         <mkdir dir="${target.psql.deploy}"/>
+        <mkdir dir="${target.oracle.deploy}"/>
         <mkdir dir="${target.db2.deploy}"/>
         <mkdir dir="${target.common.lib}"/>
         <mkdir dir="${target.test.web-inf}"/>
@@ -220,6 +227,12 @@
     	/>
     	<antcall target="meta-inf-psql"/>
 
+    	<uptodate property="meta-inf-oracle.notRequired"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-oracle"/>
+
     	<uptodate property="meta-inf-db2.notRequired"
     		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
     		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
@@ -244,6 +257,16 @@
   				token="hsqldb-fetch-key"
   				value="postgresql-fetch-seq"/>
 		</replace>
+    </target>
+
+    <target name="meta-inf-oracle" unless="meta-inf-oracle.notRequired">
+    	<copy todir="${target.meta-inf-oracle}">
+    		<fileset dir="${target.meta-inf-hsql}"/>
+    	</copy>
+    	<patch
+    		patchfile="${etc.oracle}/meta-inf-oracle.patch"
+    		originalfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
+    	/>
     </target>
 
     <target name="meta-inf-db2" unless="meta-inf-db2.notRequired">
@@ -286,6 +309,9 @@
     		<param name="db.name" value="psql"/>
     	</antcall>
     	<antcall target="ejb-jar">
+    		<param name="db.name" value="oracle"/>
+    	</antcall>
+    	<antcall target="ejb-jar">
     		<param name="db.name" value="db2"/>
     	</antcall>
     	<antcall target="lib-jar"/>
@@ -307,6 +333,7 @@
     <target name="lib-jar">
         <jar jarfile="${target.common.lib}/dcm4jboss-ejb-client.jar">
         	<fileset dir="${target.classes}">
+                <include name="**/util/*"/>
                 <include name="**/interfaces/*"/>
                 <exclude name="**/interfaces/*Local*"/>
             </fileset>

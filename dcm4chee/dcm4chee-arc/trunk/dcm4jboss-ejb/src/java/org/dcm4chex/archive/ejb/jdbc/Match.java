@@ -136,12 +136,12 @@ abstract class Match
             return true;
         }
 
-        public boolean isSimpleValue()
+        public boolean isLike()
         {
             for (int i = wc.length; --i >= 0;)
                 if (wc[i] == '*' || wc[i] == '?')
-                    return false;
-            return true;
+                    return true;
+            return false;
         }
 
         protected void appendBodyTo(StringBuffer sb)
@@ -151,7 +151,8 @@ abstract class Match
             sb.append(column);
             if (ignoreCase)
                 sb.append(')');
-            sb.append(isSimpleValue() ? " = " : " LIKE ");
+            final boolean like = isLike();
+            sb.append(like ? " LIKE " : " = ");
             if (ignoreCase)
                 sb.append(" UPPER(");
 
@@ -172,7 +173,9 @@ abstract class Match
                         break;
                     case '_' :
                     case '%' :
-                        sb.append('\\');
+                        if (like) {
+                            sb.append('\\');
+                        }
                         break;
                 }
                 sb.append(c);

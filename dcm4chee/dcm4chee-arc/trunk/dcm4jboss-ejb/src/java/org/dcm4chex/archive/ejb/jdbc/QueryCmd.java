@@ -291,11 +291,11 @@ public abstract class QueryCmd extends BaseCmd {
         protected String[] getSelectAttributes() {
             return new String[] {
                 "Patient.encodedAttributes",
-                "Study.encodedAttributes", 
-                "Study.numberOfStudyRelatedSeries", 
-                "Study.numberOfStudyRelatedInstances", 
-                "Study.retrieveAETs" 
-                };
+                "Study.encodedAttributes",
+                "Study.modalitiesInStudy",
+                "Study.numberOfStudyRelatedSeries",
+                "Study.numberOfStudyRelatedInstances",
+                "Study.retrieveAETs" };
         }
 
         protected String[] getTables() {
@@ -310,9 +310,12 @@ public abstract class QueryCmd extends BaseCmd {
             throws IOException, SQLException {
             ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(3));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(4));
-            putRetrieveAETs(ds, rs.getString(5));
+            ds.putCS(
+                Tags.ModalitiesInStudy,
+                StringUtils.split(rs.getString(3), '\\'));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(4));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(5));
+            putRetrieveAETs(ds, rs.getString(6));
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
     }
@@ -333,9 +336,8 @@ public abstract class QueryCmd extends BaseCmd {
                 "Patient.encodedAttributes",
                 "Study.encodedAttributes",
                 "Series.encodedAttributes",
-                "Series.numberOfSeriesRelatedInstances", 
-                "Series.retrieveAETs" 
-                 };
+                "Series.numberOfSeriesRelatedInstances",
+                "Series.retrieveAETs" };
         }
 
         protected String[] getTables() {
@@ -379,8 +381,7 @@ public abstract class QueryCmd extends BaseCmd {
                 "Study.encodedAttributes",
                 "Series.encodedAttributes",
                 "Instance.encodedAttributes",
-                "Instance.retrieveAETs" 
-                };
+                "Instance.retrieveAETs" };
         }
 
         protected String[] getTables() {

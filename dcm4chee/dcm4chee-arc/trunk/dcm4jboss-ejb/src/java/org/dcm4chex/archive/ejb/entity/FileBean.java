@@ -45,7 +45,7 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
  * 	type="Required"
  * 
  * @ejb.persistence
- * 	table-name="file"
+ * 	table-name="files"
  * 
  * @jboss.entity-command
  * 	name="hsqldb-fetch-key"
@@ -176,8 +176,8 @@ public abstract class FileBean implements EntityBean
 
     /**
 	 * @ejb.relation
-	 * 	name="instance-file"
-	 * 	role-name="file-of-instance"
+	 * 	name="instance-files"
+	 * 	role-name="files-of-instance"
 	 * 
 	 * @jboss:relation
 	 * 	fk-column="instance_fk"

@@ -39,11 +39,11 @@ class SqlBuilder {
     public static final boolean TYPE2 = true;
     public static final String DESC = " DESC";
     public static final String ASC = " ASC";
+    public static final String[] SELECT_COUNT = { "count(*)" };
     private String[] select;
     private String[] from;
     private String[] leftJoin;
-    private String[] relations = {
-    };
+    private String[] relations;
     private ArrayList matches = new ArrayList();
     private ArrayList orderby = new ArrayList();
     private int limit = 0;
@@ -51,6 +51,10 @@ class SqlBuilder {
 
     public void setSelect(String[] fields) {
         select = JdbcProperties.getInstance().getProperties(fields);
+    }
+
+    public void setSelectCount() {
+        select = SELECT_COUNT;
     }
 
     public void setFrom(String[] entities) {
@@ -82,6 +86,10 @@ class SqlBuilder {
     }
 
     public void setRelations(String[] relations) {
+        if (relations == null) {
+            this.relations = null;
+            return;
+        }
         if ((relations.length & 1) != 0) {
             throw new IllegalArgumentException(
                 "relations[" + relations.length + "]");
@@ -134,9 +142,9 @@ class SqlBuilder {
         if (leftJoin != null) {
             appendLeftJoinTo(sb);
         }
-        if (relations.length != 0 || !matches.isEmpty()) {
+        if (relations != null || !matches.isEmpty()) {
             sb.append(" WHERE ");
-            if (relations.length != 0) {
+            if (relations != null) {
                 appendRelationsTo(sb);
                 if (!matches.isEmpty())
                     sb.append(" AND ");

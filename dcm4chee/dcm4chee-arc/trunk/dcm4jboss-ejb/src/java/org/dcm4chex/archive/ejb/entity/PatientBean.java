@@ -26,7 +26,7 @@ import javax.ejb.RemoveException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.ejb.util.DatasetUtil;
+import org.dcm4chex.archive.util.DatasetUtil;
 
 /**
  * @ejb.bean

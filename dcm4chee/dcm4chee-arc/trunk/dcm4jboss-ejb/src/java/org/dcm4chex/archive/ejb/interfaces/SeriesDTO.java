@@ -20,6 +20,7 @@
 package org.dcm4chex.archive.ejb.interfaces;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,7 +37,7 @@ public class SeriesDTO implements Serializable {
     private String modality;
     private String seriesDescription;
     private int numberOfInstances;
-    private List instances;
+    private List instances = new ArrayList();
     
     /**
      * @return

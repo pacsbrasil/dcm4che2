@@ -50,6 +50,7 @@ public class QueryStudiesCmd extends BaseCmd {
             "Patient.encodedAttributes",
             "Study.pk",
             "Study.encodedAttributes",
+            "Study.modalitiesInStudy",
             "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances",
             };
@@ -87,7 +88,7 @@ public class QueryStudiesCmd extends BaseCmd {
                 int patPk = rs.getInt(1);
                 if (pat == null || pat.getPk() != patPk) {
                     result.add(
-                        DTOFactory.newPatientDTO(
+                        pat = DTOFactory.newPatientDTO(
                             patPk,
                             toDataset(rs.getBytes(2))));
                 }
@@ -96,8 +97,9 @@ public class QueryStudiesCmd extends BaseCmd {
                     DTOFactory.newStudyDTO(
                         styPk,
                         toDataset(rs.getBytes(4)),
-                        rs.getInt(5),
-                        rs.getInt(6)));
+                        rs.getString(5),
+                        rs.getInt(6),
+                        rs.getInt(7)));
             }
             return result;
         } finally {

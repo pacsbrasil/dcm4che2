@@ -18,7 +18,7 @@ CREATE TABLE move_order (
 	failure_count	INT,
 	failure_status	INT
 );
-CREATE INDEX move_order_scheduled_time ON move_order(scheduled_time);
+CREATE INDEX move_sched_time ON move_order(scheduled_time);
 
 CREATE TABLE code (
 	pk          	SERIAL PRIMARY KEY,
@@ -50,6 +50,7 @@ CREATE TABLE study (
 	study_id        TEXT,
 	study_datetime	TIMESTAMP,
 	accession_no	TEXT,
+	mods_in_study	TEXT,
 	ref_physician   TEXT,
 	num_series		INTEGER,
 	num_instances	INTEGER,
@@ -103,7 +104,7 @@ CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 
-CREATE TABLE file (
+CREATE TABLE files (
 	pk              SERIAL PRIMARY KEY,
 	instance_fk     INTEGER,
 	retrieve_aets	TEXT NOT NULL,
@@ -114,4 +115,27 @@ CREATE TABLE file (
 	file_size       INTEGER,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 );
-CREATE INDEX instance_fk ON file(instance_fk);
+CREATE INDEX instance_fk ON files(instance_fk);
+
+CREATE TABLE mwl_item (
+	pk          	SERIAL PRIMARY KEY,
+	sps_id			TEXT NOT NULL,
+	start_datetime	TIMESTAMP NOT NULL,
+	station_aet     TEXT NOT NULL,
+	modality	    TEXT NOT NULL,
+	perf_physician  TEXT,
+	req_proc_id    	TEXT NOT NULL,
+	accession_no	TEXT,
+	pat_id         	TEXT NOT NULL,
+	pat_name    	TEXT NOT NULL,
+	item_attrs		BYTEA
+);
+CREATE UNIQUE INDEX mwl_sps_id ON mwl_item (sps_id);
+CREATE INDEX mwl_start_time ON mwl_item (start_datetime);
+CREATE INDEX mwl_station_aet ON mwl_item (station_aet);
+CREATE INDEX mwl_modality ON mwl_item (modality);
+CREATE INDEX mwl_perf_physician ON mwl_item (UPPER(perf_physician));
+CREATE INDEX mwl_req_proc_id ON mwl_item (req_proc_id);
+CREATE INDEX mwl_accession_no ON mwl_item (accession_no);
+CREATE INDEX mwl_pat_id ON mwl_item (pat_id);
+CREATE INDEX mwl_pat_name ON mwl_item (UPPER(pat_name));
