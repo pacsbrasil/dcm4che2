@@ -172,7 +172,7 @@ public class HL7SRExportImpl implements HL7SRExport {
             w.write(receivingApplication);
             w.write("|");
             w.write(receivingFacility);
-            w.write("|ORU^R01|||");
+            w.write("|||ORU^R01|");
             w.write(messageControlID);
             w.write("|P|2.3.1|");
             w.write(maskNull(doc.getSpecificCharacterSet()));
