@@ -160,6 +160,7 @@ public abstract class MediaComposerBean implements SessionBean {
     	MediaLocal ml = null;
     	if ( coll.size() > 0 ) {
     		ml = (MediaLocal) coll.iterator().next();
+    		coll.remove( ml );
     	} else {
 			ml = mediaHome.create( UIDGenerator.getInstance().createUID() );
     	}
@@ -203,7 +204,7 @@ public abstract class MediaComposerBean implements SessionBean {
 			il = (InstanceLocal) iterInstances.next();
         	if ( log.isInfoEnabled() ) log.info( "Assign media "+mediaLocal.getFilesetIuid()+
         										" to instance "+il.getSopIuid()+
-												" for splitted study pk="+container.getStudyPk()+"!");
+												" of study pk="+container.getStudyPk()+"!");
 			il.setMedia( mediaLocal );
 		}
     }
