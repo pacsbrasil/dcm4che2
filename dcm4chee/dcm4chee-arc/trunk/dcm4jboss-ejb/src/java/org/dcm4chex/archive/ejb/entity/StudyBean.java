@@ -44,8 +44,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *  name="hsqldb-fetch-key"
  * 
  * @ejb.finder
- *  signature="Collection findAll()"
- *  query="SELECT OBJECT(a) FROM Study AS a"
+ *  signature="java.util.Collection findStudiesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
+ *  query="SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media = ?1"
  *  transaction-type="Supports"
  *
  * @ejb.finder
@@ -73,6 +73,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.query 
  * 	signature="int ejbSelectAvailability(java.lang.Integer pk)"
  * 	query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
+ * 
  * 
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
