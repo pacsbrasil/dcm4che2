@@ -316,13 +316,15 @@ class AuditLoggerImpl implements AuditLogger {
         }
     }
 
-    public void logPatientRecord(String action, Patient patient, User user) {
+    public void logPatientRecord(String action, Patient patient, User user,
+            String desc) {
         if (!logPatientRecord) { return; }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO, IHEYr4.newPatientRecord(action,
                     patient,
                     user,
+                    desc,
                     HostNameUtils.getLocalHostName(),
                     millis).toString(), millis);
         } catch (IOException e) {
@@ -332,7 +334,7 @@ class AuditLoggerImpl implements AuditLogger {
 
     public void logProcedureRecord(String action, Patient patient,
             String placerOrderNumber, String fillerOrderNumber, String suid,
-            String accessionNumber, User user) {
+            String accessionNumber, User user, String desc) {
         if (!logProcedureRecord) { return; }
         try {
             long millis = System.currentTimeMillis();
@@ -344,6 +346,7 @@ class AuditLoggerImpl implements AuditLogger {
                             accessionNumber,
                             patient,
                             user,
+                            desc,
                             HostNameUtils.getLocalHostName(),
                             millis).toString(), millis);
         } catch (IOException e) {

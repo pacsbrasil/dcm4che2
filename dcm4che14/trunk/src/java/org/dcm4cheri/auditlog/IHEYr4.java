@@ -83,19 +83,19 @@ class IHEYr4 {
     }
 
     public static IHEYr4 newPatientRecord(String action, Patient patient,
-            User user, String host, long millis) {
-        return new IHEYr4(new PatientRecord(action, patient, user), host,
-                millis);
+            User user, String desc, String host, long millis) {
+        return new IHEYr4(new PatientRecord(action, patient, user, desc),
+                host, millis);
 
     }
 
     public static IHEYr4 newProcedureRecord(String action,
             String placerOrderNumber, String fillerOrderNumber, String suid,
-            String accessionNumber, Patient patient, User user, String host,
-            long millis) {
+            String accessionNumber, Patient patient, User user, String desc,
+            String host, long millis) {
         return new IHEYr4(new ProcedureRecord(action, placerOrderNumber,
-                fillerOrderNumber, suid, accessionNumber, patient, user), host,
-                millis);
+                fillerOrderNumber, suid, accessionNumber, patient, user, desc),
+                host, millis);
 
     }
 

@@ -33,9 +33,11 @@ public class ProcedureRecord implements IHEYr4.Message {
 
     private final User user;
 
+    private final String desc;
+
     public ProcedureRecord(String action, String placerOrderNumber,
             String fillerOrderNumber, String suid, String accessionNumber,
-            Patient patient, User user) {
+            Patient patient, User user, String desc) {
         this.action = action;
         this.placerOrderNumber = placerOrderNumber;
         this.fillerOrderNumber = fillerOrderNumber;
@@ -43,6 +45,7 @@ public class ProcedureRecord implements IHEYr4.Message {
         this.accessionNumber = accessionNumber;
         this.patient = patient;
         this.user = user;
+        this.desc = desc != null && desc.length() != 0 ? desc : null;
     }
 
     public void writeTo(StringBuffer sb) {
@@ -57,6 +60,8 @@ public class ProcedureRecord implements IHEYr4.Message {
                         .append("</AccessionNumber>");
         patient.writeTo(sb);
         user.writeTo(sb);
+        if (desc != null)
+            sb.append("<Description>").append(desc).append("</Description>");
         sb.append("</ProcedureRecord>");
     }
 

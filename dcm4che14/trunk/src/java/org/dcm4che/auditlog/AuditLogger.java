@@ -106,11 +106,11 @@ public interface AuditLogger {
 
     public void logExport(MediaDescription media, User user);
 
-    public void logPatientRecord(String action, Patient patient, User user);
+    public void logPatientRecord(String action, Patient patient, User user, String description);
 
     public void logProcedureRecord(String action, Patient patient,
             String placerOrderNumber, String fillerOrderNumber, String suid,
-            String accessionNumber, User user);
+            String accessionNumber, User user, String description);
 
     public void logStudyDeleted(InstancesAction action);
 }

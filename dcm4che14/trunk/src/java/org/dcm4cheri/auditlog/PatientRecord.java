@@ -24,12 +24,15 @@ public class PatientRecord implements IHEYr4.Message {
     private final Patient patient;
 
     private final User user;
+    
+    private final String desc;
 
     public PatientRecord(final String action, final Patient patient,
-            final User user) {
+            final User user, final String desc) {
         this.action = action;
         this.patient = patient;
         this.user = user;
+        this.desc = desc != null && desc.length() != 0 ? desc : null;
     }
 
     public void writeTo(StringBuffer sb) {
@@ -37,6 +40,8 @@ public class PatientRecord implements IHEYr4.Message {
                 .append("</ObjectAction>");
         patient.writeTo(sb);
         user.writeTo(sb);
+        if (desc != null)
+            sb.append("<Description>").append(desc).append("</Description>");
         sb.append("</PatientRecord>");
     }
 
