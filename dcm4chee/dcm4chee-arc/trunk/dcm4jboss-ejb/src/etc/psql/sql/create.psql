@@ -199,7 +199,8 @@ CREATE INDEX mwl_accession_no ON mwl_item (accession_no);
 CREATE TABLE device (
 	pk          	SERIAL PRIMARY KEY,
 	station_name    TEXT NOT NULL,
-	station_aet     TEXT NOT NULL
+	station_aet     TEXT NOT NULL,
+	modality		TEXT NOT NULL
 );
 CREATE UNIQUE INDEX station_name ON device(station_name);
 

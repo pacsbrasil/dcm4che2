@@ -188,6 +188,8 @@ public abstract class QueryCmd extends BaseCmd {
         adjustDataset(ds, keys);
         keys.putCS(Tags.SpecificCharacterSet);
         keys.putAE(Tags.RetrieveAET);
+        keys.putSH(Tags.StorageMediaFileSetID);
+        keys.putUI(Tags.StorageMediaFileSetUID);
         keys.putCS(Tags.InstanceAvailability);
         return ds.subSet(keys);
     }
@@ -266,6 +268,7 @@ public abstract class QueryCmd extends BaseCmd {
                     "Study.encodedAttributes", "Study.modalitiesInStudy",
                     "Study.numberOfStudyRelatedSeries",
                     "Study.numberOfStudyRelatedInstances",
+                    "Study.filesetId", "Study.filesetIuid",                    
                     "Study.retrieveAETs", "Study.availability"};
         }
 
@@ -284,8 +287,10 @@ public abstract class QueryCmd extends BaseCmd {
                     '\\'));
             ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(4));
             ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(5));
-            putRetrieveAETs(ds, rs.getString(6));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(7)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(6));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
+            ds.putAE(Tags.RetrieveAET, StringUtils.split(rs.getString(8), '\\'));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(9)]);
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
     }
@@ -307,6 +312,7 @@ public abstract class QueryCmd extends BaseCmd {
             return new String[] { "Patient.encodedAttributes",
                     "Study.encodedAttributes", "Series.encodedAttributes",
                     "Series.numberOfSeriesRelatedInstances",
+                    "Series.filesetId", "Series.filesetIuid",                    
                     "Series.retrieveAETs", "Series.availability"};
         }
 
@@ -324,8 +330,10 @@ public abstract class QueryCmd extends BaseCmd {
             fillDataset(ds, 2);
             fillDataset(ds, 3);
             ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(4));
-            putRetrieveAETs(ds, rs.getString(5));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(6)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(5));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(6));
+            ds.putAE(Tags.RetrieveAET, StringUtils.split(rs.getString(7), '\\'));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(8)]);
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -348,7 +356,8 @@ public abstract class QueryCmd extends BaseCmd {
             return new String[] { "Patient.encodedAttributes",
                     "Study.encodedAttributes", "Series.encodedAttributes",
                     "Instance.encodedAttributes", "Instance.retrieveAETs",
-                    "Instance.availability"};
+                    "Instance.availability",
+                    "Media.filesetId", "Media.filesetIuid"};
         }
 
         protected String[] getTables() {
@@ -356,8 +365,10 @@ public abstract class QueryCmd extends BaseCmd {
         }
 
         protected String[] getLeftJoin() {
-            return isMatchSrCode() ? new String[] { "Code",
-                    "Instance.srcode_fk", "Code.pk"} : null;
+            return new String[] { 
+                    "Code", "Instance.srcode_fk", "Code.pk",
+                    "Media", "Instance.media_fk", "Media.pk",
+                    };
         }
 
         protected String[] getRelations() {
@@ -370,8 +381,10 @@ public abstract class QueryCmd extends BaseCmd {
             fillDataset(ds, 2);
             fillDataset(ds, 3);
             fillDataset(ds, 4);
-            putRetrieveAETs(ds, rs.getString(5));
+            ds.putAE(Tags.RetrieveAET, StringUtils.split(rs.getString(5), '\\'));
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(6)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
 
@@ -382,11 +395,5 @@ public abstract class QueryCmd extends BaseCmd {
         return code != null
                 && (code.vm(Tags.CodeValue) > 0 || code
                         .vm(Tags.CodingSchemeDesignator) > 0);
-    }
-
-    private static void putRetrieveAETs(Dataset ds, String aets) {
-        if (aets != null) {
-            ds.putAE(Tags.RetrieveAET, StringUtils.split(aets, '\\'));
-        }
     }
 }

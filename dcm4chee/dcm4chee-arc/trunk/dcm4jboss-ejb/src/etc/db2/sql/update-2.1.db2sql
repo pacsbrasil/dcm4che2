@@ -24,7 +24,8 @@ CREATE SEQUENCE device_pk_seq;
 CREATE TABLE device (
 	pk          	INTEGER PRIMARY KEY NOT NULL,
 	station_name    VARCHAR(254) NOT NULL,
-	station_aet     VARCHAR(254) NOT NULL
+	station_aet     VARCHAR(254) NOT NULL,
+	modality		VARCHAR(254) NOT NULL
 );
 CREATE UNIQUE INDEX station_name ON device(station_name);
 

@@ -49,12 +49,8 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @ejb.persistence table-name="instance"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
- * @ejb.finder signature="java.util.Collection findAll()"
- *             query="SELECT OBJECT(a) FROM Instance AS a"
- *             transaction-type="Supports"
- *
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
- *             query="SELECT OBJECT(a) FROM Instance AS a WHERE a.sopIuid = ?1"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.sopIuid = ?1"
  *             transaction-type="Supports"
  * 
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
@@ -62,7 +58,15 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *              eager-load-group="*"
  * 
  * @ejb.finder signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
- *             query="SELECT OBJECT(a) FROM Instance AS a WHERE a.media IS NULL AND a.series.hidden = false AND a.series.study.createdTime < ?1"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.media IS NULL AND i.series.hidden = false AND i.series.study.createdTime < ?1"
+ *             transaction-type="Supports"
+ *
+ * @ejb.finder signature="java.util.Collection findByPatientAndSopCuid(org.dcm4chex.archive.ejb.interfaces.PatientLocal patient, java.lang.String uid)"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.hidden = false AND i.series.study.patient = ?1 AND i.sopCuid = ?2"
+ *             transaction-type="Supports"
+ *
+ * @ejb.finder signature="java.util.Collection findByPatientAndSrCode(org.dcm4chex.archive.ejb.interfaces.PatientLocal patient, org.dcm4chex.archive.ejb.interfaces.CodeLocal srcode)"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.hidden = false AND i.series.study.patient = ?1 AND i.srCode = ?2"
  *             transaction-type="Supports"
  *
  * @ejb.ejb-ref ejb-name="Code"

@@ -41,15 +41,16 @@ public abstract class DeviceBean implements EntityBean {
     /**
 	 * @ejb.create-method
 	 */
-    public Integer ejbCreate(String stationName, String aet)
+    public Integer ejbCreate(String stationName, String aet, String md)
         throws CreateException
     {
         setStationName(stationName);
         setStationAET(aet);
+        setModality(md);
         return null;
     }
 
-    public void ejbPostCreate(String stationName, String aet)
+    public void ejbPostCreate(String stationName, String aet, String md)
     	throws CreateException
     {
     }
@@ -80,6 +81,13 @@ public abstract class DeviceBean implements EntityBean {
 	 */
     public abstract String getStationAET();
     public abstract void setStationAET(String aet);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="modality"
+     */
+    public abstract String getModality();
+    public abstract void setModality(String md);
     
     /**
      * @ejb.interface-method

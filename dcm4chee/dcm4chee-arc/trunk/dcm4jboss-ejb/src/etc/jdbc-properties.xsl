@@ -28,6 +28,9 @@
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Instance']" mode="fk">
 <xsl:with-param name="fk" select="'srcode_fk'"/>
 </xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Instance']" mode="fk">
+<xsl:with-param name="fk" select="'media_fk'"/>
+</xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'File']" mode="fk">
 <xsl:with-param name="fk" select="'instance_fk'"/>
 </xsl:apply-templates>
