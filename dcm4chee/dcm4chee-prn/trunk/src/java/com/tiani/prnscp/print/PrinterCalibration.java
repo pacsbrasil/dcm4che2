@@ -228,6 +228,11 @@ public class PrinterCalibration
         for (int pv = 0; pv < od.length; ++pv) {
             od[pv] = (float) density(pv, pvmax, jmin, jmax, l0, la);
         }
+             StringBuffer sb = new StringBuffer("PValToGsdfOD:");
+             for (int i = 0; i < od.length; ++i) {
+                 sb.append("\n\t").append(od[i] & 0xff);
+             }
+             log.debug(sb.toString());
         return od;
     }
 

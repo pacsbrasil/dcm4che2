@@ -199,6 +199,11 @@ class PrintableImageBox
                      + "\n\tmaxDensity: " + maxDensity
                      + "\n\tillumination: " + illumination
                      + "\n\treflectedAmbientLight: " + reflectedAmbientLight);
+             StringBuffer sb = new StringBuffer("pValToDDL:");
+             for (int i = 0; i < pValToDDL.length; ++i) {
+                 sb.append("\n\t").append(pValToDDL[i] & 0xff);
+             }
+             log.debug(sb.toString());
         }
     }
 
@@ -476,7 +481,7 @@ class PrintableImageBox
             for (int rgb, b, i = 0; i < data.length; ++i) {
                 b = (rgb = data[i]) & 0xff;
                 if (((rgb >> 8) & 0xff) == b && ((rgb >> 16) & 0xff) == b) {
-                    b = pValToDDL[b];
+                    b = (pValToDDL[b] & 0xff);
                     data[i] = b | (b << 8) | (b << 16);
                     ++count;
                 }
