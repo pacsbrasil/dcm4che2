@@ -31,7 +31,7 @@
 	<property name="target.dir" value="target"/>
 	<property name="product" value="${ant.project.name}"/>
 	<property name="war.file" value="${target.dir}/deploy/${product}.war"/>
-	<property name="jar.file" value="${target.dir}/deploy/${product}.jar"/>
+	<property name="jar.file" value="${target.dir}/lib/${product}.jar"/>
 
 	<property name="javasrc.dir" value="src/java"/>
 	<property name="classes.dir" value="${target.dir}/classes"/>
@@ -101,6 +101,7 @@
 	</target>
 	
 	<target name="jar" depends="classes">
+		<mkdir dir="${target.dir}/lib/"/>
 	    <jar jarfile="${jar.file}">
 	     	<manifest>
 					<attribute name="Implementation-Title" value="dcm4jboss-wado"/>
