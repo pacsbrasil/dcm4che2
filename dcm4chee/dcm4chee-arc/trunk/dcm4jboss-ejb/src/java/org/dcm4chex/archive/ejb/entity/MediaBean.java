@@ -10,7 +10,6 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
@@ -31,11 +30,6 @@ import org.apache.log4j.Logger;
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
- * @ejb.finder
- *  signature="java.util.Collection findAll()"
- *  query="SELECT OBJECT(m) FROM Media AS m"
- *  transaction-type="Supports"
- *
  * @ejb.finder
  *  signature="java.util.Collection findByStatus(int status)"
  *  query="SELECT OBJECT(m) FROM Media AS m WHERE m.mediaStatus = ?1"
@@ -59,7 +53,8 @@ import org.apache.log4j.Logger;
  * @jboss.query 
  * 	signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
  *  dynamic="true"
- *  strategy="on-find"
+ *  strategy="on-load"
+ *  page-size="20"
  *  eager-load-group="*"
  *
  * @author gunter.zeilinger@tiani.com
@@ -189,30 +184,31 @@ public abstract class MediaBean implements EntityBean {
     /**    
      * @ejb.home-method
      */
-    public java.util.Collection ejbHomeListByCreatedTime(Timestamp after,
-            Timestamp before, Set stati, Integer offset, Integer limit,
+    public java.util.Collection ejbHomeListByCreatedTime(Integer status,
+            Timestamp after, Timestamp before, Integer offset, Integer limit,
             boolean desc) throws FinderException {
-        return findBy("m.createdTime", after, before, stati, offset, limit,
+        return findBy("m.createdTime", status, after, before, offset, limit,
                 desc);
     }
 
     /**    
      * @ejb.home-method
      */
-    public java.util.Collection ejbHomeListByUpdatedTime(Timestamp after,
-            Timestamp before, Set stati, Integer offset, Integer limit,
+    public java.util.Collection ejbHomeListByUpdatedTime(Integer status,
+            Timestamp after, Timestamp before, Integer offset, Integer limit,
             boolean desc) throws FinderException {
-        return findBy("m.updatedTime", after, before, stati, offset, limit,
+        return findBy("m.updatedTime", status, after, before, offset, limit,
                 desc);
     }
 
-    private Collection findBy(String attrName, Timestamp after,
-            Timestamp before, Set stati, Integer offset, Integer limit,
+    private Collection findBy(String attrName, Integer status, Timestamp after,
+            Timestamp before, Integer offset, Integer limit,
             boolean desc) throws FinderException {
         // generate JBossQL query
         StringBuffer jbossQl = new StringBuffer();
-        boolean filterStati = stati != null && !stati.isEmpty();
-        int argsCount = filterStati ? stati.size() : 0;
+        int argsCount = 0;
+        if (status != null)
+            ++argsCount;
         if (after != null)
             ++argsCount;
         if (before != null)
@@ -221,19 +217,15 @@ public abstract class MediaBean implements EntityBean {
             ++argsCount;
         if (limit != null)
             ++argsCount;
-        jbossQl.append("SELECT OBJECT(m) FROM media m");
+        jbossQl.append("SELECT OBJECT(m) FROM Media m");
         Object[] args = new Object[argsCount];
         int i = 0;
-        if (filterStati) {
-            stati.toArray(args);
-            jbossQl.append(" WHERE m.mediaStatus IN (");
-            for (int n = stati.size(); i < n; i++) {
-                jbossQl.append(i > 0 ? ", ?" : "?").append(i + 1);
-            }
-            jbossQl.append(")");
+        if (status != null) {
+            args[i++] = status;
+            jbossQl.append(" WHERE m.mediaStatus = ?").append(i);
         }
         if (after != null || before != null) {
-            jbossQl.append(filterStati ? " AND " : " WHERE ");
+            jbossQl.append(i == 0 ? " WHERE " : " AND ");
             jbossQl.append(attrName);
             if (after != null) {
                 args[i++] = after;
@@ -260,7 +252,8 @@ public abstract class MediaBean implements EntityBean {
             args[i++] = limit;
             jbossQl.append(" LIMIT ?").append(i);
         }
-
+        if (log.isDebugEnabled())
+            log.debug("Execute JBossQL: " + jbossQl);
         // call dynamic-ql query
         return ejbSelectGeneric(jbossQl.toString(), args);
     }
