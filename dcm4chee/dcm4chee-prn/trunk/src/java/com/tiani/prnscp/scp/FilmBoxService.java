@@ -88,7 +88,7 @@ class FilmBoxService extends DcmServiceBase
             String aet = as.getAssociation().getCalledAET();
             String uid = rspCmd.getAffectedSOPInstanceUID();
             Dataset ds = rq.getDataset();
-            scp.logDataset(ds);
+            scp.logDataset("Create Film Box:\n", ds);
             // read out dataset
             if (ds == null) {
                 scp.getLog().warn("Create Film Box without attributes");
@@ -147,7 +147,7 @@ class FilmBoxService extends DcmServiceBase
     {
         try {
             Dataset ds = rq.getDataset();
-            scp.logDataset(ds);
+            scp.logDataset("Set Film Box:\n", ds);
             // read out dataset
             String uid = rq.getCommand().getRequestedSOPInstanceUID();
             FilmSession session = scp.getFilmSession(as);

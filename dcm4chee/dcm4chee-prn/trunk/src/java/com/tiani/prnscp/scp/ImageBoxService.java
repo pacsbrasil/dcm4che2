@@ -128,6 +128,7 @@ class ImageBoxService extends DcmServiceBase
                 Dataset hc = createHC(hcuid, session, box);
                 parser.setDcmHandler(hc.getDcmHandler());
                 parser.parseDataset(tuid, Tags.PixelData);
+                scp.logDataset("Store as Hardcopy:\n", hc);
                 File hcdir = new File(session.dir(),
                         PrintScpService.SPOOL_HARDCOPY_DIR_SUFFIX);
                 File hcfile = new File(hcdir, hcuid);
@@ -156,7 +157,7 @@ class ImageBoxService extends DcmServiceBase
                 parser.setDcmHandler(box.getDcmHandler());
             }
             parser.parseDataset(tuid, -1);
-            scp.logDataset(box);
+            scp.logDataset("Set Image Box:\n", box);
             session.getCurrentFilmBox().setImageBox(boxuid, box, pluts, rspCmd);
             return null;
         } catch (DcmServiceException e) {

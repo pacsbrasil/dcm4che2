@@ -80,7 +80,7 @@ class AnnotationBoxService extends DcmServiceBase
     {
         try {
             Dataset ds = rq.getDataset();
-            scp.logDataset(ds);
+            scp.logDataset("Set Annotation Box\n:", ds);
             // read out dataset
             String uid = rq.getCommand().getRequestedSOPInstanceUID();
             FilmSession session = scp.getFilmSession(as);
