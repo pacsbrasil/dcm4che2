@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4che.data.Dataset;
@@ -24,8 +23,6 @@ import org.dcm4chex.archive.common.PrivateTags;
  *
  */
 public class StudyModel extends AbstractModel {
-
-    private List series = new ArrayList();
 
     private int pk;
 
@@ -120,7 +117,7 @@ public class StudyModel extends AbstractModel {
     }
 
     public final void setStudyIUID(String s) {
-        ds.putUI(Tags.StudyDescription, s);
+        ds.putUI(Tags.StudyInstanceUID, s);
     }
 
     public final String getModalitiesInStudy() {
@@ -144,11 +141,26 @@ public class StudyModel extends AbstractModel {
         return StringUtils.toString(ds.getStrings(Tags.RetrieveAET), '\\');
     }
 
+    /**
+     * Returns the list of Series.
+     * <p>
+     * Use the <code>getChilds</code> from <code>AbstractModel</code> method now.
+     * 
+     * @return Series as List.
+     */
     public final List getSeries() {
-        return series;
+        return getChilds();
     }
 
+    /**
+     * Set a new list of series.
+     * <p>
+     * Use the <code>setChilds</code> from <code>AbstractModel</code> method now.
+     * 
+     * @param series List of Series
+     */
     public final void setSeries(List series) {
-        this.series = series;
+        setChilds( series );
     }
+
 }
