@@ -15,9 +15,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
@@ -38,8 +43,14 @@ import org.jboss.system.ServiceMBeanSupport;
 public class FileSystemMgtService extends ServiceMBeanSupport {
 
     private static final String LOCAL = "local";
+    private static final String CHECK_STRING_ONMEDIA = "ON_MEDIA";
+    private static final String CHECK_STRING_EXTERNAL = "EXTERNAL";
+    private static final String CHECK_STRING_NOTHING = "DONT_CHECK";
 
-    private static final long MEGA = 1000000L;
+	/** Milliseconds of one day. Is used to calculate search date. */
+	private static final long ONE_DAY_IN_MILLIS = 86400000;// one day has 86400000 milli seconds
+
+	private static final long MEGA = 1000000L;
 
     private long highWaterMark = 50000000L;
 
@@ -54,6 +65,21 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     private String mountFailedCheckFile = "NO_MOUNT";
 
     private boolean makeStorageDirectory = true;
+
+	private float freeDiskSpaceWaterMarkFactor = 1.5f;
+	
+	private float stopFreeDiskSpaceWaterMarkFactor = 2.5f;
+	
+	private boolean flushStudiesExternalRetrievable = false;
+	
+	private boolean flushStudiesOnMedia = true;
+	
+	private boolean deleteStudiesUnconditional = false;
+	
+	private int freeDiskSpaceNotAccessedForDays = 356;
+	
+	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and isFreeDiskSpaceNecessary ). */
+	private long availableDiskSpace = 0L;
 
     private static String null2local(String s) {
         return s == null ? LOCAL : s;
@@ -122,7 +148,154 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         this.highWaterMark = highWaterMark * MEGA;
     }
 
-    public final boolean isMakeStorageDirectory() {
+	/**
+	 * Return the factor to calculate watermark for free disk space process.
+	 * <p>
+	 * The watermark for freeDiskSpace process is calculated: <code>highWaterMark * freeDiskSpaceWaterMarkFactor * numberOfFilesystems</code>
+	 * 
+	 * @return Returns the cleanWaterMarkFactor.
+	 */
+	public float getFreeDiskSpaceWaterMarkFactor() {
+		return freeDiskSpaceWaterMarkFactor;
+	}
+	/**
+	 * Set the factor to calculate watermark for free disk space process.
+	 * @param freeDiskSpaceWaterMarkFactor The freeDiskSpaceWaterMarkFactor to set.
+	 */
+	public void setFreeDiskSpaceWaterMarkFactor(float freeDiskSpaceWaterMarkFactor) {
+		if ( freeDiskSpaceWaterMarkFactor < 1.0f ) throw new IllegalArgumentException("cleanWaterMarkFactor must NOT be smaller than 1!");
+		this.freeDiskSpaceWaterMarkFactor = freeDiskSpaceWaterMarkFactor;
+	}
+	/**
+	 * Returns the factor to calculate the watermark to stop free disk space process.
+	 * <p>
+	 * The watermark to stop freeDiskSpace process is calculated: <code>highWaterMark * stopFreeDiskSpaceWaterMarkFactor * numberOfFileSytsems</code>
+	 * 
+	 * @return Returns the stopCleanWaterMarkFactor.
+	 */
+	public float getStopFreeDiskSpaceWaterMarkFactor() {
+		return stopFreeDiskSpaceWaterMarkFactor;
+	}
+	/**
+	 * Set the factor to calculate the watermark to stop free disk space process.
+	 * <p>
+	 * The watermark to stop freeDiskSpace process is calculated: <code>highWaterMark * stopFreeDiskSpaceWaterMarkFactor * numberOfFileSytsems</code>
+	 * 
+	 * @param stopCleanWaterMarkFactor The stopCleanWaterMarkFactor to set.
+	 */
+	public void setStopFreeDiskSpaceWaterMarkFactor(float stopCleanWaterMarkFactor) {
+		if ( stopCleanWaterMarkFactor < freeDiskSpaceWaterMarkFactor ) throw new IllegalArgumentException("cleanWaterMarkFactor must be higher than cleanWaterMarkFactor!");
+		this.stopFreeDiskSpaceWaterMarkFactor = stopCleanWaterMarkFactor;
+	}
+
+	/**
+	 * Returns true if the freeDiskSpace policy flushStudiesExternalRetrievable is enabled.
+	 * <p>
+	 * If this policy is active studies must be external retrievable for deletion.
+	 * 
+	 * @return Returns true if flushStudiesExternalRetrievable policy is active.
+	 */
+	public boolean isFlushStudiesExternalRetrievable() {
+		return flushStudiesExternalRetrievable;
+	}
+	/**
+	 * Set the freeDiskSpace policy flushStudiesExternalRetrievable.
+	 * <p>
+	 * Set this policy active if studies must be external retrievable for deletion.
+	 * 
+	 * @param b The flushStudiesExternalRetrievable to set.
+	 * 
+	 * @throws IllegalArgumentException if deleteStudiesUnconditional is active
+	 */
+	public void setFlushStudiesExternalRetrievable(boolean b) {
+		if ( b && deleteStudiesUnconditional ) {
+			this.flushStudiesExternalRetrievable = false;
+			throw new IllegalArgumentException("This policy is not allowed if deleteStudiesUnconditional is active!"); 
+		}
+		this.flushStudiesExternalRetrievable = b;
+	}
+	/**
+	 * Returns true if the freeDiskSpace policy deleteStudiesUnconditional is enabled.
+	 * <p>
+	 * If this policy is active studies are deleted immedatly without any check.
+	 * 
+	 * @return Returns true if deleteStudiesUnconditional is active.
+	 */
+	public boolean isDeleteStudiesUnconditional() {
+		return deleteStudiesUnconditional;
+	}
+	
+	/**
+	 * Set the freeDiskSpace policy deleteStudiesUnconditional.
+	 * <p>
+	 * If this policy is active studies are deleted immedatly without any check.
+	 *
+	 * @param b The deleteStudiesUnconditional to set.
+	 * 
+	 * @throws IllegalArgumentException if flushStudiesExternalRetrievable or flushStudiesOnMedia is active
+	 */
+	public void setDeleteStudiesUnconditional(boolean b) {
+		if ( b && ( flushStudiesExternalRetrievable || flushStudiesOnMedia )) {
+			deleteStudiesUnconditional = false;
+			throw new IllegalArgumentException("This policy is not allowed in combination with flushStudiesExternalRetrievable or flushStudiesOnMedia!"); 
+		}
+		deleteStudiesUnconditional = b;
+	}
+	
+	/**
+	 * Returns true if the freeDiskSpace policy flushStudiesOnMedia is enabled.
+	 * <p>
+	 * If this policy is active studies must be stored on media (offline storage) for deletion.
+	 * 
+	 * @return Returns true if flushStudiesOnMedia policy is active.
+	 */
+	public boolean isFlushStudiesOnMedia() {
+		return flushStudiesOnMedia;
+	}
+	
+	/**
+	 * Set the freeDiskSpace policy flushStudiesOnMedia.
+	 * <p>
+	 * Set this policy active if studies must be on media (offline storage) for deletion.
+	 * 
+	 * @param b The flushStudiesOnMedia to set.
+	 *
+	 * @throws IllegalArgumentException if deleteStudiesUnconditional is active
+	 */
+	public void setFlushStudiesOnMedia(boolean b) {
+		if ( b && deleteStudiesUnconditional ) {
+			this.flushStudiesOnMedia = false;
+			throw new IllegalArgumentException("This policy is not allowed if deleteStudiesUnconditional is active!"); 
+		}
+		this.flushStudiesOnMedia = b;
+	}
+	
+	/**
+	 * Return number of days a study is not accessed for freeDiskSpace process.
+	 * <p>
+	 * This value is used by <code>freeDiskSpace</code> if the <code>freeDiskSpaceWaterMark</code> is not reached to 
+	 * release studies that are older (not accessed) as this number of days.
+	 * <p>
+	 * In this case the freeDiskSpace policies (flushStudiesExternalRetrievable, flushStudiesOnMedia 
+	 * and deleteStudiesUnconditional) are used to determine if the files of a study can be deleted.  
+	 * 
+	 * @return Returns the freeDiskSpaceNotAccessedForDays.
+	 */
+	public int getFreeDiskSpaceNotAccessedForDays() {
+		return freeDiskSpaceNotAccessedForDays;
+	}
+	
+	/**
+	 * Set number of days a study is not accessed for freeDiskSpace.
+	 * 
+	 * @param freeDiskSpaceNotAccessedForDays The freeDiskSpaceNotAccessedForDays to set in days.
+	 */
+	public void setFreeDiskSpaceNotAccessedForDays(
+			int freeDiskSpaceNotAccessedForDays) {
+		this.freeDiskSpaceNotAccessedForDays = freeDiskSpaceNotAccessedForDays;
+	}
+	
+	public final boolean isMakeStorageDirectory() {
         return makeStorageDirectory;
     }
 
@@ -137,6 +310,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     public final void setMountFailedCheckFile(String mountFailedCheckFile) {
         this.mountFailedCheckFile = mountFailedCheckFile;
     }
+    
 
     public final boolean isLocalFileSystem(String fsdir) {
         return fsPathSet.contains(fsdir);
@@ -273,5 +447,72 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         FileDTO dto = (FileDTO) list.get(0);
         AEData aeData = new AECmd(dto.getRetrieveAET()).execute();
         return aeData.getHostName();
+    }
+    
+    /**
+     * Delete studies that fullfill freeDiskSpacePolicy to free disk space.
+     * <p>
+     * Checks available disk space if free disk space is necessary.
+     * <p>
+     * Remove old files until the stopFreeDiskSpaceWatermark is reached.
+     * <p>
+     * The real deletion is done in the purge process! This method removes only the reference to the file system.  
+     *
+     * @return The released size in bytes.
+     * 
+     * @throws IOException
+     * @throws FinderException
+     * @throws RemoveException
+     * @throws EJBException
+     */
+    public long freeDiskSpace() throws IOException, FinderException, EJBException, RemoveException {
+    	Long olderThan = null;
+    	String prefix;
+    	if ( ! isFreeDiskSpaceNecessary() ) {
+    		olderThan = new Long( System.currentTimeMillis() - this.freeDiskSpaceNotAccessedForDays * ONE_DAY_IN_MILLIS );
+    		prefix = "FreeDiskSpace Status: Available disk space: OK ; Delete old files:";
+    	} else {
+    		prefix = "FreeDiskSpace Status: filesystems full! ; free disk space:";
+    	}
+    	
+        FileSystemMgt fsMgt = newFileSystemMgt();
+		long maxSizeToDel = (long) ( (float) this.highWaterMark * stopFreeDiskSpaceWaterMarkFactor ) * dirPathList.size() - availableDiskSpace;
+		long releasedSize = fsMgt.releaseStudies( fsPathSet, maxSizeToDel, deleteStudiesUnconditional, flushStudiesOnMedia, flushStudiesExternalRetrievable, olderThan );
+    	return releasedSize;
+    }
+    
+ 
+	
+	/**
+     * Check if a cleaning process is ncessary.
+     * <p>
+     * <OL>
+     * <LI>Calculate the total space that should be available on all file systems. (<code>minAvail = highWaterMark * cleanWaterMarkFactor * dirPathList.size() </code>)</LI>
+     * <LI>Cumulate available space from all file systems to get current available space on all file systems (=currAvail).</LI>
+     * </OL>
+     * <p>
+     * Creates a directory if a defined file system path doesnt exist and makeStorageDirectory is true.
+     * <p>
+     * This method doesnt check if the defined file systems are on different disk/partitions!
+     * 
+     * @return True if clean is necessary ( currAvail < minAvail )
+     * @throws IOException
+     */
+    public boolean isFreeDiskSpaceNecessary() throws IOException {
+    	long minAvail = (long) ( (float) this.highWaterMark * freeDiskSpaceWaterMarkFactor ) * dirPathList.size();
+    	long currAvail = getAvailableDiskSpace();
+    	log.info( "currAvail:"+currAvail+" < minAvail:"+minAvail);
+    	return currAvail < minAvail; 
+    }
+    
+    public long getAvailableDiskSpace() throws IOException {
+    	Iterator iter = dirPathList.iterator();
+    	FileSystemInfo info;
+    	availableDiskSpace = 0L;
+    	while ( iter.hasNext() ) {
+    		info = initFileSystemInfo( (File) iter.next() );
+    		availableDiskSpace += info.getAvailable();
+    	}
+    	return availableDiskSpace;
     }
 }
