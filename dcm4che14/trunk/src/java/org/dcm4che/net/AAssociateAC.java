@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -24,11 +23,22 @@
 package org.dcm4che.net;
 
 /**
+ * <description>
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$ $Date$
+ * @since May, 2002
+ *
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20020728 gunter:</b>
+ * <ul>
+ * <li> add {@link #countAcceptedPresContext}
+ * </ul>
  */
 public interface AAssociateAC extends AAssociateRQAC {
 
+    int countAcceptedPresContext();
 }
 

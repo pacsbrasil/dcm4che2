@@ -29,6 +29,7 @@ dcm4che API:
 + add org.dcm4che.net.Association#getAAssociateRJ
 + add org.dcm4che.net.Association#getAAbort
 + add org.dcm4che.net.DcmServiceException
++ add org.dcm4che.net.AAssociateAC#countAcceptedPresContext
 
 CHANGES:
 dcm4che API:

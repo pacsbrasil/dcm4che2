@@ -30,9 +30,19 @@ import org.dcm4che.net.PDUException;
 import java.util.Iterator;
 
 /**
+ * <description>
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$ $Date$
+ * @since May, 2002
+ *
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20020728 gunter:</b>
+ * <ul>
+ * <li> add {@link #countAcceptedPresContext}
+ * </ul>
  */
 final class AAssociateACImpl extends AAssociateRQACImpl
         implements AAssociateAC {
@@ -43,6 +53,16 @@ final class AAssociateACImpl extends AAssociateRQACImpl
 
     AAssociateACImpl() {
     }
+    
+    public int countAcceptedPresContext() {
+       int accepted = 0;
+       for (Iterator it = presCtxs.values().iterator(); it.hasNext();) {
+          if(((PresContext)it.next()).result() == 0)
+             ++accepted;
+       }
+       return accepted;
+    }
+        
 
     protected int type() {
         return 2;
@@ -63,12 +83,7 @@ final class AAssociateACImpl extends AAssociateRQACImpl
     }
 
     protected void appendPresCtxSummary(StringBuffer sb) {
-       int accepted = 0;
-       for (Iterator it = presCtxs.values().iterator(); it.hasNext();) {
-          if(((PresContext)it.next()).result() == 0)
-             ++accepted;
-       }
-       
+       int accepted = countAcceptedPresContext();       
        sb.append("\n\tpresCtx:\taccepted=").append(accepted)
          .append(", rejected=").append(presCtxs.size() - accepted);
     }
