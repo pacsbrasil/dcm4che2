@@ -391,10 +391,10 @@ public class PrintSCU {
 		return status;
 	}
 	
-	private Dataset makeRefSOP(String cuid, String iiud) {
+	private Dataset makeRefSOP(String cuid, String iuid) {
 		Dataset refSOP = dcmFact.newDataset();
 		refSOP.putUI(Tags.RefSOPClassUID, cuid);
-		refSOP.putUI(Tags.RefSOPInstanceUID, cuid);
+		refSOP.putUI(Tags.RefSOPInstanceUID, iuid);
 		return refSOP;
 	}
 
@@ -492,7 +492,7 @@ public class PrintSCU {
 		}
 		imageBox.putUS(Tags.ImagePositionOnFilm, index+1);
 			
-		Dataset refImageBox = curFilmBox.getItem(Tags.RefImageBoxSeq, index+1);
+		Dataset refImageBox = curFilmBox.getItem(Tags.RefImageBoxSeq, index);
 		int msgid = requestor.nextMsgID();
 		Command nSetRQ = dcmFact.newCommand();
 		nSetRQ.initNSetRQ(msgid,
