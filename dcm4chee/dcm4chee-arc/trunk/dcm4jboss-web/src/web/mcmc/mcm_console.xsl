@@ -1,6 +1,5 @@
 <xsl:stylesheet version="1.0" 
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:internal="urn:my-internal-data">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 <xsl:output method="html">
 </xsl:output>
@@ -82,7 +81,7 @@
 									all
 								</option>
 								<xsl:for-each select="filter/mediaStatusList/item">
-									<xsl:sort data-type="number" order="ascending" select="status"/>
+									<xsl:sort data-type="number" order="ascending" select="order"/>
 										<option>
 											<xsl:attribute name="value"><xsl:value-of select="status"/></xsl:attribute>
 											<xsl:if test="contains( $stati, concat( ' ',status ) )">
@@ -169,7 +168,7 @@
 				</table>
 			</td>
 		</table>
-	</form>
+<!--	</form> -->
 <!-- List of media -->
 		<table width="70%" border="0" bordercolor="#ffffff" cellspacing="5" cellpadding="0">
 		<tr>	<center>
@@ -180,7 +179,7 @@
 					<td width="15%"><h2>Modified</h2></td>
 					<td width="15%"><h2>Usage</h2></td>
 					<td width="10%"><h2>Status</h2></td>	
-					<td width="10"><h2>Action</h2></td>	
+					<td width="10" ><h2>Action</h2></td>	
 				</tr>
 					<xsl:apply-templates select="mediaList/item">
 						<xsl:sort data-type="text" order="ascending" select="title"/>
@@ -188,7 +187,7 @@
 			</td>	</center>
 		</tr>
 		</table>
-
+</form>
 
 </xsl:template>
 
@@ -223,7 +222,7 @@
 					<xsl:when test="mediaStatus = 4">
 						<img src="images/cdrom-completed.gif" alt="Media status: completed" border="0" title="Status: completed - info: {mediaStatusInfo}"/>		
 					</xsl:when>
-					<xsl:when test="mediaStatus = -1">
+					<xsl:when test="mediaStatus = 999">
 						<img src="images/cdrom-failed.gif" alt="Media status: failed" border="0" title="Status: failed - info: {mediaStatusInfo}"/>		
 					</xsl:when>
 					<xsl:otherwise>
@@ -231,20 +230,35 @@
 					</xsl:otherwise>
 				</xsl:choose>
 	        </td>
-			<xsl:if test="mediaStatus = /model/statiForQueue and /model/mcmNotAvail = 'false'">
-	        	<td title="Status info">
-					<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
-						<img src="images/burn.gif" width="20" height="20" alt="Create media" border="0" title="Create media"/>		
-					</a>
-	        	</td>
- 			</xsl:if>
-			<xsl:if test="mediaStatus &lt; 0 and /model/mcmNotAvail = 'false'"><!-- error stati are lower than 0! -->
-	        	<td title="Status info">
-					<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
-						<img src="images/burn.gif" width="20" height="20" alt="Retry" border="0" title="Retry"/>		
-					</a>
-	        	</td>
- 			</xsl:if>
+	        <td title="Action">
+	        	<table>
+		        	<td width="20">
+		        		<xsl:choose>
+							<xsl:when test="mediaStatus = /model/statiForQueue and /model/mcmNotAvail = 'false'">
+								<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
+									<img src="images/burn.gif" width="20" height="20" alt="Create media" border="0" title="Create media"/>		
+								</a>
+			 				</xsl:when>
+							<xsl:when test="mediaStatus = 999 and /model/mcmNotAvail = 'false'"><!-- error stati  -->
+								<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
+									<img src="images/burn.gif" width="20" height="20" alt="Retry" border="0" title="Retry"/>		
+								</a>
+				 			</xsl:when>
+				 			<xsl:otherwise>
+				 				&#160;
+				 			</xsl:otherwise>
+		        		</xsl:choose>
+			 		</td>
+			        <td title="Command">
+						<xsl:if test="mediaStatus = 999 or mediaStatus = 0 or mediaStatus = 4"><!-- delete enabled if status is either open, completed or error! -->
+							<a href="mcm_console.m?action=delete&amp;mediaPk={mediaPk}">
+								<xsl:attribute name="onclick">return confirm('Delete media <xsl:value-of select="filesetID"/> ?')</xsl:attribute>
+								<img src="images/loeschen.gif" width="20" height="20" alt="Delete" border="0" title="Delete media"/>		
+							</a>
+			 			</xsl:if>
+			 		</td>
+			 	</table>
+		 	</td>
 		</tr>
 	</xsl:template>
 	   
