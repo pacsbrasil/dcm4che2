@@ -72,6 +72,7 @@ class PrintableFilmBox implements Printable {
    private final Annotation annotation;
    private final int totPages;
    private final File hcDir;
+   private final String callingAET;
    private final PrintableImageBox[] imageBoxes;
    private final Color emptyImageBoxDensityColor;
    private final int rows;
@@ -81,11 +82,12 @@ class PrintableFilmBox implements Printable {
    
    // Constructors --------------------------------------------------
    public PrintableFilmBox(PrinterService service, File hcDir, File spFile,
-      int totPages, Dataset session) throws IOException
+      int totPages, Dataset session, String callingAET) throws IOException
    {
       this.service = service;
       this.log = service.getLog();
       this.hcDir = hcDir;
+      this.callingAET = callingAET;
       this.totPages = totPages;
       Dataset storedPrint = dof.newDataset();
       InputStream in = new BufferedInputStream(new FileInputStream(spFile));
@@ -113,11 +115,12 @@ class PrintableFilmBox implements Printable {
             filmbox,
             imageBoxContentSeq.getItem(i),
             storedPrint.get(Tags.PresentationLUTContentSeq),
-            hcDir);
+            hcDir,
+            callingAET);
       }      
-      
+            
       String adfID = filmbox.getString(Tags.AnnotationDisplayFormatID,
-         service.getDefaultAnnotation());
+         service.getAnnotationForCallingAET(callingAET));
       annotation = new Annotation(service, adfID, totPages);
       annotation.setSession(session);
       annotation.setAnnotationContentSeq(storedPrint.get(Tags.AnnotationContentSeq));

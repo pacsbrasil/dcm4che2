@@ -117,7 +117,7 @@ class PrintableImageBox {
    
    // Constructors --------------------------------------------------
    public PrintableImageBox(PrinterService service, Dataset filmbox,
-         Dataset imageBox, DcmElement pLutSeq, File hcDir)
+         Dataset imageBox, DcmElement pLutSeq, File hcDir, String callingAET)
       throws IOException
    {
       this.log = service.getLog();
@@ -126,7 +126,7 @@ class PrintableImageBox {
 
       Dataset refImage =  imageBox.getItem(Tags.RefImageSeq);
       this.hcFile = new File(hcDir, refImage.getString(Tags.RefSOPInstanceUID));
-      this.callingAET = hcDir.getParentFile().getParentFile().getName();
+      this.callingAET = callingAET;
 
       this.pos = imageBox.getInt(Tags.ImagePositionOnFilm, 1);
       this.trim = YES.equals(

@@ -306,10 +306,14 @@
   <target name="doc" depends="unpack-docbook-dtd, unpack-docbook-xsl">
     <style in="${doc.xml}/readme.xml"
            out="${build.doc.dir}/readme.html"
-           style="${doc.dir}/xsl/html/docbook.xsl"/>
+           style="${doc.dir}/xsl/html/docbook.xsl">
+        <outputproperty name="indent" value="yes"/>
+    </style>
     <style in="${doc.xml}/cs-template.docbook.xml"
            out="${build.doc.dir}/cs-template.docbook.html"
-           style="${doc.dir}/xsl/html/docbook.xsl"/>
+           style="${doc.dir}/xsl/xhtml/docbook.xsl">
+    <outputproperty name="indent" value="yes"/>
+    </style>
   </target>           
   
   <target name="release" depends="build">

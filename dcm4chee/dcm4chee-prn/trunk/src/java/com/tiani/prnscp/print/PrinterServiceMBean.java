@@ -516,15 +516,15 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setLUTForCallingAET(String lutForCallingAET);
    
-   /** Getter for property defaultAnnotation.
-    * @return Value of property defaultAnnotation.
+   /** Getter for property annotationForCallingAET.
+    * @return Value of property annotationForCallingAET.
     */
-   public String getDefaultAnnotation();
+   public String getAnnotationForCallingAET();
    
-   /** Setter for property defaultAnnotation.
-    * @param defaultAnnotation New value of property defaultAnnotation.
+   /** Setter for property annotationForCallingAET.
+    * @param annotationForCallingAET New value of property annotationForCallingAET.
     */
-   public void setDefaultAnnotation(String defaultAnnotation);
+   public void setAnnotationForCallingAET(String annotationForCallingAET);
    
    /** Getter for property grayscaleAnnotation.
     * @return Value of property grayscaleAnnotation.

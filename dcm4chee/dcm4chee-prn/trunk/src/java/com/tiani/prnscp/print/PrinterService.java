@@ -254,9 +254,9 @@ public class PrinterService
    /** Holds value of property lutForCallingAET. */
    private LinkedHashMap lutForCallingAETMap;
    
-   /** Holds value of property defaultAnnotation. */
-   private String defaultAnnotation;
-   
+   /** Holds value of property annotationForCallingAET. */
+   private LinkedHashMap annotationForCallingAETMap;
+
    /** Holds value of property grayscaleAnnotation. */
    private String grayscaleAnnotation;
    
@@ -1173,21 +1173,50 @@ public class PrinterService
    }
    
    
-   
-   /** Getter for property defaultAnnotation.
-    * @return Value of property defaultAnnotation.
+   /** Getter for property annotationForCallingAET.
+    * @return Value of property annotationForCallingAET.
     */
-   public String getDefaultAnnotation() {
-      return this.defaultAnnotation;
+   public String getAnnotationForCallingAET() {
+      StringBuffer sb = new StringBuffer();
+      for (Iterator it = annotationForCallingAETMap.entrySet().iterator(); it.hasNext();) {
+         Map.Entry item = (Map.Entry) it.next();
+         sb.append(item.getKey());
+         sb.append(':');
+         sb.append(item.getValue());
+         sb.append('\\');
+      }
+      sb.setLength(sb.length()-1);
+      return sb.toString();
+   }
+
+   String getAnnotationForCallingAET(String aet) {
+      if (annotationForCallingAETMap.isEmpty()) {
+         log.error("Configuration Error: missing attribute AnnotationForCallingAET value!");
+         return null;
+      }
+      String adfID = (String) annotationForCallingAETMap.get(aet);
+      return  adfID != null
+         ? adfID
+         : (String) annotationForCallingAETMap.values().iterator().next();
    }
    
-   /** Setter for property defaultAnnotation.
-    * @param defaultAnnotation New value of property defaultAnnotation.
+   /** Setter for property annotationForCallingAET.
+    * @param annotationForCallingAET New value of property annotationForCallingAET.
     */
-   public void setDefaultAnnotation(String defaultAnnotation) {
-      this.defaultAnnotation = defaultAnnotation;
+   public void setAnnotationForCallingAET(String annotationForCallingAET) {
+      LinkedHashMap tmp = new LinkedHashMap();
+      String[] strings = toStringArray(annotationForCallingAET);
+      for (int i = 0; i < strings.length; ++i) {
+         String s = strings[i];
+         int c1 = s.indexOf(':');
+         if (c1 == -1) {
+            throw new IllegalArgumentException(s);
+         }
+         tmp.put(s.substring(0, c1), s.substring(c1 + 1));
+      }
+      annotationForCallingAETMap = tmp;
    }
-   
+      
    /** Getter for property grayscaleAnnotation.
     * @return Value of property grayscaleAnnotation.
     */

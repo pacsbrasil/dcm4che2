@@ -261,10 +261,19 @@
     <attribute name="AnnotationDir">conf/annotation</attribute>
 
     <!--
-    Specifies name of annotation display format, which is used, when the
-    Print SCU does not specify an annotation display format.
-    -->    
-    <attribute name="DefaultAnnotation">TITLE_1</attribute>
+    Associates Calling AETs with Annotation Display Format available in the directory
+    specified by attribute AnnotationDir. Only effective, if the calling Print SCU
+    does not specify an annotation display format.
+    Multiple entires must be separated by  '\' characters or line breaks.
+    If no entry match the calling AET, the Presentation LUT specified in the
+    first entry will be used.
+    At least, one entry must be configured!
+    Format: <calling-aet>:<annotation ID> 
+    -->
+    <attribute name="AnnotationForCallingAET">
+        TITLE:TITLE_1
+        GRAYSCALE:GRAYSCALE_1
+    </attribute>
         
     <!--
     Specifies name of annotation display format used for the
