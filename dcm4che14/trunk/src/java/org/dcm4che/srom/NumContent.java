@@ -55,7 +55,7 @@ public interface NumContent extends Content {
      * 
      * @return  the the numeric value.
      */
-    public float getValue();
+    public Float getValue();
     
     /**
      * Returns the measurement unit.
@@ -67,9 +67,13 @@ public interface NumContent extends Content {
      * @return the measurement unit.
      */
     public Code getUnit();
-        
-    public void setValue(float value);
+
+    public Code getQualifier();
+    
+    public void setValue(Float value);
 
     public void setUnit(Code code);
+
+    public void setQualifier(Code code);
     
 }//end interface NumContent

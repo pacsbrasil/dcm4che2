@@ -485,6 +485,24 @@ public interface KeyObject extends ContainerContent {
             float value, Code unit);
 
     /**
+     * Creates new <code>NumContent</code> with specified properties.
+     *
+     * @param obsDateTime <i>Observation DateTime</i> or <code>null</code>.
+     * @param template <i>Content Template</i> or <code>null</code>.
+     * @param name <i>Concept Name Code</i>.
+     * @param value <i>Numeric Value</i> Float.
+     * @param unit <i>Measurement Unit Code</i>.
+     * @param qualifier <i>Numeric Value Qualifier Code</i>.
+     * @return created <code>NumContent</code> object.
+     *
+     * @see SRDocumentFactory#newCode
+     * @see SRDocumentFactory#newTemplate
+     */    
+    public NumContent createNumContent(
+            Date obsDateTime, Template template, Code name,
+            Float value, Code unit, Code qualifier);
+
+    /**
      * Creates new <code>DateContent</code> with specified properties.
      *
      * @param obsDateTime <i>Observation DateTime</i> or <code>null</code>.

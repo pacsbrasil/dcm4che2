@@ -24,6 +24,7 @@
 package org.dcm4cheri.srom;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.srom.*;
 import java.util.Date;
@@ -37,21 +38,23 @@ class NumContentImpl extends NamedContentImpl implements NumContent {
     // Constants -----------------------------------------------------
     
     // Attributes ----------------------------------------------------
-    private float value;
+    private Float value;
     private Code unit;
+    private Code qualifier;
 
     // Constructors --------------------------------------------------
     NumContentImpl(KeyObject owner, Date obsDateTime, Template template,
-            Code name, float value, Code unit) {
+            Code name, Float value, Code unit, Code qualifier) {
         super(owner, obsDateTime, template, checkNotNull(name));
-        this.value = value;
-        this.unit = checkNotNull(unit);
+    	this.value = value;
+    	this.unit = unit;
+    	this.qualifier = qualifier;
     }
     
     Content clone(KeyObject newOwner,  boolean inheritObsDateTime) {
-        return new NumContentImpl(newOwner,
+    	return new NumContentImpl(newOwner,
                 getObservationDateTime(inheritObsDateTime),
-                template, name, value, unit);
+                template, name, value, unit, qualifier);
     }
 
     // Methodes --------------------------------------------------------
@@ -67,7 +70,7 @@ class NumContentImpl extends NamedContentImpl implements NumContent {
         return ValueType.NUM;
     }    
     
-    public final float getValue() {
+    public final Float getValue() {
         return value;
     }
 
@@ -75,18 +78,32 @@ class NumContentImpl extends NamedContentImpl implements NumContent {
         return unit;
     }
 
-    public final void setValue(float value) {
+    public final Code getQualifier() {
+        return qualifier;
+    }
+
+    public final void setValue(Float value) {
         this.value = value;
     }
 
     public final void setUnit(Code unit) {
-        this.unit = checkNotNull(unit);
+        this.unit = unit;
+    }
+
+    public final void setQualifier(Code qualifier) {
+        this.qualifier = qualifier;
     }
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        Dataset mv = ds.putSQ(Tags.MeasuredValueSeq).addNewItem();
-        mv.putDS(Tags.NumericValue, value);
-        unit.toDataset(mv.putSQ(Tags.MeasurementUnitsCodeSeq).addNewItem());
+        DcmElement mvsq = ds.putSQ(Tags.MeasuredValueSeq);
+        if (value != null && unit != null) {
+            Dataset mv = mvsq.addNewItem();
+	        mv.putDS(Tags.NumericValue, value.floatValue());
+	        unit.toDataset(mv.putSQ(Tags.MeasurementUnitsCodeSeq).addNewItem());
+        }
+        if (qualifier != null) {
+        	qualifier.toDataset(ds.putSQ(Tags.NumericValueQualifierCodeSeq).addNewItem());
+        }
     }
 }

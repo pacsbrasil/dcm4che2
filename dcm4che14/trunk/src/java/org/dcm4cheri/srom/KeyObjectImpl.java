@@ -428,7 +428,14 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
             Date obsDateTime, Template template, Code name,
             float value, Code unit) {
         return new NumContentImpl(this, obsDateTime, template, name,
-                value, unit);
+                new Float(value), unit, null);
+    }
+
+    public NumContent createNumContent(
+            Date obsDateTime, Template template, Code name,
+            Float value, Code unit, Code qualifier) {
+        return new NumContentImpl(this, obsDateTime, template, name,
+        		value, unit, qualifier);
     }
 
     public DateContent createDateContent(
