@@ -43,6 +43,7 @@
     <pathelement location="${jboss.lib}/jboss-common.jar"/>
     <pathelement location="${jboss.lib}/jboss-system.jar"/>
     <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
+    <pathelement location="${jboss.server.lib}/log4j.jar"/>
     <pathelement location="${jboss.client}/jmx-rmi-connector-client.jar"/>
     <pathelement location="${build.classes.dir}"/>
   </path>
