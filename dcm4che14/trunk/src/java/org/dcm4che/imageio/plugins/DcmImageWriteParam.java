@@ -23,8 +23,11 @@
  */
 package org.dcm4che.imageio.plugins;
 
-import java.util.*;
-import javax.imageio.*;
+import java.util.Locale;
+
+import javax.imageio.ImageWriteParam;
+
+import org.dcm4che.data.DcmEncodeParam;
 
 
 /**
@@ -70,6 +73,11 @@ public abstract class DcmImageWriteParam extends ImageWriteParam {
    */
   public abstract boolean isWriteFMI();
   
+  public abstract void setDcmEncodeParameters(DcmEncodeParam dcmEncodeParams);
+  public abstract DcmEncodeParam getDcmEncodeParameters();
+  
+  //public abstract void setPixelRepresentation(boolean signed);
+  //public abstract boolean getPixelRepresentation();
   
   /**
    * Set the property monochrome2.
@@ -94,7 +102,7 @@ public abstract class DcmImageWriteParam extends ImageWriteParam {
    * @param bitsStored the number of bits to store. A value of -1 denotes, that
    *                   the DcmImageWriter should choose the best value.
    */
-  public abstract void setBitsStored(int bitsStored);
+  //public abstract void setBitsStored(int bitsStored);
   
   
   /**
@@ -102,7 +110,7 @@ public abstract class DcmImageWriteParam extends ImageWriteParam {
    * @return the number of bits to store. A value of -1 denotes, that the
    *         DcmImageWriter should choose the best value.
    */
-  public abstract int getBitsStored();
+  //public abstract int getBitsStored();
   
   
   /**
@@ -112,7 +120,7 @@ public abstract class DcmImageWriteParam extends ImageWriteParam {
    * @param highBit the highest bit position in the pixel data. A value of -1 
    *                denotes, that the DcmImageWriter should choose the best value.
    */
-  public abstract void setHighBit(int highBit);
+  //public abstract void setHighBit(int highBit);
   
   
   /**
@@ -120,7 +128,7 @@ public abstract class DcmImageWriteParam extends ImageWriteParam {
    * @return the highest bit position in the pixel data. A value of -1 denotes,
    *         that the DcmImageWriter should choose the best value.
    */
-  public abstract int getHighBit();
+  //public abstract int getHighBit();
   
   
   /**
