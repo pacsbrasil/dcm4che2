@@ -21,7 +21,7 @@ public class PLutPanel extends JPanel
     private PLut plutGen;
     private ImagePanel imgPanel;
     //histo stuff
-    private final int NumBins = 2048;
+    private final int NumBins = 128;
     private  int BinMin = 1; //raw min
     private  int BinMax = 1024; //raw max
     private  int BinRng = BinMax - BinMin; //raw range of histo
@@ -96,18 +96,11 @@ public class PLutPanel extends JPanel
                         }
                     }
                     if ((e.getModifiersEx() & ChangeCenterMask) != 0) {
-                        if (dy < -Delta) {
-                            cntr -= CenterStep;
-                            if (cntr<0) cntr = 0;
-                            plutGen.setCenter(cntr);
-                            updatePLut();
-                        }
-                        else if (dy > Delta) {
-                            cntr += CenterStep;
-                            if (cntr>1) cntr = 1;
-                            plutGen.setCenter(cntr);
-                            updatePLut();
-                        }
+                        cntr = (double)e.getY()/PLutPanel.this.getHeight();
+                        if (cntr<0) cntr = 0;
+                        else if (cntr>1) cntr = 1;
+                        plutGen.setCenter(cntr);
+                        updatePLut();
                     }
                 }
             });
