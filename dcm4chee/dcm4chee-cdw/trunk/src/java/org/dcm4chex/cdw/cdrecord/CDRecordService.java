@@ -59,9 +59,9 @@ public class CDRecordService extends MediaWriterServiceSupport {
 
     private String device = "0,0,0";
 
-    private String writeMode = "tao";
+    private String writeMode = SAO;
 
-    private String trackType = "data";
+    private String trackType = DATA;
 
     private boolean padding = false;
 
@@ -114,12 +114,12 @@ public class CDRecordService extends MediaWriterServiceSupport {
 
     public boolean checkDrive() throws MediaCreationException {
         String[] cmdarray = { executable, "dev=" + device, "-checkdrive"};
-        return super.check(cmdarray, "TAO");
+        return super.check(cmdarray, writeMode.toUpperCase());
     }
 
     public boolean checkDisk() throws MediaCreationException {
         String[] cmdarray = { executable, "dev=" + device, "-atip"};
-        return super.check(cmdarray, "Disk");
+        return super.check(cmdarray, "Manufacturer");
     }
 
     public boolean hasTOC() throws MediaCreationException {

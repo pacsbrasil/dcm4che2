@@ -107,7 +107,7 @@
       <name>WriteMode</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="tao" />
+         <value value="sao" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
