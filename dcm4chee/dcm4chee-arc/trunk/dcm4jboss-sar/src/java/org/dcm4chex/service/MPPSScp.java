@@ -50,7 +50,7 @@ class MPPSScp extends DcmServiceBase {
     private static final String DISCONTINUED = "DISCONTINUED";
 
     private static final int[] TYPE1_NCREATE_ATTR = {
-            Tags.ScheduledStepAttributesSeq, Tags.PPSID,
+            Tags.ScheduledStepAttributesSeq, // Tags.PPSID,
             Tags.PerformedStationAET, Tags.PPSStartDate, Tags.PPSStartTime,
             Tags.PPSStatus, Tags.Modality};
 
