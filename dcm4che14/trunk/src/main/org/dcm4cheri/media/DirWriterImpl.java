@@ -307,7 +307,7 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         out.seek(newRecPos);
         out.write(ITEM, 0, 8);
         ds0004.writeDataset(out, encParam);
-        ds.newView(0x00080000,-1,null).writeDataset(out, encParam);
+        ds.subset(0x00080000,-1).writeDataset(out, encParam);
         long nextNewRecPos = out.getStreamPosition();
         if (encParam.undefItemLen) {
             out.write(ITEM_DELIMITER, 0, 8);

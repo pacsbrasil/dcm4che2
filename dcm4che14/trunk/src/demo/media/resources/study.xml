@@ -1,0 +1,30 @@
+<?xml version="1.0" standalone="yes"?>
+<dataset>
+<elm tag="00080005" vr="CS" name="Specific Character Set">
+<val vm="0" len="0" data=""/>
+</elm>
+<elm tag="00080020" vr="DA" name="Study Date">
+<val vm="0" len="0" data=""/>
+</elm>
+<elm tag="00080030" vr="TM" name="Study Time">
+<val vm="0" len="0" data=""/>
+</elm>
+<elm tag="00080050" vr="SH" name="Accession Number">
+<val vm="0" len="0" data=""/>
+</elm>
+<elm tag="00080090" vr="PN" name="Referring Physician's Name">
+<val vm="0" len="0" data=""/>
+</elm>
+<elm tag="00081030" vr="LO" name="Study Description">
+<val vm="0" len="0" data=""/>
+</elm>
+<elm tag="00081032" vr="SQ" name="Procedure Code Sequence">
+<seq len="0"/>
+</elm>
+<elm tag="0020000D" vr="UI" name="Study Instance UID">
+<val vm="0" len="0" data=""/>
+</elm>
+<elm tag="00200010" vr="SH" name="Study ID">
+<val vm="0" len="0" data=""/>
+</elm>
+</dataset>

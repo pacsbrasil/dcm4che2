@@ -43,7 +43,7 @@ import org.dcm4cheri.util.StringUtils;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-class DcmElementImpl implements org.dcm4che.data.DcmElement {
+class DcmElementImpl implements DcmElement {
     static final String CLASSNAME = "org.dcm4cheri.data.DcmElementImpl";
     static final Logger log = Logger.getLogger(CLASSNAME);
 

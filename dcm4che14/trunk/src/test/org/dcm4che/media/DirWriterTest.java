@@ -212,7 +212,7 @@ public class DirWriterTest extends TestCase {
     private void doTestAdd(boolean skipGroupLen, boolean undefSeqLen,
             boolean undefItemLen) throws Exception {
         DcmEncodeParam encParam = new DcmEncodeParam(ByteOrder.LITTLE_ENDIAN,
-                true, false, skipGroupLen, undefSeqLen, undefItemLen);
+                true, false, false, skipGroupLen, undefSeqLen, undefItemLen);
         DirWriter w1 = wfact.newDirWriter(theFile, INST_UID,  FILE_SET_ID,
                 null, null, encParam);
         try {
@@ -360,7 +360,7 @@ public class DirWriterTest extends TestCase {
     private void doTestRemove(boolean skipGroupLen, boolean undefSeqLen,
             boolean undefItemLen) throws Exception {
         DcmEncodeParam encParam = new DcmEncodeParam(ByteOrder.LITTLE_ENDIAN,
-                true, false, skipGroupLen, undefSeqLen, undefItemLen);
+                true, false, false, skipGroupLen, undefSeqLen, undefItemLen);
         DirWriter w1 = wfact.newDirWriter(theFile, INST_UID,  FILE_SET_ID,
                 null, null, encParam);
         try {
@@ -500,7 +500,7 @@ public class DirWriterTest extends TestCase {
     private void doTestReplace(boolean skipGroupLen, boolean undefSeqLen,
             boolean undefItemLen) throws Exception {
         DcmEncodeParam encParam = new DcmEncodeParam(ByteOrder.LITTLE_ENDIAN,
-                true, false, skipGroupLen, undefSeqLen, undefItemLen);
+                true, false, false, skipGroupLen, undefSeqLen, undefItemLen);
         DirWriter w1 = wfact.newDirWriter(theFile, INST_UID,  FILE_SET_ID,
                 null, null, encParam);
         try {

@@ -83,7 +83,7 @@ public interface Dataset extends DcmObject, java.io.Serializable {
     public void writeDataset(ContentHandler handler, TagDictionary dict)
             throws IOException;
 
-    public Dataset newView(int[] inclTags);
-
-    public Dataset newView(int minTag, int maxTag, int[] exclTags);
+    public Dataset subset(int fromTag, int toTag);
+    
+    public Dataset subset(Dataset filter);    
 }

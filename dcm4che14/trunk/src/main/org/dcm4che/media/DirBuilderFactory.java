@@ -74,12 +74,6 @@ public abstract class DirBuilderFactory {
 
     public abstract DirBuilderPref newDirBuilderPref();
 
-    public abstract DirBuilderPref loadDirBuilderPref(InputStream in)
-            throws IOException;
-    
-    public abstract DirBuilderPref loadDirBuilderPref(File file)
-            throws IOException;
-    
     public abstract DirBuilder newDirBuilder(DirWriter writer,
             DirBuilderPref pref) throws IOException;
     

@@ -94,6 +94,10 @@ final class DirBuilderImpl implements DirBuilder {
         if (type == null) {
             throw new UnsupportedOperationException("classUID:" + classUID);
         }
+        Dataset filter = pref.getFilterForRecordType(type);
+        if (filter == null) {
+            return 0;
+        }
         String instUID = fmi.getMediaStorageSOPInstanceUID();
         if (instUID == null) {
             throw new IllegalArgumentException("Missing SOP Instance UID");
@@ -121,8 +125,7 @@ final class DirBuilderImpl implements DirBuilder {
             count += addSeriesRec(ds, seriesUID);
         }
         writer.add(curSeriesRec, type,
-                ds.newView(pref.getTagsForRecordType(type)),
-                fileIDs, classUID, instUID, tsUID);
+                ds.subset(filter), fileIDs, classUID, instUID, tsUID);
         ++count;
         return count;
     }
@@ -142,7 +145,7 @@ final class DirBuilderImpl implements DirBuilder {
             }
         }
         curPatRec = writer.add(null, "PATIENT",
-                ds.newView(pref.getTagsForRecordType("PATIENT")));
+                ds.subset(pref.getFilterForRecordType("PATIENT")));
         return 1;
     }
     
@@ -159,7 +162,7 @@ final class DirBuilderImpl implements DirBuilder {
             }
         }
         curStudyRec = writer.add(curPatRec, "STUDY",
-                ds.newView(pref.getTagsForRecordType("STUDY")));
+                ds.subset(pref.getFilterForRecordType("STUDY")));
         return 1;
     }
     
@@ -174,7 +177,7 @@ final class DirBuilderImpl implements DirBuilder {
             }
         }
         curSeriesRec = writer.add(curStudyRec, "SERIES",
-                ds.newView(pref.getTagsForRecordType("SERIES")));
+                ds.subset(pref.getFilterForRecordType("SERIES")));
         return 1;
     }
     

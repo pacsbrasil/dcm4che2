@@ -101,7 +101,7 @@ public class Acr2Dcm {
 
     private DcmEncodeParam encodeParam() {
         return new DcmEncodeParam(ByteOrder.LITTLE_ENDIAN,
-                false, false, skipGroupLen, undefSeqLen, undefItemLen);
+                false, false, false, skipGroupLen, undefSeqLen, undefItemLen);
     }
     
     public void convert(File src, File dest)

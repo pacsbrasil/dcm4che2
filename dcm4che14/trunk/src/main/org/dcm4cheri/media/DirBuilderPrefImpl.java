@@ -23,6 +23,7 @@
 
 package org.dcm4cheri.media;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4che.media.DirBuilderPref;
 
 import java.util.HashMap;
@@ -34,12 +35,12 @@ import java.util.HashMap;
  */
 final class DirBuilderPrefImpl extends HashMap implements DirBuilderPref {
     
-    public void setTagsForRecordType(String type, int[] tags) {
-        put(type, tags);
+    public void setFilterForRecordType(String type, Dataset filter) {
+        put(type, filter);
     }
     
-    public int[] getTagsForRecordType(String type) {
-        return (int[])get(type);
+    public Dataset getFilterForRecordType(String type) {
+        return (Dataset)get(type);
     }
     
 }

@@ -366,7 +366,7 @@
     <jar jarfile="${build.jars}/demo/dcmdir.jar"
          manifest="${source.demo}/media/dcmdir.mf">
       <fileset dir="${source.demo}/media">
-        <include name="resources/DirBuilderPref.xml"/>
+        <include name="resources/*.xml"/>
         <include name="resources/DcmDir.xsl"/>
       </fileset>
       <fileset dir="${build.classes}">

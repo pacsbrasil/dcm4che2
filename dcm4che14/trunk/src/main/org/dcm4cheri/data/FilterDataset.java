@@ -44,28 +44,57 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-abstract class DatasetView extends BaseDatasetImpl implements Dataset {
+abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     
-    protected final BaseDatasetImpl backend;
+    protected final Dataset backend;
     
     /** Creates a new instance of DatasetView */
-    public DatasetView(BaseDatasetImpl backend) {
+    public FilterDataset(Dataset backend) {
         this.backend = backend;
     }
-        
-    protected abstract boolean filter(int tag);
-    
-    public DcmElement get(int tag) {
-        return filter(tag) ? backend.get(tag) : null;
-    }
-    
+                
     public int size() {
         int count = 0;
-        for (Iterator iter = iterator(); iter.hasNext(); ++count)
-            ; //no op
+        for (Iterator iter = iterator(); iter.hasNext();)
+            ++count;
         return count;
     }
     
+    protected abstract boolean filter(int tag);
+    
+    public Iterator iterator() {
+        final Iterator backendIter = backend.iterator();
+        return new Iterator() {
+            private DcmElement next = findNext();
+            private DcmElement findNext() {
+                DcmElement el;
+                while (backendIter.hasNext()) {
+                    if (filter((el = (DcmElement)backendIter.next()).tag())) {
+                        return el;
+                    }
+                }
+                return null;
+            }
+            
+            public boolean hasNext() {
+                return next != null;
+            }
+            
+            public Object next() {
+                if (next == null) {
+                    throw new NoSuchElementException();
+                }
+                DcmElement retval = next;
+                next = findNext();
+                return retval;
+            }
+            
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
     public boolean isEmpty() {
         return size() == 0;
     }
@@ -121,102 +150,59 @@ abstract class DatasetView extends BaseDatasetImpl implements Dataset {
         throw new UnsupportedOperationException();
     }
 
-    static final class Selection extends DatasetView {
-        private final int[] inclTags;
-        Selection(BaseDatasetImpl backend, int[] inclTags) {
+    static final class Selection extends FilterDataset {
+        private final Dataset filter;
+        Selection(Dataset backend, Dataset filter) {
             super(backend);
-            this.inclTags = (int[])inclTags.clone();
-            Arrays.sort(this.inclTags);
+            this.filter = filter;
         }
-        protected boolean filter(int tag) {
-            return  Arrays.binarySearch(inclTags, tag) >= 0;
+
+        protected  boolean filter(int tag) {
+            return filter.contains(tag);
         }
-        public Iterator iterator() {
-            return new ViewIterator();
+
+        public boolean contains(int tag) {
+            return filter.contains(tag) && backend.contains(tag);
         }
-        private final class ViewIterator implements Iterator {
-            int cur = 0;
-            DcmElement next = null;
-            ViewIterator() {
-                findNext();
+
+        public DcmElement get(int tag) {
+            DcmElement filterEl = filter.get(tag);
+            if (filterEl == null) {
+                return null;
             }
-            void findNext() {
-                while (cur < inclTags.length) {
-                    next = Selection.this.backend.get(inclTags[cur++]);
-                    if (next != null) {
-                        return;
-                    }
-                }
-                next = null;
+            
+            DcmElement el = backend.get(tag);
+            if (!(el instanceof SQElement)) {
+                return el;
             }
-            public boolean hasNext() {
-                return next != null;
+            if (!(filterEl instanceof SQElement)) {
+                log.warning("VR mismatch - dataset:" + el
+                        + ", filter:" + filterEl);
+                return el;
             }
-            public Object next() {
-                if (next == null) {
-                    throw new NoSuchElementException();
-                }
-                DcmElement retval = next;
-                findNext();
-                return retval;
+            if (filterEl.isEmpty()) {
+                return el;
             }
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
+            return new FilterSQElement((SQElement)el, filterEl.getDataset());
         }
     }
  
-    static final class Exclusion extends DatasetView {
-        private int[] exclTags = {};
-        private long minTag;
-        private long maxTag;
-        Exclusion(BaseDatasetImpl backend, int minTag, int maxTag,
-                int[] exclTags) {
+    static final class Segment extends FilterDataset {
+        private long fromTag;
+        private long toTag;
+        Segment(Dataset backend, int fromTag, int toTag) {
             super(backend);
-            if (exclTags != null) {
-                this.exclTags = (int[])exclTags.clone();
-                Arrays.sort(this.exclTags);
-            }
-            this.minTag = minTag & 0xFFFFFFFFL;
-            this.maxTag = maxTag & 0xFFFFFFFFL;
+            this.fromTag = fromTag & 0xFFFFFFFFL;
+            this.toTag = toTag & 0xFFFFFFFFL;
         }
+        
         protected boolean filter(int tag) {
-            long ltag = tag & 0xFFFFFFFFL;
-            return ltag >= minTag && ltag <= maxTag
-                    && Arrays.binarySearch(exclTags, tag) < 0;
+            long ltag = tag & 0xFFFFFFFF;
+            return ltag >= fromTag && ltag <= toTag;
         }
-        public Iterator iterator() {
-            return new ViewIterator();
-        }
-        private final class ViewIterator implements Iterator {
-            Iterator backendIter = Exclusion.this.backend.iterator();
-            DcmElement next = null;
-            ViewIterator() {
-                findNext();
-            }
-            void findNext() {
-                while (backendIter.hasNext()) {
-                    next = (DcmElement)backendIter.next();
-                    if (filter(next.tag())) {
-                        return;
-                    }
-                }
-                next = null;
-            }
-            public boolean hasNext() {
-                return next != null;
-            }
-            public Object next() {
-                if (next == null) {
-                    throw new NoSuchElementException();
-                }
-                DcmElement retval = next;
-                findNext();
-                return retval;
-            }
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
+        
+        public DcmElement get(int tag) {
+            return filter(tag) ? backend.get(tag) : null;
         }
     } 
 }

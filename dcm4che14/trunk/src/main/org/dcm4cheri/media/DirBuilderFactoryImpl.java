@@ -97,18 +97,4 @@ public final class DirBuilderFactoryImpl extends DirBuilderFactory {
     public DirBuilderPref newDirBuilderPref() {
         return new DirBuilderPrefImpl();
     }
-
-    public DirBuilderPref loadDirBuilderPref(InputStream in)
-            throws IOException {
-        DirBuilderPrefImpl retval = new DirBuilderPrefImpl();
-        new DirBuilderPrefLoader(retval).parse(in);
-        return retval;
-    }
-    
-    public DirBuilderPref loadDirBuilderPref(File file)
-            throws IOException {
-        DirBuilderPrefImpl retval = new DirBuilderPrefImpl();
-        new DirBuilderPrefLoader(retval).parse(file);
-        return retval;
-    }
 }

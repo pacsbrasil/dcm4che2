@@ -64,7 +64,7 @@ public class DatasetSerializerTest extends TestCase {
         DataInputStream in = new DataInputStream(
                 new BufferedInputStream(new FileInputStream(EVR_LE)));
         try {
-            ds.read(in, null, -1);
+            ds.readFile(in, null, -1);
         } finally {
             try { in.close(); } catch (Exception ignore) {}
         }
@@ -89,7 +89,7 @@ public class DatasetSerializerTest extends TestCase {
         DataInputStream in = new DataInputStream(
                 new BufferedInputStream(new FileInputStream(PART10_EVR_LE)));
         try {
-            ds.read(in, null, -1);
+            ds.readFile(in, null, -1);
         } finally {
             try { in.close(); } catch (Exception ignore) {}
         }

@@ -23,6 +23,7 @@
 
 
 import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmParseException;
 import org.dcm4che.dict.DictionaryFactory;
@@ -41,6 +42,8 @@ import java.nio.ByteOrder;
 import java.net.*;
 import java.text.DecimalFormat;
 import java.util.*;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.sax.*;
 import javax.xml.transform.stream.*;
@@ -52,12 +55,13 @@ import gnu.getopt.*;
  */
 public class DcmDir {
 
+    private static final DcmObjectFactory objFact = 
+            DcmObjectFactory.getInstance();
     private static final DirBuilderFactory fact = 
             DirBuilderFactory.getInstance();
     private final TagDictionary dict =
             DictionaryFactory.getInstance().getDefaultTagDictionary();
 
-    private DirBuilderPref pref = null;
     private File dirFile = null;
     private File readMeFile = null;
     private String readMeCharset = null;
@@ -128,10 +132,6 @@ public class DcmDir {
         this.delFiles = delFiles;
     }
     
-    public void setDirBuilderPref(DirBuilderPref pref) {
-        this.pref = pref;
-    }
-    
     public void addPatientID(String id) {
         patientIDs.add(id);
     }
@@ -192,10 +192,11 @@ public class DcmDir {
     
     private DcmEncodeParam encodeParam() {
         return new DcmEncodeParam(ByteOrder.LITTLE_ENDIAN,
-                true, false, skipGroupLen, undefSeqLen, undefItemLen);
+                true, false, false, skipGroupLen, undefSeqLen, undefItemLen);
     }
     
-    public void create(String[] args, int off) throws IOException  {
+    public void create(String[] args, int off) throws IOException,
+            ParserConfigurationException, SAXException {
         if (uid == null) {
             uid = UIDGenerator.getInstance().createUID();
         }
@@ -208,7 +209,8 @@ public class DcmDir {
         }
     }
     
-    public void append(String[] args, int off) throws IOException  {
+    public void append(String[] args, int off) throws IOException,
+            ParserConfigurationException, SAXException {
         DirWriter writer = fact.newDirWriter(dirFile, encodeParam());
         try {
             build(writer, args, off);
@@ -217,11 +219,44 @@ public class DcmDir {
         }
     }
     
-    private void build(DirWriter w, String[] args, int off) throws IOException {
-        if (pref == null) {
-            pref = fact.loadDirBuilderPref(DcmDir.class.getResourceAsStream(
-                    "/resources/DirBuilderPref.xml"));
+    private DirBuilderPref loadDirBuilderPref() throws IOException,
+            ParserConfigurationException, SAXException {
+        DirBuilderPref pref = fact.newDirBuilderPref();
+        SAXParser p = SAXParserFactory.newInstance().newSAXParser();
+        pref.setFilterForRecordType("PATIENT",
+                loadDataset(p, "/resources/patient.xml"));
+        pref.setFilterForRecordType("STUDY",
+                loadDataset(p, "/resources/study.xml"));
+        pref.setFilterForRecordType("SERIES",
+                loadDataset(p, "/resources/series.xml"));
+        pref.setFilterForRecordType("IMAGE",
+                loadDataset(p, "/resources/image.xml"));
+        pref.setFilterForRecordType("PRESENTATION",
+                loadDataset(p, "/resources/presentation.xml"));
+        pref.setFilterForRecordType("SR DOCUMENT",
+                loadDataset(p, "/resources/sr_document.xml"));
+        pref.setFilterForRecordType("KEY OBJECT DOC",
+                loadDataset(p, "/resources/key_object_doc.xml"));
+        pref.setFilterForRecordType("WAVEFORM",
+                loadDataset(p, "/resources/waveform.xml"));
+        return pref;
+    }
+
+    private Dataset loadDataset(SAXParser p, String res)
+            throws IOException, SAXException {
+        Dataset ds = objFact.newDataset();
+        InputStream in = DcmDir.class.getResourceAsStream(res);
+        try {
+            p.parse(in, ds.getSAXHandler());
+        } finally {
+            try { in.close(); } catch (IOException ignore) {}
         }
+        return ds;
+    }
+        
+    private void build(DirWriter w, String[] args, int off) throws IOException,
+            ParserConfigurationException, SAXException {
+        DirBuilderPref pref = loadDirBuilderPref();
         long t1 = System.currentTimeMillis();
         int[] counter = new int[2];
         DirBuilder builder = fact.newDirBuilder(w, pref);
@@ -430,7 +465,7 @@ public class DcmDir {
     * @param args the command line arguments
     */
     public static void main (String args[]) throws Exception {
-        LongOpt[] longopts = new LongOpt[15];
+        LongOpt[] longopts = new LongOpt[14];
         longopts[0] = new LongOpt("grouplen", LongOpt.NO_ARGUMENT, null, 'G');
         longopts[1] = new LongOpt("seqlen", LongOpt.NO_ARGUMENT, null, 'S');
         longopts[2] = new LongOpt("itemlen", LongOpt.NO_ARGUMENT, null, 'I');
@@ -438,14 +473,13 @@ public class DcmDir {
         longopts[4] = new LongOpt("id", LongOpt.REQUIRED_ARGUMENT, null, 'u');
         longopts[5] = new LongOpt("readme", LongOpt.REQUIRED_ARGUMENT, null, 'R');
         longopts[6] = new LongOpt("readme-charset", LongOpt.REQUIRED_ARGUMENT, null, 'C');
-        longopts[7] = new LongOpt("pref", LongOpt.REQUIRED_ARGUMENT, null, 'p');
-        longopts[8] = new LongOpt("maxlen", LongOpt.REQUIRED_ARGUMENT, null, 'L');
-        longopts[9] = new LongOpt("vallen", LongOpt.REQUIRED_ARGUMENT, null, 'l');
-        longopts[10] = new LongOpt("pat", LongOpt.REQUIRED_ARGUMENT, null, 'P');
-        longopts[11] = new LongOpt("study", LongOpt.REQUIRED_ARGUMENT, null, 'Y');
-        longopts[12] = new LongOpt("series", LongOpt.REQUIRED_ARGUMENT, null, 'E');
-        longopts[13] = new LongOpt("sop", LongOpt.REQUIRED_ARGUMENT, null, 'O');
-        longopts[14] = new LongOpt("onlyInUse", LongOpt.NO_ARGUMENT, null, 'o');
+        longopts[7] = new LongOpt("maxlen", LongOpt.REQUIRED_ARGUMENT, null, 'L');
+        longopts[8] = new LongOpt("vallen", LongOpt.REQUIRED_ARGUMENT, null, 'l');
+        longopts[9] = new LongOpt("pat", LongOpt.REQUIRED_ARGUMENT, null, 'P');
+        longopts[10] = new LongOpt("study", LongOpt.REQUIRED_ARGUMENT, null, 'Y');
+        longopts[11] = new LongOpt("series", LongOpt.REQUIRED_ARGUMENT, null, 'E');
+        longopts[12] = new LongOpt("sop", LongOpt.REQUIRED_ARGUMENT, null, 'O');
+        longopts[13] = new LongOpt("onlyInUse", LongOpt.NO_ARGUMENT, null, 'o');
         Getopt g = new Getopt("dcmdir.jar", args, "c:t:a:x:X:z:", longopts, true);
         
         DcmDir dcmdir = new DcmDir();
@@ -488,10 +522,6 @@ public class DcmDir {
                     break;
                 case 'l':
                     dcmdir.setValLen(new Integer(g.getOptarg()));
-                    break;
-                case 'p':
-                    dcmdir.setDirBuilderPref(
-                            fact.loadDirBuilderPref(new File(g.getOptarg())));
                     break;
                 case 'P':
                     dcmdir.addPatientID(g.getOptarg());
@@ -570,7 +600,6 @@ public class DcmDir {
 " --itemlen     encode sequence items with explicit length\n" +
 " --readme readme-file   add README file reference to created DICOMDIR file\n" +
 " --readme-charset code  specifies character set used in README file\n" +
-" --pref pref-file       specifies preferences for DICOMDIR generation\n" +
 " --maxlen line-len      maximal line length in listing; default=79\n" +
 " --vallen val-len       displayed value length in listing; default=64\n";
 }

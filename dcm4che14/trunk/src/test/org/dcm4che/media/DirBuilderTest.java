@@ -24,6 +24,8 @@
 package org.dcm4che.media;
 
 import org.dcm4che.dict.*;
+import org.dcm4che.data.*;
+
 import junit.framework.*;
 
 import java.io.*;
@@ -40,8 +42,6 @@ public class DirBuilderTest extends TestCase {
         junit.textui.TestRunner.run (suite());
     }
     
-    private static final String PREF_FILE_ID = 
-            "../testdata/dir/DirBuilderPref.xml";
     private static final String FILE_ID = "../testdata/dir/DD_NEW";
     private static final String INST_UID = "1.2.40.0.13.1.1.99";
     private static final String FILE_SET_ID = "FILE_SET_ID";
@@ -60,14 +60,71 @@ public class DirBuilderTest extends TestCase {
         super(name);
     }
     
+    private DcmObjectFactory objFact = DcmObjectFactory.getInstance();
     private DirBuilderFactory fact;
     private DirBuilderPref pref;
-    protected void setUp() throws Exception {
-        fact = DirBuilderFactory.getInstance();
-        pref = fact.loadDirBuilderPref(new File(PREF_FILE_ID));
+    
+    private Dataset getPatientFilter() {
+        Dataset retval = objFact.newDataset();
+        retval.setCS(Tags.SpecificCharacterSet);
+        retval.setPN(Tags.PatientName);
+        retval.setLO(Tags.PatientID);
+        retval.setDA(Tags.PatientBirthDate);
+        retval.setCS(Tags.PatientSex);
+        return retval;
     }
     
-    public void testLoadDirBuilderPref() throws Exception {
+    private Dataset getStudyFilter() {
+        Dataset retval = objFact.newDataset();
+        retval.setCS(Tags.SpecificCharacterSet);
+        retval.setDA(Tags.StudyDate);
+        retval.setTM(Tags.StudyTime);
+        retval.setSH(Tags.AccessionNumber);
+        retval.setPN(Tags.ReferringPhysicianName);
+        retval.setLO(Tags.StudyDescription);
+        retval.setSQ(Tags.ProcedureCodeSeq);
+        retval.setUI(Tags.StudyInstanceUID);
+        retval.setSH(Tags.StudyID);
+        return retval;
+    }
+
+    private Dataset getSeriesFilter() {
+        Dataset retval = objFact.newDataset();
+        retval.setCS(Tags.SpecificCharacterSet);
+        retval.setDA(Tags.SeriesDate);
+        retval.setTM(Tags.SeriesTime);
+        retval.setCS(Tags.Modality);
+        retval.setLO(Tags.Manufacturer);
+        retval.setLO(Tags.SeriesDescription);
+        retval.setCS(Tags.BodyPartExamined);
+        retval.setUI(Tags.SeriesInstanceUID);
+        retval.setIS(Tags.SeriesNumber);
+        retval.setCS(Tags.Laterality);
+        return retval;
+    }
+    
+    private Dataset getImageFilter() {
+        Dataset retval = objFact.newDataset();
+        retval.setCS(Tags.SpecificCharacterSet);
+        retval.setDA(Tags.ContentDate);
+        retval.setTM(Tags.ContentTime);
+        retval.setSQ(Tags.RefImageSeq);
+        retval.setLO(Tags.ContrastBolusAgent);
+        retval.setIS(Tags.InstanceNumber);
+        retval.setIS(Tags.NumberOfFrames);
+        return retval;
+    }
+    
+    protected void setUp() throws Exception {
+        fact = DirBuilderFactory.getInstance();
+        pref = fact.newDirBuilderPref();
+        pref.setFilterForRecordType("PATIENT", getPatientFilter());
+        pref.setFilterForRecordType("STUDY", getStudyFilter());
+        pref.setFilterForRecordType("SERIES", getSeriesFilter());
+        pref.setFilterForRecordType("IMAGE", getImageFilter());
+    }
+    
+    public void testAddFileRef() throws Exception {
         DirWriter w1 = fact.newDirWriter(new File(FILE_ID), INST_UID, 
                 FILE_SET_ID, null, null, null);
         DirBuilder b1 = fact.newDirBuilder(w1, pref); 

@@ -80,7 +80,7 @@ public class SRDocumentFactoryTest extends TestCase {
         InputStream in = new BufferedInputStream(
                 new FileInputStream(new File(SR_DCM)));
         try {
-            ds.read(in, null, -1);
+            ds.readFile(in, null, -1);
         } finally {
             in.close();
         }
@@ -98,7 +98,7 @@ public class SRDocumentFactoryTest extends TestCase {
         InputStream in = new BufferedInputStream(
                 new FileInputStream(new File(KO_DCM)));
         try {
-            ds.read(in, null, -1);
+            ds.readFile(in, null, -1);
         } finally {
             in.close();
         }

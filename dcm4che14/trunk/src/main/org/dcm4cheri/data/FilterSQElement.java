@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,20 +21,52 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.media;
+package org.dcm4cheri.data;
 
-import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.VRs;
+import org.dcm4che.data.*;
+
+import java.util.*;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public interface DirBuilderPref {
+class FilterSQElement extends DcmElementImpl {
+    
+    private final SQElement sqElem;
+    private final Dataset filter;
+    private int totlen = -1;
 
-    public void setFilterForRecordType(String type, Dataset filter);
+    /** Creates a new instance of ElementImpl */
+    public FilterSQElement(SQElement sqElem, Dataset filter) {
+        super(sqElem.tag());
+        this.sqElem = sqElem;
+        this.filter = filter;
+    }
+    
+    public final int vr() {
+        return VRs.SQ;
+    }
 
-    public Dataset getFilterForRecordType(String type);
-
+    public final int vm() {
+        return sqElem.vm();
+    }
+    
+    public Dataset getDataset(int index) {
+        return new FilterDataset.Selection(sqElem.getDataset(index), filter);
+    }
+    
+    public int calcLength(DcmEncodeParam param) {
+        totlen = param.undefSeqLen ? 8 : 0;
+        for (int i = 0, n = vm(); i < n; ++i)
+            totlen += getDataset(i).calcLength(param) +
+                    (param.undefItemLen ? 16 : 8);
+        return totlen;
+    }
+    
+    public int length() {
+        return totlen;
+    }        
 }
-

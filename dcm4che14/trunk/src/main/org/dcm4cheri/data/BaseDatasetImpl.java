@@ -250,13 +250,22 @@ abstract class BaseDatasetImpl extends DcmObjectImpl
         writeDataset(xml, DcmDecodeParam.EVR_LE);
         xml.endDcmFile();
     }
-    
+/*    
     public Dataset newView(int[] inclTags) {
         return new DatasetView.Selection(this, inclTags);
     }
     
     public Dataset newView(int minTag, int maxTag, int[] exclTags) {
         return new DatasetView.Exclusion(this, minTag, maxTag, exclTags);
+    }
+*/
+
+    public Dataset subset(int fromTag, int toTag) {
+        return new FilterDataset.Segment(this, fromTag, toTag);
+    }
+    
+    public Dataset subset(Dataset filter) {
+        return new FilterDataset.Selection(this, filter);
     }
 
     protected Object writeReplace() throws java.io.ObjectStreamException {
