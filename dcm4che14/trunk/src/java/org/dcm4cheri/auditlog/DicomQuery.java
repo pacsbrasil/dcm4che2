@@ -26,6 +26,7 @@ import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.dcm4che.util.Base64;
 
 /**
  * <description>
