@@ -168,6 +168,15 @@ default-transform-type="xslt">
     	  <transform path="mcmc/mcm_console.xsl" />
 	    </view>
      </command>
+
+	<!-- ****** Modality Worklist Console (MWLConsole) related commands ******-->
+
+    <command name="mwl_console">
+        <controller class="org.dcm4chex.archive.web.maverick.mwl.MWLConsoleCtrl" />    
+	    <view name="success">
+    	  <transform path="mwlc/mwl_console.xsl" />
+	    </view>
+     </command>
      
   </commands>
 </maverick>

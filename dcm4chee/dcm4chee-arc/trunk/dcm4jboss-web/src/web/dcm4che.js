@@ -44,6 +44,12 @@ function checkError( errCode )
 		var msg = 'Error: ';
     	if ( errCode == 'moveError' ) 
     		msg = msg + 'Unexpected error during move operation!'
+    	else if ( errCode == 'parseError_date' ) 
+    		msg = msg + ' Wrong date format! Use yyyy/mm/dd.'
+    	else if ( errCode == 'parseError_time' ) 
+    		msg = msg + ' Wrong time format! Use hh:mm:ss.'
+    	else if ( errCode == 'parseError_datetime' ) 
+    		msg = msg + ' Wrong date/time format! Use yyyy/mm/dd hh:mm:ss.'
     	else if ( errCode == 'moveError_noSelection' ) 
     		msg = msg + ' Nothing selected! Please select a destination and one or more sources.'
     	else if ( errCode == 'moveError_toManyDest' ) 
@@ -72,6 +78,8 @@ function checkError( errCode )
     		msg = msg + 'Not allowed! You can only move instances from one series to another series.'
     	else if ( errCode == 'MEDIA_DELETE_FAILED' ) 
     		msg = msg + 'Delete media failed!'
+    	else if ( errCode == 'deleteError_mwlEntry' ) 
+    		msg = msg + 'Delete worklist entry failed!'
 		alert(msg);
 	}
 }

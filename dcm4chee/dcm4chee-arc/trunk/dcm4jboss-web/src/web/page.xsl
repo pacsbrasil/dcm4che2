@@ -13,6 +13,7 @@
     	<td width="100" align="center"><a href="default.jsp">Folder</a></td>
       <td width="120" align="center"><a href="ae.m">AE Management</a></td>
       <td width="120" align="center"><a href="mcm_console.m">Offline Storage</a></td>
+      <td width="120" align="center"><a href="mwl_console.m">Worklist Console</a></td>
       <td width="120" align="center"><a href="../dcm4jboss-arr">Audit Repository</a></td>
 			<td width="40%"></td>
 			  <xsl:apply-templates select="model"/>
