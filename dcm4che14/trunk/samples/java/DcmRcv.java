@@ -103,6 +103,7 @@ public class DcmRcv extends DcmServiceBase
     private File dir = null;
     private DcmRcvFSU fsu = null;
     private long rspDelay = 0L;
+    private int rspStatus = 0;
 
     // Static --------------------------------------------------------
     private final static LongOpt[] LONG_OPTS = new LongOpt[]{
@@ -115,6 +116,7 @@ public class DcmRcv extends DcmServiceBase
             new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("rsp-delay", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("rsp-status", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("set", LongOpt.REQUIRED_ARGUMENT, null, 's'),
             new LongOpt("fs-id", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -133,7 +135,7 @@ public class DcmRcv extends DcmServiceBase
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
             };
-
+    
 
     private static void set(Configuration cfg, String s)
     {
@@ -205,6 +207,10 @@ public class DcmRcv extends DcmServiceBase
     DcmRcv(Configuration cfg)
     {
         rspDelay = Integer.parseInt(cfg.getProperty("rsp-delay", "0")) * 1000L;
+        String decOrHex = cfg.getProperty("rsp-status", "0");        
+        rspStatus = decOrHex.endsWith("H") 
+        	? Integer.parseInt(decOrHex.substring(0, decOrHex.length()-1), 16)
+        	: Integer.parseInt(decOrHex);
         bufferSize = Integer.parseInt(
                 cfg.getProperty("buf-len", "2048")) & 0xfffffffe;
         initServer(cfg);
@@ -273,7 +279,7 @@ public class DcmRcv extends DcmServiceBase
                 ie.printStackTrace();
             }
         }
-        rspCmd.putUS(Tags.Status, Status.Success);
+        rspCmd.putUS(Tags.Status, rspStatus);
     }
 
 
