@@ -112,6 +112,10 @@ class MoveForwardCmd {
         } finally {
             try {
                 aa.release(true);
+                // workaround to ensure that the final MOVE-RSP of forwarded
+                // MOVE-RQ is processed before the final MOVE-RSP is sent
+                // to the primary Move Originator
+                Thread.sleep(10); 
             } catch (Exception ignore) {
             }
         }

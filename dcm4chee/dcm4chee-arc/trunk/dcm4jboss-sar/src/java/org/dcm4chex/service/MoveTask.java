@@ -155,7 +155,7 @@ class MoveTask implements Runnable {
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.retrieveAET = moveAssoc.getAssociation().getCalledAET();
         if ((remaining = fileInfo.length) > 0) {
-            notifyMovePending(null);
+//            notifyMovePending(null);
             prepareRetrieveInfo(fileInfo);
             if (!toRetrieve.isEmpty()) {
                 openAssociation();
@@ -315,6 +315,9 @@ class MoveTask implements Runnable {
         }
         try {
             storeAssoc.release(true);
+            // workaround to ensure that last STORE-RSP is processed before
+            // finally MOVE-RSP is sent
+            Thread.sleep(10); 
         } catch (Exception ignore) {
         }
         logInstancesSent();
