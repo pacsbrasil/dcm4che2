@@ -199,6 +199,7 @@ final class PDataTFImpl implements PDataTF {
       final int off;
       PDVImpl(int off) {
          this.off = off;
+         buf[off+5] &= 3;
       }
       
       final void pcid(int pcid) {
