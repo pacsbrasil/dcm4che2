@@ -19,7 +19,6 @@
  */
 package com.tiani.prnscp.scp;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -29,13 +28,11 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.net.PresContext;
 
 /**
  *  <description>

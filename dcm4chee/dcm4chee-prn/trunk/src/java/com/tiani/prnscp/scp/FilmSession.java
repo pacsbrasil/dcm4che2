@@ -20,13 +20,11 @@
 package com.tiani.prnscp.scp;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;

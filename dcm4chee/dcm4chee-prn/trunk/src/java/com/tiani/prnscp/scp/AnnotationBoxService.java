@@ -23,7 +23,6 @@ import java.io.IOException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;

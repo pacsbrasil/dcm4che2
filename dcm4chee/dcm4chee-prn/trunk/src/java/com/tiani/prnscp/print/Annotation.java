@@ -25,7 +25,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.io.BufferedInputStream;
 import java.io.File;

@@ -23,7 +23,6 @@ import javax.print.attribute.standard.Chromaticity;
 import org.apache.log4j.Category;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.apache.log4j.Category;
 
 /**
  *  <description>
