@@ -253,7 +253,7 @@
 						<xsl:if test="mediaStatus = 999 or mediaStatus = 0 or mediaStatus = 4"><!-- delete enabled if status is either open, completed or error! -->
 							<a href="mcm_console.m?action=delete&amp;mediaPk={mediaPk}">
 								<xsl:attribute name="onclick">return confirm('Delete media <xsl:value-of select="filesetID"/> ?')</xsl:attribute>
-								<img src="images/loeschen.gif" width="20" height="20" alt="Delete" border="0" title="Delete media"/>		
+								<img src="images/delete.gif" width="20" height="20" alt="Delete" border="0" title="Delete media"/>		
 							</a>
 			 			</xsl:if>
 			 		</td>
