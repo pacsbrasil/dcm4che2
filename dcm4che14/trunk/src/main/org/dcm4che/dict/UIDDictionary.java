@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
  */
 public interface UIDDictionary {
     
-    public static final class Entry {
+    static final class Entry {
         public final String uid;
         public final String name;
         public Entry(String uid, String name) {
@@ -44,18 +44,20 @@ public interface UIDDictionary {
             this.name = name;
         }
 	public String toString() {
-	    return uid + " - " + name;
+	    return name + "{" + uid + "}";
 	}
     }
     
-    public int size();
+    String toString(String uid);
     
-    public Entry lookup(String uid);
+    int size();
     
-    public void add(Entry entry);
+    Entry lookup(String uid);
     
-    public void load(InputSource xmlSource) throws IOException, SAXException;
+    void add(Entry entry);
     
-    public void load(File xmlFile) throws IOException, SAXException;
+    void load(InputSource xmlSource) throws IOException, SAXException;
+    
+    void load(File xmlFile) throws IOException, SAXException;
     
 }

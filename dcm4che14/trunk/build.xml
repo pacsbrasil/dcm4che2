@@ -366,8 +366,8 @@
     <jar jarfile="${build.jars}/demo/dcmdir.jar"
          manifest="${source.demo}/media/dcmdir.mf">
       <fileset dir="${source.demo}/media">
-        <include name="resources/*.xml"/>
         <include name="resources/DcmDir.xsl"/>
+        <include name="resources/DcmDir.properties"/>
       </fileset>
       <fileset dir="${build.classes}">
         <include name="DcmDir.class"/>
@@ -537,6 +537,9 @@
     </zip>
           
     <!-- Copy the needed third party libraries (lib) -->
+    <copy todir="${release.lib}" filtering="no"
+          file="${apache.log4j.lib}/log4j.jar" />
+
     <mkdir dir="${release.demo}"/>
     <copy todir="${release.demo}" filtering="no"
           file="${gnu.getopt.lib}/getopt.jar" />
@@ -550,6 +553,9 @@
          <include name="*.cfg"/>
          <include name="*.key"/>
          <include name="cacerts"/>
+      </fileset>
+      <fileset dir="${source.demo}/media">
+         <include name="*.cfg"/>
       </fileset>
     </copy>
 

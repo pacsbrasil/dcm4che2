@@ -167,7 +167,6 @@ class DcmHandlerAdapter implements org.dcm4che.data.DcmHandler {
         }
     }
     
-    static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");         
     public void fragment(int id, long pos, byte[] data, int start, int length)
             throws IOException {
         try {
@@ -177,8 +176,7 @@ class DcmHandlerAdapter implements org.dcm4che.data.DcmHandler {
             attrs.addAttribute("","len","len","", "" + length);
             attrs.addAttribute("","data","data","",
                     StringUtils.promptValue(vr,
-                    ByteBuffer.wrap(data, start, length).order(byteOrder),
-                    ISO_8859_1));
+                        ByteBuffer.wrap(data, start, length).order(byteOrder)));
             handler.startElement("","frag","frag",attrs);
             handler.endElement("","frag","frag");        
         } catch (SAXException se) {
@@ -216,8 +214,7 @@ class DcmHandlerAdapter implements org.dcm4che.data.DcmHandler {
             attrs.addAttribute("","len","len","","" + length);
             attrs.addAttribute("","data","data","",
                     StringUtils.promptValue(vr, ByteBuffer.wrap(data, start,
-                            length).order(byteOrder),
-                    ISO_8859_1));
+                            length).order(byteOrder)));
             handler.startElement("","val","val",attrs);
             handler.endElement("","val","val");        
         } catch (SAXException se) {

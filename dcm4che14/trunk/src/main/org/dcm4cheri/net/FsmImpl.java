@@ -46,9 +46,9 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.net.Socket;
+
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -192,7 +192,7 @@ final class FsmImpl {
          State prev = this.state;
          this.state = state;
          state.entry();
-         if (log.isLoggable(Level.INFO)) {
+         if (log.isInfoEnabled()) {
             log.info("" + this + ": " + state);
          }
       }
@@ -290,14 +290,14 @@ final class FsmImpl {
    }
    
    void fireReceived(Dimse dimse) {
-      if (log.isLoggable(Level.INFO)) {
+      if (log.isInfoEnabled()) {
          log.info("" + this + " >> " + dimse);
       }
       if (assocListener != null) assocListener.received(assoc, dimse);
    }
    
    void fireWrite(Dimse dimse) {
-      if (log.isLoggable(Level.INFO)) {
+      if (log.isInfoEnabled()) {
          log.info("" + this + " << " + dimse);
       }
       if (assocListener != null) assocListener.write(assoc, dimse);
@@ -305,11 +305,11 @@ final class FsmImpl {
    
    private void fireWrite(PDU pdu) {
       if (pdu instanceof PDataTF) {
-         if (log.isLoggable(Level.FINE)) {
-            log.fine("" + this + " << " + pdu);
+         if (log.isDebugEnabled()) {
+            log.debug("" + this + " << " + pdu);
          }
       } else {
-         if (log.isLoggable(Level.INFO)) {
+         if (log.isInfoEnabled()) {
             log.info("" + this + " << " + pdu);
          }
       }
@@ -318,11 +318,11 @@ final class FsmImpl {
    
    private PDU fireReceived(PDU pdu) {
       if (pdu instanceof PDataTF) {
-         if (log.isLoggable(Level.FINE)) {
-            log.fine("" + this + " >> " + pdu);
+         if (log.isDebugEnabled()) {
+            log.debug("" + this + " >> " + pdu);
          }
       } else {
-         if (log.isLoggable(Level.INFO)) {
+         if (log.isInfoEnabled()) {
             log.info("" + this + " >> " + pdu);
          }
       }
@@ -422,7 +422,7 @@ final class FsmImpl {
       void entry() {
          if (pool != null) pool.shutdown(); // stop reading
          if (assocListener != null) assocListener.close(assoc);
-         if (log.isLoggable(Level.INFO))
+         if (log.isInfoEnabled())
             log.info("" + this + ": Closing connection");
          try { in.close(); } catch (IOException ignore) {}
          try { out.close(); } catch (IOException ignore) {}

@@ -35,8 +35,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.GeneralSecurityException;
@@ -55,6 +53,8 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
+
+import org.apache.log4j.Logger;
 
 /**
  * <description>
@@ -199,7 +199,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
       if (startHandshake) {
          s.startHandshake();
       }
-      if (log.isLoggable(Level.INFO)) {
+      if (log.isInfoEnabled()) {
          log.info(toInfoMsg(s, true));
          log.info(toInfoMsg(s, false));
       }

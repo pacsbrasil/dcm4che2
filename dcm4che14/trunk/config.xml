@@ -53,6 +53,13 @@
   <!-- Library Setup                                                      -->
   <!-- ================================================================== -->
 
+  <!-- Log4j -->
+  <property name="apache.log4j.root" value="${thirdparty.root}/apache/log4j"/>
+  <property name="apache.log4j.lib" value="${apache.log4j.root}/lib"/>
+  <path id="apache.log4j.classpath">
+    <pathelement path="${apache.log4j.lib}/log4j.jar"/>
+  </path>
+
   <!-- Java GNU getopt 1.0.8 -->
   <property name="gnu.getopt.root" value="${thirdparty.root}/gnu/getopt"/>
   <property name="gnu.getopt.lib" value="${gnu.getopt.root}/lib"/>
@@ -69,6 +76,7 @@
 
   <!-- The combined library classpath -->
   <path id="library.classpath">
+    <path refid="apache.log4j.classpath"/>
     <path refid="gnu.getopt.classpath"/>
     <path refid="junit.junit.classpath"/>
   </path>

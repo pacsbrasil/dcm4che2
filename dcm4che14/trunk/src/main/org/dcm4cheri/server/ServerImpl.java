@@ -32,10 +32,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+
+import org.apache.log4j.Logger;
 
 /**
  * <description> 
@@ -91,7 +91,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
    
    public void start(int port, ServerSocketFactory ssf) throws IOException {
       checkNotRunning();
-      if (log.isLoggable(Level.INFO))
+      if (log.isInfoEnabled())
          log.info("Start Server listening at port " + port);
       ss = ssf.createServerSocket(port);
       new Thread(new Runnable() {
@@ -105,7 +105,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
       
       InetAddress ia = ss.getInetAddress();
       int port = ss.getLocalPort();
-      if (log.isLoggable(Level.INFO))
+      if (log.isInfoEnabled())
          log.info("Stop Server listening at port " + port);
       try {
          ss.close();
@@ -128,7 +128,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
       Socket s = null;
       try {
          s = ss.accept();
-         if (log.isLoggable(Level.INFO)) {
+         if (log.isInfoEnabled()) {
             log.info("Accept connection " + s);
          }
          if (s instanceof SSLSocket) {
@@ -162,7 +162,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
    private void prepare(SSLSocket ssl) throws IOException {
       if (startHandshake)
          ssl.startHandshake();
-      if (log.isLoggable(Level.INFO)) {
+      if (log.isInfoEnabled()) {
          log.info(SSLContextAdapterImpl.toInfoMsg(ssl, false));
          log.info(SSLContextAdapterImpl.toInfoMsg(ssl, true));
       }

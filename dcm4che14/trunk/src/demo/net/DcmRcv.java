@@ -96,18 +96,18 @@ public class DcmRcv extends DcmServiceBase {
       
    // Static --------------------------------------------------------
    private static final LongOpt[] LONG_OPTS = new LongOpt[] {
-      new LongOpt("called-aets", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("calling-aets", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("rsp-delay", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("called-aets", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("calling-aets", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("rsp-delay", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
       new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
    };
@@ -119,7 +119,7 @@ public class DcmRcv extends DcmServiceBase {
       int c;
       while ((c = g.getopt()) != -1) {
          switch (c) {
-            case 0:
+            case 2:
                cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
                break;
             case 'v':

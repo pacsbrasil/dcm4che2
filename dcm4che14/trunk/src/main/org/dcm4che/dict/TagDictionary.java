@@ -51,13 +51,15 @@ public interface TagDictionary {
         }
     }
     
-    public int size();
+    String toString(int tag);
+
+    int size();
     
-    public Entry lookup(int tag);
+    Entry lookup(int tag);
     
-    public void add(Entry entry);
+    void add(Entry entry);
     
-    public void load(InputSource xmlSource) throws IOException, SAXException;
+    void load(InputSource xmlSource) throws IOException, SAXException;
     
-    public void load(File xmlFile) throws IOException, SAXException;
+    void load(File xmlFile) throws IOException, SAXException;
 }

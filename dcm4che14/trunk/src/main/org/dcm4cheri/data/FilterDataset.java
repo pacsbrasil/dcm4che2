@@ -182,7 +182,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
                 return el;
             }
             if (!(filterEl instanceof SQElement)) {
-                log.warning("VR mismatch - dataset:" + el
+                log.warn("VR mismatch - dataset:" + el
                         + ", filter:" + filterEl);
                 return el;
             }

@@ -24,15 +24,15 @@
 
 package org.dcm4cheri.data;
 
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
-import org.dcm4che.data.*;
+import org.dcm4cheri.util.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.ArrayList;
 
-import org.dcm4cheri.util.StringUtils;
 
 /**
  *
@@ -109,7 +109,7 @@ abstract class FragmentElement extends DcmElementImpl {
 
         public void addDataFragment(ByteBuffer data) {
             if ((data.limit() & 3) != 0) {
-                log.warning("Ignore odd length fragment of "
+                log.warn("Ignore odd length fragment of "
                     + Tags.toString(tag) + " OF #" + data.limit());
                 data = null;
             }
@@ -135,7 +135,7 @@ abstract class FragmentElement extends DcmElementImpl {
 
         public void addDataFragment(ByteBuffer data) {
             if ((data.limit() & 1) != 0) {
-                log.warning("Ignore odd length fragment of "
+                log.warn("Ignore odd length fragment of "
                     + Tags.toString(tag) + " OW #" + data.limit());
                 data = null;
             }
@@ -162,5 +162,18 @@ abstract class FragmentElement extends DcmElementImpl {
 
     public static DcmElement createUN(int tag) {
         return new FragmentElement.UN(tag);
+    }
+
+    public String toString() {
+       StringBuffer sb = new StringBuffer(DICT.toString(tag));
+       sb.append(",").append(VRs.toString(vr()));
+       for (int i = 0, n = vm(); i < n; ++i) {
+           sb.append("\n  Frag-").append(i+1)
+             .append(",#").append(getDataFragmentLength(i)).append("[")
+             .append(StringUtils.promptValue(vr(), getDataFragment(i), 64))
+             .append("]");
+       }
+       sb.append("\n]");
+       return sb.toString();
     }
 }

@@ -33,6 +33,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.VRMap;
 
+import org.dcm4cheri.util.StringUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -42,14 +44,14 @@ import java.io.EOFException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+//import java.util.logging.Logger;
+//import java.util.logging.Level;
 import java.util.zip.InflaterInputStream;
 import javax.imageio.stream.ImageInputStream;
 
-import org.xml.sax.ContentHandler;
+import org.apache.log4j.Logger;
 
-import org.dcm4cheri.util.StringUtils;
+import org.xml.sax.ContentHandler;
 
 /**
  *
@@ -162,8 +164,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }    
 
     public final void setDcmDecodeParam(DcmDecodeParam param) {
-        if (log.isLoggable(Level.FINEST))
-            log.finest(param.toString());
+        if (log.isDebugEnabled())
+            log.debug(param.toString());
         if (param.deflated != decodeParam.deflated) {
             if (!param.deflated)
                 throw new UnsupportedOperationException(
@@ -195,8 +197,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             retval = detectFileFormat((ImageInputStream)in);
         else
             throw new UnsupportedOperationException("" + in);
-        if (log.isLoggable(Level.FINEST))
-            log.finest("detect " + retval);
+        if (log.isDebugEnabled())
+            log.debug("detect " + retval);
         return retval;
     }
     
@@ -328,7 +330,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             b12[0] = in.readByte();
         } catch (EOFException ex) {
             eof = true;
-            log.finest("Detect EOF");
+            log.debug("Detect EOF");
             return -1;
         }
         in.readFully(b12, 1, 7);
@@ -360,13 +362,13 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         }
         if (unBuf != null)
             unBuf.write(b12, 0, retval);
-        if (log.isLoggable(Level.FINEST))
-            log.finest(logMsg());
+        if (log.isDebugEnabled())
+            log.debug(logMsg());
         return retval;
     }
 
     private byte[] parsePreamble() throws IOException {
-        log.finest("rPos:" + rPos);
+        log.debug("rPos:" + rPos);
 
         byte[] b128 = new byte[128];        
         in.readFully(b128,0,128);
@@ -410,8 +412,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     private long parseGroup(int groupTag) throws IOException {
-        if (log.isLoggable(Level.FINEST)) {
-            log.finest("parse group " + groupTag);
+        if (log.isDebugEnabled()) {
+            log.debug("parse group " + groupTag);
         }
         if (handler != null)
             handler.setDcmDecodeParam(decodeParam);
@@ -465,7 +467,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
            tsUID = null;
            parseFileMetaInfo(format.hasPreamble, format.decodeParam);
            if (tsUID == null)
-               log.warning("Missing Transfer Syntax UID in FMI");
+               log.warn("Missing Transfer Syntax UID in FMI");
            else
                param = DcmDecodeParam.valueOf(tsUID);
        }
@@ -491,8 +493,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         if (itemtag != ITEM_TAG) {
             throw new DcmParseException(Tags.toString(itemtag));
         }
-        if (log.isLoggable(Level.FINEST)) {
-            log.finest("rpos:" + (rPos-8) + ",(fffe,e0dd)");
+        if (log.isDebugEnabled()) {
+            log.debug("rpos:" + (rPos-8) + ",(fffe,e0dd)");
         }
         if (handler != null) {
             handler.startDataset();
@@ -511,8 +513,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
     
     private long doParse(int stopTag, int length) throws IOException {
-        if (log.isLoggable(Level.FINEST)) {
-            log.finest("rpos:" + rPos
+        if (log.isDebugEnabled()) {
+            log.debug("rpos:" + rPos
                     + ",stopTag:" + Tags.toString(stopTag)
                     + ",length:" + length);
         }
@@ -559,8 +561,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     private long parseSequence(int vr, int sqLen) throws IOException {
-        if (log.isLoggable(Level.FINEST)) {
-            log.finest("rPos:" + rPos + "," + VRs.toString(vr)
+        if (log.isDebugEnabled()) {
+            log.debug("rPos:" + rPos + "," + VRs.toString(vr)
                     + " #" + sqLen);
         }
         if (handler != null && unBuf == null)
@@ -603,8 +605,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
             
     private long parseItem(int id, int vr, int itemlen) throws IOException {
-        if (log.isLoggable(Level.FINEST)) {
-            log.finest("rPos:" + rPos + "," + VRs.toString(vr)
+        if (log.isDebugEnabled()) {
+            log.debug("rPos:" + rPos + "," + VRs.toString(vr)
                     + " #" + itemlen);
         }
         switch (vr) {
@@ -674,15 +676,14 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     
     private String decodeUID(byte[] data, int rlen1) {
         if (rlen1 < 0) {
-            log.warning("Empty Transfer Syntax UID in FMI");
+            log.warn("Empty Transfer Syntax UID in FMI");
             return "";
         }
         try {
             return new String(data, 0, data[rlen1] == 0 ? rlen1 : rlen1+1,
                         "US-ASCII");
         } catch (UnsupportedEncodingException ex) {
-            log.log(Level.WARNING,
-                    "Decoding Transfer Syntax UID in FMI failed!", ex);
+            log.warn("Decoding Transfer Syntax UID in FMI failed!", ex);
             return null;
         }
     }

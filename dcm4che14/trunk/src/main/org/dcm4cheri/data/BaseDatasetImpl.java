@@ -70,6 +70,10 @@ abstract class BaseDatasetImpl extends DcmObjectImpl
         return fmi;
     }
 
+    public String toString() {
+        return "[" + size() + " elements]";
+    }
+    
     private int[] ensureCapacity(int[] old, int n) {
         if (n <= old.length) {
             return old;

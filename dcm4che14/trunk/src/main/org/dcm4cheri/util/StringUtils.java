@@ -43,58 +43,92 @@ public class StringUtils {
     }
     
     public static StringBuffer promptBytes(StringBuffer sb, byte[] data,
-            int start, int length) {
+            int start, int length, int maxlen) {
         if (length == 0)
             return sb;
         Tags.toHexString(sb, data[start] & 0xff, 2);
-        for (int i = start+1, remain = length; --remain > 0; ++i)
+        for (int i = start+1, remain = Math.min(length, (maxlen-2)/3);
+               --remain > 0; ++i)
             Tags.toHexString(sb.append('\\'), data[i] & 0xff, 2);
+        
+        // if limited by maxlen
+        if (sb.length() < 3 * length - 1) {
+           sb.setLength(maxlen-2);
+           sb.append("..");
+        }
         return sb;
     }
 
-    public static String promptBytes(byte[] data, int start, int length) {
+    public static String promptBytes(byte[] data, int start, int length,
+         int maxlen)
+    {
         if (length == 0)
             return "";
-        return promptBytes(new StringBuffer(length * 3 - 1), data, start,
-                length).toString();
+        return promptBytes(new StringBuffer(Math.min(maxlen, length * 3 - 1)),
+               data, start, length, maxlen).toString();
     }
 
+    public static String promptBytes(byte[] data, int start, int length)
+    {
+       return promptBytes(data, start, length, Integer.MAX_VALUE);
+    }
+    
+    public static String truncate(String val, int maxlen) {
+       return val.length() > maxlen ? (val.substring(0, maxlen-2) + "..") : val;
+    }
+    
+    static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");         
+    public static String promptValue(int vr, ByteBuffer bb) {
+       return promptValue(vr, bb, ISO_8859_1, Integer.MAX_VALUE);
+    }
+    
     public static String promptValue(int vr, ByteBuffer bb, Charset cs) {
+       return promptValue(vr, bb, cs, Integer.MAX_VALUE);
+    }
+    
+    public static String promptValue(int vr, ByteBuffer bb, int maxlen) {
+       return promptValue(vr, bb, ISO_8859_1, maxlen);
+    }
+    
+    public static String promptValue(int vr, ByteBuffer bb, Charset cs,
+         int maxlen)
+    {
         if (bb.limit() == 0)
             return "";
         
         if (VRs.isStringValue(vr)) {
             if (bb.get(bb.limit()-1) == 0)
                 bb.limit(bb.limit()-1);
-            return cs.decode(bb).toString();
+            return truncate(cs.decode(bb).toString(), maxlen);
         }
         
         switch (vr) {
             case VRs.AT:
-                return promptAT(bb);
+                return promptAT(bb, maxlen);
             case VRs.FD:
-                return promptFD(bb);
+                return promptFD(bb, maxlen);
             case VRs.FL:
-                return promptFL(bb);
+                return promptFL(bb, maxlen);
             case VRs.OB: case VRs.UN:
-                return promptBytes(bb.array(), bb.arrayOffset(), bb.limit());
+                return promptBytes(
+                     bb.array(), bb.arrayOffset(), bb.limit(), maxlen);
             case VRs.OF:
-                return promptOF(bb);
+                return promptOF(bb, maxlen);
             case VRs.OW:
-                return promptOW(bb);
+                return promptOW(bb, maxlen);
             case VRs.SL:
-                return promptSL(bb);
+                return promptSL(bb, maxlen);
             case VRs.SS:
-                return promptSS(bb);
+                return promptSS(bb, maxlen);
             case VRs.UL:
-                return promptUL(bb);
+                return promptUL(bb, maxlen);
             case VRs.US:
-                return promptUS(bb);
+                return promptUS(bb, maxlen);
         }
         throw new IllegalArgumentException("VR:" + VRs.toString(vr));
     }
 
-    public static String promptAT(ByteBuffer bb) {
+    public static String promptAT(ByteBuffer bb, int maxlen) {
         int l = bb.limit() / 4 * 9 - 1;
         if (l < 0)
             return "";
@@ -103,44 +137,44 @@ public class StringUtils {
         bb.rewind();
         Tags.toHexString(sb, bb.getShort() & 0xffff, 4);
         Tags.toHexString(sb, bb.getShort() & 0xffff, 4);
-        while (bb.remaining() >= 4) {
+        while (bb.remaining() >= 4 && sb.length() < maxlen) {
             Tags.toHexString(sb.append('\\'), bb.getShort() & 0xffff, 4);
             Tags.toHexString(sb, bb.getShort() & 0xffff, 4);
         }                
-        return sb.toString();        
+        return truncate(sb.toString(), maxlen);        
     }
     
-    public static String promptFD(ByteBuffer bb) {
+    public static String promptFD(ByteBuffer bb, int maxlen) {
         if (bb.limit() < 8)
             return "";
 
         StringBuffer sb = new StringBuffer(bb.limit());
         bb.rewind();
         sb.append(bb.getDouble());
-        while (bb.remaining() >= 8)
+        while (bb.remaining() >= 8 && sb.length() < maxlen)
             sb.append('\\').append(bb.getDouble());
 
-        return sb.toString();        
+        return truncate(sb.toString(), maxlen);        
     }
     
-    public static String promptFL(ByteBuffer bb) {
+    public static String promptFL(ByteBuffer bb, int maxlen) {
         if (bb.limit() < 4)
             return "";
 
         StringBuffer sb = new StringBuffer(bb.limit());
         bb.rewind();
         sb.append(bb.getFloat());
-        while (bb.remaining() >= 4)
+        while (bb.remaining() >= 4 && sb.length() < maxlen)
             sb.append('\\').append(bb.getFloat());
 
-        return sb.toString();        
+        return truncate(sb.toString(), maxlen);        
     }
 
-    public static String promptOF(ByteBuffer bb) {
-        return promptFL(bb);
+    public static String promptOF(ByteBuffer bb, int maxlen) {
+        return promptFL(bb, maxlen);
     }
     
-    public static String promptOW(ByteBuffer bb) {
+    public static String promptOW(ByteBuffer bb, int maxlen) {
         int l = bb.limit() / 2 * 5 - 1;
         if (l < 0)
             return "";
@@ -148,62 +182,62 @@ public class StringUtils {
         StringBuffer sb = new StringBuffer(l);
         bb.rewind();
         Tags.toHexString(sb, bb.getShort() & 0xffff, 4);
-        while (bb.remaining() >= 2)
+        while (bb.remaining() >= 2 && sb.length() < maxlen)
             Tags.toHexString(sb.append('\\'), bb.getShort() & 0xffff, 4);
                 
-        return sb.toString();        
+        return truncate(sb.toString(), maxlen);        
     }
 
-    public static String promptSL(ByteBuffer bb) {
+    public static String promptSL(ByteBuffer bb, int maxlen) {
         if (bb.limit() < 4)
             return "";
 
         StringBuffer sb = new StringBuffer(bb.limit());
         bb.rewind();
         sb.append(bb.getInt());
-        while (bb.remaining() >= 4)
+        while (bb.remaining() >= 4 && sb.length() < maxlen)
             sb.append('\\').append(bb.getInt());
 
-        return sb.toString();        
+        return truncate(sb.toString(), maxlen);        
     }
     
-    public static String promptSS(ByteBuffer bb) {
+    public static String promptSS(ByteBuffer bb, int maxlen) {
         if (bb.limit() < 2)
             return "";
 
         StringBuffer sb = new StringBuffer(bb.limit());
         bb.rewind();
         sb.append(bb.getShort());
-        while (bb.remaining() >= 2)
+        while (bb.remaining() >= 2 && sb.length() < maxlen)
             sb.append('\\').append(bb.getShort());
 
-        return sb.toString();        
+        return truncate(sb.toString(), maxlen);        
     }
     
-    public static String promptUL(ByteBuffer bb) {
+    public static String promptUL(ByteBuffer bb, int maxlen) {
         if (bb.limit() < 4)
             return "";
 
         StringBuffer sb = new StringBuffer(bb.limit());
         bb.rewind();
         sb.append(bb.getInt() & 0xffffffffL);
-        while (bb.remaining() >= 4)
+        while (bb.remaining() >= 4 && sb.length() < maxlen)
             sb.append('\\').append(bb.getInt() & 0xffffffffL);
 
-        return sb.toString();        
+        return truncate(sb.toString(), maxlen);        
     }
     
-    public static String promptUS(ByteBuffer bb) {
+    public static String promptUS(ByteBuffer bb, int maxlen) {
         if (bb.limit() < 2)
             return "";
 
         StringBuffer sb = new StringBuffer(bb.limit());
         bb.rewind();
         sb.append(bb.getShort() & 0xffff);
-        while (bb.remaining() >= 2)
+        while (bb.remaining() >= 2 && sb.length() < maxlen)
             sb.append('\\').append(bb.getShort() & 0xffff);
 
-        return sb.toString();        
+        return truncate(sb.toString(), maxlen);        
     }
 
     static final byte[] b0 = {};

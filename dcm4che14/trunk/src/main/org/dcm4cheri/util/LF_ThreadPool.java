@@ -22,9 +22,7 @@
 
 package org.dcm4cheri.util;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
+import org.apache.log4j.Logger;
 
 /**
  * Leader/Follower Thread Pool 
@@ -113,8 +111,8 @@ public class LF_ThreadPool
          {
             while (leader != null)
             {
-               if (log.isLoggable(Level.FINER))
-                  log.finer("" + this + " - "
+               if (log.isDebugEnabled())
+                  log.debug("" + this + " - "
                      + Thread.currentThread().getName() + " enter wait()");
                ++waiting;
                try { mutex.wait(); }
@@ -123,16 +121,16 @@ public class LF_ThreadPool
                   ie.printStackTrace();
                }
                finally { --waiting; }
-               if (log.isLoggable(Level.FINER))
-                  log.finer("" + this + " - "
+               if (log.isDebugEnabled())
+                  log.debug("" + this + " - "
                      + Thread.currentThread().getName() + " awaked");
             }
             if (shutdown)
                return;
 
             leader = Thread.currentThread();
-            if (log.isLoggable(Level.FINER))
-               log.finer("" + this + " - New Leader"); 
+            if (log.isDebugEnabled())
+               log.debug("" + this + " - New Leader"); 
          }
          ++running;
          try {  
@@ -158,8 +156,8 @@ public class LF_ThreadPool
       synchronized (mutex) {
          if (waiting > 0)
          {
-            if (log.isLoggable(Level.FINER))
-               log.finer("" + this + " - promote new leader by notify"); 
+            if (log.isDebugEnabled())
+               log.debug("" + this + " - promote new leader by notify"); 
             mutex.notify();
             return true;
          }
@@ -168,14 +166,14 @@ public class LF_ThreadPool
       // if there is no waiting thread,
       // and the maximum number of running threads is not yet reached,
       if (running >= maxRunning) {
-         if (log.isLoggable(Level.FINER))
-            log.finer("" + this + " - Max number of threads reached"); 
+         if (log.isDebugEnabled())
+            log.debug("" + this + " - Max number of threads reached"); 
          return false;
       }
       
       // start a new one
-      if (log.isLoggable(Level.FINER))
-         log.finer("" + this + " - promote new leader by add new Thread");
+      if (log.isDebugEnabled())
+         log.debug("" + this + " - promote new leader by add new Thread");
       addThread(
          new Runnable() {
             public void run() { join(); }
@@ -186,8 +184,8 @@ public class LF_ThreadPool
    }
    
    public void shutdown() {
-      if (log.isLoggable(Level.FINER))
-         log.finer("" + this + " - shutdown"); 
+      if (log.isDebugEnabled())
+         log.debug("" + this + " - shutdown"); 
       shutdown = true;
       leader = null;
       synchronized (mutex)

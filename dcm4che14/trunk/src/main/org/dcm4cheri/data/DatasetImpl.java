@@ -62,10 +62,6 @@ final class DatasetImpl extends BaseDatasetImpl
         this.parent = parent;
     }
     
-    public String toString() {
-        return "Dataset[" + size() + " elements]";
-    }
-    
     public Charset getCharset() {
         return charset != null ? charset
                 : parent != null ? parent.getCharset() : null;
@@ -100,7 +96,7 @@ final class DatasetImpl extends BaseDatasetImpl
             try {
                 this.charset = Charsets.lookup(newElem.getStrings(null));
             } catch (Exception ex) {
-                log.log(Level.WARNING, "Failed to consider specified Charset!", ex);
+                log.warn("Failed to consider specified Charset!", ex);
                 this.charset = null;
             }
         }

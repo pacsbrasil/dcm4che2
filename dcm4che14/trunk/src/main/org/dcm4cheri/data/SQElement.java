@@ -75,4 +75,14 @@ class SQElement extends DcmElementImpl {
     public int length() {
         return totlen;
     }        
+
+    public String toString() {
+       StringBuffer sb = new StringBuffer(DICT.toString(tag));
+       sb.append(",SQ,[");
+       for (int i = 0, n = vm(); i < n; ++i) {
+           sb.append("\n  Item-").append(i+1).append(getDataset(i));
+       }
+       sb.append("\n]");
+       return sb.toString();
+    }
 }

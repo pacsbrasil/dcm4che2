@@ -26,18 +26,20 @@ package org.dcm4cheri.data;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4cheri.util.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
 import java.util.Date;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
-import org.dcm4cheri.util.StringUtils;
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -46,6 +48,8 @@ import org.dcm4cheri.util.StringUtils;
 class DcmElementImpl implements DcmElement {
     static final String CLASSNAME = "org.dcm4cheri.data.DcmElementImpl";
     static final Logger log = Logger.getLogger(CLASSNAME);
+    static final TagDictionary DICT = 
+            DictionaryFactory.getInstance().getDefaultTagDictionary();
 
     static final byte[] BYTE0 = {};
     static final ByteBuffer EMPTY_VALUE =
@@ -98,12 +102,13 @@ class DcmElementImpl implements DcmElement {
     }
         
     public String toString() {
-        return toString(tag, vr(), vm(), length());
+        return toString(tag, vr(), vm(), length(),
+            StringUtils.promptValue(vr(), getByteBuffer(), 64));
     }
     
-    static String toString(int tag, int vr, int vm, int len) {
-        return Tags.toString(tag) + " " + VRs.toString(vr)
-                + " *" + vm + " #" + len;
+    static String toString(int tag, int vr, int vm, int len, String val) {
+        return DICT.toString(tag) + "," + VRs.toString(vr)
+                + "," + vm + ",#" + len + ",[\n" + val + "\n]" ;
     }
         
     public ByteBuffer getByteBuffer() {

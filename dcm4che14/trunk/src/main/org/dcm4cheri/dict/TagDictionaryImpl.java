@@ -24,6 +24,7 @@
 package org.dcm4cheri.dict;
 
 import org.dcm4che.dict.TagDictionary;
+import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.IntHashtable2;
 
 import java.io.File;
@@ -63,6 +64,13 @@ public class TagDictionaryImpl implements org.dcm4che.dict.TagDictionary,
         }
         return null;
     }
+
+    public String toString(int tag) {
+       Entry e = lookup(tag);
+       return e != null
+            ? Tags.toString(new StringBuffer(e.name), tag).toString()
+            : Tags.toString(tag);
+    }    
     
     /** Adds record to dictionary
      * @param entry dictionary record

@@ -33,16 +33,19 @@ import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 
-import org.xml.sax.helpers.DefaultHandler;
+import org.dcm4cheri.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.*;
-import java.util.logging.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
 
-import org.dcm4cheri.util.StringUtils;
+import org.xml.sax.helpers.DefaultHandler;
+import org.apache.log4j.Logger;
 
 abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
     private static final String CLASSNAME = "org.dcm4cheri.data.DcmObjectImpl";
@@ -747,6 +750,68 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         }
     }
 
+    public DcmElement setXX(int tag, int vr) {
+        switch (vr) {
+            case VRs.AE:
+                return set(StringElement.createAE(tag));
+            case VRs.AS:
+                return set(StringElement.createAS(tag));
+            case VRs.AT:
+                return set(ValueElement.createAT(tag));
+            case VRs.CS:
+                return set(StringElement.createCS(tag));
+            case VRs.DA:
+                return set(StringElement.createDA(tag));
+            case VRs.DS:
+                return set(StringElement.createDS(tag));
+            case VRs.DT:
+                return set(StringElement.createDT(tag));
+            case VRs.FL:
+                return set(ValueElement.createFL(tag));
+            case VRs.FD:
+                return set(ValueElement.createFD(tag));
+            case VRs.IS:
+                return set(StringElement.createIS(tag));
+            case VRs.LO:
+                return set(StringElement.createLO(tag));
+            case VRs.LT:
+                return set(StringElement.createLT(tag));
+            case VRs.OB:
+                return set(ValueElement.createOB(tag));
+            case VRs.OF:
+                return set(ValueElement.createOF(tag));
+            case VRs.OW:
+                return set(ValueElement.createOW(tag));
+            case VRs.PN:
+                return set(StringElement.createPN(tag));
+            case VRs.SH:
+                return set(StringElement.createSH(tag));
+            case VRs.SL:
+                return set(ValueElement.createSL(tag));
+            case VRs.SQ:
+                return ((Dataset)this).setSQ(tag);
+            case VRs.SS:
+                return set(ValueElement.createSS(tag));
+            case VRs.ST:
+                return set(StringElement.createST(tag));
+            case VRs.TM:
+                return set(StringElement.createTM(tag));
+            case VRs.UI:
+                return set(StringElement.createUI(tag));
+            case VRs.UN:
+                return set(ValueElement.createUN(tag));
+            case VRs.UL:
+                return set(ValueElement.createUL(tag));
+            case VRs.US:
+                return set(ValueElement.createUS(tag));
+            case VRs.UT:
+                return set(StringElement.createUT(tag));
+            default:
+                throw new IllegalArgumentException(Tags.toString(tag)
+                                    + " " + VRs.toString(vr));
+        }
+    }
+    
     public DcmElement setXX(int tag, int vr, ByteBuffer value) {
         switch (vr) {
             case VRs.AE:

@@ -24,15 +24,15 @@
 
 package org.dcm4cheri.data;
 
-import org.dcm4che.data.*;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4cheri.util.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
-
-import org.dcm4cheri.util.StringUtils;
 
 /**
  *
@@ -127,7 +127,7 @@ abstract class ValueElement extends DcmElementImpl {
     }
     static DcmElement createSS(int tag, ByteBuffer data) {
         if ((data.limit() & 1) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " SS #" + data.limit());
             return new SS(tag, EMPTY_VALUE);
         }
@@ -168,7 +168,7 @@ abstract class ValueElement extends DcmElementImpl {
     }
     static DcmElement createUS(int tag, ByteBuffer data) {
         if ((data.limit() & 1) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " US #" + data.limit());
             return new US(tag, EMPTY_VALUE);
         }
@@ -239,7 +239,7 @@ abstract class ValueElement extends DcmElementImpl {
     }
     static DcmElement createSL(int tag, ByteBuffer data) {
         if ((data.limit() & 3) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " SL #" + data.limit());
             return new SL(tag, EMPTY_VALUE);
         }
@@ -280,7 +280,7 @@ abstract class ValueElement extends DcmElementImpl {
     
     static DcmElement createUL(int tag, ByteBuffer data) {
         if ((data.limit() & 3) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " UL #" + data.limit());
             return new UL(tag, EMPTY_VALUE);
         }
@@ -347,7 +347,7 @@ abstract class ValueElement extends DcmElementImpl {
     }
     static DcmElement createAT(int tag, ByteBuffer data) {
         if ((data.limit() & 3) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " AT #" + data.limit());
             return new AT(tag, EMPTY_VALUE);
         }
@@ -428,7 +428,7 @@ abstract class ValueElement extends DcmElementImpl {
 
     static DcmElement createFL(int tag, ByteBuffer data) {
         if ((data.limit() & 3) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " FL #" + data.limit());
             return new FL(tag, EMPTY_VALUE);
         }
@@ -508,7 +508,7 @@ abstract class ValueElement extends DcmElementImpl {
     }
     static DcmElement createFD(int tag, ByteBuffer data) {
         if ((data.limit() & 7) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " FD #" + data.limit());
             return new FD(tag, EMPTY_VALUE);
         }
@@ -561,7 +561,7 @@ abstract class ValueElement extends DcmElementImpl {
 
     static DcmElement createOF(int tag, ByteBuffer data) {
         if ((data.limit() & 3) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " OW #" + data.limit());
             return new OF(tag, EMPTY_VALUE);
         }
@@ -603,7 +603,7 @@ abstract class ValueElement extends DcmElementImpl {
 
     static DcmElement createOW(int tag, ByteBuffer data) {
         if ((data.limit() & 1) != 0) {
-            log.warning("Ignore illegal value of " + Tags.toString(tag)
+            log.warn("Ignore illegal value of " + Tags.toString(tag)
                 + " OW #" + data.limit());
             return new OW(tag, EMPTY_VALUE);
         }

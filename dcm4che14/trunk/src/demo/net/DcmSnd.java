@@ -110,16 +110,16 @@ public class DcmSnd {
    private static final LongOpt[] LONG_OPTS = new LongOpt[] {
       new LongOpt("prior-high", LongOpt.NO_ARGUMENT, null, 'P'),
       new LongOpt("prior-low", LongOpt.NO_ARGUMENT, null, 'p'),
-      new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("repeat-dimse", LongOpt.REQUIRED_ARGUMENT, null, 0),
-      new LongOpt("repeat-assoc", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("repeat-dimse", LongOpt.REQUIRED_ARGUMENT, null, 2),
+      new LongOpt("repeat-assoc", LongOpt.REQUIRED_ARGUMENT, null, 2),
       new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
       new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
    };
@@ -131,7 +131,7 @@ public class DcmSnd {
       int c;
       while ((c = g.getopt()) != -1) {
          switch (c) {
-            case 0:
+            case 2:
                cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
                break;
             case 'P':

@@ -318,6 +318,8 @@ public interface DcmObject {
     
     public DcmElement setUT(int tag, String[] values);
 
+    public DcmElement setXX(int tag, int vr);
+
     public DcmElement setXX(int tag, int vr, ByteBuffer bytes);
     
     public DcmElement setXXsq(int tag, int vr);
