@@ -111,4 +111,7 @@ public interface Association {
     
     AAbort getAAbort();
     
+    String getCallingAET();
+
+    String getCalledAET();    
 }
