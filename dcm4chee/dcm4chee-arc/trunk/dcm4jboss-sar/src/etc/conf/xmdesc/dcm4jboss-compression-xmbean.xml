@@ -42,11 +42,13 @@
       <description>List of AETs with max age of image before delayed compression should be performed.
       	Format: [aet={AET list}/{age}]{type}
       	{AET list}: AET seperated with '|'. e.g. AET1|AET2
+      	{age}: min age of uncompressed file. (##d (in days), ##h (in hours) )
+      	{type}:Compression type: JPEG_LL, JPEG_LSLL or JPEG2000_LL
       </description>
       <name>CompressAfter</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[aet=PACS_TIANI/10d]JPEG_LS" />
+         <value value="[aet=PACS_TIANI/10d]JPEG_LL" />
       </descriptors>
    </attribute>
 
@@ -62,8 +64,37 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write"
+      getMethod="isCheckCompression"
+      setMethod="setCheckCompression">
+      <description>Enables/Disables checking of compressed file.
+      </description>
+      <name>CheckCompression</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getMaxConcurrentCodec"
+      setMethod="setMaxConcurrentCodec">
+      <description>Maximal number of concurrent compression/decompression of images.
+      </description>
+      <name>MaxConcurrentCodec</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Start delayed compression.</description>
+      <name>startDelayedCompression</name>
+      <return-type>void</return-type>
+   </operation>
   
 </mbean>
     
