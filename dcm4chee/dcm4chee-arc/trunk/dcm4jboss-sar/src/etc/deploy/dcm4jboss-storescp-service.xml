@@ -26,6 +26,8 @@
     <attribute name="EjbHostName">localhost</attribute>
     -->
 
+    <attribute name="RetrieveAETs">QR_SCP</attribute>
+
     <attribute name="BaseDir">/var/local/dcm4jboss</attribute>
 
     <attribute name="CallingAETs">--ANY--</attribute>

@@ -26,8 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
@@ -60,7 +58,6 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.service.util.ConfigurationException;
 import org.jboss.logging.Logger;
 
 /**
@@ -89,27 +86,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
     private final Logger log;
     private String ejbHostName;
     private String basedir;
-    private String hostname;
+    private String retrieveAETs;
 
     public StoreScp(StoreScpService scp)
     {
         this.scp = scp;
         this.log = scp.getLog();
-        this.hostname = getHostName();
-    }
-
-    private String getHostName()
-    {
-        try
-        {
-            String dn = InetAddress.getLocalHost().getCanonicalHostName();
-            int point = dn.indexOf('.');
-            return point != -1 ? dn.substring(0, point) : dn;
-        } catch (UnknownHostException e)
-        {
-            throw new ConfigurationException(e);
-        }
-    }
+     }
 
     public String getEjbHostName()
     {
@@ -120,6 +103,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
     {
         this.ejbHostName = ejbHostName;
     }
+
+	public final String getRetrieveAETs()
+	{
+		return retrieveAETs;
+	}
+
+	public final void setRetrieveAETs(String retrieveAETs)
+	{
+		this.retrieveAETs = retrieveAETs;
+	}
 
     public String getBaseDir()
     {
@@ -178,7 +171,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
             storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
             storage.store(
                 ds,
-                hostname,
+                retrieveAETs,
                 basedir,
                 toFileIds(file),
                 (int) file.length(),
@@ -436,4 +429,5 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
         }
         return suids;
     }
+    
 }
