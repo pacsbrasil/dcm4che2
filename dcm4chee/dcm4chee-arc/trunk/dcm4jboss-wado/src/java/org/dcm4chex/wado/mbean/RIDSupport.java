@@ -69,7 +69,12 @@ import org.xml.sax.SAXException;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class RIDSupport {
-
+	private static final String SUMMARY = "SUMMARY";
+	private static final String SUMMARY_RADIOLOGY = "SUMMARY-RADIOLOGY";
+	private static final String SUMMARY_CARDIOLOGY = "SUMMARY-CARDIOLOGY";
+	private static final String SUMMARY_CARDIOLOGY_ECG = "SUMMARY-CARDIOLOGY-ECG";
+	
+	private static final String CONTENT_TYPE_XHTML = "text/xhtml";
 	public static final String CONTENT_TYPE_XML = "text/xml";
 	public static final String CONTENT_TYPE_HTML = "text/html";
 	public static final String CONTENT_TYPE_JPEG = "image/jpeg";
@@ -152,30 +157,26 @@ public class RIDSupport {
 		if ( cardiologyConceptNameCodes == null ) {
 			cardiologyConceptNameCodes = new ArrayList();
 			cardiologyConceptNameCodes.add( createCodeDS( "18745-0" ) );//Cardiac Catheteization Report
-			cardiologyConceptNameCodes.add( createCodeDS( "11540-2" ) );
-			cardiologyConceptNameCodes.add( createCodeDS( "11538-6" ) );
-			cardiologyConceptNameCodes.add( createCodeDS( "11539-4" ) );
+			cardiologyConceptNameCodes.add( createCodeDS( "11522-0" ) );//Echocardiography Report
 		}
 		return cardiologyConceptNameCodes;
 	}
 	private static List getRadiologyConceptNameCodes() {
 		if ( radiologyConceptNameCodes == null ) {
 			radiologyConceptNameCodes = new ArrayList();
-			radiologyConceptNameCodes.add( createCodeDS( "18745-0" ) );//Cardiac Catheteization Report
-			radiologyConceptNameCodes.add( createCodeDS( "11540-2" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "11538-6" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "11539-4" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "11540-2" ) );//CT Abdomen Report
+			radiologyConceptNameCodes.add( createCodeDS( "11538-6" ) );//CT Chest Report
+			radiologyConceptNameCodes.add( createCodeDS( "11539-4" ) );//CT Head Report
 			radiologyConceptNameCodes.add( createCodeDS( "18747-6" ) );//CT Report
-			radiologyConceptNameCodes.add( createCodeDS( "18748-4" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "11522-0" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "18760-9" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "11541-0" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "18755-9" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "18756-7" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "18757-5" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "11525-3" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "18758-3" ) );
-			radiologyConceptNameCodes.add( createCodeDS( "11528-7" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "18748-4" ) );//Diagnostic Imaging Report
+			radiologyConceptNameCodes.add( createCodeDS( "18760-9" ) );//Ultrasound Report
+			radiologyConceptNameCodes.add( createCodeDS( "11541-0" ) );//MRI Head Report
+			radiologyConceptNameCodes.add( createCodeDS( "18755-9" ) );//MRI Report
+			radiologyConceptNameCodes.add( createCodeDS( "18756-7" ) );//MRI Spine Report
+			radiologyConceptNameCodes.add( createCodeDS( "18757-5" ) );//Nuclear Medicine Report
+			radiologyConceptNameCodes.add( createCodeDS( "11525-3" ) );//Ultrasound Obstetric and Gyn Report
+			radiologyConceptNameCodes.add( createCodeDS( "18758-3" ) );//PET Scan Report
+			radiologyConceptNameCodes.add( createCodeDS( "11528-7" ) );//Radiology Report
 		}
 		return radiologyConceptNameCodes;
 	}
@@ -251,14 +252,14 @@ public class RIDSupport {
 	 * @throws TransformerConfigurationException
 	 */
 	public RIDResponseObject getRIDSummary(RIDRequestObject reqObj) throws SQLException, IOException, TransformerConfigurationException, SAXException {
-		String contentType = checkContentType( reqObj, new String[]{CONTENT_TYPE_XML,CONTENT_TYPE_HTML,"text/xhtml" } );
+		String contentType = checkContentType( reqObj, new String[]{CONTENT_TYPE_HTML,CONTENT_TYPE_XML } );
 		if ( contentType == null ) {
 			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Client doesnt support text/xml, text/html or text/xhtml !");
 		}
 		Dataset queryDS;
 		String reqType = reqObj.getRequestType();
 		if (log.isDebugEnabled() ) log.debug(" Summary request type:"+reqObj.getRequestType());
-		if ( "SUMMARY-CARDIOLOGY-ECG".equals( reqType ) ) {
+		if ( SUMMARY_CARDIOLOGY_ECG.equals( reqType ) ) {
 			return getECGSummary( reqObj );
 		} else {
 			queryDS = getRadiologyQueryDS( reqObj );
@@ -270,9 +271,9 @@ public class RIDSupport {
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
 	    List conceptNames = null;
-	    if ( reqType.equals( "SUMMARY" ) ) {
+	    if ( reqType.equals( SUMMARY ) ) {
 	    	conceptNames = getAllConceptNameCodes();
-	    } else if ( reqType.equals( "SUMMARY_CARDIOLOGY") ) {
+	    } else if ( reqType.equals( SUMMARY_CARDIOLOGY) ) {
 	    	conceptNames = getCardiologyConceptNameCodes();
 	    } else {
 	    	conceptNames = getRadiologyConceptNameCodes();
@@ -296,11 +297,12 @@ public class RIDSupport {
 				docList.setQueryDS( patientDS );
 			}
 		}
-		if ( ! contentType.equals(CONTENT_TYPE_XML) ) { //client doesn't support xml, -> transform to (x)html
-			docList.setXslt( new URL( ridSummaryXsl ) );
+		if ( ! contentType.equals(CONTENT_TYPE_XML) ) { // transform to (x)html only if client supports (x)html.
+			docList.setXslt( ridSummaryXsl );
 		}
 		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
-		return new RIDTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
+		log.info("ContentType:"+contentType);
+		return new RIDTransformResponseObjectImpl(docList, contentType, HttpServletResponse.SC_OK, null);
 	}
 	
 	/**
@@ -333,11 +335,11 @@ public class RIDSupport {
 
 	private RIDResponseObject getECGSummary( RIDRequestObject reqObj ) throws SQLException {
 		Dataset queryDS = getECGQueryDS( reqObj );
+		if ( queryDS == null )
+			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
-	    for ( Iterator iter = getECGSopCuids().iterator() ; iter.hasNext() ; ) {
-	    	queryDS.putUI( Tags.SOPClassUID, (String) iter.next() );
-	    }
+	    queryDS.putUI( Tags.SOPClassUID, (String[]) getECGSopCuids().toArray( new String[0] ) );
     	fillDocList( docList, queryDS );//TODO Is it ok to put all SOP Class UIDs in one query?
 		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
 		return new RIDTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
@@ -352,13 +354,13 @@ public class RIDSupport {
 	    docList.setQueryDS( queryDS );
 	    String docCode = reqObj.getRequestType();
 		docList.setDocCode( docCode );
-		if ( "SUMMARY".equalsIgnoreCase( docCode )) 
+		if ( SUMMARY.equalsIgnoreCase( docCode )) 
 			docList.setDocDisplayName( "List of radiology and cardiology reports");
-		else if ("SUMMARY-RADIOLOGY".equals( docCode ) )
+		else if (SUMMARY_RADIOLOGY.equals( docCode ) )
 			docList.setDocDisplayName( "List of radiology reports");
-		else if ("SUMMARY-CARDIOLOGY".equals( docCode ) )
+		else if (SUMMARY_CARDIOLOGY.equals( docCode ) )
 			docList.setDocDisplayName( "List of cardiology reports");
-		else if ("SUMMARY-CARDIOLOGY-ECG".equals( docCode ) )
+		else if (SUMMARY_CARDIOLOGY_ECG.equals( docCode ) )
 			docList.setDocDisplayName( "List of ECG's");
 		String mrr = reqObj.getParam("mostRecentResults");
 		docList.setMostRecentResults( Integer.parseInt(mrr));
@@ -385,7 +387,10 @@ public class RIDSupport {
 				ds = qCmd.getDataset();
 				Date date = ds.getDateTime( Tags.ContentDate, Tags.ContentTime );
 				if ( checkDate( docList, date ) ) {
-					if ( log.isDebugEnabled() ) log.debug("Add to docList! ds:"+ds);
+					if ( log.isDebugEnabled() ) {
+						log.debug("Add to docList! ds:");
+						log.debug(ds);
+					}
 					docList.add( ds );
 				}
 			}
@@ -499,9 +504,16 @@ public class RIDSupport {
 	 */
 	private Dataset getECGQueryDS(RIDRequestObject reqObj) {
 		String patID = reqObj.getParam( "patientID" );
+		String[] pat = splitPatID( patID );
+		pat = checkPatient( pat );
+		if ( log.isDebugEnabled() ) log.debug("getECGQueryDS: pat:"+pat);
+		if ( pat == null ) return null;
 		Dataset ds = factory.newDataset();
         ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-		ds.putLO(Tags.PatientID, patID);
+		ds.putLO(Tags.PatientID, pat[0]);
+		if ( pat[1] != null ) { // Issuer of patientID is known. 
+			ds.putLO(Tags.IssuerOfPatientID, pat[1]);
+		}
 		return ds;
 	}
 
@@ -530,7 +542,7 @@ public class RIDSupport {
 				}
 			} else {
 				cmd.close();
-				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ "not found!");
+				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ " not found!");
 			}
 		} catch (SQLException x) {
 			log.error("Cant get RIDDocument:", x);

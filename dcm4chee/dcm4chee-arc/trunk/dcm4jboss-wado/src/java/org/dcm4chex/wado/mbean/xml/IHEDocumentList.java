@@ -8,6 +8,7 @@ package org.dcm4chex.wado.mbean.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -216,9 +217,14 @@ public class IHEDocumentList implements XMLResponseObject{
 	 * Set the URL to an xsl file that is used to transform the xml result of this DocumentList.
 	 * 
 	 * @param xslt The xslt to set.
+	 * @throws MalformedURLException
 	 */
-	public void setXslt(URL xslt) {
-		this.xslt = xslt;
+	public void setXslt(String xslt) throws MalformedURLException {
+		if ( xslt != null ) {
+			this.xslt = new URL( getDocRIDUrl()+"/"+xslt );
+		} else {
+			this.xslt = null;
+		}
 	}
 	/**
 	 * @param reqURL The reqURL to set.
