@@ -83,26 +83,26 @@ public class PLutPanel extends JPanel
                     int dy = e.getY() - lasty;
                     update(e);
                     if ((e.getModifiersEx() & ChangeEnhanceMask) != 0) {
-                        if (dy < -Delta) {
+                        if (dx < -Delta) {
                             enh -= EnhanceStep;
                             if (enh<0) enh = 0;
                             plutGen.setEnhance(enh);
                             updatePLut();
                         }
-                        else if (dy > Delta) {
+                        else if (dx > Delta) {
                             enh += EnhanceStep;
                             plutGen.setEnhance(enh);
                             updatePLut();
                         }
                     }
                     if ((e.getModifiersEx() & ChangeCenterMask) != 0) {
-                        if (dx < -Delta) {
+                        if (dy < -Delta) {
                             cntr -= CenterStep;
                             if (cntr<0) cntr = 0;
                             plutGen.setCenter(cntr);
                             updatePLut();
                         }
-                        else if (dx > Delta) {
+                        else if (dy > Delta) {
                             cntr += CenterStep;
                             if (cntr>1) cntr = 1;
                             plutGen.setCenter(cntr);
