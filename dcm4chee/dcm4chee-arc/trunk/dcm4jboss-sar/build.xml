@@ -142,7 +142,7 @@
    			<fileset dir="${dcm4jboss-ejb.src}/etc">
    				<include name="*/sql/*"/>
    				<include name="*/conf/login-config.xml"/>
-   				<include name="*/deploy/*-ds.xml"/>
+   				<include name="*/deploy/**/*.xml"/>
    				<include name="hsql/data/hypersonic/localDB.*"/>
    			</fileset>
    			<fileset dir="${dcm4jboss-arr.home}/target">
@@ -257,10 +257,9 @@
 				<include name="conf/**"/>
 				<exclude name="conf/log4j.xml"/>
 				<exclude name="conf/login-config.xml"/>
+				<exclude name="conf/standardjbosscmp-jdbc.xml"/>
 				<include name="conf/jbossmq-state.xml"/>
-				<include name="deploy/hsqldb-ds.xml"/>
 				<include name="deploy/jbossweb-tomcat50.sar/**"/>
-				<include name="deploy/jms/hsqldb-jdbc2-service.xml"/>
 				<include name="deploy/jms/jvm-il-service.xml"/>
 				<include name="deploy/jmx-console.war/**"/>
 				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
