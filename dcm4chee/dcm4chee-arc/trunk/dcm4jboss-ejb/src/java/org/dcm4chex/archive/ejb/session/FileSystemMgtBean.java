@@ -11,7 +11,6 @@ package org.dcm4chex.archive.ejb.session;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
