@@ -41,7 +41,7 @@ public abstract class RetrieveCmd extends BaseCmd
         { "PATIENT", "STUDY", "SERIES", "IMAGE" };
 
     private static final String[] ENTITY =
-        { "Patient", "Study", "Series", "Instance", "File", "Directory" };
+        { "Patient", "Study", "Series", "Instance", "File" };
 
     private static final String[] SELECT_ATTRIBUTE =
         {
@@ -51,8 +51,8 @@ public abstract class RetrieveCmd extends BaseCmd
             "Instance.encodedAttributes",
             "Instance.sopIuid",
             "Instance.sopCuid",
-            "Directory.hostName",
-            "Directory.directoryPath",
+            "File.retrieveAETs",
+            "File.directoryPath",
             "File.filePath",
             "File.fileTsuid",
             "File.fileMd5Field",
@@ -68,8 +68,6 @@ public abstract class RetrieveCmd extends BaseCmd
             "Instance.series_fk",
             "Instance.pk",
             "File.instance_fk",
-            "Directory.pk",
-            "File.directory_fk",
              };
 
     public static RetrieveCmd create(DataSource ds, Dataset keys)

@@ -52,7 +52,7 @@ abstract class Match
         if (type2)
         {
             sb.append(column);
-            sb.append(" = NULL OR ");
+            sb.append(" IS NULL OR ");
         }
         appendBodyTo(sb);
         sb.append(')');

@@ -153,7 +153,7 @@ public abstract class StorageBean implements SessionBean {
      */
     public int store(
         Dataset ds,
-        String host,
+        String retrieveAETs,
         String basedir,
         String fileid,
         int size,
@@ -174,7 +174,7 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.create(ds, getSeries(ds, modified));
             }
             FileLocal file =
-                fileHome.create(host, basedir, fileid, tsuid, size, md5, instance);
+                fileHome.create(retrieveAETs, basedir, fileid, tsuid, size, md5, instance);
             log.info("inserted instance " + iuid);
             return modified.isEmpty()
                 ? Status.Success

@@ -123,8 +123,6 @@ public class JdbcProperties extends Properties {
             "srcode_fk",
             "File",
             "instance_fk",
-            "File",
-            "directory_fk",
             };
     private static final JdbcProperties instance = new JdbcProperties();
     private static final String JBOSSCMP_JDBC_XML =

@@ -47,7 +47,7 @@ public class FileInfo
     public final byte[] instAttrs;
     public final String sopIUID;
     public final String sopCUID;
-    public final String hostname;
+    public final String retrieveAETs;
     public final String basedir;
     public final String fileID;
     public final String tsUID;
@@ -61,7 +61,7 @@ public class FileInfo
         byte[] instAttrs,
         String sopIUID,
         String sopCUID,
-        String hostname,
+        String retrieveAETs,
         String basedir,
         String fileID,
         String tsUID,
@@ -74,7 +74,7 @@ public class FileInfo
         this.instAttrs = instAttrs;
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
-        this.hostname = hostname;
+        this.retrieveAETs = retrieveAETs;
         this.basedir = basedir;
         this.fileID = fileID;
         this.tsUID = tsUID;
@@ -88,8 +88,8 @@ public class FileInfo
             + sopIUID
             + ", cuid="
             + sopCUID
-            + ", host="
-            + hostname
+            + ", retrieveAETs="
+            + retrieveAETs
             + ", basedir="
             + basedir
             + ", fileid="
