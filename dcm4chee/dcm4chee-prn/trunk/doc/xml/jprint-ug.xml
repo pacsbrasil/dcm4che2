@@ -575,7 +575,7 @@ url="http://java.sun.com/j2se/1.4.1/docs/guide/vm/index.html"
 url="http://www.jboss.org"
 >http://www.jboss.org</ulink
 >):</para
-><literallayout
+><programlisting
 ><filename
 >jprint-1.2.x/</filename
 >
@@ -623,7 +623,7 @@ url="http://www.jboss.org"
 >
     + <filename
 >tmp/</filename
-></literallayout
+></programlisting
 ><para
 >The subdirectories <filename
 >log/</filename
@@ -1056,7 +1056,7 @@ linkend="adf"
 ><varlistentry
 ><term
 ><filename
->server/default/conf/annotationTITLE.5.adf</filename
+>server/default/conf/annotation/TITLE.5.adf</filename
 ></term
 ><listitem
 ><para
@@ -1070,7 +1070,7 @@ linkend="adf"
 ><varlistentry
 ><term
 ><filename
->server/default/conf/annotationNO_TITLE.5.adf</filename
+>server/default/conf/annotation/NO_TITLE.4.adf</filename
 ></term
 ><listitem
 ><para
@@ -1861,6 +1861,7 @@ linkend="list-printers.jar"
 ></row
 ><row
 ><entry
+id="SessionLabel"
 >SessionLabel</entry
 ><entry
 >print job for $CALLING_AET$</entry
@@ -1906,6 +1907,7 @@ A3:297x420
 ></row
 ><row
 ><entry
+id="PageMargin"
 >PageMargin</entry
 ><entry
 >10,10,10,10</entry
@@ -2104,6 +2106,7 @@ linkend="local-luts"
 ></row
 ><row
 ><entry
+id="AnnotationForCallingAET"
 >AnnotationForCallingAET</entry
 ><entry
 >AET:TITLE</entry
@@ -2132,6 +2135,7 @@ linkend="local-luts"
 ></row
 ><row
 ><entry
+id="DateFormat"
 >DateFormat</entry
 ><entry
 >yyyy-MM-dd</entry
@@ -2140,6 +2144,7 @@ linkend="local-luts"
 ></row
 ><row
 ><entry
+id="TimeFormat"
 >TimeFormat</entry
 ><entry
 >HH:mm:ss</entry
@@ -2415,7 +2420,7 @@ id="lut"
 ><para
 >jPrint supports the configuration of local lookup tables at the Print Server. This feature is intended as workaround for Print Composers, which does not provide proper P-LUTs via the N-CREATE Service of the DICOM Presentation Lookup Table SOP Class. The use of local LUTs needs/shall only be configured for Print Composers with no - or inappropriate - support of the DICOM P-LUT SOP Class.</para
 ><para
->A local LUT can be defined by an explicit DICOM file with a Presentation LUT Information Object or by 1-3 parameters of a proprietary generation function for S-shaped P-LUTs. </para
+>A local LUT can be defined by an explicit DICOM file with a Presentation LUT Information Object or by 1-3 parameters of a proprietary generation function for S-shaped P-LUTs.</para
 ><para
 >A Print SCU can select such (jPrint) local LUT by providing a value for Film Box attribute (2010,0150) Configuration Information:</para
 ><table
@@ -2524,19 +2529,478 @@ linkend="print-image.jar"
 id="adf"
 >Annotation Display Formats</title
 ><para
+>jPrint provides DICOM Services of the Basic Annotation Box SOP Class, which allows a Print SCU to select one of preconfigured Annotaion Display Formats based on the value of the Attribute Annotation Display Format ID (2010,0030) of the Basic Film Box and to set the values of its editable text fields (=Annotation Boxes).</para
+><para
+>If a Print Composer does not support the Basic Annotation Box SOP Class, the selection of the Annotation Display Format can be configured based on its Calling AET (s. Printer Service configuration attribute <link
+linkend="AnnotationForCallingAET"
+>AnnotationForCallingAET</link
+>).</para
+><section
+><title
+>ADF Configuration Files</title
+><para
+>Annotation Display Formats are specified by text files located in directory <filename
+>server/default/conf/annotations</filename
+>. The file names are constrained to the format:</para
+><para
+><replaceable
+>&#60;Annotation Display Format ID&#62;</replaceable
+><literal
+>.</literal
+><replaceable
+>&#60;N&#62;</replaceable
+><literal
+>.adf</literal
+></para
+><variablelist
+><varlistentry
+><term
+><replaceable
+>&#60;Annotation Display Format ID&#62;</replaceable
+></term
+><listitem
+><para
+>ID used as value of Attribute Annotation Display Format ID (2010,0030) of the Basic Film Box and in Printer Service configuration attribute <link
+linkend="AnnotationForCallingAET"
+>AnnotationForCallingAET</link
+> to reference this format.</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><replaceable
+>&#60;N&#62;</replaceable
+></term
+><listitem
+><para
+>Number of text fields (=Annotation Boxes) defined by this format.</para
+></listitem
+></varlistentry
+></variablelist
+><para
+>The text files contains a list properties (key and element pairs). Every property occupies one line. Each line is terminated by a line terminator (line feed or carriage return + line feed).</para
+><para
+>A line that contains only whitespace or whose first non-whitespace character is an ASCII <literal
+>#</literal
+> or <literal
+>!</literal
+> is ignored (thus, <literal
+>#</literal
+> or <literal
+>!</literal
+> indicate comment lines).</para
+><para
+>The key consists of all the characters in the line starting with the first non-whitespace character and up to, but not including, the first ASCII <literal
+>=</literal
+>, <literal
+>:</literal
+>, or whitespace character. All remaining characters on the line become part of the associated value string. Within the value string, the ASCII escape sequences <literal
+>\t</literal
+>, <literal
+>\n</literal
+>, <literal
+>\r</literal
+>, <literal
+>\\</literal
+>, <literal
+>\&#34;</literal
+>, <literal
+>\&#39;</literal
+> and <literal
+>\ </literal
+>(a backslash and a space) are recognized and converted to single characters.</para
+><para
+>The default configuration contains the definition for two Annotation Display Formats:</para
+><variablelist
+><varlistentry
+><term
+><filename
+>server/default/conf/annotation/TITLE.5.adf</filename
+></term
+><listitem
+><para
+>Specifies Annotation Display Format <literal
+>TITLE</literal
+>: 5 Annotation Boxes located on the four edges and one - with larger font size - centered at the top of the page. Used for all DICOM prints with default server/default/deploy/printer-service.xml. Usually you will at least edit the specified <literal
+>Default Title</literal
+>.</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><filename
+>server/default/conf/annotation/NO_TITLE.4.adf</filename
+></term
+><listitem
+><para
+>Specifies Annotation Display Format <literal
+>NO_TITLE</literal
+>: Like Annotation Display Format <literal
+>TITLE</literal
+>, but without a centered Annotation Box at the top of the page. Used for print-outs initiated with utility <command
+>print-image.jar</command
+> at default configuration.</para
+></listitem
+></varlistentry
+></variablelist
+></section
+><section
+><title
+>ADF Properties</title
+><para
+>Usually, annotations are printed near the page margin, surrounding the printed image(s). You can specify an inset of the aera, which shall be used for the image(s) to print, from the actual printable area on the page (s. Print Service Attribute <link
+linkend="PageMargin"
+>PageMargin</link
+>). E.g. <filename
+>server/default/conf/annotation/TITLE.5.adf</filename
+></para
+><programlisting
+>inset.left=0
+inset.right=0
+inset.top=20
+inset.bottom=20</programlisting
+><para
+>defines a (minmal) margin of 20 points (1 point = 1/72 inch) above and below the printed image inside the printable aera, to accommodate the annotations. The actual distance between the border of the printed image and the page margin may be larger than defined by <literal
+>inset.</literal
+><replaceable
+>*</replaceable
+> properties: Because the aspect ratio of the image has to be preserved, only the full width <emphasis
+>OR</emphasis
+> the full height of the aera reserved for the image(s) may be used.</para
+><para
+>The properties with 1,2,... <replaceable
+>&#60;N&#62;</replaceable
+> as key, specifies the default content of the first, second, .. N-th text field (=Annotation Box) of the defined Annotation Display Format. Properties with a key name prefixed by a text field number only concern that text field. E.g. <filename
+>server/default/conf/annotation/TITLE.5.adf</filename
+></para
+><programlisting
+>1=Default Title
+1.font.size=16
+1.x=center
+1.y=top-2
+1.align=center
+1.valign=bottom</programlisting
+><para
+>defines <literal
+>Default Title</literal
+> as default content of the first text field, which shall be printed with a font size of 16 points, horizontial centered with the bottom line of the text 2 points above the top of the aera reserved for the printed image(s).</para
+><para
+>Non-prefixed key names define global properties, which may be overwritten by corresponding text field specific properties. E.g. <filename
+>server/default/conf/annotation/TITLE.5.adf</filename
+></para
+><programlisting
+>font.name=Serif
+font.size=8
+font.style=plain
+font.color=black</programlisting
+><para
+>defines Serif 8 plain style, color black as default font. In the example above, the size of the font used for the first annotation box was overwritten to be 16 points, so <literal
+>Default Title</literal
+> will be printed in Serif 16 plain style, color black.</para
+><table
+id="adf-properties"
+><title
+>Defined ADF Properties</title
+><tgroup
+cols="4"
+><colspec
+colwidth="100"
+></colspec
+><colspec
+colwidth="150"
+></colspec
+><colspec
+colwidth="40"
+></colspec
+><thead
+><row
+><entry
+>Key</entry
+><entry
+>Value Range</entry
+><entry
+>Default Value</entry
+><entry
+>Description</entry
+></row
+></thead
+><tbody
+><row
+><entry
+>insert.left</entry
+><entry
+>&#62;= 0</entry
+><entry
+>0</entry
+><entry
+morerows="3"
+>The inset of the aera in points (1/72 inch), which shall be used for the image(s) to print, from the actual printable area on the page.</entry
+></row
+><row
+><entry
+>insert.right</entry
+><entry
+>&#62;= 0</entry
+><entry
+>0</entry
+></row
+><row
+><entry
+>insert.top</entry
+><entry
+>&#62;= 0</entry
+><entry
+>0</entry
+></row
+><row
+><entry
+>insert.bottom</entry
+><entry
+>&#62;= 0</entry
+><entry
+>0</entry
+></row
+><row
+><entry
+>&#60;i&#62;</entry
+><entry
+>text</entry
+><entry
+></entry
+><entry
+>Default content of &#60;i&#62;. annotation box</entry
+></row
+><row
+><entry
+>[&#60;i&#62;.]font.name</entry
+><entry
+>Serif, SansSerif, ...? (printer dependent)</entry
+><entry
+>Serif</entry
+><entry
+morerows="3"
+>Name, point size, style and color of the font used to print the annotation text. Used as global properties or as specific for a individual Annotation Box.</entry
+></row
+><row
+><entry
+>[&#60;i&#62;.]font.size</entry
+><entry
+>6-48? (printer dependent)</entry
+><entry
+>10</entry
+></row
+><row
+><entry
+>[&#60;i&#62;.]font.style</entry
+><entry
+>plain, italic, bold, italic+bold</entry
+><entry
+>plain</entry
+></row
+><row
+><entry
+>[&#60;i&#62;.]font.color</entry
+><entry
+>black, blue, cyan, gray, green, magenta, orange, pink, red, white, yellow</entry
+><entry
+>black</entry
+></row
+><row
+><entry
+>&#60;i&#62;.x[(+|-)&#60;off&#62;]</entry
+><entry
+>left, center, right</entry
+><entry
+>left</entry
+><entry
+>Defines horizontal location of &#60;i&#62;.Annotation Box on the page. The optional offset &#60;off&#62; specifies the distance from the left or right image area border in points. A postive value corresponds a shift to right.</entry
+></row
+><row
+><entry
+>&#60;i&#62;.y[(+|-)&#60;off&#62;]</entry
+><entry
+>top, center, bottom</entry
+><entry
+>bottom</entry
+><entry
+>Defines vertical location of &#60;i&#62;.Annotation Box on the page. The optional offset &#60;off&#62; specifies the distance from the top or bottom image area border in points. A postive value corresponds a shift down.</entry
+></row
+><row
+><entry
+>[&#60;i&#62;.]align</entry
+><entry
+>left, center, right</entry
+><entry
+>left</entry
+><entry
+>Defines horizontal alignment of the text relatively to its horizontal location.</entry
+></row
+><row
+><entry
+>[&#60;i&#62;.]valign</entry
+><entry
+>top, center, top</entry
+><entry
+>top</entry
+><entry
+>Defines vertical alignment of the text relatively to its vertical location.</entry
+></row
+></tbody
+></tgroup
+></table
+></section
+><section
+><title
+>Keyword substitution</title
+><para
+>The default text for the annotation box may embed strings of the form <replaceable
+>$KEYWORD$</replaceable
+> which are replaced by its corresponding value, just before the Print Job for this page is transmitted to the connected printer:</para
+><variablelist
+><varlistentry
+><term
+><literal
+>$SESSION_LABEL$</literal
+></term
+><listitem
+><para
+>The value of Attribute Film Session Label (2000,0050) of the Basic Film Session provided by the Print Composer or the Print Service Configuration Attribute <link
+linkend="SessionLabel"
+>SessionLabel</link
+>.</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><literal
+>$CALLING_AET$</literal
+></term
+><listitem
+><para
+>The calling Application Entity Title of the Print Composer.</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><literal
+>$CALLED_AET$</literal
+></term
+><listitem
+><para
+>The called Application Entity Title associated with the used Printer Service.</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><literal
+>$DATE$</literal
+></term
+><listitem
+><para
+>The current date in the format defined by Print Service Configuration Attribute <link
+linkend="DateFormat"
+>DateFormat</link
+>.</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><literal
+>$TIME$</literal
+></term
+><listitem
+><para
+>The current time in the format defined by Print Service Configuration Attribute <link
+linkend="TimeFormat"
+>TimeFormat</link
+>.</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><literal
+>$PAGE$</literal
+></term
+><listitem
+><para
+>The number of the current page in a DICOM Print Job initated for a Film Session which contains several Film Boxes. - But usually, Print Composers initiate a Print Job for every Film Box (=page) individually. Then the page number is not available by jPrint and <literal
+>$PAGE$</literal
+> will be replaced by <literal
+>1</literal
+>!</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><literal
+>$PAGES$</literal
+></term
+><listitem
+><para
+>The total number of pages printed in a DICOM Print Job initated for a Film Session which contains several Film Boxes. - But usually, Print Composers initiate a Print Job for every Film Box (=page) individually. Then the total number of pages is not available by jPrint and <literal
+>$PAGE$</literal
+> will be replaced by <literal
+>1</literal
+>!</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><literal
+>$LICENSE_CN$</literal
+></term
+><listitem
+><para
+>The name of the license owner, encoded in the license file <filename
+>server/default/conf/license.jks</filename
+>. If no license file was found by jPrint at start up, <literal
+>$LICENSE_CN$</literal
+> will be replaced by nobody.</para
+></listitem
+></varlistentry
+><varlistentry
+><term
+><literal
+>$LICENSE_ENDDATE$</literal
+></term
+><listitem
+><para
+>The expire date of the license <filename
+>server/default/conf/license.jks</filename
+> in the format defined by Print Service Configuration Attribute <link
+linkend="DateFormat"
+>DateFormat</link
+>. If no license file was found by jPrint at start up, <literal
+>$LICENSE_ENDDATE$</literal
+> will be replaced by the current date.</para
+></listitem
+></varlistentry
+></variablelist
+><para
+>E.g. <filename
+>server/default/conf/annotation/TITLE.5.adf</filename
+></para
+><programlisting
+>3=printed by $CALLED_AET$\nat $DATE$ $TIME$
+3.x=right
+3.y=top-2
+3.align=right
+3.valign=bottom</programlisting
+><para
+>defines the (default) content of the third Annotation Box at the upper right corner of the page as two lines - \n causes the line break - with the first including the Called AET associated with the used Printer Service, and the second the current date and time.</para
+></section
+></section
+><section
+><title
+id="tls"
+>Secure Mode (DICOM-TLS)</title
+><para
 ></para
 ></section
 ><section
 ><title
 id="log4j"
 >Logging Behavior</title
-><para
-></para
-></section
-><section
-><title
-id="tls"
->Secure Mode (DICOM-TLS)</title
 ><para
 ></para
 ></section

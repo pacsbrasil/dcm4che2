@@ -8,7 +8,7 @@ inset.bottom=20
 font.name=Serif
 font.size=8
 font.style=plain
-font.color=0
+font.color=black
 
 1=Default Title
 1.font.size=16

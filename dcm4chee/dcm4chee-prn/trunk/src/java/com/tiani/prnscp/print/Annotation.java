@@ -348,13 +348,21 @@ class Annotation
     {
         String s = props.getProperty("" + index + ".font.color",
                 props.getProperty("font.color"));
-        if (s != null) {
-            try {
-                return new Color(Integer.parseInt(s, 16) & 0xffffff);
-            } catch (NumberFormatException e) {
-                service.getLog().warn("Illegal font.color value: " + s
-                         + " in annotation file:" + file.getName());
-            }
+        if (s != null && s.length() != 0) {
+        	if (Character.isDigit(s.charAt(0))) {
+	            try {
+	                return new Color(Integer.parseInt(s, 16) & 0xffffff);
+	            } catch (NumberFormatException e) {
+	                service.getLog().warn("Illegal font.color value: " + s
+	                         + " in annotation file:" + file.getName());
+	            }
+        	}
+			try {
+			  return (Color)Color.class.getField(s.toUpperCase()).get(null);
+			} catch (Exception e) {
+				service.getLog().warn("Illegal font.color value: " + s
+						 + " in annotation file:" + file.getName());
+			}
         }
         return DEF_COLOR;
     }
@@ -402,11 +410,9 @@ class Annotation
             off = RIGHT.length();
             x += w;
         }
-        if (off < l) {
-            try {
-                x += Integer.parseInt(s.substring(off));
-            } catch (NumberFormatException ignore) {}
-        }
+		if (off < l) {
+			x += parseInteger(s.substring(off));
+		}
         return x;
     }
 
@@ -428,11 +434,18 @@ class Annotation
             y += h;
         }
         if (off < l) {
-            try {
-                y += Integer.parseInt(s.substring(off));
-            } catch (NumberFormatException ignore) {}
+            y += parseInteger(s.substring(off));
         }
         return y;
+    }
+    
+    private int parseInteger(String s) {
+		try {
+			return Integer.parseInt(
+				s.substring(s.startsWith("+") ? 1 : 0));
+		} catch (NumberFormatException ignore) {
+			return 0; 	
+		}
     }
 
 
