@@ -141,6 +141,18 @@ public class PrinterService
    
    /** Holds value of property printerName. */
    private String printerName;
+
+   /** Holds value of property manufacturer. */
+   private String manufacturer;
+   
+   /** Holds value of property manufacturerModelName. */
+   private String manufacturerModelName;
+   
+   /** Holds value of property deviceSerialNumber. */
+   private String deviceSerialNumber;
+      
+   /** Holds value of property softwareVersion. */
+   private String softwareVersion;
    
    /** Holds value of property ignorePrinterIsAcceptingJobs. */
    private boolean ignorePrinterIsAcceptingJobs;
@@ -294,6 +306,12 @@ public class PrinterService
    public PrinterStatus getStatus() {
       try {
          getPrintService();
+         if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
+            return PrinterStatus.FAILURE;
+         }
+         if (calibrationErr) {
+            return PrinterStatus.WARNING;
+         }
          return PrinterStatus.NORMAL;
       } catch (PrintException e) {
          return PrinterStatus.FAILURE;
@@ -306,6 +324,12 @@ public class PrinterService
    public PrinterStatusInfo getStatusInfo() {
       try {
          getPrintService();
+         if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
+            return PrinterStatusInfo.CHECK_PRINTER;
+         }
+         if (calibrationErr) {
+            return PrinterStatusInfo.CALIBRATION_ERR;
+         }
          return PrinterStatusInfo.NORMAL;
       } catch (PrintException e) {
          return PrinterStatusInfo.ELEC_CONFIG_ERR;
@@ -346,6 +370,62 @@ public class PrinterService
          }
       }
    }
+   
+   /** Getter for property manufacturer.
+    * @return Value of property manufacturer.
+    */
+   public String getManufacturer() {
+      return this.manufacturer;
+   }
+   
+   /** Setter for property manufacturer.
+    * @param manufacturer New value of property manufacturer.
+    */
+   public void setManufacturer(String manufacturer) {
+      this.manufacturer = manufacturer;
+   }
+   
+   /** Getter for property manufacturerModelName.
+    * @return Value of property manufacturerModelName.
+    */
+   public String getManufacturerModelName() {
+      return this.manufacturerModelName;
+   }
+   
+   /** Setter for property manufacturerModelName.
+    * @param manufacturerModelName New value of property manufacturerModelName.
+    */
+   public void setManufacturerModelName(String manufacturerModelName) {
+      this.manufacturerModelName = manufacturerModelName;
+   }
+   
+   /** Getter for property deviceSerialNumber.
+    * @return Value of property deviceSerialNumber.
+    */
+   public String getDeviceSerialNumber() {
+      return this.deviceSerialNumber;
+   }
+   
+   /** Getter for property softwareVersion.
+    * @return Value of property softwareVersion.
+    */
+   public String getSoftwareVersion() {
+      return this.softwareVersion;
+   }
+   
+   /** Setter for property softwareVersion.
+    * @param softwareVersion New value of property softwareVersion.
+    */
+   public void setSoftwareVersion(String softwareVersion) {
+      this.softwareVersion = softwareVersion;
+   }
+   
+   /** Setter for property deviceSerialNumber.
+    * @param deviceSerialNumber New value of property deviceSerialNumber.
+    */
+   public void setDeviceSerialNumber(String deviceSerialNumber) {
+      this.deviceSerialNumber = deviceSerialNumber;
+   }      
    
    /** Getter for property ignorePrinterIsAcceptingJobs.
     * @return Value of property ignorePrinterIsAcceptingJobs.

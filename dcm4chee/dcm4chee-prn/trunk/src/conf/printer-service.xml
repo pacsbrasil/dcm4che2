@@ -22,6 +22,26 @@
     <attribute name="PrinterName">MINOLTA</attribute>
     
     <!--
+    Specifies Manufacturer of the printer.
+    -->
+    <attribute name="Manufacturer">Minolta</attribute>
+
+    <!--
+    Specifies Manufacturer's model number of the printer.
+    -->
+    <attribute name="ManufacturerModelName">CF 9001</attribute>
+
+    <!--
+    Specifies Manufacturer's serial number of the printer.
+    -->
+    <attribute name="DeviceSerialNumber"></attribute>
+    
+    <!--
+    Specifies Manufacturer's designation of software version of the printer.
+    -->
+    <attribute name="SoftwareVersion">EFI Fiery X3e</attribute>
+
+    <!--
     Specifies maximal number of jobs in printer job queue. Printer Jobs will
     be locally buffered, as long the current number of jobs queued by the
     printer exceeds this 
@@ -31,21 +51,10 @@
     <!--
     Specifies, if the state of the IPP attribute ACCEPTING_JOBS queried from
     the printer shall be ignored. Necessary with current J2SDK 1.4.1 for Linux,
-    because there the attribute values returned is always NOT_ACCEPTING_JOBS,
+    because there the returned attribute value is always NOT_ACCEPTING_JOBS,
     even the printer is actually ready to accept jobs.
     -->
-    <attribute name="IgnorePrinterIsAcceptingJobs">false</attribute>
-    
-    <!--
-    Activates redirection of all printing into a postscript file.
-    -->
-    <attribute name="PrintToFile">false</attribute>
-    
-    <!--
-    Specifies path of the postscript file, to which all printing will be
-    redirection if attribute "PrintToFile" is true.
-    -->
-    <attribute name="PrintToFilePath">out.ps</attribute>
+    <attribute name="IgnorePrinterIsAcceptingJobs">true</attribute>
     
     <!--
     Activate support for the Basic Color Print Management Meta SOP Class.
@@ -241,17 +250,20 @@
     Defines the maximal scaling chunk size in MB. The smaller,
     the larger the number of chunks, an image has to be devided
     for scaling. Influences necessary memory requirements (-Xmx value). 
+    Usually, you need not change the default value 10.
     -->
     <attribute name="ChunkSize">10</attribute>
 
     <!--
     Activates down-scaling to minimize printer job size.
+    Usually, you need not change the default value: true.
     -->
     <attribute name="MinimizeJobsize">true</attribute>
 
     <!--
     Defines, if Nearest Neighbor Interpolation is used for down-scaling,
     instead using same interpolation types as specified for magnification.  
+    Usually, you need not change the default value: true.
     -->
     <attribute name="DecimateByNearestNeighbor">true</attribute>
            
@@ -265,6 +277,7 @@
     <!--
     Specifies directory with contains configuration files for supported
     annotation display formats.
+    Usually, you need not change the default value: conf/annotation
     -->    
     <attribute name="AnnotationDir">conf/annotation</attribute>
 
@@ -286,17 +299,20 @@
     <!--
     Specifies name of annotation display format used for the
     grayscale pattern prinout.
+    Usually, you need not change the default value: GRAYSCALE_1
     -->    
     <attribute name="GrayscaleAnnotation">GRAYSCALE_1</attribute>
     
     <!--
     Specifies number of gray steps in printed grayscale pattern.
+    Usually, you need not change the default value: 32
     -->    
     <attribute name="Grayscales">32</attribute>
     
     <!--
     Specifies gap width in pts between two gray steps in printed gray scale
     pattern.
+    Usually, you need not change the default value: 1
     -->    
     <attribute name="GrayscaleGap">1</attribute>
 
@@ -442,6 +458,18 @@
     Usually, you need not change the default value 50x50.
     -->
    <attribute name="ScanPointExtension">50x50</attribute>
+    
+    <!--
+    Activates redirection of all printing into a postscript file.
+    Only used for debugging.
+    -->
+    <attribute name="PrintToFile">false</attribute>
+    
+    <!--
+    Specifies path of the postscript file, to which all printing will be
+    redirection if attribute "PrintToFile" is true.
+    -->
+    <attribute name="PrintToFilePath">out.ps</attribute>
     
   </mbean>
 </server>

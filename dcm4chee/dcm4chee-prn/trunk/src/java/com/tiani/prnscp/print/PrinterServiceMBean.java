@@ -75,6 +75,46 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setPrinterName(String destination);
    
+   /** Getter for property manufacturer.
+    * @return Value of property manufacturer.
+    */
+   public String getManufacturer();
+   
+   /** Setter for property manufacturer.
+    * @param manufacturer New value of property manufacturer.
+    */
+   public void setManufacturer(String manufacturer);
+   
+   /** Getter for property manufacturerModelName.
+    * @return Value of property manufacturerModelName.
+    */
+   public String getManufacturerModelName();
+   
+   /** Setter for property manufacturerModelName.
+    * @param manufacturerModelName New value of property manufacturerModelName.
+    */
+   public void setManufacturerModelName(String manufacturerModelName);
+   
+   /** Getter for property deviceSerialNumber.
+    * @return Value of property deviceSerialNumber.
+    */
+   public String getDeviceSerialNumber();
+   
+   /** Getter for property softwareVersion.
+    * @return Value of property softwareVersion.
+    */
+   public String getSoftwareVersion();
+   
+   /** Setter for property softwareVersion.
+    * @param softwareVersion New value of property softwareVersion.
+    */
+   public void setSoftwareVersion(String softwareVersion);
+   
+   /** Setter for property deviceSerialNumber.
+    * @param deviceSerialNumber New value of property deviceSerialNumber.
+    */
+   public void setDeviceSerialNumber(String deviceSerialNumber);
+      
    /** Getter for property supportedAttributeValues.
     * @return Value of property supportedAttributeValues.
     */
@@ -669,6 +709,5 @@ public interface PrinterServiceMBean extends ServiceMBean {
    
    public void calibrate(boolean force) throws CalibrationException;            
    
-   public void scheduleJob(Boolean color, String job, Dataset sessionAttr);
-   
+   public void scheduleJob(Boolean color, String job, Dataset sessionAttr);   
 }

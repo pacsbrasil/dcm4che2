@@ -585,29 +585,87 @@ public class PrintScpService
       }
    };
 
+   private static final int[] PRINTER_MODULE_ATTRS = {
+      Tags.PrinterStatus,
+      Tags.PrinterStatusInfo,
+      Tags.PrinterName,
+      Tags.Manufacturer,
+      Tags.ManufacturerModelName,
+      Tags.DeviceSerialNumber,
+      Tags.SoftwareVersion,
+      Tags.DateOfLastCalibration,
+      Tags.TimeOfLastCalibration,
+   };
+
    private DcmServiceBase printerService = new DcmServiceBase(){
       protected Dataset doNGet(ActiveAssociation as, Dimse rq, Command rspCmd)
          throws IOException, DcmServiceException
       {
-         Dataset result = dof.newDataset();
+         String aet = as.getAssociation().getCalledAET();
+         int[] tags = rq.getCommand().getTags(Tags.AttributeIdentifierList);         
          try {
-            String aet = as.getAssociation().getCalledAET();
-            result.putCS(Tags.PrinterStatus,
-               ((PrinterStatus) getPrinterAttribute(aet, "Status")).toString());
-            result.putCS(Tags.PrinterStatusInfo,
-               ((PrinterStatusInfo) getPrinterAttribute(aet, "StatusInfo")).toString());
-            result.putDA(Tags.DateOfLastCalibration,
-               (String) getPrinterAttribute(aet, "DateOfLastCalibration"));
-            result.putTM(Tags.TimeOfLastCalibration,
-               (String) getPrinterAttribute(aet, "TimeOfLastCalibration"));
+            return getPrinterAttributes(aet,
+               tags != null ? tags : PRINTER_MODULE_ATTRS);
          } catch (Exception e) {
             log.error("Failed to access printer status", e);
             throw new DcmServiceException(Status.ProcessingFailure, 
                "Failed to access printer status");
          }
-         return result;
       }      
    };
+   
+   private String toLO(String src) {
+      return src != null ? src.replace('\\', '/') : null;
+   }
+   
+   private Dataset getPrinterAttributes(String aet, int[] tags)
+      throws Exception
+   {
+      Dataset attrs = dof.newDataset();
+      for (int i = 0; i < tags.length; ++i) {
+         switch (tags[i]) {
+            case Tags.PrinterStatus:
+               attrs.putCS(Tags.PrinterStatus,
+                  ((PrinterStatus) getPrinterAttribute(aet, "Status"))
+                     .toString());
+            break;
+            case Tags.PrinterStatusInfo:
+               attrs.putCS(Tags.PrinterStatusInfo,
+                  ((PrinterStatusInfo) getPrinterAttribute(aet, "StatusInfo"))
+                     .toString());
+            break;
+            case Tags.PrinterName:
+               attrs.putLO(Tags.PrinterName,
+                  toLO((String) getPrinterAttribute(aet, "PrinterName")));
+            break;
+            case Tags.Manufacturer:
+               attrs.putLO(Tags.Manufacturer,
+                  toLO((String) getPrinterAttribute(aet, "Manufacturer")));
+            break;
+            case Tags.ManufacturerModelName:
+               attrs.putLO(Tags.ManufacturerModelName,
+                  toLO((String) getPrinterAttribute(aet, "ManufacturerModelName")));
+            break;
+            case Tags.DeviceSerialNumber:
+               attrs.putLO(Tags.DeviceSerialNumber,
+                  toLO((String) getPrinterAttribute(aet, "DeviceSerialNumber")));
+            break;
+            case Tags.SoftwareVersion:
+               attrs.putLO(Tags.SoftwareVersion,
+                  toLO((String) getPrinterAttribute(aet, "SoftwareVersion")));
+            break;
+            case Tags.DateOfLastCalibration:
+               attrs.putDA(Tags.DateOfLastCalibration,
+                  (String) getPrinterAttribute(aet, "DateOfLastCalibration"));
+            break;
+            case Tags.TimeOfLastCalibration:
+               attrs.putTM(Tags.TimeOfLastCalibration,
+                  (String) getPrinterAttribute(aet, "TimeOfLastCalibration"));
+            break;
+         }
+      }
+      return attrs;
+   }
    
    public String showLicense() {
       return "" + license;
