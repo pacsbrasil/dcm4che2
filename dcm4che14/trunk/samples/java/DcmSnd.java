@@ -106,9 +106,9 @@ public class DcmSnd implements PollDirSrv.Handler {
     private int repeatSingle = 1;
     private int repeatWhole = 1;
     private int priority = Command.MEDIUM;
-    private int assocTO = 0;
-    private int dimseTO = 0;
-    private int releaseTO = 0;
+    private int acTimeout = 5000;
+    private int dimseTimeout = 0;
+    private int soCloseDelay = 500;
     private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
     private int bufferSize = 2048;
     private byte[] buffer = null;
@@ -124,6 +124,9 @@ public class DcmSnd implements PollDirSrv.Handler {
     
     // Static --------------------------------------------------------
     private static final LongOpt[] LONG_OPTS = new LongOpt[] {
+        new LongOpt("ac-timeout", LongOpt.REQUIRED_ARGUMENT, null, 2),
+        new LongOpt("dimse-timeout", LongOpt.REQUIRED_ARGUMENT, null, 2),
+        new LongOpt("so-close-delay", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("prior-high", LongOpt.NO_ARGUMENT, null, 'P'),
         new LongOpt("prior-low", LongOpt.NO_ARGUMENT, null, 'p'),
         new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -208,7 +211,7 @@ public class DcmSnd implements PollDirSrv.Handler {
         this.repeatWhole = Integer.parseInt(cfg.getProperty("repeat-assoc", "1"));
         this.repeatSingle = Integer.parseInt(cfg.getProperty("repeat-dimse", "1"));
         this.mode = argc > 1 ? SEND : initPollDirSrv(cfg) ? POLL : ECHO;
-        initAssocRQ(cfg, url, mode == ECHO);
+        initAssocParam(cfg, url, mode == ECHO);
         initTLS(cfg);
         initOverwrite(cfg);
     }
@@ -234,7 +237,11 @@ public class DcmSnd implements PollDirSrv.Handler {
     throws IOException, GeneralSecurityException {
         Association assoc = aFact.newRequestor(
             newSocket(url.getHost(), url.getPort()));
-        PDU assocAC = assoc.connect(assocRQ, assocTO);
+        assoc.setAcTimeout(acTimeout);
+        assoc.setDimseTimeout(dimseTimeout);
+        assoc.setSoCloseDelay(soCloseDelay);
+        
+        PDU assocAC = assoc.connect(assocRQ);
         if (!(assocAC instanceof AAssociateAC)) {
             return null;
         }
@@ -541,7 +548,10 @@ public class DcmSnd implements PollDirSrv.Handler {
         System.exit(1);
     }
     
-    private final void initAssocRQ(Configuration cfg, DcmURL url, boolean echo) {
+    private final void initAssocParam(Configuration cfg, DcmURL url, boolean echo) {
+        acTimeout = Integer.parseInt(cfg.getProperty("ac-timeout", "5000"));
+        dimseTimeout = Integer.parseInt(cfg.getProperty("dimse-timeout", "0"));
+        soCloseDelay = Integer.parseInt(cfg.getProperty("so-close-delay", "500"));
         assocRQ.setCalledAET(url.getCalledAET());
         assocRQ.setCallingAET(url.getCallingAET());
         assocRQ.setMaxPDULength(

@@ -45,6 +45,12 @@ import java.util.List;
  * <li> add {@link #getProperty}
  * <li> add {@link #putProperty}
  * </ul>
+ * <p><b>20020810 gunter:</b>
+ * <ul>
+ * <li> add properties rqTimeout, acTimeout, dimseTimeout
+ * <li> rename property TCPCloseTimeout to soCloseDelay
+ * <li> remove timeout param from connect(), accept(), read()
+ * </ul>
  */
 public interface Association {
     
@@ -80,21 +86,17 @@ public interface Association {
     
     int nextMsgID();
     
-    PDU connect(AAssociateRQ rq, int timeout) throws IOException;
+    PDU connect(AAssociateRQ rq) throws IOException;
     
-    PDU accept(AcceptorPolicy policy, int timeout) throws IOException;
+    PDU accept(AcceptorPolicy policy) throws IOException;
     
-    Dimse read(int timeout) throws IOException;
+    Dimse read() throws IOException;
     
     void write(Dimse dimse) throws IOException;
     
     PDU release(int timeout) throws IOException;
     
     void abort(AAbort aa) throws IOException;
-    
-    void setTCPCloseTimeout(int tcpCloseTimeout);
-    
-    int getTCPCloseTimeout();
     
     int getMaxOpsInvoked();
     
@@ -123,4 +125,45 @@ public interface Association {
     Object getProperty(Object key);
     
     void putProperty(Object key, Object value);
+    
+    /** Getter for property rqTimeout.
+     * @return Value of property rqTimeout.
+     */
+    int getRqTimeout();
+    
+    /** Setter for property rqTimeout.
+     * @param rqTimeout New value of property rqTimeout.
+     */
+    void setRqTimeout(int rqTimeout);
+    
+    /** Getter for property dimseTimeout.
+     * @return Value of property dimseTimeout.
+     */
+    int getDimseTimeout();
+    
+    /** Setter for property dimseTimeout.
+     * @param dimseTimeout New value of property dimseTimeout.
+     */
+    void setDimseTimeout(int dimseTimeout);
+    
+    /** Getter for property soCloseDelay.
+     * @return Value of property soCloseDelay.
+     */
+    int getSoCloseDelay();
+    
+    /** Setter for property soCloseDelay.
+     * @param soCloseDelay New value of property soCloseDelay.
+     */
+    void setSoCloseDelay(int soCloseDelay);
+    
+    /** Getter for property acTimeout.
+     * @return Value of property acTimeout.
+     */
+    int getAcTimeout();
+    
+    /** Setter for property acTimeout.
+     * @param acTimeout New value of property acTimeout.
+     */
+    void setAcTimeout(int acTimeout);
+    
 }

@@ -29,6 +29,7 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AssociationFactory;
@@ -82,8 +83,7 @@ import org.apache.log4j.Logger;
  */
 public class DcmRcv extends DcmServiceBase {
     // Constants -----------------------------------------------------
-    private static final int SUCCESS = 0x0000;
-    static final Logger log = Logger.getLogger("DcmRcv");
+    static final Logger log = Logger.getLogger(DcmRcv.class);
     
     // Attributes ----------------------------------------------------
     private static ResourceBundle messages = ResourceBundle.getBundle(
@@ -114,6 +114,10 @@ public class DcmRcv extends DcmServiceBase {
     
     // Static --------------------------------------------------------
     private static final LongOpt[] LONG_OPTS = new LongOpt[] {
+        new LongOpt("max-clients", LongOpt.REQUIRED_ARGUMENT, null, 2),
+        new LongOpt("rq-timeout", LongOpt.REQUIRED_ARGUMENT, null, 2),
+        new LongOpt("dimse-timeout", LongOpt.REQUIRED_ARGUMENT, null, 2),
+        new LongOpt("so-close-delay", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("called-aets", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("calling-aets", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -199,6 +203,7 @@ public class DcmRcv extends DcmServiceBase {
         rspDelay = Integer.parseInt(cfg.getProperty("rsp-delay", "0")) * 1000L;
         bufferSize = Integer.parseInt(
         cfg.getProperty("buf-len", "2048")) & 0xfffffffe;
+        initServer(cfg);        
         initDest(cfg);
         initTLS(cfg);
         initPolicy(cfg);
@@ -246,7 +251,7 @@ public class DcmRcv extends DcmServiceBase {
                 ie.printStackTrace();
             }
         }
-        rspCmd.putUS(Tags.Status, SUCCESS);
+        rspCmd.putUS(Tags.Status, Status.Success);
     }
     
     private OutputStream openOutputStream(File file)
@@ -377,6 +382,17 @@ public class DcmRcv extends DcmServiceBase {
                     new Object[]{ dest }), true);
             }
         }
+    }
+    
+    private void initServer(Configuration cfg) {
+        server.setMaxClients(
+            Integer.parseInt(cfg.getProperty("max-clients", "10")));
+        handler.setRqTimeout(
+            Integer.parseInt(cfg.getProperty("rq-timeout", "5000")));
+        handler.setDimseTimeout(
+            Integer.parseInt(cfg.getProperty("dimse-timeout", "0")));
+        handler.setSoCloseDelay(
+            Integer.parseInt(cfg.getProperty("so-close-delay", "500")));
     }
     
     private void initPolicy(Configuration cfg) {

@@ -42,7 +42,7 @@ public class LF_ThreadPool
 {
    // Constants -----------------------------------------------------
    private static final Logger log =
-         Logger.getLogger("org.dcm4cheri.util.LF_ThreadPool");
+         Logger.getLogger(LF_ThreadPool.class);
    
    // Attributes ----------------------------------------------------
    private final Handler handler;
@@ -51,7 +51,7 @@ public class LF_ThreadPool
    private Object mutex = new Object();
    private int waiting = 0;
    private int running = 0;
-   private int maxRunning = Integer.MAX_VALUE;
+   private int maxRunning = 0;
    private final int instNo = ++instCount;
    
    // Static --------------------------------------------------------
@@ -88,7 +88,7 @@ public class LF_ThreadPool
    
    public void setMaxRunning(int maxRunning)
    {
-      if (maxRunning <= 0)
+      if (maxRunning < 0)
          throw new IllegalArgumentException("maxRunning: " + maxRunning);
             
       this.maxRunning = maxRunning;
@@ -105,7 +105,7 @@ public class LF_ThreadPool
    
    public void join()
    {
-      while (!shutdown && (waiting + running) < maxRunning)
+      while (!shutdown && (maxRunning == 0 || (waiting + running) < maxRunning))
       {
          synchronized (mutex)
          {
@@ -165,7 +165,7 @@ public class LF_ThreadPool
             
       // if there is no waiting thread,
       // and the maximum number of running threads is not yet reached,
-      if (running >= maxRunning) {
+      if (maxRunning != 0 && running >= maxRunning) {
          if (log.isDebugEnabled())
             log.debug("" + this + " - Max number of threads reached"); 
          return false;

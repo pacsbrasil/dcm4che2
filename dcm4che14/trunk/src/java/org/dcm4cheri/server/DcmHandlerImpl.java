@@ -62,7 +62,9 @@ class DcmHandlerImpl implements DcmHandler {
     private final DcmServiceRegistry services;
     private final LinkedList listeners = new LinkedList();
     
-    private int requestTO = 5000;
+    private int rqTimeout = 5000;
+    private int dimseTimeout = 0;
+    private int soCloseDelay = 500;
     
     // Static --------------------------------------------------------
     
@@ -79,14 +81,49 @@ class DcmHandlerImpl implements DcmHandler {
     }
     
     // Public --------------------------------------------------------
+    public void setRqTimeout(int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException("timeout: " + timeout);
+        }
+        this.rqTimeout = timeout;
+    }
+    
+    public int getRqTimeout() {
+        return rqTimeout;
+    }
+
+    public int getDimseTimeout() {
+        return dimseTimeout;
+    }
+    
+    public void setDimseTimeout(int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException("timeout: " + timeout);
+        }
+        this.dimseTimeout = dimseTimeout;
+    }
+    
+    public int getSoCloseDelay() {
+        return soCloseDelay;
+    }
+    
+    public void setSoCloseDelay(int delay) {
+        if (delay < 0) {
+            throw new IllegalArgumentException("delay: " + delay);
+        }
+        this.soCloseDelay = delay;
+    }
     
     // DcmHandler implementation -------------------------------------
     public void handle(Socket s) throws IOException {
         Association assoc = fact.newAcceptor(s);
+        assoc.setRqTimeout(rqTimeout);
+        assoc.setDimseTimeout(dimseTimeout);
+        assoc.setSoCloseDelay(soCloseDelay);
         for (Iterator it = listeners.iterator(); it.hasNext();) {
             assoc.addAssociationListener((AssociationListener)it.next());
         }
-        if (assoc.accept(policy, requestTO) instanceof AAssociateAC)
+        if (assoc.accept(policy) instanceof AAssociateAC)
             fact.newActiveAssociation(assoc, services).run();
     }
     

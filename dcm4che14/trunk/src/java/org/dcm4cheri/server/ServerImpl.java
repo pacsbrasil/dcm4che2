@@ -86,6 +86,14 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
       threadPool.setMaxRunning(max);
    }
 
+   public int getMaxClients() {
+      return threadPool.getMaxRunning();
+   }
+   
+   public int getNumClients() {
+      return threadPool.running();
+   }
+
    public void start(int port) throws IOException {
       start(port, ServerSocketFactory.getDefault());
    }

@@ -64,7 +64,6 @@ implements ActiveAssociation, LF_ThreadPool.Handler
    private final IntHashtable2 cancelDispatcher = new IntHashtable2();
    private final LF_ThreadPool threadPool = new LF_ThreadPool(this);
    private boolean running = false;
-   private int timeout = 0;
    
    // Static --------------------------------------------------------
    
@@ -85,14 +84,6 @@ implements ActiveAssociation, LF_ThreadPool.Handler
       cancelDispatcher.put(msgID, l);
    }
    
-   public final void setTimeout(int timeout) {
-      this.timeout = timeout;
-   }
-   
-   public final int getTimeout() {
-      return timeout;
-   }
-
    public void run()
    {
       if (running)
@@ -159,7 +150,7 @@ implements ActiveAssociation, LF_ThreadPool.Handler
    {
       try
       {
-         Dimse dimse = assoc.read(timeout);
+         Dimse dimse = assoc.read();
          
          // if Association was released
          if (dimse == null)

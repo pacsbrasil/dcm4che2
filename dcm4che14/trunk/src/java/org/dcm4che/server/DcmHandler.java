@@ -34,10 +34,9 @@ import org.dcm4che.net.AssociationListener;
  *   
  * <p><b>Revisions:</b>
  *
- * <p><b>yyyymmdd author:</b>
+ * <p><b>20020810 gunter:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
- *            beyond the cvs commit message
+ * <li> add properties rqTimeout, dimseTimeout, soCloseDelay
  * </ul>
  */
 public interface DcmHandler extends Server.Handler
@@ -45,5 +44,35 @@ public interface DcmHandler extends Server.Handler
    void addAssociationListener(AssociationListener l);
    
    void removeAssociationListener(AssociationListener l);
+   
+   /** Getter for property rqTimeout.
+    * @return Value of property rqTimeout.
+    */
+   int getRqTimeout();
+   
+   /** Setter for property rqTimeout.
+    * @param rqTimeout New value of property rqTimeout.
+    */
+   void setRqTimeout(int timeout);
+   
+   /** Getter for property dimseTimeout.
+    * @return Value of property dimseTimeout.
+    */
+   int getDimseTimeout();
+   
+   /** Setter for property dimseTimeout.
+    * @param dimseTimeout New value of property dimseTimeout.
+    */
+   void setDimseTimeout(int dimseTimeout);
+   
+   /** Getter for property soCloseDelay.
+    * @return Value of property soCloseDelay.
+    */
+   int getSoCloseDelay();
+   
+   /** Setter for property soCloseDelay.
+    * @param soCloseDelay New value of property soCloseDelay.
+    */
+   void setSoCloseDelay(int soCloseDelay);
    
 }

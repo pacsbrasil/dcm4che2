@@ -75,6 +75,9 @@ final class AssociationImpl implements Association {
     private String name;
     private static int assocCount = 0;
     private Hashtable properties = null;
+    private int rqTimeout = 5000;
+    private int acTimeout = 5000;
+    private int dimseTimeout = 0;
     
     /** Creates a new instance of AssociationImpl */
     public AssociationImpl(Socket s, boolean requestor) throws IOException {
@@ -158,28 +161,85 @@ final class AssociationImpl implements Association {
         reader.setThreadPool(pool);
     }
     
-    public final void setTCPCloseTimeout(int tcpCloseTimeout) {
-        fsm.setTCPCloseTimeout(tcpCloseTimeout);
+    /** Setter for property soCloseDelay.
+     * @param soCloseDelay New value of property soCloseDelay.
+     */
+    public final void setSoCloseDelay(int soCloseDelay) {
+        fsm.setSoCloseDelay(soCloseDelay);
     }
     
-    public final int getTCPCloseTimeout() {
-        return fsm.getTCPCloseTimeout();
+    /** Getter for property soCloseDelay.
+     * @return Value of property soCloseDelay.
+     */
+    public final int getSoCloseDelay() {
+        return fsm.getSoCloseDelay();
+    }
+        
+    /** Getter for property rqTimeout.
+     * @return Value of property rqTimeout.
+     */
+    public int getRqTimeout() {
+        return rqTimeout;
     }
     
-    public final PDU connect(AAssociateRQ rq, int timeout) throws IOException {
+    /** Setter for property rqTimeout.
+     * @param rqTimeout New value of property rqTimeout.
+     */
+    public void setRqTimeout(int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException("timeout: " + timeout);
+        }
+        this.rqTimeout = timeout;
+    }
+    
+    /** Getter for property dimseTimeout.
+     * @return Value of property dimseTimeout.
+     */
+    public int getDimseTimeout() {
+        return dimseTimeout;
+    }
+    
+    /** Setter for property dimseTimeout.
+     * @param dimseTimeout New value of property dimseTimeout.
+     */
+    public void setDimseTimeout(int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException("timeout: " + timeout);
+        }
+        this.dimseTimeout = timeout;
+    }
+    
+    /** Getter for property acTimeout.
+     * @return Value of property acTimeout.
+     */
+    public int getAcTimeout() {
+        return acTimeout;
+    }
+    
+    /** Setter for property acTimeout.
+     * @param acTimeout New value of property acTimeout.
+     */
+    public void setAcTimeout(int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException("timeout: " + timeout);
+        }
+        this.acTimeout = timeout;
+    }
+    
+    public final PDU connect(AAssociateRQ rq) throws IOException {
         NDC.push(name);
         try {
             fsm.write(rq);
-            return fsm.read(timeout, b10);
+            return fsm.read(acTimeout, b10);
         } finally {
             NDC.pop();
         }
     }
     
-    public final PDU accept(AcceptorPolicy policy, int timeout) throws IOException {
+    public final PDU accept(AcceptorPolicy policy) throws IOException {
         NDC.push(name);
         try {
-            PDU rq = fsm.read(timeout, b10);
+            PDU rq = fsm.read(rqTimeout, b10);
             if (!(rq instanceof AAssociateRQ))
                 return (AAbort)rq;
             
@@ -194,10 +254,10 @@ final class AssociationImpl implements Association {
         }
     }
     
-    public final Dimse read(int timeout) throws IOException  {
+    public final Dimse read() throws IOException  {
         NDC.push(name);
         try {
-            Dimse dimse = reader.read(timeout);
+            Dimse dimse = reader.read(dimseTimeout);
             if (dimse != null) {
                 msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
             }
@@ -274,6 +334,5 @@ final class AssociationImpl implements Association {
         } else {
             properties.remove(key);
         }
-    }
-    
+    }        
 }

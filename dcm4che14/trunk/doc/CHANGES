@@ -2,6 +2,26 @@ Revision History
 =================
 
 -------------------------------------------------------------------------------
+dcm4che 1.0.4 -  - Changes since dcm4che 1.0.3
+-------------------------------------------------------------------------------
+BUG FIXES:
+
+ENHANCEMENTS:
+org.dcm4che.net.Association:
++ add properties rqTimeout, acTimeout, dimseTimeout
+org.dcm4che.server.DcmHandler:
++ add properties rqTimeout, dimseTimeout, soCloseDelay
+DcmSnd, MppsSnd:
++ add options --ac-timeout, --dimse-timeout, --so-close-delay
+DcmRcv:
++ add options --max-clients, --rq-timeout, --dimse-timeout, --so-close-delay
+
+CHANGES:
+org.dcm4che.net.Association:
++ rename property TCPCloseTimeout to soCloseDelay
++ remove timeout param from connect(), accept(), read()
+ 
+-------------------------------------------------------------------------------
 dcm4che 1.0.3 -  - Changes since dcm4che 1.0.2
 -------------------------------------------------------------------------------
 BUG FIXES:

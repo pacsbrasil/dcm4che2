@@ -53,6 +53,10 @@ public interface Server
 
    public void setMaxClients(int max);
 
+   public int getMaxClients();
+   
+   public int getNumClients();
+
    public void start(int port) throws IOException;
    
    public void start(int port, ServerSocketFactory ssf) throws IOException;

@@ -77,7 +77,7 @@ final class FsmImpl {
     private final InputStream in;
     private final OutputStream out;
     private final static Timer timer = new Timer(true);
-    private int tcpCloseTimeout = 500;
+    private int soCloseDelay = 500;
     private AAssociateRQ rq = null;
     private AAssociateAC ac = null;
     private AAssociateRJ rj = null;
@@ -117,16 +117,16 @@ final class FsmImpl {
         return requestor;
     }
     
-    final void setTCPCloseTimeout(int tcpCloseTimeout) {
-        if (tcpCloseTimeout < 0) {
+    final void setSoCloseDelay(int soCloseDelay) {
+        if (soCloseDelay < 0) {
             throw new IllegalArgumentException(
-            "tcpCloseTimeout:" + tcpCloseTimeout);
+            "soCloseDelay:" + soCloseDelay);
         }
-        this.tcpCloseTimeout = tcpCloseTimeout;
+        this.soCloseDelay = soCloseDelay;
     }
     
-    final int getTCPCloseTimeout() {
-        return tcpCloseTimeout;
+    final int getSoCloseDelay() {
+        return soCloseDelay;
     }
     
     public int getState() {
@@ -883,7 +883,7 @@ final class FsmImpl {
                     NDC.pop();
                 }
             },
-            tcpCloseTimeout);
+            soCloseDelay);
         }
     };
     
