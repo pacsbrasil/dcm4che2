@@ -13,7 +13,7 @@
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
   <mbean code="com.tiani.prnscp.print.PrinterService" 
-         name="dcm4chex:service=Printer,aet=PRINTER_AET">
+         name="dcm4chex:service=Printer,aet=TIANI_PRINT">
     <depends optional-attribute-name="PrintSCP">dcm4chex:service=PrintSCP</depends>
          
     <!--
@@ -204,7 +204,7 @@
     Page margins for landscape orientation are derived automatically
     (s. property "ReverseLandscape").
     -->
-    <attribute name="PageMargin">7,7,7,7</attribute>
+    <attribute name="PageMargin">10,10,10,10</attribute>
    
     <!--
     Defines the direction of printing in landscape orientation.
@@ -221,10 +221,23 @@
     <attribute name="BorderThickness">2.0</attribute>
    
     <!--
-    Defines the max size chunk size in Mega Px of image part, rendered once.
+    Defines the maximal scaling chunk size in MB. The smaller,
+    the larger the number of chunks, an image has to be devided
+    for scaling. Influences necessary memory requirements (-Xmx value). 
     -->
-    <attribute name="ChunkSize">2</attribute>
-   
+    <attribute name="ChunkSize">10</attribute>
+
+    <!--
+    Activates down-scaling to minimize printer job size.
+    -->
+    <attribute name="MinimizeJobsize">true</attribute>
+
+    <!--
+    Defines, if Nearest Neighbor Interpolation is used for down-scaling,
+    instead using same interpolation types as specified for magnification.  
+    -->
+    <attribute name="DecimateByNearestNeighbor">true</attribute>
+           
     <!--
     Defines the thickness of Trim Box in mm.
     -->

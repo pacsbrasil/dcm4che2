@@ -20,6 +20,11 @@
     forwarded to the printer.
     -->
     <attribute name="SpoolDirectory">tmp/spool</attribute>
+    
+    <!--
+    Set to true, to keep spool files for debugging.
+    -->
+    <attribute name="KeepSpoolFiles">false</attribute>
   </mbean>
      
 </server>

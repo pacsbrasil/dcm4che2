@@ -86,7 +86,7 @@ public class PrintScpService
    // Constants -----------------------------------------------------   
    static final String LICENSE_FILE = "conf/license.pem";
    static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1";
-   static final int SHUTDOWN_DELAY_MINUTES = 10;
+   static final int SHUTDOWN_DELAY_MINUTES = 20;
       
    // Attributes ----------------------------------------------------
    private String spoolDirectory;

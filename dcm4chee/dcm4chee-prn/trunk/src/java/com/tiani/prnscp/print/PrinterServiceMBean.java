@@ -748,8 +748,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setSupportsGrayscale(boolean supportsMonochrome);
    
-   public void scheduleJob(Boolean color, String job, Dataset sessionAttr);
-   
    /** Getter for property chunkSize.
     * @return Value of property chunkSize.
     */
@@ -757,8 +755,29 @@ public interface PrinterServiceMBean extends ServiceMBean {
    
    /** Setter for property chunkSize.
     * @param chunkSize New value of property chunkSize.
-    *
     */
    public void setChunkSize(double chunkSize);
+   
+   /** Getter for property minimizeJobsize.
+    * @return Value of property minimizeJobsize.
+    */
+   public boolean isMinimizeJobsize();
+   
+   /** Setter for property minimizeJobsize.
+    * @param minimizeJobsize New value of property minimizeJobsize.
+    */
+   public void setMinimizeJobsize(boolean minimizeJobsize);
+   
+   /** Getter for property decimateByNearestNeighbor.
+    * @return Value of property decimateByNearestNeighbor.
+    */
+   public boolean isDecimateByNearestNeighbor();
+   
+   /** Setter for property decimateByNearestNeighbor.
+    * @param decimateByNearestNeighbor New value of property decimateByNearestNeighbor.
+    */
+   public void setDecimateByNearestNeighbor(boolean decimateByNearestNeighbor);
+   
+   public void scheduleJob(Boolean color, String job, Dataset sessionAttr);
    
 }

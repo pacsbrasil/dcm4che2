@@ -198,7 +198,10 @@ class PrintableFilmBox implements Printable {
    // Y overrides ---------------------------------------------------
    
    // Package protected ---------------------------------------------
-   
+   // make visible only for testdriver 
+   PrintableImageBox[] imageBoxes() { 
+      return imageBoxes;
+   }
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
