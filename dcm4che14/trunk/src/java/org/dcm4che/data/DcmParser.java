@@ -55,7 +55,7 @@ public interface DcmParser {
     void setSAXHandler(ContentHandler hc, TagDictionary dict);
 
     void setSAXHandler2(ContentHandler hc, TagDictionary dict,
-            int[] excludeTags, File basedir);
+            int[] excludeTags, int excludeValueLengthLimit, File basedir);
 
     void setVRMap(VRMap vrMap);
 

@@ -48,7 +48,8 @@ public interface FileMetaInfo extends DcmObject {
     public void write(ContentHandler ch, TagDictionary dict) throws IOException;
 
     public void write2(ContentHandler ch, TagDictionary dict,
-            int[] excludeTags, File basedir) throws IOException;
+            int[] excludeTags, int excludeValueLengthLimit, File basedir)
+            throws IOException;
 
     public void read(InputStream in) throws IOException;
 }

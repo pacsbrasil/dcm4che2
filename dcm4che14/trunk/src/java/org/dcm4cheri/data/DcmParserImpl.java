@@ -143,8 +143,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     public final void setSAXHandler2(ContentHandler ch, TagDictionary dict,
-            int[] excludeTags, File basedir) {
-        this.handler = new DcmHandlerAdapter2(ch, dict, excludeTags, basedir);
+            int[] excludeTags, int excludeValueLengthLimit, File basedir) {
+        this.handler = new DcmHandlerAdapter2(ch, dict, excludeTags,
+                excludeValueLengthLimit, basedir);
     }
     /*    
     public final void setInput(InputStream in) {

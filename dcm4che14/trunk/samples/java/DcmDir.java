@@ -310,6 +310,7 @@ public class DcmDir {
                 FILE_SET_INFO),
                 dict,
                 null,
+                128,
                 null);
         try {
             list("", reader.getFirstRecord(onlyInUse), tf, xslt);
@@ -340,6 +341,7 @@ public class DcmDir {
             ds.writeDataset2(getTransformerHandler(tf, xslt, prompt),
                     dict,
                     null,
+                    128,
                     null);
             list(prefix + count + '.', rec.getFirstChild(onlyInUse), tf, xslt);
             ++count;

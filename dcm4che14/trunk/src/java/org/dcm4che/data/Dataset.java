@@ -81,13 +81,14 @@ public interface Dataset extends DcmObject, Serializable {
             throws IOException;
 
     void writeFile2(ContentHandler ch, TagDictionary dict, int[] excludeTags,
-            File basedir) throws IOException;
+            int excludeValueLengthLimit, File basedir) throws IOException;
 
     void writeDataset(ContentHandler handler, TagDictionary dict)
             throws IOException;
 
     void writeDataset2(ContentHandler ch, TagDictionary dict,
-            int[] excludeTags, File basedir) throws IOException;
+            int[] excludeTags, int excludeValueLengthLimit, File basedir)
+            throws IOException;
 
     Dataset subSet(int fromTag, int toTag);
 
@@ -103,11 +104,13 @@ public interface Dataset extends DcmObject, Serializable {
     
     boolean match(Dataset keys, boolean ignorePNCase, boolean ignoreEmpty);
 
-    public void dumpDataset(OutputStream out, Map map, int[] excludeTags) throws IOException;
+    public void dumpDataset(OutputStream out, Map map, int excludeValueLengthLimit)
+            throws IOException;
 
     public void dumpDataset(OutputStream out, Map map) throws IOException;
 
-    public void dumpDataset(Writer w, Map map, int[] excludeTags) throws IOException;
+    public void dumpDataset(Writer w, Map map, int excludeValueLengthLimit)
+            throws IOException;
 
     public void dumpDataset(Writer w, Map map) throws IOException;
 

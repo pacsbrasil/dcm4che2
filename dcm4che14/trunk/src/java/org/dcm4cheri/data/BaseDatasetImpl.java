@@ -170,24 +170,26 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
         int curGrTag;
 
         int prevGrTag = -1;
-        for (Iterator iter = iterator(); iter.hasNext();) {
-            DcmElement el = (DcmElement) iter.next();
-            curGrTag = el.tag() & 0xffff0000;
-            if (curGrTag != prevGrTag) {
-                grCount++;
-                grTags = ensureCapacity(grTags, grCount + 1);
-                grLens = ensureCapacity(grLens, grCount + 1);
-                grTags[grCount - 1] = prevGrTag = curGrTag;
-                grLens[grCount - 1] = 0;
-            }
-            grLens[grCount - 1] += (param.explicitVR && !VRs
-                    .isLengthField16Bit(el.vr())) ? 12 : 8;
-            if (el instanceof ValueElement) {
-                grLens[grCount - 1] += el.length();
-            } else if (el instanceof FragmentElement) {
-                grLens[grCount - 1] += ((FragmentElement) el).calcLength();
-            } else {
-                grLens[grCount - 1] += ((SQElement) el).calcLength(param);
+        synchronized (list) {
+            for (Iterator iter = iterator(); iter.hasNext();) {
+                DcmElement el = (DcmElement) iter.next();
+                curGrTag = el.tag() & 0xffff0000;
+                if (curGrTag != prevGrTag) {
+                    grCount++;
+                    grTags = ensureCapacity(grTags, grCount + 1);
+                    grLens = ensureCapacity(grLens, grCount + 1);
+                    grTags[grCount - 1] = prevGrTag = curGrTag;
+                    grLens[grCount - 1] = 0;
+                }
+                grLens[grCount - 1] += (param.explicitVR && !VRs
+                        .isLengthField16Bit(el.vr())) ? 12 : 8;
+                if (el instanceof ValueElement) {
+                    grLens[grCount - 1] += el.length();
+                } else if (el instanceof FragmentElement) {
+                    grLens[grCount - 1] += ((FragmentElement) el).calcLength();
+                } else {
+                    grLens[grCount - 1] += ((SQElement) el).calcLength(param);
+                }
             }
         }
         grTags[grCount] = -1;
@@ -224,13 +226,15 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
      */
     public void writeDataset(DcmHandler handler, DcmEncodeParam param)
             throws IOException {
-        if (!(param.skipGroupLen && param.undefItemLen && param.undefSeqLen)) {
-            calcLength(param);
+        synchronized (list) {
+            if (!(param.skipGroupLen && param.undefItemLen && param.undefSeqLen)) {
+                calcLength(param);
+            }
+            handler.startDataset();
+            handler.setDcmDecodeParam(param);
+            doWrite(handler, param);
+            handler.endDataset();
         }
-        handler.startDataset();
-        handler.setDcmDecodeParam(param);
-        doWrite(handler, param);
-        handler.endDataset();
     }
 
     private void doWrite(DcmHandler handler, DcmEncodeParam param)
@@ -397,30 +401,32 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
     }
 
     public void writeDataset2(ContentHandler ch, TagDictionary dict,
-            int[] excludeTags, File basedir) throws IOException {
-        writeDataset(new DcmHandlerAdapter2(ch, dict, excludeTags, basedir),
+            int[] excludeTags, int excludeValueLengthLimit, File basedir)
+            throws IOException {
+        writeDataset(new DcmHandlerAdapter2(ch, dict, excludeTags, 
+                excludeValueLengthLimit, basedir),
                 DcmDecodeParam.EVR_LE);
     }
 
     public void dumpDataset(OutputStream out, Map param) throws IOException {
-        dumpDataset(new StreamResult(out), param, null);
+        dumpDataset(new StreamResult(out), param, 128);
     }
 
-    public void dumpDataset(OutputStream out, Map param, int[] excludeTags)
+    public void dumpDataset(OutputStream out, Map param, int excludeValueLengthLimit)
             throws IOException {
-        dumpDataset(new StreamResult(out), param, excludeTags);
+        dumpDataset(new StreamResult(out), param, excludeValueLengthLimit);
     }
 
     public void dumpDataset(Writer w, Map param) throws IOException {
-        dumpDataset(new StreamResult(w), param, null);
+        dumpDataset(new StreamResult(w), param, 128);
     }
 
-    public void dumpDataset(Writer w, Map param, int[] excludeTags)
+    public void dumpDataset(Writer w, Map param, int excludeValueLengthLimit)
             throws IOException {
-        dumpDataset(new StreamResult(w), param, excludeTags);
+        dumpDataset(new StreamResult(w), param, excludeValueLengthLimit);
     }
 
-    private void dumpDataset(Result result, Map param, int[] excludeTags)
+    private void dumpDataset(Result result, Map param, int excludeValueLengthLimit)
             throws IOException {
         TransformerHandler th;
         try {
@@ -436,7 +442,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
             throw new ConfigurationError("Failed to initialize XSLT", e);
         }
         th.setResult(result);
-        writeDataset2(th, getTagDictionary(), excludeTags, null);
+        writeDataset2(th, getTagDictionary(), null, excludeValueLengthLimit, null);
     }
 
     /**
@@ -459,9 +465,10 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
     }
 
     public void writeFile2(ContentHandler ch, TagDictionary dict,
-            int[] excludeTags, File basedir) throws IOException {
+            int[] excludeTags, int excludeValueLengthLimit, File basedir)
+            throws IOException {
         DcmHandlerAdapter2 xml = new DcmHandlerAdapter2(ch, dict, excludeTags,
-                basedir);
+                excludeValueLengthLimit, basedir);
         xml.startDcmFile();
         FileMetaInfo fmi = getFileMetaInfo();
         if (fmi != null) {

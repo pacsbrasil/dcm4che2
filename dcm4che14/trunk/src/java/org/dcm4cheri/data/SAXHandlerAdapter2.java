@@ -125,7 +125,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
     }
 
     private void onStartElement(String tagStr, String vrStr, String src) throws IOException {
-        int tag = Integer.parseInt(tagStr, 16);
+        int tag = (int) Long.parseLong(tagStr, 16);
         this.vr = vrStr == null ? VRMap.DEFAULT.lookup(tag) : VRs.valueOf(vrStr);
         handler.startElement(tag, vr, -1);
         state = EXPECT_VAL_OR_FIRST_ITEM;

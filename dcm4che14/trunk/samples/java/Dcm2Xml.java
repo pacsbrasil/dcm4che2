@@ -40,6 +40,8 @@ public class Dcm2Xml {
     private boolean xsltInc = false;
 
     private int[] excludeTags = {};
+    
+    private int excludeValueLengthLimit = Integer.MAX_VALUE;
 
     private TagDictionary dict = DictionaryFactory.getInstance()
             .getDefaultTagDictionary();
@@ -50,6 +52,10 @@ public class Dcm2Xml {
     public Dcm2Xml() {
     }
 
+    public final void setExcludeValueLengthLimit(int excludeValueLengthLimit) {
+        this.excludeValueLengthLimit = excludeValueLengthLimit;
+    }
+    
     public final void setBaseDir(File baseDir) {
         this.baseDir = baseDir;
     }
@@ -82,8 +88,7 @@ public class Dcm2Xml {
         TransformerHandler th = null;
         if (xslt != null) {
             if (xsltInc) {
-                tf
-                        .setAttribute("http://xml.apache.org/xalan/features/incremental",
+                tf.setAttribute("http://xml.apache.org/xalan/features/incremental",
                                 Boolean.TRUE);
             }
             th = tf.newTransformerHandler(new StreamSource(xslt.openStream(),
@@ -111,6 +116,7 @@ public class Dcm2Xml {
             parser.setSAXHandler2(getTransformerHandler(),
                     dict,
                     excludeTags,
+                    excludeValueLengthLimit,
                     baseDir);
             parser.parseDcmFile(null, -1);
         } finally {
@@ -133,7 +139,7 @@ public class Dcm2Xml {
         longopts[0] = new LongOpt("TXT", LongOpt.NO_ARGUMENT, null, 'T');
         longopts[1] = new LongOpt("XSL", LongOpt.REQUIRED_ARGUMENT, null, 'X');
 
-        Getopt g = new Getopt("dcm2xml.jar", args, "bo:ID:Xx:d:", longopts,
+        Getopt g = new Getopt("dcm2xml.jar", args, "bo:ID:Xx:L:d:", longopts,
                 true);
 
         Dcm2Xml dcm2xml = new Dcm2Xml();
@@ -161,6 +167,9 @@ public class Dcm2Xml {
                 break;
             case 'X':
                 dcm2xml.addExcludeTag(Tags.PixelData);
+                break;
+            case 'L':
+                dcm2xml.setExcludeValueLengthLimit(Integer.parseInt(g.getOptarg()));
                 break;
             case 'd':
                 dcm2xml.setBaseDir(new File(g.getOptarg()));
@@ -204,15 +213,19 @@ public class Dcm2Xml {
     }
 
     private static final String USAGE = 
-              "Usage: java -jar dcm2xml.jar <dcm_file> [-bX] [-x <tag> [,...]] [-d <basedir>]\n"
-            + "  [[--TXT | --XSL <xsl_file>] [-I] [-D<param>=<value> [,...]]] [-o <xml_file>]\n\n"
+              "Usage: java -jar dcm2xml.jar <dcm_file> [-o <xml_file>]\n"
+            + "  [-bX] [-x <tag> [,...]] [-L <maxValLen>] [-d <basedir>]\n"
+            + "  [[--TXT | --XSL <xsl_file>] [-I][-D<param>=<value> [,...]]]\n\n"
             + "Transform the specified DICOM file <dcm_file> into XML and optionally apply\n"
             + "XSLT with the specified XSL stylesheet <xsl_file> to the XML presentation.\n\n"
             + "Options:\n"
+            + " -o <xml_file>      Place output in <xml_file> instead in standard output.\n"
             + " -b                 Brief format: exclude attribute names from XML output.\n"
             + " -X                 Exclude pixel data from XML output. Same as -xPixelData\n"
             + " -x <tag>           Exclude value of specified tag from XML output.\n"
-            + "                    Format: ggggeeee or attribute name"
+            + "                    Format: ggggeeee or attribute name\n"
+            + " -L <maxValLen>     Exclude values which length exceeds the specified limit\n"
+            + "                    from XML output.\n"
             + " -d <basedir>       file excluded values into directory <basedir>.\n"
             + " -T, --TXT          Apply default XSLT to produce text output:\n"
             + "                     -Dmaxlen=<maximal line length> [79]\n"
@@ -221,6 +234,5 @@ public class Dcm2Xml {
             + "                     -Dellipsis=<truncation mark>. ['...']\n"
             + " --XSL <xsl_file>   Apply XSLT with specified XSL stylesheet <xsl_file>.\n"
             + " -I                 Enable incremental XSLT (only usable with XALAN)\n"
-            + " -D<param>=<value>  Set XSL parameter to specified value.\n"
-            + " -o <xml_file>      Place output in <xml_file> instead in standard output.\n";
+            + " -D<param>=<value>  Set XSL parameter to specified value.\n";
 }

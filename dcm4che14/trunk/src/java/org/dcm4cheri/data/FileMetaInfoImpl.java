@@ -156,8 +156,10 @@ final class FileMetaInfoImpl extends DcmObjectImpl implements FileMetaInfo {
     }
 
     public void write2(ContentHandler ch, TagDictionary dict,
-            int[] excludeTags, File basedir) throws IOException {
-        write(new DcmHandlerAdapter2(ch, dict, excludeTags, basedir));
+            int[] excludeTags, int excludeValueLengthLimit, File basedir)
+            throws IOException {
+        write(new DcmHandlerAdapter2(ch, dict, excludeTags,
+                excludeValueLengthLimit, basedir));
     }
 
     public void read(InputStream in) throws IOException {

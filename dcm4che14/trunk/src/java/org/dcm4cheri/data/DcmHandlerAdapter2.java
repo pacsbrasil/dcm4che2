@@ -72,6 +72,8 @@ class DcmHandlerAdapter2 implements DcmHandler {
     private final File outsrcDir;
 
     private final int[] outsrcTags;
+    
+    private final int outsrcValueLengthLimit;
 
     private final StringBuffer outsrcName = new StringBuffer();
 
@@ -81,9 +83,10 @@ class DcmHandlerAdapter2 implements DcmHandler {
 
     public DcmHandlerAdapter2(final ContentHandler handler,
             final TagDictionary dict, final int[] outsrcTags,
-            final File outsrcDir) {
+            final int outsrcValueLengthLimit, final File outsrcDir) {
         this.handler = handler;
         this.dict = dict;
+        this.outsrcValueLengthLimit = outsrcValueLengthLimit;
         this.outsrcDir = outsrcDir;
         this.outsrcTags = outsrcTags == null ? new int[0] : (int[]) outsrcTags
                 .clone();
@@ -203,10 +206,13 @@ class DcmHandlerAdapter2 implements DcmHandler {
             attrs.addAttribute("", "pos", "pos", "", "" + pos);
             attrs.addAttribute("", "len", "len", "", "" + length);
             final String fname = outsrcName.toString() + '-' + id;
-            if (outsrc && length > 0) if (outsrcDir != null)
-                attrs.addAttribute("", "src", "src", "", fname);
-            else
-                attrs.addAttribute("", "hide", "hide", "", "true");
+            outsrc = outsrc || length > outsrcValueLengthLimit;
+            if (outsrc && length > 0) { 
+                if (outsrcDir != null)
+                    attrs.addAttribute("", "src", "src", "", fname);
+                else
+                    attrs.addAttribute("", "hide", "hide", "", "true");
+            }
             handler.startElement("", "item", "item", attrs);
             if (length > 0) {
                 if (outsrc)
@@ -276,10 +282,13 @@ class DcmHandlerAdapter2 implements DcmHandler {
                             + vm(data, start, length));
             attrs.addAttribute("", "len", "len", "", "" + length);
             String fname = outsrcName.toString();
-            if (outsrc && length > 0) if (outsrcDir != null)
-                attrs.addAttribute("", "src", "src", "", fname);
-            else
-                attrs.addAttribute("", "hide", "hide", "", "true");
+            outsrc = outsrc || length > outsrcValueLengthLimit;
+            if (outsrc && length > 0) {
+                if (outsrcDir != null)
+                    attrs.addAttribute("", "src", "src", "", fname);
+                else
+                    attrs.addAttribute("", "hide", "hide", "", "true");
+            }
             handler.startElement("", "attr", "attr", attrs);
             if (length > 0) {
                 if (outsrc)
