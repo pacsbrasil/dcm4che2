@@ -11,6 +11,7 @@ package org.dcm4chex.archive.web.maverick;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
@@ -24,6 +25,10 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
     private int patPk;
 
     private int studyPk;
+
+    private String placerOrderNumber;
+
+    private String fillerOrderNumber;
 
     private String accessionNumber;
 
@@ -39,12 +44,24 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
 
     private String cancel = null;
 
-    public final void setAccessionNumber(String s) {
-        this.accessionNumber = s.trim();
-    }
-
     public final void setPatPk(int patPk) {
         this.patPk = patPk;
+    }
+
+    public final void setStudyPk(int studyPk) {
+        this.studyPk = studyPk;
+    }
+
+    public final void setPlacerOrderNumber(String s) {
+        this.placerOrderNumber = s.trim();
+    }
+
+    public final void setFillerOrderNumber(String s) {
+        this.fillerOrderNumber = s.trim();
+    }
+
+    public final void setAccessionNumber(String accessionNumber) {
+        this.accessionNumber = accessionNumber;
     }
 
     public final void setReferringPhysician(String s) {
@@ -63,13 +80,8 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
         this.studyID = s.trim();
     }
 
-    public final void setStudyPk(int studyPk) {
-        this.studyPk = studyPk;
-    }
-
     protected String perform() throws Exception {
-        if (submit != null)
-            executeUpdate();
+        if (submit != null) executeUpdate();
         return SUCCESS;
     }
 
@@ -84,6 +96,8 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
             StudyModel study = FolderForm.getFolderForm(getCtx().getRequest())
                     .getStudyByPk(patPk, studyPk);
             //updating data model
+            study.setPlacerOrderNumber(placerOrderNumber);
+            study.setFillerOrderNumber(fillerOrderNumber);
             study.setAccessionNumber(accessionNumber);
             study.setReferringPhysician(referringPhysician);
             study.setStudyDateTime(studyDateTime);
@@ -91,6 +105,16 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
             study.setStudyID(studyID);
             ContentEdit ce = lookupContentEdit();
             ce.updateStudy(study.toDataset());
+            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+            PatientModel pat = form.getPatientByPk(patPk);
+            AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                    AuditLoggerDelegate.MODIFY,
+                    pat.getPatientID(),
+                    pat.getPatientName(),
+                    study.getPlacerOrderNumber(),
+                    study.getFillerOrderNumber(),
+                    study.getStudyIUID(),
+                    study.getAccessionNumber());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

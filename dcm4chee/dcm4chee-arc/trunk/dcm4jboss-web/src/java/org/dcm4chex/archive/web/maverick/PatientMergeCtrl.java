@@ -8,9 +8,8 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
-import java.util.ArrayList;
-
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 
 /**
@@ -41,13 +40,18 @@ public class PatientMergeCtrl extends Errable {
     }
 
     private void executeMerge() throws Exception {
-        ArrayList list = new ArrayList();
-        for (int i = 0; i < to_be_merged.length; i++) {
+        Dataset[] priors = new Dataset[to_be_merged.length - 1];
+        for (int i = 0, j = 0; i < to_be_merged.length; i++) {
             if (to_be_merged[i] != pk)
-                    list.add(getPatient(to_be_merged[i]).toDataset());
+                priors[j++] = getPatient(to_be_merged[i]).toDataset();
         }
-        Dataset[] priors = (Dataset[]) list.toArray(new Dataset[list.size()]);
         lookupPatientUpdate().mergePatient(getPatient(pk).toDataset(), priors);
+        for (int i = 0; i < priors.length; i++) {
+            AuditLoggerDelegate.logPatientRecord(getCtx(),
+                    AuditLoggerDelegate.DELETE,
+                    priors[i].getString(Tags.PatientID),
+                    priors[i].getString(Tags.PatientName));
+        }
     }
 
     public final void setPk(int pk) {

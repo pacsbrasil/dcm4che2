@@ -4,6 +4,8 @@
 
 	<!-- Override with your JBoss dist location -->
 	<property name="jboss.dir" value="${user.home}/jboss-3.2.5" />
+	<property name="jboss.lib.dir" value="${jboss.dir}/lib"/>
+	<property name="jboss-jmx.jar" value="${jboss.lib.dir}/jboss-jmx.jar"/>
 	<property name="jboss.server.lib.dir" value="${jboss.dir}/server/default/lib"/>
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
@@ -46,6 +48,7 @@
 	<property name="web.dir" value="src/web"/>
 
 	<path id="master-classpath">
+		<pathelement location="${jboss-jmx.jar}"/>
 		<pathelement location="${servlet-api.jar}"/>
 		<pathelement location="${j2ee.jar}"/>
 		<pathelement location="${log4j.jar}"/>

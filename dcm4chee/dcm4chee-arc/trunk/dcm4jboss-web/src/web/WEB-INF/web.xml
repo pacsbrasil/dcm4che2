@@ -49,6 +49,16 @@
 			<param-value>t</param-value>
 		</init-param>
 
+		<!-- 
+			Used by dcm4jboss-web application to find AuditLogger MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-auditlog-service.xml.
+		-->
+		<init-param>
+			<param-name>auditLoggerName</param-name>
+			<param-value>dcm4chex:service=AuditLogger</param-value>
+		</init-param>
+
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	

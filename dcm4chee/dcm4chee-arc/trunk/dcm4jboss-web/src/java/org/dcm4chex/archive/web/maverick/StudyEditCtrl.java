@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
@@ -35,6 +36,11 @@ public class StudyEditCtrl extends Dcm4JbossController {
 
     public final void setStudyPk(int pk) {
         this.studyPk = pk;
+    }
+
+    public PatientModel getPatient() {
+        return FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(
+                patPk);
     }
 
     public StudyModel getStudy() {

@@ -11,7 +11,9 @@ package org.dcm4chex.archive.web.maverick;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
+import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -116,6 +118,17 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
             series.setSeriesNumber(seriesNumber);
             ContentEdit ce = lookupContentEdit();
             ce.updateSeries(series.toDataset());
+            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+            PatientModel pat = form.getPatientByPk(patPk);
+            StudyModel study = form.getStudyByPk(patPk, studyPk);
+            AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                    AuditLoggerDelegate.MODIFY,
+                    pat.getPatientID(),
+                    pat.getPatientName(),
+                    study.getPlacerOrderNumber(),
+                    study.getFillerOrderNumber(),
+                    study.getStudyIUID(),
+                    study.getAccessionNumber());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

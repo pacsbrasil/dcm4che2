@@ -59,6 +59,22 @@ public class StudyModel extends AbstractModel {
         return pk == other.pk;
     }
 
+    public final String getPlacerOrderNumber() {
+        return ds.getString(Tags.PlacerOrderNumber);
+    }
+
+    public final void setPlacerOrderNumber(String s) {
+        ds.putSH(Tags.PlacerOrderNumber, s);
+    }
+
+    public final String getFillerOrderNumber() {
+        return ds.getString(Tags.FillerOrderNumber);
+    }
+
+    public final void setFillerOrderNumber(String s) {
+        ds.putSH(Tags.FillerOrderNumber, s);
+    }
+
     public final String getAccessionNumber() {
         return ds.getString(Tags.AccessionNumber);
     }

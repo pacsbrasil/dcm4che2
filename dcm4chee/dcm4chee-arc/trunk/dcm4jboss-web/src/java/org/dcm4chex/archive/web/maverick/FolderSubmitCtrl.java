@@ -17,6 +17,7 @@ import javax.jms.JMSException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.dcm.movescu.MoveOrder;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
@@ -39,7 +40,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  * @since 28.01.2004
  */
 public class FolderSubmitCtrl extends FolderCtrl {
-
+    
     private static final int MOVE_PRIOR = 0;
 
     protected String perform() throws Exception {
@@ -113,18 +114,35 @@ public class FolderSubmitCtrl extends FolderCtrl {
         List patients = folderForm.getPatients();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
-            scheduleMoveStudies(pat.getStudies(), folderForm.isSticky(pat));
+            if (folderForm.isSticky(pat))
+                scheduleMoveStudiesOfPatient(pat.getPk());
+            else
+                scheduleMoveStudies(pat.getStudies());
         }
         return FOLDER;
     }
 
-    private void scheduleMoveStudies(List studies, boolean stickyPat) {
+    private void scheduleMoveStudiesOfPatient(int pk) throws Exception {
+        List studies = listStudiesOfPatient(pk);
+        ArrayList uids = new ArrayList();
+        for (int i = 0, n = studies.size(); i < n; i++) {
+            final Dataset ds = (Dataset) studies.get(i);
+            uids.add(ds.getString(Tags.StudyInstanceUID));
+        }
+        if (!uids.isEmpty()) {
+            scheduleMove((String[]) uids.toArray(new String[uids.size()]),
+                    null,
+                    null);
+        }
+    }
+
+    private void scheduleMoveStudies(List studies) {
         FolderForm folderForm = (FolderForm) getForm();
         ArrayList uids = new ArrayList();
         for (int i = 0, n = studies.size(); i < n; i++) {
             final StudyModel study = (StudyModel) studies.get(i);
             final String studyIUID = study.getStudyIUID();
-            if (stickyPat || folderForm.isSticky(study))
+            if (folderForm.isSticky(study))
                 uids.add(studyIUID);
             else
                 scheduleMoveSeries(studyIUID, study.getSeries());
@@ -197,43 +215,77 @@ public class FolderSubmitCtrl extends FolderCtrl {
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
-            if (folderForm.isSticky(pat))
+            if (folderForm.isSticky(pat)) {
+                List studies = listStudiesOfPatient(pat.getPk());
                 edit.deletePatient(pat.getPk());
-            else
-                deleteStudies(edit, pat.getStudies());
+                for (int j = 0, m = studies.size(); j < m; j++) {
+                    Dataset study = (Dataset) studies.get(j);
+                    AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
+                            .getPatientID(), pat.getPatientName(), study
+                            .getString(Tags.StudyInstanceUID), study
+                            .getInt(Tags.NumberOfStudyRelatedInstances, 0));
+                }
+                AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
+                        .getPatientID(), pat.getPatientName());
+            } else
+                deleteStudies(edit, pat);
         }
     }
 
-    private void deleteStudies(ContentEdit edit, List studies) throws Exception {
+    private void deleteStudies(ContentEdit edit, PatientModel pat)
+            throws Exception {
+        List studies = pat.getStudies();
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = studies.size(); i < n; i++) {
             StudyModel study = (StudyModel) studies.get(i);
-            if (folderForm.isSticky(study))
+            if (folderForm.isSticky(study)) {
                 edit.deleteStudy(study.getPk());
-            else
-                deleteSeries(edit, study.getSeries());
+                AuditLoggerDelegate.logStudyDeleted(getCtx(),
+                        pat.getPatientID(),
+                        pat.getPatientName(),
+                        study.getStudyIUID(),
+                        study.getNumberOfInstances());
+            } else {
+                final int deletedInstances = deleteSeries(edit, study.getSeries());
+                if (deletedInstances > 0) {
+                    AuditLoggerDelegate.logStudyDeleted(getCtx(),
+                            pat.getPatientID(),
+                            pat.getPatientName(),
+                            study.getStudyIUID(),
+                            deletedInstances);
+                }
+                    
+            }
         }
     }
 
-    private void deleteSeries(ContentEdit edit, List series) throws Exception {
+    private int deleteSeries(ContentEdit edit, List series) throws Exception {
+        int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
             SeriesModel serie = (SeriesModel) series.get(i);
-            if (folderForm.isSticky(serie))
+            if (folderForm.isSticky(serie)) {
                 edit.deleteSeries(serie.getPk());
-            else
-                deleteInstances(edit, serie.getInstances());
+                numInsts += serie.getNumberOfInstances();
+            } else {
+                numInsts += deleteInstances(edit, serie.getInstances());
+            }
         }
+        return numInsts;
     }
 
-    private void deleteInstances(ContentEdit edit, List instances)
+    private int deleteInstances(ContentEdit edit, List instances)
             throws Exception {
+        int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = instances.size(); i < n; i++) {
             InstanceModel instance = (InstanceModel) instances.get(i);
-            if (folderForm.isSticky(instance))
-                    edit.deleteInstance(instance.getPk());
+            if (folderForm.isSticky(instance)) {
+                edit.deleteInstance(instance.getPk());
+                ++numInsts;
+            }
         }
+        return numInsts;
     }
 
     private void setSticky(Set stickySet, String attr) {
@@ -261,5 +313,20 @@ public class FolderSubmitCtrl extends FolderCtrl {
         AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
                 .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
         return home.create();
+    }
+
+    private List listStudiesOfPatient(int patPk) throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+                .getFactory().lookup(ContentManagerHome.class,
+                        ContentManagerHome.JNDI_NAME);
+        ContentManager cm = home.create();
+        try {
+            return cm.listStudiesOfPatient(patPk);
+        } finally {
+            try {
+                cm.remove();
+            } catch (Exception e) {
+            }
+        }
     }
 }

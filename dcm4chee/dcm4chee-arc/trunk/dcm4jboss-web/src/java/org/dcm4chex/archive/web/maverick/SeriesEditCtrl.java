@@ -8,7 +8,9 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
+import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -48,6 +50,16 @@ public class SeriesEditCtrl extends Dcm4JbossController {
         this.seriesPk = seriesPk;
     }
 
+    public PatientModel getPatient() {
+        return FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(
+                patPk);
+    }
+
+    public StudyModel getStudy() {
+        return FolderForm.getFolderForm(getCtx().getRequest()).getStudyByPk(
+                patPk, studyPk);
+    }
+    
     public SeriesModel getSeries() {
         return FolderForm.getFolderForm(getCtx().getRequest())
                 .getSeriesByPk(patPk, studyPk, seriesPk);

@@ -62,6 +62,8 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	        pat.setPatientBirthDate(patientBirthDate);
 	        ContentEdit ce = lookupContentEdit();
 	        ce.createPatient(pat.toDataset());        
+            AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.CREATE, pat
+                    .getPatientID(), pat.getPatientName());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -85,6 +87,8 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
             //updating data model
             ContentEdit ce = lookupContentEdit();
             ce.updatePatient(pat.toDataset());
+            AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.MODIFY, pat
+                    .getPatientID(), pat.getPatientName());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
