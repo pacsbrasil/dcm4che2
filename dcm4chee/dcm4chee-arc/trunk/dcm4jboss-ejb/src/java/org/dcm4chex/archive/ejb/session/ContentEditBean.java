@@ -135,6 +135,20 @@ public abstract class ContentEditBean implements SessionBean {
     }
     
     /**
+     * @throws CreateException
+     * @ejb.interface-method
+     */
+    public void createSeries(Dataset ds, int studyPk) throws CreateException {
+    	try {
+	        StudyLocal study = studyHome.findByPrimaryKey(new Integer(studyPk));
+	        seriesHome.create(ds, study);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+	        
+    }
+    
+    /**
      * @ejb.interface-method
      */
     public void updatePatient(Dataset ds) {
