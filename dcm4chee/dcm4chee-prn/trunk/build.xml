@@ -470,6 +470,7 @@
         <include name="bin/JavaService.exe"/>
         <include name="doc/display-consistency.pdf"/>
         <include name="doc/gsdf_od.xls"/>
+        <include name="doc/gsdf_od.sxc"/>
         <include name="images/*.dcm"/>
       </fileset>
       <fileset dir="${build.dir}">
