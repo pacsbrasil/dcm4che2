@@ -19,8 +19,9 @@
  */
 package com.tiani.prnscp.print;
 
-import java.awt.image.BufferedImage;
 import java.awt.Rectangle;
+
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,21 +30,25 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Category;
 import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.TMFormat;
-import org.jboss.logging.Logger;
 
 /**
  *  <description>
  *
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  February 22, 2003
- * @see  <related>
- * @version  $Revision$
- * @since  December 31, 2002 <p>
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @created    February 22, 2003
+ * @see        <related>
+ * @version    $Revision$
+ * @since      December 31, 2002 <p>
  *
  *      <b>Revisions:</b> <p>
  *
@@ -52,9 +57,8 @@ import org.jboss.logging.Logger;
  *        <li> explicit fix description (no line numbers but methods) go beyond
  *        the cvs commit message
  *      </ul>
- *
  */
-class ScannerCalibration
+public class ScannerCalibration
 {
 
     // Constants -----------------------------------------------------
@@ -66,7 +70,7 @@ class ScannerCalibration
     private final static int BORDER_MIN = 50;
 
     // Attributes ----------------------------------------------------
-    private Logger log;
+    private Category log;
 
     /**  Holds value of property calibrationDir. */
     private File calibrationDir;
@@ -75,7 +79,7 @@ class ScannerCalibration
     private float[] refGrayscaleODs;
 
     /**  Holds value of property scanArea. */
-    private int[] scanPointExtension = {50, 50};
+    private int scanPointExtension = 50;
 
     /**  Holds value of property blackThreshold. */
     private int blackThreshold = 180;
@@ -101,15 +105,13 @@ class ScannerCalibration
     private String refFileName;
 
 
-    // Static --------------------------------------------------------
-
     // Constructors --------------------------------------------------
     /**
      *  Constructor for the ScannerCalibration object
      *
-     * @param  log Description of the Parameter
+     * @param  log  Description of the Parameter
      */
-    public ScannerCalibration(Logger log)
+    public ScannerCalibration(Category log)
     {
         this.log = log;
     }
@@ -120,7 +122,7 @@ class ScannerCalibration
     /**
      *  Getter for property scanGrayscaleDir.
      *
-     * @return  Value of property scanGrayscaleDir.
+     * @return    Value of property scanGrayscaleDir.
      */
     public File getCalibrationDir()
     {
@@ -131,7 +133,7 @@ class ScannerCalibration
     /**
      *  Setter for property scanGrayscaleDir.
      *
-     * @param  calibrationDir The new calibrationDir value
+     * @param  calibrationDir  The new calibrationDir value
      */
     public void setCalibrationDir(File calibrationDir)
     {
@@ -142,7 +144,7 @@ class ScannerCalibration
     /**
      *  Getter for property refFileName.
      *
-     * @return  Value of property refFileName.
+     * @return    Value of property refFileName.
      */
     public String getRefGrayscaleFileName()
     {
@@ -153,7 +155,7 @@ class ScannerCalibration
     /**
      *  Setter for property refFileName.
      *
-     * @param  refFileName New value of property refFileName.
+     * @param  refFileName  New value of property refFileName.
      */
     public void setRefGrayscaleFileName(String refFileName)
     {
@@ -164,7 +166,7 @@ class ScannerCalibration
     /**
      *  Getter for property refGrayscaleODs.
      *
-     * @return  Value of property refGrayscaleODs.
+     * @return    Value of property refGrayscaleODs.
      */
     public float[] getRefGrayscaleODs()
     {
@@ -175,7 +177,7 @@ class ScannerCalibration
     /**
      *  Setter for property refGrayscaleODs.
      *
-     * @param  refGrayscaleODs New value of property refGrayscaleODs.
+     * @param  refGrayscaleODs  New value of property refGrayscaleODs.
      */
     public void setRefGrayscaleODs(float[] refGrayscaleODs)
     {
@@ -192,49 +194,39 @@ class ScannerCalibration
     /**
      *  Getter for property scanArea.
      *
-     * @return  Value of property scanArea.
+     * @return    Value of property scanArea.
      */
-    public String getScanPointExtension()
+    public int getScanPointExtension()
     {
-        return "" + scanPointExtension[0] + "x" + scanPointExtension[1];
+        return scanPointExtension;
     }
 
 
     /**
      *  Setter for property scanArea.
      *
-     * @param  extension The new scanPointExtension value
+     * @param  extension  The new scanPointExtension value
      */
-    public void setScanPointExtension(String extension)
+    public void setScanPointExtension(int extension)
     {
-        int w;
-        int h;
-        try {
-            int xpos = extension.indexOf('x');
-            w = Integer.parseInt(extension.substring(0, xpos));
-            h = Integer.parseInt(extension.substring(xpos + 1));
-        } catch (IllegalArgumentException e) {
+        if (extension <= 0 && extension > EXTENSION_MAX) {
             throw new IllegalArgumentException("extension: " + extension);
         }
-        if (w <= 0 && w > EXTENSION_MAX && h <= 0 && h >= EXTENSION_MAX) {
-            throw new IllegalArgumentException("extension: " + extension);
-        }
-        this.scanPointExtension[0] = w;
-        this.scanPointExtension[1] = h;
+        this.scanPointExtension = extension;
     }
 
 
     /**
      *  Setter for property scanThreshold.
      *
-     * @param  threshold New value of property scanThreshold.
+     * @param  threshold  New value of property scanThreshold.
      */
     public void setScanThreshold(String threshold)
     {
         int black;
         int white;
         try {
-            int delim = threshold.indexOf('\\');
+            int delim = threshold.indexOf('/');
             black = Integer.parseInt(threshold.substring(0, delim));
             white = Integer.parseInt(threshold.substring(delim + 1));
         } catch (IllegalArgumentException e) {
@@ -245,13 +237,12 @@ class ScannerCalibration
         }
         this.blackThreshold = black;
         this.whiteThreshold = white;
-    }
-
+    }    
 
     /**
      *  Getter for property scanThreshold.
      *
-     * @return  Value of property scanThreshold.
+     * @return    Value of property scanThreshold.
      */
     public String getScanThreshold()
     {
@@ -262,7 +253,7 @@ class ScannerCalibration
     /**
      *  Getter for property dateOfLastCalibration.
      *
-     * @return  Value of property dateOfLastCalibration.
+     * @return    Value of property dateOfLastCalibration.
      */
     public String getDateOfLastCalibration()
     {
@@ -273,7 +264,7 @@ class ScannerCalibration
     /**
      *  Getter for property timeOfLastCalibration.
      *
-     * @return  Value of property timeOfLastCalibration.
+     * @return    Value of property timeOfLastCalibration.
      */
     public String getTimeOfLastCalibration()
     {
@@ -284,8 +275,8 @@ class ScannerCalibration
     /**
      *  Gets the scanDir attribute of the ScannerCalibration object
      *
-     * @param  aet Description of the Parameter
-     * @return  The scanDir value
+     * @param  aet  Description of the Parameter
+     * @return      The scanDir value
      */
     public File getScanDir(String aet)
     {
@@ -299,10 +290,10 @@ class ScannerCalibration
     /**
      *  Description of the Method
      *
-     * @param  aet Description of the Parameter
-     * @param  force Description of the Parameter
-     * @return  Description of the Return Value
-     * @exception  CalibrationException Description of the Exception
+     * @param  aet                       Description of the Parameter
+     * @param  force                     Description of the Parameter
+     * @return                           Description of the Return Value
+     * @exception  CalibrationException  Description of the Exception
      */
     public float[] calculateGrayscaleODs(String aet, boolean force)
         throws CalibrationException
@@ -338,7 +329,7 @@ class ScannerCalibration
             if (force || cachedRefData == null
                      || !refFile.equals(lastRefFile)
                      || refFile.lastModified() > lastRefFileModified) {
-                if (log != null && log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("analysing " + refFile.getName());
                 }
                 cachedRefData = analyse(refFile);
@@ -346,7 +337,7 @@ class ScannerCalibration
                 lastRefFileModified = refFile.lastModified();
                 cachedODs = null;
             } else {
-                if (log != null && log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("use cached data for " + lastRefFile.getName());
                 }
             }
@@ -494,37 +485,30 @@ class ScannerCalibration
                          : (hgrad > 0 ? "right-left" : "left-right"))
                          + "]");
             }
-            int n = portrait
-                     ? findSteps(vline, tb[0], tb[1], vgrad > 0)
-                     : findSteps(hline, lr[0], lr[1], hgrad > 0);
-            float[] px = new float[n];
+            float[] px;
             if (portrait) {
+                int n = findSteps(vline, tb[0], tb[1], vgrad > 0);
+                px = new float[n];
                 // top to bottom orientation
                 int h1 = tb[1] - tb[0];
-                int dw = (lr[1] - lr[0]) * scanPointExtension[0] / 100 + 1;
-                int dh = h1 * scanPointExtension[1] / (100 * n) + 1;
-                int x1 = (lr[0] + lr[1] - dw) / 2;
+                int dh = h1 * scanPointExtension / (100 * n) + 1;
                 int y = tb[0] + (h1 / n - dh) / 2;
-                int[] buf = new int[dw * dh];
 
                 for (int i = 0; i < n; ++i) {
-                    rParam.setSourceRegion(new Rectangle(x1, y + h1 * i / n, dw, dh));
                     px[vgrad > 0 ? n - i - 1 : i] =
-                            average(r.read(0, rParam).getRGB(0, 0, dw, dh, buf, 0, dw));
+                            average(vline, y + h1 * i / n, dh);
                 }
             } else {
                 // left to right orientation
+                int n = findSteps(hline, lr[0], lr[1], hgrad > 0);
+                px = new float[n];
                 int w1 = lr[1] - lr[0];
-                int dw = w1 * scanPointExtension[1] / (100 * n) + 1;
-                int dh = (tb[1] - tb[0]) * scanPointExtension[0] / 100 + 1;
+                int dw = w1 * scanPointExtension / (100 * n) + 1;
                 int x = lr[0] + (w1 / n - dw) / 2;
-                int y1 = (tb[0] + tb[1] - dh) / 2;
-                int[] buf = new int[dw * dh];
 
                 for (int i = 0; i < n; ++i) {
-                    rParam.setSourceRegion(new Rectangle(x + w1 * i / n, y1, dw, dh));
                     px[hgrad > 0 ? n - i - 1 : i] =
-                            average(r.read(0, rParam).getRGB(0, 0, dw, dh, buf, 0, dw));
+                            average(hline, x + w1 * i / n, dw);
                 }
             }
             if (log != null && log.isDebugEnabled()) {
@@ -544,13 +528,13 @@ class ScannerCalibration
     }
 
 
-    private float average(int[] rgb)
+    private float average(int[] rgb, int off, int len)
     {
         int v = 0;
-        for (int i = 0; i < rgb.length; ++i) {
+        for (int i = off, n = off + len; i < n; ++i) {
             v += (rgb[i] & 0xff) ^ 0xff;
         }
-        return (float) v / rgb.length;
+        return (float) v / len;
     }
 
 
@@ -637,6 +621,67 @@ class ScannerCalibration
             log.debug("detected " + (n - 1) + " from " + steps + " gray steps");
         }
         return steps;
+    }
+
+    // Main --------------------------------------------------------
+    public static void main(String args[])
+        throws Exception
+    {
+        BasicConfigurator.configure();
+        LongOpt[] longopts = {
+                new LongOpt("threshold", LongOpt.REQUIRED_ARGUMENT, null, 't'),
+                new LongOpt("ext", LongOpt.REQUIRED_ARGUMENT, null, 'e'),
+                new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h')
+                };
+
+        Getopt g = new Getopt("plut.jar", args, "t:e:h", longopts, true);
+        try {
+            ScannerCalibration sc = new ScannerCalibration(
+                Logger.getLogger(ScannerCalibration.class));
+            int c;
+            while ((c = g.getopt()) != -1) {
+                switch (c) {
+                    case 't':
+                        sc.setScanThreshold(g.getOptarg());
+                        break;
+                    case 'e':
+                        sc.setScanPointExtension(Integer.parseInt(g.getOptarg()));
+                        break;
+                    case 'h':
+                    case '?':
+                        exit("");
+                        break;
+                }
+            }
+            int optind = g.getOptind();
+            int argc = args.length - optind;
+            if (argc != 1) {
+                exit("probescan.jar: wrong number of arguments\n");
+            }
+            sc.analyse(new File(args[optind]));
+        } catch (IllegalArgumentException e) {
+            exit("probescan.jar: illegal argument - " + e.getMessage() + "\n");
+        } catch (IOException e) {
+            System.err.println("probescan.jar: i/o error - " + e.getMessage() + "\n");
+            System.exit(1);
+        }
+    }
+
+    private final static String USAGE =
+            "Usage: java -jar probescan.jar [OPTIONS] FILE\n\n" +
+            "Analyses grayscale scan in specified FILE.\n" +
+            "Options:\n" +
+            " -t --threshold   Specifies black/white threshold in device driving levels\n" +
+            "                  for step detection [default: 180/220].\n" +
+            " -e --extension   Specifies extension of measurement area in % of\n" +
+            "                  step height [default: 50]\n" +
+            " -h --help        show this help and exit\n";
+
+    private static void exit(String prompt)
+    {
+        System.err.println(prompt);
+        System.err.println(USAGE);
+        System.exit(1);
     }
 
 }

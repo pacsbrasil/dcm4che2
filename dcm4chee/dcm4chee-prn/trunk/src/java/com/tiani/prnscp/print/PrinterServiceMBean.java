@@ -713,7 +713,7 @@ public interface PrinterServiceMBean extends ServiceMBean
      *
      * @return  Value of property scanPointExtension.
      */
-    public String getScanPointExtension();
+    public int getScanPointExtension();
 
 
     /**
@@ -721,7 +721,7 @@ public interface PrinterServiceMBean extends ServiceMBean
      *
      * @param  extension New value of property scanPointExtension.
      */
-    public void setScanPointExtension(String extension);
+    public void setScanPointExtension(int extension);
 
 
     /**

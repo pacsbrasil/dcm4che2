@@ -252,7 +252,8 @@ public class PrinterService
     private boolean decimateByNearestNeighbor;
 
     private final PrinterCalibration calibration = new PrinterCalibration(log);
-    private final ScannerCalibration scanner = new ScannerCalibration(log);
+    private final ScannerCalibration scanner =
+        new ScannerCalibration(log.getCategory());
 
     private long notifCount = 0;
     private LinkedList highPriorQueue = new LinkedList();
@@ -2043,7 +2044,7 @@ public class PrinterService
      *
      * @return    Value of property scanArea.
      */
-    public String getScanPointExtension()
+    public int getScanPointExtension()
     {
         return scanner.getScanPointExtension();
     }
@@ -2054,7 +2055,7 @@ public class PrinterService
      *
      * @param  extension  New value of property scanPointExtension.
      */
-    public void setScanPointExtension(String extension)
+    public void setScanPointExtension(int extension)
     {
         scanner.setScanPointExtension(extension);
     }

@@ -505,16 +505,16 @@
     <!--
     Specifies black\white threshold in device driving levels, used by
     semi-automatic calibration from scanned gray step printout.
-    Usually, you need not change the default value 180\220.
+    Usually, you need not change the default value 180/220.
     -->    
-    <attribute name="ScanThreshold">180\220</attribute>
+    <attribute name="ScanThreshold">180/220</attribute>
     
     <!--
-    Specifies extension of measurement area in % of step width x step height,
+    Specifies extension of measurement area in % of step height,
     used by semi-automatic calibration from scanned gray step printout.
-    Usually, you need not change the default value 50x50.
+    Usually, you need not change the default value 50.
     -->
-   <attribute name="ScanPointExtension">50x50</attribute>
+   <attribute name="ScanPointExtension">50</attribute>
     
     <!--
     Activates redirection of all printing into a postscript file.
