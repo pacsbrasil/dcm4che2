@@ -126,6 +126,20 @@ public interface WADOCache {
 	File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns ) throws IOException; 
 
 	/**
+	 * Return the File object to get or store a file for given arguments.
+	 * <p>
+	 * If the cache object referenced with arguments is'nt in this cache the returned file object
+	 * exists() method will result false!
+	 * @param studyUID		Unique identifier of the study.
+	 * @param seriesUID		Unique identifier of the series.
+	 * @param instanceUID	Unique identifier of the instance.
+	 * @param key TODO
+	 * 
+	 * @return File object to get or store a file.
+	 */
+	File getFileObject( String studyUID, String seriesUID, String instanceUID, String key );
+	
+	/**
 	 * Clears this cache.
 	 * <p>
 	 * Remove all images in this cache.
