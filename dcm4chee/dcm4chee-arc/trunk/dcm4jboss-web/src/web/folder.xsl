@@ -80,7 +80,8 @@
 					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Send" name="send" src="images/send.gif" alt="send" border="0"
 							title="Send selected Entities to specified Destination"
-							onclick="return confirm('Send selected entities to ' + document.myForm.destination.value  + '?')">
+							onclick="return confirm('Send selected entities to ' + 
+document.myForm.destination.options[document.myForm.destination.selectedIndex ].text + '?')">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
