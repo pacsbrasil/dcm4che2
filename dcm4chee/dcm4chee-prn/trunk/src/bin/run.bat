@@ -10,9 +10,9 @@ rem $Id$
 
 rem Set maximum size of the memory allocation pool
 rem default value of 64MB may not be sufficient for jprint
-set JAVA_OPTS=-Xms64m -Xmx128m
+set JAVA_OPTS=-Xmx100m
 rem running in server mode may have performance benefits
-rem set JAVA_OPTS=-Xms64m -Xmx128m -server
+rem set JAVA_OPTS=-Xmx100m -server
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%

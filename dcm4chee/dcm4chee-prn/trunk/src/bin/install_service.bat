@@ -1,6 +1,8 @@
 @echo off
 setlocal
-set JAVA_OPTS=-Xmx128m
+rem Set maximum size of the memory allocation pool
+rem default value of 64MB may not be sufficient for jprint
+set JAVA_OPTS=-Xmx100m
 set DIRNAME=%~dp0%
 set RUNJAR=%DIRNAME%\run.jar
 if exist "%RUNJAR%" goto found_runjar
