@@ -36,9 +36,39 @@
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	
+	<servlet>
+		<servlet-name>IHERetrieveSummaryInfo</servlet-name>
+		<display-name>IHE RID - Retrieve Summary Information for Display</display-name>
+		<servlet-class>org.dcm4chex.wado.web.RIDServlet</servlet-class>
+		<init-param>
+			<param-name>ridServiceName</param-name>
+			<param-value>tiani.archive:service=RIDService</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>IHERetrieveDocument</servlet-name>
+		<display-name>IHE RID - Retrieve Document for Display</display-name>
+		<servlet-class>org.dcm4chex.wado.web.RIDServlet</servlet-class>
+		<init-param>
+			<param-name>ridServiceName</param-name>
+			<param-value>tiani.archive:service=RIDService</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>wado</servlet-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>/wado/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>IHERetrieveSummaryInfo</servlet-name>
+		<url-pattern>/IHERetrieveSummaryInfo/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>IHERetrieveDocument</servlet-name>
+		<url-pattern>/IHERetrieveDocument/*</url-pattern>
 	</servlet-mapping>
 
 	<welcome-file-list>
