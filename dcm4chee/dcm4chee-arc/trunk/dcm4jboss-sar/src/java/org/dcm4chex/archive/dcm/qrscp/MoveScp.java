@@ -75,6 +75,7 @@ public class MoveScp extends DcmServiceBase {
                     assoc,
                     rq.pcid(),
                     rqCmd,
+                    rqData,
                     fileInfos,
                     aeData,
                     dest))

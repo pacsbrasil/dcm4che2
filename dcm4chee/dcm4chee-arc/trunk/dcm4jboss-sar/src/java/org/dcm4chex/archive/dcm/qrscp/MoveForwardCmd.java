@@ -14,7 +14,6 @@ import java.util.Arrays;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
@@ -34,8 +33,6 @@ import org.dcm4chex.archive.exceptions.UnkownAETException;
  */
 class MoveForwardCmd {
 
-    private static final String IMAGE = "IMAGE";
-
     private static final int PCID = 1;
 
     private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
@@ -45,44 +42,39 @@ class MoveForwardCmd {
 
     private final AEData aeData;
 
-    private final int msgid;
-
     private final String callingAET;
 
-    private final String destAET;
-
-    private final int priority;
-
-    private final String[] iuids;
-
     private ActiveAssociation aa;
+
+	private final Command moveRqCmd;
+
+	private final Dataset moveRqData;
     
-    public MoveForwardCmd(QueryRetrieveScpService service, int msgid, String callingAET,
-            String retrieveAET, int priority, String destAET, String[] iuids)
-            throws SQLException, UnkownAETException {
+	public MoveForwardCmd(QueryRetrieveScpService service, String callingAET,
+			String retrieveAET, Command moveRqCmd, Dataset moveRqData)
+			throws SQLException, UnkownAETException {
         this.service = service;
-        this.msgid = msgid;
         this.callingAET = callingAET;
         this.aeData = service.queryAEData(retrieveAET);
-        this.destAET = destAET;
-        this.iuids = iuids;
-        this.priority = priority;
-    }
-    
-    private final byte[] RELATIONAL_RETRIEVE = { 1 };
+        this.moveRqCmd = moveRqCmd;
+        this.moveRqData = moveRqData;
+	}
+
+	private final byte[] RELATIONAL_RETRIEVE = { 1 };
 
     
     public void execute(DimseListener moveRspListener)
-            throws InterruptedException, IOException {
+            throws InterruptedException, IOException {    	
         Association a = QueryRetrieveScpService.asf.newRequestor(service.createSocket(aeData));
         a.setAcTimeout(service.getAcTimeout());
         AAssociateRQ rq = QueryRetrieveScpService.asf.newAAssociateRQ();
         rq.setCalledAET(aeData.getTitle());
         rq.setCallingAET(callingAET);
+        String asuid = moveRqCmd.getAffectedSOPClassUID();
         rq.addPresContext(QueryRetrieveScpService.asf.newPresContext(PCID,
-                UIDs.StudyRootQueryRetrieveInformationModelMOVE, NATIVE_TS));
+        		asuid, NATIVE_TS));
         rq.addExtNegotiation(QueryRetrieveScpService.asf.newExtNegotiation(
-                UIDs.StudyRootQueryRetrieveInformationModelMOVE, RELATIONAL_RETRIEVE));
+        		asuid, RELATIONAL_RETRIEVE));
         PDU pdu = a.connect(rq);
         if (!(pdu instanceof AAssociateAC)) { throw new IOException(
                 "Association not accepted by " + aeData + ":\n" + pdu); }
@@ -92,17 +84,10 @@ class MoveForwardCmd {
         try {
             if (a.getAcceptedTransferSyntaxUID(PCID) == null)
                 throw new IOException(
-                    "Study Root IM MOVE Service not supported by " + aeData);
-            if (!isRelationalRetrieveAccepted(ac.getExtNegotiation(UIDs.StudyRootQueryRetrieveInformationModelMOVE)))
+                    "MOVE Service " + asuid + " not supported by " + aeData);
+            if (!isRelationalRetrieveAccepted(ac.getExtNegotiation(asuid)))
                 service.getLog().warn("Relational Retrieve not supported by " + aeData);
-            Command cmd = QueryRetrieveScpService.dof.newCommand();
-            cmd.initCMoveRQ(msgid,
-                    UIDs.StudyRootQueryRetrieveInformationModelMOVE, priority,
-                    destAET);
-            Dataset ds = QueryRetrieveScpService.dof.newDataset();
-            ds.putCS(Tags.QueryRetrieveLevel, IMAGE);
-            ds.putUI(Tags.SOPInstanceUID, iuids);
-            Dimse cmoverq = QueryRetrieveScpService.asf.newDimse(PCID, cmd, ds);
+            Dimse cmoverq = QueryRetrieveScpService.asf.newDimse(PCID, moveRqCmd, moveRqData);
             aa.invoke(cmoverq, moveRspListener);
         } finally {
             try {
@@ -124,7 +109,7 @@ class MoveForwardCmd {
         if (aa == null)
             return;
         Command cmd = QueryRetrieveScpService.dof.newCommand();
-        cmd.initCCancelRQ(msgid);
+        cmd.initCCancelRQ(moveRqCmd.getMessageID());
         Dimse ccancelrq = QueryRetrieveScpService.asf.newDimse(PCID, cmd);
         aa.getAssociation().write(ccancelrq);
     }

@@ -62,6 +62,8 @@ class MoveTask implements Runnable {
     private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian };
 
+    private static final String IMAGE = "IMAGE";
+
     static boolean isNativeLittleEndianTS(String uid) {
         return UIDs.ExplicitVRLittleEndian.equals(uid)
                 || UIDs.ImplicitVRLittleEndian.equals(uid);
@@ -82,10 +84,20 @@ class MoveTask implements Runnable {
 
     private final Command moveRqCmd;
 
+    private final Dataset moveRqData;
+    
+    private boolean forwardOrigMoveRQ = false;
+
     private final String moveOriginatorAET;
 
     private final String moveCalledAET;
 
+	private final String callingAET;
+
+	private final int priority;
+
+	private final int msgID;
+	
     private final boolean withoutPixeldata;
 
     private ActiveAssociation moveAssoc;
@@ -136,18 +148,25 @@ class MoveTask implements Runnable {
 
     public MoveTask(QueryRetrieveScpService service,
             ActiveAssociation moveAssoc, int movePcid, Command moveRqCmd,
-            FileInfo[][] fileInfo, AEData aeData, String moveDest)
+            Dataset moveRqData, FileInfo[][] fileInfo, AEData aeData,
+            String moveDest)
             throws DcmServiceException {
         this.service = service;
         this.log = service.getLog();
         this.moveAssoc = moveAssoc;
         this.movePcid = movePcid;
         this.moveRqCmd = moveRqCmd;
+        this.moveRqData = moveRqData;
         this.aeData = aeData;
         this.moveDest = moveDest;
         this.withoutPixeldata = service.isWithoutPixelData(moveDest);
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.moveCalledAET = moveAssoc.getAssociation().getCalledAET();
+        this.callingAET = service.isForwardAsMoveOriginator()
+        		? moveOriginatorAET
+                : moveCalledAET;
+        this.priority = moveRqCmd.getInt(Tags.Priority, Command.MEDIUM);
+        this.msgID = moveRqCmd.getMessageID();
         if ((remaining = fileInfo.length) > 0) {
             notifyMovePending(null);
             prepareRetrieveInfo(fileInfo);
@@ -156,9 +175,11 @@ class MoveTask implements Runnable {
                 initInstancesAction(fileInfo[0][0]);
                 this.stgCmtActionInfo = QueryRetrieveScpService.dof.newDataset();
                 this.refSOPSeq = stgCmtActionInfo.putSQ(Tags.RefSOPSeq);
+            } else {
+            	this.forwardOrigMoveRQ =
+            		toForward.size() + toExternalForward.size() == 1;
             }
-            moveAssoc.addCancelListener(moveRqCmd.getMessageID(),
-                    cancelListener);
+            moveAssoc.addCancelListener(msgID, cancelListener);
         }
     }
 
@@ -280,12 +301,23 @@ class MoveTask implements Runnable {
             }
         };
         try {
-            moveForwardCmd = new MoveForwardCmd(service, moveRqCmd
-                    .getMessageID(),
-                    service.isForwardAsMoveOriginator() ? moveOriginatorAET
-                            : moveCalledAET, retrieveAET, moveRqCmd.getInt(
-                            Tags.Priority, 0), moveDest, (String[]) iuids
-                            .toArray(new String[size]));
+        	final Command cmd;
+            final Dataset ds;
+        	if (forwardOrigMoveRQ) {
+        		cmd = moveRqCmd;
+        		ds = moveRqData;
+        	} else {
+	            cmd = QueryRetrieveScpService.dof.newCommand();
+	            cmd.initCMoveRQ(msgID,
+	                    UIDs.StudyRootQueryRetrieveInformationModelMOVE, priority,
+	                    moveDest);
+	            ds = QueryRetrieveScpService.dof.newDataset();
+	            ds.putCS(Tags.QueryRetrieveLevel, IMAGE);
+	            ds.putUI(Tags.SOPInstanceUID,
+	            		(String[]) iuids.toArray(new String[iuids.size()]));
+        	}
+			moveForwardCmd = new MoveForwardCmd(service, callingAET,
+					retrieveAET, cmd, ds);
             moveForwardCmd.execute(fwdmoveRspListener);
         } catch (Exception e) {
             log.error("Failed to forward MOVE RQ to " + retrieveAET, e);
@@ -432,10 +464,9 @@ class MoveTask implements Runnable {
             }
         }
         Command storeRqCmd = QueryRetrieveScpService.dof.newCommand();
-        storeRqCmd.initCStoreRQ(assoc.nextMsgID(), info.sopCUID, info.sopIUID,
-                moveRqCmd.getInt(Tags.Priority, Command.MEDIUM));
-        storeRqCmd
-                .putUS(Tags.MoveOriginatorMessageID, moveRqCmd.getMessageID());
+		storeRqCmd.initCStoreRQ(assoc.nextMsgID(), info.sopCUID, info.sopIUID,
+                priority);
+		storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         DataSource ds = new FileDataSource(service, info, buffer);
         return QueryRetrieveScpService.asf.newDimse(presCtx.pcid(), storeRqCmd, ds);
@@ -575,5 +606,6 @@ class MoveTask implements Runnable {
                 }
             }
         }
+        
     }
 }
