@@ -32,85 +32,102 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import javax.net.SocketFactory;
 import javax.net.ServerSocketFactory;
-
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 /**
- * <description> 
+ * <description>
  *
  * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
- *   
+ *
  * <p><b>Revisions:</b>
  *
- * <p><b>yyyymmdd author:</b>
+ * <p><b>20020804 gunter:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
- *            beyond the cvs commit message
+ * <li> make enabledCipherSuites param of SocketFactory instead of Adapter
  * </ul>
  */
-public abstract class SSLContextAdapter
-{
-   // Constants -----------------------------------------------------
-  
-   // Attributes ----------------------------------------------------
-   
-   // Static --------------------------------------------------------
-   public static SSLContextAdapter getInstance() {
-      return (SSLContextAdapter)Implementation.findFactory(
+public abstract class SSLContextAdapter {
+    // Constants -----------------------------------------------------
+    public static final String SSL_RSA_WITH_NULL_SHA =
+        "SSL_RSA_WITH_NULL_SHA";
+    public static final String SSL_RSA_WITH_3DES_EDE_CBC_SHA = 
+        "SSL_RSA_WITH_3DES_EDE_CBC_SHA";
+     
+    // Attributes ----------------------------------------------------
+    
+    // Static --------------------------------------------------------
+    public static SSLContextAdapter getInstance() {
+        return (SSLContextAdapter)Implementation.findFactory(
             "dcm4che.util.SSLContextAdapter");
-   }
+    }
+    
+    // Constructors --------------------------------------------------
+    
+    // Public --------------------------------------------------------
+    public abstract SSLContext getSSLContext();
+        
+    public abstract String[] getSupportedCipherSuites();
+    
+    public abstract void setEnabledProtocols(String[] protocols);
+    
+    public abstract void setEnabledCipherSuites(String[] cipherSuites);
+    
+    public abstract String[] getEnabledCipherSuites();
+    
+    public abstract String[] getEnabledProtocols();
+        
+    public abstract String[] getSupportedProtocols();
+    
+    public abstract void setNeedClientAuth(boolean needClientAuth);
+    
+    public abstract boolean isNeedClientAuth();
+    
+    //   public abstract void setStartHandshake(boolean startHandshake);
+    
+    public abstract void seedRandom(long seed);
+    
+    public abstract KeyStore loadKeyStore(InputStream in, char[] password)
+    throws GeneralSecurityException, IOException;
+    
+    public abstract KeyStore loadKeyStore(File file, char[] password)
+    throws GeneralSecurityException, IOException;
+    
+    public abstract KeyStore loadKeyStore(URL url, char[] password)
+    throws GeneralSecurityException, IOException;
+    
+    public abstract void setKey(KeyStore key, char[] password)
+    throws GeneralSecurityException;
+    
+    public abstract KeyManager[] getKeyManagers();
 
-   // Constructors --------------------------------------------------
-   
-   // Public --------------------------------------------------------
-   public abstract void setEnabledCipherSuites(String[] cipherSuites);
+    public abstract void setTrust(KeyStore cacerts)
+    throws GeneralSecurityException;
+    
+    public abstract TrustManager[] getTrustManagers();
 
-   public abstract String[] getEnabledCipherSuites();
+    public abstract void init()
+    throws GeneralSecurityException;
+    
+    public abstract SocketFactory getSocketFactory();
+    
+    public abstract SocketFactory getSocketFactory(String[] cipherSuites);
+    
+    public abstract ServerSocketFactory getServerSocketFactory();
 
-   public abstract String[] getSupportedCipherSuites()
-   throws GeneralSecurityException;
-
-   public abstract void setEnabledProtocols(String[] protocols);
-
-   public abstract String[] getEnabledProtocols();
-   
-   public abstract void setNeedClientAuth(boolean needClientAuth);
-   
-//   public abstract void setStartHandshake(boolean startHandshake);
-
-   public abstract void seedRandom(long seed)
-   throws GeneralSecurityException;
- 
-   public abstract KeyStore loadKeyStore(InputStream in, char[] password)
-   throws GeneralSecurityException, IOException;
-   
-   public abstract KeyStore loadKeyStore(File file, char[] password)
-   throws GeneralSecurityException, IOException;
-   
-   public abstract KeyStore loadKeyStore(URL url, char[] password)
-   throws GeneralSecurityException, IOException;
-
-   public abstract void setKey(KeyStore key, char[] password)
-   throws GeneralSecurityException;
-
-   public abstract void setTrust(KeyStore cacerts)
-   throws GeneralSecurityException;
-
-   public abstract SocketFactory getSocketFactory()
-   throws GeneralSecurityException;
-
-   public abstract ServerSocketFactory getServerSocketFactory()
-   throws GeneralSecurityException;
-      
-   // Z implementation ----------------------------------------------
-   
-   // Y overrides ---------------------------------------------------
-   
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
+    public abstract ServerSocketFactory getServerSocketFactory(String[] cipherSuites);
+    
+    // Z implementation ----------------------------------------------
+    
+    // Y overrides ---------------------------------------------------
+    
+    // Package protected ---------------------------------------------
+    
+    // Protected -----------------------------------------------------
+    
+    // Private -------------------------------------------------------
+    
+    // Inner classes -------------------------------------------------
 }

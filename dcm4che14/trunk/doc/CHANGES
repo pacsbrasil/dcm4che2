@@ -58,7 +58,9 @@ dcm4che API:
 + org.dcm4che.net.AcceptorPolicy#setAsyncOpsWindow(AsyncOpsWindow) removed,
     use setAsyncOpsWindow(int, int) instead
 + org.dcm4che.net.AcceptorPolicy#addRoleSelection(RoleSelection) ->
-    #addRoleSelection(String uid, boolean scu, boolean scp) 
+    #addRoleSelection(String uid, boolean scu, boolean scp)
++ org.dcm4che.util.SSLContextAdapter:
+   make enabledCipherSuites param of SocketFactory instead of Adapter
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1

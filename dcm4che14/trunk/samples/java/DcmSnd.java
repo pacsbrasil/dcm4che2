@@ -634,6 +634,7 @@ public class DcmSnd implements PollDirSrv.Handler {
             tls.setTrust(tls.loadKeyStore(
                 DcmSnd.class.getResource(cfg.getProperty("tls-cacerts", "cacerts")),
                 cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
+            tls.init();
         } catch (Exception ex) {
             throw new RuntimeException("Could not initalize TLS configuration - "
                 + ex.getMessage());

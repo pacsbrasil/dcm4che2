@@ -466,6 +466,7 @@ public class MppsSnd implements PollDirSrv.Handler {
                 MppsSnd.class.getResource(
                     cfg.getProperty("tls-cacerts", "cacerts")),
                 cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
+            tls.init();
         } catch (Exception ex) {
             throw new RuntimeException("Could not initalize TLS configuration - "
             + ex.getMessage());
