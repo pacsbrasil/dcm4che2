@@ -260,6 +260,7 @@ public abstract class FileBean implements EntityBean
         throws CreateException
     {
         setInstance(instance);
+        instance.updateAvailability(0);
         setFileSystem(filesystem);
         filesystem.setDiskUsage(filesystem.getDiskUsage() + size);
         log.info("Created " + prompt());

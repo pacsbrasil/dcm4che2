@@ -33,11 +33,9 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
-import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -45,7 +43,6 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -185,8 +182,7 @@ public abstract class StorageBean implements SessionBean {
                     md5,
                     instance,
                     fs);
-            updateRetrieveAETs(instance, fs.getRetrieveAETs());
-            updateAvailability(instance);
+            instance.updateDerivedFields();
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (DuplicateStorageException e) {
@@ -212,35 +208,6 @@ public abstract class StorageBean implements SessionBean {
         }
     }
 
-    /**
-     * @param instance
-     * @param retrieveAETs
-     */
-    private void updateRetrieveAETs(InstanceLocal instance,
-            String retrieveAETs) {
-        if (instance.addRetrieveAETs(StringUtils.split(retrieveAETs, '\\'))) {
-            SeriesLocal series = instance.getSeries();
-            if (series.updateRetrieveAETs()) {
-                StudyLocal study = series.getStudy();
-                study.updateRetrieveAETs();
-            }
-        }
-    }
-
-    private void updateAvailability(InstanceLocal instance) {
-        if (instance.updateAvailability(0)) {
-            SeriesLocal series = instance.getSeries();
-            if (series.updateAvailability()) {
-                StudyLocal study = series.getStudy();
-                study.updateAvailability();
-            }
-        }
-    }
-
-    /**
-     * @param ds
-     * @return
-     */
     private SeriesLocal getSeries(Dataset ds, Dataset coercedElements)
             throws FinderException, CreateException {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
@@ -251,12 +218,6 @@ public abstract class StorageBean implements SessionBean {
         } catch (ObjectNotFoundException onfe) {
             series = seriesHome.create(ds.subSet(attrFilter.getSeriesFilter()),
                     getStudy(ds, coercedElements));
-            MPPSLocal mpps;
-            CodeLocal drcode;
-            if ((mpps = series.getMpps()) != null
-                    && mpps.isIncorrectWorklistEntrySelected()) {
-                series.hide();
-            }
         }
         return series;
     }
@@ -392,5 +353,19 @@ public abstract class StorageBean implements SessionBean {
      */
     public void commit(String iuid) throws FinderException {
         instHome.findBySopIuid(iuid).setCommitment(true);
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updateStudy(String iuid) throws FinderException {
+        studyHome.findByStudyIuid(iuid).updateDerivedFields();
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updateSeries(String iuid) throws FinderException {
+        seriesHome.findBySeriesIuid(iuid).updateDerivedFields();
     }
 }

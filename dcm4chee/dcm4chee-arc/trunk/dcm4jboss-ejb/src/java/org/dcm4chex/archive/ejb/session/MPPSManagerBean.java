@@ -164,10 +164,17 @@ public abstract class MPPSManagerBean implements SessionBean {
         mpps.setAttributes(ds);
         if (mpps.isIncorrectWorklistEntrySelected()) {
             Collection c = mpps.getSeries();
+            SeriesLocal ser = null;
             for (Iterator it = c.iterator(); it.hasNext();) {
-                SeriesLocal ser = (SeriesLocal) it.next();
-                ser.hide();
+                ser = (SeriesLocal) it.next();
+                ser.setHidden(true);
             }
+            if (ser != null)
+                try {
+                    ser.getStudy().updateDerivedFields();
+                } catch (FinderException e1) {
+                    throw new DcmServiceException(Status.ProcessingFailure, e1);
+                }
         }
     }
 }

@@ -164,7 +164,7 @@ public abstract class ContentEditBean implements SessionBean {
                     .findByPrimaryKey(new Integer(pk));
             series.setAttributes(ds);
             StudyLocal study = series.getStudy();
-            study.updateModalitiesInStudy();
+            study.updateDerivedFields();
         } catch (FinderException e) {
             throw new EJBException(e);
         }
@@ -179,9 +179,7 @@ public abstract class ContentEditBean implements SessionBean {
                     series_pk));
             StudyLocal study = series.getStudy();
             series.remove();
-            study.updateRetrieveAETs();
-            study.updateAvailability();
-            study.updateModalitiesInStudy();
+            study.updateDerivedFields();
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
@@ -226,12 +224,8 @@ public abstract class ContentEditBean implements SessionBean {
                     instance_pk));
             SeriesLocal series = instance.getSeries();
             instance.remove();
-            if (series.updateRetrieveAETs()) {
-                series.getStudy().updateRetrieveAETs();
-            }
-            if (series.updateAvailability()) {
-                series.getStudy().updateAvailability();
-            }
+            series.updateDerivedFields();
+            series.getStudy().updateDerivedFields();
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
@@ -280,18 +274,10 @@ public abstract class ContentEditBean implements SessionBean {
                 StudyLocal oldStudy = series.getStudy();
                 if (oldStudy.isIdentical(study)) continue;
                 seriess.add(series);                
-                oldStudy.updateRetrieveAETs();
-                oldStudy.updateAvailability();
-                oldStudy.updateModalitiesInStudy();
+                oldStudy.updateDerivedFields();
                 final int numI = series.getNumberOfSeriesRelatedInstances();
-                oldStudy.incNumberOfStudyRelatedInstances(-numI);
-                oldStudy.incNumberOfStudyRelatedSeries(-1);
-                study.incNumberOfStudyRelatedInstances(numI);
-                study.incNumberOfStudyRelatedSeries(1);
             }
-            study.updateRetrieveAETs();
-            study.updateAvailability();
-            study.updateModalitiesInStudy();
+            study.updateDerivedFields();
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (FinderException e) {
@@ -315,21 +301,11 @@ public abstract class ContentEditBean implements SessionBean {
                 SeriesLocal oldSeries = instance.getSeries();
                 if (oldSeries.isIdentical(series)) continue;
                 instances.add(instance);                
-                if (oldSeries.updateRetrieveAETs()) {
-                    oldSeries.getStudy().updateRetrieveAETs();
-                }
-                if (oldSeries.updateAvailability()) {
-                    oldSeries.getStudy().updateAvailability();
-                }
-                oldSeries.incNumberOfSeriesRelatedInstances(-1);
-                series.incNumberOfSeriesRelatedInstances(1);
+                oldSeries.updateDerivedFields();
+                oldSeries.getStudy().updateDerivedFields();
             }
-            if (series.updateRetrieveAETs()) {
-                series.getStudy().updateRetrieveAETs();
-            }
-            if (series.updateAvailability()) {
-                series.getStudy().updateAvailability();
-            }
+            series.updateDerivedFields();
+            series.getStudy().updateDerivedFields();
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (FinderException e) {

@@ -8,10 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -34,7 +30,6 @@ import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PrivateTags;
-import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
@@ -76,6 +71,14 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *  query="SELECT OBJECT(a) FROM Series AS a WHERE a.ppsIuid IS NULL"
  *  transaction-type="Supports"
  * 
+ * @jboss.query 
+ * 	signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
+ * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
+ * 
+ * @jboss.query 
+ * 	signature="int ejbSelectAvailability(java.lang.Integer pk)"
+ * 	query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
+ * 
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
@@ -94,7 +97,7 @@ public abstract class SeriesBean implements EntityBean {
     private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
             Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances};
 
-    private Set retrieveAETSet;
+//    private Set retrieveAETSet;
 
     private MPPSLocalHome mppsHome;
 
@@ -283,6 +286,9 @@ public abstract class SeriesBean implements EntityBean {
         }
     }
 
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setHidden(boolean hidden);
 
     /**
@@ -341,9 +347,9 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract java.util.Collection getInstances();
 
-    public void ejbLoad() {
-        retrieveAETSet = null;
-    }
+//    public void ejbLoad() {
+//        retrieveAETSet = null;
+//    }
 
     /**
      * Create series.
@@ -352,7 +358,7 @@ public abstract class SeriesBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, StudyLocal study)
             throws CreateException {
-        retrieveAETSet = null;
+//        retrieveAETSet = null;
         setAttributes(ds);
         return null;
     }
@@ -361,16 +367,64 @@ public abstract class SeriesBean implements EntityBean {
             throws CreateException {
         updateMpps();
         setStudy(study);
-        study.addModalityInStudy(getModality());
-        study.incNumberOfStudyRelatedSeries(1);
+//        study.addModalityInStudy(getModality());
+//        study.incNumberOfStudyRelatedSeries(1);
         log.info("Created " + prompt());
     }
 
+    /**
+     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAETs FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1"
+     */ 
+    public abstract java.util.Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
+
+    /**
+     * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAETs = ?2"
+     */ 
+    public abstract java.util.Set ejbSelectInstancesWithRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfSeriesRelatedInstances(Integer pk) throws FinderException;
+    
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectAvailability(Integer pk) throws FinderException;
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedFields() throws FinderException {
+        final Integer pk = getPk();
+        final int numI = ejbSelectNumberOfSeriesRelatedInstances(pk);
+        if (getNumberOfSeriesRelatedInstances() != numI)
+            setNumberOfSeriesRelatedInstances(numI);
+        Set aetSet = ejbSelectRetrieveAETs(pk);
+        for (Iterator it = aetSet.iterator(); it.hasNext();) {
+            final String aet = (String) it.next();
+            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
+                it.remove();
+        }
+        final String aets = toString(aetSet);
+        if (!aets.equals(getRetrieveAETs()))
+            setRetrieveAETs(aets);
+        final int availability = ejbSelectAvailability(pk);
+        if (getAvailability() != availability)
+            setAvailability(availability);
+    }
+
+    private static String toString(Set s) {
+        String[] a = (String[]) s.toArray(new String[s.size()]);
+        return StringUtils.toString(a, '\\');
+    }
+    
     private void updateMpps() {
         final String ppsiuid = getPpsIuid();
         MPPSLocal mpps = null;
         if (ppsiuid != null) try {
             mpps = mppsHome.findBySopIuid(ppsiuid);
+            setHidden(mpps.isIncorrectWorklistEntrySelected());
         } catch (ObjectNotFoundException ignore) {
         } catch (FinderException e) {
             throw new EJBException(e);
@@ -380,14 +434,14 @@ public abstract class SeriesBean implements EntityBean {
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
-        StudyLocal study = getStudy();
+/*        StudyLocal study = getStudy();
         if (study != null) {
             // study.updateModalitiesInStudy();?
             study.incNumberOfStudyRelatedSeries(-1);
             study
                     .incNumberOfStudyRelatedInstances(-getNumberOfSeriesRelatedInstances());
         }
-    }
+*/    }
 
     /**
      * 
@@ -436,9 +490,9 @@ public abstract class SeriesBean implements EntityBean {
         return ds;
     }
 
-    /**
-     * @ejb.interface-method
-     */
+    /*
+     * ejb.interface-method
+     *
     public void incNumberOfSeriesRelatedInstances(int inc) {
         setNumberOfSeriesRelatedInstances(getNumberOfSeriesRelatedInstances()
                 + inc);
@@ -448,8 +502,8 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public void hide() {
         if (getHiddenSafe()) return;
         StudyLocal study = getStudy();
@@ -460,8 +514,8 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public void unhide() {
         if (!getHiddenSafe()) return;
         StudyLocal study = getStudy();
@@ -472,8 +526,8 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public Set getRetrieveAETSet() {
         return Collections.unmodifiableSet(retrieveAETSet());
     }
@@ -491,8 +545,8 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public boolean updateRetrieveAETs() {
         Collection c = getInstances();
         HashSet newAETSet = new HashSet();
@@ -514,8 +568,8 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * 
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public boolean updateAvailability() {
         Collection c = getInstances();
         int availability = 0;
@@ -530,6 +584,7 @@ public abstract class SeriesBean implements EntityBean {
         }
         return false;
     }
+    */
 
     /**
      * 

@@ -8,9 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -78,7 +75,7 @@ public abstract class InstanceBean implements EntityBean {
         
     private CodeLocalHome codeHome;
 
-    private Set retrieveAETSet;
+//    private Set retrieveAETSet;
 
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
@@ -305,9 +302,9 @@ public abstract class InstanceBean implements EntityBean {
      */
     public abstract CodeLocal getSrCode();
 
-    public void ejbLoad() {
-        retrieveAETSet = null;
-    }
+//    public void ejbLoad() {
+//        retrieveAETSet = null;
+//    }
 
     /**
      * Create Instance.
@@ -316,7 +313,7 @@ public abstract class InstanceBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
-        retrieveAETSet = null;
+//        retrieveAETSet = null;
         setAttributes(ds);
         return null;
     }
@@ -332,18 +329,39 @@ public abstract class InstanceBean implements EntityBean {
             throw new CreateException(e.getMessage());
         }
         setSeries(series);
-        series.incNumberOfSeriesRelatedInstances(1);
+//        series.incNumberOfSeriesRelatedInstances(1);
         log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
-        SeriesLocal series = getSeries();
+/*        SeriesLocal series = getSeries();
         if (series != null) {
             series.incNumberOfSeriesRelatedInstances(-1);
         }
+*/    }
+
+    /**
+     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAETs FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
+     */ 
+    public abstract Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedFields() throws FinderException {
+        final Integer pk = getPk();
+        Set aetSet = ejbSelectRetrieveAETs(pk);
+        final String aets = toString(aetSet);
+        if (!aets.equals(getRetrieveAETs()))
+            setRetrieveAETs(aets);
     }
 
+    private static String toString(Set s) {
+        String[] a = (String[]) s.toArray(new String[s.size()]);
+        return StringUtils.toString(a, '\\');
+    }
+    
     /**
      * @ejb.interface-method
      */
@@ -387,9 +405,9 @@ public abstract class InstanceBean implements EntityBean {
                 .toByteArray(tmp, DcmDecodeParam.EVR_LE));
     }
 
-    /**
-     * @ejb.interface-method
-     */
+    /*
+     * ejb.interface-method
+     *
     public Set getRetrieveAETSet() {
         return Collections.unmodifiableSet(retrieveAETSet());
     }
@@ -407,14 +425,14 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     */
+     *
     public boolean addRetrieveAETs(String[] aets) {
         if (!retrieveAETSet().addAll(Arrays.asList(aets))) return false;
         setRetrieveAETs(StringUtils.toString((String[]) retrieveAETSet()
                 .toArray(new String[retrieveAETSet.size()]), '\\'));
         return true;
     }
-
+    */
     /**
      * 
      * @ejb.interface-method

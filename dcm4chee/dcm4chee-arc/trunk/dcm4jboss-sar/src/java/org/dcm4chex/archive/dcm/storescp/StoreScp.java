@@ -284,7 +284,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         file.delete();
     }
 
-    private synchronized Dataset updateDB(Association assoc, Dataset ds,
+    private Dataset updateDB(Association assoc, Dataset ds,
             FileSystemDTO fsDTO, String filePath, File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             DuplicateStorageException, IOException {
@@ -293,9 +293,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	        int retry = 0;
 	        for (;;) {
 	            try {
-	                return storage.store(assoc.getCallingAET(),
-	                        assoc.getCalledAET(), ds, fsDTO.getDirectoryPath(),
-	                        filePath, (int) file.length(), md5);
+	                synchronized(this) {
+		                return storage.store(assoc.getCallingAET(),
+		                        assoc.getCalledAET(), ds, fsDTO.getDirectoryPath(),
+		                        filePath, (int) file.length(), md5);
+	                }
 	            } catch (DuplicateStorageException e) {
 	                throw e;
 	            } catch (Exception e) {
@@ -494,8 +496,97 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void close(Association assoc) {
+        Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
         logInstancesStored(assoc);
+        if (ians != null) {
+            updateDBStudiesAndSeries(ians);
+        }
         service.sendReleaseNotification(assoc);
+    }
+
+
+    private void updateDBStudiesAndSeries(Map ians) {
+        Storage store;
+        try {
+            store = getStorageHome().create();
+        } catch (Exception e) {
+            log.fatal("Failed to access Storage EJB");
+            return;
+        }
+        try {
+            for (Iterator it = ians.values().iterator(); it.hasNext();) {
+                Dataset ian = (Dataset) it.next();
+                DcmElement seq = ian.get(Tags.RefSeriesSeq);
+                for (int i = 0, n = seq.vm(); i < n; ++i) {
+                    Dataset ser = seq.getItem(i);
+                    final String seriuid = ser.getString(Tags.SeriesInstanceUID);
+                    updateDBSeries(store, seriuid);
+                }
+                final String suid = ian.getString(Tags.StudyInstanceUID);
+                updateDBStudy(store, suid);
+            }
+        } finally {
+            try {
+                store.remove();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    private void updateDBStudy(Storage store, final String suid) {
+        int retry = 0;
+        for (;;) {
+            try {
+                synchronized(this) {
+                    store.updateStudy(suid);
+                }
+                return;
+            } catch (Exception e) {
+                ++retry;
+                if (retry > updateDatabaseMaxRetries) {
+                    service.getLog().error(
+                            "give up update DB Study Record [iuid=" + suid + "]:" , e);
+                    ;
+                }
+                maxCountUpdateDatabaseRetries = Math.max(retry,
+                        maxCountUpdateDatabaseRetries);
+                service.getLog().warn(
+                        "failed to update DB Study Record [iuid=" + suid + "] - retry:" , e);
+                try {
+                    Thread.sleep(updateDatabaseRetryInterval);
+                } catch (InterruptedException e1) {
+                    log.warn("update Database Retry Interval interrupted:", e1);
+                }
+            }
+        }
+    }
+
+    private void updateDBSeries(Storage store, final String seriuid) {
+	        int retry = 0;
+	        for (;;) {
+	            try {
+	                synchronized(this) {
+	                    store.updateSeries(seriuid);
+	                }
+	                return;
+	            } catch (Exception e) {
+	                ++retry;
+	                if (retry > updateDatabaseMaxRetries) {
+	                    service.getLog().error(
+	                            "give up update DB Series Record [iuid=" + seriuid + "]:" , e);
+	                    ;
+	                }
+	                maxCountUpdateDatabaseRetries = Math.max(retry,
+	                        maxCountUpdateDatabaseRetries);
+	                service.getLog().warn(
+	                        "failed to update DB Series Record [iuid=" + seriuid + "] - retry" , e);
+	                try {
+                        Thread.sleep(updateDatabaseRetryInterval);
+                    } catch (InterruptedException e1) {
+                        log.warn("update Database Retry Interval interrupted:", e1);
+                    }
+	            }
+	        }
     }
 
     private void updateIANInfo(Association assoc, Dataset ds,

@@ -8,15 +8,12 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -28,7 +25,6 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
-import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
 /**
  * @ejb.bean
@@ -57,6 +53,18 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *  query="SELECT OBJECT(a) FROM Study AS a WHERE a.studyIuid = ?1"
  *  transaction-type="Supports"
  *
+ * @jboss.query 
+ * 	signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
+ * 	query="SELECT COUNT(s) FROM Series s WHERE s.hidden = FALSE AND s.study.pk = ?1"
+ * 
+ * @jboss.query 
+ * 	signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
+ * 	query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
+ * 
+ * @jboss.query 
+ * 	signature="int ejbSelectAvailability(java.lang.Integer pk)"
+ * 	query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
+ * 
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
@@ -70,9 +78,9 @@ public abstract class StudyBean implements EntityBean {
     private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
             Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances};
 
-    private Set retrieveAETSet;
+//    private Set retrieveAETSet;
 
-    private Set modalitySet;
+//    private Set modalitySet;
 
     /**
      * Auto-generated Primary Key
@@ -230,6 +238,18 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
+     * Modalities In Study
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="mods_in_study"
+     */
+    public abstract String getModalitiesInStudy();
+
+    public abstract void setModalitiesInStudy(String mds);
+
+
+    /**
      * @ejb.interface-method view-type="local"
      * 
      * @ejb.relation
@@ -268,12 +288,12 @@ public abstract class StudyBean implements EntityBean {
      * @return all series of this study
      */
     public abstract java.util.Collection getSeries();
-
+/*
     public void ejbLoad() {
         retrieveAETSet = null;
         modalitySet = null;
     }
-
+*/
     /**
      * Create study.
      *
@@ -281,8 +301,8 @@ public abstract class StudyBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient)
             throws CreateException {
-        retrieveAETSet = null;
-        modalitySet = null;
+//        retrieveAETSet = null;
+//        modalitySet = null;
         setAttributes(ds);
         return null;
     }
@@ -295,6 +315,69 @@ public abstract class StudyBean implements EntityBean {
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
+    }
+
+    /**
+     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAETs FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE"
+     */ 
+    public abstract Set ejbSelectRetrieveAETs(Integer pk) throws FinderException;
+    
+    /**
+     * @ejb.select query="SELECT DISTINCT OBJECT(i) FROM Study st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE st.pk = ?1 AND s.hidden = FALSE AND f.fileSystem.retrieveAETs = ?2"
+     */ 
+    public abstract java.util.Set ejbSelectInstancesWithRetrieveAET(Integer pk, String retrieveAET) throws FinderException;
+
+    /**
+     * @ejb.select query="SELECT DISTINCT s.modality FROM Study st, IN(st.series) s WHERE s.hidden = FALSE AND st.pk = ?1"
+     */ 
+    public abstract Set ejbSelectModalityInStudies(Integer pk) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstances(Integer pk) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedSeries(Integer pk) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectAvailability(Integer pk) throws FinderException;
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedFields() throws FinderException {
+        final Integer pk = getPk();
+        final int numS = ejbSelectNumberOfStudyRelatedSeries(pk);
+        if (getNumberOfStudyRelatedSeries() != numS)
+            setNumberOfStudyRelatedSeries(numS);
+        final int numI = ejbSelectNumberOfStudyRelatedInstances(pk);
+        if (getNumberOfStudyRelatedInstances() != numI)
+            setNumberOfStudyRelatedInstances(numI);
+        Set aetSet = ejbSelectRetrieveAETs(pk);
+        for (Iterator it = aetSet.iterator(); it.hasNext();) {
+            final String aet = (String) it.next();
+            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
+                it.remove();
+        }
+        final String aets = toString(aetSet);
+        if (!aets.equals(getRetrieveAETs()))
+            setRetrieveAETs(aets);
+        final String mds = toString(ejbSelectModalityInStudies(pk));
+        if (!mds.equals(getModalitiesInStudy()))
+            setModalitiesInStudy(mds);
+        final int availability = ejbSelectAvailability(pk);
+        if (getAvailability() != availability)
+            setAvailability(availability);
+    }
+
+    private static String toString(Set s) {
+        String[] a = (String[]) s.toArray(new String[s.size()]);
+        return StringUtils.toString(a, '\\');
     }
 
     /**
@@ -343,24 +426,24 @@ public abstract class StudyBean implements EntityBean {
                 : null);
     }
 
-    /**
-     * @ejb.interface-method
-     */
+    /*
+     * ejb.interface-method
+     *
     public void incNumberOfStudyRelatedSeries(int inc) {
         setNumberOfStudyRelatedSeries(getNumberOfStudyRelatedSeries() + inc);
     }
 
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public void incNumberOfStudyRelatedInstances(int inc) {
         setNumberOfStudyRelatedInstances(getNumberOfStudyRelatedInstances()
                 + inc);
     }
 
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public Set getRetrieveAETSet() {
         return Collections.unmodifiableSet(retrieveAETSet());
     }
@@ -376,11 +459,12 @@ public abstract class StudyBean implements EntityBean {
         }
         return retrieveAETSet;
     }
-
+    
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public boolean updateRetrieveAETs() {
+        
         Collection c = getSeries();
         HashSet newAETSet = null;
         Iterator it = c.iterator();
@@ -408,8 +492,8 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * 
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public boolean updateAvailability() {
         Collection c = getSeries();
         int availability = 0;
@@ -425,8 +509,8 @@ public abstract class StudyBean implements EntityBean {
     }
 
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public boolean updateModalitiesInStudy() {
         Collection c = getSeries();
         HashSet newModalitySet = new HashSet();
@@ -451,19 +535,8 @@ public abstract class StudyBean implements EntityBean {
     }
     
     /**
-     * Modalities In Study
+     * ejb.interface-method
      *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="mods_in_study"
-     */
-    public abstract String getModalitiesInStudy();
-
-    public abstract void setModalitiesInStudy(String mds);
-
-    /**
-     * @ejb.interface-method
-     */
     public Set getModalitySet() {
         if (modalitySet == null) {
             modalitySet = new HashSet();
@@ -476,8 +549,8 @@ public abstract class StudyBean implements EntityBean {
     }
 
     /**
-     * @ejb.interface-method
-     */
+     * ejb.interface-method
+     *
     public boolean addModalityInStudy(String md) {
         if (getModalitySet().contains(md)) { return false; }
         modalitySet.add(md);
@@ -489,6 +562,7 @@ public abstract class StudyBean implements EntityBean {
         }
         return true;
     }
+    */
 
     /**
      * 
