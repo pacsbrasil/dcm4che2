@@ -39,42 +39,14 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  * @version $Revision$ $Date$
  * @since 14.01.2004
  * 
- * @ejb.bean
- *  name="ContentManager"
- *  type="Stateless"
- *  view-type="remote"
- *  jndi-name="ejb/ContentManager"
- * 
- * @ejb.transaction-type 
- *  type="Container"
- * 
- * @ejb.transaction 
- *  type="Required"
- * 
- * @ejb.ejb-ref
- *  ejb-name="Patient" 
- *  view-type="local"
- *  ref-name="ejb/Patient" 
- * 
- * @ejb.ejb-ref
- *  ejb-name="Study" 
- *  view-type="local"
- *  ref-name="ejb/Study" 
- * 
- * @ejb.ejb-ref
- *  ejb-name="Series" 
- *  view-type="local"
- *  ref-name="ejb/Series" 
- * 
- * @ejb.ejb-ref
- *  ejb-name="Instance" 
- *  view-type="local"
- *  ref-name="ejb/Instance" 
- *
- * @ejb.resource-ref
- *  res-name="jdbc/DS"
- *  res-type="javax.sql.DataSource"
- *  res-auth="Container"
+ * @ejb.bean name="ContentManager" type="Stateless" view-type="remote"
+ *           jndi-name="ejb/ContentManager"
+ * @ejb.transaction-type type="Container"
+ * @ejb.transaction type="Required"
+
+ * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient" 
+ * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study" 
+ * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series" 
  */
 public abstract class ContentManagerBean implements SessionBean {
 
