@@ -81,7 +81,6 @@ public class ContentEditDelegate {
     }
 
     public void mergePatients(int pk, int[] patPks) {
-    	System.out.println("ContentEditDelegate:mergePatients called:"+pk+" merged:"+patPks[0]);
         try {
             server.invoke(contentEditName,
                     "mergePatients",
