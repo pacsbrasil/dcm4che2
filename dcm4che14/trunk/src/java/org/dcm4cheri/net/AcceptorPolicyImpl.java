@@ -349,7 +349,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     
     private PresContext negotiatePresCtx(PresContext offered) {
         int result = PresContext.ABSTRACT_SYNTAX_NOT_SUPPORTED;
-        String tsuid = UIDs.ImplicitVRLittleEndian;
+        String tsuid = offered.getTransferSyntaxUID();
         
         PresContext accept = getPresContext(offered.getAbstractSyntaxUID());
         if (accept != null) {
