@@ -30,6 +30,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
@@ -377,10 +378,23 @@ public abstract class InstanceBean implements EntityBean {
         Set aetSet = ejbSelectRetrieveAETs(pk);
         String aets = toString(aetSet);
         final String extAet = getExternalRetrieveAET();
-        if (extAet != null && extAet.length() != 0)
+        if (extAet != null && extAet.length() != 0) {
             aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;
+        }
         if (!aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
+        int availability = 3;
+        MediaLocal media;
+        if (getFiles().size() != 0)
+            availability = 0;
+        else if (extAet != null && extAet.length() != 0)
+            availability = 1;
+        else if ((media = getMedia()) != null 
+                && media.getMediaStatus() == MediaDTO.COMPLETED)
+            availability = 2;
+        if (availability != getAvailabilitySafe()) {
+            setAvailability(availability);
+        }
     }
 
     private static String toString(Set s) {
@@ -388,17 +402,6 @@ public abstract class InstanceBean implements EntityBean {
         return StringUtils.toString(a, '\\');
     }
     
-    /**
-     * @ejb.interface-method
-     */
-    public boolean updateAvailability(int availability) {
-        if (availability != getAvailabilitySafe()) {
-            setAvailability(availability);
-            return true;
-        }
-        return false;
-    }
-
     /**
      * @ejb.interface-method
      */

@@ -236,7 +236,6 @@ public abstract class FileBean implements EntityBean
         throws CreateException
     {
         setInstance(instance);
-        instance.updateAvailability(0);
         setFileSystem(filesystem);
         log.info("Created " + prompt());
     }
