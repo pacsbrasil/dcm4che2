@@ -123,7 +123,7 @@
       <name>AcTimeout</name>
       <type>int</type>
       <descriptors>
-         <value value="60000" />
+         <value value="10000" />
       </descriptors>
    </attribute>
 
@@ -135,7 +135,7 @@
       <name>DimseTimeout</name>
       <type>int</type>
       <descriptors>
-         <value value="10000" />
+         <value value="60000" />
       </descriptors>
    </attribute>
 
