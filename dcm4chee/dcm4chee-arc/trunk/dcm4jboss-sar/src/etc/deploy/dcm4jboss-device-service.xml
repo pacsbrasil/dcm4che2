@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<server>
+  <classpath codebase="lib" archives="dcm4jboss.jar"/>
+  <mbean code="org.dcm4chex.archive.mbean.DeviceService" 
+         name="tiani.archive:service=DeviceService"
+         xmbean-dd="xmdesc/dcm4jboss-device-xmbean.xml">
+    <depends>
+    </depends>
+  </mbean>
+</server>
