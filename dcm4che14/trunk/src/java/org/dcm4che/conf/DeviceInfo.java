@@ -20,6 +20,7 @@
 
 package org.dcm4che.conf;
 
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
 /**
@@ -57,12 +58,12 @@ public class DeviceInfo extends ConfigInfo {
             + versions
             + "\n\tprimaryDeviceType="
             + types
-            + "\n\trelatedDeviceReference="
-            + relDeviceDesc
-            + "\n\tauthorizedNodeCertificate="
-            + authNodeCerts
-            + "\n\tthisNodeCertificate="
-            + thisNodeCerts
+            + "\n\trelatedDeviceInfo=#"
+            + relDeviceDesc.size()
+            + "\n\tauthorizedNodeCertificate=#"
+            + authNodeCerts.size()
+            + "\n\tthisNodeCertificate=#"
+            + thisNodeCerts.size()
             + "\n\tvendorData=#"
             + vendorData.size()
             + "\n\tinstalled="
@@ -156,18 +157,18 @@ public class DeviceInfo extends ConfigInfo {
         return !types.isEmpty();
     }
 
-    public JavaObjectInfo[] getRelatedDeviceDescription() {
-        return (JavaObjectInfo[]) relDeviceDesc.toArray(new JavaObjectInfo[relDeviceDesc.size()]);
+    public Object[] getRelatedDeviceDescription() {
+        return relDeviceDesc.toArray();
     }
 
-    public void addRelatedDeviceDescription(JavaObjectInfo info) {
+    public void addRelatedDeviceDescription(Object info) {
         if (info == null)
             throw new NullPointerException("info");
 
         relDeviceDesc.add(info);
     }
 
-    public boolean removeRelatedDeviceDescription(JavaObjectInfo info) {
+    public boolean removeRelatedDeviceDescription(Object info) {
         return relDeviceDesc.remove(info);
     }
 
@@ -175,19 +176,19 @@ public class DeviceInfo extends ConfigInfo {
         return !relDeviceDesc.isEmpty();
     }
 
-    public NodeCertificateInfo[] getAuthorizedNodeCertificate() {
-        return (NodeCertificateInfo[]) authNodeCerts.toArray(
-            new NodeCertificateInfo[authNodeCerts.size()]);
+    public X509Certificate[] getAuthorizedNodeCertificate() {
+        return (X509Certificate[]) authNodeCerts.toArray(
+            new X509Certificate[authNodeCerts.size()]);
     }
 
-    public void addAuthorizedNodeCertificate(NodeCertificateInfo cert) {
+    public void addAuthorizedNodeCertificate(X509Certificate cert) {
         if (cert == null)
             throw new NullPointerException("cert");
 
         authNodeCerts.add(cert);
     }
 
-    public boolean removeAuthorizedNodeCertificate(NodeCertificateInfo cert) {
+    public boolean removeAuthorizedNodeCertificate(X509Certificate cert) {
         return authNodeCerts.remove(cert);
     }
 
@@ -195,19 +196,19 @@ public class DeviceInfo extends ConfigInfo {
         return !authNodeCerts.isEmpty();
     }
 
-    public NodeCertificateInfo[] getThisNodeCertificate() {
-        return (NodeCertificateInfo[]) thisNodeCerts.toArray(
-            new NodeCertificateInfo[authNodeCerts.size()]);
+    public X509Certificate[] getThisNodeCertificate() {
+        return (X509Certificate[]) thisNodeCerts.toArray(
+            new X509Certificate[authNodeCerts.size()]);
     }
 
-    public void addThisNodeCertificate(NodeCertificateInfo cert) {
+    public void addThisNodeCertificate(X509Certificate cert) {
         if (cert == null)
             throw new NullPointerException("cert");
 
         thisNodeCerts.add(cert);
     }
 
-    public boolean removeThisNodeCertificate(NodeCertificateInfo cert) {
+    public boolean removeThisNodeCertificate(X509Certificate cert) {
         return thisNodeCerts.remove(cert);
     }
 

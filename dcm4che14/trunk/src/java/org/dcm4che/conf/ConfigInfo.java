@@ -27,24 +27,6 @@ package org.dcm4che.conf;
  */
 public abstract class ConfigInfo {
 
-    private String dn;
-    
-    protected ConfigInfo() {}
-    
-    protected ConfigInfo(String dn) {
-        if (dn == null)
-            throw new NullPointerException("dn");
-        setDN(dn); 
-    }
-
-    public void setDN(String dn) {
-        this.dn = dn;
-    }
-    
-    public String getDN() {
-        return dn;
-    }
-
     public abstract boolean isValid();
 
 }

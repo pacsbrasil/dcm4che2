@@ -232,5 +232,4 @@ public class NetworkAEInfo extends ConfigInfo {
     public boolean isValid() {
         return aeTitle != null && !ncList.isEmpty() && !tcList.isEmpty();
     }
-
 }

@@ -153,4 +153,30 @@ public class TransferCapabilityInfo extends ConfigInfo {
         return sopClass != null && role != null && !tsList.isEmpty();
     }
 
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+
+        if (!(o instanceof TransferCapabilityInfo))
+            return false;
+
+        TransferCapabilityInfo other = (TransferCapabilityInfo) o;
+        return (cn == null ? other.cn == null : cn.equals(other.cn))
+            && (sopClass == null
+                ? other.sopClass == null
+                : sopClass.equals(other.sopClass))
+            && (role == other.role)
+            && tsList.equals(other.tsList);
+    }
+    
+    public int hashCode() {
+        int hash = tsList.hashCode();
+        if (cn != null)
+            hash ^= cn.hashCode(); 
+        if (sopClass != null)
+            hash ^= sopClass.hashCode(); 
+        if (role != null)
+            hash ^= role.hashCode();
+        return hash; 
+    }
 }
