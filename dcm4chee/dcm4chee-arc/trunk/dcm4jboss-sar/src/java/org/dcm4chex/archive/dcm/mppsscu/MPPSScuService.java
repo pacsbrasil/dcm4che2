@@ -50,11 +50,6 @@ import org.jboss.system.ServiceMBeanSupport;
 public class MPPSScuService extends ServiceMBeanSupport implements
         MessageListener, NotificationListener {
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
-    private static final AssociationFactory af = AssociationFactory
-            .getInstance();
-
     private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian};
 
@@ -208,7 +203,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         try {
             MPPSOrder order = (MPPSOrder) om.getObject();
             log.info("Start processing " + order);
-            final int status = process(order);
+            final int status = sendMPPS(order.getDataset(), order.getDestination());
             if (status == 0) {
                 log.info("Finished processing " + order);
                 return;
@@ -233,45 +228,45 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         }
     }
 
-    private int process(MPPSOrder order) {
-        final Dataset mpps = order.getDataset();
-        final String called = order.getDestination();
+    public int sendMPPS(Dataset mpps, String destination) {
+        AEData aeData = null;
+        try {
+            aeData = new AECmd(destination).execute();
+        } catch (SQLException e1) {
+            log.error("Failed to access DB for resolving AET: " + destination,
+                    e1);
+            return ERR_SQL;
+        }
+        if (aeData == null) {
+            log.error("Unkown Destination AET: " + destination);
+            return ERR_UNKOWN_DEST;
+        }
         ActiveAssociation aa = null;
         try {
-            AEData aeData = null;
-            try {
-                aeData = new AECmd(called).execute();
-            } catch (SQLException e1) {
-                log.error("Failed to access DB for resolving AET: " + called,
-                        e1);
-                return ERR_SQL;
-            }
-            if (aeData == null) {
-                log.error("Unkown Destination AET: " + called);
-                return ERR_UNKOWN_DEST;
-            }
+        	AssociationFactory af = AssociationFactory.getInstance();        
             Association a = af.newRequestor(createSocket(aeData));
             a.setAcTimeout(acTimeout);
             a.setDimseTimeout(dimseTimeout);
             a.setSoCloseDelay(soCloseDelay);
             AAssociateRQ rq = af.newAAssociateRQ();
-            rq.setCalledAET(called);
+            rq.setCalledAET(destination);
             rq.setCallingAET(callingAET);
             rq.addPresContext(af.newPresContext(PCID_MPPS,
                     UIDs.ModalityPerformedProcedureStep,
                     NATIVE_TS));
             PDU ac = a.connect(rq);
             if (!(ac instanceof AAssociateAC)) {
-                log.error("Association not accepted by " + called + ": " + ac);
+                log.error("Association not accepted by " + destination + ": " + ac);
                 return ERR_ASSOC_NOT_ACCEPTED;
             }
             aa = af.newActiveAssociation(a, null);
             aa.start();
             if (a.getAcceptedTransferSyntaxUID(PCID_MPPS) == null) {
-                log.error("MPPS Service not supported by remote AE: " + called);
+                log.error("MPPS Service not supported by remote AE: " + destination);
                 return ERR_SERVICE_NOT_SUPPORTED;
             }
-            Command cmdRq = dof.newCommand();
+	        DcmObjectFactory dof = DcmObjectFactory.getInstance();
+	        Command cmdRq = dof.newCommand();
             if (mpps.contains(Tags.ScheduledStepAttributesSeq)) {
 	            cmdRq.initNCreateRQ(a.nextMsgID(),
 	                    UIDs.ModalityPerformedProcedureStep,
@@ -281,13 +276,12 @@ public class MPPSScuService extends ServiceMBeanSupport implements
 	                    UIDs.ModalityPerformedProcedureStep,
 	                    mpps.getString(Tags.SOPInstanceUID));
             }
-            Dimse dimseRq = af.newDimse(PCID_MPPS, cmdRq, order.getDataset()
-                    .exclude(IUID));
+            Dimse dimseRq = af.newDimse(PCID_MPPS, cmdRq, mpps.exclude(IUID));
             final Dimse dimseRsp;
             try {
                 dimseRsp = aa.invoke(dimseRq).get();
             } catch (InterruptedException ie) {
-                log.error("Threading error during performing " + order);
+                log.error("Threading error during waiting for response of " + cmdRq);
                 return ERR_THREAD;
             }
             final Command cmdRsp = dimseRsp.getCommand();
@@ -296,15 +290,14 @@ public class MPPSScuService extends ServiceMBeanSupport implements
             case 0x0000:
                 return 0;
             case 0x0116:
-                log
-                        .warn("Received Warning Status 116H (=Attribute Value Out of Range) from remote AE "
-                                + called);
+                log.warn("Received Warning Status 116H (=Attribute Value Out of Range) from remote AE "
+                                + destination);
                 return 0;
             default:
                 return status;
             }
         } catch (IOException e) {
-            log.error("i/o exception during processing " + order, e);
+            log.error("i/o exception during sending MPPS to " + destination, e);
             return ERR_IO;
         } finally {
             if (aa != null) try {
