@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -34,8 +35,6 @@ import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.jboss.mx.util.MBeanServerLocator;
-
-import sun.misc.BASE64Encoder;
 
 /**
  * @author franz.willer
@@ -69,11 +68,15 @@ public WADOSupport( MBeanServer mbServer ) {
  * <p>
  * </DL>
  * <DT>If the request was successfull:</DT>
- * <DD>The WADO response object contains a File and a corresponding content type.</DD>
- * <DD>the return code was OK and the error message <code>null</code>.</DD>
+ * <DD>	The WADO response object contains a File and a corresponding content type.</DD>
+ * <DD>	the return code was OK and the error message <code>null</code>.</DD>
+ * <DT>If the requested object is not local:</DT>
+ * <DD>	If <code>WADOCacheImpl.isClientRedirect() is false</code> the server tries to connect via WADO to the remote WADO server to get the object.</DD>
+ * <DD> if clientRedirect is enabled, the WADOResponse object return code is set to <code>HttpServletResponse.SC_TEMPORARY_REDIRECT</code> and 
+ *      error message is set to the hostname to redirect.</DD>
  * <DT>If the request was not successfull (not found or an error):</DT>
- * <DD>The return code of the WADO response object is set to a http error code and an error message was set.</DD>
- * <DD>The file of the WADO response is <code>null</code>. The content type is not specified for this case.</DD>
+ * <DD>	The return code of the WADO response object is set to a http error code and an error message was set.</DD>
+ * <DD>	The file of the WADO response is <code>null</code>. The content type is not specified for this case.</DD>
  * </DL> 
  * @param req The WADO request object.
  * 
@@ -103,7 +106,11 @@ public WADOResponseObject handleDicom( WADORequestObject req ) {
 		log.error("Exception in handleDicom: "+x.getMessage(), x);
 		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
 	} catch ( NeedRedirectionException nre ) {
-    	return getRemoteDICOMFile( nre.getHostname(), req);
+		if ( ! WADOCacheImpl.getInstance().isClientRedirect() )  {
+			return getRemoteDICOMFile( nre.getHostname(), req);
+		} else {
+			return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
+		}
 	}
 	try {
 		return new WADOResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_DICOM, HttpServletResponse.SC_OK, null);
@@ -133,7 +140,12 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 	String instanceUID = req.getObjectUID();
 	String rows = req.getRows();
 	String columns = req.getColumns();
+	String frameNumber = req.getFrameNumber();
+	int frame = 0;
 	try {
+		if ( frameNumber != null ) {
+			frame = Integer.parseInt( frameNumber );
+		}
 		WADOCache cache = WADOCacheImpl.getInstance();
 		File file;
 		BufferedImage bi = null;
@@ -147,10 +159,14 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 			try {
 				dicomFile = getDICOMFile( studyUID, seriesUID, instanceUID );
 			} catch ( NeedRedirectionException nre ) {
-	        	return getRemoteDICOMFile( nre.getHostname(), req);
+				if ( ! cache.isClientRedirect() )  {
+					return getRemoteDICOMFile( nre.getHostname(), req);
+				} else {
+					return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
+				}
 			}
 			if ( dicomFile != null ) {
-				bi = getImage( dicomFile, rows, columns );
+				bi = getImage( dicomFile, frame, rows, columns );
 			} else {
 				return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
 			}
@@ -208,6 +224,27 @@ private File getDICOMFile( String studyUID, String seriesUID, String instanceUID
 	return null;
 }
 
+private URL getRedirectURL( String hostname, WADORequestObject req ) {
+	StringBuffer sb = new StringBuffer();
+	sb.append( "/dcm4jboss-wado/wado?requestType=WADO");
+	Map mapParam = req.getRequestParams();
+	Iterator iter = mapParam.keySet().iterator();
+	Object key;
+	while ( iter.hasNext() ) {
+		key = iter.next();
+		sb.append("&").append(key).append("=").append( ( (String[]) mapParam.get(key))[0] );
+	}
+	URL url = null;
+	try {
+		url = new URL("http",hostname,8080, sb.toString() );
+	} catch (MalformedURLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	if (log.isDebugEnabled() ) log.debug("redirect url:"+url );
+	return url;
+}
+
 /**
  * Tries to get the DICOM file from an external WADO service.
  * 
@@ -222,17 +259,7 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
 	if ( log.isInfoEnabled() ) log.info("WADO request redirected to hostname:"+hostname);
 	URL url = null;
 	try {
-//		BufferedOutputStream out = new BufferedOutputStream( new FileOutputStream( tmpFile ) );
-		StringBuffer sb = new StringBuffer();
-		sb.append( "/dcm4jboss-wado/wado?requestType=WADO");
-		Map mapParam = req.getRequestParams();
-		Iterator iter = mapParam.keySet().iterator();
-		Object key;
-		while ( iter.hasNext() ) {
-			key = iter.next();
-			sb.append("&").append(key).append("=").append( ( (String[]) mapParam.get(key))[0] );
-		}
-		url = new URL("http",hostname,8080, sb.toString() );
+		url = getRedirectURL( hostname, req );
 		if (log.isDebugEnabled() ) log.debug("redirect url:"+url );
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		String authHeader = (String)req.getRequestHeaders().get("Authorization");
@@ -246,7 +273,7 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
 			return new WADOResponseObjectImpl( null, conn.getContentType(), conn.getResponseCode(), conn.getResponseMessage() );
 		}
 		InputStream is = conn.getInputStream();
-		if ( CONTENT_TYPE_JPEG.equals( conn.getContentType() ) ) {
+		if ( WADOCacheImpl.getInstance().isRedirectCaching() && CONTENT_TYPE_JPEG.equals( conn.getContentType() ) ) {
 			File file = WADOCacheImpl.getInstance().putStream( is, req.getStudyUID(), 
 													req.getSeriesUID(), 
 													req.getObjectUID(), 
@@ -268,20 +295,21 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
  * If <code>rows or columns</code> not null, the original image will be scaled.
  * 
  * @param file		A DICOM file.
+ * @param frame
  * @param rows			Image height in pixel.
  * @param columns		Image width in pixel.
  *
  * @return
  * @throws IOException
  */
-private BufferedImage getImage(File file, String rows, String columns) throws IOException {
+private BufferedImage getImage(File file, int frame, String rows, String columns) throws IOException {
     Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
     if (!it.hasNext())
             return null; //TODO more usefull stuff
     ImageReader reader = (ImageReader) it.next();
     ImageInputStream in = new FileImageInputStream( file );
     reader.setInput( in );
-	BufferedImage bi = reader.read(0);
+	BufferedImage bi = reader.read( frame );
 	if ( rows != null || columns != null ) {
 		bi = resize( bi, rows, columns );
 	}
