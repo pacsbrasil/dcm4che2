@@ -16,6 +16,7 @@
 					<td width="25%"><h2>AE Title</h2></td>
 					<td width="20%"><h2>Hostname</h2></td>
 					<td width="15%"><h2>Port</h2></td>	
+					<td width="15%"><h2>Cipher</h2></td>	
 					<td colspan="2" width="10%" align="center"><a href="aenew.m"><img src="images/add_aet.gif" alt="add new AET" border="0"/></a></td>
 				</tr>
 					<xsl:apply-templates select="AEs/item">
@@ -38,6 +39,9 @@
 	        </td>
 	        <td title="Port">
 					<xsl:value-of select="port"/>
+	        </td>
+	        <td title="Cipher">
+					<xsl:value-of select="cipherSuitesAsString"/>
 	        </td>
 			<td align="center">
 				<a href="aeedit.m?pk={pk}">
