@@ -239,6 +239,11 @@
            <fileset dir="${build.classes.dir}" includes="MppsSnd*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="MppsSnd*"/>
       </jar>
+      <jar jarfile="${build.samples.dir}/mvstudy.jar"
+           manifest="${build.res.dir}/META-INF/mvstudy.mf">
+           <fileset dir="${build.classes.dir}" includes="MoveStudy*,Configuration*"/>
+           <fileset dir="${build.res.dir}" includes="MoveStudy*"/>
+      </jar>
       <jar jarfile="${build.samples.dir}/syslog.jar"
            manifest="${build.res.dir}/META-INF/syslog.mf">
            <fileset dir="${build.classes.dir}" includes="Syslog*"/>
@@ -357,6 +362,7 @@
             <include name="DcmRcvFSU.java"/>
             <include name="DcmSnd.java"/>
             <include name="MppsSnd.java"/>
+            <include name="MoveStudy.java"/>
             <include name="Hl7Snd.java"/>
             <include name="Hl7Rcv.java"/>
          </fileset>
@@ -364,6 +370,8 @@
             <include name="DcmRcv.properties"/>
             <include name="DcmSnd.properties"/>
             <include name="MppsSnd.properties"/>
+            <include name="MoveStudy.properties"/>
+            <include name="QueryStudyUIDs.properties"/>
             <include name="Hl7Snd.properties"/>
             <include name="Hl7Rcv.properties"/>
          </fileset>

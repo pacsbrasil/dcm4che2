@@ -26,6 +26,7 @@ ENHANCEMENTS:
 + class org.dcm4che.imageio.plugin.DcmImageReader: support of P-value to
   Device-Driver-Level transformation by DcmReadImageParam#setPValToDDL
 + class org.dcm4che.data.DcmObject: add methodes getTag/getTags
++ sample/utility MoveStudy (mvstudy.jar)
 
 CHANGES:
 + change schema of Implementation Version Name in META-INF/MANIFEST.MF and
