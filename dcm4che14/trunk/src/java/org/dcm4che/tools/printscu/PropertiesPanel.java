@@ -78,19 +78,21 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
         "ImageBox.RequestedImageSize",
         "LUT.Shape",
         "LUT.Gamma",
-        "LUT.Level",
-        "LUT.ScaleToFitBitDepth",
-        "LUT.ApplyBySCU",
-        "User.SendAspectRatio",
-        "User.RequestedZoom",
-        "User.BurnInInfo",
-        "User.BurnInInfo.Properties",
-        "User.BitDepth",
-        "User.InflateBitsAlloc",
-        "User.MinMaxWindowing",
+        //"LUT.Level",
+        //"LUT.ScaleToFitBitDepth",
+        //"LUT.ApplyBySCU",
+        //"User.SendAspectRatio",
+        //"User.RequestedZoom",
+        //"User.BurnInInfo",
+        "User.BurnInOverlays",
+        "User.AutoScale",   //added this
+        //"User.BurnInInfo.Properties",
+        //"User.BitDepth",
+        //"User.InflateBitsAlloc",
+        //"User.MinMaxWindowing",
         "Verbose",
-        "DumpCmdsetIntoDir",
-        "DumpDatasetIntoDir",
+        //"DumpCmdsetIntoDir",
+        //"DumpDatasetIntoDir",
     };
 
     private static final Properties DEFAULTS;
@@ -145,7 +147,7 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
       "Always","IfNot1/1"
     };
     private static final String[] BURNIN_INFO = {
-      "No","IfNoOverlays","Always"
+      "No", "IfNoOverlays", "Always"
     };
 
     static final int LUT_FILE = 0;
@@ -185,6 +187,8 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
         PROP_ENUMS.put("ImageBox.Polarity", POLARITY);
         PROP_ENUMS.put("User.SendAspectRatio", SEND_ASPECTRATIO);
         PROP_ENUMS.put("User.BurnInInfo", BURNIN_INFO);
+        PROP_ENUMS.put("User.BurnInOverlays", YES_NO);
+        PROP_ENUMS.put("User.AutoScale", YES_NO);
         PROP_ENUMS.put("Verbose", VERBOSE);
     }
 

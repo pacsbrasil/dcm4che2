@@ -358,7 +358,11 @@ public class PrintSCUFrame extends JFrame
                         //dump to log
                         dump(attr, "Image Box");
                         //create image box
-                        printSCU.setImageBox(nextImageBoxIndex++, file, null, attr);
+                        Boolean burnInOverlays = getBooleanFromProperty("User.BurnInOverlays"),
+                                autoScale = getBooleanFromProperty("User.AutoScale");
+                        printSCU.setImageBox(nextImageBoxIndex++, file, null, attr,
+                            (burnInOverlays != null) ? burnInOverlays.booleanValue() : false,
+                            (autoScale != null) ? autoScale.booleanValue() : true);
                     }
                     catch (PrintSCUConfigurationException e1) {
                         JOptionPane.showMessageDialog(PrintSCUFrame.this, e1);
@@ -740,6 +744,10 @@ public class PrintSCUFrame extends JFrame
     protected Integer getIntegerFromProperty(String propertyName)
     {
         return (Integer)getFromProperty(propertyName, Integer.class);
+    }
+    protected Boolean getBooleanFromProperty(String propertyName)
+    {
+        return (Boolean)getFromProperty(propertyName, Boolean.class);
     }
 
     /* 
