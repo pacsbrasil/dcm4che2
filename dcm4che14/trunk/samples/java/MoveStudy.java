@@ -1,3 +1,11 @@
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -82,7 +90,6 @@ public class MoveStudy
     private int soCloseDelay = 500;
     private AAssociateRQ assocRQ = af.newAAssociateRQ();
     private boolean packPDVs = false;
-    private byte[] buffer = null;
     private SSLContextAdapter tls = null;
     private String[] cipherSuites = null;
     private Dataset keys = dof.newDataset();
