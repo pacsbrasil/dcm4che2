@@ -176,6 +176,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setMaxCountUpdateDatabaseRetries(0);
     }
     
+    public final long getUpdateDatabaseRetryInterval() {
+        return scp.getUpdateDatabaseRetryInterval();
+    }
+    
+    public final void setUpdateDatabaseRetryInterval(long interval) {
+        scp.setUpdateDatabaseRetryInterval(interval);
+    }
+    
     public final int getAcTimeout() {
         return acTimeout;
     }
@@ -409,5 +417,4 @@ public class StoreScpService extends AbstractScpService {
             throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
         }
     }
-
 }

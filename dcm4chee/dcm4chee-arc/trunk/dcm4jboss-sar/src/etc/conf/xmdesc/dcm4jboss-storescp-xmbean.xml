@@ -91,6 +91,17 @@
       <type>int</type>
    </attribute>   
    <attribute access="read-write"
+      getMethod="getUpdateDatabaseRetryInterval"
+      setMethod="setUpdateDatabaseRetryInterval">
+      <description>Delay in ms between retries to update DB records for new received objects.
+      </description>
+      <name>UpdateDatabaseRetryInterval</name>
+      <type>long</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptStorageCommitment"
       setMethod="setAcceptStorageCommitment">
       <description>Support Storage Commitment Push Model SOP Class.

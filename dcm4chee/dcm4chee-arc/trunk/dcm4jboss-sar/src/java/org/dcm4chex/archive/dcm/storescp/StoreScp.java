@@ -98,6 +98,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private String mountFailedCheckFile = "NO_MOUNT";
 
     private boolean makeStorageDirectory = true;
+    
+    private long updateDatabaseRetryInterval = 0L;
 
     public StoreScp(StoreScpService service) {
         this.service = service;
@@ -119,8 +121,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         coerceWarnCallingAETs.clear();
         if ("NONE".equals(aets))
             return;
-        coerceWarnCallingAETs.addAll(Arrays
-                .asList(StringUtils.split(aets, '\\')));
+        coerceWarnCallingAETs.addAll(Arrays.asList(StringUtils
+                .split(aets, '\\')));
     }
 
     public final CompressionRules getCompressionRules() {
@@ -155,6 +157,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.maxCountUpdateDatabaseRetries = count;
     }
 
+    public final long getUpdateDatabaseRetryInterval() {
+        return updateDatabaseRetryInterval;
+    }
+
+    public final void setUpdateDatabaseRetryInterval(long interval) {
+        this.updateDatabaseRetryInterval = interval;
+    }
+    
     public final boolean isMakeStorageDirectory() {
         return makeStorageDirectory;
     }
@@ -274,42 +284,45 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         file.delete();
     }
 
-    private Dataset updateDB(Association assoc, Dataset ds,
+    private synchronized Dataset updateDB(Association assoc, Dataset ds,
             FileSystemDTO fsDTO, String filePath, File file, byte[] md5)
             throws DcmServiceException, CreateException, HomeFactoryException,
             DuplicateStorageException, IOException {
         Storage storage = getStorageHome().create();
         try {
-            int retry = 0;
-            for (;;) {
-                try {
-                    return storage.store(assoc.getCallingAET(), assoc
-                            .getCalledAET(), ds, fsDTO.getDirectoryPath(),
-                            filePath, (int) file.length(), md5);
-                } catch (DuplicateStorageException e) {
-                    throw e;
-                } catch (Exception e) {
-                    ++retry;
-                    if (retry > updateDatabaseMaxRetries) {
-                        service.getLog().error(
-                                "failed to update DB with entries for received "
-                                        + file, e);
-                        throw new DcmServiceException(Status.ProcessingFailure,
-                                e);
+	        int retry = 0;
+	        for (;;) {
+	            try {
+	                return storage.store(assoc.getCallingAET(),
+	                        assoc.getCalledAET(), ds, fsDTO.getDirectoryPath(),
+	                        filePath, (int) file.length(), md5);
+	            } catch (DuplicateStorageException e) {
+	                throw e;
+	            } catch (Exception e) {
+	                ++retry;
+	                if (retry > updateDatabaseMaxRetries) {
+	                    service.getLog().error(
+	                            "failed to update DB with entries for received "
+	                                    + file, e);
+	                    throw new DcmServiceException(Status.ProcessingFailure, e);
+	                }
+	                maxCountUpdateDatabaseRetries = Math.max(retry,
+	                        maxCountUpdateDatabaseRetries);
+	                service.getLog().warn(
+	                        "failed to update DB with entries for received " + file
+	                                + " - retry", e);
+	                try {
+                        Thread.sleep(updateDatabaseRetryInterval);
+                    } catch (InterruptedException e1) {
+                        log.warn("update Database Retry Interval interrupted:", e1);
                     }
-                    maxCountUpdateDatabaseRetries = Math.max(retry, maxCountUpdateDatabaseRetries);                
-                    service.getLog().warn(
-                            "failed to update DB with entries for received "
-                                    + file + " - retry", e);
-                }
-            }
+	            }
+	        }
         } finally {
             try {
                 storage.remove();
-            } catch (Exception ignore) {
-
-            }
-        }
+            } catch (Exception ignore) {}
+         }
     }
 
     private File makeFile(File basedir, Dataset ds) throws IOException {
