@@ -54,8 +54,7 @@ public class MWLEntry {
 	 * @return Returns the physiciansName.
 	 */
 	public String getPhysiciansName() {
-		PersonName pn =  spsItem.getPersonName( Tags.ScheduledPerformingPhysicianName );
-		return pn.get( PersonName.GIVEN )+" "+pn.get( PersonName.FAMILY );
+		return spsItem.getString( Tags.ScheduledPerformingPhysicianName );
 	}
 	/**
 	 * @return Returns the reqProcedureID.

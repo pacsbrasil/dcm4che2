@@ -317,6 +317,7 @@ public class MWLModel {
 	 */
 	public class SpsDSComparator implements Comparator {
 
+		private final Date DATE_0 = new Date(0l);
 		public SpsDSComparator() {
 			
 		}
@@ -351,12 +352,15 @@ public class MWLModel {
 		 * @return the date of this SPS Dataset.
 		 */
 		private Date _getStartDateAsLong(Dataset ds) {
-			Dataset spsItem = ds.get( Tags.SPSSeq ).getItem();//scheduled procedure step sequence item.
+			if ( ds == null ) return DATE_0;
+			DcmElement e = ds.get( Tags.SPSSeq );
+			if ( e == null ) return DATE_0;
+			Dataset spsItem = e.getItem();//scheduled procedure step sequence item.
 			Date d = spsItem.getDate( Tags.SPSStartDateAndTime );
 			if ( d == null ) {
 				d = spsItem.getDateTime( Tags.SPSStartDate, Tags.SPSStartTime );
 			}
-			if ( d == null ) d = new Date(0l);
+			if ( d == null ) d = DATE_0;
 			return d;
 		}
 	}
