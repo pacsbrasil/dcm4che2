@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
-Class-Path: jdt.jar
+Class-Path: log4j.jar
 
-Name: com/tiani/dicom
-Implementation-Vendor: TIANI MEDGRAPH AG
-Implementation-Version: @VERSION@
-Implementation-Title: jdicom
+Name: org/dcm4cheri
+Implementation-Vendor: TIANI MEDGRAPH AG (gunter.zeilinger@tiani.com)
+Implementation-Version: 1.2.40.0.13.1.1/@VERSIONNAME@
+Implementation-Title: tiani.dcm4che
 

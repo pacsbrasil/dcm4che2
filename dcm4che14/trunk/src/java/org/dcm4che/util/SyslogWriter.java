@@ -50,7 +50,6 @@ import java.util.Calendar;
  */
 public class SyslogWriter extends OutputStreamWriter {
    // Constants -----------------------------------------------------
-   public final int SYSLOG_PORT = 514;
    private static final String[] MONTH = {
       "Jan", "Feb", "Mar", "Apr", "May", "Jun",
       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -168,6 +167,8 @@ public class SyslogWriter extends OutputStreamWriter {
    }
    
    // Attributes ----------------------------------------------------
+   public String syslogHost;
+   public int syslogPort = 514;
    private String localHostName;
    private String tag;
    private int facility = LOG_USER;
@@ -192,6 +193,19 @@ public class SyslogWriter extends OutputStreamWriter {
    // Public --------------------------------------------------------
    public void setSyslogHost(String syslogHost) throws UnknownHostException {
       this.address = InetAddress.getByName(syslogHost);
+      this.syslogHost = syslogHost;
+   }
+   
+   public String getSyslogHost() {
+       return syslogHost;
+   }
+
+   public void setSyslogPort(int syslogPort) {
+      this.syslogPort = syslogPort;
+   }
+   
+   public int getSyslogPort() {
+      return syslogPort;
    }
 
    public void setPrintHostName(boolean printHostName) {
@@ -202,6 +216,56 @@ public class SyslogWriter extends OutputStreamWriter {
       this.contentPrefix = contentPrefix;
    }      
 
+   public void setFacility(String facility) {
+       this.facility = forName(facility);
+   }
+
+   public String getFacilityAsString() {
+      switch(facility) {
+         case LOG_KERN:
+             return "kern";
+         case LOG_USER:
+             return "user";
+         case LOG_MAIL:
+             return "mail";
+         case LOG_DAEMON:
+             return "daemon";
+         case LOG_AUTH:
+             return "auth";
+         case LOG_SYSLOG:
+             return "syslog";
+         case LOG_LPR:
+             return "lpr";
+         case LOG_NEWS:
+             return "news";
+         case LOG_UUCP:
+             return "uucp";
+         case LOG_CRON:
+             return "cron";
+         case LOG_AUTHPRIV:
+             return "authpriv";
+         case LOG_FTP:
+             return "ftp";
+         case LOG_LOCAL0:
+             return "local0";
+         case LOG_LOCAL1:
+             return "local1";
+         case LOG_LOCAL2:
+             return "local2";
+         case LOG_LOCAL3:
+             return "local3";
+         case LOG_LOCAL4:
+             return "local4";
+         case LOG_LOCAL5:
+             return "local5";
+         case LOG_LOCAL6:
+             return "local6";
+         case LOG_LOCAL7:
+             return "local7";
+      }
+      throw new RuntimeException();
+   }
+   
    public void setFacility(int facility) {
       switch(facility) {
          case LOG_KERN:
@@ -305,7 +369,7 @@ public class SyslogWriter extends OutputStreamWriter {
       super.flush();
       if (bout.size() > 0) {
          ds.send(new DatagramPacket(bout.getBuffer(), bout.size(),
-               address, SYSLOG_PORT));
+               address, syslogPort));
          bout.reset();
       }
    }
