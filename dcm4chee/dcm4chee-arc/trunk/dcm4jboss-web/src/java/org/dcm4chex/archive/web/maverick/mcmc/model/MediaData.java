@@ -26,7 +26,7 @@ public class MediaData {
 
 	private static final long GBYTE = 1000000000L;
 	private static final long MBYTE = 1000000L;
-	private static final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	private static Map mapDefinedStati;
 	public static final Collection DEFINED_MEDIA_STATI = _getMediaStatusList();
 	

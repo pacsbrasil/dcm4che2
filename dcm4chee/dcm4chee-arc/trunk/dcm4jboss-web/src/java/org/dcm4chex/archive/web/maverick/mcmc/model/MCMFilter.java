@@ -29,7 +29,7 @@ public class MCMFilter {
 	public static final String MEDIA_TYPE_DEFAULT = String.valueOf( MediaDTO.OPEN );
 
 	/** The Date/Time formatter to parse input field values. (dd.MM.yyyy) */
-	private static final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
 	/** Collection with all defined media stati. (defined in MediaData) */ 
 	private Collection mediaStatusList = null;
 	/** holds the 'left' string value of creation time range. */
