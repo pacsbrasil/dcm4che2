@@ -60,6 +60,11 @@ import java.util.List;
  * <ul>
  * <li> Initial import
  * </ul>
+ * <p><b>20030425 gunter zeilinger:</b>
+ * <ul>
+ * <li> Fix Permanent-reject with reason "CallingAE-not-recognized".
+ *      Thanx to Jie from INPHACT for sending me the Bug Fix
+ * </ul>
  */
 class AcceptorPolicyImpl implements AcceptorPolicy {
     // Constants -----------------------------------------------------
@@ -284,7 +289,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         if (policy1 == null)
             policy1 = this;
         
-        String callingAET = rq.getCalledAET();
+        String calledAET = rq.getCalledAET();
         if (policy1.callingAETs != null
         && !policy1.callingAETs.contains(callingAET)) {
             return new AAssociateRJImpl(
