@@ -159,12 +159,12 @@
 
    <!-- Limit the org.dcm4jboss.ejb category to INFO
         Modify INFO to FATAL to hide error messages from EJB layer --> 
-   <category name="org.dcm4jboss.ejb">
+   <category name="org.dcm4chex.ejb">
       <priority value="INFO"/>
    </category>
 
    <!-- Limit the org.dcm4jboss.service category to INFO --> 
-   <category name="org.dcm4jboss.service">
+   <category name="org.dcm4chex.service">
       <priority value="INFO"/>
    </category>
 
