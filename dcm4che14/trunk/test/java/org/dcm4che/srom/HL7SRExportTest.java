@@ -75,8 +75,8 @@ public class HL7SRExportTest extends TestCase {
             "ReceivingApplication","ReceivingFacility");
         byte[] msg = export.toHL7(sr, "MessageControlID",
             "IssuerOfPatientID", "PatientAccountNumber",
-            "UniversalServiceID", "PlacerOrderNumber",
-            "FillerOrderNumber");
+            "PlacerOrderNumber", "FillerOrderNumber",
+            "UniversalServiceID");
 //        new FileOutputStream(SR_HL7).write(msg);
         assertEquals(expected, msg);
      }

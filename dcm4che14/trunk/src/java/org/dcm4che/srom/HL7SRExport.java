@@ -74,6 +74,6 @@ public interface HL7SRExport {
     
     byte[] toHL7(SRDocument doc, String messageControlID,
             String issuerOfPatientID, String patientAccountNumber,
-            String universalServiceID, String placerOrderNumber,
-            String fillerOrderNumber);
+            String placerOrderNumber, String fillerOrderNumber,
+            String universalServiceID);
 }

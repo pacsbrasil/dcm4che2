@@ -32,6 +32,7 @@ import org.dcm4che.srom.Patient;
 import org.dcm4che.srom.RefSOP;
 import org.dcm4che.srom.SOPInstanceRef;
 import org.dcm4che.srom.SRDocument;
+import org.dcm4che.srom.ContainerContent;
 import org.dcm4che.srom.TextContent;
 
 import java.io.ByteArrayOutputStream;
@@ -281,7 +282,14 @@ public class HL7SRExportImpl implements HL7SRExport {
             ArrayList txts, ArrayList imgs) {
         if (node instanceof TextContent) {
             TextContent txtNode = (TextContent) node;
-            txts.add(txtNode.getText());
+            Content parent = txtNode.getParent();
+            StringBuffer sb = new StringBuffer();
+            if (parent instanceof ContainerContent) {
+                ContainerContent container = (ContainerContent) parent;
+                sb.append(container.getName().getCodeMeaning()).append(' ');
+            }
+            sb.append(txtNode.getText());
+            txts.add(sb.toString());
         } else if (node instanceof ImageContent) {
             ImageContent imgNode = (ImageContent) node;
             RefSOP refSOP = imgNode.getRefSOP();
