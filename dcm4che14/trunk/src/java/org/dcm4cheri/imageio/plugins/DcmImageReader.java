@@ -23,6 +23,7 @@
 
 package org.dcm4cheri.imageio.plugins;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.image.ColorModelFactory;
 import org.dcm4che.imageio.plugins.DcmImageReadParam;
 
@@ -67,6 +68,8 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class DcmImageReader extends ImageReader {
 
+    private static final Logger log = Logger.getLogger(DcmImageReader.class);
+    
     static final DcmParserFactory pfact = DcmParserFactory.getInstance();
 
     private static final ColorModelFactory cmFactory = ColorModelFactory
@@ -303,7 +306,7 @@ public class DcmImageReader extends ImageReader {
         return new DcmImageReadParamImpl();
     }
 
-    public BufferedImage read(int imageIndex, ImageReadParam param)
+    public synchronized BufferedImage read(int imageIndex, ImageReadParam param)
             throws IOException {
         readMetadata();
         checkIndex(imageIndex);
@@ -312,15 +315,19 @@ public class DcmImageReader extends ImageReader {
             readParam = (DcmImageReadParam) getDefaultReadParam();
         }
         if (decompressor != null) {
-            if (frameStartPos[imageIndex] == 0) {
-                for (int i = 0; i < imageIndex; ++i)
-                    if (frameStartPos[i+1] == 0)
-                        decompress(i, readParam);
+            if (imageIndex > 0 && frameStartPos[imageIndex] == 0) {
+                if (itemParser.getNumberOfDataFragments() == frameStartPos.length) {
+                    for (int i = 1; i < frameStartPos.length; ++i)
+	                    if (frameStartPos[i] == itemParser.getOffsetOfDataFragment(i));                   
+                } else {
+                    for (int i = 0; i < imageIndex; ++i)
+	                    if (frameStartPos[i+1] == 0)
+	                        decompress(i, readParam);
+                }
             }
             BufferedImage bi = decompress(imageIndex, readParam);
             if (readParam.isMaskPixelData())
                 maskPixelData(bi.getTile(0,0).getDataBuffer());
-
             return bi;
         }
         stream.seek(this.frameStartPos[imageIndex]);
@@ -379,20 +386,21 @@ public class DcmImageReader extends ImageReader {
 
         if (readParam.isMaskPixelData())
             maskPixelData(db);
-
         return this.theImage;
     }
 
     private BufferedImage decompress(int imageIndex, DcmImageReadParam readParam)
             throws IOException {
+        log.debug("Start decompressing frame#" + (imageIndex+1));
         itemStream.seek(this.frameStartPos[imageIndex]);
         decompressor.setInput(itemStream);
         BufferedImage bi = decompressor.read(0, readParam);
         decompressor.reset();
-        if (imageIndex + 1 < frameStartPos.length) {
-            this.frameStartPos[imageIndex + 1] = itemParser
-                    .seekNextFrame(itemStream);
+        final int nextIndex = imageIndex + 1;
+        if (nextIndex < frameStartPos.length && frameStartPos[nextIndex] == 0) {
+            this.frameStartPos[nextIndex] = itemParser.seekNextFrame(itemStream);
         }
+        log.debug("Finished decompressed frame#" + (imageIndex+1));
         return bi;
     }
 

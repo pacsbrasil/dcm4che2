@@ -57,6 +57,8 @@ public class ItemParser implements StreamSegmentMapper {
     
     private final DcmParser parser;
     private final ImageInputStream iis;
+    private boolean lastItemSeen = false;
+    
 
     public ItemParser(DcmParser parser) throws IOException {
         this.parser = parser;
@@ -65,8 +67,24 @@ public class ItemParser implements StreamSegmentMapper {
         iis.skipBytes(parser.getReadLength());
         next();
     }
+    
+    public int getNumberOfDataFragments() {
+        while (!lastItemSeen)
+            next();
+        return items.size();
+    }
 
+    public int getOffsetOfDataFragment(int index) {
+        while (items.size() <= index)
+            if (next() == null)
+                throw new IndexOutOfBoundsException(
+                        "index:" + index + " >= size:" + items.size());
+        return last().offset;
+    }
+    
     private Item next() {
+        if (lastItemSeen)
+            return null;
         try {
             if (!items.isEmpty())
                 iis.seek(last().nextItemPos());
@@ -92,6 +110,7 @@ public class ItemParser implements StreamSegmentMapper {
                     + Tags.toString(parser.getReadTag())
                     + " #" + parser.getReadLength());            
         }
+        lastItemSeen = true;
 	    return null;
     }
     
@@ -134,9 +153,7 @@ public class ItemParser implements StreamSegmentMapper {
         while (item.offset >= pos)
             item = (Item) items.get(--i);
         siis.seek(item.nextOffset());
-        siis.flush();
         iis.seek(item.nextItemPos());
-        iis.flush();
         return item.nextOffset();
     }
     
