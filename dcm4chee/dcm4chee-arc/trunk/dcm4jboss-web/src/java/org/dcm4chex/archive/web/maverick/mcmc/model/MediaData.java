@@ -210,7 +210,7 @@ public class MediaData {
 		mapDefinedStati.put( new Integer(MediaDTO.QUEUED), new MediaStatus( MediaDTO.QUEUED, "QUEUED" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.PROCESSING), new MediaStatus( MediaDTO.PROCESSING, "PROCESSING" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.COMPLETED), new MediaStatus( MediaDTO.COMPLETED, "COMPLETED" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.ERROR), new MediaStatus( MediaDTO.ERROR, "ERROR" ) );
+		mapDefinedStati.put( new Integer(MediaDTO.ERROR), new MediaStatus( MediaDTO.ERROR, "FAILED" ) );
 		return mapDefinedStati.values();
 	}
 	
