@@ -224,7 +224,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmParser parser = pf.newDcmParser(in);
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
-            service.logDataset("Dataset", ds);
+            service.logDataset("Dataset:\n", ds);
             ds.setFileMetaInfo(
                 objFact.newFileMetaInfo(
                     rqCmd.getAffectedSOPClassUID(),

@@ -72,7 +72,7 @@ public class MoveScp extends DcmServiceBase {
         Command rqCmd = rq.getCommand();
         try {
             Dataset rqData = rq.getDataset();
-            service.logDataset("Identifier", rqData);
+            service.logDataset("Identifier:\n", rqData);
             checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
             String dest = rqCmd.getString(Tags.MoveDestination);
             AEData aeData = queryAEData(dest);

@@ -55,7 +55,7 @@ public class FindScp extends DcmServiceBase {
         final QueryCmd queryCmd;
         try {
             Dataset rqData = rq.getDataset();
-            service.logDataset("Identifier", rqData);
+            service.logDataset("Identifier:\n", rqData);
             queryCmd = QueryCmd.create(service.getDS(), rqData);
             queryCmd.execute();
         } catch (Exception e) {
