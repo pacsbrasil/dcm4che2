@@ -1,0 +1,141 @@
+;; DashO-Pro(tm) Configuration File
+
+-Version: ========================================
+2.3
+
+-MapFile: ========================================
+; Unix
+dashopro.map
+
+; Windows
+;c:\DashoPro\dashopro.map
+
+-ReportFile: =====================================
+; Unix
+dashopro.log
+
+;Windows
+;c:\DashoPro\dashopro.map
+
+-ClassPath: ======================================
+classes/
+@lib.dir@/dcm4che.jar
+@jboss.lib@/jboss-common.jar
+@jboss.lib@/jboss-system.jar
+@jboss.lib@/jboss-jmx.jar
+@jboss.lib@/concurrent.jar
+@jboss.lib@/log4j-boot.jar
+
+@java.home@/lib/rt.jar
+
+;c:\java\myJar.jar
+;c:\java\jre\lib\rt.jar
+;/usr/local/java/jre/lib/rt.jar
+
+-Destination: ========================================
+;/home/myUserName/myapplication.jar
+;/apps/inThisDir/
+;c:\temp
+lib/prnscp.jar
+
+-TriggerFields: ==================================
+;; format <classname>:<fieldname>
+;;
+;MyApplet:myField1
+
+-TriggerMethods: =================================
+
+;; format <classname>:<methodname>:<paramtype1,paramtype2>
+
+;; Note that method overrides of java.* or sun.* are
+;; automatically included, i.e. no need to specify 
+;; all methods like init, paint, run, etc.
+
+;MyApplet:(applet):
+;MyHelperLib:ConnectToDatabase:int,int,java.lang.Object
+;MyInterfaceClass:(publics)
+;DirWhereMyPackagesAre:(library):
+
+com.tiani.prnscp.print.PrinterService:(publics):
+com.tiani.prnscp.scp.PrintScpService:(publics):
+
+;CaffeineMarkApp:main:java.lang.String[]
+
+-RemoveUnusedElements: ===========================
+;; This turns on or off DashO-Pro's ability to 
+;; remove unused fields and methods
+;none
+;onlynonpublics
+all
+
+-ExcludeMethods: =================================
+;; excludes debugMethodClient, debugMethodServer, 
+;; debugMethodetc
+;;
+;debugMethod*
+
+-ExcludePackages: ================================
+;; java.* and sun.* are implicit here
+;; Doing this implies these packages will be 
+;; available elsewhere at runtime
+;preemptive.tools.* 
+javax.*
+org.*
+
+-ExcludeClasses: =================================
+;; this option is DEPRECATED
+;; use ExcludePackages with a fully qualified class 
+;; to emulate the same functionality
+
+-IncludeClasses: =================================
+;; You probably only want to enter something here
+;; to satisfy use of a forName method
+;IwannaPlay.class
+;MeToo.class
+
+-IncludeClassesUnconditional: ====================
+;; Here you can include "interfaces" to the outside
+;; world, serialized classes, etc.
+;Shape.class
+org.dcm4chex.service.DcmServerServiceMBean
+com.tiani.prnscp.print.PrinterServiceMBean
+com.tiani.prnscp.scp.PrintScpServiceMBean
+
+-IncludeNonClassFiles: ===========================
+;; Include all non class files
+;c:\gifs\*
+
+-RenameOptions: ==================================
+ON
+;OFF
+;ONLYNONPUBLICS
+
+-RenamePrefix: ===================================
+(keeppackages)
+;(keeppackages):MYPREFIX
+;(verbatim)
+;MYPREFIX
+
+-General: ========================================
+;nomakepublic
+;ignorenotfoundclasses
+;fornamedetection
+;leavedebugginginfo
+;renameforname
+;renamenativeclasses
+;noautserialize
+;noinductstatics
+
+-OptimizationType: ===============================
+;speed
+;size
+none
+
+-IncUpdateInputFile: =============================
+;lastrun.upd
+
+-IncUpdateOutputFile: ============================
+OVERWRITE:thisrun.upd
+
+-ConstantPoolTag: ================================
+This class property of preEmptive Solutions, Inc.

@@ -11,7 +11,7 @@
   <property name="javac.optimize" value="off"/>
 
   <!-- Override with your JBoss/Web server bundle dist location -->
-  <property name="jboss.dist" value="${user.home}/jboss-3.0.3"/>
+  <property name="jboss.dist" value="${user.home}/jboss-3.0.4"/>
   <property name="jboss.lib" value="${jboss.dist}/lib"/>
   <property name="jboss.conf" value="default"/>
   <property name="jboss.server" value="${jboss.dist}/server/${jboss.conf}"/>
@@ -62,6 +62,7 @@
     <echo message="ant.home = ${ant.home}"/>
     <echo message="jboss.dist = ${jboss.dist}"/>
     <echo message="java.class.path = ${java.class.path}"/>
+    <echo message="dasho.jar = ${dasho.jar}"/>
     <tstamp/>
   </target>
 
@@ -76,6 +77,27 @@
            optimize="${javac.optimize}">
     </javac>
   </target>
+
+  <target name="sar" depends="dcmsrv-sar,prnscp-sar"/>
+  
+  <target name="dcmsrv-sar" depends="compile">
+    <mkdir dir="${build.dir}/dcmsrv"/>
+    <copy file="${src.conf}/dcmsrv-service.xml" 
+          tofile="${build.dir}/dcmsrv/jboss-service.xml">
+      <filterset>
+        <filter token="ARCHIVES" value="dcm4che.jar"/>
+      </filterset>
+    </copy>  
+    <mkdir dir="${build.deploy.dir}"/>
+    <jar jarfile="${build.deploy.dir}/dcmsrv.sar">
+      <metainf dir="${build.dir}/dcmsrv"
+               includes="jboss-service.xml"
+      />
+      <fileset dir="${build.classes.dir}"
+               includes="org/dcm4chex/service/DcmServer*"
+      />
+    </jar>
+  </target>   
 
   <target name="prnscp-sar" depends="compile">
     <mkdir dir="${build.dir}/prnscp"/>
@@ -96,41 +118,8 @@
     </jar>
   </target>   
 
-  <target name="prnscp-jar" depends="compile">
-    <mkdir dir="${build.lib.dir}"/>
-    <jar jarfile="${build.lib.dir}/prnscp.jar">
-      <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/**"
-      />
-    </jar>
-    <mkdir dir="${build.deploy.dir}"/>
-    <copy file="${src.conf}/prnscp-service.xml" 
-          todir="${build.deploy.dir}">
-      <filterset>
-        <filter token="ARCHIVES" value="dcm4che.jar,prnscp.jar"/>
-      </filterset>
-    </copy>
-  </target>
-
-  <target name="dcmsrv-sar" depends="compile">
-    <mkdir dir="${build.dir}/dcmsrv"/>
-    <copy file="${src.conf}/dcmsrv-service.xml" 
-          tofile="${build.dir}/dcmsrv/jboss-service.xml">
-      <filterset>
-        <filter token="ARCHIVES" value="dcm4che.jar"/>
-      </filterset>
-    </copy>  
-    <mkdir dir="${build.deploy.dir}"/>
-    <jar jarfile="${build.deploy.dir}/dcmsrv.sar">
-      <metainf dir="${build.dir}/dcmsrv"
-               includes="jboss-service.xml"
-      />
-      <fileset dir="${build.classes.dir}"
-               includes="org/dcm4chex/service/DcmServer*"
-      />
-    </jar>
-  </target>   
-
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar"/>
+  
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
     <jar jarfile="${build.lib.dir}/dcmsrv.jar">
@@ -138,16 +127,56 @@
                includes="org/dcm4chex/service/DcmServer*"
       />
     </jar>
+  </target>   
+
+  <target name="prnscp-jar" depends="compile" unless="dasho.jar">
+    <mkdir dir="${build.lib.dir}"/>
+    <jar jarfile="${build.lib.dir}/prnscp.jar">
+      <fileset dir="${build.classes.dir}"
+               includes="com/tiani/prnscp/**"
+      />
+    </jar>
+  </target>
+
+  <target name="dasho-prnscp-jar" depends="compile" if="dasho.jar">
+    <copy file="prnscp-${os.name}.dop" todir="${build.dir}">
+      <filterset>
+        <filter token="lib.dir" value="${lib.dir}"/>
+        <filter token="jboss.lib" value="${jboss.lib}"/>
+        <filter token="java.home" value="${java.home}"/>
+      </filterset>
+    </copy>
+    <java classname="DashoPro" 
+         fork="true"
+         dir="${build.dir}"
+         failonerror="true"
+         maxmemory="128m"
+         >
+       <arg value="prnscp-${os.name}.dop"/> 
+       <classpath>
+         <path refid="build.path" />
+         <pathelement location="${dasho.jar}"/>
+       </classpath>
+    </java>
+  </target>
+    
+  <target name="service-xml">
     <mkdir dir="${build.deploy.dir}"/>
+    <copy file="${src.conf}/prnscp-service.xml" 
+          todir="${build.deploy.dir}">
+      <filterset>
+        <filter token="ARCHIVES" value="dcm4che.jar,prnscp.jar"/>
+      </filterset>
+    </copy>
     <copy file="${src.dir}/conf/dcmsrv-service.xml" 
           todir="${build.deploy.dir}">
       <filterset>
         <filter token="ARCHIVES" value="dcm4che.jar,dcmsrv.jar"/>
       </filterset>
     </copy>
-  </target>   
+  </target>
 
-  <target name="build" depends="dcmsrv-sar,prnscp-sar,dcmsrv-jar,prnscp-jar"/>
+  <target name="build" depends="sar, jar, service-xml"/>
 
   <target name="deploy" depends="build">
     <copy todir="${jboss.server}">
@@ -174,7 +203,7 @@
   </target>           
 
   <target name="release" depends="build">
-    <mkdir dir="${dist.dir}/server/deafult"/>
+    <mkdir dir="${dist.dir}/server/default"/>
     <copy todir="${dist.dir}">
       <fileset dir="${jboss.dist}">
         <include name="bin/*.jar"/>
