@@ -59,11 +59,11 @@
 							  <!--input type="submit" name="send" value="Send" disabled="disabled"/-->
 							  <!--input type="submit" name="move" value="Move" disabled="disabled"/-->
 							  
-							  <!--input type="submit" name="merge" value="Merge"  onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
+							   <input type="submit" name="merge" value="Merge"  onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
 								<xsl:if test="total &lt;= 0">
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
-								</input-->							  
+								</input>
 								
 							  	<input type="submit" name="del" value="Del" onclick="return confirm('Are you sure you want to delete?')">
 								<xsl:if test="total &lt;= 0">

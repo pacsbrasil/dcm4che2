@@ -19,7 +19,6 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
-import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
@@ -71,12 +70,10 @@ public class FolderSubmitCtrl extends FolderCtrl
 			}
 			if (rq.getParameter("merge") != null)
 			{
-				/* TODO */
-				return FOLDER;
+				return MERGE;
 			}
 			if (rq.getParameter("move") != null)
 			{
-				/* TODO */
 				return FOLDER;
 			}
 			return FOLDER;

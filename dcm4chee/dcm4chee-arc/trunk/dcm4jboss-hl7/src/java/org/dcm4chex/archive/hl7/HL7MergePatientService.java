@@ -53,7 +53,7 @@ public class HL7MergePatientService extends HL7AcceptService
 				prior = HL7Utils.makePatientIODFromMRG(msh, mrg);
 				PatientUpdate update = getPatientUpdateHome().create();
 				try {
-					update.mergePatient(dominant, prior);
+					update.mergePatient(dominant, new PatientDTO[]{prior});
 				} finally {
 					update.remove();
 				}

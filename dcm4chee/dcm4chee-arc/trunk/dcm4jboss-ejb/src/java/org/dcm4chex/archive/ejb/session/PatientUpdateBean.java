@@ -92,12 +92,16 @@ public abstract class PatientUpdateBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void mergePatient(PatientDTO dominantDTO, PatientDTO priorDTO) {
+    public void mergePatient(PatientDTO dominantDTO, PatientDTO[] priorDTOs) {
 
         PatientLocal dominantPat = updateOrCreate(dominantDTO);
-        PatientLocal priorPat = updateOrCreate(priorDTO);
-        dominantPat.getStudies().addAll(priorPat.getStudies());
-        priorPat.setMergedWith(dominantPat);
+        PatientLocal priorPat;
+        for (int i=0; i<priorDTOs.length;i++)
+        {
+        	priorPat= updateOrCreate(priorDTOs[i]);
+        	dominantPat.getStudies().addAll(priorPat.getStudies());
+        	priorPat.setMergedWith(dominantPat);
+        }
     }
 
     /**
