@@ -110,36 +110,49 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					</td>
 				</table>
 				<table border="0" width="100%" cellpadding="0" cellspacing="0">
+				  <tr>
 					<td bgcolor="eeeeee" class="label">Patient Name:
 					</td>
 					<td bgcolor="eeeeee">
 						<input size="10" name="patientName" type="text" value="{patientName}"/>
-      		</td>
+      				</td>
 					<td bgcolor="eeeeee" class="label">Patient ID:
 					</td>
 					<td bgcolor="eeeeee">
 						<input size="10" name="patientID" type="text" value="{patientID}"/>
 					</td>
-					<td bgcolor="eeeeee" class="label">Study ID:
-					</td>
-      		<td bgcolor="eeeeee">
-        		<input size="10" name="studyID" type="text" value="{studyID}"/>
-      		</td>
-					<td bgcolor="eeeeee" class="label">Study Date:
-					</td>
-      		<td bgcolor="eeeeee"> 
-        		<input size="10" name="studyDateRange" type="text" value="{studyDateRange}"/>
-      		</td>
-      		<td bgcolor="eeeeee" class="label">Accession No.:
-					</td>
-      		<td bgcolor="eeeeee">
-        		<input size="10" name="accessionNumber" type="text" value="{accessionNumber}"/>
-      		</td>
-      		<td bgcolor="eeeeee" class="label">Modality:
-					</td>
-      		<td bgcolor="eeeeee">
-        		<input size="10" name="modality" type="text" value="{modality}"/>
-      		</td>
+	
+					<xsl:choose>
+						<xsl:when test="showStudyIUID='true'">
+				      		<td bgcolor="eeeeee" class="label">Study IUID:</td>
+				      		<td bgcolor="eeeeee">
+				        		<input size="45" name="studyUID" type="text" value="{studyUID}"/>
+				      		</td>
+						</xsl:when>
+						<xsl:otherwise>
+							<td bgcolor="eeeeee" class="label">Study ID:</td>
+				      		<td bgcolor="eeeeee">
+				        		<input size="10" name="studyID" type="text" value="{studyID}"/>
+				      		</td>
+							<td bgcolor="eeeeee" class="label">Study Date:
+							</td>
+				      		<td bgcolor="eeeeee"> 
+				        		<input size="10" name="studyDateRange" type="text" value="{studyDateRange}"/>
+				      		</td>
+						</xsl:otherwise>
+					</xsl:choose>
+
+		      		<td bgcolor="eeeeee" class="label">Accession No.:
+							</td>
+		      		<td bgcolor="eeeeee">
+		        		<input size="10" name="accessionNumber" type="text" value="{accessionNumber}"/>
+		      		</td>
+		      		<td bgcolor="eeeeee" class="label">Modality:
+							</td>
+		      		<td bgcolor="eeeeee">
+		        		<input size="10" name="modality" type="text" value="{modality}"/>
+		      		</td>
+		      	  </tr>
 				</table>
 					<xsl:call-template name="overview"/>
    			<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -227,7 +240,17 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					Study Description:</font>
+				<xsl:choose>
+					<xsl:when test="showStudyIUID='false'">
+							<b>Study Description</b> / 
+						<a title="Show StudyIUID" href="foldersubmit.m?showStudyIUID=true&amp;studyID=">IUID</a>
+					</xsl:when>
+					<xsl:otherwise>
+						<a title="Show Study Description" href="foldersubmit.m?showStudyIUID=false&amp;studyUID=">Study Description</a>
+							/ <b>IUID</b>
+					</xsl:otherwise>
+				</xsl:choose> :
+				</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -281,7 +304,17 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					Series Description/Body Part:</font>
+				<xsl:choose>
+					<xsl:when test="showSeriesIUID='false'">
+							<b>Series Description/Body Part</b> / 
+						<a title="Show SeriesIUID" href="foldersubmit.m?showSeriesIUID=true">IUID</a>
+					</xsl:when>
+					<xsl:otherwise>
+						<a title="Show Description" href="foldersubmit.m?showSeriesIUID=false">Series Description/Body Part</a>
+							/ <b>IUID</b>
+					</xsl:otherwise>
+				</xsl:choose> :
+				</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -301,7 +334,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.PatientModel']">
 	<tr>
-      <table width="100%" callpadding="1" callspacing="1" border="0">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
 		<colgroup>
 			<col width="1%"/>
 			<col width="26%"/>
@@ -326,22 +359,22 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
-      <td title="Patient Name">
+      <td title="Patient Name" bgcolor="f8f8f8">
 				<strong>
             <xsl:value-of select="patientName"/>
 				</strong>
       </td>
-      <td title="Patient ID">
+      <td title="Patient ID" bgcolor="f8f8f8">
 				<strong>
             <xsl:value-of select="patientID"/>
 				</strong>
 			</td>
-      <td title="Birth Date">
+      <td title="Birth Date" bgcolor="f8f8f8">
 				<strong>
             <xsl:value-of select="patientBirthDate"/>
 				</strong>
       </td>
-      <td title="Patient Sex">
+      <td title="Patient Sex" bgcolor="f8f8f8">
 				<strong>
             <xsl:value-of select="patientSex"/>
 				</strong>
@@ -372,7 +405,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.StudyModel']">
 <tr>
-	<table width="100%" callpadding="0" callspacing="0" border="0">
+	<table width="100%" cellpadding="0" cellspacing="0" border="0">
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		<colgroup>
 			<col width="2%"/>
@@ -401,28 +434,35 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
-      <td title="Study Date">
+      		<td title="Study Date" bgcolor="eaeaff">
 				<xsl:value-of select="studyDateTime"/>
 			</td>
-			<td title="Study ID">
+			<td title="Study ID" bgcolor="eaeaff" >
 				<xsl:value-of select="studyID"/>
 			</td>
-		 	<td title="Modalities">
+		 	<td title="Modalities" bgcolor="eaeaff">
 				<xsl:value-of select="modalitiesInStudy"/>
 			</td>
-      <td title="Study Description">
-				<xsl:value-of select="studyDescription"/>
+      		<td title="Study Description" bgcolor="eaeaff">
+      			<xsl:choose>
+					<xsl:when test="/model/showStudyIUID='false'">
+						<xsl:value-of select="studyDescription"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="studyIUID"/>
+					</xsl:otherwise>
+				</xsl:choose>
 			</td>
-			<td title="Accession Number">
-				<xsl:value-of select="accessionNumber"/>
+			<td title="Accession Number" bgcolor="eaeaff">
+				&#160;<xsl:value-of select="accessionNumber"/>
 			</td>
-      <td title="Referring Physican">
+      		<td title="Referring Physican" bgcolor="eaeaff">
 				<xsl:value-of select="referringPhysician"/>
 			</td>
-      <td title="Number of Series">
+      		<td title="Number of Series" bgcolor="eaeaff">
 				<xsl:value-of select="numberOfSeries"/>
 			</td>
-      <td title="Number of Instances">
+      		<td title="Number of Instances" bgcolor="eaeaff">
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
 			<td align="right" bgcolor="ccffcc">
@@ -451,7 +491,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.SeriesModel']">
 	<tr>
-<table width="100%" callpadding="0" callspacing="0" border="0">	  
+<table width="100%" cellpadding="0" cellspacing="0" border="0" >	  
 		<colgroup>
 			<col width="3%"/>
 			<col width="14%"/>
@@ -478,32 +518,40 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
-			<td title="Series Date">
+			<td title="Series Date" bgcolor="e8ffe8" >
 				<xsl:value-of select="seriesDateTime"/>
 			</td>
-			<td title="Series Number">
-			<xsl:value-of select="seriesNumber"/>
+			<td title="Series Number" bgcolor="e8ffe8" >
+				<xsl:value-of select="seriesNumber"/>
 			</td>
-      <td title="Modality">
+      <td title="Modality" bgcolor="e8ffe8" >
 				<xsl:value-of select="modality"/>
 			</td>
-      <td title="Series Description / Body Part">
-    		<xsl:value-of select="seriesDescription"/>
-				\ <xsl:value-of select="bodyPartExamined"/>
+      <td title="Series Description / Body Part"  bgcolor="e8ffe8">
+      			<xsl:choose>
+					<xsl:when test="/model/showSeriesIUID='false'">
+						<xsl:value-of select="seriesDescription"/>
+						\ <xsl:value-of select="bodyPartExamined"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="seriesIUID"/>
+					</xsl:otherwise>
+				</xsl:choose>
+    		
       </td>
-			<td title="Modality Vendors / Modelname">
+			<td title="Modality Vendors / Modelname"  bgcolor="e8ffe8">
     		<xsl:value-of select="manufacturer"/>
 				\ <xsl:value-of select="manufacturerModelName"/>
       </td>
-			<td title="Number of Instances">
+			<td title="Number of Instances"  bgcolor="e8ffe8">
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
-			<td align="right" bgcolor="ccffcc">
+			<td align="right" bgcolor="ccffcc" >
 				<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
 					<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		
 				</a>
 			</td>
-			<td align="right" bgcolor="ccffcc">
+			<td align="right" bgcolor="ccffcc" >
 				<input type="checkbox" name="stickySeries" value="{pk}">
 					<xsl:if test="/model/stickySeries/item = pk">
 						<xsl:attribute name="checked"/>
@@ -519,7 +567,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.ImageModel']">
 	<tr>
-<table width="100%" callpadding="0" callspacing="0" border="0">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
 		<colgroup>
 			<col width="4%"/>
 			<col width="10%"/>
@@ -527,33 +575,37 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="21%"/>
 			<col width="25%"/>
 			<col width="5%"/>
-			<col width="30%"/>
+			<col width="10%"/>
+			<col width="20%"/>
 			<col width="2%"/>
 		</colgroup>
 		<td bgcolor="ffffcc">
 		</td>
-		<td title="Content Datetime">
+		<td title="Content Datetime" bgcolor="ffffef">
 			<xsl:value-of select="contentDateTime"/>
 		</td>
-		<td title="Instance Number">
+		<td title="Instance Number" bgcolor="ffffef">
 	   		<xsl:value-of select="instanceNumber"/>
     </td>
-    <td title="ImageType">
+    <td title="ImageType" bgcolor="ffffef">
 			<xsl:value-of select="imageType"/>
 		</td>
-    <td title="Pixel Matrix">
+    <td title="Pixel Matrix" bgcolor="ffffef">
 	    	<xsl:value-of select="photometricInterpretation"/>
 				??
     		<xsl:value-of select="rows"/>x<xsl:value-of select="columns"/>x<xsl:value-of select="numberOfFrames"/>
 				??
     		<xsl:value-of select="bitsAllocated"/>bits
     </td>
-		<td title="Number of Files">
+		<td title="Number of Files" bgcolor="ffffef">
 			<xsl:value-of select="numberOfFiles"/>
 		</td>
-	  <td title="Retrieve AETs">
+	  	<td title="Retrieve AETs" bgcolor="ffffef">
 			<xsl:value-of select="retrieveAETs"/>
-    </td>
+    	</td>
+	  	<td title="SopIUID" bgcolor="ffffef">
+			<xsl:value-of select="sopIUID"/>
+    	</td>
 		<td align="right" bgcolor="ffffcc">
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
@@ -579,7 +631,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.PresentationStateModel']">
 	<tr>
-<table width="100%" callpadding="0" callspacing="0" border="0">	
+<table width="100%" cellpadding="0" cellspacing="0" border="0">	
 		<colgroup>
 			<col width="4%"/>
 			<col width="15%"/>
@@ -588,32 +640,36 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="5%"/>
 			<col width="5%"/>
 			<col width="5%"/>
-			<col width="38%"/>
+			<col width="13%"/>
+			<col width="25%"/>
 			<col width="2%"/>
 		</colgroup>
 		<td bgcolor="ffffcc">
 		</td>
-		<td title="Creation Datetime">
-      <xsl:value-of select="presentationCreationDateTime"/>
+		<td title="Creation Datetime" bgcolor="ffffef">
+      		<xsl:value-of select="presentationCreationDateTime"/>
 		</td>
-		<td title="Instance Number">
+		<td title="Instance Number" bgcolor="ffffef">
 			<xsl:value-of select="instanceNumber"/>
-    </td>
-    <td title="Presentation Description">
-      <xsl:value-of select="presentationDescription"/>
+    	</td>
+    	<td title="Presentation Description" bgcolor="ffffef">
+      		<xsl:value-of select="presentationDescription"/>
 		</td>
-		<td title="Presentation Label">
-    	<xsl:value-of select="presentationLabel"/>
+		<td title="Presentation Label" bgcolor="ffffef">
+    		<xsl:value-of select="presentationLabel"/>
 		</td>
-		<td title="Number of Referenced Images">
-      -&gt;<xsl:value-of select="numberOfReferencedImages"/>
+		<td title="Number of Referenced Images" bgcolor="ffffef">
+      		-&gt;<xsl:value-of select="numberOfReferencedImages"/>
 		</td>
-		<td title="Number of Files">
-      <xsl:value-of select="numberOfFiles"/>
+		<td title="Number of Files" bgcolor="ffffef">
+      		<xsl:value-of select="numberOfFiles"/>
 		</td>
-		<td title="Retrieve AETs">
-      <xsl:value-of select="retrieveAETs"/>
-    </td>
+		<td title="Retrieve AETs" bgcolor="ffffef">
+      		<xsl:value-of select="retrieveAETs"/>
+    	</td>
+	  	<td title="SopIUID" bgcolor="ffffef">
+			<xsl:value-of select="sopIUID"/>
+    	</td>
 		<td align="right" bgcolor="ffffcc">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
@@ -627,7 +683,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.StructuredReportModel']">
 	<tr>
-<table width="100%" callpadding="1" callspacing="0" border="0">		 
+<table width="100%" cellpadding="1" cellspacing="0" border="0">		 
 		<colgroup>
 			<col width="4%"/>
 			<col width="15%"/>
@@ -635,29 +691,33 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="15%"/>
 			<col width="15%"/>
 			<col width="5%"/>
-			<col width="38%"/>
+			<col width="18%"/>
+			<col width="20"/>
 			<col width="2%"/>
 		</colgroup>
  
 		<td bgcolor="ffffcc">
 		</td>
-		<td title="Content Datetime">
+		<td title="Content Datetime" bgcolor="ffffef">
     	<xsl:value-of select="contentDateTime"/>
 		</td>
-		<td title="Instance Number">
+		<td title="Instance Number" bgcolor="ffffef">
   		<xsl:value-of select="instanceNumber"/>
     	</td>
-    	<td title="Document Title">
+    	<td title="Document Title" bgcolor="ffffef">
   			<xsl:value-of select="documentTitle"/>
 		</td>
-		<td title="Document Status">
+		<td title="Document Status" bgcolor="ffffef">
       		<xsl:value-of select="completionFlag"/>/<xsl:value-of select="verificationFlag"/>
     	</td>
-		<td title="Number of Files">
+		<td title="Number of Files" bgcolor="ffffef">
 			<xsl:value-of select="numberOfFiles"/>
 		</td>
-	  	<td title="Retrieve AETs">
+	  	<td title="Retrieve AETs" bgcolor="ffffef">
 			<xsl:value-of select="retrieveAETs"/>
+    	</td>
+	  	<td title="SopIUID" bgcolor="ffffef">
+			<xsl:value-of select="sopIUID"/>
     	</td>
 		<td align="right" bgcolor="ffffcc">
 			<xsl:choose>
@@ -681,4 +741,61 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 </table>
 	</tr>
 </xsl:template>
+
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.WaveformModel']">
+	<tr>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+		<colgroup>
+			<col width="4%"/>
+			<col width="10%"/>
+			<col width="3%"/>
+			<col width="21%"/>
+			<col width="25%"/>
+			<col width="5%"/>
+			<col width="10%"/>
+			<col width="20%"/>
+			<col width="2%"/>
+		</colgroup>
+		<td bgcolor="ffffcc">
+		</td>
+		<td title="Content Datetime" bgcolor="ffffef">
+			<xsl:value-of select="contentDateTime"/>
+		</td>
+		<td title="Instance Number" bgcolor="ffffef">
+	   		<xsl:value-of select="instanceNumber"/>
+	    </td>
+	    <td title="WaveformType" bgcolor="ffffef">
+			<xsl:value-of select="waveformType"/>
+		</td>
+	    <td title="dummy" bgcolor="ffffef">&#160;&#160;</td>
+		<td title="dummy" bgcolor="ffffef">&#160;&#160;</td>
+ 	  	<td title="Retrieve AETs" bgcolor="ffffef">
+			<xsl:value-of select="retrieveAETs"/>
+    	</td>
+	  	<td title="SopIUID" bgcolor="ffffef">
+			<xsl:value-of select="sopIUID"/>
+    	</td>
+		<td align="right" bgcolor="ffffcc">
+			<xsl:choose>
+				<xsl:when test="availability='ONLINE'" >			
+					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="waveformview" >
+						<img src="images/image.gif" alt="View waveform" border="0" title="View waveform"/>		
+					</a>
+				</xsl:when>
+				<xsl:otherwise>
+					<img src="images/invalid.gif" alt="Image not online" border="0" title="Image not online"/>		
+				</xsl:otherwise>
+			</xsl:choose>				
+		</td>
+		<td align="right" bgcolor="ffffcc">
+			<input type="checkbox" name="stickyInst" value="{pk}">
+				<xsl:if test="/model/stickyInstances/item = pk">
+					<xsl:attribute name="checked"/>
+				</xsl:if>
+			</input>
+		</td>
+      </table>
+	</tr>
+</xsl:template>
+
 </xsl:stylesheet>
