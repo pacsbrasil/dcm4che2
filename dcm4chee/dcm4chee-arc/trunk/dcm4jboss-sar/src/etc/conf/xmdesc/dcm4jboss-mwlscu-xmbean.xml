@@ -35,7 +35,7 @@
       setMethod="setMwlScpAET">
       <description>The modality work list AET (for find).
       </description>
-      <name>MWL AET</name>
+      <name>MWL_AET</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="PACS_TIANI" />
