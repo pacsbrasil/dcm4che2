@@ -73,3 +73,11 @@ function checkError( errCode )
 		alert(msg);
 	}
 }
+
+function selectCipher()
+{
+	selection = document.ae_edit.cipherSelect.options[document.ae_edit.cipherSelect.selectedIndex ].value;
+	if ( selection != '--' ) {
+		document.ae_edit.cipherSuites.value=document.ae_edit.cipherSelect.options[document.ae_edit.cipherSelect.selectedIndex ].value;
+	}
+}
