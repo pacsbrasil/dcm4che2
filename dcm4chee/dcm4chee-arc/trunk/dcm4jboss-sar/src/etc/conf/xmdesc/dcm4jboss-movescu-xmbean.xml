@@ -11,8 +11,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="dcm4jboss-movescu.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -72,10 +70,10 @@
          <value value="java:/DefaultDS" />
       </descriptors>
    </attribute>
-   &defattr;
+   &defaultAttributes;
 
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
    <operation impact="ACTION">
       <description>Check for new move orders.</description>
       <name>run</name>

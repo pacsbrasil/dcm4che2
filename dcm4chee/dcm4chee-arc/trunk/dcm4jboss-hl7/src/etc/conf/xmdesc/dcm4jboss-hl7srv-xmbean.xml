@@ -11,8 +11,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="dcm4jboss-hl7srv.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -32,7 +30,6 @@
       <name>Port</name>
       <type>int</type>
       <descriptors>
-         <state-action-on-update value="restart"/>
          <value value="2300" />
       </descriptors>
    </attribute>
@@ -45,7 +42,6 @@
       <name>ProtocolName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <state-action-on-update value="restart"/>
          <value value="mllp" />
       </descriptors>
    </attribute>
@@ -106,10 +102,10 @@
          <value value="dcm4chex:service=AuditLogger" />
       </descriptors>
    </attribute>
-   &defattr;
+   &defaultAttributes;
 
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
    <operation impact="ACTION">
       <description>Register HL7 Message Handler</description>
       <name>registerApplication</name>

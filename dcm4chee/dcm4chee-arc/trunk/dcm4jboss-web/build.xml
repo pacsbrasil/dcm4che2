@@ -3,11 +3,13 @@
 	<property file="build.properties"/>
 
 	<!-- Override with your JBoss dist location -->
-	<property name="jboss.dir" value="${user.home}/jboss-3.2.3" />
+	<property name="jboss.dir" value="${user.home}/jboss-3.2.5" />
 	<property name="jboss.server.lib.dir" value="${jboss.dir}/server/default/lib"/>
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
-	<property name="javax.servlet.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
+	<property name="tomcat.dir" value="${jboss.dir}/server/default/deploy/jbossweb-tomcat50.sar"/>
+	<property name="servlet-api.jar" value="${tomcat.dir}/servlet-api.jar"/>
+	<property name="commons-beanutils.jar" value="${tomcat.dir}/commons-beanutils.jar"/>
 
 	<!-- Override with your Maverick dist location -->
 	<property name="maverick.dir" value="../maverick" />
@@ -35,11 +37,11 @@
 	<property name="web.dir" value="src/web"/>
 
 	<path id="master-classpath">
-		<pathelement location="${javax.servlet.jar}"/>
+		<pathelement location="${servlet-api.jar}"/>
 		<pathelement location="${j2ee.jar}"/>
 		<pathelement location="${log4j.jar}"/>
 		<pathelement location="${maverick.jar}"/>
-		<pathelement location="${maverick.lib.dir}/commons-beanutils.jar"/>
+		<pathelement location="${commons-beanutils.jar}"/>
 		<pathelement location="${dcm4jboss-ejb-client.jar}"/>
 	<!-- TODO dependence should be eliminated -->
 		<pathelement location="${dcm4jboss-jdbc-hsql.jar}"/>
@@ -74,10 +76,6 @@
 
 			<lib dir="${maverick.dist.dir}">
 				<include name="maverick.jar" />
-			</lib>
-			<lib dir="${maverick.lib.dir}">
-				<include name="commons-beanutils.jar" />
-				<include name="commons-collections.jar" />
 			</lib>
 			<lib dir="${opt-domify.lib.dir}">
 				<include name="domify.jar" />

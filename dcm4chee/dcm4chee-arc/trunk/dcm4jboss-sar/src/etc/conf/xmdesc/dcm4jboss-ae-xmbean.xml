@@ -36,7 +36,7 @@
          <value value="dcm4chex:service=AuditLogger" />
       </descriptors>
    </attribute>
-   &defattr;
+   &defaultAttributes;
 
    <!-- Operations -->
    <operation impact="ACTION">
@@ -59,6 +59,6 @@
      </parameter>
      <return-type>void</return-type>
 	</operation>
-   &defops;
+   &defaultOperations;
 </mbean>
 

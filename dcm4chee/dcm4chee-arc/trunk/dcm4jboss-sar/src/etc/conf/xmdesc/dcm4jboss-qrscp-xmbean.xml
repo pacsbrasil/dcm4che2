@@ -11,8 +11,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="dcm4jboss-qrscp.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -237,9 +235,9 @@
          <value value="dcm4chex:service=DcmServer" />
       </descriptors>
    </attribute>
-   &defattr;
+   &defaultAttributes;
 
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
 </mbean>
 

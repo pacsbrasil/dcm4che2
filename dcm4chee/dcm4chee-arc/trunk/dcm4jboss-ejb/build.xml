@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.7.3"/>
+	<property name="version" value="0.8.1"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
@@ -29,7 +29,7 @@
     <property name="cactus.lib" value="${cactus.home}/lib"/>
 
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-3.2.3"/>		
+	<property name="jboss.home" value="${user.home}/jboss-3.2.5"/>		
 	<property name="jboss.client" value="${jboss.home}/client"/>		
 	<property name="jboss.conf" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.conf}/deploy"/>		

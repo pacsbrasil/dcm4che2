@@ -11,8 +11,6 @@
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
          persistName="dcm4jboss-auditlog.ser"/>
-      <currencyTimeLimit value="0"/>
-      <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
@@ -156,10 +154,10 @@
          <value value="true" />
       </descriptors>
    </attribute>
-   &defattr;
+   &defaultAttributes;
 
    <!-- Operations -->
-   &defops;
+   &defaultOperations;
    <operation impact="INFO">
       <description>Get Audit Logger</description>
       <name>getAuditLogger</name>
