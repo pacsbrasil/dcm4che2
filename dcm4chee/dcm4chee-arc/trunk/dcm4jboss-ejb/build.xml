@@ -81,6 +81,7 @@
 	<property name="target.dir" value="${basedir}/target"/>
 	<property name="target.xdoclet" value="${target.dir}/xdoclet"/>
 	<property name="target.java" value="${target.xdoclet}/java"/>
+	<property name="target.meta-inf" value="${target.xdoclet}/META-INF"/>
 	<property name="target.meta-inf-psql" value="${target.xdoclet}/META-INF-psql"/>
 	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
@@ -198,7 +199,23 @@
             
         </ejbdoclet>
 
+    	<uptodate property="meta-inf-db2.notRequired"
+    		srcfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-db2"/>
     </target>
+
+    <target name="meta-inf-db2" unless="meta-inf-db2.notRequired">
+    	<copy todir="${target.meta-inf-db2}">
+    		<fileset dir="${target.meta-inf-psql}"/>
+    	</copy>
+    	<patch
+    		patchfile="${etc.db2}/meta-inf-db2.patch"
+    		originalfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
+    	/>
+    </target>
+
 
    	<!-- =================================================================== -->
    	<!-- Compiles the source code                                            -->
@@ -221,34 +238,19 @@
    <!-- =================================================================== -->
    <!-- Creates the ejb-jar                                                 -->
    <!-- =================================================================== -->
-    <target name="jar" depends="ejb-psql-jar,ejb-db2-jar,lib-jar,jdbc-jar"/>
-    <target name="ejb-psql-jar" depends="compile">
-        <jar jarfile="${target.deploy}/dcm4jboss-ejb-psql.jar">
-        	<metainf dir="${target.meta-inf-psql}"/>
-        	<fileset dir="${target.classes}">
-                <exclude name="**/*Test.class"/>
-                <exclude name="**/jdbc/**"/>
-            </fileset>
-        	<fileset dir="${src.conf}"/>
-        </jar>
+    <target name="jar" depends="compile">
+    	<antcall target="ejb-jar">
+    		<param name="db.name" value="psql"/>
+    	</antcall>
+    	<antcall target="ejb-jar">
+    		<param name="db.name" value="db2"/>
+    	</antcall>
+    	<antcall target="lib-jar"/>
+    	<antcall target="jdbc-jar"/>
     </target>
-    <target name="meta-inf-db2" unless="meta-inf-db2.notRequired">
-    	<copy todir="${target.meta-inf-db2}">
-    		<fileset dir="${target.meta-inf-psql}"/>
-    	</copy>
-    	<patch
-    		patchfile="${etc.db2}/meta-inf-db2.patch"
-    		originalfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
-    	/>
-    </target>
-    <target name="ejb-db2-jar" depends="compile">
-    	<uptodate property="meta-inf-db2.notRequired"
-    		srcfile="${target.meta-inf-psql}/jbosscmp-jdbc.xml"
-    		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
-    	/>
-    	<antcall target="meta-inf-db2"/>
-        <jar jarfile="${target.deploy}/dcm4jboss-ejb-db2.jar">
-        	<metainf dir="${target.meta-inf-db2}"/>
+    <target name="ejb-jar">
+        <jar jarfile="${target.deploy}/dcm4jboss-ejb-${db.name}.jar">
+        	<metainf dir="${target.meta-inf}-${db.name}"/>
         	<fileset dir="${target.classes}">
                 <exclude name="**/*Test.class"/>
                 <exclude name="**/jdbc/**"/>
@@ -260,11 +262,11 @@
    <!-- =================================================================== -->
    <!-- Creates the ejb-lib-jar                                          -->
    <!-- =================================================================== -->
-    <target name="lib-jar" depends="compile">
+    <target name="lib-jar">
         <jar jarfile="${target.lib}/dcm4jboss-ejb-client.jar">
         	<fileset dir="${target.classes}">
-                <include name="**/interfaces/Storage*"/>
-                <include name="**/interfaces/AE*"/>
+                <include name="**/interfaces/*"/>
+                <exclude name="**/interfaces/*Local*"/>
             </fileset>
         </jar>
     </target>
@@ -272,7 +274,7 @@
    <!-- =================================================================== -->
    <!-- Creates the dcm4jboss-jdbc.jar                                  -->
    <!-- =================================================================== -->
-    <target name="jdbc-jar" depends="compile">
+    <target name="jdbc-jar">
         <jar jarfile="${target.lib}/dcm4jboss-jdbc.jar">
         	<metainf dir="${target.meta-inf-psql}">
 	        	<include name="jbosscmp-jdbc.xml"/>

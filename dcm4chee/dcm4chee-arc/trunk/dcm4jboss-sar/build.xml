@@ -32,13 +32,12 @@
 
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
+		<pathelement location="${dcm4jboss-ejb.home}/lib/dcm4jboss-jdbc.jar"/>
+		<pathelement location="${dcm4jboss-ejb.home}/deploy/dcm4jboss-ejb-psql.jar"/>
 		<fileset dir="${jboss.home}/lib">
 			<include name="*.jar"/>
 		</fileset>
 		<fileset dir="${jboss.conf}/lib">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${dcm4jboss-ejb.home}/client">
 			<include name="*.jar"/>
 		</fileset>
 	</path>

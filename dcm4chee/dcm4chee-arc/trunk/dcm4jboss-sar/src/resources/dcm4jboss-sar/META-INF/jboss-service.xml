@@ -7,11 +7,11 @@
 <classpath codebase="lib"
 	archives="dcm4che.jar,dcm4jboss-ejb-client.jar,dcm4jboss-jdbc.jar"/>
 
-<mbean code="org.dcm4chex.service.AEService" 
+  <mbean code="org.dcm4chex.service.AEService" 
 	name="dcm4chex:service=AE">
-</mbean>
+  </mbean>
 
-<mbean code="org.dcm4chex.service.DcmServerService" 
+  <mbean code="org.dcm4chex.service.DcmServerService" 
     name="dcm4chex:service=DcmServer,name=DCMSRV">
 
     <!--
@@ -87,9 +87,9 @@
     Defines password for access to cacerts file, specified by attribute CacertsFile 
     -->
     <attribute name="CacertsPasswd">passwd</attribute>
-</mbean>
+  </mbean>
 
-<mbean code="org.dcm4chex.service.StoreScpService" 
+  <mbean code="org.dcm4chex.service.StoreScpService" 
 	name="dcm4chex:service=StoreScp,aet=STORE_SCP">
 
     <depends optional-attribute-name="DcmServerName">
@@ -102,8 +102,6 @@
         
     <attribute name="EjbProviderURL">jnp://localhost:1099</attribute>
     -->
-
-    <attribute name="DataSource">java:/PostgresDS</attribute>    
 
     <attribute name="RetrieveAETs">QR_SCP</attribute>
 
@@ -172,9 +170,9 @@
     <attribute name="RtPlanStorage">-</attribute>
     <attribute name="RtTreatmentSummaryRecordStorage">-</attribute>
     
-</mbean>
+  </mbean>
 
-<mbean code="org.dcm4chex.service.QueryRetrieveScpService" 
+  <mbean code="org.dcm4chex.service.QueryRetrieveScpService" 
 	name="dcm4chex:service=QueryRetrieveScp,aet=QR_SCP">
 
     <depends optional-attribute-name="DcmServerName">
@@ -193,7 +191,38 @@
     <attribute name="PatientRootMove">-</attribute>
     <attribute name="StudyRootMove">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
     <attribute name="PatientStudyOnlyMove">-</attribute>         
-</mbean>
+  </mbean>
+
+  <mbean code="org.dcm4chex.service.MoveScuService" 
+	name="dcm4chex:service=MoveScu,aet=MOVE_SCU">
+
+    <!-- Do NOT uncomment this line if the service is deployed
+    in the same jboss instance as the Storage EJB. Otherwise
+    in VM calls to go over RMI!
+        
+    <attribute name="EjbProviderURL">jnp://localhost:1099</attribute>
+    -->
+
+    <!-- 
+    Specifies JNDI name used to look up the datasource.
+    Name after "java:/" must match with <jndi-name> attribute of 
+    JDBC Datasource configuration deployment file (*-ds.xml) 
+	-->
+    <attribute name="DataSource">java:/PostgresDS</attribute>    
+
+    <attribute name="RetryIntervalls">1m,10m,1h,6h,1d</attribute>    
+
+  </mbean>
+
+  <mbean code="org.jboss.varia.scheduler.Scheduler" 
+	 name="dcm4chex:service=Scheduler,name=Scheduler of MoveScu">
+    <attribute name="StartAtStartup">true</attribute>
+    <attribute name="SchedulableMBean">dcm4chex:service=MoveScu,aet=MOVE_SCU</attribute>
+    <attribute name="SchedulableMBeanMethod">run</attribute>
+    <attribute name="InitialStartDate">NOW</attribute>
+    <attribute name="SchedulePeriod">10000</attribute>
+    <attribute name="InitialRepetitions">-1</attribute>
+  </mbean>
 
 </server>
 

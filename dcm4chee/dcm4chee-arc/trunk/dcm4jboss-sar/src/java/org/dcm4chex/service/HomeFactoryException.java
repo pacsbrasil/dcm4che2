@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -17,22 +17,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
-package org.dcm4chex.service.util;
+package org.dcm4chex.service;
 
 /**
- * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$
- * @since 02.08.2003
+ * 
+ * @author gunter.zeilinger@tiani.com
+ * @version $Revision$ $Date$
+ * @since 16.12.2003
  */
-public class ConfigurationException extends Exception
-{
+final class HomeFactoryException extends Exception {
 
     /**
      * 
      */
-    public ConfigurationException()
-    {
+    public HomeFactoryException() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -40,8 +38,7 @@ public class ConfigurationException extends Exception
     /**
      * @param message
      */
-    public ConfigurationException(String message)
-    {
+    public HomeFactoryException(String message) {
         super(message);
         // TODO Auto-generated constructor stub
     }
@@ -49,8 +46,7 @@ public class ConfigurationException extends Exception
     /**
      * @param cause
      */
-    public ConfigurationException(Throwable cause)
-    {
+    public HomeFactoryException(Throwable cause) {
         super(cause);
         // TODO Auto-generated constructor stub
     }
@@ -59,8 +55,7 @@ public class ConfigurationException extends Exception
      * @param message
      * @param cause
      */
-    public ConfigurationException(String message, Throwable cause)
-    {
+    public HomeFactoryException(String message, Throwable cause) {
         super(message, cause);
         // TODO Auto-generated constructor stub
     }

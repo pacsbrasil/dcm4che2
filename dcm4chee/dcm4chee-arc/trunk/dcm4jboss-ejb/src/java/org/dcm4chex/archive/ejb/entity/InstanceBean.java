@@ -269,7 +269,7 @@ public abstract class InstanceBean implements EntityBean {
     public abstract CodeLocal getSrCode();
 
     /**
-     * Create series.
+     * Create Instance.
      *
      * @ejb.create-method
      */

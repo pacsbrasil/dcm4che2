@@ -27,13 +27,6 @@
     -->
 
     <!-- 
-    Specifies JNDI name used to look up the datasource.
-    Name after "java:/" must match with <jndi-name> attribute of 
-    JDBC Datasource configuration deployment file (*-ds.xml) 
-	-->
-    <attribute name="DataSource">java:/PostgresDS</attribute>    
-
-    <!-- 
     Defines a list of DICOM Application Entity Title(s) that identify the
     location from which composite object instance(s) received by this
     Storage SCP, may be retrieved on the network. At least, one AET must be

@@ -1,6 +1,5 @@
-diff -c target/xdoclet/META-INF-postgres/jbosscmp-jdbc.xml target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml
-*** target/xdoclet/META-INF-postgres/jbosscmp-jdbc.xml	Mon Dec  1 22:04:24 2003
---- target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	Tue Nov 25 21:25:19 2003
+*** target/xdoclet/META-INF-psql/jbosscmp-jdbc.xml	Mon Dec 15 19:28:04 2003
+--- target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	Mon Dec 15 19:28:15 2003
 ***************
 *** 3,10 ****
   
@@ -75,7 +74,7 @@ diff -c target/xdoclet/META-INF-postgres/jbosscmp-jdbc.xml target/xdoclet/META-I
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 252,258 ****
+*** 238,244 ****
   
           </cmp-field>
   
@@ -83,7 +82,7 @@ diff -c target/xdoclet/META-INF-postgres/jbosscmp-jdbc.xml target/xdoclet/META-I
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 255,262 ----
+--- 241,248 ----
   
           </cmp-field>
   
@@ -93,7 +92,7 @@ diff -c target/xdoclet/META-INF-postgres/jbosscmp-jdbc.xml target/xdoclet/META-I
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 299,305 ****
+*** 319,325 ****
   
           </cmp-field>
   
@@ -101,7 +100,7 @@ diff -c target/xdoclet/META-INF-postgres/jbosscmp-jdbc.xml target/xdoclet/META-I
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 303,310 ----
+--- 323,330 ----
   
           </cmp-field>
   
@@ -111,7 +110,7 @@ diff -c target/xdoclet/META-INF-postgres/jbosscmp-jdbc.xml target/xdoclet/META-I
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 336,342 ****
+*** 366,372 ****
   
           </cmp-field>
   
@@ -119,7 +118,7 @@ diff -c target/xdoclet/META-INF-postgres/jbosscmp-jdbc.xml target/xdoclet/META-I
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 341,348 ----
+--- 371,378 ----
   
           </cmp-field>
   

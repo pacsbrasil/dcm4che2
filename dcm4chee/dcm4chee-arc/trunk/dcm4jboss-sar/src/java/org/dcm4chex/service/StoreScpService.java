@@ -221,8 +221,7 @@ public class StoreScpService
 
     private String rtTreatmentSummaryRecordStorage;
 
-    private DataSourceFactory dsf = new DataSourceFactory(log);
-    private StoreScp scp = new StoreScp(log, dsf);
+    private StoreScp scp = new StoreScp(log);
 
     /**
      * @jmx.managed-attribute
@@ -241,31 +240,15 @@ public class StoreScpService
     /**
      * @jmx.managed-attribute
      */
-    public String getDataSource()
-    {
-        return dsf.getJNDIName();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setDataSource(String datasource)
-    {
-        dsf.setJNDIName(datasource);
-    }
-    
-    /**
-     * @jmx.managed-attribute
-     */
     public String getEjbProviderURL() {
-        return scp.getEjbProviderURL();
+        return EJBHomeFactory.getEjbProviderURL();
     }
 
     /**
      * @jmx.managed-attribute
      */
     public void setEjbProviderURL(String ejbProviderURL) {
-        scp.setEjbProviderURL(ejbProviderURL);
+        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
     /**

@@ -25,6 +25,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.dcm4chex.service.util.ConfigurationException;
 import org.jboss.logging.Logger;
 
 /**
@@ -55,17 +56,21 @@ class DataSourceFactory
         
     }
 
-    public DataSource getDataSource() throws NamingException
+    public DataSource getDataSource() throws ConfigurationException
     {
         if (datasource == null) {
-            Context jndiCtx = new InitialContext();
             try {
-                datasource = (DataSource) jndiCtx.lookup(jndiName);
-            } finally {
+                Context jndiCtx = new InitialContext();
                 try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {} 
-            }
+                    datasource = (DataSource) jndiCtx.lookup(jndiName);
+                } finally {
+                    try {
+                        jndiCtx.close();
+                    } catch (NamingException ignore) {} 
+                }
+            } catch (NamingException ne) {
+                throw new ConfigurationException("Failed to access Data Source: " + jndiName, ne);
+            } 
         }
         return datasource;
     }

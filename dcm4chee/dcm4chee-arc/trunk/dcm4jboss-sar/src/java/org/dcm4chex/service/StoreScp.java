@@ -26,20 +26,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -60,10 +55,11 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
+import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueue;
+import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueueHome;
+import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.jboss.logging.Logger;
 
 /**
@@ -82,34 +78,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Tags.SOPClassUID,
             };
 
-    static final AssociationFactory af = AssociationFactory.getInstance();
+    private static final AssociationFactory af = AssociationFactory.getInstance();
 
-    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    static final DcmParserFactory pf = DcmParserFactory.getInstance();
-
-    private StorageHome storageHome;
+    private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
     private final Logger log;
-    private final DataSourceFactory dsf;
-    private String ejbProviderURL;
     private int forwardPriority = Command.LOW;
     private String retrieveAETs;
     private String forwardAETs;
     private String storageDirs;
     private File[] storageDirFiles;
 
-    public StoreScp(Logger log, DataSourceFactory dsf) {
+    public StoreScp(Logger log) {
         this.log = log;
-        this.dsf = dsf;
-    }
-
-    public String getEjbProviderURL() {
-        return ejbProviderURL;
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        this.ejbProviderURL = ejbProviderURL;
     }
 
     public final String getRetrieveAETs() {
@@ -192,7 +175,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         InputStream in = rq.getDataAsStream();
         Storage storage = null;
         try {
-            storage = storageHome().create();
+            storage = getStorageHome().create();
             DcmDecodeParam decParam =
                 DcmDecodeParam.valueOf(rq.getTransferSyntaxUID());
             Dataset ds = objFact.newDataset();
@@ -301,33 +284,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return file;
     }
 
-    private StorageHome storageHome() throws NamingException {
-        if (storageHome == null) {
-            Hashtable env = new Hashtable();
-            env.put(
-                "java.naming.factory.initial",
-                "org.jnp.interfaces.NamingContextFactory");
-            env.put(
-                "java.naming.factory.url.pkgs",
-                "org.jboss.naming:org.jnp.interfaces");
-            if (ejbProviderURL != null && ejbProviderURL.length() > 0) {
-                env.put("java.naming.provider.url", ejbProviderURL);
-            }
-            Context jndiCtx = new InitialContext(env);
-            try {
-                Object o = jndiCtx.lookup(StorageHome.JNDI_NAME);
-                storageHome =
-                    (StorageHome) PortableRemoteObject.narrow(
-                        o,
-                        StorageHome.class);
-            } finally {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
-            }
-        }
-        return storageHome;
+    private StorageHome getStorageHome() throws HomeFactoryException {
+        return (StorageHome) EJBHomeFactory.getFactory().lookup(
+            StorageHome.class,
+            StorageHome.JNDI_NAME);
+    }
+
+    private MoveOrderQueueHome getMoveOrderQueueHome()
+        throws HomeFactoryException {
+        return (MoveOrderQueueHome) EJBHomeFactory.getFactory().lookup(
+            MoveOrderQueueHome.class,
+            MoveOrderQueueHome.JNDI_NAME);
     }
 
     private void storeToFile(
@@ -411,6 +378,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             'D',
             'E',
             'F' };
+            
     private String toHex(int val) {
         char[] ch8 = new char[8];
         for (int i = 8; --i >= 0; val >>= 4) {
@@ -446,49 +414,24 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public void close(Association assoc) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
-        if (storedStudiesInfo == null) {
-            return;
-        }
-        updateStudies(storedStudiesInfo);
-        if (forwardAETs != null && forwardAETs.length() != 0) {
-            AEData retrieveAE = null;
-            try {
-                retrieveAE = getRetrieveAE();
-            } catch (Exception e) {
-                log.error("Failed to get Retrieve AE configuration from DB", e);
-            }
-            if (retrieveAE == null) {
-                log.error(
-                    "Cannot forward received objects without Retrieve AE configuration");
-            } else {
-                try {
-                    new ForwardTask(
-                        log,
-                        assoc.getCalledAET(),
-                        retrieveAE,
-                        storedStudiesInfo.values(),
-                        forwardAETs,
-                        forwardPriority)
-                        .run();
-                } catch (Exception e1) {
-                    log.error("Failed to forward received objects:", e1);
-                }
+        if (storedStudiesInfo != null) {
+            updateStudies(storedStudiesInfo.keySet().iterator());
+            if (forwardAETs != null && forwardAETs.length() != 0) {
+                forward(storedStudiesInfo.values().iterator());
             }
         }
     }
 
-    private void updateStudies(Map storedStudiesInfo) {
+    private void updateStudies(Iterator suids) {
         Storage storage;
         try {
-            storage = storageHome().create();
+            storage = getStorageHome().create();
         } catch (Exception e) {
             log.error("Failed to update Studies", e);
             return;
         }
-        for (Iterator it = storedStudiesInfo.keySet().iterator();
-            it.hasNext();
-            ) {
-            final String suid = (String) it.next();
+        while (suids.hasNext()) {
+            final String suid = (String) suids.next();
             try {
                 storage.updateStudy(suid);
             } catch (Exception e) {
@@ -541,23 +484,51 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return info.putSQ(Tags.RefImageSeq);
     }
 
-    private AEData getRetrieveAE() throws SQLException, NamingException {
-        AEData aeData = null;
-        StringTokenizer stok = new StringTokenizer(retrieveAETs, "\\");
-        while (stok.hasMoreTokens()) {
-            String aet = stok.nextToken();
-            aeData = queryAEData(aet);
-            if (aeData != null) {
-                return aeData;
-            }
-            log.warn("Unkown Retrieve AET " + aet);
+    private static String firstOf(String s, char delim) {
+        int delimPos = s.indexOf(delim);
+        return delimPos == -1 ? s : s.substring(0, delimPos);
+    }
+
+    private void forward(Iterator scns) {
+        MoveOrderQueue orderQueue;
+        try {
+            orderQueue = getMoveOrderQueueHome().create();
+        } catch (Exception e) {
+            log.error("Failed to access Move Order Queue", e);
+            return;
         }
-        return aeData;
+        final MoveOrderValue order = new MoveOrderValue();
+        order.setScheduledTime(new Date());
+        order.setRetrieveAET(firstOf(retrieveAETs, '\\'));
+        order.setPriority(forwardPriority);
+        while (scns.hasNext()) {
+            Dataset scn = (Dataset) scns.next();
+            DcmElement refSeriesSeq = scn.get(Tags.RefSeriesSeq);
+            order.setStudyIuids(scn.getString(Tags.StudyInstanceUID));
+            for (int i = 0, n = refSeriesSeq.vm(); i < n; ++i) {
+                Dataset refSeries = refSeriesSeq.getItem(i);
+                DcmElement refSOPSeq = refSeries.get(Tags.RefImageSeq);
+                StringBuffer sopIUIDs = new StringBuffer();
+                for (int j = 0, m = refSOPSeq.vm(); j < m; ++j) {
+                    if (j != 0) {
+                        sopIUIDs.append('\\');
+                    }
+                    sopIUIDs.append(
+                        refSOPSeq.getItem(j).getString(Tags.RefSOPInstanceUID));
+                }
+                order.setSeriesIuids(
+                    refSeries.getString(Tags.SeriesInstanceUID));
+                order.setSopIuids(sopIUIDs.toString());
+                StringTokenizer stok = new StringTokenizer(forwardAETs, "\\");
+                while (stok.hasMoreTokens()) {
+                    order.setMoveDestination(stok.nextToken());
+                    try {
+                        orderQueue.queue(order);
+                    } catch (RemoteException e) {
+                        log.error("Failed to queue " + order, e);
+                    }
+                }
+            }
+        }
     }
-
-    private AEData queryAEData(String aet)
-        throws SQLException, NamingException {
-        return new AECmd(dsf.getDataSource(), aet).execute();
-    }
-
 }

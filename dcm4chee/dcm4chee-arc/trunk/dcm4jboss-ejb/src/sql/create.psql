@@ -5,6 +5,20 @@ CREATE TABLE ae (
 	cipher_suites  	TEXT
 );
 
+CREATE TABLE move_order (
+	pk          	SERIAL PRIMARY KEY,
+	scheduled_time	TIMESTAMP,
+	priority		INT NOT NULL,
+	retrieve_aet    TEXT NOT NULL,
+	move_dest	    TEXT NOT NULL,
+	pat_id         	TEXT,
+	study_iuids		TEXT,
+	series_iuids	TEXT,
+	sop_iuids		TEXT,
+	failure_count	INT,
+	failure_status	INT
+);
+
 CREATE TABLE code (
 	pk          	SERIAL PRIMARY KEY,
 	code_value     	TEXT NOT NULL,
