@@ -296,7 +296,10 @@ public abstract class InstanceBean implements EntityBean {
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
-        getSeries().incNumberOfSeriesRelatedInstances(-1);
+        SeriesLocal series = getSeries();
+        if (series != null) {
+            series.incNumberOfSeriesRelatedInstances(-1);
+        }
     }
 
     /**

@@ -235,127 +235,131 @@ public abstract class SeriesBean implements EntityBean {
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
-        // study.updateModalitiesInStudy();?
-        getStudy().incNumberOfStudyRelatedSeries(-1);
-    }
+        StudyLocal study = getStudy();
+        if (study != null) {
+            // study.updateModalitiesInStudy();?
+            study.incNumberOfStudyRelatedSeries(-1);
+            study.incNumberOfStudyRelatedInstances(
+                -getNumberOfSeriesRelatedInstances());
+        }
 
-    /**
-     * 
-     * @ejb.interface-method
-     */
-    public void setAttributes(Dataset ds) {
-        setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
-        setSeriesNumber(ds.getString(Tags.SeriesNumber));
-        setModality(ds.getString(Tags.Modality));
-        setPpsStartDateTime(
-            ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
-        setEncodedAttributes(
-            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
-    }
+        /**
+         * 
+         * @ejb.interface-method
+         */
+        public void setAttributes(Dataset ds) {
+            setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
+            setSeriesNumber(ds.getString(Tags.SeriesNumber));
+            setModality(ds.getString(Tags.Modality));
+            setPpsStartDateTime(
+                ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
+            setEncodedAttributes(
+                DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+        }
 
-    /**
-     * @ejb.interface-method
-     */
-    public Dataset getAttributes() {
-        return DatasetUtils.fromByteArray(
-            getEncodedAttributes(),
-            DcmDecodeParam.EVR_LE);
-    }
+        /**
+         * @ejb.interface-method
+         */
+        public Dataset getAttributes() {
+            return DatasetUtils.fromByteArray(
+                getEncodedAttributes(),
+                DcmDecodeParam.EVR_LE);
+        }
 
-    /**
-     * @ejb.interface-method
-     */
-    public void incNumberOfSeriesRelatedInstances(int inc) {
-        setNumberOfSeriesRelatedInstances(
-            getNumberOfSeriesRelatedInstances() + inc);
-        getStudy().incNumberOfStudyRelatedInstances(inc);
-    }
+        /**
+         * @ejb.interface-method
+         */
+        public void incNumberOfSeriesRelatedInstances(int inc) {
+            setNumberOfSeriesRelatedInstances(
+                getNumberOfSeriesRelatedInstances() + inc);
+            getStudy().incNumberOfStudyRelatedInstances(inc);
+        }
 
-    /**
-     * @ejb.interface-method
-     */
-    public Set getRetrieveAETSet() {
-        if (retrieveAETSet == null) {
-            retrieveAETSet = new HashSet();
-            String aets = getRetrieveAETs();
-            if (aets != null) {
-                retrieveAETSet.addAll(
-                    Arrays.asList(StringUtils.split(aets, '\\')));
+        /**
+         * @ejb.interface-method
+         */
+        public Set getRetrieveAETSet() {
+            if (retrieveAETSet == null) {
+                retrieveAETSet = new HashSet();
+                String aets = getRetrieveAETs();
+                if (aets != null) {
+                    retrieveAETSet.addAll(
+                        Arrays.asList(StringUtils.split(aets, '\\')));
+                }
             }
+            return retrieveAETSet;
         }
-        return retrieveAETSet;
-    }
 
-    /**
-     * @ejb.interface-method
-     */
-    public boolean addRetrieveAET(String aet) {
-        log.debug(
-            "series[pk="
-                + getPk()
-                + "]: update retrieveAETs "
-                + getRetrieveAETs()
-                + " with "
-                + aet);
-        if (getRetrieveAETSet().contains(aet)) {
+        /**
+         * @ejb.interface-method
+         */
+        public boolean addRetrieveAET(String aet) {
             log.debug(
                 "series[pk="
                     + getPk()
-                    + "]: no update of retrieveAETs "
-                    + getRetrieveAETSet()
-                    + " necessary");
-            return false;
-        }
-        if (!areAllInstancesRetrieveableFrom(aet)) {
-            log.debug(
-                "series[pk="
-                    + getPk()
-                    + "]: not all Instances retrieveable from "
+                    + "]: update retrieveAETs "
+                    + getRetrieveAETs()
+                    + " with "
                     + aet);
-            return false;
-        }
-        retrieveAETSet.add(aet);
-        String prev = getRetrieveAETs();
-        if (prev == null || prev.length() == 0) {
-            setRetrieveAETs(aet);
-        } else {
-            setRetrieveAETs(prev + '\\' + aet);
-        }
-        log.debug(
-            "series[pk="
-                + getPk()
-                + "]: updated retrieveAETs to "
-                + getRetrieveAETs());
-        return true;
-    }
-
-    private boolean areAllInstancesRetrieveableFrom(String aet) {
-        Collection c = getInstances();
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            InstanceLocal instance = (InstanceLocal) it.next();
-            if (!instance.getRetrieveAETSet().contains(aet)) {
+            if (getRetrieveAETSet().contains(aet)) {
+                log.debug(
+                    "series[pk="
+                        + getPk()
+                        + "]: no update of retrieveAETs "
+                        + getRetrieveAETSet()
+                        + " necessary");
                 return false;
             }
+            if (!areAllInstancesRetrieveableFrom(aet)) {
+                log.debug(
+                    "series[pk="
+                        + getPk()
+                        + "]: not all Instances retrieveable from "
+                        + aet);
+                return false;
+            }
+            retrieveAETSet.add(aet);
+            String prev = getRetrieveAETs();
+            if (prev == null || prev.length() == 0) {
+                setRetrieveAETs(aet);
+            } else {
+                setRetrieveAETs(prev + '\\' + aet);
+            }
+            log.debug(
+                "series[pk="
+                    + getPk()
+                    + "]: updated retrieveAETs to "
+                    + getRetrieveAETs());
+            return true;
         }
-        return true;
-    }
 
-    /**
-     * 
-     * @ejb.interface-method
-     */
-    public String asString() {
-        return prompt();
-    }
+        private boolean areAllInstancesRetrieveableFrom(String aet) {
+            Collection c = getInstances();
+            for (Iterator it = c.iterator(); it.hasNext();) {
+                InstanceLocal instance = (InstanceLocal) it.next();
+                if (!instance.getRetrieveAETSet().contains(aet)) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-    private String prompt() {
-        return "Series[pk="
-            + getPk()
-            + ", uid="
-            + getSeriesIuid()
-            + ", study->"
-            + getStudy()
-            + "]";
-    }
+        /**
+         * 
+         * @ejb.interface-method
+         */
+        public String asString() {
+            return prompt();
+        }
 
-}
+        private String prompt() {
+            return "Series[pk="
+                + getPk()
+                + ", uid="
+                + getSeriesIuid()
+                + ", study->"
+                + getStudy()
+                + "]";
+        }
+
+    }
