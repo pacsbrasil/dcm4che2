@@ -6,9 +6,6 @@
  */
 package org.dcm4chex.wado.mbean;
 
-import java.util.List;
-import java.util.ArrayList;
-
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
