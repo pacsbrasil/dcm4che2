@@ -88,4 +88,13 @@ public interface Association {
    String getAcceptedTransferSyntaxUID(int pcid);
    
    PresContext getAcceptedPresContext(String asuid, String tsuid);
+   
+   AAssociateRQ getAAssociateRQ();
+   
+   AAssociateAC getAAssociateAC();
+   
+   AAssociateRJ getAAssociateRJ();
+   
+   AAbort getAAbort();
+   
 }

@@ -56,12 +56,12 @@ public class PDataTFTest extends ExtTestCase {
     private final int MAX_LEN = 250;
 
 
-    private Factory fact;
+    private AssociationFactory fact;
     
     protected void setUp() throws Exception {
         Arrays.fill(CMD, (byte)0xcc);
         Arrays.fill(DATA, (byte)0xdd);
-        fact = Factory.getInstance();
+        fact = AssociationFactory.getInstance();
     }
         
     public void testWrite() throws Exception {

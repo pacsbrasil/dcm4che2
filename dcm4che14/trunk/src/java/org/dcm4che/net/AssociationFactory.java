@@ -45,15 +45,15 @@ import java.io.InputStream;
  *            beyond the cvs commit message
  * </ul>
  */
-public abstract class Factory {
+public abstract class AssociationFactory {
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
    // Static --------------------------------------------------------
-   public static Factory getInstance() {
-      return (Factory)Implementation.findFactory(
-            "dcm4che.net.Factory");
+   public static AssociationFactory getInstance() {
+      return (AssociationFactory)Implementation.findFactory(
+            "dcm4che.net.AssociationFactory");
    }
    
    // Constructors --------------------------------------------------

@@ -53,10 +53,10 @@ public class AAbortTest extends ExtTestCase {
     private final int REASON = AAbort.INVALID_PDU_PARAMETER_VALUE;
 
 
-    private Factory fact;
+    private AssociationFactory fact;
     
     protected void setUp() throws Exception {
-        fact = Factory.getInstance();
+        fact = AssociationFactory.getInstance();
     }
 
     public void testWrite() throws Exception {

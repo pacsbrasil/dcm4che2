@@ -124,6 +124,36 @@ final class FsmImpl {
       return state.toString();
    }
 
+   final AAssociateRQ getAAssociateRQ() {
+       return rq;
+   }
+   
+   final String getCallingAET() {
+       if (rq == null) {
+           throw new IllegalStateException(state.toString());
+       }
+       return rq.getCallingAET();
+   }
+
+   final String getCalledAET() {
+       if (rq == null) {
+           throw new IllegalStateException(state.toString());
+       }
+       return rq.getCalledAET();
+   }
+
+   final AAssociateAC getAAssociateAC() {
+       return ac;
+   }
+   
+   final AAssociateRJ getAAssociateRJ() {
+       return rj;
+   }
+   
+   final AAbort getAAbort() {
+       return aa;
+   }
+   
    final int getWriteMaxLength() {
       if (ac == null || rq == null) {
          throw new IllegalStateException(state.toString());

@@ -10,6 +10,7 @@ org.dcm4cheri.data
 + Fix value of Command#C_CANCEL_RQ
 samples:
 + Fix build.xml to include missing .class into imgread.jar & imgdisp.jar
++ DcmRcv: Fix write to file - wasn't MT safe
 
 ENHANCEMENTS:
 dcm4che API:
@@ -23,6 +24,14 @@ dcm4che API:
 + add org.dcm4che.media.DirBuilder#getDirWriter
 + add org.dcm4che.net.FutureRSP#listPending
 + add org.dcm4che.net.DcmServiceBase.MultiDimseRsp#release
++ add org.dcm4che.net.Association#getAAssociateRQ
++ add org.dcm4che.net.Association#getAAssociateAC
++ add org.dcm4che.net.Association#getAAssociateRJ
++ add org.dcm4che.net.Association#getAAbort
+
+CHANGES:
+dcm4che API:
++ rename org.dcm4che.net.Factory to org.dcm4che.net.AssociationFactory
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1

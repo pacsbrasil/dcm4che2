@@ -37,7 +37,7 @@ import org.dcm4che.net.DataSource;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.ExtNegotiation;
-import org.dcm4che.net.Factory;
+import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.PDataTF;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PDUException;
@@ -57,9 +57,9 @@ import java.net.Socket;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public final class FactoryImpl extends Factory {
+public final class AssociationFactoryImpl extends AssociationFactory {
     
-    public FactoryImpl() {
+    public AssociationFactoryImpl() {
     }
 
     public AAssociateRQ newAAssociateRQ() {
