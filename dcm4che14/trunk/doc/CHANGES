@@ -17,6 +17,7 @@ dcm4che API:
 + add org.dcm4che.data.DcmObject#setPrivateCreatorID (access private attributs)
 + add org.dcm4che.data.DcmObject#getPrivateCreatorID
 + org.dcm4che.data.DcmObject#put??(tag, value) except value=null 
++ add org.dcm4che.data.Tags#valueOf(short,short)
 + add org.dcm4che.data.DcmElement#getDateRange
 + add org.dcm4che.media.DirBuilder#getDirWriter
 + add org.dcm4che.net.FutureRSP#listPending

@@ -82,6 +82,10 @@ public class Tags {
         return sb;
     }
 
+    public static final int valueOf(short grTag, short elTag) {
+        return (grTag &lt;&lt; 16) | (elTag &amp; 0xffff);
+    }
+
     public static final int forName(String name) {
        try {
           return Tags.class.getField(name).getInt(null);
