@@ -108,7 +108,7 @@
 				<include name="bin/xalan.bat"/>
    			</zipfileset>	
 			<zipfileset dir="${src.etc}" prefix="${dist.standalone}">
-				<include name="bin/fop.xsl"/>
+				<include name="bin/fopcfg.xml"/>
 			</zipfileset>
 			<zipfileset dir="target/${dist.name}" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="deploy/*"/>
