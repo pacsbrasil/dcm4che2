@@ -103,7 +103,7 @@ public class DcmServiceException extends Exception {
         String msg = getMessage();
         if (msg != null && msg.length() > 0) {
             cmd.putLO(Tags.ErrorComment,
-                msg.length() > 64 ? msg.substring(0, 64) : msg);
+                toErrorComment(msg));
         }
         if (errorID >= 0) {
             cmd.putUS(Tags.ErrorID, errorID);
@@ -115,4 +115,14 @@ public class DcmServiceException extends Exception {
             cmd.putUS(Tags.EventTypeID, eventTypeID);
         }
     }
+
+	private String toErrorComment(String msg) {
+		char[] a = msg.toCharArray();
+		int len = Math.min(64, a.length);
+		for (int i = 0; i < len; i++) {
+			if (a[i] < 0x20 || a[i] > 0x126)
+				a[i] = '?';
+		}
+		return new String(a, 0, len);
+	}
 }
