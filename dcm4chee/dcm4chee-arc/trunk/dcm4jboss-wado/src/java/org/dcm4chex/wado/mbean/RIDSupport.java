@@ -232,7 +232,7 @@ public class RIDSupport {
 	}
 	
 	private void fillDocList( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
-		QueryCmd qCmd = QueryCmd.create( queryDS );
+		QueryCmd qCmd = QueryCmd.create( queryDS, false );
 		try {
 			qCmd.execute();
 		    Dataset ds = factory.newDataset();
@@ -259,10 +259,6 @@ public class RIDSupport {
 		ds.putLO(Tags.PatientID, patID);
 		ds.putCS( Tags.Modality, "SR" );
 		//Concept name sequence will be used as search criteria. -> within a loop over all radiology specific concept names.
-		fillAttributes( ds );
-		ds.putSQ(Tags.ProcedureCodeSeq);
-        ds.putDA(Tags.ContentDate);
-        ds.putTM(Tags.ContentTime);
 		return ds;
 	}
 
@@ -276,24 +272,7 @@ public class RIDSupport {
 		Dataset ds = factory.newDataset();
         ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
 		ds.putLO(Tags.PatientID, patID);
-		fillAttributes( ds );
-        ds.putDT(Tags.AcquisitionDatetime);
 		return ds;
-	}
-	/**
-	 * @param ds
-	 */
-	private void fillAttributes(Dataset ds) {
-        ds.putUI(Tags.SOPInstanceUID);
-        ds.putPN(Tags.PatientName);
-        ds.putDA(Tags.PatientBirthDate);
-        ds.putLO(Tags.IssuerOfPatientID);
-        ds.putCS(Tags.PatientSex);
-        ds.putLO(Tags.InstitutionName);
-        ds.putLO(Tags.StudyDescription);
-        ds.putCS(Tags.CompletionFlag);
-        ds.putCS(Tags.VerificationFlag);
-		
 	}
 
 	/**
@@ -343,7 +322,7 @@ public class RIDSupport {
         OutputStream tmpOut = new FileOutputStream( tmpFile);
         th.setResult(new StreamResult( tmpOut ));
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
-        parser.setSAXHandler2(th,DictionaryFactory.getInstance().getDefaultTagDictionary(), null, null );
+        parser.setSAXHandler2(th,DictionaryFactory.getInstance().getDefaultTagDictionary(), null, 4000, null );//4000 ~ one text page.
         parser.parseDcmFile(null, -1);
         tmpOut.close();
         
