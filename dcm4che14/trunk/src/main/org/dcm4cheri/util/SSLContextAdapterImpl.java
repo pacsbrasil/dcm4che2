@@ -35,6 +35,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -49,6 +53,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
 /**
@@ -68,21 +73,19 @@ import javax.net.ssl.SSLSocketFactory;
  */
 public class SSLContextAdapterImpl extends SSLContextAdapter {
    // Constants -----------------------------------------------------
-   private static final String[] ENCRYPT_NONE_CIPHER_SUITES = {
-      "SSL_RSA_WITH_NULL_SHA",
-   };
-   
-   private static final String[] ENCRYPT_FORCE_CIPHER_SUITES = {
-      "SSL_RSA_WITH_3DES_EDE_CBC_SHA",
-   };
-   
-   private static final String[] ENCRYPT_ENABLE_CIPHER_SUITES = {
-      "SSL_RSA_WITH_NULL_SHA",
-      "SSL_RSA_WITH_3DES_EDE_CBC_SHA",
-   };
    
    // Attributes ----------------------------------------------------
-   private String[] cipherSuites = ENCRYPT_NONE_CIPHER_SUITES;
+   static final Logger log = Logger.getLogger("dcm4che.net");
+
+   private String[] cipherSuites = {
+      "SSL_RSA_WITH_NULL_SHA"
+   };
+
+   private String[] protocols = {
+      "TLSv1",
+//    "SSLv3",
+//    "SSLv2Hello"
+   };
    
    private SecureRandom random = null;
    private KeyManager[] kms = null;
@@ -107,22 +110,6 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
    }
    
    // SSLContextAdapter implementation ------------------------------
-   public void setEnabledCipherSuites(int encyption) {
-      switch (encyption) {
-         case ENCRYPT_NONE:
-            cipherSuites = ENCRYPT_NONE_CIPHER_SUITES;
-            break;
-         case ENCRYPT_FORCE:
-            cipherSuites = ENCRYPT_FORCE_CIPHER_SUITES;
-            break;
-         case ENCRYPT_ENABLE:
-            cipherSuites = ENCRYPT_ENABLE_CIPHER_SUITES;
-            break;
-         default:
-            throw new IllegalArgumentException("encyption:" + encyption);
-      }
-   }
-   
    public void setKey(KeyStore key, char[] password)
    throws GeneralSecurityException {
       KeyManagerFactory kmf = KeyManagerFactory.getInstance(
@@ -135,7 +122,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
    throws GeneralSecurityException {
       TrustManagerFactory tmf = TrustManagerFactory.getInstance(
            TrustManagerFactory.getDefaultAlgorithm());
-       tmf.init(cacerts);
+      tmf.init(cacerts);
       tms = tmf.getTrustManagers();
    }
    
@@ -159,6 +146,14 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
 
    public String[] getEnabledCipherSuites() {
       return (String[])cipherSuites.clone();
+   }
+
+   public void setEnabledProtocols(String[] protocols) {
+      this.protocols = (String[])protocols.clone();
+   }
+
+   public String[] getEnabledProtocols() {
+      return (String[])protocols.clone();
    }
    
    public String[] getSupportedCipherSuites()
@@ -194,20 +189,51 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
    private ServerSocket prepare(SSLServerSocket ss) {
       ss.setNeedClientAuth(needClientAuth);
       ss.setEnabledCipherSuites(cipherSuites);
+      ss.setEnabledProtocols(protocols);
       return ss;
    }
    
    private Socket prepare(SSLSocket s) throws IOException {
       s.setEnabledCipherSuites(cipherSuites);
+      s.setEnabledProtocols(protocols);
       if (startHandshake) {
          s.startHandshake();
+      }
+      if (log.isLoggable(Level.INFO)) {
+         log.info(toInfoMsg(s, true));
+         log.info(toInfoMsg(s, false));
       }
       return s;
    }
    
-   public KeyStore loadKeyStore(String systemId, char[] password)
-   throws GeneralSecurityException, IOException {
-      InputStream in = new URL(systemId).openStream();
+   public static String toInfoMsg(SSLSocket ssl, boolean local)
+   throws IOException {
+      return toInfoMsg(ssl, local, new StringBuffer()).toString();
+   }
+   
+   private static StringBuffer toInfoMsg(SSLSocket ssl, boolean local,
+         StringBuffer sb)
+   throws IOException {
+      sb.append(ssl.getInetAddress());
+      sb.append(local ? " << " : " >> ");
+      SSLSession se = ssl.getSession();
+      sb.append(se.getCipherSuite());
+      sb.append("[");
+      Certificate[] certs = local ? se.getLocalCertificates()
+                                  : se.getPeerCertificates();
+      if (certs.length == 0) {
+         sb.append("null");
+      } else if (certs[0] instanceof X509Certificate) {
+         sb.append(((X509Certificate)certs[0]).getSubjectX500Principal());
+      } else {
+         sb.append(certs[0].getType());
+      }
+      sb.append("]");
+      return sb;
+   }
+
+   public KeyStore loadKeyStore(URL url, char[] password) throws GeneralSecurityException, IOException {
+      InputStream in = url.openStream();
       try {
          return loadKeyStore(in, password);
       } finally {

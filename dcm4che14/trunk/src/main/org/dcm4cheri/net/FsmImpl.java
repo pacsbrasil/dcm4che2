@@ -55,6 +55,7 @@ import java.net.Socket;
  */
 final class FsmImpl {    
     static final Logger log = Logger.getLogger("dcm4che.Association");
+
     private final AssociationImpl assoc;
     private final boolean requestor;
     private final Socket s;
@@ -175,12 +176,12 @@ final class FsmImpl {
     
     private synchronized void changeState(State state) {
         if (this.state != state) {
-            if (log.isLoggable(Level.INFO)) {
-                log.info("" + s.getInetAddress() + ": " + state);
-            }
             State prev = this.state;
             this.state = state;
             state.entry();
+            if (log.isLoggable(Level.INFO)) {
+                log.info("" + s.getInetAddress() + ": " + state);
+            }
         }
     }
 
@@ -408,6 +409,8 @@ final class FsmImpl {
         }
         void entry() {
             if (assocListener != null) assocListener.close(assoc);
+            if (log.isLoggable(Level.INFO))
+               log.info("" + s.getInetAddress() + ": Closing connection");
             try { in.close(); } catch (IOException ignore) {}
             try { out.close(); } catch (IOException ignore) {}
             try { s.close(); } catch (IOException ignore) {}

@@ -80,8 +80,8 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
             version = din.readShort();
             din.readUnsignedByte();
             din.readUnsignedByte();
-            calledAET = readASCII(din, 16);
-            callingAET = readASCII(din, 16);
+            calledAET = readASCII(din, 16).trim();
+            callingAET = readASCII(din, 16).trim();
             if (din.skip(32) != 32) {
                 throw new EOFException();
             }
@@ -340,7 +340,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     throws IOException {
         dout.writeBytes(aet);
         for (int n = aet.length(); n < 16; ++n) {
-            dout.write(0);
+            dout.write(' ');
         }
     }
     

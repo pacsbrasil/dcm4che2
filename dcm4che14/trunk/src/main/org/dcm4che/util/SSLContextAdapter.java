@@ -27,6 +27,7 @@ import org.dcm4che.Implementation;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import javax.net.SocketFactory;
@@ -50,9 +51,6 @@ import javax.net.ServerSocketFactory;
 public abstract class SSLContextAdapter
 {
    // Constants -----------------------------------------------------
-   public static final int ENCRYPT_NONE   = 0;
-   public static final int ENCRYPT_FORCE  = 1;
-   public static final int ENCRYPT_ENABLE = 2;
   
    // Attributes ----------------------------------------------------
    
@@ -65,8 +63,6 @@ public abstract class SSLContextAdapter
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
-   public abstract void setEnabledCipherSuites(int encyption);
-
    public abstract void setEnabledCipherSuites(String[] cipherSuites);
 
    public abstract String[] getEnabledCipherSuites();
@@ -74,6 +70,10 @@ public abstract class SSLContextAdapter
    public abstract String[] getSupportedCipherSuites()
    throws GeneralSecurityException;
 
+   public abstract void setEnabledProtocols(String[] protocols);
+
+   public abstract String[] getEnabledProtocols();
+   
    public abstract void setNeedClientAuth(boolean needClientAuth);
    
    public abstract void setStartHandshake(boolean startHandshake);
@@ -87,7 +87,7 @@ public abstract class SSLContextAdapter
    public abstract KeyStore loadKeyStore(File file, char[] password)
    throws GeneralSecurityException, IOException;
    
-   public abstract KeyStore loadKeyStore(String systemId, char[] password)
+   public abstract KeyStore loadKeyStore(URL url, char[] password)
    throws GeneralSecurityException, IOException;
 
    public abstract void setKey(KeyStore key, char[] password)

@@ -32,7 +32,7 @@ import java.util.StringTokenizer;
  */
 public final class DcmURL extends Object {
     // Constants -----------------------------------------------------    
-    public static final String ANONYMOUS = "anonymous";
+    public static final String ANONYMOUS = "ANONYMOUS";
     public static final int DICOM_PORT = 104;
     
     private static final int DELIMITER = -1;

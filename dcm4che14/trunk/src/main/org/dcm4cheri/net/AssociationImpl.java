@@ -141,6 +141,10 @@ final class AssociationImpl implements Association {
       return fsm.read(timeout, b10);
    }
    
+   final void writeReleaseRQ() throws IOException {
+      fsm.write(AReleaseRQImpl.getInstance());
+   }
+   
    public final void abort(AAbort aa) throws IOException {
       fsm.write(aa);
    }

@@ -47,4 +47,6 @@ public interface ActiveAssociation extends Runnable
    Association getAssociation();
 
    void invoke(Dimse rq, DimseListener l) throws IOException;
+
+   void release() throws IOException;
 }

@@ -70,7 +70,7 @@ public interface Association {
    PDU release(int timeout) throws IOException;
    
    void abort(AAbort aa) throws IOException;
-      
+   
    void setTCPCloseTimeout(int tcpCloseTimeout);
    
    int getTCPCloseTimeout();

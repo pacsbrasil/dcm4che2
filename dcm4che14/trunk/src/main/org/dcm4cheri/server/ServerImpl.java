@@ -25,12 +25,17 @@ package org.dcm4cheri.server;
 import org.dcm4che.server.Server;
 
 import org.dcm4cheri.util.LF_ThreadPool;
+import org.dcm4cheri.util.SSLContextAdapterImpl;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.ServerSocket;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 
 /**
  * <description> 
@@ -52,10 +57,13 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   static final Logger log = Logger.getLogger("dcm4che.net");
+
    private final Handler handler;
    private final LF_ThreadPool threadPool = new LF_ThreadPool(this);
    private ServerSocket ss;
    private int port = 104;
+   private boolean startHandshake = true;
       
    // Static --------------------------------------------------------
    
@@ -83,7 +91,8 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
    
    public void start(int port, ServerSocketFactory ssf) throws IOException {
       checkNotRunning();
-      
+      if (log.isLoggable(Level.INFO))
+         log.info("Start Server listening at port " + port);
       ss = ssf.createServerSocket(port);
       new Thread(new Runnable() {
          public void run() { threadPool.join(); }
@@ -96,6 +105,8 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
       
       InetAddress ia = ss.getInetAddress();
       int port = ss.getLocalPort();
+      if (log.isLoggable(Level.INFO))
+         log.info("Stop Server listening at port " + port);
       try {
          ss.close();
       } catch (IOException ignore) {}
@@ -117,6 +128,13 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
       Socket s = null;
       try {
          s = ss.accept();
+         if (log.isLoggable(Level.INFO)) {
+            log.info("Accept connection " + s);
+         }
+         if (s instanceof SSLSocket) {
+            prepare((SSLSocket)s);
+         }
+         
          pool.promoteNewLeader();
          handler.handle(s);
       } catch (IOException ioe) {
@@ -138,6 +156,15 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
    {
       if (ss != null) {
          throw new IllegalStateException("Already Running - " + threadPool);
+      }
+   }
+   
+   private void prepare(SSLSocket ssl) throws IOException {
+      if (startHandshake)
+         ssl.startHandshake();
+      if (log.isLoggable(Level.INFO)) {
+         log.info(SSLContextAdapterImpl.toInfoMsg(ssl, false));
+         log.info(SSLContextAdapterImpl.toInfoMsg(ssl, true));
       }
    }
 

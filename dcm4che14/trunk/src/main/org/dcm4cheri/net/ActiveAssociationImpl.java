@@ -117,7 +117,7 @@ implements ActiveAssociation, LF_ThreadPool.Handler
       } else synchronized (rspDispatcher) {
          while (rspDispatcher.size() >= maxOps) {
             try {
-               wait();
+               rspDispatcher.wait();
             } catch (InterruptedException ie) {
                ie.printStackTrace();
             }
@@ -125,6 +125,20 @@ implements ActiveAssociation, LF_ThreadPool.Handler
          rspDispatcher.put(msgID, l);
       }
       assoc.write(rq);
+   }
+      
+   public void release() throws IOException {
+      checkRunning();
+      synchronized (rspDispatcher) {
+         while (!rspDispatcher.isEmpty()) {
+            try {
+               rspDispatcher.wait();
+            } catch (InterruptedException ie) {
+               ie.printStackTrace();
+            }
+         }
+         ((AssociationImpl)assoc).writeReleaseRQ();
+      }
    }
       
    // LF_ThreadPool.Handler implementation --------------------------
@@ -228,7 +242,7 @@ implements ActiveAssociation, LF_ThreadPool.Handler
           l = (DimseListener)rspDispatcher.get(msgID);
       } else synchronized(rspDispatcher) {
           l = (DimseListener)rspDispatcher.remove(msgID);
-          notify();
+          rspDispatcher.notify();
       }
 
       if (l != null)

@@ -380,6 +380,9 @@
       <fileset dir="${build.classes}">
         <include name="DcmSnd*.class"/>
       </fileset>
+      <fileset dir="${source.demo}/net">
+        <include name="resources/DcmSnd.properties"/>
+      </fileset>
     </jar>
 
     <!-- Build dcmrcv.jar -->

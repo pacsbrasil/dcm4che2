@@ -72,7 +72,7 @@ import gnu.getopt.LongOpt;
 public class DcmRcv extends DcmServiceBase {
    // Constants -----------------------------------------------------
    private static final int SUCCESS = 0x0000;
-
+   
    private static final String[] IMAGE_SOP_CLASS_UIDs = {
       UIDs.HardcopyGrayscaleImageStorage,
       UIDs.HardcopyColorImageStorage,
@@ -110,7 +110,7 @@ public class DcmRcv extends DcmServiceBase {
       UIDs.PositronEmissionTomographyImageStorage,
       UIDs.RTImageStorage,
    };
-
+   
    private static final String[] OTHER_STORAGE_SOP_CLASS_UIDs = {
       UIDs.BasicStudyContentNotification,
       UIDs.StoredPrintStorage,
@@ -137,7 +137,7 @@ public class DcmRcv extends DcmServiceBase {
       UIDs.RTBeamsTreatmentRecordStorage,
       UIDs.RTTreatmentSummaryRecordStorage,
    };
-
+   
    private static final String[] NATIVE_TS_UIDs = {
       UIDs.ExplicitVRLittleEndian,
       UIDs.ExplicitVRBigEndian,
@@ -160,8 +160,8 @@ public class DcmRcv extends DcmServiceBase {
    };
    
    // Attributes ----------------------------------------------------
-   private static ResourceBundle messages = PropertyResourceBundle.getBundle(
-      "resources/DcmRcv", Locale.getDefault());
+   private static ResourceBundle messages = ResourceBundle.getBundle(
+   "resources/DcmRcv", Locale.getDefault());
    
    private static ServerFactory srvFact = ServerFactory.getInstance();
    private static Factory fact = Factory.getInstance();
@@ -190,99 +190,112 @@ public class DcmRcv extends DcmServiceBase {
       
       DcmRcv dcmrcv = new DcmRcv();
       dcmrcv.policy.setAsyncOpsWindow(fact.newAsyncOpsWindow(0,0));
+      String num = null;
       int c;
-      while ((c = g.getopt()) != -1) {
-         switch (c) {
-            case 's':
-              dcmrcv.initTLS();
-              break;
-            case 'L':
-              dcmrcv.policy.setReceivedPDUMaxLength(
-                  Integer.parseInt(g.getOptarg()));
-              break;
-            case 'b':
-              dcmrcv.bufferSize =
-                      Integer.parseInt(g.getOptarg()) & 0xfffffffe;
-              break;
-            case 'v':
-               exit(messages.getString("version"));
-            case 'h':
-            case '?':
-               exit(messages.getString("usage"));
-               break;
+      try {
+         while ((c = g.getopt()) != -1) {
+            switch (c) {
+               case 's':
+                  dcmrcv.initTLS();
+                  break;
+               case 'L':
+                  dcmrcv.policy.setReceivedPDUMaxLength(
+                  Integer.parseInt(num = g.getOptarg()));
+                  break;
+               case 'b':
+                  dcmrcv.bufferSize =
+                  Integer.parseInt(num = g.getOptarg()) & 0xfffffffe;
+                  break;
+               case 'v':
+                  exit(messages.getString("version"), false);
+               case 'h':
+                  exit(messages.getString("usage"), false);
+               case '?':
+                  exit(null, true);
+                  break;
+            }
          }
+         int optind = g.getOptind();
+         switch(args.length - optind) {
+            case 2:
+               dcmrcv.dir = new File(args[optind+1]);
+               if (!dcmrcv.dir.exists()) {
+                  if (dcmrcv.dir.mkdirs()) {
+                     System.out.println(
+                     MessageFormat.format(messages.getString("mkdir"),
+                     new Object[]{ dcmrcv.dir }));
+                  } else {
+                     exit(MessageFormat.format(messages.getString("failmkdir"),
+                     new Object[]{ args[optind+1] }), true);
+                  }
+               } else {
+                  if (!dcmrcv.dir.isDirectory())
+                     exit(MessageFormat.format(messages.getString("errdir"),
+                     new Object[]{ args[optind+1] }), true);
+               }
+            case 1:
+               dcmrcv.port = Integer.parseInt(num = args[optind]);
+               break;
+            case 0:
+               exit(messages.getString("missing"), true);
+            default:
+               exit(messages.getString("many"), true);
+         }
+      } catch (NumberFormatException nfe) {
+         exit(MessageFormat.format(messages.getString("errnum"),
+               new Object[]{ num }), true);
       }
-        int optind = g.getOptind();
-        switch(args.length - optind) {
-          case 2:
-            dcmrcv.dir = new File(args[optind+1]);
-            if (!dcmrcv.dir.exists())
-               dcmrcv.dir.mkdirs();
-            else
-               if (!dcmrcv.dir.isDirectory())
-                  throw new IllegalArgumentException("" + dcmrcv.dir);
-          case 1:
-            dcmrcv.port = Integer.parseInt(args[optind]);
-            break;
-          case 0:
-            exit(messages.getString("missing"));
-           default:
-            exit(messages.getString("many"));
-        }
-
+      
       dcmrcv.enable(IMAGE_SOP_CLASS_UIDs, SUPPORTED_TS_UIDs);
       dcmrcv.enable(OTHER_STORAGE_SOP_CLASS_UIDs, NATIVE_TS_UIDs);
       dcmrcv.start();
    }
-       
+   
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
-   public void enable(String[] sopClassUIDs, String[] tsUIDs)
-   {
+   public void enable(String[] sopClassUIDs, String[] tsUIDs) {
       for (int i = 0; i < sopClassUIDs.length; ++i) {
          policy.addPresContext(sopClassUIDs[i], tsUIDs);
          services.bind(sopClassUIDs[i], this);
       }
    }
-
-   public void start() throws GeneralSecurityException, IOException
-   {
+   
+   public void start() throws GeneralSecurityException, IOException {
       if (bufferSize > 0) {
          buffer = new byte[bufferSize];
       }
       System.out.println(MessageFormat.format(messages.getString("start"),
-         new Object[]{ new Date(), "" + port }));
+      new Object[]{ new Date(), "" + port }));
       if (tls != null) {
          System.out.println(MessageFormat.format(messages.getString("tls"),
-            new Object[] { Arrays.asList(tls.getEnabledCipherSuites()) }));
+         new Object[] { Arrays.asList(tls.getEnabledCipherSuites()) }));
          server.start(port, tls.getServerSocketFactory());
       } else {
          server.start(port);
-      }      
+      }
    }
-      
+   
    // DcmServiceBase overrides --------------------------------------
    protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-   throws IOException
-   {
+   throws IOException {
       InputStream in = rq.getDataAsStream();
       try {
          if (dir != null) {
             Command rqCmd = rq.getCommand();
             FileMetaInfo fmi = objFact.newFileMetaInfo(
-                  rqCmd.getAffectedSOPClassUID(),
-                  rqCmd.getAffectedSOPInstanceUID(),
-                  rq.getTransferSyntaxUID());
+            rqCmd.getAffectedSOPClassUID(),
+            rqCmd.getAffectedSOPInstanceUID(),
+            rq.getTransferSyntaxUID());
             OutputStream out = new BufferedOutputStream(
-                  new FileOutputStream(
-                     new File(dir, rqCmd.getAffectedSOPInstanceUID())));
+            new FileOutputStream(
+            new File(dir, rqCmd.getAffectedSOPInstanceUID())));
             try {
                fmi.write(out);
                copy(in, out);
-           } catch (IOException ioe) {
-              ioe.printStackTrace();
-           } finally {
+            } catch (IOException ioe) {
+               ioe.printStackTrace();
+            } finally {
                try { out.close(); } catch (IOException ignore) {}
             }
          }
@@ -291,59 +304,61 @@ public class DcmRcv extends DcmServiceBase {
       }
       rspCmd.setUS(Tags.Status, SUCCESS);
    }
-         
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-    private static void exit(String prompt) {
-        System.err.println(prompt);
-        System.exit(1);
-    }
+   private static void exit(String prompt, boolean error) {
+      if (prompt != null)
+         System.err.println(prompt);
+      if (error)
+         System.err.println(messages.getString("try"));
+      System.exit(1);
+   }
    
-    private void copy(InputStream in, OutputStream out)
-    throws IOException {
-       if (buffer == null) {
-          int ch;
-          while ((ch = in.read()) != -1) {
-             out.write(ch);
-          }
-       } else {
-          int c;
-          while ((c = in.read(buffer)) != -1) {
-             out.write(buffer, 0, c);
-          }
-       }
-    }
-    
-    private void initTLS() throws GeneralSecurityException, IOException {
-       InputStream in = DcmRcv.class.getResourceAsStream("dcmrcv.tls");
-       ResourceBundle rb;
-       try {
+   private void copy(InputStream in, OutputStream out)
+   throws IOException {
+      if (buffer == null) {
+         int ch;
+         while ((ch = in.read()) != -1) {
+            out.write(ch);
+         }
+      } else {
+         int c;
+         while ((c = in.read(buffer)) != -1) {
+            out.write(buffer, 0, c);
+         }
+      }
+   }
+   
+   private void initTLS() throws GeneralSecurityException, IOException {
+      InputStream in = DcmRcv.class.getResourceAsStream("dcmrcv.tls");
+      ResourceBundle rb;
+      try {
          rb = new PropertyResourceBundle(in);
-       } finally {
+      } finally {
          try { in.close(); } catch (IOException ignore) {}
-       }
-       tls = SSLContextAdapter.getInstance();
-       tls.setEnabledCipherSuites(tokenize(rb.getString("tls.cipher")));
-       char[] keypasswd = rb.getString("tls.key.passwd").toCharArray();
-       tls.setKey(tls.loadKeyStore(
-            DcmRcv.class.getResource(rb.getString("tls.key")).toString(),
-            keypasswd),
-            keypasswd);
-       tls.setTrust(tls.loadKeyStore(
-            DcmRcv.class.getResource(rb.getString("tls.cacerts")).toString(),
-            rb.getString("tls.cacerts.passwd").toCharArray()));
-    }
-    
-    private String[] tokenize(String s) {
-       StringTokenizer stk = new StringTokenizer(s, ", ");
-       String[] retval = new String[stk.countTokens()];
-       for (int i = 0; i < retval.length; ++i)
-          retval[i] = stk.nextToken();
-       return retval;
-    } 
-    
-    // Inner classes -------------------------------------------------
+      }
+      tls = SSLContextAdapter.getInstance();
+      tls.setEnabledCipherSuites(tokenize(rb.getString("tls.cipher")));
+      char[] keypasswd = rb.getString("tls.key.passwd").toCharArray();
+      tls.setKey(tls.loadKeyStore(
+      DcmRcv.class.getResource(rb.getString("tls.key")), keypasswd),
+      keypasswd);
+      tls.setTrust(tls.loadKeyStore(
+      DcmRcv.class.getResource(rb.getString("tls.cacerts")),
+      rb.getString("tls.cacerts.passwd").toCharArray()));
+   }
+   
+   private String[] tokenize(String s) {
+      StringTokenizer stk = new StringTokenizer(s, ", ");
+      String[] retval = new String[stk.countTokens()];
+      for (int i = 0; i < retval.length; ++i)
+         retval[i] = stk.nextToken();
+      return retval;
+   }
+   
+   // Inner classes -------------------------------------------------
 }
