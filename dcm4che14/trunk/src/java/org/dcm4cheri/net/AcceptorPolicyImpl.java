@@ -220,7 +220,6 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     }
 
     public void setCalledAETFilter(AETFilter filter) {
-        if (filter == null) throw new NullPointerException();
         this.calledAETFilter = filter;
     }
 
@@ -229,7 +228,6 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     }
 
     public void setCallingAETFilter(AETFilter filter) {
-        if (filter == null) throw new NullPointerException();
         this.callingAETFilter = filter;
     }
 
@@ -313,7 +311,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
                 AAssociateRJ.PROTOCOL_VERSION_NOT_SUPPORTED);
         }
         String calledAET = rq.getCalledAET();
-        if (!getCalledAETFilter().accept(calledAET)) {
+        if (calledAETFilter != null && !calledAETFilter.accept(calledAET)) {
             return new AAssociateRJImpl(
                 AAssociateRJ.REJECTED_PERMANENT,
                 AAssociateRJ.SERVICE_USER,
@@ -325,7 +323,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
             policy1 = this;
         
         String callingAET = rq.getCallingAET();
-        if (!policy1.getCallingAETFilter().accept(callingAET)) {
+        if (policy1.callingAETFilter != null && !policy1.callingAETFilter.accept(callingAET)) {
             return new AAssociateRJImpl(
                 AAssociateRJ.REJECTED_PERMANENT,
                 AAssociateRJ.SERVICE_USER,
