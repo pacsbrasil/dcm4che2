@@ -1,0 +1,3 @@
+Main-Class: Hl7Rcv
+Class-Path: ./ ../lib/dcm4che.jar getopt.jar
+
