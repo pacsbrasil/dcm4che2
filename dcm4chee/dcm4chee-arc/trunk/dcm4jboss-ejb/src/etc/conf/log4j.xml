@@ -163,6 +163,11 @@
       <priority value="INFO"/>
    </category>
 
+   <!-- Limit the org.dcm4jboss.service category to INFO --> 
+   <category name="org.dcm4jboss.service">
+      <priority value="INFO"/>
+   </category>
+
    <!-- Limit the org.dcm4cheri category to INFO -->
    <category name="org.dcm4cheri">
       <priority value="INFO"/>
