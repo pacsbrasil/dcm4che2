@@ -8,6 +8,11 @@
 <xsl:include href="page.xsl"/>
 
 <xsl:template match="model">
+	<xsl:choose>
+		<xsl:when test="errorCode = 'moveError'">
+			<font size="3" color="ff0000">Warning: Move not possible with your selection!</font>
+		</xsl:when>
+	</xsl:choose>
 	<form action="foldersubmit.m" method="get" name="myForm">
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td valign="top">
@@ -63,6 +68,14 @@
 					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0"
 							title="Merge selected Patients" onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
+							<xsl:if test="total &lt;= 0">
+								<xsl:attribute name="disabled">disabled</xsl:attribute>
+							</xsl:if>
+						</input>
+					</td>
+					<td width="40" bgcolor="eeeeee">
+						<input type="image" value="Move" name="move" src="images/move.gif" alt="move" border="0"
+							title="Move selected Items">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
@@ -338,6 +351,11 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:value-of select="patientSex"/>
 				</strong>
       </td>
+			<td align="right" bgcolor="ccccff">
+				<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
+					<img src="images/add.gif" alt="Add Study" border="0" title="Add a new Study"/>		
+				</a>
+			</td>
 			<td align="right" bgcolor="cccccc">
 				<a href="patientEdit.m?pk={pk}">
 					<img src="images/edit.gif" alt="Edit Patient" border="0" title="Edit Patient Attributes"/>		
