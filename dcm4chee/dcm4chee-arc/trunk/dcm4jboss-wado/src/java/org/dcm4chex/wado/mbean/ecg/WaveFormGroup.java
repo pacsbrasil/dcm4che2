@@ -68,6 +68,12 @@ public class WaveFormGroup {
 	public int getBitsAlloc() {
 		return bitsAlloc;
 	}
+	/**
+	 * @return Returns the sampleFreq.
+	 */
+	public float getSampleFreq() {
+		return sampleFreq;
+	}
 	public WaveFormChannel getChannel( int idx ) {
 		return channels[idx];
 	}

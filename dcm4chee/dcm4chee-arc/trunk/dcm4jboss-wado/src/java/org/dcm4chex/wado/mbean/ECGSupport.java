@@ -25,6 +25,7 @@ import org.dcm4chex.wado.mbean.ecg.WaveForm16Buffer;
 import org.dcm4chex.wado.mbean.ecg.WaveForm8Buffer;
 import org.dcm4chex.wado.mbean.ecg.WaveFormBuffer;
 import org.dcm4chex.wado.mbean.ecg.WaveFormGroup;
+import org.dcm4chex.wado.mbean.xml.SVGCreator;
 
 /**
  * @author franz.willer
@@ -34,6 +35,7 @@ import org.dcm4chex.wado.mbean.ecg.WaveFormGroup;
  */
 public class ECGSupport {
 
+	public static final String CONTENT_TYPE_SVGXML = "Image/svg+xml";
 	private static Logger log = Logger.getLogger( ECGSupport.class.getName() );
 	
     private static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
@@ -117,11 +119,13 @@ public class ECGSupport {
 					StringBuffer sb = new StringBuffer();
 					sb.append("Data(").append(i).append("):");
 					for ( int j = 0 ; j < wfgrp.getNrOfChannels() ; j++) {
-						sb.append( wfgrp.getChannel(j).getValue() ).append("|");
+						sb.append( wfgrp.getChannel(j).getRawValue() ).append("|");
 					}
 					log.info(sb);
 				}
 			}
+			SVGCreator svgCreator = new SVGCreator( wfgrp );
+			return new RIDTransformResponseObjectImpl(svgCreator, CONTENT_TYPE_SVGXML, HttpServletResponse.SC_OK, null);
 		} catch ( Throwable t ) {
 			t.printStackTrace();
 		}
