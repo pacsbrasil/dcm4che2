@@ -29,15 +29,24 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
 public class WADOCacheImpl implements WADOCache {
 
 	public static final String DEFAULT_CACHE_ROOT = "/wadocache";
+	public static final String DEFAULT_WADO_SUBDIR = "wado/default";
+	public static final String DEFAULT_RID_SUBDIR = "rid";
 
-	private static WADOCacheImpl singleton = null;
+	private static WADOCacheImpl singletonWADO = null;
+	private static WADOCacheImpl singletonRID = null;
 	
 	/** the root folder where this cache stores the image files. */
 	private File cacheRoot = null;
 	
 	/** The config string that is used to set cacheRoot. */
 	private String cacheRootCfgString = null;
-	
+
+	/** 
+	 * Default subdirectory. this is used to split directory structer for WADO and RID cache 
+	 * and for WADO cache to split 'default' requests and requests with rows and columns.
+	 */
+	private String defaultSubdir = "default";
+
 	/** holds the min cache size. */
 	private long preferredFreeSpace = 300000000;
 
@@ -64,11 +73,24 @@ public class WADOCacheImpl implements WADOCache {
 	 * Returns the singleton instance of WADOCache.
 	 * @return
 	 */
-	public static WADOCache getInstance() {
-		if ( singleton == null ) {
-			singleton = new WADOCacheImpl();
+	public static WADOCache getWADOCache() {
+		if ( singletonWADO == null ) {
+			singletonWADO = new WADOCacheImpl();
+			singletonWADO.defaultSubdir = DEFAULT_WADO_SUBDIR;
 		}
-		return singleton;
+		return singletonWADO;
+	}
+
+	/**
+	 * Returns the singleton instance of WADOCache.
+	 * @return
+	 */
+	public static WADOCache getRIDCache() {
+		if ( singletonRID == null ) {
+			singletonRID = new WADOCacheImpl();
+			singletonRID.defaultSubdir = DEFAULT_RID_SUBDIR;
+		}
+		return singletonRID;
 	}
 	
 	/**
@@ -98,7 +120,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * @return	The File of the image if in cache or null.
 	 */
 	public File getImageFile(String studyUID, String seriesUID, String instanceUID) {
-		File file = this._getImageFile( "default", studyUID, seriesUID, instanceUID );
+		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null );
 		if ( file.exists() ) {
 			file.setLastModified( System.currentTimeMillis() ); //set last modified because File has only lastModified timestamp visible.
 			return file;
@@ -122,7 +144,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * @throws IOException
 	 */
 	public File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID) throws IOException {
-		File file = this._getImageFile( "default", studyUID, seriesUID, instanceUID );
+		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null );
 		_writeImageFile( image, file);
 		cleanCache( true );
 		return file;
@@ -159,7 +181,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * @return				The File object of the image if in cache or null.
 	 */
 	public File getImageFile(String studyUID, String seriesUID, String instanceUID, String rows, String columns) {
-		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID );
+		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, null );
 		if ( file.exists() ) {
 			file.setLastModified( System.currentTimeMillis() ); //set last modified because File has only lastModified timestamp visible.
 			return file;
@@ -185,7 +207,7 @@ public class WADOCacheImpl implements WADOCache {
      */
 	public File putImage( BufferedImage image, String studyUID, String seriesUID,
 			String instanceUID, String rows, String columns) throws IOException {
-		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID );
+		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, null );
 		_writeImageFile( image, file);
 		cleanCache( true );
 		return file;
@@ -208,9 +230,9 @@ public class WADOCacheImpl implements WADOCache {
 	public File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String rows, String columns ) throws IOException {
 		File file;
 		if ( rows == null && columns == null ) {
-			file = this._getImageFile( "default", studyUID, seriesUID, instanceUID );
+			file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null );
 		} else {
-			file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID );
+			file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, null );
 		}
 		if ( ! file.getParentFile().exists() ) {
 			file.getParentFile().mkdirs();
@@ -231,6 +253,22 @@ public class WADOCacheImpl implements WADOCache {
 		}
 		return file; 
 	}
+	
+	/**
+	 * Return the File object to get or store a file for given arguments.
+	 * <p>
+	 * If the cache object referenced with arguments is'nt in this cache the returned file object
+	 * exists() method will result false!
+	 * @param studyUID		Unique identifier of the study.
+	 * @param seriesUID		Unique identifier of the series.
+	 * @param instanceUID	Unique identifier of the instance.
+	 * 
+	 * @return File object to get or store a file.
+	 */
+	public File getFileObject( String studyUID, String seriesUID, String instanceUID, String contentType ) {
+		return this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, contentType );
+	}
+
 	
 	/**
 	 * Clears this cache.
@@ -457,22 +495,44 @@ public class WADOCacheImpl implements WADOCache {
 	 * <DT>The File object was build like:</DT>
 	 * <DD> &lt;root&gt;/[&lt;subdir&gt;/&lt;]studyID&gt;/&lt;seriesID&gt;/&lt;instanceID&gt;</DD>
 	 * </DL>
-	 * 
 	 * @param subdir 		The subdirectory
 	 * @param studyUID		Unique identifier of the study.
 	 * @param seriesUID		Unique identifier of the series.
 	 * @param instanceUID	Unique identifier of the instance.
+	 * @param contentType TODO
 	 * 
 	 * @return
 	 */
-	private File _getImageFile( String subdir, String studyUID, String seriesUID, String instanceUID ) {
+	private File _getImageFile( String subdir, String studyUID, String seriesUID, String instanceUID, String contentType ) {
+		if ( contentType == null ) contentType = "image/jpg";//use jpg instead of jpeg here because for extension jpeg is set to jpg.
 		File file = getAbsCacheRoot();
 		if ( subdir != null )
 			file = new File( this.getAbsCacheRoot(), subdir ); 
-		file = new File( file, _getSubDirName( studyUID ) );
-		file = new File( file, _getSubDirName( seriesUID ) );
-		file = new File( file, _getSubDirName( instanceUID )+".jpg" ); 
+		String ext = getFileExtension( contentType );
+		if ( ext.length() < 1 )
+			file = new File( file, contentType.replace('/', '_') );
+		if ( studyUID != null ) 
+			file = new File( file, _getSubDirName( studyUID ) );
+		if ( seriesUID != null )
+			file = new File( file, _getSubDirName( seriesUID ) );
+		file = new File( file, _getSubDirName( instanceUID )+ext ); 
 		return file;
+	}
+
+	/**
+	 * @param contentType
+	 * @return
+	 */
+	private String getFileExtension(String contentType) {
+		int pos = contentType.indexOf("/");
+		String ext = "";
+		if ( pos != -1 ) {
+			ext = contentType.substring( pos+1 );
+			if ( ext.equalsIgnoreCase("jpeg") ) ext = "jpg";
+			//do some other mapping here;
+			ext = "." + ext;
+		}
+		return ext;
 	}
 
 	/**
