@@ -56,7 +56,7 @@
 		-->
 		<init-param>
 			<param-name>auditLoggerName</param-name>
-			<param-value>dcm4chex:service=AuditLogger</param-value>
+			<param-value>tiani.archive:service=AuditLogger</param-value>
 		</init-param>
 
 		<!-- 
@@ -66,7 +66,7 @@
 		-->
 		<init-param>
 			<param-name>mcmScuServiceName</param-name>
-			<param-value>dcm4chex:service=MCMScu</param-value>
+			<param-value>tiani.archive:service=MCMScu</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>
