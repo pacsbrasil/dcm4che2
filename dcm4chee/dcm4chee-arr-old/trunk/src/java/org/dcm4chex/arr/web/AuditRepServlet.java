@@ -82,13 +82,13 @@ import org.jboss.security.SecurityAssociation;
  *  type="Session"
  *  home="org.dcm4chex.arr.ejb.session.QueryAuditRecordLocalHome"
  *  local="org.dcm4chex.arr.ejb.session.QueryAuditRecordLocal"
- *  link="dcm4jboss-arr-ejb.jar#QueryAuditRecord"
+ *  link="jaudit-ejb.jar#QueryAuditRecord"
  * @web.ejb-local-ref
  *  name="ejb/StoreAuditRecord"
  *  type="Session"
  *  home="org.dcm4chex.arr.ejb.session.StoreAuditRecordLocalHome"
  *  local="org.dcm4chex.arr.ejb.session.StoreAuditRecordLocal"
- *  link="dcm4jboss-arr-ejb.jar#StoreAuditRecord"
+ *  link="jaudit-ejb.jar#StoreAuditRecord"
  * 
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @author  <a href="mailto:joseph@tiani.com">joseph foraci</a>

@@ -9,7 +9,7 @@ to users with the role JBossAdmin. -->
     	<http-method>POST</http-method>
     </web-resource-collection>
     <auth-constraint>
-    	<role-name>AuditRepAdmin</role-name>
+    	<role-name>jaudit-user</role-name>
 	</auth-constraint>
 </security-constraint>
 
@@ -21,5 +21,5 @@ to users with the role JBossAdmin. -->
 
 <!-- security role -->
 <security-role>
-	<role-name>AuditRepAdmin</role-name>
+	<role-name>jaudit-user</role-name>
 </security-role>
