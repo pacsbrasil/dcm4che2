@@ -103,13 +103,13 @@
     Defines the default Border Density identifier that is used when the
     Print SCU does not specify Border Density.
     -->
-    <attribute name="BorderDensity">WHITE</attribute>
+    <attribute name="BorderDensity">BLACK</attribute>
       
     <!--
     Defines the default Empty Image Density identifier that is used when the
     Print SCU does not specify Empty Image Density.
     -->
-    <attribute name="EmptyImageDensity">WHITE</attribute>
+    <attribute name="EmptyImageDensity">BLACK</attribute>
     
     <!--
     Defines density of trim box. Same format than for BorderDensity and 
