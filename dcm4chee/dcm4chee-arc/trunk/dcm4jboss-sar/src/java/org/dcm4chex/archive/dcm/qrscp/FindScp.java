@@ -46,9 +46,12 @@ public class FindScp extends DcmServiceBase {
     private final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
 
     private final QueryRetrieveScpService service;
+    
+    private final boolean filterResult;
 
-    public FindScp(QueryRetrieveScpService service) {
+    public FindScp(QueryRetrieveScpService service, boolean filterResult) {
         this.service = service;
+        this.filterResult = filterResult;
     }
 
     protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
@@ -58,7 +61,7 @@ public class FindScp extends DcmServiceBase {
             Dataset rqData = rq.getDataset();
             service.logDataset("Identifier:\n", rqData);
             logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
-            queryCmd = QueryCmd.create(rqData);
+            queryCmd = QueryCmd.create(rqData, filterResult);
             queryCmd.execute();
         } catch (Exception e) {
             service.getLog().error("Query DB failed:", e);
@@ -77,7 +80,7 @@ public class FindScp extends DcmServiceBase {
         private final QueryCmd queryCmd;
 
         private boolean canceled = false;
-
+        
         public MultiCFindRsp(QueryCmd queryCmd) {
             this.queryCmd = queryCmd;
         }
