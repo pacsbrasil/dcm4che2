@@ -304,15 +304,11 @@
   </target>  
   
   <target name="doc" depends="unpack-docbook-dtd, unpack-docbook-xsl">
-    <style basedir="${doc.xml}"
-           includes="readme.xml"
-           destdir="${build.doc.dir}"
-           extension=".html"
+    <style in="${doc.xml}/readme.xml"
+           out="${build.doc.dir}/readme.html"
            style="${doc.dir}/xsl/html/docbook.xsl"/>
-    <style basedir="${doc.xml}"
-           includes="cs-template.docbook.xml"
-           destdir="${build.doc.dir}"
-           extension=".html"
+    <style in="${doc.xml}/cs-template.docbook.xml"
+           out="${build.doc.dir}/cs-template.docbook.html"
            style="${doc.dir}/xsl/html/docbook.xsl"/>
   </target>           
   
