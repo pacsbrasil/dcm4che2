@@ -44,7 +44,6 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
@@ -213,14 +212,11 @@ public abstract class StorageBean implements SessionBean {
      * @param retrieveAETs
      */
     private void updateRetrieveAETs(InstanceLocal instance, String retrieveAETs) {
-        String[] a = StringUtils.split(retrieveAETs, '\\');
-        for (int i = 0; i < a.length; i++) {
-            if (instance.addRetrieveAET(a[i])) {
-                SeriesLocal series = instance.getSeries();
-                if (series.addRetrieveAET(a[i])) {
-                    StudyLocal study = series.getStudy();
-                    study.addRetrieveAET(a[i]);
-                }
+        if (instance.addRetrieveAETs(retrieveAETs)) {
+            SeriesLocal series = instance.getSeries();
+            if (series.updateRetrieveAETs()) {
+                StudyLocal study = series.getStudy();
+                study.updateRetrieveAETs();
             }
         }
     }

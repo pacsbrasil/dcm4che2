@@ -332,57 +332,37 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean addRetrieveAET(String aet) {
-        log.debug(
-            "study[pk="
-                + getPk()
-                + "]: update retrieveAETs "
-                + getRetrieveAETs()
-                + " with "
-                + aet);
-        if (retrieveAETSet().contains(aet)) {
-            log.debug(
-                "study[pk="
-                    + getPk()
-                    + "]: no update of retrieveAETs "
-                    + retrieveAETSet()
-                    + " necessary");
-            return false;
-        }
-        if (!areAllSeriesRetrieveableFrom(aet)) {
-            log.debug(
-                "study[pk="
-                    + getPk()
-                    + "]: not all Series retrieveable from "
-                    + aet);
-            return false;
-        }
-        retrieveAETSet().add(aet);
-        String prev = getRetrieveAETs();
-        if (prev == null || prev.length() == 0) {
-            setRetrieveAETs(aet);
-        } else {
-            setRetrieveAETs(prev + '\\' + aet);
-        }
-        log.debug(
-            "study[pk="
-                + getPk()
-                + "]: updated retrieveAETs to "
-                + getRetrieveAETs());
-        return true;
-    }
-
-    private boolean areAllSeriesRetrieveableFrom(String aet) {
+    public boolean updateRetrieveAETs() {
         Collection c = getSeries();
-        for (Iterator it = c.iterator(); it.hasNext();) {
+        HashSet newAETSet = null;
+        Iterator it = c.iterator();
+        while (it.hasNext()) {
             SeriesLocal series = (SeriesLocal) it.next();
-            if (!series.getRetrieveAETSet().contains(aet)) {
-                return false;
+            // consider only series with instances
+            if (series.getNumberOfSeriesRelatedInstances() > 0) {
+                if (newAETSet == null) {
+                    newAETSet = new HashSet(series.getRetrieveAETSet());
+                } else {
+                    newAETSet.retainAll(series.getRetrieveAETSet());
+                }
             }
         }
+        if (newAETSet == null) {
+            newAETSet = new HashSet();
+        }
+        if (retrieveAETSet().equals(newAETSet)) {
+            return false;
+        }
+        retrieveAETSet = newAETSet;
+        String newAETs =
+            StringUtils.toString(
+                    (String[]) retrieveAETSet().toArray(
+                            new String[retrieveAETSet.size()]),
+            '\\');
+        setRetrieveAETs(newAETs);
         return true;
     }
-
+    
     /**
      * 
      * @ejb.interface-method

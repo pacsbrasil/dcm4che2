@@ -35,11 +35,14 @@ import javax.naming.NamingException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.DTO2Dataset;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 
 /**
@@ -178,10 +181,16 @@ public abstract class ContentEditBean implements SessionBean {
      */
     public void deleteSeries(int series_pk) throws RemoteException {
         try {
-            seriesHome.remove(new Integer(series_pk));
+            SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(series_pk));
+            StudyLocal study = series.getStudy();
+            series.remove();
+            study.updateRetrieveAETs();
+            study.updateAvailability();
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
             throw new RemoteException(e.getMessage());
         }
     }
@@ -217,10 +226,20 @@ public abstract class ContentEditBean implements SessionBean {
      */
     public void deleteInstance(int instance_pk) throws RemoteException {
         try {
-            instHome.remove(new Integer(instance_pk));
+            InstanceLocal instance = instHome.findByPrimaryKey(new Integer(instance_pk));
+            SeriesLocal series = instance.getSeries();
+            instance.remove();
+            if (series.updateRetrieveAETs()) {
+                series.getStudy().updateRetrieveAETs();
+            }
+            if (series.updateAvailability()) {
+                series.getStudy().updateAvailability();
+            }
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
             throw new RemoteException(e.getMessage());
         }
     }

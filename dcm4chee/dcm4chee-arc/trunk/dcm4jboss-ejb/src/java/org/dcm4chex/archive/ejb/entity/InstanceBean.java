@@ -309,7 +309,10 @@ public abstract class InstanceBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
         throws CreateException {
         try {
-            setSrCode(CodeBean.valueOf(codeHome, ds.getItem(Tags.ConceptNameCodeSeq)));
+            setSrCode(
+                CodeBean.valueOf(
+                    codeHome,
+                    ds.getItem(Tags.ConceptNameCodeSeq)));
         } catch (CreateException e) {
             throw new CreateException(e.getMessage());
         } catch (FinderException e) {
@@ -384,17 +387,16 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean addRetrieveAET(String aet) {
-        if (retrieveAETSet().contains(aet)) {
+    public boolean addRetrieveAETs(String aets) {
+        if (!retrieveAETSet()
+            .addAll(Arrays.asList(StringUtils.split(aets, '\\')))) {
             return false;
         }
-        retrieveAETSet().add(aet);
-        String prev = getRetrieveAETs();
-        if (prev == null || prev.length() == 0) {
-            setRetrieveAETs(aet);
-        } else {
-            setRetrieveAETs(prev + '\\' + aet);
-        }
+        setRetrieveAETs(
+            StringUtils.toString(
+                (String[]) retrieveAETSet().toArray(
+                    new String[retrieveAETSet.size()]),
+                '\\'));
         return true;
     }
 

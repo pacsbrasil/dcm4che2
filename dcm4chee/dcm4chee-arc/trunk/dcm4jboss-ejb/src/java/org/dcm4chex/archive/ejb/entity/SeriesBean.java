@@ -101,7 +101,7 @@ public abstract class SeriesBean implements EntityBean {
     private static final Logger log = Logger.getLogger(SeriesBean.class);
     private Set retrieveAETSet;
     private MPPSLocalHome mppsHome;
-    
+
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
         try {
@@ -121,7 +121,7 @@ public abstract class SeriesBean implements EntityBean {
     public void unsetEntityContext() {
         mppsHome = null;
     }
-    
+
     /**
      * Auto-generated Primary Key
      *
@@ -180,7 +180,7 @@ public abstract class SeriesBean implements EntityBean {
     public abstract java.util.Date getPpsStartDateTime();
 
     public abstract void setPpsStartDateTime(java.util.Date datetime);
-    
+
     /**
      * PPS Instance UID
      *
@@ -193,8 +193,7 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setPpsIuid(String uid);
-    
-    
+
     /**
      * Number Of Series Related Instances
      *
@@ -336,12 +335,11 @@ public abstract class SeriesBean implements EntityBean {
         final String ppsiuid = getPpsIuid();
         MPPSLocal mpps = null;
         if (ppsiuid != null)
-        try {
-            mpps = mppsHome.findBySopIuid(ppsiuid);
-        } catch (ObjectNotFoundException ignore) {
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        }
+            try {
+                mpps = mppsHome.findBySopIuid(ppsiuid);
+            } catch (ObjectNotFoundException ignore) {} catch (FinderException e) {
+                throw new EJBException(e);
+            }
         setMpps(mpps);
     }
 
@@ -395,12 +393,12 @@ public abstract class SeriesBean implements EntityBean {
         }
     }
 
-
     /**
      * @ejb.interface-method
      */
     public void hide() {
-        if (getHidden()) return;
+        if (getHidden())
+            return;
         StudyLocal study = getStudy();
         study.incNumberOfStudyRelatedSeries(-1);
         study.incNumberOfStudyRelatedInstances(
@@ -412,14 +410,15 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public void unhide() {
-        if (!getHidden()) return;
+        if (!getHidden())
+            return;
         StudyLocal study = getStudy();
         study.incNumberOfStudyRelatedSeries(1);
         study.incNumberOfStudyRelatedInstances(
             getNumberOfSeriesRelatedInstances());
         setHidden(false);
     }
-    
+
     /**
      * @ejb.interface-method
      */
@@ -442,54 +441,27 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean addRetrieveAET(String aet) {
-        log.debug(
-            "series[pk="
-                + getPk()
-                + "]: update retrieveAETs "
-                + getRetrieveAETs()
-                + " with "
-                + aet);
-        if (retrieveAETSet().contains(aet)) {
-            log.debug(
-                "series[pk="
-                    + getPk()
-                    + "]: no update of retrieveAETs "
-                    + retrieveAETSet()
-                    + " necessary");
-            return false;
-        }
-        if (!areAllInstancesRetrieveableFrom(aet)) {
-            log.debug(
-                "series[pk="
-                    + getPk()
-                    + "]: not all Instances retrieveable from "
-                    + aet);
-            return false;
-        }
-        retrieveAETSet().add(aet);
-        String prev = getRetrieveAETs();
-        if (prev == null || prev.length() == 0) {
-            setRetrieveAETs(aet);
-        } else {
-            setRetrieveAETs(prev + '\\' + aet);
-        }
-        log.debug(
-            "series[pk="
-                + getPk()
-                + "]: updated retrieveAETs to "
-                + getRetrieveAETs());
-        return true;
-    }
-
-    private boolean areAllInstancesRetrieveableFrom(String aet) {
+    public boolean updateRetrieveAETs() {
         Collection c = getInstances();
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            InstanceLocal instance = (InstanceLocal) it.next();
-            if (!instance.getRetrieveAETSet().contains(aet)) {
-                return false;
+        HashSet newAETSet = new HashSet();
+        Iterator it = c.iterator();
+        if (it.hasNext()) {
+            newAETSet.addAll(((InstanceLocal) it.next()).getRetrieveAETSet());
+            while (it.hasNext()) {
+                newAETSet.retainAll(
+                    ((InstanceLocal) it.next()).getRetrieveAETSet());
             }
         }
+        if (retrieveAETSet().equals(newAETSet)) {
+            return false;
+        }
+        retrieveAETSet = newAETSet;
+        String newAETs =
+            StringUtils.toString(
+                (String[]) retrieveAETSet().toArray(
+                    new String[retrieveAETSet.size()]),
+                '\\');
+        setRetrieveAETs(newAETs);
         return true;
     }
 
@@ -502,7 +474,7 @@ public abstract class SeriesBean implements EntityBean {
         int availability = 0;
         for (Iterator it = c.iterator(); it.hasNext();) {
             InstanceLocal instance = (InstanceLocal) it.next();
-            availability = Math.max(availability, instance.getAvailability());            
+            availability = Math.max(availability, instance.getAvailability());
         }
         if (availability != getAvailability()) {
             return false;
