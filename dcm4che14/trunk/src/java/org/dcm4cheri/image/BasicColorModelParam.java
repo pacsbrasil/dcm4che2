@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -23,18 +22,21 @@
 
 package org.dcm4cheri.image;
 
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
 
-import java.awt.image.DataBuffer;
-
 /**
- *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @author <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author <a href="mailto:joseph@tiani.com">joseph foraci</a>
+ * @version $Revision$ $Date$
  */
-abstract class BasicColorModelParam implements ColorModelParam {   
+abstract class BasicColorModelParam
+    implements ColorModelParam
+{
     protected final int dataType;
     protected final int size;
     protected final int bits;
@@ -44,61 +46,74 @@ abstract class BasicColorModelParam implements ColorModelParam {
     protected final int alloc;
     protected final int hBit;
 
-    /** Creates a new instance of PaletteColorParam */
-    protected BasicColorModelParam(Dataset ds) {
-        this.alloc = ds.getInt(Tags.BitsAllocated,8);
-        switch (alloc) {
-            case 8:
-                this.dataType = DataBuffer.TYPE_BYTE;
-                break;
-            case 16:
-                this.dataType = DataBuffer.TYPE_USHORT;
-                break;
-            default:
-                throw new UnsupportedOperationException(
-                        "" + alloc + " Bits Allocated not supported!");
+    protected BasicColorModelParam(Dataset ds)
+    {
+        alloc = ds.getInt(Tags.BitsAllocated, 8);
+        if (alloc <= 8)
+            dataType = DataBuffer.TYPE_BYTE;
+        else if (alloc <= 16)
+            dataType = DataBuffer.TYPE_USHORT;
+        else if (alloc <= 32) //dataType = DataBuffer.TYPE_INT
+            throw new IllegalArgumentException(alloc + " Bits Allocated not supported for Java BufferedImages");
+        else
+            throw new IllegalArgumentException("Bits allocated " + alloc + " not supported");
+        bits = ds.getInt(Tags.BitsStored, 8);
+        hBit = ds.getInt(Tags.HighBit, bits - 1);
+        size = 1 << bits;
+        if(ds.getInt(Tags.PixelRepresentation, 0) == 0) {
+            min = 0;
+            max = size - 1;
         }
-        this.bits = ds.getInt(Tags.BitsStored, 8);
-        if (bits < 8 || bits > 16) {
-            throw new UnsupportedOperationException("Bits Stored: " + bits
-                    + " not supported!");
+        else {
+            min = -(size >> 1);
+            max = -min - 1;
         }
-        this.hBit = ds.getInt(Tags.HighBit, bits-1);
-        if (hBit != bits-1) {
-            throw new UnsupportedOperationException("High Bit: " + hBit
-                    + " not supported!");
-        }
-        this.size = 1 << bits;
-        if (ds.getInt(Tags.PixelRepresentation, 0) == 0) {
-            this.min = 0;
-            this.max = size;
-        } else {
-            this.min = -(size>>1);
-            this.max = -min-1;
-        }
-        this.shiftmask = 32-bits;
+        shiftmask = 32 - bits;
     }
 
-    protected BasicColorModelParam(BasicColorModelParam other) {
-        this.alloc = other.alloc;
-        this.hBit = other.hBit;
-        this.dataType = other.dataType;
-        this.size = other.size;
-        this.bits = other.bits;
-        this.min = other.min;
-        this.max = other.max;
-        this.shiftmask = other.shiftmask;
+    protected BasicColorModelParam(BasicColorModelParam other)
+    {
+        alloc = other.alloc;
+        hBit = other.hBit;
+        dataType = other.dataType;
+        size = other.size;
+        bits = other.bits;
+        min = other.min;
+        max = other.max;
+        shiftmask = other.shiftmask;
     }
 
-    public final int toSampleValue(int pxValue) {
-        return min == 0 ? ((pxValue<<shiftmask)>>>shiftmask)
-                        : ((pxValue<<shiftmask)>>shiftmask);
+    public final int toSampleValue(int pxValue)
+    {
+        return min != 0 ? (pxValue << shiftmask) >> shiftmask : (pxValue << shiftmask) >>> shiftmask;
     }
-    
-    public final int toPixelValueRaw(int sampleValue) {
+
+    public final int toPixelValueRaw(int sampleValue)
+    {
         int bsMask = (1 << bits) - 1;
-        //int baMask = (1 << alloc) - 1; // bits allocated mask
-        int packedValue = ((sampleValue & bsMask) << (hBit - bits + 1)); //mask and shift into proper position
+        int packedValue = (sampleValue & bsMask) << (hBit - bits) + 1;
         return packedValue;
     }
+
+    public abstract ColorModel newColorModel();
+
+    public abstract ColorModelParam update(float f, float f1, boolean flag);
+
+    public abstract float getRescaleSlope();
+
+    public abstract float getRescaleIntercept();
+
+    public abstract float getWindowCenter(int i);
+
+    public abstract float getWindowWidth(int i);
+
+    public abstract int getNumberOfWindows();
+
+    public abstract float toMeasureValue(int i);
+
+    public abstract int toPixelValue(float f);
+
+    public abstract boolean isInverse();
+
+    public abstract boolean isCacheable();
 }
