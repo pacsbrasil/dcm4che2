@@ -98,36 +98,30 @@
    	<!-- =================================================================== -->
 
    	<target name="dist" depends="jar,sar">
-   		<mkdir dir="${build.dir}/bin"/>
-   		<fixcrlf srcdir="${src.etc}/bin" destdir="${build.dir}/bin"
+   		<fixcrlf srcdir="${src.etc}" destdir="${build.dir}"
    		    eol="crlf"
-       		includes="*.bat"
+       		includes="bin/*.bat"
    		/>
-   		<fixcrlf srcdir="${src.etc}/bin" destdir="${build.dir}/bin"
+   		<fixcrlf srcdir="${src.etc}" destdir="${build.dir}"
        		eol="lf" 
        		eof="remove"
-       		includes="*.sh,*.conf"
+       		includes="bin/*.sh,bin/*.conf"
    		/>
+   		<copy todir="${build.dir}" filtering="true">
+   			<filterset>
+	   	      	<filter token="VERSION" value="${version}"/>
+   			</filterset>
+   			<fileset dir="${src.etc}" includes="data/mergedir/README.TXT"/>
+   		</copy>
    		<zip destfile="${build.dir}/${dist.name}.zip">
-			<zipfileset dir="${build.dir}" prefix="${dist.jboss.conf}">
-				<include name="deploy/*"/>
-				<include name="lib/*"/>
-   			</zipfileset>	
-			<zipfileset dir="${dcm4che.home}" prefix="${dist.jboss.conf}">
-				<include name="lib/dcm4che.jar"/>
-				<include name="bin/getopt.jar"/>
-				<include name="bin/log4j.properties"/>
-				<include name="bin/dcmsnd.jar"/>
-				<include name="bin/dcmsnd.cfg"/>
-				<include name="bin/mcmscu.jar"/>
-				<include name="bin/mcmscu.cfg"/>
-				<include name="bin/dcm2xml.jar"/>
-   			</zipfileset>	
 			<zipfileset dir="${build.dir}" prefix="${dist.jboss.conf}">
 				<include name="bin/acroread.bat"/>
 				<include name="bin/fop.bat"/>
 				<include name="bin/run.conf"/>
 				<include name="bin/xalan.bat"/>
+ 				<include name="data/mergedir/README.TXT"/>
+ 				<include name="deploy/*"/>
+				<include name="lib/*"/>
    			</zipfileset>	
 			<zipfileset dir="${build.dir}" prefix="${dist.jboss.conf}" filemode="755">
 				<include name="bin/fop.sh"/>
@@ -138,7 +132,18 @@
 				<include name="conf/**"/>
 				<exclude name="conf/jboss-service.xml"/>
 				<include name="data/**"/>
+				<exclude name="data/mergedir/README.TXT"/>
 			</zipfileset>
+			<zipfileset dir="${dcm4che.home}" prefix="${dist.jboss.conf}">
+				<include name="lib/dcm4che.jar"/>
+				<include name="bin/getopt.jar"/>
+				<include name="bin/log4j.properties"/>
+				<include name="bin/dcmsnd.jar"/>
+				<include name="bin/dcmsnd.cfg"/>
+				<include name="bin/mcmscu.jar"/>
+				<include name="bin/mcmscu.cfg"/>
+				<include name="bin/dcm2xml.jar"/>
+   			</zipfileset>	
 			<zipfileset dir="${fop.home}/build" prefix="${dist.jboss.conf}/lib">
 				<include name="fop.jar"/>				
 			</zipfileset>

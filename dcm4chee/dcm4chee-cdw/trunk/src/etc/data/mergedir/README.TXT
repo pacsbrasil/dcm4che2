@@ -5,14 +5,15 @@ Institution:
     Tiani Medgraph AG
     Diefenbachgasse 35
     A - 1150 Vienna
-    Austria/Europe 
+    Austria/Europe
+    http://www.tiani.com 
 
 
 Media Creator Application:
 
     This disk was created using:
  
-    dcm4che/cdw v0.9 Media Creation Manager 
+    dcm4che/cdw v@VERSION@ Media Creation Manager 
 
 
 Contact Information:
