@@ -9,8 +9,10 @@
 package org.dcm4chex.archive.dcm.ianscu;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -59,6 +61,13 @@ import org.jboss.system.ServiceMBeanSupport;
 public class IANScuService extends ServiceMBeanSupport implements
         MessageListener, NotificationListener {
 
+    private static final Map dumpParam = new HashMap(5);
+    static {
+        dumpParam.put("maxlen", new Integer(128));
+        dumpParam.put("vallen", new Integer(64));
+        dumpParam.put("prefix", "\t");
+    }
+    
     private static final String NONE = "NONE";
 
     private static final String[] EMPTY = {};
@@ -344,6 +353,7 @@ public class IANScuService extends ServiceMBeanSupport implements
                         cmdRq,
                         toSCN(order.getDataset()));
             }
+            logDataset("Dataset:\n", dimseRq.getDataset());
             final Dimse dimseRsp;
             try {
                 dimseRsp = aa.invoke(dimseRq).get();
@@ -403,5 +413,17 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     private Socket createSocket(AEData ianSCP) throws IOException {
         return new Socket(ianSCP.getHostName(), ianSCP.getPort());
+    }
+
+    void logDataset(String prompt, Dataset ds) {
+        if (!log.isDebugEnabled()) { return; }
+        try {
+            StringWriter w = new StringWriter();
+            w.write(prompt);
+            ds.dumpDataset(w, dumpParam);
+            log.debug(w.toString());
+        } catch (Exception e) {
+            log.warn("Failed to dump dataset", e);
+        }
     }
 }

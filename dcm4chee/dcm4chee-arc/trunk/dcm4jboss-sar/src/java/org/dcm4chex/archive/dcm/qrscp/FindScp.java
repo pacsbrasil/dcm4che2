@@ -110,6 +110,7 @@ public class FindScp extends DcmServiceBase {
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
                 Dataset data = queryCmd.getDataset();
+                service.logDataset("Identifier:\n", data);
                 return data;
             } catch (SQLException e) {
                 service.getLog().error("Retrieve DB record failed:", e);

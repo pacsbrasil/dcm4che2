@@ -8,6 +8,10 @@
  ******************************************/
 package org.dcm4chex.archive.dcm.movescu;
 
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -18,6 +22,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.JMSDelegate;
@@ -33,6 +38,13 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 public class MoveScuService extends ServiceMBeanSupport implements
         MessageListener {
 
+    private static final Map dumpParam = new HashMap(5);
+    static {
+        dumpParam.put("maxlen", new Integer(128));
+        dumpParam.put("vallen", new Integer(64));
+        dumpParam.put("prefix", "\t");
+    }
+    
     private static final String DEFAULT_AET = "MOVE_SCU";
 
     private String callingAET = DEFAULT_AET;
@@ -46,6 +58,10 @@ public class MoveScuService extends ServiceMBeanSupport implements
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
     
     private PooledExecutor pool = new PooledExecutor();
+    
+    public MoveScuService() {
+        pool.waitWhenBlocked();
+    }
     
     public final String getDataSourceJndiName() {
         return dsJndiName;
@@ -142,6 +158,18 @@ public class MoveScuService extends ServiceMBeanSupport implements
             log.error("jms error during processing message: " + message, e);
         } catch (InterruptedException e) {
             log.error("Failed to process " + order, e);
+        }
+    }
+
+    void logDataset(String prompt, Dataset ds) {
+        if (!log.isDebugEnabled()) { return; }
+        try {
+            StringWriter w = new StringWriter();
+            w.write(prompt);
+            ds.dumpDataset(w, dumpParam);
+            log.debug(w.toString());
+        } catch (Exception e) {
+            log.warn("Failed to dump dataset", e);
         }
     }
 }

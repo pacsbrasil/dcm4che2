@@ -18,7 +18,6 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -36,8 +35,6 @@ import org.jboss.logging.Logger;
 import EDU.oswego.cs.dl.util.concurrent.Semaphore;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
-import com.sun.media.imageio.stream.StreamSegment;
-import com.sun.media.imageio.stream.StreamSegmentMapper;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -45,7 +42,7 @@ import com.sun.media.imageio.stream.StreamSegmentMapper;
  * @since 22.05.2004
  *
  */
-class DecompressCmd implements StreamSegmentMapper {
+class DecompressCmd {
 
     private static final String JPEG2000 = "jpeg2000";
 
@@ -58,29 +55,6 @@ class DecompressCmd implements StreamSegmentMapper {
     private static final String J2K_IMAGE_READER = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
 
     private static final String J2K_IMAGE_READER_CODEC_LIB = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib";
-
-    private static final class Item {
-        
-        int offset;
-
-        long startPos;
-
-        int length;
-
-        final int nextOffset() {
-            return offset + length;
-        }
-
-        final long nextItemPos() {
-            return startPos + length;
-        }
-        
-        public String toString() {
-            return "Item[off=" + offset + ", pos=" + startPos + ", len=" + length + "]";
-        }
-    }
-
-    private final ArrayList items = new ArrayList();
 
     private final QueryRetrieveScpService service;
 
@@ -102,11 +76,11 @@ class DecompressCmd implements StreamSegmentMapper {
 
     private final DcmParser parser;
 
+    private final ItemParser itemParser;
+    
     private final ImageInputStream iis;
 
-    private final byte[] frameOffsets;
-
-    private boolean useNative = false;
+    private boolean useNative = true;
 
     public DecompressCmd(QueryRetrieveScpService service, Dataset ds,
             DcmParser parser) throws IOException {
@@ -114,16 +88,14 @@ class DecompressCmd implements StreamSegmentMapper {
         this.log = service.getLog();
         this.debug = log.isDebugEnabled();
         this.parser = parser;
+        this.iis = parser.getImageInputStream();
+        this.itemParser = new ItemParser(parser, log);
         tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
         samples = ds.getInt(Tags.SamplesPerPixel, 1);
         frames = ds.getInt(Tags.NumberOfFrames, 1);
         rows = ds.getInt(Tags.Rows, 1);
         columns = ds.getInt(Tags.Columns, 1);
         bitsalloc = ds.getInt(Tags.BitsAllocated, 8);
-        iis = parser.getImageInputStream();
-        parser.parseHeader();
-        frameOffsets = new byte[parser.getReadLength()];
-        iis.read(frameOffsets);
         if (samples == 3) ds.putCS(Tags.PhotometricInterpretation, "RGB");
     }
 
@@ -145,8 +117,7 @@ class DecompressCmd implements StreamSegmentMapper {
             log.info("start decompression of image: " + rows + "x" + columns
                     + "x" + frames);
             t1 = System.currentTimeMillis();
-            nextItem();
-            SegmentedImageInputStream siis = new SegmentedImageInputStream(iis, this);
+            SegmentedImageInputStream siis = new SegmentedImageInputStream(iis, itemParser);
             reader = getReaderForTransferSyntax(tsuid);
             for (int i = 0; i < frames; ++i) {
                 if (debug)
@@ -156,10 +127,10 @@ class DecompressCmd implements StreamSegmentMapper {
                 if (bi != null) param.setDestination(bi);
                 bi = reader.read(0, param);
                 reader.reset();
-                seekNextFrame(siis);
+                itemParser.seekNextFrame(siis);
                 write(bi.getRaster(), out, byteOrder);
             }
-            seekFooter();
+            itemParser.seekFooter();
         } finally {
             if (reader != null) reader.dispose();
             if (codecSemaphoreAquired) {
@@ -167,8 +138,6 @@ class DecompressCmd implements StreamSegmentMapper {
                 codecSemaphore.release();
             }
         }
-        // skip end of sequence tag;
-        parser.parseHeader();
         long t2 = System.currentTimeMillis();
         log.info("finished decompression in " + (t2 - t1) + "ms.");
     }
@@ -259,83 +228,5 @@ class DecompressCmd implements StreamSegmentMapper {
 
         throw new ConfigurationException("No Image Reader for format:"
                 + formatName);
-    }
-
-    private Item nextItem() {
-        try {
-            if (!items.isEmpty())
-                iis.seek(lastItem().nextItemPos());
-            parser.parseHeader();
-            if (log.isDebugEnabled())
-                log.debug("Read "+ Tags.toString(parser.getReadTag())
-                        + " #" + parser.getReadLength());
-	        if (parser.getReadTag() == Tags.Item) {
-	            Item item = new Item();
-	            item.startPos = iis.getStreamPosition();
-	            item.length = parser.getReadLength();
-	            if (!items.isEmpty())
-	                item.offset = lastItem().nextOffset();
-	            items.add(item);
-	            return item;
-	        }
-        } catch (IOException e) {
-            log.warn("i/o error reading next item:", e);
-        }
-        if (parser.getReadTag() != Tags.SeqDelimitationItem
-                || parser.getReadLength() != 0) {
-            log.warn("expected (FFFE,E0DD) #0 but read "
-                    + Tags.toString(parser.getReadTag())
-                    + " #" + parser.getReadLength());            
-        }
-	    return null;
-    }
-    
-    private Item lastItem() {
-        return (Item) items.get(items.size() -1);
-    }
-
-    public StreamSegment getStreamSegment(long pos, int len) {
-        StreamSegment retval = new StreamSegment();
-        getStreamSegment(pos, len, retval);
-        return retval;
-    }
-
-    public void getStreamSegment(long pos, int len, StreamSegment seg) {
-        if (log.isDebugEnabled())
-            log.debug("getStreamSegment(pos="+ pos + ", len=" + len + ")");
-        Item item = lastItem();
-        while (item.nextOffset() <= pos) {
-            if ((item = nextItem()) == null) {
-                seg.setSegmentLength(-1);
-                return;
-            }
-        }
-        int i = items.size() - 1;
-        while (item.offset > pos)
-            item = (Item) items.get(--i);
-        seg.setStartPos(item.startPos + pos - item.offset);
-        seg.setSegmentLength(Math.min(
-                (int) (item.offset + item.length - pos), len));
-        if (log.isDebugEnabled())
-            log.debug("return StreamSegment[start=" + seg.getStartPos()
-                    + ", len=" + seg.getSegmentLength() + "]");
-    }
-
-    private void seekNextFrame(SegmentedImageInputStream siis)
-    		throws IOException {
-        Item item = lastItem();
-        long pos = siis.getStreamPosition();
-        int i = items.size() - 1;
-        while (item.offset >= pos)
-            item = (Item) items.get(--i);
-        siis.seek(item.nextOffset());
-        siis.flush();
-        iis.seek(item.nextItemPos());
-        iis.flush();
-    }
-
-    private void seekFooter() throws IOException {
-        iis.seek(lastItem().nextItemPos());
-        parser.parseHeader();
     }
 }

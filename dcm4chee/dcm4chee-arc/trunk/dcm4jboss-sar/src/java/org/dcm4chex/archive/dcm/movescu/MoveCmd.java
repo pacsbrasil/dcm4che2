@@ -79,6 +79,7 @@ class MoveCmd implements Runnable, DimseListener {
             putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
             putUI(ds, Tags.SeriesInstanceUID, order.getSeriesIuids());
             putUI(ds, Tags.SOPInstanceUID, order.getSopIuids());
+            service.logDataset("Identifier:\n", ds);
             moveAssoc.invoke(af.newDimse(PCID, cmd, ds), this);
         } catch (Exception e) {
             log.warn("Failed to invoke C-MOVE-RQ for " + order, e);
