@@ -14,8 +14,8 @@
    </mbean>
 
    <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	  name="dcmcdw:service=CleanSpoolDirScheduler"
-      xmbean-dd="xmdesc/dcmcdw-cleanspooldir-scheduler-xmbean.xml">
+	  name="dcmcdw:service=SpoolDirScheduler"
+      xmbean-dd="xmdesc/dcmcdw-spooldir-scheduler-xmbean.xml">
       <depends>
          dcmcdw:service=SpoolDir
       </depends>
@@ -47,8 +47,41 @@
          dcmcdw:service=SpoolDir
       </depends>
       <depends>
-         dcmcdw:service=CDWriter
+      	dcmcdw:service=MediaComposer
       </depends>
    </mbean>
    
+   <mbean code="org.dcm4chex.cdw.mbean.MediaComposerService"
+      name="dcmcdw:service=MediaComposer"
+      xmbean-dd="xmdesc/dcmcdw-composer-xmbean.xml">
+      <depends>
+         dcmcdw:service=SpoolDir
+      </depends>
+      <depends>
+      	dcmcdw:service=Queue,name=MakeIsoImage
+      </depends>
+      <depends>
+      	dcmcdw:service=Queue,name=MediaWriter
+      </depends>
+      <depends>
+      	dcmcdw:service=Queue,name=MediaComposer
+      </depends>
+      <depends>
+        jboss.mq:service=InvocationLayer,type=JVM
+      </depends>
+   </mbean>
+
+   <mbean code="org.dcm4chex.cdw.mbean.MakeIsoImageService"
+      name="dcmcdw:service=MakeIsoImage"
+      xmbean-dd="xmdesc/dcmcdw-mkisofs-xmbean.xml">
+      <depends>
+      	dcmcdw:service=Queue,name=MakeIsoImage
+      </depends>
+      <depends>
+      	dcmcdw:service=Queue,name=MediaWriter
+      </depends>
+      <depends>
+        jboss.mq:service=InvocationLayer,type=JVM
+      </depends>
+   </mbean>
 </server>

@@ -4,7 +4,21 @@
 
 <server>
   <mbean code="org.jboss.mq.server.jmx.Queue"
-	 name="dcmcdw:service=Queue,name=Pending">
+	 name="dcmcdw:service=Queue,name=MediaComposer">
+     <depends optional-attribute-name="DestinationManager">
+     	jboss.mq:service=DestinationManager
+     </depends>
+  </mbean>  
+
+  <mbean code="org.jboss.mq.server.jmx.Queue"
+	 name="dcmcdw:service=Queue,name=MakeIsoImage">
+     <depends optional-attribute-name="DestinationManager">
+     	jboss.mq:service=DestinationManager
+     </depends>
+  </mbean>  
+
+  <mbean code="org.jboss.mq.server.jmx.Queue"
+	 name="dcmcdw:service=Queue,name=MediaWriter">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager
      </depends>

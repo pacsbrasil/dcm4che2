@@ -7,7 +7,7 @@
     <property name="dist.name" value="dcmcdw-${version}"/>
 
     <!-- Override with your JBoss server bundle dist location -->
-    <property name="jboss.dist" value="${user.home}/jboss-3.2.3"/>
+    <property name="jboss.home" value="${user.home}/jboss-3.2.3"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>
@@ -24,10 +24,10 @@
 
     <path id="build.path">
         <pathelement location="${dcm4che.home}/lib/dcm4che.jar"/>
-        <pathelement location="${jboss.dist}/lib/jboss-common.jar"/>
-        <pathelement location="${jboss.dist}/lib/jboss-system.jar"/>
-        <pathelement location="${jboss.dist}/lib/jboss-jmx.jar"/>
-        <pathelement location="${jboss.dist}/server/default/lib/jboss-j2ee.jar"/>
+        <pathelement location="${jboss.home}/lib/jboss-common.jar"/>
+        <pathelement location="${jboss.home}/lib/jboss-system.jar"/>
+        <pathelement location="${jboss.home}/lib/jboss-jmx.jar"/>
+        <pathelement location="${jboss.home}/server/default/lib/jboss-j2ee.jar"/>
         <pathelement location="${build.classes.dir}"/>
     </path>
 
@@ -101,7 +101,7 @@
 			<zipfileset dir="${basedir}" prefix="${dist.standalone}">
 				<include name="bin/*"/>
 			</zipfileset>
-			<zipfileset dir="${jboss.dist}" prefix="${dist.standalone}">
+			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
 				<include name="bin/run.bat"/>
 				<include name="bin/run.conf"/>
 				<include name="bin/run.sh"/>
@@ -112,7 +112,7 @@
 				<include name="client/jbossall-client.jar"/>
 				<include name="lib/*"/>
 			</zipfileset>
-			<zipfileset dir="${jboss.dist}/server/default" prefix="${dist.standalone}/server/dcmcdw">
+			<zipfileset dir="${jboss.home}/server/default" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="deploy/hsqldb-ds.xml"/>
 				<include name="deploy/jboss-jca.sar"/>
 				<include name="deploy/jboss-local-jdbc.rar"/>

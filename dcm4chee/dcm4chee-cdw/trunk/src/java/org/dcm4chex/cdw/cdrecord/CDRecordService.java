@@ -8,15 +8,13 @@
  ******************************************/
 package org.dcm4chex.cdw.cdrecord;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
-import org.dcm4chex.cdw.common.AbstractCDWriterService;
+import org.dcm4chex.cdw.common.AbstractMediaWriterService;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
+import org.dcm4chex.cdw.common.MediaCreationRequest;
 
 
 /**
@@ -25,37 +23,33 @@ import org.dcm4chex.cdw.common.ExecutionStatusInfo;
  * @since 22.06.2004
  *
  */
-public class CDRecordService extends AbstractCDWriterService {
+public class CDRecordService extends AbstractMediaWriterService {
 
-    protected void process(String iuid, int retry) {
-        File f = spoolDir.getMediaCreationRequestFile(iuid);
-        Dataset mcrq;
+    protected void process(MediaCreationRequest rq) {
         try {
-            mcrq = spoolDir.readDatasetFrom(f);
-        } catch (FileNotFoundException e) {
-            return; // was canceled
+            log.info("Start processing " + rq);
+            if (rq.isCanceled()) {
+                log.info("" + rq + " was canceled");
+                return;
+            }
+             
+            Dataset attrs = rq.readAttributes(log);
+            rq.updateStatus(ExecutionStatus.CREATING, ExecutionStatusInfo.NORMAL, log);
+            //TODO
+            try {
+                Thread.sleep(100000L);
+            } catch (InterruptedException e1) {
+            }
+            rq.updateStatus(ExecutionStatus.DONE, ExecutionStatusInfo.NORMAL, log);
+            log.info("Finished processing " + rq);
         } catch (IOException e) {
-            return;
-        }
-        mcrq.putCS(Tags.ExecutionStatus, ExecutionStatus.CREATING);
-        mcrq.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.NORMAL);
-        try {
-            spoolDir.writeDatasetTo(mcrq, f);
-        } catch (IOException ignore) {
-        }
-        //TODO
-        try {
-            Thread.sleep(100000L);
-        } catch (InterruptedException e1) {
-        }
-        
-        spoolDir.deleteMediaLayouts(iuid);
-        spoolDir.deleteRefInstances(mcrq);
-        mcrq.putCS(Tags.ExecutionStatus, ExecutionStatus.DONE);
-        mcrq.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.NORMAL);
-        try {
-            spoolDir.writeDatasetTo(mcrq, f);
-        } catch (IOException ignore) {
+            log.error("Failed to process " + rq, e);
+            try {
+                rq.updateStatus(ExecutionStatus.FAILURE, ExecutionStatusInfo.PROC_FAILURE, log);
+            } catch (IOException e1) {
+            }
+        } finally {
+            rq.cleanFiles(log);
         }
     }
 }

@@ -10,8 +10,7 @@ package org.dcm4chex.cdw.common;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.TextMessage;
-import javax.management.ObjectName;
+import javax.jms.ObjectMessage;
 
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -22,20 +21,17 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 22.06.2004
  *
  */
-public abstract class AbstractCDWriterService extends ServiceMBeanSupport {
-
-    protected SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
+public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
 
     private final MessageListener listener = new MessageListener()
 	{
 
 		public void onMessage(Message msg)
 		{
-			TextMessage txtmsg = (TextMessage) msg;
+			ObjectMessage objmsg = (ObjectMessage) msg;
 			try
 			{
-			    AbstractCDWriterService.this.process(txtmsg.getText(),
-				        txtmsg.getIntProperty(JMSDelegate.PROPERTY_RETRY));
+			    AbstractMediaWriterService.this.process((MediaCreationRequest)objmsg.getObject());
 			} catch (Throwable e)
 			{
 				log.error(e.getMessage(), e);
@@ -44,23 +40,15 @@ public abstract class AbstractCDWriterService extends ServiceMBeanSupport {
 
 	};
 
-    public final ObjectName getSpoolDirName() {
-        return spoolDir.getSpoolDirName();
-    }
-
-    public final void setSpoolDirName(ObjectName spoolDirName) {
-        spoolDir.setSpoolDirName(spoolDirName);
-    }
-
 	protected void startService() throws Exception
 	{
-		JMSDelegate.getInstance().listenPending(listener);
+		JMSDelegate.getInstance().setMediaWriterListener(listener);
 	}
 
 	protected void stopService() throws Exception
 	{
-		JMSDelegate.getInstance().listenPending(null);
+		JMSDelegate.getInstance().setMediaWriterListener(null);
 	}
 
-    protected abstract void process(String iuid, int retry);
+    protected abstract void process(MediaCreationRequest rq);
 }

@@ -11,16 +11,15 @@ package org.dcm4chex.cdw.common;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
-import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -32,11 +31,17 @@ public class JMSDelegate {
 
     static final String CONNECTION_FACTORY = "java:ConnectionFactory";
 
-    static final String PENDING_QUEUE = "queue/Pending";
+    static final String COMPOSER_QUEUE = "queue/MediaComposer";
 
-    static final String PROPERTY_SCHEDULED_DELIVERY = "JMS_JBOSS_SCHEDULED_DELIVERY";
+    static final String MKISOFS_QUEUE = "queue/MakeIsoImage";
 
-    static final String PROPERTY_RETRY = "RETRY";
+    static final String WRITER_QUEUE = "queue/MediaWriter";
+
+    static int toJMSPriority(String dcmPriority) {
+        if (dcmPriority.equals(Priority.LOW)) return 3;
+        if (dcmPriority.equals(Priority.HIGH)) return 5;
+        return 4;
+    }
 
     private static JMSDelegate instance;
 
@@ -47,9 +52,17 @@ public class JMSDelegate {
 
     private QueueConnection conn;
 
-    private Queue pendingQueue;
+    private Queue composerQueue;
 
-    private QueueReceiver pendingReceiver;
+    private Queue mkisofsQueue;
+
+    private Queue writerQueue;
+
+    private QueueReceiver composerReceiver;
+
+    private QueueReceiver mkisofsReceiver;
+
+    private QueueReceiver writerReceiver;
 
     private JMSDelegate() {
         InitialContext iniCtx = null;
@@ -58,12 +71,18 @@ public class JMSDelegate {
             Object tmp = iniCtx.lookup(CONNECTION_FACTORY);
             QueueConnectionFactory qcf = (QueueConnectionFactory) tmp;
             conn = qcf.createQueueConnection();
-            pendingQueue = (Queue) iniCtx.lookup(PENDING_QUEUE);
-            QueueSession inqs = conn.createQueueSession(false,
+            composerQueue = (Queue) iniCtx.lookup(COMPOSER_QUEUE);
+            mkisofsQueue = (Queue) iniCtx.lookup(MKISOFS_QUEUE);
+            writerQueue = (Queue) iniCtx.lookup(WRITER_QUEUE);
+            QueueSession composerSession = conn.createQueueSession(false,
                     QueueSession.AUTO_ACKNOWLEDGE);
-            QueueSession outqs = conn.createQueueSession(false,
+            QueueSession mkisofsSession = conn.createQueueSession(false,
                     QueueSession.AUTO_ACKNOWLEDGE);
-            pendingReceiver = inqs.createReceiver(pendingQueue);
+            QueueSession writerSession = conn.createQueueSession(false,
+                    QueueSession.AUTO_ACKNOWLEDGE);
+            composerReceiver = composerSession.createReceiver(composerQueue);
+            mkisofsReceiver = mkisofsSession.createReceiver(mkisofsQueue);
+            writerReceiver = writerSession.createReceiver(writerQueue);
             conn.start();
         } catch (NamingException e) {
             throw new ConfigurationException(e);
@@ -79,30 +98,56 @@ public class JMSDelegate {
         }
     }
 
-    public void listenPending(MessageListener listener) {
+    public void setMediaWriterListener(MessageListener listener) {
         try {
-            pendingReceiver.setMessageListener(listener);
+            writerReceiver.setMessageListener(listener);
         } catch (JMSException e) {
             throw new ConfigurationException(e);
         }
     }
 
-    public void queuePending(String iuid, boolean persistentDeliveryMode,
-            int priority, int retry, long delay) throws JMSException {
+    public void setMediaComposerListener(MessageListener listener) {
+        try {
+            composerReceiver.setMessageListener(listener);
+        } catch (JMSException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    public void setMakeIsoImageListener(MessageListener listener) {
+        try {
+            mkisofsReceiver.setMessageListener(listener);
+        } catch (JMSException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    public void queueForMediaComposer(MediaCreationRequest rq)
+            throws JMSException {
+        queueFor(rq, composerQueue);
+    }
+
+    public void queueForMediaWriter(MediaCreationRequest rq)
+            throws JMSException {
+        queueFor(rq, writerQueue);
+    }
+
+    public void queueForMakeIsoImage(MediaCreationRequest rq)
+            throws JMSException {
+        queueFor(rq, mkisofsQueue);
+    }
+
+    private void queueFor(MediaCreationRequest request, Queue queue)
+            throws JMSException {
         QueueSession session = null;
         QueueSender send = null;
         try {
             session = conn.createQueueSession(false,
                     QueueSession.AUTO_ACKNOWLEDGE);
-            send = session.createSender(pendingQueue);
-            TextMessage msg = session.createTextMessage(iuid);
-            msg.setIntProperty(PROPERTY_RETRY, retry);
-            if (delay > 0) {
-                long now = System.currentTimeMillis();
-                msg.setLongProperty(PROPERTY_SCHEDULED_DELIVERY, now + delay);
-            }
-            send.send(msg, persistentDeliveryMode ? DeliveryMode.PERSISTENT
-                    : DeliveryMode.NON_PERSISTENT, priority, 0);
+            send = session.createSender(queue);
+            ObjectMessage msg = session.createObjectMessage(request);
+            send.send(msg, DeliveryMode.PERSISTENT, toJMSPriority(request
+                    .getPriority()), 0);
         } finally {
             if (send != null) {
                 try {

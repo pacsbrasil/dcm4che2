@@ -31,36 +31,48 @@
       getMethod="getDirectoryPath"
       setMethod="setDirectoryPath">
       <description>Spool Directory Path Name. Relative path names will be
-      resolved against directory $DCMCDW_HOME/server/dcmcdw/data/."
+      resolved against directory $DCMCDW_HOME/server/dcmcdw/."
       </description>
       <name>DirectoryPath</name>
       <type>java.lang.String</type>      
       <descriptors>
-         <value value="cdwspool" />
+         <value value="spool" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getDeleteMediaCreationRequestsAfter"
-      setMethod="setDeleteMediaCreationRequestsAfter">
+      getMethod="getPurgeMediaCreationRequestsAfter"
+      setMethod="setPurgeMediaCreationRequestsAfter">
       <description>Persistence duration for Media Creation Requests
       in days (##d), hours (##h) or minutes (##m). 0 = Infinite Persistenz.
       </description>
-      <name>DeleteMediaCreationRequestsAfter</name>
+      <name>PurgeMediaCreationRequestsAfter</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="1d" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getDeletePreservedInstancesAfter"
-      setMethod="setDeletePreservedInstancesAfter">
+      getMethod="getPurgePreservedInstancesAfter"
+      setMethod="setPurgePreservedInstancesAfter">
       <description>Persistence duration for preserved Instances
       in days (##d), hours (##h) or minutes (##m). 0 = Infinite Persistenz.
       </description>
-      <name>DeletePreservedInstancesAfter</name>
+      <name>PurgePreservedInstancesAfter</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="1d" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPurgeTemporaryFilesAfter"
+      setMethod="setPurgeTemporaryFilesAfter">
+      <description>Persistence duration of residual temporary Files
+      in days (##d), hours (##h) or minutes (##m). 0 = Infinite Persistenz.
+      </description>
+      <name>PurgeTemporaryFilesAfter</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="1h" />
       </descriptors>
    </attribute>
    &defattr;
@@ -88,27 +100,31 @@
       <return-type>java.io.File</return-type>
    </operation>
    <operation impact="INFO">
-      <description>Get Media Layouts Root Directory</description>
-      <name>getMediaLayoutsRoot</name>
+      <description>Get Media File-Set Root Directory</description>
+      <name>getMediaFilesetRootDir</name>
       <parameter>
-         <description>Media Creation Mgt Instance UID</description>
+         <description>Storage Media File-Set UID</description>
          <name>iuid</name>
          <type>java.lang.String</type>
       </parameter>
       <return-type>java.io.File</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Delete Expired Media Creation Requests and
-      Preserved Instances</description>
-      <name>deleteExpiredFiles</name>
+      <description>Purge Expired Media Creation Requests, Preserved Instances
+      and Residual Temporary Files</description>
+      <name>purge</name>
    </operation>
    <operation impact="ACTION">
-      <description>Delete Expired Media Creation Requests</description>
-      <name>deleteExpiredMediaCreationRequests</name>
+      <description>Purge Expired Media Creation Requests</description>
+      <name>purgeExpiredMediaCreationRequests</name>
    </operation>
    <operation impact="ACTION">
-      <description>Delete Expired Preserved Instances</description>
-      <name>deleteExpiredPreservedInstances</name>
+      <description>Purge Expired Preserved Instances</description>
+      <name>purgeExpiredPreservedInstances</name>
+   </operation>
+   <operation impact="ACTION">
+      <description>Purge Residual Temporary Files</description>
+      <name>purgeResidualTemporaryFiles</name>
    </operation>
 
 </mbean>

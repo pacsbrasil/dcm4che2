@@ -7,37 +7,28 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>CD Writer</description>
+   <description>Media Writer Service for using cdrecord
+   [http://freshmeat.net/projects/cdrecord/]
+   </description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
-         persistName="CDWriterService.ser"/>
+         persistName="CDRecordService.ser"/>
       <currencyTimeLimit value="0"/>
       <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
    </descriptors>
 
-   <class>org.dcm4chex.cdw.cdrecord.CDWriterService</class>
+   <class>org.dcm4chex.cdw.cdrecord.CDRecordService</class>
 
    <constructor>
       <description>The default constructor</description>
-      <name>CDWriterService</name>
+      <name>CDRecordService</name>
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getSpoolDirName"
-      setMethod="setSpoolDirName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>SpoolDirName</name>
-      <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcmcdw:service=SpoolDir" />
-      </descriptors>
-   </attribute>
    &defattr;
    
    <!-- Operations -->

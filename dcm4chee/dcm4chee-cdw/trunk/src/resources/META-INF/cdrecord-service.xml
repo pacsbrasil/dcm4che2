@@ -10,12 +10,9 @@
 <server>
    <mbean code="org.dcm4chex.cdw.cdrecord.CDRecordService"
       name="dcmcdw:service=CDWriter"
-      xmbean-dd="xmdesc/dcmcdw-cdwriter-xmbean.xml">
+      xmbean-dd="xmdesc/dcmcdw-cdrecord-xmbean.xml">
       <depends>
-         dcmcdw:service=SpoolDir
-      </depends>
-      <depends>
-      	dcmcdw:service=Queue,name=Pending
+      	dcmcdw:service=Queue,name=MediaWriter
       </depends>
       <depends>
         jboss.mq:service=InvocationLayer,type=JVM

@@ -60,6 +60,127 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultRequestPriority"
+      setMethod="setDefaultRequestPriority">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultRequestPriority</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="LOW" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxNumberOfCopies"
+      setMethod="setMaxNumberOfCopies">
+      <description>Description not yet written.
+      </description>
+      <name>MaxNumberOfCopies</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="50" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isDefaultLabelUsingInformationExtractedFromInstances"
+      setMethod="setDefaultLabelUsingInformationExtractedFromInstances">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultLabelUsingInformationExtractedFromInstances</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultLabelText"
+      setMethod="setDefaultLabelText">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultLabelText</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultLabelStyleSelection"
+      setMethod="setDefaultLabelStyleSelection">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultLabelStyleSelection</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isDefaultAllowMediaSplitting"
+      setMethod="setDefaultAllowMediaSplitting">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultAllowMediaSplitting</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isMediaSplittingSupported"
+      setMethod="setMediaSplittingSupported">
+      <description>Description not yet written.
+      </description>
+      <name>MediaSplittingSupported</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isDefaultAllowLossyCompression"
+      setMethod="setDefaultAllowLossyCompression">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultAllowLossyCompression</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefaultIncludeNonDICOMObjects"
+      setMethod="setDefaultIncludeNonDICOMObjects">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultIncludeNonDICOMObjects</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="NO" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isDefaultIncludeDisplayApplication"
+      setMethod="setDefaultIncludeDisplayApplication">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultIncludeDisplayApplication</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isDefaultPreserveInstances"
+      setMethod="setDefaultPreserveInstances">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultPreserveInstances</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
    &defattr;
    
    <!-- Operations -->

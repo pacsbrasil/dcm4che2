@@ -12,21 +12,20 @@ package org.dcm4chex.cdw.common;
 /**
  * @author gunter.zeilinter@tiani.com
  * @version $Revision$ $Date$
- * @since 23.06.2004
+ * @since 25.06.2004
  *
  */
-public class ExecutionStatusInfo {
+public class Priority {
 
-    public static final String NORMAL = "NORMAL";
+    public static final String HIGH = "HIGH";
+
+    public static final String MED = "MED";
+
+    public static final String LOW = "LOW";
+
+    public static boolean isValid(String s) {
+        return s.equals(LOW) || s.equals(MED) || s.equals(HIGH);
+    }
     
-    public static final String QUEUED = "QUEUED";
-    
-    public static final String DUPL_REF_INST = "DUPL_REF_INST";
-
-    public static final String NO_INSTANCE = "NO_INSTANCE";
-
-    public static final String PROC_FAILURE = "PROC_FAILURE";    
-
-    private ExecutionStatusInfo() {}
-
+    private Priority() {};
 }

@@ -10,7 +10,7 @@
       <persistence persistPolicy="OnUpdate"
          persistPeriod="10"
          persistLocation="${jboss.server.data.dir}"
-         persistName="CleanSpoolDirScheduler.ser"/>
+         persistName="SpoolDirScheduler.ser"/>
       <currencyTimeLimit value="0"/>
       <state-action-on-update value="keep-running"/>
       <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
@@ -43,7 +43,7 @@
       <name>SchedulableMBeanMethod</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="deleteExpiredFiles" />
+         <value value="purge" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

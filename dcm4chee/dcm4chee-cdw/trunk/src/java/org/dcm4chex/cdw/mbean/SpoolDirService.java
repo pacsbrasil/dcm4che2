@@ -20,14 +20,14 @@ import org.jboss.system.server.ServerConfigLocator;
  *
  */
 public class SpoolDirService extends ServiceMBeanSupport {
-
+    
     private static final long MS_PER_MINUTE = 60000L;
 
     private static final long MS_PER_HOUR = MS_PER_MINUTE * 60;
 
     private static final long MS_PER_DAY = MS_PER_HOUR * 24;
 
-    private static final String CACHE = "cache";
+    private static final String ARCHIVE = "archive";
 
     private static final String REQUEST = "request";
 
@@ -37,10 +37,12 @@ public class SpoolDirService extends ServiceMBeanSupport {
 
     private File dir;
 
-    private long deleteMediaCreationRequestsAfter = MS_PER_DAY;
+    private long purgeMediaCreationRequestsAfter = MS_PER_DAY;
 
-    private long deletePreservedInstancesAfter = MS_PER_DAY;
+    private long purgePreservedInstancesAfter = MS_PER_DAY;
 
+    private long purgeTemporaryFilesAfter = MS_PER_HOUR;
+    
     public final String getDirectoryPath() {
         return directoryPath;
     }
@@ -48,10 +50,10 @@ public class SpoolDirService extends ServiceMBeanSupport {
     public final void setDirectoryPath(String directoryPath) {
         File d = new File(directoryPath);
         if (!d.isAbsolute()) {
-            File dataDir = ServerConfigLocator.locate().getServerDataDir();
+            File dataDir = ServerConfigLocator.locate().getServerHomeDir();
             d = new File(dataDir, directoryPath);
         }
-        init(d, CACHE);
+        init(d, ARCHIVE);
         init(d, REQUEST);
         init(d, MEDIA);
         this.dir = d;
@@ -66,51 +68,73 @@ public class SpoolDirService extends ServiceMBeanSupport {
                         + " is not a writable directory!");
     }
 
-    public final String getDeletePreservedInstancesAfter() {
-        return timeAsString(deletePreservedInstancesAfter);
+    public final String getPurgePreservedInstancesAfter() {
+        return timeAsString(purgePreservedInstancesAfter);
     }
 
-    public final void setDeletePreservedInstancesAfter(String s) {
-        this.deletePreservedInstancesAfter = timeFromString(s);
+    public final void setPurgePreservedInstancesAfter(String s) {
+        this.purgePreservedInstancesAfter = timeFromString(s);
     }
 
-    public final String getDeleteMediaCreationRequestsAfter() {
-        return timeAsString(deleteMediaCreationRequestsAfter);
+    public final String getPurgeMediaCreationRequestsAfter() {
+        return timeAsString(purgeMediaCreationRequestsAfter);
     }
 
-    public final void setDeleteMediaCreationRequestsAfter(String s) {
-        this.deleteMediaCreationRequestsAfter = timeFromString(s);
+    public final void setPurgeMediaCreationRequestsAfter(String s) {
+        this.purgeMediaCreationRequestsAfter = timeFromString(s);
+    }
+
+    public final String getPurgeTemporaryFilesAfter() {
+        return timeAsString(purgeTemporaryFilesAfter);
+    }
+
+    public final void setPurgeTemporaryFilesAfter(String s) {
+        this.purgeTemporaryFilesAfter = timeFromString(s);
     }
 
     public File getInstanceFile(String iuid) {
-        return new File(new File(dir, CACHE), iuid);
+        return new File(new File(dir, ARCHIVE), iuid);
     }
 
     public File getMediaCreationRequestFile(String iuid) {
         return new File(new File(dir, REQUEST), iuid);
     }
 
-    public File getMediaLayoutsRoot(String iuid) {
+    public File getMediaFilesetRootDir(String iuid) {
         return new File(new File(dir, MEDIA), iuid);
     }
 
-    public void deleteExpiredFiles() {
-        deleteExpiredMediaCreationRequests();
-        deleteExpiredPreservedInstances();
+    public void purge() {
+        purgeExpiredMediaCreationRequests();
+        purgeExpiredPreservedInstances();
+        purgeResidualTemporaryFiles();
     }
 
-    public void deleteExpiredMediaCreationRequests() {
-        if (deleteMediaCreationRequestsAfter == 0) return;
+    public void purgeExpiredMediaCreationRequests() {
+        if (purgeMediaCreationRequestsAfter == 0) return;
         long modifiedBefore = System.currentTimeMillis()
-                - deleteMediaCreationRequestsAfter;
+                - purgeMediaCreationRequestsAfter;
         delete(new File(dir, REQUEST), modifiedBefore, true);
     }
 
-    public void deleteExpiredPreservedInstances() {
-        if (deletePreservedInstancesAfter == 0) return;
-        long modifiedBefore = System.currentTimeMillis() - deletePreservedInstancesAfter;
+    public void purgeExpiredPreservedInstances() {
+        if (purgePreservedInstancesAfter == 0) return;
+        long modifiedBefore = System.currentTimeMillis() - purgePreservedInstancesAfter;
+        delete(new File(dir, ARCHIVE), modifiedBefore, true);
+    }
+    
+    public void purgeResidualTemporaryFiles() {
+        if (purgeTemporaryFilesAfter == 0) return;
+        long modifiedBefore = System.currentTimeMillis() - purgeTemporaryFilesAfter;
         delete(new File(dir, MEDIA), modifiedBefore, true);
-        delete(new File(dir, CACHE), modifiedBefore, true);
+    }    
+
+    private boolean deleteFile(File file) {
+        String prompt = "M-DELETE " + file;
+        log.info(prompt);
+        boolean success = file.delete();
+        if (!success) log.error("Failed to " + prompt);
+        return success;
     }
 
     private boolean delete(File fileOrDirectory, long modifiedBefore,
@@ -123,12 +147,10 @@ public class SpoolDirService extends ServiceMBeanSupport {
                 emptyDir = delete(files[i], modifiedBefore, false) && emptyDir;
             if (keepRoot || !emptyDir) return false;
         }
-        if (fileOrDirectory.lastModified() > modifiedBefore) return false;
-        String prompt = "M-DELETE " + fileOrDirectory;
-        log.info(prompt);
-        boolean success = fileOrDirectory.delete();
-        if (!success) log.error("Failed to " + prompt);
-        return success;
+        if (fileOrDirectory.lastModified() > modifiedBefore)
+            return false;
+        else
+            return deleteFile(fileOrDirectory);
     }
 
     static String timeAsString(long ms) {

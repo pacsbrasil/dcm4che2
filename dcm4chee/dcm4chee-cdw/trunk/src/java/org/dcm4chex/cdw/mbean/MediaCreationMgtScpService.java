@@ -9,7 +9,6 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 
@@ -17,6 +16,8 @@ import javax.jms.JMSException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.FileFormat;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
@@ -26,7 +27,12 @@ import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4chex.cdw.common.*;
+import org.dcm4chex.cdw.common.ExecutionStatus;
+import org.dcm4chex.cdw.common.ExecutionStatusInfo;
+import org.dcm4chex.cdw.common.Flag;
+import org.dcm4chex.cdw.common.JMSDelegate;
+import org.dcm4chex.cdw.common.MediaCreationRequest;
+import org.dcm4chex.cdw.common.Priority;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -36,46 +42,34 @@ import org.dcm4chex.cdw.common.*;
  */
 public class MediaCreationMgtScpService extends AbstractScpService {
 
-    private static final String HIGH = "HIGH";
-
-    private static final String MED = "MED";
-
-    private static final String LOW = "LOW";
-
-    private static final String[] MC_PRIORITY = { LOW, MED, HIGH};
-
-    private static final int[] JMS_PRIORITY = { 3, 4, 5};
-
     private static final int INITIATE = 1;
 
     private static final int CANCEL = 2;
 
     private static final String[] CUIDS = { UIDs.MediaCreationManagementSOPClass};
 
-    private boolean persistentDeliveryMode = true;
-
-    private String requestPriority = MED;
-
-    private int numberOfCopies = 1;
+    private String defaultRequestPriority = Priority.LOW;
 
     private int maxNumberOfCopies = 50;
-    
-    private boolean labelUsingInformationExtractedFromInstances = true;
 
-    private String labelText = "";
+    private boolean defaultLabelUsingInformationExtractedFromInstances = true;
 
-    private String labelStyleSelection = "";
-    
-    private boolean allowMediaSplitting = false;
-    
-    private boolean allowLossyCompression = false;
-    
-    private String includeNonDICOMObjects = "NO";
-    
-    private boolean includeDisplayApplication = false;
-    
-    private boolean preserveInstances = false;
-    
+    private String defaultLabelText = "";
+
+    private String defaultLabelStyleSelection = "";
+
+    private boolean defaultAllowMediaSplitting = false;
+
+    private boolean mediaSplittingSupported = false;
+
+    private boolean defaultAllowLossyCompression = false;
+
+    private String defaultIncludeNonDICOMObjects = "NO";
+
+    private boolean defaultIncludeDisplayApplication = false;
+
+    private boolean defaultPreserveInstances = false;
+
     private final DcmService service = new DcmServiceBase() {
 
         protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
@@ -94,6 +88,106 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         }
 
     };
+
+    public final boolean isDefaultAllowLossyCompression() {
+        return defaultAllowLossyCompression;
+    }
+
+    public final void setDefaultAllowLossyCompression(
+            boolean defaultAllowLossyCompression) {
+        this.defaultAllowLossyCompression = defaultAllowLossyCompression;
+    }
+
+    public final boolean isDefaultAllowMediaSplitting() {
+        return defaultAllowMediaSplitting;
+    }
+
+    public final void setDefaultAllowMediaSplitting(
+            boolean defaultAllowMediaSplitting) {
+        this.defaultAllowMediaSplitting = defaultAllowMediaSplitting;
+    }
+
+    public final boolean isDefaultIncludeDisplayApplication() {
+        return defaultIncludeDisplayApplication;
+    }
+
+    public final void setDefaultIncludeDisplayApplication(
+            boolean defaultIncludeDisplayApplication) {
+        this.defaultIncludeDisplayApplication = defaultIncludeDisplayApplication;
+    }
+
+    public final String getDefaultIncludeNonDICOMObjects() {
+        return defaultIncludeNonDICOMObjects;
+    }
+
+    public final void setDefaultIncludeNonDICOMObjects(
+            String defaultIncludeNonDICOMObjects) {
+        this.defaultIncludeNonDICOMObjects = defaultIncludeNonDICOMObjects;
+    }
+
+    public final String getDefaultLabelStyleSelection() {
+        return defaultLabelStyleSelection;
+    }
+
+    public final void setDefaultLabelStyleSelection(
+            String defaultLabelStyleSelection) {
+        this.defaultLabelStyleSelection = defaultLabelStyleSelection;
+    }
+
+    public final String getDefaultLabelText() {
+        return defaultLabelText;
+    }
+
+    public final void setDefaultLabelText(String defaultLabelText) {
+        this.defaultLabelText = defaultLabelText;
+    }
+
+    public final boolean isDefaultLabelUsingInformationExtractedFromInstances() {
+        return defaultLabelUsingInformationExtractedFromInstances;
+    }
+
+    public final void setDefaultLabelUsingInformationExtractedFromInstances(
+            boolean defaultLabelUsingInformationExtractedFromInstances) {
+        this.defaultLabelUsingInformationExtractedFromInstances = defaultLabelUsingInformationExtractedFromInstances;
+    }
+
+    public final boolean isDefaultPreserveInstances() {
+        return defaultPreserveInstances;
+    }
+
+    public final void setDefaultPreserveInstances(
+            boolean defaultPreserveInstances) {
+        this.defaultPreserveInstances = defaultPreserveInstances;
+    }
+
+    public final String getDefaultRequestPriority() {
+        return defaultRequestPriority;
+    }
+
+    public final void setDefaultRequestPriority(String priority) {
+        if (!Priority.isValid(priority))
+                throw new IllegalArgumentException("priority:" + priority);
+        this.defaultRequestPriority = priority;
+    }
+
+    public final int getMaxNumberOfCopies() {
+        return maxNumberOfCopies;
+    }
+
+    public final void setMaxNumberOfCopies(int maxNumberOfCopies) {
+        if (maxNumberOfCopies < 1)
+                throw new IllegalArgumentException("maxNumberOfCopies:"
+                        + maxNumberOfCopies);
+        this.maxNumberOfCopies = maxNumberOfCopies;
+    }
+
+    public final boolean isMediaSplittingSupported() {
+        return mediaSplittingSupported;
+    }
+
+    public final void setMediaSplittingSupported(boolean mediaSplittingSupported) {
+        this.mediaSplittingSupported = mediaSplittingSupported;
+    }
 
     protected void bindDcmServices() {
         bindDcmServices(CUIDS, service);
@@ -130,7 +224,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         ds.putCS(Tags.ExecutionStatus, ExecutionStatus.IDLE);
         ds.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.NORMAL);
         try {
-            spoolDir.writeDatasetTo(ds, f);
+            ds.writeFile(f, null);
         } catch (IOException e) {
             throw new DcmServiceException(Status.ProcessingFailure);
         }
@@ -138,8 +232,65 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     }
 
     private void checkCreateAttributes(Dataset ds, Command rspCmd) {
-        // TODO Auto-generated method stub
+        checkFlag(ds, Tags.LabelUsingInformationExtractedFromInstances,
+                defaultLabelUsingInformationExtractedFromInstances, rspCmd);
+        checkFlag(ds, Tags.AllowMediaSplitting, mediaSplittingSupported
+                && defaultAllowMediaSplitting, rspCmd);
+        if (!mediaSplittingSupported) disableMediaSplitting(ds, rspCmd);
+        checkFlag(ds, Tags.AllowLossyCompression, defaultAllowLossyCompression,
+                rspCmd);
+        checkFlag(ds, Tags.IncludeDisplayApplication,
+                defaultIncludeDisplayApplication, rspCmd);
+        checkFlag(ds, Tags.PreserveCompositeInstancesAfterMediaCreation,
+                defaultPreserveInstances, rspCmd);
+        if (ds.vm(Tags.LabelText) <= 0)
+                ds.putUT(Tags.LabelText, defaultLabelText);
+        if (ds.vm(Tags.LabelText) <= 0)
+                ds.putCS(Tags.LabelStyleSelection, defaultLabelStyleSelection);
+        if (ds.vm(Tags.IncludeNonDICOMObjects) <= 0)
+                ds.putCS(Tags.IncludeNonDICOMObjects,
+                        defaultIncludeNonDICOMObjects);
+    }
 
+    private void checkFlag(Dataset ds, int tag, boolean defval, Command rspCmd) {
+        String s = ds.getString(tag);
+        if (!Flag.isValid(s)) {
+            rspCmd.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+            rspCmd.putLO(Tags.ErrorComment, "" + ds.get(tag));
+            s = null;
+        }
+        if (s == null) ds.putCS(tag, Flag.valueOf(defval));
+    }
+
+    private void disableMediaSplitting(Dataset ds, Command rspCmd) {
+        if (Flag.isYes(ds.getString(Tags.AllowMediaSplitting))) {
+            rspCmd.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+            rspCmd.putLO(Tags.ErrorComment, ""
+                    + ds.get(Tags.AllowMediaSplitting));
+            ds.putCS(Tags.AllowMediaSplitting, Flag.NO);
+        }
+    }
+
+    private void checkRequest(Dataset mcrq) throws DcmServiceException {
+        HashSet checkForDuplicate = new HashSet();
+        DcmElement refSOPs = mcrq.get(Tags.RefSOPSeq);
+        for (int i = 0, n = refSOPs.vm(); i < n; ++i) {
+            Dataset item = refSOPs.getItem(i);
+            String iuid = item.getString(Tags.RefSOPInstanceUID);
+            if (!checkForDuplicate.add(iuid)) {
+                mcrq.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
+                mcrq.putCS(Tags.ExecutionStatusInfo,
+                        ExecutionStatusInfo.DUPL_REF_INST);
+                throw new DcmServiceException(Status.ProcessingFailure);
+            }
+            File f = spoolDir.getInstanceFile(iuid);
+            if (!f.exists()) {
+                mcrq.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
+                mcrq.putCS(Tags.ExecutionStatusInfo,
+                        ExecutionStatusInfo.NO_INSTANCE);
+                throw new DcmServiceException(Status.ProcessingFailure);
+            }
+        }
     }
 
     private Dataset doNAction(ActiveAssociation assoc, Dimse rq, Command rspCmd)
@@ -149,16 +300,19 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         if (log.isDebugEnabled())
                 log.debug("N-Action Information:\n" + actionInfo);
         String iuid = rqCmd.getAffectedSOPInstanceUID();
+
         File f = spoolDir.getMediaCreationRequestFile(iuid);
-        Dataset mcrq;
+        if (!f.exists())
+                throw new DcmServiceException(Status.NoSuchObjectInstance);
+
+        MediaCreationRequest mcrq = new MediaCreationRequest(f);
+        Dataset attrs;
         try {
-            mcrq = spoolDir.readDatasetFrom(f);
-        } catch (FileNotFoundException e) {
-            throw new DcmServiceException(Status.NoSuchObjectInstance);
+            attrs = mcrq.readAttributes(log);
         } catch (IOException e) {
             throw new DcmServiceException(Status.ProcessingFailure);
         }
-        final String status = mcrq.getString(Tags.ExecutionStatus,
+        final String status = attrs.getString(Tags.ExecutionStatus,
                 ExecutionStatus.IDLE);
         final int actionID = rqCmd.getInt(Tags.ActionTypeID, -1);
         switch (actionID) {
@@ -166,37 +320,56 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             if (!ExecutionStatus.IDLE.equals(status))
                     throw new DcmServiceException(
                             Status.DuplicateInitiateMediaCreation);
-            checkActionInfo(actionInfo, rspCmd);
-            
-            createDisk1(iuid, mcrq);
-
+            int numberOfCopies = actionInfo != null ? actionInfo.getInt(
+                    Tags.NumberOfCopies, 1) : 1;
+            if (numberOfCopies < 1 || numberOfCopies > maxNumberOfCopies) {
+                rspCmd.putLO(Tags.ErrorComment, ""
+                        + actionInfo.get(Tags.NumberOfCopies));
+                throw new DcmServiceException(Status.InvalidArgumentValue);
+            }
             String priority = actionInfo != null ? actionInfo.getString(
-                    Tags.RequestPriority, requestPriority) : requestPriority;
-            int copies = actionInfo != null ? actionInfo.getInt(
-                    Tags.NumberOfCopies, numberOfCopies) : numberOfCopies;
-            mcrq.putUS(Tags.NumberOfCopies, copies);
-            mcrq.putCS(Tags.RequestPriority, priority);
-            mcrq.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
-            mcrq.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.QUEUED);
+                    Tags.RequestPriority, defaultRequestPriority)
+                    : defaultRequestPriority;
+            if (!Priority.isValid(priority)) {
+                rspCmd.putLO(Tags.ErrorComment, ""
+                        + actionInfo.get(Tags.RequestPriority));
+                throw new DcmServiceException(Status.InvalidArgumentValue);
+            }
             try {
-                spoolDir.writeDatasetTo(mcrq, f);
-            } catch (IOException e) {
-                throw new DcmServiceException(Status.ProcessingFailure);
+                checkRequest(attrs);
+            } catch (DcmServiceException e) {
+                try {
+                    mcrq.writeAttributes(attrs, log);
+                } catch (IOException ioe) {
+                }
+                spoolDir.deleteRefInstances(attrs);
+                throw e;
             }
-            try {                
-                JMSDelegate.getInstance().queuePending(iuid,
-                        persistentDeliveryMode, toJMSPriority(priority), 0, 0L);
-                return null;
-            } catch (JMSException e1) {
-                mcrq.putCS(Tags.ExecutionStatusInfo,
-                        ExecutionStatusInfo.PROC_FAILURE);
-            }
-            mcrq.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
+            mcrq.setPriority(priority);
+            mcrq.setNumberOfCopies(numberOfCopies);
+            attrs.putIS(Tags.NumberOfCopies, numberOfCopies);
+            attrs.putCS(Tags.RequestPriority, priority);
+            attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
+            attrs.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.QUEUED);
             try {
-                spoolDir.writeDatasetTo(mcrq, f);
-            } catch (IOException ignore) {
+                mcrq.writeAttributes(attrs, log);
+            } catch (IOException ioe) {
+                throw new DcmServiceException(Status.ProcessingFailure, ioe);
             }
-            throw new DcmServiceException(Status.ProcessingFailure);
+            try {
+                log.info("Forwarding " + mcrq + " to Media Composer");
+                JMSDelegate.getInstance().queueForMediaComposer(mcrq);
+            } catch (JMSException e) {
+                log.error("Failed to forward " + mcrq + " to Media Composer", e);
+                try {
+                    mcrq.updateStatus(ExecutionStatus.FAILURE,
+                            ExecutionStatusInfo.PROC_FAILURE, log);
+                } catch (IOException ioe) {
+                }
+                spoolDir.deleteRefInstances(attrs);
+                throw new DcmServiceException(Status.ProcessingFailure, e);
+            }
+            break;
         case CANCEL:
             if (ExecutionStatus.CREATING.equals(status))
                     throw new DcmServiceException(
@@ -205,11 +378,11 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     || ExecutionStatus.FAILURE.equals(status))
                     throw new DcmServiceException(
                             Status.MediaCreationRequestAlreadyCompleted);
-            if (!spoolDir.delete(f))
+            if (f.delete())
                     throw new DcmServiceException(
                             Status.CancellationDeniedForUnspecifiedReason);
-            spoolDir.deleteMediaLayouts(iuid);
-            spoolDir.deleteRefInstances(mcrq);
+            spoolDir.deleteRefInstances(attrs);
+
             break;
         default:
             throw new DcmServiceException(Status.NoSuchActionType, "actionID:"
@@ -218,76 +391,23 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         return null;
     }
 
-    // only for Tests
-    private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-    private String toHex(int val) {
-        char[] ch8 = new char[8];
-        for (int i = 8; --i >= 0; val >>= 4) {
-            ch8[i] = HEX_DIGIT[val & 0xf];
-        }
-        return String.valueOf(ch8);
-    }
-
-    private void createDisk1(String iuid, Dataset mcrq) {
-        File[] instances = spoolDir.getRefInstanceFiles(mcrq);
-        File disk1 = new File(spoolDir.getMediaLayoutsRoot(iuid), "DISK1");
-        File dicom = new File(disk1, "DICOM");
-        log.info("M-WRITE " + dicom);
-        dicom.mkdirs();
-        HashSet used = new HashSet();
-        for (int i = 0; i < instances.length; i++) {
-	        File src = instances[i];
-	        int hash = src.getName().hashCode();
-	        while (!used.add(new Integer(hash))) ++hash;
-	        File dst = new File(dicom, toHex(hash));
-	        link(src, dst);
-        }
-    }
-
-    private void link(File src, File dst) {
-        String cmd = "ln -s " + src.getAbsolutePath() + " " + dst.getAbsolutePath();
-        log.debug(cmd);
-        try {
-            Runtime.getRuntime().exec(cmd);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * @param actionInfo
-     * @param rspCmd
-     */
-    private void checkActionInfo(Dataset actionInfo, Command rspCmd) {
-        // TODO Auto-generated method stub
-
-    }
-
-    private static int toJMSPriority(String priority) {
-        for (int i = 0; i < MC_PRIORITY.length; i++)
-            if (MC_PRIORITY[i].equals(priority)) return JMS_PRIORITY[i];
-        throw new IllegalArgumentException("priority:" + priority);
-    }
-
     private Dataset doNGet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         Dataset ds = rq.getDataset(); // should be null!
         String iuid = rqCmd.getAffectedSOPInstanceUID();
         File f = spoolDir.getMediaCreationRequestFile(iuid);
-        Dataset mcrq;
+        if (!f.exists())
+                throw new DcmServiceException(Status.NoSuchObjectInstance);
+
+        Dataset mcrq = dof.newDataset();
         log.info("M-READ " + f);
         try {
-            mcrq = spoolDir.readDatasetFrom(f);
-        } catch (FileNotFoundException e) {
-            throw new DcmServiceException(Status.NoSuchObjectInstance);
+            mcrq.readFile(f, FileFormat.DICOM_FILE, -1);
         } catch (IOException e) {
             throw new DcmServiceException(Status.ProcessingFailure);
         }
         final int[] filter = rqCmd.getTags(Tags.AttributeIdentifierList);
-        return filter != null ? ds.subSet(filter) : ds;
+        return filter != null ? mcrq.subSet(filter) : mcrq;
     }
 }

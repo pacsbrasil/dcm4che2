@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>Make Iso Image
+   </description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"
+         persistPeriod="10"
+         persistLocation="${jboss.server.data.dir}"
+         persistName="MakeIsoImage.ser"/>
+      <currencyTimeLimit value="0"/>
+      <state-action-on-update value="keep-running"/>
+      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.cdw.mbean.MakeIsoImage</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>MakeIsoImage</name>
+   </constructor>
+
+   <!-- Attributes -->
+   <attribute access="read-write"
+      getMethod="getIsoLevel"
+      setMethod="setIsoLevel">
+      <description>Description not yet written.
+      </description>
+      <name>IsoLevel</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isRockRidge"
+      setMethod="setRockRidge">
+      <description>Description not yet written.
+      </description>
+      <name>RockRidge</name>
+      <type>boolean</type>      
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isJoliet"
+      setMethod="setJoliet">
+      <description>Description not yet written.
+      </description>
+      <name>Joliet</name>
+      <type>boolean</type>      
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isVolsetInfoEnabled"
+      setMethod="setVolsetInfoEnabled">
+      <description>Description not yet written.
+      </description>
+      <name>VolsetInfoEnabled</name>
+      <type>boolean</type>      
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogEnabled"
+      setMethod="setLogEnabled">
+      <description>Description not yet written.
+      </description>
+      <name>LogEnabled</name>
+      <type>boolean</type>      
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSortEnabled"
+      setMethod="setSortEnabled">
+      <description>Description not yet written.
+      </description>
+      <name>SortEnabled</name>
+      <type>boolean</type>      
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   &defattr;
+   
+   <!-- Operations -->
+   &defops;
+</mbean>
