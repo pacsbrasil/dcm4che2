@@ -69,8 +69,6 @@ public class DecompressCmd extends CodecCmd {
             Dataset ds = dof.newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-    		FileMetaInfo fmi = dof.newFileMetaInfo(ds, tsuid);
-    		ds.setFileMetaInfo(fmi);
             log.info("M-WRITE file:" + outFile);
             BufferedOutputStream os = new BufferedOutputStream(
                     new FileOutputStream(outFile));
@@ -80,7 +78,9 @@ public class DecompressCmd extends CodecCmd {
     			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
                 DecompressCmd cmd = new DecompressCmd(ds, parser);
                 int len = cmd.getPixelDataLength();
-                ds.writeDataset(dos, encParam);
+        		FileMetaInfo fmi = dof.newFileMetaInfo(ds, tsuid);
+        		ds.setFileMetaInfo(fmi);
+                ds.writeFile(dos, encParam);
                 ds.writeHeader(dos, encParam, Tags.PixelData, VRs.OW, (len+1)&~1);
                 try {
 	                cmd.decompress(encParam.byteOrder, dos);
