@@ -19,12 +19,12 @@ url="http://www.tiani.com"
 ><para
 >This document describes how to install, configure and calibrate TIANI&#39;s DICOM Print Server jPrint 1.2 for proper mode of operation.</para
 ><para
->jPrint 1.2 is delivered pre-configured, to enable to run with minimal adaptions of the default configuration according your printing environment.</para
+>jPrint 1.2 is delivered pre-configured, to enable to run with minimal adjustments of the default configuration according your printing environment.</para
 ><para
 >To achieve hard copy presentation quality and consistency compliant to DICOM Part 14: Grayscale Standard Display Function, jPrint 1.2 has to quantify the characteristic curve of connected printers. This procedure is called <link
 linkend="printer-calibration"
 >Printer Calibration</link
->, and shall be repeated in regular intervalls, but particular after any printer adjustment (e.g. toner refill).</para
+>, and shall be repeated in regular intervals, but particular after any printer adjustment (e.g. toner refill).</para
 ><para
 >jPrint 1.2 also supports configuration of modality specific Presentation LUTs, for the - still common - case, that the Print Composer implementation of the modality (or workstation) does not provide an appropriate Presentation LUT by itself.</para
 ><para
@@ -50,7 +50,7 @@ url="http://java.sun.com/j2se/"
 ></listitem
 ><listitem
 ><para
->100Mb free disk space - mainly for spooled print jobs (jPrint 1.2 program files allocate less than 10Mb); if the performance of the connected printer is not sufficient to forward incoming print jobs just-in-time, much more (&#62;1 Gb) disk space may be required, to enable jPrint to buffer print jobs as long the connected printer is not ready to accept them.</para
+>100Mb free disk space - mainly for spooled print jobs (jPrint 1.2 program files allocate less than 10Mb); if the performance of the connected printer is not sufficient to forward incoming print jobs immediately, much more (&#62;1 Gb) disk space may be required, to enable jPrint to buffer print jobs as long the connected printer is not ready to accept them.</para
 ></listitem
 ><listitem
 ><para
@@ -136,7 +136,7 @@ url="http://www.jboss.org"
 ></listitem
 ><listitem
 ><para
->Unpack the jPrint distribution somewhere, using any ZIP decompressor or the <command
+>Unpack the jPrint distribution somewhere, using any ZIP extractor or the <command
 >jar</command
 > tool included in the Java 2 SDK:</para
 ><programlisting
@@ -369,7 +369,7 @@ linkend="print-image.jar"
 ><programlisting
 >$ java -jar print-image.jar -i shape=IDENTITY ../images/WEDGE8.dcm</programlisting
 ><para
->and check the qualitity of the calibration visibly: The hardcopy should not contain visible contours - the transition from dark to bright within the wedge should be smooth.</para
+>and check the quality of the calibration visibly: The hard copy should not contain visible contours - the transition from dark to bright within the wedge should be smooth.</para
 ><para
 >You may also compare the result against the print-out of the same pattern without calibration by</para
 ><programlisting
@@ -434,8 +434,8 @@ linkend="print-image.jar"
 ></term
 ><listitem
 ><para
->specify user, under which jPrint will run on the system. (Must have write permission to <filename
->jprint installation subdirectory server/default/tmp</filename
+>specify user, under which jPrint will run on the system. (Must have write permission to jPrint installation subdirectory <filename
+>server/default/tmp</filename
 >).</para
 ></listitem
 ></varlistentry
@@ -522,7 +522,7 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting
 >server</literal
 > as parameter, to install the Windows Service using the Java HotSpot <emphasis
 >Server</emphasis
-> VM to run jprint:</para
+> VM to run jPrint:</para
 ><programlisting
 >$ install_service server</programlisting
 ><para
@@ -532,7 +532,7 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting
 >client</literal
 > as parameter, to install the Windows Service using the Java HotSpot <emphasis
 >Client</emphasis
-> VM to run jprint:</para
+> VM to run jPrint:</para
 ><programlisting
 >$ install_service client</programlisting
 ><para
@@ -634,7 +634,7 @@ url="http://www.jboss.org"
 >jprint-1.2.x/server/default/</filename
 > are not part of the jPrint distribution package, but are created at first server startup.</para
 ><para
->jprint-with-jaudit-1.2.x.zip contains additional subdirectories which are describted at <xref
+>jprint-with-jaudit-1.2.x.zip contains additional subdirectories which are described at <xref
 linkend="jprint-with-jaudit"
 ></xref
 >.</para
@@ -679,7 +679,7 @@ linkend="list-printers.jar"
 >Executable jar of utility <link
 linkend="print-image.jar"
 >print-image.jar</link
->, to print a DICOM image - particularlly, one of the test pattern in subdirectory <filename
+>, to print a DICOM image - particularly, one of the test pattern in subdirectory <filename
 >images/</filename
 > used for <link
 linkend="printer-calibration"
@@ -793,7 +793,7 @@ linkend="view-printerODs.jar"
 ><para
 >Subdirectory <filename
 >doc/</filename
-> contains jPrint documention files:</para
+> contains jPrint documentation files:</para
 ><variablelist
 ><varlistentry
 ><term
@@ -835,7 +835,7 @@ url="http://wuerlim.wustl.edu/mesa/software/consistency/index.html"
 ></term
 ><listitem
 ><para
->Open Office Verion of <filename
+>Open Office Version of <filename
 >doc/gsdf_od.xls</filename
 >.</para
 ></listitem
@@ -874,7 +874,7 @@ url="http://wuerlim.wustl.edu/mesa/software/consistency/index.html"
 ></term
 ><listitem
 ><para
->Philips dsitest image used for quatitative verification of proper Printer Calibration.</para
+>Philips dsitest image used for quantitative verification of proper Printer Calibration.</para
 ></listitem
 ></varlistentry
 ><varlistentry
@@ -1049,7 +1049,7 @@ linkend="tls"
 ><para
 >Subdirectory <filename
 >server/default/conf/annotation</filename
-> contains configuration files specifing <link
+> contains configuration files specifying <link
 linkend="adf"
 >Annotation Display Formats</link
 > provided by jPrint:</para
@@ -1182,7 +1182,7 @@ linkend="print-scp-service"
 >Print SCP Service</link
 >, which spools received DICOM Print Requests to disk and schedule their processing by the Printer Service. Edit this file to change the default spool directory [<filename
 >server/deafult/tmp/spool</filename
->] or to keep spooled Print Requests for debugging or for ajusting local Presentation LUTs to particular Print Requests.</para
+>] or to keep spooled Print Requests for debugging or for adjusting local Presentation LUTs to particular Print Requests.</para
 ></listitem
 ></varlistentry
 ><varlistentry
@@ -1195,7 +1195,7 @@ linkend="print-scp-service"
 >Configures the <link
 linkend="printer-service"
 >Printer Service</link
->, which transforms spooled DICOM Print Requests to Print Jobs for a connected (system or network) printer. You have to edit this file to specify a vaild (=existing) printer name on your system. Also the Called AET [<literal
+>, which transforms spooled DICOM Print Requests to Print Jobs for a connected (system or network) printer. You have to edit this file to specify a valid (=existing) printer name on your system. Also the Called AET [<literal
 >TIANI_PRINT</literal
 >], with which this printer must be addressed by the Print Composer, is specified here.</para
 ></listitem
@@ -1243,7 +1243,7 @@ colwidth="80"
 >localhost</literal
 ></entry
 ><entry
->Specifies hostname or IP of the Audit Record Repository, to which Audit Records shall be transmitted.</entry
+>Specifies host name or IP of the Audit Record Repository, to which Audit Records shall be transmitted.</entry
 ></row
 ><row
 ><entry
@@ -1352,7 +1352,7 @@ id="dicom-server"
 ><title
 >DICOM Server</title
 ><para
->General DICOM Server with support of secure (DICOM-TLS) mode. In secure mode SecurityAlert Audit Records will be generate and forwarded for transmisstion to the Audit Logger Service in the case of connection attempts by unauthorized clients.</para
+>General DICOM Server with support of secure (DICOM-TLS) mode. In secure mode SecurityAlert Audit Records will be generate and forwarded for transmission to the Audit Logger Service in the case of connection attempts by unauthorized clients.</para
 ><para
 >Following attributes are defined by its configuration file <filename
 >server/default/deploy/dcmsrv-service.xml</filename
@@ -1385,7 +1385,7 @@ colwidth="120"
 ><entry
 >10</entry
 ><entry
->Set maximal number of simultaneously conncected DICOM clients.</entry
+>Set maximal number of simultaneously connected DICOM clients.</entry
 ></row
 ><row
 ><entry
@@ -1502,7 +1502,7 @@ colwidth="120"
 ><para
 >Specifies if Command and Data PDVs can be packed in one PDU.</para
 ><para
->There are well-known bugs of some DICOM implementions in support of this performance improving DICOM feature.</para
+>There are well-known bugs of some DICOM implementations in support of this performance improving DICOM feature.</para
 ></entry
 ></row
 ><row
@@ -1511,7 +1511,7 @@ colwidth="120"
 ><entry
 >conf/license.jks</entry
 ><entry
->Defines file containing key used in SSL handshake, when running in TLS mode. Relative path names are resolved using jboss server directory as base directory.</entry
+>Defines file containing key used in SSL handshake, when running in TLS mode. Relative path names are resolved using JBoss server directory as base directory.</entry
 ></row
 ><row
 ><entry
@@ -1527,7 +1527,7 @@ colwidth="120"
 ><entry
 >conf/cacerts.jks</entry
 ><entry
->Defines file containing accepted certificates, when running in TLS mode Relative path names are resolved using jboss server directory as base directory.</entry
+>Defines file containing accepted certificates, when running in TLS mode Relative path names are resolved using JBoss server directory as base directory.</entry
 ></row
 ><row
 ><entry
@@ -1595,7 +1595,7 @@ colwidth="80"
 ><entry
 >false</entry
 ><entry
->Defines whether an Audit Record shall be generated for each scheduled Print Job. Generates usally one Audit Record for every printed page, because most Print SCUs request a separate Print Job for each page to print. Only AuditCreateSession OR AuditCreateFilmBox OR AuditPrintJob shall be set to true.</entry
+>Defines whether an Audit Record shall be generated for each scheduled Print Job. Generates usually one Audit Record for every printed page, because most Print SCUs request a separate Print Job for each page to print. Only AuditCreateSession OR AuditCreateFilmBox OR AuditPrintJob shall be set to true.</entry
 ></row
 ><row
 ><entry
@@ -1603,7 +1603,7 @@ colwidth="80"
 ><entry
 >conf/license.jks</entry
 ><entry
->Defines file containing the license to run jPrint. Relative path names are resolved using jboss server directory as base directory.</entry
+>Defines file containing the license to run jPrint. Relative path names are resolved using JBoss server directory as base directory.</entry
 ></row
 ><row
 ><entry
@@ -1619,7 +1619,7 @@ colwidth="80"
 ><entry
 >tmp/spool</entry
 ><entry
->Specifies spool directory used for buffering print jobs, before they can be forwarded to the printer. Relative path names are resolved using jboss server directory as base directory.</entry
+>Specifies spool directory used for buffering print jobs, before they can be forwarded to the printer. Relative path names are resolved using JBoss server directory as base directory.</entry
 ></row
 ><row
 ><entry
@@ -1669,7 +1669,7 @@ id="printer-service"
     &#60;!--
     Name property calledAET defines the DICOM Called AET to which this
     Print Service is bound. If multiple Print Services are configured -
-    associated with different Printers or specifing different configuration
+    associated with different Printers or specifying different configuration
     settings for the same Printer - they have to be distinguished by different
     calledAET values.
     --&#62;
@@ -1937,7 +1937,7 @@ id="PageMargin"
 ><entry
 >true</entry
 ><entry
->Defines the direction of printing in landscape orientation. Page margin for landscape format derived from the specification for portrait orientatiion depends on it. If true, the left side of the page in landscape orientation correspondes to the top side in portrait orientation.</entry
+>Defines the direction of printing in landscape orientation. Page margin for landscape format derived from the specification for portrait orientation depends on it. If true, the left side of the page in landscape orientation corresponds to the top side in portrait orientation.</entry
 ></row
 ><row
 ><entry
@@ -1981,7 +1981,7 @@ NONE</literallayout
 ><entry
 >10</entry
 ><entry
->Defines the maximal scaling chunk size in MB. The smaller, the larger the number of chunks, an image has to be devided for scaling. Influences necessary memory requirements (-Xmx value). Usually, you need not change the default value 10.</entry
+>Defines the maximal scaling chunk size in MB. The smaller, the larger the number of chunks, an image has to be divided for scaling. Influences necessary memory requirements (-Xmx value). Usually, you need not change the default value 10.</entry
 ></row
 ><row
 ><entry
@@ -2024,7 +2024,7 @@ HIGH:1200x1200</literallayout
 ><entry
 >0</entry
 ><entry
->Defines the default Reflected Ambient Light that is used when the Print SCU does not specify a Reflected Ambient Light value for applying the presentation LUT. For reflective media likr Paper, it has to be 0 by definition! So it is not resonable to change the default value!</entry
+>Defines the default Reflected Ambient Light that is used when the Print SCU does not specify a Reflected Ambient Light value for applying the presentation LUT. For reflective media like Paper, it has to be 0 by definition! So it is not reasonable to change the default value!</entry
 ></row
 ><row
 ><entry
@@ -2037,7 +2037,7 @@ HIGH:1200x1200</literallayout
 ><para
 >Only effective, if the Print SCU does not provide a P-LUT itself using the P-LUT SOP class.</para
 ><para
->Relative path names are resolved using jboss server directory as base directory.</para
+>Relative path names are resolved using JBoss server directory as base directory.</para
 ><para
 >Usually, you need not change the default value: conf/lut.</para
 ></entry
@@ -2056,7 +2056,7 @@ ForCallingAET</literallayout
 ></entry
 ><entry
 ><para
->Associates Calling AETs with Configuration Information values. Only effective, if the calling Print SCU does whether provide a P-LUT using the PLUT SOP class, nor specifies itselfs a value of Film Box attribute (2010,0150) Configuration Information. (see <xref
+>Associates Calling AETs with Configuration Information values. Only effective, if the calling Print SCU does whether provide a P-LUT using the P-LUT SOP class, nor specifies itself a value of Film Box attribute (2010,0150) Configuration Information. (see <xref
 linkend="local-luts"
 ></xref
 >)</para
@@ -2100,7 +2100,7 @@ linkend="local-luts"
 >conf/annotation</entry
 ><entry
 ><para
->Specifies directory with contains configuration files for supported annotation display formats. Relative path names are resolved using jboss server directory as base directory.</para
+>Specifies directory with contains configuration files for supported annotation display formats. Relative path names are resolved using JBoss server directory as base directory.</para
 ><para
 >Usually, you need not change the default value: conf/annotation.</para
 ></entry
@@ -2178,7 +2178,7 @@ id="TimeFormat"
 ></term
 ><listitem
 ><para
->OD values in monochrome mode. Measured from mochrome print-out of DSI16 or DSI256 pattern or calculated from most recent &#60;calledAET&#62;.monochrome/*.jpg</para
+>OD values in monochrome mode. Measured from monochrome print-out of DSI16 or DSI256 pattern or calculated from most recent &#60;calledAET&#62;.monochrome/*.jpg</para
 ></listitem
 ></varlistentry
 ><varlistentry
@@ -2223,7 +2223,7 @@ id="TimeFormat"
 ></varlistentry
 ></variablelist
 ><para
->Relative path names are resolved using jboss server directory as base directory.</para
+>Relative path names are resolved using JBoss server directory as base directory.</para
 ><para
 >Usually, you need not change the default value: conf/calibration..</para
 ><para
@@ -2288,7 +2288,7 @@ linkend="printer-calibration"
 >true</entry
 ><entry
 ><para
->Specifies if measured/calculated ODs of printer characteristic shall be smoothed to avoid quantisation effect caused by limited resolution of OD measurements/scan pixel values.</para
+>Specifies if measured/calculated ODs of printer characteristic shall be smoothed to avoid quantization effect caused by limited resolution of OD measurements/scan pixel values.</para
 ><para
 >Usually, you need not change the default value true.</para
 ></entry
@@ -2321,10 +2321,10 @@ linkend="printer-calibration"
 ><title
 >Dependencies between jPrint Services</title
 ><para
->At default configuration, there is only one instance of each jPrint Service type configured. There may be use cases (e.g.: to connect two different printers) where several instances of one jPrint Service type (e.g. the Printer Service) have to be configured. In that case, a modified copy of the configuration file for the primary service instance (e.g. <filename
+>At default configuration, there is only one instance of each jPrint Service type configured. There may be use cases (e.g.: to connect two different printers) where several instances of one jPrint Service type (e.g. The Printer Service) have to be configured. In that case, a modified copy of the configuration file for the primary service instance (e.g. <filename
 >printer-service.xml</filename
 >) have to be store into the same directory as <replaceable
->&#60;anyName&#62;</replaceable
+>&#60;any name&#62;</replaceable
 ><literal
 >-service.xml</literal
 >. In general, the literal name of a service configuration file does not matter, as long it ends with <literal
@@ -2334,7 +2334,7 @@ linkend="printer-calibration"
 ><xref
 linkend="fig-jprint-service"
 ></xref
->shows the dependencies between jPrint Services.</para
+>Shows the dependencies between jPrint Services.</para
 ><figure
 id="fig-jprint-service"
 ><title
@@ -2348,7 +2348,7 @@ fileref="../img/jPrint-ug.gif"
 ></mediaobject
 ></figure
 ><para
->DICOM Server, Print SCP and Print Service make use of the same Audit Logger Service. Every Printer Service is connected to one Print SCP Service which is itself registered to one Dicom Server instance. But there may be more than one Printer Service connected to the same Print SCP instance.</para
+>DICOM Server, Print SCP and Print Service make use of the same Audit Logger Service. Every Printer Service is connected to one Print SCP Service which is itself registered to one DICOM Server instance. But there may be more than one Printer Service connected to the same Print SCP instance.</para
 ><para
 >If several DICOM server instances shall be running - e.g. one in secure (DICOM-TLS) mode, and another without TLS - not only the configuration file for the DICOM server <filename
 >dcmsrv-service.xml</filename
@@ -2492,8 +2492,8 @@ colwidth="180"
 ><entry
 ><literallayout
 >center=&#60;c&#62;,slope=&#60;s&#62;
-{with &#60;c&#62; in intervall [0,1],
-and &#60;s&#62; in intervall [0,10]} </literallayout
+{with &#60;c&#62; in interval [0,1],
+and &#60;s&#62; in interval [0,10]} </literallayout
 ></entry
 ><entry
 >applies a S-shaped P-LUT, which enhanced the contrast around a defined center (c = 0.5 specifies middle of pixel value range), with the factor specified by slope (e.g.: s=2 doubles the contrast).</entry
@@ -2544,7 +2544,7 @@ linkend="print-image.jar"
 id="adf"
 >Annotation Display Formats</title
 ><para
->jPrint provides DICOM Services of the Basic Annotation Box SOP Class, which allows a Print SCU to select one of preconfigured Annotaion Display Formats based on the value of the Attribute Annotation Display Format ID (2010,0030) of the Basic Film Box and to set the values of its editable text fields (=Annotation Boxes).</para
+>jPrint provides DICOM Services of the Basic Annotation Box SOP Class, which allows a Print SCU to select one of preconfigured Annotation Display Formats based on the value of the Attribute Annotation Display Format ID (2010,0030) of the Basic Film Box and to set the values of its editable text fields (=Annotation Boxes).</para
 ><para
 >If a Print Composer does not support the Basic Annotation Box SOP Class, the selection of the Annotation Display Format can be configured based on its Calling AET (s. Printer Service configuration attribute <link
 linkend="AnnotationForCallingAET"
@@ -2663,7 +2663,7 @@ linkend="AnnotationForCallingAET"
 ><title
 >ADF Properties</title
 ><para
->Usually, annotations are printed near the page margin, surrounding the printed image(s). You can specify an inset of the aera, which shall be used for the image(s) to print, from the actual printable area on the page (s. Print Service Attribute <link
+>Usually, annotations are printed near the page margin, surrounding the printed image(s). You can specify an inset of the area, which shall be used for the image(s) to print, from the actual printable area on the page (s. Print Service Attribute <link
 linkend="PageMargin"
 >PageMargin</link
 >):</para
@@ -2690,25 +2690,25 @@ align="center"
 ><entry
 >inset.left</entry
 ><entry
->Defines width of border in points, left from the printed image(s) to the left margin of the printable aera on the page.</entry
+>Defines width of border in points, left from the printed image(s) to the left margin of the printable area on the page.</entry
 ></row
 ><row
 ><entry
 >inset.right</entry
 ><entry
->Defines width of border in points, right from the printed image(s) to the right margin of the printable aera on the page.</entry
+>Defines width of border in points, right from the printed image(s) to the right margin of the printable area on the page.</entry
 ></row
 ><row
 ><entry
 >inset.top</entry
 ><entry
->Defines height of border in points, above the printed image(s) to the top margin of the printable aera on the page.</entry
+>Defines height of border in points, above the printed image(s) to the top margin of the printable area on the page.</entry
 ></row
 ><row
 ><entry
 >inset.bottom</entry
 ><entry
->Defines height of border in points, below the printed image(s) to the bottom margin of the printable aera on the page.</entry
+>Defines height of border in points, below the printed image(s) to the bottom margin of the printable area on the page.</entry
 ></row
 ></tbody
 ></tgroup
@@ -2723,18 +2723,18 @@ inset.right=0
 inset.top=20
 inset.bottom=20</programlisting
 ><para
->defines a (minmal) margin of 20 points (1 point = 1/72 inch) above and below the printed image inside the printable aera, to accommodate the annotations. The actual distance between the border of the printed image and the page margin may be larger than defined by <literal
+>defines a (minimal) margin of 20 points (1 point = 1/72 inch) above and below the printed image inside the printable area, to accommodate the annotations. The actual distance between the border of the printed image and the page margin may be larger than defined by <literal
 >inset.</literal
 ><replaceable
 >*</replaceable
 > properties: Because the aspect ratio of the image has to be preserved, only the full width <emphasis
 >OR</emphasis
-> the full height of the aera reserved for the image(s) may be used.</para
+> the full height of the area reserved for the image(s) may be used.</para
 ><para
 ><xref
 linkend="fig-adf-inset"
 ></xref
->shows the rectangle aera for the printed image with a border for locating annotations on the page with portait orientation defined by the Print Service Attribute <link
+>shows the rectangle area for the printed image with a border for locating annotations on the page with portrait orientation defined by the Print Service Attribute <link
 linkend="PageMargin"
 >PageMargin</link
 > and the <literal
@@ -2755,7 +2755,7 @@ fileref="../img/jPrint-ug2.gif"
 ></mediaobject
 ></figure
 ><para
->Annotations can be located around the 4 edge points of the rectangle and around the 4 center points of the rectangle sides. Although possible, it&#39;s not quite useful to locate an annotion in the center of the rectangle, because there it overlaps with the printed image(s).</para
+>Annotations can be located around the 4 edge points of the rectangle and around the 4 center points of the rectangle sides. Although possible, it&#39;s not quite useful to locate an annotation in the center of the rectangle, because there it overlaps with the printed image(s).</para
 ><para
 >Annotation Boxes defined by an Annotation Display Format are serially numbered, starting with 1. Properties specific to an annotation box, as its <literal
 >x</literal
@@ -2818,7 +2818,7 @@ align="center"
 >#.align</entry
 ><entry
 ><para
->Specifies the horizonal alignment of the content of annotation box #. Possible values are <literal
+>Specifies the horizontal alignment of the content of annotation box #. Possible values are <literal
 >left</literal
 >, <literal
 >center</literal
@@ -2859,7 +2859,7 @@ fileref="../img/jPrint-ug3.gif"
 ></tgroup
 ></table
 ><para
->Typicially, annotations are positioned outside of the rectangle aera for the printed image(s). That constrains the configurable horizontal and vertical alignment and the direction (=sign) of an optional location shift (=offset) dependend on the configured location:</para
+>Typically, annotations are positioned outside of the rectangle area for the printed image(s). That constrains the configurable horizontal and vertical alignment and the direction (=sign) of an optional location shift (=offset) dependent on the configured location:</para
 ><table
 ><title
 >Alignment and Offset Constrains for Annotation Box Positions</title
@@ -3017,7 +3017,7 @@ linkend="keyword-substitution"
 ><entry
 >[#.]font.name</entry
 ><entry
->Specifies Font (family) name, used for text rendering. Possible values are printer dependend, but at least <literal
+>Specifies Font (family) name, used for text rendering. Possible values are dependent on the printer, but at least <literal
 >Serif</literal
 > and <literal
 >SansSerif</literal
@@ -3027,7 +3027,7 @@ linkend="keyword-substitution"
 ><entry
 >[#.]font.size</entry
 ><entry
->Specifies Font point size used for text rendering. Possible values are printer dependend, but font sizes between 8 and 24 should be supported by any printer (driver).</entry
+>Specifies Font point size used for text rendering. Possible values are dependent on the printer, but font sizes between 8 and 24 should be supported by any printer (driver).</entry
 ></row
 ><row
 ><entry
@@ -3075,7 +3075,7 @@ linkend="keyword-substitution"
 ></tgroup
 ></table
 ><para
->Font attributes can be specified individually for each annotation box (=with the #. key prefix) or globally for all annotation boxes (without #. key prefix), wheras the individually specified value overwrites a possible global specified value for the same attribute.</para
+>Font attributes can be specified individually for each annotation box (=with the #. key prefix) or globally for all annotation boxes (without #. key prefix), whereas the individually specified value overwrites a possible global specified value for the same attribute.</para
 ><para
 >E.g. <filename
 >server/default/conf/annotation/TITLE.5.adf</filename
@@ -3095,7 +3095,7 @@ font.color=black
 ><para
 >defines Serif 8 plain style, color black as default font. The size of the font used for the first annotation box is overwritten to be 16 points, so <literal
 >Default Title</literal
-> - specified as default content - will be printed in Serif 16 plain style, color black, horizontial centered with the bottom line of the text 2 points above the top of the aera reserved for the printed image(s).</para
+> - specified as default content - will be printed in Serif 16 plain style, color black, horizontal centered with the bottom line of the text 2 points above the top of the area reserved for the printed image(s).</para
 ></section
 ><section
 id="keyword-substitution"
@@ -3172,7 +3172,7 @@ linkend="TimeFormat"
 ></term
 ><listitem
 ><para
->The number of the current page in a DICOM Print Job initated for a Film Session which contains several Film Boxes. - But usually, Print Composers initiate a Print Job for every Film Box (=page) individually. Then the page number is not available by jPrint and <literal
+>The number of the current page in a DICOM Print Job initiated for a Film Session which contains several Film Boxes. - But usually, Print Composers initiate a Print Job for every Film Box (=page) individually. Then the page number is not available by jPrint and <literal
 >$PAGE$</literal
 > will be replaced by <literal
 >1</literal
@@ -3186,7 +3186,7 @@ linkend="TimeFormat"
 ></term
 ><listitem
 ><para
->The total number of pages printed in a DICOM Print Job initated for a Film Session which contains several Film Boxes. - But usually, Print Composers initiate a Print Job for every Film Box (=page) individually. Then the total number of pages is not available by jPrint and <literal
+>The total number of pages printed in a DICOM Print Job initiated for a Film Session which contains several Film Boxes. - But usually, Print Composers initiate a Print Job for every Film Box (=page) individually. Then the total number of pages is not available by jPrint and <literal
 >$PAGE$</literal
 > will be replaced by <literal
 >1</literal
@@ -3259,12 +3259,12 @@ id="printer-calibration"
 ><title
 >Printer Calibration</title
 ><para
->To achieve hard copy presentation quality and consistency compliant to DICOM Part 14: Grayscale Standard Display Function, jPrint has to quantify the characteristic curve of the connected printers. This procedure is called Printer Calibration, and shall be repeated in regular intervalls, but particular after any printer adjustment (e.g. toner refill).</para
+>To achieve hard copy presentation quality and consistency compliant to DICOM Part 14: Grayscale Standard Display Function, jPrint has to quantify the characteristic curve of the connected printers. This procedure is called Printer Calibration, and shall be repeated in regular intervals, but particular after any printer adjustment (e.g. toner refill).</para
 ><section
 ><title
 >The Test Patterns</title
 ><para
->The jPrint destribution package contains several test pattern - as DICOM images - which are used to determine the printer characteristics and to evaluate the print quality after the calibration:</para
+>The jPrint distribution package contains several test pattern - as DICOM images - which are used to determine the printer characteristics and to evaluate the print quality after the calibration:</para
 ><informaltable
 frame="none"
 ><tgroup
@@ -3288,7 +3288,7 @@ format="GIF"
 ><entry
 ><filename
 >images/DSI16.dcm</filename
-> -Philips dsitest image with 16 boxes with shades of gray from black to white, with equidistant pixel values. Used for manual measurement of printer characteristics and for quatitative verification of proper Printer Calibration.</entry
+> -Philips dsitest image with 16 boxes with shades of gray from black to white, with equidistant pixel values. Used for manual measurement of printer characteristics and for quantitative verification of proper Printer Calibration.</entry
 ></row
 ><row
 ><entry
@@ -3371,7 +3371,7 @@ linkend="print-image.jar"
 ><itemizedlist
 ><listitem
 ><para
->Manually measuring of the optical density (OD) values releated to different driver device levels (DDLs) on the print-out of the <literal
+>Manually measuring of the optical density (OD) values related to different driver device levels (DDLs) on the print-out of the <literal
 >DSI256</literal
 > or <literal
 >DSI16</literal
@@ -3381,19 +3381,19 @@ linkend="print-image.jar"
 ><para
 >Scanning a print-out of the <literal
 >DSI256</literal
-> pattern and a reference sheet with the same pattern by a digital scanner and store the scans as JPG files into the jprint calibration subdirectories, so jPrint can calculate the OD values on the print-out by comparison of both scans.</para
+> pattern and a reference sheet with the same pattern by a digital scanner and store the scans as JPEG files into the JPrint calibration subdirectories, so jPrint can calculate the OD values on the print-out by comparison of both scans.</para
 ></listitem
 ></itemizedlist
 ><para
->For color printers, two charactertic curves have to be determined: one for monochrome and one for color mode.</para
+>For color printers, two characteristic curves have to be determined: one for monochrome and one for color mode.</para
 ><section
 ><title
 id="od-measurement"
 >OD Measurement with Densitometer</title
 ><para
->You can decide beween measurement of only 16 OD values related to equidistant DDLs - then jPrint will estimate the OD values for intermediate DDLs by interpolation -, or you can take the effort and measure the OD values of all 256 different DDLs manually.</para
+>You can decide between measurement of only 16 OD values related to equidistant DDLs - then jPrint will estimate the OD values for intermediate DDLs by interpolation -, or you can take the effort and measure the OD values of all 256 different DDLs manually.</para
 ><para
->Dependend on your decision, you have to print out the <filename
+>Dependent on your decision, you have to print out the <filename
 >images/DSI16.dcm</filename
 > or the <filename
 >images/DSI256.dcm</filename
@@ -3472,7 +3472,7 @@ id="sODcalcFromScans"
 >images/DSI256.dcm</filename
 > pattern with defined DDLs.</para
 ><para
->To determine the charactertic curve of the scanner, you need a reference paper sheet with the <filename
+>To determine the characteristic curve of the scanner, you need a reference paper sheet with the <filename
 >images/DSI256.dcm</filename
 > pattern with known ODs.</para
 ><figure
@@ -3553,13 +3553,13 @@ $ java -jar print-image.jar -a <replaceable
 >.jpg</filename
 >.</para
 ><para
->jPrint calculates the charactertic curve from the scans, when it performs the next print out. The analysing of the scans can take some time - depended on the used scan resolution. You may see the corresponding messages in the console log:</para
+>jPrint calculates the characteristic curve from the scans, when it performs the next print out. The analyzing of the scans can take some time - depended on the used scan resolution. You may see the corresponding messages in the console log:</para
 ><programlisting
 >21:27:14,330 INFO  [PrinterService] Calibrating Printer TIANI_PRINT, chromaticity=monochrome
 21:28:30,725 INFO  [PrinterService] Printer OD range [monochrome]: total=0.0-1.62, used=0.0-1.62, DDL=255-6
 21:28:30,745 INFO  [PrinterService] Calibrated Printer TIANI_PRINT, chromaticity=monochrome</programlisting
 ><para
->jPrint stores the calculated charactertic curve in <filename
+>jPrint stores the calculated characteristic curve in <filename
 >server/default/conf/calibration/<replaceable
 >&#60;AET&#62;</replaceable
 >.monochrome.ods</filename
@@ -3577,20 +3577,20 @@ $ java -jar print-image.jar -a <replaceable
 ><para
 >to print a test pattern. The option <literal
 >-i shape=IDENTITY</literal
-> forces jPrint to print the image calibrated according the Grayscale Standard Display Function (GSDF). Without that, the pixel values are directly used as DDL, so jPrint would not need to know the printer charactertics to perform the print and no calculation of the charactertic curve would be triggered.</para
+> forces jPrint to print the image calibrated according the Grayscale Standard Display Function (GSDF). Without that, the pixel values are directly used as DDL, so jPrint would not need to know the printer characteristics to perform the print and no calculation of the characteristic curve would be triggered.</para
 ><para
 >jPrint always use the most recent scan file in directory <filename
 >server/default/conf/calibration/&#60;AET&#62;.monochrome/</filename
 > - for prints in color mode: <filename
 >server/default/conf/calibration/&#60;AET&#62;.color/</filename
-> - for the calculating of the printer charateristics. So you only need to drop scans of current print-outs of <filename
+> - for the calculating of the printer characteristics. So you only need to drop scans of current print-outs of <filename
 >images/DSI256.dcm</filename
-> into this directories, to keep the Printer Calibration up-to-date with the - possible changing - printer characterstics.</para
+> into this directories, to keep the Printer Calibration up-to-date with the - possible changing - printer characteristics.</para
 ><para
->You may evaluate the printer charateristics from the stored scans by utility <link
+>You may evaluate the printer characteristics from the stored scans by utility <link
 linkend="view-printerODs.jar"
 >view-printerODs.jar</link
->. This is in particular useful, if you are experimenting with different printer configurations, to evaluate the effect on the charateristic curve(s), or to evaluate the drift of the printer characterstics over time.</para
+>. This is in particular useful, if you are experimenting with different printer configurations, to evaluate the effect on the characteristic curve(s), or to evaluate the drift of the printer characteristics over time.</para
 ></section
 ></section
 ><section
@@ -3633,7 +3633,7 @@ $ java -jar print-image.jar -a <replaceable
 ><title
 >Quantitative Verification of the Printer Calibration to GSDF</title
 ><para
->If a densitometer is available, you can determine the derivation of the Printer Calibration to the DICOM Grayscale Standard Display Function (GSDF), using a Microsoft Excel or OpenOffice.org spreadsheed included in the jPrint distribution:</para
+>If a densitometer is available, you can determine the derivation of the Printer Calibration to the DICOM Grayscale Standard Display Function (GSDF), using a Microsoft Excel or OpenOffice.org spreadsheet included in the jPrint distribution:</para
 ><para
 >Initiate the calibrated print-out of the DSI16 pattern by:</para
 ><programlisting
