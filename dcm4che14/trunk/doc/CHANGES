@@ -5,6 +5,8 @@ Revision History
 dcm4che 1.0.6 -  - Changes since dcm4che 1.0.5
 -------------------------------------------------------------------------------
 BUG FIXES:
++ class org.dcm4che.imageio.plugins.DcmImageWriteParam:
+  Fix value for Pixel Aspect Ratio from 1 to int[]{1,1}
 
 ENHANCEMENTS:
 + class org.dcm4che.data.DcmParser: add method

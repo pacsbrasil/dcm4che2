@@ -57,6 +57,13 @@ import org.dcm4che.imageio.plugins.*;
  * 
  * @author   Thomas Hacklaender
  * @version  2002.6.16
+ *
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20021121 gunter zeilinger:</b>
+ * <ul>
+ * <li> Fix value for Pixel Aspect Ratio from 1 to int[]{1,1}
+ * </ul>
  */
 public class DcmImageWriter extends ImageWriter {
 
@@ -239,7 +246,7 @@ public class DcmImageWriter extends ImageWriter {
     // ds.putUS(Tags.PixelRepresentation, -1);                                         // Type 1; 0x0=unsigned int, 0x1=2's complement
     // ds.putOB(Tags.PixelData, ByteBuffer.allocate(0));                               // Type 1; or ds.putOW
     // ds.putUS(Tags.PlanarConfiguration, -1);                                         // Type 1C, if SamplesPerPixel > 1, should not present otherwise 
-    // ds.putIS(Tags.PixelAspectRatio, 1);                                             // Type 1C, if vertical/horizontal != 1
+    // ds.putIS(Tags.PixelAspectRatio, new int[]{1,1});                                             // Type 1C, if vertical/horizontal != 1
     // ds.putSS(Tags.SmallestImagePixelValue, 0);                                      // Type 3, if vertical/horizontal != 1
     // ds.putSS(Tags.LargestImagePixelValue, 0);                                       // Type 3, if vertical/horizontal != 1
     // ds.putXX(Tags.RedPaletteColorLUTDescriptor, VRs.US, ByteBuffer.allocate(0));    // Type 1C; US/US or SS/US
@@ -437,7 +444,7 @@ public class DcmImageWriter extends ImageWriter {
     ds.putUS(Tags.Columns, destinationImage.getWidth());    // Type 1
     ds.putUS(Tags.PixelRepresentation, 0);                  // Type 1; 0x0=unsigned int, 0x1=2's complement
     ds.putUS(Tags.PlanarConfiguration, 0);                  // Type 1C, if SamplesPerPixel > 1, should not present otherwise 
-    ds.putIS(Tags.PixelAspectRatio, 1);                     // Type 1C, if vertical/horizontal != 1
+    ds.putIS(Tags.PixelAspectRatio, new int[]{1,1});        // Type 1C, if vertical/horizontal != 1
 
     dataBuf = ((DataBufferInt) destinationImage.getRaster().getDataBuffer()).getData();
     byteBuf = ByteBuffer.allocate(dataBuf.length * 3);
@@ -600,7 +607,7 @@ public class DcmImageWriter extends ImageWriter {
     ds.putUS(Tags.HighBit, highBit);                            // Type 1
     
     ds.putUS(Tags.PixelRepresentation, 0);                      // Type 1; 0x0=unsigned int, 0x1=2's complement
-    ds.putIS(Tags.PixelAspectRatio, 1);                         // Type 1C, if vertical/horizontal != 1
+    ds.putIS(Tags.PixelAspectRatio, new int[]{1,1});            // Type 1C, if vertical/horizontal != 1
 
     dataBuf = ((DataBufferUShort) destinationImage.getRaster().getDataBuffer()).getData();
     byteBuf = ByteBuffer.allocate(dataBuf.length * 2);
@@ -711,7 +718,7 @@ public class DcmImageWriter extends ImageWriter {
     ds.putUS(Tags.BitsStored, 8);                                         // Type 1
     ds.putUS(Tags.HighBit, 7);                                            // Type 1
     ds.putUS(Tags.PixelRepresentation, 0);                                // Type 1; 0x0=unsigned int, 0x1=2's complement
-    ds.putIS(Tags.PixelAspectRatio, 1);                                   // Type 1C, if vertical/horizontal != 1
+    ds.putIS(Tags.PixelAspectRatio, new int[]{1,1});                      // Type 1C, if vertical/horizontal != 1
 
     // Paletten Deskriptoren schreiben
     pDescriptor = ByteBuffer.allocate(3 * 2);
