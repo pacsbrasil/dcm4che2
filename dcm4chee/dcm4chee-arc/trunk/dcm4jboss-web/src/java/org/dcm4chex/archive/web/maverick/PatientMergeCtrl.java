@@ -10,9 +10,6 @@ package org.dcm4chex.archive.web.maverick;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
-import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 
 /**
@@ -47,11 +44,6 @@ public class PatientMergeCtrl extends Errable {
         	"]" +  ds.getString(Tags.PatientName);
     }
 
-    private ContentEdit lookupContentEdit() throws Exception {
-        ContentEditHome home = (ContentEditHome) EJBHomeFactory.getFactory()
-                .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
-        return home.create();
-    }
     
     private void executeMerge() throws Exception {
         int[] priors = new int[to_be_merged.length-1];
@@ -59,7 +51,7 @@ public class PatientMergeCtrl extends Errable {
             if (to_be_merged[i] != pk)
                 priors[j++] = to_be_merged[i];
         }        
-        lookupContentEdit().mergePatients(pk, priors);
+        FolderSubmitCtrl.getDelegate().mergePatients( pk, priors);
         Dataset dominant = getPatient(pk).toDataset();
         for (int i = 0; i < priors.length; i++) {
             Dataset prior = getPatient(priors[i]).toDataset();

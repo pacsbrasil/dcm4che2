@@ -22,8 +22,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.dcm.movescu.MoveOrder;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
-import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -49,7 +47,29 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	public static final int MOVE_INSTANCES = 2;
 	
     private static final int MOVE_PRIOR = 0;
+    
+    private static ContentEditDelegate delegate = null;
 
+    public static ContentEditDelegate getDelegate() {
+    	return delegate;
+    }
+    
+	/**
+	 * Get the model for the view.
+	 * @throws 
+	 */
+    protected Object makeFormBean() {
+        if ( delegate == null ) {
+        	delegate = new ContentEditDelegate();
+        	try {
+        		delegate.init( getCtx() );
+        	} catch( Exception x ) {
+        		log.error("Cant make form bean!", x );
+        	}
+        }
+        return super.makeFormBean();
+    }
+    
     protected String perform() throws Exception {
         try {
             FolderForm folderForm = (FolderForm) getForm();
@@ -219,21 +239,20 @@ public class FolderSubmitCtrl extends FolderCtrl {
     }
 
     private String delete() throws Exception {
-        ContentEdit edit = lookupContentEdit();
         FolderForm folderForm = (FolderForm) getForm();
-        deletePatients(edit, folderForm.getPatients());
+        deletePatients(folderForm.getPatients());
         folderForm.removeStickies();
         return FOLDER;
     }
 
-    private void deletePatients(ContentEdit edit, List patients)
+    private void deletePatients(List patients)
             throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (folderForm.isSticky(pat)) {
                 List studies = listStudiesOfPatient(pat.getPk());
-                edit.deletePatient(pat.getPk());
+                delegate.deletePatient(pat.getPk());
                 for (int j = 0, m = studies.size(); j < m; j++) {
                     Dataset study = (Dataset) studies.get(j);
                     AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
@@ -245,18 +264,18 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
                         .getPatientID(), pat.getPatientName(), null);
             } else
-                deleteStudies(edit, pat);
+                deleteStudies( pat);
         }
     }
 
-    private void deleteStudies(ContentEdit edit, PatientModel pat)
+    private void deleteStudies( PatientModel pat)
             throws Exception {
         List studies = pat.getStudies();
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = studies.size(); i < n; i++) {
             StudyModel study = (StudyModel) studies.get(i);
             if (folderForm.isSticky(study)) {
-                edit.deleteStudy(study.getPk());
+            	delegate.deleteStudy(study.getPk());
                 AuditLoggerDelegate.logStudyDeleted(getCtx(),
                         pat.getPatientID(),
                         pat.getPatientName(),
@@ -265,7 +284,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                         null);
             } else {
                 StringBuffer sb = new StringBuffer("Deleted ");
-                final int deletedInstances = deleteSeries(edit, study.getSeries(), sb);
+                final int deletedInstances = deleteSeries( study.getSeries(), sb);
                 if (deletedInstances > 0) {
                     AuditLoggerDelegate.logStudyDeleted(getCtx(),
                             pat.getPatientID(),
@@ -279,33 +298,33 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
     }
 
-    private int deleteSeries(ContentEdit edit, List series, StringBuffer sb)
+    private int deleteSeries(List series, StringBuffer sb)
     		throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
             SeriesModel serie = (SeriesModel) series.get(i);
             if (folderForm.isSticky(serie)) {
-                edit.deleteSeries(serie.getPk());
+            	delegate.deleteSeries(serie.getPk());
                 numInsts += serie.getNumberOfInstances();
                 sb.append("Series[");
                 sb.append(serie.getSeriesIUID());
                 sb.append("], ");
             } else {
-                numInsts += deleteInstances(edit, serie.getInstances(), sb);
+                numInsts += deleteInstances(serie.getInstances(), sb);
             }
         }
         return numInsts;
     }
 
-    private int deleteInstances(ContentEdit edit, List instances,
+    private int deleteInstances(List instances,
             StringBuffer sb) throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = instances.size(); i < n; i++) {
             InstanceModel instance = (InstanceModel) instances.get(i);
             if (folderForm.isSticky(instance)) {
-                edit.deleteInstance(instance.getPk());
+            	delegate.deleteInstance(instance.getPk());
                 ++numInsts;
                 sb.append("Object[");
                 sb.append(instance.getSopIUID());
@@ -321,12 +340,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
         if (newValue != null) {
             stickySet.addAll(Arrays.asList(newValue));
         }
-    }
-
-    private ContentEdit lookupContentEdit() throws Exception {
-        ContentEditHome home = (ContentEditHome) EJBHomeFactory.getFactory()
-                .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
-        return home.create();
     }
 
     private ContentManager lookupContentManager() throws Exception {
@@ -407,20 +420,18 @@ public class FolderSubmitCtrl extends FolderCtrl {
     		int[] iaSrc;
     		int iDest;
     		ContentManager cm = null;
-    		ContentEdit ce = null;
     		try {
-    			ce = lookupContentEdit();
     			ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
 		        .getFactory().lookup(ContentManagerHome.class,
 		                ContentManagerHome.JNDI_NAME);
 		        cm = home.create();
     			
 	    		if ( moveType == MOVE_STUDIES ) {
-	    			_move_studies( ce, cm );
+	    			_move_studies( cm );
 	    		} else if ( moveType == MOVE_SERIES ) {
-	    			_move_series( ce, cm );
+	    			_move_series( cm );
 	    		} else if ( moveType == MOVE_INSTANCES ) {
-	    			_move_instances( ce, cm );
+	    			_move_instances( cm );
 	    		}
 	    		ret = FOLDER;
     		} catch ( Exception x ) {
@@ -430,11 +441,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
     			
     			//ret is ERROR
     		}	finally {
-    	            try {
-    	            	if ( ce != null )
-    	            		ce.remove();
-    	            } catch (Exception e) {
-    	            }
     	            try {
     	            	if ( cm != null )
     	            		cm.remove();
@@ -450,14 +456,13 @@ public class FolderSubmitCtrl extends FolderCtrl {
     /**
      * Move selected studies to a patient.
      * 
-	 * @param ce ContentEditBean to make the move.
 	 * @param cm ContentManagerBean to update the model.
 	 */
-	private void _move_studies( ContentEdit ce, ContentManager cm ) throws Exception {
+	private void _move_studies( ContentManager cm ) throws Exception {
 		FolderForm folderForm = (FolderForm) getForm();
 		int iDest = Integer.parseInt( (String) folderForm.getStickyPatients().iterator().next().toString() );
 		int[] iaSrc = getIntArrayFromSet( folderForm.getStickyStudies() );
-		ce.moveStudies( iaSrc, iDest );
+		delegate.moveStudies( iaSrc, iDest );
 		
 		PatientModel destPat = folderForm.getPatientByPk( iDest );
 		List path = findModelPath( folderForm.getPatients(), iaSrc[0], 1 );
@@ -492,11 +497,11 @@ public class FolderSubmitCtrl extends FolderCtrl {
         patient.setStudies( studies );
 	}
 
-	private void _move_series( ContentEdit ce, ContentManager cm ) throws Exception {
+	private void _move_series( ContentManager cm ) throws Exception {
 		FolderForm folderForm = (FolderForm) getForm();
 		int iDest = Integer.parseInt( (String) folderForm.getStickyStudies().iterator().next().toString() );
 		int[] iaSrc = getIntArrayFromSet( folderForm.getStickySeries() );
-		ce.moveSeries( iaSrc, iDest );
+		delegate.moveSeries( iaSrc, iDest );
 
 		List destPath = findModelPath( folderForm.getPatients(), iDest, 1 );
 
@@ -538,11 +543,11 @@ public class FolderSubmitCtrl extends FolderCtrl {
         study.update( cm.getStudy( study.getPk() ) );
 	}
 
-	private void _move_instances( ContentEdit ce, ContentManager cm ) throws Exception {
+	private void _move_instances( ContentManager cm ) throws Exception {
 		FolderForm folderForm = (FolderForm) getForm();
 		int iDest = Integer.parseInt( (String) folderForm.getStickySeries().iterator().next().toString() );
 		int[] iaSrc = getIntArrayFromSet( folderForm.getStickyInstances() );
-		ce.moveInstances( iaSrc, iDest );
+		delegate.moveInstances( iaSrc, iDest );
 
 		List destPath = findModelPath( folderForm.getPatients(), iDest, 2 );
 

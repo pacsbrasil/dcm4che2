@@ -12,8 +12,6 @@ import java.util.List;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
-import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -108,12 +106,6 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
         return SUCCESS;
     }
 
-    private ContentEdit lookupContentEdit() throws Exception {
-        ContentEditHome home = (ContentEditHome) EJBHomeFactory.getFactory()
-                .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
-        return home.create();
-    }
-
     private ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
                 .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
@@ -134,8 +126,7 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
         	series.setSeriesDescription(seriesDescription);
         	series.setSeriesNumber(seriesNumber);
         	
-            ContentEdit ce = lookupContentEdit();
-            ce.createSeries( series.toDataset(), studyPk );
+            FolderSubmitCtrl.getDelegate().createSeries( series.toDataset(), studyPk );
             FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
             PatientModel pat = form.getPatientByPk(patPk);
             StudyModel study = form.getStudyByPk(patPk, studyPk);
@@ -202,8 +193,7 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
                 modified = true;
             }
             if (modified) {
-	            ContentEdit ce = lookupContentEdit();
-	            ce.updateSeries(series.toDataset());
+	            FolderSubmitCtrl.getDelegate().updateSeries(series.toDataset());
 	            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
 	            PatientModel pat = form.getPatientByPk(patPk);
 	            StudyModel study = form.getStudyByPk(patPk, studyPk);

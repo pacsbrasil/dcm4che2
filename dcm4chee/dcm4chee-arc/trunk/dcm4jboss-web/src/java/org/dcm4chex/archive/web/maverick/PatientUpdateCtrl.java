@@ -61,8 +61,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	        pat.setPatientSex(patientSex);
 	        pat.setPatientName(patientName);
 	        pat.setPatientBirthDate(patientBirthDate);
-	        ContentEdit ce = lookupContentEdit();
-	        Dataset ds = ce.createPatient(pat.toDataset());
+	        Dataset ds = FolderSubmitCtrl.getDelegate().createPatient(pat.toDataset());
 	        
 	        //add new patient to model (as first element) and set sticky flag!
 	        pat = new PatientModel( ds );
@@ -78,11 +77,6 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
         }
     }
 
-    private ContentEdit lookupContentEdit() throws Exception {
-        ContentEditHome home = (ContentEditHome) EJBHomeFactory.getFactory()
-                .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
-        return home.create();
-    }
     
     private void executeUpdate() {
         try {
@@ -107,8 +101,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
             }
             if (modified) {
 	            //updating data model
-	            ContentEdit ce = lookupContentEdit();
-	            ce.updatePatient(pat.toDataset());
+	            FolderSubmitCtrl.getDelegate().updatePatient(pat.toDataset());
 	            AuditLoggerDelegate.logPatientRecord(getCtx(), 
 	                    AuditLoggerDelegate.MODIFY, pat.getPatientID(),
 	                    pat.getPatientName(), AuditLoggerDelegate.trim(sb));
