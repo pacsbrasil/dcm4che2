@@ -24,7 +24,7 @@ public abstract class FreeDiskSpace {
     static {
         final String os = System.getProperty("os.name");
         // TODO implementation for other OS
-        impl = new Linux();
+        impl = new ExecuteDF();
     }
     
     public static void main(String[] args) {
@@ -71,7 +71,7 @@ public abstract class FreeDiskSpace {
         }
     }
     
-    private static final class Linux extends FreeDiskSpace {
+    private static final class ExecuteDF extends FreeDiskSpace {
 
         protected long getFreeDiskSpaceInternal(File f) throws IOException {
             String[] cmd = { "df", "-Pk", f.getAbsolutePath() };
