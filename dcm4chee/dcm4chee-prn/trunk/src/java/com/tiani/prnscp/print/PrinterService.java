@@ -1412,17 +1412,7 @@ public class PrinterService
       if (printGrayscaleAtStartup) {
          printGrayscaleWithLinDDL();
       }
-      server.invoke(printSCP, "registerPrinter",
-         new Object[] { 
-            aet,
-            getServiceName(),
-            getAcceptorPolicy()
-         },
-         new String[] { 
-            String.class.getName(),
-            ObjectName.class.getName(),
-            AcceptorPolicy.class.getName()
-         });
+      putAcceptorPolicy(getAcceptorPolicy());
    }
    
    private AcceptorPolicy getAcceptorPolicy()
@@ -1468,7 +1458,7 @@ public class PrinterService
    
    public void stopService()
    throws Exception {
-      invokeOnPrintSCP("unregisterPrinter", aet);
+      putAcceptorPolicy(null);
       Thread tmp = scheduler;
       scheduler = null;
       tmp.interrupt();
@@ -1480,6 +1470,20 @@ public class PrinterService
       server.invoke(printSCP, methode,
          new Object[] { arg },
          new String[] { String.class.getName() });
+   }
+
+   private void putAcceptorPolicy(AcceptorPolicy policy)
+      throws Exception
+   {
+      server.invoke(printSCP, "putAcceptorPolicy",
+         new Object[] { 
+            aet,
+            getAcceptorPolicy()
+         },
+         new String[] { 
+            String.class.getName(),
+            AcceptorPolicy.class.getName()
+         });
    }
    
    public void scheduleJob(Boolean color, String job, Dataset sessionAttr) {

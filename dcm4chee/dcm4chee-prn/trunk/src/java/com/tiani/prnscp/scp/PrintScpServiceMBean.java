@@ -90,11 +90,8 @@ public interface PrintScpServiceMBean extends ServiceMBean {
     */
    public int getNumStoredPrints();
    
-   public void registerPrinter(String aet, ObjectName printer,
-         AcceptorPolicy policy);
+   public void putAcceptorPolicy(String aet, AcceptorPolicy policy);
    
-   public void unregisterPrinter(String aet);
-
    public void onJobStartPrinting(String job);
       
    public void onJobFailed(String job);

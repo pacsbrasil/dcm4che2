@@ -45,12 +45,7 @@ import org.dcm4che.server.DcmHandler;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerNotification;
-import javax.management.Notification;
-import javax.management.NotificationFilter;
-import javax.management.NotificationFilterSupport;
-import javax.management.NotificationListener;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import java.io.BufferedOutputStream;
@@ -95,7 +90,6 @@ public class PrintScpService
    private FilmBoxService filmBoxService = new FilmBoxService(this);
    private ImageBoxService imageBoxService = new ImageBoxService(this);
 
-   private HashMap printerMap = new HashMap();
    private ObjectName dcmServer;
    private DcmHandler dcmHandler;
    private int numCreatedJobs = 0;
@@ -177,21 +171,11 @@ public class PrintScpService
       return numStoredPrints;
    }
       
-   public void registerPrinter(String aet, ObjectName printer,
-         AcceptorPolicy policy)
+   public void putAcceptorPolicy(String aet, AcceptorPolicy policy)
    {
-      printerMap.put(aet, printer);
       dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aet, policy);
-      log.info("Registered Printer with AET: " + aet);
    }
 
-   public void unregisterPrinter(String aet)
-   {
-      dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aet, null);
-      printerMap.remove(aet);
-      log.info("Unregistered Printer with AET: " + aet);
-   }
-   
    // ServiceMBeanSupport overrides -----------------------------------
    public void startService()
    throws Exception
@@ -292,14 +276,16 @@ public class PrintScpService
       throw new DcmServiceException(Status.InvalidAttributeValue);
    }
 
+   private ObjectName makePrinterName(String aet)
+      throws MalformedObjectNameException
+   {
+      return new ObjectName(PrinterServiceMBean.OBJECT_NAME_PREFIX + aet);
+   }
+
    private Object getPrinterAttribute(String aet, String attribute)
       throws Exception
    {
-      ObjectName printer = (ObjectName) printerMap.get(aet);
-      if (printer == null) {
-         throw new IllegalArgumentException("No printer with aet: " + aet);
-      }
-      return server.getAttribute(printer, attribute);
+      return server.getAttribute(makePrinterName(aet), attribute);
    }
 
    private boolean getBooleanPrinterAttribute(String aet, String attribute)
@@ -320,21 +306,11 @@ public class PrintScpService
          Object[] arg, String[] type)
       throws Exception
    {
-      Boolean b = (Boolean) invokeOnPrinter(aet, methode, arg, type);
+      Boolean b = (Boolean)
+         server.invoke(makePrinterName(aet), methode, arg, type);
       return b.booleanValue();
    }
 
-   Object invokeOnPrinter(String aet, String methode,
-         Object[] arg, String[] type)
-      throws Exception
-   {
-      ObjectName printer = (ObjectName) printerMap.get(aet);
-      if (printer == null) {
-         throw new IllegalArgumentException("No printer with aet: " + aet);
-      }
-      return server.invoke(printer, methode, arg, type);
-   }
-   
    FilmSession getFilmSession(ActiveAssociation as) {
       return (FilmSession) as.getAssociation().getProperty("FilmSession");
    }
@@ -430,7 +406,7 @@ public class PrintScpService
          Dataset sessionAttr = dof.newDataset();
          sessionAttr.putAll(session.getAttributes());
          try {
-            invokeOnPrinter(aet, "scheduleJob",
+            server.invoke(makePrinterName(aet), "scheduleJob",
                new Object[] {
                   new Boolean(session.isColor()),
                   jobdir.getPath(),

@@ -75,7 +75,8 @@ class PrintableFilmBox implements Printable {
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   public PrintableFilmBox(PrinterService service, File hcDir, File spFile, int totPages, Dataset session) throws IOException
+   public PrintableFilmBox(PrinterService service, File hcDir, File spFile,
+      int totPages, Dataset session) throws IOException
    {
       this.service = service;
       this.log = service.getLog();
