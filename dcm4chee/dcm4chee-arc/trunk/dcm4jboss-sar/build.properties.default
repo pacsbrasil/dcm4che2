@@ -5,4 +5,4 @@ dcm4che.home=../dcm4che14/build
 dcm4jboss-ejb.home=../dcm4jboss-ejb
 
 #Override with your JBoss dist location
-jboss.home=${user.home}/jboss-3.2.6
+jboss.home=${user.home}/jboss-3.2.7

@@ -8,7 +8,7 @@ xdoclet.home=${user.home}/xdoclet-1.2.2
 cactus.home=${user.home}/jakarta-cactus-13-1.6.1
 
 #Override with your JBoss dist location
-jboss.home=${user.home}/jboss-3.2.6
+jboss.home=${user.home}/jboss-3.2.7
 
 #Uncomment to skip patch task (=not available on Windows)
 #meta-inf-oracle.notRequired=true

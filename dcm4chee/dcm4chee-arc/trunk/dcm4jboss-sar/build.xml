@@ -46,7 +46,7 @@
 	<property name="dcm4jboss-wado.target" value="${dcm4jboss-wado.home}/target"/>		
 	
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-3.2.6"/>		
+	<property name="jboss.home" value="${user.home}/jboss-3.2.7"/>		
 	<property name="jboss.server" value="${jboss.home}/server"/>		
 	<property name="jboss.server.home" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.server.home}/deploy"/>		
@@ -258,7 +258,6 @@
 				<exclude name="conf/log4j.xml"/>
 				<exclude name="conf/login-config.xml"/>
 				<exclude name="conf/standardjbosscmp-jdbc.xml"/>
-				<include name="conf/jbossmq-state.xml"/>
 				<include name="deploy/jbossweb-tomcat50.sar/**"/>
 				<include name="deploy/jms/jvm-il-service.xml"/>
 				<include name="deploy/jmx-console.war/**"/>
