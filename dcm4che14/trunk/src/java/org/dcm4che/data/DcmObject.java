@@ -89,6 +89,10 @@ public interface DcmObject {
    
    String[] getBoundedStrings(int maxLen, int tag);
    
+   PersonName getPersonName(int tag);
+
+   PersonName getPersonName(int tag, int index);
+
    Integer getInteger(int tag);
 
    Integer getInteger(int tag, int index);

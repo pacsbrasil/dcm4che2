@@ -454,6 +454,23 @@ abstract class DcmObjectImpl implements DcmObject {
         }
     }
 
+    public PersonName getPersonName(int tag) {
+        return getPersonName(tag, 0);
+    }
+
+    public PersonName getPersonName(int tag, int index) {
+        DcmElement el = get(tag);
+        if (el == null || el.vm() <= index) {
+            return null;
+        }
+
+        try {
+            return el.getPersonName(index, getCharset());
+        } catch (DcmValueException e) {
+            return null;
+        }
+    }
+    
     /**
      *  Gets the int attribute of the DcmObjectImpl object
      *
