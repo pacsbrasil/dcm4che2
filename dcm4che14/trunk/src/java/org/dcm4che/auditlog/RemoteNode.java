@@ -43,5 +43,11 @@ public interface RemoteNode {
     // Constants -----------------------------------------------------
     
     // Methods -------------------------------------------------------
+    String getAET();
+    
+    String getHostName();
+    
+    String getIP();
+
     void writeTo(StringBuffer sb);
 }

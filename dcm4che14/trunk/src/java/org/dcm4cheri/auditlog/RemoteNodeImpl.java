@@ -66,6 +66,18 @@ class RemoteNodeImpl implements RemoteNode {
         this.aet = aet;
     }
         
+    public final String getAET() {
+        return aet;
+    }
+    
+    public final String getHostName() {
+        return hname;
+    }
+    
+    public final String getIP() {
+        return ip;
+    }
+
     private final String toHname(String name) {
         if (Character.isDigit(name.charAt(0))) {
             return null;
