@@ -168,6 +168,25 @@ CREATE INDEX mwl_accession_no ON mwl_item (accession_no);
 CREATE INDEX mwl_pat_id ON mwl_item (pat_id);
 CREATE INDEX mwl_pat_name ON mwl_item (UPPER(pat_name));
 
+CREATE TABLE audit_record(
+	pk 				SERIAL PRIMARY KEY,
+	msg_type 		TEXT,
+	host_name 		TEXT,
+	time_stamp 		TIMESTAMP,
+	aet 			TEXT,
+	user_name 		TEXT,
+	patient_name	TEXT,
+	patient_id 		TEXT,
+	xml_data 		TEXT
+);
+CREATE INDEX arr_msg_type ON audit_record(msg_type);
+CREATE INDEX arr_host_name ON audit_record(UPPER(host_name));
+CREATE INDEX arr_time_stamp ON audit_record(time_stamp);
+CREATE INDEX arr_aet ON audit_record(aet);
+CREATE INDEX arr_user_name ON audit_record(user_name);
+CREATE INDEX arr_patient_name ON audit_record(UPPER(patient_name));
+CREATE INDEX arr_patient_id ON audit_record(patient_id);
+
 CREATE TABLE users(
 	user_id		TEXT PRIMARY KEY,
 	passwd 		TEXT
