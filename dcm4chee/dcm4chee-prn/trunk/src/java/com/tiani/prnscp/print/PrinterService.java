@@ -253,7 +253,7 @@ public class PrinterService
     /**  Holds value of property decimateByNearestNeighbor. */
     private boolean decimateByNearestNeighbor;
 
-    private final PrinterCalibration calibration = new PrinterCalibration();
+    private final PrinterCalibration calibration = new PrinterCalibration(log);
     private final ScannerCalibration scanner = new ScannerCalibration(log);
 
     private long notifCount = 0;

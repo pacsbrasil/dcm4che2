@@ -24,6 +24,8 @@ import java.util.Arrays;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
+import org.jboss.logging.Logger;
+
 /**
  *  <description>
  *
@@ -46,11 +48,16 @@ class PrinterCalibration
     private float[] stepODs;
 
     private float[] ddl2od = new float[256];
+    
+    private final Logger log;
 
 
     // Static --------------------------------------------------------
 
     // Constructors --------------------------------------------------
+    PrinterCalibration(Logger log) {
+        this.log = log;
+    }
 
     // Public --------------------------------------------------------
 
@@ -109,9 +116,12 @@ class PrinterCalibration
         for (int p = 0; p < lut.length; ++p) {
             lut[p] = (byte) toDDL(dmax - (dmax - dmin) * p / ((1 << n) - 1));
         }
+        if (log.isDebugEnabled()) {
+            logLut("PValToDDLwLinOD[dmin=" + dmin + ", dmax=" + dmax + "]:", lut);
+        }
         return lut;
     }
-
+    
 
     /**
      *  Gets the pValToDDLwGSDF attribute of the PrinterCalibration object
@@ -139,9 +149,22 @@ class PrinterCalibration
         for (int pv = 0; pv < lut.length; ++pv) {
             lut[pv] = (byte) toDDL((float) density(pv, n, jmin, jmax, l0, la));
         }
+        if (log.isDebugEnabled()) {
+            logLut("PValToDDLwGSDF[dmin=" + dmin + ", dmax=" + dmax
+                + ", L0=" + l0 + ", La=" + la + "]:", lut);
+        }
         return lut;
     }
 
+    private void logLut(String prompt, byte[] lut) {
+        StringBuffer sb = new StringBuffer(prompt);
+        for (int i = lut.length; --i >= 0;) {
+            int ddl = lut[i] & 0xff;
+            sb.append("\n\tpv=").append(i).append("\tddl=")
+              .append(ddl).append("\tod=").append(ddl2od[255-ddl]);
+        }
+        log.debug(sb.toString());
+    }
 
     /**
      *  Gets the pValToDDL attribute of the PrinterCalibration object

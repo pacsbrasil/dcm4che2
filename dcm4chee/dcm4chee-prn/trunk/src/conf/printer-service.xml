@@ -90,7 +90,7 @@
     <!--
     Defines Time Format used in Annotations
     -->
-    <attribute name="TimeFormat">hh:mm:ss</attribute>
+    <attribute name="TimeFormat">HH:mm:ss</attribute>
     
     <!--
     Defines Maximal Number of Copies accepted by the Print SCP.
@@ -109,7 +109,7 @@
     specify a Session Label. $CALLING_AET$ $DATE$ $TIME$ will be replaced by
     current values.
     -->
-    <attribute name="SessionLabel">print job for $CALLING_AET$&#xA;created $DATE$ $TIME$</attribute>
+    <attribute name="SessionLabel">job for $CALLING_AET$ created at $DATE$ $TIME$</attribute>
     
     <!--
     Specifies all STANDARD\C,R image display formats accepted by the Print SCP
