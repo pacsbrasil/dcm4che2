@@ -557,7 +557,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		<td align="right" bgcolor="ffffcc">
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
-					<a href="{/model/wadoBaseURL}?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
 						<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
 					</a>
 				</xsl:when>
@@ -646,19 +646,31 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		</td>
 		<td title="Instance Number">
   		<xsl:value-of select="instanceNumber"/>
-    </td>
-    <td title="Document Title">
-  		<xsl:value-of select="documentTitle"/>
+    	</td>
+    	<td title="Document Title">
+  			<xsl:value-of select="documentTitle"/>
 		</td>
 		<td title="Document Status">
-      <xsl:value-of select="completionFlag"/>/<xsl:value-of select="verificationFlag"/>
-    </td>
+      		<xsl:value-of select="completionFlag"/>/<xsl:value-of select="verificationFlag"/>
+    	</td>
 		<td title="Number of Files">
 			<xsl:value-of select="numberOfFiles"/>
 		</td>
-	  <td title="Retrieve AETs">
+	  	<td title="Retrieve AETs">
 			<xsl:value-of select="retrieveAETs"/>
-    </td>
+    	</td>
+		<td align="right" bgcolor="ffffcc">
+			<xsl:choose>
+				<xsl:when test="availability='ONLINE'" >			
+					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="SRview" >
+						<img src="images/sr.gif" alt="View Report" border="0" title="View Report"/>		
+					</a>
+				</xsl:when>
+				<xsl:otherwise>
+					<img src="images/invalid.gif" alt="Report not online" border="0" title="Report not online"/>		
+				</xsl:otherwise>
+			</xsl:choose>				
+		</td>
 		<td align="right" bgcolor="ffffcc">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
