@@ -21,11 +21,12 @@ package org.dcm4cheri.auditlog;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.dcm4che.auditlog.MediaDescription;
 
 import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.MediaDescription;
 import org.dcm4che.auditlog.Patient;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.auditlog.User;
@@ -42,8 +43,8 @@ class IHEYr4
     /**
      *  Description of the Interface
      *
-     * @author    gunter
-     * @since     March 16, 2003
+     * @author    <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+     * @since     August 27, 2002
      */
     interface Message
     {
@@ -51,8 +52,7 @@ class IHEYr4
     }
 
     // Constants -----------------------------------------------------
-    private final static SimpleDateFormat TIMESTAMP =
-            new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+    private final static String ISO8601_FORMAT = "yyyy-MM-dd'T'hh:mm:ssZ";
 
     // Variables -----------------------------------------------------
     private static String localHostName;
@@ -264,9 +264,11 @@ class IHEYr4
         StringBuffer sb = new StringBuffer(512);
         sb.append("<IHEYr4>");
         msg.writeTo(sb);
-        sb.append("<Host>").append(host).append("</Host><TimeStamp>")
-                .append(TIMESTAMP.format(new Date(millis)))
-                .append("</TimeStamp></IHEYr4>");
+        sb.append("<Host>").append(host).append("</Host><TimeStamp>");
+        new SimpleDateFormat(ISO8601_FORMAT).format(new Date(millis), sb,
+                new FieldPosition(SimpleDateFormat.YEAR_FIELD));
+        sb.setLength(sb.length() - 2);
+        sb.append("</TimeStamp></IHEYr4>");
         return sb.toString();
     }
 }
