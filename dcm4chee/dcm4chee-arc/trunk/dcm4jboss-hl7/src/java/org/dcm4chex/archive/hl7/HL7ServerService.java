@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -31,7 +30,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 import org.dcm4che.auditlog.AuditLogger;
-import org.dcm4che.util.HandshakeFailedEvent;
+import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.util.MLLP_Protocol;
 import org.dcm4che.util.SSLContextAdapter;
 import org.jboss.system.ServiceMBeanSupport;
@@ -45,19 +44,29 @@ import ca.uhn.hl7v2.app.Application;
  * 
  * @jmx.mbean extends="org.jboss.system.ServiceMBean"
  */
-public class HL7ServerService
-    extends ServiceMBeanSupport
-    implements org.dcm4chex.archive.hl7.HL7ServerServiceMBean {
+public class HL7ServerService extends ServiceMBeanSupport implements
+        org.dcm4chex.archive.hl7.HL7ServerServiceMBean {
+
+    private final static AuditLoggerFactory alf = AuditLoggerFactory
+            .getInstance();
 
     private HL7Server hl7srv = new HL7Server(this);
+
     private SSLContextAdapter ssl = SSLContextAdapter.getInstance();
+
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
+
     private String keyStoreURL = "resource:identity.p12";
-    private char[] keyStorePassword = { 'p', 'a', 's', 's', 'w', 'd' };
+
+    private char[] keyStorePassword = { 'p', 'a', 's', 's', 'w', 'd'};
+
     private String trustStoreURL = "resource:cacerts.jks";
-    private char[] trustStorePassword = { 'p', 'a', 's', 's', 'w', 'd' };
+
+    private char[] trustStorePassword = { 'p', 'a', 's', 's', 'w', 'd'};
+
     private ObjectName auditLogName;
-    private String actorName;
+
+    private AuditLogger auditLogger;
 
     /**
      * @jmx.managed-attribute
@@ -65,6 +74,7 @@ public class HL7ServerService
     public ObjectName getAuditLoggerName() {
         return auditLogName;
     }
+
     /**
      * @jmx.managed-attribute
      */
@@ -92,6 +102,7 @@ public class HL7ServerService
     public String getProtocolName() {
         return protocol.toString();
     }
+
     /**
      * @jmx.managed-attribute
      */
@@ -105,91 +116,74 @@ public class HL7ServerService
     public final void setKeyStorePassword(String keyStorePassword) {
         this.keyStorePassword = keyStorePassword.toCharArray();
     }
+
     /**
      * @return Returns the keyStoreURL.
      */
     public final String getKeyStoreURL() {
         return keyStoreURL;
     }
+
     /**
      * @jmx.managed-attribute
      */
     public final void setKeyStoreURL(String keyStoreURL) {
         this.keyStoreURL = keyStoreURL;
     }
+
     /**
      * @jmx.managed-attribute
      */
     public final void setTrustStorePassword(String trustStorePassword) {
         this.trustStorePassword = trustStorePassword.toCharArray();
     }
+
     /**
      * @jmx.managed-attribute
      */
     public final String getTrustStoreURL() {
         return trustStoreURL;
     }
+
     /**
      * @jmx.managed-attribute
      */
     public final void setTrustStoreURL(String trustStoreURL) {
         this.trustStoreURL = trustStoreURL;
     }
+
     /**
      * @jmx.managed-operation
      */
-    public void registerApplication(
-        String messageType,
-        String triggerEvent,
-        Application handler) {
+    public void registerApplication(String messageType, String triggerEvent,
+            Application handler) {
         hl7srv.registerApplication(messageType, triggerEvent, handler);
     }
 
-    protected ObjectName getObjectName(MBeanServer hl7srv, ObjectName name) {
-        actorName = name.getKeyProperty("name");
-        return name;
-    }
-
     protected void startService() throws Exception {
-        hl7srv.setServerSocketFactory(
-            getServerSocketFactory(protocol.getCipherSuites()));
+        if (auditLogName != null) {
+            auditLogger = (AuditLogger) server.getAttribute(auditLogName,
+                    "AuditLogger");
+        }
+        hl7srv.setServerSocketFactory(getServerSocketFactory(protocol
+                .getCipherSuites()));
         hl7srv.start();
-        logActorStartStop(AuditLogger.START);
     }
 
     private ServerSocketFactory getServerSocketFactory(String[] cipherSuites)
-        throws GeneralSecurityException, IOException {
-        if (cipherSuites == null || cipherSuites.length == 0) {
-            return ServerSocketFactory.getDefault();
-        }
-        ssl.setKey(
-            ssl.loadKeyStore(keyStoreURL, keyStorePassword),
-            keyStorePassword);
+            throws GeneralSecurityException, IOException {
+        if (cipherSuites == null || cipherSuites.length == 0) { return ServerSocketFactory
+                .getDefault(); }
+        ssl.setKey(ssl.loadKeyStore(keyStoreURL, keyStorePassword),
+                keyStorePassword);
         ssl.setTrust(ssl.loadKeyStore(trustStoreURL, trustStorePassword));
         return ssl.getServerSocketFactory(protocol.getCipherSuites());
     }
 
     protected void stopService() throws Exception {
         hl7srv.stop();
-        logActorStartStop(AuditLogger.STOP);
     }
 
-    private void logActorStartStop(String action) {
-        if (auditLogName != null) {
-            try {
-                server.invoke(
-                    auditLogName,
-                    "logActorStartStop",
-                    new Object[] { actorName, action, },
-                    new String[] {
-                        String.class.getName(),
-                        String.class.getName(),
-                        });
-            } catch (Exception e) {
-                log.warn("Failed to log ActorStartStop:", e);
-            }
-        }
-    }
     /**
      * @param newSocket
      */
@@ -199,13 +193,10 @@ public class HL7ServerService
             if (log.isInfoEnabled()) {
                 SSLSession se = s.getSession();
                 try {
-                    X509Certificate cert =
-                        (X509Certificate) se.getPeerCertificates()[0];
-                    log.info(
-                        s.getInetAddress().toString()
-                            + ": accept "
-                            + se.getCipherSuite()
-                            + " with "
+                    X509Certificate cert = (X509Certificate) se
+                            .getPeerCertificates()[0];
+                    log.info(s.getInetAddress().toString() + ": accept "
+                            + se.getCipherSuite() + " with "
                             + cert.getSubjectDN());
                 } catch (SSLPeerUnverifiedException e) {
                     log.error("SSL peer not verified:", e);
@@ -216,17 +207,11 @@ public class HL7ServerService
         }
 
     }
-    private void logHandshakeFailed(SSLSocket s, IOException ex) {
-        if (auditLogName != null) {
-            try {
-                server.invoke(
-                    auditLogName,
-                    "logHandshakeFailedEvent",
-                    new Object[] { new HandshakeFailedEvent(s, ex), },
-                    new String[] { HandshakeFailedEvent.class.getName(), });
-            } catch (Exception e) {
-                log.warn("Failed to log HandshakeFailedEvent:", e);
-            }
+
+    private void logHandshakeFailed(SSLSocket s, IOException e) {
+        if (auditLogger != null) {
+            auditLogger.logSecurityAlert("NodeAuthentification", alf
+                    .newRemoteUser(alf.newRemoteNode(s, null)), e.getMessage());
         }
     }
 }
