@@ -9,10 +9,12 @@
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
@@ -148,7 +150,8 @@ class DecompressCmd implements StreamSegmentMapper {
         return rows * columns * samples * bitsalloc * frames / 8;
     }
 
-    public void decompress(ByteOrder byteOrder, OutputStream out) throws Exception {
+    public void decompress(ByteOrder byteOrder, OutputStream out)
+            throws Exception {
         long t1;
         ImageReader reader = null;
         BufferedImage bi = null;
@@ -158,8 +161,8 @@ class DecompressCmd implements StreamSegmentMapper {
             log.debug("acquire codec semaphore");
             codecSemaphore.acquire();
             codecSemaphoreAquired = true;
-            log.info("start decompression of image: " + rows + "x" + columns + "x"
-                    + frames);            
+            log.info("start decompression of image: " + rows + "x" + columns
+                    + "x" + frames);
             t1 = System.currentTimeMillis();
             reader = getReaderForTransferSyntax(tsuid);
             for (int i = 0; i < frames; ++i) {
@@ -171,12 +174,11 @@ class DecompressCmd implements StreamSegmentMapper {
                 ImageReadParam param = reader.getDefaultReadParam();
                 if (bi != null) param.setDestination(bi);
                 bi = reader.read(0, param);
-                write(bi.getRaster().getDataBuffer(), out, byteOrder);
+                write(bi.getRaster(), out, byteOrder);
                 iis.seek((lastItem()).nextStreamPos());
             }
         } finally {
-            if (reader != null)
-                reader.dispose();
+            if (reader != null) reader.dispose();
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
@@ -188,22 +190,39 @@ class DecompressCmd implements StreamSegmentMapper {
         log.info("finished decompression in " + (t2 - t1) + "ms.");
     }
 
-    private void write(DataBuffer buffer, OutputStream out, ByteOrder byteOrder) throws IOException {
+    private void write(WritableRaster raster, OutputStream out,
+            ByteOrder byteOrder) throws IOException {
+        DataBuffer buffer = raster.getDataBuffer();
+        final int stride = ((ComponentSampleModel) raster.getSampleModel())
+                .getScanlineStride();
+        final int h = raster.getHeight();
+        final int w = raster.getWidth();
+        final int b = raster.getNumBands();
+        final int wb = w * b;
         switch (buffer.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            out.write(((DataBufferByte) buffer).getData());
+            for (int i = 0; i < h; ++i)
+                out.write(((DataBufferByte) buffer).getData(), i * stride, wb);
             break;
         case DataBuffer.TYPE_USHORT:
             if (byteOrder == ByteOrder.LITTLE_ENDIAN)
-                writeShortLE(((DataBufferUShort) buffer).getData(), out);
+                for (int i = 0; i < h; ++i)
+                    writeShortLE(((DataBufferUShort) buffer).getData(), i
+                            * stride, wb, out);
             else
-                writeShortBE(((DataBufferUShort) buffer).getData(), out);
+                for (int i = 0; i < h; ++i)
+                    writeShortBE(((DataBufferUShort) buffer).getData(), i
+                            * stride, wb, out);
             break;
         case DataBuffer.TYPE_SHORT:
             if (byteOrder == ByteOrder.LITTLE_ENDIAN)
-                writeShortLE(((DataBufferShort) buffer).getData(), out);
+                for (int i = 0; i < h; ++i)
+                    writeShortLE(((DataBufferShort) buffer).getData(), i
+                            * stride, wb, out);
             else
-                writeShortBE(((DataBufferShort) buffer).getData(), out);
+                for (int i = 0; i < h; ++i)
+                    writeShortBE(((DataBufferShort) buffer).getData(), i
+                            * stride, wb, out);
             break;
         default:
             throw new RuntimeException(buffer.getClass().getName()
@@ -211,27 +230,22 @@ class DecompressCmd implements StreamSegmentMapper {
         }
     }
 
-    private void writeShortLE(short[] data, OutputStream out)
+    private void writeShortLE(short[] data, int off, int len, OutputStream out)
             throws IOException {
-        for (int i = 0; i < data.length; i++) {
+        for (int i = off, end = off + len; i < end; i++) {
             final short px = data[i];
             out.write(px & 0xff);
             out.write((px >>> 8) & 0xff);
         }
     }
 
-    private void writeShortBE(short[] data, OutputStream out)
-    throws IOException {
-		for (int i = 0; i < data.length; i++) {
-		    final short px = data[i];
-		    out.write((px >>> 8) & 0xff);
-		    out.write(px & 0xff);
-		}
-	}
-
-    private void writeBytes(DataBufferByte buffer, OutputStream out)
+    private void writeShortBE(short[] data, int off, int len, OutputStream out)
             throws IOException {
-        out.write(buffer.getData());
+        for (int i = off, end = off + len; i < end; i++) {
+            final short px = data[i];
+            out.write((px >>> 8) & 0xff);
+            out.write(px & 0xff);
+        }
     }
 
     private ImageReader getReaderForTransferSyntax(String ts) {
