@@ -33,6 +33,7 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
@@ -190,13 +191,14 @@ public abstract class StorageBean implements SessionBean {
             } catch (ObjectNotFoundException onfe) {
                 fs = fileSystemHome.create(dirpath, retrieveAET);
             }
+            instance.setAvailability(Availability.ONLINE);
+            instance.addRetrieveAET(fs.getRetrieveAET());
             FileLocal file = fileHome.create(fileid,
                     tsuid,
                     size,
                     md5,
                     instance,
                     fs);
-            instance.updateDerivedFields();
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {
@@ -355,9 +357,35 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void commit(String iuid) throws FinderException {
-        instHome.findBySopIuid(iuid).setCommitment(true);
+    public void commit(Dataset stgCmtResult) throws FinderException {
+        DcmElement refSOPSeq = stgCmtResult.get(Tags.RefSOPSeq);
+        if (refSOPSeq == null) return;
+        HashSet seriesSet = new HashSet();
+        HashSet studySet = new HashSet();
+        for (int i = 0, n = refSOPSeq.vm(); i < n; ++i) {
+        	commit(seriesSet, studySet, refSOPSeq.getItem(i).getString(Tags.RefSOPInstanceUID));
+        }
+        for (Iterator series = seriesSet.iterator(); series.hasNext();) {
+            final SeriesLocal ser = seriesHome.findBySeriesIuid((String) series.next());
+            // update NumberOfCommitedInstances
+			ser.updateDerivedFields(false, true, false, false, false, false);
+        }
+        for (Iterator studies = studySet.iterator(); studies.hasNext();) {
+        	final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
+            // update NumberOfCommitedInstances
+        	study.updateDerivedFields(false, true, false, false, false, false, false);
+        }
     }
+
+    private void commit(HashSet seriesSet, HashSet studySet, final String iuid)
+			throws FinderException {
+		InstanceLocal inst = instHome.findBySopIuid(iuid);
+		inst.setCommitment(true);
+		SeriesLocal series = inst.getSeries();
+		seriesSet.add(series.getSeriesIuid());
+		StudyLocal study = series.getStudy();
+		studySet.add(study.getStudyIuid());
+	}
     
     /**
      * @ejb.interface-method
@@ -371,32 +399,41 @@ public abstract class StorageBean implements SessionBean {
             final Dataset refSOP = refSOPSeq.getItem(i);
             final String iuid = refSOP.getString(Tags.RefSOPInstanceUID);
             final String aet = refSOP.getString(Tags.RetrieveAET);
-            if (iuid == null || aet == null) continue;
-            InstanceLocal inst = instHome.findBySopIuid(iuid);
-            inst.setExternalRetrieveAET(aet);
-            inst.updateDerivedFields();
-            SeriesLocal series = inst.getSeries();
-            seriesSet.add(series.getSeriesIuid());
-            StudyLocal study = series.getStudy();
-            studySet.add(study.getStudyIuid());
+            if (iuid != null && aet != null)
+            	commited(seriesSet, studySet, iuid, aet);
         }
-        for (Iterator series = seriesSet.iterator(); series.hasNext();)
-            seriesHome.findBySeriesIuid((String) series.next()).updateDerivedFields();            
-        for (Iterator series = studySet.iterator(); series.hasNext();)
-            studyHome.findByStudyIuid((String) series.next()).updateDerivedFields();            
+        for (Iterator series = seriesSet.iterator(); series.hasNext();) {
+            final SeriesLocal ser = seriesHome.findBySeriesIuid((String) series.next());
+			ser.updateDerivedFields(false, false, false, true, false, false);
+        }
+        for (Iterator studies = studySet.iterator(); studies.hasNext();) {
+            final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
+			study.updateDerivedFields(false, false, false, true, false, false, false);
+        }
     }
+
+    private void commited(HashSet seriesSet, HashSet studySet, final String iuid, final String aet) throws FinderException {
+		InstanceLocal inst = instHome.findBySopIuid(iuid);
+		inst.setExternalRetrieveAET(aet);
+		SeriesLocal series = inst.getSeries();
+		seriesSet.add(series.getSeriesIuid());
+		StudyLocal study = series.getStudy();
+		studySet.add(study.getStudyIuid());
+	}
     
     /**
      * @ejb.interface-method
      */
     public void updateStudy(String iuid) throws FinderException {
-        studyHome.findByStudyIuid(iuid).updateDerivedFields();
+        final StudyLocal study = studyHome.findByStudyIuid(iuid);
+		study.updateDerivedFields(true, false, true, false, true, true, true);
     }
     
     /**
      * @ejb.interface-method
      */
     public void updateSeries(String iuid) throws FinderException {
-        seriesHome.findBySeriesIuid(iuid).updateDerivedFields();
+        final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
+        series.updateDerivedFields(true, false, true, false, true, true);
     }
 }

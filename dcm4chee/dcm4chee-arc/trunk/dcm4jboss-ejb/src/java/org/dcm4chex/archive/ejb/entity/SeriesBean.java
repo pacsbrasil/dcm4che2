@@ -26,9 +26,8 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
-import org.dcm4cheri.util.DatasetUtils;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
@@ -50,9 +49,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
- * @ejb.finder signature="java.util.Collection findAll()"
- *             query="SELECT OBJECT(a) FROM Series AS a"
- *             transaction-type="Supports"
  * @ejb.finder signature="java.util.Collection findSeriesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
  *             query="SELECT DISTINCT OBJECT(s) FROM Series s, IN(s.instances) i WHERE i.media = ?1"
  *             transaction-type="Supports"
@@ -74,13 +70,12 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * 
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Integer pk, java.lang.String retrieveAET)"
  *              query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
- * 
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1 AND i.media.mediaStatus = ?2"
- * 
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
- * 
+ * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1 AND i.commitment = TRUE"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
  * 
@@ -94,7 +89,8 @@ public abstract class SeriesBean implements EntityBean {
     private static final Logger log = Logger.getLogger(SeriesBean.class);
 
     private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
-            Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances};
+            Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances,
+            Tags.StorageMediaFileSetID, Tags.StorageMediaFileSetUID};
 
 //    private Set retrieveAETSet;
 
@@ -126,10 +122,8 @@ public abstract class SeriesBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.pk-field
-     * @ejb.persistence
-     *  column-name="pk"
-     * @jboss.persistence
-     *  auto-increment="true"
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
      *
      */
     public abstract Integer getPk();
@@ -138,8 +132,7 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="created_time"
+     * @ejb.persistence column-name="created_time"
      */
     public abstract java.sql.Timestamp getCreatedTime();
 
@@ -147,8 +140,7 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="updated_time"
+     * @ejb.persistence column-name="updated_time"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
 
@@ -158,8 +150,7 @@ public abstract class SeriesBean implements EntityBean {
      * Series Instance UID
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="series_iuid"
+     * @ejb.persistence column-name="series_iuid"
      */
     public abstract String getSeriesIuid();
 
@@ -169,8 +160,7 @@ public abstract class SeriesBean implements EntityBean {
      * Series Number
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="series_no"
+     * @ejb.persistence column-name="series_no"
      */
     public abstract String getSeriesNumber();
 
@@ -180,8 +170,7 @@ public abstract class SeriesBean implements EntityBean {
      * Modality
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="modality"
+     * @ejb.persistence column-name="modality"
      */
     public abstract String getModality();
 
@@ -191,8 +180,7 @@ public abstract class SeriesBean implements EntityBean {
      * PPS Start Datetime
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="pps_start"
+     * @ejb.persistence column-name="pps_start"
      */
     public abstract java.sql.Timestamp getPpsStartDateTime();
 
@@ -215,8 +203,7 @@ public abstract class SeriesBean implements EntityBean {
      * Number Of Series Related Instances
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="num_instances"
+     * @ejb.persistence column-name="num_instances"
      * 
      */
     public abstract int getNumberOfSeriesRelatedInstances();
@@ -224,10 +211,20 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setNumberOfSeriesRelatedInstances(int num);
 
     /**
+     * Number Of Commited Instances
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="num_commited"
+     * 
+     */
+    public abstract int getNumberOfCommitedInstances();
+
+    public abstract void setNumberOfCommitedInstances(int num);
+    
+    /**
      * Encoded Series Dataset
      *
-     * @ejb.persistence
-     *  column-name="series_attrs"
+     * @ejb.persistence column-name="series_attrs"
      * 
      */
     public abstract byte[] getEncodedAttributes();
@@ -251,11 +248,21 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setFilesetId(String id);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="ext_retr_aet"
+     */
+    public abstract String getExternalRetrieveAET();
+
+    /**
+     * @ejb.interface-method
+     */ 
+    public abstract void setExternalRetrieveAET(String aet);
+
+    /**
      * Retrieve AETs
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="retrieve_aets"
+     * @ejb.persistence column-name="retrieve_aets"
      */
     public abstract String getRetrieveAETs();
 
@@ -264,8 +271,7 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * Instance Availability
      *
-     * @ejb.persistence
-     *  column-name="availability"
+     * @ejb.persistence column-name="availability"
      */
     public abstract int getAvailability();
 
@@ -285,8 +291,7 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * Hidden Flag
      *
-     * @ejb.persistence
-     *  column-name="hidden"
+     * @ejb.persistence column-name="hidden"
      */
     public abstract boolean getHidden();
 
@@ -307,14 +312,12 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setHidden(boolean hidden);
 
     /**
-     * @ejb.relation
-     *  name="study-series"
-     *  role-name="series-of-study"
-     *  cascade-delete="yes"
+     * @ejb.relation name="study-series"
+     *               role-name="series-of-study"
+     *               cascade-delete="yes"
      *
-     * @jboss:relation
-     *  fk-column="study_fk"
-     *  related-pk-field="pk"
+     * @jboss:relation fk-column="study_fk"
+     *                 related-pk-field="pk"
      * 
      * @param study study of this series
      */
@@ -328,13 +331,10 @@ public abstract class SeriesBean implements EntityBean {
     public abstract StudyLocal getStudy();
 
     /**
-     * @ejb.relation
-     *  name="mpps-series"
-     *  role-name="series-of-mpps"
-     *
-     * @jboss:relation
-     *  fk-column="mpps_fk"
-     *  related-pk-field="pk"
+     * @ejb.relation name="mpps-series"
+     *               role-name="series-of-mpps"
+     * @jboss:relation fk-column="mpps_fk"
+     *                 related-pk-field="pk"
      * 
      * @param study study of this series
      */
@@ -354,9 +354,8 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.interface-method view-type="local"
-     * @ejb.relation
-     *  name="series-instance"
-     *  role-name="series-has-instance"
+     * @ejb.relation name="series-instance"
+     *               role-name="series-has-instance"
      *    
      * @return all instances of this series
      */
@@ -418,20 +417,17 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.select query=""
      */ 
+    public abstract int ejbSelectNumberOfCommitedInstances(Integer pk) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
     public abstract int ejbSelectAvailability(Integer pk) throws FinderException;
     
-    /**
-     * @ejb.interface-method
-     */
-    public void updateDerivedFields() throws FinderException {
-        final Integer pk = getPk();
-        final int numI = ejbSelectNumberOfSeriesRelatedInstances(pk);
-        if (getNumberOfSeriesRelatedInstances() != numI)
-            setNumberOfSeriesRelatedInstances(numI);
-        String aets = "";
-        int availability = 0;
+    private void updateRetrieveAETs(Integer pk, int numI) throws FinderException {
+        String aets = null;
         if (numI > 0) {
-            StringBuffer sb = new StringBuffer();
+	        StringBuffer sb = new StringBuffer();
 	        Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
 	        if (iAetSet.remove(null))
 	            log.warn("Series[iuid=" + getSeriesIuid()
@@ -441,29 +437,91 @@ public abstract class SeriesBean implements EntityBean {
 	            if (ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(pk, aet) == numI)
 	                sb.append(aet).append('\\');
 	        }
-            Set eAetSet = ejbSelectExternalRetrieveAETs(pk);
-            if (eAetSet.size() == 1 && !eAetSet.contains(null))
-                sb.append(eAetSet.iterator().next()).append('\\');
             if (sb.length() > 0) {
                 sb.setLength(sb.length() - 1);
                 aets = sb.toString();
             }
-            if (ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
-                Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
-                if (c.size() == 1) {
-                    MediaLocal media = (MediaLocal) c.iterator().next();
-                    setFilesetId(media.getFilesetId());
-                    setFilesetIuid(media.getFilesetIuid());
-                }
-            }
-	        availability = ejbSelectAvailability(pk);
+    	}
+        if (aets == null 
+        		? getRetrieveAETs() != null 
+        		: !aets.equals(getRetrieveAETs())) {
+        	setRetrieveAETs(aets);
         }
-        if (!aets.equals(getRetrieveAETs()))
-            setRetrieveAETs(aets);
-        if (getAvailability() != availability)
+    }
+    
+    private void updateExternalRetrieveAET(Integer pk, int numI) throws FinderException {
+    	String aet = null;
+        if (numI > 0) {
+	        Set eAetSet = ejbSelectExternalRetrieveAETs(getPk());
+	        if (eAetSet.size() == 1)
+	        	aet = (String) eAetSet.iterator().next();
+        }
+        if (aet == null 
+        		? getExternalRetrieveAET() != null 
+        		: !aet.equals(getExternalRetrieveAET())) {
+        	setExternalRetrieveAET(aet);
+        }    	
+    }
+    
+    private void updateAvailability(Integer pk, int numI) throws FinderException {
+        int availability = numI > 0 ? ejbSelectAvailability(getPk()) 
+        		: Availability.UNAVAILABLE;
+        if (availability != getAvailabilitySafe()) {
             setAvailability(availability);
+        }
+    }
+    
+    private int updateNumberOfInstances(Integer pk) throws FinderException {
+        final int numI = ejbSelectNumberOfSeriesRelatedInstances(pk);
+        if (getNumberOfSeriesRelatedInstances() != numI)
+            setNumberOfSeriesRelatedInstances(numI);
+        return numI;
+    }
+    
+    private void updateNumberOfCommitedInstances(Integer pk) throws FinderException {
+        final int numC = ejbSelectNumberOfCommitedInstances(pk);
+        if (getNumberOfCommitedInstances() != numC)
+            setNumberOfCommitedInstances(numC);
     }
 
+    private void updateFilesetId(Integer pk, int numI) throws FinderException {
+        if (numI > 0) {
+	        if (ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
+	            Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
+	            if (c.size() == 1) {
+	                MediaLocal media = (MediaLocal) c.iterator().next();
+	                setFilesetId(media.getFilesetId());
+	                setFilesetIuid(media.getFilesetIuid());
+	                return;
+	            }
+	        }
+        }
+        setFilesetId(null);
+        setFilesetIuid(null);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedFields(boolean numOfInstances,
+    		boolean numOfCommited, boolean retrieveAETs,
+    		boolean externalRettrieveAETs, boolean filesetId,
+    		boolean availibility) throws FinderException {
+    	final Integer pk = getPk();
+		final int numI = numOfInstances ? updateNumberOfInstances(pk) 
+				: getNumberOfSeriesRelatedInstances();
+		if (numOfCommited)
+			updateNumberOfCommitedInstances(pk);
+		if (retrieveAETs)
+			updateRetrieveAETs(pk, numI);
+		if (externalRettrieveAETs)
+			updateExternalRetrieveAET(pk, numI);
+		if (filesetId)
+			updateFilesetId(pk, numI);
+		if (availibility)
+			updateAvailability(pk, numI);
+    }
+    
     private void updateMpps() {
         final String ppsiuid = getPpsIuid();
         MPPSLocal mpps = null;
@@ -500,7 +558,7 @@ public abstract class SeriesBean implements EntityBean {
             final String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
             setPpsIuid(ppsUID);
         }
-        Dataset tmp = ds.exclude(SUPPL_TAGS).excludePrivate();
+        Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
         setEncodedAttributes(DatasetUtils.toByteArray(tmp,
                 DcmDecodeParam.EVR_LE));
     }
@@ -525,7 +583,10 @@ public abstract class SeriesBean implements EntityBean {
             ds.putUL(PrivateTags.SeriesPk, getPk().intValue());
             ds.putIS(Tags.NumberOfSeriesRelatedInstances,
                     getNumberOfSeriesRelatedInstances());
-            ds.putAE(Tags.RetrieveAET, StringUtils.split(getRetrieveAETs(),'\\'));
+            ds.putSH(Tags.StorageMediaFileSetID, getFilesetId());
+            ds.putUI(Tags.StorageMediaFileSetUID, getFilesetIuid());
+            DatasetUtils.putRetrieveAET(ds, getRetrieveAETs(),
+            		getExternalRetrieveAET());
             ds.putCS(Tags.InstanceAvailability, Availability
                     .toString(getAvailabilitySafe()));
         }

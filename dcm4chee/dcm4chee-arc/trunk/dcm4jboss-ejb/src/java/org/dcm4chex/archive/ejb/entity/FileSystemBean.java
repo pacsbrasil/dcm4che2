@@ -24,31 +24,23 @@ import org.apache.log4j.Logger;
  * @version $Revision$ $Date$
  * @since 31.08.2004
  *
- * @ejb.bean
- * 	name="FileSystem"
- * 	type="CMP"
- * 	view-type="local"
- * 	primkey-field="pk"
- * 	local-jndi-name="ejb/FileSystem"
+ * @ejb.bean name="FileSystem"
+ * 	         type="CMP"
+ * 	         view-type="local"
+ * 	         primkey-field="pk"
+ * 	         local-jndi-name="ejb/FileSystem"
  * 
- * @ejb.transaction
- * 	type="Required"
+ * @ejb.transaction type="Required"
+ * @ejb.persistence table-name="filesystem"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * 
- * @ejb.persistence
- * 	table-name="filesystem"
- * 
- * @jboss.entity-command
- * 	name="hsqldb-fetch-key"
- * 
- * @ejb.finder
- *  signature="java.util.Collection findAll()"
- *  query="SELECT OBJECT(a) FROM FileSystem AS a"
- *  transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findAll()"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a"
+ *             transaction-type="Supports"
  *
- * @ejb.finder
- *  signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
- *  query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
- *  transaction-type="Supports"
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
+ *             transaction-type="Supports"
  */
 public abstract class FileSystemBean implements EntityBean {
 
@@ -82,15 +74,18 @@ public abstract class FileSystemBean implements EntityBean {
     public void ejbPostCreate(String dirpath, String aets)
         throws CreateException
     {
-        log.info("Created " + prompt());
+        log.info("Created " + asString());
     }
 
     public void ejbRemove() throws RemoveException
     {
-        log.info("Deleting " + prompt());
+        log.info("Deleting " + asString());
     }
     
-    private String prompt()
+    /**
+     * @ejb.interface-method
+     */ 
+    public String asString()
     {
         return "FileSystem[pk="
             + getPk()
@@ -106,10 +101,8 @@ public abstract class FileSystemBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.pk-field
-     * @ejb.persistence
-     *  column-name="pk"
-     * @jboss.persistence
-     *  auto-increment="true"
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
      *
      */
     public abstract Integer getPk();
@@ -118,8 +111,7 @@ public abstract class FileSystemBean implements EntityBean {
 	 * Directory Path
 	 * 
 	 * @ejb.interface-method
-	 * @ejb.persistence
-	 * 	column-name="dirpath"
+	 * @ejb.persistence column-name="dirpath"
 	 */
     public abstract String getDirectoryPath();
 

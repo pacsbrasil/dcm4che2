@@ -20,9 +20,9 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
-import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
@@ -60,8 +60,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1" AND f.fileSystem.retrieveAET = ?2"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Integer pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
- * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesWithNoExternalRetrieveAET(java.lang.Integer pk)"
- *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.externalRetrieveAET IS NULL"
+ * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
+ * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1" AND i.commitment = TRUE"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
  * 
@@ -72,7 +72,9 @@ public abstract class StudyBean implements EntityBean {
     private static final Logger log = Logger.getLogger(StudyBean.class);
 
     private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
-            Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances };
+            Tags.InstanceAvailability, Tags.NumberOfStudyRelatedSeries,
+            Tags.NumberOfStudyRelatedInstances, Tags.StorageMediaFileSetID,
+            Tags.StorageMediaFileSetUID };
 
     /**
      * Auto-generated Primary Key
@@ -176,6 +178,17 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setNumberOfStudyRelatedInstances(int num);
 
     /**
+     * Number Of Commited Instances
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="num_commited"
+     * 
+     */
+    public abstract int getNumberOfCommitedInstances();
+
+    public abstract void setNumberOfCommitedInstances(int num);
+
+    /**
      * Study DICOM Attributes
      *
      * @ejb.persistence column-name="study_attrs"
@@ -200,6 +213,17 @@ public abstract class StudyBean implements EntityBean {
     public abstract String getFilesetId();
 
     public abstract void setFilesetId(String id);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="ext_retr_aet"
+     */
+    public abstract String getExternalRetrieveAET();
+
+    /**
+     * @ejb.interface-method
+     */ 
+    public abstract void setExternalRetrieveAET(String aet);
 
     /**
      * Retrieve AETs
@@ -338,12 +362,6 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.select query=""
      */
-    public abstract int ejbSelectNumberOfStudyRelatedInstancesWithNoExternalRetrieveAET(
-            Integer pk) throws FinderException;
-
-    /**
-     * @ejb.select query=""
-     */
     public abstract int ejbSelectNumberOfStudyRelatedInstances(Integer pk)
             throws FinderException;
 
@@ -355,15 +373,65 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfCommitedInstances(Integer pk) throws FinderException;
+    
+    /**
+     * @ejb.select query=""
      */
     public abstract int ejbSelectAvailability(Integer pk)
             throws FinderException;
 
-    /**
-     * @ejb.interface-method
-     */
-    public void updateDerivedFields() throws FinderException {
-        final Integer pk = getPk();
+    private void updateRetrieveAETs(Integer pk, int numI) throws FinderException {
+        String aets = null;
+        if (numI > 0) {
+	        StringBuffer sb = new StringBuffer();
+	        Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
+	        if (iAetSet.remove(null))
+	            log.warn("Study[iuid=" + getStudyIuid()
+	                    + "] contains File(s) with unspecified Retrieve AET");
+	        for (Iterator it = iAetSet.iterator(); it.hasNext();) {
+	            final String aet = (String) it.next();
+	            if (ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(pk, aet) == numI)
+	                sb.append(aet).append('\\');
+	        }
+            if (sb.length() > 0) {
+                sb.setLength(sb.length() - 1);
+                aets = sb.toString();
+            }
+    	}
+        if (aets == null 
+        		? getRetrieveAETs() != null 
+        		: !aets.equals(getRetrieveAETs())) {
+        	setRetrieveAETs(aets);
+        }
+    }
+    
+    private void updateExternalRetrieveAET(Integer pk, int numI) throws FinderException {
+    	String aet = null;
+        if (numI > 0) {
+	        Set eAetSet = ejbSelectExternalRetrieveAETs(pk);
+	        if (eAetSet.size() == 1)
+	        	aet = (String) eAetSet.iterator().next();
+        }
+        if (aet == null 
+        		? getExternalRetrieveAET() != null 
+        		: !aet.equals(getExternalRetrieveAET())) {
+        	setExternalRetrieveAET(aet);
+        }    	
+    }
+    
+
+    private void updateAvailability(Integer pk, int numI) throws FinderException {
+        int availability = getNumberOfStudyRelatedInstances() > 0
+        			? ejbSelectAvailability(getPk())
+        			: Availability.UNAVAILABLE;
+        if (availability != getAvailabilitySafe()) {
+            setAvailability(availability);
+        }
+    }
+    
+    private int updateNumberOfInstances(Integer pk) throws FinderException {
         final int numS = ejbSelectNumberOfStudyRelatedSeries(pk);
         if (getNumberOfStudyRelatedSeries() != numS)
             setNumberOfStudyRelatedSeries(numS);
@@ -371,8 +439,34 @@ public abstract class StudyBean implements EntityBean {
                 : 0;
         if (getNumberOfStudyRelatedInstances() != numI)
             setNumberOfStudyRelatedInstances(numI);
+        return numI;
+    }
+    
+    private void updateNumberOfCommitedInstances(Integer pk) throws FinderException {
+        final int numC = ejbSelectNumberOfCommitedInstances(pk);
+        if (getNumberOfCommitedInstances() != numC)
+            setNumberOfCommitedInstances(numC);
+    }
+
+    private void updateFilesetId(Integer pk, int numI) throws FinderException {
+        if (numI > 0) {
+	        if (ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
+	            Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
+	            if (c.size() == 1) {
+	                MediaLocal media = (MediaLocal) c.iterator().next();
+	                setFilesetId(media.getFilesetId());
+	                setFilesetIuid(media.getFilesetIuid());
+	                return;
+	            }
+	        }
+        }
+        setFilesetId(null);
+        setFilesetIuid(null);
+    }
+
+    private void updateModalitiesInStudy(Integer pk, int numI) throws FinderException {
         String mds = "";
-        if (numS > 0) {
+        if (numI > 0) {
             Set c = ejbSelectModalityInStudies(pk);
             if (c.remove(null))
                 log.warn("Study[iuid=" + getStudyIuid()
@@ -387,46 +481,33 @@ public abstract class StudyBean implements EntityBean {
         }
         if (!mds.equals(getModalitiesInStudy()))
             setModalitiesInStudy(mds);
-        String aets = "";
-        int availability = 0;
-        if (numI > 0) {
-            StringBuffer sb = new StringBuffer();
-            Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
-            if (iAetSet.remove(null))
-                log
-                        .warn("Study[iuid="
-                                + getStudyIuid()
-                                + "] contains Instance(s) with unspecified Retrieve AET");
-            for (Iterator it = iAetSet.iterator(); it.hasNext();) {
-                final String aet = (String) it.next();
-                if (ejbSelectNumberOfStudyRelatedInstancesWithInternalRetrieveAET(
-                        pk, aet) == numI)
-                    sb.append(aet).append('\\');
-            }
-            Set eAetSet = ejbSelectExternalRetrieveAETs(pk);
-            if (eAetSet.size() == 1 && !eAetSet.contains(null))
-                sb.append(eAetSet.iterator().next()).append('\\');
-            if (sb.length() > 0) {
-                sb.setLength(sb.length() - 1);
-                aets = sb.toString();
-            }
-            if (ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(pk,
-                    MediaDTO.COMPLETED) == numI) {
-                Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
-                if (c.size() == 1) {
-                    MediaLocal media = (MediaLocal) c.iterator().next();
-                    setFilesetId(media.getFilesetId());
-                    setFilesetIuid(media.getFilesetIuid());
-                }
-            }
-            availability = ejbSelectAvailability(pk);
-        }
-        if (!aets.equals(getRetrieveAETs()))
-            setRetrieveAETs(aets);
-        if (getAvailability() != availability)
-            setAvailability(availability);
+    	
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedFields(boolean numOfInstances,
+    		boolean numOfCommited, boolean retrieveAETs,
+    		boolean externalRettrieveAETs, boolean filesetId,
+    		boolean availibility, boolean modsInStudies) throws FinderException {
+    	final Integer pk = getPk();
+		final int numI = numOfInstances ? updateNumberOfInstances(pk) 
+				: getNumberOfStudyRelatedInstances();
+		if (numOfCommited)
+			updateNumberOfCommitedInstances(pk);
+		if (retrieveAETs)
+			updateRetrieveAETs(pk, numI);
+		if (externalRettrieveAETs)
+			updateExternalRetrieveAET(pk, numI);
+		if (filesetId)
+			updateFilesetId(pk, numI);
+		if (availibility)
+			updateAvailability(pk, numI);
+		if (modsInStudies)
+			updateModalitiesInStudy(pk, numI);
+    }
+     
     /**
      * @ejb.interface-method
      */
@@ -435,14 +516,6 @@ public abstract class StudyBean implements EntityBean {
         return (fsuid != null && fsuid.length() != 0)
                 || ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(
                         getPk(), MediaDTO.COMPLETED) == getNumberOfStudyRelatedInstances();
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public boolean isStudyAvailableOnExternalRetrieveAET()
-            throws FinderException {
-        return ejbSelectNumberOfStudyRelatedInstancesWithNoExternalRetrieveAET(getPk()) == 0;
     }
 
     /**
@@ -460,8 +533,10 @@ public abstract class StudyBean implements EntityBean {
                     getNumberOfStudyRelatedSeries());
             ds.putIS(Tags.NumberOfStudyRelatedInstances,
                     getNumberOfStudyRelatedInstances());
-            ds.putAE(Tags.RetrieveAET, StringUtils.split(getRetrieveAETs(),
-                    '\\'));
+            ds.putSH(Tags.StorageMediaFileSetID, getFilesetId());
+            ds.putUI(Tags.StorageMediaFileSetUID, getFilesetIuid());
+            DatasetUtils.putRetrieveAET(ds, getRetrieveAETs(),
+            		getExternalRetrieveAET());
             ds.putCS(Tags.InstanceAvailability, Availability
                     .toString(getAvailabilitySafe()));
         }
@@ -481,7 +556,7 @@ public abstract class StudyBean implements EntityBean {
         }
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
-        Dataset tmp = ds.exclude(SUPPL_TAGS).excludePrivate();
+        Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
         setEncodedAttributes(DatasetUtils.toByteArray(tmp,
                 DcmDecodeParam.EVR_LE));
     }

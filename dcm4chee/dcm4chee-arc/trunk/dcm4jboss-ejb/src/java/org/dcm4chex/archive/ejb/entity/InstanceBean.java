@@ -8,6 +8,8 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -24,9 +26,9 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
-import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
@@ -52,6 +54,9 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.sopIuid = ?1"
  *             transaction-type="Supports"
+ * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
+ *              strategy="on-find"
+ *              eager-load-group="*"
  * 
  * @ejb.finder signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.media IS NULL AND i.series.hidden = false AND i.series.study.createdTime < ?1"
@@ -74,7 +79,9 @@ public abstract class InstanceBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(InstanceBean.class);
 
-    private static final int[] SUPPL_TAGS = { Tags.RetrieveAET, Tags.InstanceAvailability };
+    private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
+    	Tags.InstanceAvailability, Tags.StorageMediaFileSetID,
+    	Tags.StorageMediaFileSetUID };
         
     private CodeLocalHome codeHome;
 
@@ -221,6 +228,9 @@ public abstract class InstanceBean implements EntityBean {
         }
     }
     
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setAvailability(int availability);
 
     /**
@@ -344,31 +354,57 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public void updateDerivedFields() throws FinderException {
-        final Integer pk = getPk();
-        Set aetSet = ejbSelectRetrieveAETs(pk);
-        String aets = toString(aetSet);
-        final String extAet = getExternalRetrieveAET();
-        if (extAet != null && extAet.length() != 0) {
-            aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;
-        }
-        if (!aets.equals(getRetrieveAETs()))
+    public void addRetrieveAET(String aet) {
+    	String s = getRetrieveAETs();
+    	if (s == null) {
+    		setRetrieveAETs(aet);
+    	} else {
+    		final Set aetSet = new HashSet(Arrays.asList(StringUtils.split(s, '\\')));
+    		if (aetSet.add(aet))
+    			setRetrieveAETs(toString(aetSet));
+    	}   		
+    }
+    
+    private String updateRetrieveAETs(Integer pk) throws FinderException {
+        final Set aetSet = ejbSelectRetrieveAETs(pk);
+        if (aetSet.remove(null))
+            log.warn("Instance[iuid=" + getSopIuid()
+                    + "] reference File(s) with unspecified Retrieve AET");
+        final String aets = toString(aetSet);
+        if (aets == null ? getRetrieveAETs() != null : !aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
-        int availability = 3;
+        return aets;
+    }
+    
+    private void updateAvailability(Integer pk, String retrieveAETs) throws FinderException {
+        int availability = Availability.UNAVAILABLE;
         MediaLocal media;
-        if (getFiles().size() != 0)
-            availability = 0;
-        else if (extAet != null && extAet.length() != 0)
-            availability = 1;
+        if (retrieveAETs != null)
+            availability = Availability.ONLINE;
+        else if (getExternalRetrieveAET() != null)
+            availability = Availability.NEARLINE;
         else if ((media = getMedia()) != null 
                 && media.getMediaStatus() == MediaDTO.COMPLETED)
-            availability = 2;
+            availability = Availability.OFFLINE;
         if (availability != getAvailabilitySafe()) {
             setAvailability(availability);
         }
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedFields(boolean retrieveAETs, boolean availability) 
+    		throws FinderException {
+        final Integer pk = getPk();
+        final String aets = retrieveAETs ? updateRetrieveAETs(pk) : getRetrieveAETs();
+        if (availability)
+        	updateAvailability(pk, aets);
+    }
 
     private static String toString(Set s) {
+    	if (s.isEmpty())
+    		return null;
         String[] a = (String[]) s.toArray(new String[s.size()]);
         return StringUtils.toString(a, '\\');
     }
@@ -383,7 +419,13 @@ public abstract class InstanceBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putUL(PrivateTags.InstancePk, getPk().intValue());
-            ds.putAE(Tags.RetrieveAET, StringUtils.split(getRetrieveAETs(),'\\'));
+            MediaLocal media = getMedia();
+            if (media != null && media.getMediaStatus() == MediaDTO.COMPLETED) {
+                ds.putSH(Tags.StorageMediaFileSetID, media.getFilesetId());
+                ds.putUI(Tags.StorageMediaFileSetUID, media.getFilesetIuid());            	
+            }
+            DatasetUtils.putRetrieveAET(ds, getRetrieveAETs(),
+            		getExternalRetrieveAET());
             ds.putCS(Tags.InstanceAvailability, Availability
                     .toString(getAvailabilitySafe()));
         }
@@ -400,7 +442,7 @@ public abstract class InstanceBean implements EntityBean {
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
-        Dataset tmp = ds.exclude(SUPPL_TAGS).excludePrivate();
+        Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);
         setEncodedAttributes(DatasetUtils
                 .toByteArray(tmp, DcmDecodeParam.EVR_LE));
     }

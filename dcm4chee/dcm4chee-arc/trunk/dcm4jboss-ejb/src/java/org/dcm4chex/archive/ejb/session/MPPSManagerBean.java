@@ -171,7 +171,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             }
             if (ser != null)
                 try {
-                    ser.getStudy().updateDerivedFields();
+                    ser.getStudy().updateDerivedFields(true, true, true, true, true, true, true);
                 } catch (FinderException e1) {
                     throw new DcmServiceException(Status.ProcessingFailure, e1);
                 }

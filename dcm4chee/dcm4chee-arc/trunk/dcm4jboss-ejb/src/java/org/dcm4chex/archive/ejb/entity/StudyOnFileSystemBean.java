@@ -115,6 +115,19 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
         setAccessTime(new Timestamp(System.currentTimeMillis()));
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public String asString() {
+        StudyLocal study = getStudy();
+        FileSystemLocal fs = getFileSystem();
+        return "StudyOnFileSystem[" 
+        	+ (study == null ? "null" : study.asString())
+        	+ "@"
+        	+ (fs == null ? "null" : fs.asString())
+        	+ "]"; 
+    }
+
     /**    
      * @ejb.home-method
      */

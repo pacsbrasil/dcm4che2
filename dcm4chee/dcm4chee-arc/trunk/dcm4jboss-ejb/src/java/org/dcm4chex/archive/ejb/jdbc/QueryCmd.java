@@ -18,8 +18,8 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
-import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.DatasetUtils;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -274,7 +274,8 @@ public abstract class QueryCmd extends BaseCmd {
                     "Study.numberOfStudyRelatedSeries",
                     "Study.numberOfStudyRelatedInstances",
                     "Study.filesetId", "Study.filesetIuid",                    
-                    "Study.retrieveAETs", "Study.availability"};
+                    "Study.retrieveAETs", "Study.externalRetrieveAET",
+                    "Study.availability"};
         }
 
         protected String[] getTables() {
@@ -294,10 +295,11 @@ public abstract class QueryCmd extends BaseCmd {
             ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(5));
             ds.putSH(Tags.StorageMediaFileSetID, rs.getString(6));
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
-            ds.putAE(Tags.RetrieveAET, StringUtils.split(rs.getString(8), '\\'));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(9)]);
+            DatasetUtils.putRetrieveAET(ds, rs.getString(8), rs.getString(9));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(10)]);
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
+
     }
 
     static class SeriesQueryCmd extends QueryCmd {
@@ -318,7 +320,8 @@ public abstract class QueryCmd extends BaseCmd {
                     "Study.encodedAttributes", "Series.encodedAttributes",
                     "Series.numberOfSeriesRelatedInstances",
                     "Series.filesetId", "Series.filesetIuid",                    
-                    "Series.retrieveAETs", "Series.availability"};
+                    "Series.retrieveAETs", "Series.externalRetrieveAET",
+                    "Series.availability"};
         }
 
         protected String[] getTables() {
@@ -337,8 +340,8 @@ public abstract class QueryCmd extends BaseCmd {
             ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(4));
             ds.putSH(Tags.StorageMediaFileSetID, rs.getString(5));
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(6));
-            ds.putAE(Tags.RetrieveAET, StringUtils.split(rs.getString(7), '\\'));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(8)]);
+            DatasetUtils.putRetrieveAET(ds, rs.getString(7), rs.getString(8));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(9)]);
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -361,7 +364,7 @@ public abstract class QueryCmd extends BaseCmd {
             return new String[] { "Patient.encodedAttributes",
                     "Study.encodedAttributes", "Series.encodedAttributes",
                     "Instance.encodedAttributes", "Instance.retrieveAETs",
-                    "Instance.availability",
+                    "Instance.externalRetrieveAET", "Instance.availability",
                     "Media.filesetId", "Media.filesetIuid"};
         }
 
@@ -386,10 +389,10 @@ public abstract class QueryCmd extends BaseCmd {
             fillDataset(ds, 2);
             fillDataset(ds, 3);
             fillDataset(ds, 4);
-            ds.putAE(Tags.RetrieveAET, StringUtils.split(rs.getString(5), '\\'));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(6)]);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(5), rs.getString(6));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(7)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(8));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(9));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
 

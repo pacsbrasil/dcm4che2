@@ -16,7 +16,12 @@ package org.dcm4chex.archive.common;
  */
 public class Availability {
 
-    private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
+	public static final int ONLINE = 0;
+	public static final int NEARLINE = 1;
+	public static final int OFFLINE = 2;
+	public static final int UNAVAILABLE = 3;
+
+	private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
             "OFFLINE", "UNAVAILABLE"};
 
     public static final String toString(int value) {

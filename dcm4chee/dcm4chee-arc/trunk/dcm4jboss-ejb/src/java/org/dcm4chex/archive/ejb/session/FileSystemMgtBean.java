@@ -240,47 +240,48 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	 * @ejb.interface-method
      */
     public long releaseStudies( Set fsPathSet, long maxSizeToDel, 
-    			boolean checkNothing, boolean checkOnMedia, boolean checkExternal, Long accessedBefore ) throws IOException, FinderException, EJBException, RemoveException {
+    			boolean checkNothing, boolean checkOnMedia, 
+    			boolean checkExternal, Long accessedBefore ) 
+    		throws IOException, FinderException, EJBException, RemoveException {
     	Timestamp tsBefore = null;
     	if ( accessedBefore != null ) {
     		tsBefore = new Timestamp( accessedBefore.longValue() );
     	}
         Collection c = getStudiesOnFilesystems( fsPathSet, tsBefore );
-        if ( log.isDebugEnabled() ) log.debug("Collection of studies on filesystems:"+c);
         StudyOnFileSystemLocal studyOnFs;
         StudyLocal studyLocal;
-        if ( log.isDebugEnabled() ) log.debug("maxSizeToDel:"+maxSizeToDel);
+        log.info("Try to release " + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
         long sizeToDelete = 0L;
-        for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
+        for ( Iterator iter = c.iterator() ; iter.hasNext() && sizeToDelete < maxSizeToDel; ) {
         	studyOnFs = (StudyOnFileSystemLocal) iter.next();
-        	studyLocal = studyOnFs.getStudy();
 			if ( checkNothing ) {
-				Collection files = studyOnFs.getFiles();
-				for ( Iterator it = files.iterator() ; it.hasNext() ; ) sizeToDelete += ( (FileLocal) it.next() ).getFileSize();
-				studyHome.remove( studyLocal.getPrimaryKey() );
-			} else if ( ( checkOnMedia && studyLocal.isStudyAvailableOnMedia() ) ||
-				 ( checkExternal && studyLocal.isStudyAvailableOnExternalRetrieveAET() ) ) {
-				sizeToDelete += releaseStudy( studyOnFs );
+				sizeToDelete += deleteStudy(studyOnFs);
+			} else {
+				studyLocal = studyOnFs.getStudy();
+				if ( ( checkOnMedia && studyLocal.isStudyAvailableOnMedia() ) ||
+					 ( checkExternal && studyLocal.getExternalRetrieveAET() != null ) ) {
+					sizeToDelete += releaseStudy(studyOnFs);
+				}
 			}
-	        if ( log.isDebugEnabled() )log.debug("Released size:"+sizeToDelete);
-			if ( sizeToDelete >= maxSizeToDel ) break;
         }
+        log.info("Released " + (sizeToDelete / 1000000.f) + "MB of DiskSpace");
     	return sizeToDelete;
     }
+
+	private long deleteStudy(StudyOnFileSystemLocal studyOnFs) throws FinderException, RemoveException {
+		long size = 0L;
+		Collection files = studyOnFs.getFiles();
+		for ( Iterator it = files.iterator() ; it.hasNext() ; ) { 
+			size += ( (FileLocal) it.next() ).getFileSize();
+		}
+		log.info("Delete " + studyOnFs.asString() + " - " 
+				+ (size / 1000000.f) + "MB");
+		studyOnFs.getStudy().remove();
+		return size;
+	}
     
   
-   /**
-	 * @param studyOnFs
-	 * @return
-	 * @throws FinderException
-	 * @throws RemoveException
-	 * @throws EJBException
-	 * 
-	 * @ejb.transaction type="RequiresNew"
-	 * 
-	 * @ejb.interface-method
-	 */
-	public long releaseStudy(StudyOnFileSystemLocal studyOnFs) throws FinderException, EJBException, RemoveException {
+	private long releaseStudy(StudyOnFileSystemLocal studyOnFs) throws FinderException, EJBException, RemoveException {
 		Collection c = studyOnFs.getFiles();
 		long size = 0L;
 		FileLocal fileLocal;
@@ -288,18 +289,22 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		Set series = new HashSet();
 		for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
 			fileLocal = (FileLocal) iter.next();
-			if ( log.isDebugEnabled() ) log.debug("Release file:"+fileLocal);
+			if ( log.isDebugEnabled() ) log.debug("Delete file:"+fileLocal);
 			size += fileLocal.getFileSize();
 			il = fileLocal.getInstance();
 			series.add( il.getSeries() );
 			fileLocal.setInstance( null );
-			il.updateDerivedFields();
+			il.updateDerivedFields(true, true);
 		}
 		for ( Iterator iter = series.iterator() ; iter.hasNext() ; ) {
-			( (SeriesLocal) iter.next() ).updateDerivedFields();
+			final SeriesLocal ser = (SeriesLocal) iter.next();
+			ser.updateDerivedFields(false, false, true, false, false, true);
 		}
-		studyOnFs.getStudy().updateDerivedFields();
-		this.sofHome.remove( studyOnFs.getPk() );
+		StudyLocal sty = studyOnFs.getStudy();
+		sty.updateDerivedFields(false, false, true, false, false, true, false);
+		log.info("Delete Files of " + studyOnFs.asString() + " - " 
+				+ (size / 1000000.f) + "MB");
+		studyOnFs.remove();
 		return size;
 	}
 	

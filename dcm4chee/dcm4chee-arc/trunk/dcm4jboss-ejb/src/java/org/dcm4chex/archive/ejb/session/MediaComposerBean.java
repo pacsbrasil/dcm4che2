@@ -47,37 +47,29 @@ import org.dcm4chex.archive.ejb.util.InstanceCollector;
 import org.dcm4chex.archive.ejb.util.InstanceCollector.InstanceContainer;
 
 /**
- * @ejb.bean
- *  name="MediaComposer"
- *  type="Stateless"
- *  view-type="remote"
- *  jndi-name="ejb/MediaComposer"
+ * @ejb.bean name="MediaComposer"
+ *           type="Stateless"
+ *           view-type="remote"
+ *           jndi-name="ejb/MediaComposer"
  * 
- * @ejb.transaction-type 
- *  type="Container"
+ * @ejb.transaction-type type="Container"
+ * @ejb.transaction type="Required"
  * 
- * @ejb.transaction 
- *  type="Required"
+ * @ejb.ejb-ref ejb-name="Media" 
+ *              view-type="local"
+ *              ref-name="ejb/Media" 
  * 
- * @ejb.ejb-ref
- *  ejb-name="Media" 
- *  view-type="local"
- *  ref-name="ejb/Media" 
- * 
- * @ejb.ejb-ref
- *  ejb-name="Instance" 
- *  view-type="local"
- *  ref-name="ejb/Instance" 
+ * @ejb.ejb-ref ejb-name="Instance" 
+ *              view-type="local"
+ *              ref-name="ejb/Instance" 
  *  
- * @ejb.ejb-ref
- *  ejb-name="Study" 
- *  view-type="local"
- *  ref-name="ejb/Study" 
+ * @ejb.ejb-ref ejb-name="Study" 
+ *              view-type="local"
+ *              ref-name="ejb/Study" 
  *
- * @ejb.ejb-ref
- *  ejb-name="Series" 
- *  view-type="local"
- *  ref-name="ejb/Series" 
+ * @ejb.ejb-ref ejb-name="Series" 
+ *              view-type="local"
+ *              ref-name="ejb/Series" 
  * 
  * @author gunter.zeilinger@tiani.com
  * @version Revision $Date$
@@ -555,12 +547,14 @@ public abstract class MediaComposerBean implements SessionBean {
     	Collection series = seriesHome.findSeriesOnMedia( media );
     	Iterator iter = series.iterator();
     	while ( iter.hasNext() ) {
-    		( (SeriesLocal) iter.next() ).updateDerivedFields();
+    		final SeriesLocal ser = ( (SeriesLocal) iter.next() );
+			ser.updateDerivedFields(false, false, false, false, true, false);
     	}
     	Collection studies = studyHome.findStudiesOnMedia( media );
     	iter = studies.iterator();
     	while ( iter.hasNext() ){
-    		( (StudyLocal) iter.next()).updateDerivedFields();
+    		final StudyLocal sty = ( (StudyLocal) iter.next());
+			sty.updateDerivedFields(false, false, false, false, true, false, false);
     	}
     }
     
@@ -582,13 +576,15 @@ public abstract class MediaComposerBean implements SessionBean {
     	log.info("Media "+filesetId+" removed!");
       	Iterator iter = series.iterator();
     	while ( iter.hasNext() ) {
-    		( (SeriesLocal) iter.next() ).updateDerivedFields();
+    		SeriesLocal ser = (SeriesLocal) iter.next();
+			ser.updateDerivedFields(false, false, false, false, true, true);
     	}
     	if ( log.isDebugEnabled() ) log.debug( "Series updated after media "+filesetId+" was deleted!");
     	iter = studies.iterator();
     	while ( iter.hasNext() ){
-    		( (StudyLocal) iter.next()).updateDerivedFields();
-    	}
+    		StudyLocal sty = (StudyLocal) iter.next();
+    		sty.updateDerivedFields(false, false, false, false, true, true, false);
+     	}
     	if ( log.isDebugEnabled() ) log.debug( "Studies updated after media "+filesetId+" was deleted!");
    	
     }

@@ -29,7 +29,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4cheri.util.DatasetUtils;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.xml.sax.SAXException;
