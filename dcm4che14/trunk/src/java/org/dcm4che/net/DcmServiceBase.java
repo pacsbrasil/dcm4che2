@@ -381,11 +381,11 @@ public class DcmServiceBase implements DcmService {
         try {
             assoc.addCancelListener(rspCmd.getMessageIDToBeingRespondedTo(),
                 mdr.getCancelListener());
-            while (rspCmd.isPending()) {
+            do {
                 Dataset rspData = mdr.next(assoc, rq, rspCmd);
                 Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
                 assoc.getAssociation().write(rsp);
-            }
+            } while (rspCmd.isPending());
         } finally {
             mdr.release();
         }
