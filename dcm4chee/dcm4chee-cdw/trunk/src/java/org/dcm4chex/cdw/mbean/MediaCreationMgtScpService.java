@@ -49,6 +49,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
     private static final String[] CUIDS = { UIDs.MediaCreationManagementSOPClass};
 
+    private boolean cleanFilesDisabled = false;
+    
     private String defaultMediaApplicationProfile = "STD-GEN-CD";
 
     private String defaultRequestPriority = Priority.LOW;
@@ -93,6 +95,14 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         }
 
     };
+
+    public final boolean isCleanFilesDisabled() {
+        return cleanFilesDisabled;
+    }
+
+    public final void setCleanFilesDisabled(boolean cleanFilesDisabled) {
+        this.cleanFilesDisabled = cleanFilesDisabled;
+    }
 
     public final String getDefaultMediaApplicationProfile() {
         return defaultMediaApplicationProfile;
@@ -415,7 +425,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 } catch (IOException ioe) {
                     // error already logged
                 }
-                spoolDir.deleteRefInstances(attrs);
+                if (!cleanFilesDisabled)
+                    spoolDir.deleteRefInstances(attrs);
 	            throw new DcmServiceException(Status.ProcessingFailure, e);
             }
             break;

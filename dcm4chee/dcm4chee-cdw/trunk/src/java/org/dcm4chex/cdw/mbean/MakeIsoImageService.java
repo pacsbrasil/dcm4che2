@@ -42,12 +42,16 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
 
     private static final String _SORT = ".sort";
 
+    private boolean cleanFilesDisabled = false;
+    
     private int isoLevel = 1;
 
     private boolean rockRidge = false;
 
     private boolean joliet = false;
 
+    private boolean utf = false;
+    
     private boolean volsetInfoEnabled = false;
 
     private boolean logEnabled = false;
@@ -80,6 +84,14 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         logFile = new File(logdir, "mkisofs.log");
     }
 
+    public final boolean isCleanFilesDisabled() {
+        return cleanFilesDisabled;
+    }
+
+    public final void setCleanFilesDisabled(boolean cleanFilesDisabled) {
+        this.cleanFilesDisabled = cleanFilesDisabled;
+    }
+
     public final boolean isVolsetInfoEnabled() {
         return volsetInfoEnabled;
     }
@@ -104,6 +116,14 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         this.joliet = joliet;
     }
 
+    public final boolean isUtf() {
+        return utf;
+    }
+
+    public final void setUtf(boolean utf) {
+        this.utf = utf;
+    }
+    
     public final boolean isLogEnabled() {
         return logEnabled;
     }
@@ -141,6 +161,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
             cmd.add(String.valueOf(isoLevel));
             if (rockRidge) cmd.add("-r");
             if (joliet) cmd.add("-J");
+            if (utf) cmd.add("-utf");
             if (volId != null && volId.length() != 0) {
                 cmd.add("-V");
                 cmd.add(volId);
@@ -307,4 +328,5 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
             if (cleanup) rq.cleanFiles(log);
         }
     }
+
 }

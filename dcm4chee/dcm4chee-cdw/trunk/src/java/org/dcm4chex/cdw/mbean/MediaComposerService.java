@@ -44,6 +44,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private String displayApplicationDir = "VIEWER";
 
+    private boolean cleanFilesDisabled = false;
+    
     private boolean makeIsoImage = true;
 
     private final MessageListener listener = new MessageListener() {
@@ -59,6 +61,14 @@ public class MediaComposerService extends ServiceMBeanSupport {
         }
 
     };
+
+    public final boolean isCleanFilesDisabled() {
+        return cleanFilesDisabled;
+    }
+
+    public final void setCleanFilesDisabled(boolean cleanFilesDisabled) {
+        this.cleanFilesDisabled = cleanFilesDisabled;
+    }
 
     public final String getCharsetOfFileSetDescriptorFile() {
         return charsetOfFileSetDescriptorFile;
@@ -184,7 +194,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
         } catch (IOException e) {
             // error already logged
         } finally {
-            if (cleanup) {
+            if (cleanup && !cleanFilesDisabled) {
                 if (attrs != null) spoolDir.deleteRefInstances(attrs);
                 rq.cleanFiles(log);
             }

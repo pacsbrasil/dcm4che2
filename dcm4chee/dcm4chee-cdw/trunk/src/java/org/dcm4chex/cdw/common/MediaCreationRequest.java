@@ -33,6 +33,8 @@ public class MediaCreationRequest implements Serializable {
     private File filesetDir;
 
     private File isoImageFile;
+    
+    private String medium;
 
     private String filesetID;
 
@@ -54,6 +56,15 @@ public class MediaCreationRequest implements Serializable {
         this.numberOfCopies = copies;
     }
 
+
+    public final String getMedium() {
+        return medium;
+    }
+
+    public final void setMedium(String medium) {
+        this.medium = medium;
+    }
+    
     public final String getPriority() {
         return priority;
     }
@@ -149,5 +160,4 @@ public class MediaCreationRequest implements Serializable {
                 retval = FileUtils.delete(filesetDir, log) && retval;
         return retval;
     }
-
 }

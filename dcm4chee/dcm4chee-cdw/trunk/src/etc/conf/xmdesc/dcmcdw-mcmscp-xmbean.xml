@@ -50,6 +50,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isCleanFilesDisabled"
+      setMethod="setCleanFilesDisabled">
+      <description>No cleanup of referenced objects in failure case.
+      </description>
+      <name>CleanFilesDisabled</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptExplicitVRLE"
       setMethod="setAcceptExplicitVRLE">
       <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
