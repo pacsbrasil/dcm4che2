@@ -255,6 +255,7 @@ public abstract class ContentEditBean implements SessionBean {
                         study_pks[i]));
                 PatientLocal oldPat = study.getPatient();
                 if (oldPat.isIdentical(pat)) continue;
+                studies.add(study);                
             }
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
