@@ -79,7 +79,8 @@ final class AssociationImpl implements Association {
     private int dimseTimeout = 0;
     
     /** Creates a new instance of AssociationImpl */
-    public AssociationImpl(Socket s, boolean requestor) throws IOException {
+    public AssociationImpl(Socket s, boolean requestor)
+            throws IOException {
         this.name = "Assoc-" + ++assocCount;
         NDC.push(name);
         try {
@@ -89,6 +90,10 @@ final class AssociationImpl implements Association {
         } finally {
             NDC.pop();
         }
+    }
+    
+    public Socket getSocket() {
+        return fsm.socket();
     }
     
     public void setName(String name) {
@@ -334,4 +339,5 @@ final class AssociationImpl implements Association {
             properties.remove(key);
         }
     }        
+    
 }

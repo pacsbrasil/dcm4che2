@@ -23,6 +23,7 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.List;
 
 /**
@@ -117,6 +118,8 @@ public interface Association {
     AAssociateRJ getAAssociateRJ();
     
     AAbort getAAbort();
+    
+    Socket getSocket();
     
     String getCallingAET();
 
