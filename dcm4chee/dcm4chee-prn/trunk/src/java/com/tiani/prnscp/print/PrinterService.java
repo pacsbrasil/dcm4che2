@@ -2240,17 +2240,20 @@ public class PrinterService
                 return;
             }
 
-            File odFile = scanner.getODsFile(scanDirName);
-            long odFileLastModified = odFile.lastModified();
-
             log.info("Calibrating Printer " + calledAET + ", chromaticity=" + chromaticity);
             float[] ods = scanner.interpolate(scanner.analyse(scanFile));
+            calibration.setODs(chromaticity, ods);
+            File odFile = scanner.getODsFile(scanDirName);
             scanner.writeODs(odFile, ods);
             odFile.setLastModified(scanFileLastModified);
-            calibration.setODs(chromaticity, ods);
-            log.info("Calibrating Printer " + calledAET + ", chromaticity=" + chromaticity);
+            if (Chromaticity.COLOR.equals(chromaticity)) {
+                colorCalibrationTime = scanFileLastModified;
+            } else {
+                monochromeCalibrationTime = scanFileLastModified;
+            }
+            log.info("Calibrated Printer " + calledAET + ", chromaticity=" + chromaticity);
             logActorConfig(
-                    "Calibrating Printer " + calledAET + ", chromaticity=" + chromaticity, "PrinterCalibration");
+                    "Calibrated Printer " + calledAET + ", chromaticity=" + chromaticity, "PrinterCalibration");
         } catch (Exception e) {
             log.warn("Failed to calibrate Printer " + calledAET + ", chromaticity=" + chromaticity);
         }
