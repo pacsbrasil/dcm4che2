@@ -49,6 +49,16 @@ class SQElement extends DcmElementImpl
         super(tag);
         this.parent = parent;
     }
+    
+    public DcmElement intern() {
+        synchronized(list) {
+            final int size = list.size();
+            for (int i = 0; i < size; i++) {
+                ((Dataset) list.get(i)).internalize();
+            }
+        }
+        return this;
+    }
 
 
     /**

@@ -58,7 +58,11 @@ class DcmElementImpl implements DcmElement {
     public DcmElementImpl(int tag) {
         this.tag = tag;
     }
-    
+
+    public DcmElement intern() {
+        return this;
+    }
+       
     public final int tag() {
         return tag;
     }
@@ -92,13 +96,7 @@ class DcmElementImpl implements DcmElement {
     public int hashCode() {
         return tag;
     }
-    
-    public final int compareTo(Object o) {
-		long tmp = (tag & 0xffffffffL)
-				- (((DcmElementImpl)o).tag & 0xffffffffL);
-   		return tmp > 0L ? 1 : tmp < 0L ? -1 : 0;
-    }
-    
+
     public String toString() {
         return toString(tag, vr(), vm(), length(),
             StringUtils.promptValue(vr(), getByteBuffer(), 64));

@@ -20,13 +20,11 @@
  */
 package org.dcm4che.data;
 
-import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.Dataset;
-
-import org.dcm4che.dict.TagDictionary;
-import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.DictionaryFactory;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -36,11 +34,16 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import junit.framework.*;
-import org.apache.log4j.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.TagDictionary;
+import org.dcm4che.dict.Tags;
 
 /**
  *@author     gunter.zeilinger@tiani.com
@@ -199,6 +202,10 @@ public class DatasetTest extends TestCase {
         ds.writeFile(th, dict);
     }
 
+    public void testInternalize() throws Exception {
+        testReadDICOMDIR();
+        ds.internalize();
+    }
 
     /**
      *  A unit test for JUnit

@@ -32,7 +32,7 @@ import java.util.Date;
  * @see "DICOM Part 5: Data Structures and Encoding, 7.1 Data Elements"
  * @see "DICOM Part 7: Message Exchange, 6.3.1 Command Set Structure"
  */
-public interface DcmElement extends Comparable {
+public interface DcmElement {
    
    int tag();
    
@@ -46,8 +46,8 @@ public interface DcmElement extends Comparable {
    
    int hashCode();
    
-   int compareTo(Object o);
-   
+   DcmElement intern();
+      
    ByteBuffer getByteBuffer();
    
    ByteBuffer getByteBuffer(ByteOrder byteOrder);

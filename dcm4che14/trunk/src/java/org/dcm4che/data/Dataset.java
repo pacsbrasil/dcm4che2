@@ -45,6 +45,8 @@ import org.xml.sax.ContentHandler;
 public interface Dataset extends DcmObject, Serializable
 {
 
+    void internalize();
+    
     Dataset setFileMetaInfo(FileMetaInfo fmi);
 
 
