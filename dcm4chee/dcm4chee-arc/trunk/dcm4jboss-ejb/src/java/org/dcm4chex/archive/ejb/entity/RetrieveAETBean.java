@@ -53,9 +53,9 @@ public abstract class RetrieveAETBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="aet"
      */
-    public abstract String getAET();
+    public abstract String getAet();
 
-    public abstract void setAET(String aet);
+    public abstract void setAet(String aet);
 
     /**
      * @ejb.interface-method
@@ -72,7 +72,7 @@ public abstract class RetrieveAETBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(String aet, int availability) throws CreateException {
-        setAET(aet);
+        setAet(aet);
         setAvailability(availability);
         return null;
     }
@@ -82,7 +82,7 @@ public abstract class RetrieveAETBean implements EntityBean {
     }
 
     public String asString() {
-        return "RetrieveAET[aet=" + getAET() + "availability=" + getAvailability()
+        return "RetrieveAET[aet=" + getAet() + "availability=" + getAvailability()
                 + "]";
     }
 }

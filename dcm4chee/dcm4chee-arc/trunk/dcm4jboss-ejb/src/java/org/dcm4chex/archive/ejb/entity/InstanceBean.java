@@ -291,9 +291,9 @@ public abstract class InstanceBean implements EntityBean {
      *  target-ejb="RetrieveAET"
      *  target-role-name="external-retrieve-aet-of-instance"
      *  target-multiple="yes"
-     * @jboss:relation fk-column="retrieve_aet_fk" related-pk-field="pk"
+     * @jboss:relation fk-column="aet_fk" related-pk-field="pk"
      * @jboss:target-relation fk-column="instance_fk" related-pk-field="pk"
-     * @jboss.relation-table table-name="rel_instance_retrieve_aet"
+     * @jboss.relation-table table-name="rel_instance_aet"
      *    
      * @ejb.interface-method view-type="local"
      */

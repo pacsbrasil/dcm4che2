@@ -134,7 +134,8 @@ CREATE TABLE filesystem (
 	dirpath			VARCHAR2(255) NOT NULL,
 	retrieve_aets	VARCHAR2(255) NOT NULL,
 	disk_usage		NUMBER(19) DEFAULT 0 NOT NULL,
-	highwater_mark	NUMBER(19) DEFAULT 0 NOT NULL
+	highwater_mark	NUMBER(19) DEFAULT 0 NOT NULL,
+	min_available	NUMBER(19) DEFAULT 0 NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
 CREATE INDEX retrieve_aets ON filesystem(retrieve_aets);
@@ -153,6 +154,49 @@ FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
+
+CREATE SEQUENCE retrieve_aet_pk_seq;
+CREATE TABLE retrieve_aet (
+	pk          	NUMBER PRIMARY KEY,
+	aet          	VARCHAR2(255) NOT NULL,
+	availability	INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX retrieve_aet_aet ON retrieve_aet(aet);
+
+CREATE SEQUENCE media_pk_seq;
+CREATE TABLE media (
+	pk          	NUMBER PRIMARY KEY,
+	fileset_iuid	VARCHAR2(255) NOT NULL,
+	fileset_id		VARCHAR2(255)
+);
+CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
+
+CREATE TABLE rel_instance_media (
+	instance_fk		INTEGER,
+	media_fk		INTEGER,
+FOREIGN KEY (instance_fk) REFERENCES instance(pk),
+FOREIGN KEY (media_fk) REFERENCES media(pk)
+);
+CREATE INDEX rel_instance_media_fk1 ON rel_instance_media(instance_fk);
+CREATE INDEX rel_instance_media_fk2 ON rel_instance_media(media_fk);
+
+CREATE TABLE rel_instance_aet (
+	instance_fk		INTEGER,
+	aet_fk			INTEGER,
+FOREIGN KEY (instance_fk) REFERENCES instance(pk),
+FOREIGN KEY (aet_fk) REFERENCES retrieve_aet(pk)
+);
+CREATE INDEX rel_instance_aet_fk1 ON rel_instance_aet(instance_fk);
+CREATE INDEX rel_instance_aet_fk2 ON rel_instance_aet(aet_fk);
+
+CREATE TABLE rel_filesystem_aet (
+	filesystem_fk	INTEGER,
+	aet_fk			INTEGER,
+FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk),
+FOREIGN KEY (aet_fk) REFERENCES retrieve_aet(pk)
+);
+CREATE INDEX rel_filesystem_aet_fk1 ON rel_filesystem_aet(filesystem_fk);
+CREATE INDEX rel_filesystem_aet_fk2 ON rel_filesystem_aet(aet_fk);
 
 CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (

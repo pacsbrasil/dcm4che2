@@ -221,9 +221,9 @@ public abstract class FileSystemBean implements EntityBean {
      *  target-ejb="RetrieveAET"
      *  target-role-name="retrieve-aet-of-filesystem"
      *  target-multiple="yes"
-     * @jboss:relation fk-column="retrieve_aet_fk" related-pk-field="pk"
+     * @jboss:relation fk-column="aet_fk" related-pk-field="pk"
      * @jboss:target-relation fk-column="filesystem_fk" related-pk-field="pk"
-     * @jboss.relation-table table-name="rel_filesystem_retrieve_aet"
+     * @jboss.relation-table table-name="rel_filesystem_aet"
      *    
      * @ejb.interface-method view-type="local"
      */
