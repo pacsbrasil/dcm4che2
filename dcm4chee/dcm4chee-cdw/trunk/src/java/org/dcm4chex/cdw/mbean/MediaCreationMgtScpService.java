@@ -107,7 +107,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         this.keepSpoolFiles = keepSpoolFiles;
     }
 
-    public final String getDefaultMediaApplicationProfile() {
+   public final String getDefaultMediaApplicationProfile() {
         return defaultMediaApplicationProfile;
     }
 
@@ -428,6 +428,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 mcrq.setPriority(priority);
                 mcrq.setNumberOfCopies(numberOfCopies);
                 mcrq.setFilesetID(attrs.getString(Tags.StorageMediaFileSetID));
+                mcrq.setVolsetID(attrs.getString(Tags.StorageMediaFileSetID));
                 attrs.putIS(Tags.NumberOfCopies, numberOfCopies);
                 attrs.putCS(Tags.RequestPriority, priority);
                 attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);

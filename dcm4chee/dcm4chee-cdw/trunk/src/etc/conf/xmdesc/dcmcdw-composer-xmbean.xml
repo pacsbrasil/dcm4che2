@@ -52,12 +52,23 @@
    <attribute access="read-write"
       getMethod="getMediaCapacity"
       setMethod="setMediaCapacity">
-      <description>Media Capacity. Format: nnnGB|nnnMB|nnnKB. 
+      <description>Media Capacity. Format: ##.#GB|##.#MB|##.#KB. 
       </description>
       <name>MediaCapacity</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="700MB" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxHtmlSize"
+      setMethod="setMaxHtmlSize">
+      <description>Maximal Size of generated HTML pages. Format: ##.#GB|##.#MB|##.#KB. 
+      </description>
+      <name>MaxHtmlSize</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="1MB" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -83,12 +94,24 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isCreateIcon"
-      setMethod="setCreateIcon">
-      <description>Creates an icon to include in DICOMDIR for image instances
-      for which no icon is provided in the Media Creation Request.
+      getMethod="isKeepSpoolFiles"
+      setMethod="setKeepSpoolFiles">
+      <description>Keep spool files (for debugging) in failure case.
       </description>
-      <name>CreateIcon</name>
+      <name>KeepSpoolFiles</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isIncludeDisplayApplicationOnlyOnFirstMedia"
+      setMethod="setIncludeDisplayApplicationOnlyOnFirstMedia">
+      <description>Include Display Application only on first media if
+      the request is splitted over more than one piece of media. Otherwise,
+      the Display Application is included on every media.
+      </description>
+      <name>IncludeDisplayApplicationOnlyOnFirstMedia</name>
       <type>boolean</type>      
       <descriptors>
          <value value="true" />

@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
@@ -38,12 +40,14 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che.media.DirBuilderFactory;
+import org.dcm4che.media.DirReader;
 import org.dcm4che.media.DirRecord;
 import org.dcm4che.media.DirWriter;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
+import org.dcm4chex.cdw.common.FileUtils;
 import org.dcm4chex.cdw.common.Flag;
 import org.dcm4chex.cdw.common.MediaCreationException;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
@@ -61,6 +65,10 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  */
 class FilesetBuilder {
 
+    private static final String DICOM = "DICOM";
+    
+    private static final String IHE_PDI = "IHE_PDI";
+    
     private static final char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5',
             '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
@@ -86,9 +94,11 @@ class FilesetBuilder {
     private final ImageReader reader;
 
     private final boolean preserveInstances;
+    
+    private final boolean splitMedia;
 
     private final String web;
-
+    
     private BufferedImage imageBI;
 
     private BufferedImage jpegBI;
@@ -100,7 +110,9 @@ class FilesetBuilder {
     private boolean viewer;
 
     private final FilesetComponent fsRoot = new FilesetComponent(null, null, null);
-   
+    
+    private final Dataset recFilter = dof.newDataset();
+    
     private static String toHex(int val) {
         char[] ch8 = new char[8];
         for (int i = 8; --i >= 0; val >>= 4)
@@ -111,7 +123,7 @@ class FilesetBuilder {
 
     private static String[] makeFileIDs(String pid, String suid, String seruid,
             String iuid) {
-        return new String[] { "DICOM", toHex(pid.hashCode()),
+        return new String[] { DICOM, toHex(pid.hashCode()),
                 toHex(suid.hashCode()), toHex(seruid.hashCode()),
                 toHex(iuid.hashCode()),};
     }
@@ -139,25 +151,27 @@ class FilesetBuilder {
         this.viewer = Flag.isYes(attrs
                 .getString(Tags.IncludeDisplayApplication));
         this.web = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
+        this.splitMedia = Flag.isYes(attrs.getString(Tags.AllowMediaSplitting));
     }
 
     final boolean isWeb() {
         return !"NO".equals(web);
     }
-
-    public void build() throws MediaCreationException {
+    
+    public List build() throws MediaCreationException {
+        ArrayList result = new ArrayList();
+        result.add(rq);
         try {
-            File rootDir = mkRootDir(spoolDir);
+            File rootDir = mkRootDir(spoolDir, false);
             rq.setFilesetDir(rootDir);
-            File ddFile = new File(rootDir, "DICOMDIR");
+            File readmeFile = new File(rootDir, service
+                    .getFileSetDescriptorFile());
+            DirWriter dirWriter = dbf.newDirWriter(rq.getDicomDirFile(), rootDir.getName(),
+                    rq.getFilesetID(), readmeFile, service
+                            .getCharsetOfFileSetDescriptorFile(), null);
             HashMap patRecs = new HashMap();
             HashMap styRecs = new HashMap();
             HashMap serRecs = new HashMap();
-            File readmeFile = new File(rootDir, service
-                    .getFileSetDescriptorFile());
-            DirWriter dirWriter = dbf.newDirWriter(ddFile, rootDir.getName(),
-                    rq.getFilesetID(), readmeFile, service
-                            .getCharsetOfFileSetDescriptorFile(), null);
             try {
                 DcmElement refSOPs = attrs.get(Tags.RefSOPSeq);
                 for (int i = 0, n = refSOPs.vm(); i < n; ++i) {
@@ -170,14 +184,24 @@ class FilesetBuilder {
             }
             mergeDir(service.getMergeDir(), rootDir);
             if (isWeb()) {
-                (new File(rootDir, "IHE_PDI")).mkdir();
+                (new File(rootDir, IHE_PDI)).mkdir();
                 mergeDir(service.getMergeDirWeb(), rootDir);
             }
-            if (viewer) mergeDir(service.getMergeDirViewer(), rootDir);
+            if (viewer)
+                mergeDir(service.getMergeDirViewer(), rootDir);
+            if (fsRoot.size() > service.freeSizeOnMedia(isWeb(), viewer)) {
+                if (!splitMedia)
+                    throw new MediaCreationException(
+                            ExecutionStatusInfo.SET_OVERSIZED,
+                            "File-set size exceeds Media Capacity: "
+                            + service.getMediaCapacity());
+                splitFileset(result);
+            }
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
         }
+        return result;
     }
 
     private void mergeDir(File src, File dest) throws IOException {
@@ -188,9 +212,8 @@ class FilesetBuilder {
             if (link.isDirectory())
                 mergeDir(files[i], link);
             else {
-                if (link.delete())
-                        if (log.isDebugEnabled())
-                                log.debug("M-DELETE " + link);
+                if (link.isFile())
+                    FileUtils.delete(link, log);
                 makeSymLink(files[i], link);
             }
         }
@@ -227,7 +250,7 @@ class FilesetBuilder {
                     Pair patRec = (Pair) patRecs.get(pid);
                     if (patRec == null) {
                         patRec = new Pair(dirWriter.add(null,
-                                "PATIENT", recFact.makeRecord(
+                                DirRecord.PATIENT, recFact.makeRecord(
                                         DirRecord.PATIENT, ds)),
                                 new FilesetComponent(pid, ds
                                         .getString(Tags.PatientName),
@@ -236,14 +259,14 @@ class FilesetBuilder {
                         fsRoot.addChild(patRec.comp);
                     }
                     styRec = new Pair(dirWriter.add(
-                            patRec.rec, "STUDY", recFact.makeRecord(
+                            patRec.rec, DirRecord.STUDY, recFact.makeRecord(
                                     DirRecord.STUDY, ds)), new FilesetComponent(suid,
                             ds.getDateTime(Tags.StudyDate, Tags.StudyTime), new String[]{ fileIDs[0], fileIDs[1], fileIDs[2] }));
                     styRecs.put(suid, styRec);
                     patRec.comp.addChild(styRec.comp);
                 }
                 serRec = new Pair(dirWriter.add(
-                        styRec.rec, "SERIES", recFact.makeRecord(
+                        styRec.rec, DirRecord.SERIES, recFact.makeRecord(
                                 DirRecord.SERIES, ds)), new FilesetComponent(seruid,
                         ds.getInteger(Tags.SeriesNumber), new String[]{ fileIDs[0], fileIDs[1], fileIDs[2], fileIDs[3]}));
                 serRecs.put(seruid, serRec);
@@ -252,6 +275,7 @@ class FilesetBuilder {
             FilesetComponent comp = new FilesetComponent(iuid, ds
                     .getInteger(Tags.InstanceNumber), fileIDs);
             comp.incSize(src.length());
+            log.info("add: " + comp);                        
             serRec.comp.addChild(comp);
             String recType = DirBuilderFactory.getRecordType(cuid);
             Dataset rec = recFact.makeRecord(recType, ds);
@@ -281,10 +305,10 @@ class FilesetBuilder {
                                         + src);
                     } else {
                         try {
-                            fileIDs[0] = "IHE_PDI";
+                            fileIDs[0] = IHE_PDI;
                             File jpegDir = new File(rq.getFilesetDir(), StringUtils.toString(fileIDs,
                                     File.separatorChar));
-                            fileIDs[0] = "DICOM";
+                            fileIDs[0] = DICOM;
                             mkJpegs(jpegDir, comp);
                         } catch (Exception e) {
                             log.warn("Failed to generate jpeg from " + src, e);
@@ -294,6 +318,7 @@ class FilesetBuilder {
             }
             dirWriter.add(serRec.rec, recType, rec, fileIDs, cuid, iuid,
                     tsuid);
+            log.info("fsRoot: " + fsRoot);            
         } finally {
             try {
                 in.close();
@@ -303,9 +328,7 @@ class FilesetBuilder {
 
         File dest = new File(rootDir, StringUtils.toString(fileIDs,
                 File.separatorChar));
-        File parent = dest.getParentFile();
-        if (!parent.exists() && !parent.mkdirs())
-                throw new IOException("Failed to mkdirs " + parent);
+        mkParentDir(dest);
         if (preserveInstances)
             makeSymLink(src, dest);
         else
@@ -485,8 +508,10 @@ class FilesetBuilder {
         return bi;
     }
 
-    private File mkRootDir(SpoolDirDelegate spoolDir) throws IOException {
-        String uid = attrs.getString(Tags.StorageMediaFileSetUID);
+    private File mkRootDir(SpoolDirDelegate spoolDir, boolean newuid)
+    		throws IOException {
+        String uid = newuid ? null
+        		: attrs.getString(Tags.StorageMediaFileSetUID);
         if (uid == null) uid = uidgen.createUID();
 
         File d;
@@ -512,6 +537,131 @@ class FilesetBuilder {
         } catch (InterruptedException e) {
         }
         throw new IOException(StringUtils.toString(cmd, ' ') + " failed!");
+    }
+
+    private void splitFileset(ArrayList rqList) throws MediaCreationException, IOException {
+        long freeSizeFirst = service.freeSizeOnMedia(isWeb(), viewer);
+        long freeSizeOther = service.freeSizeOnMedia(isWeb(), viewer && !service.isIncludeDisplayApplicationOnlyOnFirstMedia());
+        ArrayList fsList = new ArrayList();
+        fsRoot.split(freeSizeFirst, freeSizeOther, fsList, log);
+        rq.setVolsetSize(fsList.size());
+        String fsIDPrefix = getFilesetIDPrefix();
+        File oldDDFile = new File(rq.getFilesetDir(), "DICOMDIR.old");
+        move(rq.getDicomDirFile(), oldDDFile);
+        DirReader dirReader = dbf.newDirReader(oldDDFile);
+        try {
+	        for (int i = 0, n = fsList.size(); i < n; ++i) {
+	            FilesetComponent comp = (FilesetComponent) fsList.get(i);
+	            File rootDir = rq.getFilesetDir();
+	            MediaCreationRequest newrq = rq;
+	            if (i > 0) {
+	                rootDir = mkRootDir(spoolDir, false);
+	                moveComponents(comp.childs(), rootDir);
+	                mergeDir(service.getMergeDir(), rootDir);
+	                if (isWeb()) {
+	                    (new File(rootDir, IHE_PDI)).mkdir();
+	                    mergeDir(service.getMergeDirWeb(), rootDir);
+	                }            
+	                if (viewer && !service.isIncludeDisplayApplicationOnlyOnFirstMedia())
+	                    mergeDir(service.getMergeDirViewer(), rootDir);
+	                newrq = new MediaCreationRequest(rq);
+	                newrq.setFilesetDir(rootDir);	                
+	                newrq.setVolsetSeqno(i+1);
+	            }
+	            newrq.setFilesetID(fsIDPrefix + (i+1));
+	            File newReadmeFile = new File(rootDir, service
+	                    .getFileSetDescriptorFile());
+	            DirWriter dirWriter = dbf.newDirWriter(rq.getDicomDirFile(), rootDir.getName(),
+	                    newrq.getFilesetID(), newReadmeFile, service
+	                    .getCharsetOfFileSetDescriptorFile(), null);
+	            try {
+                    copyPatientDirRecords(comp.root().childs(), dirWriter, dirReader);
+	            } finally {
+	                dirWriter.close();
+	            }
+	        }
+        } finally {
+            dirReader.close();
+            FileUtils.delete(oldDDFile, log);
+        }
+    }
+
+    private String getFilesetIDPrefix() {
+        String prefix = rq.getFilesetID() + '_';
+        int maxSuffixLen = String.valueOf(rq.getVolsetSize()).length();
+        return prefix.substring(Math.max(0, prefix.length() + maxSuffixLen - 16));
+    }
+
+    private void moveComponents(ArrayList comps, File newRootDir) throws IOException {
+        for (int i = 0, n = comps.size(); i < n; ++i) {
+            FilesetComponent comp = (FilesetComponent) comps.get(i);
+            String[] fileIDs = comp.fileIDs();
+            move(fileIDs, newRootDir);
+            if (isWeb()) {
+                fileIDs[0] = IHE_PDI;
+                move(fileIDs, newRootDir);
+                fileIDs[0] = DICOM;
+            }
+        }
+    }
+    
+    private void move(String[] fileIDs, File newRootDir) throws IOException {
+        String filepath = StringUtils.toString(fileIDs, File.separatorChar);
+        File src = new File(rq.getFilesetDir(), filepath);
+        File dest = new File(newRootDir, filepath);
+        mkParentDir(dest);
+        move(src, dest);
+    }
+
+    private boolean mkParentDir(File dest) throws IOException {
+        File parent = dest.getParentFile();
+        if (parent.exists()) return false;
+        if (!parent.mkdirs())
+            throw new IOException("Failed to mkdirs " + parent); 
+        return true;
+    }
+
+    private void copyPatientDirRecords(ArrayList pats, DirWriter dirWriter, DirReader dirReader) throws IOException {
+        for (int i = 0, n = pats.size(); i < n; ++i) {
+            FilesetComponent pat = (FilesetComponent) pats.get(i);
+            recFilter.clear();
+            recFilter.putLO(Tags.PatientID, pat.id());
+            DirRecord srcPatRec = dirReader.getFirstRecordBy(null, recFilter, false);
+            DirRecord dstPatRec = dirWriter.add(null, srcPatRec.getType(), srcPatRec.getDataset());
+            copyStudyDirRecords(pat.childs(), dirWriter, srcPatRec, dstPatRec);
+        }
+    }
+
+    private void copyStudyDirRecords(ArrayList stys, DirWriter dirWriter, DirRecord srcPatRec, DirRecord dstPatRec) throws IOException {
+        for (int i = 0, n = stys.size(); i < n; ++i) {
+            FilesetComponent sty = (FilesetComponent) stys.get(i);
+            recFilter.clear();
+            recFilter.putUI(Tags.StudyInstanceUID, sty.id());
+            DirRecord srcRec = srcPatRec.getFirstChildBy(null, recFilter, false);
+            DirRecord dstRec = dirWriter.add(dstPatRec, srcRec.getType(), srcRec.getDataset());
+            copySeriesDirRecords(sty.childs(), dirWriter, srcRec, dstRec);
+        }
+    }
+
+    private void copySeriesDirRecords(ArrayList sers, DirWriter dirWriter, DirRecord srcStyRec, DirRecord dstStyRec) throws IOException {
+        for (int i = 0, n = sers.size(); i < n; ++i) {
+            FilesetComponent ser = (FilesetComponent) sers.get(i);
+            recFilter.clear();
+            recFilter.putUI(Tags.SeriesInstanceUID, ser.id());
+            DirRecord srcRec = srcStyRec.getFirstChildBy(null, recFilter, false);
+            DirRecord dstRec = dirWriter.add(dstStyRec, srcRec.getType(), srcRec.getDataset());
+            copyInstanceDirRecords(ser.childs(), dirWriter, srcRec, dstRec);
+        }
+    }
+
+    private void copyInstanceDirRecords(ArrayList insts, DirWriter dirWriter, DirRecord srcSerRec, DirRecord dstSerRec) throws IOException {
+        for (int i = 0, n = insts.size(); i < n; ++i) {
+            FilesetComponent inst = (FilesetComponent) insts.get(i);
+            recFilter.clear();
+            recFilter.putUI(Tags.SOPInstanceUID, inst.id());
+            DirRecord srcRec = srcSerRec.getFirstChildBy(null, recFilter, false);
+            DirRecord dstRec = dirWriter.add(dstSerRec, srcRec.getType(), srcRec.getDataset());
+        }
     }
 
 }

@@ -38,9 +38,9 @@ public class MediaCreationRequest implements Serializable {
 
     private String medium;
 
-    private String filesetID;
+    private String filesetID = "";
 
-    private String volsetID;
+    private String volsetID = "";
 
     private int volsetSeqno = 1;
 
@@ -48,6 +48,26 @@ public class MediaCreationRequest implements Serializable {
 
     public MediaCreationRequest(File requestFile) {
         this.requestFile = requestFile;
+    }
+
+    public MediaCreationRequest(MediaCreationRequest other) {
+        this.requestFile = other.requestFile;
+        this.mediaWriterName = other.mediaWriterName;
+        this.priority = other.priority;
+        this.numberOfCopies = other.numberOfCopies;
+        this.filesetDir = other.filesetDir;
+        this.isoImageFile = other.isoImageFile;
+        this.medium = other.medium;
+        this.filesetID = other.filesetID;
+        this.volsetID = other.volsetID;
+        this.volsetSeqno = other.volsetSeqno;
+        this.volsetSize = other.volsetSize;
+    }
+    
+    public final File getDicomDirFile() {
+        if (filesetDir == null)
+            throw new IllegalStateException("FilesetDir not yet initialized");
+        return new File(filesetDir, "DICOMDIR");
     }
 
     public final String getMediaWriterName() {
@@ -87,7 +107,7 @@ public class MediaCreationRequest implements Serializable {
     }
 
     public final void setFilesetID(String filesetID) {
-        this.filesetID = filesetID;
+        this.filesetID = filesetID != null ? filesetID : "";
     }
 
     public final File getIsoImageFile() {
@@ -115,7 +135,7 @@ public class MediaCreationRequest implements Serializable {
     }
 
     public final void setVolsetID(String volsetID) {
-        this.volsetID = volsetID;
+        this.volsetID = volsetID != null ? volsetID : "";
     }
 
     public final int getVolsetSeqno() {

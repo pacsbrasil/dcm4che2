@@ -8,9 +8,13 @@
  ******************************************/
 package org.dcm4chex.cdw.mbean;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.cdw.common.ExecutionStatusInfo;
+import org.dcm4chex.cdw.common.MediaCreationException;
+import org.jboss.logging.Logger;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -36,6 +40,11 @@ final class FilesetComponent implements Comparable {
         this.id = id;
         this.comparable = comparable;
         this.fileIDs = fileIDs;
+    }
+    
+    public String toString() {
+        return "FilesetComponent[" + StringUtils.toString(fileIDs, '/')
+        	+ ", size=" + size + ", cmp=" + comparable + "]";
     }
 
     public int compareTo(Object o) {
@@ -67,19 +76,59 @@ final class FilesetComponent implements Comparable {
         if (parent != null) parent.incSize(delta);
     }
 
-    public FilesetComponent takeChilds(long maxSize) {
-        FilesetComponent result = new FilesetComponent(id, comparable, fileIDs);
-        Collections.sort(childs);
+    private void moveChilds(FilesetComponent dest, long maxSize, Logger log) {
         while (!childs.isEmpty()) {
             FilesetComponent child = (FilesetComponent) childs.get(0);
-            if (result.size + child.size > maxSize) break;
+            if (dest.size + child.size > maxSize) break;
+            log.info("move " + child);
             removeChild(child);
-            result.addChild(child);
+            dest.addChild(child);
         }
+    }
+    
+    public void split(long freeSizeFirst, long freeSizeOther, ArrayList result, Logger log)
+		throws MediaCreationException {
+        log.info("split " + this);
+        Collections.sort(childs);
+        while (!childs.isEmpty()) {
+			FilesetComponent dest = newFilesetComponent();
+			moveChilds(dest, result.isEmpty() ? freeSizeFirst : freeSizeOther, log);
+			if (dest.childs == null) {
+				FilesetComponent child = (FilesetComponent) childs.get(0);
+				if (child.childs == null)
+					throw new MediaCreationException(
+					        ExecutionStatusInfo.INST_OVERSIZED,
+                            "Instance size exceeds Media Capacity");
+				child.split(freeSizeFirst, freeSizeOther, result, log);				
+			} else
+				result.add(dest);				
+		}		
+    }
+
+    private FilesetComponent newFilesetComponent() {
+        FilesetComponent result = new FilesetComponent(id, comparable, fileIDs);
+		if (parent != null)
+			parent.newFilesetComponent().addChild(result); 
         return result;
     }
 
     public final long size() {
         return size;
-    };
+    }
+
+	public final FilesetComponent root() {
+		return parent != null ? parent.root() : this; 
+	}
+
+	public final ArrayList childs() {
+		return childs; 
+	}
+
+	public final String id() {
+		return id; 
+	}
+
+	public final String[] fileIDs() {
+		return fileIDs; 
+	}
 }
