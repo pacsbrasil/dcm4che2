@@ -43,7 +43,10 @@
         <attr tag="00080008"/> <!-- Image Type -->
         <attr tag="00080016"/> <!-- SOP Class UID -->
         <attr tag="00080018"/> <!-- SOP Instance UID -->
-        <attr tag="00080023"/> <!-- Content Date -->
+	    <attr tag="00080022"/> <!-- Acquisition Date -->
+	    <attr tag="00080023"/> <!-- Content Date -->
+	    <attr tag="0008002A"/> <!-- Acquisition Datetime -->
+	    <attr tag="00080032"/> <!-- Acquisition Time -->
         <attr tag="00080033"/> <!-- Content Time -->
         <attr tag="00081115"/> <!-- Referenced Series Sequence -->
         <attr tag="00200013"/> <!-- Instance Number -->
