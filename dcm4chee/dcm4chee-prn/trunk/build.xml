@@ -34,6 +34,7 @@
   <property name="build.deploy.dir" value="${build.dir}/deploy"/>
   <property name="build.lib.dir" value="${build.dir}/lib"/>
   <property name="build.bin.dir" value="${build.dir}/bin"/>
+  <property name="build.doc.dir" value="${build.dir}/doc"/>
   
   <property name="dist.name" value="${name}-${version}"/>
   <property name="dist.dir" value="${build.dir}/${dist.name}"/>
@@ -281,7 +282,38 @@
     <delete file="${jboss.server.deploy}/dcmsrv.sar" />
   </target>           
 
-  <target name="doc">
+  <target name="unpack-docbook-dtd">
+    <mkdir dir="${doc.dir}/dtd"/>
+    <unzip src="${doc.dir}/docbook-xml-4.2.zip" dest="${doc.dir}/dtd"/>
+  </target>
+  
+  <target name="unpack-docbook-xsl"
+          depends="check-docbook-xsl"
+          unless="docbook-xsl.present">
+    <unzip src="${doc.dir}/docbook-xsl-1.60.1.zip" dest="${doc.dir}"/>
+    <move todir="${doc.dir}/xsl">
+      <fileset dir="${doc.dir}/docbook-xsl-1.60.1"/>
+    </move>
+  </target>
+    
+  <target name="check-docbook-xsl">
+    <available file="${doc.dir}/xsl/html/docbook.xsl"
+               type="file"
+               property="docbook-xsl.present"
+    />
+  </target>  
+  
+  <target name="doc" depends="unpack-docbook-dtd, unpack-docbook-xsl">
+    <style basedir="${doc.xml}"
+           includes="readme.xml"
+           destdir="${build.doc.dir}"
+           extension=".html"
+           style="${doc.dir}/xsl/html/docbook.xsl"/>
+    <style basedir="${doc.xml}"
+           includes="cs-template.docbook.xml"
+           destdir="${build.doc.dir}"
+           extension=".html"
+           style="${doc.dir}/xsl/html/docbook.xsl"/>
   </target>           
   
   <target name="release" depends="build">
