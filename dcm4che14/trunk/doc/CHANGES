@@ -8,6 +8,7 @@ BUG FIXES:
 + org.dcm4che.srom.HL7Export#toHL7(String..):
   Fix Inconsistence between API and Implementation of String argument order
 + Fix bug in mppssnd utility (did not send anything)
++ add missing Def of Tag (0040,030E) Exposure Dose Sequence
 
 ENHANCEMENTS:
 org.dcm4che.data.Dataset:

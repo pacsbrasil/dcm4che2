@@ -996,6 +996,7 @@
   <element tag="(0040,0303)" name="Exposed Area" vr="US" vm="1-2" key="ExposedArea" />
   <element tag="(0040,0306)" name="Distance Source to Entrance" vr="DS" vm="1" key="DistanceSourceToEntrance" />
   <element tag="(0040,0307)" name="Distance Source to Support" vr="DS" vm="1" key="DistanceSourceToSupport" />
+  <element tag="(0040,030E)" name="Exposure Dose Sequence" vr="SQ" vm="1" key="ExposureDoseSeq" />
   <element tag="(0040,0310)" name="Comments on Radiation Dose" vr="ST" vm="1" key="CommentsOnRadiationDose" />
   <element tag="(0040,0312)" name="X-Ray Output" vr="DS" vm="1" key="XRayOutput" />
   <element tag="(0040,0314)" name="Half Value Layer" vr="DS" vm="1" key="HalfValueLayer" />
