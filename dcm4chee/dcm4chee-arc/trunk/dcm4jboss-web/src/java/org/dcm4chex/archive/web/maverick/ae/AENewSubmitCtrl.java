@@ -20,7 +20,7 @@ import org.dcm4chex.archive.web.maverick.*;
 public class AENewSubmitCtrl extends Errable
 {
 
-	private String title, hostName, chiperSuites;
+	private String title, hostName, cipherSuites;
 	private int port, pk;
 	private String newPar = null;
 	private String cancelPar = null;
@@ -29,9 +29,9 @@ public class AENewSubmitCtrl extends Errable
 	/**
 	 * @param chiperSuites The chiperSuites to set.
 	 */
-	public final void setChiperSuites(String chiperSuites)
+	public final void setCipherSuites(String cipherSuites)
 	{
-		this.chiperSuites = chiperSuites;
+		this.cipherSuites = cipherSuites;
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class AENewSubmitCtrl extends Errable
 			this.title,
 			this.hostName,
 			this.port,
-			this.chiperSuites);
+			this.cipherSuites);
 	}
 
 	protected String perform() throws Exception
