@@ -1,6 +1,5 @@
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
+/*                                                                           *
+ *  Copyright (c) 2002, 2003 by TIANI MEDGRAPH AG                            *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -17,12 +16,12 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
+ */
 
 package org.dcm4cheri.hl7;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * <description> 
@@ -31,13 +30,6 @@ import java.io.ByteArrayOutputStream;
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
  *   
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
- *            beyond the cvs commit message
- * </ul>
  */
 class HL7FieldsImpl implements HL7Fields
 {
@@ -150,7 +142,11 @@ class HL7FieldsImpl implements HL7Fields
    }
 
    public String toString() {
-      return new String(data, off, len);
+       try {
+           return new String(data, off, len, "ISO-8859-1");
+       } catch (UnsupportedEncodingException e) {
+           return new String(data, off, len);
+       }
    }
    
    public String get(int index) {
