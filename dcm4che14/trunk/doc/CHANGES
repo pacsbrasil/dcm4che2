@@ -35,10 +35,14 @@ dcm4che API:
 + add org.dcm4che.net.AAssociateAC#countAcceptedPresContext
 + add org.dcm4che.net.AAssociation#countAcceptedPresContext
 + add org.dcm4che.net.AAssociation#listAcceptedPresContext
++ make org.dcm4cheri.data.DcmParserImpl tolerant for redundant
+  Sequence Delimiter Items of Sequences with explicit length encoding
 
 CHANGES:
 dcm4che API:
 + rename org.dcm4che.net.Factory to org.dcm4che.net.AssociationFactory
++ relax VR value check for most VR types to log warning insteed
+  throw IllegalValueException
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1

@@ -46,8 +46,7 @@ import org.apache.log4j.Logger;
  * @version 1.0.0
  */
 class DcmElementImpl implements DcmElement {
-    static final String CLASSNAME = "org.dcm4cheri.data.DcmElementImpl";
-    static final Logger log = Logger.getLogger(CLASSNAME);
+    static final Logger log = Logger.getLogger(DcmElementImpl.class);
     static final TagDictionary DICT = 
             DictionaryFactory.getInstance().getDefaultTagDictionary();
 

@@ -376,6 +376,7 @@ public class DcmSnd implements PollDirSrv.Handler {
     private boolean sendDataset(ActiveAssociation active, File file,
     DcmParser parser, Dataset ds)
     throws InterruptedException, IOException {
+        doOverwrite(ds);
         String sopInstUID = ds.getString(Tags.SOPInstanceUID);
         if (sopInstUID == null) {
             log.error(
@@ -414,7 +415,6 @@ public class DcmSnd implements PollDirSrv.Handler {
             return false;
             
         }
-        doOverwrite(ds);
         active.invoke(aFact.newDimse(pc.pcid(),
             oFact.newCommand().initCStoreRQ(assoc.nextMsgID(),
             sopClassUID, sopInstUID, priority),

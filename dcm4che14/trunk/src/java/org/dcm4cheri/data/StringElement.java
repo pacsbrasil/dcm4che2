@@ -90,11 +90,13 @@ abstract class StringElement extends ValueElement {
         }
         public String check(String s) {
             char[] a = s.toCharArray();
-            if (a.length > maxLen)
-                throw new IllegalArgumentException(s);
+            if (a.length > maxLen) {
+                log.warn("Value: " + s + " exeeds VR length limit: " + maxLen);
+            }
             for (int i = 0; i < a.length; ++i) {
-                if (!check(a[i]))
-                    throw new IllegalArgumentException(s);
+                if (!check(a[i])) {
+                    log.warn("Illegal character '" + a[i] + "' in value: " + s);
+                }
             }
             return s;
         }
@@ -469,7 +471,8 @@ abstract class StringElement extends ValueElement {
                         return s;
                 }
             }
-            throw new IllegalArgumentException(s);            
+            log.warn("Illegal Age String: " + s );
+            return s;
         }
     };
     
@@ -526,9 +529,14 @@ abstract class StringElement extends ValueElement {
     // DS ------------------------------------------------------------------
     static final Check DS_CHECK = new Check() {
         public String check(String s) {
-            if (s.length() > 16)
-                throw new IllegalArgumentException(s);
-            Float.parseFloat(s);
+            try {
+                Float.parseFloat(s);
+                if (s.length() > 16) {
+                    log.warn("DS Value: " + s + " exeeds DS length limit: 16");
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Illegal DS Value: " + s);
+            }
             return s;
         }        
     };
@@ -585,9 +593,14 @@ abstract class StringElement extends ValueElement {
     // IS ------------------------------------------------------------------
     static final Check IS_CHECK = new Check() {
         public String check(String s) {
-            if (s.length() > 12)
-                throw new IllegalArgumentException(s);
-            Integer.parseInt(s);
+            try {
+                Integer.parseInt(s);
+                if (s.length() > 12) {
+                    log.warn("IS Value: " + s + " exeeds IS length limit: 12");
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Illegal IS Value: " + s);
+            }
             return s;
         }        
     };
@@ -683,15 +696,19 @@ abstract class StringElement extends ValueElement {
     private static final Check UI_CHECK = new CheckImpl(64, false) {
         public String check(String s) {
             char[] a = s.toCharArray();
-            if (a.length > maxLen)
-                throw new IllegalArgumentException(s);
+            if (a.length > maxLen) {
+                log.warn("Value: " + s + " exeeds VR length limit: " + maxLen);
+            }
             int state = UID_DIGIT1;
             for (int i = 0; i < a.length; ++i) {
-                if ((state = nextState(state, a[i])) == UID_ERROR)
-                    throw new IllegalArgumentException(s);
+                if ((state = nextState(state, a[i])) == UID_ERROR) {
+                    log.warn("Illegal UID value: " + s);
+                    return s;
+                }
             }
-            if (state == UID_DIGIT1)
-                throw new IllegalArgumentException(s);
+            if (state == UID_DIGIT1) {
+                log.warn("Illegal UID value: " + s);
+            }
             return s;
         }
     };

@@ -579,7 +579,12 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                 int itemlen = bb12.getInt(4);
                 switch (itemtag) {
                     case SEQ_DELIMITATION_ITEM_TAG:
-                        if (sqLen != -1 || itemlen != 0)
+                        if (sqLen != -1) {
+                            log.warn("Unexpected Sequence Delimination Item"
+                                + " (fffe,e0dd) for Sequence with explicit length: "
+                                + sqLen);
+                        }
+                        if (itemlen != 0)
                             throw new DcmParseException(
                                     "(fffe,e0dd), Length:" + itemlen);
                         break loop;
