@@ -386,7 +386,7 @@ public abstract class MediaComposerBean implements SessionBean {
      * @ejb.interface-method
      */
     public int findByCreatedTime( Collection col, Long after,
-            Long before, Integer stati, Integer offset, Integer limit,
+            Long before, int[] stati, Integer offset, Integer limit,
             boolean desc) throws FinderException {
     	Timestamp tsAfter = null;
     	if ( after != null ) tsAfter = new Timestamp(after.longValue() );
@@ -416,7 +416,7 @@ public abstract class MediaComposerBean implements SessionBean {
      * @ejb.interface-method
      */
     public int findByUpdatedTime( Collection col, Long after,
-            Long before, Integer stati, Integer offset, Integer limit,
+            Long before, int[] stati, Integer offset, Integer limit,
             boolean desc) throws FinderException {
     	Timestamp tsAfter = null;
     	if ( after != null ) tsAfter = new Timestamp(after.longValue() );

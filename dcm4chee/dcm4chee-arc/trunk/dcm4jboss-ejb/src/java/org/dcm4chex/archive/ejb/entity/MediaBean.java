@@ -188,7 +188,7 @@ public abstract class MediaBean implements EntityBean {
     /**    
      * @ejb.home-method
      */
-    public java.util.Collection ejbHomeListByCreatedTime(Integer status,
+    public java.util.Collection ejbHomeListByCreatedTime(int[] status,
             Timestamp after, Timestamp before, Integer offset, Integer limit,
             boolean desc) throws FinderException {
         return findBy("m.createdTime", status, after, before, offset, limit,
@@ -198,38 +198,45 @@ public abstract class MediaBean implements EntityBean {
     /**    
      * @ejb.home-method
      */
-    public java.util.Collection ejbHomeListByUpdatedTime(Integer status,
+    public java.util.Collection ejbHomeListByUpdatedTime(int[] status,
             Timestamp after, Timestamp before, Integer offset, Integer limit,
             boolean desc) throws FinderException {
         return findBy("m.updatedTime", status, after, before, offset, limit,
-                desc);
+        		desc);
     }
 
     /**    
      * @ejb.home-method
      */
-    public int ejbHomeCountByCreatedTime(Integer status,
+    public int ejbHomeCountByCreatedTime(int[] status,
             Timestamp after, Timestamp before) throws FinderException {
         return countBy("m.createdTime", status, after, before);
     }
 
-    /**    
+	/**    
      * @ejb.home-method
      */
-    public int ejbHomeCountByUpdatedTime(Integer status,
+    public int ejbHomeCountByUpdatedTime(int[] status,
             Timestamp after, Timestamp before) throws FinderException {
         return countBy("m.updatedTime", status, after, before);
     }
     
+	private static boolean isNull(int[] status) {
+		return status == null || status.length == 0;
+	}
+
     private int appendWhere(StringBuffer jbossQl, Object[] args, String attrName,
-            Integer status, Timestamp after, Timestamp before) {
-        int i = 0;
-        if (status != null) {
-            args[i++] = status;
-            jbossQl.append(" WHERE m.mediaStatus = ?").append(i);
+            int[] status, Timestamp after, Timestamp before) {
+        if (!isNull(status)) {
+            jbossQl.append(" WHERE m.mediaStatus IN (").append(status[0]);
+            for (int i = 1; i < status.length; i++) {
+				jbossQl.append(", ").append(status[i]);
+			}            
+			jbossQl.append(")");
         }
+        int i = 0;
         if (after != null || before != null) {
-            jbossQl.append(i == 0 ? " WHERE " : " AND ");
+            jbossQl.append(isNull(status) ? " WHERE " : " AND ");
             jbossQl.append(attrName);
             if (after != null) {
                 args[i++] = after;
@@ -248,13 +255,11 @@ public abstract class MediaBean implements EntityBean {
         return i;
     }
     
-    private Collection findBy(String attrName, Integer status, Timestamp after,
+    private Collection findBy(String attrName, int[] status, Timestamp after,
             Timestamp before, Integer offset, Integer limit,
             boolean desc) throws FinderException {
         // generate JBossQL query
         int argsCount = 0;
-        if (status != null)
-            ++argsCount;
         if (after != null)
             ++argsCount;
         if (before != null)
@@ -283,12 +288,10 @@ public abstract class MediaBean implements EntityBean {
         return ejbSelectGeneric(jbossQl.toString(), args);
     }
 
-    private int countBy(String attrName, Integer status, Timestamp after,
+    private int countBy(String attrName, int[] status, Timestamp after,
             Timestamp before) throws FinderException {
         // generate JBossQL query
         int argsCount = 0;
-        if (status != null)
-            ++argsCount;
         if (after != null)
             ++argsCount;
         if (before != null)
