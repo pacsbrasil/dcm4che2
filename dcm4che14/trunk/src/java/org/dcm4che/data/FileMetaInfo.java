@@ -47,6 +47,10 @@ public interface FileMetaInfo extends DcmObject{
     public String getMediaStorageSOPInstanceUID();
     
     public String getTransferSyntaxUID();
+
+    public String getImplementationClassUID();
+    
+    public String getImplementationVersionName();
     
     public void write(DcmHandler handler) throws IOException;
 

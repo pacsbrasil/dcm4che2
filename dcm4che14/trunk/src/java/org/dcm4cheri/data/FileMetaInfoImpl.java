@@ -45,106 +45,125 @@ import org.xml.sax.ContentHandler;
  * @see "DICOM Part 5: Data Structures and Encoding, 7. The Data Set"
  */
 final class FileMetaInfoImpl extends DcmObjectImpl implements FileMetaInfo {
-   
-   static final byte[] DICM_PREFIX = {
-      (byte)'D', (byte)'I', (byte)'C', (byte)'M'
-   };
-   
-   static final byte[] VERSION = { 0, 1 };
-   
-   private final byte[] preamble = new byte[128];
-   private String sopClassUID = null;
-   private String sopInstanceUID = null;
-   private String tsUID = null;
-   private String implClassUID = null;
-   private String implVersionName = null;
-   
-   public String toString() {
-      return "FileMetaInfo[uid=" + sopInstanceUID
-         + "\n\tclass=" + DICT.lookup(sopClassUID)
-         + "\n\tts=" + DICT.lookup(tsUID)
-         + "\n\timpl=" + implClassUID + "-" + implVersionName + "]";
-   }
-   
-   public final byte[] getPreamble() {
-      return preamble;
-   }
-   
-   FileMetaInfoImpl init(String sopClassUID, String sopInstUID, String tsUID,
-   String implClassUID, String  implVersName) {
-      putOB(Tags.FileMetaInformationVersion, (byte[])VERSION.clone());
-      putUI(Tags.MediaStorageSOPClassUID, sopClassUID);
-      putUI(Tags.MediaStorageSOPInstanceUID, sopInstUID);
-      putUI(Tags.TransferSyntaxUID, tsUID);
-      putUI(Tags.ImplementationClassUID, implClassUID);
-      if (implVersName != null) {
-         putSH(Tags.ImplementationVersionName, implVersName);
-      }
-      return this;
-   }
-   
-   public String getMediaStorageSOPClassUID() {
-      try {
-         return getString(Tags.MediaStorageSOPClassUID);
-      } catch (DcmValueException ex) {
-         return null;
-      }
-   }
-   
-   public String getMediaStorageSOPInstanceUID() {
-      try {
-         return getString(Tags.MediaStorageSOPInstanceUID);
-      } catch (DcmValueException ex) {
-         return null;
-      }
-   }
-   
-   public String getTransferSyntaxUID() {
-      try {
-         return getString(Tags.TransferSyntaxUID);
-      } catch (DcmValueException ex) {
-         return null;
-      }
-   }
-   
-   protected DcmElement put(DcmElement newElem) {
-      if ((newElem.tag() & 0xFFFF0000) != 0x00020000)
+    
+    static final byte[] DICM_PREFIX = {
+        (byte)'D', (byte)'I', (byte)'C', (byte)'M'
+    };
+    
+    static final byte[] VERSION = { 0, 1 };
+    
+    private final byte[] preamble = new byte[128];
+    private String sopClassUID = null;
+    private String sopInstanceUID = null;
+    private String tsUID = null;
+    private String implClassUID = null;
+    private String implVersionName = null;
+    
+    public String toString() {
+        return "FileMetaInfo[uid=" + sopInstanceUID
+        + "\n\tclass=" + DICT.lookup(sopClassUID)
+        + "\n\tts=" + DICT.lookup(tsUID)
+        + "\n\timpl=" + implClassUID + "-" + implVersionName + "]";
+    }
+    
+    public final byte[] getPreamble() {
+        return preamble;
+    }
+    
+    FileMetaInfoImpl init(String sopClassUID, String sopInstUID, String tsUID,
+    String implClassUID, String  implVersName) {
+        putOB(Tags.FileMetaInformationVersion, (byte[])VERSION.clone());
+        putUI(Tags.MediaStorageSOPClassUID, sopClassUID);
+        putUI(Tags.MediaStorageSOPInstanceUID, sopInstUID);
+        putUI(Tags.TransferSyntaxUID, tsUID);
+        putUI(Tags.ImplementationClassUID, implClassUID);
+        if (implVersName != null) {
+            putSH(Tags.ImplementationVersionName, implVersName);
+        }
+        return this;
+    }
+    
+    public String getMediaStorageSOPClassUID() {
+        return sopClassUID;
+    }
+    
+    public String getMediaStorageSOPInstanceUID() {
+        return sopInstanceUID;
+    }
+    
+    public String getTransferSyntaxUID() {
+        return tsUID;
+    }
+        
+    public String getImplementationClassUID() {
+        return implClassUID;
+    }
+    
+    public String getImplementationVersionName() {
+        return implVersionName;
+    }
+    
+    protected DcmElement put(DcmElement newElem) {
+        final int tag = newElem.tag();
+        if ((tag & 0xFFFF0000) != 0x00020000) {
+            throw new IllegalArgumentException(newElem.toString());
+        }
+        
+        try {
+            switch (tag) {
+                case Tags.MediaStorageSOPClassUID:
+                   sopClassUID = newElem.getString(null);
+                   break;
+                case Tags.MediaStorageSOPInstanceUID:
+                   sopInstanceUID = newElem.getString(null);
+                   break;
+                case Tags.TransferSyntaxUID:
+                   tsUID = newElem.getString(null);
+                   break;
+                case Tags.ImplementationClassUID:
+                   implClassUID = newElem.getString(null);
+                   break;
+                case Tags.ImplementationVersionName:
+                   implVersionName = newElem.getString(null);
+                   break;
+           }
+       } catch (DcmValueException ex) {
          throw new IllegalArgumentException(newElem.toString());
-      
-      return super.put(newElem);
-   }
-   
-   public int length() {
-      return grLen() + 12;
-   }
-   
-   private int grLen() {
-      int len = 0;
-      for (int i = 0, n = list.size(); i < n; ++i) {
-         DcmElement e = (DcmElement)list.get(i);
-         len += e.length() + (VRs.isLengthField16Bit(e.vr()) ? 8 : 12);
-      }
-      return len;
-   }
-   
-   public void write(DcmHandler handler) throws IOException {
-      handler.startFileMetaInfo(preamble);
-      handler.setDcmDecodeParam(DcmDecodeParam.EVR_LE);
-      write(0x00020000, grLen(), handler);
-      handler.endFileMetaInfo();
-   }
-   
-   public void write(OutputStream out) throws IOException {
-      write(new DcmStreamHandlerImpl(out));
-   }
-   
-   public void write(ImageOutputStream out) throws IOException {
-      write(new DcmStreamHandlerImpl(out));
-   }
-   
-   public void write(ContentHandler ch, TagDictionary dict)
-   throws IOException {
-      write(new DcmHandlerAdapter(ch, dict));
-   }
+       }
+       return super.put(newElem);
+    }
+    
+    public int length() {
+        return grLen() + 12;
+    }
+    
+    private int grLen() {
+        int len = 0;
+        for (int i = 0, n = list.size(); i < n; ++i) {
+            DcmElement e = (DcmElement)list.get(i);
+            len += e.length() + (VRs.isLengthField16Bit(e.vr()) ? 8 : 12);
+        }
+        return len;
+    }
+    
+    public void write(DcmHandler handler) throws IOException {
+        handler.startFileMetaInfo(preamble);
+        handler.setDcmDecodeParam(DcmDecodeParam.EVR_LE);
+        write(0x00020000, grLen(), handler);
+        handler.endFileMetaInfo();
+    }
+    
+    public void write(OutputStream out) throws IOException {
+        write(new DcmStreamHandlerImpl(out));
+    }
+    
+    public void write(ImageOutputStream out) throws IOException {
+        write(new DcmStreamHandlerImpl(out));
+    }
+    
+    public void write(ContentHandler ch, TagDictionary dict)
+    throws IOException {
+        write(new DcmHandlerAdapter(ch, dict));
+    }    
 }
 
