@@ -71,6 +71,7 @@ public final class DTOFactory {
                 StudyDTO.DATETIME_FORMAT));
         study.setStudyDescription(ds.getString(Tags.StudyDescription, ""));
         study.setModalitiesInStudy(modsInStudy);
+        study.setReferringPhysician(ds.getString(Tags.ReferringPhysicianName, ""));
         study.setNumberOfSeries(numSeries);
         study.setNumberOfInstances(numInst);
         study.setRetrieveAETs(retrieveAETs);

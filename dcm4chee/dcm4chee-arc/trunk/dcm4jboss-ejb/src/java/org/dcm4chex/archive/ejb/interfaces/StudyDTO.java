@@ -40,6 +40,7 @@ public class StudyDTO implements Serializable {
     private String studyDateTime;
     private String studyDescription;
     private String modalitiesInStudy;
+    private String referringPhysician;
     private int numberOfSeries;
     private int numberOfInstances;
     private String retrieveAETs;
@@ -212,5 +213,13 @@ public class StudyDTO implements Serializable {
      */
     public final void setAvailability(int availability) {
         this.availability = availability;
+    }
+    
+    public final String getReferringPhysician() {
+        return referringPhysician;
+    }
+    
+    public final void setReferringPhysician(String referringPhysician) {
+        this.referringPhysician = referringPhysician;
     }
 }
