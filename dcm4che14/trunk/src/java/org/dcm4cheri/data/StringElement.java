@@ -70,7 +70,7 @@ abstract class StringElement extends ValueElement {
         public String trim(String s) {
             char ch;
             for (int r = s.length(); r > 0; --r) {
-                if ((ch = s.charAt(r - 1)) != '^' && ch != ' ') {
+                if ((ch = s.charAt(r - 1)) != '^' && ch != ' ' && ch != '\0') {
                     return s.substring(0, r);
                 }
             }
