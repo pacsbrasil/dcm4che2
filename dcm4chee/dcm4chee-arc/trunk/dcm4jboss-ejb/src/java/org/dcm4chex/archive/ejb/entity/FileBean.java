@@ -8,8 +8,11 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -34,16 +37,19 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath)"
  *              strategy="on-find" eager-load-group="*"
- * @ejb.finder signature="java.util.Collection findToCompress(java.lang.String tsuid, java.lang.String cuid, java.lang.String srcaet, java.lang.String dirPath, java.sql.Timestamp before, int limit)"
- *             query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findToCompress(java.lang.String tsuid, java.lang.String cuid, java.lang.String srcaet, java.lang.String dirPath, java.sql.Timestamp before, int limit)"
- *              query="SELECT OBJECT(f) FROM File AS f WHERE f.fileTsuid = ?1 AND f.instance.sopCuid = ?2  AND f.instance.series.sourceAET = ?3 AND f.fileSystem.directoryPath = ?4 AND (f.createdTime IS NULL OR f.createdTime < ?5) LIMIT ?6"
- *              strategy="on-find" eager-load-group="*"
  * @ejb.finder signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
  *              query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND (f.timeOfLastMd5Check IS NULL OR f.timeOfLastMd5Check < ?2) LIMIT ?3"
  *              strategy="on-find" eager-load-group="*"
+ *              
+ * @jboss.query 
+ * 	signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
+ *  dynamic="true"
+ *  strategy="on-load"
+ *  page-size="20"
+ *  eager-load-group="*"
+ *              
  */
 public abstract class FileBean implements EntityBean {
 
@@ -201,6 +207,62 @@ public abstract class FileBean implements EntityBean {
                 + ", tsuid=" + getFileTsuid() + ", filesystem->"
                 + getFileSystem() + ", inst->" + getInstance() + "]";
     }
+    /**
+     * @ejb.home-method
+     */
+    public java.util.Collection ejbHomeListFilesToCompress(java.lang.String[] tsuid, 
+			java.lang.String[] cuid, java.lang.String[] srcaet, java.lang.String dirPath,
+			java.sql.Timestamp before, int limit) throws FinderException {
+// generate JBossQL query
+    	if ( log.isDebugEnabled() ) log.debug("listFilesToCompress for "+dirPath+" before "+before.toGMTString());
+		int i = 0;
+		int argsCount = 2;
+		if (before != null)
+		    ++argsCount;
+		Object[] args = new Object[argsCount];
+		StringBuffer jbossQl = new StringBuffer("SELECT OBJECT(f) FROM File AS f WHERE ");
+		addIN( jbossQl, "f.fileTsuid", tsuid );
+		addIN( jbossQl, "f.instance.sopCuid", cuid );
+		addIN( jbossQl, "f.instance.series.sourceAET", srcaet );
+		args[i++] = dirPath;
+		jbossQl.append( "f.fileSystem.directoryPath = ?1 AND ");
+		if ( before != null ) {
+			args[i++] = before;
+		    jbossQl.append( "(f.createdTime IS NULL OR f.createdTime < ?"+i+")");
+		}
+		args[i++] = new Integer( limit );
+		jbossQl.append(" LIMIT ?").append(i);
+		if (log.isDebugEnabled())
+		    log.debug("Execute JBossQL: " + jbossQl+"\nargs:1="+args[0]+" 2="+args[1]+" 3="+args[2]);
+		// call dynamic-ql query
+		return ejbSelectGeneric(jbossQl.toString(), args);
+    }
+/*
+SELECT OBJECT(f) FROM File AS f WHERE f.fileTsuid IN ('1.2.840.10008.1.2.2', '1.2.840.10008.1.2.1', '1.2.840.10008.1.2') AND f.instance.sopCuid IN ('1.2.840.10008.5.1.4.1.1.2', '1.2.840.10008.5.1.4.1.1.2.1', '1.2.840.10008.5.1.4.1.1.4.1', '1.2.840.10008.5.1.4.1.1.4', '1.2.840.10008.5.1.4.1.1.4.2', '1.2.840.10008.5.1.4.1.1.7.4', '1.2.840.10008.5.1.4.1.1.77.1') AND f.instance.series.sourceAET = 'DB2_PACS_TIANI' AND f.fileSystem.directoryPath = ?1 AND (f.createdTime IS NULL OR f.createdTime < ?2) AND  LIMIT ?3
+ */
+private void addIN( StringBuffer jbossQl, String col,  Object[] values ) {
+if ( values != null ) {
+    jbossQl.append(col);
+    if ( values.length == 1 ) {
+    	jbossQl.append(" = '").append(values[0]).append("' AND ");
+    } else {
+    	jbossQl.append(" IN ('").append(values[0]);
+        for (int i = 1; i < values.length; i++) {
+    		jbossQl.append("', '").append(values[i]);
+    	}            
+    	jbossQl.append("') AND ");
+    }
+}
+}
+
+/**
+* @ejb.select query=""
+*  transaction-type="Supports"
+*/ 
+public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
+	throws FinderException;
+
+
 
     /**
      * Create file.
