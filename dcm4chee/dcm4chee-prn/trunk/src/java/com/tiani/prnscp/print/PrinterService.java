@@ -305,11 +305,10 @@ public class PrinterService
     */
    public PrinterStatus getStatus() {
       try {
-         getPrintService();
          if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
             return PrinterStatus.FAILURE;
          }
-         if (calibrationErr) {
+         if (getQueuedJobCount() > 0 || calibrationErr) {
             return PrinterStatus.WARNING;
          }
          return PrinterStatus.NORMAL;
@@ -326,6 +325,9 @@ public class PrinterService
          getPrintService();
          if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
             return PrinterStatusInfo.CHECK_PRINTER;
+         }
+         if (getQueuedJobCount() > 0) {
+            return PrinterStatusInfo.QUEUED;
          }
          if (calibrationErr) {
             return PrinterStatusInfo.CALIBRATION_ERR;
