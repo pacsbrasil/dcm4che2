@@ -104,6 +104,24 @@ public class ARRServer extends ServiceMBeanSupport implements
         return udpsrv.getNumClients();
     }
 
+    public int getMaxIdleThreads() {
+        return udpsrv.getMaxIdleThreads();
+    }
+    
+    public int getNumIdleThreads() {
+        return udpsrv.getNumIdleThreads();
+    }
+    
+    public void setMaxIdleThreads(int max) {
+        udpsrv.setMaxIdleThreads(max);
+    }
+    
+    public void stop() {
+        udpsrv.stop();
+    }
+    public String toString() {
+        return udpsrv.toString();
+    }
     public void process(Date date, String host, String content) {
         store(content);
     }

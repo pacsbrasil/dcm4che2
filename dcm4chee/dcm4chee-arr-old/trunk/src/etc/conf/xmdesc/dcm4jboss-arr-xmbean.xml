@@ -62,6 +62,24 @@
       <name>NumClients</name>
       <type>int</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxIdleThreads"
+      setMethod="setMaxIdleThreads">
+      <description>Maximal number of idle threads.
+      </description>
+      <name>MaxClients</name>
+      <type>int</type>
+      <descriptors>
+         <value value="5" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-only"
+      getMethod="getNumIdleThread">
+      <description>Current number of idle threads.
+      </description>
+      <name>NumIdleThread</name>
+      <type>int</type>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
