@@ -248,7 +248,7 @@ public class ScannerCalibration
         throws IOException
     {
         if (scanDir == null) {
-            throw new IllegalStateException("Scan Dir not initalized!");
+            throw new IllegalStateException("Scan Dir not initialized!");
         }
         if (!scanDir.isDirectory()) {
             throw new FileNotFoundException(
@@ -271,6 +271,10 @@ public class ScannerCalibration
         return scanFiles[0];
     }
 
+    public float[] getRefODs()
+    {
+        return refODs;
+    }
 
     /**
      *  Description of the Method
