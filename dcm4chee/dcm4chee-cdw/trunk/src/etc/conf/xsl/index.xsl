@@ -58,14 +58,14 @@
                     <xsl:for-each select="$pats">Patient: <xsl:call-template name="formatPN">
                             <xsl:with-param name="pn" select="attr[@tag='(0010,0010)']"/>
                         </xsl:call-template>
-                        <xsl:for-each select="$studies">
+                        <xsl:for-each select="record[record/record[@seqno=$seqno]]">
                             <br/>Study <xsl:call-template name="formatDateTime">
                                 <xsl:with-param name="date" select="attr[@tag='(0008,0020)']"/>
                                 <xsl:with-param name="time" select="attr[@tag='(0008,0030)']"/>
                             </xsl:call-template>
                             <xsl:text>: </xsl:text>
                             <xsl:value-of select="attr[@tag='(0008,1030)']"/>
-                            <xsl:for-each select="$series">
+                            <xsl:for-each select="record[record[@seqno=$seqno]]">
                                 <br/>
                                 <xsl:value-of select="attr[@tag='(0008,0060)']"/>
                                 <xsl:text> Series #</xsl:text>
@@ -73,7 +73,7 @@
                                 <xsl:text>: </xsl:text>
                                 <xsl:value-of select="attr[@tag='(0008,103E)']"/>
                                 <br/>
-                                <xsl:for-each select="$insts">
+                                <xsl:for-each select="record[@seqno=$seqno]">
                                     <code>
                                         <xsl:value-of select="attr[@tag='(0004,1500)']"/>
                                     </code>
