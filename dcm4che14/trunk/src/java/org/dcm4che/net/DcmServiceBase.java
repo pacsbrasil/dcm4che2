@@ -111,6 +111,7 @@ public class DcmServiceBase implements DcmService {
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
         assoc.getAssociation().write(rsp);
+        doAfterRsp(assoc, rsp);
     }
     
     public void c_get(ActiveAssociation assoc, Dimse rq)
@@ -127,6 +128,7 @@ public class DcmServiceBase implements DcmService {
             copy(e, rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);
+            doAfterRsp(assoc, rsp);
         }
     }
     
@@ -144,6 +146,7 @@ public class DcmServiceBase implements DcmService {
             copy(e, rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);
+            doAfterRsp(assoc, rsp);
         }
     }
     
@@ -161,6 +164,7 @@ public class DcmServiceBase implements DcmService {
             copy(e, rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);
+            doAfterRsp(assoc, rsp);
         }
     }
     
@@ -179,6 +183,7 @@ public class DcmServiceBase implements DcmService {
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
         assoc.getAssociation().write(rsp);
+        doAfterRsp(assoc, rsp);
     }
     
     public void n_event_report(ActiveAssociation assoc, Dimse rq)
@@ -198,6 +203,7 @@ public class DcmServiceBase implements DcmService {
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
+        doAfterRsp(assoc, rsp);
     }
     
     public void n_get(ActiveAssociation assoc, Dimse rq)
@@ -217,6 +223,7 @@ public class DcmServiceBase implements DcmService {
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
+        doAfterRsp(assoc, rsp);
     }
     
     public void n_set(ActiveAssociation assoc, Dimse rq)
@@ -236,6 +243,7 @@ public class DcmServiceBase implements DcmService {
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
+        doAfterRsp(assoc, rsp);
     }
     
     public void n_action(ActiveAssociation assoc, Dimse rq)
@@ -255,6 +263,7 @@ public class DcmServiceBase implements DcmService {
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
+        doAfterRsp(assoc, rsp);
     }
     
     public void n_create(ActiveAssociation assoc, Dimse rq)
@@ -274,6 +283,7 @@ public class DcmServiceBase implements DcmService {
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
+        doAfterRsp(assoc, rsp);
     }
     
     public void n_delete(ActiveAssociation assoc, Dimse rq)
@@ -293,11 +303,15 @@ public class DcmServiceBase implements DcmService {
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
+        doAfterRsp(assoc, rsp);
     }
     
     // Package protected ---------------------------------------------
     
     // Protected -----------------------------------------------------
+    protected void doAfterRsp(ActiveAssociation assoc, Dimse rsp) {
+    }
+    
     protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
     throws IOException, DcmServiceException {
         rq.getDataset(); // read out dataset
@@ -382,6 +396,7 @@ public class DcmServiceBase implements DcmService {
                 Dataset rspData = mdr.next(assoc, rq, rspCmd);
                 Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
                 assoc.getAssociation().write(rsp);
+                doAfterRsp(assoc, rsp);
             } while (rspCmd.isPending());
         } finally {
             mdr.release();
