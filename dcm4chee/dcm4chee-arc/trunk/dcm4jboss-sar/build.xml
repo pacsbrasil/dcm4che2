@@ -50,6 +50,7 @@
 
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
+		<pathelement location="${dcm4jboss-ejb.target}/common/lib/dcm4jboss-ejb-client.jar"/>
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
 		<pathelement location="${dcm4jboss-ejb.target}/hsql/deploy/dcm4jboss-ejb-hsql.jar"/>
 		<fileset dir="${jboss.home}/lib">
