@@ -22,21 +22,28 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  * 
- * @ejb.bean name="File"
- * 	         type="CMP"
- * 	         view-type="local"
- * 	         primkey-field="pk"
+ * @ejb.bean name="File" type="CMP" view-type="local" primkey-field="pk"
  * 	         local-jndi-name="ejb/File"
  * @ejb.persistence table-name="files"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.audit-created-time field-name="createdTime"
  * 
  * @ejb.finder signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath)"
  *             query="SELECT OBJECT(f) FROM File AS f WHERE f.instance IS NULL AND f.fileSystem.directoryPath = ?1"
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath)"
- *              strategy="on-find"
- *              eager-load-group="*"
+ *              strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findToCompress(java.lang.String tsuid, java.lang.String cuid, java.lang.String dirPath, java.sql.Timestamp before, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findToCompress(java.lang.String tsuid, java.lang.String cuid, java.lang.String dirPath, java.sql.Timestamp before, int limit)"
+ *              query="SELECT OBJECT(f) FROM File AS f WHERE f.fileTsuid = ?1 AND f.instance.sopCuid = ?2 AND f.fileSystem.directoryPath = ?3 AND (f.createdTime IS NULL OR f.createdTime < ?4) LIMIT ?5"
+ *              strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findToCheck(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findToCheck(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
+ *              query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND (f.timeOfLastMd5Check IS NULL OR f.timeOfLastMd5Check < ?2) LIMIT ?3"
+ *              strategy="on-find" eager-load-group="*"
  */
 public abstract class FileBean implements EntityBean {
 
@@ -54,6 +61,25 @@ public abstract class FileBean implements EntityBean {
 
     public abstract void setPk(Integer pk);
 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="created_time"
+     */
+    public abstract java.sql.Timestamp getCreatedTime();
+
+    public abstract void setCreatedTime(java.sql.Timestamp time);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="md5_check_time"
+     */
+    public abstract java.sql.Timestamp getTimeOfLastMd5Check();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setTimeOfLastMd5Check(java.sql.Timestamp time);
+    
     /**
      * File Path (relative path to Directory).
      * 

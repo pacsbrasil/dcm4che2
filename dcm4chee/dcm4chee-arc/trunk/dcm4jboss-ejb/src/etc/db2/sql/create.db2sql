@@ -206,11 +206,16 @@ CREATE TABLE files (
 	file_tsuid      VARCHAR(254) NOT NULL,
 	file_md5        VARCHAR(254),
 	file_size       INTEGER,
+	md5_check_time	TIMESTAMP,
+	created_time	TIMESTAMP,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
+CREATE INDEX file_tsuid ON files(file_tsuid);
+CREATE INDEX md5_check_time ON files(md5_check_time);
+CREATE INDEX file_created ON files(created_time);
 
 CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (
