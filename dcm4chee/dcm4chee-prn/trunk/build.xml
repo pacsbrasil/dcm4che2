@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="main" name="prnscp">
+   
+    <!-- Allow override from local properties file -->
+    <property file=".ant.properties" />
+    
+    <property name="name" value="prnscp"/>
+    <property name="version" value="1.0.0"/>
+    <property name="javac.debug" value="on"/>
+    <property name="javac.optimize" value="off"/>
+   
+    <!-- Override with your JBoss/Web server bundle dist location -->
+    <property name="jboss.dist" value="${user.home}/jboss-3.0.3"/>
+    <property name="jboss.deploy.dir" value="${jboss.dist}/server/default/deploy"/>
+    <property name="jboss.lib.dir" value="${jboss.dist}/server/default/lib"/>
+
+    <property name="lib.dir" value="${basedir}/lib"/>
+    <property name="src.dir" value="${basedir}/src/java"/>
+    <property name="src.resources" value="${basedir}/src/resources"/>
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="build.classes.dir" value="${build.dir}/classes"/>
+    <property name="build.deploy.dir" value="${build.dir}/deploy"/>
+    <property name="prnscp.sar" value="${build.deploy.dir}/prnscp.sar"/>
+
+    <path id="build.path">
+        <pathelement location="${lib.dir}/dcm4che.jar"/>
+        <pathelement location="${jboss.dist}/lib/jboss-common.jar"/>
+        <pathelement location="${jboss.dist}/lib/jboss-system.jar"/>
+        <pathelement location="${jboss.dist}/lib/jboss-jmx.jar"/>
+        <pathelement location="${jboss.dist}/server/default/lib/log4j.jar"/>
+        <pathelement location="${jboss.dist}/server/default/lib/jboss-j2ee.jar"/>
+        <pathelement location="${build.classes.dir}"/>
+    </path>
+
+    <!-- Validate the jboss.dist value by looking for a the lib/jboss-system.jar jar -->
+    <target name="validate">
+        <available property="classpath_id" value="build.path" file="${jboss.dist}/lib/jboss-system.jar" />
+    </target>
+    <target name="fail_if_not_valid" unless="classpath_id">
+        <fail message="jboss.dist=${jboss.dist} is not a valid JBoss dist directory"/>
+    </target>
+    <target name="init" depends="validate,fail_if_not_valid">
+        <echo message="user.home = ${user.home}"/>
+        <echo message="java.home = ${java.home}"/>
+        <echo message="ant.home = ${ant.home}"/>
+        <echo message="jboss.dist = ${jboss.dist}"/>
+        <echo message="java.class.path = ${java.class.path}"/>
+        <tstamp/>
+    </target>
+
+    <!-- Compile all java source under src/java -->
+    <target name="compile" depends="init">
+        <mkdir dir="${build.classes.dir}"/>
+        <javac srcdir="${src.dir}"
+            destdir="${build.classes.dir}"
+            classpathref="${classpath_id}"
+            debug="${javac.debug}"
+            deprecation="on"
+            optimize="${javac.optimize}">
+        </javac>
+    </target>
+
+    <target name="prnscp-sar" depends="compile">
+        <mkdir dir="${build.deploy.dir}"/>
+        <jar jarfile="${build.deploy.dir}/prnscp.sar">
+            <metainf dir="${src.resources}/plugin/META-INF"
+                includes="jboss-service.xml"
+            />
+            <fileset dir="${build.classes.dir}"
+                includes="com/tiani/prnscp/**"
+            />
+        </jar>
+    </target>   
+
+    <target name="dcmsrv-sar" depends="compile">
+        <mkdir dir="${build.deploy.dir}"/>
+        <jar jarfile="${build.deploy.dir}/dcmsrv.sar">
+            <metainf dir="${src.resources}/dcmsrv/META-INF"
+                includes="jboss-service.xml"
+            />
+            <fileset dir="${build.classes.dir}"
+                includes="org/dcm4chex/service/DcmServer*"
+            />
+        </jar>
+    </target>   
+
+    <target name="build" depends="dcmsrv-sar,prnscp-sar"/>
+
+    <target name="deploy" depends="build">
+        <copy file="${lib.dir}/dcm4che.jar"
+            todir="${jboss.lib.dir}" />
+        <copy file="${build.deploy.dir}/dcmsrv.sar"
+            todir="${jboss.deploy.dir}" />
+        <copy file="${build.deploy.dir}/prnscp.sar"
+            todir="${jboss.deploy.dir}" />
+    </target>           
+
+    <target name="undeploy">
+        <delete file="${jboss.deploy.dir}/dcmsrv.sar" />
+        <delete file="${jboss.deploy.dir}/prnscp.sar" />
+    </target>           
+        
+    <target name="main" depends="build"/>
+        
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+</project>
