@@ -133,9 +133,12 @@ private static final int BUF_SIZE = 512;
             throws IOException {
         if (src.isDirectory()) {
             String[] ss = src.list();
-            for (int i = 0; i < ss.length; i++)
-                if (!(equals(new File(dst, ss[i]), new File(src, ss[i]), log, srcBuf, dstBuf)))
+            for (int i = 0; i < ss.length; i++) {
+            	String s = ss[i];
+            	if (s.endsWith(".lnk")) continue; 
+                if (!(equals(new File(dst, s), new File(src, s), log, srcBuf, dstBuf)))
                         return false;
+            }
         } else {
             if (!dst.isFile()) {
                 log.warn("File " + dst + " missing");

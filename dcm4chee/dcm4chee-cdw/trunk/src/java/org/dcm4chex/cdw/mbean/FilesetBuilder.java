@@ -71,6 +71,8 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  */
 class FilesetBuilder {
 
+    private static final String EXT_LNK = ".lnk";
+
     private static final String EXT_MD5 = ".MD5";
 
     private static final String MD5_SUMS = "MD5_SUMS";
@@ -818,15 +820,16 @@ class FilesetBuilder {
         if (fileOrDir.isDirectory()) {
             String[] files = fileOrDir.list();
             for (int i = 0; i < files.length; i++) {
+            	String f = files[i];
                 writeMd5Sums(out,
-                        new File(fileOrDir, files[i]),
+                        new File(fileOrDir, f),
                         strip,
                         digest,
                         cbuf);
             }
         } else {
             String fname = fileOrDir.getName();
-            if (fname.endsWith(EXT_MD5)) return;
+            if (fname.endsWith(EXT_MD5) || fname.endsWith(EXT_LNK)) return;
             File md5file = new File(fileOrDir.getParent(), fname + EXT_MD5);
             if (md5file.exists()) {
                 Reader in = new FileReader(md5file);
