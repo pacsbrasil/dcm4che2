@@ -119,8 +119,8 @@ public class ImagePanel extends JPanel
     void setPLut(byte[] plut)
         throws Exception
     {
-        final int maxWidth = 512;
-        final int maxHeight = 512;
+        final int maxWidth = 256;
+        final int maxHeight = 256;
         
         lastPLut = plut;
         readParam = (DcmImageReadParam)reader.getDefaultReadParam();
@@ -137,6 +137,7 @@ public class ImagePanel extends JPanel
                 if (height > maxHeight)
                     suby = height / maxHeight;
                 //read pixel data
+                System.out.println("sx="+subx+",sy="+suby);
                 readParam.setSourceSubsampling(subx, suby, 0, 0);
                 bi = reader.read(0, readParam);
 				//get the actual dataset
