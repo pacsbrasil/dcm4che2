@@ -121,6 +121,23 @@ class SqlBuilder {
         addMatch(new Match.AppendLiteral(field, type2, literal));
     }
     
+    public void addBooleanMatch(
+            String field,
+            boolean type2,
+            boolean value) {
+        addMatch(new Match.AppendLiteral(field, type2, toBooleanLiteral(value)));
+    }
+    
+    private String toBooleanLiteral(boolean value) {
+        switch (getDatabase()) {
+        case JdbcProperties.DB2 :
+        case JdbcProperties.ORACLE :
+            return value ? " != 0" : " = 0";
+        default:
+            return value ? " = true" : " = false";
+        }
+    }
+
     public void addListOfUidMatch(String field, boolean type2, String[] uids) {
         addMatch(new Match.ListOfUID(field, type2, uids));
     }

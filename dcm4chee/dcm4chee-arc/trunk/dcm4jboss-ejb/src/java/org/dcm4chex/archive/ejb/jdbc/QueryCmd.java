@@ -159,10 +159,10 @@ public abstract class QueryCmd extends BaseCmd {
     }
 
     protected void addSeriesMatch() {
-        sqlBuilder.addLiteralMatch(
+        sqlBuilder.addBooleanMatch(
             "Series.hidden",
             SqlBuilder.TYPE2,
-            "=false");
+            false);
         sqlBuilder.addListOfUidMatch(
             "Series.seriesIuid",
             SqlBuilder.TYPE1,
