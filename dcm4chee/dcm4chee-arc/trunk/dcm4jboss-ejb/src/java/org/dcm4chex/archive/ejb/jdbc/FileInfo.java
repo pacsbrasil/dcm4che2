@@ -30,10 +30,6 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -51,14 +47,12 @@ public class FileInfo
     public final byte[] instAttrs;
     public final String sopIUID;
     public final String sopCUID;
-    public final String retrieveAET;
-    public final String uri;
-    public final String fpath;
+    public final String hostname;
+    public final String basedir;
+    public final String fileID;
     public final String tsUID;
     public final String md5;
-    public final long size;
-    public final int status;
-    public final String fsIUID;
+    public final int size;
 
     public FileInfo(
         byte[] patAttrs,
@@ -67,14 +61,12 @@ public class FileInfo
         byte[] instAttrs,
         String sopIUID,
         String sopCUID,
-        String retrieveAET,
-        String uri,
-        String fpath,
+        String hostname,
+        String basedir,
+        String fileID,
         String tsUID,
         String md5,
-        long size,
-        int status,
-        String fsIUID)
+        int size)
     {
         this.patAttrs = patAttrs;
         this.studyAttrs = studyAttrs;
@@ -82,14 +74,12 @@ public class FileInfo
         this.instAttrs = instAttrs;
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
-        this.retrieveAET = retrieveAET;
-        this.uri = uri;
-        this.fpath = fpath;
+        this.hostname = hostname;
+        this.basedir = basedir;
+        this.fileID = fileID;
         this.tsUID = tsUID;
         this.md5 = md5;
         this.size = size;
-        this.status = status;
-        this.fsIUID = fsIUID;
     }
 
     public String toString()
@@ -98,40 +88,20 @@ public class FileInfo
             + sopIUID
             + ", cuid="
             + sopCUID
-            + ", aet="
-            + retrieveAET
-            + ", uri="
-            + uri
-            + ", fpath="
-            + fpath
+            + ", host="
+            + hostname
+            + ", basedir="
+            + basedir
+            + ", fileid="
+            + fileID
             + ", tsuid="
-            + tsUID
-            + ", status="
-            + status;
+            + tsUID;
     }
 
     public File toFile()
     {
-        try
-        {
-            URI tmp = new URI(uri);
-            String myHost = InetAddress.getLocalHost().getHostName();
-            if (!"file".equalsIgnoreCase(tmp.getScheme())
-                || !myHost.equalsIgnoreCase(tmp.getHost()))
-            {
-                throw new IllegalStateException("" + this);
-            }
-            return new File(new URI("file:" + tmp.getPath() + fpath));
-        } catch (URISyntaxException e)
-        {
-            throw new IllegalStateException("" + this);
-        } catch (IllegalArgumentException e)
-        {
-            throw new IllegalStateException("" + this);
-        } catch (UnknownHostException e)
-        {
-            throw new RuntimeException(e);
-        }
+        String fpath = basedir + '/' + fileID;
+        return new File(fpath.replace('/', File.separatorChar));
     }
 
     public Dataset getPatientAttrs() throws IOException

@@ -48,22 +48,21 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
 /**
  * Instance Bean
  * 
- * @ejb:bean
+ * @ejb.bean
  *  name="Instance"
  *  type="CMP"
  *  view-type="local"
  *  primkey-field="pk"
  *  local-jndi-name="ejb/Instance"
  * 
- * @ejb:transaction 
+ * @ejb.transaction 
  *  type="Required"
  * 
  * @ejb.persistence
  *  table-name="instance"
  * 
  * @jboss.entity-command
- *  name="get-last-oid"
- *  class="org.jboss.ejb.plugins.cmp.jdbc.postgres.JDBCPostgresCreateCommand"
+ *  name="postgresql-fetch-seq"
  * 
  * @ejb.finder
  *  signature="java.util.Collection findAll()"
@@ -200,7 +199,7 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
-     * @ejb:relation
+     * @ejb.relation
      *  name="series-instance"
      *  role-name="instance-of-series"
      *  cascade-delete="yes"
@@ -214,18 +213,18 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setSeries(SeriesLocal series);
 
     /**
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      * 
      * @return series of this series
      */
     public abstract SeriesLocal getSeries();
 
     /**
-     * @ejb:relation
+     * @ejb.relation
      *  name="instance-file"
      *  role-name="instance-in-file"
      *    
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      * 
      * @return all files of this instance
      */
@@ -233,7 +232,7 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setFiles(java.util.Collection files);
 
     /**
-     * @ejb:relation
+     * @ejb.relation
      *  name="instance-srcode"
      *  role-name="sr-with-title"
      *  target-ejb="Code"
@@ -249,7 +248,7 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setSrCode(CodeLocal srCode);
 
     /**
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      * 
      * @return code of SR title
      */
@@ -280,7 +279,7 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     /**
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public Dataset getAttributes() {
         return DatasetUtil.fromByteArray(getEncodedAttributes());

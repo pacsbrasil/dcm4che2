@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -17,15 +17,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 20.07.2003
- * Time: 16:21:45
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
- */
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
@@ -40,20 +31,17 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
 /**
- * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- *
+ * @author Gunter.Zeilinger@tiani.com
+ * @version $Revision$ $Date$
+ * @since 26.08.2003
  */
-public abstract class RetrieveCmd extends BaseCmd {
-    /**
-     * @author Gunter.Zeilinger@tiani.com
-     * @version $Revision$
-     * @since 26.08.2003
-     */
+public abstract class RetrieveCmd extends BaseCmd
+{
     private static final String[] QRLEVEL =
         { "PATIENT", "STUDY", "SERIES", "IMAGE" };
 
     private static final String[] ENTITY =
-        { "Patient", "Study", "Series", "Instance", "Node", "File" };
+        { "Patient", "Study", "Series", "Instance", "File" };
 
     private static final String[] SELECT_ATTRIBUTE =
         {
@@ -63,14 +51,12 @@ public abstract class RetrieveCmd extends BaseCmd {
             "Instance.encodedAttributes",
             "Instance.sopIuid",
             "Instance.sopCuid",
-            "Node.retrieveAET",
-            "Node.URI",
-            "File.filePath",
+            "File.hostName",
+            "File.baseDir",
+            "File.fileId",
             "File.fileTsuid",
             "File.fileMd5Field",
-            "File.fileSize",
-            "File.fileStatus",
-            "Media.filesetIuid" };
+            "File.fileSize" };
 
     private static final String[] RELATIONS =
         {
@@ -81,14 +67,14 @@ public abstract class RetrieveCmd extends BaseCmd {
             "Series.pk",
             "Instance.series_fk",
             "Instance.pk",
-            "File.instance_fk",
-            "Node.pk",
-            "File.node_fk" };
+            "File.instance_fk" };
 
     public static RetrieveCmd create(DataSource ds, Dataset keys)
-        throws SQLException {
+        throws SQLException
+    {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
-        switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
+        switch (Arrays.asList(QRLEVEL).indexOf(qrLevel))
+        {
             case 0 :
                 return new PatientRetrieveCmd(ds, keys);
             case 1 :
@@ -105,21 +91,25 @@ public abstract class RetrieveCmd extends BaseCmd {
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    private RetrieveCmd(DataSource ds) throws SQLException {
+    private RetrieveCmd(DataSource ds) throws SQLException
+    {
         super(ds);
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.setFrom(ENTITY);
-        sqlBuilder.setLeftJoin(new String[]{ "Media", "Media.pk", "File.media_fk" });
         sqlBuilder.setRelations(RELATIONS);
     }
 
-    public FileInfo[][] execute() throws SQLException {
-        try {
+    public FileInfo[][] execute() throws SQLException
+    {
+        try
+        {
             execute(sqlBuilder.getSql());
             LinkedHashMap map = new LinkedHashMap();
             ArrayList list;
-            while (next()) {
-                FileInfo info = new FileInfo(
+            while (next())
+            {
+                FileInfo info =
+                    new FileInfo(
                         rs.getBytes(1),
                         rs.getBytes(2),
                         rs.getBytes(3),
@@ -131,30 +121,33 @@ public abstract class RetrieveCmd extends BaseCmd {
                         rs.getString(9),
                         rs.getString(10),
                         rs.getString(11),
-                        rs.getLong(12),
-                        rs.getInt(13),
-                        rs.getString(14));
+                        rs.getInt(12));
                 list = (ArrayList) map.get(info.sopIUID);
-                if (list == null) {
+                if (list == null)
+                {
                     map.put(info.sopIUID, list = new ArrayList());
                 }
                 list.add(info);
             }
             FileInfo[][] result = new FileInfo[map.size()][];
             Iterator it = map.values().iterator();
-            for (int i = 0; i < result.length; i++) {
+            for (int i = 0; i < result.length; i++)
+            {
                 list = (ArrayList) it.next();
                 result[i] =
                     (FileInfo[]) list.toArray(new FileInfo[list.size()]);
             }
             return result;
-        } finally {
+        } finally
+        {
             close();
         }
     }
 
-    static class PatientRetrieveCmd extends RetrieveCmd {
-        PatientRetrieveCmd(DataSource ds, Dataset keys) throws SQLException {
+    static class PatientRetrieveCmd extends RetrieveCmd
+    {
+        PatientRetrieveCmd(DataSource ds, Dataset keys) throws SQLException
+        {
             super(ds);
             String pid = keys.getString(Tags.PatientID);
             if (pid == null)
@@ -168,8 +161,10 @@ public abstract class RetrieveCmd extends BaseCmd {
         }
     }
 
-    static class StudyRetrieveCmd extends RetrieveCmd {
-        StudyRetrieveCmd(DataSource ds, Dataset keys) throws SQLException {
+    static class StudyRetrieveCmd extends RetrieveCmd
+    {
+        StudyRetrieveCmd(DataSource ds, Dataset keys) throws SQLException
+        {
             super(ds);
             String[] uid = keys.getStrings(Tags.StudyInstanceUID);
             if (uid.length == 0)
@@ -182,8 +177,10 @@ public abstract class RetrieveCmd extends BaseCmd {
         }
     }
 
-    static class SeriesRetrieveCmd extends RetrieveCmd {
-        SeriesRetrieveCmd(DataSource ds, Dataset keys) throws SQLException {
+    static class SeriesRetrieveCmd extends RetrieveCmd
+    {
+        SeriesRetrieveCmd(DataSource ds, Dataset keys) throws SQLException
+        {
             super(ds);
             String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
             if (uid.length == 0)
@@ -196,8 +193,10 @@ public abstract class RetrieveCmd extends BaseCmd {
         }
     }
 
-    static class ImageRetrieveCmd extends RetrieveCmd {
-        ImageRetrieveCmd(DataSource ds, Dataset keys) throws SQLException {
+    static class ImageRetrieveCmd extends RetrieveCmd
+    {
+        ImageRetrieveCmd(DataSource ds, Dataset keys) throws SQLException
+        {
             super(ds);
             String[] uid = keys.getStrings(Tags.SOPInstanceUID);
             if (uid.length == 0)

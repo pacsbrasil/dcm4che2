@@ -1,3 +1,10 @@
+CREATE TABLE ae (
+	aet          	TEXT PRIMARY KEY,
+	hostname     	TEXT NOT NULL,
+	port			INTEGER NOT NULL,
+	cipher_suites  	TEXT
+);
+
 CREATE TABLE code (
 	pk          	SERIAL PRIMARY KEY,
 	code_value     	TEXT NOT NULL,
@@ -72,35 +79,15 @@ CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 
-CREATE TABLE media (
-	pk              SERIAL PRIMARY KEY,
-	fs_iuid			TEXT NOT NULL,
-	fs_id			TEXT,
-	media_status	INTEGER
-);
-CREATE UNIQUE INDEX media_uid ON media(fs_iuid);
-CREATE INDEX media_status ON media(media_status);
-
-CREATE TABLE node (
-	pk              SERIAL PRIMARY KEY,
-	uri				TEXT NOT NULL,
-	storage_aet		TEXT NOT NULL,
-	retrieve_aet	TEXT NOT NULL
-);
-CREATE UNIQUE INDEX storage_aet ON node(storage_aet);
-
 
 CREATE TABLE file (
 	pk              SERIAL PRIMARY KEY,
-	node_fk			INTEGER,
 	instance_fk     INTEGER,
-	media_fk        INTEGER,
-	file_path		TEXT NOT NULL,
+	hostname		TEXT NOT NULL,
+	basedir			TEXT NOT NULL,
+	file_id			TEXT NOT NULL,
 	file_tsuid      TEXT NOT NULL,
 	file_md5        TEXT,
-	file_size       BIGINT,
-	file_status		INTEGER,
-FOREIGN KEY (node_fk)		REFERENCES node(pk),
-FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
-FOREIGN KEY (media_fk)  	REFERENCES media(pk)
+	file_size       INTEGER,
+FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 );

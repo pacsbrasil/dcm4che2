@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -17,15 +17,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 16.07.2003
- * Time: 18:28:10
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
- */
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
@@ -35,22 +26,21 @@ import javax.ejb.RemoveException;
 import org.apache.log4j.Logger;
 
 /**
- * @ejb:bean
+ * @ejb.bean
  *  name="Code"
  *  type="CMP"
  *  view-type="local"
  *  primkey-field="pk"
  *  local-jndi-name="ejb/Code"
  * 
- * @ejb:transaction 
+ * @ejb.transaction 
  *  type="Required"
  * 
  * @ejb.persistence
  *  table-name="code"
  * 
  * @jboss.entity-command
- *  name="get-last-oid"
- *  class="org.jboss.ejb.plugins.cmp.jdbc.postgres.JDBCPostgresCreateCommand"
+ *  name="postgresql-fetch-seq"
  * 
  * @ejb.finder
  *  signature="Collection findAll()"
@@ -138,7 +128,7 @@ public abstract class CodeBean implements EntityBean
 
     private String prompt()
     {
-        return "Media[pk="
+        return "Code[pk="
             + getPk()
             + ", value="
             + getCodeValue()

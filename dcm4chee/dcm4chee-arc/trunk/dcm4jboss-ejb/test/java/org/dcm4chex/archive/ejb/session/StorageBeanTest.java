@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -17,15 +17,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 11.07.2003
- * Time: 14:50:40
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
- */
 package org.dcm4chex.archive.ejb.session;
 
 import java.io.BufferedInputStream;
@@ -33,11 +24,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -47,13 +38,12 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.HostNameUtils;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- *
+ * @version $Revision$ $Date$
  */
 public class StorageBeanTest extends TestCase
 {
@@ -78,14 +68,6 @@ public class StorageBeanTest extends TestCase
         StorageHome home = (StorageHome) ctx.lookup(StorageHome.JNDI_NAME);
         ctx.close();
         storage = home.create();
-        try {
-            storage.getNodeURI(AET);
-        } catch (ObjectNotFoundException e) {
-            String host = HostNameUtils.getLocalHostName();
-            URI tmp = new File(DIR).toURI();
-            String uri = "file://" + host + tmp.getPath();
-            storage.createNode(uri, AET, AET);
-        }
     }
 
     /*
@@ -123,7 +105,7 @@ public class StorageBeanTest extends TestCase
         }
         MessageDigest md = MessageDigest.getInstance("MD5");
         Dataset ds = loadDataset(file, md);
-        storage.store(ds, AET, path.substring(1), file.length(), md.digest());
+        storage.store(ds, getHostName(), "/", path.substring(1), (int)file.length(), md.digest());
     }
 
     private Dataset loadDataset(File file, MessageDigest md) throws IOException
@@ -150,5 +132,11 @@ public class StorageBeanTest extends TestCase
         }
         ds.remove(Tags.PixelData);
         return ds;
+    }
+    
+    private static String getHostName() throws UnknownHostException {
+        String hostname = InetAddress.getLocalHost().getHostName();
+        int pos = hostname.lastIndexOf('.');
+        return pos != -1 ? hostname.substring(pos+1) : hostname;
     }
 }

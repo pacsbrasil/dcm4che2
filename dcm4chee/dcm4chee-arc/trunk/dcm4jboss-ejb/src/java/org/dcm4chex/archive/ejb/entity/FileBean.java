@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -17,15 +17,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 09.07.2003
- * Time: 09:08:46
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
- */
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
@@ -34,26 +25,23 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
-import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
-import org.dcm4chex.archive.ejb.interfaces.NodeLocal;
 
 /**
- * @ejb:bean
+ * @ejb.bean
  *  name="File"
  *  type="CMP"
  *  view-type="local"
  *  primkey-field="pk"
  *  local-jndi-name="ejb/File"
  * 
- * @ejb:transaction 
+ * @ejb.transaction 
  *  type="Required"
  * 
  * @ejb.persistence
  *  table-name="file"
  * 
  * @jboss.entity-command
- *  name="get-last-oid"
- *  class="org.jboss.ejb.plugins.cmp.jdbc.postgres.JDBCPostgresCreateCommand"
+ *  name="postgresql-fetch-seq"
  *
  * @ejb.finder
  *  signature="java.util.Collection findAll()"
@@ -61,9 +49,11 @@ import org.dcm4chex.archive.ejb.interfaces.NodeLocal;
  *  transaction-type="Supports"
  *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$ $Date$
  *
  */
-public abstract class FileBean implements EntityBean {
+public abstract class FileBean implements EntityBean
+{
 
     private static final Logger log = Logger.getLogger(FileBean.class);
 
@@ -83,14 +73,34 @@ public abstract class FileBean implements EntityBean {
     public abstract void setPk(Integer pk);
 
     /**
-     * File Path relative to mount point
+     * Hostname.
      *
      * @ejb.interface-method
      * @ejb.persistence
-     *  column-name="file_path"
+     *  column-name="hostname"
      */
-    public abstract String getFilePath();
-    public abstract void setFilePath(String path);
+    public abstract String getHostName();
+    public abstract void setHostName(String hostname);
+
+    /**
+     * Base Directory (mount point).
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="basedir"
+     */
+    public abstract String getBaseDir();
+    public abstract void setBaseDir(String basedir);
+
+    /**
+     * File ID (relative path to Base Directory).
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="file_id"
+     */
+    public abstract String getFileId();
+    public abstract void setFileId(String fileid);
 
     /**
      * Transfer Syntax UID
@@ -117,10 +127,12 @@ public abstract class FileBean implements EntityBean {
      *
      * @ejb.interface-method
      */
-    public byte[] getFileMd5() {
+    public byte[] getFileMd5()
+    {
         char[] md5Hex = getFileMd5Field().toCharArray();
         byte[] md5 = new byte[16];
-        for (int i = 0; i < md5.length; i++) {
+        for (int i = 0; i < md5.length; i++)
+        {
             md5[i] =
                 (byte) ((Character.digit(md5Hex[i >> 1], 16) << 4)
                     + Character.digit(md5Hex[(i >> 1) + 1], 16));
@@ -128,12 +140,15 @@ public abstract class FileBean implements EntityBean {
         return md5;
     }
 
-    public void setFileMd5(byte[] md5) {
-        if (md5.length != 16) {
+    public void setFileMd5(byte[] md5)
+    {
+        if (md5.length != 16)
+        {
             throw new IllegalArgumentException("md5.length=" + md5.length);
         }
         char[] md5Hex = new char[32];
-        for (int i = 0; i < md5.length; i++) {
+        for (int i = 0; i < md5.length; i++)
+        {
             md5Hex[i << 1] = Character.forDigit((md5[i] >> 4) & 0xf, 16);
             md5Hex[(i << 1) + 1] = Character.forDigit(md5[i] & 0xf, 16);
         }
@@ -147,48 +162,11 @@ public abstract class FileBean implements EntityBean {
      * @ejb.persistence
      *  column-name="file_size"
      */
-    public abstract long getFileSize();
-    public abstract void setFileSize(long size);
+    public abstract int getFileSize();
+    public abstract void setFileSize(int size);
 
     /**
-     * File status
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="file_status"
-     */
-    public abstract int getFileStatus();
-
-    /**
-     * @ejb.interface-method
-     */
-    public abstract void setFileStatus(int status);
-
-    /**
-     * @ejb:relation
-     *  name="file-node"
-     *  role-name="file-at-node"
-     *  target-ejb="Node"
-     *  target-role-name="node-of-file"
-     *  target-multiple="yes"
-     *
-     * @jboss:relation
-     *  fk-column="node_fk"
-     *  related-pk-field="pk"
-     * 
-     * @param node node where file is located
-     */
-    public abstract void setNode(NodeLocal node);
-
-    /**
-     * @ejb:interface-method view-type="local"
-     * 
-     * @return node where file is located
-     */
-    public abstract NodeLocal getNode();
-
-    /**
-     * @ejb:relation
+     * @ejb.relation
      *  name="instance-file"
      *  role-name="file-of-instance"
      *
@@ -196,57 +174,38 @@ public abstract class FileBean implements EntityBean {
      *  fk-column="instance_fk"
      *  related-pk-field="pk"
      * 
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setInstance(InstanceLocal inst);
 
     /**
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      * 
      */
     public abstract InstanceLocal getInstance();
 
     /**
-     * @ejb:relation
-     *  name="media-file"
-     *  role-name="file-on-media"
-     *
-     * @jboss:relation
-     *  fk-column="media_fk"
-     *  related-pk-field="pk"
-     * 
-     * @ejb:interface-method view-type="local"
-     */
-    public abstract void setMedia(MediaLocal media);
-
-    /**
-     * @ejb:interface-method view-type="local"
-     * 
-     */
-    public abstract MediaLocal getMedia();
-
-    /**
      * 
      * @ejb.interface-method
      */
-    public String asString() {
+    public String asString()
+    {
         return prompt();
     }
 
-    private String prompt() {
+    private String prompt()
+    {
         return "File[pk="
             + getPk()
-            + ", node->"
-            + getNode()
-            + ", path="
-            + getFilePath()
-            + ", status="
-            + getFileStatus()
+            + ", host="
+            + getHostName()
+            + ", dir="
+            + getBaseDir()
+            + ", id="
+            + getFileId()
             + ", tsuid="
             + getFileTsuid()
-            + ", media->"
-            + getMedia()
-            + ", instance->"
+            + ", inst->"
             + getInstance()
             + "]";
     }
@@ -257,17 +216,18 @@ public abstract class FileBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(
-        NodeLocal node,
-        String path,
+        String hostname,
+        String basedir,
+        String fileid,
         String tsuid,
-        long size,
+        int size,
         byte[] md5,
         InstanceLocal instance)
-        throws CreateException {
-        if (node == null) {
-            throw new NullPointerException("node");
-        }
-        setFilePath(path);
+        throws CreateException
+    {
+        setHostName(hostname);
+        setBaseDir(basedir);
+        setFileId(fileid);
         setFileTsuid(tsuid);
         setFileSize(size);
         setFileMd5(md5);
@@ -275,19 +235,21 @@ public abstract class FileBean implements EntityBean {
     }
 
     public void ejbPostCreate(
-        NodeLocal node,
-        String path,
+        String hostname,
+        String basedir,
+        String fileid,
         String tsuid,
-        long size,
+        int size,
         byte[] md5,
         InstanceLocal instance)
-        throws CreateException {
-        setNode(node);
+        throws CreateException
+    {
         setInstance(instance);
         log.info("Created " + prompt());
     }
 
-    public void ejbRemove() throws RemoveException {
+    public void ejbRemove() throws RemoveException
+    {
         log.info("Deleting " + prompt());
     }
 }

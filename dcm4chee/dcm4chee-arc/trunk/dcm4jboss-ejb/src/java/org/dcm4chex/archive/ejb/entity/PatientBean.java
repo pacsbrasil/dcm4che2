@@ -38,22 +38,21 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
 
 /**
- * @ejb:bean
+ * @ejb.bean
  *  name="Patient"
  *  type="CMP"
  *  view-type="local"
  *  primkey-field="pk"
  *  local-jndi-name="ejb/Patient"
  * 
- * @ejb:transaction 
+ * @ejb.transaction 
  *  type="Required"
  * 
  * @ejb.persistence
  *  table-name="patient"
  * 
  * @jboss.entity-command
- *  name="get-last-oid"
- *  class="org.jboss.ejb.plugins.cmp.jdbc.postgres.JDBCPostgresCreateCommand"
+ *  name="postgresql-fetch-seq"
  * 
  * @ejb.finder
  *  signature="Collection findAll()"
@@ -168,15 +167,15 @@ public abstract class PatientBean implements EntityBean
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      *
      * @param studies all studies of this patient
      */
     public abstract void setStudies(java.util.Collection studies);
 
     /**
-     * @ejb:interface-method view-type="local"
-     * @ejb:relation
+     * @ejb.interface-method view-type="local"
+     * @ejb.relation
      *  name="patient-study"
      *  role-name="patient-has-studies"
      *    
@@ -206,7 +205,7 @@ public abstract class PatientBean implements EntityBean
     }
 
     /**
-     * @ejb:interface-method
+     * @ejb.interface-method
      */
     public Dataset getAttributes()
     {
@@ -214,7 +213,7 @@ public abstract class PatientBean implements EntityBean
     }
     
     /**
-     * @ejb:interface-method
+     * @ejb.interface-method
      */
     public void setAttributes(Dataset ds)
     {

@@ -14,7 +14,7 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-3.2.1"/>		
+	<property name="jboss.home" value="${user.home}/jboss-3.2.2"/>		
 	<property name="jboss.conf" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.conf}/deploy"/>		
 	<property name="ejb.jar" value="${jboss.conf}/lib/jboss-j2ee.jar"/>		
@@ -236,6 +236,7 @@
         <jar jarfile="${target.client}/dcm4jboss-ejb-client.jar">
         	<fileset dir="${target.classes}">
                 <include name="**/interfaces/Storage*"/>
+                <include name="**/interfaces/AE*"/>
             </fileset>
         </jar>
     </target>
@@ -324,8 +325,6 @@
          <test name="org.dcm4chex.archive.ejb.entity.SeriesBeanTest"
          	todir="${target.reports}"/>
          <test name="org.dcm4chex.archive.ejb.entity.InstanceBeanTest"
-         	todir="${target.reports}"/>
-         <test name="org.dcm4chex.archive.ejb.entity.MediaBeanTest"
          	todir="${target.reports}"/>
          <test name="org.dcm4chex.archive.ejb.entity.FileBeanTest"
          	todir="${target.reports}"/>

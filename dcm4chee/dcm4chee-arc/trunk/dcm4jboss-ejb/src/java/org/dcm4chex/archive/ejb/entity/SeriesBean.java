@@ -41,22 +41,21 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
 /**
 
 /**
- * @ejb:bean
+ * @ejb.bean
  *  name="Series"
  *  type="CMP"
  *  view-type="local"
  *  primkey-field="pk"
  *  local-jndi-name="ejb/Series"
  * 
- * @ejb:transaction 
+ * @ejb.transaction 
  *  type="Required"
  * 
  * @ejb.persistence
  *  table-name="series"
  * 
  * @jboss.entity-command
- *  name="get-last-oid"
- *  class="org.jboss.ejb.plugins.cmp.jdbc.postgres.JDBCPostgresCreateCommand"
+ *  name="postgresql-fetch-seq"
  * 
  * @ejb.finder
  *  signature="Collection findAll()"
@@ -148,7 +147,7 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setEncodedAttributes(byte[] attr);
 
     /**
-     * @ejb:relation
+     * @ejb.relation
      *  name="study-series"
      *  role-name="series-of-study"
      *  cascade-delete="yes"
@@ -162,22 +161,22 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setStudy(StudyLocal study);
     
     /**
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      * 
      * @return study of this series
      */
     public abstract StudyLocal getStudy();
     
     /**
-     * @ejb:interface-method view-type="local"
+     * @ejb.interface-method view-type="local"
      *
      * @param series all instances of this series
      */
     public abstract void setInstances(java.util.Collection series);
 
     /**
-     * @ejb:interface-method view-type="local"
-     * @ejb:relation
+     * @ejb.interface-method view-type="local"
+     * @ejb.relation
      *  name="series-instance"
      *  role-name="series-has-instance"
      *    
@@ -205,7 +204,7 @@ public abstract class SeriesBean implements EntityBean {
     }
     
     /**
-     * @ejb:interface-method
+     * @ejb.interface-method
      */
     public Dataset getAttributes()
     {

@@ -37,7 +37,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
-import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -57,8 +56,6 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.NodeLocal;
-import org.dcm4chex.archive.ejb.interfaces.NodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -69,16 +66,16 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 /**
  * Storage Bean
  * 
- * @ejb:bean
+ * @ejb.bean
  *  name="Storage"
  *  type="Stateless"
  *  view-type="remote"
  *  jndi-name="ejb/Storage"
  * 
- * @ejb:transaction-type 
+ * @ejb.transaction-type 
  *  type="Container"
  * 
- * @ejb:transaction 
+ * @ejb.transaction 
  *  type="Required"
  * 
  * @ejb.ejb-ref
@@ -106,11 +103,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  view-type="local"
  *  ref-name="ejb/File" 
  * 
- * @ejb.ejb-ref
- *  ejb-name="Node" 
- *  view-type="local"
- *  ref-name="ejb/Node" 
- *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
@@ -122,7 +114,6 @@ public abstract class StorageBean implements SessionBean {
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instHome;
     private FileLocalHome fileHome;
-    private NodeLocalHome nodeHome;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
@@ -138,7 +129,6 @@ public abstract class StorageBean implements SessionBean {
                 (InstanceLocalHome) jndiCtx.lookup(
                     "java:comp/env/ejb/Instance");
             fileHome = (FileLocalHome) jndiCtx.lookup("java:comp/env/ejb/File");
-            nodeHome = (NodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Node");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -156,49 +146,20 @@ public abstract class StorageBean implements SessionBean {
         seriesHome = null;
         instHome = null;
         fileHome = null;
-        nodeHome = null;
     }
 
     /**
-     * @ejb:interface-method
-     */
-    public String getNodeURI(String aet) throws FinderException {
-        return nodeHome.findByStorageAET(aet).getURI();
-    }
-
-    /**
-     * @ejb:interface-method
-     */
-    public void createNode(String uri, String storageAET, String retrieveAET)
-        throws CreateException {
-        nodeHome.create(uri, storageAET, retrieveAET);
-    }
-
-    /**
-     * @ejb:interface-method
-     */
-    public boolean removeNode(String aet) throws RemoveException, FinderException {
-        try {
-            nodeHome.findByStorageAET(aet).remove();
-            return true;
-        } catch (ObjectNotFoundException e) {
-            return false;
-        }
-        
-    }
-
-    /**
-     * @ejb:interface-method
+     * @ejb.interface-method
      */
     public int store(
         Dataset ds,
-        String aet,
-        String path,
-        long size,
+        String host,
+        String basedir,
+        String fileid,
+        int size,
         byte[] md5)
         throws DcmServiceException {
         try {
-            NodeLocal node = nodeHome.findByStorageAET(aet);
             ArrayList modified = new ArrayList();
             FileMetaInfo fmi = ds.getFileMetaInfo();
             final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -212,7 +173,7 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.create(ds, getSeries(ds, modified));
             }
             FileLocal file =
-                fileHome.create(node, path, tsuid, size, md5, instance);
+                fileHome.create(host, basedir, fileid, tsuid, size, md5, instance);
             return modified.isEmpty()
                 ? Status.Success
                 : Status.CoercionOfDataElements;

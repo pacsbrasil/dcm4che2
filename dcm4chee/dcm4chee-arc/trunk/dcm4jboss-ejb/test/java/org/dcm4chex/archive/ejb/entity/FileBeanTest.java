@@ -28,14 +28,15 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.apache.cactus.ServletTestCase;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.NodeLocal;
-import org.dcm4chex.archive.ejb.interfaces.NodeLocalHome;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -43,18 +44,14 @@ import org.dcm4chex.archive.ejb.interfaces.NodeLocalHome;
  */
 public class FileBeanTest extends ServletTestCase
 {
-    public static final String STORAGE_AET = "STORE_AET";
-    public static final String RETRIEVE_AET = "RETRIEVE_AET";
-    public static final String URI = "file://hostname/var/local/archive/";
-    public static final String PATH = "2003/07/11/12345678/9ABCDEF0";
+    public static final String BASEDIR = "/var/local/archive";
+    public static final String FILEID = "2003/07/11/12345678/9ABCDEF0";
     public static final String TSUID = "1.2.40.0.13.1.1.9999.3";
-    public static final long SIZE = 567890L;
+    public static final int SIZE = 567890;
     public static final byte[] MD5 =
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
-    private NodeLocalHome nodeHome;
     private FileLocalHome fileHome;
-    private NodeLocal node;
 
     public static void main(String[] args)
     {
@@ -67,10 +64,8 @@ public class FileBeanTest extends ServletTestCase
     protected void setUp() throws Exception
     {
         Context ctx = new InitialContext();
-        nodeHome = (NodeLocalHome) ctx.lookup("java:comp/env/ejb/Node");
         fileHome = (FileLocalHome) ctx.lookup("java:comp/env/ejb/File");
         ctx.close();
-        node = nodeHome.create(URI, STORAGE_AET, RETRIEVE_AET);
     }
 
     /*
@@ -78,7 +73,6 @@ public class FileBeanTest extends ServletTestCase
      */
     protected void tearDown() throws Exception
     {
-        node.remove();
     }
 
     /**
@@ -92,7 +86,13 @@ public class FileBeanTest extends ServletTestCase
 
     public void testCreate() throws Exception
     {
-        FileLocal file = fileHome.create(node, PATH, TSUID, SIZE, MD5, null);
+        FileLocal file = fileHome.create(getHostName(), BASEDIR, FILEID, TSUID, SIZE, MD5, null);
         file.remove();
+    }
+    
+    private static String getHostName() throws UnknownHostException {
+        String hostname = InetAddress.getLocalHost().getHostName();
+        int pos = hostname.lastIndexOf('.');
+        return pos != -1 ? hostname.substring(pos+1) : hostname;
     }
 }
