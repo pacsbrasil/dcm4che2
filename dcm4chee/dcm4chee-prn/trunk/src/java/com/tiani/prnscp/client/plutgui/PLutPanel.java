@@ -80,6 +80,7 @@ public class PLutPanel extends JPanel
     private final static int CHANGING_SLOPE = 2;
     private final static int CHANGING_GAMMA = 4;
     private int changingParam;
+    private boolean showPLutParams = true;
     private boolean logHisto = true;
 
 
@@ -101,22 +102,33 @@ public class PLutPanel extends JPanel
                 private int lastx, lasty;
                 private boolean grabCntr;
 
-
                 private void update(MouseEvent e)
                 {
                     lastx = e.getX();
                     lasty = e.getY();
                 }
 
+                private float grabCenterVal(MouseEvent e)
+                {
+                    int winMin = PLutPanel.this.imgPanel.getWindowMin();
+                    int winMax = PLutPanel.this.imgPanel.getWindowMax();
+                    final boolean winDefined = (winMin < winMax);
+                    
+                    if (winDefined)
+                        return (((float)(e.getY() * binRange) / getHeight())
+                                - winMin + binMin) / (winMax - winMin);
+                    else
+                        return (float)e.getY() / getHeight();
+                }
 
                 public void mousePressed(MouseEvent e)
                 {
                     update(e);
+                    final boolean near = (Math.abs((float)builder.getCenter() - grabCenterVal(e))
+                                         < CENTER_GRAB_DIST_REL);
                     grabCntr = ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0
-                                && Math.abs((float)e.getY() / getHeight()
-                                            - builder.getCenter()) < CENTER_GRAB_DIST_REL);
+                                && near);
                 }
-
 
                 public void mouseReleased(MouseEvent e)
                 {
@@ -124,7 +136,6 @@ public class PLutPanel extends JPanel
                     repaint();
                     grabCntr = false;
                 }
-
 
                 public void mouseClicked(MouseEvent e)
                 {
@@ -136,7 +147,6 @@ public class PLutPanel extends JPanel
                     }
                 }
 
-
                 public void mouseDragged(MouseEvent e)
                 {
                     int dx = e.getX() - lastx;
@@ -146,10 +156,7 @@ public class PLutPanel extends JPanel
                     changingParam = 0;
                     if (grabCntr) { //center
                         changingParam |= CHANGING_CENTER;
-                        builder.setCenter(
-                            Math.max(0.f,
-                                Math.min(1.f,
-                                    (float) e.getY() / getHeight())));
+                        builder.setCenter(Math.max(0.f, Math.min(1.f, grabCenterVal(e))));
                         updatePLut();
                     }
                     else {
@@ -215,7 +222,11 @@ public class PLutPanel extends JPanel
     private void updatePLut(boolean createFromParams)
     {
         if (createFromParams) {
+            showPLutParams = true;
             plut = builder.create();
+        }
+        else {
+            showPLutParams = false;
         }
         byte[] bplut = new byte[plut.length];
         for (int i = 0; i < plut.length; i++) {
@@ -248,27 +259,29 @@ public class PLutPanel extends JPanel
             //draw P-LUT curve
             drawPLut(g2, false);
             //draw curve parameters overlay
-            g2.setColor(Color.WHITE);
-            g2.fillRect(10, 10, 100, 34);
-            g2.setColor(Color.BLACK);
-            g2.drawRect(10, 10, 100, 34);
-            g2.setClip(10, 10, 100, 34);
-            g2.setColor((changingParam & CHANGING_CENTER) != 0
-                        ? Color.RED
-                        : Color.BLACK);
-            g2.drawString("Center = " + numFormat.format(builder.getCenter()),
-                          12, 22);
-            g2.setColor((changingParam & CHANGING_SLOPE) != 0
-                        ? Color.RED
-                        : Color.BLACK);
-            g2.drawString("Slope = " + numFormat.format(builder.getSlope()),
-                          12, 32);
-            g2.setColor((changingParam & CHANGING_GAMMA) != 0
-                        ? Color.RED
-                        : Color.BLACK);
-            g2.drawString("Gamma = " + numFormat.format(builder.getGamma()),
-                          12, 42);
-            g2.setClip(0, 0, getWidth(), getHeight());
+            if (showPLutParams) {
+                g2.setColor(Color.WHITE);
+                g2.fillRect(10, 10, 100, 34);
+                g2.setColor(Color.BLACK);
+                g2.drawRect(10, 10, 100, 34);
+                g2.setClip(10, 10, 100, 34);
+                g2.setColor((changingParam & CHANGING_CENTER) != 0
+                            ? Color.RED
+                            : Color.BLACK);
+                g2.drawString("Center = " + numFormat.format(builder.getCenter()),
+                              12, 22);
+                g2.setColor((changingParam & CHANGING_SLOPE) != 0
+                            ? Color.RED
+                            : Color.BLACK);
+                g2.drawString("Slope = " + numFormat.format(builder.getSlope()),
+                              12, 32);
+                g2.setColor((changingParam & CHANGING_GAMMA) != 0
+                            ? Color.RED
+                            : Color.BLACK);
+                g2.drawString("Gamma = " + numFormat.format(builder.getGamma()),
+                              12, 42);
+                g2.setClip(0, 0, getWidth(), getHeight());
+            }
             //draw window/histogram information overlay
             g2.setColor(Color.WHITE);
             g2.fillRect(10, getHeight() - 32, 200, 24);
@@ -570,5 +583,15 @@ public class PLutPanel extends JPanel
 
     public void setLogHisto(boolean b) {
         logHisto = b;
+    }
+
+
+    PLutBuilder getBuilder() {
+        return builder;
+    }
+
+
+    public boolean isShowingPLutParams() {
+        return showPLutParams;
     }
 }

@@ -8,7 +8,11 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Hashtable;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
@@ -23,16 +27,23 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
+
+import com.tiani.prnscp.print.PLutBuilder;
+
 public class PLutGUIFrame extends JFrame
 {
+    private final static String MBEAN_PRINTER_SERVICE_PREFIX = "dcm4chex:service=Printer,calledAET=";
     private final int DEF_WIDTH = 800, DEF_HEIGHT = 600;
+
+    private String printingCalledAet = "TIANI_PRINT";
     PLutGUIPanel guiPanel;
     File lastFile = null; //for JFileChooser to remember last dir
     JFileChooser chooser = new JFileChooser();
-    Action actOpenImg,actExit, actExportDcmPres, actImportDcmPres,
+    Action actOpenImg, actExit, actExportDcmPres, actImportDcmPres,
            actDisplayImageInfo, actHistoEq, actExportTxtPres,
-           actImportTxtPres, actHistoScale;
-    
+           actImportTxtPres, actHistoScale, actPrint;
+
     PLutGUIFrame()
     {
         Container panel = this.getContentPane();
@@ -60,6 +71,30 @@ public class PLutGUIFrame extends JFrame
                 }
             };
         actOpenImg.putValue(Action.NAME,"Open DICOM Image");
+        actPrint = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    if (!guiPanel.getPLutPanel().isShowingPLutParams()) {
+                        JOptionPane.showMessageDialog(PLutGUIFrame.this,
+                            "Printing is only possible using a manually generated P-LUT.");
+                        return;
+                    }
+                    try {
+                        print(lastFile);
+                    }
+                    catch (InstanceNotFoundException infe) {
+                        JOptionPane.showMessageDialog(PLutGUIFrame.this,
+                            "Problem with printing: the called AET may not be registered");
+                    }
+                    catch (Exception ex) {
+                        JOptionPane.showMessageDialog(PLutGUIFrame.this,
+                            "Problem with printing: " + ex);
+                        //ex.printStackTrace();
+                    }
+                }
+            };
+        actPrint.putValue(Action.NAME,"Print");
         actExit = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
@@ -154,6 +189,8 @@ public class PLutGUIFrame extends JFrame
         mnuFile.add(mnuImportTxtPres);
         JMenuItem mnuExportTxtPres = new JMenuItem(actExportTxtPres);
         mnuFile.add(mnuExportTxtPres);
+        JMenuItem mnuPrint = new JMenuItem(actPrint);
+        mnuFile.add(mnuPrint);
         JMenuItem mnuDisplayImageInfo = new JMenuItem(actDisplayImageInfo);
         mnuFile.add(mnuDisplayImageInfo);
         JMenuItem mnuExit = new JMenuItem(actExit);
@@ -194,6 +231,35 @@ public class PLutGUIFrame extends JFrame
         setTitle(title);
     }
 
+    void print(File file)
+        throws Exception
+    {
+        PLutBuilder builder = guiPanel.getPLutPanel().getBuilder();
+        String cfg = "shape=IDENTITY";
+        cfg = "center=" + Double.toString(builder.getCenter())
+              + ",gamma=" + Double.toString(builder.getGamma())
+              + ",slope=" + Double.toString(builder.getSlope());
+        boolean color = guiPanel.getImagePanel().isApplyingPLutToRGB();
+        
+        Hashtable env = new Hashtable();
+        env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+        env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+        env.put("java.naming.provider.url", "localhost");
+        InitialContext ic = new InitialContext(env);
+        RMIAdaptor server = (RMIAdaptor) ic.lookup("jmx/rmi/RMIAdaptor");
+        server.invoke(new ObjectName(MBEAN_PRINTER_SERVICE_PREFIX + printingCalledAet), "printImage",
+                new Object[]{
+                    file.getCanonicalPath(),
+                    cfg,
+                    new Boolean(color)
+                },
+                new String[]{
+                    String.class.getName(),
+                    String.class.getName(),
+                    Boolean.class.getName(),
+                });
+    }
+
     /* for abnormal exit */
     private static void exit(String msg)
     {
@@ -209,6 +275,7 @@ public class PLutGUIFrame extends JFrame
             " -t --threshold   Specifies the maximum threshold of differences\n" +
             "                  to treat the components of RGB values as gray values.\n" +
             "                  Specified as an integer from 0..255.\n" +
+            " -a --aet         The called AET of a print server for printing images\n" +
             " -h --help        show this help and exit\n";
 
     public static void main(String[] args)
@@ -218,17 +285,21 @@ public class PLutGUIFrame extends JFrame
         
         LongOpt[] longopts = {
                 new LongOpt("gray-threshold", LongOpt.OPTIONAL_ARGUMENT, null, 't'),
+                new LongOpt("aet", LongOpt.OPTIONAL_ARGUMENT, null, 'a'),
                 new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h')
-                };
+            };
 
-        Getopt g = new Getopt("view-plut", args, "t:h", longopts, true);
+        Getopt g = new Getopt("view-plut", args, "t:a:h", longopts, true);
         try {
-            PLutGUIFrame fr = new PLutGUIFrame("P-LUT Viewer");
+            PLutGUIFrame plutViewer = new PLutGUIFrame("P-LUT Viewer");
             int c;
             while ((c = g.getopt()) != -1) {
                 switch (c) {
                     case 't':
-                        fr.guiPanel.getImagePanel().setRgbToGrayThreshold(Integer.parseInt(g.getOptarg()));
+                        plutViewer.guiPanel.getImagePanel().setRgbToGrayThreshold(Integer.parseInt(g.getOptarg()));
+                        break;
+                    case 'a':
+                        plutViewer.setPrintingCalledAet(g.getOptarg());
                         break;
                     case 'h':
                     case '?':
@@ -241,15 +312,22 @@ public class PLutGUIFrame extends JFrame
             if (argc != 0) {
                 exit("view-plut: wrong number of arguments\n");
             }
-            fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            fr.show();
+            plutViewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            plutViewer.show();
         }
         catch (IllegalArgumentException e) {
             exit("view-plut: illegal argument - " + e.getMessage() + "\n");
         }
-        /*catch (IOException e) {
-            System.err.println("view-plut: i/o error - " + e.getMessage() + "\n");
-            System.exit(1);
-        }*/
+    }
+
+    public String getPrintingCalledAet() {
+        return printingCalledAet;
+    }
+
+    public void setPrintingCalledAet(String string) {
+        if (string == null || string.length() == 0 || string.length() > 16)
+            throw new IllegalArgumentException(
+                "AET titles must be between 1 to 16 characters");
+        printingCalledAet = string;
     }
 }
