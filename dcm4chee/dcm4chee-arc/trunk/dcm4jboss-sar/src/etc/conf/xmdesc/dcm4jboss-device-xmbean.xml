@@ -57,8 +57,8 @@
       <return-type>java.util.Collection</return-type>
    </operation>   
    <operation impact="ACTION">
-      <description>Add device information to given Dataset.</description>
-      <name>addDeviceInfo</name>
+      <description>Add Scheduled Station AET + Name + Modality to given SPS Items.</description>
+      <name>addScheduledStationInfo</name>
       <parameter>
         <name>ds</name>
         <type>org.dcm4che.data.Dataset</type>

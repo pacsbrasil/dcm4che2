@@ -96,7 +96,7 @@ public class DeviceService extends ServiceMBeanSupport {
         ds2.putSH( Tags.CodeValue, sa[0] );
     	ds2.putSH( Tags.CodeMeaning, sa[1]);
     	ds2.putSH( Tags.CodingSchemeDesignator, sa[2] );
-    	Dataset ds3 = addDeviceInfo( ds );
+    	Dataset ds3 = addScheduledStationInfo( ds );
     	sq = ds3.get( Tags.SPSSeq );
     	ds1 = sq.getItem();
     	String dev = ds1.getString( Tags.ScheduledStationName );
@@ -104,8 +104,8 @@ public class DeviceService extends ServiceMBeanSupport {
     	return l;
     }
     
-    public Dataset addDeviceInfo( Dataset ds ) throws RemoteException, FinderException, HomeFactoryException, CreateException {
-    	return lookupMapper().addDeviceInfo( ds );
+    public Dataset addScheduledStationInfo( Dataset ds ) throws RemoteException, FinderException, HomeFactoryException, CreateException {
+    	return lookupMapper().addScheduledStationInfo(ds);
     }
     
     public Templates getTemplates(String uri) throws TransformerConfigurationException {
