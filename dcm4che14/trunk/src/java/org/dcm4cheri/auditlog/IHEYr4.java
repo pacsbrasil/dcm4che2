@@ -123,7 +123,7 @@ class IHEYr4 {
 
     public String toString() {
         StringBuffer sb = new StringBuffer(512);
-        sb.append("<IHEYr4>");
+        sb.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><IHEYr4>");
         msg.writeTo(sb);
         sb.append("<Host>").append(host).append("</Host><TimeStamp>");
         sb.append(new ISO8601DateFormat().format(new Date(millis)));

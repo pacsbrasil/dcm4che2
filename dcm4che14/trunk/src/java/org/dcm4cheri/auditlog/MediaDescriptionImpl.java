@@ -116,14 +116,14 @@ class MediaDescriptionImpl implements MediaDescription
     public void writeTo(StringBuffer sb)
     {
         if (mediaID != null) {
-            sb.append("<MediaID>")
+            sb.append("<MediaID><![CDATA[")
                     .append(mediaID)
-                    .append("</MediaID>");
+                    .append("]]></MediaID>");
         }
         if (mediaType != null) {
-            sb.append("<MediaType>")
+            sb.append("<MediaType><![CDATA[")
                     .append(mediaType)
-                    .append("</MediaType>");
+                    .append("]]></MediaType>");
         }
         for (Iterator it = suids.iterator(); it.hasNext(); ) {
             sb.append("<SUID>")

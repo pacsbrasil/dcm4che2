@@ -81,7 +81,7 @@ class RemoteNodeImpl implements RemoteNode {
             sb.append("<Hname>").append(hname).append("</Hname>");
         }
         if (aet != null) {
-            sb.append("<AET>").append(aet).append("</AET>");
+            sb.append("<AET><![CDATA[").append(aet).append("]]></AET>");
         }
     }
 }

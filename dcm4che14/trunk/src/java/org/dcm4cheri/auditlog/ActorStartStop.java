@@ -59,9 +59,9 @@ class ActorStartStop implements IHEYr4.Message {
     
     // Methods -------------------------------------------------------
     public void writeTo(StringBuffer sb) {
-        sb.append("<ActorStartStop><ActorName>")
+        sb.append("<ActorStartStop><ActorName><![CDATA[")
           .append(actorName)
-          .append("</ActorName><ApplicationAction>")
+          .append("]]></ActorName><ApplicationAction>")
           .append(applicationAction)
           .append("</ApplicationAction>");
         user.writeTo(sb);

@@ -116,9 +116,9 @@ class InstancesActionImpl implements InstancesAction {
           .append(action)
           .append("</ObjectAction>");
         if (accessionNumber != null) {
-            sb.append("<AccessionNumber>")
+            sb.append("<AccessionNumber><![CDATA[")
               .append(accessionNumber)
-              .append("</AccessionNumber>");
+              .append("]]></AccessionNumber>");
         }
         for (Iterator it = suids.iterator(); it.hasNext();) {
             sb.append("<SUID>")

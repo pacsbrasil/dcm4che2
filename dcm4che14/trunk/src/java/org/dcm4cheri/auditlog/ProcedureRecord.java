@@ -50,18 +50,18 @@ public class ProcedureRecord implements IHEYr4.Message {
 
     public void writeTo(StringBuffer sb) {
         sb.append("<ProcedureRecord><ObjectAction>").append(action)
-                .append("</ObjectAction>").append("<PlacerOrderNumber>")
-                .append(placerOrderNumber).append("</PlacerOrderNumber>")
-                .append("<FillerOrderNumber>").append(fillerOrderNumber)
-                .append("</FillerOrderNumber>").append("<SUID>").append(suid)
+                .append("</ObjectAction>").append("<PlacerOrderNumber><![CDATA[")
+                .append(placerOrderNumber).append("]]></PlacerOrderNumber>")
+                .append("<FillerOrderNumber><![CDATA[").append(fillerOrderNumber)
+                .append("]]></FillerOrderNumber>").append("<SUID>").append(suid)
                 .append("</SUID>");
         if (accessionNumber != null)
-                sb.append("<AccessionNumber>").append(accessionNumber)
-                        .append("</AccessionNumber>");
+                sb.append("<AccessionNumber><![CDATA[").append(accessionNumber)
+                        .append("]]></AccessionNumber>");
         patient.writeTo(sb);
         user.writeTo(sb);
         if (desc != null)
-            sb.append("<Description>").append(desc).append("</Description>");
+            sb.append("<Description><![CDATA[").append(desc).append("]]></Description>");
         sb.append("</ProcedureRecord>");
     }
 

@@ -58,13 +58,13 @@ class ActorConfig implements IHEYr4.Message {
     
     // Methods -------------------------------------------------------
     public void writeTo(StringBuffer sb) {
-        sb.append("<ActorConfig><Description>")
+        sb.append("<ActorConfig><Description><![CDATA[")
           .append(description)
-          .append("</Description>");
+          .append("]]></Description>");
         user.writeTo(sb);
-        sb.append("<ConfigType>")
+        sb.append("<ConfigType><![CDATA[")
           .append(configType)
-          .append("</ConfigType></ActorConfig>");
+          .append("]]></ConfigType></ActorConfig>");
     }
     
 }

@@ -53,9 +53,9 @@ class LocalPrinterImpl implements Destination
      */
     public void writeTo(StringBuffer sb)
     {
-        sb.append("<Destination><LocalPrinter>")
+        sb.append("<Destination><LocalPrinter><![CDATA[")
                 .append(name)
-                .append("</LocalPrinter></Destination>");
+                .append("]]></LocalPrinter></Destination>");
     }
 
 }

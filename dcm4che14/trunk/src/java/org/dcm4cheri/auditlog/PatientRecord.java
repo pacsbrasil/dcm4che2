@@ -41,7 +41,8 @@ public class PatientRecord implements IHEYr4.Message {
         patient.writeTo(sb);
         user.writeTo(sb);
         if (desc != null)
-            sb.append("<Description>").append(desc).append("</Description>");
+            sb.append("<Description><![CDATA[").append(desc)
+            	.append("]]></Description>");
         sb.append("</PatientRecord>");
     }
 

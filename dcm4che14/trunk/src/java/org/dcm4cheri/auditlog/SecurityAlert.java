@@ -62,9 +62,9 @@ class SecurityAlert implements IHEYr4.Message {
           .append(alertType)
           .append("</AlertType>");
         user.writeTo(sb);
-        sb.append("<Description>")
+        sb.append("<Description><![CDATA[")
           .append(description)
-          .append("</Description></SecurityAlert>");
+          .append("]]></Description></SecurityAlert>");
     }
     
 }

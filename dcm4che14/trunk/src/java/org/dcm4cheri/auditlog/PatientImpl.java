@@ -56,10 +56,10 @@ class PatientImpl implements Patient {
     
     // Methods -------------------------------------------------------
     public void writeTo(StringBuffer sb) {
-        sb.append("<Patient><PatientID>")
+        sb.append("<Patient><PatientID><![CDATA[")
           .append(id)
-          .append("</PatientID><PatientName>")
+          .append("]]></PatientID><PatientName><![CDATA[")
           .append(name)
-          .append("</PatientName></Patient>");
+          .append("]]></PatientName></Patient>");
     }
 }

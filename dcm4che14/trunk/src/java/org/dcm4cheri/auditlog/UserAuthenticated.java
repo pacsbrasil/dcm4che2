@@ -54,9 +54,9 @@ class UserAuthenticated implements IHEYr4.Message {
     
     // Methods -------------------------------------------------------
     public void writeTo(StringBuffer sb) {
-        sb.append("<UserAuthenticated><LocalUsername>")
+        sb.append("<UserAuthenticated><LocalUsername><![CDATA[")
           .append(localUserName)
-          .append("</LocalUsername><Action>")
+          .append("]]></LocalUsername><Action>")
           .append(action)
           .append("</Action></UserAuthenticated>");
     }

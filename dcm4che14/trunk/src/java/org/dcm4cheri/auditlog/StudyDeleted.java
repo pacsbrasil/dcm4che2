@@ -60,7 +60,8 @@ class StudyDeleted implements IHEYr4.Message {
         sb.append("<StudyDeleted>");
         instancesAction.writeTo(sb);
         if (desc != null)
-            sb.append("<Description>").append(desc).append("</Description>");
+            sb.append("<Description><![CDATA[").append(desc)
+            	.append("]]></Description>");
         sb.append("</StudyDeleted>");
     }
     

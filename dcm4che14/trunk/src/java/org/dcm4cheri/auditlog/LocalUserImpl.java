@@ -53,9 +53,9 @@ class LocalUserImpl implements User {
     }
     
     public void writeTo(StringBuffer sb) {
-        sb.append("<User><LocalUser>")
+        sb.append("<User><LocalUser><![CDATA[")
         .append(name)
-        .append("</LocalUser></User>");
+        .append("]]></LocalUser></User>");
     }
     
 }
