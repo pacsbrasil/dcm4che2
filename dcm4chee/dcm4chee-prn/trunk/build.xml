@@ -260,11 +260,15 @@
         
     <copy file="${build.deploy.dir}/prnscp.sar"
         todir="${jboss.server.deploy}" />
+        
+    <copy file="${build.deploy.dir}/printer.sar"
+        todir="${jboss.server.deploy}" />
   </target>           
 
   <target name="undeploy">
-    <delete file="${jboss.server.deploy}/dcmsrv.sar" />
+    <delete file="${jboss.server.deploy}/printer.sar" />
     <delete file="${jboss.server.deploy}/prnscp.sar" />
+    <delete file="${jboss.server.deploy}/dcmsrv.sar" />
   </target>           
 
   <target name="doc">
