@@ -16,10 +16,12 @@
    <property name="samples.res" value="${samples}/resources"/>
    <property name="lib" value="lib"/>
    <property name="doc" value="doc"/>
-   <property name="out" value="dcm4che-${version.number}"/>
-   <property name="lib_out" value="${out}/lib"/>
-   <property name="samples_out" value="${out}/samples"/>
-   <property name="doc_out" value="${out}/doc"/>
+   <property name="out" value="out"/>
+   <property name="dist" value="${out}/dcm4che-${version.number}"/>
+   <property name="etc_out" value="${dist}/etc"/>
+   <property name="lib_out" value="${dist}/lib"/>
+   <property name="samples_out" value="${dist}/samples"/>
+   <property name="doc_out" value="${dist}/doc"/>
    <property name="javadoc" value="${doc_out}/api"/>
    <property name="reports" value="${out}/reports"/>
    <property name="dcm4che_jar" value="${lib_out}/dcm4che.jar"/>
@@ -42,12 +44,17 @@
    <target name="init">
       <tstamp/>
       <mkdir dir="${lib_out}"/>
+      <mkdir dir="${etc_out}"/>
       <mkdir dir="${samples_out}"/>
       <mkdir dir="${javadoc}"/>
       <mkdir dir="${build}"/>
       <mkdir dir="${reports}"/>
    </target>
 
+   <target name="fetch">
+     <cvs command="update -APd"/>
+   </target>
+   
    <target name="clean"
            description="clean up" >
       <delete file="${dcm4che_jar}"/>
@@ -56,13 +63,9 @@
       <delete dir="${reports}"/>
    </target>
 
-   <target name="main" depends="package">
-   <!-- WRITEME -->
-   </target>
+   <target name="main" depends="package"/>
 
-   <target name="all" depends="clean,test,publish">
-   <!-- WRITEME -->
-   </target>
+   <target name="all" depends="clean,publish"/>
 
    <!-- Generate java source from XML via XSLT -->
    <target name="xml2java" depends="init">
@@ -98,15 +101,8 @@
              classpathref="build.classpath"/>
    </target>
 
-   <target name="check-res" depends="compile">
-      <uptodate property="uptodate-res"
-	             targetfile="${src.res}/org/dcm4cheri/dict/TagDictionary.ser">
-         <srcfiles dir="${src.etc}" includes="dictionary.xml"/>
-      </uptodate>
-   </target>
-   
    <!-- Compile resource files if necessary -->
-   <target name="compile-res" depends="check-res" unless="uptodate-res"> 
+   <target name="compile-res" depends="compile" unless="uptodate-res"> 
       <mkdir dir="${src.res}/org/dcm4cheri/dict"/>
       <java classname="org.dcm4cheri.dict.DictionaryFactoryImpl"
             classpathref="run.classpath"
@@ -116,7 +112,12 @@
       </java>
    </target>
       
-   <target name="prepare-res" depends="compile-res">
+   <target name="prepare-res" depends="init">
+      <uptodate property="uptodate-res"
+	             targetfile="${src.res}/org/dcm4cheri/dict/TagDictionary.ser">
+         <srcfiles dir="${src.etc}" includes="dictionary.xml"/>
+      </uptodate>
+      <antcall target="compile-res"/>
       <filter token="VERSIONNAME" value="DCM4CHE${DSTAMP}"/>
       <filter token="VERSION" value="${version.number}"/>
       <filter token="TODAY" value="${TODAY}"/>
@@ -255,8 +256,11 @@
    </target>
    
    <target name="publish" depends="package,doc">           
-      <copy todir="${out}">
+      <copy todir="${dist}">
          <fileset dir="${doc}" excludes="**/.nbattrs"/>
+      </copy>
+      <copy todir="${etc_out}">
+         <fileset dir="${src.etc}" excludes="**/.nbattrs"/>
       </copy>
       <mkdir dir="${samples_out}/data"/>
       <copy todir="${samples_out}/data">
@@ -335,13 +339,11 @@
          </fileset>
       </copy>
       
-      <zip zipfile="${out}/src.zip" 
+      <zip zipfile="${dist}/src.zip" 
            basedir="${src.java}"
            includes="**/*.java"/>
       
-      <zip zipfile="${local_out}/dcm4che14-${version.number}.zip" 
-           basedir="${out}"
-           excludes="dcm4che/**,reports/**"/>
+      <zip zipfile="${out}/dcm4che14-${version.number}.zip" basedir="${dist}"/>
       
    </target>
 
