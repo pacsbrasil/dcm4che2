@@ -25,7 +25,7 @@
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 
     <!-- Override with your Cactus bundle dist location -->
-    <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.5"/>
+    <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.6.1"/>
     <property name="cactus.lib" value="${cactus.home}/lib"/>
 
     <!-- Override with your JBoss/Web server bundle dist location -->
