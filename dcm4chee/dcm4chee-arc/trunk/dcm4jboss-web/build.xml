@@ -77,6 +77,9 @@
 			<lib dir="${maverick.dist.dir}">
 				<include name="maverick.jar" />
 			</lib>
+			<lib dir="${maverick.lib.dir}">
+				<include name="jdom.jar" />
+			</lib>
 			<lib dir="${opt-domify.lib.dir}">
 				<include name="domify.jar" />
 			</lib>

@@ -31,6 +31,7 @@
          <eager-load-group>*</eager-load-group>
       </read-ahead>
       <list-cache-max>1000</list-cache-max>
+      <clean-read-ahead-on-load>false</clean-read-ahead-on-load>
 
       <unknown-pk>
          <key-generator-factory>UUIDKeyGeneratorFactory</key-generator-factory>
@@ -40,15 +41,15 @@
       </unknown-pk>
 
       <entity-command name="default"/>
-		
+      <ql-compiler>org.jboss.ejb.plugins.cmp.jdbc.JDBCEJBQLCompiler</ql-compiler>
    </defaults>
 
    <type-mappings>
       <type-mapping>
          <name>FirstSQL/J</name>
          <row-locking-template/>
-         <pk-constraint-template>PRIMARY KEY (?1)</pk-constraint-template>
-         <fk-constraint-template>FOREIGN KEY (?1) REFERENCES ?2 (?3)</fk-constraint-template>
+         <pk-constraint-template>PRIMARY KEY (?2)</pk-constraint-template>
+         <fk-constraint-template>FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
          <alias-header-suffix>_</alias-header-suffix>
          <alias-max-length>32</alias-max-length>
@@ -174,7 +175,7 @@
 
       <type-mapping>
          <name>Ingres</name>
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>    
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>    
          <pk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 PRIMARY KEY (?3)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
@@ -309,7 +310,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
       </type-mapping>
      <type-mapping>
       <name>McKoi</name>
-      <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+      <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
       <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
       <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
       <alias-header-prefix>t</alias-header-prefix>
@@ -393,15 +394,12 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>Firebird</name>
-         <!-- For use with the Firebirdsql jca-jdbc driver.
-              A version after Beta 1 is strongly recommended,
-              this may involve building from cvs -->
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
          <alias-header-suffix>_</alias-header-suffix>
-         <alias-max-length>32</alias-max-length>
+         <alias-max-length>31</alias-max-length>
          <subquery-supported>true</subquery-supported>
          <true-mapping>1</true-mapping>
          <false-mapping>0</false-mapping>
@@ -414,37 +412,37 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
          <mapping>
             <java-type>java.lang.Boolean</java-type>
             <jdbc-type>BIT</jdbc-type>
-            <sql-type>SMALLINT</sql-type>
+            <sql-type>SMALLINT default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Byte</java-type>
             <jdbc-type>TINYINT</jdbc-type>
-            <sql-type>SMALLINT</sql-type>
+            <sql-type>SMALLINT default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Short</java-type>
             <jdbc-type>SMALLINT</jdbc-type>
-            <sql-type>SMALLINT</sql-type>
+            <sql-type>SMALLINT default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Integer</java-type>
             <jdbc-type>INTEGER</jdbc-type>
-            <sql-type>INTEGER</sql-type>
+            <sql-type>INTEGER default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Long</java-type>
             <jdbc-type>BIGINT</jdbc-type>
-            <sql-type>NUMERIC(18,0)</sql-type>
+            <sql-type>NUMERIC(18,0) default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Float</java-type>
             <jdbc-type>REAL</jdbc-type>
-            <sql-type>FLOAT</sql-type>
+            <sql-type>FLOAT default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Double</java-type>
             <jdbc-type>DOUBLE</jdbc-type>
-            <sql-type>DOUBLE PRECISION</sql-type>
+            <sql-type>DOUBLE PRECISION default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Character</java-type>
@@ -481,12 +479,12 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>InterBase</name>
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
          <alias-header-suffix>_</alias-header-suffix>
-         <alias-max-length>32</alias-max-length>
+         <alias-max-length>31</alias-max-length>
          <subquery-supported>true</subquery-supported>
          <true-mapping>1</true-mapping>
          <false-mapping>0</false-mapping>
@@ -499,37 +497,37 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
          <mapping>
             <java-type>java.lang.Boolean</java-type>
             <jdbc-type>BIT</jdbc-type>
-            <sql-type>SMALLINT</sql-type>
+            <sql-type>SMALLINT default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Byte</java-type>
             <jdbc-type>TINYINT</jdbc-type>
-            <sql-type>SMALLINT</sql-type>
+            <sql-type>SMALLINT default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Short</java-type>
             <jdbc-type>SMALLINT</jdbc-type>
-            <sql-type>SMALLINT</sql-type>
+            <sql-type>SMALLINT default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Integer</java-type>
             <jdbc-type>INTEGER</jdbc-type>
-            <sql-type>INTEGER</sql-type>
+            <sql-type>INTEGER default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Long</java-type>
             <jdbc-type>BIGINT</jdbc-type>
-            <sql-type>NUMERIC(18,0)</sql-type>
+            <sql-type>NUMERIC(18,0) default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Float</java-type>
             <jdbc-type>REAL</jdbc-type>
-            <sql-type>FLOAT</sql-type>
+            <sql-type>FLOAT default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Double</java-type>
             <jdbc-type>DOUBLE</jdbc-type>
-            <sql-type>DOUBLE PRECISION</sql-type>
+            <sql-type>DOUBLE PRECISION default 0</sql-type>
          </mapping>
          <mapping>
             <java-type>java.lang.Character</java-type>
@@ -579,6 +577,11 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
             <function-name>count</function-name>
             <function-sql>count(?1)</function-sql>
          </function-mapping>
+		 <function-mapping>
+			 <function-name>locate</function-name>
+			 <function-sql>locate(CAST(?1 as VARCHAR(254)),
+				 CAST(?2 as VaRCHAR(254)),?3)</function-sql>
+		 </function-mapping>
 
          <mapping>
             <java-type>java.lang.Boolean</java-type>
@@ -648,20 +651,28 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
          </mapping>
+         <!-- this one gives errors with DB2 V8.1
+         		and at least the NET driver
          <mapping>
+            <java-type>java.lang.Object</java-type>
+            <jdbc-type>JAVA_OBJECT</jdbc-type>
+            <sql-type>BLOB(2000)</sql-type>
+         </mapping>
+         -->
+      	<mapping>
             <java-type>java.lang.Object</java-type>
             <jdbc-type>VARBINARY</jdbc-type>
             <sql-type>BLOB(2000)</sql-type>
          </mapping>
       </type-mapping>
-
+      
       <type-mapping>
          <name>Oracle9i</name>
          <!--
          | Make sure that you have the Oracle 9i version of classes12.jar
          | or you will suffer
          -->
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
@@ -721,6 +732,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
          <mapping>
             <java-type>java.lang.Short</java-type>
             <jdbc-type>NUMERIC</jdbc-type>
+            <!-- <jdbc-type>SMALLINT</jdbc-type> this resulted in a ClassCastException -->
             <sql-type>NUMBER(5)</sql-type>
          </mapping>
          <mapping>
@@ -791,7 +803,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>Oracle8</name>
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
@@ -929,7 +941,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>Oracle7</name>
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
@@ -1068,7 +1080,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
          <alias-header-suffix>_</alias-header-suffix>
-         <alias-max-length>32</alias-max-length>
+         <alias-max-length>30</alias-max-length>
          <subquery-supported>true</subquery-supported>
          <true-mapping>1</true-mapping>
          <false-mapping>0</false-mapping>
@@ -1131,6 +1143,11 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
             <sql-type>VARCHAR(255)</sql-type>
          </mapping>
          <mapping>
+            <java-type>java.util.Date</java-type>
+            <jdbc-type>TIMESTAMP</jdbc-type>
+            <sql-type>DATETIME</sql-type>
+         </mapping>
+         <mapping>
             <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATETIME</sql-type>
@@ -1154,7 +1171,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>PostgreSQL</name>
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <auto-increment-template>?1</auto-increment-template>
@@ -1281,7 +1298,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>PostgreSQL 7.2</name>
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <auto-increment-template>?1</auto-increment-template>
@@ -1536,7 +1553,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>PointBase</name>
-         <row-locking-template/>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
@@ -1608,6 +1625,11 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
             <java-type>java.lang.Integer</java-type>
             <jdbc-type>INTEGER</jdbc-type>
             <sql-type>INTEGER</sql-type>
+         </mapping>
+         <mapping>
+            <java-type>java.util.Date</java-type>
+            <jdbc-type>DATE</jdbc-type>
+            <sql-type>DATE</sql-type>
          </mapping>
       </type-mapping>
 
@@ -1692,7 +1714,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>mySQL</name>
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <!-- does not work for compound keys <fk-constraint-template>ALTER TABLE ?1 ADD INDEX ind_?3 (?3), ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template> -->
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
@@ -1832,7 +1854,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>MS SQLSERVER</name>
-         <row-locking-template>SELECT ?1 FROM ?2 with (updlock) WHERE ?3</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 with (updlock) WHERE ?3 ORDER BY ?4</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <auto-increment-template>?1 IDENTITY</auto-increment-template>
@@ -1963,7 +1985,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>MS SQLSERVER2000</name>
-         <row-locking-template>SELECT ?1 FROM ?2 with (xlock) WHERE ?3</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 with (xlock) WHERE ?3 ORDER BY ?4</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT ?2 FOREIGN KEY (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <auto-increment-template>?1 IDENTITY</auto-increment-template>
@@ -2196,7 +2218,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
          <name>SapDB</name>
          <!-- SapDB 7.3 might require '... UPDATE OF ?1' in the row-locking-template -->
          <!-- as is works with SapDB 7.4 -->
-         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 FOR UPDATE</row-locking-template>
+         <row-locking-template>SELECT ?1 FROM ?2 WHERE ?3 ORDER BY ?4 FOR UPDATE</row-locking-template>
          <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD FOREIGN KEY ?2 (?3) REFERENCES ?4 (?5)</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
@@ -2376,7 +2398,7 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
 
       <type-mapping>
          <name>InformixDB</name>
-         <row-locking-template>select ?1 from ?2 where ?3 for update</row-locking-template>
+         <row-locking-template>select ?1 from ?2 where ?3 order by ?4 for update</row-locking-template>
          <pk-constraint-template>PRIMARY KEY (?2) CONSTRAINT ?1</pk-constraint-template>
          <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT FOREIGN KEY (?3) REFERENCES ?4 (?5) CONSTRAINT ?2</fk-constraint-template>
          <alias-header-prefix>t</alias-header-prefix>
@@ -2652,28 +2674,42 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
    <!-- reserved words that should not be used as table names -->
    <!-- JBoss will escape them by prepending a 'X' -->
    <reserved-words>
-      	<word>create</word>
-      	<word>table</word>
+      	<word>alias</word>   	
       	<word>alter</word>
-      	<word>on</word>
-      	<word>column</word>
-      	<word>index</word>
-      	<word>set</word>
-      	<word>select</word>
-      	<word>update</word>
-      	<word>delete</word>
-      	<word>from</word>
-      	<word>view</word>
-      	<word>trigger</word>
-      	<word>commit</word>
-      	<word>rollback</word>
-      	<word>drop</word>
-      	<word>grant</word>
-      	<word>revoke</word>
-      	<word>group</word>
       	<word>between</word>
+      	<word>char</word>      	
+      	<word>column</word>      	
+      	<word>commit</word>
+      	<word>create</word>
+      	<word>date</word>
+      	<word>default</word>
+      	<word>delete</word>
+      	<word>drop</word>
+      	<word>file</word>
+      	<word>from</word>
+      	<word>grant</word>
+      	<word>group</word>
+      	<word>index</word>
+      	<word>integer</word>
       	<word>join</word>
-      	<word>unique</word>
+      	<word>number</word>
+      	<word>on</word>
+      	<word>order</word>
       	<word>primary</word>
+      	<word>public</word>
+      	<word>revoke</word>
+      	<word>rollback</word>
+      	<word>row</word>
+      	<word>select</word>
+      	<word>set</word>
+      	<word>session</word>
+      	<word>size</word>      	
+      	<word>table</word>
+      	<word>trigger</word>
+      	<word>update</word>
+      	<word>unique</word>
+      	<word>user</word>
+      	<word>varchar</word>
+      	<word>view</word>
     </reserved-words>
 </jbosscmp-jdbc>
