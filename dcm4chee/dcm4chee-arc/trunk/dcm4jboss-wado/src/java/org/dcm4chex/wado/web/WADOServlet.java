@@ -7,8 +7,6 @@
 package org.dcm4chex.wado.web;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -63,7 +61,6 @@ public class WADOServlet extends HttpServlet {
 	 * @param response	The http response.
 	 */
 	public void doGet( HttpServletRequest request, HttpServletResponse response ){
-
 		WADORequestObject reqObject = new WADORequestObjectImpl( request );
 		int iErr = reqObject.checkRequest();
 		if ( iErr == WADORequestObject.INVALID_WADO_URL ) {
@@ -115,12 +112,17 @@ public class WADOServlet extends HttpServlet {
 	 */
 	private void sendWADOFile( HttpServletResponse response, WADOResponseObject respObject ) {
 		try {
-			File file = respObject.getFile();
-			if ( file != null ) {
+			InputStream stream = respObject.getStream();
+			if ( stream != null ) {
 				response.setContentType( respObject.getContentType() );
 				
 				OutputStream out = response.getOutputStream();
-				InputStream in = new BufferedInputStream( new FileInputStream( file ), BUF_LEN );
+				InputStream in;
+				if ( stream instanceof BufferedInputStream ) {
+					in = stream;
+				} else {
+					in = new BufferedInputStream( stream, BUF_LEN );
+				}
 				byte[] buf = new byte[BUF_LEN];
 				try {
 					int len = in.read( buf );
@@ -136,7 +138,7 @@ public class WADOServlet extends HttpServlet {
 			}
 		} catch ( Exception x ) {
 			x.printStackTrace();
-			sendError(	response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "" );
+			sendError(	response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, x.getMessage() );
 		}
 		
 	}
