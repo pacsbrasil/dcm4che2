@@ -110,7 +110,7 @@
    		/>
    		<zip destfile="${build.dir}/${dist.name}.zip">
 			<zipfileset dir="${build.dir}" prefix="${dist.jboss.conf}">
-				<exclude name="deploy/*"/>
+				<include name="deploy/*"/>
 				<include name="lib/*"/>
    			</zipfileset>	
 			<zipfileset dir="${dcm4che.home}" prefix="${dist.jboss.conf}">
