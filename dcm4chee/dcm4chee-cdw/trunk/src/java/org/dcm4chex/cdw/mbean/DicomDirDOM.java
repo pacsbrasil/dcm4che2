@@ -81,7 +81,7 @@ class DicomDirDOM {
     private static final String MODALITY = "(0008,0060)";
 
     private static final String MODALITIES_IN_STUDY = "(0008,0061)";
-    
+
     private static final String ATTR = "attr";
 
     private static final String TAG = "tag";
@@ -115,7 +115,7 @@ class DicomDirDOM {
     private final MediaComposerService service;
 
     private final Logger log;
-
+    
     static {
         try {
             dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
@@ -194,7 +194,7 @@ class DicomDirDOM {
         elm.setAttribute(TAG, MODALITIES_IN_STUDY);
         elm.appendChild(doc.createTextNode(mds));
         sty.appendChild(elm);
-     }
+    }
 
     private String getModality(Node attrs) {
         for (Node attr = attrs.getFirstChild(); attr != null; attr = attr
@@ -207,7 +207,7 @@ class DicomDirDOM {
         }
         return "";
     }
-    
+
     public void setPatientSeqNo(String pid, int seqNo) {
         setSeqNo(findPatient(pid), String.valueOf(seqNo), 1);
     }
@@ -388,17 +388,26 @@ class DicomDirDOM {
 
     public void createIndex(MediaCreationRequest rq)
             throws MediaCreationException {
-        xslt(indexTpl,
-                new StreamResult(new File(rq.getFilesetDir(), INDEX_HTM)),
-                rq);
+        File file = new File(rq.getFilesetDir(), INDEX_HTM);
+        try {
+            xslt(indexTpl, new StreamResult(file), rq);
+        } finally {
+            service.getSpoolDir().register(file);
+        }
     }
 
     public void createWeb(MediaCreationRequest rq)
             throws MediaCreationException {
-        log.info("Creating HTML content for " + rq);
-        xslt(webTpl, new StreamResult(new File(rq.getFilesetDir(), IHE_PDI
-                + File.separatorChar + INDEX_HTM)), rq);
-        log.info("Created HTML content for " + rq);
+        File dir = new File(rq.getFilesetDir(), IHE_PDI);
+        try {
+	        log.info("Creating HTML content for " + rq);
+	        xslt(webTpl, new StreamResult(new File(rq.getFilesetDir(), IHE_PDI
+	                + File.separatorChar + INDEX_HTM)), rq);
+	        log.info("Created HTML content for " + rq);
+        } finally {
+            service.getSpoolDir().register(dir);
+        }
+	        
     }
 
     public void createLabel(MediaCreationRequest rq, ContentHandler handler)

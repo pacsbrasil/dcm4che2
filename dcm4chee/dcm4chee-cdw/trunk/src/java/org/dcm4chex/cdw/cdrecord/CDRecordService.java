@@ -76,7 +76,7 @@ public class CDRecordService extends AbstractMediaWriterService {
     private static final String[] TRACK_TYPES = { DATA, MODE2, XA, XA1, XA2,
             XAMIX};
 
-    private String cdrecordCmd = "cdrecord";
+    private String executable = "cdrecord";
 
     private String device = "0,0,0";
 
@@ -90,11 +90,11 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     private String trackType = "data";
 
-    private boolean padding = false;
+    private boolean appendEnabled = false;
 
     private boolean multiSession = false;
-
-    private boolean appendEnabled = false;
+    
+    private boolean padding = false;
 
     private boolean simulate = false;
 
@@ -112,6 +112,8 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     private int graceTime = MIN_GRACE_TIME;
 
+    private int mountTime = 10;
+    
     private int pauseTime = 10;
 
     private final File logFile;
@@ -184,6 +186,14 @@ public class CDRecordService extends AbstractMediaWriterService {
         this.graceTime = graceTime;
     }
 
+    public final int getMountTime() {
+        return mountTime;
+    }
+
+    public final void setMountTime(int mountTime) {
+        this.mountTime = mountTime;
+    }
+    
     public final int getPauseTime() {
         return pauseTime;
     }
@@ -202,22 +212,18 @@ public class CDRecordService extends AbstractMediaWriterService {
         this.padding = padding;
     }
 
-    public final boolean isMultiSession() {
-        return multiSession;
-    }
-
-    public final void setMultiSession(boolean multiSession) {
-        this.multiSession = multiSession;
-    }
-
     public final boolean isAppendEnabled() {
         return appendEnabled;
     }
-
     public final void setAppendEnabled(boolean appendEnabled) {
         this.appendEnabled = appendEnabled;
     }
-
+    public final boolean isMultiSession() {
+        return multiSession;
+    }
+    public final void setMultiSession(boolean multiSession) {
+        this.multiSession = multiSession;
+    }
     public final boolean isSimulate() {
         return simulate;
     }
@@ -272,12 +278,12 @@ public class CDRecordService extends AbstractMediaWriterService {
         this.device = device;
     }
 
-    public final String getCdrecordCmd() {
-        return cdrecordCmd;
+    public final String getExecutable() {
+        return executable;
     }
 
-    public final void setCdrecordCmd(String command) {
-        this.cdrecordCmd = command;
+    public final void setExecutable(String command) {
+        this.executable = command;
     }
 
     public final boolean isLogEnabled() {
@@ -311,9 +317,28 @@ public class CDRecordService extends AbstractMediaWriterService {
                 burn(rq.getIsoImageFile());
                 log.info("Burned " + rq);
                 if (verify) {
-                    log.info("Verifying " + rq);
-                    verify(rq.getFilesetDir());
-                    log.info("Verified " + rq);
+                    if (!hasTOC()) // load media
+                        throw new MediaCreationException(
+                                ExecutionStatusInfo.PROC_FAILURE, "Verification failed!");
+                    if (!mount) { // On Windows wait for automount
+	                    if (mountTime > 0) {
+	                        try {
+	                            Thread.sleep(mountTime * 1000L);
+	                        } catch (InterruptedException e) {
+	                            log.warn("Mount Time was interrupted:", e);
+	                        }
+	                    }
+                    } else {
+                        mount();
+                    }
+                    try {
+	                    log.info("Verifying " + rq);
+	                    verify(rq.getFilesetDir());
+	                    log.info("Verified " + rq);
+                    } finally {
+                        if (mount)
+                            umount();
+                    }
                     if (eject) eject();
                 }
                 if (rq.getLabelFile() != null) printLabel(rq);
@@ -321,6 +346,7 @@ public class CDRecordService extends AbstractMediaWriterService {
                 eject();
                 throw e;
             }
+
             if (rq.isCanceled()) {
                 log.info("" + rq + " was canceled");
                 return;
@@ -331,7 +357,7 @@ public class CDRecordService extends AbstractMediaWriterService {
             try {
                 Thread.sleep(pauseTime * 1000L);
             } catch (InterruptedException e) {
-                log.warn("Pause after burn was interrupted:", e);
+                log.warn("Pause before next burn was interrupted:", e);
             }
         }
     }
@@ -352,20 +378,16 @@ public class CDRecordService extends AbstractMediaWriterService {
                     System.currentTimeMillis() + retryInterval * 1000L);
         } catch (JMSException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE, e);
-        }
-        
+        }        
     }
 
     private void verify(File fsDir) throws MediaCreationException {
-        if (mount) mount();
         try {
             if (!FileUtils.verify(driveDir, fsDir, log)) { throw new MediaCreationException(
                     ExecutionStatusInfo.PROC_FAILURE, "Verification failed!"); }
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     "Verification failed:", e);
-        } finally {
-            if (mount) umount();
         }
     }
 
@@ -387,14 +409,15 @@ public class CDRecordService extends AbstractMediaWriterService {
         OutputStream logout = null;
         try {
             ArrayList cmd = new ArrayList();
-            cmd.add(cdrecordCmd = "cdrecord");
+            cmd.add(executable);
             cmd.add("dev=" + device);
             cmd.add("speed=" + writeSpeed);
             cmd.add("gracetime=" + graceTime);
-            if (simulate) cmd.add("-dummy");
-            if (eject && !verify) cmd.add("-eject");
-            if (!TAO.equals(writeMode)) cmd.add("-" + writeMode);
             if (multiSession) cmd.add("-multi");
+            if (simulate) cmd.add("-dummy");
+            // eject for verify on windows
+            if (verify ? !mount : eject) cmd.add("-eject");
+            if (!TAO.equals(writeMode)) cmd.add("-" + writeMode);
             cmd.add("-s");
             cmd.add(padding ? "-pad" : "-nopad");
             cmd.add("-" + trackType);
@@ -434,7 +457,7 @@ public class CDRecordService extends AbstractMediaWriterService {
     }
 
     public void eject() {
-        String[] cmdarray = { "cdrecord", "dev=" + device, "-eject"};
+        String[] cmdarray = { executable, "dev=" + device, "-eject"};
         try {
             int exit = new Executer(cmdarray, null, null).waitFor();
             if (exit != 0)
@@ -473,7 +496,7 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     private boolean cdrecord(String option, String match)
             throws MediaCreationException {
-        String[] cmdarray = { "cdrecord", "dev=" + device, option};
+        String[] cmdarray = { executable, "dev=" + device, option};
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             Executer ex = new Executer(cmdarray, stdout, null);

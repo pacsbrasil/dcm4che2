@@ -258,16 +258,22 @@ public class StoreScpService extends AbstractScpService {
         putPresContexts(IMAGE_CUIDS, null);
         putPresContexts(OTHER_CUIDS, null);
     }
-    
+
     private void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws DcmServiceException, IOException {
-        InputStream in = rq.getDataAsStream();
         Command rqCmd = rq.getCommand();
+        InputStream in = rq.getDataAsStream();
+        if (spoolDir.isArchiveHighWater()) {
+            in.close(); // read out data
+            throw new DcmServiceException(Status.OutOfResources);
+        }
+
         String cuid = rqCmd.getAffectedSOPClassUID();
         String iuid = rqCmd.getAffectedSOPInstanceUID();
         String tsuid = rq.getTransferSyntaxUID();
         DcmDecodeParam decParam = DcmDecodeParam.valueOf(tsuid);
-        String fileTS = decParam.encapsulated ? tsuid : UIDs.ExplicitVRLittleEndian;
+        String fileTS = decParam.encapsulated ? tsuid
+                : UIDs.ExplicitVRLittleEndian;
         DcmEncodeParam encParam = DcmEncodeParam.valueOf(fileTS);
         Dataset ds = dof.newDataset();
         DcmParser parser = pf.newDcmParser(in);
@@ -278,24 +284,28 @@ public class StoreScpService extends AbstractScpService {
         File file = spoolDir.getInstanceFile(iuid);
         File md5file = FileUtils.makeMD5File(file);
         try {
+            spoolDir.delete(file);
+            spoolDir.delete(md5file);
             log.info("M-WRITE " + file);
             MessageDigest digest = MessageDigest.getInstance("MD5");
-            OutputStream out = new BufferedOutputStream(new DigestOutputStream(new FileOutputStream(file), digest));
+            OutputStream out = new BufferedOutputStream(new DigestOutputStream(
+                    new FileOutputStream(file), digest));
             try {
                 ds.writeFile(out, encParam);
                 if (parser.getReadTag() == Tags.PixelData) {
-	                writePixelData(in, encParam, ds, parser, out);
-	                parser.parseDataset(decParam, -1);
-	                ds.subSet(Tags.PixelData, -1).writeDataset(out, encParam);
+                    writePixelData(in, encParam, ds, parser, out);
+                    parser.parseDataset(decParam, -1);
+                    ds.subSet(Tags.PixelData, -1).writeDataset(out, encParam);
                 }
             } finally {
                 try {
                     out.close();
                 } catch (IOException ignore) {
                 }
+                spoolDir.register(file);
             }
             log.info("M-WRITE " + md5file);
-            Writer md5out = new FileWriter(md5file);            
+            Writer md5out = new FileWriter(md5file);
             try {
                 md5out.write(FileUtils.toHexChars(digest.digest()));
             } finally {
@@ -303,25 +313,21 @@ public class StoreScpService extends AbstractScpService {
                     md5out.close();
                 } catch (IOException ignore) {
                 }
+                spoolDir.register(md5file);
             }
         } catch (Throwable t) {
             log.error("Processing Failure during receive of instance[uid="
                     + iuid + "]:", t);
-            if (md5file.exists()) {
-                log.debug("M-DELETE " + md5file);
-                md5file.delete();
-            }
-            if (file.exists()) {
-                log.debug("M-DELETE " + file);
-                file.delete();
-            }
+            spoolDir.delete(md5file);
+            spoolDir.delete(file);
             throw new DcmServiceException(Status.ProcessingFailure, t);
         } finally {
             in.close();
         }
     }
 
-    private void writePixelData(InputStream in, DcmEncodeParam encParam, Dataset ds, DcmParser parser, OutputStream out) throws IOException {
+    private void writePixelData(InputStream in, DcmEncodeParam encParam,
+            Dataset ds, DcmParser parser, OutputStream out) throws IOException {
         int len = parser.getReadLength();
         byte[] buffer = new byte[bufferSize];
         if (encParam.encapsulated) {
@@ -333,11 +339,18 @@ public class StoreScpService extends AbstractScpService {
                 copy(in, out, len, buffer);
                 parser.parseHeader();
             }
-            ds.writeHeader(out, encParam, Tags.SeqDelimitationItem,
-                    VRs.NONE, 0);
+            ds
+                    .writeHeader(out,
+                            encParam,
+                            Tags.SeqDelimitationItem,
+                            VRs.NONE,
+                            0);
         } else {
-            ds.writeHeader(out, encParam, Tags.PixelData, parser
-                    .getReadVR(), len);
+            ds.writeHeader(out,
+                    encParam,
+                    Tags.PixelData,
+                    parser.getReadVR(),
+                    len);
             copy(in, out, len, buffer);
         }
     }

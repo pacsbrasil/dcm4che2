@@ -26,15 +26,40 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getDirectoryPath"
-      setMethod="setDirectoryPath">
-      <description>Spool Directory Path Name. Relative path names will be
+      getMethod="getArchiveDirPath"
+      setMethod="setArchiveDirPath">
+      <description>Archive Spool Directory Path Name. Relative path names will be
       resolved against directory $DCMCDW_HOME/server/dcmcdw/."
       </description>
-      <name>DirectoryPath</name>
+      <name>ArchiveDirPath</name>
       <type>java.lang.String</type>      
       <descriptors>
-         <value value="spool" />
+         <value value="archive" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFilesetDirPath"
+      setMethod="setFilesetDirPath">
+      <description>Fileset Spool Directory Path Name. Relative path names will be
+      resolved against directory $DCMCDW_HOME/server/dcmcdw/."
+      </description>
+      <name>FilesetDirPath</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="fileset" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getRequestDirPath"
+      setMethod="setRequestDirPath">
+      <description>Path Name of Directory where received Media Creation Requests
+      are stored. Relative path names will be resolved against directory
+      $DCMCDW_HOME/server/dcmcdw/."
+      </description>
+      <name>RequestDirPath</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="request" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -46,6 +71,88 @@
       <type>int</type>      
       <descriptors>
          <value value="37" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getArchiveHighWaterMark"
+      setMethod="setArchiveHighWaterMark">
+      <description>High Water Mark for Archive Disk Usage.
+      Format #.#MB or #.#GB. 1MB = 1000000 Byte, 1GB = 1000MB.
+      </description>
+      <name>ArchiveHighWaterMark</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="10GB" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-only"
+      getMethod="getArchiveDiskUsage">
+      <description>Estimated current Archive Disk Usage.
+      1MB = 1000000 Byte, 1GB = 1000MB.
+      </description>
+      <name>ArchiveDiskUsage</name>
+      <type>java.lang.String</type>      
+   </attribute>
+   <attribute access="read-only"
+      getMethod="isArchiveHighWater">
+      <description>True if ArchiveDiskUsage > ArchiveHighWaterMark.
+      Storage of further Objects via C-STORE RQ will be
+      rejected, as long ArchiveDiskUsage > ArchiveHighWaterMark.
+      </description>
+      <name>ArchiveHighWater</name>
+      <type>boolean</type>      
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getArchiveDiskUsageRefreshInterval"
+      setMethod="setArchiveDiskUsageRefreshInterval">
+      <description>Interval between (re)calculating of ArchiveDiskUsage
+      in days (##d), hours (##h) or minutes (##m).
+      </description>
+      <name>ArchiveDiskUsageRefreshInterval</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="1h" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFilesetHighWaterMark"
+      setMethod="setFilesetHighWaterMark">
+      <description>High Water Mark for Fileset Disk Usage.
+      Format #.#MB or #.#GB. 1MB = 1000000 Byte, 1GB = 1000MB.
+      </description>
+      <name>FilesetHighWaterMark</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="10GB" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-only"
+      getMethod="getFilesetDiskUsage">
+      <description>Estimated current Fileset Disk Usage.
+      1MB = 1000000 Byte, 1GB = 1000MB.
+      </description>
+      <name>FilesetDiskUsage</name>
+      <type>java.lang.String</type>      
+   </attribute>
+   <attribute access="read-only"
+      getMethod="isFilesetHighWater">
+      <description>True if FilesetDiskUsage > FilesetHighWaterMark.
+	  Initiation of further Media Creation via N-ACTION RQ will be
+      rejected, as long FilesetDiskUsage > FilesetHighWaterMark.
+      </description>
+      <name>FilesetHighWater</name>
+      <type>boolean</type>      
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFilesetDiskUsageRefreshInterval"
+      setMethod="setFilesetDiskUsageRefreshInterval">
+      <description>Interval between (re)calculating of FilesetDiskUsage
+      in days (##d), hours (##h) or minutes (##m).
+      </description>
+      <name>FilesetDiskUsageRefreshInterval</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="1h" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -98,6 +205,16 @@
       </parameter>
       <return-type>java.io.File</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Delete Instance File</description>
+      <name>deleteInstanceFile</name>
+      <parameter>
+         <description>SOP Instance UID</description>
+         <name>iuid</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
    <operation impact="INFO">
       <description>Get Media Creation Request File</description>
       <name>getMediaCreationRequestFile</name>
@@ -117,6 +234,67 @@
          <type>java.lang.String</type>
       </parameter>
       <return-type>java.io.File</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Register Directory/File</description>
+      <name>register</name>
+      <parameter>
+         <description>File/Directory</description>
+         <name>file</name>
+         <type>java.io.File</type>
+      </parameter>
+   </operation>
+   <operation impact="ACTION">
+      <description>Delete File/Directory</description>
+      <name>delete</name>
+      <parameter>
+         <description>File/Directory</description>
+         <name>file</name>
+         <type>java.io.File</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Move File/Directory</description>
+      <name>move</name>
+      <parameter>
+         <description>Source</description>
+         <name>src</name>
+         <type>java.io.File</type>
+      </parameter>
+      <parameter>
+         <description>Destination</description>
+         <name>dest</name>
+         <type>java.io.File</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Copy File/Directory</description>
+      <name>copy</name>
+      <parameter>
+         <description>Source</description>
+         <name>src</name>
+         <type>java.io.File</type>
+      </parameter>
+      <parameter>
+         <description>Destination</description>
+         <name>dest</name>
+         <type>java.io.File</type>
+      </parameter>
+      <parameter>
+         <description>Byte Buffer</description>
+         <name>buffer</name>
+         <type>[B</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>   <operation impact="ACTION">
+      <description>Refresh estimated Archive Disk Usage</description>
+      <name>refreshArchiveDiskUsage</name>
+   </operation>
+   <operation impact="ACTION">
+      <description>Refresh estimated Fileset Disk Usage</description>
+      <name>refreshFilesetDiskUsage</name>
    </operation>
    <operation impact="ACTION">
       <description>Purge Expired Media Creation Requests, Preserved Instances

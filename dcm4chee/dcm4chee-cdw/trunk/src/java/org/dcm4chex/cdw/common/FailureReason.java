@@ -15,25 +15,25 @@ package org.dcm4chex.cdw.common;
  */
 public class FailureReason {
     
-    private final int ProcessingFailure = 0x0110;
+    public static final int ProcessingFailure = 0x0110;
      
-    private final int NoSuchObjectInstance = 0x0112; 
+    public static final int NoSuchObjectInstance = 0x0112; 
     
-    private final int RefSOPClassNotSupported = 0x0122; 
+    public static final int RefSOPClassNotSupported = 0x0122; 
     
-    private final int ClassInstanceConflict = 0x0119;
+    public static final int ClassInstanceConflict = 0x0119;
     
-    private final int MediaApplicationProfilesConflict = 0x0201;
+    public static final int MediaApplicationProfilesConflict = 0x0201;
     
-    private final int MediaApplicationProfileInstanceConflict = 0x0202; 
+    public static final int MediaApplicationProfileInstanceConflict = 0x0202; 
     
-    private final int MediaApplicationProfileCompressionConflict = 0x0203;
+    public static final int MediaApplicationProfileCompressionConflict = 0x0203;
     
-    private final int MediaApplicationProfileNotSupported = 0x0204;
+    public static final int MediaApplicationProfileNotSupported = 0x0204;
     
-    private final int InstanceSizeExceeded = 0x0205;
+    public static final int InstanceSizeExceeded = 0x0205;
+
+    public static final int MissingAttribute = 0x0120;
     
-    private final int MissingAttribute = 0x0120;
-    
-    private final int MissingAttributeValue = 0x0121;
+    public static final int MissingAttributeValue = 0x0121;
 }

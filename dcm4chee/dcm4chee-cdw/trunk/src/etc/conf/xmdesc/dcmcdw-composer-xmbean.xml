@@ -30,6 +30,7 @@
       getMethod="getMediaCapacity"
       setMethod="setMediaCapacity">
       <description>Media Capacity. Format: ##.#GB|##.#MB. 
+      1MB = 1000000 Bytes, 1GB = 1000MB.
       </description>
       <name>MediaCapacity</name>
       <type>java.lang.String</type>      
@@ -204,6 +205,18 @@
          <value value="false" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of buffer used to copy files.
+      No need to change default value: 512.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="512" />
+      </descriptors>
+   </attribute>      
    <attribute access="read-write"
       getMethod="getSpoolDirName"
       setMethod="setSpoolDirName">

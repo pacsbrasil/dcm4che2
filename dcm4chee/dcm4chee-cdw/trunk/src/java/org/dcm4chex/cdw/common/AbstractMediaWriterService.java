@@ -13,6 +13,7 @@ import java.io.IOException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -26,6 +27,8 @@ import org.jboss.system.ServiceMBeanSupport;
  *
  */
 public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
+
+    protected SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
     protected boolean keepSpoolFiles = false;
 
@@ -42,6 +45,14 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
         }
 
     };
+
+    public final ObjectName getSpoolDirName() {
+        return spoolDir.getSpoolDirName();
+    }
+
+    public final void setSpoolDirName(ObjectName spoolDirName) {
+        spoolDir.setSpoolDirName(spoolDirName);
+    }
 
     public final boolean isKeepSpoolFiles() {
         return keepSpoolFiles;
@@ -114,7 +125,7 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
         } catch (IOException e) {
             // error already logged
         } finally {
-            if (cleanup && !keepSpoolFiles) rq.cleanFiles(log);
+            if (cleanup && !keepSpoolFiles) rq.cleanFiles(spoolDir);
         }
 
     }

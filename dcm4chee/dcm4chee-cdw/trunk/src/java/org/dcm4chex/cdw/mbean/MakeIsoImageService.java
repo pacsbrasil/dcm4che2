@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
@@ -27,6 +28,7 @@ import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.JMSDelegate;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
+import org.dcm4chex.cdw.common.SpoolDirDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -41,7 +43,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
     private static final String _ISO = ".iso";
 
     private static final String _SORT = ".sort";
-
+    
     private boolean keepSpoolFiles = false;
     
     private int isoLevel = 1;
@@ -63,6 +65,8 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
     private boolean sortEnabled = false;
 
     private final File sortFile;
+    
+    private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
     private final MessageListener listener = new MessageListener() {
 
@@ -82,6 +86,14 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         File homedir = ServerConfigLocator.locate().getServerHomeDir();
         sortFile = new File(homedir, "conf" + File.separatorChar + "mkisofs.sort");
         logFile = new File(homedir, "log" + File.separatorChar + "mkisofs.log");
+    }
+
+    public final ObjectName getSpoolDirName() {
+        return spoolDir.getSpoolDirName();
+    }
+
+    public final void setSpoolDirName(ObjectName spoolDirName) {
+        spoolDir.setSpoolDirName(spoolDirName);
     }
 
     public final boolean isKeepSpoolFiles() {
@@ -205,6 +217,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
             throw new IOException(e.getMessage());
         } finally {
             if (tmpSortFile != null) tmpSortFile.delete();
+            spoolDir.register(isoImageFile);
         }
         if (exitCode != 0) { throw new IOException("mkisofs " + srcDir
                         + " returns " + exitCode); }
@@ -331,7 +344,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
                 }
             }
         } finally {
-            if (cleanup && !keepSpoolFiles) rq.cleanFiles(log);
+            if (cleanup && !keepSpoolFiles) rq.cleanFiles(spoolDir);
         }
     }
 

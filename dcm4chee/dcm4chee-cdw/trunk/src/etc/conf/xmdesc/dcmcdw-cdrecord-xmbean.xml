@@ -28,11 +28,11 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getCdrecordCmd"
-      setMethod="setCdrecordCmd">
+      getMethod="getExecutable"
+      setMethod="setExecutable">
       <description>Executable command to invoke cdrecord.
       </description>
-      <name>CdrecordCmd</name>
+      <name>Executable</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="cdrecord" />
@@ -180,6 +180,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMountTime"
+      setMethod="setMountTime">
+      <description>Wait time[s] before read-access after reloading media on
+      Windows OS.
+      </description>
+      <name>MountTime</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="10" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isVerify"
       setMethod="setVerify">
       <description>Check MD5 sums of written files or - if MD5_SUMS was not
@@ -246,6 +258,17 @@
       <type>javax.management.ObjectName</type>      
       <descriptors>
          <value value="dcmcdw:service=LabelPrint" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSpoolDirName"
+      setMethod="setSpoolDirName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>SpoolDirName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="dcmcdw:service=SpoolDir" />
       </descriptors>
    </attribute>
    &defaultAttributes;

@@ -51,7 +51,6 @@ import org.dcm4che.media.DirRecord;
 import org.dcm4che.media.DirWriter;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.FileUtils;
 import org.dcm4chex.cdw.common.Flag;
@@ -70,8 +69,6 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  *
  */
 class FilesetBuilder {
-
-    private static final String EXT_LNK = ".lnk";
 
     private static final String EXT_MD5 = ".MD5";
 
@@ -116,7 +113,7 @@ class FilesetBuilder {
     private final boolean web;
 
     private final boolean md5sums;
-    
+
     private final boolean icons;
 
     private BufferedImage imageBI;
@@ -132,7 +129,7 @@ class FilesetBuilder {
 
     private final Dataset recFilter = dof.newDataset();
 
-    private final byte[] bbuf = new byte[512];
+    private final byte[] bbuf;
 
     private static String toHex(int val) {
         char[] ch8 = new char[8];
@@ -172,16 +169,21 @@ class FilesetBuilder {
         this.rq = rq;
         this.attrs = attrs;
         this.preserveInstances = Flag.isYes(attrs
-                .getString(Tags.PreserveCompositeInstancesAfterMediaCreation));
+                .getString(Tags.PreserveCompositeInstancesAfterMediaCreation))
+                && !service.isArchiveHighWater();
         this.viewer = Flag.isYes(attrs
                 .getString(Tags.IncludeDisplayApplication));
         this.nonDICOM = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
         this.web = service.includeWeb(nonDICOM);
         this.md5sums = service.includeMd5Sums(nonDICOM);
         this.icons = service.createIcons(nonDICOM);
-
+        this.bbuf = new byte[service.getBufferSize()];
     }
 
+    final byte[] getBuffer() {
+        return bbuf;
+    }
+    
     final boolean isWeb() {
         return web;
     }
@@ -221,14 +223,12 @@ class FilesetBuilder {
                 }
 
             } finally {
-                dirWriter.close();
+                try {
+                    dirWriter.close();
+                } catch (Exception ignore) {
+                }
+                spoolDir.register(rq.getDicomDirFile());
             }
-            mergeDir(service.getMergeDir(), rootDir);
-            if (web) {
-                (new File(rootDir, IHE_PDI)).mkdir();
-                mergeDir(service.getMergeDirWeb(), rootDir);
-            }
-            if (viewer) mergeDir(service.getMergeDirViewer(), rootDir);
         } catch (Throwable e) {
             log.error("buildFileset failed:", e);
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
@@ -238,20 +238,6 @@ class FilesetBuilder {
 
     public long sizeOfDicomContent() {
         return fsRoot.size();
-    }
-
-    private void mergeDir(File src, File dest) throws IOException {
-        if (debug) log.debug("merge " + src + " to " + dest);
-        File[] files = src.listFiles();
-        for (int i = 0; i < files.length; ++i) {
-            File link = new File(dest, files[i].getName());
-            if (link.isDirectory())
-                mergeDir(files[i], link);
-            else {
-                if (link.isFile()) FileUtils.delete(link, log);
-                makeSymLink(files[i], link);
-            }
-        }
     }
 
     private void addFile(File rootDir, Dataset item, DirWriter dirWriter,
@@ -320,7 +306,8 @@ class FilesetBuilder {
                 if (iconItem == null && icons)
                         if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                                 && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
-                            log.info("Generation from icon from compressed image not supported - "
+                            log
+                                    .info("Generation from icon from compressed image not supported - "
                                             + src);
                         } else {
                             try {
@@ -335,7 +322,8 @@ class FilesetBuilder {
                 if (web) {
                     if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                             && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
-                        log.info("Generation from jpeg from compressed image not supported - "
+                        log
+                                .info("Generation from jpeg from compressed image not supported - "
                                         + src);
                     } else {
                         try {
@@ -363,17 +351,17 @@ class FilesetBuilder {
                 File.separatorChar));
         mkParentDir(dest);
         if (preserveInstances) {
-            makeSymLink(src, dest);
+            spoolDir.copy(src, dest, bbuf);
             if (md5sums)
-                    makeSymLink(FileUtils.makeMD5File(src), FileUtils
-                            .makeMD5File(dest));
+                    spoolDir.copy(FileUtils.makeMD5File(src), FileUtils
+                            .makeMD5File(dest), bbuf);
         } else {
-            move(src, dest);
+            spoolDir.move(src, dest);
             File md5src = FileUtils.makeMD5File(src);
             if (md5sums)
-                move(md5src, FileUtils.makeMD5File(dest));
+                spoolDir.move(md5src, FileUtils.makeMD5File(dest));
             else
-                md5src.delete();
+                spoolDir.delete(md5src);
         }
     }
 
@@ -569,22 +557,6 @@ class FilesetBuilder {
         return d;
     }
 
-    private void move(File src, File dst) throws IOException {
-        if (debug) log.debug("mv " + src + " " + dst);
-        if (!src.renameTo(dst))
-                throw new IOException("mv " + src + " " + dst + " failed!");
-    }
-
-    private void makeSymLink(File src, File dst) throws IOException {
-        String[] cmd = new String[] { "ln", "-s", src.getAbsolutePath(),
-                dst.getAbsolutePath()};
-        try {
-            if (new Executer(cmd).waitFor() == 0) return;
-        } catch (InterruptedException e) {
-        }
-        throw new IOException(StringUtils.toString(cmd, ' ') + " failed!");
-    }
-
     public ArrayList splitMedia(long freeSizeFirst, long freeSizeOther,
             DicomDirDOM dom) throws MediaCreationException, IOException {
         File ddFile = rq.getDicomDirFile();
@@ -593,7 +565,7 @@ class FilesetBuilder {
         rq.setVolsetSize(fsList.size());
         String fsIDPrefix = getFilesetIDPrefix();
         File oldDDFile = new File(rq.getFilesetDir(), "DICOMDIR.old");
-        move(ddFile, oldDDFile);
+        ddFile.renameTo(oldDDFile);
         DirReader dirReader = dbf.newDirReader(oldDDFile);
         ArrayList rqList = new ArrayList();
         try {
@@ -602,12 +574,8 @@ class FilesetBuilder {
                 File rootDir = rq.getFilesetDir();
                 MediaCreationRequest newrq = rq;
                 if (i > 0) {
-                    rootDir = mkRootDir(spoolDir, false);
+                    rootDir = mkRootDir(spoolDir, true);
                     moveComponents(comp.childs(), rootDir);
-                    mergeDir(service.getMergeDir(), rootDir);
-                    if (viewer
-                            && service.isIncludeDisplayApplicationOnAllMedia())
-                            mergeDir(service.getMergeDirViewer(), rootDir);
                     newrq = new MediaCreationRequest(rq);
                     newrq.setFilesetDir(rootDir);
                     newrq.setVolsetSeqno(i + 1);
@@ -629,12 +597,16 @@ class FilesetBuilder {
                             dirWriter,
                             dirReader);
                 } finally {
-                    dirWriter.close();
+                    try {
+                        dirWriter.close();
+                    } catch (Exception ignore) {
+                    }
+                    spoolDir.register(newrq.getDicomDirFile());
                 }
             }
         } finally {
             dirReader.close();
-            FileUtils.delete(oldDDFile, log);
+            spoolDir.delete(oldDDFile);
         }
         dom.updateSeqNo();
         return rqList;
@@ -704,17 +676,19 @@ class FilesetBuilder {
     private void moveComponents(List comps, File newRootDir) throws IOException {
         for (int i = 0, n = comps.size(); i < n; ++i) {
             FilesetComponent comp = (FilesetComponent) comps.get(i);
-            move(comp.getFilePath(), newRootDir);
+            moveComponent(comp.getFilePath(), newRootDir);
         }
     }
 
-    private void move(String filepath, File newRootDir) throws IOException {
+    private void moveComponent(String filepath, File newRootDir) throws IOException {
         File src = new File(rq.getFilesetDir(), filepath);
         if (!src.exists()) return;
         File dest = new File(newRootDir, filepath);
         mkParentDir(dest);
-        move(src, dest);
-        FileUtils.purgeDir(src.getParentFile(), log);
+        src.renameTo(dest);
+        // purge empty directories
+        File dir = src.getParentFile();
+        while (dir.delete()) dir = src.getParentFile();
     }
 
     private boolean mkParentDir(File dest) throws IOException {
@@ -810,7 +784,11 @@ class FilesetBuilder {
                             cbuf);
                 }
             } finally {
-                out.close();
+                try {
+                    out.close();
+                } catch (Exception ignore) {
+                }
+                spoolDir.register(md5sums);
             }
         } catch (Exception e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
@@ -824,16 +802,12 @@ class FilesetBuilder {
         if (fileOrDir.isDirectory()) {
             String[] files = fileOrDir.list();
             for (int i = 0; i < files.length; i++) {
-            	String f = files[i];
-                writeMd5Sums(out,
-                        new File(fileOrDir, f),
-                        strip,
-                        digest,
-                        cbuf);
+                String f = files[i];
+                writeMd5Sums(out, new File(fileOrDir, f), strip, digest, cbuf);
             }
         } else {
             String fname = fileOrDir.getName();
-            if (fname.endsWith(EXT_MD5) || fname.endsWith(EXT_LNK)) return;
+            if (fname.endsWith(EXT_MD5)) return;
             File md5file = new File(fileOrDir.getParent(), fname + EXT_MD5);
             if (md5file.exists()) {
                 Reader in = new FileReader(md5file);
@@ -842,8 +816,7 @@ class FilesetBuilder {
                 } finally {
                     in.close();
                 }
-                log.debug("M-DELETE " + md5file);
-                md5file.delete();
+                spoolDir.delete(md5file);
             } else {
                 FileUtils.md5sum(fileOrDir, cbuf, digest, bbuf);
             }
@@ -857,4 +830,5 @@ class FilesetBuilder {
         }
 
     }
+
 }

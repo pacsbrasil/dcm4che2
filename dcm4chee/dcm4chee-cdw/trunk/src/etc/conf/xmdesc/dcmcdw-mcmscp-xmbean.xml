@@ -204,7 +204,8 @@
    <attribute access="read-write"
       getMethod="isAllowCancelAlreadyCreating"
       setMethod="setAllowCancelAlreadyCreating">
-      <description>Description not yet written.
+      <description>Accepts Cancel Requests for Media Creation Requests
+      even if the actual burning of media already started.
       </description>
       <name>AllowCancelAlreadyCreating</name>
       <type>boolean</type>
@@ -212,6 +213,21 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isAllowDuplicateRefSOPInstances"
+      setMethod="setAllowDuplicateRefSOPInstances">
+      <description>Accepts incorrect Media Creation Request with duplicated
+      referenced SOP Instances. Attention: Such Requests may signal
+      inconsistencies in the system requesting the media creation,
+      which may lead to export incomplete studies on media!
+      </description>
+      <name>AllowDuplicateRefSOPInstances</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   
    &defaultAttributes;
    
    <!-- Operations -->

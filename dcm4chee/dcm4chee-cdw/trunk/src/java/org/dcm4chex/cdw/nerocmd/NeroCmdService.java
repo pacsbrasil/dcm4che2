@@ -264,7 +264,7 @@ public class NeroCmdService extends AbstractMediaWriterService {
             try {
                 Thread.sleep(pauseTime * 1000L);
             } catch (InterruptedException e) {
-                log.warn("Pause after burn was interrupted:", e);
+                log.warn("Pause before next burn was interrupted:", e);
             }
         }
     }

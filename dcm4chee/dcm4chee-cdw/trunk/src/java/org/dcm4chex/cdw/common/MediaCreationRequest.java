@@ -206,14 +206,14 @@ public class MediaCreationRequest implements Serializable {
         FileUtils.writeDataset(attrs, requestFile, log);
     }
 
-    public boolean cleanFiles(Logger log) {
+    public boolean cleanFiles(SpoolDirDelegate spoolDir) {
         boolean retval = true;
         if (labelFile != null && labelFile.exists())
-                retval = FileUtils.delete(labelFile, log);
+                retval = spoolDir.delete(labelFile);
         if (isoImageFile != null && isoImageFile.exists())
-                retval = FileUtils.delete(isoImageFile, log) && retval;
+                retval = spoolDir.delete(isoImageFile) && retval;
         if (filesetDir != null && filesetDir.exists())
-                retval = FileUtils.delete(filesetDir, log) && retval;
+                retval = spoolDir.delete(filesetDir) && retval;
         return retval;
     }
 }

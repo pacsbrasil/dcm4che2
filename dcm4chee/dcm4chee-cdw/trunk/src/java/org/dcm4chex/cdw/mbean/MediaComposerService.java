@@ -31,6 +31,7 @@ import org.dcm4chex.cdw.common.ConfigurationException;
 import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
+import org.dcm4chex.cdw.common.FileUtils;
 import org.dcm4chex.cdw.common.Flag;
 import org.dcm4chex.cdw.common.JMSDelegate;
 import org.dcm4chex.cdw.common.MediaCreationException;
@@ -48,13 +49,11 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class MediaComposerService extends ServiceMBeanSupport {
 
+    private static final long MIN_MEDIA_CAPACITY = 1000000L;
+
+    private static final int MIN_BUFFER_SIZE = 512;
+
     private static final long BLOCK_SIZE = 2048L;
-
-    private static final long MB = 1000000L;
-
-    private static final long GB = 1000000000L;
-
-    private static final long MIN_MEDIA_SIZE = 1000000L;
 
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
@@ -71,7 +70,9 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private final File mergeDirWeb;
 
-    private long mediaCapacity = 700 * MB;
+    private long mediaCapacity = 700 * FileUtils.MEGA;
+
+    private int bufferSize = 512;
 
     private String fileSetDescriptorFile;
 
@@ -79,7 +80,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private boolean keepSpoolFiles = false;
 
-//    private boolean createIcon = true;
+    //    private boolean createIcon = true;
 
     private int iconWidth = 64;
 
@@ -100,7 +101,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private Set valuesForIncludeMd5Sums = new HashSet();
 
     private Set valuesForCreateIcons = new HashSet();
-    
+
     private final ImageReader imageReader;
 
     private final MessageListener listener = new MessageListener() {
@@ -136,10 +137,6 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 throw new ConfigurationException("missing " + file);
     }
 
-    final File getMergeDir() {
-        return mergeDir;
-    }
-
     public final boolean isIncludeDisplayApplicationOnAllMedia() {
         return includeDisplayApplicationOnAllMedia;
     }
@@ -150,7 +147,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     public final String[] getValuesForIncludeMd5Sums() {
-        return (String[]) valuesForIncludeMd5Sums.toArray(new String[valuesForIncludeMd5Sums.size()]);
+        return (String[]) valuesForIncludeMd5Sums
+                .toArray(new String[valuesForIncludeMd5Sums.size()]);
     }
 
     public final void setValuesForIncludeMd5Sums(String[] values) {
@@ -159,7 +157,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     public final String[] getValuesForIncludeWeb() {
-        return (String[]) valuesForIncludeWeb.toArray(new String[valuesForIncludeWeb.size()]);
+        return (String[]) valuesForIncludeWeb
+                .toArray(new String[valuesForIncludeWeb.size()]);
     }
 
     public final void setValuesForIncludeWeb(String[] values) {
@@ -168,21 +167,13 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     public final String[] getValuesForCreateIcons() {
-        return (String[]) valuesForCreateIcons.toArray(new String[valuesForCreateIcons.size()]);
+        return (String[]) valuesForCreateIcons
+                .toArray(new String[valuesForCreateIcons.size()]);
     }
 
     public final void setValuesForCreateIcons(String[] values) {
         valuesForCreateIcons.clear();
         valuesForCreateIcons.addAll(Arrays.asList(values));
-    }
-
-    
-    final File getMergeDirWeb() {
-        return mergeDirWeb;
-    }
-
-    final File getMergeDirViewer() {
-        return mergeDirViewer;
     }
 
     final DirRecordFactory getDirRecordFactory() {
@@ -193,41 +184,23 @@ public class MediaComposerService extends ServiceMBeanSupport {
         return imageReader;
     }
 
-    static String formatSize(long size) {
-        if (size < GB)
-            return "" + ((float) size / MB) + "MB";
-        else
-            return "" + ((float) size / GB) + "GB";
-    }
-
-    private long parseSize(String s) {
-        long u;
-        if (s.endsWith("GB"))
-            u = GB;
-        else if (s.endsWith("MB"))
-            u = MB;
-        else
-            throw new IllegalArgumentException(s);
-        try {
-            return (long) (Float.parseFloat(s.substring(0, s.length() - 2)) * u);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(s);
-        }
-    }
-
     public final String getMediaCapacity() {
-        return formatSize(mediaCapacity);
+        return FileUtils.formatSize(mediaCapacity);
     }
 
     public final void setMediaCapacity(String mediaCapacity) {
-        setMediaCapacity(parseSize(mediaCapacity));
+        this.mediaCapacity = FileUtils.parseSize(mediaCapacity,
+                MIN_MEDIA_CAPACITY);
     }
 
-    private void setMediaCapacity(long mediaCapacity) {
-        if (mediaCapacity < MIN_MEDIA_SIZE)
-                throw new IllegalArgumentException("mediaCapacity:"
-                        + mediaCapacity);
-        this.mediaCapacity = mediaCapacity;
+    public final int getBufferSize() {
+        return bufferSize;
+    }
+
+    public final void setBufferSize(int bufferSize) {
+        if (bufferSize < MIN_BUFFER_SIZE)
+                throw new IllegalArgumentException("bufferSize:" + bufferSize);
+        this.bufferSize = bufferSize;
     }
 
     public final boolean isKeepSpoolFiles() {
@@ -367,24 +340,38 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 builder.buildFileset();
                 DicomDirDOM dom = new DicomDirDOM(this, rq, attrs);
                 dom.insertModalitiesInStudy();
-                if (builder.isWeb()) dom.createWeb(rq);
-                final long fsSize = sizeOf(rq.getFilesetDir());
+                File fsDir = rq.getFilesetDir();
+                spoolDir.copy(mergeDir, fsDir, builder.getBuffer());
+                if (builder.isViewer()) {
+                    spoolDir.copy(mergeDirViewer, fsDir, builder.getBuffer());
+                }
+                if (builder.isWeb()) {
+                    dom.createWeb(rq);
+                    spoolDir.copy(mergeDirWeb, fsDir, builder.getBuffer());
+                }
+                final long fsSize = sizeOf(fsDir);
                 if (fsSize > mediaCapacity) {
                     List rqList = splitMedia(rq, attrs, builder, dom, fsSize);
                     if (logXml) dom.toXML(xmlFile);
                     for (int i = 0, n = rqList.size(); i < n; ++i) {
                         MediaCreationRequest rq1 = (MediaCreationRequest) rqList
                                 .get(i);
-                        dom.createIndex(rq1);
-                        builder.createMd5Sums(rq1);
-                        labelCreator.createLabel(rq1, dom);
+                        File fsDir1 = rq1.getFilesetDir();
+                        if (i > 0) {
+                            spoolDir
+                                    .copy(mergeDir, fsDir1, builder.getBuffer());
+                            if (includeDisplayApplicationOnAllMedia
+                                    && builder.isViewer()) {
+                                spoolDir.copy(mergeDirViewer, fsDir1, builder
+                                        .getBuffer());
+                            }
+                        }
+                        finishFileset(builder, dom, rq1);
                         if (!forward(rq1)) return;
                     }
                 } else {
                     if (logXml) dom.toXML(xmlFile);
-                    dom.createIndex(rq);
-                    builder.createMd5Sums(rq);
-                    labelCreator.createLabel(rq, dom);
+                    finishFileset(builder, dom, rq);
                     if (!forward(rq)) return;
                 }
                 cleanup = false;
@@ -403,7 +390,19 @@ public class MediaComposerService extends ServiceMBeanSupport {
         } finally {
             if (cleanup && !keepSpoolFiles) {
                 if (attrs != null) spoolDir.deleteRefInstances(attrs);
-                rq.cleanFiles(log);
+                rq.cleanFiles(spoolDir);
+            }
+        }
+    }
+
+    private void finishFileset(FilesetBuilder builder, DicomDirDOM dom, MediaCreationRequest rq) throws MediaCreationException {
+        dom.createIndex(rq);
+        builder.createMd5Sums(rq);
+        if (labelCreator.isActive()) {
+            try {
+                labelCreator.createLabel(rq, dom);
+            } finally {
+                spoolDir.register(rq.getLabelFile());
             }
         }
     }
@@ -413,16 +412,17 @@ public class MediaComposerService extends ServiceMBeanSupport {
             throws MediaCreationException, IOException {
         if (!Flag.isYes(attrs.getString(Tags.AllowMediaSplitting))) { throw new MediaCreationException(
                 ExecutionStatusInfo.SET_OVERSIZED, "File-set size: "
-                        + formatSize(fsSize) + " exceeds Media Capacity: "
-                        + formatSize(mediaCapacity)); }
+                        + FileUtils.formatSize(fsSize)
+                        + " exceeds Media Capacity: "
+                        + FileUtils.formatSize(mediaCapacity)); }
         final long sizeOfNonDicomContent = fsSize
                 - builder.sizeOfDicomContent();
         if (sizeOfNonDicomContent > mediaCapacity) { throw new MediaCreationException(
                 ExecutionStatusInfo.SET_OVERSIZED,
                 "Size of Non-DICOM Content: "
-                        + formatSize(sizeOfNonDicomContent)
+                        + FileUtils.formatSize(sizeOfNonDicomContent)
                         + " exceeds Media Capacity: "
-                        + formatSize(mediaCapacity)); }
+                        + FileUtils.formatSize(mediaCapacity)); }
         long freeSizeFirst = mediaCapacity - sizeOfNonDicomContent;
         long freeSizeOther = mediaCapacity - rq.getDicomDirFile().length();
         if (includeDisplayApplicationOnAllMedia && builder.isViewer())
@@ -477,16 +477,19 @@ public class MediaComposerService extends ServiceMBeanSupport {
         }
     }
 
-    boolean includeWeb(String value) {
+    final boolean includeWeb(String value) {
         return valuesForIncludeWeb.contains(value);
     }
 
-    boolean includeMd5Sums(String value) {
+    final boolean includeMd5Sums(String value) {
         return valuesForIncludeMd5Sums.contains(value);
     }
 
-    boolean createIcons(String value) {
+    final boolean createIcons(String value) {
         return valuesForCreateIcons.contains(value);
     }
 
+    final boolean isArchiveHighWater() {
+        return spoolDir.isArchiveHighWater();
+    }
 }

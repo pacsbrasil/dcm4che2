@@ -206,6 +206,17 @@
          <value value="dcmcdw:service=LabelPrint" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getSpoolDirName"
+      setMethod="setSpoolDirName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>SpoolDirName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="dcmcdw:service=SpoolDir" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
    
    <!-- Operations -->

@@ -35,8 +35,12 @@ import org.jboss.logging.Logger;
  */
 public class FileUtils {
 
-    
-private static final int BUF_SIZE = 512;
+    public static final long MEGA = 1000000L;
+
+    public static final long GIGA = 1000000000L;
+
+    private static final int BUF_SIZE = 512;
+
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private FileUtils() {
@@ -65,29 +69,6 @@ private static final int BUF_SIZE = 512;
         }
     }
 
-    public static boolean delete(File f, Logger log) {
-        if (!f.exists()) return false;
-        if (f.isDirectory()) {
-            File[] files = f.listFiles();
-            for (int i = 0; i < files.length; i++)
-                delete(files[i], log);
-        }
-        log.debug("M-DELETE " + f);
-        boolean success = f.delete();
-        if (!success) log.warn("Failed M-DELETE " + f);
-        return success;
-    }
-
-    public static void purgeDir(File d, Logger log) {
-        if (d.isDirectory() && d.list().length == 0) {
-            log.debug("M-DELETE " + d);
-            if (!d.delete())
-                log.warn("Failed M-DELETE " + d);
-            else
-                purgeDir(d.getParentFile(), log);
-        }
-    }
-
     public static File makeMD5File(File f) {
         return new File(f.getParent(), f.getName() + ".MD5");
     }
@@ -108,11 +89,11 @@ private static final int BUF_SIZE = 512;
         }
     }
 
-    public static void md5sum(File fileOrDir, char[] cbuf, MessageDigest digest, byte[] bbuf)
-            throws IOException {
+    public static void md5sum(File fileOrDir, char[] cbuf,
+            MessageDigest digest, byte[] bbuf) throws IOException {
         digest.reset();
-        InputStream in = new DigestInputStream(
-                new FileInputStream(fileOrDir), digest);
+        InputStream in = new DigestInputStream(new FileInputStream(fileOrDir),
+                digest);
         try {
             while (in.read(bbuf) != -1)
                 ;
@@ -125,19 +106,26 @@ private static final int BUF_SIZE = 512;
     public static boolean verify(File driveDir, File fsDir, Logger log)
             throws IOException {
         File md5sums = new File(driveDir, "MD5_SUMS");
-        return md5sums.exists() ? verifyMd5Sums(md5sums, log, new byte[BUF_SIZE])
-                : equals(driveDir, fsDir, log, new byte[BUF_SIZE], new byte[BUF_SIZE]);
+        return md5sums.exists() ? verifyMd5Sums(md5sums,
+                log,
+                new byte[BUF_SIZE]) : equals(driveDir,
+                fsDir,
+                log,
+                new byte[BUF_SIZE],
+                new byte[BUF_SIZE]);
     }
 
-    private static boolean equals(File dst, File src, Logger log, byte[] srcBuf, byte[] dstBuf)
-            throws IOException {
+    private static boolean equals(File dst, File src, Logger log,
+            byte[] srcBuf, byte[] dstBuf) throws IOException {
         if (src.isDirectory()) {
             String[] ss = src.list();
             for (int i = 0; i < ss.length; i++) {
-            	String s = ss[i];
-            	if (s.endsWith(".lnk")) continue; 
-                if (!(equals(new File(dst, s), new File(src, s), log, srcBuf, dstBuf)))
-                        return false;
+                String s = ss[i];
+                if (!(equals(new File(dst, s),
+                        new File(src, s),
+                        log,
+                        srcBuf,
+                        dstBuf))) return false;
             }
         } else {
             if (!dst.isFile()) {
@@ -151,7 +139,8 @@ private static final int BUF_SIZE = 512;
                 log.warn("File " + dst + " has wrong length");
                 return false;
             }
-            DataInputStream dstIn = new DataInputStream(new FileInputStream(dst));
+            DataInputStream dstIn = new DataInputStream(
+                    new FileInputStream(dst));
             try {
                 InputStream srcIn = new FileInputStream(src);
                 try {
@@ -175,7 +164,7 @@ private static final int BUF_SIZE = 512;
 
     private static boolean equals(byte[] dstBuf, byte[] srcBuf, int len) {
         for (int i = 0; i < len; i++)
-            if (dstBuf[i] != srcBuf[i]) return false; 
+            if (dstBuf[i] != srcBuf[i]) return false;
         return true;
     }
 
@@ -206,5 +195,29 @@ private static final int BUF_SIZE = 512;
             md5sumsIn.close();
         }
         return true;
+    }
+
+    public static String formatSize(long size) {
+        if (size < GIGA)
+            return ((float) size / MEGA) + "MB";
+        else
+            return ((float) size / GIGA) + "GB";
+    }
+
+    public static long parseSize(String s, long minSize) {
+        long u;
+        if (s.endsWith("GB"))
+            u = GIGA;
+        else if (s.endsWith("MB"))
+            u = MEGA;
+        else
+            throw new IllegalArgumentException(s);
+        try {
+            long size = (long) (Float.parseFloat(s.substring(0, s.length() - 2)) * u);
+            if (size >= minSize)
+                return size;
+        } catch (IllegalArgumentException e) {
+        }
+        throw new IllegalArgumentException(s);
     }
 }

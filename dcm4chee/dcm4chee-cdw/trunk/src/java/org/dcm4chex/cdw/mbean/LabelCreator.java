@@ -49,6 +49,9 @@ class LabelCreator {
         MessageHandler.setScreenLogger(logger);
     }
 
+    public final boolean isActive() {
+        return active;
+    }
     public final String getCreateLabel() {
         return active ? (renderer == Driver.RENDER_PS ? "PS" : "PDF") : "NO";
     }
