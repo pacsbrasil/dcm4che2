@@ -557,7 +557,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
     </td>
 			<td align="right" bgcolor="ffffcc">
 				<a href="{$wado_url}?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
-					<img src="images/edit.gif" alt="View image" border="0" title="View image"/>		
+					<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
 				</a>
 			</td>
 		<td align="right" bgcolor="ffffcc">
