@@ -184,17 +184,6 @@ public abstract class FileBean implements EntityBean
     public abstract int getFileSize();
     public abstract void setFileSize(int size);
 
-
-    /**
-     * Timestamp in ms
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="file_timestamp"
-     */
-    public abstract long getFileTimestamp();
-    public abstract void setFileTimestamp(long time);
-
     /**
 	 * @ejb.relation
 	 * 	name="instance-files"
@@ -229,7 +218,6 @@ public abstract class FileBean implements EntityBean
         retval.setFileTsuid(getFileTsuid());
         retval.setFileSize(getFileSize());
         retval.setFileMd5(getFileMd5());
-        retval.setFileTimestamp(getFileTimestamp());
         return retval;
     }
 
@@ -271,7 +259,6 @@ public abstract class FileBean implements EntityBean
         String tsuid,
         int size,
         byte[] md5,
-        long timestamp,
         InstanceLocal instance)
         throws CreateException
     {
@@ -281,7 +268,6 @@ public abstract class FileBean implements EntityBean
         setFileTsuid(tsuid);
         setFileSize(size);
         setFileMd5(md5);
-        setFileTimestamp(timestamp);
         return null;
     }
 
@@ -292,7 +278,6 @@ public abstract class FileBean implements EntityBean
         String tsuid,
         int size,
         byte[] md5,
-        long timestamp,
         InstanceLocal instance)
         throws CreateException
     {

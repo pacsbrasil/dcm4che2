@@ -50,7 +50,6 @@ public class FileBeanTest extends ServletTestCase {
     public static final int SIZE = 567890;
     public static final byte[] MD5 =
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    public static final long TIMESTAMP = System.currentTimeMillis();
 
     private FileLocalHome fileHome;
 
@@ -89,7 +88,6 @@ public class FileBeanTest extends ServletTestCase {
                 TSUID,
                 SIZE,
                 MD5,
-                TIMESTAMP,
                 null);
         file.remove();
     }

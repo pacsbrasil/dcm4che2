@@ -123,7 +123,6 @@ CREATE TABLE files (
 	file_tsuid      VARCHAR2(255) NOT NULL,
 	file_md5        VARCHAR2(255),
 	file_size       INTEGER,
-	file_timestamp  NUMBER(19),
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);

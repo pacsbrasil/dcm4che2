@@ -38,7 +38,6 @@ public final class FileDTO implements Serializable {
     private String tsuid;
     private int size;
     private byte[] md5;
-    private long timestamp;
 
     /**
      * @return Returns the pk.
@@ -122,20 +121,6 @@ public final class FileDTO implements Serializable {
      */
     public final void setFileSize(int size) {
         this.size = size;
-    }
-
-    /**
-     * @return Returns the timestamp.
-     */
-    public final long getFileTimestamp() {
-        return timestamp;
-    }
-
-    /**
-     * @param timestamp The timestamp to set.
-     */
-    public final void setFileTimestamp(long timestamp) {
-        this.timestamp = timestamp;
     }
 
     /**

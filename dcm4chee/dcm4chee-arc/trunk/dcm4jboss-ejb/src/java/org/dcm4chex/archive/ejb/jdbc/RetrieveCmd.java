@@ -45,6 +45,7 @@ public abstract class RetrieveCmd extends BaseCmd
 
     private static final String[] SELECT_ATTRIBUTE =
         {
+            "File.pk",
             "Patient.encodedAttributes",
             "Study.encodedAttributes",
             "Series.encodedAttributes",
@@ -56,8 +57,7 @@ public abstract class RetrieveCmd extends BaseCmd
             "File.filePath",
             "File.fileTsuid",
             "File.fileMd5Field",
-            "File.fileSize",
-            "File.fileTimestamp" };
+            "File.fileSize" };
 
     private static final String[] RELATIONS =
         {
@@ -112,19 +112,19 @@ public abstract class RetrieveCmd extends BaseCmd
             {
                 FileInfo info =
                     new FileInfo(
-                        rs.getBytes(1),
+                        rs.getInt(1),
                         rs.getBytes(2),
                         rs.getBytes(3),
                         rs.getBytes(4),
-                        rs.getString(5),
+                        rs.getBytes(5),
                         rs.getString(6),
                         rs.getString(7),
                         rs.getString(8),
                         rs.getString(9),
                         rs.getString(10),
-                        rs.getString(11),
-                        rs.getInt(12),
-                        rs.getLong(13));
+                        rs.getString(12),
+                        rs.getString(12),
+                        rs.getInt(13));
                 list = (ArrayList) map.get(info.sopIUID);
                 if (list == null)
                 {

@@ -106,8 +106,7 @@ public class StorageBeanTest extends TestCase {
             "/",
             path.substring(1),
             (int) file.length(),
-            md.digest(),
-            file.lastModified());
+            md.digest());
     }
 
     private Dataset loadDataset(File file, MessageDigest md)

@@ -182,8 +182,7 @@ public abstract class StorageBean implements SessionBean {
         java.lang.String basedir,
         java.lang.String fileid,
         int size,
-        byte[] md5,
-        long timestamp)
+        byte[] md5)
         throws DcmServiceException {
         try {
             Dataset coercedElements = dof.newDataset();
@@ -211,7 +210,6 @@ public abstract class StorageBean implements SessionBean {
                     tsuid,
                     size,
                     md5,
-                    timestamp,
                     instance);
             updateRetrieveAETs(instance, retrieveAETs);
             log.info("inserted instance " + iuid);

@@ -33,6 +33,7 @@ import org.dcm4cheri.util.DatasetUtils;
  */
 public class FileInfo
 {
+    public final int pk;
     public final byte[] patAttrs;
     public final byte[] studyAttrs;
     public final byte[] seriesAttrs;
@@ -45,9 +46,9 @@ public class FileInfo
     public final String tsUID;
     public final String md5;
     public final int size;
-    public final long timestamp;
 
     public FileInfo(
+        int pk,
         byte[] patAttrs,
         byte[] studyAttrs,
         byte[] seriesAttrs,
@@ -59,9 +60,9 @@ public class FileInfo
         String fileID,
         String tsUID,
         String md5,
-        int size,
-        long timestamp)
+        int size)
     {
+        this.pk = pk;
         this.patAttrs = patAttrs;
         this.studyAttrs = studyAttrs;
         this.seriesAttrs = seriesAttrs;
@@ -74,12 +75,13 @@ public class FileInfo
         this.tsUID = tsUID;
         this.md5 = md5;
         this.size = size;
-        this.timestamp = timestamp;
     }
 
     public String toString()
     {
-        return "FileInfo[iuid="
+        return "FileInfo[pk="
+            + pk
+            + "iuid="
             + sopIUID
             + ", cuid="
             + sopCUID

@@ -82,11 +82,28 @@ public class AttributeCoercion {
             return ds.getStrings(srcTag);
         }
     }
+    
+    private static class Substring {
+        final int beginIndex;
+        final int endIndex;
+        Substring(int beginIndex, int endIndex) {
+            if (beginIndex < 0 || endIndex < beginIndex) {
+                throw new IllegalArgumentException();
+            }
+            this.beginIndex = beginIndex;
+            this.endIndex = endIndex;
+        }
+        String applyTo(String s) {
+            final int l = s.length();
+            return s.substring(Math.min(l, beginIndex), Math.min(l, endIndex));
+        }
+    }
 
     private static class GeneralCoerce extends Coerce {
         final String[] literals;
         final int[] srcTags;
         final int[] srcIndex;
+        final Substring[] substring;
         final CoercionLUT[] luts;
         GeneralCoerce(int tag, String value, Hashtable lutsByName) {
             super(tag);
@@ -103,14 +120,16 @@ public class AttributeCoercion {
             literals = new String[tokens.size()];
             srcTags = new int[literals.length - 1];
             srcIndex = new int[literals.length - 1];
+            substring = new Substring[literals.length - 1];
             luts = new CoercionLUT[literals.length - 1];
             literals[0] = (String) tokens.get(0);
             for (int i = 0; i < srcTags.length; i++) {
                 String tk = (String) tokens.get(i + 1);
                 srcTags[i] = Tags.valueOf(tk.substring(1, 12));
                 int startLiteral = 12;
-                if (tk.length() > 14 && tk.charAt(12) == '[') {
-                    int last = tk.indexOf(']', 14);
+                if (tk.length() > startLiteral + 2
+                    && tk.charAt(startLiteral) == '[') {
+                    final int last = tk.indexOf(']', startLiteral + 2);
                     if (last != -1) {
                         try {
                             int tmp = Integer.parseInt(tk.substring(13, last));
@@ -122,9 +141,30 @@ public class AttributeCoercion {
                         }
                     }
                 }
+                if (tk.length() > startLiteral + 2
+                    && tk.charAt(startLiteral) == '[') {
+                    final int comma = tk.indexOf(',', startLiteral + 2);
+                    if (comma != -1 && tk.length() > comma + 2) {
+                        final int last = tk.indexOf(']', comma + 2);
+                        if (last != -1) {
+                            try {
+                                substring[i] =
+                                    new Substring(
+                                        Integer.parseInt(
+                                            tk.substring(
+                                                startLiteral + 1,
+                                                comma)),
+                                        Integer.parseInt(
+                                            tk.substring(comma + 1, last)));
+                                startLiteral = last + 1;
+                            } catch (IllegalArgumentException e) {
+                            }
+                        }
+                    }
+                }
                 if (tk.length() > startLiteral + 3
                     && tk.charAt(startLiteral) == '{') {
-                    int last = tk.indexOf('}', startLiteral + 2);
+                    final int last = tk.indexOf('}', startLiteral + 2);
                     if (last != -1) {
                         luts[i] =
                             (CoercionLUT) lutsByName.get(
@@ -147,6 +187,9 @@ public class AttributeCoercion {
                         : (el.vm() == VRs.UN)
                         ? el.getByteBuffer().asCharBuffer().toString()
                         : ds.getString(srcTags[i], srcIndex[i]);
+                if (substring[i] != null) {
+                    val = substring[i].applyTo(val);
+                }
                 sb.append(luts[i] != null ? luts[i].lookup(val) : val);
             }
             sb.append(literals[srcTags.length]);
