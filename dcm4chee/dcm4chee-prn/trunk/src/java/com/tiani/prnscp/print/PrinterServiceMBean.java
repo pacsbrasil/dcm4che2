@@ -26,6 +26,7 @@ import org.dcm4che.data.Dataset;
 import org.jboss.system.ServiceMBean;
 
 import javax.management.ObjectName;
+import javax.print.PrintException;
 
 /**
  * <description>
@@ -54,25 +55,300 @@ public interface PrinterServiceMBean extends ServiceMBean {
    int WARNING = 2;
    int FAILURE = 3;
       
-   /** Getter for property printerConfiguration.
-    * @return Value of property printerConfiguration.
+   /** Getter for property availableDestinations.
+    * @return Value of property availableDestinations.
     */
-   public ObjectName getPrinterConfiguration();
+   public String[] getAvailablePrinters();
    
-   /** Setter for property printerConfiguration.
-    * @param printerConfiguration New value of property printerConfiguration.
+   /** Getter for property destination.
+    * @return Value of property destination.
     */
-   public void setPrinterConfiguration(ObjectName printerConfiguration);
+   public String getPrinterName();
    
-   /** Getter for property printerCalibration.
-    * @return Value of property printerCalibration.
+   /** Setter for property destination.
+    * @param destination New value of property destination.
     */
-   ObjectName getPrinterCalibration();
+   public void setPrinterName(String destination);
    
-   /** Setter for property printerCalibration.
-    * @param printerCalibration New value of property printerCalibration.
+   /** Getter for property supportedAttributeValues.
+    * @return Value of property supportedAttributeValues.
     */
-   void setPrinterCalibration(ObjectName printerCalibration);
+   public String[] getSupportedAttributeValues();
+   
+   /** Getter for property printServiceAttributes.
+    * @return Value of property printServiceAttributes.
+    */
+   public String[] getPrintServiceAttributes();
+   
+   /** Getter for property printToFile.
+    * @return Value of property printToFile.
+    */
+   public String getPrintToFilePath();
+   
+   /** Setter for property printToFile.
+    * @param printToFile New value of property printToFile.
+    */
+   public void setPrintToFilePath(String printToFile);
+   
+   /** Getter for property printToFile.
+    * @return Value of property printToFile.
+    */
+   public boolean isPrintToFile();
+   
+   /** Setter for property printToFile.
+    * @param printToFile New value of property printToFile.
+    */
+   public void setPrintToFile(boolean printToFile);
+   
+   /** Getter for property supportsColor.
+    * @return Value of property supportsColor.
+    */
+   public boolean isSupportsColor();
+   
+   /** Setter for property supportsColor.
+    * @param supportsColor New value of property supportsColor.
+    */
+   public void setSupportsColor(boolean supportsColor);
+   
+   /** Getter for property supportsPresentationLUT.
+    * @return Value of property supportsPresentationLUT.
+    */
+   public boolean isSupportsPresentationLUT();
+   
+   /** Setter for property supportsPresentationLUT.
+    * @param supportsPresentationLUT New value of property supportsPresentationLUT.
+    */
+   public void setSupportsPresentationLUT(boolean supportsPresentationLUT);
+   
+   /** Getter for property mediaType.
+    * @return Value of property mediaType.
+    */
+   public String getMediumType();
+   
+   /** Setter for property mediaType.
+    * @param mediaType New value of property mediaType.
+    */
+   public void setMediumType(String mediaType);
+   
+   /** Getter for property filmDestination.
+    * @return Value of property filmDestination.
+    */
+   public String getFilmDestination();
+   
+   /** Setter for property filmDestination.
+    * @param filmDestination New value of property filmDestination.
+    */
+   public void setFilmDestination(String filmDestination);
+   
+   /** Getter for property displayFormat.
+    * @return Value of property displayFormat.
+    */
+   public String getDisplayFormat();
+   
+   /** Setter for property displayFormat.
+    * @param displayFormat New value of property displayFormat.
+    */
+   public void setDisplayFormat(String displayFormat);
+   
+   /** Getter for property filmOrientation.
+    * @return Value of property filmOrientation.
+    */
+   public String getFilmOrientation();
+   
+   /** Setter for property filmOrientation.
+    * @param filmOrientation New value of property filmOrientation.
+    */
+   public void setFilmOrientation(String filmOrientation);
+   
+   /** Getter for property filmSizeID.
+    * @return Value of property filmSizeID.
+    */
+   public String getFilmSizeID();
+   
+   /** Setter for property filmSizeID.
+    * @param filmSizeID New value of property filmSizeID.
+    */
+   public void setFilmSizeID(String filmSizeID);
+   
+   /** Getter for property resolutionID.
+    * @return Value of property resolutionID.
+    */
+   public String getResolutionID();
+   
+   /** Setter for property resolutionID.
+    * @param resolutionID New value of property resolutionID.
+    */
+   public void setResolutionID(String resolutionID);
+   
+   /** Getter for property resolution.
+    * @return Value of property resolution.
+    */
+   public String getResolution();
+   
+   /** Setter for property resolution.
+    * @param resolution New value of property resolution.
+    */
+   public void setResolution(String resolution);
+      
+   /** Getter for property magnificationType.
+    * @return Value of property magnificationType.
+    */
+   public String getMagnificationType();
+   
+   /** Setter for property magnificationType.
+    * @param magnificationType New value of property magnificationType.
+    */
+   public void setMagnificationType(String magnificationType);
+   
+   /** Getter for property smoothingType.
+    * @return Value of property smoothingType.
+    */
+   public String getSmoothingType();
+   
+   /** Setter for property smoothingType.
+    * @param smoothingType New value of property smoothingType.
+    */
+   public void setSmoothingType(String smoothingType);
+   
+   /** Getter for property decimateCropBehavior.
+    * @return Value of property decimateCropBehavior.
+    */
+   public String getDecimateCropBehavior();
+   
+   /** Setter for property decimateCropBehavior.
+    * @param decimateCropBehavior New value of property decimateCropBehavior.
+    */
+   public void setDecimateCropBehavior(String decimateCropBehavior);
+   
+   /** Getter for property borderDensity.
+    * @return Value of property borderDensity.
+    */
+   public String getBorderDensity();
+   
+   /** Setter for property borderDensity.
+    * @param borderDensity New value of property borderDensity.
+    */
+   public void setBorderDensity(String borderDensity);
+   
+   /** Getter for property emptyImageDensity.
+    * @return Value of property emptyImageDensity.
+    */
+   public String getEmptyImageDensity();
+   
+   /** Setter for property emptyImageDensity.
+    * @param emptyImageDensity New value of property emptyImageDensity.
+    */
+   public void setEmptyImageDensity(String emptyImageDensity);
+   
+   /** Getter for property minDensity.
+    * @return Value of property minDensity.
+    */
+   public int getMinDensity();
+   
+   /** Setter for property minDensity.
+    * @param minDensity New value of property minDensity.
+    */
+   public void setMinDensity(int minDensity);
+   
+   /** Getter for property maxDensity.
+    * @return Value of property maxDensity.
+    */
+   public int getMaxDensity();
+   
+   /** Setter for property maxDensity.
+    * @param maxDensity New value of property maxDensity.
+    */
+   public void setMaxDensity(int maxDensity);
+   
+   /** Getter for property borderThickness.
+    * @return Value of property borderThickness.
+    */
+   public float getBorderThickness();
+   
+   /** Setter for property borderThickness.
+    * @param borderThickness New value of property borderThickness.
+    */
+   public void setBorderThickness(float borderThickness);
+
+   /** Getter for property margin.
+    * @return Value of property margin.
+    */
+   public String getPageMargin();
+   
+   /** Setter for property margin.
+    * @param margin New value of property margin.
+    */
+   public void setPageMargin(String margin);
+   
+   /** Getter for property illumination.
+    * @return Value of property illumination.
+    */
+   public int getIllumination();
+   
+   /** Setter for property illumination.
+    * @param illumination New value of property illumination.
+    */
+   public void setIllumination(int illumination);
+   
+   /** Getter for property reflectedAmbientLight.
+    * @return Value of property reflectedAmbientLight.
+    */
+   public int getReflectedAmbientLight();
+   
+   /** Setter for property reflectedAmbientLight.
+    * @param reflectedAmbientLight New value of property reflectedAmbientLight.
+    */
+   public void setReflectedAmbientLight(int reflectedAmbientLight);
+   
+   /** Getter for property defaultMediumType.
+    * @return Value of property defaultMediumType.
+    *
+    */
+   public String getDefaultMediumType();
+   
+   /** Getter for property defaultFilmDestination.
+    * @return Value of property defaultFilmDestination.
+    *
+    */
+   public String getDefaultFilmDestination();
+   
+   /** Getter for property defaultFilmSizeID.
+    * @return Value of property defaultFilmSizeID.
+    *
+    */
+   public String getDefaultFilmSizeID();
+   
+   /** Getter for property defaultMagnificationType.
+    * @return Value of property defaultMagnificationType.
+    *
+    */
+   public String getDefaultMagnificationType();
+   
+   /** Getter for property defaultSmoothingType.
+    * @return Value of property defaultSmoothingType.
+    *
+    */
+   public String getDefaultSmoothingType();
+   
+   /** Getter for property defaultResolutionID.
+    * @return Value of property defaultResolutionID.
+    *
+    */
+   public String getDefaultResolutionID();
+   
+   public boolean isSupportsFilmDestination(String filmDestination);
+   
+   public boolean isSupportsFilmSizeID(String filmSizeID);
+
+   public boolean isSupportsDisplayFormat(String displayFormat, String filmOrientation);
+   
+   public boolean isSupportsMagnificationType(String magnificationType);
+   
+   public boolean isSupportsMediumType(String mediumType);
+   
+   public boolean isSupportsSmoothingType(String smoothingType);
+
+   public boolean isSupportsResolutionID(String resolutionID);   
    
    /** Getter for property status.
     * @return Value of property status.
@@ -88,5 +364,111 @@ public interface PrinterServiceMBean extends ServiceMBean {
     * @return Value of property statusInfo.
     */
    String getStatusInfo();
+   
+   /** Getter for property measuredODs.
+    * @return Value of property measuredODs.
+    */
+   public float[] getMeasuredODs();
+   
+   /** Setter for property measuredODs.
+    * @param measuredODs New value of property measuredODs.
+    */
+   public void setMeasuredODs(float[] measuredODs);
+   
+   /** Setter for property measuredODsAsText.
+    * @param measuredODsAsText New value of property measuredODsAsText.
+    */
+   public void setMeasuredODsAsText(String measuredODsAsText);
+   
+   /** Getter for property graySteps.
+    * @return Value of property graySteps.
+    */
+   public int getScanGraySteps();
+   
+   /** Setter for property graySteps.
+    * @param graySteps New value of property graySteps.
+    */
+   public void setScanGraySteps(int graySteps);
+   
+   /** Getter for property grayStepGap.
+    * @return Value of property grayStepGap.
+    */
+   public double getGrayStepGap();
+   
+   /** Setter for property grayStepGap.
+    * @param grayStepGap New value of property grayStepGap.
+    */
+   public void setGrayStepGap(double grayStepGap);
+   
+   /** Getter for property refGrayStepFile.
+    * @return Value of property refGrayStepFile.
+    */
+   public String getRefGrayStepFile();
+   
+   /** Setter for property refGrayStepFile.
+    * @param refGrayStepFile New value of property refGrayStepFile.
+    */
+   public void setRefGrayStepFile(String refGrayStepFile);
+   
+   /** Getter for property refGrayStepODs.
+    * @return Value of property refGrayStepODs.
+    */
+   public float[] getRefGrayStepODs();
+   
+   /** Setter for property refGrayStepODs.
+    * @param refGrayStepODs New value of property refGrayStepODs.
+    */
+   public void setRefGrayStepODs(float[] refGrayStepODs);
+   
+   /** Setter for property refGrayStepODsAsText.
+    * @param refGrayStepODsAsText New value of property refGrayStepODsAsText.
+    */
+   public void setRefGrayStepODsAsText(String refGrayStepODsAsText);
+   
+   /** Getter for property scanGrayStepDir.
+    * @return Value of property scanGrayStepDir.
+    */
+   public String getScanGrayStepDir();
+   
+   /** Setter for property scanGrayStepDir.
+    * @param scanGrayStepDir New value of property scanGrayStepDir.
+    */
+   public void setScanGrayStepDir(String scanGrayStepDir);
+   
+   /** Getter for property scanBorderThreshold.
+    * @return Value of property scanBorderThreshold.
+    */
+   public int getScanBorderThreshold();
+   
+   /** Setter for property scanBorderThreshold.
+    * @param scanBorderThreshold New value of property scanBorderThreshold.
+    */
+   public void setScanBorderThreshold(int scanBorderThreshold);
+   
+   /** Getter for property scanPointExtension.
+    * @return Value of property scanPointExtension.
+    */
+   public String getScanPointExtension();
+   
+   /** Setter for property scanPointExtension.
+    * @param extension New value of property scanPointExtension.
+    */
+   public void setScanPointExtension(String extension);
+   
+   /** Getter for property scanGradientThreshold.
+    * @return Value of property scanGradientThreshold.
+    */
+   public int getScanGradientThreshold();
+   
+   /** Setter for property scanGradientThreshold.
+    * @param scanGradientThreshold New value of property scanGradientThreshold.
+    */
+   public void setScanGradientThreshold(int scanGradientThreshold);
+   
+   public void printGraySteps() throws PrintException;
+   
+   public void printGrayStepsWithGSDF() throws PrintException;
+   
+   public void printGrayStepsWithLinOD() throws PrintException;
    
 }

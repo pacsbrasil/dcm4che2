@@ -29,17 +29,50 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
-import javax.management.ObjectName;
 
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Font;
+import java.awt.Color;
+import java.awt.geom.Rectangle2D;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import javax.print.Doc;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintException;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
+import javax.print.attribute.Attribute;
+import javax.print.attribute.AttributeSet;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.event.PrintJobAttributeEvent;
+import javax.print.event.PrintJobAttributeListener;
+import javax.print.event.PrintJobListener;
+import javax.print.event.PrintJobEvent;
+import javax.print.event.PrintServiceAttributeEvent;
+import javax.print.event.PrintServiceAttributeListener;
+import javax.print.attribute.standard.Destination;
+import javax.print.attribute.standard.MediaSize;
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.MediaPrintableArea;
+import javax.print.attribute.standard.OrientationRequested;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.File;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.StringTokenizer;
 
 /**
  * <description>
@@ -59,18 +92,97 @@ import java.util.LinkedList;
  */
 public class PrinterService
    extends ServiceMBeanSupport
-   implements PrinterServiceMBean, NotificationListener, Runnable {
+   implements PrinterServiceMBean, NotificationListener, Runnable,
+      PrintServiceAttributeListener, PrintJobAttributeListener, PrintJobListener
+{
    
    // Constants -----------------------------------------------------
    private static final String[] CODE_STRING = {
       null, "NORMAL", "WARNING", "FAILURE"
    };
+   private static final byte[] IDENTITY_PV_TO_DDL = new byte[256];
+   static {
+      for (int i = 0; i < 256; ++i)
+         IDENTITY_PV_TO_DDL[i] = (byte)i;
+   }
+   private static final double PTS_PER_MM = 72 / 24.5;
+   private static final int FONT_SIZE = 8;
    
    // Attributes ----------------------------------------------------
-   private ObjectName printerCalibration;
-   private ObjectName printerConfiguration;
-   private PrinterCalibrationService calibrationService;
-   private PrinterConfigurationService configurationService;
+   /** Holds value of property printerName. */
+   private String printerName;
+   
+   /** Holds value of property printToFilePath. */
+   private String printToFilePath;
+   
+   /** Holds value of property supportsColor. */
+   private boolean supportsColor;
+   
+   /** Holds value of property supportsPresentationLUT. */
+   private boolean supportsPresentationLUT;
+   
+   /** Holds value of property displayFormat. */
+   private String displayFormat;
+   
+   /** Holds value of property filmSizeID. */
+   private String filmSizeID;
+   
+   /** Holds value of property resolutionID. */
+   private String resolutionID;
+   
+   /** Holds value of property magnificationType. */
+   private String magnificationType;
+   
+   /** Holds value of property smoothingType. */
+   private String smoothingType;
+   
+   /** Holds value of property borderDensity. */
+   private String borderDensity;
+   
+   /** Holds value of property emptyImageDensity. */
+   private String emptyImageDensity;
+   
+   /** Holds value of property minDensity. */
+   private int minDensity;
+   
+   /** Holds value of property maxDensity. */
+   private int maxDensity;
+   
+   /** Holds value of property filmDestination. */
+   private String filmDestination;
+   
+   /** Holds value of property pageMargin. */
+   private float[] pageMargin;
+   
+   /** Holds value of property borderThickness. */
+   private float borderThickness;
+   
+   /** Holds value of property resolution. */
+   private String resolution;
+   
+   /** Holds value of property mediumType. */
+   private String mediumType;
+   
+   /** Holds value of property filmOrientation. */
+   private String filmOrientation;
+   
+   /** Holds value of property illumination. */
+   private int illumination;
+   
+   /** Holds value of property reflectedAmbientLight. */
+   private int reflectedAmbientLight;
+   
+   /** Holds value of property decimateCropBehavior. */
+   private String decimateCropBehavior;
+
+   /** Holds value of property grayStepGap. */
+   private double grayStepGap;
+   
+   private int status = NORMAL;
+   private String statusInfo = "NORMAL";
+
+   private final PrinterCalibration calibration = new PrinterCalibration();
+   private final ScannerCalibration scanner = new ScannerCalibration();
    
    private long notifCount = 0;
    private LinkedList highPriorQueue = new LinkedList();
@@ -78,62 +190,534 @@ public class PrinterService
    private LinkedList lowPriorQueue = new LinkedList();
    private Object queueMonitor = new Object();
    private Thread scheduler;
+   private PrintService printService;
    
-   private int status = NORMAL;
-   private String statusInfo = "NORMAL";
+   /** Holds value of property printToFile. */
+   private boolean printToFile;
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
-   public ObjectName getObjectName(MBeanServer server, ObjectName name)
-   throws MalformedObjectNameException {
-      return name == null
-      ? new ObjectName("dcm4chex:service=Printer")
-      : name;
-   }
-   
-   public String getName() {
-      return "Printer";
-   }
-   
-   public PrinterCalibrationService getCalibrationService() {
-      return calibrationService;
-   }
-   
-   public PrinterConfigurationService getConfigurationService() {
-      return configurationService;
-   }
    
    // PrinterMBean implementation -----------------------------------
    
-   /** Getter for property printerCalibration.
-    * @return Value of property printerCalibration.
+   /** Getter for property printerName.
+    * @return Value of property printerName.
     */
-   public ObjectName getPrinterCalibration() {
-      return printerCalibration;
+   public String getPrinterName() {
+      return printerName;
    }
    
-   /** Setter for property printerCalibration.
-    * @param printerCalibration New value of property printerCalibration.
+   /** Setter for property printerName.
+    * @param printerName New value of property printerName.
     */
-   public void setPrinterCalibration(ObjectName printerCalibration) {
-      this.printerCalibration = printerCalibration;
+   public void setPrinterName(String printerName) {
+      if (!printerName.equals(this.printerName)) {
+         this.printerName = printerName;
+         try {
+            getPrintService(); // to register Attribute Listener
+         } catch (PrintException e) {
+            log.warn(e);
+         }
+      }
    }
    
-   /** Getter for property printerConfiguration.
-    * @return Value of property printerConfiguration.
-    */
-   public ObjectName getPrinterConfiguration() {
-      return printerConfiguration;
+   private PrintService getPrintService() throws PrintException {
+      if (printService != null) {
+         if (printService.getName().equals(printerName)) {
+            return printService;
+         }
+         printService.removePrintServiceAttributeListener(this);
+         printService = null;         
+      }
+      PrintService[] services =  PrintServiceLookup.lookupPrintServices(
+         DocFlavor.SERVICE_FORMATTED.PRINTABLE, null);
+      for (int i = 0; i < services.length; ++i) {
+         if (services[i].getName().equals(printerName)) {
+            printService = services[i];
+            printService.addPrintServiceAttributeListener(this);
+         }
+      }
+      throw new PrintException("Failed to access Printer " + printerName);
    }
    
-   /** Setter for property printerConfiguration.
-    * @param printerConfiguration New value of property printerConfiguration.
+   /** Getter for property printToFile.
+    * @return Value of property printToFile.
     */
-   public void setPrinterConfiguration(ObjectName printerConfiguration) {
-      this.printerConfiguration = printerConfiguration;
+   public boolean isPrintToFile() {
+      return this.printToFile;
+   }
+   
+   /** Setter for property printToFile.
+    * @param printToFile New value of property printToFile.
+    */
+   public void setPrintToFile(boolean printToFile) {
+      this.printToFile = printToFile;
+   }
+   
+   /** Getter for property printToFilePath.
+    * @return Value of property printToFilePath.
+    */
+   public String getPrintToFilePath() {
+      return this.printToFilePath;
+   }
+   
+   /** Setter for property printToFilePath.
+    * @param printToFilePath New value of property printToFilePath.
+    */
+   public void setPrintToFilePath(String printToFilePath) {
+      this.printToFilePath = printToFilePath;
+   }
+   
+   /** Getter for property availableDestinations.
+    * @return Value of property availableDestinations.
+    */
+   public String[] getAvailablePrinters() {
+      PrintService[] services =  PrintServiceLookup.lookupPrintServices(
+         DocFlavor.SERVICE_FORMATTED.PRINTABLE, null);
+      String[] names = new String[services.length];      
+      for (int i = 0; i < services.length; ++i) {
+         names[i] = services[i].getName();
+      }
+      return names;
+   }
+   
+   /** Getter for property printServiceAttributes.
+    * @return Value of property printServiceAttributes.
+    */
+   public String[] getPrintServiceAttributes() {
+      try {
+         return toStringArray(getPrintService().getAttributes());
+      } catch (PrintException e) {
+         return new String[] { e.getMessage() };
+      }
+   }
+   
+   static String[] toStringArray(AttributeSet as) {
+      Attribute[] a = as.toArray();
+      String[] result = new String[a.length];
+      for (int i = 0; i < a.length; ++i) {
+         result[i] =
+            org.jboss.util.Classes.stripPackageName(a[i].getCategory()) + "=" + a[i];
+      }
+      return result;
+   }
+   
+   /** Getter for property supportedAttributeValues.
+    * @return Value of property supportedAttributeValues.
+    */
+   public String[] getSupportedAttributeValues() {
+      try {
+         PrintService ps = getPrintService();
+         Class[] c = ps.getSupportedAttributeCategories();
+         String[] result = new String[c.length];
+         AttributeSet aset = new HashPrintRequestAttributeSet();
+         aset.add(toOrientationRequested(getFilmOrientation()));
+         aset.add(toMediaSizeName(getDefaultFilmSizeID()));
+         for (int i = 0; i < c.length; ++i) {
+            Object value = ps.getSupportedAttributeValues(c[i],
+               DocFlavor.SERVICE_FORMATTED.PRINTABLE, aset);            
+            result[i] = org.jboss.util.Classes.stripPackageName(c[i]) + "="
+               + (value instanceof Object[]
+                  ? Arrays.asList((Object[]) value) : value);
+         }
+         return result;
+      } catch (PrintException e) {
+         return new String[] { e.getMessage() };
+      }
+   }
+   
+   /** Getter for property supportsColor.
+    * @return Value of property supportsColor.
+    */
+   public boolean isSupportsColor() {
+      return this.supportsColor;
+   }
+   
+   /** Setter for property supportsColor.
+    * @param supportsColor New value of property supportsColor.
+    */
+   public void setSupportsColor(boolean supportsColor) {
+      this.supportsColor = supportsColor;
+   }
+   
+   /** Getter for property supportsPresentationLUT.
+    * @return Value of property supportsPresentationLUT.
+    */
+   public boolean isSupportsPresentationLUT() {
+      return this.supportsPresentationLUT;
+   }
+   
+   /** Setter for property supportsPresentationLUT.
+    * @param supportsPresentationLUT New value of property supportsPresentationLUT.
+    */
+   public void setSupportsPresentationLUT(boolean supportsPresentationLUT) {
+      this.supportsPresentationLUT = supportsPresentationLUT;
+   }
+   
+   /** Getter for property mediaType.
+    * @return Value of property mediaType.
+    */
+   public String getMediumType() {
+      return this.mediumType;
+   }
+   
+   /** Setter for property mediaType.
+    * @param mediaType New value of property mediaType.
+    */
+   public void setMediumType(String mediumType) {
+      this.mediumType = mediumType;
+   }
+   
+   /** Getter for property defaultMediumType.
+    * @return Value of property defaultMediumType.
+    */
+   public String getDefaultMediumType() {
+      return firstOf(mediumType);
+   }
+   
+   public boolean isSupportsMediumType(String mediumType) {
+      return contains(this.mediumType, mediumType);
+   }
+   
+   /** Getter for property filmDestination.
+    * @return Value of property filmDestination.
+    */
+   public String getFilmDestination() {
+      return this.filmDestination;
+   }
+   
+   /** Setter for property filmDestination.
+    * @param filmDestination New value of property filmDestination.
+    */
+   public void setFilmDestination(String filmDestination) {
+      this.filmDestination = filmDestination;
+   }
+   
+   /** Getter for property defaultFilmDestination.
+    * @return Value of property defaultFilmDestination.
+    */
+   public String getDefaultFilmDestination() {
+      return firstOf(filmDestination);
+   }
+   
+   public boolean isSupportsFilmDestination(String filmDestination) {
+      return contains(this.filmDestination, filmDestination);
+   }
+   
+   /** Getter for property displayFormat.
+    * @return Value of property displayFormat.
+    */
+   public String getDisplayFormat() {
+      return this.displayFormat;
+   }
+   
+   /** Setter for property displayFormat.
+    * @param displayFormat New value of property displayFormat.
+    */
+   public void setDisplayFormat(String displayFormat) {
+      this.displayFormat = displayFormat;
+   }
+   
+   public boolean isSupportsDisplayFormat(String displayFormat,
+      String filmOrientation)
+   {
+      if (!displayFormat.startsWith("STANDARD\\")) {
+         return false;
+      }
+      if (filmOrientation.equals("PORTRAIT")) {
+         return contains(this.displayFormat, displayFormat.substring(9));
+      }
+      int pos = displayFormat.lastIndexOf(',');
+      return contains(this.displayFormat, 
+         displayFormat.substring(pos+1) + ',' + displayFormat.substring(9,pos));
+   }
+
+   private static String firstOf(String list) {
+      if (list == null || list.length() == 0) {
+         return null;
+      }
+      int pos = list.indexOf('\\');
+      return pos == -1 ? list : list.substring(0, pos);
+   }
+   
+   private static boolean contains(String list, String value) {
+      if (list == null || list.length() == 0) {
+         return false;
+      }
+      StringTokenizer tk = new StringTokenizer(list, "\\");
+      while (tk.hasMoreTokens()) {
+         if (value.equals(tk.nextToken())) {
+            return true;
+         }
+      }
+      return false;
+   }
+   
+   /** Getter for property filmSizeID.
+    * @return Value of property filmSizeID.
+    */
+   public String getFilmSizeID() {
+      return this.filmSizeID;
+   }
+   
+   /** Setter for property filmSizeID.
+    * @param filmSizeID New value of property filmSizeID.
+    */
+   public void setFilmSizeID(String filmSizeID) {
+      this.filmSizeID = filmSizeID;
+   }
+   
+   /** Getter for property defaultFilmSizeID.
+    * @return Value of property defaultFilmSizeID.
+    */
+   public String getDefaultFilmSizeID() {
+      String tmp = firstOf(filmSizeID);
+      return tmp.substring(0, tmp.indexOf(':'));
+   }
+   
+   public boolean isSupportsFilmSizeID(String filmSizeID) {
+      StringTokenizer tk = new StringTokenizer(this.filmSizeID, "\\");
+      while (tk.hasMoreTokens()) {
+         String tmp = tk.nextToken();
+         if (filmSizeID.equals(tmp.substring(0, tmp.indexOf(':')))) {
+            return true;
+         }
+      }
+      return false;
+   }
+   
+   /** Getter for property resolutionID.
+    * @return Value of property resolutionID.
+    */
+   public String getResolutionID() {
+      return this.resolutionID;
+   }
+   
+   /** Setter for property resolutionID.
+    * @param resolutionID New value of property resolutionID.
+    */
+   public void setResolutionID(String resolutionID) {
+      this.resolutionID = resolutionID;
+   }
+   
+   /** Getter for property defaultResolutionID.
+    * @return Value of property defaultResolutionID.
+    */
+   public String getDefaultResolutionID() {
+      return firstOf(resolutionID);
+   }
+   
+   public boolean isSupportsResolutionID(String resolutionID) {
+      return contains(this.resolutionID, resolutionID);
+   }
+      
+   /** Getter for property magnificationType.
+    * @return Value of property magnificationType.
+    */
+   public String getMagnificationType() {
+      return this.magnificationType;
+   }
+   
+   /** Setter for property magnificationType.
+    * @param magnificationType New value of property magnificationType.
+    */
+   public void setMagnificationType(String magnificationType) {
+      this.magnificationType = magnificationType;
+   }
+   
+   /** Getter for property defaultMagnificationType.
+    * @return Value of property defaultMagnificationType.
+    */
+   public String getDefaultMagnificationType() {
+      return firstOf(magnificationType);
+   }
+   
+   public boolean isSupportsMagnificationType(String magnificationType) {
+      return contains(this.magnificationType, magnificationType);
+   }
+   
+   /** Getter for property smoothingType.
+    * @return Value of property smoothingType.
+    */
+   public String getSmoothingType() {
+      return this.smoothingType;
+   }
+   
+   /** Setter for property smoothingType.
+    * @param smoothingType New value of property smoothingType.
+    */
+   public void setSmoothingType(String smoothingType) {
+      this.smoothingType = smoothingType;
+   }
+   
+   public boolean isSupportsSmoothingType(String smoothingType) {
+      return contains(this.smoothingType, smoothingType);
+   }
+   
+   /** Getter for property defaultSmoothingType.
+    * @return Value of property defaultSmoothingType.
+    */
+   public String getDefaultSmoothingType() {
+      return firstOf(smoothingType);
+   }
+   
+   /** Getter for property decimateCropBehavior.
+    * @return Value of property decimateCropBehavior.
+    */
+   public String getDecimateCropBehavior() {
+      return this.decimateCropBehavior;
+   }
+   
+   /** Setter for property decimateCropBehavior.
+    * @param decimateCropBehavior New value of property decimateCropBehavior.
+    */
+   public void setDecimateCropBehavior(String decimateCropBehavior) {
+      this.decimateCropBehavior = decimateCropBehavior;
+   }
+   
+   /** Getter for property borderDensity.
+    * @return Value of property borderDensity.
+    */
+   public String getBorderDensity() {
+      return this.borderDensity;
+   }
+   
+   /** Setter for property borderDensity.
+    * @param borderDensity New value of property borderDensity.
+    */
+   public void setBorderDensity(String borderDensity) {
+      this.borderDensity = borderDensity;
+   }
+   
+   /** Getter for property emptyImageDensity.
+    * @return Value of property emptyImageDensity.
+    */
+   public String getEmptyImageDensity() {
+      return this.emptyImageDensity;
+   }
+   
+   /** Setter for property emptyImageDensity.
+    * @param emptyImageDensity New value of property emptyImageDensity.
+    */
+   public void setEmptyImageDensity(String emptyImageDensity) {
+      this.emptyImageDensity = emptyImageDensity;
+   }
+   
+   /** Getter for property minDensity.
+    * @return Value of property minDensity.
+    */
+   public int getMinDensity() {
+      return this.minDensity;
+   }
+   
+   /** Setter for property minDensity.
+    * @param minDensity New value of property minDensity.
+    */
+   public void setMinDensity(int minDensity) {
+      this.minDensity = minDensity;
+   }
+   
+   /** Getter for property maxDensity.
+    * @return Value of property maxDensity.
+    */
+   public int getMaxDensity() {
+      return this.maxDensity;
+   }
+   
+   /** Setter for property maxDensity.
+    * @param maxDensity New value of property maxDensity.
+    */
+   public void setMaxDensity(int maxDensity) {
+      this.maxDensity = maxDensity;
+   }
+   
+   /** Getter for property margin.
+    * @return Value of property margin.
+    */
+   public String getPageMargin() {
+      return "" + pageMargin[0] + "," + pageMargin[1] + ","
+         + pageMargin[2] + "," + pageMargin[3];
+   }
+   
+   /** Setter for property margin.
+    * @param margin New value of property margin.
+    */
+   public void setPageMargin(String pageMargin) {
+      float[] tmp = toFloatArray(pageMargin);
+      this.pageMargin = tmp;
+   }
+   
+   /** Getter for property borderThickness.
+    * @return Value of property borderThickness.
+    */
+   public float getBorderThickness() {
+      return this.borderThickness;
+   }
+   
+   /** Setter for property borderThickness.
+    * @param borderThickness New value of property borderThickness.
+    */
+   public void setBorderThickness(float borderThickness) {
+      this.borderThickness = borderThickness;
+   }
+   
+   /** Getter for property resolution.
+    * @return Value of property resolution.
+    */
+   public String getResolution() {
+      return this.resolution;
+   }
+   
+   /** Setter for property resolution.
+    * @param resolution New value of property resolution.
+    */
+   public void setResolution(String resolution) {
+      this.resolution = resolution;
+   }
+   
+   /** Getter for property filmOrientation.
+    * @return Value of property filmOrientation.
+    */
+   public String getFilmOrientation() {
+      return this.filmOrientation;
+   }
+   
+   /** Setter for property filmOrientation.
+    * @param filmOrientation New value of property filmOrientation.
+    */
+   public void setFilmOrientation(String filmOrientation) {
+      this.filmOrientation = filmOrientation;
+   }
+   
+   /** Getter for property illumination.
+    * @return Value of property illumination.
+    */
+   public int getIllumination() {
+      return this.illumination;
+   }
+   
+   /** Setter for property illumination.
+    * @param illumination New value of property illumination.
+    */
+   public void setIllumination(int illumination) {
+      this.illumination = illumination;
+   }
+   
+   /** Getter for property reflectedAmbientLight.
+    * @return Value of property reflectedAmbientLight.
+    */
+   public int getReflectedAmbientLight() {
+      return this.reflectedAmbientLight;
+   }
+   
+   /** Setter for property reflectedAmbientLight.
+    * @param reflectedAmbientLight New value of property reflectedAmbientLight.
+    */
+   public void setReflectedAmbientLight(int reflectedAmbientLight) {
+      this.reflectedAmbientLight = reflectedAmbientLight;
    }
    
    /** Getter for property status.
@@ -157,15 +741,182 @@ public class PrinterService
       return CODE_STRING[status];
    }
    
+   /** Getter for property measuredODs.
+    * @return Value of property measuredODs.
+    */
+   public float[] getMeasuredODs() {
+      return calibration.getMeasuredODs();
+   }
+   
+   /** Setter for property measuredODs.
+    * @param measuredODs New value of property measuredODs.
+    */
+   public void setMeasuredODs(float[] measuredODs) {
+      calibration.setMeasuredODs(measuredODs);
+   }
+      
+   /** Setter for property measuredODsAsText.
+    * @param measuredODsAsText New value of property measuredODsAsText.
+    */
+   public void setMeasuredODsAsText(String measuredODsAsText) {
+      calibration.setMeasuredODs(toFloatArray(measuredODsAsText));
+   }
+   
+   private static float[] toFloatArray(String text) {
+      StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n");
+      float[] a = new float[stk.countTokens()];
+      for (int i = 0; i < a.length; ++i) {
+         a[i] = Float.parseFloat(stk.nextToken());
+      }
+      return a;
+   }
+         
+   /** Getter for property graySteps.
+    * @return Value of property graySteps.
+    */
+   public int getScanGraySteps() {
+      return scanner.getScanGraySteps();
+   }   
+
+   /** Setter for property graySteps.
+    * @param graySteps New value of property graySteps.
+    */
+   public void setScanGraySteps(int graySteps) {
+      scanner.setScanGraySteps(graySteps);
+   }   
+   
+   /** Getter for property grayStepGap.
+    * @return Value of property grayStepGap.
+    */
+   public double getGrayStepGap() {
+      return grayStepGap;
+   }
+   
+   /** Setter for property grayStepGap.
+    * @param grayStepGap New value of property grayStepGap.
+    */
+   public void setGrayStepGap(double grayStepGap) {
+      this.grayStepGap = grayStepGap;
+   }
+   
+   /** Getter for property refGrayStepFile.
+    * @return Value of property refGrayStepFile.
+    */
+   public String getRefGrayStepFile() {
+      return scanner.getRefGrayStepFile();
+   }
+   
+   /** Setter for property refGrayStepFile.
+    * @param refGrayStepFile New value of property refGrayStepFile.
+    */
+   public void setRefGrayStepFile(String refGrayStepFile) {
+      scanner.setRefGrayStepFile(refGrayStepFile);
+   }
+   
+   /** Getter for property refGrayStepODs.
+    * @return Value of property refGrayStepODs.
+    */
+   public float[] getRefGrayStepODs() {
+      return scanner.getRefGrayStepODs();
+   }
+   
+   /** Setter for property refGrayStepODs.
+    * @param refGrayStepODs New value of property refGrayStepODs.
+    */
+   public void setRefGrayStepODs(float[] refGrayStepODs) {
+      scanner.setRefGrayStepODs(refGrayStepODs);
+   }
+   
+   /** Setter for property refGrayStepODsAsText.
+    * @param refGrayStepODsAsText New value of property refGrayStepODsAsText.
+    */
+   public void setRefGrayStepODsAsText(String refGrayStepODsAsText) {
+      setRefGrayStepODs(toFloatArray(refGrayStepODsAsText));
+   }
+   
+   /** Getter for property scanGrayStepDir.
+    * @return Value of property scanGrayStepDir.
+    */
+   public String getScanGrayStepDir() {
+      return scanner.getScanGrayStepDir();
+   }
+   
+   /** Setter for property scanGrayStepDir.
+    * @param scanGrayStepDir New value of property scanGrayStepDir.
+    */
+   public void setScanGrayStepDir(String scanGrayStepDir) {
+      scanner.setScanGrayStepDir(scanGrayStepDir);
+   }
+   
+   /** Getter for property scanBorderThreshold.
+    * @return Value of property scanBorderThreshold.
+    */
+   public int getScanBorderThreshold() {
+      return scanner.getScanBorderThreshold();
+   }
+   
+   /** Setter for property scanBorderThreshold.
+    * @param scanBorderThreshold New value of property scanBorderThreshold.
+    */
+   public void setScanBorderThreshold(int scanBorderThreshold) {
+      scanner.setScanBorderThreshold(scanBorderThreshold);
+   }
+   
+   /** Getter for property scanGradientThreshold.
+    * @return Value of property scanGradientThreshold.
+    */
+   public int getScanGradientThreshold() {
+      return scanner.getScanGradientThreshold();
+   }
+   
+   /** Setter for property scanGradientThreshold.
+    * @param scanGradientThreshold New value of property scanGradientThreshold.
+    */
+   public void setScanGradientThreshold(int scanGradientThreshold) {
+      scanner.setScanGradientThreshold(scanGradientThreshold);
+   }
+   
+   /** Getter for property scanArea.
+    * @return Value of property scanArea.
+    */
+   public String getScanPointExtension() {
+      return scanner.getScanPointExtension();
+   }
+   
+   /** Setter for property scanPointExtension.
+    * @param extension New value of property scanPointExtension.
+    */
+   public void setScanPointExtension(String extension) {
+      scanner.setScanPointExtension(extension);
+   }
+   
+   public void printGraySteps() throws PrintException {
+      print(new GrayStep(IDENTITY_PV_TO_DDL),
+         toPrintRequestAttributeSet(
+            getFilmOrientation(),
+            getDefaultFilmSizeID()));
+   }
+   
+   public void printGrayStepsWithGSDF() throws PrintException {
+      print(new GrayStep(calibration.getPValToDDLwGSDF(8,
+            minDensity/100.f, maxDensity/100.f,
+            illumination, reflectedAmbientLight)),
+         toPrintRequestAttributeSet(
+            getFilmOrientation(),
+            getDefaultFilmSizeID()));
+   }
+   
+   public void printGrayStepsWithLinOD() throws PrintException {
+      print(new GrayStep(calibration.getPValToDDLwLinOD(8,
+            minDensity/100.f, maxDensity/100.f)),
+         toPrintRequestAttributeSet(
+            getFilmOrientation(),
+            getDefaultFilmSizeID()));
+   }
    
    // ServiceMBeanSupport overrides ------------------------------------
    public void startService()
    throws Exception {
-      calibrationService = (PrinterCalibrationService)
-         server.getAttribute(printerCalibration, "Service");
-      configurationService = (PrinterConfigurationService)
-         server.getAttribute(printerConfiguration, "Service");
-
       scheduler = new Thread(this);
       scheduler.start();
    }
@@ -245,6 +996,49 @@ public class PrinterService
       }
    }
    
+   // PrintServiceAttributeListener implementation -------------------------
+   static String toMsg(String prompt, AttributeSet set) {
+      return prompt + Arrays.asList(toStringArray(set));
+   }
+
+   static String toMsg(String prompt, PrintJobEvent pje) {
+      return toMsg(prompt, pje.getPrintJob().getAttributes());
+   }
+   
+   public void attributeUpdate(PrintServiceAttributeEvent psae) {
+      log.info(toMsg("printServiceAttributeUpdate: ", psae.getAttributes()));
+   }
+   
+   // PrintJobAttributeListener implementation -------------------------   
+   public void attributeUpdate(PrintJobAttributeEvent pjae) {
+      log.info(toMsg("printJobAttributeUpdate: ", pjae.getAttributes()));
+   }
+   
+   // PrintJobListener implementation -------------------------   
+   public void printDataTransferCompleted(PrintJobEvent pje) {
+      log.info(toMsg("printDataTransferCompleted: ", pje));
+   }
+   
+   public void printJobCanceled(PrintJobEvent pje) {
+      log.info(toMsg("printJobCanceled: ", pje));
+   }
+   
+   public void printJobCompleted(PrintJobEvent pje) {
+      log.info(toMsg("printJobCompleted: ", pje));
+   }
+   
+   public void printJobFailed(PrintJobEvent pje) {
+      log.info(toMsg("printJobFailed: ", pje));
+   }
+   
+   public void printJobNoMoreEvents(PrintJobEvent pje) {
+      log.info(toMsg("printJobNoMoreEvents: ", pje));
+   }
+   
+   public void printJobRequiresAttention(PrintJobEvent pje) {
+      log.info(toMsg("printJobRequiresAttention: ", pje));
+   }
+      
    private void doPrint(File jobDir, Dataset sessionAttr)
       throws Exception
    {
@@ -272,10 +1066,146 @@ public class PrinterService
    }
    
    // Package protected ---------------------------------------------
+   static File toFile(String path) {
+      File f = new File(path);
+      if (f.isAbsolute()) {
+         return f;
+      }
+      File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+      return new File(systemHomeDir, path);
+   }
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+   static OrientationRequested toOrientationRequested(String orientation) {
+      if ("PORTRAIT".equals(orientation)) {
+         return  OrientationRequested.PORTRAIT;
+      }
+      if ("LANDSCAPE".equals(orientation)) {
+         return  OrientationRequested.LANDSCAPE;
+      }
+      throw new IllegalArgumentException("orientation: " + orientation);
+   }
+
+   static MediaSizeName toMediaSizeName(String sizeID) {
+      if ("A4".equals(sizeID)) {
+         return  MediaSizeName.ISO_A4;
+      }
+      if ("A3".equals(sizeID)) {
+         return  MediaSizeName.ISO_A3;
+      }
+      throw new IllegalArgumentException("sizeID: " + sizeID);
+   }
    
+   private PrintRequestAttributeSet toPrintRequestAttributeSet(
+      String orientation, String sizeId)
+   {
+      PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+      OrientationRequested or = toOrientationRequested(orientation);
+      MediaSizeName media = toMediaSizeName(sizeId);
+      MediaSize mediaSize = MediaSize.getMediaSizeForName(media);
+      aset.add(or);
+      aset.add(media);
+      float x1, y1, x2, y2;
+      if (or == OrientationRequested.PORTRAIT) {
+         x1 = pageMargin[0];
+         y1 = pageMargin[1];
+         x2 = pageMargin[2];
+         y2 = pageMargin[3];
+      } else {
+         y1 = pageMargin[0];
+         x1 = pageMargin[1];
+         y2 = pageMargin[2];
+         x2 = pageMargin[3];
+      }
+         
+      aset.add(
+         new MediaPrintableArea(
+            x1, y1,
+            mediaSize.getX(MediaSize.MM) - (x1 + x2), 
+            mediaSize.getY(MediaSize.MM)- (y1 + y2),
+            MediaPrintableArea.MM));
+      if (printToFile) {
+         aset.add(new Destination(toFile(printToFilePath).toURI()));
+      }
+      return aset;
+   }
+   
+   private float getPageWidth(OrientationRequested or, MediaSize mediaSize) {
+      return or == OrientationRequested.PORTRAIT
+         ? mediaSize.getX(MediaSize.MM)
+         : mediaSize.getY(MediaSize.MM);
+   }
+         
+   private float getPageHeight(OrientationRequested or, MediaSize mediaSize) {
+      return or == OrientationRequested.PORTRAIT
+         ? mediaSize.getY(MediaSize.MM)
+         : mediaSize.getX(MediaSize.MM);
+   }
+         
+   private void print(Printable printData, PrintRequestAttributeSet aset)
+      throws PrintException
+   {
+         PrintService ps = getPrintService();
+         DocPrintJob pj = ps.createPrintJob();         
+         Doc doc = new SimpleDoc(printData, 
+            DocFlavor.SERVICE_FORMATTED.PRINTABLE, null);
+         
+         pj.addPrintJobAttributeListener(this, null);
+         pj.addPrintJobListener(this);
+         try {
+            pj.print(doc, aset);
+         } finally {
+            pj.removePrintJobAttributeListener(this);
+            pj.removePrintJobListener(this);
+         }
+   }
+            
    // Inner classes -------------------------------------------------
+   private class GrayStep implements Printable {
+      final byte[] pvToDDL;
+      
+      GrayStep(byte[] pvToDDL) {
+         this.pvToDDL = (byte[]) pvToDDL.clone();
+      }
+      
+      public int print(Graphics g, PageFormat pf, int pageIndex)
+         throws PrinterException
+      {
+         if (pageIndex == 0) {
+            Graphics2D g2d = (Graphics2D) g;
+            double w = pf.getImageableWidth();
+            double h = pf.getImageableHeight();
+            int graySteps = scanner.getScanGraySteps();
+            double d = h / graySteps - grayStepGap * PTS_PER_MM;
+            g2d.setFont(new Font("Serif", Font.PLAIN, FONT_SIZE));
+            g2d.translate(pf.getImageableX(), pf.getImageableY());
+            Rectangle2D rect = new Rectangle2D.Double();
+            for (int i = 0; i < graySteps; ++i) {
+               double y = h * i / graySteps;
+               int pv = Math.round(255.f * i / (graySteps-1));
+               int ddl = pvToDDL[pv] & 0xff;
+
+               // fill step
+               g2d.setColor(new Color(ddl, ddl, ddl));
+               rect.setRect(0, y, w, d);
+               g2d.fill(rect);
+               
+               // label step
+               g2d.setColor(ddl < 128 ? Color.WHITE : Color.BLACK);
+               g2d.drawString(" #" + (i+1) + ":" + ddl,
+                  0, (float) (y + FONT_SIZE));
+            }
+            
+            // draw frame
+            g2d.setColor(Color.BLACK);
+            rect.setRect(0, 0, w, h);
+            g2d.draw(rect);
+            return Printable.PAGE_EXISTS;
+         } else {
+            return Printable.NO_SUCH_PAGE;
+         }
+      }
+   }
 }

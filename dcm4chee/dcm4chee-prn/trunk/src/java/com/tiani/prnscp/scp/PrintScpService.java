@@ -45,7 +45,6 @@ import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
 import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.NotificationFilterSupport;
@@ -99,7 +98,6 @@ public class PrintScpService
    private ImageBoxService imageBoxService = new ImageBoxService(this);
          
    private ObjectName printer;
-   private ObjectName printerConfiguration;
    private ObjectName dcmServer;
    private DcmHandler dcmHandler;
    private AcceptorPolicy policy;
@@ -114,17 +112,6 @@ public class PrintScpService
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
-   public ObjectName getObjectName(MBeanServer server, ObjectName name)
-   throws MalformedObjectNameException {
-      this.server = server;
-      return name == null
-      ? new ObjectName("dcm4chex:service=PrintSCP")
-      : name;
-   }
-   
-   public String getName() {
-      return "PrintSCP";
-   }
    
    // PrintScpMBean implementation ----------------------------------
    
@@ -155,21 +142,7 @@ public class PrintScpService
    public void setPrinter(ObjectName printer) {
       this.printer = printer;
    }
-     
-   /** Getter for property printerConfiguration.
-    * @return Value of property printerConfiguration.
-    */
-   public ObjectName getPrinterConfiguration() {
-      return printerConfiguration;
-   }
-   
-   /** Setter for property printerConfiguration.
-    * @param printerConfiguration New value of property printerConfiguration.
-    */
-   public void setPrinterConfiguration(ObjectName printerConfiguration) {
-      this.printerConfiguration = printerConfiguration;
-   }
-   
+        
    /** Getter for property spoolDirPath.
     * @return Value of property spoolDirPath.
     */
@@ -299,15 +272,7 @@ public class PrintScpService
       services.unbind(UIDs.PresentationLUT);
       services = null;
       dcmHandler = null;
-/*
-      queueSend.close();
-      queueSend = null;
-      queueConn.stop();
-      queueSession.close();
-      queueSession = null;
-      queueConn.close();
-      queueConn = null;
-  */    
+      
       server.removeNotificationListener(getServiceName(), printer);
       server.removeNotificationListener(printer, printingListener);
       server.removeNotificationListener(printer, doneListener);
@@ -374,17 +339,16 @@ public class PrintScpService
    }
 
    private boolean isSupported(String attribute) throws Exception {
-      Boolean b = (Boolean)
-         server.getAttribute(printerConfiguration, attribute);
+      Boolean b = (Boolean) server.getAttribute(printer, attribute);
       return b.booleanValue();
    }
 
    String getStringConfigParam(String attribute) throws DcmServiceException {
       try {
-         return (String) server.getAttribute(printerConfiguration, attribute);
+         return (String) server.getAttribute(printer, attribute);
       } catch (Exception e) {
          log.error("Failed to access attribute " + attribute
-            + " of " + printerConfiguration, e);
+            + " of " + printer, e);
          throw new DcmServiceException(Status.ProcessingFailure, 
             "Internal JMX Access Error");
       }
@@ -393,11 +357,11 @@ public class PrintScpService
    int getIntConfigParam(String attribute) throws DcmServiceException {
       try {
          Integer i =
-            (Integer) server.getAttribute(printerConfiguration, attribute);
+            (Integer) server.getAttribute(printer, attribute);
          return i.intValue();
       } catch (Exception e) {
          log.error("Failed to access attribute " + attribute
-            + " of " + printerConfiguration, e);
+            + " of " + printer, e);
          throw new DcmServiceException(Status.ProcessingFailure, 
             "Internal JMX Access Error");
       }
@@ -407,10 +371,10 @@ public class PrintScpService
       throws DcmServiceException
    {
       try {
-         return server.invoke(printerConfiguration, methode, arg, type);
+         return server.invoke(printer, methode, arg, type);
       } catch (Exception e) {
          log.error("Failed to invoke " + methode
-            + " of " + printerConfiguration, e);
+            + " of " + printer, e);
          throw new DcmServiceException(Status.ProcessingFailure, 
             "Internal JMX Access Error");
       }
