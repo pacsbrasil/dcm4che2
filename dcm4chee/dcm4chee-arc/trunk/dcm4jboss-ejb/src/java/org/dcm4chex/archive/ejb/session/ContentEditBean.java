@@ -91,97 +91,118 @@ import org.dcm4chex.archive.ejb.jdbc.RetrievePatientDatasetCmd;
  *  res-ref-name="jdbc/DefaultDS"
  *  resource-name="java:/DefaultDS"
  */
-public abstract class ContentEditBean implements SessionBean {
+public abstract class ContentEditBean implements SessionBean
+{
 
-    private DataSource ds;
-    private PatientLocalHome patHome;
-    private StudyLocalHome studyHome;
-    private SeriesLocalHome seriesHome;
+	private DataSource ds;
+	private PatientLocalHome patHome;
+	private StudyLocalHome studyHome;
+	private SeriesLocalHome seriesHome;
 
-    public void setSessionContext(SessionContext arg0)
-        throws EJBException, RemoteException {
-        Context jndiCtx = null;
-        try {
-            jndiCtx = new InitialContext();
-            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
-            patHome =
-                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
-            studyHome =
-                (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
-            seriesHome =
-                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
-        } catch (NamingException e) {
-            throw new EJBException(e);
-        } finally {
-            if (jndiCtx != null) {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
-            }
-        }
-    }
-
-    public void unsetSessionContext() {
-        patHome = null;
-        studyHome = null;
-        seriesHome = null;
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void  updatePatient(PatientDTO to_update) 
+	public void setSessionContext(SessionContext arg0)
+		throws EJBException, RemoteException
 	{
-    	
-        try 
+		Context jndiCtx = null;
+		try
 		{
-        	PatientLocal patientLocal = patHome.findByPrimaryKey(new Integer(to_update.getPk()));
-        	
-        	if (to_update.getPatientName()==null && patientLocal.getPatientName()!=null)
-        		patientLocal.setPatientName(null);
-        	else if (!to_update.getPatientName().equals(patientLocal.getPatientName()))
-        		patientLocal.setPatientName(to_update.getPatientName());
+			jndiCtx = new InitialContext();
+			ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
+			patHome =
+				(PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+			studyHome =
+				(StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
+			seriesHome =
+				(SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+		}
+		catch (NamingException e)
+		{
+			throw new EJBException(e);
+		}
+		finally
+		{
+			if (jndiCtx != null)
+			{
+				try
+				{
+					jndiCtx.close();
+				}
+				catch (NamingException ignore)
+				{
+				}
+			}
+		}
+	}
 
-        	if (to_update.getPatientSex()==null && patientLocal.getPatientSex()!=null)
-        		patientLocal.setPatientSex(null);
-        	else if (!to_update.getPatientSex().equals(patientLocal.getPatientSex()))
-        		patientLocal.setPatientSex(to_update.getPatientName());
-        	
-        	if (to_update.getPatientBirthDate()==null && patientLocal.getPatientBirthDate()!=null)
-        		patientLocal.setPatientBirthDate(null);
-        	else if (!to_update.getPatientBirthDate().equals(patientLocal.getPatientBirthDate()))
-        	{	
-	        	try { patientLocal.setPatientBirthDate(new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(to_update.getPatientBirthDate()));}
-	        	catch (ParseException e){}
-        	}
-			
+	public void unsetSessionContext()
+	{
+		patHome = null;
+		studyHome = null;
+		seriesHome = null;
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public void updatePatient(PatientDTO to_update)
+	{
+
+		try
+		{
+			PatientLocal patientLocal =
+				patHome.findByPrimaryKey(new Integer(to_update.getPk()));
+
+			if (to_update.getPatientName() == null
+				&& patientLocal.getPatientName() != null)
+				patientLocal.setPatientName(null);
+			else if (
+				!to_update.getPatientName().equals(
+					patientLocal.getPatientName()))
+				patientLocal.setPatientName(to_update.getPatientName());
+
+			if (to_update.getPatientSex() == null
+				&& patientLocal.getPatientSex() != null)
+				patientLocal.setPatientSex(null);
+			else if (
+				!to_update.getPatientSex().equals(
+					patientLocal.getPatientSex()))
+				patientLocal.setPatientSex(to_update.getPatientName());
+
+			if (to_update.getPatientBirthDate() == null
+				&& patientLocal.getPatientBirthDate() != null)
+				patientLocal.setPatientBirthDate(null);
+			else if (
+				!to_update.getPatientBirthDate().equals(
+					patientLocal.getPatientBirthDate()))
+			{
+				try
+				{
+					patientLocal.setPatientBirthDate(
+						new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
+							to_update.getPatientBirthDate()));
+				}
+				catch (ParseException e)
+				{
+				}
+			}
+
 			//dataset retrieve &update
-			Dataset oldPat = new RetrievePatientDatasetCmd(ds,to_update.getPatientID()).execute();
+			Dataset oldPat =
+				new RetrievePatientDatasetCmd(ds, to_update.getPatientID())
+					.execute();
 			if (oldPat != null)
 			{
-				DTO2Dataset.updtateDataset(oldPat,to_update);
+				DTO2Dataset.updtateDataset(oldPat, to_update);
 				patientLocal.setAttributes(oldPat);
 			}
-			
-        } catch (SQLException e)
+
+		}
+		catch (SQLException e)
 		{
-        	//e1.printStackTrace();
-        }
-        catch (FinderException e) 
+			//e1.printStackTrace();
+		}
+		catch (FinderException e)
 		{
-            throw new EJBException(e);
-        }
-    }
+			throw new EJBException(e);
+		}
+	}
 }
-
-
-
-
-
-
-
-
-
-
-

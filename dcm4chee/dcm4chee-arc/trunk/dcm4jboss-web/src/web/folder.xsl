@@ -181,12 +181,7 @@
 					<xsl:value-of select="patientBirthDate"/>
         </td>
  				<td>
-				  <a href="...." 
-				  onClick="window.open('patientEdit.m?pk={pk}', '_blank', 
-				  'toolbar=no, directories=no, location=no, 
-				  status=yes, menubar=no, resizable=no, scrollbars=no, 
-				  width=300, height=300,screenX=100,screenY=100;'); 
-				  return false">Edit</a> 				  
+				  <a href="patientEdit.m?pk={pk}" >Edit</a> 				  
         </td>
 				<td>
 					<input type="checkbox" name="stickyPat" value="{pk}">

@@ -8,18 +8,18 @@
    <internal:data>
       <months>
          <month value=""></month>      
-         <month value="01">Jan</month>
-         <month value="02">Feb</month>
-         <month value="03">Mar</month>
-         <month value="04">Apr</month>
-         <month value="05">May</month>
-         <month value="06">Jun</month>
-         <month value="07">Jul</month>
-         <month value="08">Aug</month>
-         <month value="09">Sep</month>
-         <month value="10">Oct</month>
-         <month value="11">Nov</month>
-         <month value="12">Dec</month>
+         <month value="01">01</month>
+         <month value="02">02</month>
+         <month value="03">03</month>
+         <month value="04">04</month>
+         <month value="05">05</month>
+         <month value="06">06</month>
+         <month value="07">07</month>
+         <month value="08">08</month>
+         <month value="09">09</month>
+         <month value="10">10</month>
+         <month value="11">11</month>
+         <month value="12">12</month>
       </months>
 
       <days>
@@ -79,10 +79,16 @@
    </xsl:template>
 
    <xsl:template match="model/patient">
-      <form action="patientUpdate.m" method="post" target="folder">
+      <form action="patientUpdate.m" method="post">
          <input name="pk" type="hidden" value="{pk}" />
 
          <table bgcolor="#eeeeee" border="0" width="100%">
+            <tr>
+               <td class="title">Patient Edit</td>
+            </tr>
+            <tr>
+               <td>&nbsp;</td>
+            </tr>
             <tr>
                <td class="label">Patient ID:</td>
             </tr>
@@ -119,13 +125,9 @@
 
             <tr>
                <td>
-                  <select id="patientBirthDay" name="patientBirthDay" value="{patientBirthDay}">
-                     <xsl:call-template name="options">
-                        <xsl:with-param name="options" select="$gDays" />
-                        <xsl:with-param name="current-value" select="number(patientBirthDay)" />
-                     </xsl:call-template>
-                  </select>
 
+                  <input size="4" name="patientBirthYear" type="text" value="{patientBirthYear}" />
+				  <text>/</text>
                   <select id="patientBirthMonth" name="patientBirthMonth" value="{patientBirthMonth}">
                      <xsl:call-template name="options">
                         <xsl:with-param name="options" select="$gMonths" />
@@ -133,18 +135,21 @@
                         <xsl:with-param name="current-value" select="number(patientBirthMonth)" />
                      </xsl:call-template>
                   </select>
-
-                  <input size="4" name="patientBirthYear" type="text" value="{patientBirthYear}" />
+				  <text>/</text>
+                  <select id="patientBirthDay" name="patientBirthDay" value="{patientBirthDay}">
+                     <xsl:call-template name="options">
+                        <xsl:with-param name="options" select="$gDays" />
+                        <xsl:with-param name="current-value" select="number(patientBirthDay)" />
+                     </xsl:call-template>
+                  </select>
+                  
                </td>
             </tr>
 
             <tr>
-               <td align="right">
+               <td align="left">
                   <input type="submit" name="update" value="Update" />
-               </td>
-
-               <td align="right">
-                  <input type="button" name="close" value="Close" onClick="window.close()" />
+                  <input type="submit" name="cancel" value="Cancel" />
                </td>
             </tr>
          </table>

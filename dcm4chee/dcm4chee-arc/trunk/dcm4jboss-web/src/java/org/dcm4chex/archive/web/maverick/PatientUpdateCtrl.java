@@ -39,10 +39,14 @@ public class PatientUpdateCtrl extends ThrowawayBean2
 	private String patientBirthDay;
 	private String patientBirthMonth;
 	private String patientBirthYear;
+
+	private String update = null;
+	private String cancel = null;
 	
 	protected String perform() throws Exception
 	{
-		executeUpdate();
+		if (update!=null)
+			executeUpdate();
 		return SUCCESS;
 	}
 
@@ -130,6 +134,22 @@ public class PatientUpdateCtrl extends ThrowawayBean2
 	public final void setPk(int pk)
 	{
 		this.pk = pk;
+	}
+
+	/**
+	 * @param back The back to set.
+	 */
+	public final void setUpdate(String update)
+	{
+		this.update= update;
+	}
+
+	/**
+	 * @param cancel The cancel to set.
+	 */
+	public final void setCancel(String cancel)
+	{
+		this.cancel = cancel;
 	}
 
 }
