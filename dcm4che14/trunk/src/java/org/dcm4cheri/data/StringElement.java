@@ -284,12 +284,12 @@ abstract class StringElement extends ValueElement
      *  Description of the Method
      *
      * @param  key         Description of the Parameter
-     * @param  ignoreCase  Description of the Parameter
+     * @param  ignorePNCase  Description of the Parameter
      * @param  keyCS       Description of the Parameter
      * @param  dsCS        Description of the Parameter
      * @return             Description of the Return Value
      */
-    protected boolean matchValue(DcmElement key, boolean ignoreCase,
+    protected boolean matchValue(DcmElement key, boolean ignorePNCase,
             Charset keyCS, Charset dsCS)
     {
         for (int i = 0, m = key.vm(); i < m; ++i) {
@@ -310,7 +310,7 @@ abstract class StringElement extends ValueElement
                     // Illegal Value match always (like null value)
                     return true;
                 }
-                if (ignoreCase
+                if (ignorePNCase && vr() == VRs.PN
                          ? match(s.toLowerCase(), regex.toLowerCase())
                          : match(s, regex)) {
                     return true;
@@ -1158,7 +1158,7 @@ abstract class StringElement extends ValueElement
         }
 
 
-        protected boolean matchValue(DcmElement key, boolean ignoreCase,
+        protected boolean matchValue(DcmElement key, boolean ignorePNCase,
                 Charset keyCS, Charset dsCS)
         {
             for (int i = 0, n = key.vm(); i < n; ++i) {

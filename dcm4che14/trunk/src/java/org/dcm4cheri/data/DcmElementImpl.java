@@ -108,13 +108,13 @@ class DcmElementImpl implements DcmElement {
                 + ",*" + vm + ",#" + len + ",[" + val + "]" ;
     }
     
-    boolean match(DcmElement key, boolean ignoreCase, Charset keyCS, Charset dsCS) {
+    boolean match(DcmElement key, boolean ignorePNCase, Charset keyCS, Charset dsCS) {
         return key == null || (key.tag() == tag && key.vr() == vr()
                 && (isEmpty() || key.isEmpty()
-                || matchValue(key, ignoreCase, keyCS, dsCS)));
+                || matchValue(key, ignorePNCase, keyCS, dsCS)));
     }
 
-    protected boolean matchValue(DcmElement key, boolean ignoreCase,
+    protected boolean matchValue(DcmElement key, boolean ignorePNCase,
             Charset keyCS, Charset dsCS) {
         throw new UnsupportedOperationException("" + this);
     }

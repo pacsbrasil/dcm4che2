@@ -546,8 +546,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     private boolean match(DcmElementImpl key, boolean ignorePNCase, Charset keyCS)
     {
         DcmElementImpl e = (DcmElementImpl) get(key.tag());
-        return e == null || e.match(
-                key, ignorePNCase && e.vr() == VRs.PN, keyCS, getCharset());
+        return e == null || e.match(key, ignorePNCase, keyCS, getCharset());
     }
 
 

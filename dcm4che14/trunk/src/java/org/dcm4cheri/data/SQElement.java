@@ -18,8 +18,10 @@
  */
 package org.dcm4cheri.data;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.dict.VRs;
 
@@ -164,6 +166,30 @@ class SQElement extends DcmElementImpl
             }
         }
         return sb.toString();
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  key           Description of the Parameter
+     * @param  ignorePNCase  Description of the Parameter
+     * @param  keyCS         Description of the Parameter
+     * @param  dsCS          Description of the Parameter
+     * @return               Description of the Return Value
+     */
+    protected boolean matchValue(DcmElement key, boolean ignorePNCase,
+            Charset keyCS, Charset dsCS)
+    {
+        for (int i = 0, m = key.vm(); i < m; ++i) {
+            Dataset keys = key.getItem(i);
+            for (int j = 0, n = vm(); j < n; ++j) {
+                if (getItem(j).match(keys, ignorePNCase)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 
