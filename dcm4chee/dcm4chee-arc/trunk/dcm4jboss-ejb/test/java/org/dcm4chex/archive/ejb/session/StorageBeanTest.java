@@ -136,7 +136,7 @@ public class StorageBeanTest extends TestCase
     
     private static String getHostName() throws UnknownHostException {
         String hostname = InetAddress.getLocalHost().getHostName();
-        int pos = hostname.lastIndexOf('.');
-        return pos != -1 ? hostname.substring(pos+1) : hostname;
+        int pos = hostname.indexOf('.');
+        return pos != -1 ? hostname.substring(0, pos) : hostname;
     }
 }
