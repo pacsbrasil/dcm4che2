@@ -15,15 +15,15 @@
             <fo:layout-master-set>
                 <fo:simple-page-master master-name="page" page-height="297mm" page-width="210mm"
                     margin-left="45mm" margin-right="45mm" margin-top="20mm" margin-bottom="20mm">
-                      <fo:region-before extent="1cm"/>
-                      <fo:region-body margin-top="1cm"/>
+                      <fo:region-before extent="3cm"/>
+                      <fo:region-body margin-top="3cm"/>
                       <fo:region-after extent="1.5cm"/>
                 </fo:simple-page-master>
             </fo:layout-master-set>
             <fo:page-sequence master-reference="page">
             	<fo:static-content flow-name="xsl-region-before">
           <fo:block text-align="center">
-            <fo:external-graphic src="url(http://127.0.0.1:8080/dcm4jboss-wado/wado?requestType=WADO&amp;studyUID=1.2.528.1.1001.100.2.801.3313.36309633972.20050118155723703&amp;seriesUID=1.2.528.1.1001.100.3.801.3313.36309633972.20050118155723718&amp;objectUID=1.2.528.1.1001.100.4.801.3313.36309633972.20050118155723734)"/>
+            <fo:external-graphic src="../images/tiani_logo.jpg"/>
          </fo:block>
             		<fo:block font-size="20pt"  text-align="center" font-weight="bold" >
             			<xsl:value-of select="attr[@tag='0040A043']/item/attr[@tag='00080104']"/>
