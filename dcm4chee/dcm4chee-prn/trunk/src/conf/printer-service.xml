@@ -18,6 +18,7 @@
          
     <!--
     Specifies name of the printer used by the system.
+    Printer Name
     -->
     <attribute name="PrinterName">MINOLTA</attribute>
     
