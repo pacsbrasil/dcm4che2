@@ -8,8 +8,16 @@
  ******************************************/
 package org.dcm4chex.archive.util;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
+import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.FileFormat;
+import org.dcm4che.dict.Tags;
 import org.jboss.system.server.ServerConfigLocator;
 
 
@@ -21,7 +29,8 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class FileUtils {
 
-    public static final long MEGA = 1000000L;
+    private static final int BUFFER_SIZE = 512;
+	public static final long MEGA = 1000000L;
 
     public static final long GIGA = 1000000000L;
 
@@ -66,5 +75,46 @@ public class FileUtils {
         } catch (IllegalArgumentException e) {
         }
         throw new IllegalArgumentException(s);
+    }
+    
+    public static boolean equalsPixelData(File f1, File f2)
+    		throws IOException {
+    	InputStream in1 = new BufferedInputStream(new FileInputStream(f1));
+    	try {
+    		InputStream in2 = new BufferedInputStream(new FileInputStream(f2));
+    		try {    			
+    	    	DcmParserFactory pf = DcmParserFactory.getInstance();
+				DcmParser p1 = pf.newDcmParser(in1);
+    	    	DcmParser p2 = pf.newDcmParser(in2);
+    			p1.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+    			p2.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+    			int toRead = p1.getReadLength();
+    			if (toRead < 0 || toRead != p2.getReadLength()) {
+    				return false;
+    			}
+    			byte[] b1 = new byte[BUFFER_SIZE];
+    			byte[] b2 = new byte[BUFFER_SIZE];
+    			int len, len2;
+    			while (toRead > 0) {
+    				toRead -= len = in1.read(b1, 0, BUFFER_SIZE);
+    				if (len < 0) // EOF
+    					return false;
+    				int off = 0;
+    				while (off < len) {
+    					off += len2 = in2.read(b2, off, len - off);
+	    				if (len2 < 0) // EOF
+	    					return false;
+    				}
+    		        for (int i=0; i<len; i++)
+    		            if (b1[i] != b2[i])
+    		                return false;
+    			}
+    			return true;
+    		} finally {
+    			in2.close();
+    		}
+    	} finally {
+    		in1.close();
+    	}
     }
 }
