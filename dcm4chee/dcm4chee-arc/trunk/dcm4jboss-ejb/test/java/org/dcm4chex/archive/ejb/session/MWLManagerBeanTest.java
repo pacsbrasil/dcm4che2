@@ -21,7 +21,6 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;

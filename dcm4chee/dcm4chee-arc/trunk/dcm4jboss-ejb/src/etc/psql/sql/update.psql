@@ -41,4 +41,4 @@ CREATE INDEX arr_user_name ON audit_record(user_name);
 CREATE INDEX arr_patient_name ON audit_record(UPPER(patient_name));
 CREATE INDEX arr_patient_id ON audit_record(patient_id);
 
-INSERT INTO roles VALUES('admin','AuditRepAdmin');
+INSERT INTO roles VALUES('admin','jaudit-user');
