@@ -244,7 +244,7 @@
             />
             <attribute
                 name="Class-Path"
-                value="../server/default/lib/dcm4che.jar ../server/default/lib/log4j.jar"
+                value="../server/default/lib/dcm4che.jar ../lib/getopt.jar ../client/jnp-client.jar ../client/jmx-rmi-connector-client.jar ../lib/jboss-common.jar ../lib/jboss-jmx.jar ../server/default/lib/log4j.jar"
             />
         </manifest>
         <fileset dir="${build.classes.dir}">
@@ -268,6 +268,7 @@
         </manifest>
         <fileset dir="${build.classes.dir}">
             <include name="com/tiani/prnscp/client/ddl2odgui/*"/>
+            <include name="com/tiani/prnscp/print/*Curve*"/>
             <include name="com/tiani/prnscp/print/PrinterCalibration*"/>
             <include name="com/tiani/prnscp/print/ScannerCalibration*"/>
             <include name="com/tiani/prnscp/print/CalibrationException*"/>
