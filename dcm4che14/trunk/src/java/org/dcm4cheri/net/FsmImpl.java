@@ -324,6 +324,14 @@ final class FsmImpl
         return pc.getTransferSyntaxUID();
     }
 
+    final PresContext getProposedPresContext(int pcid)
+    {
+        if (rq == null) {
+            throw new IllegalStateException(state.toString());
+        }
+        return rq.getPresContext(pcid);
+    }
+
 
     /**
      *  Gets the acceptedPresContext attribute of the FsmImpl object
