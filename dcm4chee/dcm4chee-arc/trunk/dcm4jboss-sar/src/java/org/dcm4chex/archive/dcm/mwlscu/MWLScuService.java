@@ -11,6 +11,7 @@ package org.dcm4chex.archive.dcm.mwlscu;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -216,7 +218,34 @@ public class MWLScuService extends ServiceMBeanSupport {
     /**
      * Get a list of work list entries.
 	 */
-	public List getMWLList( Dataset searchDS ) {
+	public List findMWLEntries( Dataset searchDS ) {
+		if ( "local".equalsIgnoreCase( this.getMwlScpAET() ) ) {
+			return findMWLEntriesLocal( searchDS );
+		} else {
+			return findMWLEntriesFromAET( searchDS );
+		}
+	}
+	/**
+	 * @param searchDS
+	 * @return
+	 */
+	private List findMWLEntriesLocal(Dataset searchDS) {
+		List l = new ArrayList();
+		MWLQueryCmd queryCmd = null;
+		try {
+			queryCmd = new MWLQueryCmd(searchDS);
+			queryCmd.execute();
+			while ( queryCmd.next() ) {
+				l.add( queryCmd.getDataset() );
+			}
+		} catch (SQLException x) {
+			log.error( "Exception in findMWLEntriesLocal! ", x);
+		}
+		if ( queryCmd != null ) queryCmd.close();
+		return l;
+	}
+
+	private List findMWLEntriesFromAET( Dataset searchDS ) {
     	ActiveAssociation assoc = null;
     	String iuid = null;
     	List list = new ArrayList();

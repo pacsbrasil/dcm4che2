@@ -109,7 +109,12 @@
    <operation impact="ACTION">
       <description>Get List of MWL entries.
       </description>
-      <name>getMWLList</name>
+      <name>findMWLEntries</name>
+      <parameter>
+        <description>Dataset for CFIND</description>
+        <name>searchDS</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
       <return-type>java.util.List</return-type>
    </operation>
  
