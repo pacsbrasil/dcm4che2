@@ -82,6 +82,80 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getFreeDiskSpaceWaterMarkFactor"
+      setMethod="setFreeDiskSpaceWaterMarkFactor">
+      <description>Factor to calculate High Water Mark for freeDiskSpace.
+      freeDiskSpace starts with deletion if currAvail &lt; minAvail.
+      currAvail = Available space of all defined filesystems.
+      minAvail = highWaterMark * freeDiskSpaceWaterMarkFactor * nrOfFileSystems.
+      </description>
+      <name>FreeDiskSpaceWaterMarkFactor</name>
+      <type>float</type>
+      <descriptors>
+         <value value="1.5" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getStopFreeDiskSpaceWaterMarkFactor"
+      setMethod="setStopFreeDiskSpaceWaterMarkFactor">
+      <description>Factor to calculate High Water Mark indicating the end of the FreeDiskSpace process.
+      The FreeDiskSpace process works until current available space exceeds this value.
+      </description>
+      <name>StopFreeDiskSpaceWaterMarkFactor</name>
+      <type>float</type>
+      <descriptors>
+         <value value="2.0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFreeDiskSpaceNotAccessedForDays"
+      setMethod="setFreeDiskSpaceNotAccessedForDays">
+      <description>The number of days a study must not be accessed for freeDiskSpace.
+      This value is used if the  freeDiskSpaceWaterMark is not reached to delete the files of studies
+      that not accessed in the given time.
+      </description>
+      <name>StudiesNotAccessedForDays</name>
+      <type>int</type>
+      <descriptors>
+         <value value="365" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isFlushStudiesOnMedia"
+      setMethod="setFlushStudiesOnMedia">
+      <description>This policy checks if a study is stored on a media (offline storage)
+      </description>
+      <name>flushStudiesOnMedia</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isFlushStudiesExternalRetrievable"
+      setMethod="setFlushStudiesExternalRetrievable">
+      <description>This policy checks if a study is external retrievable.
+      </description>
+      <name>flushStudiesExternalRetrievable</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isDeleteStudiesUnconditional"
+      setMethod="setDeleteStudiesUnconditional">
+      <description>If this policy is active, the oldest studies will be deleted immediately!
+      Deletes both files and database entries!
+      Enable this policy only if archive is used only as caching system!
+      </description>
+      <name>deleteStudiesUnconditional</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
@@ -136,4 +210,18 @@
       </parameter>
       <return-type>java.lang.Object</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Check if it is necessary to free disk space.
+      </description>
+      <name>isFreeDiskSpaceNecessary</name>
+      <return-type>boolean</return-type>
+   </operation>   
+   <operation impact="ACTION">
+      <description>Free disk space by deleting old studies.
+      Deletes all older files on study level that fullfill the freeDiskSpacePolicy.
+      </description>
+      <name>freeDiskSpace</name>
+      <return-type>long</return-type>
+   </operation>   
+   
 </mbean>
