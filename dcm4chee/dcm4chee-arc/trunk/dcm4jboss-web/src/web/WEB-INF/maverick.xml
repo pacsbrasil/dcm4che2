@@ -93,6 +93,7 @@ default-transform-type="xslt">
     <command name="patientMerge">
         <controller class="org.dcm4chex.archive.web.maverick.PatientMergeCtrl" />    
 	    <view type="redirect" path="foldersubmit.m?filter=" name="success"/>        
+	    <view ref="error" />
      </command>
 
 	<!-- ****** AE related commands ******-->

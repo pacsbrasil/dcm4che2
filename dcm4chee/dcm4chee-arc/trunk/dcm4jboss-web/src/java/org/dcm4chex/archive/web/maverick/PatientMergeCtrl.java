@@ -20,15 +20,11 @@ package org.dcm4chex.archive.web.maverick;
 import java.util.Vector;
 
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
-import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
-import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.infohazard.maverick.ctl.ThrowawayBean2;
 
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class PatientMergeCtrl extends ThrowawayBean2
+public class PatientMergeCtrl extends Errable
 {
 	private int pk;
 	private int[] to_be_merged;
@@ -36,11 +32,20 @@ public class PatientMergeCtrl extends ThrowawayBean2
 	private String merge = null;
 	private String cancel = null;
 	
-	protected String perform() throws Exception
+	protected String perform()
 	{
-		if (merge!=null)
-			executeMerge();
-		return SUCCESS;
+		try
+		{
+			if (merge!=null)
+				executeMerge();
+			return SUCCESS;
+		} catch (Exception e1)
+		{
+			this.errorType = e1.getClass().getName();
+			this.message = e1.getMessage();
+			this.backURL =	"folder.m";
+			return ERROR_VIEW;
+		}
 	}
 
 	private void executeMerge() throws Exception
@@ -60,15 +65,6 @@ public class PatientMergeCtrl extends ThrowawayBean2
 
 		lookupPatientUpdate().mergePatient(principal,priors);
 	} 	
-	
-	private PatientUpdate lookupPatientUpdate() throws Exception
-	{
-		PatientUpdateHome home =
-			(PatientUpdateHome) EJBHomeFactory.getFactory().lookup(
-					PatientUpdateHome.class,
-					PatientUpdateHome.JNDI_NAME);
-		return home.create();
-	}
 
 	public final void setPk(int pk)
 	{
