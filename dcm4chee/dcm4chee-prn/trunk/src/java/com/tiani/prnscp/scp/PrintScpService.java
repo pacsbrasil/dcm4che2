@@ -259,49 +259,6 @@ public class PrintScpService
    }
 
    // ServiceMBeanSupport overrides -----------------------------------
-   private boolean isSupported(String attribute) throws Exception {
-      Boolean b = (Boolean)
-         server.getAttribute(printerConfiguration, attribute);
-      return b.booleanValue();
-   }
-
-   String getStringConfigParam(String attribute) throws DcmServiceException {
-      try {
-         return (String) server.getAttribute(printerConfiguration, attribute);
-      } catch (Exception e) {
-         log.error("Failed to access attribute " + attribute
-            + " of " + printerConfiguration, e);
-         throw new DcmServiceException(Status.ProcessingFailure, 
-            "Internal JMX Access Error");
-      }
-   }
-
-   int getIntConfigParam(String attribute) throws DcmServiceException {
-      try {
-         Integer i =
-            (Integer) server.getAttribute(printerConfiguration, attribute);
-         return i.intValue();
-      } catch (Exception e) {
-         log.error("Failed to access attribute " + attribute
-            + " of " + printerConfiguration, e);
-         throw new DcmServiceException(Status.ProcessingFailure, 
-            "Internal JMX Access Error");
-      }
-   }
-   
-   boolean check(String methode, String attribute) throws DcmServiceException {
-      try {
-         Boolean flag = (Boolean) server.invoke(printerConfiguration, methode, 
-            new Object[]{ attribute }, new String[]{ "java.lang.String" });
-         return flag.booleanValue();
-      } catch (Exception e) {
-         log.error("Failed to access attribute " + attribute
-            + " of " + printerConfiguration, e);
-         throw new DcmServiceException(Status.ProcessingFailure, 
-            "Internal JMX Access Error");
-      }
-   }
-   
    public void startService()
    throws Exception
    {
@@ -383,7 +340,101 @@ public class PrintScpService
    
    
    // Package protected ---------------------------------------------
-    
+   String getCSorDefConfig(Dataset ds, int tag, String configAttr)
+      throws DcmServiceException
+   {
+      String val = ds.getString(tag);
+      if (val == null) {
+         ds.putCS(tag, val = getStringConfigParam(configAttr));
+         log.info("set defualt: " + val);
+      }
+      return val;
+   }
+
+   int getUSorDefConfig(Dataset ds, int tag, String configAttr)
+      throws DcmServiceException
+   {
+      Integer val = ds.getInteger(tag);
+      if (val == null) {
+         int defVal = getIntConfigParam(configAttr);
+         ds.putUS(tag, defVal);
+         return defVal;
+      }
+      return val.intValue();
+   }
+   
+   String checkAttributeValue(String test, String val)
+      throws DcmServiceException
+   {
+      if (val != null) {
+         Boolean flag = (Boolean) invokeOnConfig(test,
+            new Object[]{ val },
+            new String[]{ "java.lang.String" });
+         if (!flag.booleanValue()) {
+            throw new DcmServiceException(Status.InvalidAttributeValue);
+         }
+      }
+      return val;
+   }
+
+   String checkImageDisplayFormat(String val, String orientation)
+      throws DcmServiceException
+   {
+      if (val == null) {
+         throw new DcmServiceException(Status.MissingAttributeValue);
+      }
+      Boolean flag = (Boolean) invokeOnConfig("isSupportsDisplayFormat",
+         new Object[]{ val, orientation },
+         new String[]{"java.lang.String", "java.lang.String"});
+      if (!flag.booleanValue()) {
+         throw new DcmServiceException(Status.InvalidAttributeValue);
+      }
+      return val;
+   }
+
+   private boolean isSupported(String attribute) throws Exception {
+      Boolean b = (Boolean)
+         server.getAttribute(printerConfiguration, attribute);
+      return b.booleanValue();
+   }
+
+   String getStringConfigParam(String attribute) throws DcmServiceException {
+      try {
+         return (String) server.getAttribute(printerConfiguration, attribute);
+      } catch (Exception e) {
+         log.error("Failed to access attribute " + attribute
+            + " of " + printerConfiguration, e);
+         throw new DcmServiceException(Status.ProcessingFailure, 
+            "Internal JMX Access Error");
+      }
+   }
+
+   int getIntConfigParam(String attribute) throws DcmServiceException {
+      try {
+         Integer i =
+            (Integer) server.getAttribute(printerConfiguration, attribute);
+         return i.intValue();
+      } catch (Exception e) {
+         log.error("Failed to access attribute " + attribute
+            + " of " + printerConfiguration, e);
+         throw new DcmServiceException(Status.ProcessingFailure, 
+            "Internal JMX Access Error");
+      }
+   }
+      
+   Object invokeOnConfig(String methode, Object[] arg, String[] type)
+      throws DcmServiceException
+   {
+      try {
+         return server.invoke(printerConfiguration, methode, arg, type);
+      } catch (Exception e) {
+         log.error("Failed to invoke " + methode
+            + " of " + printerConfiguration, e);
+         throw new DcmServiceException(Status.ProcessingFailure, 
+            "Internal JMX Access Error");
+      }
+   }
+       
    FilmSession getFilmSession(ActiveAssociation as) {
       return (FilmSession) as.getAssociation().getProperty("FilmSession");
    }

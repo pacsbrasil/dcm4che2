@@ -178,15 +178,10 @@ class FilmSession {
       if (!checkPrintPriority(ds.getString(Tags.PrintPriority))) {
          rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
       }
-      String mediumType = ds.getString(Tags.MediumType);
-      if (mediumType == null) {
-         ds.putCS(Tags.MediumType, scp.getStringConfigParam("DefaultMediumType"));
-      } else {
-         if (!scp.check("isSupportsMediumType", mediumType)) {
-            scp.getLog().warn("Unsupported Medium Type: " + mediumType);
-            throw new DcmServiceException(Status.AttributeValueOutOfRange);
-         }
-      }
+      scp.checkAttributeValue("isSupportsMediumType",
+         scp.getCSorDefConfig(ds, Tags.MediumType, "DefaultMediumType"));
+      scp.checkAttributeValue("isSupportsFilmDestination",
+         scp.getCSorDefConfig(ds, Tags.FilmDestination, "DefaultFilmDestination"));
       if (ds.getInt(Tags.MemoryAllocation, 0) != 0) {
          rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
       }      

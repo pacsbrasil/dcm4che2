@@ -75,7 +75,7 @@ class FilmBox {
       this.scp = scp;
       this.uid = uid;
       this.dataset = dataset;
-      check(dataset, rspCmd);
+      checkCreateData(dataset, rspCmd);
       addPLUT(dataset, pluts);
    }
    
@@ -91,7 +91,7 @@ class FilmBox {
    public void updateAttributes(Dataset modification, Command rspCmd, HashMap pluts)
       throws DcmServiceException
    {
-      check(modification, rspCmd);
+//      check(modification, rspCmd);
       addPLUT(modification, pluts);
       dataset.putAll(modification);
    }
@@ -99,6 +99,9 @@ class FilmBox {
    public void setImageBox(String imageBoxUID, Dataset imageBox, HashMap pluts)
       throws DcmServiceException
    {
+      checkDecimateCropBehavior(
+         scp.getCSorDefConfig(imageBox, Tags.RequestedDecimateCropBehavior, 
+            "DecimateCropBehavior"));
       addPLUT(imageBox, pluts);
       imageBoxes.remove(imageBoxUID);
       imageBoxes.put(imageBoxUID, imageBox);
@@ -194,25 +197,59 @@ class FilmBox {
       }
       this.pluts.put(iuid, plut);
    }
-   
-   private void check(Dataset ds, Command rsp)
+      
+   private String checkFilmOrientation(String val)
       throws DcmServiceException
    {
-      Integer illumination = ds.getInteger(Tags.Illumination);
-      if (illumination == null) {
-         ds.putUS(Tags.MediumType, scp.getIntConfigParam("Illumination"));
+      if (!val.equals("PORTRAIT") && !val.equals("LANDSCAPE")) {
+         throw new DcmServiceException(Status.InvalidAttributeValue);
       }
-      Integer ambientLight = ds.getInteger(Tags.ReflectedAmbientLight);
-      if (ambientLight == null) {
-         ds.putUS(Tags.MediumType, scp.getIntConfigParam("ReflectedAmbientLight"));
+      return val;
+   }
+
+   private String checkDecimateCropBehavior(String val)
+      throws DcmServiceException
+   {
+      if (!val.equals("DECIMATE") && !val.equals("CROP") && !val.equals("FAIL")) {
+         throw new DcmServiceException(Status.InvalidAttributeValue);
       }
-      Integer minDensity = ds.getInteger(Tags.MinDensity);
-      if (minDensity == null) {
-         ds.putUS(Tags.MinDensity, scp.getIntConfigParam("MinDensity"));
+      return val;
+   }
+   
+   private String checkDensity(String val)
+      throws DcmServiceException
+   {
+      if (!val.equals("WHITE") && !val.equals("BLACK")) {
+         try {
+            Integer.parseInt(val);
+         } catch (NumberFormatException e) {
+            throw new DcmServiceException(Status.InvalidAttributeValue);
+         }
       }
-      Integer maxDensity = ds.getInteger(Tags.MaxDensity);
-      if (maxDensity == null) {
-         ds.putUS(Tags.MaxDensity, scp.getIntConfigParam("MaxDensity"));
-      }
+      return val;
+   }
+   
+   private void checkCreateData(Dataset ds, Command rsp)
+      throws DcmServiceException
+   {
+      scp.checkImageDisplayFormat(ds.getString(Tags.ImageDisplayFormat),
+         checkFilmOrientation(
+            scp.getCSorDefConfig(ds, Tags.FilmOrientation, "FilmOrientation")));
+      scp.checkAttributeValue("isSupportsFilmSizeID",
+         scp.getCSorDefConfig(ds, Tags.FilmSizeID, "DefaultFilmSizeID"));
+      scp.checkAttributeValue("isSupportsMagnificationType",
+         scp.getCSorDefConfig(ds, Tags.MagnificationType, "DefaultMagnificationType"));
+      scp.checkAttributeValue("isSupportsSmoothingType",
+         scp.getCSorDefConfig(ds, Tags.SmoothingType, "DefaultSmoothingType"));
+      scp.getUSorDefConfig(ds, Tags.Illumination, "Illumination");
+      scp.getUSorDefConfig(ds, Tags.ReflectedAmbientLight, "ReflectedAmbientLight");
+      scp.getUSorDefConfig(ds, Tags.MinDensity, "MinDensity");
+      scp.getUSorDefConfig(ds, Tags.MaxDensity, "MaxDensity");
+      checkDensity(
+         scp.getCSorDefConfig(ds, Tags.BorderDensity, "BorderDensity"));
+      checkDensity(
+         scp.getCSorDefConfig(ds, Tags.EmptyImageDensity, "EmptyImageDensity"));
+      scp.checkAttributeValue("isSupportsResolutionID",
+         scp.getCSorDefConfig(ds, Tags.RequestedResolutionID, "DefaultResolutionID"));
    }
 }
