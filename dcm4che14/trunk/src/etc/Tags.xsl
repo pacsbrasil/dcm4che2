@@ -2,7 +2,7 @@
 
 <!--**************************************************************************
  *                                                                           *
- *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG                             *
+ *  Copyright (c) 2001-2004 by TIANI MEDGRAPH AG                             *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -22,7 +22,7 @@
  *                                                                           *
  ***************************************************************************-->
 
-<!-- $Id -->
+<!-- $Id$ -->
 
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -32,7 +32,7 @@
 <xsl:text>
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG                             *
+ *  Copyright (c) 2001-2004 by TIANI MEDGRAPH AG                             *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -62,9 +62,12 @@ package org.dcm4che.dict;
 /** Provides tag constants.
  *
  * @author gunter zeilinger
- * @version 1.0.3
+ * @version 1.0.22
  */
 public class Tags {
+
+    private static final char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     /** Private constructor */
     private Tags() {
@@ -75,10 +78,8 @@ public class Tags {
     }
 
     public static StringBuffer toHexString(StringBuffer sb, int v, int l) {
-        String hex = Integer.toHexString(v);
-        for (int i = hex.length(); i &lt; l; ++i)
-            sb.append('0');
-        sb.append(hex);
+		for (int i = l; --i >= 0;)
+		    sb.append(HEX_DIGIT[(v >>> (i &lt;&lt; 2)) &amp; 0xf]);
         return sb;
     }
 
