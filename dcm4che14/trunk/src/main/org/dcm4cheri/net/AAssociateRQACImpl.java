@@ -37,26 +37,19 @@ import java.util.*;
  */
 abstract class AAssociateRQACImpl implements AAssociateRQAC {
     
-    private String appCtxUID = null;
+    private String appCtxUID = UIDs.DICOMApplicationContextName;
     private int version = 1;
-    private int maxLength = -1;
+    private int maxLength = DEFAULT_MAX_LENGTH;
     private String callingAET = "ANONYMOUS";
     private String calledAET = "ANONYMOUS";
-    private String implClassUID = null;
-    private String implVers = null;
+    private String implClassUID = Impl.CLASS_UID;
+    private String implVers = Impl.VERSION_NAME;
     private AsyncOpsWindow asyncOpsWindow = null;
     private final LinkedHashMap presCtxs = new LinkedHashMap();
     private final LinkedHashMap roleSels = new LinkedHashMap();
     private final LinkedHashMap extNegs = new LinkedHashMap();
 
-    AAssociateRQACImpl() {
-        appCtxUID = UIDs.DICOMApplicationContextName;
-        maxLength = DEFAULT_MAX_LENGTH;
-        implClassUID = Impl.CLASS_UID;
-        implVers = Impl.VERSION_NAME;
-    }
-
-    AAssociateRQACImpl(UnparsedPDU raw, int pctype) throws PDUParseException {
+    protected void init(UnparsedPDU raw) throws DcmULServiceException {
         ByteArrayInputStream bin = new ByteArrayInputStream(
                 raw.buffer(), 6, raw.length());
         DataInputStream din = new DataInputStream(bin);
@@ -79,24 +72,33 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
                         break;
                     case 0x20:
                     case 0x21:
-                        if (itemType != pctype) {
-                            throw new PDUParseException(
-                                    "Unexpected pdu-type " + raw);
+                        if (itemType != pctype()) {
+                            throw new DcmULServiceException(
+                                    "unexpected item type "
+                                          + Integer.toHexString(itemType) + 'H',
+                                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                            AAbort.UNEXPECTED_PDU_PARAMETER));
                         }
-                        addPresContext(new PresContextImpl(din, itemLen));
+                        addPresContext(
+                                new PresContextImpl(itemType, din, itemLen));
                         break;
                     case 0x50:
-                        readUserInfo(din, din.readUnsignedShort());
+                        readUserInfo(din, itemLen);
                         break;
                    default:
-                        throw new PDUParseException(
-                                "Unexpected pdu-type " + raw);
+                        throw new DcmULServiceException(
+                                "unrecognized item type "
+                                        + Integer.toHexString(itemType) + 'H',
+                                new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                        AAbort.UNRECOGNIZED_PDU_PARAMETER));
                 }
             }
-        } catch (PDUParseException e) {
+        } catch (DcmULServiceException e) {
             throw e;
         } catch (Exception e) {            
-            throw new PDUParseException("Failed to parse " + raw, e);
+            throw new DcmULServiceException("Failed to parse " + raw, e,
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.REASON_NOT_SPECIFIED));
         }
     }
     
@@ -124,11 +126,11 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         this.callingAET = checkAE(aet);
     }
 
-    public final String getApplicationContext() {
+    public final String getApplicationContextUID() {
         return appCtxUID;
     }
 
-    public final void setApplicationContext(String appCtxUID) {
+    public final void setApplicationContextUID(String appCtxUID) {
         appCtxUID = checkUID(appCtxUID);
     }
 
@@ -149,26 +151,32 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         return uid;
     }
     
-    public final byte nextPresContextId() {
+    public final int nextPCID() {
         int c = presCtxs.size();
         if (c == 128) {
-            throw new IllegalStateException(
-                    "Maximal number of Presentation State reached");
+            return -1;
         }
-        return (byte)((c << 1) | 1);
+        int retval = ((c << 1) | 1);
+        while (presCtxs.containsKey(new Integer(retval))) {
+            retval = (retval + 2) % 256;
+        }
+        return retval;
     }
     
     public final PresContext addPresContext(PresContext presCtx) {
+        if (((PresContextImpl)presCtx).type() != pctype()) {
+            throw new IllegalArgumentException("wrong type of " + presCtx);
+        }
         return (PresContext)presCtxs.put(
-                new Byte(presCtx.getID()), presCtx);
+                new Integer(presCtx.pcid()), presCtx);
     }
 
-    public final PresContext removePresContext(byte id) {
-        return (PresContext)presCtxs.remove(new Byte(id));
+    public final PresContext removePresContext(int pcid) {
+        return (PresContext)presCtxs.remove(new Integer(pcid));
     }
     
-    public final PresContext getPresContext(byte id) {
-        return (PresContext)presCtxs.get(new Byte(id));
+    public final PresContext getPresContext(int pcid) {
+        return (PresContext)presCtxs.get(new Integer(pcid));
     }
 
     public final Iterator iteratePresContext() {
@@ -268,19 +276,22 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
 
     public RoleSelection addRoleSelection (RoleSelection roleSel) {
         return (RoleSelection)roleSels.put(
-                roleSel.getAbstractSyntaxUID(), roleSel);
+                roleSel.getSOPClassUID(), roleSel);
     }
 
     public ExtNegotiation addExtNegotiation(ExtNegotiation extNeg) {
         return (ExtNegotiation)extNegs.put(
-                extNeg.getAbstractSyntaxUID(), extNeg);
+                extNeg.getSOPClassUID(), extNeg);
     }
 
-    private void readUserInfo(DataInputStream din, int len) throws IOException {
+    private void readUserInfo(DataInputStream din, int len)
+            throws IOException, DcmULServiceException {
         int diff = len - din.available();
         if (diff != 0) {
-            throw new IOException("User info item length=" + len
-                + " mismatch PDU length (diff=" + diff + ")");
+            throw new DcmULServiceException("User info item length=" + len
+                + " mismatch PDU length (diff=" + diff + ")",
+                new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                               AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
         while (din.available() > 0) {
             int subItemType = din.readUnsignedByte();
@@ -289,9 +300,11 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
             switch (subItemType) {
                 case 0x51:
                     if (itemLen != 4) {
-                        throw new IOException(
+                        throw new DcmULServiceException(
                                 "Illegal length of Maximum length sub-item: "
-                                + itemLen);
+                                + itemLen,
+                            new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                           AAbort.INVALID_PDU_PARAMETER_VALUE));
                     }                                
                     maxLength = din.readInt();
                     break;
@@ -311,8 +324,11 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
                     addExtNegotiation(new ExtNegotiationImpl(din, itemLen));
                     break;
                 default:
-                    throw new IOException("Unexpected sub-item-type "
-                            + subItemType);
+                    throw new DcmULServiceException(
+                            "unrecognized user sub-item type "
+                                    + Integer.toHexString(subItemType) + 'H',
+                            new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                    AAbort.UNRECOGNIZED_PDU_PARAMETER));
            }
         }
     }
@@ -369,7 +385,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         dout.writeShort(appCtxUID.length());
         dout.writeBytes(appCtxUID);
         for (Iterator it = presCtxs.values().iterator(); it.hasNext();) {
-            ((PresContextImpl)it.next()).writeTo(pctype(), dout);
+            ((PresContextImpl)it.next()).writeTo(dout);
         }
         writeUserInfo(dout);
         bout.writeTo(type(), out);

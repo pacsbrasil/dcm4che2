@@ -21,68 +21,59 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.net;
-
-import org.dcm4che.net.*;
+package org.dcm4che.net;
 
 import java.io.*;
+import java.util.*;
+
+import junit.framework.*;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-final class RoleSelectionImpl implements RoleSelection {
+public class AReleaseRPTest extends ExtTestCase {
 
-    private final String asuid;
-    private final boolean scu;
-    private final boolean scp;
+    public AReleaseRPTest(java.lang.String testName) {
+        super(testName);
+    }        
     
-    /** Creates a new instance of RoleSelectionImpl */
-    RoleSelectionImpl(String asuid, boolean scu, boolean scp) {
-        this.asuid = asuid;
-        this.scu = scu;
-        this.scp = scp;
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
     }
     
-    RoleSelectionImpl(DataInputStream din, int len)
-            throws IOException, DcmULServiceException {
-        int uidLen = din.readUnsignedShort();
-        if (uidLen + 4 != len) {
-            throw new DcmULServiceException( "SCP/SCU role selection sub-item length: "
-                    + len + " mismatch UID-length:" + uidLen,
-                new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                               AAbort.INVALID_PDU_PARAMETER_VALUE));
-        } 
-        this.asuid = AAssociateRQACImpl.readASCII(din, uidLen);
-        this.scu = din.readBoolean();
-        this.scp = din.readBoolean();
+    public static Test suite() {
+        TestSuite suite = new TestSuite(AReleaseRPTest.class);
+        return suite;
     }
 
-    public final String getSOPClassUID() {
-        return asuid;
-    }    
+    private static final String A_RELEASE_RP = "../testdata/pdu/AReleaseRP.pdu";
 
-    public final boolean scu() {
-        return scu;
+    private PDUFactory fact;
+    
+    protected void setUp() throws Exception {
+        fact = PDUFactory.getInstance();
     }
 
-    public final boolean scp() {
-        return scp;
+    public void testWrite() throws Exception {
+        AReleaseRP pdu = fact.newAReleaseRP();
+        ByteArrayOutputStream out = new ByteArrayOutputStream(10);
+//        OutputStream out = new FileOutputStream(A_RELEASE_RP);        
+        pdu.writeTo(out);
+        out.close();
+        assertEquals(load(A_RELEASE_RP), out.toByteArray());
     }
-    
-    final int length() {
-        return 4 + asuid.length();
+
+    public void testRead() throws Exception {
+        InputStream in = new FileInputStream(A_RELEASE_RP);
+        UnparsedPDU raw = null;
+        try {
+            raw = fact.readFrom(in);            
+        } finally {
+            try { in.close(); } catch (IOException ignore) {}
+        }
+        AReleaseRP pdu = (AReleaseRP)fact.parse(raw);
     }
-    
-    void writeTo(DataOutputStream dout) throws IOException {
-        dout.write(0x54);
-        dout.write(0);
-        dout.writeShort(length());
-        dout.writeShort(asuid.length());
-        dout.writeBytes(asuid);
-        dout.writeBoolean(scu);
-        dout.writeBoolean(scp);         
-    }
-    
 }
+

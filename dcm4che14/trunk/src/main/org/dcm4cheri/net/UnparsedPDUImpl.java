@@ -23,7 +23,8 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.UnparsedPDU;
+import org.dcm4che.net.*;
+
 import java.io.*;
 
 /**
@@ -38,7 +39,8 @@ final class UnparsedPDUImpl implements UnparsedPDU {
     private final int len;
     
     /** Creates a new instance of RawPDU */
-    public UnparsedPDUImpl(InputStream in) throws IOException {
+    public UnparsedPDUImpl(InputStream in)
+            throws IOException, DcmULServiceException {
         byte[] h = new byte[6];
         readFully(in, h, 0, 6);
         this.len = ((h[2] & 0xff) << 24)
@@ -46,8 +48,10 @@ final class UnparsedPDUImpl implements UnparsedPDU {
                 | ((h[4] & 0xff) << 8)
                 | ((h[5] & 0xff) << 0);
         if (len > MAX_LENGTH) {
-            throw new IOException("PDU length exceeds supported maximum: "
-                    + len);
+            throw new DcmULServiceException(
+                    "PDU length exceeds supported maximum: " + len,
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.REASON_NOT_SPECIFIED));
         }
         this.buf = new byte[6 + len];
         System.arraycopy(h, 0, buf, 0, 6);

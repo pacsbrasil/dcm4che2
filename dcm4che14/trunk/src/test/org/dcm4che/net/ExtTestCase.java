@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG                             *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -23,39 +23,39 @@
 
 package org.dcm4che.net;
 
+import java.io.*;
+
+import junit.framework.*;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
+ * @version 1.0.0
  */
-public class PDUParseException extends java.io.IOException {
+class ExtTestCase extends TestCase {
 
-    /**
-     * Creates a new instance of <code>PDUParseException</code> without detail
-     * message.
-     */
-    public PDUParseException() {
+    public ExtTestCase(java.lang.String testName) {
+        super(testName);
+    }        
+
+    public static byte[] load(String id) throws IOException {
+        File f = new File(id);
+        InputStream in = new FileInputStream(f);        
+        try {
+            byte[] retval = new byte[(int)f.length()];
+            in.read(retval);
+            return retval;
+        } finally {
+            try { in.close(); } catch (IOException ignore) {};
+        }
     }
-
-    /**
-     * Constructs an instance of <code>PDUParseException</code> with the
-     * specified detail message.
-     * @param msg the detail message.
-     */
-    public PDUParseException(String msg) {
-        super(msg);
-    }
-
-    /**
-     * Constructs a new throwable with the specified detail message and
-     * cause.
-     *
-     * @param msg the detail message.
-     * @param  cause the cause.
-     */
-    public PDUParseException(String msg, Throwable cause) {
-        super(msg);
-        super.initCause(cause);
+    
+    public static void assertEquals(byte[] expected, byte[] value) {
+        TestCase.assertNotNull(value);
+        TestCase.assertEquals(expected.length, value.length);
+        for (int i = 0; i < expected.length; ++i) {
+            TestCase.assertEquals("byte[" + i + "]", expected[i], value[i]);
+        }
     }
 }
-
 

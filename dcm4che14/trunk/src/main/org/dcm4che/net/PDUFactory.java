@@ -67,16 +67,17 @@ public abstract class PDUFactory {
     public abstract AAbort newAAbort(int source, int reason);
     
     public abstract PresContext newPresContext(
-            byte id, String asuid, String[] tsuids);
+            int pcid, String asuid, String[] tsuids);
     public abstract PresContext newPresContext(
-            byte id, int result, String tsuid);
+            int pcid, int result, String tsuid);
     public abstract AsyncOpsWindow newAsyncOpsWindow(
             int maxOpsInvoked, int maxOpsPerfomed);    
     public abstract RoleSelection newRoleSelection(String uid,
             boolean scu, boolean scp);    
     public abstract ExtNegotiation newExtNegotiation(String uid, byte[] info);    
 
-    public abstract UnparsedPDU readFrom(InputStream in) throws IOException;
+    public abstract UnparsedPDU readFrom(InputStream in)
+            throws IOException, DcmULServiceException;
 
-    public abstract PDU parse(UnparsedPDU pdu) throws PDUParseException;
+    public abstract PDU parse(UnparsedPDU pdu) throws DcmULServiceException;
 }

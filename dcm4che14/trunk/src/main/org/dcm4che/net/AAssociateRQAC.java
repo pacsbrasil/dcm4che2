@@ -46,7 +46,7 @@ public interface AAssociateRQAC extends PDU {
      * Default = { @link org.dcm4che.dict.UIDs#DICOMApplicationContextName }.
      * @see #setApplicationContext
      * @return Application-context-name. */    
-    public String getApplicationContext();
+    public String getApplicationContextUID();
 
     /** Returns Source DICOM Application Name.
      * Default = "ANONYMOUS".
@@ -65,7 +65,7 @@ public interface AAssociateRQAC extends PDU {
     /** Sets Application-context-name.
      * @see #getApplicationContext
      * @param uid Application-context-name */    
-    public void setApplicationContext(String uid);
+    public void setApplicationContextUID(String uid);
 
     /** Sets Source DICOM Application Name.
      * @see #setCalledAET
@@ -79,9 +79,10 @@ public interface AAssociateRQAC extends PDU {
      * @param calledAET  Destination DICOM Application Name. */    
     public void setCalledAET(String calledAET);
     
-    /** Returns next valid Presentation-context-ID. Starting with 1,3,5,...
-     * @return  Presentation-context-ID */    
-    public byte nextPresContextId();
+    /** Returns next free valid Presentation-context-ID. Starting with 1,3,5,...
+     * @return  next free Presentation-context-ID or -1, if maximum number
+     * of Presentation Context (128) is reached. */    
+    public int nextPCID();
     
     /** Adds specified Presentation Context to this Associate RQ/AC.
      * If this AssociateRQ previously contained a Presentation Context with an
@@ -96,7 +97,7 @@ public interface AAssociateRQAC extends PDU {
      * @param id Presentation-context-ID
      * @return previous Presentation Context which was removed or
      * <CODE>null</CODE> if there was no previous Presentation Context with this id */    
-    public PresContext removePresContext(byte id);    
+    public PresContext removePresContext(int id);    
 
     /** Removes all Presentation Context Items from this Associate RQ/AC. */    
     public void clearPresContext();
@@ -106,7 +107,7 @@ public interface AAssociateRQAC extends PDU {
      * @return  Presentation Context which the specified id or
      * <CODE>null</CODE> if this AssociateRQ contains no
      * Presentation Context with this id. */    
-    public PresContext getPresContext(byte id);
+    public PresContext getPresContext(int id);
 
     /** Returns an iterator over the contained Presentation Context Items.
      * The sequence shall be equal to the order, in which the Presentation Context Items

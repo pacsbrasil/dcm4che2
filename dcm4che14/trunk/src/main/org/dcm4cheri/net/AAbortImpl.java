@@ -33,12 +33,14 @@ import java.io.*;
  * @version 1.0.0
  */
 final class AAbortImpl implements AAbort {
-
+    
     private final byte[] buf;
     
-    AAbortImpl(UnparsedPDU raw) throws PDUParseException {
+    AAbortImpl(UnparsedPDU raw) throws DcmULServiceException {
         if (raw.length() != 4) {
-            throw new PDUParseException("Illegal PDU : " + raw);
+            throw new DcmULServiceException("Illegal A-ABORT " + raw,
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
         this.buf = raw.buffer();
     }
@@ -50,11 +52,11 @@ final class AAbortImpl implements AAbort {
         };
     }
 
-    public final int getSource() {
+    public final int source() {
         return buf[8] & 0xff;
     }
     
-    public final int getReason() {
+    public final int reason() {
         return buf[9] & 0xff;
     }
     
@@ -62,5 +64,43 @@ final class AAbortImpl implements AAbort {
         out.write(buf);
         out.flush();
     }
+
+    public String toString() {
+        return toStringBuffer(new StringBuffer()).toString();
+    }
     
+    final StringBuffer toStringBuffer(StringBuffer sb) {
+        return sb.append("A-ABORT[source=").append(sourceAsString())
+                .append(", reason=").append(reasonAsString()).append("]");
+    }    
+    
+    private String sourceAsString() {
+        switch (source()) {
+            case SERVICE_USER:
+                return "0 - service-user";
+            case SERVICE_PROVIDER:
+                return "2 - service-provider";
+            default:
+                return String.valueOf(source());
+        }
+    }
+    
+    private String reasonAsString() {
+        switch (reason()) {
+            case REASON_NOT_SPECIFIED:
+                return "0 - reason-not-specified";
+            case UNRECOGNIZED_PDU:
+                return "1 - unrecognized-PDU";
+            case UNEXPECTED_PDU:
+                return "2 - unexpected-PDU";
+            case UNRECOGNIZED_PDU_PARAMETER:
+                return "4 - unrecognized-PDU parameter";
+            case UNEXPECTED_PDU_PARAMETER:
+                return "5 - unexpected-PDU parameter";
+            case INVALID_PDU_PARAMETER_VALUE:
+                return "6 - invalid-PDU-parameter value";
+            default:
+                return String.valueOf(reason());
+        }
+    }        
 }

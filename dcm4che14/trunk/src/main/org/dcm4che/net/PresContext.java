@@ -31,10 +31,16 @@ import java.util.List;
  * @version 1.0.0
  */
 public interface PresContext {
-
-    public byte getID();
     
-    public int getResult();
+    public static final int ACCEPTANCE = 0;
+    public static final int USER_REJECTION = 1;
+    public static final int NO_REASON_GIVEN = 2;
+    public static final int ABSTRACT_SYNTAX_NOT_SUPPORTED = 3;
+    public static final int TRANSFER_SYNTAXES_NOT_SUPPORTED = 4;
+
+    public int pcid();
+    
+    public int result();
     
     public String getAbstractSyntaxUID();
 

@@ -30,12 +30,22 @@ package org.dcm4che.net;
  */
 public interface AAbort extends PDU {
     
+    public static final int SERVICE_USER = 0;
+    public static final int SERVICE_PROVIDER = 2;
+    
+    public static final int REASON_NOT_SPECIFIED = 0;
+    public static final int UNRECOGNIZED_PDU = 1;
+    public static final int UNEXPECTED_PDU = 2;
+    public static final int UNRECOGNIZED_PDU_PARAMETER = 4;
+    public static final int UNEXPECTED_PDU_PARAMETER = 5;
+    public static final int INVALID_PDU_PARAMETER_VALUE = 6;
+
     /** Returns Source field value.
      * @return Source field value. */    
-    public int getSource();
+    public int source();
 
     /** Returns Reason field value.
      * @return Reason field value. */    
-    public int getReason();
+    public int reason();
 }
 

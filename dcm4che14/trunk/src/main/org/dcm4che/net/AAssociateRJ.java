@@ -30,16 +30,31 @@ package org.dcm4che.net;
  */
 public interface AAssociateRJ extends PDU {
 
+    public static final int REJECTED_PERMANENT = 1;
+    public static final int REJECTED_TRANSIENT = 2;
+
+    public static final int SERVICE_USER = 1;
+    public static final int SERVICE_PROVIDER_ACSE = 2;
+    public static final int SERVICE_PROVIDER_PRES = 3;
+
+    public static final int NO_REASON_GIVEN = 1;
+    public static final int APPLICATION_CONTEXT_NAME_NOT_SUPPORTED = 2;
+    public static final int CALLING_AE_TITLE_NOT_RECOGNIZED = 3;
+    public static final int CALLED_AE_TITLE_NOT_RECOGNIZED = 7;
+    public static final int PROTOCOL_VERSION_NOT_SUPPORTED = 2;
+    public static final int TEMPORARY_CONGESTION = 1;
+    public static final int LOCAL_LIMIT_EXCEEDED = 2;
+    
     /** Returns Result field value.
      * @return Result field value. */    
-    public int getResult();
+    public int result();
 
     /** Returns Source field value.
      * @return Source field value. */    
-    public int getSource();
+    public int source();
 
     /** Returns Reason field value.
      * @return Reason field value. */    
-    public int getReason();
+    public int reason();
 }
 

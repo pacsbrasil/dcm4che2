@@ -37,7 +37,7 @@ public interface PDataTF extends PDU {
 
     public int free();
     
-    public void openPDV(byte pcid, boolean cmd);
+    public void openPDV(int pcid, boolean cmd);
 
     public void closePDV(boolean last);
     
@@ -49,7 +49,7 @@ public interface PDataTF extends PDU {
 
         public int length();
 
-        public byte pcid();
+        public int pcid();
 
         public boolean cmd();
 

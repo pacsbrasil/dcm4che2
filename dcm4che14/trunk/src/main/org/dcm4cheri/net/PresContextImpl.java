@@ -23,7 +23,7 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.PresContext;
+import org.dcm4che.net.*;
 
 import java.io.*;
 import java.util.*;
@@ -34,21 +34,28 @@ import java.util.*;
  * @version 1.0.0
  */
 final class PresContextImpl implements PresContext {
-
-    private final byte pcid;
+    private final int type;
+    private final int pcid;
     private final int result;
     private final String asuid;
     private final List tsuids;
 
-    PresContextImpl(byte pcid, int result, String asuid, String[] tsuids) {
+    PresContextImpl(int type, int pcid, int result, String asuid,
+            String[] tsuids) {
+        if ((pcid | 1) == 0 || (pcid & ~0xff) != 0) {
+            throw new IllegalArgumentException("pcid=" + pcid);
+        }         
+        this.type = type;
         this.pcid = pcid;
         this.result = result;
         this.asuid = asuid;
         this.tsuids = new ArrayList(Arrays.asList(tsuids));
     }
     
-    PresContextImpl(DataInputStream din, int len) throws IOException {
-        this.pcid = din.readByte();
+    PresContextImpl(int type, DataInputStream din, int len)
+            throws IOException, DcmULServiceException {
+        this.type = type;
+        this.pcid = din.readUnsignedByte();
         din.readUnsignedByte();
         this.result = din.readUnsignedByte();
         din.readUnsignedByte();
@@ -61,35 +68,48 @@ final class PresContextImpl implements PresContext {
             int uidlen = din.readUnsignedShort();
             switch (uidtype) {
                 case 0x30:
-                    if (asuid != null) {
-                        throw new IOException(
-                                "More than one Abstract Syntax sub-item in"
-                                + " Presentation Context");
+                    if (type == 0x21 || asuid != null) {
+                        throw new DcmULServiceException(
+                                "Unexpected Abstract Syntax sub-item in"
+                                + " Presentation Context",
+                                new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                            AAbort.UNEXPECTED_PDU_PARAMETER));
                     }
                     asuid = AAssociateRQACImpl.readASCII(din, uidlen);
                     break;
                 case 0x40:
+                    if (type == 0x21 && !tsuids.isEmpty()) {
+                        throw new DcmULServiceException(
+                                "Unexpected Transfer Syntax sub-item in"
+                                + " Presentation Context",
+                                new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                            AAbort.UNEXPECTED_PDU_PARAMETER));
+                    }
                     tsuids.add(AAssociateRQACImpl.readASCII(din, uidlen));
                     break;
                 default:
-                    throw new IOException(
-                            "Illegal sub-item type=" + uidtype  + ", len= "
-                            + uidlen + " in Presentation Context");
+                    throw new DcmULServiceException(
+                            "unrecognized item type "
+                                    + Integer.toHexString(uidtype) + 'H',
+                            new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                    AAbort.UNRECOGNIZED_PDU_PARAMETER));
             }
             remain -= 4 + uidlen;
         }
         this.asuid = asuid;
         if (remain < 0) {
-            throw new IOException("Presentation item length: " + len
-                + " mismatch length of sub-items");
+            throw new DcmULServiceException("Presentation item length: " + len
+                + " mismatch length of sub-items",
+                new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                               AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
     }
     
-    void writeTo(int type, DataOutputStream dout) throws IOException {
+    void writeTo(DataOutputStream dout) throws IOException {
         dout.write(type);
         dout.write(0);
         dout.writeShort(length());
-        dout.write(getID());
+        dout.write(pcid);
         dout.write(0);
         dout.write(result);
         dout.write(0);
@@ -119,11 +139,15 @@ final class PresContextImpl implements PresContext {
         return retval;
     }
 
-    public final byte getID() {
+    final int type() {
+        return type;
+    }    
+
+    public final int pcid() {
         return pcid;
     }    
     
-    public final int getResult() {
+    public final int result() {
         return result;
     }    
     
@@ -137,5 +161,22 @@ final class PresContextImpl implements PresContext {
 
     public final String getTransferSyntaxUID() {
         return (String)tsuids.get(0);
+    }
+
+    private String resultAsString() {
+        switch (result()) {
+            case ACCEPTANCE:
+                return "0 - acceptance";
+            case USER_REJECTION:
+                return "1 - user-rejection";
+            case NO_REASON_GIVEN:
+                return "2 - no-reason-given";
+            case ABSTRACT_SYNTAX_NOT_SUPPORTED:
+                return "3 - abstract-syntax-not-supported";
+            case TRANSFER_SYNTAXES_NOT_SUPPORTED:
+                return "4 - transfer-syntaxes-not-supported";
+            default:
+                return String.valueOf(result());
+        }
     }
 }

@@ -36,9 +36,11 @@ final class AReleaseRPImpl implements AReleaseRP {
 
     private static final byte[] buf = { 6, 0, 0, 0, 0, 4, 0, 0, 0, 0 }; 
     
-    AReleaseRPImpl(UnparsedPDU raw) throws PDUParseException {
+    AReleaseRPImpl(UnparsedPDU raw) throws DcmULServiceException {
         if (raw.length() != 4) {
-            throw new PDUParseException("Illegal PDU : " + raw);
+            throw new DcmULServiceException("Illegal A-RELEASE-RQ " + raw,
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
     }
 
@@ -48,5 +50,9 @@ final class AReleaseRPImpl implements AReleaseRP {
     public void writeTo(OutputStream out) throws IOException {
         out.write(buf);
         out.flush();
-    }    
+    }
+    
+    public String toString() {
+        return "A-RELEASE-RP";
+    }
 }

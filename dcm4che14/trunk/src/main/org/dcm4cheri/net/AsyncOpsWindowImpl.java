@@ -44,10 +44,12 @@ final class AsyncOpsWindowImpl implements AsyncOpsWindow {
     }
 
     AsyncOpsWindowImpl(DataInputStream din, int len)
-            throws IOException, PDUParseException {
+            throws IOException, DcmULServiceException {
         if (len != 4) {
-            throw new PDUParseException(
-                    "Illegal length of AsyncOpsWindow sub-item: " + len);
+            throw new DcmULServiceException(
+                    "Illegal length of AsyncOpsWindow sub-item: " + len,
+                new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                               AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
         this.maxOpsInvoked = din.readUnsignedShort();
         this.maxOpsPerformed = din.readUnsignedShort();

@@ -30,10 +30,10 @@ package org.dcm4che.net;
  */
 public interface RoleSelection {
 
-    public String getAbstractSyntaxUID();
+    public String getSOPClassUID();
 
-    public boolean isSCU();
+    public boolean scu();
 
-    public boolean isSCP();
+    public boolean scp();
 }
 

@@ -41,7 +41,7 @@ final class PDataTFImpl implements PDataTF {
     private final LinkedList pdvs = new LinkedList();
     private PDVImpl curPDV = null;
     
-    PDataTFImpl(UnparsedPDU raw) throws PDUParseException {
+    PDataTFImpl(UnparsedPDU raw) throws DcmULServiceException {
         this.pdulen = raw.length();
         this.wpos = pdulen + 12;
         this.buf = raw.buffer();
@@ -52,8 +52,9 @@ final class PDataTFImpl implements PDataTF {
             off += 4 + pdv.length();
         }
         if (off != pdulen + 6) {
-            throw new PDUParseException("PDU length=" + pdulen
-                + " mismatch PDV length (diff=" + (off - pdulen)  + ")");
+            throw new DcmULServiceException("Illegal " + toString(), 
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
     }
 
@@ -67,11 +68,30 @@ final class PDataTFImpl implements PDataTF {
         return pdvs.iterator();
     }
     
+    public String toString() {
+        return toStringBuffer(new StringBuffer()).toString();
+    }
+
+    StringBuffer toStringBuffer(StringBuffer sb) {
+        sb.append("P-DATA-TF[len=").append(pdulen).append(",{");
+        Iterator it = pdvs.iterator();
+        if (it.hasNext()) {
+            sb.append(it.next());
+            while (it.hasNext()) {
+                sb.append(',').append(it.next());
+            }
+        }
+        return sb.append("}]");
+    }
+
     public final int free() {
         return buf.length - wpos;
     }
     
-    public void openPDV(byte pcid, boolean cmd) {
+    public void openPDV(int pcid, boolean cmd) {
+        if ((pcid & 1) == 0) {
+            throw new IllegalArgumentException("pcid=" + pcid);
+        }
         if (curPDV != null) {
             throw new IllegalStateException("Open PDV " + curPDV);
         }
@@ -135,8 +155,8 @@ final class PDataTFImpl implements PDataTF {
             this.off = off;
         }
         
-        final void pcid(byte pcid) {
-            buf[off+4] = pcid;
+        final void pcid(int pcid) {
+            buf[off+4] = (byte)pcid;
         }
         
         final void length(int pdvLen) {
@@ -173,8 +193,8 @@ final class PDataTFImpl implements PDataTF {
                 | ((buf[off+3] & 0xff) << 0);
         }
 
-        public final byte pcid() {
-            return buf[off+4];
+        public final int pcid() {
+            return buf[off+4] & 0xFF;
         }
 
         public final boolean cmd() {
@@ -187,6 +207,19 @@ final class PDataTFImpl implements PDataTF {
         
         public final InputStream getInputStream() {
             return new ByteArrayInputStream(buf, off + 6, length() - 2);
-        }            
+        }
+        
+        public String toString() {
+            return toStringBuffer(new StringBuffer()).toString();
+        }
+
+        StringBuffer toStringBuffer(StringBuffer sb) {
+            return sb.append("PDV[off=").append(off)
+                    .append(",len=").append(length())
+                    .append(",pcid=").append(pcid())
+                    .append(",cmd=").append(cmd())
+                    .append(",last=").append(last())
+                    .append("]");
+        }
     }
 }

@@ -21,68 +21,66 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.net;
-
-import org.dcm4che.net.*;
+package org.dcm4che.net;
 
 import java.io.*;
+import java.util.*;
+
+import junit.framework.*;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-final class RoleSelectionImpl implements RoleSelection {
+public class AAssociateRJTest extends ExtTestCase {
 
-    private final String asuid;
-    private final boolean scu;
-    private final boolean scp;
+    public AAssociateRJTest(java.lang.String testName) {
+        super(testName);
+    }        
     
-    /** Creates a new instance of RoleSelectionImpl */
-    RoleSelectionImpl(String asuid, boolean scu, boolean scp) {
-        this.asuid = asuid;
-        this.scu = scu;
-        this.scp = scp;
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
     }
     
-    RoleSelectionImpl(DataInputStream din, int len)
-            throws IOException, DcmULServiceException {
-        int uidLen = din.readUnsignedShort();
-        if (uidLen + 4 != len) {
-            throw new DcmULServiceException( "SCP/SCU role selection sub-item length: "
-                    + len + " mismatch UID-length:" + uidLen,
-                new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                               AAbort.INVALID_PDU_PARAMETER_VALUE));
-        } 
-        this.asuid = AAssociateRQACImpl.readASCII(din, uidLen);
-        this.scu = din.readBoolean();
-        this.scp = din.readBoolean();
+    public static Test suite() {
+        TestSuite suite = new TestSuite(AAssociateRJTest.class);
+        return suite;
     }
 
-    public final String getSOPClassUID() {
-        return asuid;
-    }    
+    private static final String A_ASSOCIATE_RJ = 
+            "../testdata/pdu/AAssociateRJ.pdu";
+    private final int RESULT = AAssociateRJ.REJECTED_PERMANENT;
+    private final int SOURCE = AAssociateRJ.SERVICE_USER;
+    private final int REASON = AAssociateRJ.CALLED_AE_TITLE_NOT_RECOGNIZED;
 
-    public final boolean scu() {
-        return scu;
+    private PDUFactory fact;
+        
+    protected void setUp() throws Exception {
+        fact = PDUFactory.getInstance();
+    }
+    
+    public void testWrite() throws Exception {
+        AAssociateRJ pdu = fact.newAAssociateRJ(RESULT, SOURCE, REASON);
+        ByteArrayOutputStream out = new ByteArrayOutputStream(10);
+//        OutputStream out = new FileOutputStream(A_ASSOCIATE_RJ);        
+        pdu.writeTo(out);
+        out.close();
+        assertEquals(load(A_ASSOCIATE_RJ), out.toByteArray());
     }
 
-    public final boolean scp() {
-        return scp;
+    public void testRead() throws Exception {
+        InputStream in = new FileInputStream(A_ASSOCIATE_RJ);
+        UnparsedPDU raw = null;
+        try {
+            raw = fact.readFrom(in);            
+        } finally {
+            try { in.close(); } catch (IOException ignore) {}
+        }
+        AAssociateRJ pdu = (AAssociateRJ)fact.parse(raw);
+        assertEquals(RESULT, pdu.result());
+        assertEquals(SOURCE, pdu.source());
+        assertEquals(REASON, pdu.reason());
     }
-    
-    final int length() {
-        return 4 + asuid.length();
-    }
-    
-    void writeTo(DataOutputStream dout) throws IOException {
-        dout.write(0x54);
-        dout.write(0);
-        dout.writeShort(length());
-        dout.writeShort(asuid.length());
-        dout.writeBytes(asuid);
-        dout.writeBoolean(scu);
-        dout.writeBoolean(scp);         
-    }
-    
 }
+

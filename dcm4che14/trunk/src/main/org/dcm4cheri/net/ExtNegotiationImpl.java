@@ -50,11 +50,11 @@ final class ExtNegotiationImpl implements ExtNegotiation {
         din.readFully(info);
     }    
 
-    public final String getAbstractSyntaxUID() {
+    public final String getSOPClassUID() {
         return asuid;
     }    
 
-    public final byte[] getInfo() {
+    public final byte[] info() {
         return (byte[])info.clone();
     }    
 

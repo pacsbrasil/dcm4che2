@@ -66,12 +66,13 @@ public final class PDUFactoryImpl extends PDUFactory {
         return new AAbortImpl(source, reason);
     }
     
-    public PresContext newPresContext(byte id, String asuid, String[] tsuids) {
-        return new PresContextImpl(id, 0, asuid, tsuids);
+    public PresContext newPresContext(int pcid, String asuid, String[] tsuids) {
+        return new PresContextImpl(0x020, pcid, 0, asuid, tsuids);
     }
     
-    public PresContext newPresContext(byte id, int result, String tsuid) {
-        return new PresContextImpl(id, result, null, new String[]{ tsuid } );
+    public PresContext newPresContext(int pcid, int result, String tsuid) {
+        return new PresContextImpl(0x021, pcid, result, null,
+                new String[]{ tsuid } );
     }
     
     public AsyncOpsWindow newAsyncOpsWindow(
@@ -88,11 +89,12 @@ public final class PDUFactoryImpl extends PDUFactory {
         return new ExtNegotiationImpl(uid, info);
     }
     
-    public UnparsedPDU readFrom(InputStream in) throws IOException {
+    public UnparsedPDU readFrom(InputStream in)
+            throws IOException, DcmULServiceException {
         return new UnparsedPDUImpl(in);
     }
 
-    public PDU parse(UnparsedPDU raw) throws PDUParseException {
+    public PDU parse(UnparsedPDU raw) throws DcmULServiceException {
         switch (raw.type()) {
             case 1:
                 return new AAssociateRQImpl(raw);
@@ -109,7 +111,9 @@ public final class PDUFactoryImpl extends PDUFactory {
             case 7:
                 return new AAbortImpl(raw);
             default:
-                throw new PDUParseException("Illegal PDU-type: " + raw);
+                throw new DcmULServiceException("Unrecognized " + raw,
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.UNRECOGNIZED_PDU));
         }
     }
 }

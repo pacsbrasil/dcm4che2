@@ -36,9 +36,11 @@ final class AAssociateRJImpl implements AAssociateRJ {
 
     private final byte[] buf;
     
-    AAssociateRJImpl(UnparsedPDU raw) throws PDUParseException {
+    AAssociateRJImpl(UnparsedPDU raw) throws DcmULServiceException {
         if (raw.length() != 4) {
-            throw new PDUParseException("Illegal PDU : " + raw);
+            throw new DcmULServiceException("Illegal A-ASSOCIATE-RJ " + raw,
+                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
+                                   AAbort.INVALID_PDU_PARAMETER_VALUE));
         }
         this.buf = raw.buffer();
     }
@@ -51,15 +53,15 @@ final class AAssociateRJImpl implements AAssociateRJ {
         };
     }
 
-    public final int getResult() {
+    public final int result() {
         return buf[7] & 0xff;
     }
     
-    public final int getSource() {
+    public final int source() {
         return buf[8] & 0xff;
     }
     
-    public final int getReason() {
+    public final int reason() {
         return buf[9] & 0xff;
     }
     
@@ -67,4 +69,70 @@ final class AAssociateRJImpl implements AAssociateRJ {
         out.write(buf);
         out.flush();
     }
+
+    public String toString() {
+        return toStringBuffer(new StringBuffer()).toString();
+    }
+    
+    final StringBuffer toStringBuffer(StringBuffer sb) {
+        return sb.append("A-ASSOCIATE-RJ[result=").append(resultAsString())
+                .append(", source=").append(sourceAsString())
+                .append(", reason=").append(reasonAsString())
+                .append("]");
+    }    
+    
+    private String resultAsString() {
+        switch (result()) {
+            case REJECTED_PERMANENT:
+                return "1 - rejected-permanent";
+            case REJECTED_TRANSIENT:
+                return "2 - rejected-transient";
+            default:
+                return String.valueOf(result());
+        }
+    }
+
+    private String sourceAsString() {
+        switch (source()) {
+            case SERVICE_USER:
+                return "1 - service-user";
+            case SERVICE_PROVIDER_ACSE:
+                return "2 - service-provider (ACSE)";
+            case SERVICE_PROVIDER_PRES:
+                return "3 - service-provider (Presentation)";
+            default:
+                return String.valueOf(source());
+        }
+    }
+    
+    private String reasonAsString() {
+        switch (source()) {
+            case SERVICE_USER:
+                switch (reason()) {
+                    case NO_REASON_GIVEN:
+                        return "1 - no-reason-given";
+                    case APPLICATION_CONTEXT_NAME_NOT_SUPPORTED:
+                        return "2 - application-context-name-not-supported";
+                    case CALLING_AE_TITLE_NOT_RECOGNIZED:
+                        return "3 - calling-AE-title-not-recognized";
+                    case CALLED_AE_TITLE_NOT_RECOGNIZED:
+                        return "7 - called-AE-title-not-recognizedr";
+                }
+            case SERVICE_PROVIDER_ACSE:
+                switch (reason()) {
+                    case NO_REASON_GIVEN:
+                        return "1 - no-reason-given";
+                    case PROTOCOL_VERSION_NOT_SUPPORTED:
+                        return "2 - protocol-version-not-supported";
+                }
+            case SERVICE_PROVIDER_PRES:
+                switch (reason()) {
+                    case TEMPORARY_CONGESTION:
+                        return "1 - temporary-congestion";
+                    case LOCAL_LIMIT_EXCEEDED:
+                        return "2 - local-limit-exceeded";
+                }
+        }
+        return String.valueOf(reason());
+    }        
 }

@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
+ *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG                             *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,32 +21,47 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.net;
-
-import org.dcm4che.net.*;
-
-import java.io.*;
+package org.dcm4che.net;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
  */
-final class AAssociateRQImpl extends AAssociateRQACImpl
-        implements AAssociateRQ {
+public class DcmULServiceException extends Exception {
 
-    AAssociateRQImpl(UnparsedPDU raw) throws DcmULServiceException {
-        init(raw);
+    private final AAbort abort;
+    
+    /**
+     * Constructs an instance of <code>PDUParseException</code> with the
+     * specified detail message and corresponding A-Abort PDU.
+     * @param msg the detail message.
+     * @param abort corresponding A-Abort PDU.
+     */
+    public DcmULServiceException(String msg, AAbort abort) {
+        super(msg);
+        this.abort = abort;
     }
 
-    AAssociateRQImpl() {
+    /**
+     * Constructs a new throwable with the specified detail message and
+     * cause and corresponding A-Abort PDU.
+     *
+     * @param msg the detail message.
+     * @param  cause the cause.
+     * @param abort corresponding A-Abort PDU.
+     */
+    public DcmULServiceException(String msg, Throwable cause, AAbort abort) {
+        super(msg, cause);
+        this.abort = abort;
     }
     
-    protected int type() {
-        return 1;
-    }
-    
-    protected int pctype() {
-        return 0x20;
+    /**
+     * Returns corresponding A-Abort PDU.
+     * @return corresponding A-Abort PDU.
+     */
+    public final AAbort getAAbort() {
+        return abort;
     }
 }
+
+
