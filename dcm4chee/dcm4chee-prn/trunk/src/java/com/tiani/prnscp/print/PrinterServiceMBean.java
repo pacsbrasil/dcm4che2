@@ -982,6 +982,20 @@ public interface PrinterServiceMBean extends ServiceMBean
      */
     public void setPrintGrayscaleAtStartup(boolean printGrayscaleAtStartup);
 
+    /**
+     *  Gets the printGrayscaleAsImage attribute of the PrinterService object
+     *
+     * @return    The printGrayscaleAsImage value
+     */
+    public boolean isPrintGrayscaleAsImage();
+
+
+    /**
+     *  Sets the printGrayscaleAsImage attribute of the PrinterService object
+     *
+     * @param  printGrayscaleAsImage  The new printGrayscaleAsImage value
+     */
+    public void setPrintGrayscaleAsImage(boolean printGrayscaleAsImage);
 
     /**
      *  Getter for property printGrayAsColor.
