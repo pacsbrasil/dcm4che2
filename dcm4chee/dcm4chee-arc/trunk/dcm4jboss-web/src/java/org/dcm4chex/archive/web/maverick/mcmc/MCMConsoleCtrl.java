@@ -91,6 +91,7 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 			int mediaPk = Integer.parseInt( request.getParameter("mediaPk"));
            	MediaData md = model.mediaDataFromList( mediaPk );
            	if ( md != null ) {
+   			   model.updateMediaStatus( mediaPk, MediaDTO.QUEUED, "" );
 	           try {
 	 				JMSDelegate.queue( QUEUE,
 					        md.asMediaDTO(),
@@ -98,9 +99,8 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 					        0L);
 				} catch (JMSException e) {
 					
-					model.updateMediaStatus( mediaPk, MediaDTO.QUEUED, e.getMessage() );
+					model.updateMediaStatus( mediaPk, MediaDTO.ERROR, e.getMessage() );
 				}
-				model.updateMediaStatus( mediaPk, MediaDTO.QUEUED, "" );
            	}
 		} else if ( action.equalsIgnoreCase("check_mcm_avail") ) {
 			model.setMcmNotAvail( ! delegate.checkMcmScpAvail() );
