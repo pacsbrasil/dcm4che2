@@ -24,9 +24,9 @@
 package org.dcm4cheri.imageio.plugins;
 
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.*;
-import java.nio.*;
 import java.nio.*;
 import java.util.*;
 import java.text.*;
@@ -73,6 +73,21 @@ public class DcmImageWriter extends ImageWriter {
 	 */
 	public final static String    VERSION = "1.0";
 
+    private static final ColorSpace sRGB =
+       ColorSpace.getInstance(ColorSpace.CS_sRGB);
+    
+    private static final ImageTypeSpecifier RGB_PLANE =
+       ImageTypeSpecifier.createBanded(sRGB,
+          new int[]{0,1,2},
+          new int[]{0,0,0},
+          DataBuffer.TYPE_BYTE,
+          false,false);
+    
+    private static final ImageTypeSpecifier RGB_PIXEL =
+       ImageTypeSpecifier.createInterleaved(sRGB,
+          new int[]{0,1,2},
+          DataBuffer.TYPE_BYTE,
+          false,false);
   
   /**
    * Constructs an ImageWriter and sets its originatingProvider instance
@@ -84,6 +99,21 @@ public class DcmImageWriter extends ImageWriter {
     super(originatingProvider);
   }
   
+  public void setOutput(Object output)
+  {
+      if (output != null) {
+          if (output instanceof ImageOutputStream) {
+              this.output = (ImageOutputStream)output;
+          }
+          else {
+              throw new
+                  IllegalArgumentException("output is not an ImageOutputStream");
+          }
+      }
+      else {
+          this.output = null;
+      }
+  }
   
   /**
    * Returns an IIOMetadata object that may be used for encoding and optionally 
@@ -122,6 +152,8 @@ public class DcmImageWriter extends ImageWriter {
    */
   public IIOMetadata convertStreamMetadata(IIOMetadata inData, ImageWriteParam param) {
     // The DcmImageWriter can not encode other IIOMetadata types
+    if (inData instanceof DcmMetadata)
+        return inData;
     return null;
   }
   
@@ -172,7 +204,7 @@ public class DcmImageWriter extends ImageWriter {
    * structure of the stream metadata.<br>
    * If the supplied ImageWriteParam contains optional setting values not supported 
    * by this writer, they will be ignored.<br>
-   * The returned metadata are sufficient to construct a Sacondary Capture Image IOD.
+   * The returned metadata are sufficient to construct a Secondary Capture Image IOD.
    * @param param an ImageWriteParam that will be used to encode the image, or null.
    * @return an DcmMetadata object which is a subclass of an IIOMetadata object.
    */
@@ -182,6 +214,7 @@ public class DcmImageWriter extends ImageWriter {
     Date              now = new Date();
     SimpleDateFormat  dateFormatter = new SimpleDateFormat("yyyyMMdd");
     SimpleDateFormat  timeFormatter = new SimpleDateFormat("HHmmss.SSS");
+    DcmImageWriteParam dcmParam = (DcmImageWriteParam)param;
     
     ds = DcmObjectFactory.getInstance().newDataset();
     uidGen = UIDGenerator.getInstance();
@@ -236,8 +269,8 @@ public class DcmImageWriter extends ImageWriter {
     
     
     // Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
-    // ds.putUS(Tags.SamplesPerPixel, -1);                                             // Type 1
-    // ds.putCS(Tags.PhotometricInterpretation, "");                                   // Type 1
+    //ds.putUS(Tags.SamplesPerPixel, spp);                                             // Type 1
+    //ds.putCS(Tags.PhotometricInterpretation, "");                                   // Type 1
     // ds.putUS(Tags.Rows, -1);                                                        // Type 1
     // ds.putUS(Tags.Columns, -1);                                                     // Type 1
     // ds.putUS(Tags.BitsAllocated, -1);                                               // Type 1
@@ -283,7 +316,6 @@ public class DcmImageWriter extends ImageWriter {
     return new DcmMetadataImpl(ds);
   }
   
-  
   /**
    * Appends a complete image stream containing a single image to the output. 
    * Any necessary header nformation is included.
@@ -300,19 +332,26 @@ public class DcmImageWriter extends ImageWriter {
    * by this writer, they will be ignored.
    * @param streamMetadata an IIOMetadata object representing stream metadata, or 
    *                       null to use default values.
-   * @param image an IIOImage object containing an image, thumbnails, and metadata 
+   * @param ioImage an IIOImage object containing an image, thumbnails, and metadata 
    *              to be written.
    * @param param an ImageWriteParam, or null to use a default ImageWriteParam.
    * @throws IllegalStateException  if the output has not been set.
    * @throws UnsupportedOperationException if image  contains a Raster and 
    *                                       canWriteRasters  returns false. 
-   * @throws IllegalArgumentException if image is null.
+   * @throws IllegalArgumentException if ioImage is null.
    * @throws IOException if an error occurs during writing.
    */
   public void write(IIOMetadata streamMetadata, IIOImage ioImage, ImageWriteParam param) throws IOException {
     Dataset             ds;
     DcmImageWriteParam  dcmParam;
-    
+    DcmMetadata dcmMetaData;
+
+    //TODO if param == null then make image consistent with imagepixel module in streammetadata,
+    // otherwise create streamMetadata  (if null) from params in param.
+    // otherwise if streammetadata != null as well, then should we check for consistency between it and param
+    //  with any common attributes having their value taken from param instead...
+    // and if neither are supplied, get default meta data
+
     // Gueltigkeit der Parameter ueberpruefen
     if (output == null) {
       throw new IllegalStateException("output == null" + this);
@@ -330,19 +369,28 @@ public class DcmImageWriter extends ImageWriter {
       throw new IllegalArgumentException("RenderedImage == null" + this);
     }
     
-    if (! (streamMetadata instanceof DcmMetadata)) {
-      throw new IllegalArgumentException("streamMetadata != DcmImageMetadata" + this);
-    }
-    
-    // dcmParam setzen, ggf. DefaultWriteParam verwenden
-    if (param == null) {
-      param = this.getDefaultWriteParam();
-    } else {
-      if (! (param instanceof DcmImageWriteParam)) {
+    // dcm params
+    if (param != null
+        && !(param instanceof DcmImageWriteParam)) {
         throw new UnsupportedOperationException("param != DcmImageWriteParam" + this);
-      }
     }
-    dcmParam = (DcmImageWriteParam) param;
+    else if (param == null) {
+        dcmParam = (DcmImageWriteParam)getDefaultWriteParam();
+    }
+    else {
+        dcmParam = (DcmImageWriteParam)param;
+    }
+    // dcmMetaData
+    if (streamMetadata != null
+        && !(streamMetadata instanceof DcmMetadata)) {
+        throw new IllegalArgumentException("streamMetadata != DcmImageMetadata" + this);
+    }
+    else if (streamMetadata == null) {
+        dcmMetaData = (DcmMetadata)getDefaultStreamMetadata(dcmParam); //ignores dcmParam, just creates a dummy dataset
+    }
+    else {
+        dcmMetaData = (DcmMetadata)streamMetadata;
+    }
     
     //>>>>>>>>>>>>>>>>>>>
     // Test
@@ -353,40 +401,65 @@ public class DcmImageWriter extends ImageWriter {
     // dcmParam.setHighBit(11);
     // dcmParam.setWriteAlwaysRGB(true);
     //<<<<<<<<<<<<<<<<<<<
+
+    //get rendered image
+    BufferedImage bi = (BufferedImage)ioImage.getRenderedImage();
     
     // Das Dataset aus den Metadaten extrahieren
-    ds = ((DcmMetadata) streamMetadata).getDataset();
-
+    ds = dcmMetaData.getDataset();
+    
     // Ggf. File-Meta-Information-Block schreiben
     if (dcmParam.isWriteFMI()) {
       DcmObjectFactory.getInstance().newFileMetaInfo(ds, UIDs.ImplicitVRLittleEndian).write((ImageOutputStream) output);
     }
     
+    int dataType = bi.getRaster().getDataBuffer().getDataType();
+    boolean color = (dcmParam.isWriteAlwaysRGB() || dcmParam.isWriteIndexedAsRGB());
+    
+    switch (dataType)
+    {
+        case DataBuffer.TYPE_BYTE:
+            if (color)
+                writeRGB(bi, dcmParam, ds);
+            else
+                writeMONOCHROME(bi, dcmParam, ds);
+            break;
+        case DataBuffer.TYPE_USHORT:
+            if (color)
+                writePALETTE(bi, dcmParam, ds);
+            else
+                writeMONOCHROME(bi, dcmParam, ds);
+            break;
+        default: //unsupported primitive type in the backing DataBuffer of our image
+            throw new IllegalArgumentException("Images with DataBuffer type == "
+                                               + dataType + " are not supported");
+    }
+    
     // Alle nicht speziell implementierten Typen des BufferedImage werden nach
     // RGB konvertiert und so geschreben
-    switch (((BufferedImage) ioImage.getRenderedImage()).getType()) {
+    /*switch (bi.getType()) {
       
       case BufferedImage.TYPE_BYTE_GRAY:
       case BufferedImage.TYPE_USHORT_GRAY:
         if (dcmParam.isWriteAlwaysRGB()) {
-          writeRGB((BufferedImage) ioImage.getRenderedImage(), dcmParam, ds);
+          writeRGB(bi, dcmParam, ds);
         } else {
-          writeMONOCHROME((BufferedImage) ioImage.getRenderedImage(), dcmParam, ds);
+          writeMONOCHROME(bi, dcmParam, ds);
         }
         break;
         
       case BufferedImage.TYPE_BYTE_INDEXED:
         if (dcmParam.isWriteAlwaysRGB() | dcmParam.isWriteIndexedAsRGB()) {
-          writeRGB((BufferedImage) ioImage.getRenderedImage(), dcmParam, ds);
+          writeRGB(bi, dcmParam, ds);
         } else {
-          writePALETTE((BufferedImage) ioImage.getRenderedImage(), dcmParam, ds);
+          writePALETTE(bi, dcmParam, ds);
         }
         break;
         
       case BufferedImage.TYPE_INT_RGB:
       default:
-        writeRGB((BufferedImage) ioImage.getRenderedImage(), dcmParam, ds);
-    }
+        writeRGB(bi, dcmParam, ds);
+    }*/
     
   }
   
@@ -398,7 +471,9 @@ public class DcmImageWriter extends ImageWriter {
    * @param ds the Dataset as given by the IIOMetadata.
    * @throws IOException if an error occurs during writing.
    */
-  private void writeRGB(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds) throws IOException, IllegalArgumentException {
+  private void writeRGB(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds)
+    throws IOException, IllegalArgumentException
+  {
     ByteBuffer      byteBuf;
     int[]           dataBuf;
     int             dataBufIndex;
@@ -475,7 +550,9 @@ public class DcmImageWriter extends ImageWriter {
    * @param ds the Dataset as given by the IIOMetadata.
    * @throws IOException if an error occurs during writing.
    */
-  private void writeMONOCHROME(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds) throws IOException, IllegalArgumentException {
+  private void writeMONOCHROME(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds)
+    throws IOException, IllegalArgumentException
+  {
     BufferedImage     bi;
     int               bitsAllocated;
     int               bitsStored;
@@ -500,13 +577,12 @@ public class DcmImageWriter extends ImageWriter {
     // in ein 16 Bit Grauwertbild konvertiert. Aus dem 8-Bit Wert 0xaa wird im
     // Datenbuffer des 16 Bit Bildes 0xaaaa.
     // Deshalb zunaechst Konvertierung von 8 nach 16 Bit:
-    switch (sourceImage.getType()) {
+    switch (sourceImage.getRaster().getDataBuffer().getDataType()) {
       
-      case BufferedImage.TYPE_USHORT_GRAY:
+      case DataBuffer.TYPE_USHORT:
         // Keine Konvertierung notwendig
         break;
-      
-      case BufferedImage.TYPE_BYTE_GRAY:
+      case DataBuffer.TYPE_BYTE:
         // Ein neues BufferedImage mit definierten Eigenschaften erzeugen:
         // - ComponentColorModel
         // - PixelInterleavedSampleModel (superclass: ComponentSampleModel)
@@ -534,10 +610,8 @@ public class DcmImageWriter extends ImageWriter {
         // Mit diesem BufferedImage weiterarbeiten
         sourceImage = bi;
         break;
-      
       default:
-        throw new IllegalArgumentException("BufferedImage not TYPE_USHORT_GRAY or TYPE_BYTE_GRAY." + this);
-        
+        throw new IllegalArgumentException("BufferedImage not TYPE_USHORT or TYPE_BYTE." + this);
     }
 
     // Die Source-Region (Rechteck) mit dem sourceImage clippen
@@ -577,7 +651,8 @@ public class DcmImageWriter extends ImageWriter {
     ds.putUS(Tags.SamplesPerPixel, 1);                          // Type 1
     if (dcmParam.isMONOCHROME2()) {
       ds.putCS(Tags.PhotometricInterpretation, "MONOCHROME2");  // Type 1
-    } else {
+    }
+    else {
       ds.putCS(Tags.PhotometricInterpretation, "MONOCHROME1");  // Type 1
     }
     ds.putUS(Tags.Rows, destinationImage.getHeight());          // Type 1
@@ -588,10 +663,11 @@ public class DcmImageWriter extends ImageWriter {
     
     bitsStored = dcmParam.getBitsStored();
     if (bitsStored == -1) {
-      bitsStored = 16;
-    } else {
+      bitsStored = bitsAllocated;
+    }
+    else {
       if ((bitsStored < 1) || (bitsStored > bitsAllocated)) {
-        bitsStored = 16;
+        bitsStored = bitsAllocated;
       }
     }
     ds.putUS(Tags.BitsStored, bitsStored);                      // Type 1
@@ -618,7 +694,7 @@ public class DcmImageWriter extends ImageWriter {
       value = dataBuf[dataBufIndex];
       intValue = ((int) value) & 0xffff;
       if (intValue > max) max = intValue;
-      if (intValue < min) min = intValue;
+      else if (intValue < min) min = intValue;
       byteBuf.putShort(value);
       dataBufIndex++;
     }
@@ -766,5 +842,29 @@ public class DcmImageWriter extends ImageWriter {
     // Dataset schreiben
     ds.writeDataset((ImageOutputStream) output, DcmEncodeParam.valueOf(UIDs.ImplicitVRLittleEndian));
 
-  }  
+  }
+  
+  public static void main(String[] args)
+      throws IOException
+  {
+      BufferedImage bi;
+      final String testimg = "/home/joe/work/dicom-images/MR001.dcm";
+      DcmImageReader rdr;
+      Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
+      rdr = (DcmImageReader) iter.next();
+      rdr.setInput(ImageIO.createImageInputStream(new File(testimg)));
+      bi = rdr.read(0);
+      System.out.println("read ok");
+      iter = ImageIO.getImageWritersByFormatName("DICOM");
+      DcmImageWriter writer = (DcmImageWriter) iter.next();
+      writer.setOutput(ImageIO.createImageOutputStream(new File(testimg + ".out")));
+      DcmMetadata dcmmd = (DcmMetadata)rdr.getStreamMetadata();
+      DcmImageWriteParam wparam = (DcmImageWriteParam)writer.getDefaultWriteParam();
+      wparam.setWriteAlwaysRGB(false);
+      wparam.setWriteIndexedAsRGB(false);
+      wparam.setMONOCHROME2(true);
+      writer.write(dcmmd, new IIOImage(bi,null,null), wparam);
+      System.out.println("datatype = " + bi.getType() + ", db.type = " + bi.getRaster().getDataBuffer().getDataType());
+      System.out.println("write ok");
+  }
 }

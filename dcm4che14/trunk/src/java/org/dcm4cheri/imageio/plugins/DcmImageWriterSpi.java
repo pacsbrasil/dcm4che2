@@ -99,7 +99,9 @@ public class DcmImageWriterSpi extends ImageWriterSpi {
    * @return allways true.
    * @throws IllegalArgumentException if type is null.
    */
-  public boolean canEncodeImage(ImageTypeSpecifier type) {
+  public boolean canEncodeImage(ImageTypeSpecifier type)
+      throws IllegalArgumentException
+  {
     return true;
   }
   
@@ -116,7 +118,9 @@ public class DcmImageWriterSpi extends ImageWriterSpi {
    *         IllegalArgumentException to indicate that the extension object is 
    *         unsuitable.
    */
-  public ImageWriter createWriterInstance(Object extension) throws IOException {
+  public ImageWriter createWriterInstance(Object extension)
+    throws IOException
+  {
         return new DcmImageWriter(this);
   }
   
@@ -125,7 +129,8 @@ public class DcmImageWriterSpi extends ImageWriterSpi {
    * Returns the Locale associated with this writer.
    * @return the Locale.
    */
-  public String getDescription(Locale locale) {
+  public String getDescription(Locale locale)
+  {
     return "DICOM image writer";
   }
   
