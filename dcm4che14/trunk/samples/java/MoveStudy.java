@@ -47,17 +47,8 @@ import org.dcm4che.util.SSLContextAdapter;
  *  <description>
  *
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  February 19, 2003
+ * @since  February 19, 2003
  * @version  $Revision$ <p>
- *
- *      <b>Revisions:</b> <p>
- *
- *      <b>yyyymmdd author:</b>
- *      <ul>
- *        <li> explicit fix description (no line numbers but methods) go beyond
- *        the cvs commit message
- *      </ul>
- *
  */
 public class MoveStudy
 {
@@ -124,8 +115,8 @@ public class MoveStudy
         acTimeout = Integer.parseInt(cfg.getProperty("ac-timeout", "5000"));
         dimseTimeout = Integer.parseInt(cfg.getProperty("dimse-timeout", "0"));
         soCloseDelay = Integer.parseInt(cfg.getProperty("so-close-delay", "500"));
-        assocRQ.setCalledAET(maskNull(url.getCalledAET()));
-        assocRQ.setCallingAET(url.getCallingAET());
+        assocRQ.setCalledAET(url.getCalledAET());
+        assocRQ.setCallingAET(maskNull(url.getCallingAET()));
         assocRQ.setMaxPDULength(
                 Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
         assocRQ.addPresContext(af.newPresContext(PCID_FIND,
@@ -143,14 +134,14 @@ public class MoveStudy
                 return;
             }
             tls = SSLContextAdapter.getInstance();
-            char[] keypasswd = cfg.getProperty("tls-key-passwd", "iheihe").toCharArray();
+            char[] keypasswd = cfg.getProperty("tls-key-passwd", "dcm4che").toCharArray();
             tls.setKey(tls.loadKeyStore(
-                    MoveStudy.class.getResource(cfg.getProperty("tls-key", "test_sys_1.p12")),
+                    MoveStudy.class.getResource(cfg.getProperty("tls-key", "identity.p12")),
                     keypasswd),
                     keypasswd);
             tls.setTrust(tls.loadKeyStore(
                     MoveStudy.class.getResource(cfg.getProperty("tls-cacerts", "cacerts.jks")),
-                    cfg.getProperty("tls-cacerts-passwd", "iheihe").toCharArray()));
+                    cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
             tls.init();
         } catch (Exception ex) {
            throw new RuntimeException("Could not initalize TLS configuration: ", ex);

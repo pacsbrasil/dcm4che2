@@ -152,12 +152,14 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
                 Dataset ds2 = sq2.getItem(i2);
                 String seriesInstanceUID = ds2.getString(Tags.SeriesInstanceUID);
                 DcmElement sq3 = ds2.get(Tags.RefSOPSeq);
-                for (int i3 = 0, n3 = sq3.vm(); i3 < n3; ++i3) {
-                    Dataset ds3 = sq3.getItem(i3);
-                    list.add(new SOPInstanceRefImpl(
-                            ds3.getString(Tags.RefSOPClassUID),
-                            ds3.getString(Tags.RefSOPInstanceUID),
-                            seriesInstanceUID, studyInstanceUID));
+                if (sq3 != null) {
+                    for (int i3 = 0, n3 = sq3.vm(); i3 < n3; ++i3) {
+                        Dataset ds3 = sq3.getItem(i3);
+                        list.add(new SOPInstanceRefImpl(
+                                ds3.getString(Tags.RefSOPClassUID),
+                                ds3.getString(Tags.RefSOPInstanceUID),
+                                seriesInstanceUID, studyInstanceUID));
+                    }
                 }
             }
         }

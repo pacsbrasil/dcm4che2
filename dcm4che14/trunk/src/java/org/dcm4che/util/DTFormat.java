@@ -103,8 +103,9 @@ public class DTFormat extends SimpleDateFormat {
         if (zpos >= 0) {
             char ch = source.charAt(zpos);
             if (ch == '+' || ch == '-') {
-                calendar.set(Calendar.ZONE_OFFSET, 
-                    Integer.parseInt(source.substring(zpos)));
+                calendar.set(Calendar.ZONE_OFFSET,
+                    Integer.parseInt(
+                        source.substring(ch == '-' ? zpos : (zpos+1))));
                 calendar.set(Calendar.DST_OFFSET, 0);
                 return source.substring(0, zpos);
             }

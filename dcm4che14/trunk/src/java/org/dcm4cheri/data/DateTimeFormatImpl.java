@@ -172,11 +172,13 @@ public final class DateTimeFormatImpl
                 float frac = Float.parseFloat(s.substring(2,Math.min(l,9)));
                 c.set(Calendar.MILLISECOND, (int)(frac*1000));
                 if (l > 9) {
+                    int sign = 1;
                     switch (s.charAt(9)) {
-                        case '+':
                         case '-':
-                            c.set(Calendar.ZONE_OFFSET,
-                                    Integer.parseInt(s.substring(9,l)));
+                            sign = -1;
+                        case '+':
+                            c.set(Calendar.ZONE_OFFSET, sign *
+                                    Integer.parseInt(s.substring(10,l)));
                             break;
                         default:
                             throw new IllegalArgumentException(s);

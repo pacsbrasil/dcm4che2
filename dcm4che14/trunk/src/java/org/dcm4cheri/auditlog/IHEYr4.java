@@ -267,7 +267,9 @@ class IHEYr4
         sb.append("<Host>").append(host).append("</Host><TimeStamp>");
         new SimpleDateFormat(ISO8601_FORMAT).format(new Date(millis), sb,
                 new FieldPosition(SimpleDateFormat.YEAR_FIELD));
+        String mm = sb.substring(sb.length() - 2);
         sb.setLength(sb.length() - 2);
+        sb.append(':').append(mm);
         sb.append("</TimeStamp></IHEYr4>");
         return sb.toString();
     }
