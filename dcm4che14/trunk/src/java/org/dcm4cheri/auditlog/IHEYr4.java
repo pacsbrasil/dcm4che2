@@ -257,8 +257,8 @@ class IHEYr4
         StringBuffer sb = new StringBuffer(512);
         sb.append("<IHEYr4>");
         msg.writeTo(sb);
-        sb.append("<Host>").append(host).append("</Host><TimeStamp>")
-        sb.append(new ISO8601DateFormat().format(new Date(millis));
+        sb.append("<Host>").append(host).append("</Host><TimeStamp>");
+        sb.append(new ISO8601DateFormat().format(new Date(millis)));
         sb.append("</TimeStamp></IHEYr4>");
         return sb.toString();
     }
