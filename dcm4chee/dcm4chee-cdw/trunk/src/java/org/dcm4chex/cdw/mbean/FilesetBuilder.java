@@ -123,11 +123,11 @@ class FilesetBuilder {
                 .getString(Tags.PreserveCompositeInstancesAfterMediaCreation));
         this.viewer = Flag.isYes(attrs
                 .getString(Tags.IncludeDisplayApplication));
-        this.web = attrs.getString(Tags.IncludeNonDICOMObjects, "NONE");
+        this.web = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
     }
 
     final boolean isWeb() {
-        return !"NONE".equals(web);
+        return !"NO".equals(web);
     }
 
     public void build() throws MediaCreationException {
@@ -234,7 +234,7 @@ class FilesetBuilder {
                         }
                 if (iconItem != null)
                         rec.putSQ(Tags.IconImageSeq).addItem(iconItem);
-                if (!"NONE".equals(web)) {
+                if (isWeb()) {
                     if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                             && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
                         log

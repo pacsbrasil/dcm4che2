@@ -152,7 +152,6 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     public final void setFileSetDescriptorFile(String fname) {
         checkExists(new File(mergeDir, fname));
-        checkExists(new File(mergeDirViewer, fname));
         this.fileSetDescriptorFile = fname;
     }
 
@@ -207,9 +206,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
     public final boolean isLogXml() {
         return logXml;
     }
+    
     public final void setLogXml(boolean logXml) {
         this.logXml = logXml;
     }
+    
     public final ObjectName getSpoolDirName() {
         return spoolDir.getSpoolDirName();
     }
@@ -223,6 +224,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
+        log.info("load " + WebBuilder.class.getName());
         JMSDelegate.getInstance().setMediaComposerListener(listener);
     }
 

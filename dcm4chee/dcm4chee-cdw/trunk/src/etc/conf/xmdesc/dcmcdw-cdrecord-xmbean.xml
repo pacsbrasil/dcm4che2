@@ -172,4 +172,8 @@
       <name>hasTOC</name>
       <return-type>boolean</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Eject Media</description>
+      <name>eject</name>
+   </operation>
 </mbean>

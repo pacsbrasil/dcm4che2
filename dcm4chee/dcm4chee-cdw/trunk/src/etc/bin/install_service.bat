@@ -16,9 +16,9 @@ if "%1" == "server" goto install
 if "%1" == "client" goto install
 echo "Usage: %0 server|client|uninstall"
 echo Options:
-echo   client    install "DICOM Media Creation Mgt." service, using client hotspot vm
-echo   server    install "DICOM Media Creation Mgt." service, using server hotspot vm
-echo   uninstall uninstall "DICOM Media Creation Mgt." service
+echo   client    install "DICOM CD Writer" service, using client hotspot vm
+echo   server    install "DICOM CD Writer" service, using server hotspot vm
+echo   uninstall uninstall "DICOM CD Writer" service
 goto eof
 
 :install
@@ -42,11 +42,11 @@ echo Could not locate %TOOLS_JAR%. Unexpected results may occur.
 echo Make sure that JAVA_HOME points to a JDK and not a JRE.
 
 :install
-JavaService.exe -install "DICOM Media Creation Mgt." "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -params -c dcmcdw -stop org.jboss.Main -method systemExit  -out %DIRNAME%..\server\dcmcdw\log\install_service.log -current %DIRNAME%
+JavaService.exe -install "DICOM CD Writer" "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -params -c dcmcdw -stop org.jboss.Main -method systemExit  -out %DIRNAME%..\server\dcmcdw\log\install_service.log -current %DIRNAME%
 goto eof
 
 :uninstall
-JavaService.exe -uninstall "DICOM Media Creation Mgt."
+JavaService.exe -uninstall "DICOM CD Writer"
 goto eof
 
 :eof

@@ -47,8 +47,8 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     private static final String RAW16 = "raw16";
 
-    private static final String[] WRITE_MODES = { TAO, DAO, SAO, RAW, RAW96R,
-            RAW96P, RAW16};
+    private static final String[] WRITE_MODES =
+        { TAO, DAO, SAO, RAW, RAW96R, RAW96P, RAW16 };
 
     private static final String DATA = "data";
 
@@ -62,8 +62,8 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     private static final String XAMIX = "xamix";
 
-    private static final String[] TRACK_TYPES = { DATA, MODE2, XA, XA1, XA2,
-            XAMIX};
+    private static final String[] TRACK_TYPES =
+        { DATA, MODE2, XA, XA1, XA2, XAMIX };
 
     private String device = "0,0";
 
@@ -89,7 +89,8 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     public CDRecordService() {
         File homedir = ServerConfigLocator.locate().getServerHomeDir();
-        logFile = new File(homedir, "log" + File.separatorChar + "cdrecord.log");
+        logFile =
+            new File(homedir, "log" + File.separatorChar + "cdrecord.log");
     }
 
     public final boolean isPadding() {
@@ -138,7 +139,7 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     public final void setTrackType(String trackType) {
         if (Arrays.asList(TRACK_TYPES).indexOf(trackType) == -1)
-                throw new IllegalArgumentException("trackType:" + trackType);
+            throw new IllegalArgumentException("trackType:" + trackType);
         this.trackType = trackType;
     }
 
@@ -148,7 +149,7 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     public final void setWriteMode(String writeMode) {
         if (Arrays.asList(WRITE_MODES).indexOf(writeMode) == -1)
-                throw new IllegalArgumentException("writeMode:" + writeMode);
+            throw new IllegalArgumentException("writeMode:" + writeMode);
         this.writeMode = writeMode;
     }
 
@@ -158,7 +159,7 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     public final void setWriteSpeed(int writeSpeed) {
         if (writeSpeed < 0)
-                throw new IllegalArgumentException("writeSpeed:" + writeSpeed);
+            throw new IllegalArgumentException("writeSpeed:" + writeSpeed);
         this.writeSpeed = writeSpeed;
     }
 
@@ -179,17 +180,23 @@ public class CDRecordService extends AbstractMediaWriterService {
     }
 
     protected void handle(MediaCreationRequest r, Dataset attrs)
-            throws MediaCreationException {
+        throws MediaCreationException {
         if (!checkDrive())
-                throw new MediaCreationException(
-                        ExecutionStatusInfo.CHECK_MCD_SRV, "Drive Check failed");
-        if (!checkDisk())
-                throw new MediaCreationException(
-                        ExecutionStatusInfo.OUT_OF_SUPPLIES,
-                        "No or Wrong Media");
-        if (hasTOC() && !appendEnabled)
-                throw new MediaCreationException(
-                        ExecutionStatusInfo.OUT_OF_SUPPLIES, "Media not empty");
+            throw new MediaCreationException(
+                ExecutionStatusInfo.CHECK_MCD_SRV,
+                "Drive Check failed");
+        if (!checkDisk()) {
+            eject();
+            throw new MediaCreationException(
+                ExecutionStatusInfo.OUT_OF_SUPPLIES,
+                "No or Wrong Media");
+        }
+        if (!appendEnabled && hasTOC()) {
+            eject();
+            throw new MediaCreationException(
+                ExecutionStatusInfo.OUT_OF_SUPPLIES,
+                "Media not empty");
+        }
         burn(r.getIsoImageFile());
     }
 
@@ -201,31 +208,42 @@ public class CDRecordService extends AbstractMediaWriterService {
             cmd.add("cdrecord");
             cmd.add("dev=" + device);
             cmd.add("speed=" + writeSpeed);
-            if (simulate) cmd.add("-dummy");
-            if (eject) cmd.add("-eject");
-            if (!TAO.equals(writeMode)) cmd.add("-" + writeMode);
-            if (multiSession) cmd.add("-multi");
+            if (simulate)
+                cmd.add("-dummy");
+            if (eject)
+                cmd.add("-eject");
+            if (!TAO.equals(writeMode))
+                cmd.add("-" + writeMode);
+            if (multiSession)
+                cmd.add("-multi");
             cmd.add("-s");
             cmd.add(padding ? "-pad" : "-nopad");
             cmd.add("-" + trackType);
             cmd.add(isoImageFile.getAbsolutePath());
             String[] cmdarray = (String[]) cmd.toArray(new String[cmd.size()]);
             if (logEnabled)
-                logout = new BufferedOutputStream(new FileOutputStream(logFile));
+                logout =
+                    new BufferedOutputStream(new FileOutputStream(logFile));
             exitCode = new Executer(cmdarray, logout, null).waitFor();
         } catch (InterruptedException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
+            throw new MediaCreationException(
+                ExecutionStatusInfo.PROC_FAILURE,
+                e);
         } catch (IOException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
+            throw new MediaCreationException(
+                ExecutionStatusInfo.PROC_FAILURE,
+                e);
         } finally {
             if (logout != null)
-                try { logout.close(); } catch (IOException ignore) {}
+                try {
+                    logout.close();
+                } catch (IOException ignore) {}
         }
-        if (exitCode != 0) { throw new MediaCreationException(
-                ExecutionStatusInfo.MCD_FAILURE, "cdrecord " + isoImageFile
-                        + " returns " + exitCode); }
+        if (exitCode != 0) {
+            throw new MediaCreationException(
+                ExecutionStatusInfo.MCD_FAILURE,
+                "cdrecord " + isoImageFile + " returns " + exitCode);
+        }
     }
 
     public boolean checkDrive() throws MediaCreationException {
@@ -240,9 +258,20 @@ public class CDRecordService extends AbstractMediaWriterService {
         return cdrecord("-toc", "track");
     }
 
+    public void eject() {
+        String[] cmdarray = { "cdrecord", "dev=" + device, "-eject" };
+        try {
+            int exit = new Executer(cmdarray, null, null).waitFor();
+            if (exit != 0)
+                log.warn("Failed to eject Media: exit(" + exit + ")");
+        } catch (Exception e) {
+            log.warn("Failed to eject Media:", e);
+        }
+    }
+
     private boolean cdrecord(String option, String match)
-            throws MediaCreationException {
-        String[] cmdarray = { "cdrecord", "dev=" + device, option};
+        throws MediaCreationException {
+        String[] cmdarray = { "cdrecord", "dev=" + device, option };
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             Executer ex = new Executer(cmdarray, stdout, null);
@@ -252,11 +281,13 @@ public class CDRecordService extends AbstractMediaWriterService {
                 log.debug("cdrecord stdout: " + result);
             return exit == 0 && result.indexOf(match) != -1;
         } catch (InterruptedException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
+            throw new MediaCreationException(
+                ExecutionStatusInfo.PROC_FAILURE,
+                e);
         } catch (IOException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
+            throw new MediaCreationException(
+                ExecutionStatusInfo.PROC_FAILURE,
+                e);
         }
     }
 
