@@ -85,7 +85,7 @@
       operation. Use '\' (backslash) as delimiter. "NONE" = Do not supress
       Audit Trails according the initiator AET.
       </description>
-      <name>DisableForAETs</name>
+      <name>SupressLogForAETs</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="MOVE_SCU" />
