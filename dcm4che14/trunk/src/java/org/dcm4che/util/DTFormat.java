@@ -47,28 +47,41 @@ public class DTFormat extends SimpleDateFormat {
         calendar.clear();
         try {
             String s = parseTZ(source);
+            int p = 0;
             int l = s.length();
             calendar.set(Calendar.YEAR,
-                Integer.parseInt(s.substring(0,4)));
-            pos.setIndex(4);
-            if (l > 4) {
+                Integer.parseInt(s.substring(p,p+4)));
+            pos.setIndex(p+=4);
+            if (l > p) {
+                if (s.charAt(p) == '-') {
+                    pos.setIndex(++p);
+                }
                 calendar.set(Calendar.MONTH,
-                    Integer.parseInt(s.substring(4,6)) - 1);
-                pos.setIndex(6);
-                if (l > 6) {
+                    Integer.parseInt(s.substring(p,p+2)) - 1);
+                pos.setIndex(p+=2);
+                if (l > p) {
+                    if (s.charAt(p) == '-') {
+                        pos.setIndex(++p);
+                    }
                     calendar.set(Calendar.DAY_OF_MONTH,
-                        Integer.parseInt(s.substring(6,8)));
-                    pos.setIndex(8);
-                    if (l > 8) {
+                        Integer.parseInt(s.substring(p,p+2)));
+                    pos.setIndex(p+=2);
+                    if (l > p) {
                         calendar.set(Calendar.HOUR_OF_DAY,
-                            Integer.parseInt(s.substring(8,10)));
-                        pos.setIndex(10);
-                        if (l > 10) {
+                            Integer.parseInt(s.substring(p,p+2)));
+                        pos.setIndex(p+=2);
+                        if (l > p) {
+                            if (s.charAt(p) == ':') {
+                                pos.setIndex(++p);
+                            }
                             calendar.set(Calendar.MINUTE,
-                                Integer.parseInt(s.substring(10,12)));
-                            pos.setIndex(12);
-                            if (l > 12) {
-                                float f = Float.parseFloat(s.substring(12));
+                                Integer.parseInt(s.substring(p,p+2)));
+                            pos.setIndex(p+=2);
+                            if (l > p) {
+                                if (s.charAt(p) == ':') {
+                                    pos.setIndex(++p);
+                                }
+                                float f = Float.parseFloat(s.substring(p));
                                 int i = (int) f;
                                 calendar.set(Calendar.SECOND, i);
                                 calendar.set(Calendar.MILLISECOND,

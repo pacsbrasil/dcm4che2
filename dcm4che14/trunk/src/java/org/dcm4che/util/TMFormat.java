@@ -50,7 +50,6 @@ public class TMFormat extends SimpleDateFormat {
     // Constructors --------------------------------------------------
     public TMFormat() {
         super("HHmmss.SSS");
-        setTimeZone(TimeZone.getTimeZone("GMT"));
     }
     
     // Methods -------------------------------------------------------

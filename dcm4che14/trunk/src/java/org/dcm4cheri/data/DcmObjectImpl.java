@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDDictionary;
 import org.dcm4che.dict.VRMap;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.util.DTFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -44,7 +46,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version $Revision$ $Date$
  */
 abstract class DcmObjectImpl implements DcmObject {
-    private static long MS_PER_DAY = 24 * 3600000L;
 
     static UIDDictionary DICT =
         DictionaryFactory.getInstance().getDefaultUIDDictionary();
@@ -832,9 +833,9 @@ abstract class DcmObjectImpl implements DcmObject {
             if (time == null || time.isEmpty()) {
                 return date.getDate();
             }
-            return new Date(date.getDate().getTime()
-            		+ time.getDate().getTime());
-        } catch (DcmValueException e) {
+            String dt = date.getString(null) + time.getString(null); 
+            return new DTFormat().parse(dt);
+        } catch (Exception e) {
             return null;
         }
     }
@@ -847,31 +848,48 @@ abstract class DcmObjectImpl implements DcmObject {
      * @return          The dateTimeRange value
      */
     public Date[] getDateTimeRange(int dateTag, int timeTag) {
+        DcmElement time = get(timeTag);
+        if (time == null || time.isEmpty()) {
+            return getDateRange(dateTag);
+        }
         DcmElement date = get(dateTag);
         if (date == null || date.isEmpty()) {
             return null;
         }
-
         try {
-            Date[] dateRange = date.getDateRange();
-            DcmElement time = get(timeTag);
-            Date[] timeRange = (time == null || time.isEmpty()) ? null 
-            	    : time.getDateRange();
-            if (dateRange[0] != null && timeRange != null && timeRange[0] != null)
-            	dateRange[0] = new Date(dateRange[0].getTime() 
-            			+ timeRange[0].getTime());
-            if (dateRange[1] != null)
-            	dateRange[1] = new Date(dateRange[1].getTime() 
-            			+ (timeRange != null && timeRange[1] != null 
-            					? timeRange[1].getTime()
-            					: MS_PER_DAY - 1));
-            return dateRange; 
+        	String[] dateRange = splitRange(date.getString(null));
+        	String[] timeRange = splitRange(time.getString(null));
+        	Date[] result = new Date[2];
+        	DTFormat f = new DTFormat();
+        	if (dateRange[0] != null) {
+        		result[0] = f.parse(dateRange[0] 
+        		          + (timeRange[0] == null ? "" : timeRange[0]));
+        	}
+        	if (dateRange[1] != null) {
+        		result[1] = f.parse(dateRange[1] 
+        		          + (timeRange[1] == null ? "235959.999" : timeRange[1]));
+        	}
+            return result; 
+        } catch (ParseException e) {
+            return null;
         } catch (DcmValueException e) {
             return null;
         }
     }
 
-    /**
+	private static String[] splitRange(String range) {
+        int hypen = range.indexOf('-');
+        String[] result = new String[2];
+        if (hypen != 0) {
+        	result[0] = hypen == -1 ? range : range.substring(0, hypen);
+        }
+        if (hypen != range.length() - 1) {
+        	result[1] = hypen == -1 ? range : range.substring(hypen+1);
+        }
+		return result;
+	}
+
+	/**
      *  Gets the item attribute of the DcmObjectImpl object
      *
      * @param  tag  Description of the Parameter

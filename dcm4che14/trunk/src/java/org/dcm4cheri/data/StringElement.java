@@ -41,6 +41,7 @@ import org.dcm4che.util.TMFormat;
  * @version    $Revision$ $Date$
  */
 abstract class StringElement extends ValueElement {
+    private static long MS_PER_DAY = 24 * 3600000L;
 
     static Logger log = Logger.getLogger(StringElement.class);
 
@@ -955,6 +956,10 @@ abstract class StringElement extends ValueElement {
             return toDate(getFormat(), super.getString(index, null));
         }
 
+        public final Date[] getDateRange(int index) throws DcmValueException {
+            return toDateRange(getFormat(), super.getString(index, null), getInterval());
+        }
+
         public final Date[] getDates() throws DcmValueException {
             DateFormat f = getFormat();
             Date[] a = new Date[vm()];
@@ -962,10 +967,6 @@ abstract class StringElement extends ValueElement {
                 a[i] = toDate(f, super.getString(i, null));
             }
             return a;
-        }
-
-        public final Date[] getDateRange(int index) throws DcmValueException {
-            return toDateRange(getFormat(), super.getString(index, null));
         }
 
         protected boolean matchValue(
@@ -1004,6 +1005,8 @@ abstract class StringElement extends ValueElement {
         }
 
         protected abstract DateFormat getFormat();
+        
+        protected long getInterval() { return 0L; }
 
     }
 
@@ -1015,7 +1018,7 @@ abstract class StringElement extends ValueElement {
         }
     }
 
-    private static Date[] toDateRange(DateFormat f, String s) {
+    private static Date[] toDateRange(DateFormat f, String s, long interval) {
         if (s == null) {
             return null;
         }
@@ -1023,7 +1026,8 @@ abstract class StringElement extends ValueElement {
         int delim = s.indexOf('-');
         try {
             if (delim == -1) {
-                range[0] = range[1] = f.parse(s);
+                range[0] = f.parse(s);
+                range[1] = new Date(range[0].getTime() + interval-1);
             } else {
                 if (delim > 0) {
                     range[0] = f.parse(s.substring(0, delim));
@@ -1050,6 +1054,11 @@ abstract class StringElement extends ValueElement {
         protected DateFormat getFormat() {
             return new DAFormat();
         }
+        
+        protected long getInterval() { 
+        	return MS_PER_DAY;
+        }
+
     }
 
     static DcmElement createDA(int tag, ByteBuffer data) {
@@ -1108,7 +1117,7 @@ abstract class StringElement extends ValueElement {
     static DcmElement createDA(int tag, String value) {
         DAFormat f = new DAFormat();
         if (value.indexOf('-') != -1) {
-            toDateRange(f, value);
+            toDateRange(f, value, MS_PER_DAY);
         } else {
             toDate(f, value);
         }
@@ -1177,7 +1186,7 @@ abstract class StringElement extends ValueElement {
     static DcmElement createDT(int tag, String value) {
         DTFormat f = new DTFormat();
         if (value.indexOf('-') != -1) {
-            toDateRange(f, value);
+            toDateRange(f, value, 0);
         } else {
             toDate(f, value);
         }
@@ -1246,7 +1255,7 @@ abstract class StringElement extends ValueElement {
     static DcmElement createTM(int tag, String value) {
         TMFormat f = new TMFormat();
         if (value.indexOf('-') != -1) {
-            toDateRange(f, value);
+            toDateRange(f, value, 0);
         } else {
             toDate(f, value);
         }
