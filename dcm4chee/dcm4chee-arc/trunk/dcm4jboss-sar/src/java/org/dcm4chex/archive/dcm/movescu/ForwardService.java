@@ -10,6 +10,7 @@ package org.dcm4chex.archive.dcm.movescu;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.Association;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.util.JMSDelegate;
@@ -37,6 +39,9 @@ public class ForwardService extends ServiceMBeanSupport implements
         NotificationListener {
 
     private ObjectName storeScpServiceName;
+    private ObjectName editContentServiceName;
+    
+    private String[] editContentAETs;
 
     private int forwardPriority = 0;
 
@@ -66,18 +71,52 @@ public class ForwardService extends ServiceMBeanSupport implements
         this.storeScpServiceName = storeScpServiceName;
     }
 
+	/**
+	 * @return Returns the editContentServiceName.
+	 */
+	public ObjectName getEditContentServiceName() {
+		return editContentServiceName;
+	}
+	/**
+	 * @param editContentServiceName The editContentServiceName to set.
+	 */
+	public void setEditContentServiceName(ObjectName editContentServiceName) {
+		this.editContentServiceName = editContentServiceName;
+	}
+	
+	public String getEditContentAETs() {
+		if ( editContentAETs == null ) return " ";
+		return StringUtils.toString( editContentAETs, '\\');
+	}
+	
+	public void setEditContentAETs( String s ) {
+		if ( s == null || s.trim().length() < 1 ) {
+			editContentAETs = null;
+		} else {
+			editContentAETs = StringUtils.split( s, '\\');
+		}
+	}
+	
     protected void startService() throws Exception {
         server.addNotificationListener(storeScpServiceName,
                 this,
                 StoreScpService.NOTIF_FILTER,
                 null);
+        server.addNotificationListener(editContentServiceName,
+        		contentEditNotificationListener,
+                null,
+                "contentEdit");
     }
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
-                this,
+        		contentEditNotificationListener,
                 StoreScpService.NOTIF_FILTER,
                 null);
+        server.removeNotificationListener(editContentServiceName,
+                this,
+                null,
+                "contentEdit");
     }
 
     public void handleNotification(Notification notif, Object handback) {
@@ -132,5 +171,33 @@ public class ForwardService extends ServiceMBeanSupport implements
             }
         }
     }
+    
+    public final NotificationListener contentEditNotificationListener = new NotificationListener() {
+
+		/**
+		 * @see javax.management.NotificationListener#handleNotification(javax.management.Notification, java.lang.Object)
+		 */
+		public void handleNotification(Notification notif, Object ctx) {
+			if ( editContentAETs == null || editContentAETs.length < 1 ) return;
+			Object o = notif.getUserData();
+			if ( o == null ) return;
+			if ( log.isDebugEnabled() ) {
+				log.debug("ContentEditNotification:"); 
+				log.debug( o );
+			}
+			Map map = null;
+			if ( o instanceof Dataset) {
+				map = new HashMap();
+				map.put("ds", o );
+			} else if ( o instanceof Map ) {
+				map = (Map) o;
+			} else {
+				log.error("Ignored! ContentEditNotification with wrong userObject type! "+o.getClass().getName());
+				return;
+			}
+			forward( editContentAETs, map);
+		}
+    	
+    };
 
 }

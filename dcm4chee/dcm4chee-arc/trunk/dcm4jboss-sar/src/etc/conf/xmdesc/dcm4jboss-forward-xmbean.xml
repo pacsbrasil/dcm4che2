@@ -55,6 +55,29 @@
          <value value="tiani.archive:service=StoreScp" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getEditContentServiceName"
+      setMethod="setEditContentServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>EditContentServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=ContentEditService" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getEditContentAETs"
+      setMethod="setEditContentAETs">
+      <description>List of AETs that will be synchronized via editContent notification.
+      Format:=AET1\AET2...
+      </description>
+      <name>EditContentAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value=" " />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
