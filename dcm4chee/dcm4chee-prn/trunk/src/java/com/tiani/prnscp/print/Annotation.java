@@ -27,7 +27,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
+import java.awt.font.TextLayout;
 import java.awt.print.PageFormat;
 import java.awt.geom.Rectangle2D;
 import java.text.SimpleDateFormat;
@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 /**
@@ -144,7 +145,6 @@ class Annotation {
    
    public void print(Graphics g, PageFormat pf, int pageIndex) {
       Graphics2D g2 = (Graphics2D) g;
-      FontRenderContext frc = g2.getFontRenderContext();
       String pageNoStr = "" + (pageIndex+1); 
       String dateStr = dateFormat.format(new Date());
       String s;
@@ -152,14 +152,31 @@ class Annotation {
          s = DATE.matcher(s).replaceAll(dateStr);
          s = PAGE.matcher(s).replaceAll(pageNoStr);
          s = PAGES.matcher(s).replaceAll(numPagesStr);
-         Font font = getFont(i);
          g2.setColor(getColor(i));
-         g2.setFont(font);
-         LineMetrics lm = font.getLineMetrics(s, frc);
-         Rectangle2D bound = font.getStringBounds(s, frc);
-         float dx = - (float) bound.getWidth() * getAlignmentX(i);
-         float dy = lm.getHeight() * getAlignmentY(i) - lm.getDescent();
-         g2.drawString(s, getX(i, pf) + dx, getY(i, pf) + dy);      
+         g2.setFont(getFont(i));
+         drawText(g2,
+            getX(i, pf), getY(i, pf), getAlignmentX(i), getAlignmentY(i),  s);
+      }
+   }
+
+   private void drawText(Graphics2D g2, 
+      float x0, float y0, float alignX, float alignY, String s)
+   {
+      StringTokenizer stk = new StringTokenizer(s, "\r\n");
+      int n = stk.countTokens();
+      if (n == 0)
+         return;
+      
+      Font font = g2.getFont();
+      FontRenderContext frc = g2.getFontRenderContext();
+      TextLayout line =  new TextLayout(stk.nextToken(), font, frc);
+      float dY = line.getAscent() + line.getDescent() + line.getLeading();
+      float h = n * dY - line.getLeading();
+      float y = y0 - (n - 1)* dY + alignY * h - line.getDescent();
+      line.draw(g2, x0 - alignX * line.getAdvance(), y);
+      for (int i = 1; i < n; ++i) {
+         line =  new TextLayout(stk.nextToken(), font, frc);
+         line.draw(g2, x0 - alignX * line.getAdvance(), y + i * dY);
       }
    }
    

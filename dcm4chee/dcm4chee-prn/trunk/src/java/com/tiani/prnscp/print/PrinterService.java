@@ -852,24 +852,21 @@ public class PrinterService
     * @return Value of property margin.
     */
    public String getPageMargin() {
-      return "" + pageMargin[0] + "," + pageMargin[1] + ","
-         + pageMargin[2] + "," + pageMargin[3];
+      return "" 
+         + pageMargin[0] + ','
+         + pageMargin[1] + ','
+         + pageMargin[2] + ','
+         + pageMargin[3];
    }
    
    /** Setter for property margin.
     * @param margin New value of property margin.
     */
    public void setPageMargin(String pageMargin) {
-      StringTokenizer tk = new StringTokenizer(pageMargin, ", ");
-      if (tk.countTokens() != 4) {
+      float[] tmp = toFloatArray(pageMargin);
+      if (tmp.length != 4) {
          throw new IllegalArgumentException("pageMargin: " + pageMargin);
       }
-      float[] tmp = {
-         Float.parseFloat(tk.nextToken()),
-         Float.parseFloat(tk.nextToken()),
-         Float.parseFloat(tk.nextToken()),
-         Float.parseFloat(tk.nextToken())
-      };
       this.pageMargin = tmp;
    }
 
@@ -1146,13 +1143,23 @@ public class PrinterService
    }      
    
    private static float[] toFloatArray(String text) {
-      StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n");
+      StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n\\");
       float[] a = new float[stk.countTokens()];
       for (int i = 0; i < a.length; ++i) {
          a[i] = Float.parseFloat(stk.nextToken());
       }
       return a;
    }
+   
+   private static int[] toIntArray(String text) {
+      StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n\\");
+      int[] a = new int[stk.countTokens()];
+      for (int i = 0; i < a.length; ++i) {
+         a[i] = Integer.parseInt(stk.nextToken());
+      }
+      return a;
+   }
+   
 
    /** Getter for property grayscales.
     * @return Value of property grayscales.
@@ -1699,27 +1706,25 @@ public class PrinterService
     */
    public String getPuzzleScalePackageSize() {
        return "" 
-          + puzzleScalePackageSize[0] + ","
-          + puzzleScalePackageSize[1] + ","
-          + puzzleScalePackageSize[2] + ","
-          + puzzleScalePackageSize[3] + ","
-          + puzzleScalePackageSize[4] + ","
-          + puzzleScalePackageSize[5] + ","
-          + puzzleScalePackageSize[6] + ","
-          + puzzleScalePackageSize[7] + ","
-          + puzzleScalePackageSize[8] + ","
-          + puzzleScalePackageSize[9] + ","
+          + puzzleScalePackageSize[0] + '\\'
+          + puzzleScalePackageSize[1] + '\\'
+          + puzzleScalePackageSize[2] + '\\'
+          + puzzleScalePackageSize[3] + '\\'
+          + puzzleScalePackageSize[4] + '\\'
+          + puzzleScalePackageSize[5] + '\\'
+          + puzzleScalePackageSize[6] + '\\'
+          + puzzleScalePackageSize[7] + '\\'
+          + puzzleScalePackageSize[8] + '\\'
+          + puzzleScalePackageSize[9] + '\\'
           + puzzleScalePackageSize[10];
    }
    
    public void setPuzzleScalePackageSize(String str) {
-      StringTokenizer tk = new StringTokenizer(str, "\\");
-      if (tk.countTokens() != 11) {
+      int[] tmp = toIntArray(str);
+      if (tmp.length != 11) {
          throw new IllegalArgumentException("puzzleScalePackageSize: (need 11 values)" + str);
       }
-      for(int i=0;i<11;i++){
-          puzzleScalePackageSize[i] = Integer.parseInt(tk.nextToken().toString());
-      }
+      puzzleScalePackageSize = tmp;
    }
    
    /** Getter for property printGrayAsColor.
