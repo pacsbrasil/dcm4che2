@@ -1,4 +1,4 @@
-rem @echo off
+@echo off
 setlocal
 set JAVA_OPTS=-Xmx128m
 set DIRNAME=%~dp0%

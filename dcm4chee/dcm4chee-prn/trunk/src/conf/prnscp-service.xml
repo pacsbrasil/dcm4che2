@@ -124,7 +124,7 @@
     <attribute name="BorderDensity">WHITE</attribute>
       
     
-    <attribute name="useBorderDensForGrid">true</attribute>
+    <attribute name="UseBorderDensForGrid">true</attribute>
     <!--
     Defines the default Empty Image Density identifier that is used when the
     Print SCU does not specify Empty Image Density.
