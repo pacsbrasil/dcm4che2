@@ -6,21 +6,28 @@
  */
 package org.dcm4chex.wado.mbean.xml;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -44,6 +51,9 @@ public class IHEDocumentList implements XMLResponseObject{
 	private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyyMMdd");
 	private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyyMMddHHmmss");
 	private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
+	
+	private static Logger log = Logger.getLogger( IHEDocumentList.class.getName() );
+	
 	private List datasets = new ArrayList();
 	private Dataset queryDS = null;
     private TransformerHandler th = null;
@@ -52,10 +62,15 @@ public class IHEDocumentList implements XMLResponseObject{
 	private String docCodeSystem;
 	private String docDisplayName;
 	
+	private Date lowerDateTime = null;
+	private Date upperDateTime = null;
+	private int mostRecentResults = 0;
+	
 	private String xslFile;
 	/** the request URL which is used from client to get this document list (with query string!). */
 	private String reqURL = "";
 	private String docRIDUrl = "http://localhost:8080/dcm4jboss-wado";
+	private URL xslt;
 	
 	public IHEDocumentList() {
 		
@@ -71,9 +86,31 @@ public class IHEDocumentList implements XMLResponseObject{
 	
 	public boolean add( Dataset ds ) {
 		if ( ds == null ) return false;
-		return datasets.add( ds );
+			return datasets.add( ds );
 	}
 	
+	/**
+	 * @param ds
+	 * @return
+	 */
+	private void applyMostRecentResults() {
+		Collections.sort( datasets, new DatasetDateComparator() );
+		if ( mostRecentResults > 0 && datasets.size() > mostRecentResults ) {
+			datasets.subList( mostRecentResults, datasets.size() ).clear();//Remains mostRecentResults items in list; removes all older dataset
+		}
+	}
+
+	/**
+	 * @param ds
+	 * @return
+	 */
+	private Date getDateFromDS(Dataset ds) {
+		Date d = ds.getDateTime( Tags.ContentDate, Tags.ContentTime );
+		if ( d == null )
+			d = ds.getDate( Tags.AcquisitionDatetime );
+		return d;
+	}
+
 	public void addAll( Collection col ) {
 		if ( col == null || col.isEmpty() ) return;
 		for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) {
@@ -122,6 +159,42 @@ public class IHEDocumentList implements XMLResponseObject{
 		this.docDisplayName = docDisplayName;
 	}
 	/**
+	 * @return Returns the lowerDateTime.
+	 */
+	public Date getLowerDateTime() {
+		return lowerDateTime;
+	}
+	/**
+	 * @param lowerDateTime The lowerDateTime to set.
+	 */
+	public void setLowerDateTime(Date lowerDateTime) {
+		this.lowerDateTime = lowerDateTime;
+	}
+	/**
+	 * @return Returns the mostRecentResults.
+	 */
+	public int getMostRecentResults() {
+		return mostRecentResults;
+	}
+	/**
+	 * @param mostRecentResults The mostRecentResults to set.
+	 */
+	public void setMostRecentResults(int mostRecentResults) {
+		this.mostRecentResults = mostRecentResults;
+	}
+	/**
+	 * @return Returns the upperDateTime.
+	 */
+	public Date getUpperDateTime() {
+		return upperDateTime;
+	}
+	/**
+	 * @param upperDateTime The upperDateTime to set.
+	 */
+	public void setUpperDateTime(Date upperDateTime) {
+		this.upperDateTime = upperDateTime;
+	}
+	/**
 	 * @return Returns the xslFile.
 	 */
 	public String getXslFile() {
@@ -132,6 +205,20 @@ public class IHEDocumentList implements XMLResponseObject{
 	 */
 	public void setXslFile(String xslFile) {
 		this.xslFile = xslFile;
+	}
+	/**
+	 * @return Returns the xslt.
+	 */
+	public URL getXslt() {
+		return xslt;
+	}
+	/**
+	 * Set the URL to an xsl file that is used to transform the xml result of this DocumentList.
+	 * 
+	 * @param xslt The xslt to set.
+	 */
+	public void setXslt(URL xslt) {
+		this.xslt = xslt;
 	}
 	/**
 	 * @param reqURL The reqURL to set.
@@ -153,9 +240,22 @@ public class IHEDocumentList implements XMLResponseObject{
 	}
 	public void toXML( OutputStream out ) throws TransformerConfigurationException, SAXException {
 			        SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-        th = tf.newTransformerHandler();
-        th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
-        th.setResult(new StreamResult(out));
+
+        applyMostRecentResults();//sorts the list and ( if mostRecentResults > 0 ) shrink the list.
+        
+        if (xslt != null) {
+        	try {
+        		th = tf.newTransformerHandler(new StreamSource(xslt.openStream(),
+                    xslt.toExternalForm()));
+        	} catch ( IOException x ) {
+        		log.error("Cant open xsl file:"+xslt, x );
+        	}
+            Transformer t = th.getTransformer();
+        } else {
+        	th = tf.newTransformerHandler();
+        	th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
+        }
+        th.setResult( new StreamResult(out) );
         th.startDocument();
         if ( xslFile != null ) {
         	th.processingInstruction("xml-stylesheet", "href='"+xslFile+"' type='text/xsl'");
@@ -222,16 +322,15 @@ public class IHEDocumentList implements XMLResponseObject{
          startElement("patient", EMPTY_ATTRIBUTES);
           //patient id
 		  AttributesImpl attrsPatID = new AttributesImpl();
-		  String[] patID = StringUtils.split( ds.getString( Tags.PatientID ), '^');
-		  addAttribute( attrsPatID, "root", patID.length > 3 ? patID[3] : "" );//issuer id
-		  addAttribute( attrsPatID, "extension", patID[0]);//patient id within issuer
+		  addAttribute( attrsPatID, "root", ds.getString( Tags.IssuerOfPatientID ) );//issuer id
+		  addAttribute( attrsPatID, "extension", ds.getString( Tags.PatientID ));//patient id within issuer
 		  startElement("id", attrsPatID );
 		  endElement("id");
 		  //patientPatient
 		  addPatientPatient( ds );
 		  startElement( "providerOrganization", EMPTY_ATTRIBUTES);
 		  	AttributesImpl attrsOrgID = new AttributesImpl();
-		  	addAttribute( attrsOrgID, "id", "TODO");//TODO where can i get the id?
+		  	addAttribute( attrsOrgID, "id", "");//TODO where can i get the id?
 			startElement("id", attrsOrgID );
 			endElement("id");
 			startElement("name", EMPTY_ATTRIBUTES );
@@ -254,15 +353,19 @@ public class IHEDocumentList implements XMLResponseObject{
         String birthDate = "";
         try {
         	PersonName pn = ds.getPersonName(Tags.PatientName );
-        	familyName = pn.get( PersonName.FAMILY );
-        	givenName = pn.get( PersonName.GIVEN );
-        	if ( givenName == null ) givenName = "";
+        	if ( pn != null ) {
+	        	familyName = pn.get( PersonName.FAMILY );
+	        	givenName = pn.get( PersonName.GIVEN );
+	        	if ( givenName == null ) givenName = "";
+        	}
         	String s = ds.getString( Tags.PatientSex );
         	if ( "M".equals(s) || "F".equals(s) ) genderCode = s;
-        	birthDate = DATE_FORMATTER.format( ds.getDate( Tags.PatientBirthDate  ) );
+        	Date date = ds.getDate( Tags.PatientBirthDate  );
+        	if ( date != null )
+        		birthDate = DATE_FORMATTER.format( date );
         	
         } catch ( Exception x ) {
-        	
+        	log.info("Exception getting person informations:", x);
         }
         startElement("patientPatient", EMPTY_ATTRIBUTES );
         //Names
@@ -299,22 +402,22 @@ public class IHEDocumentList implements XMLResponseObject{
         endElement("noteText" );       
         startElement("assignedAuthor", EMPTY_ATTRIBUTES );
 		  AttributesImpl attrsID = new AttributesImpl();
-		  addAttribute( attrsID, "root", "TODO" );
-		  addAttribute( attrsID, "extension", "TODO");//TODO
+		  addAttribute( attrsID, "root", "" );//TODO
+		  addAttribute( attrsID, "extension", "");//TODO
 		  startElement("id", attrsID );
 		  endElement("id");
 	      startElement("assignedDevice", EMPTY_ATTRIBUTES );
 			  AttributesImpl attrsCode = new AttributesImpl();
-			  addAttribute( attrsCode, "code", "TODO" );
-			  addAttribute( attrsCode, "codeSystem", "TODO");//TODO
-			  addAttribute( attrsCode, "displayName", "TODO");//TODO
+			  addAttribute( attrsCode, "code", "" );//TODO
+			  addAttribute( attrsCode, "codeSystem", "");//TODO
+			  addAttribute( attrsCode, "displayName", "");//TODO
 			  startElement("code", attrsCode );
 			  endElement("code");
 	          startElement("manufacturerModelName", EMPTY_ATTRIBUTES );
-	          th.characters("TODO".toCharArray(),0,4);
+	          //TODO th.characters("TODO".toCharArray(),0,4);
 	          endElement("manufacturerModelName" );       
 	          startElement("softwareName", EMPTY_ATTRIBUTES );
-	          th.characters("TODO".toCharArray(),0,4);
+	          //TODO th.characters("TODO".toCharArray(),0,4);
 	          endElement("softwareName" );       
 		  endElement("assignedDevice" );       
         endElement("assignedAuthor" );       
@@ -448,6 +551,33 @@ public class IHEDocumentList implements XMLResponseObject{
 	private void addAttribute( AttributesImpl attr, String name, String value ) {
 		if ( value == null ) return;
 		attr.addAttribute("", name, name, "", value);		
+	}
+	
+	public class DatasetDateComparator implements Comparator {
+
+		public DatasetDateComparator() {
+			
+		}
+
+		/**
+		 * Compares the modification time of two File objects.
+		 * <p>
+		 * Compares its two arguments for order. Returns a negative integer, zero, or a positive integer 
+		 * as the first argument is less than, equal to, or greater than the second.
+		 * <p>
+		 * Throws an Exception if one of the arguments is null or not a Dataset object.
+		 *  
+		 * @param arg0 	First argument
+		 * @param arg1	Second argument
+		 * 
+		 * @return <0 if arg0<arg1, 0 if equal and >0 if arg0>arg1
+		 */
+		public int compare( Object arg0, Object arg1 ) {
+			Date d1 = getDateFromDS( (Dataset) arg0 );
+			Date d2 = getDateFromDS( (Dataset) arg1 );
+			return d2.compareTo( d1 );
+		}
+		
 	}
 	
 }
