@@ -21,7 +21,6 @@
 package org.dcm4chex.service;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -34,7 +33,6 @@ import org.dcm4che.net.Dimse;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.config.NetworkAEInfo;
-import org.dcm4chex.config.NetworkConnectionInfo;
 import org.jboss.logging.Logger;
 
 /**
@@ -56,7 +54,7 @@ public class MoveScp extends DcmServiceBase {
         String dest = rqCmd.getString(Tags.MoveDestination);
         Dataset rqData = rq.getDataset();
         try {
-            NetworkConnectionInfo con = getNetworkConnection(dest);
+            NetworkAEInfo aeInfo = getNetworkAEInfo(dest);
             FileInfo[] fileInfo;
             try {
                 RetrieveCmd retrieveCmd =
@@ -68,7 +66,7 @@ public class MoveScp extends DcmServiceBase {
                         rq.pcid(),
                         rqCmd,
                         retrieveCmd.execute(),
-                        con,
+                        aeInfo,
                         dest))
                     .start();
             } catch (Exception e) {
@@ -87,21 +85,21 @@ public class MoveScp extends DcmServiceBase {
         }
     }
 
-    private NetworkConnectionInfo getNetworkConnection(String dest)
+    private NetworkAEInfo getNetworkAEInfo(String dest)
         throws DcmServiceException {
             NetworkAEInfo aeInfo = scp.findNetworkAE(dest);
             if (aeInfo == null) {
                 log.warn("Unkown Move Destination - " + dest);
                 throw new DcmServiceException(Status.MoveDestinationUnknown);
             }
-            Iterator it = aeInfo.getNetworkConnections().iterator();
-            if (!it.hasNext()) {
+            
+            if (aeInfo.getNetworkConnections().isEmpty()) {
                 log.error(
                     "No configured connection of Move Destination - " + dest);
                 throw new DcmServiceException(
                     Status.UnableToPerformSuboperations);
             }
-            return (NetworkConnectionInfo) it.next();
+            return aeInfo;
     }
 
 }

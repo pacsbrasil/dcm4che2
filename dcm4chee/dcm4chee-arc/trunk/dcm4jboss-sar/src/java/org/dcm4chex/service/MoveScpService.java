@@ -160,11 +160,13 @@ public class MoveScpService
         throws DcmServiceException {
         try {
             log.info("Query NetworkAE Info for " + dest + " from LDAP");
-            return (NetworkAEInfo) server.invoke(
+            NetworkAEInfo aeInfo = (NetworkAEInfo) server.invoke(
                 deviceConfigName,
                 "findNetworkAE",
                 new Object[] { dest },
                 new String[] { String.class.getName()});
+            log.info("find NetworkAE Info for " + dest + ": " + aeInfo);
+            return aeInfo;
         } catch (Exception e) {
             log.error("Query  NetworkAE failed", e);
             throw new DcmServiceException(Status.UnableToPerformSuboperations);
