@@ -242,6 +242,7 @@ public abstract class SeriesBean implements EntityBean {
             study.incNumberOfStudyRelatedInstances(
                 -getNumberOfSeriesRelatedInstances());
         }
+    }
 
         /**
          * 
