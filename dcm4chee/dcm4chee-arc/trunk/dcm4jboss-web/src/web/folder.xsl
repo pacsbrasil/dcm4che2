@@ -70,7 +70,7 @@
 					</td>
 					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Move" name="move" src="images/move.gif" alt="move" border="0"
-							title="Move selected Items">
+							title="Move selected Entities">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
