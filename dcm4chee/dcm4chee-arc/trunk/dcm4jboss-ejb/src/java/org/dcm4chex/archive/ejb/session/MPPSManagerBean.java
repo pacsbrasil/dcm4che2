@@ -161,7 +161,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         }
         Dataset attrs = mpps.getAttributes();
         attrs.putAll(ds);
-        mpps.setAttributes(ds);
+        mpps.setAttributes(attrs);
         if (mpps.isIncorrectWorklistEntrySelected()) {
             Collection c = mpps.getSeries();
             SeriesLocal ser = null;
