@@ -219,6 +219,31 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLimitFailedSOPInstanceUIDList"
+      setMethod="setLimitFailedSOPInstanceUIDList">
+      <description>Limit maximal number of SOP Instance UID reported as failed
+          in returned MOVE RSP. Necessary, because the maximal value length of
+          UI attributes of 64kB could be otherwise exceeded.
+      </description>
+      <name>LimitFailedSOPInstanceUIDList</name>
+      <type>int</type>
+      <descriptors>
+         <value value="100" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxSOPInstanceUIDsPerMoveRQ"
+      setMethod="setMaxSOPInstanceUIDsPerMoveRQ">
+      <description>Maximal number of SOP Instance UIDs in forwarded MOVE RQ.
+          Larger Move RQs are splitted in smaller according this constraint.
+      </description>
+      <name>MaxSOPInstanceUIDsPerMoveRQ</name>
+      <type>int</type>
+      <descriptors>
+         <value value="100" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
       <description>Maximal PDU package length for receiving PDUs.

@@ -129,7 +129,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private FindScp tianiFindScp = new FindScp(this, false);
     
     private MoveScp moveScp = new MoveScp(this);
+    
+    private int limitFailedSOPInstanceUIDList = 100;
 
+    private int maxSOPInstanceUIDsPerMoveRQ = 100;
+    
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -369,7 +373,23 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.bufferSize = bufferSize;
     }
 
-    protected void bindDcmServices(DcmServiceRegistry services) {
+	public final int getLimitFailedSOPInstanceUIDList() {
+		return limitFailedSOPInstanceUIDList;
+	}
+	
+	public final void setLimitFailedSOPInstanceUIDList(int limit) {
+		this.limitFailedSOPInstanceUIDList = limit;
+	}
+
+	public final int getMaxSOPInstanceUIDsPerMoveRQ() {
+		return maxSOPInstanceUIDsPerMoveRQ;
+	}
+	
+	public final void setMaxSOPInstanceUIDsPerMoveRQ(int max) {
+		this.maxSOPInstanceUIDsPerMoveRQ = max;
+	}
+	
+	protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 dicomFindScp);
         services.bind(UIDs.StudyRootQueryRetrieveInformationModelFIND,

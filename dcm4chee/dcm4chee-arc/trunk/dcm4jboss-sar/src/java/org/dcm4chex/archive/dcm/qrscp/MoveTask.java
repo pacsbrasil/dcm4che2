@@ -27,6 +27,7 @@ import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
@@ -188,7 +189,6 @@ class MoveTask implements Runnable {
 		this.priority = moveRqCmd.getInt(Tags.Priority, Command.MEDIUM);
 		this.msgID = moveRqCmd.getMessageID();
 		if ((remaining = fileInfo.length) > 0) {
-			notifyMovePending(null);
 			prepareRetrieveInfo(fileInfo);
 			if (!toRetrieve.isEmpty()) {
 				openAssociation();
@@ -282,8 +282,6 @@ class MoveTask implements Runnable {
 	}
 
 	private void forwardMove(final String retrieveAET, final Set iuids) {
-		final int size = iuids.size();
-		remaining -= size;
 		DimseListener fwdmoveRspListener = new DimseListener() {
 
 			public void dimseReceived(Association assoc, Dimse dimse) {
@@ -293,10 +291,7 @@ class MoveTask implements Runnable {
 					final int status = fwdMoveRspCmd.getStatus();
 					switch (status) {
 					case Status.Pending:
-						if (fwdMoveRspCmd.getInt(
-								Tags.NumberOfRemainingSubOperations, 0) < size) {
-							notifyMovePending(fwdMoveRspCmd);
-						}
+						notifyMovePending(fwdMoveRspCmd);
 						break;
 					case Status.Cancel:
 						remaining += fwdMoveRspCmd.getInt(
@@ -308,10 +303,8 @@ class MoveTask implements Runnable {
 						warnings += fwdMoveRspCmd.getInt(
 								Tags.NumberOfWarningSubOperations, 0);
 						if (ds != null) {
-							failedIUIDs
-									.addAll(Arrays
-											.asList(ds
-													.getStrings(Tags.FailedSOPInstanceUIDList)));
+							failedIUIDs.addAll(Arrays.asList(
+									ds.getStrings(Tags.FailedSOPInstanceUIDList)));
 						}
 						break;
 					default:
@@ -326,24 +319,40 @@ class MoveTask implements Runnable {
 			}
 		};
 		try {
-			final Command cmd;
-			final Dataset ds;
+			final int uidsSize = iuids.size();
+			moveForwardCmd = new MoveForwardCmd(service, callingAET,
+					retrieveAET, fwdmoveRspListener);
 			if (forwardOrigMoveRQ) {
-				cmd = moveRqCmd;
-				ds = moveRqData;
+				remaining -= iuids.size();
+				moveForwardCmd.execute(moveRqCmd, moveRqData);
 			} else {
-				cmd = QueryRetrieveScpService.dof.newCommand();
+				DcmObjectFactory dof = DcmObjectFactory.getInstance();
+				Command cmd = dof.newCommand();
 				cmd.initCMoveRQ(msgID,
 						UIDs.StudyRootQueryRetrieveInformationModelMOVE,
 						priority, moveDest);
-				ds = QueryRetrieveScpService.dof.newDataset();
+				Dataset ds = dof.newDataset();
 				ds.putCS(Tags.QueryRetrieveLevel, IMAGE);
-				ds.putUI(Tags.SOPInstanceUID, (String[]) iuids
-						.toArray(new String[iuids.size()]));
+				String[] a = (String[]) iuids.toArray(new String[iuids.size()]);
+				// split MOVE_RQ if neccessary
+				if (a.length > service.getMaxSOPInstanceUIDsPerMoveRQ()) {
+					int off = 0;
+					String[] b = new String[service.getMaxSOPInstanceUIDsPerMoveRQ()];
+					while (off + b.length < a.length) {
+						System.arraycopy(a, off, b, 0, b.length);
+						ds.putUI(Tags.SOPInstanceUID, b);
+						remaining -= b.length;
+						moveForwardCmd.execute(cmd, ds);
+						off += b.length;
+					}
+					b = new String[a.length - off];
+					System.arraycopy(a, off, b, 0, b.length);					
+					a = b;
+				}
+				ds.putUI(Tags.SOPInstanceUID, a);
+				remaining -= a.length;
+				moveForwardCmd.execute(cmd, ds);
 			}
-			moveForwardCmd = new MoveForwardCmd(service, callingAET,
-					retrieveAET, cmd, ds);
-			moveForwardCmd.execute(fwdmoveRspListener);
 		} catch (Exception e) {
 			log.error("Failed to forward MOVE RQ to " + retrieveAET, e);
 			failedIUIDs.addAll(iuids);
@@ -507,16 +516,19 @@ class MoveTask implements Runnable {
 	}
 
 	private void notifyMoveFinished() {
-		final int status = canceled ? Status.Cancel
-				: !failedIUIDs.isEmpty() ? Status.SubOpsOneOrMoreFailures
-						: Status.Success;
-		Dataset ds = null;
-		if (!failedIUIDs.isEmpty()) {
-			ds = QueryRetrieveScpService.dof.newDataset();
-			ds.putUI(Tags.FailedSOPInstanceUIDList, (String[]) failedIUIDs
-					.toArray(new String[failedIUIDs.size()]));
+		if (failedIUIDs.isEmpty()) {
+			notifyMoveSCU(canceled ? Status.Cancel : Status.Success, null, null);
+		} else {
+			String[] a = (String[]) failedIUIDs.toArray(new String[failedIUIDs.size()]);
+			if (a.length > service.getLimitFailedSOPInstanceUIDList()) {
+				String[] tmp = new String[service.getLimitFailedSOPInstanceUIDList()];
+				System.arraycopy(a, 0, tmp, 0, tmp.length);
+				a = tmp;
+			}
+			Dataset ds = DcmObjectFactory.getInstance().newDataset();
+			ds.putUI(Tags.FailedSOPInstanceUIDList, a);
+			notifyMoveSCU(Status.SubOpsOneOrMoreFailures, ds, null);
 		}
-		notifyMoveSCU(status, ds, null);
 	}
 
 	private void notifyMoveSCU(int status, Dataset ds, Command fwdMoveRspCmd) {

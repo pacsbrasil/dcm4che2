@@ -14,11 +14,13 @@ import java.util.Arrays;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.ExtNegotiation;
@@ -46,45 +48,46 @@ class MoveForwardCmd {
 
     private ActiveAssociation aa;
 
-	private final Command moveRqCmd;
-
-	private final Dataset moveRqData;
+	private final DimseListener moveRspListener;
     
 	public MoveForwardCmd(QueryRetrieveScpService service, String callingAET,
-			String retrieveAET, Command moveRqCmd, Dataset moveRqData)
+			String retrieveAET, DimseListener moveRspListener)
 			throws SQLException, UnkownAETException {
         this.service = service;
         this.callingAET = callingAET;
         this.aeData = service.queryAEData(retrieveAET);
-        this.moveRqCmd = moveRqCmd;
-        this.moveRqData = moveRqData;
+        this.moveRspListener = moveRspListener;
 	}
 
 	private final byte[] RELATIONAL_RETRIEVE = { 1 };
 
+	private int msgID;
+
     
-    public void execute(DimseListener moveRspListener)
+    public void execute(Command moveRqCmd, Dataset moveRqData)
             throws InterruptedException, IOException {    	
-        Association a = QueryRetrieveScpService.asf.newRequestor(service.createSocket(aeData));
+        AssociationFactory asf = AssociationFactory.getInstance();
+		Association a = asf.newRequestor(service.createSocket(aeData));
         a.setAcTimeout(service.getAcTimeout());
-        AAssociateRQ rq = QueryRetrieveScpService.asf.newAAssociateRQ();
+        AAssociateRQ rq = asf.newAAssociateRQ();
         rq.setCalledAET(aeData.getTitle());
         rq.setCallingAET(callingAET);
         String asuid = moveRqCmd.getAffectedSOPClassUID();
-        rq.addPresContext(QueryRetrieveScpService.asf.newPresContext(PCID,
-        		asuid, NATIVE_TS));
-        rq.addExtNegotiation(QueryRetrieveScpService.asf.newExtNegotiation(
-        		asuid, RELATIONAL_RETRIEVE));
+        rq.addPresContext(asf.newPresContext(PCID,
+        		UIDs.StudyRootQueryRetrieveInformationModelMOVE, NATIVE_TS));
+        rq.addExtNegotiation(asf.newExtNegotiation(
+        		UIDs.StudyRootQueryRetrieveInformationModelMOVE, RELATIONAL_RETRIEVE));
         PDU pdu = a.connect(rq);
         if (!(pdu instanceof AAssociateAC)) { throw new IOException(
                 "Association not accepted by " + aeData + ":\n" + pdu); }
         AAssociateAC ac = (AAssociateAC) pdu;
-        ActiveAssociation aa = QueryRetrieveScpService.asf.newActiveAssociation(a, null);
+        aa = asf.newActiveAssociation(a, null);
+        msgID = moveRqCmd.getInt(Tags.MessageID, 0);
         aa.start();
         try {
             if (a.getAcceptedTransferSyntaxUID(PCID) == null)
                 throw new IOException(
-                    "MOVE Service " + asuid + " not supported by " + aeData);
+                    "StudyRootQueryRetrieveInformationModelMOVE not supported by " + aeData);
             if (!isRelationalRetrieveAccepted(ac.getExtNegotiation(asuid)))
                 service.getLog().warn("Relational Retrieve not supported by " + aeData);
             Dimse cmoverq = QueryRetrieveScpService.asf.newDimse(PCID, moveRqCmd, moveRqData);
@@ -98,6 +101,7 @@ class MoveForwardCmd {
                 Thread.sleep(10); 
             } catch (Exception ignore) {
             }
+            aa = null;
         }
     }
 
@@ -109,7 +113,7 @@ class MoveForwardCmd {
         if (aa == null)
             return;
         Command cmd = QueryRetrieveScpService.dof.newCommand();
-        cmd.initCCancelRQ(moveRqCmd.getMessageID());
+        cmd.initCCancelRQ(msgID);
         Dimse ccancelrq = QueryRetrieveScpService.asf.newDimse(PCID, cmd);
         aa.getAssociation().write(ccancelrq);
     }
