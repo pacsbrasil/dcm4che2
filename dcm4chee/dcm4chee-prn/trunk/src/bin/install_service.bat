@@ -1,8 +1,8 @@
-@echo off
+rem @echo off
 setlocal
 set JAVA_OPTS=-Xmx128m
 set DIRNAME=%~dp0%
-set RUNJAR=%DIRNAME%\JavaService.exe
+set RUNJAR=%DIRNAME%\run.jar
 if exist "%RUNJAR%" goto found_runjar
 echo Could not locate %RUNJAR%. Please check that you are in the
 echo bin directory when running this script.
@@ -40,7 +40,7 @@ echo Could not locate %TOOLS_JAR%. Unexpected results may occur.
 echo Make sure that JAVA_HOME points to a JDK and not a JRE.
 
 :install
-JavaService.exe -install prnscp-1.0.0 "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out %DIRNAME%\bin\out.txt -current %DIRNAME%\bin
+JavaService.exe -install prnscp-1.0.0 "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out %DIRNAME%\out.txt -current %DIRNAME%
 goto eof
 
 :uninstall
