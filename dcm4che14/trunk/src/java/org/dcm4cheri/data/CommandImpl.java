@@ -432,6 +432,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
     
     private StringBuffer toStringBuffer(StringBuffer sb) {
        String s;
+       Integer i;
        sb.append(msgID).append(':').append(cmdFieldAsString());
        if (dataSetType != NO_DATASET)
           sb.append(" with Dataset");
@@ -441,8 +442,14 @@ final class CommandImpl extends DcmObjectImpl implements Command {
           sb.append("\n\tinst:\t").append(DICT.lookup(sopInstUID));
        if (status != -1)
           sb.append("\n\tstatus:\t").append(Integer.toHexString(status));
+       if ((s = getString(Tags.ErrorComment)) != null)
+           sb.append("\n\terror comment:\t").append(s);
        if ((s = getString(Tags.MoveDestination)) != null)
           sb.append("\n\tmove dest:\t").append(s);
+       if ((i = getInteger(Tags.ActionTypeID)) != null)
+           sb.append("\n\taction type:\t").append(i);
+       if ((i = getInteger(Tags.EventTypeID)) != null)
+           sb.append("\n\tevent type:\t").append(i);
        return sb;
     }
 
