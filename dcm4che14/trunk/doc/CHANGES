@@ -39,7 +39,7 @@ dcm4che API:
   Sequence Delimiter Items of Sequences with explicit length encoding
 + add org.dcm4che.data.FileMetaInfo#getImplementationClassUID
 + add org.dcm4che.data.FileMetaInfo#getImplementationVersionName
-
++ add org.dcm4che.dict.Status
 
 CHANGES:
 dcm4che API:

@@ -2051,4 +2051,50 @@
   <uid value="1.2.840.10008.3.1.1.1" name="DICOM Application Context Name" key="DICOMApplicationContextName" />
 </uids>
 
+<statuses>
+  <status code="0000" name="Success" type="Success" key="Success"/>
+  <status code="FE00" name="Cancel" type="Cancel" key="Cancel"/>
+  <status code="FF00" name="Pending" type="Pending" key="Pending"/>
+  <status code="0107" name="Attribute list error" type="Warning" key="AttributeListError"/>
+  <status code="0116" name="Attribute Value Out of Range" type="Warning" key="AttributeValueOutOfRange"/>
+  <status code="0122" name="Refused: SOP class not supported" type="Failure" key="SOPClassNotSupported"/>
+  <status code="0119" name="Class-instance conflict" type="Failure" key="ClassInstanceConflict"/>
+  <status code="0111" name="Duplicate SOP instance" type="Failure" key="DuplicateSOPInstance"/>
+  <status code="0210" name="Duplicate invocation" type="Failure" key="DuplicateInvocation"/>
+  <status code="0115" name="Invalid argument value" type="Failure" key="InvalidArgumentValue"/>
+  <status code="0106" name="Invalid attribute value" type="Failure" key="InvalidAttributeValue"/>
+  <status code="0117" name="Invalid object instance" type="Failure" key="InvalidObjectInstance"/>
+  <status code="0120" name="Missing attribute" type="Failure" key="MissingAttribute"/>
+  <status code="0121" name="Missing attribute value" type="Failure" key="MissingAttributeValue"/>
+  <status code="0212" name="Mistyped argument" type="Failure" key="MistypedArgument"/>
+  <status code="0114" name="No such argument" type="Failure" key="NoSuchArgument"/>
+  <status code="0113" name="No such event type" type="Failure" key="NoSuchEventType"/>
+  <status code="0112" name="No Such object instance" type="Failure" key="NoSuchObjectInstance"/>
+  <status code="0118" name="No Such SOP class" type="Failure" key="NoSuchSOPClass"/>
+  <status code="0110" name="Processing failure" type="Failure" key="ProcessingFailure"/>
+  <status code="0213" name="Resource limitation" type="Failure" key="ResourceLimitation"/>
+  <status code="0211" name="Unrecognized operation" type="Failure" key="UnrecognizedOperation"/>
+  <status code="0123" name="No such action type" type="Failure" key="NoSuchActionType"/>
+</statuses>
+
+<statuses service="Storage">
+  <status code="A7xx" name="Out of Resources" type="Failure" key="StorageOutOfResources"/>
+  <status code="A9xx" name="Data Set does not match SOP Class (Error)" type="Failure" key="DataSetDoesNotMatchSOPClassError"/>
+  <status code="Cxxx" name="Cannot understand" type="Failure" key="CannotUnderstand"/>
+  <status code="B000" name="Coercion of Data Elements" type="Warning" key="CoercionOfDataElements"/>
+  <status code="B007" name="Data Set does not match SOP Class (Warning)" type="Warning" key="DataSetDoesNotMatchSOPClassWarning"/>
+  <status code="B006" name="Elements Discarded" type="Warning" key="ElementsDiscarded"/>
+</statuses>
+
+<statuses service="QueryRetrieve">
+  <status code="A700" name="Out of Resources" type="Failure" key="OutOfResources"/>
+  <status code="A701" name="Unable to calculate number of matches" type="Failure" key="UnableToCalculateNumberOfMatches"/>
+  <status code="A702" name="Unable to perform suboperations" type="Failure" key="UnableToPerformSuboperations"/>
+  <status code="A801" name="Move Destination unknown" type="Failure" key="MoveDestinationUnknown"/>
+  <status code="A900" name="Identifier does not match SOP Class" type="Failure" key="IdentifierDoesNotMatchSOPClass"/>
+  <status code="Cxxx" name="Unable to process" type="Failure" key="UnableToProcess"/>
+  <status code="FF01" name="Optional Keys Not Supported" type="Pending" key="OptionalKeysNotSupported"/>
+  <status code="B000" name="Sub-operations Complete - One or more Failures" type="Warning" key="SubOpsOneOrMoreFailures"/>
+</statuses>
+
 </dictionary>

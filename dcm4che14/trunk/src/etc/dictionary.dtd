@@ -1,5 +1,5 @@
 <?xml encoding="UTF-8"?>
-<!ELEMENT dictionary (elements*,uids*)>
+<!ELEMENT dictionary (elements*,uids*,status*)>
 
 <!ELEMENT elements (element*)>
 <!ATTLIST elements type (Command|Data|FileMetaInfo|DicomDir) #REQUIRED>
@@ -20,3 +20,12 @@
               name    CDATA #REQUIRED
               retired (true|false) "false"
               key     CDATA #REQUIRED>
+              
+<!ELEMENT statuses (status*)>
+<!ATTLIST statuses service CDATA #IMPLIED>
+
+<!ELEMENT status EMPTY>
+<!ATTLIST status code   CDATA #REQUIRED
+                 name   CDATA #REQUIRED
+                 type  (Success|Pending|Cancel|Warning|Failure) #REQUIRED
+                 key    CDATA #REQUIRED>

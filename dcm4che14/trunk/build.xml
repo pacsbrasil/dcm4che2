@@ -86,7 +86,13 @@
              style="${src.etc}/UIDs.xsl"
              in="${src.etc}/dictionary.xml"
              out="${src.java}/org/dcm4che/dict/UIDs.java"
-      />    
+      />
+      
+      <style processor="trax"
+             style="${src.etc}/Status.xsl"
+             in="${src.etc}/dictionary.xml"
+             out="${src.java}/org/dcm4che/dict/Status.java"
+      />
    </target>
 
    <target name="compile" depends="xml2java">
