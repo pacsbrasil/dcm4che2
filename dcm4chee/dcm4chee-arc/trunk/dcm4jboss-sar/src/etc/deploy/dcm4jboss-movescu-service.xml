@@ -47,10 +47,6 @@
 	-->
     <attribute name="RetryIntervalls">5x1m,12x5m,24x1h,7x1d</attribute>    
 
-    <!-- 
-    Specifies maximal number of concurrently invoked move requests.
-	-->
-    <attribute name="MaxConcurrentMoves">1</attribute>
   </mbean>
 
   <mbean code="org.jboss.varia.scheduler.Scheduler" 
@@ -79,5 +75,33 @@
     <attribute name="InitialRepetitions">-1</attribute>
   </mbean>
 
+  <!--
+  Uncomment following mbean descriptors to enable processing of pending move orders
+  by (2) concurrent MOVE RQs. Add further entries for MoveScuService+Scheduler to
+  increase the number of maximimal concurrent MOVE RQs triggered by pending move orders.
+  
+  <mbean code="org.dcm4chex.service.MoveScuService" 
+	name="dcm4chex:service=MoveScu2,aet=MOVE_SCU2">
+
+    <attribute name="DataSource">java:/DefaultDS</attribute>    
+    <attribute name="RetryIntervalls">5x1m,12x5m,24x1h,7x1d</attribute>    
+
+  </mbean>
+
+
+  <mbean code="org.jboss.varia.scheduler.Scheduler" 
+	 name="dcm4chex:service=Scheduler,name=Scheduler of MoveScu2">
+
+    <depends>jboss.j2ee:jndiName=ejb/MoveOrderQueue,service=EJB</depends>
+    <depends>jboss.j2ee:jndiName=ejb/MoveOrder,service=EJB</depends>
+        
+    <attribute name="SchedulableMBean">dcm4chex:service=MoveScu2,aet=MOVE_SCU2</attribute>
+    <attribute name="SchedulePeriod">60000</attribute>
+    <attribute name="StartAtStartup">true</attribute>
+    <attribute name="SchedulableMBeanMethod">run</attribute>
+    <attribute name="InitialStartDate">NOW</attribute>
+    <attribute name="InitialRepetitions">-1</attribute>
+  </mbean>
+  -->
 </server>
 

@@ -71,8 +71,6 @@ public class MoveScuService
     private DataSourceFactory dsf = new DataSourceFactory(log);
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
     private MoveOrderQueue queue;
-    private int invoked = 0;
-    private int maxConcurrentMoves = 1;
 
     /**
      * @jmx.managed-attribute
@@ -116,20 +114,6 @@ public class MoveScuService
         retryIntervalls = new RetryIntervalls(text);
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
-    public int getMaxConcurrentMoves() {
-        return maxConcurrentMoves;
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setMaxConcurrentMoves(int maxConcurrentMoves) {
-        this.maxConcurrentMoves = maxConcurrentMoves;
-    }
-
     private String getAET() {
         String aet = getServiceName().getKeyProperty("aet");
         return aet != null ? aet : DEFAULT_AET;
@@ -140,8 +124,7 @@ public class MoveScuService
      */
     public void run() {
         MoveOrderValue order;
-        while (invoked < maxConcurrentMoves
-            && (order = fetchNextOrder()) != null) {
+        while ((order = fetchNextOrder()) != null) {
             try {
                 log.debug("Processing " + order);
                 process(order);
@@ -161,7 +144,6 @@ public class MoveScuService
             IOException {
         ActiveAssociation moveAssoc =
             openAssociation(queryAEData(order.getRetrieveAET()));
-        ++invoked;
         try {
             Command cmd = dof.newCommand();
             cmd.initCMoveRQ(
@@ -206,7 +188,6 @@ public class MoveScuService
             } catch (Exception e) {
                 log.warn("Failed to release " + moveAssoc.getAssociation());
             }
-            --invoked;
         }
     }
 
