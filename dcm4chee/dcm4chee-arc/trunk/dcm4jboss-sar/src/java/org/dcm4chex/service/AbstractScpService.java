@@ -34,6 +34,7 @@ import javax.management.ReflectionException;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
+import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -62,6 +63,7 @@ abstract class AbstractScpService extends ServiceMBeanSupport
     protected ObjectName dcmServerName;
     protected DcmHandler dcmHandler;
     protected String aet;
+    protected AuditLogger auditLogger;
 
     protected ObjectName getObjectName(MBeanServer server, ObjectName name)
         throws MalformedObjectNameException
@@ -74,8 +76,13 @@ abstract class AbstractScpService extends ServiceMBeanSupport
         return aet;
     }
 
+    public final AuditLogger getAuditLogger() {
+        return auditLogger;
+    }
+
     protected void startService() throws Exception
     {
+        auditLogger = (AuditLogger) server.getAttribute(dcmServerName, "AuditLogger");
         dcmHandler =
             (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
         bindDcmServices(dcmHandler.getDcmServiceRegistry());

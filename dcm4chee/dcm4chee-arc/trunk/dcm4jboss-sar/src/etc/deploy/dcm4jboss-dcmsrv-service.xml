@@ -16,7 +16,7 @@
     name="dcm4chex:service=DcmServer,name=DCMSRV">
 
     <depends optional-attribute-name="AuditLoggerName">
-      dcm4chex:service=AuditLogger,name=AUDITLOG
+      dcm4chex:service=AuditLogger,actorName=PACS_TIANI
     </depends>
 
     <!--

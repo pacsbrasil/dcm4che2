@@ -1679,6 +1679,4 @@ public class StoreScpService
             storageCommitmentPushModel);
         return policy;
     }
-
-
 }

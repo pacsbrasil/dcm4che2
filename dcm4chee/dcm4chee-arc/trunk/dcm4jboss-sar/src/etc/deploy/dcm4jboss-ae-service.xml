@@ -14,6 +14,11 @@
 
 <mbean code="org.dcm4chex.service.AEService" 
 	name="dcm4chex:service=AE">
+	
+    <depends optional-attribute-name="AuditLoggerName">
+      dcm4chex:service=AuditLogger,actorName=PACS_TIANI
+    </depends>
+    
 </mbean>
 
 </server>

@@ -13,7 +13,7 @@
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
 
    <mbean code="org.dcm4chex.service.AuditLoggerService" 
-         name="dcm4chex:service=AuditLogger,name=AUDITLOG">
+         name="dcm4chex:service=AuditLogger,actorName=PACS_TIANI">
     <attribute name="SyslogHost">localhost</attribute>
     <attribute name="SyslogPort">4000</attribute>
     <attribute name="Facility">authpriv</attribute>         

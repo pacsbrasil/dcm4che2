@@ -41,6 +41,8 @@ import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -77,6 +79,7 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
+	private static final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
     private static final String STORESCP = "org.dcm4chex.service.StoreScp";
     private static final int[] TYPE1_ATTR =
         {
@@ -259,6 +262,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ds.putAll(coercedElements);
             }
             updateStoredStudiesInfo(assoc, ds);
+            updateInstancesStored(assoc, ds);
         } catch (DcmServiceException e) {
             service.getLog().warn(e.getMessage(), e);
             deleteFailedStorage(file);
@@ -510,6 +514,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void close(Association assoc) {
+        logInstancesStored(assoc);
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo != null) {
             forward(
@@ -610,4 +615,46 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
+    void updateInstancesStored(Association assoc, Dataset ds)
+    {
+        if (service.getAuditLogger() == null) {
+            return;
+        }
+        try {
+            InstancesAction stored =
+                    (InstancesAction) assoc.getProperty("InstancesStored");
+            String suid = ds.getString(Tags.StudyInstanceUID);
+            if (stored != null
+                     && !stored.listStudyInstanceUIDs()[0].equals(suid)) {
+                logInstancesStored(assoc);
+                stored = null;
+            }
+            if (stored == null) {
+                stored = alf.newInstancesAction("Create", suid,
+                        alf.newPatient(ds.getString(Tags.PatientID),
+                        ds.getString(Tags.PatientName)));
+                stored.setAccessionNumber(ds.getString(Tags.AccessionNumber));
+                assoc.putProperty("InstancesStored", stored);
+            }
+            stored.incNumberOfInstances(1);
+            stored.addSOPClassUID(ds.getString(Tags.SOPClassUID));
+        } catch (Exception e) {
+            service.getLog().error("Could not audit log InstancesStored:", e);
+        }
+    }
+
+    void logInstancesStored(Association assoc)
+    {
+        if (service.getAuditLogger() == null) {
+            return;
+        }
+        InstancesAction stored =
+                (InstancesAction) assoc.getProperty("InstancesStored");
+        if (stored != null) {
+            service.getAuditLogger().logInstancesStored(
+                    alf.newRemoteNode(assoc.getSocket(), assoc.getCallingAET()),
+                    stored);
+        }
+        assoc.putProperty("InstancesStored", null);
+    }
 }

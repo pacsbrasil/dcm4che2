@@ -23,6 +23,7 @@ package org.dcm4chex.service;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
@@ -41,21 +42,22 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
  * @since 31.08.2003
  */
 public class FindScp extends DcmServiceBase {
+
+    private final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+
     private final QueryRetrieveScpService service;
 
     public FindScp(QueryRetrieveScpService service) {
         this.service = service;
     }
 
-    protected MultiDimseRsp doCFind(
-        ActiveAssociation assoc,
-        Dimse rq,
-        Command rspCmd)
-        throws IOException, DcmServiceException {
+    protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
+            Command rspCmd) throws IOException, DcmServiceException {
         final QueryCmd queryCmd;
         try {
             Dataset rqData = rq.getDataset();
             service.logDataset("Identifier:\n", rqData);
+            logDicomQuery(assoc.getAssociation(), rq.getCommand(), rqData);
             queryCmd = QueryCmd.create(service.getDS(), rqData);
             queryCmd.execute();
         } catch (Exception e) {
@@ -65,8 +67,21 @@ public class FindScp extends DcmServiceBase {
         return new MultiCFindRsp(queryCmd);
     }
 
+    void logDicomQuery(Association assoc, Command cmd, Dataset keys) {
+        if (service.getAuditLogger() != null) {
+            service.getAuditLogger()
+                    .logDicomQuery(
+                            keys,
+                            alf.newRemoteNode(assoc.getSocket(), assoc
+                                    .getCallingAET()),
+                            cmd.getAffectedSOPClassUID());
+        }
+    }
+
     private class MultiCFindRsp implements MultiDimseRsp {
+
         private final QueryCmd queryCmd;
+
         private boolean canceled = false;
 
         public MultiCFindRsp(QueryCmd queryCmd) {
@@ -75,6 +90,7 @@ public class FindScp extends DcmServiceBase {
 
         public DimseListener getCancelListener() {
             return new DimseListener() {
+
                 public void dimseReceived(Association assoc, Dimse dimse) {
                     canceled = true;
                 }
@@ -82,11 +98,10 @@ public class FindScp extends DcmServiceBase {
         }
 
         public Dataset next(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-            throws DcmServiceException
-        {
+                throws DcmServiceException {
             if (canceled) {
                 rspCmd.putUS(Tags.Status, Status.Cancel);
-                return null;                
+                return null;
             }
             try {
                 if (!queryCmd.next()) {
@@ -98,11 +113,11 @@ public class FindScp extends DcmServiceBase {
                 return data;
             } catch (SQLException e) {
                 service.getLog().error("Retrieve DB record failed:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);                
+                throw new DcmServiceException(Status.ProcessingFailure, e);
             } catch (Exception e) {
                 service.getLog().error("Corrupted DB record:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);                
-            }                        
+                throw new DcmServiceException(Status.ProcessingFailure, e);
+            }
         }
 
         public void release() {

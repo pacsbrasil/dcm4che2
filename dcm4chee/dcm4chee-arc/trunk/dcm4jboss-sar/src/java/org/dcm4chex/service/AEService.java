@@ -27,6 +27,7 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
+import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -53,6 +54,7 @@ public class AEService
 {
 
     private AELocalHome home = null;
+    private ObjectName auditLogName;
 
     private AELocalHome getHome()
     {
@@ -75,6 +77,20 @@ public class AEService
     }
 
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public ObjectName getAuditLoggerName() {
+        return auditLogName;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setAuditLoggerName(ObjectName auditLogName) {
+        this.auditLogName = auditLogName;
+    }
+    
     /**
      * @jmx.managed-attribute
      */
@@ -110,6 +126,7 @@ public class AEService
                     url.getHost(),
                     url.getPort(),
                     toString(url.getCipherSuites()));
+            logActorConfig("Add AE " + url);
         }
     }
 
@@ -129,9 +146,29 @@ public class AEService
             } catch (IllegalArgumentException ignore) {
             }
             getHome().remove(tk);
+            logActorConfig("Remove AE " + tk);
         }
     }
 
+    private void logActorConfig(String desc)
+    {
+        if (auditLogName == null) {
+            return;
+        }
+        try {
+            server.invoke(auditLogName, "logActorConfig",
+                    new Object[]{
+                        desc,
+                        "NetWorking"
+                    },
+                    new String[]{
+                    String.class.getName(),
+                    String.class.getName(),
+                    });
+        } catch (Exception e) {
+            log.warn("Failed to log ActorConfig:", e);
+        }
+    }
 
     private String toString(String[] a)
     {
