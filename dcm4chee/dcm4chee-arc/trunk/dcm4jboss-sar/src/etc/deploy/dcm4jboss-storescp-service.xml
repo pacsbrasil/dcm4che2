@@ -26,12 +26,42 @@
     <attribute name="EjbHostName">localhost</attribute>
     -->
 
+    <!-- 
+    Specifies JNDI name used to look up the datasource.
+    Name after "java:/" must match with <jndi-name> attribute of 
+    JDBC Datasource configuration deployment file (*-ds.xml) 
+	-->
     <attribute name="DataSource">java:/PostgresDS</attribute>    
 
+    <!-- 
+    Defines a list of DICOM Application Entity Title(s) that identify the
+    location from which composite object instance(s) received by this
+    Storage SCP, may be retrieved on the network. At least, one AET must be
+    specified. Multiple values must be separated by '\' characters.
+    For each listed AET, there shall be a corresponding Network configuration
+    (Host, Port) entry in the AE configuration table! 
+	-->
     <attribute name="RetrieveAETs">QR_SCP</attribute>
 
+    <!-- 
+    Defines an optional list of DICOM Application Entity Title(s) to which 
+    composite object instance(s) received by this Storage SCP are forwarded.
+    Multiple values must be separated by '\' characters.
+    For each listed AET, the must be a corresponding Network configuration
+    (Host, Port) entry in the AE configuration table!
+	-->
     <attribute name="ForwardAETs"></attribute>
 
+    <!-- 
+    Defines a list of directory path(s) - e.g. mounted filesystems - where
+    composite object instance(s) received by this Storage SCP are stored.
+    At least, one directory path must be specified. Multiple values must be
+    separated by ',' characters.
+    If multiple directories are specified, the storage location alternates
+    every day (at midnight). There may be several entries with the same
+    directory path to configure an asymetric distribution of received objects
+    among different storage locations.
+    -->
     <attribute name="StorageDirs">/var/local/dcm4jboss</attribute>
 
     <attribute name="CallingAETs">__any__</attribute>
