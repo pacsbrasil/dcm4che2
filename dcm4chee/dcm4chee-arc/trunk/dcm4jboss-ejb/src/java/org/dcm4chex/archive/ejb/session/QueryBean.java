@@ -33,7 +33,8 @@ import javax.ejb.SessionBean;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.jdbc.DatasetQueryCmd;
+import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 
 /**
  * Query Bean
@@ -64,17 +65,17 @@ public abstract class QueryBean implements SessionBean
 {
     private Logger log = Logger.getLogger(QueryBean.class);
 
-    private transient DatasetQueryCmd cmd = null;
+    private transient QueryCmd cmd = null;
     
     // Constructors --------------------------------------------------    
 
     /**
      * @ejb:create-method
      */
-    public void ejbCreate(Dataset keys)
-    throws CreateException {
-        cmd = new DatasetQueryCmd();
-        cmd.execute(keys);
+    public void ejbCreate(Dataset keys, String principal)
+    throws CreateException, DcmServiceException {
+        cmd = QueryCmd.create(keys, principal);
+        cmd.execute();
     }
 
         
