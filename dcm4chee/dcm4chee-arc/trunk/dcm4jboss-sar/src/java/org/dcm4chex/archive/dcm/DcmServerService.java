@@ -17,7 +17,6 @@ import org.dcm4che.server.DcmHandler;
 import org.dcm4che.server.Server;
 import org.dcm4che.server.ServerFactory;
 import org.dcm4che.util.DcmProtocol;
-import org.dcm4chex.archive.codec.CodecCmd;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -163,13 +162,6 @@ public class DcmServerService extends ServiceMBeanSupport {
         policy.setMaxPDULength(newMaxPDULength);
     }
 
-    public final int getMaxConcurrentCodec() {
-        return CodecCmd.getMaxConcurrentCodec();
-    }
-    
-    public final void setMaxConcurrentCodec(int maxConcurrentCodec) {
-        CodecCmd.setMaxConcurrentCodec(maxConcurrentCodec);
-    }
     
     protected void startService() throws Exception {
         dcmsrv.addHandshakeFailedListener(tlsConfig.getHandshakeFailedListener());

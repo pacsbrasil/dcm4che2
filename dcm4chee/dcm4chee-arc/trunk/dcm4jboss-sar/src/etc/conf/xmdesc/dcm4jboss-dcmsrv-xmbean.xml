@@ -98,17 +98,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMaxConcurrentCodec"
-      setMethod="setMaxConcurrentCodec">
-      <description>Maximal number of concurrent compression/decompression of images.
-      </description>
-      <name>MaxConcurrentCodec</name>
-      <type>int</type>
-      <descriptors>
-         <value value="1" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getMaxClients"
       setMethod="setMaxClients">
       <description>Maximal number of simultaneously connected DICOM clients.
