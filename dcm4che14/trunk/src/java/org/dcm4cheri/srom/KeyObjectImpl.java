@@ -580,7 +580,7 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
                 Dataset series = refSeriesSeq.addNewItem();
                 series.putUI(Tags.SeriesInstanceUID, (String)entry2.getKey());
                 DcmElement refSOPSeq = series.putSQ(Tags.RefSOPSeq);
-                for (Iterator it3 = ((List)entry.getValue()).iterator();
+                for (Iterator it3 = ((List)entry2.getValue()).iterator();
                         it3.hasNext();) {
                     ((SOPInstanceRef)it3.next()).toDataset(
                             refSOPSeq.addNewItem());
