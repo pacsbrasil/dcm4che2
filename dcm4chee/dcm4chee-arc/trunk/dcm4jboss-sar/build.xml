@@ -41,9 +41,6 @@
     <!-- Override with your dcm4jboss-hl7 dist location -->
 	<property name="dcm4jboss-hl7.home" value="../dcm4jboss-hl7"/>		
 
-    <!-- Override with your hapi ZIP location -->
-	<property name="hapi.zip" value="../hapi/dist/hapi-0.4.2.zip"/>		
-
     <!-- Override with your dcm4jboss-wado dist location -->
 	<property name="dcm4jboss-wado.home" value="../dcm4jboss-wado"/>		
 	<property name="dcm4jboss-wado.target" value="${dcm4jboss-wado.home}/target"/>		
@@ -317,9 +314,9 @@
   			<fileset dir="${dcm4jboss-hl7.home}/src/etc">
    				<include name="deploy/*.xml"/>
    				<include name="conf/xmdesc/*.xml"/>
+   				<include name="conf/xsl/*.xsl"/>
    			</fileset>
    		</copy>
-   		<unzip src="${hapi.zip}" dest="${dist.dir}/common/lib"/>
     </target>
 	
     <!-- WADO distribution -->

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <server>
-  <classpath codebase="lib" archives="dcm4jboss-hl7.jar hapi-0.4.1.jar"/>
+  <classpath codebase="lib" archives="dcm4jboss-hl7.jar"/>
   <mbean code="org.dcm4chex.archive.hl7.HL7ServerService" 
          name="dcm4chex:service=HL7Server"
          xmbean-dd="xmdesc/dcm4jboss-hl7srv-xmbean.xml">

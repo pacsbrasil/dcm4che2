@@ -8,50 +8,73 @@
  ******************************************/
 package org.dcm4chex.archive.hl7;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.GeneralSecurityException;
-import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Hashtable;
 
 import javax.management.ObjectName;
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
-import org.dcm4che.auditlog.AuditLogger;
-import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.server.Server;
+import org.dcm4che.server.ServerFactory;
 import org.dcm4che.util.MLLP_Protocol;
-import org.dcm4che.util.SSLContextAdapter;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.dcm4chex.archive.mbean.TLSConfigService;
+import org.dom4j.Document;
+import org.dom4j.io.DocumentSource;
+import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
-
-import ca.uhn.hl7v2.app.Application;
+import org.jboss.system.server.ServerConfigLocator;
+import org.regenstrief.xhl7.HL7XMLReader;
+import org.regenstrief.xhl7.HL7XMLWriter;
+import org.regenstrief.xhl7.MLLPDriver;
+import org.regenstrief.xhl7.XMLWriter;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
- * @since 24.02.2004
+ * @since 25.10.2004
+ *
  */
-public class HL7ServerService extends ServiceMBeanSupport {
+public class HL7ServerService extends ServiceMBeanSupport
+	implements Server.Handler {
 
-    private HL7Server hl7srv = new HL7Server(this);
+    private static final TransformerFactory tf = 
+        						TransformerFactory.newInstance();
+
+    private File logDir;
+
+    private Server hl7srv = ServerFactory.getInstance().newServer(this);
 
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
 
     private ObjectName auditLogName;
+    
+    private boolean fileReceivedHL7AsXML;
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
+
+    private String ACK_XSL_URL = "resource:xsl/msh2ack.xsl";
+
+    private Hashtable templates = new Hashtable();
+
+    private Hashtable serviceRegistry = new Hashtable();
     
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-
+    private String[] noopMessageTypes = {};
 
     public ObjectName getAuditLoggerName() {
         return auditLogName;
@@ -61,6 +84,14 @@ public class HL7ServerService extends ServiceMBeanSupport {
         this.auditLogName = auditLogName;
     }
 
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
+    }
+    
     public int getPort() {
         return hl7srv.getPort();
     }
@@ -69,6 +100,14 @@ public class HL7ServerService extends ServiceMBeanSupport {
         hl7srv.setPort(port);
     }
 
+    public final String getNoopMessageTypes() {
+        return StringUtils.toString(noopMessageTypes,',');
+    }
+
+    public final void setNoopMessageTypes(String noopMessageTypes) {
+        this.noopMessageTypes = StringUtils.split(noopMessageTypes,',');
+    }
+    
     public String getProtocolName() {
         return protocol.toString();
     }
@@ -77,12 +116,58 @@ public class HL7ServerService extends ServiceMBeanSupport {
         this.protocol = MLLP_Protocol.valueOf(protocolName);
     }
 
-    public void registerApplication(String messageType, String triggerEvent,
-            Application handler) {
-        hl7srv.registerApplication(messageType, triggerEvent, handler);
+    public int getMaxClients() {
+        return hl7srv.getMaxClients();
+    }
+
+    public void setMaxClients(int newMaxClients) {
+        hl7srv.setMaxClients(newMaxClients);
+    }
+
+    public int getNumClients() {
+        return hl7srv.getNumClients();
+    }
+
+    public int getMaxIdleThreads() {
+        return hl7srv.getMaxIdleThreads();
+    }
+    
+    public int getNumIdleThreads() {
+        return hl7srv.getNumIdleThreads();
+    }
+    
+    public void setMaxIdleThreads(int max) {
+        hl7srv.setMaxIdleThreads(max);
+    }
+
+    public final boolean isFileReceivedHL7AsXML() {
+        return fileReceivedHL7AsXML;
+    }
+    
+    public final void setFileReceivedHL7AsXML(boolean fileReceivedHL7AsXML) {
+        this.fileReceivedHL7AsXML = fileReceivedHL7AsXML;
+    }
+    
+    public void registerService(String messageType, HL7Service service) {
+        if (service != null)
+            serviceRegistry.put(messageType, service);
+        else
+            serviceRegistry.remove(messageType);
+    }
+    
+    public Templates getTemplate(String uri) 
+    		throws TransformerConfigurationException {
+        Templates tpl = (Templates) templates.get(uri);
+        if (tpl == null) {
+            tpl = tf.newTemplates(new StreamSource(uri));
+            templates.put(uri, tpl);
+        }
+        return tpl;
     }
 
     protected void startService() throws Exception {
+        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
+        hl7srv.addHandshakeFailedListener(tlsConfig.getHandshakeFailedListener());
         hl7srv.setServerSocketFactory(tlsConfig.getServerSocketFactory(protocol
                 .getCipherSuites()));
         hl7srv.start();
@@ -90,39 +175,78 @@ public class HL7ServerService extends ServiceMBeanSupport {
 
     protected void stopService() throws Exception {
         hl7srv.stop();
+        templates.clear();
     }
 
-    public void handshake(SSLSocket s) {
+    public void ack(Document document, ContentHandler hl7out, HL7Exception hl7ex) {
         try {
-            s.startHandshake();
-            if (log.isInfoEnabled()) {
-                SSLSession se = s.getSession();
-                try {
-                    X509Certificate cert = (X509Certificate) se
-                            .getPeerCertificates()[0];
-                    log.info(s.getInetAddress().toString() + ": accept "
-                            + se.getCipherSuite() + " with "
-                            + cert.getSubjectDN());
-                } catch (SSLPeerUnverifiedException e) {
-                    log.error("SSL peer not verified:", e);
-                }
+            Transformer t = getTemplate(ACK_XSL_URL).newTransformer();
+            if (hl7ex != null) {
+                t.setParameter("AcknowledgementCode", hl7ex
+                        .getAcknowledgementCode());
+                t.setParameter("TextMessage", hl7ex.getMessage());
             }
-        } catch (IOException e) {
-            logSecurityAlert("NodeAuthentification", s, null, e.getMessage());
+            t.transform(new DocumentSource(document), new SAXResult(hl7out));
+        } catch (TransformerException e) {
+            log.error("Failed to acknowlege message", e);
         }
-
     }
 
-    private void logSecurityAlert(String alertType, Socket socket, String aet,
-            String description) {
-        if (auditLogName == null) return;
+    private HL7Service getService(MSH msh) throws HL7Exception {
+        String messageType = msh.messageType + '^' + msh.triggerEvent;
+        HL7Service service = (HL7Service) serviceRegistry.get(messageType);
+        if (service == null) {
+            if (Arrays.asList(noopMessageTypes).indexOf(messageType) == -1)
+                throw new HL7Exception.AR("Unsupported message type: " + messageType.replace('^','_'));
+        }
+        return service;
+    }
+
+    //  Server.Handler Implementation-------------------------------
+    public void handle(Socket s) throws IOException {
+        MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
+                .getOutputStream(), false);
+        XMLReader xmlReader = new HL7XMLReader();
+        XMLWriter xmlWriter = new HL7XMLWriter();
+        xmlWriter.setOutputStream(mllpDriver.getOutputStream());
+        ContentHandler hl7out = xmlWriter.getContentHandler();
+        SAXContentHandler hl7in = new SAXContentHandler();
+        xmlReader.setContentHandler(hl7in);
+        while (mllpDriver.hasMoreInput()) {
+            try {
+                try {
+                    xmlReader
+                            .parse(new InputSource(mllpDriver.getInputStream()));
+                    Document msg = hl7in.getDocument();
+                    if (fileReceivedHL7AsXML)
+                        logMessage(msg);
+                    MSH msh = new MSH(msg);
+                    HL7Service service = getService(msh);
+                    if (service == null || service.process(msh, msg, hl7out)) ack(msg, hl7out, null);
+                } catch (SAXException e) {
+                    throw new HL7Exception.AE("Failed to parse message", e);
+                }
+            } catch (HL7Exception e) {
+                mllpDriver.discardPendingOutput();
+                ack(hl7in.getDocument(), hl7out, e);
+            }
+            mllpDriver.turn();
+        }
+    }
+
+    private void logMessage(Document msg) {
+        File f = new File(logDir, "hl7." + System.currentTimeMillis() + ".xml");
         try {
-            server.invoke(auditLogName, "logSecurityAlert",
-                new Object[] { alertType, socket, aet, description },
-                new String[] { String.class.getName(), Socket.class.getName(),
-                    String.class.getName(), String.class.getName()});
+	        Transformer tr = tf.newTransformer();
+	        tr.setOutputProperty(OutputKeys.INDENT, "yes");
+	        tr.transform(new DocumentSource(msg), new StreamResult(f));
         } catch (Exception e) {
-            log.warn("Audit Log failed:", e);
+            log.warn("Failed to log HL7 to " + f, e);
         }
     }
+
+    public boolean isSockedClosedByHandler() {
+        return false;
+    }
+
 }
