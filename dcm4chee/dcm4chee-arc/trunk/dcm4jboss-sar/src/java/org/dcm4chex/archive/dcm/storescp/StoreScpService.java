@@ -315,6 +315,25 @@ public class StoreScpService extends AbstractScpService {
 
     private String[] getImageTS() {
         ArrayList list = new ArrayList();
+        if (acceptJPEGLossless14) {
+            list.add(UIDs.JPEGLossless14);
+        }
+        if (acceptJPEGLossless) {
+            list.add(UIDs.JPEGLossless);
+        }
+        if (acceptJPEGLSLossless) {
+            list.add(UIDs.JPEGLSLossless);
+        }
+        if (acceptRLELossless) {
+            list.add(UIDs.RLELossless);
+        }
+        if (acceptJPEG2000Lossless) {
+            list.add(UIDs.JPEG2000Lossless);
+        }
+        if (acceptExplicitVRLE) {
+            list.add(UIDs.ExplicitVRLittleEndian);
+        }
+        list.add(UIDs.ImplicitVRLittleEndian);
         if (acceptJPEGBaseline) {
             list.add(UIDs.JPEGBaseline);
         }
@@ -327,25 +346,6 @@ public class StoreScpService extends AbstractScpService {
         if (acceptJPEG2000Lossy) {
             list.add(UIDs.JPEG2000Lossy);
         }
-        if (acceptJPEGLSLossless) {
-            list.add(UIDs.JPEGLSLossless);
-        }
-        if (acceptJPEG2000Lossless) {
-            list.add(UIDs.JPEG2000Lossless);
-        }
-        if (acceptJPEGLossless14) {
-            list.add(UIDs.JPEGLossless14);
-        }
-        if (acceptJPEGLossless) {
-            list.add(UIDs.JPEGLossless);
-        }
-        if (acceptRLELossless) {
-            list.add(UIDs.RLELossless);
-        }
-        if (acceptExplicitVRLE) {
-            list.add(UIDs.ExplicitVRLittleEndian);
-        }
-        list.add(UIDs.ImplicitVRLittleEndian);
         return (String[]) list.toArray(new String[list.size()]);
     }
 
