@@ -297,7 +297,7 @@ public class SpoolDirService extends ServiceMBeanSupport {
 
     public void purgeLabelDir() {
         if (purgeLabelDirAfter == 0) return;
-        deleteFilesModifiedBefore(requestDir, System.currentTimeMillis()
+        deleteFilesModifiedBefore(labelDir, System.currentTimeMillis()
                 - purgeLabelDirAfter);
     }
 
