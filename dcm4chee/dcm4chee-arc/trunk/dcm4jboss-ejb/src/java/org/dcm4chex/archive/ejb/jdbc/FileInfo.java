@@ -8,16 +8,13 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
-import java.io.Serializable;
 import java.util.Comparator;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  *  
  */
-public class FileInfo implements Serializable {
-
-    private static final long serialVersionUID = 4051044159831685173L;
+public class FileInfo {
 
     public static final Comparator ASC_ORDER = new Comparator() {
 
