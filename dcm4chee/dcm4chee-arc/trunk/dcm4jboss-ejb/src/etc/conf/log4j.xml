@@ -152,8 +152,8 @@
    <!-- Limit categories -->
    <!-- ================ -->
 
-   <!-- Limit the org.dcm4cheri.data category to INFO as its DEBUG is verbose -->
-   <category name="org.dcm4cheri.data">
+   <!-- Limit the org.dcm4cheri category to INFO -->
+   <category name="org.dcm4cheri">
       <priority value="INFO"/>
    </category>
 
