@@ -74,7 +74,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
 
     private String[] protocols = {
             "TLSv1",
-    //    "SSLv3",
+        "SSLv3",
     //    "SSLv2Hello"
             };
     /*
