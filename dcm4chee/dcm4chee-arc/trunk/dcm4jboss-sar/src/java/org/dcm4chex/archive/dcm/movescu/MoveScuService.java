@@ -16,7 +16,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.jms.QueueSession;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -56,8 +55,6 @@ public class MoveScuService extends ServiceMBeanSupport implements
     private String dsJndiName = "java:/DefaultDS";
 
     private DataSource datasource;
-
-    private QueueSession jmsSession;
 
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
@@ -128,20 +125,11 @@ public class MoveScuService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        if (this.jmsSession != null) {
-            log.warn("Closing existing JMS Session for receiving messages");
-            this.jmsSession.close();
-            this.jmsSession = null;
-        }
-        this.jmsSession = JMSDelegate.getInstance(MoveOrder.QUEUE)
-                .setMessageListener(this);
+        JMSDelegate.startListening(MoveOrder.QUEUE, this);
     }
 
     protected void stopService() throws Exception {
-        if (jmsSession != null) {
-            jmsSession.close();
-            jmsSession = null;
-        }
+        JMSDelegate.stopListening(MoveOrder.QUEUE);
     }
 
     void queueFailedMoveOrder(MoveOrder order) {
@@ -152,7 +140,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
         } else {
             log.warn("Failed to process " + order + ". Scheduling retry.");
             try {
-                JMSDelegate.getInstance(MoveOrder.QUEUE).queueMessage(order,
+                JMSDelegate.queue(MoveOrder.QUEUE, order,
                         0,
                         System.currentTimeMillis() + delay);
             } catch (JMSException e) {

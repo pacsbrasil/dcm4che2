@@ -42,6 +42,27 @@ public class JMSDelegate {
      */
     public static final String PROPERTY_SCHEDULED_DELIVERY = "JMS_JBOSS_SCHEDULED_DELIVERY";
 
+    public static void startListening(String name, MessageListener listener) {
+        if (map.containsKey(name))
+            throw new IllegalStateException("Already listening on queue " + name);
+        map.put(name, new JMSDelegate(name, listener));
+    }
+
+    public static void stopListening(String name) {
+        JMSDelegate jms = (JMSDelegate) map.remove(name);
+        if (jms == null)
+            throw new IllegalStateException("No listener on queue " + name);
+        jms.close();
+    }
+    
+    public static void queue(String name, Serializable obj, int prior,
+            long scheduledTime) throws JMSException {
+        JMSDelegate jms = (JMSDelegate) map.get(name);
+        if (jms == null)
+            throw new IllegalStateException("No listener on queue " + name);
+        jms.queueMessage(obj, prior, scheduledTime);
+    }
+    
     public static int toJMSPriority(int dcmPriority) {
         if (dcmPriority == 1) return 5;
         if (dcmPriority == 2) return 3;
@@ -50,33 +71,20 @@ public class JMSDelegate {
     
     private static HashMap map = new HashMap();
 
-    public synchronized static JMSDelegate getInstance(String qname) {
-        JMSDelegate instance = (JMSDelegate) map.get(qname);
-        if (instance == null)
-                map.put(qname, instance = new JMSDelegate(qname));
-        return instance;
-    }
-
-    private static QueueConnection conn;
-
-    private final String qname;
+    private final QueueConnection conn;
 
     private final Queue queue;
 
     private int deliveryMode = DeliveryMode.PERSISTENT;
 
-    public JMSDelegate(String qname) {
-        this.qname = qname;
+    private JMSDelegate(String name, MessageListener listener) {
         InitialContext iniCtx = null;
+        QueueConnectionFactory qcf = null;
         try {
             iniCtx = new InitialContext();
-            if (conn == null) {
-                Object tmp = iniCtx.lookup(CONNECTION_FACTORY);
-                QueueConnectionFactory qcf = (QueueConnectionFactory) tmp;
-                conn = qcf.createQueueConnection();
-                conn.start();
-            }
-            queue = (Queue) iniCtx.lookup("queue/" + qname);
+	        qcf = (QueueConnectionFactory) iniCtx.lookup(CONNECTION_FACTORY);
+            queue = (Queue) iniCtx.lookup("queue/" + name);
+            conn = qcf.createQueueConnection();
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         } catch (JMSException e) {
@@ -89,15 +97,22 @@ public class JMSDelegate {
                 }
             }
         }
+        try {
+            QueueSession session = conn.createQueueSession(false,
+                    QueueSession.AUTO_ACKNOWLEDGE);
+            QueueReceiver receiver = session.createReceiver(queue);
+            receiver.setMessageListener(listener);
+            conn.start();
+        } catch (JMSException e) {
+            close();
+        }
     }
-
-    public QueueSession setMessageListener(MessageListener listener)
-            throws JMSException {
-        QueueSession session = conn.createQueueSession(false,
-                QueueSession.AUTO_ACKNOWLEDGE);
-        QueueReceiver receiver = session.createReceiver(queue);
-        receiver.setMessageListener(listener);
-        return session;
+    
+    private void close() {
+        try {
+            conn.close();
+        } catch (Exception ignore) {
+        }
     }
 
     public void queueMessage(Serializable obj, int priority,

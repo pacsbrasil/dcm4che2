@@ -123,12 +123,8 @@ public class ForwardService extends ServiceMBeanSupport implements
                                 + order
                                 + (scheduledTime > 0L ? (" for " + new Date(
                                         scheduledTime)) : " now"));
-                        JMSDelegate
-                                .getInstance(MoveOrder.QUEUE)
-                                .queueMessage(order,
-                                        JMSDelegate
-                                                .toJMSPriority(forwardPriority),
-                                        scheduledTime);
+                        JMSDelegate.queue(MoveOrder.QUEUE, order, JMSDelegate
+                                .toJMSPriority(forwardPriority), scheduledTime);
                     } catch (JMSException e) {
                         log.error("Failed to schedule " + order, e);
                     }

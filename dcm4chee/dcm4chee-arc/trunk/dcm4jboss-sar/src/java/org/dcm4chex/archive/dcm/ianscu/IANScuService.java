@@ -199,17 +199,11 @@ public class IANScuService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
+        JMSDelegate.startListening(QUEUE, this);
         server.addNotificationListener(storeScpServiceName,
                 this,
                 StoreScpService.NOTIF_FILTER,
                 null);
-        if (this.jmsSession != null) {
-            log.warn("Closing existing JMS Session for receiving messages");
-            this.jmsSession.close();
-            this.jmsSession = null;
-        }
-        this.jmsSession = JMSDelegate.getInstance(QUEUE)
-                .setMessageListener(this);
     }
 
     protected void stopService() throws Exception {
@@ -217,10 +211,7 @@ public class IANScuService extends ServiceMBeanSupport implements
                 this,
                 StoreScpService.NOTIF_FILTER,
                 null);
-        if (jmsSession != null) {
-            jmsSession.close();
-            jmsSession = null;
-        }
+        JMSDelegate.stopListening(QUEUE);
     }
 
     public void handleNotification(Notification notif, Object handback) {
@@ -233,7 +224,8 @@ public class IANScuService extends ServiceMBeanSupport implements
                 IANOrder order = new IANOrder(notifiedAETs[i], ian);
                 try {
                     log.info("Scheduling " + order);
-                    JMSDelegate.getInstance(QUEUE).queueMessage(order,
+                    JMSDelegate.queue(QUEUE,
+                            order,
                             Message.DEFAULT_PRIORITY,
                             0L);
                 } catch (JMSException e) {
@@ -261,14 +253,14 @@ public class IANScuService extends ServiceMBeanSupport implements
                 log.error("Give up to process " + order);
             } else {
                 log.warn("Failed to process " + order + ". Scheduling retry.");
-                JMSDelegate.getInstance(QUEUE).queueMessage(order,
-                        0,
-                        System.currentTimeMillis() + delay);
+                JMSDelegate.queue(QUEUE, order, 0, System.currentTimeMillis()
+                        + delay);
             }
         } catch (JMSException e) {
             log.error("jms error during processing message: " + message, e);
         } catch (Throwable e) {
-            log.error("unexpected error during processing message: " + message, e);
+            log.error("unexpected error during processing message: " + message,
+                    e);
         }
     }
 
