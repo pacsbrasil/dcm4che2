@@ -39,6 +39,12 @@
     <!-- Override with your dcm4jboss-arr dist location -->
 	<property name="dcm4jboss-arr.home" value="../dcm4jboss-arr"/>		
 
+    <!-- Override with your dcm4jboss-arr dist location -->
+	<property name="dcm4jboss-hl7.home" value="../dcm4jboss-hl7"/>		
+
+    <!-- Override with your hapi ZIP location -->
+	<property name="hapi.zip" value="../hapi/dist/hapi-0.4.1.zip"/>		
+
     <!-- Override with your XDoclet bundle dist location -->
 	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
@@ -233,6 +239,12 @@
   			<fileset dir="${dcm4jboss-arr.home}/src/etc">
    				<include name="deploy/*.xml"/>
    			</fileset>
+  			<fileset dir="${dcm4jboss-hl7.home}/target">
+   				<include name="lib/dcm4jboss-hl7.jar"/>
+   			</fileset>
+  			<fileset dir="${dcm4jboss-hl7.home}/src/etc">
+   				<include name="deploy/*.xml"/>
+   			</fileset>
   			<fileset dir="${basedir}">
    				<include name="bin/*.exe"/>
    			</fileset>
@@ -240,6 +252,7 @@
    				<include name="lib/*"/>
    			</fileset>
    		</copy>
+   		<unzip src="${hapi.zip}" dest="${dist.dir}/common/lib"/>
    		<zip
    			destfile="${target.dir}/${dist.name}.zip"
    			basedir="${target.dir}"
