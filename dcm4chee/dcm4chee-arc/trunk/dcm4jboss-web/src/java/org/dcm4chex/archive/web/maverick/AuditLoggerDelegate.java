@@ -60,16 +60,16 @@ public class AuditLoggerDelegate {
     }
 
     public static void logStudyDeleted(ControllerContext ctx, String patid,
-            String patname, String suid, int numberOfInstances) {
+            String patname, String suid, int numberOfInstances, String desc) {
         try {
             init(ctx);
             AuditLoggerDelegate.server.invoke(auditLogName,
                     "logStudyDeleted",
                     new Object[] { patid, patname, suid,
-                            new Integer(numberOfInstances)},
+                            new Integer(numberOfInstances), desc},
                     new String[] { String.class.getName(),
                             String.class.getName(), String.class.getName(),
-                            Integer.class.getName(),});
+                            Integer.class.getName(), String.class.getName()});
         } catch (Exception e) {
             log.warn("Failed to log studyDeleted:", e);
         }

@@ -229,7 +229,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
                             .getPatientID(), pat.getPatientName(), study
                             .getString(Tags.StudyInstanceUID), study
-                            .getInt(Tags.NumberOfStudyRelatedInstances, 0));
+                            .getInt(Tags.NumberOfStudyRelatedInstances, 0),
+                            null);
                 }
                 AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
                         .getPatientID(), pat.getPatientName(), null);
@@ -250,22 +251,26 @@ public class FolderSubmitCtrl extends FolderCtrl {
                         pat.getPatientID(),
                         pat.getPatientName(),
                         study.getStudyIUID(),
-                        study.getNumberOfInstances());
+                        study.getNumberOfInstances(),
+                        null);
             } else {
-                final int deletedInstances = deleteSeries(edit, study.getSeries());
+                StringBuffer sb = new StringBuffer("Deleted ");
+                final int deletedInstances = deleteSeries(edit, study.getSeries(), sb);
                 if (deletedInstances > 0) {
                     AuditLoggerDelegate.logStudyDeleted(getCtx(),
                             pat.getPatientID(),
                             pat.getPatientName(),
                             study.getStudyIUID(),
-                            deletedInstances);
+                            deletedInstances,
+                            AuditLoggerDelegate.trim(sb));
                 }
                     
             }
         }
     }
 
-    private int deleteSeries(ContentEdit edit, List series) throws Exception {
+    private int deleteSeries(ContentEdit edit, List series, StringBuffer sb)
+    		throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
@@ -273,15 +278,18 @@ public class FolderSubmitCtrl extends FolderCtrl {
             if (folderForm.isSticky(serie)) {
                 edit.deleteSeries(serie.getPk());
                 numInsts += serie.getNumberOfInstances();
+                sb.append("Series[");
+                sb.append(serie.getSeriesIUID());
+                sb.append("], ");
             } else {
-                numInsts += deleteInstances(edit, serie.getInstances());
+                numInsts += deleteInstances(edit, serie.getInstances(), sb);
             }
         }
         return numInsts;
     }
 
-    private int deleteInstances(ContentEdit edit, List instances)
-            throws Exception {
+    private int deleteInstances(ContentEdit edit, List instances,
+            StringBuffer sb) throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = instances.size(); i < n; i++) {
@@ -289,6 +297,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
             if (folderForm.isSticky(instance)) {
                 edit.deleteInstance(instance.getPk());
                 ++numInsts;
+                sb.append("Object[");
+                sb.append(instance.getSopIUID());
+                sb.append("], ");
             }
         }
         return numInsts;
