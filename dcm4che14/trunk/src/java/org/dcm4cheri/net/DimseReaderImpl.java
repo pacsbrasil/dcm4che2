@@ -146,17 +146,20 @@ final class DimseReaderImpl {
     }
     
     private boolean nextPDV() throws IOException {
+        FsmImpl.log.debug("Enter nextPDV()");
         boolean hasPrev = pdv != null && !pdv.last();
         boolean prevCmd = hasPrev && pdv.cmd();
         int prevPcid = hasPrev ? pdv.pcid() : 0;
         while (pDataTF == null || (pdv = pDataTF.readPDV()) == null) {
             if (!nextPDataTF()) {
+                FsmImpl.log.debug("Leave nextPDV()");
                 return false;
             }
         }
         if (hasPrev && (prevCmd != pdv.cmd() || prevPcid != pdv.pcid())) {
             abort("Mismatch of following PDVs: " + pdv);
         }
+        FsmImpl.log.debug("Leave nextPDV()");
         return true;
     }
     
@@ -167,19 +170,23 @@ final class DimseReaderImpl {
     }
 
     private boolean nextPDataTF() throws IOException {
+        FsmImpl.log.debug("Enter nextPDataTF()");
         if (buf == null) {
             buf = new byte[fsm.getReadMaxLength() + 6];
         }
         PDU pdu = fsm.read(timeout, buf);
         if (pdu instanceof PDataTF) {
             pDataTF = (PDataTF)pdu;
+            FsmImpl.log.debug("Leave nextPDataTF()");
             return true;
         }
         if (pdu instanceof AReleaseRP) {
+            FsmImpl.log.debug("Leave nextPDataTF()");
             return false;
         }
         if (pdu instanceof AReleaseRQ) {
             fsm.write(AReleaseRPImpl.getInstance());
+            FsmImpl.log.debug("Leave nextPDataTF()");
             return false;
         }
         throw new PDUException("Received " + pdu, (AAbort)pdu);

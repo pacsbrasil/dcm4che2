@@ -1007,7 +1007,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putAS(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? StringElement.createAS(tag, value)
                 : StringElement.createAS(tag));
     }
@@ -1069,7 +1069,7 @@ abstract class DcmObjectImpl implements DcmObject {
      * @return        Description of the Return Value
      */
     public DcmElement putAT(int tag, String value) {
-        return value != null
+        return value != null && value.length() != 0
             ? putAT(tag, Integer.parseInt(value, 16))
             : putAT(tag);
     }
@@ -1193,7 +1193,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putDA(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? StringElement.createDA(tag, value)
                 : StringElement.createDA(tag));
     }
@@ -1256,7 +1256,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putDS(int tag, String value) {
         return put(
-            value != null
+            value != null || value.length() != 0
                 ? StringElement.createDS(tag, value)
                 : StringElement.createDS(tag));
     }
@@ -1338,7 +1338,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putDT(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? StringElement.createDT(tag, value)
                 : StringElement.createDT(tag));
     }
@@ -1401,7 +1401,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putFL(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? ValueElement.createFL(tag, Float.parseFloat(value))
                 : ValueElement.createFL(tag));
     }
@@ -1464,7 +1464,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putFD(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? ValueElement.createFD(tag, Double.parseDouble(value))
                 : ValueElement.createFD(tag));
     }
@@ -1527,7 +1527,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putIS(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? StringElement.createIS(tag, value)
                 : StringElement.createIS(tag));
     }
@@ -1813,7 +1813,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putPN(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? StringElement.createPN(
                     tag,
                     new PersonNameImpl(value),
@@ -1921,7 +1921,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putSL(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? ValueElement.createSL(
                     tag,
                     StringUtils.parseInt(
@@ -2002,7 +2002,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putSS(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? ValueElement.createSS(
                     tag,
                     StringUtils.parseInt(
@@ -2132,7 +2132,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putTM(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? StringElement.createTM(tag, value)
                 : StringElement.createTM(tag));
     }
@@ -2233,7 +2233,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putUL(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? ValueElement.createUL(
                     tag,
                     StringUtils.parseInt(value, 0L, 0xFFFFFFFFL))
@@ -2348,7 +2348,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putUS(int tag, String value) {
         return put(
-            value != null
+            value != null && value.length() != 0
                 ? ValueElement.createUS(
                     tag,
                     StringUtils.parseInt(value, 0L, 0xFFFFL))

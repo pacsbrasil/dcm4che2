@@ -282,21 +282,24 @@ public final class ISO8601DateFormat extends DateFormat
 				p += tok.length();
 			}
 			//get time zone offset, if exists
-			if ("-".equals(tok) || "+".equals(tok)) {
-				if ("-".equals(tok)) f = -1;
-				else f = 1;
-				tok = st.nextToken();
-				p += tok.length();
-				int off = Integer.parseInt(tok) * 3600 * 1000;
-				if ((tok.length()!=2 && strict) || !(tok = st.nextToken()).equals(":"))
-					throw new ParseException("invalid zone hour offset length",p);
-				p += tok.length();
-				tok = st.nextToken();
-				p += tok.length();
-				off += Integer.parseInt(tok) * 60 * 1000;
-				if (tok.length()!=2 && strict)
-					throw new ParseException("invalid zone min offset length",p);
-				off *= f;
+			if ("-".equals(tok) || "+".equals(tok) || "Z".equals(tok)) {
+                int off = 0;
+                if (!"Z".equals(tok)) {
+    				if ("-".equals(tok)) f = -1;
+    				else f = 1;
+    				tok = st.nextToken();
+    				p += tok.length();
+    				off = Integer.parseInt(tok) * 3600 * 1000;
+    				if ((tok.length()!=2 && strict) || !(tok = st.nextToken()).equals(":"))
+    					throw new ParseException("invalid zone hour offset length",p);
+    				p += tok.length();
+    				tok = st.nextToken();
+    				p += tok.length();
+    				off += Integer.parseInt(tok) * 60 * 1000;
+    				if (tok.length()!=2 && strict)
+    					throw new ParseException("invalid zone min offset length",p);
+    				off *= f;
+                }
 		        //set time to be in GMT timezone, by telling the Calendar it's offset from GMT
 		        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
 		        cal.set(Calendar.ZONE_OFFSET,off);
