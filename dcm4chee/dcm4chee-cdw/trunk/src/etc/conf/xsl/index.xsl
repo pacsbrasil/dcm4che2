@@ -11,7 +11,7 @@
 			<title>[Title of INDEX.HTM]</title>
 		</head>
 		<body>
-			<p>Edit <i>dcmcdw-x.y.z/server/dcmcdw/conf/xsl/index.xsl</i> to generate this page (INDEX.HTM)
+			<p>Edit <i>conf/xsl/index.xsl</i> to generate this page (INDEX.HTM)
 				compliant to the IHE Portable Data for Imaging Integration Profile, specified in 
 				<a href="http://www.rsna.org/IHE/tf/IHE_TF_Suppl_TI_2004-06-04.pdf">
 					IHE Radiology Technical Framework 2004-2005 Supplements for Trial Implementation
@@ -35,7 +35,7 @@
 				</li>
 				<xsl:if test="dicomdir/attr[@tag='(2200,0008)']!='NO' and $seqno = 1">
 					<li>
-						<p>a <a href="IHE_PDI/INDEX.HTM">link</a> to an entry point for accessing the
+						<p>a <a href="IHE_PDI/HOME.HTM">link</a> to an entry point for accessing the
 							web content of the IHE_PDI directory.</p>
 					</li>
 				</xsl:if>
