@@ -42,8 +42,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public class FileBeanTest extends ServletTestCase
-{
+public class FileBeanTest extends ServletTestCase {
+    public static final String[] RETRIEVE_AETS = { "QR_SCP" };
     public static final String BASEDIR = "/var/local/archive";
     public static final String FILEID = "2003/07/11/12345678/9ABCDEF0";
     public static final String TSUID = "1.2.40.0.13.1.1.9999.3";
@@ -53,16 +53,14 @@ public class FileBeanTest extends ServletTestCase
 
     private FileLocalHome fileHome;
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         junit.textui.TestRunner.run(FileBeanTest.class);
     }
 
     /*
      * @see TestCase#setUp()
      */
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         Context ctx = new InitialContext();
         fileHome = (FileLocalHome) ctx.lookup("java:comp/env/ejb/File");
         ctx.close();
@@ -71,23 +69,20 @@ public class FileBeanTest extends ServletTestCase
     /*
      * @see TestCase#tearDown()
      */
-    protected void tearDown() throws Exception
-    {}
+    protected void tearDown() throws Exception {}
 
     /**
      * Constructor for StudyBeanTest.
      * @param arg0
      */
-    public FileBeanTest(String arg0)
-    {
+    public FileBeanTest(String arg0) {
         super(arg0);
     }
 
-    public void testCreate() throws Exception
-    {
+    public void testCreate() throws Exception {
         FileLocal file =
             fileHome.create(
-                getHostName(),
+                RETRIEVE_AETS,
                 BASEDIR,
                 FILEID,
                 TSUID,
@@ -97,8 +92,7 @@ public class FileBeanTest extends ServletTestCase
         file.remove();
     }
 
-    private static String getHostName() throws UnknownHostException
-    {
+    private static String getHostName() throws UnknownHostException {
         String hostname = InetAddress.getLocalHost().getHostName();
         int pos = hostname.indexOf('.');
         return pos != -1 ? hostname.substring(0, pos) : hostname;

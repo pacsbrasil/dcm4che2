@@ -51,7 +51,7 @@ public abstract class RetrieveCmd extends BaseCmd
             "Instance.encodedAttributes",
             "Instance.sopIuid",
             "Instance.sopCuid",
-            "File.retrieveAETs",
+            "File.retrieveAETsField",
             "File.directoryPath",
             "File.filePath",
             "File.fileTsuid",
@@ -92,7 +92,7 @@ public abstract class RetrieveCmd extends BaseCmd
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    private RetrieveCmd(DataSource ds) throws SQLException
+    protected RetrieveCmd(DataSource ds) throws SQLException
     {
         super(ds);
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
@@ -168,7 +168,7 @@ public abstract class RetrieveCmd extends BaseCmd
         {
             super(ds);
             String[] uid = keys.getStrings(Tags.StudyInstanceUID);
-            if (uid.length == 0)
+            if (uid == null || uid.length == 0)
                 throw new IllegalArgumentException("Missing StudyInstanceUID");
 
             sqlBuilder.addListOfUidMatch(
@@ -184,7 +184,7 @@ public abstract class RetrieveCmd extends BaseCmd
         {
             super(ds);
             String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
-            if (uid.length == 0)
+            if (uid == null || uid.length == 0)
                 throw new IllegalArgumentException("Missing SeriesInstanceUID");
 
             sqlBuilder.addListOfUidMatch(
@@ -200,7 +200,7 @@ public abstract class RetrieveCmd extends BaseCmd
         {
             super(ds);
             String[] uid = keys.getStrings(Tags.SOPInstanceUID);
-            if (uid.length == 0)
+            if (uid == null || uid.length == 0)
                 throw new IllegalArgumentException("Missing SOPInstanceUID");
 
             sqlBuilder.addListOfUidMatch(

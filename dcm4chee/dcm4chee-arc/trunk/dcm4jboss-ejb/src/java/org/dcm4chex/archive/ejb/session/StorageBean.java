@@ -153,9 +153,9 @@ public abstract class StorageBean implements SessionBean {
      */
     public int store(
         Dataset ds,
-        String retrieveAETs,
-        String basedir,
-        String fileid,
+        java.lang.String[] retrieveAETs,
+        java.lang.String basedir,
+        java.lang.String fileid,
         int size,
         byte[] md5)
         throws DcmServiceException {

@@ -70,6 +70,8 @@
 	
 	<property name="src.java" value="${basedir}/src/java"/>
 	<property name="src.conf" value="${basedir}/src/conf"/>
+	<property name="src.etc" value="${basedir}/src/etc"/>
+	<property name="etc.db2" value="${src.etc}/db2"/>
 	<property name="test.dir" value="${basedir}/test"/>
 	<property name="test.java" value="${test.dir}/java"/>
 	<property name="test.web-inf" value="${test.dir}/WEB-INF"/>
@@ -79,7 +81,8 @@
 	<property name="target.dir" value="${basedir}/target"/>
 	<property name="target.xdoclet" value="${target.dir}/xdoclet"/>
 	<property name="target.java" value="${target.xdoclet}/java"/>
-	<property name="target.meta-inf" value="${target.xdoclet}/META-INF"/>
+	<property name="target.meta-inf-postgres" value="${target.xdoclet}/META-INF-postgres"/>
+	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
 	<property name="target.deploy" value="${target.dir}/deploy"/>
 	<property name="target.client" value="${target.dir}/client"/>	
@@ -125,7 +128,8 @@
     <target name="prepare" depends="init">
         <mkdir dir="${target.classes}"/>
         <mkdir dir="${target.java}"/>
-        <mkdir dir="${target.meta-inf}"/>
+        <mkdir dir="${target.meta-inf-postgres}"/>
+        <mkdir dir="${target.meta-inf-db2}"/>
         <mkdir dir="${target.deploy}"/>
         <mkdir dir="${target.client}"/>
         <mkdir dir="${target.test.web-inf}"/>
@@ -173,7 +177,7 @@
             <!--utilobject cacheHomes="true" includeGUID="false"/-->
 
             <deploymentdescriptor
-                destdir="${target.meta-inf}"
+                destdir="${target.meta-inf-postgres}"
                 validatexml="true"
                 description="dcm4jboss archive EJBs"
                 >
@@ -185,7 +189,7 @@
                 version="3.2"
                 unauthenticatedPrincipal="nobody"
                 xmlencoding="UTF-8"
-                destdir="${target.meta-inf}"
+                destdir="${target.meta-inf-postgres}"
                 validatexml="true"
                 datasource="${datasource.name}"
                 typeMapping="${datasource.mapping}"                  
@@ -217,10 +221,34 @@
    <!-- =================================================================== -->
    <!-- Creates the ejb-jar                                                 -->
    <!-- =================================================================== -->
-    <target name="jar" depends="ejb-jar,client-jar,jdbc-jar"/>
-    <target name="ejb-jar" depends="compile">
-        <jar jarfile="${target.deploy}/dcm4jboss-ejb.jar">
-        	<metainf dir="${target.meta-inf}"/>
+    <target name="jar" depends="ejb-postgres-jar,ejb-db2-jar,client-jar,jdbc-jar"/>
+    <target name="ejb-postgres-jar" depends="compile">
+        <jar jarfile="${target.deploy}/dcm4jboss-ejb-postgres.jar">
+        	<metainf dir="${target.meta-inf-postgres}"/>
+        	<fileset dir="${target.classes}">
+                <exclude name="**/*Test.class"/>
+                <exclude name="**/jdbc/**"/>
+            </fileset>
+        	<fileset dir="${src.conf}"/>
+        </jar>
+    </target>
+    <target name="meta-inf-db2" unless="meta-inf-db2.notRequired">
+    	<copy todir="${target.meta-inf-db2}">
+    		<fileset dir="${target.meta-inf-postgres}"/>
+    	</copy>
+    	<patch
+    		patchfile="${etc.db2}/meta-inf-db2.patch"
+    		originalfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
+    	/>
+    </target>
+    <target name="ejb-db2-jar" depends="compile">
+    	<uptodate property="meta-inf-db2.notRequired"
+    		srcfile="${target.meta-inf-postgres}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-db2"/>
+        <jar jarfile="${target.deploy}/dcm4jboss-ejb-db2.jar">
+        	<metainf dir="${target.meta-inf-db2}"/>
         	<fileset dir="${target.classes}">
                 <exclude name="**/*Test.class"/>
                 <exclude name="**/jdbc/**"/>
@@ -246,7 +274,7 @@
    <!-- =================================================================== -->
     <target name="jdbc-jar" depends="compile">
         <jar jarfile="${target.client}/dcm4jboss-jdbc.jar">
-        	<metainf dir="${target.meta-inf}">
+        	<metainf dir="${target.meta-inf-postgres}">
 	        	<include name="jbosscmp-jdbc.xml"/>
 	        </metainf>
         	<fileset dir="${target.classes}">
@@ -261,7 +289,7 @@
     <target name="test-war" depends="compile">
     	<copy file="${test.web-inf}/web.xml" todir="${target.test.web-inf}">
     		<filterset>
-                <filter token="EJB_JAR" value="dcm4jboss-ejb.jar"/>
+                <filter token="EJB_JAR" value="dcm4jboss-ejb-postgres.jar"/>
             </filterset>
 		</copy>    		
         <war

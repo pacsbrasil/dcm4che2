@@ -28,6 +28,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
+import org.dcm4chex.archive.ejb.util.StringUtils;
 
 /**
 
@@ -152,17 +153,12 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * Retrieve AETs
      *
-     * @ejb.interface-method
      * @ejb.persistence
      *  column-name="retrieve_aets"
      */
-    public abstract String getRetrieveAETs();
+    public abstract String getRetrieveAETsField();
 
-    /**
-     * 
-     * @ejb.interface-method
-     */
-    public abstract void setRetrieveAETs(String aets);
+    public abstract void setRetrieveAETsField(String aets);
 
     /**
      * @ejb.relation
@@ -248,6 +244,24 @@ public abstract class SeriesBean implements EntityBean {
     public Dataset getAttributes()
     {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
+    }
+    
+    /**
+     * 
+     * @ejb.interface-method
+     */
+    public String[] getRetrieveAETs()
+    {
+        return StringUtils.split(getRetrieveAETsField(), ',');
+    }
+    
+    /**
+     * 
+     * @ejb.interface-method
+     */
+    public void setRetrieveAETs(String[] aets)
+    {
+        setRetrieveAETsField(StringUtils.toString(aets, ','));
     }
     
     /**

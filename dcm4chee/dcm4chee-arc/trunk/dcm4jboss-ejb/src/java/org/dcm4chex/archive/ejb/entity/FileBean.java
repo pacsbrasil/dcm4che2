@@ -26,6 +26,7 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.util.*;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -86,17 +87,12 @@ public abstract class FileBean implements EntityBean
     /**
 	 * Retrieve AETs
 	 * 
-	 * @ejb.interface-method
 	 * @ejb.persistence
 	 * 	column-name="retrieve_aets"
 	 */
-    public abstract String getRetrieveAETs();
+    public abstract String getRetrieveAETsField();
 
-    /**
-	 * 
-	 * @ejb.interface-method
-	 */
-    public abstract void setRetrieveAETs(String aets);
+    public abstract void setRetrieveAETsField(String aets);
 
     /**
 	 * File Path (relative path to Directory).
@@ -193,6 +189,24 @@ public abstract class FileBean implements EntityBean
     public abstract InstanceLocal getInstance();
 
     /**
+     * 
+     * @ejb.interface-method
+     */
+    public String[] getRetrieveAETs()
+    {
+        return StringUtils.split(getRetrieveAETsField(), ',');
+    }
+    
+    /**
+     * 
+     * @ejb.interface-method
+     */
+    public void setRetrieveAETs(String[] aets)
+    {
+        setRetrieveAETsField(StringUtils.toString(aets, ','));
+    }
+    
+    /**
 	 * 
 	 * @ejb.interface-method
 	 */
@@ -224,7 +238,7 @@ public abstract class FileBean implements EntityBean
 	 * @ejb.create-method
 	 */
     public Integer ejbCreate(
-        String aets,
+        String[] aets,
         String basedir,
         String path,
         String tsuid,
@@ -243,7 +257,7 @@ public abstract class FileBean implements EntityBean
     }
 
     public void ejbPostCreate(
-        String aets,
+        String[] aets,
         String basedir,
         String path,
         String tsuid,

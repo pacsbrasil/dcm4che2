@@ -24,8 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
@@ -48,6 +46,7 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 public class StorageBeanTest extends TestCase
 {
 
+    public static final String[] RETRIEVE_AETS = { "QR_SCP" };
     public static final String DIR = "storage";
     public static final String AET = "StorageBeanTest";
     public static final DcmObjectFactory objFact = DcmObjectFactory.getInstance();
@@ -105,7 +104,7 @@ public class StorageBeanTest extends TestCase
         }
         MessageDigest md = MessageDigest.getInstance("MD5");
         Dataset ds = loadDataset(file, md);
-        storage.store(ds, getHostName(), "/", path.substring(1), (int)file.length(), md.digest());
+        storage.store(ds, RETRIEVE_AETS, "/", path.substring(1), (int)file.length(), md.digest());
     }
 
     private Dataset loadDataset(File file, MessageDigest md) throws IOException
@@ -134,9 +133,4 @@ public class StorageBeanTest extends TestCase
         return ds;
     }
     
-    private static String getHostName() throws UnknownHostException {
-        String hostname = InetAddress.getLocalHost().getHostName();
-        int pos = hostname.indexOf('.');
-        return pos != -1 ? hostname.substring(0, pos) : hostname;
-    }
 }

@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -25,13 +25,13 @@ import java.util.Date;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$
+ * @version $Revision$ $Date$
  * @since 25.08.2003
  */
 abstract class Match
 {
 
-    private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSSZ''";
+    private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSS''";
     protected final String column;
     protected final boolean type2;
 
