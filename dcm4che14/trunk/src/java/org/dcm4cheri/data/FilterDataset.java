@@ -59,6 +59,14 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
                     
     protected abstract boolean filter(int tag);
  
+    public boolean contains(int tag) {
+        return filter(tag) && backend.contains(tag);
+    }
+
+    public int vm(int tag) {
+        return filter(tag) ? backend.vm(tag) : -1;
+    }
+
     public int size() {
         int count = 0;
         for (Iterator iter = backend.iterator(); iter.hasNext();) {
@@ -198,10 +206,6 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             return filter == null || filter.contains(tag);
         }
 
-        public boolean contains(int tag) {
-            return filter(tag) && backend.contains(tag);
-        }
-
         public DcmElement get(int tag) {
             if (filter == null) {
                 return backend.get(tag);
@@ -235,10 +239,6 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
 
         protected  boolean filter(int tag) {
             return !Tags.isPrivate(tag);
-        }
-
-        public boolean contains(int tag) {
-            return filter(tag) && backend.contains(tag);
         }
 
         public DcmElement get(int tag) {
