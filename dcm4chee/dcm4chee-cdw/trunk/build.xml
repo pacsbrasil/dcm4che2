@@ -102,10 +102,14 @@
 			<zipfileset dir="target/${dist.name}" prefix="${dist.standalone}">
 				<include name="bin/init_redhat.sh"/>
 				<include name="bin/install_service.bat"/>
+				<include name="bin/fop.sh"/>
+				<include name="bin/fop.bat"/>
+				<include name="bin/xalan.sh"/>
+				<include name="bin/xalan.bat"/>
    			</zipfileset>	
-			<zipfileset dir="target/${dist.name}/bin" prefix="${dist.standalone}/server/dcmcdw/samples">
-				<include name="fop.*"/>
-   			</zipfileset>	
+			<zipfileset dir="${src.etc}" prefix="${dist.standalone}">
+				<include name="bin/fop.xsl"/>
+			</zipfileset>
 			<zipfileset dir="target/${dist.name}" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="deploy/*"/>
 				<include name="lib/*"/>

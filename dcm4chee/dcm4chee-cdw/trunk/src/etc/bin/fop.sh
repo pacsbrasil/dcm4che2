@@ -25,7 +25,7 @@ if [ -n "$CLASSPATH" ] ; then
   LOCALCLASSPATH=$CLASSPATH
 fi
 
-LIB_DIR=`dirname $0`/../lib
+LIB_DIR=`dirname $0`/../server/dcmcdw/lib
 LOCALCLASSPATH=${LIB_DIR}/fop.jar
 LOCALCLASSPATH=${LIB_DIR}/avalon-framework-cvs-20020806.jar:$LOCALCLASSPATH
 LOCALCLASSPATH=${LIB_DIR}/batik.jar:$LOCALCLASSPATH
