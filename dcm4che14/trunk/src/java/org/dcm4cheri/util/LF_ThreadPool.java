@@ -137,6 +137,9 @@ public class LF_ThreadPool
             do {
                handler.run(this);
             } while (!shutdown && leader == Thread.currentThread());
+         } catch (Throwable th) {
+            log.warn("Exception thrown in " + Thread.currentThread().getName(), th);
+            shutdown();
          } finally { --running; }
       }
    }
