@@ -74,6 +74,14 @@ class PrinterCalibration
       return 255 - (diff1 < diff2 ? i : i-1);
    }
    
+   public byte[] getIdentityPValToDDL() {
+      byte[] lut = new byte[256];
+      for (int i = 0; i < 256; ++i) {
+          lut[i] = (byte)i;
+      }
+      return lut;
+   }
+   
    public byte[] getPValToDDLwLinOD(int n, float dmin, float dmax) {
       check(n, dmin, dmax);
       byte[] lut = new byte[1<<n];

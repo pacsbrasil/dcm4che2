@@ -34,13 +34,8 @@ import org.jboss.system.server.ServerConfigLocator;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Font;
-import java.awt.Color;
-import java.awt.geom.Rectangle2D;
+import java.awt.print.Pageable;
 import java.awt.print.PageFormat;
-import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import javax.print.Doc;
 import javax.print.DocFlavor;
@@ -71,6 +66,8 @@ import java.io.File;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 
@@ -100,13 +97,12 @@ public class PrinterService
    private static final String[] CODE_STRING = {
       null, "NORMAL", "WARNING", "FAILURE"
    };
-   private static final byte[] IDENTITY_PV_TO_DDL = new byte[256];
-   static {
-      for (int i = 0; i < 256; ++i)
-         IDENTITY_PV_TO_DDL[i] = (byte)i;
+   private static final String[] ORIENTATION = {
+      "LANDSCAPE", "PORTRAIT", "REVERSE_LANDSCAPE"
+   };
+   static String orientationAsString(int orientation) {
+      return ORIENTATION[orientation];
    }
-   private static final double PTS_PER_MM = 72 / 24.5;
-   private static final int FONT_SIZE = 8;
    
    // Attributes ----------------------------------------------------
    /** Holds value of property printerName. */
@@ -125,7 +121,7 @@ public class PrinterService
    private String displayFormat;
    
    /** Holds value of property filmSizeID. */
-   private String filmSizeID;
+   private LinkedHashMap filmSizeIDMap = new LinkedHashMap();
    
    /** Holds value of property resolutionID. */
    private String resolutionID;
@@ -152,7 +148,7 @@ public class PrinterService
    private String filmDestination;
    
    /** Holds value of property pageMargin. */
-   private float[] pageMargin;
+   private double[] pageMargin;
    
    /** Holds value of property borderThickness. */
    private float borderThickness;
@@ -164,7 +160,7 @@ public class PrinterService
    private String mediumType;
    
    /** Holds value of property filmOrientation. */
-   private String filmOrientation;
+   private int filmOrientation;
    
    /** Holds value of property illumination. */
    private int illumination;
@@ -236,7 +232,7 @@ public class PrinterService
          printService = null;         
       }
       PrintService[] services =  PrintServiceLookup.lookupPrintServices(
-         DocFlavor.SERVICE_FORMATTED.PRINTABLE, null);
+         DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
       for (int i = 0; i < services.length; ++i) {
          if (services[i].getName().equals(printerName)) {
             printService = services[i];
@@ -280,7 +276,7 @@ public class PrinterService
     */
    public String[] getAvailablePrinters() {
       PrintService[] services =  PrintServiceLookup.lookupPrintServices(
-         DocFlavor.SERVICE_FORMATTED.PRINTABLE, null);
+         DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
       String[] names = new String[services.length];      
       for (int i = 0; i < services.length; ++i) {
          names[i] = services[i].getName();
@@ -318,11 +314,11 @@ public class PrinterService
          Class[] c = ps.getSupportedAttributeCategories();
          String[] result = new String[c.length];
          AttributeSet aset = new HashPrintRequestAttributeSet();
-         aset.add(toOrientationRequested(getFilmOrientation()));
-         aset.add(toMediaSizeName(getDefaultFilmSizeID()));
+//         aset.add(toOrientationRequested(getFilmOrientation()));
+//         aset.add(toMediaSizeName(getDefaultFilmSizeID()));
          for (int i = 0; i < c.length; ++i) {
             Object value = ps.getSupportedAttributeValues(c[i],
-               DocFlavor.SERVICE_FORMATTED.PRINTABLE, aset);            
+               DocFlavor.SERVICE_FORMATTED.PAGEABLE, aset);            
             result[i] = org.jboss.util.Classes.stripPackageName(c[i]) + "="
                + (value instanceof Object[]
                   ? Arrays.asList((Object[]) value) : value);
@@ -464,33 +460,52 @@ public class PrinterService
     * @return Value of property filmSizeID.
     */
    public String getFilmSizeID() {
-      return this.filmSizeID;
+      StringBuffer sb = new StringBuffer();
+      for (Iterator it = filmSizeIDMap.values().iterator(); it.hasNext();) {
+         sb.append(it.next());
+         sb.append('\\');
+      }
+      sb.setLength(sb.length()-1);
+      return sb.toString();
    }
    
    /** Setter for property filmSizeID.
     * @param filmSizeID New value of property filmSizeID.
     */
    public void setFilmSizeID(String filmSizeID) {
-      this.filmSizeID = filmSizeID;
+      LinkedHashMap tmp = new LinkedHashMap();
+      StringTokenizer tk = new StringTokenizer(filmSizeID, "\\");
+      while (tk.hasMoreTokens()) {
+         FilmSize item = new FilmSize(tk.nextToken());
+         tmp.put(item.getSizeID(), item);
+      }
+      filmSizeIDMap = tmp;
    }
-   
+      
    /** Getter for property defaultFilmSizeID.
     * @return Value of property defaultFilmSizeID.
     */
    public String getDefaultFilmSizeID() {
-      String tmp = firstOf(filmSizeID);
-      return tmp.substring(0, tmp.indexOf(':'));
+      if (filmSizeIDMap.isEmpty()) {
+         return null;
+      }
+      FilmSize fs = (FilmSize) filmSizeIDMap.values().iterator().next();
+      return fs.getSizeID();
    }
    
    public boolean isSupportsFilmSizeID(String filmSizeID) {
-      StringTokenizer tk = new StringTokenizer(this.filmSizeID, "\\");
-      while (tk.hasMoreTokens()) {
-         String tmp = tk.nextToken();
-         if (filmSizeID.equals(tmp.substring(0, tmp.indexOf(':')))) {
-            return true;
-         }
+      return filmSizeIDMap.containsKey(filmSizeID);
+   }
+   
+   FilmSize getFilmSize(String filmSizeID) {
+      return (FilmSize) filmSizeIDMap.get(filmSizeID);
+   }
+
+   FilmSize getDefaultFilmSize() {
+      if (filmSizeIDMap.isEmpty()) {
+         return null;
       }
-      return false;
+      return (FilmSize) filmSizeIDMap.values().iterator().next();
    }
    
    /** Getter for property resolutionID.
@@ -650,8 +665,29 @@ public class PrinterService
     * @param margin New value of property margin.
     */
    public void setPageMargin(String pageMargin) {
-      float[] tmp = toFloatArray(pageMargin);
+      StringTokenizer tk = new StringTokenizer(pageMargin, ", ");
+      if (tk.countTokens() != 4) {
+         throw new IllegalArgumentException("pageMargin: " + pageMargin);
+      }
+      double[] tmp = {
+         Double.parseDouble(tk.nextToken()),
+         Double.parseDouble(tk.nextToken()),
+         Double.parseDouble(tk.nextToken()),
+         Double.parseDouble(tk.nextToken())
+      };
       this.pageMargin = tmp;
+   }
+
+   double[] getPageMargin(int orientation) {
+      if (orientation == PageFormat.PORTRAIT) {
+         return (double[]) pageMargin.clone();
+      }
+      return new double[] {
+         pageMargin[1],
+         pageMargin[2],
+         pageMargin[3],
+         pageMargin[0]
+      };
    }
    
    /** Getter for property borderThickness.
@@ -686,14 +722,24 @@ public class PrinterService
     * @return Value of property filmOrientation.
     */
    public String getFilmOrientation() {
-      return this.filmOrientation;
+      return orientationAsString(filmOrientation);
+   }
+   
+   int getFilmOrientationAsInt() {
+      return filmOrientation;
    }
    
    /** Setter for property filmOrientation.
     * @param filmOrientation New value of property filmOrientation.
     */
    public void setFilmOrientation(String filmOrientation) {
-      this.filmOrientation = filmOrientation;
+      if ("PORTRAIT".equals(filmOrientation)) {
+         this.filmOrientation = PageFormat.PORTRAIT;
+      } else if ("LANDSCAPE".equals(filmOrientation)) {
+         this.filmOrientation = PageFormat.LANDSCAPE;
+      } else {
+         throw new IllegalArgumentException("filmOrientation: " + filmOrientation);
+      }
    }
    
    /** Getter for property illumination.
@@ -775,7 +821,7 @@ public class PrinterService
       }
       return a;
    }
-         
+
    /** Getter for property graySteps.
     * @return Value of property graySteps.
     */
@@ -886,27 +932,18 @@ public class PrinterService
    }
    
    public void printGraySteps() throws PrintException {
-      print(new GrayStep(IDENTITY_PV_TO_DDL),
-         toPrintRequestAttributeSet(
-            getFilmOrientation(),
-            getDefaultFilmSizeID()));
+      print(new GrayStep(this, calibration.getIdentityPValToDDL()));
    }
    
    public void printGrayStepsWithGSDF() throws PrintException {
-      print(new GrayStep(calibration.getPValToDDLwGSDF(8,
+      print(new GrayStep(this, calibration.getPValToDDLwGSDF(8,
             minDensity/100.f, maxDensity/100.f,
-            illumination, reflectedAmbientLight)),
-         toPrintRequestAttributeSet(
-            getFilmOrientation(),
-            getDefaultFilmSizeID()));
+            illumination, reflectedAmbientLight)));
    }
    
    public void printGrayStepsWithLinOD() throws PrintException {
-      print(new GrayStep(calibration.getPValToDDLwLinOD(8,
-            minDensity/100.f, maxDensity/100.f)),
-         toPrintRequestAttributeSet(
-            getFilmOrientation(),
-            getDefaultFilmSizeID()));
+      print(new GrayStep(this, calibration.getPValToDDLwLinOD(8,
+            minDensity/100.f, maxDensity/100.f)));
    }
    
    public void calibrate(boolean force) throws CalibrationException {
@@ -1090,6 +1127,8 @@ public class PrinterService
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+   
+   /*
    static OrientationRequested toOrientationRequested(String orientation) {
       if ("PORTRAIT".equals(orientation)) {
          return  OrientationRequested.PORTRAIT;
@@ -1108,7 +1147,7 @@ public class PrinterService
          return  MediaSizeName.ISO_A3;
       }
       throw new IllegalArgumentException("sizeID: " + sizeID);
-   }
+   }   
    
    private PrintRequestAttributeSet toPrintRequestAttributeSet(
       String orientation, String sizeId)
@@ -1155,68 +1194,28 @@ public class PrinterService
          ? mediaSize.getY(MediaSize.MM)
          : mediaSize.getX(MediaSize.MM);
    }
-         
-   private void print(Printable printData, PrintRequestAttributeSet aset)
+   */
+   private void print(Pageable printData)
       throws PrintException
    {
-         PrintService ps = getPrintService();
-         DocPrintJob pj = ps.createPrintJob();         
-         Doc doc = new SimpleDoc(printData, 
-            DocFlavor.SERVICE_FORMATTED.PRINTABLE, null);
-         
-         pj.addPrintJobAttributeListener(this, null);
-         pj.addPrintJobListener(this);
-         try {
-            pj.print(doc, aset);
-         } finally {
-            pj.removePrintJobAttributeListener(this);
-            pj.removePrintJobListener(this);
-         }
+      PrintService ps = getPrintService();
+      PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+      if (printToFile) {
+         aset.add(new Destination(toFile(printToFilePath).toURI()));
+      }
+      DocPrintJob pj = ps.createPrintJob();         
+      Doc doc = new SimpleDoc(printData, 
+         DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
+
+      pj.addPrintJobAttributeListener(this, null);
+      pj.addPrintJobListener(this);
+      try {
+         pj.print(doc, aset);
+      } finally {
+         pj.removePrintJobAttributeListener(this);
+         pj.removePrintJobListener(this);
+      }
    }
             
    // Inner classes -------------------------------------------------
-   private class GrayStep implements Printable {
-      final byte[] pvToDDL;
-      
-      GrayStep(byte[] pvToDDL) {
-         this.pvToDDL = (byte[]) pvToDDL.clone();
-      }
-      
-      public int print(Graphics g, PageFormat pf, int pageIndex)
-         throws PrinterException
-      {
-         if (pageIndex == 0) {
-            Graphics2D g2d = (Graphics2D) g;
-            double w = pf.getImageableWidth();
-            double h = pf.getImageableHeight();
-            double d = h / graySteps - grayStepGap * PTS_PER_MM;
-            g2d.setFont(new Font("Serif", Font.PLAIN, FONT_SIZE));
-            g2d.translate(pf.getImageableX(), pf.getImageableY());
-            Rectangle2D rect = new Rectangle2D.Double();
-            for (int i = 0; i < graySteps; ++i) {
-               double y = h * i / graySteps + grayStepGap * PTS_PER_MM;
-               int pv = Math.round(255.f * (graySteps - i - 1) / (graySteps-1));
-               int ddl = pvToDDL[pv] & 0xff;
-
-               // fill step
-               g2d.setColor(new Color(ddl, ddl, ddl));
-               rect.setRect(0, y, w, d);
-               g2d.fill(rect);
-               
-               // label step
-               g2d.setColor(ddl < 128 ? Color.WHITE : Color.BLACK);
-               g2d.drawString(" #" + (i+1) + ":" + ddl,
-                  0, (float) (y + FONT_SIZE));
-            }
-            
-            // draw frame
-            g2d.setColor(Color.BLACK);
-            rect.setRect(0, 0, w, h);
-            g2d.draw(rect);
-            return Printable.PAGE_EXISTS;
-         } else {
-            return Printable.NO_SUCH_PAGE;
-         }
-      }
-   }
 }

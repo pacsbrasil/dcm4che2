@@ -178,7 +178,7 @@ class ScannerCalibration {
    public void setScanThreshold(String threshold) {
       int black, white;
       try {
-         int delim = threshold.indexOf('/');
+         int delim = threshold.indexOf('\\');
          black = Integer.parseInt(threshold.substring(0, delim));
          white = Integer.parseInt(threshold.substring(delim+1));
       } catch (IllegalArgumentException e) {
@@ -195,7 +195,7 @@ class ScannerCalibration {
     * @return Value of property scanThreshold.
     */
    public String getScanThreshold() {
-      return "" + blackThreshold + "/" + whiteThreshold;
+      return "" + blackThreshold + "\\" + whiteThreshold;
    }
    
    public float[] calculateGrayStepODs(boolean force)
