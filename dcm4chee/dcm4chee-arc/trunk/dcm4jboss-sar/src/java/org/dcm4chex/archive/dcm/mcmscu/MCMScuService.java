@@ -76,13 +76,13 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	private long maxMediaUsage;
 	
     /** Holds the max age of a media for status COLLECTING. */
-	private int maxMediaAge;
+	private int maxStudyAge;
 
 	/** Holds the prefix that is used to generate the fileset id. */
 	private String fileSetIdPrefix;
 	
 	/** Holds the min age of instances in days for collecting. */ 
-	private int daysBefore;
+	private int minStudyAge;
 
 	/** Holds the calling AET. */
 	private String callingAET;
@@ -111,8 +111,8 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	/** Flag if media creation should use information extracted from instance. */
 	private boolean useInstanceInfo = false;
 	
-	/** Flag if media should contain none DICOM objects like html pages, images,.. */
-	private boolean includeNonDICOMObj = false;
+	/** Holds type of none DICOM objects that should be stored on media. Default is NONE */
+	private String includeNonDICOMObj = "NONE";
 	
 	/** DICOM priority. Used for move and media creation action. */
 	private int priority = 0;
@@ -167,17 +167,19 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * 
 	 * @return The maxMediaAge in days.
 	 */
-	public int getMaxMediaAge() {
-		return maxMediaAge;
+	public int getMaxStudyAge() {
+		return maxStudyAge;
 	}
 	
 	/**
-	 * Sets the max media age in days.
+	 * Sets the max study age in days.
+	 * <p>
+	 * This value is used to determine how long an instance may not be stored offline.
 	 *  
-	 * @param maxMediaAge The maxMediaAge to set.
+	 * @param maxStudyAge The maxStudyAge to set.
 	 */
-	public void setMaxMediaAge(int maxMediaAge) {
-		this.maxMediaAge = maxMediaAge;
+	public void setMaxStudyAge(int maxStudyAge) {
+		this.maxStudyAge = maxStudyAge;
 	}
 	/**
 	 * This value is used to get the search date from current date.
@@ -188,8 +190,20 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * 
 	 * @return Returns the daysBefore.
 	 */
-	public int getDaysBefore() {
-		return daysBefore;
+	public int getMinStudyAge() {
+		return minStudyAge;
+	}
+	
+	/**
+	 * Setter for minStudyAge. 
+	 * <p>
+	 * This value is used to ensure that all instances of a study is stored on a single media.
+	 * 
+	 * @param age The min number of days before instances are collected to media.
+	 */
+	public void setMinStudyAge(int age) {
+		if ( age < 0) age *= -1;
+		this.minStudyAge = age;
 	}
 	
 	/**
@@ -367,21 +381,24 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	}
 	
 	/**
-	 * Returns true if the media should contain none DICOM objects like html pages, images, etc.
+	 * Returns 'NO' if the media should not contain none DICOM objects or the named type of none DICOM object like html, image.
 	 * 
-	 * @return The includeNonDICOMObj flag.
+	 * @return The type of none DICOM Objects to include or NO.
 	 */
-	public boolean isIncludeNonDICOMObj() {
+	public String getIncludeNonDICOMObj() {
 		return includeNonDICOMObj;
 	}
 	/**
-	 * Set the includeNonDICOMObj flag.
+	 * Set the type of none DICOM object that should be included by media creation.
 	 * <p>
-	 * true..media should contain none DICOM object, false.. media should contain only DICOM objects.
+	 * Use NONE if no such objects should be included.
+	 * <p>
+	 * Set the value to NO if argument is null!
 	 * 
 	 * @param includeNonDICOMObj The flag value to set.
 	 */
-	public void setIncludeNonDICOMObj(boolean includeNonDICOMObj) {
+	public void setIncludeNonDICOMObj(String includeNonDICOMObj) {
+		if ( includeNonDICOMObj == null ) includeNonDICOMObj = "NO";
 		this.includeNonDICOMObj = includeNonDICOMObj;
 	}
 	
@@ -405,16 +422,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 		this.useInstanceInfo = useInstanceInfo;
 	}
 	
-	/**
-	 * Setter for daysBefore. 
-	 * 
-	 * @param daysBefore The daysBefore to set.
-	 */
-	public void setDaysBefore(int daysBefore) {
-		if ( daysBefore < 0) daysBefore *= -1;
-		this.daysBefore = daysBefore;
-	}
-	
+
 	/**
 	 * Collect studies to media for media creation. (offline storage)
 	 * <p>
@@ -451,7 +459,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * @return The search date
 	 */
 	private long getSearchDate() {
-		return System.currentTimeMillis() - ( getDaysBefore() * ONE_DAY_IN_MILLIS );
+		return System.currentTimeMillis() - ( getMinStudyAge() * ONE_DAY_IN_MILLIS );
 	}
 	
 	/**
@@ -652,7 +660,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	private Dataset getMediaCreationReqDS( MediaDTO mediaDTO ) throws RemoteException, FinderException, HomeFactoryException, CreateException {
 		Dataset ds = lookupMediaComposer().prepareMediaCreationRequest( mediaDTO.getPk() );
 		ds.putCS(Tags.LabelUsingInformationExtractedFromInstances, this.isUseInstanceInfo() ? "YES" : "NO");
-		ds.putCS(Tags.IncludeNonDICOMObjects, this.isIncludeNonDICOMObj() ? "YES" : "NO" );
+		ds.putCS(Tags.IncludeNonDICOMObjects, "NONE".equals( includeNonDICOMObj ) ? "YES" : "NO" );
 		return ds;
 	}
 
@@ -685,7 +693,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 		log.error( msg, x );
 		if ( mediaDTO != null ) {
 			try {
-				this.lookupMediaComposer().setMediaStatus( mediaDTO.getPk(), mediaDTO.getMediaStatus()<MediaDTO.QUEUED ? MediaDTO.QUEUE_ERROR : MediaDTO.CREATE_ERROR, msg );
+				this.lookupMediaComposer().setMediaStatus( mediaDTO.getPk(), MediaDTO.ERROR, msg );
 			} catch (Exception e) {
 				log.error("cant set error media status for "+mediaDTO.getFilesetId() );
 			}
@@ -884,7 +892,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 			            		info = info +"("+ dataRsp.vm( Tags.FailedSOPSeq )+ " number of instances missing)";
 			            	}
 			            	log.error("Cant create media "+mediaDTO.getFilesetId()+"! Reason:"+info);
-			            	mediaComposer.setMediaStatus( mediaDTO.getPk(), MediaDTO.CREATE_ERROR, info );
+			            	mediaComposer.setMediaStatus( mediaDTO.getPk(), MediaDTO.ERROR, info );
 			            } else {
 			            	mediaComposer.setMediaStatus( mediaDTO.getPk(), mediaStatus, execStatus);
 			            }
@@ -918,8 +926,8 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
      */
     public int scheduleCollectingMedia() throws RemoteException, FinderException, HomeFactoryException, CreateException {
     	int nrOfMedia = 0;
-    	Collection c = lookupMediaComposer().getWithStatus( MediaDTO.COLLECTING );
-    	long maxAgeDate = System.currentTimeMillis() - maxMediaAge * ONE_DAY_IN_MILLIS;
+    	Collection c = lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
+    	long maxAgeDate = System.currentTimeMillis() - ( maxStudyAge - minStudyAge ) * ONE_DAY_IN_MILLIS;//media is created after minStudyAge -> max media age is maxStudyAge-minStudyAge
     	MediaDTO mediaDTO;
     	for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
     		mediaDTO = (MediaDTO) iter.next();

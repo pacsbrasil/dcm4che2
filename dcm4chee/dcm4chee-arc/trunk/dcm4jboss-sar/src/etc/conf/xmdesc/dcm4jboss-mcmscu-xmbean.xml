@@ -43,11 +43,11 @@
    </attribute>
 
     <attribute access="read-write"
-      getMethod="getMaxMediaAge"
-      setMethod="setMaxMediaAge">
-      <description>The max. age of a media for status COLLECTING in days.
+      getMethod="getMaxStudyAge"
+      setMethod="setMaxStudyAge">
+      <description>The max. age in days instances are allowed to be not stored on media.
       </description>
-      <name>MaxMediaAge</name>
+      <name>MaxStudyAge</name>
       <type>int</type>
       <descriptors>
          <value value="7" />
@@ -55,11 +55,12 @@
    </attribute>
 
     <attribute access="read-write"
-      getMethod="getDaysBefore"
-      setMethod="setDaysBefore">
-      <description>This value is used to calculate the search date from current date: Instances must be older than search date.
+      getMethod="getMinStudyAge"
+      setMethod="setMinStudyAge">
+      <description>The min. age in days instances should not be collected for offline storage.
+      This value is used to ensure that all instances of a study will be stored on a single media.
       </description>
-      <name>DaysBefore</name>
+      <name>MinStudyAge</name>
       <type>int</type>
       <descriptors>
          <value value="2" />
@@ -175,14 +176,15 @@
    </attribute>
 
    <attribute access="read-write"
-      getMethod="isIncludeNonDICOMObj"
+      getMethod="getIncludeNonDICOMObj"
       setMethod="setIncludeNonDICOMObj">
-      <description>A flag indicating if the SCP should include in the media additional Non-DICOM information/objects
+      <description>The type of none DICOM information/object that the SCP should include in the media.
+      Use NO if no additional information/objects should be included.
       </description>
       <name>IncludeNonDicomObj</name>
-      <type>boolean</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="false" />
+         <value value="NO" />
       </descriptors>
    </attribute>
    
