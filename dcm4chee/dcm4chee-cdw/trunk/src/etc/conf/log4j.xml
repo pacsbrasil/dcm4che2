@@ -14,6 +14,7 @@
    | owebsite: http://jakarta.apache.org/log4j
  -->
 
+
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
    <!-- ================================= -->
@@ -64,7 +65,7 @@
    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       <param name="Target" value="System.out"/>
-      <!--param name="Threshold" value="INFO"/-->
+      <param name="Threshold" value="INFO"/>
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -157,15 +158,21 @@
       <priority value="INFO"/>
    </category>
 
-   <!-- Limit the org.apache.commons category to INFO as its DEBUG is verbose -->
-   <category name="org.apache.commons">
+   <!-- Limit the org.apache category to INFO as its DEBUG is verbose -->
+   <category name="org.apache">
       <priority value="INFO"/>
    </category>
 
-   <!-- Limit JBoss categories to INFO -->
+   <!-- Limit org.jgroups category to INFO -->
+   <category name="org.jgroups">
+     <priority value="INFO"/>
+   </category>
+
+   <!-- Limit JBoss categories to INFO
    <category name="org.jboss">
      <priority value="INFO"/>
    </category>
+   -->
 
    <!-- Decrease the priority threshold for the org.jboss.varia category
    <category name="org.jboss.varia">
