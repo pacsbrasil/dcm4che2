@@ -205,6 +205,9 @@
    				<include name="conf/*.xml"/>
    				<include name="conf/*.dtd"/>
    			</fileset>
+   			<fileset dir="${dcm4jboss-ejb.home}">
+   				<include name="test/data/mwlitem.xml"/>
+   			</fileset>
    			<fileset dir="${dcm4jboss-web.target}">
    				<include name="deploy/*.war"/>
    			</fileset>
@@ -240,12 +243,14 @@
    		<zip destfile="${target.dir}/${dist.standalone}.zip">
 			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}/server/pacs">
 				<exclude name="bin/**"/>
+				<exclude name="test/**"/>
 			</zipfileset>
 			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}/server/pacs">
 				<exclude name="sql/**"/>
 			</zipfileset>
 			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}">
 				<include name="bin/**"/>
+				<include name="test/**"/>
 			</zipfileset>
 			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}">
 				<include name="sql/**"/>
