@@ -19,7 +19,9 @@
 					<td width="15%"><h2>Port</h2></td>	
 					<td colspan="2" width="10%" align="center"><a href="aenew.m"><img src="images/add_aet.gif" alt="add new AET" border="0"/></a></td>
 				</tr>
-				<xsl:apply-templates select="AEs/item"/>
+				<xsl:apply-templates select="AEs/item">
+					<xsl:sort data-type="text" order="ascending" select="title"/>
+				</xsl:apply-templates>
 				</td></tr>
 		  </table>
 </center>
