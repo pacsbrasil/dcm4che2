@@ -198,6 +198,14 @@ final class PaletteColorParam extends BasicColorModelParam {
         throw new UnsupportedOperationException();
     }
     
+    public float getRescaleSlope() {
+        throw new UnsupportedOperationException();
+    }
+    
+    public float getRescaleIntercept() {
+        throw new UnsupportedOperationException();
+    }
+
     public float getWindowCenter(int index) {
         throw new UnsupportedOperationException();
     }
@@ -222,4 +230,7 @@ final class PaletteColorParam extends BasicColorModelParam {
         throw new UnsupportedOperationException();
     }
     
+    public int toPixelValue(float measureValue) {
+        throw new UnsupportedOperationException();
+    }
 }

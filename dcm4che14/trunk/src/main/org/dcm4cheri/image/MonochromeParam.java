@@ -131,6 +131,14 @@ final class MonochromeParam extends BasicColorModelParam  {
                 && this.min == other.min;
     }
     
+    public final float getRescaleSlope() {
+        return slope;
+    }
+    
+    public final float getRescaleIntercept() {
+        return intercept;
+    }
+
     public final float getWindowCenter(int index) {
         return center[index];
     }
@@ -153,6 +161,10 @@ final class MonochromeParam extends BasicColorModelParam  {
     
     public final float toMeasureValue(int pxValue) {
         return mask(pxValue)*slope + intercept;
+    }    
+
+    public final int toPixelValue(float measureValue) {
+        return (int)((measureValue - intercept) / slope);
     }    
     
     private static int toARGB(int grey) {

@@ -23,7 +23,7 @@
 
 package org.dcm4cheri.data;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -62,8 +62,8 @@ public final class DcmObjectFactoryImpl extends DcmObjectFactory {
             String sopInstanceUID, String transferSyntaxUID) {
         return new FileMetaInfoImpl().init(sopClassUID, sopInstanceUID,
                 transferSyntaxUID, 
-                Dcm4che.getImplementationClassUID(),
-                Dcm4che.getImplementationVersionName());
+                Implementation.getClassUID(),
+                Implementation.getVersionName());
     }
 
     public PersonName newPersonName(String s) {
@@ -76,8 +76,8 @@ public final class DcmObjectFactoryImpl extends DcmObjectFactory {
                     ds.getString(Tags.SOPClassUID, null),
                     ds.getString(Tags.SOPInstanceUID, null),
                     transferSyntaxUID,
-                    Dcm4che.getImplementationClassUID(),
-                    Dcm4che.getImplementationVersionName());
+                    Implementation.getClassUID(),
+                    Implementation.getVersionName());
         } catch (DcmValueException ex) {
             throw new IllegalArgumentException(ex.getMessage());
         }

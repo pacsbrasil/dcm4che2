@@ -23,7 +23,7 @@
 
 package org.dcm4cheri.util;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.util.UIDGenerator;
 
 import java.io.DataOutput;
@@ -49,7 +49,7 @@ public final class UIDGeneratorImpl extends UIDGenerator {
     }
 
     public String createUID() {
-        return createUID(Dcm4che.getImplementationClassUID());
+        return createUID(Implementation.getClassUID());
     }
     
     public String createUID(String root) {

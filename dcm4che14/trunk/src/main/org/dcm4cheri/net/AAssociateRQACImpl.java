@@ -23,7 +23,7 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.net.AAssociateRQAC;
 import org.dcm4che.net.AAbort;
 import org.dcm4che.net.AsyncOpsWindow;
@@ -59,8 +59,8 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     private int maxLength = DEFAULT_MAX_LENGTH;
     private String callingAET = "ANONYMOUS";
     private String calledAET = "ANONYMOUS";
-    private String implClassUID = Dcm4che.getImplementationClassUID();
-    private String implVers = Dcm4che.getImplementationVersionName();
+    private String implClassUID = Implementation.getClassUID();
+    private String implVers = Implementation.getVersionName();
     private AsyncOpsWindow asyncOpsWindow = null;
     private final LinkedHashMap presCtxs = new LinkedHashMap();
     private final LinkedHashMap roleSels = new LinkedHashMap();

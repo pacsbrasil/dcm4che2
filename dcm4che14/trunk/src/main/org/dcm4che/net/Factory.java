@@ -22,7 +22,7 @@
 
 package org.dcm4che.net;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 
@@ -52,7 +52,7 @@ public abstract class Factory {
    
    // Static --------------------------------------------------------
    public static Factory getInstance() {
-      return (Factory)Dcm4che.findFactory(
+      return (Factory)Implementation.findFactory(
             "dcm4che.net.Factory");
    }
    

@@ -36,6 +36,10 @@ public interface ColorModelParam {
     
     public ColorModelParam update(float center, float width, boolean inverse);
     
+    public float getRescaleSlope();
+
+    public float getRescaleIntercept();
+
     public float getWindowCenter(int index);
 
     public float getWindowWidth(int index);
@@ -44,6 +48,8 @@ public interface ColorModelParam {
     
     public float toMeasureValue(int pxValue);
     
+    public int toPixelValue(float measureValue);
+
     public boolean isInverse();
     
     public boolean isCacheable();

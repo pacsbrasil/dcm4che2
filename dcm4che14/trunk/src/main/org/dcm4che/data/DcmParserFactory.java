@@ -23,7 +23,7 @@
 
 package org.dcm4che.data;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 
 import java.io.InputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -36,7 +36,7 @@ import javax.imageio.stream.ImageInputStream;
 public abstract class DcmParserFactory {
    
    public static DcmParserFactory getInstance() {
-      return (DcmParserFactory)Dcm4che.findFactory(
+      return (DcmParserFactory)Implementation.findFactory(
             "dcm4che.data.DcmParserFactory");
    }
    

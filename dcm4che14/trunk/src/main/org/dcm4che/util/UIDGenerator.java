@@ -23,7 +23,7 @@
 
 package org.dcm4che.util;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 
 /**
  *
@@ -33,7 +33,7 @@ import org.dcm4che.Dcm4che;
 public abstract class UIDGenerator {
 
    public static UIDGenerator getInstance() {
-      return (UIDGenerator)Dcm4che.findFactory(
+      return (UIDGenerator)Implementation.findFactory(
             "dcm4che.util.UIDGenerator");
    }
     

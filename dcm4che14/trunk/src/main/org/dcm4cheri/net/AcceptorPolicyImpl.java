@@ -22,7 +22,7 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AAssociateAC;
@@ -65,9 +65,9 @@ class AcceptorPolicyImpl implements AcceptorPolicy
    
    private AsyncOpsWindow aow = null;
 
-   private String implClassUID = Dcm4che.getImplementationClassUID();
+   private String implClassUID = Implementation.getClassUID();
 
-   private String implVers = Dcm4che.getImplementationVersionName();
+   private String implVers = Implementation.getVersionName();
    
    private HashMap appCtxMap = new HashMap();
 

@@ -22,7 +22,7 @@
 
 package org.dcm4che.server;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 
@@ -48,7 +48,7 @@ public abstract class ServerFactory {
    
    // Static --------------------------------------------------------
    public static ServerFactory getInstance() {
-      return (ServerFactory)Dcm4che.findFactory(
+      return (ServerFactory)Implementation.findFactory(
             "dcm4che.server.ServerFactory");
    }
       

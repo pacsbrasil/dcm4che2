@@ -23,7 +23,7 @@
 
 package org.dcm4che.data;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 
 /**
  *
@@ -33,7 +33,7 @@ import org.dcm4che.Dcm4che;
 public abstract class DcmObjectFactory {
 
    public static DcmObjectFactory getInstance() {
-      return (DcmObjectFactory)Dcm4che.findFactory(
+      return (DcmObjectFactory)Implementation.findFactory(
             "dcm4che.data.DcmObjectFactory");
    }
 

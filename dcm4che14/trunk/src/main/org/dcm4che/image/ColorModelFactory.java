@@ -23,7 +23,7 @@
 
 package org.dcm4che.image;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmValueException;
 import java.awt.image.ColorModel;
@@ -36,7 +36,7 @@ import java.awt.image.ColorModel;
 public abstract class ColorModelFactory {
 
    public static ColorModelFactory getInstance() {
-      return (ColorModelFactory)Dcm4che.findFactory(
+      return (ColorModelFactory)Implementation.findFactory(
             "dcm4che.image.ColorModelFactory");
    }
 

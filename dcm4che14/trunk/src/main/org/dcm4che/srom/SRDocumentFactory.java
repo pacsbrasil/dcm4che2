@@ -23,7 +23,7 @@
 
 package org.dcm4che.srom;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmValueException;
 
@@ -43,7 +43,7 @@ public abstract class SRDocumentFactory {
     
     // Constructor ---------------------------------------------------
    public static SRDocumentFactory getInstance() {
-      return (SRDocumentFactory)Dcm4che.findFactory(
+      return (SRDocumentFactory)Implementation.findFactory(
             "dcm4che.srom.SRDocumentFactory");
    }
     

@@ -23,7 +23,7 @@
 
 package org.dcm4che.media;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.FileMetaInfo;
 
@@ -40,7 +40,7 @@ import javax.imageio.stream.ImageInputStream;
 public abstract class DirBuilderFactory {
 
    public static DirBuilderFactory getInstance() {
-      return (DirBuilderFactory)Dcm4che.findFactory(
+      return (DirBuilderFactory)Implementation.findFactory(
             "dcm4che.media.DirBuilderFactory");
    }
     

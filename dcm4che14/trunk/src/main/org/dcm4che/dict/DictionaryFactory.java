@@ -23,7 +23,7 @@
 
 package org.dcm4che.dict;
 
-import org.dcm4che.Dcm4che;
+import org.dcm4che.Implementation;
 
 /**
  *
@@ -33,7 +33,7 @@ import org.dcm4che.Dcm4che;
 public abstract class DictionaryFactory {
 
    public static DictionaryFactory getInstance() {
-      return (DictionaryFactory)Dcm4che.findFactory(
+      return (DictionaryFactory)Implementation.findFactory(
             "dcm4che.dict.DictionaryFactory");
    }
     

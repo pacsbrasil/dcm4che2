@@ -61,7 +61,7 @@ public class DcmServiceBase implements DcmService
       }
    };
    public static final DcmService NO_SUCH_SOP_CLASS_SCP =
-         new DcmServiceBase(UNRECOGNIZE_OPERATION);
+         new DcmServiceBase(NO_SUCH_SOP_CLASS);
    
    // Attributes ----------------------------------------------------
    protected static final DcmObjectFactory objFact =
