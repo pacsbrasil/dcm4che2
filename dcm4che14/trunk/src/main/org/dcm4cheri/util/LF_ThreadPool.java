@@ -44,7 +44,7 @@ public class LF_ThreadPool
 {
    // Constants -----------------------------------------------------
    private static final Logger log =
-         Logger.getLogger("org.dcm4cheri.utilLF_ThreadPool");
+         Logger.getLogger("org.dcm4cheri.util.LF_ThreadPool");
    
    // Attributes ----------------------------------------------------
    private final Handler handler;
@@ -53,9 +53,11 @@ public class LF_ThreadPool
    private Object mutex = new Object();
    private int waiting = 0;
    private int running = 0;
-   private int maxRunning = 0;
+   private int maxRunning = Integer.MAX_VALUE;
+   private final int instNo = ++instCount;
    
    // Static --------------------------------------------------------
+   private static int instCount = 0;
    
    // Constructors --------------------------------------------------
    public LF_ThreadPool(Handler handler) {
@@ -88,7 +90,7 @@ public class LF_ThreadPool
    
    public void setMaxRunning(int maxRunning)
    {
-      if (maxRunning < 0)
+      if (maxRunning <= 0)
          throw new IllegalArgumentException("maxRunning: " + maxRunning);
             
       this.maxRunning = maxRunning;
@@ -96,7 +98,7 @@ public class LF_ThreadPool
    
    public String toString()
    {
-      return "LF_ThreadPool[leader:"
+      return "LF_ThreadPool-" + instNo + "[leader:"
             + (leader == null ? "null" : leader.getName())
             + ", waiting:" + waiting
             + ", running: " + running + "(" + maxRunning
@@ -105,8 +107,7 @@ public class LF_ThreadPool
    
    public void join()
    {
-      shutdown = false;
-      while (!shutdown && (maxRunning == 0 || waiting + running < maxRunning))
+      while (!shutdown && (waiting + running) < maxRunning)
       {
          synchronized (mutex)
          {
@@ -166,7 +167,7 @@ public class LF_ThreadPool
             
       // if there is no waiting thread,
       // and the maximum number of running threads is not yet reached,
-      if (maxRunning != 0 && running >= maxRunning) {
+      if (running >= maxRunning) {
          if (log.isLoggable(Level.FINER))
             log.finer("" + this + " - Max number of threads reached"); 
          return false;
@@ -174,17 +175,19 @@ public class LF_ThreadPool
       
       // start a new one
       if (log.isLoggable(Level.FINER))
-         log.finer("" + this + " - promote new leader by start new Thread"); 
-      new Thread(
+         log.finer("" + this + " - promote new leader by add new Thread");
+      addThread(
          new Runnable() {
             public void run() { join(); }
          }
-      ).start();
+      );
       
       return true;
    }
    
    public void shutdown() {
+      if (log.isLoggable(Level.FINER))
+         log.finer("" + this + " - shutdown"); 
       shutdown = true;
       leader = null;
       synchronized (mutex)
@@ -196,6 +199,10 @@ public class LF_ThreadPool
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
+   // may be overloaded to take new thread from convential thread pool
+   protected void addThread(Runnable r) {
+      new Thread(r).start();
+   }
    
    // Private -------------------------------------------------------
    

@@ -161,7 +161,7 @@ public class DcmRcv extends DcmServiceBase {
    
    // Attributes ----------------------------------------------------
    private static ResourceBundle messages = ResourceBundle.getBundle(
-   "resources/DcmRcv", Locale.getDefault());
+         "resources/DcmRcv", Locale.getDefault());
    
    private static ServerFactory srvFact = ServerFactory.getInstance();
    private static Factory fact = Factory.getInstance();
@@ -175,11 +175,14 @@ public class DcmRcv extends DcmServiceBase {
    private int bufferSize = 2048;
    private byte[] buffer = null;
    private File dir = null;
+   private long delay = 0L;
    
    
    // Static --------------------------------------------------------
    public static void main(String args[]) throws Exception {
       LongOpt[] longopts = new LongOpt[] {
+         new LongOpt("async", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
+         new LongOpt("delay", LongOpt.REQUIRED_ARGUMENT, null, 'd'),
          new LongOpt("tls", LongOpt.NO_ARGUMENT, null, 's'),
          new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 'b'),
          new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 'L'),
@@ -189,22 +192,29 @@ public class DcmRcv extends DcmServiceBase {
       Getopt g = new Getopt("dcmrcv", args, "", longopts, true);
       
       DcmRcv dcmrcv = new DcmRcv();
-      dcmrcv.policy.setAsyncOpsWindow(fact.newAsyncOpsWindow(0,0));
       String num = null;
       int c;
       try {
          while ((c = g.getopt()) != -1) {
             switch (c) {
+               case 'a':
+                  dcmrcv.policy.setAsyncOpsWindow(
+                        fact.newAsyncOpsWindow(
+                           Integer.parseInt(num = g.getOptarg()), 1));
+                  break;
                case 's':
                   dcmrcv.initTLS();
                   break;
                case 'L':
                   dcmrcv.policy.setReceivedPDUMaxLength(
-                  Integer.parseInt(num = g.getOptarg()));
+                        Integer.parseInt(num = g.getOptarg()));
+                  break;
+               case 'd':
+                  dcmrcv.delay = Integer.parseInt(num = g.getOptarg()) * 1000L;
                   break;
                case 'b':
                   dcmrcv.bufferSize =
-                  Integer.parseInt(num = g.getOptarg()) & 0xfffffffe;
+                     Integer.parseInt(num = g.getOptarg()) & 0xfffffffe;
                   break;
                case 'v':
                   exit(messages.getString("version"), false);
@@ -284,12 +294,12 @@ public class DcmRcv extends DcmServiceBase {
          if (dir != null) {
             Command rqCmd = rq.getCommand();
             FileMetaInfo fmi = objFact.newFileMetaInfo(
-            rqCmd.getAffectedSOPClassUID(),
-            rqCmd.getAffectedSOPInstanceUID(),
-            rq.getTransferSyntaxUID());
+                  rqCmd.getAffectedSOPClassUID(),
+                  rqCmd.getAffectedSOPInstanceUID(),
+                  rq.getTransferSyntaxUID());
             OutputStream out = new BufferedOutputStream(
-            new FileOutputStream(
-            new File(dir, rqCmd.getAffectedSOPInstanceUID())));
+                  new FileOutputStream(
+                        new File(dir, rqCmd.getAffectedSOPInstanceUID())));
             try {
                fmi.write(out);
                copy(in, out);
@@ -301,6 +311,13 @@ public class DcmRcv extends DcmServiceBase {
          }
       } finally {
          in.close();
+      }
+      if (delay > 0) {
+         try {
+            Thread.sleep(delay);
+         } catch (InterruptedException ie) {
+            ie.printStackTrace();
+         }
       }
       rspCmd.setUS(Tags.Status, SUCCESS);
    }

@@ -77,7 +77,7 @@ final class AssociationImpl implements Association {
       return fsm.getState();
    }
    
-   public final int nextMsgID() {
+   public synchronized final int nextMsgID() {
       return ++msgID;
    }
    
@@ -90,6 +90,7 @@ final class AssociationImpl implements Association {
    }
    
    public void setThreadPool(LF_ThreadPool pool) {
+     fsm.setThreadPool(pool);
      reader.setThreadPool(pool);
    }
    

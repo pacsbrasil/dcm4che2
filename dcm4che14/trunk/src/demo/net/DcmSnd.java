@@ -183,6 +183,7 @@ public class DcmSnd {
    // Static --------------------------------------------------------
    public static void main(String args[]) throws Exception {
       LongOpt[] longopts = new LongOpt[] {
+         new LongOpt("async", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
          new LongOpt("prior-high", LongOpt.NO_ARGUMENT, null, 'P'),
          new LongOpt("prior-low", LongOpt.NO_ARGUMENT, null, 'p'),
          new LongOpt("tls", LongOpt.NO_ARGUMENT, null, 's'),
@@ -202,6 +203,11 @@ public class DcmSnd {
          int c;
          while ((c = g.getopt()) != -1) {
             switch (c) {
+               case 'a':
+                  dcmsnd.assocRQ.setAsyncOpsWindow(
+                        aFact.newAsyncOpsWindow(
+                           Integer.parseInt(num = g.getOptarg()), 1));
+                  break;
                case 's':
                   dcmsnd.initTLS();
                   break;
@@ -269,7 +275,8 @@ public class DcmSnd {
       assocRQ.setCalledAET(url.getCalledAET());
    }
    
-   public void echo() throws IOException, GeneralSecurityException {
+   public void echo()
+   throws InterruptedException, IOException, GeneralSecurityException {
       final int pcid = 1;
       assocRQ.addPresContext(
       aFact.newPresContext(pcid, UIDs.Verification, DEF_TS));
@@ -280,15 +287,19 @@ public class DcmSnd {
             newSocket(url.getHost(), url.getPort()));
          PDU assocAC = assoc.connect(assocRQ, assocTO);
          if (assocAC instanceof AAssociateAC) {
+            ActiveAssociation active = aFact.newActiveAssociation(assoc, null);
+            active.start();
             if (assoc.getAcceptedTransferSyntaxUID(pcid) == null) {
                System.out.println(messages.getString("noPCEcho"));
             }
             else for (int j = 0; j < repeatSingle; ++j, ++count) {
-               assoc.write(
-                     aFact.newDimse(pcid, dFact.newCommand().initCEchoRQ(j)));
-               Dimse rsp = assoc.read(dimseTO);
+               active.invoke(
+                     aFact.newDimse(pcid, dFact.newCommand().initCEchoRQ(j)),
+                     null);
+//               Dimse rsp = assoc.read(dimseTO);
             }
-            PDU releaseRP = assoc.release(releaseTO);
+            active.release(true);
+//            PDU releaseRP = assoc.release(releaseTO);
          }
       }
       long dt = System.currentTimeMillis() - t1;
@@ -298,7 +309,7 @@ public class DcmSnd {
    }
    
    public void send(String[] args, int offset)
-   throws IOException, GeneralSecurityException {
+   throws InterruptedException, IOException, GeneralSecurityException {
       if (bufferSize > 0) {
          buffer = new byte[bufferSize];
       }
@@ -328,13 +339,15 @@ public class DcmSnd {
       Result res = new Result();
       for (int i = 0; i < repeatWhole; ++i) {
          Association assoc = aFact.newRequestor(
-         newSocket(url.getHost(), url.getPort()));
+               newSocket(url.getHost(), url.getPort()));
          PDU assocAC = assoc.connect(assocRQ, assocTO);
          if (assocAC instanceof AAssociateAC) {
+            ActiveAssociation active = aFact.newActiveAssociation(assoc, null);
+            active.start();
             for (int k = offset; k < args.length; ++k) {
-               send(assoc, new File(args[k]), res);
+               send(active, new File(args[k]), res);
             }
-            PDU releaseRP = assoc.release(releaseTO);
+            active.release(true);
          }
       }
       long dt = System.currentTimeMillis() - t1;
@@ -356,22 +369,22 @@ public class DcmSnd {
 //      long wait4Rsp;
    }
    
-   private void send(Association assoc, File file, Result res)
-   throws IOException {
+   private void send(ActiveAssociation active, File file, Result res)
+   throws InterruptedException, IOException {
       if (!file.isDirectory()) {
          for (int i = 0; i < repeatSingle; ++i) {
-            sendFile(assoc, file, res);
+            sendFile(active, file, res);
          }
          return;
       }
       File[] list = file.listFiles();
       for (int i = 0; i < list.length; ++i) {
-         send(assoc, list[i], res);
+         send(active, list[i], res);
       }
    }
    
-   private void sendFile(Association assoc, File file, Result res)
-   throws IOException {
+   private void sendFile(ActiveAssociation active, File file, Result res)
+   throws InterruptedException, IOException {
       InputStream in = null;
       DcmParser parser = null;
       Dataset ds = null;
@@ -396,7 +409,7 @@ public class DcmSnd {
       }
       try {
          if (ds != null) {
-            sendDataset(assoc, file, parser, ds, res);
+            sendDataset(active, file, parser, ds, res);
             
          }
       } finally {
@@ -406,9 +419,9 @@ public class DcmSnd {
       }
    }
    
-   private boolean sendDataset(Association assoc, File file,
+   private boolean sendDataset(ActiveAssociation active, File file,
          DcmParser parser, Dataset ds, Result res)
-   throws IOException {
+   throws InterruptedException, IOException {
       String sopInstUID = ds.getString(Tags.SOPInstanceUID);
       if (sopInstUID == null) {
         System.out.println(
@@ -424,6 +437,7 @@ public class DcmSnd {
          return false;
       }
       PresContext pc = null;
+      Association assoc = active.getAssociation();
       if (parser.getDcmDecodeParam().encapsulated) {
          String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
          if ((pc = assoc.getAcceptedPresContext(sopClassUID, tsuid))
@@ -446,11 +460,10 @@ public class DcmSnd {
          return false;
          
       }
-      assoc.write(aFact.newDimse(pc.pcid(),
+      active.invoke(aFact.newDimse(pc.pcid(),
             dFact.newCommand().initCStoreRQ(assoc.nextMsgID(),
                   sopClassUID, sopInstUID, priority),
-            new MyDataSource(parser, ds, buffer)));
-      Dimse rsp = assoc.read(dimseTO);
+            new MyDataSource(parser, ds, buffer)), null);
       res.sentBytes += parser.getStreamPosition();
       ++res.sentCount;
       System.out.print('.');

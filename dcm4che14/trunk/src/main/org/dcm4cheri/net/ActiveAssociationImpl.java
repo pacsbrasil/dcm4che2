@@ -28,6 +28,7 @@ import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4che.net.FutureRSP;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 
@@ -96,9 +97,17 @@ implements ActiveAssociation, LF_ThreadPool.Handler
    {
       if (running)
          throw new IllegalStateException("Already running: " + threadPool);
-      
+
       this.running = true;
       threadPool.join();
+   }
+
+   public void start()
+   {
+      if (running)
+         throw new IllegalStateException("Already running: " + threadPool);
+      
+      new Thread(this).start();
    }
    
    public Association getAssociation()
@@ -107,38 +116,42 @@ implements ActiveAssociation, LF_ThreadPool.Handler
    }
    
    public void invoke(Dimse rq, DimseListener l)
-   throws IOException
+   throws InterruptedException, IOException
    {
-      checkRunning();
+//      checkRunning();
       int msgID = rq.getCommand().getMessageID();
       int maxOps = assoc.getMaxOpsInvoked();
       if (maxOps == 0) {
          rspDispatcher.put(msgID, l);
       } else synchronized (rspDispatcher) {
          while (rspDispatcher.size() >= maxOps) {
-            try {
-               rspDispatcher.wait();
-            } catch (InterruptedException ie) {
-               ie.printStackTrace();
-            }
+            rspDispatcher.wait();
          }
          rspDispatcher.put(msgID, l);
       }
       assoc.write(rq);
    }
       
-   public void release() throws IOException {
-      checkRunning();
-      synchronized (rspDispatcher) {
-         while (!rspDispatcher.isEmpty()) {
-            try {
+   
+   public FutureRSP invoke(Dimse rq)
+   throws InterruptedException, IOException {
+      FutureRSPImpl retval = new FutureRSPImpl();
+      assoc.addAssociationListener(retval);
+      invoke(rq, retval);
+      return retval;
+   }
+   
+   public void release(boolean waitOnRSP)
+   throws InterruptedException, IOException {
+//      checkRunning();
+      if (waitOnRSP) {
+         synchronized (rspDispatcher) {
+            while (!rspDispatcher.isEmpty()) {
                rspDispatcher.wait();
-            } catch (InterruptedException ie) {
-               ie.printStackTrace();
             }
          }
-         ((AssociationImpl)assoc).writeReleaseRQ();
       }
+      ((AssociationImpl)assoc).writeReleaseRQ();
    }
       
    // LF_ThreadPool.Handler implementation --------------------------

@@ -25,35 +25,34 @@ package org.dcm4che.net;
 import java.io.IOException;
 
 /**
- * <description> 
+ * Simplified and specialized version of
+ * EDU.oswego.cs.dl.util.concurrent.FutureResult
+ * in Doug Lee's util.concurrent package.
  *
  * @see <related>
- * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author  <a href="http://g.oswego.edu/index.html">Doug Lee</a>
  * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
- *   
+ *
  * <p><b>Revisions:</b>
  *
  * <p><b>yyyymmdd author:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
+ * <li> explicit fix description (no line numbers but methods) go
  *            beyond the cvs commit message
  * </ul>
  */
-public interface ActiveAssociation extends Runnable
-{
-   public void start();
+public interface FutureRSP {
 
-   void addCancelListener(int msgID, DimseListener l);
+   void set(Dimse rsp);
    
-   Association getAssociation();
-
-   void invoke(Dimse rq, DimseListener l)
-   throws InterruptedException, IOException;
-
-   FutureRSP invoke(Dimse rq)
-   throws InterruptedException, IOException;
-
-   void release(boolean waitOnRSP)
-   throws InterruptedException, IOException;
+   void setException(IOException ex);
+   
+   Dimse get() throws InterruptedException, IOException;
+   
+   IOException getException();
+   
+   boolean isReady();
+   
+   Dimse peek();
 }
