@@ -73,7 +73,7 @@
     
     <!--
     Specifies Timeout in ms, the DICOM server will wait after sending
-    a A-RELEASE RQ or an A-ABORT RQ for DIMSE message on an established
+    a A-RELEASE RSP or an A-ABORT RQ for DIMSE message on an established
     association.  "0" means, there is no Timeout.
     -->
     <attribute name="SoCloseDelay">500</attribute>

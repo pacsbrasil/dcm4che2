@@ -1,0 +1,3642 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<article status="draft">
+  <title>jPrint Release 1.2</title>
+
+  <subtitle>DICOM Conformance Statement</subtitle>
+
+  <articleinfo>
+    <corpauthor><ulink url="http://www.tiani.com">TIANI MEDGRAPH AG</ulink></corpauthor>
+
+    <date>18 Feb 2003</date>
+  </articleinfo>
+
+  <abstract>
+    <title>Overview</title>
+
+    <para>jPrint is a multi-modality print manager and server which can be
+    used to connect any one of a wide variety of paper printers to a DICOM
+    v3.0 network. They system can simultaneously receive images and associated
+    printing parameters from multiple imaging scanners and reviewing
+    workstations, while automatically transferring image data and instructions
+    to connected paper printers.</para>
+
+    <para>Before sending the images to be printed, jPrint will apply image
+    processing, using presentation parameters and LUT to improve the image
+    presentation quality and consistency.</para>
+
+    <para>jPrint supports the IHE Consistent Presentation of Images
+    Integration Profile as the IHE Print Server Actor and the IHE Basic
+    Security Integration Profile as IHE Secure Node Actor.</para>
+
+    <para>jPrint supports following network services:<table><title>NETWORK
+    SERVICES</title><tgroup align="left" cols="3"><colspec colname="c1" /><colspec
+    align="center" colname="c2" colwidth="60" /><colspec align="center"
+    colname="c3" colwidth="60" /><spanspec nameend="c3" namest="c1"
+    spanname="c1-3" /><thead><row><entry>Networking SOP Classes</entry><entry>User
+    of Service (SCU)</entry><entry>Provider of Service (SCP)</entry></row></thead><tbody><row><entry
+    spanname="c1-3"><emphasis>Print Management</emphasis></entry></row><row><entry>Basic
+    Grayscale Print Management Meta</entry><entry>No</entry><entry>Yes</entry></row><row><entry>Basic
+    Color Print Management Meta</entry><entry>No</entry><entry>Yes</entry></row><row><entry>Presentation
+    LUT</entry><entry>No</entry><entry>Yes</entry></row><row><entry>Basic
+    Annotation</entry><entry>No</entry><entry>Yes</entry></row><row><entry
+    spanname="c1-3"><emphasis>Connectivity Verification</emphasis></entry></row><row><entry>Verification</entry><entry>No</entry><entry>Yes</entry></row></tbody></tgroup></table></para>
+  </abstract>
+
+  <section>
+    <title>Introduction</title>
+
+    <section>
+      <title>Revision History</title>
+
+      <para><revhistory><revision><revnumber>0.1</revnumber><date>18 Feb 2003</date><authorinitials>gz</authorinitials><revremark>Initial
+      draft</revremark></revision></revhistory></para>
+    </section>
+
+    <section>
+      <title>Audience</title>
+
+      <para>This document is intended for hospital staff, health system
+      integrators, software designers or implementers. It is assumed that the
+      reader has a working understanding of DICOM.</para>
+    </section>
+
+    <section>
+      <title>Remarks</title>
+
+      <para>DICOM, by itself, does not guarantee interoperability. However,
+      the Conformance Statement facilitates a first-level validation for
+      interoperability between different applications supporting the same
+      DICOM functionality.</para>
+
+      <para>This Conformance Statement is not intended to replace validation
+      with other DICOM equipment to ensure proper exchange of information
+      intended.</para>
+
+      <para>The scope of this Conformance Statement is to facilitate
+      communication with TIANI and other vendors Medical equipment. The
+      Conformance Statement should be read and understood in conjunction with
+      the DICOM Standard [DICOM]. However, by itself it is not guaranteed to
+      ensure the desired interoperability and a successful interconnectivity.</para>
+
+      <para>The user should be aware of the following important issues:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The comparison of different conformance statements is the
+          first step towards assessing interconnectivity between TIANI and
+          non- TIANI equipment.</para>
+        </listitem>
+
+        <listitem>
+          <para>Test procedures should be defined to validate the desired
+          level of connectivity.</para>
+        </listitem>
+
+        <listitem>
+          <para>The DICOM standard will evolve to meet the users&#39; future
+          requirements. TIANI is actively involved in developing the standard
+          further and therefore reserves the right to make changes to its
+          products or to discontinue its delivery.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Definitions, Terms and Abbreviations</title>
+
+      <para>Definitions, terms and abbreviations used in this document are
+      defined within the different parts of the DICOM standard.</para>
+
+      <para>Abbreviations and terms are as follows:<variablelist><varlistentry><term>AE</term><listitem><para>Application
+      Entity</para></listitem></varlistentry><varlistentry><term>AET</term><listitem><para>AE
+      Title</para></listitem></varlistentry><varlistentry><term>DICOM</term><listitem><para>Digital
+      Imaging and Communications in Medicine</para></listitem></varlistentry><varlistentry><term>DIMSE</term><listitem><para>DICOM
+      Message Service Element</para></listitem></varlistentry><varlistentry><term>GSDF</term><listitem><para>Grayscale
+      Standard Display Function</para></listitem></varlistentry><varlistentry><term>HIS/RIS</term><listitem><para>Hospital
+      Information System / Radiology Information System.</para></listitem></varlistentry><varlistentry><term>IHE</term><listitem><para>Integrating
+      the Healthcare Enterprise</para></listitem></varlistentry><varlistentry><term>IHE-TF</term><listitem><para>Integrating
+      the Healthcare Enterprise Technical Framework</para></listitem></varlistentry><varlistentry><term>IOD</term><listitem><para>Information
+      Object Definition</para></listitem></varlistentry><varlistentry><term>ISO</term><listitem><para>International
+      Standard Organization</para></listitem></varlistentry><varlistentry><term>PDU</term><listitem><para>DICOM
+      Protocol Data Unit</para></listitem></varlistentry><varlistentry><term>LUT</term><listitem><para>Look-up
+      Table</para></listitem></varlistentry><varlistentry><term>P-LUT</term><listitem><para>Presentation
+      Look-up Table</para></listitem></varlistentry><varlistentry><term>SCP</term><listitem><para>Service
+      Class Provider</para></listitem></varlistentry><varlistentry><term>SCU</term><listitem><para>Service
+      Class User</para></listitem></varlistentry><varlistentry><term>SOP</term><listitem><para>DICOM
+      Service-Object Pair</para></listitem></varlistentry><varlistentry><term>TCP/IP</term><listitem><para>Transmission
+      Control Protocol/Internet Protocol</para></listitem></varlistentry><varlistentry><term>TLS</term><listitem><para>Transport
+      Layer Security</para></listitem></varlistentry><varlistentry><term>UID</term><listitem><para>Unique
+      Identifier</para></listitem></varlistentry><varlistentry><term>VR</term><listitem><para>Value
+      Representation</para></listitem></varlistentry></variablelist></para>
+    </section>
+
+    <section>
+      <title>References</title>
+
+      <para><variablelist><varlistentry><term>[DICOM]</term><listitem><para>Digital
+      Imaging and Communications in Medicine (DICOM), NEMA PS 3.1- 3.16, 2001</para></listitem></varlistentry><varlistentry><term>[IHE-TF]</term><listitem><para>Integrating
+      the Healthcare Enterprise Technical Framework, HIMSS/RSNA, Revision 5.4,
+      2002</para></listitem></varlistentry></variablelist></para>
+    </section>
+  </section>
+
+  <section>
+    <title>Networking</title>
+
+    <section>
+      <title>Implementation Model</title>
+
+      <section>
+        <title>Application Data Flow</title>
+
+        <para>jPrint consists of one server application and several
+        calibration and configuration utilities. User interactions are only
+        need for the initial configuration of jPrint and regularly calibration
+        of connected Printers. The server applications is usually configured
+        to run as Windows NT/2000/XP or Unix Startup Service.</para>
+
+        <para>jPrint uses the DICOM Basic Print Management Meta SOP Class to
+        receive studies for printing on connected paper printers. Multiple
+        associations to Print SCUs are supported.</para>
+
+        <para><figure><title>Application Data Flow Diagram</title><mediaobject><imageobject><imagedata
+        fileref="../img/jPrint.gif" /></imageobject></mediaobject></figure></para>
+
+        <para>jPrint is receiving the Images with the Presentation and
+        Annotation information, it apply it on the images and create a
+        print-job within the print queue, containing one or more film pages
+        composed from images selected by the client Print SCU.</para>
+      </section>
+
+      <section>
+        <title>Functional Definition of AEs</title>
+
+        <section>
+          <title>Functional Definition of jPrint Application Entity</title>
+
+          <para>jPrint acquires the images and presentation information from
+          the connected Print Composer (SCU). Studies are temporarily stored
+          on disk. The images are then processed and formatted and finally
+          send as a print-job to the connected Printer(s).</para>
+
+          <para>If several Printers are connected to jPrint, each Printer is
+          addressable by the Print SCU via a different Called AET.</para>
+
+          <para>If several Print Composers (SCU) requests printing on the same
+          Printer simultaneously, jPrint will serialize the requests; the
+          printer itself receives one print-job after one on its queue. If the
+          number of print-jobs within the printer queue exceeds a configurable
+          limit, jPrint defers the transmission of further print-jobs to the
+          Printer, until the number of print-jobs within the queue decreases
+          below this limit.</para>
+
+          <para>If the Printer is operating normally, then the pages described
+          in the print-job will be printed. Changes in the Printer operation
+          status will be detected and can be queried by the Print SCU using
+          the N-GET service of the Printer SOP Class at any time.</para>
+
+          <para>To achieve best hard copy presentation quality and
+          consistency, the connected Printers must be calibrated at regular
+          intervals. jPrint supports calibration by manually measurements
+          using a gray scale densitometer or semi-automatic calibration, that
+          only requires the user to scan a current gray scale print-out of the
+          printer and a reference gray scale page and put the resulting JPEG
+          files into a configuration folder. The jPrint Service Manual
+          describes in details the jPrint calibration of connected Printers to
+          the DICOM GSDF curve.</para>
+
+          <para>jPrint includes</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>DICOM Association and Negotiation Management</para>
+            </listitem>
+
+            <listitem>
+              <para>Image Buffering</para>
+            </listitem>
+
+            <listitem>
+              <para>Image Processing (P-LUT, GSDF, Annotation, etc)</para>
+            </listitem>
+
+            <listitem>
+              <para>Image Formatting (Paper sheet format)</para>
+            </listitem>
+
+            <listitem>
+              <para>Printing</para>
+            </listitem>
+
+            <listitem>
+              <para>Printer Status Query</para>
+            </listitem>
+          </itemizedlist>
+        </section>
+
+        <section id="s-sequencing">
+          <title>Sequencing of Real-World Activities</title>
+
+          <para>Before any actual (gray scale) printing is performed,
+          connected printers shall be calibrated. Otherwise jPrint cannot
+          achieve conformance of printing according the DICOM Grayscale
+          Standard Display Function (GSDF):<figure><title>Printer Calibration</title><mediaobject><imageobject><imagedata
+          fileref="../img/jPrint2.gif" /></imageobject></mediaobject></figure></para>
+
+          <para>The sequence of DICOM services used by the Print Composer
+          (SCU) to send the images and presentation information to a Print
+          Server (SCP) is specified in DICOM Part 4, Annex H. The Print SCU
+          may invoke a print request for every page, by using the N-ACTION
+          service of the Film Box SOP class:<figure><title>Film Box Print
+          Request with P-LUT</title><mediaobject><imageobject><imagedata
+          fileref="../img/jPrint3.gif" /></imageobject></mediaobject></figure></para>
+
+          <para>jPrint also supports Print Requests on Film Session level:<figure><title>Film
+          Session Print Request with P-LUT</title><mediaobject><imageobject><imagedata
+          fileref="../img/jPrint4.gif" /></imageobject></mediaobject></figure></para>
+
+          <para>The Print Composer may query the Printer Status using N-GET of
+          the Printer SOP Class at any time it is needed during the Print
+          sequence:<figure><title>Query Printer Status</title><mediaobject><imageobject><imagedata
+          fileref="../img/jPrint5.gif" /></imageobject></mediaobject></figure></para>
+        </section>
+      </section>
+    </section>
+
+    <section>
+      <title>AE Specifications</title>
+
+      <section>
+        <title>jPrint Application Entity Specification</title>
+
+        <section>
+          <title>SOP Classes</title>
+
+          <para>jPrint provides Standard Conformance to the following SOP
+          Classes:</para>
+
+          <table>
+            <title>SOP Classes for jPrint AE</title>
+
+            <tgroup align="left" cols="4">
+              <colspec align="left" colname="c1" />
+
+              <colspec align="left" colname="c2" colwidth="120" />
+
+              <colspec align="center" colname="c3" colwidth="25" />
+
+              <colspec align="center" colname="c4" colwidth="25" />
+
+              <thead>
+                <row>
+                  <entry>SOP Class Name</entry>
+
+                  <entry>SOP Class UID</entry>
+
+                  <entry>SCU</entry>
+
+                  <entry>SCP</entry>
+                </row>
+              </thead>
+
+              <tbody>
+                <row>
+                  <entry>Basic Grayscale Print Management Meta SOP Class</entry>
+
+                  <entry>1.2.840.10008.5.1.1.9</entry>
+
+                  <entry>No</entry>
+
+                  <entry>Yes</entry>
+                </row>
+
+                <row>
+                  <entry>Basic Color Print Management Meta SOP Class</entry>
+
+                  <entry>1.2.840.10008.5.1.1.18</entry>
+
+                  <entry>No</entry>
+
+                  <entry>Yes</entry>
+                </row>
+
+                <row>
+                  <entry>Presentation LUT SOP Class</entry>
+
+                  <entry>1.2.840.10008.5.1.1.23</entry>
+
+                  <entry>No</entry>
+
+                  <entry>Yes</entry>
+                </row>
+
+                <row>
+                  <entry>Basic Annotation Box SOP Class</entry>
+
+                  <entry>1.2.840.10008.5.1.1.15</entry>
+
+                  <entry>No</entry>
+
+                  <entry>Yes</entry>
+                </row>
+
+                <row>
+                  <entry>Verification SOP Class</entry>
+
+                  <entry>1.2.840.10008.1.1</entry>
+
+                  <entry>No</entry>
+
+                  <entry>Yes</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </section>
+
+        <section>
+          <title>Association Establishment Policy</title>
+
+          <section>
+            <title>General</title>
+
+            <para>The DICOM standard application context name for DICOM 3.0 is
+            always accepted:</para>
+
+            <table>
+              <title>DICOM application context name for jPrint AE</title>
+
+              <tgroup align="left" cols="2">
+                <tbody>
+                  <row>
+                    <entry>Application Context Name</entry>
+
+                    <entry>1.2.840.10008.3.1.1.1</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+          </section>
+
+          <section>
+            <title>Number of Associations</title>
+
+            <para>jPrint will accept up to 10 simultaneous delivery
+            Associations:</para>
+
+            <table>
+              <title>Number of Associations accepted for jPrint AE</title>
+
+              <tgroup align="left" cols="2">
+                <tbody>
+                  <row>
+                    <entry>Maximum number of simultaneous Associations</entry>
+
+                    <entry>10 (Configurable)</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+          </section>
+
+          <section>
+            <title>Asynchronous Nature</title>
+
+            <para>jPrint does not support asynchronous communication. Multiple
+            outstanding transactions are not supported. It allows up to one
+            invoked and one performed operation on an Association (it is
+            synchronous).Asynchronous mode of operation is not supported.</para>
+
+            <table>
+              <title>Asynchronous Nature as SCP for jPrint AE</title>
+
+              <tgroup align="left" cols="2">
+                <tbody>
+                  <row>
+                    <entry>Maximum number of outstanding asynchronous
+                    transactions</entry>
+
+                    <entry>1</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+          </section>
+
+          <section>
+            <title>Implementation Identifying Information</title>
+
+            <para>The implementation information for this Application Entity
+            is:</para>
+
+            <table>
+              <title>DICOM Implementation Class and Version for jPrint AE</title>
+
+              <tgroup align="left" cols="2">
+                <tbody>
+                  <row>
+                    <entry>Implementation Class UID</entry>
+
+                    <entry>1.2.40.0.13.1.1</entry>
+                  </row>
+
+                  <row>
+                    <entry>Implementation Version Name</entry>
+
+                    <entry>dcm4che-1.0.7</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+          </section>
+        </section>
+
+        <section>
+          <title>Association Initiation Policy</title>
+
+          <para>This application entity never initiates associations.</para>
+        </section>
+
+        <section>
+          <title>Association Acceptance Policy</title>
+
+          <section>
+            <title>Activity - Print Server Management</title>
+
+            <section>
+              <title>Description and Sequencing of Activities</title>
+
+              <para>A remote peer DICOM Application Entity, acting as an Print
+              SCU, establishes an association with jPrint that accepts these
+              Associations for the purpose of receiving images and image
+              presentation related data for image processing and printing it
+              on the connected paper printer, associated with the Called AET
+              used in the association request by the Print SCU.</para>
+
+              <para>At default configuration any Calling AET and any Called
+              AET will be accepted. But if no printer is associated with the
+              Called AET, only a Presentation Context for the Verification SOP
+              Class will be accepted and the SCU can only verify the DICOM
+              Association, but cannot invoke any print related DICOM service.</para>
+
+              <para>When an association has been established the Sequencing of
+              Real-World Activities is as described in <xref
+              linkend="s-sequencing" />.</para>
+
+              <para>Association requests can be rejected with the following
+              status codes and reasons:</para>
+
+              <table>
+                <title>Association Rejection Reasons</title>
+
+                <tgroup align="left" cols="4">
+                  <colspec colwidth="60" />
+
+                  <colspec colwidth="60" />
+
+                  <colspec colwidth="60" />
+
+                  <thead>
+                    <row>
+                      <entry>Result</entry>
+
+                      <entry>Source</entry>
+
+                      <entry>Reason</entry>
+
+                      <entry>Description</entry>
+                    </row>
+                  </thead>
+
+                  <tbody>
+                    <row>
+                      <entry>rejected transient</entry>
+
+                      <entry>provider</entry>
+
+                      <entry>local-limit exceeded</entry>
+
+                      <entry>The (configurable) maximum number of simultaneous
+                      associations has been reached. An association request
+                      with the same parameters may succeed at a later time.</entry>
+                    </row>
+
+                    <row>
+                      <entry>rejected permanent</entry>
+
+                      <entry>user</entry>
+
+                      <entry>app. context name not supported</entry>
+
+                      <entry>Incorrect application context name</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </table>
+            </section>
+
+            <section>
+              <title>Accepted Presentation Contexts</title>
+
+              <para>The accepted Presentation Contexts depends on the
+              configuration for the paper printer associated with the Called
+              AET in the association Request:</para>
+
+              <table>
+                <title>Accepted Presentation Contexts for Print Server
+                Management</title>
+
+                <tgroup align="left" cols="6">
+                  <colspec colname="c1" />
+
+                  <colspec colname="c2" colwidth="110" />
+
+                  <colspec colname="c3" colwidth="60" />
+
+                  <colspec colname="c4" colwidth="90" />
+
+                  <colspec align="center" colname="c5" colwidth="30" />
+
+                  <colspec align="center" colname="c6" colwidth="30" />
+
+                  <spanspec align="center" nameend="c2" namest="c1"
+                  spanname="s12" />
+
+                  <spanspec align="center" nameend="c4" namest="c3"
+                  spanname="s34" />
+
+                  <thead>
+                    <row valign="middle">
+                      <entry spanname="s12">Abstract Syntax</entry>
+
+                      <entry spanname="s34">Transfer Syntax</entry>
+
+                      <entry morerows="1">Role</entry>
+
+                      <entry morerows="1">Ext. Neg.</entry>
+                    </row>
+
+                    <row>
+                      <entry>Name</entry>
+
+                      <entry>UID</entry>
+
+                      <entry>Name List</entry>
+
+                      <entry>UID List</entry>
+                    </row>
+                  </thead>
+
+                  <tbody>
+                    <row>
+                      <entry>Verification</entry>
+
+                      <entry>1.2.840.10008.1.1</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry>SCP</entry>
+
+                      <entry>None</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Basic Grayscale Print Management
+                      Meta SOP (configurable)</entry>
+
+                      <entry morerows="1">1.2.840.10008.5.1.1.9</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry morerows="1">SCP</entry>
+
+                      <entry morerows="1">None</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Basic Color Print Management Meta
+                      SOP Class (configurable)</entry>
+
+                      <entry morerows="1">1.2.840.10008.5.1.1.18</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry morerows="1">SCP</entry>
+
+                      <entry morerows="1">None</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Presentation LUT SOP Class
+                      (configurable)</entry>
+
+                      <entry morerows="1">1.2.840.10008.5.1.1.23</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry morerows="1">SCP</entry>
+
+                      <entry morerows="1">None</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+
+                    <row>
+                      <entry morerows="1">Basic Annotation Box SOP Class
+                      (configurable)</entry>
+
+                      <entry morerows="1">1.2.840.10008.5.1.1.15</entry>
+
+                      <entry>Implicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2</entry>
+
+                      <entry morerows="1">SCP</entry>
+
+                      <entry morerows="1">None</entry>
+                    </row>
+
+                    <row>
+                      <entry>Explicit VR Little Endian</entry>
+
+                      <entry>1.2.840.10008.1.2.1</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </table>
+
+              <para>jPrint AE will prefer to accept the Explicit VR Little
+              Endian Transfer Syntax if multiple transfer syntaxes are
+              offered.</para>
+
+              <para>If no printer is associated with the Called AET, jPrint
+              will only accept the Presentation Context for the Verification
+              SOP Class.</para>
+            </section>
+
+            <section id="s-sop-spec-conf">
+              <title>SOP Specific Conformance</title>
+
+              <section>
+                <title>Specific Conformance for Verification SOP Class</title>
+
+                <para>jPrint provides standard conformance to the DICOM
+                Verification Service Class as a SCP. The status code for the
+                C-ECHO is in the following table:</para>
+
+                <table>
+                  <title>C-Echo Response Status Handling Behavior</title>
+
+                  <tgroup align="left" cols="4">
+                    <colspec colwidth="40" />
+
+                    <colspec colwidth="100" />
+
+                    <colspec colwidth="40" />
+
+                    <thead>
+                      <row valign="middle">
+                        <entry>Service Status</entry>
+
+                        <entry>Further Meaning</entry>
+
+                        <entry>Error Code</entry>
+
+                        <entry>Behavior</entry>
+                      </row>
+                    </thead>
+
+                    <tbody>
+                      <row>
+                        <entry>Success</entry>
+
+                        <entry>Success</entry>
+
+                        <entry>0000</entry>
+
+                        <entry>The C-ECHO request is accepted</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </table>
+              </section>
+
+              <section id="s-gray-meta-sop">
+                <title>Specific Conformance to Basic Grayscale Print
+                Management Meta SOP Class</title>
+
+                <para>jPrint supports the following mandatory SOP classes as
+                defined by the Basic Grayscale Print Management Meta SOP
+                Class:</para>
+
+                <table>
+                  <title>SOP Classes for Basic Grayscale Print Management Meta
+                  SOP Class</title>
+
+                  <tgroup align="left" cols="4">
+                    <colspec colwidth="120" />
+
+                    <colspec colwidth="120" />
+
+                    <colspec align="center" colwidth="30" />
+
+                    <colspec align="center" colwidth="30" />
+
+                    <thead>
+                      <row>
+                        <entry>SOP Class Name</entry>
+
+                        <entry>SOP Class UID</entry>
+
+                        <entry>SCU</entry>
+
+                        <entry>SCP</entry>
+                      </row>
+                    </thead>
+
+                    <tbody>
+                      <row>
+                        <entry>Basic Film Session</entry>
+
+                        <entry>1.2.840.10008.5.1.1.1</entry>
+
+                        <entry>No</entry>
+
+                        <entry>Yes</entry>
+                      </row>
+
+                      <row>
+                        <entry>Basic Film Box</entry>
+
+                        <entry>1.2.840.10008.5.1.1.2</entry>
+
+                        <entry>No</entry>
+
+                        <entry>Yes</entry>
+                      </row>
+
+                      <row>
+                        <entry>Basic Grayscale Image Box</entry>
+
+                        <entry>1.2.840.10008.5.1.1.4</entry>
+
+                        <entry>No</entry>
+
+                        <entry>Yes</entry>
+                      </row>
+
+                      <row>
+                        <entry>Printer</entry>
+
+                        <entry>1.2.840.10008.5.1.1.16</entry>
+
+                        <entry>No</entry>
+
+                        <entry>Yes</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </table>
+
+                <para>The specific SOP Conformance statement for each of the
+                Basic Grayscale Print Management Meta SOP Class components is
+                described in the subsequent sections.</para>
+
+                <section id="s-session">
+                  <title>Specific Conformance for Basic Film Session SOP Class</title>
+
+                  <para>jPrint provides support for the following DIMSE
+                  Services:</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para>N-CREATE</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>N-SET</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>N-ACTION</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>N-DELETE</para>
+                    </listitem>
+                  </itemizedlist>
+
+                  <section>
+                    <title>Film Session SOP Class Operations for N-CREATE</title>
+
+                    <para>jPrint provides the following support for the Film
+                    Session attributes sent by the N-CREATE DIMSE service:<table><title>Basic
+                    Film Session SOP Class N-CREATE Request Attributes</title><tgroup
+                    align="left" cols="5"><colspec colwidth="100" /><colspec
+                    align="center" colwidth="60" /><colspec /><colspec /><colspec
+                    colwidth="50" /><thead><row valign="middle"><entry>Attribute
+                    Name</entry><entry>Tag</entry><entry>Valid Range</entry><entry><para>Default
+                    Value</para><para>if not sent by SCU or invalid value
+                    received</para></entry><entry><para>Response to Invalid
+                    Value</para></entry></row></thead><tbody><row><entry>Number
+                    of Copies</entry><entry>(2000,0010)</entry><entry>1-99
+                    (Configurable)</entry><entry>1</entry><entry>Warning
+                    (0116H)</entry></row><row><entry>Print Priority</entry><entry>(2000,0020)</entry><entry><simplelist
+                    type="vert"><member>LOW</member><member>MED</member><member>HIGH</member></simplelist></entry><entry><para>LOW</para></entry><entry><para>Warning
+                    (0116H)</para></entry></row><row><entry>Medium Type</entry><entry>(2000,0030)</entry><entry>PAPER
+                    (Configurable)</entry><entry>PAPER (Configurable)</entry><entry>Warning
+                    (0116H)</entry></row><row><entry>Film Session Label</entry><entry>(2000,0050)</entry><entry>Up
+                    to 64 characters</entry><entry>&#34;print job for
+                    CALLING_AET created DATE TIME&#34; (Configurable);
+                    truncate if &#62; 64 characters</entry><entry>Warning
+                    (0116H)</entry></row></tbody></tgroup></table></para>
+
+                    <para>jPrint behavior and specific status codes sent for
+                    the N-CREATE of a specific Film Session is described in
+                    the following table:<table><title>Basic Film Session SOP
+                    Class N-CREATE Response Status Handling Behavior</title><tgroup
+                    cols="4"><colspec colwidth="40" /><colspec colwidth="80" /><colspec
+                    colwidth="40" /><thead><row valign="middle"><entry>Service
+                    Status</entry><entry>Further Meaning</entry><entry>Error
+                    Code</entry><entry>Behavior</entry></row></thead><tbody><row><entry>Success</entry><entry>Success</entry><entry>0000H</entry><entry>The
+                    SCP has completed the operation successfully.</entry></row><row><entry>Warning</entry><entry>Attribute
+                    Value Out of Range</entry><entry>0116H</entry><entry>The
+                    N-CREATE operation is considered successful but the status
+                    meaning is logged.</entry></row><row><entry>Warning</entry><entry>Memory
+                    allocation not supported</entry><entry>B600H</entry><entry>Memory
+                    allocation is not supported by jPrint, the attribute will
+                    be ignored.</entry></row><row><entry>Failure</entry><entry>Processing
+                    Failure</entry><entry>0110H</entry><entry>Unspecified
+                    application failure</entry></row><row><entry>Failure</entry><entry>Duplicate
+                    SOP Instance</entry><entry>0111H</entry><entry>An instance
+                    of the Basic Film Session SOP Class already exists</entry></row></tbody></tgroup></table></para>
+                  </section>
+
+                  <section>
+                    <title>Film Session SOP Class Operations for N-SET</title>
+
+                    <para>jPrint provides the support for the Film Session
+                    attributes sent by the N-SET DIMSE service identically as
+                    it is described for the Film Session with N-CREATE, <xref
+                    linkend="t-session-ncreate" />.</para>
+
+                    <para>jPrint behavior and specific status codes sent for
+                    the N-SET of a specific Film Session is described in the
+                    following table:<table><title>Basic Film Session SOP Class
+                    N-SET Response Status Handling Behavior</title><tgroup
+                    cols="4"><colspec colwidth="40" /><colspec colwidth="80" /><colspec
+                    colwidth="40" /><thead><row valign="middle"><entry>Service
+                    Status</entry><entry>Further Meaning</entry><entry>Error
+                    Code</entry><entry>Behavior</entry></row></thead><tbody><row><entry>Success</entry><entry>Success</entry><entry>0000H</entry><entry>The
+                    SCP has completed the operation successfully.</entry></row><row><entry>Warning</entry><entry>Attribute
+                    Value Out of Range</entry><entry>0116H</entry><entry>The
+                    N-SET operation is considered successful but the status
+                    meaning is logged.</entry></row><row><entry>Warning</entry><entry>Memory
+                    allocation not supported</entry><entry>B600H</entry><entry>Memory
+                    allocation is not supported by jPrint, the attribute will
+                    be ignored.</entry></row><row><entry>Failure</entry><entry>Processing
+                    Failure</entry><entry>0110H</entry><entry>Unspecified
+                    application failure</entry></row><row><entry>Failure</entry><entry>Invalid
+                    object instance</entry><entry>0112H</entry><entry>No such
+                    object instance: the instance UID given does not exist.</entry></row></tbody></tgroup></table></para>
+                  </section>
+
+                  <section>
+                    <title>Film Session SOP Class Operations for N-DELETE</title>
+
+                    <para>jPrint behavior and specific status codes sent for
+                    the N-DELETE of a specific Film Session is described in
+                    the following table:<table><title>Basic Film Session SOP
+                    Class N-DELETE Response Status Handling Behavior</title><tgroup
+                    cols="4"><colspec colwidth="40" /><colspec colwidth="80" /><colspec
+                    colwidth="40" /><thead><row valign="middle"><entry>Service
+                    Status</entry><entry>Further Meaning</entry><entry>Error
+                    Code</entry><entry>Behavior</entry></row></thead><tbody><row><entry>Success</entry><entry>Success</entry><entry>0000H</entry><entry>The
+                    SCP has completed the operation successfully. Film session
+                    has been successfully deleted.</entry></row><row><entry>Failure</entry><entry>No
+                    Such object instance</entry><entry>0112H</entry><entry>The
+                    instance UID given does not exist.</entry></row></tbody></tgroup></table></para>
+                  </section>
+
+                  <section>
+                    <title>Film Session SOP Class Operations for N-ACTION</title>
+
+                    <para>The receipt of the N-ACTION will result in
+                    submitting a print job to print all the films of the film
+                    session in the order that they were received.</para>
+
+                    <para>jPrint behavior and specific status codes sent for
+                    the N-ACTION of a specific Film Session is described in
+                    the following table:<table><title>Basic Film Session SOP
+                    Class N-ACTION Response Status Handling Behavior</title><tgroup
+                    cols="4"><colspec colwidth="40" /><colspec colwidth="80" /><colspec
+                    colwidth="40" /><thead><row valign="middle"><entry>Service
+                    Status</entry><entry>Further Meaning</entry><entry>Error
+                    Code</entry><entry>Behavior</entry></row></thead><tbody><row><entry>Success</entry><entry>Success</entry><entry>0000H</entry><entry>Films
+                    in the film session are accepted for printing.</entry></row><row><entry>Failure</entry><entry>Processing
+                    Failure</entry><entry>0110H</entry><entry>Unspecified
+                    application failure</entry></row><row><entry>Failure</entry><entry>No
+                    Such object instance</entry><entry>0112H</entry><entry>The
+                    instance UID given does not exist.</entry></row></tbody></tgroup></table></para>
+                  </section>
+                </section>
+
+                <section id="s-filmbox">
+                  <title>Specific Conformance for Basic Film Box SOP Class</title>
+
+                  <para>jPrint provides support for the following DIMSE
+                  Services:</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para>N-CREATE</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>N-SET</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>N-DELETE</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>N-ACTION</para>
+                    </listitem>
+                  </itemizedlist>
+
+                  <section>
+                    <title>Basic Film Box SOP Class Operations for N-CREATE</title>
+
+                    <para>jPrint provides the following support for the Film
+                    Box attributes sent by the N-CREATE DIMSE service:<table
+                    id="t-session-ncreate"><title>Basic Film Box SOP Class
+                    N-CREATE Request Attributes</title><tgroup align="left"
+                    cols="5"><colspec colwidth="100" /><colspec align="center"
+                    colwidth="60" /><colspec /><colspec /><colspec
+                    colwidth="50" /><thead><row valign="middle"><entry>Attribute
+                    Name</entry><entry>Tag</entry><entry>Valid Range</entry><entry><para>Default
+                    Value</para><para>if not sent by SCU or invalid value
+                    received</para></entry><entry><para>Response to Invalid
+                    Value</para></entry></row></thead><tbody><row><entry>Image
+                    Display</entry><entry>(2010,0010)</entry><entry><para>Orientation
+                    PORTRAIT:<simplelist type="vert"><member>STANDARD\1,1</member><member>STANDARD\1,2</member><member>STANDARD\2,2</member><member>STANDARD\2,3</member><member>STANDARD\3,3</member><member>STANDARD\3,4</member><member>STANDARD\3,5</member><member>STANDARD\4,4</member><member>STANDARD\4,5</member><member>STANDARD\4,6</member><member>STANDARD\5,5</member><member>STANDARD\5,6</member><member>STANDARD\6,6</member></simplelist></para><para>Orientation
+                    LANDSCAPE:<simplelist type="vert"><member>STANDARD\1,1</member><member>STANDARD\2,1</member><member>STANDARD\2,2</member><member>STANDARD\3,2</member><member>STANDARD\3,3</member><member>STANDARD\4,3</member><member>STANDARD\5,3</member><member>STANDARD\4,4</member><member>STANDARD\5,4</member><member>STANDARD\6,4</member><member>STANDARD\5,5</member><member>STANDARD\6,5</member><member>STANDARD\6,6</member></simplelist></para>(Configurable)</entry><entry>Mandatory,
+                    no default</entry><entry>Failure (0106H)</entry></row><row><entry>Annotation
+                    Display Format ID</entry><entry>(2010,0030)</entry><entry><simplelist
+                    type="vert"><member>TITLE</member><member>NO_TITLE</member></simplelist>(Configurable)</entry><entry>TITLE
+                    (Different configurable for different Calling AETs)</entry><entry>Warning
+                    (0116H)</entry></row><row><entry>Film Orientation</entry><entry>(2010,0040)</entry><entry><simplelist
+                    type="vert"><member>PORTRAIT</member><member>LANDSCAPE</member></simplelist></entry><entry>PORTRAIT
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Film
+                    Size ID</entry><entry>(2010,0050)</entry><entry><simplelist
+                    type="vert"><member>A4</member><member>A3</member><member>8INX10IN</member><member>8_5INX11IN</member><member>10INX12IN</member><member>10INX14IN</member><member>11INX14IN</member><member>11INX17IN</member><member>14INX14IN</member><member>14INX17IN</member><member>24CMX24CM</member><member>24CMX30CM</member></simplelist>(Configurable)</entry><entry>A4
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Magnification
+                    Type</entry><entry>(2010,0060)</entry><entry><simplelist
+                    type="vert"><member>REPLICATE</member><member>BILINEAR</member><member>NONE</member></simplelist>(Configurable)</entry><entry>BILINEAR
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Border
+                    Density</entry><entry>(2010,0100)</entry><entry><simplelist
+                    type="vert"><member>BLACK</member><member>WHITE</member></simplelist></entry><entry>WHITE
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Min
+                    Density</entry><entry>(2010,0120)</entry><entry>100x
+                    Measured Printer Min Density - Max Density (2010,0130)</entry><entry>0
+                    (Configurable)</entry><entry>Warning (B605H)</entry></row><row><entry>Max
+                    Density</entry><entry>(2010,0130)</entry><entry>Min
+                    Density (2010,0120) - 100x Measured Printer Max Density</entry><entry>160
+                    (Configurable)</entry><entry>Warning (B605H)</entry></row><row><entry>Trim</entry><entry>(2010,0140)</entry><entry><simplelist
+                    type="vert"><member>YES</member><member>NO</member></simplelist></entry><entry>NO
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Configuration
+                    Information</entry><entry>(2010,0150)</entry><entry><simplelist
+                    type="vert"><member>IDENTITY</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist>(Configurable)</entry><entry>IDENTITY
+                    (Different configurable for different Calling AETs)</entry><entry>Warning
+                    (0116H)</entry></row><row><entry>Illumination</entry><entry>(2010,015E)</entry><entry>Any
+                    valid value in the unit of cd/m^2</entry><entry>150
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Reflected
+                    Ambient Light</entry><entry>(2010,0160)</entry><entry>Any
+                    valid value in the unit of cd/m^2</entry><entry>0
+                    (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Referenced
+                    Film Session Sequence</entry><entry>(2010,0500)</entry><entry>N/A</entry><entry><para>N/A</para></entry><entry><para>N/A</para></entry></row><row><entry>&#62;
+                    Referenced SOP Class UID</entry><entry>(0008,1150)</entry><entry>SOP
+                    Class UID</entry><entry>Mandatory, no default</entry><entry>Failure
+                    (0106H)</entry></row><row><entry>&#62; Referenced SOP
+                    Instance UID</entry><entry>(0008,1151)</entry><entry>SOP
+                    Instance UID</entry><entry>Mandatory, no default</entry><entry>Failure
+                    (0106H)</entry></row><row><entry>Requested Resolution ID</entry><entry>(2020,0050)</entry><entry><simplelist
+                    type="vert"><member>STANDARD</member><member>HIGH</member></simplelist>(Configurable)</entry><entry><para>STANDARD
+                    (Configurable)</para></entry><entry><para>Warning (0116H)</para></entry></row><row><entry>Reference
+                    Presentation LUT Sequence</entry><entry>(2050,0500)</entry><entry>N/A</entry><entry><para>N/A</para></entry><entry><para>N/A</para></entry></row><row><entry>&#62;
+                    Referenced SOP Class UID</entry><entry>(0008,1150)</entry><entry>SOP
+                    Class UID</entry><entry>Mandatory if sequence is present,
+                    no default</entry><entry>Failure (0106H)</entry></row><row><entry>&#62;
+                    Referenced SOP Instance UID</entry><entry>(0008,1151)</entry><entry>SOP
+                    Instance UID</entry><entry>Mandatory if sequence is
+                    present, no default</entry><entry>Failure (0106H)</entry></row></tbody></tgroup></table></para>
+
+                    <para>jPrint defines two Annotation Display Formats at
+                    default configuration:<table id="t-adf"><title>Predefined
+                    Annotation Display Formats</title><tgroup align="left"
+                    cols="3"><colspec colwidth="60" /><colspec align="center"
+                    colwidth="40" /><thead><row><entry>ID</entry><entry>#
+                    Boxes</entry><entry>Layout</entry></row></thead><tbody><row><entry>TITLE</entry><entry>5</entry><entry>Prints
+                    a centered text string in larger font at the top, and four
+                    text strings in smaller fonts at the corners of the page.</entry></row><row><entry>NO_TITLE</entry><entry>4</entry><entry>Prints
+                    only the four text strings in smaller fonts at the corners
+                    of the page.</entry></row></tbody></tgroup></table></para>
+
+                    <para>The annotation display formats also defines default
+                    contents for the created Annotation Boxes, which is
+                    printed, if the Print SCU does not set the content of the
+                    box using the N-SET service of the Basic Annotation Box
+                    SOP Class.</para>
+
+                    <para>The layout of the two predefined Annotation Display
+                    Formats may be modified, as well as additional Annotation
+                    Display Formats may be defined by jPrint configuration
+                    files.</para>
+
+                    <para>At default configuration, jPrint defines 4 local
+                    P-LUTs, which a Print SCU with no support of the
+                    Presentation LUT SOP Class can select by Configuration
+                    Information values:</para>
+
+                    <table id="t-config-info">
+                      <title>Predefined Configuration Information Values</title>
+
+                      <tgroup align="left" cols="2">
+                        <colspec colwidth="70" />
+
+                        <thead>
+                          <row>
+                            <entry>Configuration Information</entry>
+
+                            <entry valign="middle">Apply local P-LUT</entry>
+                          </row>
+                        </thead>
+
+                        <tbody>
+                          <row>
+                            <entry>IDENTITY</entry>
+
+                            <entry>Treats received pixel values as P-Values
+                            and perform gray scaling according the DICOM
+                            Grayscale Standard Standard Display Function
+                            (GSDF).</entry>
+                          </row>
+
+                          <row>
+                            <entry>MIDTONE</entry>
+
+                            <entry>Applies a S-shaped P-LUT, which increase
+                            the contrast in the middle range of gray shades.</entry>
+                          </row>
+
+                          <row>
+                            <entry>LIGHTEN</entry>
+
+                            <entry>Applies a gamma-shaped P-LUT with gamma
+                            &#62; 1, which increase the contrast for dark gray
+                            shades and lighten the image as a whole.</entry>
+                          </row>
+
+                          <row>
+                            <entry>DARKEN</entry>
+
+                            <entry>Applies a gamma-shaped P-LUT with gamma
+                            &#60; 1, which increase the contrast for light
+                            gray shades and darken the image as a whole.</entry>
+                          </row>
+                        </tbody>
+                      </tgroup>
+                    </table>
+
+                    <para>Additional local P-LUTs associated to particular
+                    Configuration Information values may be defined by jPrint
+                    configuration files.</para>
+
+                    <note>
+                      <para>The selection of (jPrint) local P-LUTs via the
+                      Configuration Information value is automatically
+                      disabled, if the Print Composer (SCU) make use of the
+                      DICOM Presentation LUT SOP Class. The described
+                      mechanism should only be used for printing from Print
+                      SCUs without P-LUT support!</para>
+                    </note>
+
+                    <para>Providing a value for the Requested Resolution ID
+                    attribute, a Print SCU can select the resolution at which
+                    images on the page are to be printed. At default
+                    configuration, jPrint supports the two Resolution IDs
+                    defined by DICOM - the specified printer resolution values
+                    must be adjusted to the supported print resolutions of
+                    connected printers:<table id="t-resolution-id"><title>Predefined
+                    Resolution IDs</title><tgroup align="left" cols="2"><colspec
+                    colwidth="70" /><colspec colwidth="70" /><thead><row><entry>ID</entry><entry>Resolution</entry></row></thead><tbody><row><entry>STANDARD</entry><entry>600x600dpi</entry></row><row><entry>HIGH</entry><entry>1200x1200dpi</entry></row></tbody></tgroup></table></para>
+
+                    <para>Also additional Resolution IDs may be defined in
+                    jPrint configuration files.</para>
+
+                    <note>
+                      <para>jPrint does NOT support printing with non-squared
+                      printer resolution!</para>
+
+                      <para>jPrint does NOT support printing of several pages
+                      with different Resolution IDs in one print job (=invoked
+                      by one Basic Film Session N-ACTION DIMSE).</para>
+                    </note>
+
+                    <para>jPrint behavior and specific status codes sent for
+                    the N-CREATE of a specific Film Box is described in the
+                    following table:<table><title>Basic Film Box SOP Class
+                    N-CREATE Response Status Handling Behavior</title><tgroup
+                    align="left" cols="4"><colspec colwidth="40" /><colspec
+                    colwidth="80" /><colspec colwidth="40" /><thead><row
+                    valign="middle"><entry>Service Status</entry><entry>Further
+                    Meaning</entry><entry>Error Code</entry><entry>Behavior</entry></row></thead><tbody><row><entry>Success</entry><entry>Success</entry><entry>0000H</entry><entry>Film
+                    box is successfully created.</entry></row><row><entry>Warning</entry><entry>Attribute
+                    Value Out of Range</entry><entry>0116H</entry><entry>The
+                    N-CREATE operation is considered successful but the status
+                    meaning is logged.</entry></row><row><entry>Warning</entry><entry>Min/Max
+                    Density Out of Range</entry><entry>B605H</entry><entry>Requested
+                    Min Density or Max Density outside of printer s operating
+                    range. The printer will use its respective minimum or
+                    maximum density value instead.</entry></row><row><entry>Failure</entry><entry>Invalid
+                    attribute value</entry><entry>0106H</entry><entry>An
+                    invalid attribute value was submitted</entry></row><row><entry>Failure</entry><entry>Processing
+                    Failure</entry><entry>0110H</entry><entry>Unspecified
+                    application failure</entry></row><row><entry>Failure</entry><entry>Duplicate
+                    SOP Instance</entry><entry>0111H</entry><entry>An instance
+                    of the Basic Film Box SOP Class already exists</entry></row><row><entry>Failure</entry><entry>Invalid
+                    Object Instance</entry><entry>0117H</entry><entry>Cannot
+                    create Film Box without Film Session</entry></row><row><entry>Failure</entry><entry>Missing
+                    Attribute</entry><entry>0120H</entry><entry>Mandatory
+                    attribute missing</entry></row></tbody></tgroup></table></para>
+                  </section>
+
+                  <section>
+                    <title>Basic Film Box SOP Class Operations for N-SET</title>
+
+                    <para>jPrint provides the support for the following Film
+                    Box attributes sent by the N-SET DIMSE service:</para>
+
+                    <table>
+                      <title>Basic Film Box SOP Class N-SET Request Attributes</title>
+
+                      <tgroup align="left" cols="5">
+                        <colspec colwidth="100" />
+
+                        <colspec colwidth="60" />
+
+                        <colspec />
+
+                        <colspec />
+
+                        <colspec colwidth="50" />
+
+                        <thead>
+                          <row valign="middle">
+                            <entry>Attribute Name</entry>
+
+                            <entry>Tag</entry>
+
+                            <entry>Valid Range</entry>
+
+                            <entry><para>Default Value</para><para>if not sent
+                            by SCU or invalid value received</para></entry>
+
+                            <entry><para>Response to Invalid Value</para></entry>
+                          </row>
+                        </thead>
+
+                        <tbody>
+                          <row>
+                            <entry>Magnification Type</entry>
+
+                            <entry>(2010,0060)</entry>
+
+                            <entry><simplelist type="vert"><member>REPLICATE</member><member>BILINEAR</member><member>NONE</member></simplelist>(Configurable)</entry>
+
+                            <entry>BILINEAR (Configurable)</entry>
+
+                            <entry>Warning (0116H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>Border Density</entry>
+
+                            <entry>(2010,0100)</entry>
+
+                            <entry><simplelist type="vert"><member>BLACK</member><member>WHITE</member></simplelist></entry>
+
+                            <entry>WHITE (Configurable)</entry>
+
+                            <entry>Warning (0116H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>Min Density</entry>
+
+                            <entry>(2010,0120)</entry>
+
+                            <entry>100x Measured Printer Min Density - Max
+                            Density (2010,0130)</entry>
+
+                            <entry>0 (Configurable)</entry>
+
+                            <entry>Warning (B605H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>Max Density</entry>
+
+                            <entry>(2010,0130)</entry>
+
+                            <entry>Min Density (2010,0120) - 100x Measured
+                            Printer Max Density</entry>
+
+                            <entry>160 (Configurable)</entry>
+
+                            <entry>Warning (B605H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>Trim</entry>
+
+                            <entry>(2010,0140)</entry>
+
+                            <entry><simplelist type="vert"><member>YES</member><member>NO</member></simplelist></entry>
+
+                            <entry>NO (Configurable)</entry>
+
+                            <entry>Warning (0116H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>Configuration Information</entry>
+
+                            <entry>(2010,0150)</entry>
+
+                            <entry><simplelist type="vert"><member>IDENTITY</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist>(Configurable)</entry>
+
+                            <entry>IDENTITY (Configurable)</entry>
+
+                            <entry>Warning (0116H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>Illumination</entry>
+
+                            <entry>(2010,015E)</entry>
+
+                            <entry>Any valid value in the unit of cd/m^2</entry>
+
+                            <entry>150 (Configurable)</entry>
+
+                            <entry>Warning (0116H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>Reflected Ambient Light</entry>
+
+                            <entry>(2010,0160)</entry>
+
+                            <entry>Any valid value in the unit of cd/m^2</entry>
+
+                            <entry>0 (Configurable)</entry>
+
+                            <entry>Warning (0116H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>Requested Resolution ID</entry>
+
+                            <entry>(2020,0050)</entry>
+
+                            <entry><simplelist type="vert"><member>STANDARD</member><member>HIGH</member></simplelist>(Configurable)</entry>
+
+                            <entry><para>STANDARD (Configurable)</para></entry>
+
+                            <entry><para>Warning (0116H)</para></entry>
+                          </row>
+
+                          <row>
+                            <entry>Reference Presentation LUT Sequence</entry>
+
+                            <entry>(2050,0500)</entry>
+
+                            <entry>N/A</entry>
+
+                            <entry><para>N/A</para></entry>
+
+                            <entry><para>N/A</para></entry>
+                          </row>
+
+                          <row>
+                            <entry>&#62; Referenced SOP Class UID</entry>
+
+                            <entry>(0008,1150)</entry>
+
+                            <entry>SOP Class UID</entry>
+
+                            <entry>Mandatory if sequence is present, no
+                            default</entry>
+
+                            <entry>Failure (0106H)</entry>
+                          </row>
+
+                          <row>
+                            <entry>&#62; Referenced SOP Instance UID</entry>
+
+                            <entry>(0008,1151)</entry>
+
+                            <entry>SOP Instance UID</entry>
+
+                            <entry>Mandatory if sequence is present, no
+                            default</entry>
+
+                            <entry>Failure (0106H)</entry>
+                          </row>
+                        </tbody>
+                      </tgroup>
+                    </table>
+
+                    <para>jPrint behavior and specific status codes sent for
+                    the N-SET of a specific Film Box is described in the
+                    following table:</para>
+
+                    <table>
+                      <title>Basic Film Box SOP Class N-SET Response Status
+                      Handling Behavior</title>
+
+                      <tgroup align="left" cols="4">
+                        <colspec colwidth="40" />
+
+                        <colspec colwidth="100" />
+
+                        <colspec colwidth="40" />
+
+                        <thead>
+                          <row valign="middle">
+                            <entry>Service Status</entry>
+
+                            <entry>Further Meaning</entry>
+
+                            <entry>Error Code</entry>
+
+                            <entry>Behavior</entry>
+                          </row>
+                        </thead>
+
+                        <tbody>
+                          <row>
+                            <entry>Success</entry>
+
+                            <entry>Success</entry>
+
+                            <entry>0000H</entry>
+
+                            <entry>Film box is successfully set.</entry>
+                          </row>
+
+                          <row>
+                            <entry>Warning</entry>
+
+                            <entry>Illegal Attribute</entry>
+
+                            <entry>0107H</entry>
+
+                            <entry>Attributes not recognized within the
+                            context of this SOP class.</entry>
+                          </row>
+
+                          <row>
+                            <entry>Warning</entry>
+
+                            <entry>Attribute Value Out of Range</entry>
+
+                            <entry>0116H</entry>
+
+                            <entry>The N-SET operation is considered
+                            successful but the status meaning is logged.</entry>
+                          </row>
+
+                          <row>
+                            <entry>Warning</entry>
+
+                            <entry>Min/Max Density Out of Range</entry>
+
+                            <entry>B605H</entry>
+
+                            <entry>Requested Min Density or Max Density
+                            outside of printer s operating range. The printer
+                            will use its respective minimum or maximum density
+                            value instead.</entry>
+                          </row>
+
+                          <row>
+                            <entry>Failure</entry>
+
+                            <entry>Invalid attribute value</entry>
+
+                            <entry>0106H</entry>
+
+                            <entry>An invalid attribute value was submitted</entry>
+                          </row>
+
+                          <row>
+                            <entry>Failure</entry>
+
+                            <entry>Processing Failure</entry>
+
+                            <entry>0110H</entry>
+
+                            <entry>Unspecified application failure</entry>
+                          </row>
+
+                          <row>
+                            <entry>Failure</entry>
+
+                            <entry>No Such object instance</entry>
+
+                            <entry>0112H</entry>
+
+                            <entry>The instance UID given does not exist.</entry>
+                          </row>
+                        </tbody>
+                      </tgroup>
+                    </table>
+                  </section>
+
+                  <section>
+                    <title>Basic Film Box SOP Class Operations for N-DELETE</title>
+
+                    <para>jPrint provides the support for deleting the last
+                    created Film Box.</para>
+
+                    <para>The specific behavior and status codes sent for the
+                    N-DELETE of the last created Film Box is described in the
+                    following table:</para>
+
+                    <table>
+                      <title>Basic Film Box SOP Class N-DELETE Response Status
+                      Handling Behavior</title>
+
+                      <tgroup align="left" cols="4">
+                        <colspec colwidth="40" />
+
+                        <colspec colwidth="100" />
+
+                        <colspec colwidth="40" />
+
+                        <thead>
+                          <row valign="middle">
+                            <entry>Service Status</entry>
+
+                            <entry>Further Meaning</entry>
+
+                            <entry>Error Code</entry>
+
+                            <entry>Behavior</entry>
+                          </row>
+                        </thead>
+
+                        <tbody>
+                          <row>
+                            <entry>Success</entry>
+
+                            <entry>Success</entry>
+
+                            <entry>0000H</entry>
+
+                            <entry>Film box has been successfully deleted.</entry>
+                          </row>
+
+                          <row>
+                            <entry>Failure</entry>
+
+                            <entry>No Such object instance</entry>
+
+                            <entry>0112H</entry>
+
+                            <entry>The instance UID given does not exist.</entry>
+                          </row>
+                        </tbody>
+                      </tgroup>
+                    </table>
+
+                    <section>
+                      <title>Film Box SOP Class Operations for N-ACTION</title>
+
+                      <para>jPrint provides the support for submitting the
+                      print job for printing the specific Film Box..</para>
+
+                      <para>The specific behavior and status codes sent for
+                      the N-ACTION of the specific Film Box is described in
+                      the following table:</para>
+
+                      <table>
+                        <title>Basic Film Box SOP Class N-ACTION Response
+                        Status Handling Behavior</title>
+
+                        <tgroup align="left" cols="4">
+                          <colspec colwidth="40" />
+
+                          <colspec colwidth="100" />
+
+                          <colspec colwidth="40" />
+
+                          <thead>
+                            <row valign="middle">
+                              <entry>Service Status</entry>
+
+                              <entry>Further Meaning</entry>
+
+                              <entry>Error Code</entry>
+
+                              <entry>Behavior</entry>
+                            </row>
+                          </thead>
+
+                          <tbody>
+                            <row>
+                              <entry>Success</entry>
+
+                              <entry>Success</entry>
+
+                              <entry>0000H</entry>
+
+                              <entry>Film accepted for printing.</entry>
+                            </row>
+
+                            <row>
+                              <entry>Failure</entry>
+
+                              <entry>Processing Failure</entry>
+
+                              <entry>0110H</entry>
+
+                              <entry>Unspecified application failure</entry>
+                            </row>
+
+                            <row>
+                              <entry>Failure</entry>
+
+                              <entry>No Such object instance</entry>
+
+                              <entry>0112H</entry>
+
+                              <entry>The instance UID given does not exist.</entry>
+                            </row>
+                          </tbody>
+                        </tgroup>
+                      </table>
+                    </section>
+                  </section>
+                </section>
+
+                <section id="s-GSIB">
+                  <title>Specific Conformance for Grayscale Image Box SOP
+                  Class</title>
+
+                  <para>jPrint provides the following support for the
+                  attributes contained in the N-SET DIMSE Service of the Basic
+                  Grayscale Image Box SOP Class:</para>
+
+                  <table>
+                    <title>Basic Grayscale Image Box SOP Class N-SET Request
+                    Attributes</title>
+
+                    <tgroup align="left" cols="5">
+                      <colspec colwidth="100" />
+
+                      <colspec colwidth="60" />
+
+                      <colspec />
+
+                      <colspec />
+
+                      <colspec colwidth="50" />
+
+                      <thead>
+                        <row valign="middle">
+                          <entry>Attribute Name</entry>
+
+                          <entry>Tag</entry>
+
+                          <entry>Valid Range</entry>
+
+                          <entry><para>Default Value</para><para>if not sent
+                          by SCU or invalid value received</para></entry>
+
+                          <entry><para>Response to Invalid Value</para></entry>
+                        </row>
+                      </thead>
+
+                      <tbody>
+                        <row>
+                          <entry>Magnification Type</entry>
+
+                          <entry>(2010,0060)</entry>
+
+                          <entry><simplelist type="vert"><member>REPLICATE</member><member>BILINEAR</member><member>NONE</member></simplelist>(Configurable)</entry>
+
+                          <entry>BILINEAR (Configurable)</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Min Density</entry>
+
+                          <entry>(2010,0120)</entry>
+
+                          <entry>100x Measured Printer Min Density - Max
+                          Density (2010,0130)</entry>
+
+                          <entry>0 (Configurable)</entry>
+
+                          <entry>Warning (B605H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Max Density</entry>
+
+                          <entry>(2010,0130)</entry>
+
+                          <entry>Min Density (2010,0120) - 100x Measured
+                          Printer Max Density</entry>
+
+                          <entry>160 (Configurable)</entry>
+
+                          <entry>Warning (B605H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Configuration Information<footnoteref
+                          linkend="fn-configinfo" /></entry>
+
+                          <entry>(2010,0150)</entry>
+
+                          <entry><simplelist type="vert"><member>IDENTITY</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist>(Configurable)</entry>
+
+                          <entry>IDENTITY (Configurable)</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Image Position</entry>
+
+                          <entry>(2020,0010)</entry>
+
+                          <entry>1 - Max number of images for Display Format</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Polarity</entry>
+
+                          <entry>(2020,0020)</entry>
+
+                          <entry><simplelist type="vert"><member>NORMAL</member><member>REVERSE</member></simplelist></entry>
+
+                          <entry>NORMAL</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Requested Image Size</entry>
+
+                          <entry>(2020,0030)</entry>
+
+                          <entry>1 -</entry>
+
+                          <entry>Not set</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Requested Decimate/Crop Behavior</entry>
+
+                          <entry>(2020,0040)</entry>
+
+                          <entry><simplelist type="vert"><member>DECIMATE</member><member>CROP</member></simplelist></entry>
+
+                          <entry>DECIMATE (Configurable)</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Basic Grayscale Image Sequence</entry>
+
+                          <entry>(2020,0110)</entry>
+
+                          <entry>N/A</entry>
+
+                          <entry>N/A</entry>
+
+                          <entry>N/A</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Samples Per Pixel</entry>
+
+                          <entry>(0028,0002)</entry>
+
+                          <entry>1</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Photometric Interpretation</entry>
+
+                          <entry>(0028,0004)</entry>
+
+                          <entry><simplelist type="vert"><member>MONOCHROME1</member><member>MONOCHROME2</member></simplelist></entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Rows</entry>
+
+                          <entry>(0028,0010)</entry>
+
+                          <entry>1 -</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Columns</entry>
+
+                          <entry>(0028,0011)</entry>
+
+                          <entry>1 -</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Pixel Aspect Ratio</entry>
+
+                          <entry>(0028,0034)</entry>
+
+                          <entry>Any pair of valid positive integers</entry>
+
+                          <entry>1:1</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Bits Allocated</entry>
+
+                          <entry>(0028,0100)</entry>
+
+                          <entry>8 or 16</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Bits Stored</entry>
+
+                          <entry>(0028,0101)</entry>
+
+                          <entry>8 or 12</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;High Bit</entry>
+
+                          <entry>(0028,0102)</entry>
+
+                          <entry>Bits Stored - 1</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Pixel Representation</entry>
+
+                          <entry>(0028,0103)</entry>
+
+                          <entry>0</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Pixel Data</entry>
+
+                          <entry>(7FE0,0010)</entry>
+
+                          <entry></entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0120H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Reference Presentation LUT Sequence</entry>
+
+                          <entry>(2050,0500)</entry>
+
+                          <entry>N/A</entry>
+
+                          <entry><para>N/A</para></entry>
+
+                          <entry><para>N/A</para></entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62; Referenced SOP Class UID</entry>
+
+                          <entry>(0008,1150)</entry>
+
+                          <entry>SOP Class UID</entry>
+
+                          <entry>Mandatory if sequence is present, no default</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62; Referenced SOP Instance UID</entry>
+
+                          <entry>(0008,1151)</entry>
+
+                          <entry>SOP Instance UID</entry>
+
+                          <entry>Mandatory if sequence is present, no default</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+                      </tbody>
+                    </tgroup>
+                  </table>
+
+                  <formalpara id="p-none-decimate-crop">
+                    <title>Magnification Type NONE defines Requested
+                    Decimate/Crop Behavior</title>
+
+                    <para>If Image Box (or containing Film Box) attribute
+                    Magnification Type is NONE, the Requested Decimate/Crop
+                    Behavior is assumed to be CROP, ignoring the actual value
+                    of the Requested Decimate/Crop Behavior attribute provided
+                    by the Print SCU.</para>
+                  </formalpara>
+
+                  <formalpara id="p-none-aspect-ratio">
+                    <title>Magnification Type NONE with Pixel Aspect Ration
+                    not 1:1</title>
+
+                    <para>Pixel Aspect Ratio will always be considered, also
+                    if the Image Box (or containing Film Box) attribute
+                    Magnification Type is NONE. In that case, only the number
+                    columns of the printed pixel matrix is identical with the
+                    number of columns of the received Image Data, and the
+                    number of rows of the printed pixel matrix will be
+                    adjusted according the Pixel Aspect Ratio.</para>
+                  </formalpara>
+
+                  <formalpara id="p-none-requested-image-size">
+                    <title>Requested Image Size defines Requested
+                    Decimate/Crop Behavior and ignores Magnification Type NONE</title>
+
+                    <para>If a Requested Image Size is provided by the Print
+                    SCU, the Requested Decimate/Crop Behavior is assumed to be
+                    DECIMATE, ignoring the actual value of the Requested
+                    Decimate/Crop Behavior attribute. Also a provided
+                    Magnification Type NONE will be replaced by BILINEAR in
+                    this case.</para>
+                  </formalpara>
+
+                  <para>jPrint behavior and specific status codes sent for the
+                  N-SET of a specific Image Box is described in the following
+                  table:</para>
+
+                  <table>
+                    <title>Basic Grayscale Image Box SOP Class N-SET Response
+                    Status Handling Behavior</title>
+
+                    <tgroup align="left" cols="4">
+                      <colspec colwidth="40" />
+
+                      <colspec colwidth="100" />
+
+                      <colspec colwidth="40" />
+
+                      <thead>
+                        <row valign="middle">
+                          <entry>Service Status</entry>
+
+                          <entry>Further Meaning</entry>
+
+                          <entry>Error Code</entry>
+
+                          <entry>Behavior</entry>
+                        </row>
+                      </thead>
+
+                      <tbody>
+                        <row>
+                          <entry>Success</entry>
+
+                          <entry>Success</entry>
+
+                          <entry>0000H</entry>
+
+                          <entry>Image box is successfully set.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Warning</entry>
+
+                          <entry>Attribute Value Out of Range</entry>
+
+                          <entry>0116H</entry>
+
+                          <entry>The N-SET operation is considered successful
+                          but the status meaning is logged.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Warning</entry>
+
+                          <entry>Min/Max Density Out of Range</entry>
+
+                          <entry>B605H</entry>
+
+                          <entry>Requested Min Density or Max Density outside
+                          of printer s operating range. The printer will use
+                          its respective minimum or maximum density value
+                          instead.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Invalid attribute value</entry>
+
+                          <entry>0106H</entry>
+
+                          <entry>An invalid attribute value was submitted</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Processing Failure</entry>
+
+                          <entry>0110H</entry>
+
+                          <entry>Unspecified application failure</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>No Such object instance</entry>
+
+                          <entry>0112H</entry>
+
+                          <entry>The instance UID given does not exist.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Missing Attribute</entry>
+
+                          <entry>0120H</entry>
+
+                          <entry>Mandatory attribute missing</entry>
+                        </row>
+                      </tbody>
+                    </tgroup>
+                  </table>
+                </section>
+
+                <section>
+                  <title>Specific Conformance for Printer SOP Class</title>
+
+                  <para>jPrint supports the following DIMSE operations and
+                  notifications for the Printer SOP Class:</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para>N-GET</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>(N-EVENT-REPORT)</para>
+                    </listitem>
+                  </itemizedlist>
+
+                  <section>
+                    <title>Specific Conformance for Printer N-GET Status</title>
+
+                    <para>The Print SCU uses the Printer SOP Class N-GET
+                    operation to obtain information about the current Printer
+                    status. The attributes obtained via N-GET are listed in
+                    the following table:</para>
+
+                    <table>
+                      <title>Printer SOP Class N-GET Request Attributes</title>
+
+                      <tgroup align="left" cols="4">
+                        <colspec colwidth="100" />
+
+                        <colspec align="center" colwidth="60" />
+
+                        <colspec align="center" colwidth="20" />
+
+                        <thead>
+                          <row>
+                            <entry>Attribute Name</entry>
+
+                            <entry>Tag</entry>
+
+                            <entry>VR</entry>
+
+                            <entry>Value</entry>
+                          </row>
+                        </thead>
+
+                        <tbody>
+                          <row>
+                            <entry>Printer Status</entry>
+
+                            <entry>(2110,0010)</entry>
+
+                            <entry>CS</entry>
+
+                            <entry><simplelist type="vert"><member>NORMAL</member><member>WARNING</member><member>FAILURE</member></simplelist></entry>
+                          </row>
+
+                          <row>
+                            <entry>Printer Status Info</entry>
+
+                            <entry>(2110,0020)</entry>
+
+                            <entry>CS</entry>
+
+                            <entry><para>for NORMAL conditions:<simplelist
+                            type="vert"><member>NORMAL</member></simplelist></para><para>for
+                            WARNING conditions:<simplelist type="vert"><member>QUEUED</member><member>CALIBRATION
+                            ERR</member></simplelist></para><para>for FAILURE
+                            conditions:<simplelist type="vert"><member>CHECK
+                            PRINTER</member><member>ELEC SW ERROR</member></simplelist></para></entry>
+                          </row>
+
+                          <row>
+                            <entry>Printer Name</entry>
+
+                            <entry>(2110,0030)</entry>
+
+                            <entry>LO</entry>
+
+                            <entry>Configurable</entry>
+                          </row>
+
+                          <row>
+                            <entry>Manufacturer</entry>
+
+                            <entry>(0008,0070)</entry>
+
+                            <entry>LO</entry>
+
+                            <entry>Configurable</entry>
+                          </row>
+
+                          <row>
+                            <entry>Manufacturer Model Name</entry>
+
+                            <entry>(0008,1090)</entry>
+
+                            <entry>LO</entry>
+
+                            <entry>Configurable</entry>
+                          </row>
+
+                          <row>
+                            <entry>Device Serial Number</entry>
+
+                            <entry>(0018,1000)</entry>
+
+                            <entry>LO</entry>
+
+                            <entry>Configurable</entry>
+                          </row>
+
+                          <row>
+                            <entry>Software Version</entry>
+
+                            <entry>(0018,1020)</entry>
+
+                            <entry>LO</entry>
+
+                            <entry>Configurable</entry>
+                          </row>
+
+                          <row>
+                            <entry>Date Of Last Calibration</entry>
+
+                            <entry>(0018,1200)</entry>
+
+                            <entry>DA</entry>
+
+                            <entry>Date of most recent scanned grayscale
+                            print-out in calibration folder, if semiautomatic
+                            calibration mode is activated</entry>
+                          </row>
+
+                          <row>
+                            <entry>Time Of Last Calibration</entry>
+
+                            <entry>(0018,1201)</entry>
+
+                            <entry>TM</entry>
+
+                            <entry>Time of most recent scanned grayscale
+                            print-out in calibration folder, if semiautomatic
+                            calibration mode is activated</entry>
+                          </row>
+                        </tbody>
+                      </tgroup>
+                    </table>
+
+                    <para>The following status codes may be returned in
+                    response to Printer N-GET:</para>
+
+                    <table>
+                      <title>Printer SOP Class N-GET Response Status Handling
+                      Behavior</title>
+
+                      <tgroup align="left" cols="4">
+                        <colspec colwidth="40" />
+
+                        <colspec colwidth="100" />
+
+                        <colspec colwidth="40" />
+
+                        <thead>
+                          <row valign="middle">
+                            <entry>Service Status</entry>
+
+                            <entry>Further Meaning</entry>
+
+                            <entry>Error Code</entry>
+
+                            <entry>Behavior</entry>
+                          </row>
+                        </thead>
+
+                        <tbody>
+                          <row>
+                            <entry>Success</entry>
+
+                            <entry>Success</entry>
+
+                            <entry>0000H</entry>
+
+                            <entry>The request to get printer status
+                            information was success.</entry>
+                          </row>
+
+                          <row>
+                            <entry>Failure</entry>
+
+                            <entry>Processing Failure</entry>
+
+                            <entry>0110H</entry>
+
+                            <entry>Unspecified application failure</entry>
+                          </row>
+                        </tbody>
+                      </tgroup>
+                    </table>
+                  </section>
+
+                  <section>
+                    <title>Specific Conformance for Printer N-EVENT-REPORT
+                    status</title>
+
+                    <para>jPrint never sends N-EVENT-REPORT-RSP messages.</para>
+                  </section>
+                </section>
+              </section>
+
+              <section>
+                <title>Specific Conformance to Basic Color Print Management
+                Meta SOP Class</title>
+
+                <para>jPrint supports the following mandatory SOP classes as
+                defined by the Basic Color Print Management Meta SOP Class:</para>
+
+                <table>
+                  <title>SOP Classes for Basic Color Print Management Meta SOP
+                  Class</title>
+
+                  <tgroup align="left" cols="4">
+                    <colspec colwidth="120" />
+
+                    <colspec colwidth="120" />
+
+                    <colspec align="center" colwidth="30" />
+
+                    <colspec align="center" colwidth="30" />
+
+                    <thead>
+                      <row>
+                        <entry>SOP Class Name</entry>
+
+                        <entry>SOP Class UID</entry>
+
+                        <entry>SCU</entry>
+
+                        <entry>SCP</entry>
+                      </row>
+                    </thead>
+
+                    <tbody>
+                      <row>
+                        <entry>Basic Film Session</entry>
+
+                        <entry>1.2.840.10008.5.1.1.1</entry>
+
+                        <entry>No</entry>
+
+                        <entry>Yes</entry>
+                      </row>
+
+                      <row>
+                        <entry>Basic Film Box</entry>
+
+                        <entry>1.2.840.10008.5.1.1.2</entry>
+
+                        <entry>No</entry>
+
+                        <entry>Yes</entry>
+                      </row>
+
+                      <row>
+                        <entry>Basic Color Image Box</entry>
+
+                        <entry>1.2.840.10008.5.1.1.4.1</entry>
+
+                        <entry>No</entry>
+
+                        <entry>Yes</entry>
+                      </row>
+
+                      <row>
+                        <entry>Printer</entry>
+
+                        <entry>1.2.840.10008.5.1.1.16</entry>
+
+                        <entry>No</entry>
+
+                        <entry>Yes</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </table>
+
+                <para>The specific SOP Conformance statement for Basic Color
+                Print Management Meta SOP Class components Basic Film Session,
+                Basic Film Session and Printer, which are also components of
+                the Basic Grayscale Print Management Meta SOP Class components
+                are described in <xref linkend="s-gray-meta-sop" />.</para>
+
+                <note>
+                  <para>Currently, there is no Standard Display Function for
+                  Hard- and Softcopy of Color Images defined by DICOM. There
+                  is also no proprietary way to calibrate jPrint for Color
+                  Print implemented. Hence quality and consistency of color
+                  prints cannot be guaranteed by the usage of jPrint, but are
+                  dependent on the characteristic of the connected color
+                  printer.</para>
+                </note>
+
+                <section>
+                  <title>Specific Conformance for Color Image Box SOP Class</title>
+
+                  <para>print provides the following support for the
+                  attributes contained in the N-SET DIMSE Service of the Basic
+                  Color Image Box SOP Class:</para>
+
+                  <table>
+                    <title>Basic Color Image Box SOP Class N-SET Request
+                    Attributes</title>
+
+                    <tgroup align="left" cols="5">
+                      <colspec colwidth="100" />
+
+                      <colspec align="center" colwidth="60" />
+
+                      <colspec />
+
+                      <colspec />
+
+                      <colspec colwidth="50" />
+
+                      <thead>
+                        <row valign="middle">
+                          <entry>Attribute Name</entry>
+
+                          <entry>Tag</entry>
+
+                          <entry>Valid Range</entry>
+
+                          <entry><para>Default Value</para><para>if not sent
+                          by SCU or invalid value received</para></entry>
+
+                          <entry><para>Response to Invalid Value</para></entry>
+                        </row>
+                      </thead>
+
+                      <tbody>
+                        <row>
+                          <entry>Magnification Type</entry>
+
+                          <entry>(2010,0060)</entry>
+
+                          <entry><simplelist type="vert"><member>REPLICATE</member><member>BILINEAR</member><member>NONE</member></simplelist>(Configurable)</entry>
+
+                          <entry>BILINEAR (Configurable)</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Image Position</entry>
+
+                          <entry>(2020,0010)</entry>
+
+                          <entry>1 - Max number of images for Display Format</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Requested Image Size</entry>
+
+                          <entry>(2020,0030)</entry>
+
+                          <entry>1 -</entry>
+
+                          <entry>Not set</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Requested Decimate/Crop Behavior</entry>
+
+                          <entry>(2020,0040)</entry>
+
+                          <entry><simplelist type="vert"><member>DECIMATE</member><member>CROP</member></simplelist></entry>
+
+                          <entry>DECIMATE (Configurable)</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Basic Color Image Sequence</entry>
+
+                          <entry>(2020,0111)</entry>
+
+                          <entry>N/A</entry>
+
+                          <entry>N/A</entry>
+
+                          <entry>N/A</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Samples Per Pixel</entry>
+
+                          <entry>(0028,0002)</entry>
+
+                          <entry>3</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Photometric Interpretation</entry>
+
+                          <entry>(0028,0004)</entry>
+
+                          <entry>RGB</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Planar Configuration</entry>
+
+                          <entry>(0028,0006)</entry>
+
+                          <entry>1</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Rows</entry>
+
+                          <entry>(0028,0010)</entry>
+
+                          <entry>1 -</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Columns</entry>
+
+                          <entry>(0028,0011)</entry>
+
+                          <entry>1 -</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Pixel Aspect Ratio</entry>
+
+                          <entry>(0028,0034)</entry>
+
+                          <entry>Any pair of valid positive integers</entry>
+
+                          <entry>1:1</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Bits Allocated</entry>
+
+                          <entry>(0028,0100)</entry>
+
+                          <entry>8</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Bits Stored</entry>
+
+                          <entry>(0028,0101)</entry>
+
+                          <entry>8</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;High Bit</entry>
+
+                          <entry>(0028,0102)</entry>
+
+                          <entry>7</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Pixel Representation</entry>
+
+                          <entry>(0028,0103)</entry>
+
+                          <entry>1</entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;Pixel Data</entry>
+
+                          <entry>(7FE0,0010)</entry>
+
+                          <entry></entry>
+
+                          <entry>Mandatory, no default.</entry>
+
+                          <entry>Failure (0120H)</entry>
+                        </row>
+                      </tbody>
+                    </tgroup>
+                  </table>
+
+                  <para>jPrint behavior and specific status codes sent for the
+                  N-SET of a specific Image Box is described in the following
+                  table:</para>
+
+                  <table>
+                    <title>Basic Color Image Box SOP Class N-SET Response
+                    Status Handling Behavior</title>
+
+                    <tgroup align="left" cols="4">
+                      <colspec colwidth="40" />
+
+                      <colspec colwidth="100" />
+
+                      <colspec colwidth="40" />
+
+                      <thead>
+                        <row valign="middle">
+                          <entry>Service Status</entry>
+
+                          <entry>Further Meaning</entry>
+
+                          <entry>Error Code</entry>
+
+                          <entry>Behavior</entry>
+                        </row>
+                      </thead>
+
+                      <tbody>
+                        <row>
+                          <entry>Success</entry>
+
+                          <entry>Success</entry>
+
+                          <entry>0000H</entry>
+
+                          <entry>Image box is successfully set.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Warning</entry>
+
+                          <entry>Attribute Value Out of Range</entry>
+
+                          <entry>0116H</entry>
+
+                          <entry>The N-SET operation is considered successful
+                          but the status meaning is logged.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Invalid attribute value</entry>
+
+                          <entry>0106H</entry>
+
+                          <entry>An invalid attribute value was submitted</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Processing Failure</entry>
+
+                          <entry>0110H</entry>
+
+                          <entry>Unspecified application failure</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>No Such object instance</entry>
+
+                          <entry>0112H</entry>
+
+                          <entry>The instance UID given does not exist.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Missing Attribute</entry>
+
+                          <entry>0120H</entry>
+
+                          <entry>Mandatory attribute missing</entry>
+                        </row>
+                      </tbody>
+                    </tgroup>
+                  </table>
+                </section>
+              </section>
+
+              <section>
+                <title>Specific Conformance to Basic Annotation BOX SOP Class</title>
+
+                <para>jPrint creates the Basic Annotation Box SOP instance at
+                the time the Basic Film Box SOP instance is created, based on
+                the value of the attribute Annotation Display Format ID
+                (2010,0030) of the Basic Film Box.</para>
+
+                <para>The created Basic Annotation Box SOP instance can be
+                updated with the N-SET DIMSE service. The following table
+                describes the attributes that can be updated:</para>
+
+                <table>
+                  <title>Basic Annotation Box SOP Class N-SET Request
+                  Attributes</title>
+
+                  <tgroup align="left" cols="5">
+                    <colspec colwidth="100" />
+
+                    <colspec align="center" colwidth="60" />
+
+                    <colspec />
+
+                    <colspec />
+
+                    <colspec colwidth="50" />
+
+                    <thead>
+                      <row valign="middle">
+                        <entry>Attribute Name</entry>
+
+                        <entry>Tag</entry>
+
+                        <entry>Valid Range</entry>
+
+                        <entry><para>Default Value</para><para>if not sent by
+                        SCU or invalid value received</para></entry>
+
+                        <entry><para>Response to Invalid Value</para></entry>
+                      </row>
+                    </thead>
+
+                    <tbody>
+                      <row>
+                        <entry>Annotation Position</entry>
+
+                        <entry>(2030,0010)</entry>
+
+                        <entry>1 - Max number of annotation strings defined
+                        for Annotation Format</entry>
+
+                        <entry>Mandatory, no default.</entry>
+
+                        <entry>Failure (0106H)</entry>
+                      </row>
+
+                      <row>
+                        <entry>Text String</entry>
+
+                        <entry>(2030,0020)</entry>
+
+                        <entry>1-64 characters</entry>
+
+                        <entry>Null string, truncate if &#62;64 characters</entry>
+
+                        <entry>Warning (0116H)</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </table>
+
+                <para>jPrint behavior and specific status codes sent for the
+                N-SET of a specific Annotation Box is described in the
+                following table:</para>
+
+                <table>
+                  <title>Basic Annotation Box SOP Class N-SET Response Status
+                  Handling Behavior</title>
+
+                  <tgroup align="left" cols="4">
+                    <colspec colwidth="40" />
+
+                    <colspec colwidth="100" />
+
+                    <colspec colwidth="40" />
+
+                    <thead>
+                      <row valign="middle">
+                        <entry>Service Status</entry>
+
+                        <entry>Further Meaning</entry>
+
+                        <entry>Error Code</entry>
+
+                        <entry>Behavior</entry>
+                      </row>
+                    </thead>
+
+                    <tbody>
+                      <row>
+                        <entry>Success</entry>
+
+                        <entry>Success</entry>
+
+                        <entry>0000H</entry>
+
+                        <entry>The SCP has completed the operation
+                        successfully.</entry>
+                      </row>
+
+                      <row>
+                        <entry>Warning</entry>
+
+                        <entry>Attribute Value Out of Range</entry>
+
+                        <entry>0116H</entry>
+
+                        <entry>The N-SET operation is considered successful
+                        but the status meaning is logged.</entry>
+                      </row>
+
+                      <row>
+                        <entry>Failure</entry>
+
+                        <entry>Invalid attribute value</entry>
+
+                        <entry>0106H</entry>
+
+                        <entry>An invalid attribute value was submitted</entry>
+                      </row>
+
+                      <row>
+                        <entry>Failure</entry>
+
+                        <entry>Processing Failure</entry>
+
+                        <entry>0110H</entry>
+
+                        <entry>Unspecified application failure</entry>
+                      </row>
+
+                      <row>
+                        <entry>Failure</entry>
+
+                        <entry>No Such object instance</entry>
+
+                        <entry>0112H</entry>
+
+                        <entry>The instance UID given does not exist.</entry>
+                      </row>
+
+                      <row>
+                        <entry>Failure</entry>
+
+                        <entry>Missing Attribute</entry>
+
+                        <entry>0120H</entry>
+
+                        <entry>Mandatory attribute missing</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </table>
+              </section>
+
+              <section>
+                <title>Specific Conformance for Presentation LUT Box SOP Class</title>
+
+                <para>jPrint supports the Presentation LUT SOP class as SCP.
+                Print SCU may negotiate this support and create a Presentation
+                LUT instance prior to the creation of Film Boxes or Image
+                Boxes. Multiple Presentation LUT instances are supported in an
+                association, but only one instance will be supported for each
+                image.</para>
+
+                <para>The SCU shall send either Presentation LUT Sequence or
+                the Presentation LUT Shape. These values are mutually
+                exclusive and the action will result in an error if neither or
+                both are present. The presence of the Presentation LUT
+                instance overrides any data set in the Configuration
+                Information attribute (2010,0150) of the Film Box or Image
+                Box.</para>
+
+                <para>jPrint provides support for the following DIMSE
+                Services:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>N-CREATE</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>N-SET</para>
+                  </listitem>
+                </itemizedlist>
+
+                <section>
+                  <title>Presentation LUT Box SOP class operation for N-CREATE</title>
+
+                  <para>jPrint supports the following attributes of the
+                  N-CREATE DIMSE Service of the Presentation LUT SOP Class:</para>
+
+                  <table>
+                    <title>Presentation LUT Box SOP N-CREATE Request
+                    Attributes</title>
+
+                    <tgroup align="left" cols="5">
+                      <colspec colwidth="100" />
+
+                      <colspec align="center" colwidth="60" />
+
+                      <colspec />
+
+                      <colspec />
+
+                      <colspec colwidth="50" />
+
+                      <thead>
+                        <row valign="middle">
+                          <entry>Attribute Name</entry>
+
+                          <entry>Tag</entry>
+
+                          <entry>Valid Range</entry>
+
+                          <entry><para>Default Value</para><para>if not sent
+                          by SCU or invalid value received</para></entry>
+
+                          <entry><para>Response to Invalid Value</para></entry>
+                        </row>
+                      </thead>
+
+                      <tbody>
+                        <row>
+                          <entry>Presentation LUT Sequence</entry>
+
+                          <entry>(2050,0010)</entry>
+
+                          <entry>N/A</entry>
+
+                          <entry>Mandatory if no Presentation LUT Shape is
+                          present, no default.</entry>
+
+                          <entry>Failure (0120H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;LUT Descriptor</entry>
+
+                          <entry>(0028,3002)</entry>
+
+                          <entry><para>First value:<simplelist type="vert"><member>256</member><member>4096</member></simplelist></para><para>Second
+                          value: 0</para><para>Third value: 8-12</para></entry>
+
+                          <entry>Mandatory if sequence is present, no default.</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;LUT Explanation</entry>
+
+                          <entry>(0028,3003)</entry>
+
+                          <entry>1-64 characters</entry>
+
+                          <entry>Null String; truncate if &#62;64 characters</entry>
+
+                          <entry>Warning (0116H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>&#62;LUT Data</entry>
+
+                          <entry>(0028,3006)</entry>
+
+                          <entry>Number of LUT entries = First value of LUT
+                          Descriptor</entry>
+
+                          <entry>Mandatory if sequence is present, no default</entry>
+
+                          <entry>Failure (0106H)</entry>
+                        </row>
+
+                        <row>
+                          <entry>Presentation LUT Shape</entry>
+
+                          <entry>(2050,0020)</entry>
+
+                          <entry><simplelist type="vert"><member>IDENTITY</member><member>LIN
+                          OD</member></simplelist></entry>
+
+                          <entry>Mandatory if no Presentation LUT Sequence is
+                          present, no default.</entry>
+
+                          <entry>Failure (0106H) or (0120H)</entry>
+                        </row>
+                      </tbody>
+                    </tgroup>
+                  </table>
+
+                  <para>jPrint behavior and specific status codes sent for the
+                  N-CREATE of a specific Presentation LUT is described in the
+                  following table:</para>
+
+                  <table>
+                    <title>Presentation LUT Box SOP N-CREATE Response Status
+                    Handling Behavior</title>
+
+                    <tgroup align="left" cols="4">
+                      <colspec colwidth="40" />
+
+                      <colspec colwidth="100" />
+
+                      <colspec colwidth="40" />
+
+                      <thead>
+                        <row valign="middle">
+                          <entry>Service Status</entry>
+
+                          <entry>Further Meaning</entry>
+
+                          <entry>Error Code</entry>
+
+                          <entry>Behavior</entry>
+                        </row>
+                      </thead>
+
+                      <tbody>
+                        <row>
+                          <entry>Success</entry>
+
+                          <entry>Success</entry>
+
+                          <entry>0000H</entry>
+
+                          <entry>The SCP has completed the operation
+                          successfully.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Warning</entry>
+
+                          <entry>Attribute Value Out of Range</entry>
+
+                          <entry>0116H</entry>
+
+                          <entry>The N-SET operation is considered successful
+                          but the status meaning is logged.</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Invalid attribute value</entry>
+
+                          <entry>0106H</entry>
+
+                          <entry>An invalid attribute value was submitted</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Processing Failure</entry>
+
+                          <entry>0110H</entry>
+
+                          <entry>Unspecified application failure</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Duplicate SOP Instance</entry>
+
+                          <entry>0111H</entry>
+
+                          <entry>An instance of the Presentation LUT SOP Class
+                          already exists</entry>
+                        </row>
+
+                        <row>
+                          <entry>Failure</entry>
+
+                          <entry>Missing Attribute</entry>
+
+                          <entry>0120H</entry>
+
+                          <entry>Mandatory attribute missing</entry>
+                        </row>
+                      </tbody>
+                    </tgroup>
+                  </table>
+                </section>
+
+                <section>
+                  <title>Presentation LUT SOP class operation for N-DELETE</title>
+
+                  <para>When a N-DELETE DIMSE service is requested with a
+                  specific Presentation LUT SOP instance, jPrint will not
+                  delete the specified Presentation LUT SOP instance as long
+                  as there are outstanding references to it. Otherwise, it
+                  deletes the specified Presentation LUT SOP instance.</para>
+                </section>
+
+                <section>
+                  <title>Consistent Presentation of Grayscale Images</title>
+
+                  <para>jPrint supports the DICOM standard (PS 3-14) Grayscale
+                  Standard Display Function (GSDF) for Consistent Presentation
+                  of Displayed and Printed Images. The Image Consistency is
+                  achieved through the support of the Presentation LUT
+                  (transforming the image pixels value in to the Standard
+                  Presentation P-values) and then Transforming the Image pixel
+                  values from the standard Presentation (P-value) space to the
+                  Optical Density space.</para>
+
+                  <para>jPrint supports calibration by manually measurements
+                  using a grayscale densitometer or semi-automatic
+                  calibration, that only requires the user to scan a current
+                  grayscale print-out of the printer and a reference grayscale
+                  page and put the resulting JPEG files into a configuration
+                  folder. The jPrint Service Manual describes in details the
+                  jPrint calibration of connected Printers to the DICOM GSDF
+                  curve.</para>
+
+                  <note>
+                    <para>Presentation LUT SOP class can only be used for
+                    Grayscale Print Management. Currently, there is no
+                    definition/support for color print consistence/calibration
+                    provided by DICOM/jPrint.</para>
+                  </note>
+                </section>
+              </section>
+            </section>
+          </section>
+        </section>
+      </section>
+    </section>
+
+    <section>
+      <title>Physical Network Interfaces</title>
+
+      <section>
+        <title>Supported Communication Stacks</title>
+
+        <para>DICOM Upper Layer over TCP/IP is supported.</para>
+
+        <section>
+          <title>TCP/IP Stack</title>
+
+          <para>The TCP/IP stack is inherited from the underlying operating
+          system.</para>
+        </section>
+      </section>
+
+      <section>
+        <title>Physical Network Interface</title>
+
+        <para>DICOM is indifferent to the physical medium over which TCP/IP
+        executes.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>Configuration</title>
+
+      <section>
+        <title>AE Title/Presentation Address Mapping</title>
+
+        <section>
+          <title>Local AE Titles</title>
+
+          <para>Each connected printer must be bound to a different local AET.
+          If no connected printer is bound to the Called AET in the
+          Association Request of the Print SCU, only acceptance of the
+          Presentation Context for Verification SOP Class will be returned in
+          the Association Acceptance Response (A-ASSOCIATE-AC).</para>
+
+          <para>At default, only one connected printer is configured:
+          <table><title>AE Title Configuration Table</title><tgroup
+          align="left" cols="3"><colspec colwidth="100" /><colspec
+          colwidth="100" /><colspec colwidth="100" /><thead><row><entry>Application
+          Entity</entry><entry>Default AE Title</entry><entry>Default TCP/IP
+          Port</entry></row></thead><tbody><row><entry>jPrint</entry><entry>TIANI_PRINT</entry><entry>6104</entry></row></tbody></tgroup></table></para>
+        </section>
+
+        <section>
+          <title>Remote AE Title</title>
+
+          <para>At default configuration, Association Requests with any
+          Calling AET will be accepted.</para>
+        </section>
+      </section>
+
+      <section>
+        <title>Parameters</title>
+
+        <para>A large number of parameters related to Print Management,
+        Communications and general operation can be configured. The following
+        table shows those configuration parameters relevant to DICOM
+        communication. See the jPrint Service Manual for details on general
+        configuration capabilities.</para>
+
+        <para><table><title>Configuration Parameter Table</title><tgroup
+        align="left" cols="3"><colspec align="left" colname="c1" /><colspec
+        align="center" colname="c2" colwidth="70" /><colspec colname="c3"
+        colwidth="100" /><spanspec align="center" nameend="c3" namest="c1"
+        spanname="c1-c3" /><thead><row valign="middle"><entry>Parameter</entry><entry>Configurable
+        (Yes/No)</entry><entry>Default Value</entry></row></thead><tbody><row><entry
+        spanname="c1-c3">General Parameters</entry></row><row><entry>Max PDU
+        Receive Size</entry><entry>Yes</entry><entry>16352</entry></row><row><entry>Max
+        PDU Send Size (If the receiver supports a smaller Max PDU Receive Size
+        then the Max PDU Send Size will be reduced accordingly for the
+        duration of the Association.)</entry><entry>No</entry><entry>65535</entry></row><row><entry>Time-out
+        to receive the Association Request (A-ASSOCIATE RQ), after accepting
+        the TCP connect from the Print SCU.</entry><entry>Yes</entry><entry>5s</entry></row><row><entry>Delay
+        for TCP close after sending A-RELEASE RSP (or A-ABORT RQ) to the Print
+        SCU.</entry><entry>Yes</entry><entry>0.5s</entry></row><row><entry>Maximum
+        number of simultaneous Associations</entry><entry>Yes</entry><entry>10</entry></row><row><entry>Supported
+        Transfer Syntaxes</entry><entry>No</entry><entry><simplelist
+        type="vert"><member>Implicit VR Little Endian</member><member>Explicit
+        VR Little Endian</member></simplelist></entry></row><row><entry
+        spanname="c1-c3">Printer specific Parameters - may differ for
+        connected Printers</entry></row><row><entry>Called AET associated with
+        this Printer</entry><entry>Yes</entry><entry>TIANI_PRINT</entry></row><row><entry>Printer
+        Name</entry><entry>Yes</entry><entry>MINOLTA</entry></row><row><entry>Manufacturer</entry><entry>Yes</entry><entry>Minolta</entry></row><row><entry>Manufacturer
+        Model Name</entry><entry>Yes</entry><entry>CF 9001</entry></row><row><entry>Device
+        Serial Number</entry><entry>Yes</entry><entry></entry></row><row><entry>Software
+        Version</entry><entry>Yes</entry><entry>EFI Fiery X3e</entry></row><row><entry>Maximum
+        number of Jobs in printer queue</entry><entry>Yes</entry><entry>10</entry></row><row><entry>Supports
+        Color</entry><entry>Yes</entry><entry>true</entry></row><row><entry>Supports
+        Grayscale</entry><entry>Yes</entry><entry>true</entry></row><row><entry>Supports
+        Presentation LUT</entry><entry>Yes</entry><entry>true</entry></row><row><entry>Supports
+        Annotation Box</entry><entry>Yes</entry><entry>true</entry></row><row><entry>Max
+        Number Of Copies</entry><entry>Yes</entry><entry>99</entry></row><row><entry>Medium
+        Type (if not specified by Print SCU)</entry><entry>Yes</entry><entry>PAPER</entry></row><row><entry>Supported
+        Medium Types</entry><entry>Yes</entry><entry>PAPER</entry></row><row><entry>Session
+        Label (if not specified by Print SCU)</entry><entry>Yes</entry><entry>print
+        job for CALLING_AET created DATE TIME</entry></row><row><entry>Orientation
+        (if not specified by Print SCU)</entry><entry>Yes</entry><entry>PORTRAIT</entry></row><row><entry>Supported
+        Display Formats</entry><entry>Yes</entry><entry><para>Orientation
+        PORTRAIT:<simplelist type="vert"><member>STANDARD\1,1</member><member>STANDARD\1,2</member><member>STANDARD\2,2</member><member>STANDARD\2,3</member><member>STANDARD\3,3</member><member>STANDARD\3,4</member><member>STANDARD\3,5</member><member>STANDARD\4,4</member><member>STANDARD\4,5</member><member>STANDARD\4,6</member><member>STANDARD\5,5</member><member>STANDARD\5,6</member><member>STANDARD\6,6</member></simplelist></para><para>Orientation
+        LANDSCAPE:<simplelist type="vert"><member>STANDARD\1,1</member><member>STANDARD\2,1</member><member>STANDARD\2,2</member><member>STANDARD\3,2</member><member>STANDARD\3,3</member><member>STANDARD\4,3</member><member>STANDARD\5,3</member><member>STANDARD\4,4</member><member>STANDARD\5,4</member><member>STANDARD\6,4</member><member>STANDARD\5,5</member><member>STANDARD\6,5</member><member>STANDARD\6,6</member></simplelist></para></entry></row><row><entry>Film
+        Size ID (if not specified by Print SCU)</entry><entry>Yes</entry><entry>A4</entry></row><row><entry>Supported
+        Film Size IDs</entry><entry>Yes</entry><entry><simplelist type="vert"><member>A4</member><member>A3</member><member>8INX10IN</member><member>8_5INX11IN</member><member>10INX12IN</member><member>10INX14IN</member><member>11INX14IN</member><member>11INX17IN</member><member>14INX14IN</member><member>14INX17IN</member><member>24CMX24CM</member><member>24CMX30CM</member></simplelist></entry></row><row><entry>Magnification
+        Type (if not specified by Print SCU)</entry><entry>Yes</entry><entry>BILINEAR</entry></row><row><entry>Supported
+        Magnification Types</entry><entry>Yes</entry><entry><simplelist
+        type="vert"><member>BILINEAR</member><member>REPLICATE</member><member>NONE</member></simplelist></entry></row><row><entry>Decimate
+        Crop Behavior (if not specified by Print SCU)</entry><entry>Yes</entry><entry>DECIMATE</entry></row><row><entry>Border
+        Density (if not specified by Print SCU)</entry><entry>Yes</entry><entry>WHITE</entry></row><row><entry>Trim
+        (if not specified by Print SCU)</entry><entry>Yes</entry><entry>true</entry></row><row><entry>Min
+        Density (if not specified by Print SCU)</entry><entry>Yes</entry><entry>0</entry></row><row><entry>Max
+        Density (if not specified by Print SCU)</entry><entry>Yes</entry><entry>160</entry></row><row><entry>Illumination
+        (if not specified by Print SCU)</entry><entry>Yes</entry><entry>150</entry></row><row><entry>Reflected
+        Ambient Light (if not specified by Print SCU)</entry><entry>Yes</entry><entry>0</entry></row><row><entry>Configuration
+        Information (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called
+        AET&#62; or IDENTITY</entry></row><row><entry>Supported Configuration
+        Information (= IDs of local P-LUTs)</entry><entry>Yes</entry><entry><simplelist
+        type="vert"><member>IDENTITY</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist></entry></row><row><entry>Annotation
+        Display Format (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called
+        AET&#62; or TITLE</entry></row><row><entry>Supported Annotation
+        Display Format IDs</entry><entry>Yes</entry><entry><simplelist
+        type="vert"><member>TITLE</member><member>NO_TITLE</member></simplelist></entry></row><row><entry>Minimal
+        spacing between Image Boxes on the page</entry><entry>Yes</entry><entry>2
+        mm</entry></row><row><entry>Resolution ID (if not specified by Print
+        SCU)</entry><entry>Yes</entry><entry>STANDARD</entry></row><row><entry>Supported
+        Resolution IDs</entry><entry>Yes</entry><entry><simplelist type="vert"><member>STANDARD:600x600dpi</member><member>HIGH:1200x1200dpi</member></simplelist></entry></row><row><entry>Semi-automatic
+        Calibration by evaluating scanned gray scale print out in calibration
+        folder</entry><entry>Yes</entry><entry>on</entry></row><row><entry>Density
+        measurements of the printed gray scale pattern. Only used for the case
+        of manually density measurement using a grayscale densitometer.</entry><entry>Yes</entry><entry>Must
+        be configured, if semi-automatic Calibration is not used.</entry></row></tbody></tgroup></table></para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>Media Storage</title>
+
+    <para>jPrint does not support Media Storage.</para>
+  </section>
+
+  <section>
+    <title>Support of Extended Character Sets</title>
+
+    <para>jPrint supports ISO_IR 100 (ISO 8859-1 Latin 1) as extended
+    character set.</para>
+  </section>
+
+  <section>
+    <title>Security</title>
+
+    <section>
+      <title>Security Profiles</title>
+
+      <para>jPrint can be configured to use secure DICOM communication in
+      conformance with the Basic TLS Secure Transport Connection Profile.</para>
+    </section>
+
+    <section>
+      <title>Association Level Security</title>
+
+      <para>jPrint can be configured to accept Association Requests from only
+      a limited list of Calling AE Titles and to check that the Association
+      requester specifies the correct Called AE Title.</para>
+
+      <para>At default configuration, Association requests with any Calling
+      AET and any Called AET will be accepted. But if no connected printer is
+      configured for the Called AET, only acceptance of the Presentation
+      Context for Verification SOP Class will be returned in the Association
+      Acceptance Response (A-ASSOCIATE AC).</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Annexes</title>
+
+    <section>
+      <title>Created IOD Instances</title>
+
+      <para>jPrint creates the following IOD types of instances: Image Boxes,
+      Annotation Boxes, Print Jobs, Printer, and Printer Configuration. The
+      attributes of the created IODs are described in <xref
+      linkend="s-sop-spec-conf" />.</para>
+    </section>
+
+    <section>
+      <title>Used Fields in IOD by Application</title>
+
+      <para>The usage of attributes received in the IODs sent by the Print SCU
+      is described in <xref linkend="s-sop-spec-conf" />.</para>
+    </section>
+
+    <section>
+      <title>Attribute Mapping</title>
+
+      <para>The following table is a mapping table of attributes that can be
+      set by different Print IODs. If more then one IOD is setting the same
+      element, then the value will be over-written by the IOD s value in the
+      order from left to right, such that the Printer Configuration (PC)
+      specific element values is in lowest order might be overwritten by any
+      other IOD.</para>
+
+      <table>
+        <title>jPrint Attribute Mapping</title>
+
+        <tgroup align="left" cols="6">
+          <colspec colwidth="200" />
+
+          <colspec align="center" colwidth="60" />
+
+          <colspec align="center" colwidth="15" />
+
+          <colspec align="center" colwidth="15" />
+
+          <colspec align="center" colwidth="15" />
+
+          <colspec align="center" colwidth="15" />
+
+          <thead>
+            <row>
+              <entry>Attribute Name</entry>
+
+              <entry>Tag</entry>
+
+              <entry>PC</entry>
+
+              <entry>FS</entry>
+
+              <entry>FB</entry>
+
+              <entry>IB</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>Medium Type</entry>
+
+              <entry>(2000,0030)</entry>
+
+              <entry>X</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Image Display Format</entry>
+
+              <entry>(2010,0010)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Annotation Display Format ID</entry>
+
+              <entry>(2010,0030)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Film Orientation</entry>
+
+              <entry>(2010,0040)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Film Size ID</entry>
+
+              <entry>(2010,0050)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Border Density</entry>
+
+              <entry>(2010,0100)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Trim</entry>
+
+              <entry>(2010,0140)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Illumination</entry>
+
+              <entry>(2010,015E)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Reflected Ambient Light</entry>
+
+              <entry>(2010,0160)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Requested Resolution ID</entry>
+
+              <entry>(2020,0050)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Magnification Type</entry>
+
+              <entry>(2010,0060)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry>X</entry>
+            </row>
+
+            <row>
+              <entry>Min Density</entry>
+
+              <entry>(2010,0120)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry>X</entry>
+            </row>
+
+            <row>
+              <entry>Max Density</entry>
+
+              <entry>(2010,0130)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry>X</entry>
+            </row>
+
+            <row>
+              <entry>Configuration Information</entry>
+
+              <entry>(2010,0150)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+
+              <entry>X</entry>
+            </row>
+
+            <row>
+              <entry>Requested Decimate/Crop Behavior</entry>
+
+              <entry>(2020,0040)</entry>
+
+              <entry>X</entry>
+
+              <entry></entry>
+
+              <entry></entry>
+
+              <entry>X</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>Print Management IODs Abbreviations:<variablelist><varlistentry><term>PC</term><listitem><para>Printer
+      Configuration</para></listitem></varlistentry><varlistentry><term>FS</term><listitem><para>Film
+      Session</para></listitem></varlistentry><varlistentry><term>FB</term><listitem><para>Film
+      Box</para></listitem></varlistentry><varlistentry><term>IB</term><listitem><para>Image
+      Box</para></listitem></varlistentry></variablelist></para>
+    </section>
+
+    <section>
+      <title>Coerced/Modified Fields</title>
+
+      <para>jPrint will truncate attribute values received from the Print
+      Composer (SCU) if the value length is longer than the maximum length
+      permitted by the attribute VR.</para>
+    </section>
+
+    <section>
+      <title>Data Dictionary</title>
+
+      <para>No private attributes are defined.</para>
+    </section>
+
+    <section>
+      <title>Controlled Terminology</title>
+
+      <para>jPrint is not using any Codes (SNOMED) or Controlled Terminology,
+      such as the use of the DICOM Content Mapping Resource (DCMR).</para>
+    </section>
+
+    <section>
+      <title>Gray Scale Standard Display Function</title>
+
+      <para>jPrint supports the Grayscale Standard Display Function (GSDF) as
+      described in PS 3.14, for the Printer Calibration and Hardcopy Image
+      Consistency.</para>
+    </section>
+
+    <section>
+      <title>Standard Extended/Specialized/Private SOPs</title>
+
+      <para>jPrint does not claim conformance to any Extended, Specialized or
+      Private SOP Classes.</para>
+    </section>
+
+    <section>
+      <title>Private Transfer Syntaxes</title>
+
+      <para>jPrint does not employ any Private Transfer Syntaxes.</para>
+    </section>
+  </section>
+</article>

@@ -1,5 +1,4 @@
-/*****************************************************************************
- *                                                                           *
+/*                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
@@ -17,10 +16,13 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
-
+ */
 package com.tiani.prnscp.scp;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -30,163 +32,341 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import org.jboss.logging.Logger;
 
 /**
- * <description>
+ *  <description>
  *
- * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @version $Revision$
- * @since November 14, 2002
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
+ * @created  November 14, 2002
+ * @version  $Revision$
  */
-class FilmSession {
-   
-   // Constants -----------------------------------------------------
-   private static final boolean TYPE1 = true;
-   
-   // Attributes ----------------------------------------------------
-   private final PrintScpService scp;
-   private final File dir;
-   private final String aet;
-   private final String uid;
-   private final Dataset session;
-   private final boolean color;
-   private final LinkedHashMap filmBoxes = new LinkedHashMap();
-   private String curFilmBoxUID = null;
-   private FilmBox curFilmBox = null;
-   
-   // Static --------------------------------------------------------
-   
-   // Constructors --------------------------------------------------
-   public FilmSession(PrintScpService scp, String aet, boolean color, String uid,
-         Dataset session, File dir, Command rspCmd)
-      throws DcmServiceException
-   {
-      this.scp = scp;
-      this.aet = aet;
-      this.color = color;// metaCUID.equals(UIDs.BasicColorPrintManagement);
-      this.uid = uid;
-      this.session = session;
-      this.dir = dir;
-      check(session, rspCmd);
-   }
-   
-   // Public --------------------------------------------------------
-   public String toString() {
-      return "FilmSession[uid=" + uid + ", " + filmBoxes.size() + " FilmBoxes]";
-   }      
-   
-   public String uid() {
-      return uid;
-   }   
+class FilmSession
+{
 
-   public File dir() {
-      return dir;
-   }   
-   
-   public Dataset getAttributes() {
-      return session;
-   }
-   
-   public boolean isColor() {
-      return color;
-   }
+    // Constants -----------------------------------------------------
 
-   public String getImageBoxCUID() {
-      return color 
-         ? UIDs.BasicColorImageBox 
-         : UIDs.BasicGrayscaleImageBox;
-   }
-   
-   public String getHardcopyCUID() {
-      return color 
-         ? UIDs.HardcopyColorImageStorage 
-         : UIDs.HardcopyGrayscaleImageStorage;
-   }
+    // Attributes ----------------------------------------------------
+    private final PrintScpService scp;
+    private final Logger log;
+    private final File dir;
+    private final String aet;
+    private final String uid;
+    private final Dataset session;
+    private final boolean color;
+    private final LinkedHashMap filmBoxes = new LinkedHashMap();
+    private String curFilmBoxUID = null;
+    private FilmBox curFilmBox = null;
 
-   public void updateAttributes(Dataset modification, Command rspCmd)
-      throws DcmServiceException
-   {
-      check(modification, rspCmd);
-      session.putAll(modification);
-   }
 
-   public void addFilmBox(String uid, FilmBox filmbox) {
-      if (filmBoxes.containsKey(uid)) {
-         throw new IllegalStateException();
-      }
-      this.curFilmBoxUID = uid;
-      this.curFilmBox = filmbox;
-      filmBoxes.put(uid, filmbox);
-   }
+    // Static --------------------------------------------------------
 
-   public String getCurrentFilmBoxUID() {
-      return curFilmBoxUID;
-   }   
+    // Constructors --------------------------------------------------
+    /**
+     *  Constructor for the FilmSession object
+     *
+     * @param  scp Description of the Parameter
+     * @param  aet Description of the Parameter
+     * @param  color Description of the Parameter
+     * @param  uid Description of the Parameter
+     * @param  session Description of the Parameter
+     * @param  dir Description of the Parameter
+     * @param  rspCmd Description of the Parameter
+     * @exception  DcmServiceException Description of the Exception
+     */
+    public FilmSession(PrintScpService scp, String aet, boolean color, String uid,
+            Dataset session, File dir, Command rspCmd)
+        throws DcmServiceException
+    {
+        this.scp = scp;
+        this.log = scp.getLog();
+        this.aet = aet;
+        this.color = color;
+        // metaCUID.equals(UIDs.BasicColorPrintManagement);
+        this.uid = uid;
+        this.session = session;
+        this.dir = dir;
+        check(session, rspCmd);
+    }
 
-   public FilmBox getCurrentFilmBox() {
-      return curFilmBox;
-   }   
 
-   public LinkedHashMap getFilmBoxes() {
-      return filmBoxes;
-   }   
-   
-   public boolean containsFilmBox(String uid) {
-      return filmBoxes.containsKey(uid);
-   }   
-   
-   public void setFilmBox(Dataset filmbox, Command rspCmd, HashMap pluts)
-      throws DcmServiceException
-   {
-      if (curFilmBox == null) {
-         throw new IllegalStateException();
-      }
-      curFilmBox.updateAttributes(filmbox, pluts, session);
-   }
-   
-   public void deleteFilmBox() {
-      if (curFilmBox == null) {
-         throw new IllegalStateException();
-      }
-      filmBoxes.remove(curFilmBoxUID);
-      curFilmBoxUID = null;
-      curFilmBox = null;
-   }
-      
-   // Private -------------------------------------------------------
-   private void check(Dataset ds, Command rsp)
-      throws DcmServiceException
-   {
-      if (!checkPrintPriority(ds.getString(Tags.PrintPriority))) {
-         rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
-      }
-      scp.checkAttributeValue(aet, "isSupportsMediumType",
-         ds, Tags.MediumType, !TYPE1);
-      scp.checkAttributeValue(aet, "isSupportsFilmDestination",
-         ds, Tags.FilmDestination, !TYPE1);
-      if (ds.getInt(Tags.MemoryAllocation, 0) != 0) {
-         rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
-      }      
-   }
-   
-   private boolean checkPrintPriority(String val) {
-      return val == null 
-         || "HIGH".equals(val)
-         || "LOW".equals(val)
-         || "MED".equals(val);
-   }
-   
+    // Public --------------------------------------------------------
+    /**
+     *  Description of the Method
+     *
+     * @return  Description of the Return Value
+     */
+    public String toString()
+    {
+        return "FilmSession[uid=" + uid + ", " + filmBoxes.size() + " FilmBoxes]";
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @return  Description of the Return Value
+     */
+    public String uid()
+    {
+        return uid;
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @return  Description of the Return Value
+     */
+    public File dir()
+    {
+        return dir;
+    }
+
+
+    /**
+     *  Gets the attributes attribute of the FilmSession object
+     *
+     * @return  The attributes value
+     */
+    public Dataset getAttributes()
+    {
+        return session;
+    }
+
+
+    /**
+     *  Gets the color attribute of the FilmSession object
+     *
+     * @return  The color value
+     */
+    public boolean isColor()
+    {
+        return color;
+    }
+
+
+    /**
+     *  Gets the imageBoxCUID attribute of the FilmSession object
+     *
+     * @return  The imageBoxCUID value
+     */
+    public String getImageBoxCUID()
+    {
+        return color
+                 ? UIDs.BasicColorImageBox
+                 : UIDs.BasicGrayscaleImageBox;
+    }
+
+
+    /**
+     *  Gets the hardcopyCUID attribute of the FilmSession object
+     *
+     * @return  The hardcopyCUID value
+     */
+    public String getHardcopyCUID()
+    {
+        return color
+                 ? UIDs.HardcopyColorImageStorage
+                 : UIDs.HardcopyGrayscaleImageStorage;
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  modification Description of the Parameter
+     * @param  rspCmd Description of the Parameter
+     * @exception  DcmServiceException Description of the Exception
+     */
+    public void updateAttributes(Dataset modification, Command rspCmd)
+        throws DcmServiceException
+    {
+        check(modification, rspCmd);
+        session.putAll(modification);
+    }
+
+
+    /**
+     *  Adds a feature to the FilmBox attribute of the FilmSession object
+     *
+     * @param  uid The feature to be added to the FilmBox attribute
+     * @param  filmbox The feature to be added to the FilmBox attribute
+     */
+    public void addFilmBox(String uid, FilmBox filmbox)
+    {
+        if (filmBoxes.containsKey(uid)) {
+            throw new IllegalStateException();
+        }
+        this.curFilmBoxUID = uid;
+        this.curFilmBox = filmbox;
+        filmBoxes.put(uid, filmbox);
+    }
+
+
+    /**
+     *  Gets the currentFilmBoxUID attribute of the FilmSession object
+     *
+     * @return  The currentFilmBoxUID value
+     */
+    public String getCurrentFilmBoxUID()
+    {
+        return curFilmBoxUID;
+    }
+
+
+    /**
+     *  Gets the currentFilmBox attribute of the FilmSession object
+     *
+     * @return  The currentFilmBox value
+     */
+    public FilmBox getCurrentFilmBox()
+    {
+        return curFilmBox;
+    }
+
+
+    /**
+     *  Gets the filmBoxes attribute of the FilmSession object
+     *
+     * @return  The filmBoxes value
+     */
+    public LinkedHashMap getFilmBoxes()
+    {
+        return filmBoxes;
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  uid Description of the Parameter
+     * @return  Description of the Return Value
+     */
+    public boolean containsFilmBox(String uid)
+    {
+        return filmBoxes.containsKey(uid);
+    }
+
+
+    /**
+     *  Sets the filmBox attribute of the FilmSession object
+     *
+     * @param  filmbox The new filmBox value
+     * @param  rspCmd The new filmBox value
+     * @param  pluts The new filmBox value
+     * @exception  DcmServiceException Description of the Exception
+     */
+    public void setFilmBox(Dataset filmbox, Command rspCmd, HashMap pluts)
+        throws DcmServiceException
+    {
+        if (curFilmBox == null) {
+            throw new IllegalStateException();
+        }
+        curFilmBox.updateAttributes(filmbox, pluts, session);
+    }
+
+
+    /**  Description of the Method */
+    public void deleteFilmBox()
+    {
+        if (curFilmBox == null) {
+            throw new IllegalStateException();
+        }
+        filmBoxes.remove(curFilmBoxUID);
+        curFilmBoxUID = null;
+        curFilmBox = null;
+    }
+
+
+    // Private -------------------------------------------------------
+    private void check(Dataset ds, Command rsp)
+        throws DcmServiceException
+    {
+        try {
+            checkPriority(ds, rsp);
+            checkMediumType(ds, rsp);
+            checkNumberOfCopies(ds, rsp);
+            checkMemoryAllocation(ds, rsp);
+            checkSessionLabel(ds, rsp);
+        } catch (Exception e) {
+            log.error("Processing Failure:", e);
+            throw new DcmServiceException(Status.ProcessingFailure);
+        }
+    }
+
+
+    private void checkPriority(Dataset ds, Command rsp)
+    {
+        String s = ds.getString(Tags.PrintPriority);
+        if (s == null) {
+            return;
+        }
+        if ("MED".equals(s)
+                 || "HIGH".equals(s)
+                 || "LOW".equals(s)) {
+            return;
+        }
+        log.warn("Priority Value Out Of Range: " + s);
+        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        ds.remove(Tags.PrintPriority);
+    }
+
+
+    private void checkMediumType(Dataset ds, Command rsp)
+        throws Exception
+    {
+        String s = ds.getString(Tags.MediumType);
+        if (s == null) {
+            return;
+        }
+        if (scp.isPrinter(aet, "isSupportsMediumType", s)) {
+            return;
+        }
+        log.warn("Medium Type Value Out Of Range: " + s);
+        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        ds.remove(Tags.MediumType);
+    }
+
+
+    private void checkNumberOfCopies(Dataset ds, Command rsp)
+        throws Exception
+    {
+        Integer copies = ds.getInteger(Tags.NumberOfCopies);
+        if (copies == null) {
+            return;
+        }
+        int i = copies.intValue();
+        if (i > 0 && i <= scp.getIntPrinterAttribute(aet, "MaxNumberOfCopies")) {
+            return;
+        }
+        log.warn("Number Of Copies Value Out Of Range: " + i);
+        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        ds.remove(Tags.NumberOfCopies);
+    }
+
+
+    private void checkMemoryAllocation(Dataset ds, Command rsp)
+    {
+        if (ds.vm(Tags.MemoryAllocation) > 0) {
+            log.warn("Memory Allocation Not Supported");
+            rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
+            ds.remove(Tags.MemoryAllocation);
+        }
+    }
+
+    private void checkSessionLabel(Dataset ds, Command rsp)
+    {
+        String s = ds.getString(Tags.FilmSessionLabel);
+        if (s == null) {
+            return;
+        }
+        if (s.length() <= 64) {
+            return;
+        }
+        log.warn("Session Label Value Out Of Range: " + s);
+        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        ds.remove(Tags.FilmSessionLabel);
+    }
 }
+

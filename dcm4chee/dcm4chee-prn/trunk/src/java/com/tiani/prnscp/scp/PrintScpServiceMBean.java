@@ -1,5 +1,4 @@
-/*****************************************************************************
- *                                                                           *
+/*
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
@@ -17,93 +16,142 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
-
+ */
 package com.tiani.prnscp.scp;
+import java.security.cert.X509Certificate;
+import javax.management.ObjectName;
 
 import org.dcm4che.net.AcceptorPolicy;
 import org.jboss.system.ServiceMBean;
-import javax.management.ObjectName;
-import java.security.cert.X509Certificate;
 
 /**
- * <description>
+ *  <description>
  *
- * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @version $Revision$
- * @since November 3, 2002
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
+ * @created  November 3, 2002
+ * @version  $Revision$
  */
-public interface PrintScpServiceMBean extends ServiceMBean {
+public interface PrintScpServiceMBean extends ServiceMBean
+{
 
-   String SPOOL_SESSION_LOCK_SUFFIX = "LOCK";
-   
-   String SPOOL_HARDCOPY_DIR_SUFFIX = "HC";
+    String SPOOL_SESSION_LOCK_SUFFIX = "LOCK";
 
-   String SPOOL_JOB_DIR_SUFFIX = "JOBS";
-   
-   /** Getter for property dcmServer.
-    * @return Value of property dcmServer.
-    */
-   ObjectName getDcmServer();
-   
-   /** Setter for property dcmServer.
-    * @param dcmServer New value of property dcmServer.
-    */
-   void setDcmServer(ObjectName dcmServer);
-   
-   /** Getter for property spoolDirectory.
-    * @return Value of property spoolDirectory.
-    */
-   String getSpoolDirectory();
-   
-   /** Setter for property spoolDirectory.
-    * @param spoolDirPath New value of property spoolDirectory.
-    */
-   void setSpoolDirectory(String spoolDirectory);
-   
-   /** Getter for property keepSpoolFiles.
-    * @return Value of property keepSpoolFiles.
-    */
-   public boolean isKeepSpoolFiles();
-   
-   /** Setter for property keepSpoolFiles.
-    * @param keepSpoolFiles New value of property keepSpoolFiles.
-    */
-   public void setKeepSpoolFiles(boolean keepSpoolFiles);
-   
-   /** Getter for property numCreatedJobs.
-    * @return Value of property numCreatedJobs.
-    */
-   public int getNumCreatedJobs();
-      
-   /** Getter for property numStoredPrints.
-    * @return Value of property numStoredPrints.
-    */
-   public int getNumStoredPrints();   
+    String SPOOL_HARDCOPY_DIR_SUFFIX = "HC";
 
-   /** Getter for property license.
-    * @return Value of property license.
-    */
-   public X509Certificate getLicense();
-   
-   public String showLicense();
-      
-   public void putAcceptorPolicy(String aet, AcceptorPolicy policy);
-   
-   public void onJobStartPrinting(String job);
-      
-   public void onJobFailed(String job);
+    String SPOOL_JOB_DIR_SUFFIX = "JOBS";
 
-   public void onJobDone(String job);
-   
+
+    /**
+     *  Getter for property dcmServer.
+     *
+     * @return  Value of property dcmServer.
+     */
+    ObjectName getDcmServer();
+
+
+    /**
+     *  Setter for property dcmServer.
+     *
+     * @param  dcmServer New value of property dcmServer.
+     */
+    void setDcmServer(ObjectName dcmServer);
+
+
+    /**
+     *  Getter for property spoolDirectory.
+     *
+     * @return  Value of property spoolDirectory.
+     */
+    String getSpoolDirectory();
+
+
+    /**
+     *  Setter for property spoolDirectory.
+     *
+     * @param  spoolDirectory The new spoolDirectory value
+     */
+    void setSpoolDirectory(String spoolDirectory);
+
+
+    /**
+     *  Getter for property keepSpoolFiles.
+     *
+     * @return  Value of property keepSpoolFiles.
+     */
+    public boolean isKeepSpoolFiles();
+
+
+    /**
+     *  Setter for property keepSpoolFiles.
+     *
+     * @param  keepSpoolFiles New value of property keepSpoolFiles.
+     */
+    public void setKeepSpoolFiles(boolean keepSpoolFiles);
+
+
+    /**
+     *  Getter for property numCreatedJobs.
+     *
+     * @return  Value of property numCreatedJobs.
+     */
+    public int getNumCreatedJobs();
+
+
+    /**
+     *  Getter for property numStoredPrints.
+     *
+     * @return  Value of property numStoredPrints.
+     */
+    public int getNumStoredPrints();
+
+
+    /**
+     *  Getter for property license.
+     *
+     * @return  Value of property license.
+     */
+    public X509Certificate getLicense();
+
+
+    /**
+     *  Description of the Method
+     *
+     * @return  Description of the Return Value
+     */
+    public String showLicense();
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  aet Description of the Parameter
+     * @param  policy Description of the Parameter
+     */
+    public void putAcceptorPolicy(String aet, AcceptorPolicy policy);
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  job Description of the Parameter
+     */
+    public void onJobStartPrinting(String job);
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  job Description of the Parameter
+     */
+    public void onJobFailed(String job);
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  job Description of the Parameter
+     */
+    public void onJobDone(String job);
+
 }
+

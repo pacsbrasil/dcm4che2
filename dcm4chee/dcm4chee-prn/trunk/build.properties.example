@@ -1,14 +1,14 @@
-# set property "jboss.dist" to the path of your jboss installation directory
-jboss.dist=C:\jboss-3.0.4
+# set property "jboss.dist" to the path of your installation directory
+# of JBoss [http://sourceforge.org/projects/jboss]
+jboss.dist=C:/jboss-3.0.4
 
-# specifies jboss server configuration. ant deploy will copy generated
-# components to the conf, lib and deploy sub directory of
-# ${jboss.dist}/server/${jboss.conf}
-jboss.conf=default
+# set property "docbook-xsl.dist" to the path of your installation directory
+# of DocBook XSL Stylesheets [http://sourceforge.net/projects/docbook]
+docbook-xsl.dist=C:/docbook-xsl-1.60.1
 
-# set property "docbook-xsl.dist" to the path of your 
-# installation directory of DocBook XSL Stylesheets
-docbook-xsl.dist=/etc/sgml/docbook-xsl
+# set property "fop.dist" to the path of your installation directory 
+# of Apache FOP [http://xml.apache.org/fop/]
+fop.dist=C:/fop-0.20.4
 
 # set property "dasho.jar" to your file path of DashoPro.jar
 # for obfuscation of commercial prnscp.jar module.

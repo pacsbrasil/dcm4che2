@@ -1,6 +1,5 @@
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
+/*
+ *  Copyright (c) 2003 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -17,24 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
-
-/**
- * <description>
- *
- * @see <related>
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @version $Revision$
- * @since January 10, 2003
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
  */
 package com.tiani.prnscp.client;
 
@@ -42,13 +23,30 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.print.DocFlavor;
 
-public class GetAvailablePrinters {
-   public static void main(String[] args) throws Exception {
-      PrintService[] services =  PrintServiceLookup.lookupPrintServices(
-         DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
-      System.out.println("Available Printers:");
-      for (int i = 0; i < services.length; ++i) {
-         System.out.println(services[i].getName());
-      }
-   }
+/**
+ *  Description of the Class
+ *
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @created  January 22, 2003
+ * @version  $Revision$
+ */
+public class GetAvailablePrinters
+{
+    /**
+     *  The main program for the GetAvailablePrinters class
+     *
+     * @param  args The command line arguments
+     * @exception  Exception Description of the Exception
+     */
+    public static void main(String[] args)
+        throws Exception
+    {
+        PrintService[] services = PrintServiceLookup.lookupPrintServices(
+                DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);
+        System.out.println("Available Printers:");
+        for (int i = 0; i < services.length; ++i) {
+            System.out.println(services[i].getName());
+        }
+    }
 }
+

@@ -1,5 +1,4 @@
-/*****************************************************************************
- *                                                                           *
+/*
  *  Copyright (c) 2003 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
@@ -17,68 +16,78 @@
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
-
+ */
 package com.tiani.prnscp.print;
 
 import javax.print.attribute.EnumSyntax;
 
 /**
- * <description>
+ *  <description>
  *
- * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @version $Revision$
- * @since February 6, 2003
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
+ * @created  February 6, 2003
+ * @version  $Revision$
  */
-public class PrinterStatus extends EnumSyntax {
-   
-   public static final PrinterStatus NORMAL = new PrinterStatus(0);
-   public static final PrinterStatus WARNING = new PrinterStatus(1);
-   public static final PrinterStatus FAILURE = new PrinterStatus(2);
-   
-   // Constructors --------------------------------------------------
-   protected PrinterStatus(int value) {
-      super(value);
-   }
-   
-   // Public --------------------------------------------------------
-   
-   // EnumSyntax overrides ---------------------------------------------------
-    private static final String[] myStringTable = {
-	"NORMAL",
-	"WARNING",
-	"FAILURE"
-    };
+public class PrinterStatus extends EnumSyntax
+{
 
-    private static final PrinterStatus[] myEnumValueTable = {
-	NORMAL,
-	WARNING,
-	FAILURE
-    };
+    /**  Description of the Field */
+    public final static PrinterStatus NORMAL = new PrinterStatus(0);
+    /**  Description of the Field */
+    public final static PrinterStatus WARNING = new PrinterStatus(1);
+    /**  Description of the Field */
+    public final static PrinterStatus FAILURE = new PrinterStatus(2);
 
+
+    // Constructors --------------------------------------------------
     /**
-     * Returns the string table for class PrinterStatus.
+     *  Constructor for the PrinterStatus object
+     *
+     * @param  value Description of the Parameter
      */
-    protected String[] getStringTable() {
-	return myStringTable;
+    protected PrinterStatus(int value)
+    {
+        super(value);
     }
 
+
+    // Public --------------------------------------------------------
+
+    // EnumSyntax overrides ---------------------------------------------------
+    private final static String[] myStringTable = {
+            "NORMAL",
+            "WARNING",
+            "FAILURE"
+            };
+
+    private final static PrinterStatus[] myEnumValueTable = {
+            NORMAL,
+            WARNING,
+            FAILURE
+            };
+
+
     /**
-     * Returns the enumeration value table for class PrinterStatus.
+     *  Returns the string table for class PrinterStatus.
+     *
+     * @return  The stringTable value
      */
-    protected EnumSyntax[] getEnumValueTable() {
-	return myEnumValueTable;
+    protected String[] getStringTable()
+    {
+        return myStringTable;
     }
-   
-   // Y implementation ----------------------------------------------
+
+
+    /**
+     *  Returns the enumeration value table for class PrinterStatus.
+     *
+     * @return  The enumValueTable value
+     */
+    protected EnumSyntax[] getEnumValueTable()
+    {
+        return myEnumValueTable;
+    }
+
+    // Y implementation ----------------------------------------------
 }
+

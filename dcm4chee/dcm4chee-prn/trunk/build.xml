@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project basedir="." default="main" name="prnscp">
+<project basedir="." default="main" name="jprint">
 
   <!-- Allow override from local properties file -->
   <property file="build.properties" />
 
-  <property name="name" value="prnscp"/>
-  <property name="version" value="1.1.2"/>
+  <property name="name" value="jprint"/>
+  <property name="version" value="1.2.0"/>
   <property name="javac.debug" value="on"/>
   <property name="javac.optimize" value="off"/>
 
@@ -21,8 +21,18 @@
   <property name="jboss.server.lib" value="${jboss.server}/lib"/>
   <property name="jboss.server.conf" value="${jboss.server}/conf"/>
 
+  <!-- Override with your docbook-xsl dist location -->
+  <property name="docbook-xsl.dist" value="${user.home}/docbook-xsl-1.60.1"/>
+  <property name="docbook-xsl.fo.dir" value="${docbook-xsl.dist}/fo"/>
+
+  <!-- Override with your Apache FOP dist location -->
+  <property name="fop.dist" value="${user.home}/fop-0.20.4"/>
+  <property name="fop.jar" value="${fop.dist}/build/fop.jar"/>
+  
   <property name="doc.dir" value="${basedir}/doc"/>
   <property name="doc.xml" value="${doc.dir}/xml"/>
+  <property name="doc.xsl" value="${doc.dir}/xsl"/>
+  <property name="doc.img" value="${doc.dir}/img"/>
   <property name="lib.dir" value="${basedir}/lib"/>
   <property name="src.dir" value="${basedir}/src"/>
   <property name="src.java" value="${src.dir}/java"/>
@@ -39,6 +49,13 @@
   <property name="dist.name" value="${name}-${version}"/>
   <property name="dist.dir" value="${build.dir}/${dist.name}"/>
 
+  <path id="fop.path">
+    <pathelement location="${fop.jar}"/>
+    <fileset dir="${fop.dist}/lib">
+        <include name="*.jar"/>
+    </fileset>
+  </path>
+
   <path id="build.path">
     <pathelement location="${lib.dir}/dcm4che.jar"/>
     <pathelement location="${jboss.bin}/run.jar"/>
@@ -50,14 +67,16 @@
     <pathelement location="${build.classes.dir}"/>
   </path>
 
-  <!-- Validate the jboss.dist value by looking for a the lib/jboss-system.jar jar -->
-  <target name="validate">
+  <target name="set_classpath_id">
     <available property="classpath_id"
                value="build.path"
                file="${jboss.lib}/jboss-system.jar" />
+    <available property="fop_classpath_id"
+               value="fop.path"
+               file="${fop.jar}" />
   </target>
 
-  <target name="fail_if_not_valid" unless="classpath_id">
+  <target name="fail_unless_classpath_id" unless="classpath_id">
     <fail message="jboss.dist=${jboss.dist} is not a valid JBoss dist directory"/>
   </target>
 
@@ -66,11 +85,13 @@
     <cvs command="update -APd"/>
   </target>
 
-  <target name="init" depends="validate,fail_if_not_valid">
+  <target name="init" depends="set_classpath_id,fail_unless_classpath_id">
     <echo message="user.home = ${user.home}"/>
     <echo message="java.home = ${java.home}"/>
     <echo message="ant.home = ${ant.home}"/>
     <echo message="jboss.dist = ${jboss.dist}"/>
+    <echo message="fop.dist = ${fop.dist}"/>
+    <echo message="docbook-xsl.dist = ${docbook-xsl.dist}"/>
     <echo message="java.class.path = ${java.class.path}"/>
     <echo message="dasho.jar = ${dasho.jar}"/>
     <tstamp/>
@@ -169,19 +190,34 @@
 
   <target name="print-grayscale-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/print-grayscale.jar"
-         manifest="${src.res}/META-INF/print-grayscale.mf">
-      <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/client/PrintGrayscaleWithLinDDL*"
-      />
+    <jar jarfile="${build.bin.dir}/print-grayscale.jar">
+        <manifest>
+            <attribute
+                name="Main-Class"
+                value="com.tiani.prnscp.client.PrintGrayscaleWithLinDDL"
+            />
+            <attribute
+                name="Class-Path"
+                value="../client/jnp-client.jar ../client/jmx-rmi-connector-client.jar ../lib/jboss-common.jar ../lib/jboss-jmx.jar ../server/default/lib/log4j.jar"
+            />
+        </manifest>
+        <fileset
+           dir="${build.classes.dir}"
+           includes="com/tiani/prnscp/client/PrintGrayscaleWithLinDDL*"
+        />
     </jar>
   </target>
   
   <target name="list-printers-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/list-printers.jar"
-         manifest="${src.res}/META-INF/list-printers.mf">
-      <fileset dir="${build.classes.dir}"
+    <jar jarfile="${build.bin.dir}/list-printers.jar">
+        <manifest>
+            <attribute
+                name="Main-Class"
+                value="com.tiani.prnscp.client.GetAvailablePrinters"
+            />
+        </manifest>
+        <fileset dir="${build.classes.dir}"
                includes="com/tiani/prnscp/client/GetAvailablePrinters*"
       />
     </jar>
@@ -189,21 +225,35 @@
   
   <target name="plut-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/plut.jar"
-         manifest="${src.res}/META-INF/plut.mf">
-      <fileset dir="${build.classes.dir}"
+    <jar jarfile="${build.bin.dir}/plut.jar">
+        <manifest>
+            <attribute
+                name="Main-Class"
+                value="com.tiani.prnscp.client.PLut"
+            />
+            <attribute
+                name="Class-Path"
+                value="../lib/getopt.jar ../server/default/lib/dcm4che.jar ../server/default/lib/log4j.jar"
+            />
+        </manifest>
+        <fileset dir="${build.classes.dir}"
                includes="com/tiani/prnscp/client/PLut*"
-      />
+        />
     </jar>
   </target>
 
   <target name="localhost-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/localhost.jar"
-         manifest="${src.res}/META-INF/localhost.mf">
-      <fileset dir="${build.classes.dir}"
+    <jar jarfile="${build.bin.dir}/localhost.jar">
+        <manifest>
+            <attribute
+                name="Main-Class"
+                value="com.tiani.prnscp.client.GetLocalHost"
+            />
+        </manifest>
+        <fileset dir="${build.classes.dir}"
                includes="com/tiani/prnscp/client/GetLocalHost*"
-      />
+        />
     </jar>
   </target>
   
@@ -281,42 +331,44 @@
     <delete file="${jboss.server.deploy}/prnscp.sar" />
     <delete file="${jboss.server.deploy}/dcmsrv.sar" />
   </target>           
-
-  <target name="unpack-docbook-dtd">
-    <mkdir dir="${doc.dir}/dtd"/>
-    <unzip src="${doc.dir}/docbook-xml-4.2.zip" dest="${doc.dir}/dtd"/>
-  </target>
-  
-  <target name="unpack-docbook-xsl"
-          depends="check-docbook-xsl"
-          unless="docbook-xsl.present">
-    <unzip src="${doc.dir}/docbook-xsl-1.60.1.zip" dest="${doc.dir}"/>
-    <move todir="${doc.dir}/xsl">
-      <fileset dir="${doc.dir}/docbook-xsl-1.60.1"/>
-    </move>
-  </target>
     
-  <target name="check-docbook-xsl">
-    <available file="${doc.dir}/xsl/html/docbook.xsl"
+  <target name="fail_unless_docbook_xsl_present" unless="docbook-xsl.present">
+    <fail message="docbook-xsl.dist=${docbook-xsl.dist} is not a valid docbook-xsl dist directory"/>
+  </target>
+
+ <target name="check_docbook_xsl">
+    <available file="${docbook-xsl.fo.dir}/docbook.xsl"
                type="file"
                property="docbook-xsl.present"
     />
-  </target>  
+    <ant target="fail_unless_docbook_xsl_present"/>
+  </target>
+   
+  <target name="doc" if="fop_classpath_id">
+    <uptodate property="cs_pdf_uptodate"
+            srcfile="${doc.xml}/jprint-cs.xml"
+            targetfile="${build.doc.dir}/jprint-cs.pdf"/>
+    <ant target="gen_cs_pdf"/>
+  </target>
+
+  <target name="gen_cs_pdf" depends="check_docbook_xsl" unless="cs_pdf_uptodate">
+    <mkdir dir="${build.doc.dir}"/>
+    <copy file="${doc.img}/draft.gif" todir="${docbook-xsl.fo.dir}"/>
+    <copy file="${doc.xsl}/fo/jprint-cs.xsl" todir="${docbook-xsl.fo.dir}">
+        <filterset>
+          <filter token="DRAFT_IMG_URI" value="file://${docbook-xsl.fo.dir}/draft.gif"/>
+        </filterset>
+    </copy>
+    <java classname="org.apache.fop.apps.Fop"
+        classpathref="${fop_classpath_id}"
+        fork="yes">
+        <arg line="-xml ${doc.xml}/jprint-cs.xml"/>
+        <arg line="-xsl ${docbook-xsl.fo.dir}/jprint-cs.xsl"/>
+        <arg line="-pdf ${build.doc.dir}/jprint-cs.pdf"/>
+    </java>
+  </target>
   
-  <target name="doc" depends="unpack-docbook-dtd, unpack-docbook-xsl">
-    <style in="${doc.xml}/readme.xml"
-           out="${build.doc.dir}/readme.html"
-           style="${doc.dir}/xsl/html/docbook.xsl">
-        <outputproperty name="indent" value="yes"/>
-    </style>
-    <style in="${doc.xml}/cs-template.docbook.xml"
-           out="${build.doc.dir}/cs-template.docbook.html"
-           style="${doc.dir}/xsl/xhtml/docbook.xsl">
-    <outputproperty name="indent" value="yes"/>
-    </style>
-  </target>           
-  
-  <target name="release" depends="build">
+  <target name="release" depends="build, doc">
     <mkdir dir="${dist.dir}/server/default"/>
     <copy todir="${dist.dir}">
       <fileset dir="${jboss.dist}">
@@ -338,6 +390,7 @@
       </fileset>
       <fileset dir="${build.dir}">
         <include name="bin/*"/>
+        <include name="doc/*"/>
       </fileset>
     </copy>
     <copy todir="${dist.dir}">

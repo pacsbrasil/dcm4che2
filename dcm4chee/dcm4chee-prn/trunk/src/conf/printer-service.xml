@@ -13,12 +13,11 @@
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
   <mbean code="com.tiani.prnscp.print.PrinterService" 
-         name="dcm4chex:service=Printer,aet=TIANI_PRINT">
-    <depends optional-attribute-name="PrintSCP">dcm4chex:service=PrintSCP</depends>
+         name="dcm4chex:service=Printer,calledAET=TIANI_PRINT">
+    <depends optional-attribute-name="PrintSCP">dcm4chex:service=jPrint</depends>
          
     <!--
     Specifies name of the printer used by the system.
-    Printer Name
     -->
     <attribute name="PrinterName">MINOLTA</attribute>
     
@@ -84,18 +83,33 @@
     <attribute name="SupportsAnnotationBox">true</attribute>
     
     <!--
+    Defines Date Format used in Annotations
+    -->
+    <attribute name="DateFormat">yyyy-MM-dd</attribute>
+
+    <!--
+    Defines Time Format used in Annotations
+    -->
+    <attribute name="TimeFormat">hh:mm:ss</attribute>
+    
+    <!--
+    Defines Maximal Number of Copies accepted by the Print SCP.
+    -->
+    <attribute name="MaxNumberOfCopies">99</attribute>
+    
+    <!--
     Medium Type identifiers supported by the printer for the Basic Film Session.
     Multiple values can be specified, must be separated by '\' characters.
     The first specified value is used as the default.
     -->
     <attribute name="MediumType">PAPER</attribute>
-    
+
     <!--
-    Film Destination identifiers supported by the Print SCP for the Basic 
-    Film Session. Multiple values can be specified, must be separated by '\' 
-    characters.  The first specified value is used as the default.
+    Defines default Session Label that is used when the Print SCU does not 
+    specify a Session Label. $CALLING_AET$ $DATE$ $TIME$ will be replaced by
+    current values.
     -->
-    <attribute name="FilmDestination">BIN_1</attribute>
+    <attribute name="SessionLabel">print job for $CALLING_AET$ created $DATE$ $TIME$</attribute>
     
     <!--
     Specifies all STANDARD\C,R image display formats accepted by the Print SCP
@@ -273,7 +287,7 @@
     Basic Film Box. Multiple values can be specified, must be separated by 
     '\' characters. The first specified value is used as the default.
     -->
-    <attribute name="ResolutionID">STANDARD:600x600\HIGH:600x600</attribute>
+    <attribute name="ResolutionID">STANDARD:600x600\HIGH:1200x1200</attribute>
     
     <!--
     Specifies directory with contains configuration files for supported
@@ -325,7 +339,7 @@
     <!--
     Density mesurements of the printed gray scale pattern. Only used for the
     case of manuell density mesurement using a grayscale densitometer.
-    Not needed, if semi-automatic calibration by scanned  gray scale printouts
+    Not effective, if semi-automatic calibration by scanned  gray scale printouts
     is used. 
     -->    
     <attribute name="GrayscaleODsAsText">
@@ -367,19 +381,19 @@
     Date [YYYYMMDD] of the density mesurements of the printed gray scale
     pattern specified in attribute GrayscaleOD.
     Only used in the case of manuell density mesurement using a grayscale
-    densitometer. Not needed, if semi-automatic calibration by scanned 
+    densitometer. Not effective, if semi-automatic calibration by scanned 
     gray scale printouts is used. 
     -->    
-    <attribute name="DateOfLastCalibration">20030210</attribute>
+    <attribute name="DateOfLastCalibration">19700101</attribute>
 
     <!--
     Time [HHmm[ss]] of the density mesurements of the printed gray scale
     pattern specified in attribute GrayscaleOD.
     Only used in the case of manuell density mesurement using a grayscale
-    densitometer. Not needed, if semi-automatic calibration by scanned 
+    densitometer. Not effective, if semi-automatic calibration by scanned 
     gray scale printouts is used. 
     -->    
-    <attribute name="TimeOfLastCalibration">1230</attribute>
+    <attribute name="TimeOfLastCalibration">1200</attribute>
 
     <!--
     Specifies directory with contains scanned reference gray step file
@@ -403,7 +417,7 @@
     <attribute name="AutoCalibration">true</attribute>
                             
     <!--
-    Specifies (measured) density values of scanned reference gray step
+    Specifies (measured) density values of scanned reference gray scale page
     refgrayscale.jpg in calibration directoy (s. property "CalibrationDir")
     used for semi-automatic calibration. Need not be modified as long the 
     delivered reference gray step pattern is used: It has to be scanned and
