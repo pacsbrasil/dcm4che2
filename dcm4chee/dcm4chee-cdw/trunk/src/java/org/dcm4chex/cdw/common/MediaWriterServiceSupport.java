@@ -21,6 +21,7 @@ import javax.management.ObjectName;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.Executer;
+import org.dcm4che.util.MD5Utils;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -325,7 +326,7 @@ public abstract class MediaWriterServiceSupport extends
                 }
             }
             if (mount) mount();
-            if (!MD5Utils.verify(driveDir, fsDir, log)) { throw new MediaCreationException(
+            if (!MD5Utils.verify(driveDir, fsDir)) { throw new MediaCreationException(
                     ExecutionStatusInfo.PROC_FAILURE, "Verification failed!"); }
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,

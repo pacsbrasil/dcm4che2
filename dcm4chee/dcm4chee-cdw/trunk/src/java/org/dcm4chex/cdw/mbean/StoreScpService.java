@@ -35,7 +35,7 @@ import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4chex.cdw.common.MD5Utils;
+import org.dcm4che.util.MD5Utils;
 
 /**
  * @author gunter.zeilinter@tiani.com
