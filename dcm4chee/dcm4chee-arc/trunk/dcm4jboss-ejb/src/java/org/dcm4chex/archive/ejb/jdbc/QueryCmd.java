@@ -35,7 +35,7 @@ public abstract class QueryCmd extends BaseCmd {
             "IMAGE"};
 
     private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
-            "OFFLINE"};
+            "OFFLINE", "UNAVAILABLE"};
 
     public static QueryCmd create(Dataset keys)
             throws SQLException {
