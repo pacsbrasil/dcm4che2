@@ -41,18 +41,20 @@ public class MPPSEmulatorService extends TimerSupport implements
 
     private static final int[] MPPS_CREATE_TAGS = { Tags.SpecificCharacterSet,
             Tags.SOPInstanceUID, Tags.Modality, Tags.ProcedureCodeSeq,
-            Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
-            Tags.PatientBirthDate, Tags.PatientSex, Tags.PerformedStationAET,
-            Tags.PerformedStationName, Tags.PPSStartDate, Tags.PPSStartTime,
-            Tags.PPSEndDate, Tags.PPSEndTime, Tags.PPSStatus, Tags.PPSID,
+            Tags.RefPatientSeq, Tags.PatientName, Tags.PatientID,
+            Tags.IssuerOfPatientID, Tags.PatientBirthDate, Tags.PatientSex,
+            Tags.PerformedStationAET, Tags.PerformedStationName,
+            Tags.PPSStartDate, Tags.PPSStartTime, Tags.PPSEndDate,
+            Tags.PPSEndTime, Tags.PPSStatus, Tags.PPSID,
             Tags.PPSDescription, Tags.PerformedProcedureTypeDescription,
             Tags.PerformedProtocolCodeSeq, Tags.ScheduledStepAttributesSeq, };
 
     private static final int[] MPPS_SET_TAGS = { Tags.SpecificCharacterSet,
-            Tags.SOPInstanceUID, Tags.PPSStatus, Tags.PerformedSeriesSeq, };
+            Tags.SOPInstanceUID, Tags.PPSEndDate, Tags.PPSEndTime,
+            Tags.PPSStatus, Tags.PerformedSeriesSeq, };
     
     private static final int[] MWL_TAGS = {
-            Tags.AccessionNumber, Tags.StudyInstanceUID,
+            Tags.AccessionNumber, Tags.RefStudySeq, Tags.StudyInstanceUID,
             Tags.RequestedProcedureDescription, Tags.RequestedProcedureID, 
             Tags.PlacerOrderNumber, Tags.FillerOrderNumber         
     };
@@ -99,7 +101,7 @@ public class MPPSEmulatorService extends TimerSupport implements
         this.calledAET = calledAET;
     }
     
-    public final String getStationAETsWithDelays() {
+    public final String getStationAETsWithDelay() {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < stationAETs.length; i++) {
             sb.append(stationAETs[i]);
@@ -149,7 +151,8 @@ public class MPPSEmulatorService extends TimerSupport implements
     }
 
     public int emulateMPPS() throws Exception {
-        if (stationAETs == null)
+        log.info("Check for received series without MPPS");
+        if (stationAETs.length == 0)
             return 0;
         int num = 0;
         MPPSEmulator mppsEmulator = getMPPSEmulatorHome().create();
@@ -158,6 +161,12 @@ public class MPPSEmulatorService extends TimerSupport implements
                 Dataset[] mpps = mppsEmulator.generateMPPS(stationAETs[i],
                         delay[i]);
                 for (int j = 0; j < mpps.length; ++j) {
+                    Dataset ssa = mpps[j].getItem(Tags.ScheduledStepAttributesSeq);
+                    String suid = ssa.getString(Tags.StudyInstanceUID);
+                    log.info("Emulate MPPS for Study:" + suid + " of Patient:"
+                    		+ mpps[j].getString(Tags.PatientName)
+                    		+ " received from Station:" + stationAETs[i]);
+                	fillType2Attrs(mpps[j], MPPS_CREATE_TAGS);
                     if (addMWLAttrs(mpps[j]) && createMPPS(mpps[j])
                             && updateMPPS(mpps[j]))
                         ++num;
@@ -186,6 +195,8 @@ public class MPPSEmulatorService extends TimerSupport implements
             return false;
         if (mwlEntries.isEmpty()) {
             log.info("No matching MWL entry for Study - " + suid);
+            fillType2Attrs(ssa, MWL_TAGS);
+            fillType2Attrs(ssa, SPS_TAGS);
             return true;
         }
         DcmElement ssaSq = mpps.putSQ(Tags.ScheduledStepAttributesSeq);
@@ -201,7 +212,14 @@ public class MPPSEmulatorService extends TimerSupport implements
         return true;
     }
 
-    private boolean createMPPS(Dataset mpps) {
+	private void fillType2Attrs(Dataset ds, int[] tags) {
+		for (int i = 0; i < tags.length; i++) {
+			if (ds.vm(tags[i]) == -1)
+				ds.putXX(tags[i]);
+		}		
+	}
+
+	private boolean createMPPS(Dataset mpps) {
         mpps.putCS(Tags.PPSStatus, IN_PROGRESS);
         int status = sendMPPS(mpps.subSet(MPPS_CREATE_TAGS), calledAET);
         if (status != 0) {

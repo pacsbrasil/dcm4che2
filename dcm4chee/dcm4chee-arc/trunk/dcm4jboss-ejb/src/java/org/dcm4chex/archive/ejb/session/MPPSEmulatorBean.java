@@ -169,8 +169,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             Dataset ssa = mpps.putSQ(Tags.ScheduledStepAttributesSeq)
                     .addNewItem();
             ssa.putAll(studyAttrs.subSet(STUDY_SSA_TAGS));
-            final String iuid = UIDGenerator.getInstance().createUID();
-            mpps.putUI(Tags.SOPInstanceUID, iuid);
+            mpps.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
             mpps.putUI(Tags.SOPClassUID, UIDs.ModalityPerformedProcedureStep);
             mpps.putAE(Tags.PerformedStationAET, sourceAET);
             mpps.putSH(Tags.PerformedStationName, seriesAttrs

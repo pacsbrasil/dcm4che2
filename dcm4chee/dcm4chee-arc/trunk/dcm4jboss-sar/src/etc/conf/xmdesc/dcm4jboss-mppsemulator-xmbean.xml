@@ -83,4 +83,14 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Emulate MPPSs for new received Series from Stations
+          specified by property StationAETsWithDelay. Returns number of
+          successful created MPPS instances at MPPS SCP specified by
+          property CalledAET.
+      </description>
+      <name>emulateMPPS</name>
+      <return-type>int</return-type>
+   </operation>
+
 </mbean>
