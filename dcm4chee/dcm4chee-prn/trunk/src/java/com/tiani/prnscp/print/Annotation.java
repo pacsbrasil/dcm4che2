@@ -52,7 +52,7 @@ import org.jboss.logging.Logger;
 class Annotation
 {
 
-    // Constants -----------------------------------------------------
+	// Constants -----------------------------------------------------
     private final static Color DEF_COLOR = Color.BLACK;
     private final static String DEF_FONT_NAME = "Serif";
     private final static String DEF_FONT_STYLE = "PLAIN";
@@ -76,6 +76,7 @@ class Annotation
     private final PrinterService service;
 	private final Logger log;
     private final File file;
+	private final int numBoxes;
     private final Properties props = new Properties();
     private final float insetLeft;
     private final float insetRight;
@@ -116,6 +117,8 @@ class Annotation
         this.service = service;
         this.log = service.getLog();
         this.file = service.getAnnotationFile(adfID);
+        this.numBoxes = PrinterService.parseAnnotationBoxCount(
+        	file.getName());
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             props.load(in);
@@ -233,7 +236,7 @@ class Annotation
 
     private String getText(int index)
     {
-        return props.getProperty("" + index);
+        return props.getProperty("" + index, "");
     }
 
 
@@ -300,7 +303,8 @@ class Annotation
         String dateStr = dateFormat.format(date);
         String timeStr = timeFormat.format(date);
         String s;
-        for (int i = 1; (s = getText(i)) != null; ++i) {
+        for (int i = 1; i <= numBoxes; ++i) {
+        	s = getText(i);
             s = SESSION_LABEL.matcher(s).replaceAll(sessionLabel);
             s = CALLING_AET.matcher(s).replaceAll(callingAET);
             s = CALLED_AET.matcher(s).replaceAll(service.getCalledAET());

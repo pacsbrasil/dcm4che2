@@ -1614,7 +1614,7 @@ public class PrinterService
      * @param  fname  Description of the Parameter
      * @return        Description of the Return Value
      */
-    private static int parseAnnotationBoxCount(String fname)
+    static int parseAnnotationBoxCount(String fname)
     {
         if (!fname.endsWith(ADF_FILE_EXT)) {
             throw new IllegalArgumentException("fname:" + fname);
@@ -2250,6 +2250,13 @@ public class PrinterService
     {
         try {
             String scanDirName = toScanDirName(chromaticity);
+			File odFile = scanner.getODsFile(scanDirName);
+			if (odFile.exists()
+				&& odFile.lastModified() > getCalibrationTime(chromaticity)) {
+				log.info("Read Printer Characteristic - " + odFile);
+				calibration.setODs(chromaticity, scanner.readODs(odFile));
+				setCalibrationTime(chromaticity, odFile.lastModified());								
+			}
             File scanFile = scanner.getMostRecentScanFile(scanDirName);
             if (scanFile == null) {
                 if (log.isDebugEnabled()) {
@@ -2275,7 +2282,6 @@ public class PrinterService
             log.info("Calibrating Printer " + calledAET + ", chromaticity=" + chromaticity);
             float[] ods = scanner.interpolate(scanner.analyse(scanFile));
             calibration.setODs(chromaticity, ods);
-            File odFile = scanner.getODsFile(scanDirName);
             scanner.writeODs(odFile, ods);
             odFile.setLastModified(scanFileLastModified);
             setCalibrationTime(chromaticity, scanFileLastModified);
