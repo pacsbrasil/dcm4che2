@@ -31,7 +31,7 @@ import org.infohazard.maverick.ctl.ThrowawayFormBeanUser;
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class PatientUpdateCtrl extends ThrowawayBean2
+public class PatientUpdateCtrl extends Dcm4JbossController
 {
 	private int pk;
 	private String patientName=null;

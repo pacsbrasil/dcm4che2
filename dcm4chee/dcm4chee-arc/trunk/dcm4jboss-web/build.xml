@@ -39,6 +39,7 @@
 		<pathelement location="${j2ee.jar}"/>
 		<pathelement location="${log4j.jar}"/>
 		<pathelement location="${maverick.jar}"/>
+		<pathelement location="${maverick.lib.dir}/commons-beanutils.jar"/>
 		<pathelement location="${dcm4jboss-ejb-client.jar}"/>
 	<!-- TODO dependence should be eliminated -->
 		<pathelement location="${dcm4jboss-jdbc-hsql.jar}"/>

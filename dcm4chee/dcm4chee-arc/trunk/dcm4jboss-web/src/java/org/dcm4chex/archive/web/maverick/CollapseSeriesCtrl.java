@@ -19,15 +19,13 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
-import org.infohazard.maverick.ctl.ThrowawayBean2;
-
 /**
  * 
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class CollapseSeriesCtrl extends ThrowawayBean2 {
+public class CollapseSeriesCtrl extends Dcm4JbossController {
 
     private int patPk;
     private int studyPk;

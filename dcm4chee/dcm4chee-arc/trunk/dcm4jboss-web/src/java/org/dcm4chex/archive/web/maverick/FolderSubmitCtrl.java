@@ -55,24 +55,26 @@ public class FolderSubmitCtrl extends FolderCtrl
 			setSticky(folderForm.getStickySeries(), "stickySeries");
 			setSticky(folderForm.getStickyInstances(), "stickyInst");
 			HttpServletRequest rq = getCtx().getRequest();
-			if (rq.getParameter("filter") != null)
+			if (rq.getParameter("filter") != null || rq.getParameter("filter.x") != null)
 			{
 				return query(true);
 			}
 			if (rq.getParameter("prev") != null
-				|| rq.getParameter("next") != null)
+				|| rq.getParameter("prev.x") != null	
+				|| rq.getParameter("next") != null
+				||rq.getParameter("next.x") != null)
 			{
 				return query(false);
 			}
-			if (rq.getParameter("del") != null)
+			if (rq.getParameter("del") != null || rq.getParameter("del.x") != null)
 			{
 				return delete();
 			}
-			if (rq.getParameter("merge") != null)
+			if (rq.getParameter("merge") != null || rq.getParameter("merge.x") != null)
 			{
 				return MERGE;
 			}
-			if (rq.getParameter("move") != null)
+			if (rq.getParameter("move") != null || rq.getParameter("move.x") != null)
 			{
 				return FOLDER;
 			}

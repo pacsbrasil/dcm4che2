@@ -11,7 +11,6 @@ import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.infohazard.maverick.ctl.ThrowawayBean2;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -19,7 +18,7 @@ import org.infohazard.maverick.ctl.ThrowawayBean2;
  * Module: dcm4jboss-web
  * 
  */
-public abstract class Errable extends ThrowawayBean2
+public abstract class Errable extends Dcm4JbossController
 {
 	public static String ERROR_VIEW = "error";
 

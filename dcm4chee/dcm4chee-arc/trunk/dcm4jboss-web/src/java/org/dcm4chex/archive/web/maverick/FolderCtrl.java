@@ -19,15 +19,13 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
-import org.infohazard.maverick.ctl.ThrowawayFormBeanUser;
-
 /**
  * 
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class FolderCtrl extends ThrowawayFormBeanUser {
+public class FolderCtrl extends Dcm4JbossFormController {
 
     public static final String FOLDER = "folder";
     public static final String MERGE = "merge";

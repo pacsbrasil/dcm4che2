@@ -22,7 +22,7 @@ package org.dcm4chex.archive.web.maverick;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.infohazard.maverick.ctl.ThrowawayBean2;
+
 
 /**
  * 
@@ -30,7 +30,7 @@ import org.infohazard.maverick.ctl.ThrowawayBean2;
  * @version $Revision$ $Date$
  * @since 28.01.2004
  */
-public class ExpandSeriesCtrl extends ThrowawayBean2 {
+public class ExpandSeriesCtrl extends Dcm4JbossController {
 
     private int patPk;
     private int studyPk;

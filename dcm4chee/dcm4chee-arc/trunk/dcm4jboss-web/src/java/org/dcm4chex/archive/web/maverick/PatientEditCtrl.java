@@ -21,12 +21,11 @@ package org.dcm4chex.archive.web.maverick;
 
 
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
-import org.infohazard.maverick.ctl.ThrowawayBean2;
 
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class PatientEditCtrl extends ThrowawayBean2
+public class PatientEditCtrl extends Dcm4JbossController
 {
 	private int pk;
 	
