@@ -124,7 +124,7 @@ public class LF_ThreadPool
    {
       log.info("Thread: " + Thread.currentThread().getName() + " JOIN ThreadPool " + name);
       try {
-	      while (!shutdown && (maxWaiting == -1 || waiting < maxWaiting)
+	      while (!shutdown && (running == 0 || maxWaiting == -1 || waiting < maxWaiting)
 	              && (maxRunning == 0 || (waiting + running) < maxRunning))
 	      {
 	         synchronized (mutex)
