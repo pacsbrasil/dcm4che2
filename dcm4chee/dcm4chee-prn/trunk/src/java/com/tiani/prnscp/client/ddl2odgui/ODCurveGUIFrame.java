@@ -62,7 +62,7 @@ public class ODCurveGUIFrame extends JFrame
                     }
                 }
             };
-        actLoadCurve.putValue(Action.NAME," Load...");
+        actLoadCurve.putValue(Action.NAME, "Load...");
         JMenuItem mnuLoadCurve = new JMenuItem(actLoadCurve);
         mnuCurve.add(mnuLoadCurve);
         //create "curve -> reset" curve menu
