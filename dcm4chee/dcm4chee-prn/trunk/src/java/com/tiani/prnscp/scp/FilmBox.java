@@ -117,7 +117,7 @@ class FilmBox
         try {
             scp.checkImageDisplayFormat(ds, aet, rsp);
             scp.checkAttribute(ds, Tags.AnnotationDisplayFormatID,
-                aet, "isAnnotationDisplayFormatID", rsp);
+                aet, "isSupportsAnnotationDisplayFormatID", rsp);
             scp.checkAttribute(ds, Tags.FilmSizeID,
                 aet, "isSupportsFilmSizeID", rsp);
             scp.checkAttribute(ds, Tags.FilmOrientation, FILM_ORIENTATION, rsp);
