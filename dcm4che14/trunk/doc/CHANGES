@@ -2,9 +2,15 @@ Revision History
 =================
 
 -------------------------------------------------------------------------------
-dcm4che 1.0.6 -  - Changes since dcm4che 1.0.5
+dcm4che 1.0.7 -  - Changes since dcm4che 1.0.5
 -------------------------------------------------------------------------------
 BUG FIXES:
++ class org.dcm4che.data.Dataset: Fix
+  writeFile(OutputStream out, DcmEncodeParam param)
+  writeFile(ImageOutputStream out, DcmEncodeParam param)
+  to throw IllegalArgumentException, if param does not match with 
+  Transfer Syntax of File Meta Information, to prevent writting illegal file
+  formats.
 + class org.dcm4che.imageio.plugins.DcmImageWriteParam:
   Fix value for Pixel Aspect Ratio from 1 to int[]{1,1}
 + class org.dcm4che.imageio.plugin.DcmImageReader#getAspectRatio
