@@ -26,8 +26,6 @@ import java.util.Date;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -48,11 +46,9 @@ import org.jboss.system.ServiceMBeanSupport;
  * @author <a href="mailto:joseph@tiani.com">joseph foraci </a>
  * @since February 13, 2003
  * @version $Revision$
- * 
- * @jmx.mbean extends="org.jboss.system.ServiceMBean"
  */
 public class ARRServer extends ServiceMBeanSupport implements
-        org.dcm4chex.arr.mbean.ARRServerMBean, SyslogService {
+        SyslogService {
 
     // Constants -----------------------------------------------------
     private static final String START = "Start";
@@ -78,28 +74,36 @@ public class ARRServer extends ServiceMBeanSupport implements
 
     private StoreAuditRecordLocalHome storeHome = null;
 
-    private String actorName;
+    private String actorName = "ARR";
 
-    // Methods -------------------------------------------------------
-    public String getName() {
+    public final String getActorName() {
         return actorName;
     }
 
-    protected ObjectName getObjectName(MBeanServer server, ObjectName name) {
-        actorName = name.getKeyProperty("name");
-        return name;
+    public final void setActorName(String actorName) {
+        this.actorName = actorName;
+    }
+    
+	public final int getPort() {
+        return udpsrv.getPort();
     }
 
-    /**
-     * Description of the Method
-     * 
-     * @param date
-     *            Description of the Parameter
-     * @param host
-     *            Description of the Parameter
-     * @param content
-     *            Description of the Parameter
-     */
+	public final void setPort(int port) {
+        udpsrv.setPort(port);
+    }
+
+	public final int getMaxClients() {
+        return udpsrv.getMaxClients();
+    }
+
+	public final void setMaxClients(int maxClients) {
+        udpsrv.setMaxClients(maxClients);
+    }
+
+	public final int getNumClients() {
+        return udpsrv.getNumClients();
+    }
+
     public void process(Date date, String host, String content) {
         store(content);
     }
@@ -121,41 +125,6 @@ public class ARRServer extends ServiceMBeanSupport implements
 		}
 		
 	}
-
-	/**
-     * @jmx.managed-attribute
-     */
-    public int getPort() {
-        return udpsrv.getPort();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setPort(int port) {
-        udpsrv.setPort(port);
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public int getMaxClients() {
-        return udpsrv.getMaxClients();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setMaxClients(int maxClients) {
-        udpsrv.setMaxClients(maxClients);
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public int getNumClients() {
-        return udpsrv.getNumClients();
-    }
 
     // ServiceMBeanSupport overrides ---------------------------------
     public void startService() throws Exception {

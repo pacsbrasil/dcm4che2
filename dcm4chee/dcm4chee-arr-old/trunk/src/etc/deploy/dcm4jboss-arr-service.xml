@@ -1,26 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE server>
 <!-- $Id$ -->
-
 <server>
-
   <classpath codebase="lib" archives="dcm4jboss-arr.jar"/>
-
   <mbean code="org.dcm4chex.arr.mbean.ARRServer" 
-         name="dcm4chex:service=AuditRecordRepository,name=ARR">
+         name="dcm4chex:service=AuditRecordRepository"
+         xmbean-dd="xmdesc/dcm4jboss-arr-xmbean.xml">
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/AuditRecord</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/StoreAuditRecord</depends>
-    
-    <!--
-    Set maximal number of simultaneously conncected SEC clients.
-    -->
-    <attribute name="MaxClients">10</attribute>
-    
-    <!--
-    Specifies UDP port on which the Audit Record Repository server is listening.
-    -->
-    <attribute name="Port">4000</attribute>
   </mbean>
-
 </server>
-

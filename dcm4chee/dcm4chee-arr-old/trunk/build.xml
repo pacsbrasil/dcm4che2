@@ -5,7 +5,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.3.1"/>
+	<property name="version" value="0.3.2"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
@@ -169,30 +169,6 @@
     </target>
     
 
-    <target name="jmxdoclet">
-        <taskdef
-            name="jmxdoclet"
-            classname="xdoclet.modules.jmx.JMXDocletTask"
-            classpathref="xdoclet.path"
-            />
-
-        <jmxdoclet 
-            destdir="${basedir}/target/java"
-            excludedtags="@version,@author,@todo,@since"
-            addedtags="@xdoclet-generated at ${TODAY},@copyright The XDoclet Team,@author XDoclet,@version ${version}"
-            force="${xdoclet.force}"
-            verbose="${xdoclet.verbose}"
-            >
-
-            <fileset dir="${basedir}/src/java">
-                <include name="**/mbean/ARRServer.java"/>
-            </fileset>
-            
-            <mbeaninterface/>
-		</jmxdoclet>
-		
-	</target>
-	
    <target name="webdoclet">
         <taskdef
             name="webdoclet"
@@ -226,7 +202,7 @@
     </target>
 	
 
-	<target name="compile" depends="ejbdoclet,jmxdoclet,webdoclet">
+	<target name="compile" depends="ejbdoclet,webdoclet">
 		<mkdir dir="${basedir}/target/classes"/>
 		<javac
         	destdir="${basedir}/target/classes"
@@ -305,7 +281,7 @@
             <classes dir="${basedir}/target/classes">
                 <include name="**/web/**"/>
             </classes>
-            <fileset dir="${basedir}/src/web" includes="*.jsp,*.css,images/*.jpg,js/*.js"/>
+            <fileset dir="${basedir}/src/web" includes="*.jsp,*.css,images/*.jpg,images/*.gif,js/*.js"/>
         </war>
 
 	</target>
