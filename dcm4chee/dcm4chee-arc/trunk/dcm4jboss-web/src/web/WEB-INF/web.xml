@@ -60,4 +60,31 @@
 	<welcome-file-list>
 		<welcome-file>default.jsp</welcome-file>
 	</welcome-file-list>
+
+   <!-- A security constraint that restricts access to the
+   	Archive Web Administration pages to users with the role WebAdmin.
+   -->
+   <security-constraint>
+     <web-resource-collection>
+       <web-resource-name>dispatcher</web-resource-name>
+       <description>Only allows users with the role WebAdmin
+       		to access the Archive Web Administration pages
+       </description>
+       <url-pattern>/*</url-pattern>
+       <http-method>GET</http-method>
+       <http-method>POST</http-method>
+     </web-resource-collection>
+     <auth-constraint>
+       <role-name>WebAdmin</role-name>
+     </auth-constraint>
+   </security-constraint>
+
+   <login-config>
+      <auth-method>BASIC</auth-method>
+      <realm-name>Archive Web Admin</realm-name>
+   </login-config>
+
+   <security-role>
+      <role-name>WebAdmin</role-name>
+   </security-role>
 </web-app>

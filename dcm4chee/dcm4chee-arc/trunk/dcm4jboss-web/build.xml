@@ -23,6 +23,8 @@
 	<!-- Override with your dcm4jboss-ejb working directory -->
 	<property name="dcm4jboss-ejb.dir" value="../dcm4jboss-ejb/target" />
 	<property name="dcm4jboss-ejb-client.jar" value="${dcm4jboss-ejb.dir}/common/lib/dcm4jboss-ejb-client.jar" />
+	<!-- TODO dependence should be eliminated -->
+	<property name="dcm4jboss-jdbc-hsql.jar" value="${dcm4jboss-ejb.dir}/hsql/lib/dcm4jboss-jdbc-hsql.jar" />
 
 	<property name="target.dir" value="target"/>
 	<property name="file" value="${ant.project.name}.war"/>
@@ -38,6 +40,8 @@
 		<pathelement location="${log4j.jar}"/>
 		<pathelement location="${maverick.jar}"/>
 		<pathelement location="${dcm4jboss-ejb-client.jar}"/>
+	<!-- TODO dependence should be eliminated -->
+		<pathelement location="${dcm4jboss-jdbc-hsql.jar}"/>
 	</path>
 
 	<property name="debug" value="on"/>
