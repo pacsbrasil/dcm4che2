@@ -76,10 +76,12 @@
       </path>
   </target>
 
-  <target name="available_check">
-    <available property="dcm4che_present" file="${dcm4che.home}/build.xml" />
-    <available property="jboss_present" file="${jboss.lib}/jboss-system.jar" />
-    <available property="fop_present" file="${fop.jar}" />
+  <target name="check-env">
+    <available property="dcm4che.present" file="${dcm4che.home}/build.xml" />
+    <antcall target="fail_if_no_dcm4che"/>
+    <available property="jboss.present" file="${jboss.lib}/jboss-system.jar" />
+    <antcall target="fail_if_no_jboss"/>
+    <available property="fop.present" file="${fop.jar}" />
     <uptodate property="dcm4che.uptodate" targetfile="${dcm4che.jar}" >
         <srcfiles dir= "${dcm4che.home}/src"/>
     </uptodate>
@@ -90,15 +92,15 @@
     <cvs command="update -APd"/>
   </target>
 
-  <target name="fail_unless_dcm4che_present" unless="dcm4che_present">
+  <target name="fail_if_no_dcm4che" unless="dcm4che.present">
     <fail message="dcm4che.home=${dcm4che.home} is not a valid dcm4che dist directory"/>
   </target>
   
-  <target name="fail_unless_jboss_present" unless="jboss_present">
+  <target name="fail_if_no_jboss" unless="jboss.present">
     <fail message="jboss.home=${jboss.home} is not a valid JBoss dist directory"/>
   </target>
 
-  <target name="init" depends="available_check,fail_unless_dcm4che_present,fail_unless_jboss_present">
+  <target name="init" depends="check-env">
     <echo message="user.home = ${user.home}"/>
     <echo message="java.home = ${java.home}"/>
     <echo message="ant.home = ${ant.home}"/>
@@ -396,7 +398,7 @@
     <delete file="${jboss.server.deploy}/auditlog.sar" />
   </target>           
     
-  <target name="fail_unless_docbook_xsl_present" unless="docbook-xsl.present">
+  <target name="fail_if_no_docbook_xsl" unless="docbook-xsl.present">
     <fail message="docbook-xsl.dist=${docbook-xsl.dist} is not a valid docbook-xsl dist directory"/>
   </target>
 
@@ -405,7 +407,7 @@
                type="file"
                property="docbook-xsl.present"
     />
-    <ant target="fail_unless_docbook_xsl_present"/>
+    <ant target="fail_if_no_docbook_xsl"/>
   </target>
    
   <target name="doc" depends="init" if="fop_classpath_id">
