@@ -5,6 +5,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="html" indent="yes" encoding="ISO-8859-1"/>
 <xsl:variable name="page_title">Patient List</xsl:variable>
+<xsl:variable name="wado_url">http://localhost:8080/dcm4jboss-wado/wado</xsl:variable>
 <xsl:include href="page.xsl"/>
 
 <xsl:template match="model">
@@ -554,6 +555,11 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	  <td title="Retrieve AETs">
 			<xsl:value-of select="retrieveAETs"/>
     </td>
+			<td align="right" bgcolor="ffffcc">
+				<a href="{$wado_url}?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
+					<img src="images/edit.gif" alt="View image" border="0" title="View image"/>		
+				</a>
+			</td>
 		<td align="right" bgcolor="ffffcc">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
