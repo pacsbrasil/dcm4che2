@@ -33,6 +33,32 @@ import org.apache.log4j.Logger;
  * 
  * @jboss.entity-command
  * 	name="hsqldb-fetch-key"
+ * 
+ * @ejb.finder
+ * 	signature="Collection findAll()"
+ * 	query="SELECT OBJECT(d) FROM Device AS d"
+ * 	transaction-type="Supports"
+ *
+ * @ejb.finder
+ * 	signature="org.dcm4chex.archive.ejb.interface.DeviceLocal findByStationName(java.lang.String name)"
+ * 	query="SELECT OBJECT(d) FROM Device AS d WHERE d.stationName = ?1"
+ *  transaction-type="Supports"
+ *
+ * @jboss.query
+ * 	signature="org.dcm4chex.archive.ejb.interfaces.DeviceLocal findByStationName(java.lang.String name)"
+ *  strategy="on-find"
+ *  eager-load-group="*"
+ *
+ * @ejb.finder
+ * 	signature="java.util.Collection findByProtocolCode( org.dcm4chex.archive.ejb.interfaces.CodeLocal code)"
+ * 	query="SELECT DISTINCT OBJECT(d) FROM Device d, IN(d.protocolCodes) p WHERE p = ?1"
+ *  transaction-type="Supports"
+ * 
+ * @jboss.query
+ * 	signature="java.util.Collection findByProtocolCode(org.dcm4chex.archive.ejb.interfaces.CodeLocal code)"
+ *  strategy="on-find"
+ *  eager-load-group="*"
+ *
  */
 public abstract class DeviceBean implements EntityBean {
     
@@ -108,5 +134,11 @@ public abstract class DeviceBean implements EntityBean {
      *  related-pk-field="pk"     
      */
     public abstract java.util.Collection getProtocolCodes();
+    
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setProtocolCodes(java.util.Collection codes);
+    
+
 }
