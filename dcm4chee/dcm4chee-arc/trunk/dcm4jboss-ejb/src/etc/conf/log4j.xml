@@ -34,8 +34,8 @@
       -->
 
       <layout class="org.apache.log4j.PatternLayout">
-         <!-- The default pattern: Date Priority CallingAET->CalledAET [Category] Message\n -->
-         <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} [%c] %m%n"/>
+         <!-- The default pattern: Date Priority CallingAET->CalledAET (Thread) [Category] Message\n -->
+         <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
 
          <!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n
          <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
@@ -186,6 +186,12 @@
    <!-- Limit the org.dcm4cheri category to INFO -->
    <category name="org.dcm4cheri">
       <priority value="INFO"/>
+   </category>
+
+   <!-- Decrease the priority threshold for the org.dcm4cheri.util category
+   		for monitoring thread pool behavior -->
+   <category name="org.dcm4cheri.util">
+      <priority value="DEBUG"/>
    </category>
 
    <!-- Limit the org.apache category to INFO -->

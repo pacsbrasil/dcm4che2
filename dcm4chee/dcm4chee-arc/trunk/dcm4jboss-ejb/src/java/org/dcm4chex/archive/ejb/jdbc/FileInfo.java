@@ -50,7 +50,7 @@ public class FileInfo {
 
     public final String sopCUID;
 
-    public final String instRetrieveAETs;
+    public final String extRetrieveAET;
     
     public final String fileRetrieveAET;
 
@@ -67,7 +67,7 @@ public class FileInfo {
     public FileInfo(int pk, String patID, String patName, byte[] patAttrs,
             String studyIUID, byte[] studyAttrs, byte[] seriesAttrs,
             byte[] instAttrs, String sopIUID, String sopCUID,
-            String instRetrieveAETs, String fileRetrieveAET, String basedir,
+            String extRetrieveAET, String fileRetrieveAET, String basedir,
             String fileID, String tsUID, String md5, int size) {
         this.pk = pk;
         this.patID = patID;
@@ -79,7 +79,7 @@ public class FileInfo {
         this.instAttrs = instAttrs;
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
-        this.instRetrieveAETs = instRetrieveAETs;
+        this.extRetrieveAET = extRetrieveAET;
         this.fileRetrieveAET = fileRetrieveAET;
         this.basedir = basedir;
         this.fileID = fileID;
@@ -90,7 +90,7 @@ public class FileInfo {
 
     public String toString() {
         return "FileInfo[pk=" + pk + "iuid=" + sopIUID + ", cuid=" + sopCUID
-                + ", instRetrieveAETs=" + instRetrieveAETs
+                + ", extRetrieveAET=" + extRetrieveAET
                 + ", fileRetrieveAET=" + fileRetrieveAET + ", basedir="
                 + basedir + ", fileid=" + fileID + ", tsuid=" + tsUID;
     }
