@@ -371,15 +371,15 @@ public class MediaComposerService extends ServiceMBeanSupport {
                     for (int i = 0, n = rqList.size(); i < n; ++i) {
                         MediaCreationRequest rq1 = (MediaCreationRequest) rqList
                                 .get(i);
-                        builder.createMd5Sums(rq1);
                         dom.createIndex(rq1);
+                        builder.createMd5Sums(rq1);
                         labelCreator.createLabel(rq1, dom);
                         if (!forward(rq1)) return;
                     }
                 } else {
                     if (logXml) dom.toXML(xmlFile);
-                    builder.createMd5Sums(rq);
                     dom.createIndex(rq);
+                    builder.createMd5Sums(rq);
                     labelCreator.createLabel(rq, dom);
                     if (!forward(rq)) return;
                 }

@@ -22,7 +22,6 @@
    </constructor>
 
    <!-- Attributes -->
-   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getSchedulableMBean"
       setMethod="setSchedulableMBean">
@@ -89,6 +88,7 @@
          <value value="-1" />
       </descriptors>
    </attribute>
+   &defaultAttributes;
    
    <!-- Operations -->
    &defaultOperations;

@@ -109,7 +109,7 @@
    <attribute access="read-write"
       getMethod="getValuesForIncludeMd5Sums"
       setMethod="setValuesForIncludeMd5Sums">
-      <description>Comma separated list of values for flag
+      <description>Comma separated list of values of flag
       "Include Non-DICOM Objects" (2200,0008), to include
       MD5 checksums.
       </description>
@@ -122,7 +122,7 @@
    <attribute access="read-write"
       getMethod="getValuesForIncludeWeb"
       setMethod="setValuesForIncludeWeb">
-      <description>Comma separated list of values for flag
+      <description>Comma separated list of values of flag
       "Include Non-DICOM Objects" (2200,0008), to include
       Web presentations.
       </description>

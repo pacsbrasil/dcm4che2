@@ -25,7 +25,6 @@
    </constructor>
 
    <!-- Attributes -->
-   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getDirectoryPath"
       setMethod="setDirectoryPath">
@@ -85,6 +84,7 @@
          <value value="1h" />
       </descriptors>
    </attribute>
+   &defaultAttributes;
    
    <!-- Operations -->
    &defaultOperations;

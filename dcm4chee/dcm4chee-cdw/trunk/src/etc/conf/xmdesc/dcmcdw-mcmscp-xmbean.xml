@@ -25,7 +25,6 @@
    </constructor>
 
    <!-- Attributes -->
-   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
@@ -213,6 +212,7 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   &defaultAttributes;
    
    <!-- Operations -->
    &defaultOperations;

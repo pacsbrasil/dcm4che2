@@ -7,7 +7,7 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>DICOM Storage SCP</description>
+   <description>Label Print Service</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"

@@ -314,7 +314,7 @@ class FilesetBuilder {
                 if (iconItem == null && service.isCreateIcon())
                         if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                                 && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
-                            log.info("Generation from icons from compressed image not supported"
+                            log.info("Generation from icon from compressed image not supported - "
                                             + src);
                         } else {
                             try {
@@ -329,7 +329,7 @@ class FilesetBuilder {
                 if (web) {
                     if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                             && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
-                        log.info("Generation from jpeg from compressed image not supported"
+                        log.info("Generation from jpeg from compressed image not supported - "
                                         + src);
                     } else {
                         try {

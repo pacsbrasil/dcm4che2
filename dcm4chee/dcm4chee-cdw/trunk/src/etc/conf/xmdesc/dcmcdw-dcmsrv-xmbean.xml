@@ -22,7 +22,6 @@
    </constructor>
 
    <!-- Attributes -->
-   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getPort"
       setMethod="setPort">
@@ -119,6 +118,7 @@
       <name>NumClients</name>
       <type>int</type>
    </attribute>
+   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

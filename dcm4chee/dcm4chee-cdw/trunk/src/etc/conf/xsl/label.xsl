@@ -42,7 +42,7 @@
               </xsl:otherwise>
             </xsl:choose>
           </fo:block-container>
-          <fo:block-container position="absolute" top="42mm" left="5mm" right="40mm" bottom="80mm">
+          <fo:block-container position="absolute" top="50mm" left="5mm" right="40mm" bottom="80mm">
 <!-- Include IHE Logo -->
             <fo:block text-align="center">
               <fo:external-graphic src="ihe_logo.jpg"/>

@@ -28,7 +28,6 @@
      <param name="Append" value="false"/>
      <param name="MaxFileSize" value="1000KB"/>
      <param name="MaxBackupIndex" value="10"/>
-     <param name="Threshold" value="INFO"/>
 
      <layout class="org.apache.log4j.PatternLayout">
        <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
@@ -129,6 +128,11 @@
    <!-- ================ -->
    <!-- Limit categories -->
    <!-- ================ -->
+
+   <!-- Limit the org.dcm4chex.cdw category to INFO -->
+   <category name="org.dcm4chex.cdw">
+      <priority value="INFO"/>
+   </category>
 
    <!-- Limit the org.dcm4cheri category to INFO -->
    <category name="org.dcm4cheri">
