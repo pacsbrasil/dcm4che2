@@ -62,6 +62,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1" AND i.commitment = TRUE"
+ * @jboss.query signature="int ejbSelectNumberOfExternalRetrieveableInstances(java.lang.Integer pk)"
+ *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1" AND i.externalRetrieveAET IS NOT NULL"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1"
  * 
@@ -178,17 +180,6 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setNumberOfStudyRelatedInstances(int num);
 
     /**
-     * Number Of Commited Instances
-     *
-     * @ejb.interface-method
-     * @ejb.persistence column-name="num_commited"
-     * 
-     */
-    public abstract int getNumberOfCommitedInstances();
-
-    public abstract void setNumberOfCommitedInstances(int num);
-
-    /**
      * Study DICOM Attributes
      *
      * @ejb.persistence column-name="study_attrs"
@@ -272,7 +263,7 @@ public abstract class StudyBean implements EntityBean {
      *               role-name="study-of-patient"
      *               cascade-delete="yes"
      *
-     * @jboss:relation fk-column="patient_fk"
+     * @jboss.relation fk-column="patient_fk"
      *                 related-pk-field="pk"
      * 
      * @param patient patient of this study
@@ -375,6 +366,26 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.select query=""
      */ 
     public abstract int ejbSelectNumberOfCommitedInstances(Integer pk) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfExternalRetrieveableInstances(Integer pk) throws FinderException;
+
+    /**
+     * @ejb.interface-method
+     */
+    public int getNumberOfCommitedInstances() throws FinderException {
+        return ejbSelectNumberOfCommitedInstances(getPk());
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isStudyExternalRetrievable() throws FinderException {
+        return ejbSelectNumberOfExternalRetrieveableInstances(getPk()) 
+                == getNumberOfStudyRelatedInstances();
+    }
     
     /**
      * @ejb.select query=""
@@ -442,12 +453,6 @@ public abstract class StudyBean implements EntityBean {
         return numI;
     }
     
-    private void updateNumberOfCommitedInstances(Integer pk) throws FinderException {
-        final int numC = ejbSelectNumberOfCommitedInstances(pk);
-        if (getNumberOfCommitedInstances() != numC)
-            setNumberOfCommitedInstances(numC);
-    }
-
     private void updateFilesetId(Integer pk, int numI) throws FinderException {
         if (numI > 0) {
 	        if (ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
@@ -488,14 +493,12 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public void updateDerivedFields(boolean numOfInstances,
-    		boolean numOfCommited, boolean retrieveAETs,
-    		boolean externalRettrieveAETs, boolean filesetId,
-    		boolean availibility, boolean modsInStudies) throws FinderException {
+    		boolean retrieveAETs, boolean externalRettrieveAETs, 
+            boolean filesetId, boolean availibility, boolean modsInStudies)
+            throws FinderException {
     	final Integer pk = getPk();
 		final int numI = numOfInstances ? updateNumberOfInstances(pk) 
 				: getNumberOfStudyRelatedInstances();
-		if (numOfCommited)
-			updateNumberOfCommitedInstances(pk);
 		if (retrieveAETs)
 			updateRetrieveAETs(pk, numI);
 		if (externalRettrieveAETs)

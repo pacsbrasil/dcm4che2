@@ -49,6 +49,8 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *  		 local-jndi-name="ejb/Instance"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="instance"
+ * @jboss.load-group name="most"
+ * @jboss.eager-load-group name="most"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
@@ -56,7 +58,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *             transaction-type="Supports"
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
  *              strategy="on-find"
- *              eager-load-group="*"
+ *              eager-load-group="most"
  * 
  * @ejb.finder signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.media IS NULL AND i.series.hidden = false AND i.series.study.createdTime < ?1"
@@ -111,11 +113,8 @@ public abstract class InstanceBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.pk-field
-     * @ejb.persistence
-     *  column-name="pk"
-     * @jboss.persistence
-     *  auto-increment="true"
-     *
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
      */
     public abstract Integer getPk();
 
@@ -124,11 +123,9 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * SOP Instance UID
      *
-     * @ejb.persistence
-     *  column-name="sop_iuid"
-     * 
+     * @ejb.persistence column-name="sop_iuid" 
      * @ejb.interface-method
-     *
+     * @jboss.load-group name="most"
      */
     public abstract String getSopIuid();
 
@@ -137,10 +134,9 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * SOP Class UID
      *
-     * @ejb.persistence
-     *  column-name="sop_cuid"
-     * 
+     * @ejb.persistence column-name="sop_cuid"
      * @ejb.interface-method
+     * @jboss.load-group name="most"
      *
      */
     public abstract String getSopCuid();
@@ -150,11 +146,8 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * Instance Number
      *
-     * @ejb.persistence
-     *  column-name="inst_no"
-     * 
+     * @ejb.persistence column-name="inst_no"
      * @ejb.interface-method
-     *
      */
     public abstract String getInstanceNumber();
 
@@ -163,9 +156,7 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * SR Completion Flag
      *
-     * @ejb.persistence
-     *  column-name="sr_complete"
-     * 
+     * @ejb.persistence column-name="sr_complete"
      * @ejb.interface-method
      *
      */
@@ -196,6 +187,7 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ext_retr_aet"
+     * @jboss.load-group name="most"
      */
     public abstract String getExternalRetrieveAET();
 
@@ -207,6 +199,7 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="retrieve_aets"
+     * @jboss.load-group name="most"
      */
     public abstract String getRetrieveAETs();
 
@@ -214,6 +207,7 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="availability"
+     * @jboss.load-group name="most"
      */
     public abstract int getAvailability();
 
@@ -258,8 +252,9 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.relation name="series-instance"
      *               role-name="instance-of-series"
      *               cascade-delete="yes"
-     * @jboss:relation fk-column="series_fk"
+     * @jboss.relation fk-column="series_fk"
      *                 related-pk-field="pk"
+     * @jboss.load-group name="most"
      * 
      * @param series series of this instance
      */
@@ -287,7 +282,7 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.relation name="instance-media"
      *               role-name="instance-on-media"
-     * @jboss:relation fk-column="media_fk" 
+     * @jboss.relation fk-column="media_fk" 
      *                 related-pk-field="pk"
      *    
      * @ejb.interface-method
@@ -305,7 +300,7 @@ public abstract class InstanceBean implements EntityBean {
      *               target-ejb="Code"
      *               target-role-name="title-of-sr"
      *               target-multiple="yes"
-     * @jboss:relation fk-column="srcode_fk"
+     * @jboss.relation fk-column="srcode_fk"
      *                 related-pk-field="pk"
      * 
      * @param srCode code of SR title

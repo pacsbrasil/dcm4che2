@@ -3,9 +3,7 @@
 CONNECT TO tiani;
 SET CURRENT SCHEMA TIANI;
 
-ALTER TABLE study ADD COLUMN num_commited DEFAULT 0 INTEGER NOT NULL;
 ALTER TABLE study ADD COLUMN ext_retr_aet	VARCHAR(254);
-ALTER TABLE series ADD COLUMN num_commited DEFAULT 0 INTEGER NOT NULL;
 ALTER TABLE series ADD COLUMN ext_retr_aet	VARCHAR(254);
 
 ALTER TABLE media ADD COLUMN created_time TIMESTAMP;
@@ -13,6 +11,11 @@ ALTER TABLE media ADD COLUMN updated_time TIMESTAMP;
 ALTER TABLE media ADD COLUMN media_usage DEFAULT 0 BIGINT NOT NULL;
 ALTER TABLE media ADD COLUMN media_rq_iuid VARCHAR(254);
 ALTER TABLE media ADD COLUMN media_status_info VARCHAR(254);
+
+CREATE INDEX srcode_fk ON instance(srcode_fk);
+CREATE INDEX media_fk ON instance(media_fk);
+CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
+CREATE INDEX commitment ON instance(commitment);
 
 CREATE SEQUENCE study_on_fs_pk_seq;
 CREATE TABLE study_on_fs (

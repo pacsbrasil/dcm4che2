@@ -44,7 +44,6 @@ CREATE TABLE study (
 	ref_physician   TEXT,
 	num_series		INTEGER,
 	num_instances	INTEGER,
-	num_commited	INTEGER,
 	ext_retr_aet	TEXT,
 	retrieve_aets	TEXT,
 	fileset_iuid	TEXT,
@@ -85,7 +84,6 @@ CREATE TABLE series (
 	pps_start		TIMESTAMP,
 	pps_iuid		TEXT,
 	num_instances	INTEGER,
-	num_commited	INTEGER,
 	ext_retr_aet	TEXT,
 	retrieve_aets	TEXT,
 	fileset_iuid	TEXT,
@@ -140,11 +138,15 @@ FOREIGN KEY (srcode_fk) REFERENCES code(pk),
 FOREIGN KEY (media_fk) REFERENCES media(pk)
 );
 CREATE INDEX series_fk ON instance(series_fk);
+CREATE INDEX srcode_fk ON instance(srcode_fk);
+CREATE INDEX media_fk ON instance(media_fk);
 CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid);
 CREATE INDEX sop_cuid ON instance(sop_cuid);
 CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
+CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
+CREATE INDEX commitment ON instance(commitment);
 
 CREATE TABLE filesystem (
 	pk          	SERIAL PRIMARY KEY,

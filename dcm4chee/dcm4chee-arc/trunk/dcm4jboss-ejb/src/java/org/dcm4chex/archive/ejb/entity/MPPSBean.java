@@ -162,7 +162,7 @@ public abstract class MPPSBean implements EntityBean {
      *  role-name="mpps-of-patient"
      *  cascade-delete="yes"
      *
-     * @jboss:relation
+     * @jboss.relation
      *  fk-column="patient_fk"
      *  related-pk-field="pk"
      */
@@ -195,7 +195,7 @@ public abstract class MPPSBean implements EntityBean {
      *  target-role-name="drcode-of-mpps"
      *  target-multiple="yes"
      *
-     * @jboss:relation fk-column="drcode_fk" related-pk-field="pk"
+     * @jboss.relation fk-column="drcode_fk" related-pk-field="pk"
      */
     public abstract void setDrCode(CodeLocal srCode);
 

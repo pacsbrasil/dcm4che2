@@ -72,7 +72,7 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
      *               target-ejb="Study"
      *               target-role-name="study-of-sof"
      *               target-multiple="yes" 
-     * @jboss:relation fk-column="study_fk" related-pk-field="pk"
+     * @jboss.relation fk-column="study_fk" related-pk-field="pk"
      */
     public abstract StudyLocal getStudy();
 
@@ -86,7 +86,7 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
      * 	             target-ejb="FileSystem"
      *               target-role-name="filesystem-of-sof"
      *               target-multiple="yes"
-     * @jboss:relation fk-column="filesystem_fk" 
+     * @jboss.relation fk-column="filesystem_fk" 
      *                 related-pk-field="pk"
      */
     public abstract FileSystemLocal getFileSystem();
@@ -135,16 +135,23 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
             throws FinderException {
         if (dirPaths.isEmpty())
             return Collections.EMPTY_LIST;
-        Object[] args = new Object[]{tsBefore};
         StringBuffer jbossQl = new StringBuffer(
-                "SELECT OBJECT(s) FROM StudyOnFileSystem s WHERE s.fileSystem.directoryPath IN ('"+args[0]);
-        for ( Iterator iter = dirPaths.iterator(); iter.hasNext(); )
-            jbossQl.append("', '").append( iter.next() );
-        jbossQl.append("')");
+                "SELECT OBJECT(s) FROM StudyOnFileSystem s WHERE s.fileSystem.directoryPath");
+        Iterator iter = dirPaths.iterator();
+        String dirPath1 = (String) iter.next();
+        Object[] args = null;
+        if (!iter.hasNext()) {
+            jbossQl.append(" = '").append(dirPath1).append("'");
+        } else {
+            jbossQl.append(" IN ('").append(dirPath1);
+            while (iter.hasNext()) {
+                jbossQl.append("', '").append( iter.next() );
+            }
+            jbossQl.append("')");
+        }
         if ( tsBefore != null ) {
         	jbossQl.append(" AND s.accessTime < ?1");
-        } else {
-        	args[0] = "dummy";//null not allowed in args!
+            args = new Object[]{ tsBefore };
         }
         jbossQl.append(" ORDER BY s.accessTime ASC");
         if (log.isDebugEnabled())

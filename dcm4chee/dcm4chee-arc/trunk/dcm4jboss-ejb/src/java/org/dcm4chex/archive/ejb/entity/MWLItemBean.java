@@ -195,7 +195,7 @@ public abstract class MWLItemBean implements EntityBean {
      *  role-name="mwlitem-of-patient"
      *  cascade-delete="yes"
      *
-     * @jboss:relation
+     * @jboss.relation
      *  fk-column="patient_fk"
      *  related-pk-field="pk"
      */

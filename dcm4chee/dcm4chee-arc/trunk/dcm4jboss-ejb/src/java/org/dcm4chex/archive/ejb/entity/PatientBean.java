@@ -162,8 +162,8 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @return Patient, with which this Patient was merged.
      *
-     * @ejb:interface-method view-type="local"
-     * @ejb:relation
+     * @ejb.interface-method view-type="local"
+     * @ejb.relation
      *    name="merged-patients"
      *    role-name="dereferenced-patient"
      *    target-role-name="dominant-patient"
@@ -171,7 +171,7 @@ public abstract class PatientBean implements EntityBean {
      *    target-multiple="yes"
      *    cascade-delete="yes"
      *
-     * @jboss:relation
+     * @jboss.relation
      *    fk-column="merge_fk"
      *    related-pk-field="pk"
      */
@@ -180,7 +180,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @param mergedWith, Patient, with which this Patient was merged.
      *
-     * @ejb:interface-method
+     * @ejb.interface-method
      */
     public abstract void setMergedWith(PatientLocal mergedWith);
 

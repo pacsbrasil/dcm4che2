@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -34,9 +33,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
-import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
-import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtSupportLocal;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtSupportLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
@@ -57,6 +55,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
  * @ejb.ejb-ref ejb-name="Study" ref-name="ejb/Study" view-type="local"
  * @ejb.ejb-ref ejb-name="StudyOnFileSystem" ref-name="ejb/StudyOnFileSystem"
  *              view-type="local"
+ * @ejb.ejb-ref ejb-name="FileSystemMgtSupport" ref-name="ejb/FileSystemMgtSupport"
+ *              view-type="local"
  */
 public abstract class FileSystemMgtBean implements SessionBean {
 
@@ -70,6 +70,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
 
 	private FileSystemLocalHome fileSystemHome;
 
+    private FileSystemMgtSupportLocalHome freeDiskSpacerHome;
+    
 	public void setSessionContext(SessionContext ctx) {
 		Context jndiCtx = null;
 		try {
@@ -82,6 +84,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
 					.lookup("java:comp/env/ejb/File");
 			this.fileSystemHome = (FileSystemLocalHome) jndiCtx
 					.lookup("java:comp/env/ejb/FileSystem");
+           this.freeDiskSpacerHome = (FileSystemMgtSupportLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/FileSystemMgtSupport");
 		} catch (NamingException e) {
 			throw new EJBException(e);
 		} finally {
@@ -99,6 +103,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		sofHome = null;
 		fileHome = null;
 		fileSystemHome = null;
+        freeDiskSpacerHome = null;
 	}
 
 	/**
@@ -213,6 +218,31 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		return sofHome.listOnFileSystems( dirPaths, tsBefore );
 	}
 
+    /** 
+     * @ejb.interface-method
+     */
+    public long releaseStudies(Set fsPathSet, boolean checkUncommited,
+            boolean checkOnMedia, boolean checkExternal, long accessedBefore)
+            throws IOException, FinderException, EJBException, RemoveException,
+            CreateException {
+        Timestamp tsBefore = new Timestamp(accessedBefore);
+        log.info("Releasing studies not accessed since " + tsBefore);
+        return releaseStudies(fsPathSet, checkUncommited, checkOnMedia,
+                checkExternal, Long.MAX_VALUE, new Timestamp(accessedBefore));
+    }
+
+    /** 
+     * @ejb.interface-method
+     */
+    public long freeDiskSpace(Set fsPathSet, boolean checkUncommited,
+            boolean checkOnMedia, boolean checkExternal, long maxSizeToDel)
+            throws IOException, FinderException, EJBException, RemoveException,
+            CreateException {
+        log.info("Releasing " + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
+        return releaseStudies(fsPathSet, checkUncommited, checkOnMedia,
+                checkExternal, maxSizeToDel, null);
+    }
+    
     /**
      * Release studies that fullfill freeDiskSpacePolicy to free disk space.
      * <p>
@@ -225,10 +255,10 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * 
      * @param fsPathSet 	Set with path of filesystems.
      * @param maxSizeToDel	Size that should be released.
-     * @param checkNothing	Flag of freeDiskSpacePolicy: Dont check study.
+     * @param checkUncommited	Flag of freeDiskSpacePolicy: Check if storage of study was not commited.
      * @param checkOnMedia	Flag of freeDiskSpacePolicy: Check if study is stored on media (offline storage).
      * @param checkExternal	Flag of freeDiskSpacePolicy: Check if study is on an external AET.
-     * @param accessedBefore date in ms a study have to be accessed.
+     * @param tsBefore date study have to be accessed.
      *  
      * @return Total size of released studies.
      *  
@@ -236,76 +266,36 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @throws FinderException
      * @throws RemoveException
      * @throws EJBException
-	 * 
-	 * @ejb.interface-method
+     * @throws CreateException 
      */
-    public long releaseStudies( Set fsPathSet, long maxSizeToDel, 
-    			boolean checkNothing, boolean checkOnMedia, 
-    			boolean checkExternal, Long accessedBefore ) 
-    		throws IOException, FinderException, EJBException, RemoveException {
-    	Timestamp tsBefore = null;
-    	if ( accessedBefore != null ) {
-    		tsBefore = new Timestamp( accessedBefore.longValue() );
-    	}
-        Collection c = getStudiesOnFilesystems( fsPathSet, tsBefore );
-        StudyOnFileSystemLocal studyOnFs;
-        StudyLocal studyLocal;
-        log.info("Try to release " + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
+    private long releaseStudies(Set fsPathSet, boolean checkUncommited,
+            boolean checkOnMedia, boolean checkExternal, long maxSizeToDel,
+            Timestamp tsBefore) throws IOException, FinderException,
+            EJBException, RemoveException, CreateException {
+        Collection c = getStudiesOnFilesystems(fsPathSet, tsBefore);
         long sizeToDelete = 0L;
-        for ( Iterator iter = c.iterator() ; iter.hasNext() && sizeToDelete < maxSizeToDel; ) {
-        	studyOnFs = (StudyOnFileSystemLocal) iter.next();
-			if ( checkNothing ) {
-				sizeToDelete += deleteStudy(studyOnFs);
-			} else {
-				studyLocal = studyOnFs.getStudy();
-				if ( ( checkOnMedia && studyLocal.isStudyAvailableOnMedia() ) ||
-					 ( checkExternal && studyLocal.getExternalRetrieveAET() != null ) ) {
-					sizeToDelete += releaseStudy(studyOnFs);
-				}
-			}
+        FileSystemMgtSupportLocal spacer = freeDiskSpacerHome.create();
+        try {
+            for (Iterator iter = c.iterator(); iter.hasNext()
+                    && sizeToDelete < maxSizeToDel;) {
+                StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter
+                        .next();
+                sizeToDelete += spacer.releaseStudy(studyOnFs, checkUncommited,
+                        checkOnMedia, checkExternal);
+/*                StudyLocal studyLocal = studyOnFs.getStudy();
+                if ((checkOnMedia && studyLocal.isStudyAvailableOnMedia())
+                        || (checkExternal && studyLocal
+                                .isStudyExternalRetrievable())) {
+                    sizeToDelete += spacer.releaseStudy(studyOnFs);
+                } else if (checkUncommited
+                        && studyLocal.getNumberOfCommitedInstances() == 0) {
+                    sizeToDelete += spacer.deleteStudy(studyOnFs);
+                }*/
+            }
+        } finally {
+            spacer.remove();
         }
         log.info("Released " + (sizeToDelete / 1000000.f) + "MB of DiskSpace");
-    	return sizeToDelete;
+        return sizeToDelete;
     }
-
-	private long deleteStudy(StudyOnFileSystemLocal studyOnFs) throws FinderException, RemoveException {
-		long size = 0L;
-		Collection files = studyOnFs.getFiles();
-		for ( Iterator it = files.iterator() ; it.hasNext() ; ) { 
-			size += ( (FileLocal) it.next() ).getFileSize();
-		}
-		log.info("Delete " + studyOnFs.asString() + " - " 
-				+ (size / 1000000.f) + "MB");
-		studyOnFs.getStudy().remove();
-		return size;
-	}
-    
-  
-	private long releaseStudy(StudyOnFileSystemLocal studyOnFs) throws FinderException, EJBException, RemoveException {
-		Collection c = studyOnFs.getFiles();
-		long size = 0L;
-		FileLocal fileLocal;
-		InstanceLocal il;
-		Set series = new HashSet();
-		for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
-			fileLocal = (FileLocal) iter.next();
-			if ( log.isDebugEnabled() ) log.debug("Delete file:"+fileLocal);
-			size += fileLocal.getFileSize();
-			il = fileLocal.getInstance();
-			series.add( il.getSeries() );
-			fileLocal.setInstance( null );
-			il.updateDerivedFields(true, true);
-		}
-		for ( Iterator iter = series.iterator() ; iter.hasNext() ; ) {
-			final SeriesLocal ser = (SeriesLocal) iter.next();
-			ser.updateDerivedFields(false, false, true, false, false, true);
-		}
-		StudyLocal sty = studyOnFs.getStudy();
-		sty.updateDerivedFields(false, false, true, false, false, true, false);
-		log.info("Delete Files of " + studyOnFs.asString() + " - " 
-				+ (size / 1000000.f) + "MB");
-		studyOnFs.remove();
-		return size;
-	}
-	
 }

@@ -74,8 +74,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Integer pk)"
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
- * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Integer pk)"
- * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1 AND i.commitment = TRUE"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Integer pk)"
  * 	            query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
  * 
@@ -209,17 +207,6 @@ public abstract class SeriesBean implements EntityBean {
     public abstract int getNumberOfSeriesRelatedInstances();
 
     public abstract void setNumberOfSeriesRelatedInstances(int num);
-
-    /**
-     * Number Of Commited Instances
-     *
-     * @ejb.interface-method
-     * @ejb.persistence column-name="num_commited"
-     * 
-     */
-    public abstract int getNumberOfCommitedInstances();
-
-    public abstract void setNumberOfCommitedInstances(int num);
     
     /**
      * Encoded Series Dataset
@@ -316,7 +303,7 @@ public abstract class SeriesBean implements EntityBean {
      *               role-name="series-of-study"
      *               cascade-delete="yes"
      *
-     * @jboss:relation fk-column="study_fk"
+     * @jboss.relation fk-column="study_fk"
      *                 related-pk-field="pk"
      * 
      * @param study study of this series
@@ -333,7 +320,7 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.relation name="mpps-series"
      *               role-name="series-of-mpps"
-     * @jboss:relation fk-column="mpps_fk"
+     * @jboss.relation fk-column="mpps_fk"
      *                 related-pk-field="pk"
      * 
      * @param study study of this series
@@ -417,11 +404,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfCommitedInstances(Integer pk) throws FinderException;
-
-    /**
-     * @ejb.select query=""
-     */ 
     public abstract int ejbSelectAvailability(Integer pk) throws FinderException;
     
     private void updateRetrieveAETs(Integer pk, int numI) throws FinderException {
@@ -478,12 +460,6 @@ public abstract class SeriesBean implements EntityBean {
         return numI;
     }
     
-    private void updateNumberOfCommitedInstances(Integer pk) throws FinderException {
-        final int numC = ejbSelectNumberOfCommitedInstances(pk);
-        if (getNumberOfCommitedInstances() != numC)
-            setNumberOfCommitedInstances(numC);
-    }
-
     private void updateFilesetId(Integer pk, int numI) throws FinderException {
         if (numI > 0) {
 	        if (ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
@@ -504,14 +480,11 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public void updateDerivedFields(boolean numOfInstances,
-    		boolean numOfCommited, boolean retrieveAETs,
-    		boolean externalRettrieveAETs, boolean filesetId,
-    		boolean availibility) throws FinderException {
+    		boolean retrieveAETs, boolean externalRettrieveAETs,
+            boolean filesetId, boolean availibility) throws FinderException {
     	final Integer pk = getPk();
 		final int numI = numOfInstances ? updateNumberOfInstances(pk) 
 				: getNumberOfSeriesRelatedInstances();
-		if (numOfCommited)
-			updateNumberOfCommitedInstances(pk);
 		if (retrieveAETs)
 			updateRetrieveAETs(pk, numI);
 		if (externalRettrieveAETs)

@@ -71,7 +71,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  *  view-type="local"
  *  ref-name="ejb/Instance" 
  *
- * @ejb:resource-ref
+ * @ejb.resource-ref
  *  res-name="jdbc/DS"
  *  res-type="javax.sql.DataSource"
  *  res-auth="Container"

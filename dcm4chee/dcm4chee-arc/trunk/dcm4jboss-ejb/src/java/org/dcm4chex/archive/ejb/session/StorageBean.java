@@ -357,35 +357,9 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void commit(Dataset stgCmtResult) throws FinderException {
-        DcmElement refSOPSeq = stgCmtResult.get(Tags.RefSOPSeq);
-        if (refSOPSeq == null) return;
-        HashSet seriesSet = new HashSet();
-        HashSet studySet = new HashSet();
-        for (int i = 0, n = refSOPSeq.vm(); i < n; ++i) {
-        	commit(seriesSet, studySet, refSOPSeq.getItem(i).getString(Tags.RefSOPInstanceUID));
-        }
-        for (Iterator series = seriesSet.iterator(); series.hasNext();) {
-            final SeriesLocal ser = seriesHome.findBySeriesIuid((String) series.next());
-            // update NumberOfCommitedInstances
-			ser.updateDerivedFields(false, true, false, false, false, false);
-        }
-        for (Iterator studies = studySet.iterator(); studies.hasNext();) {
-        	final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
-            // update NumberOfCommitedInstances
-        	study.updateDerivedFields(false, true, false, false, false, false, false);
-        }
+    public void commit(String iuid) throws FinderException {
+        instHome.findBySopIuid(iuid).setCommitment(true);
     }
-
-    private void commit(HashSet seriesSet, HashSet studySet, final String iuid)
-			throws FinderException {
-		InstanceLocal inst = instHome.findBySopIuid(iuid);
-		inst.setCommitment(true);
-		SeriesLocal series = inst.getSeries();
-		seriesSet.add(series.getSeriesIuid());
-		StudyLocal study = series.getStudy();
-		studySet.add(study.getStudyIuid());
-	}
     
     /**
      * @ejb.interface-method
@@ -395,20 +369,21 @@ public abstract class StorageBean implements SessionBean {
         if (refSOPSeq == null) return;
         HashSet seriesSet = new HashSet();
         HashSet studySet = new HashSet();
+        final String aet0 = stgCmtResult.getString(Tags.RetrieveAET);
         for (int i = 0, n = refSOPSeq.vm(); i < n; ++i) {
             final Dataset refSOP = refSOPSeq.getItem(i);
             final String iuid = refSOP.getString(Tags.RefSOPInstanceUID);
-            final String aet = refSOP.getString(Tags.RetrieveAET);
+            final String aet = refSOP.getString(Tags.RetrieveAET, aet0);
             if (iuid != null && aet != null)
             	commited(seriesSet, studySet, iuid, aet);
         }
         for (Iterator series = seriesSet.iterator(); series.hasNext();) {
             final SeriesLocal ser = seriesHome.findBySeriesIuid((String) series.next());
-			ser.updateDerivedFields(false, false, false, true, false, false);
+			ser.updateDerivedFields(false, false, true, false, false);
         }
         for (Iterator studies = studySet.iterator(); studies.hasNext();) {
             final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
-			study.updateDerivedFields(false, false, false, true, false, false, false);
+			study.updateDerivedFields(false, false, true, false, false, false);
         }
     }
 
@@ -426,7 +401,7 @@ public abstract class StorageBean implements SessionBean {
      */
     public void updateStudy(String iuid) throws FinderException {
         final StudyLocal study = studyHome.findByStudyIuid(iuid);
-		study.updateDerivedFields(true, false, true, false, true, true, true);
+		study.updateDerivedFields(true, true, false, true, true, true);
     }
     
     /**
@@ -434,6 +409,6 @@ public abstract class StorageBean implements SessionBean {
      */
     public void updateSeries(String iuid) throws FinderException {
         final SeriesLocal series = seriesHome.findBySeriesIuid(iuid);
-        series.updateDerivedFields(true, false, true, false, true, true);
+        series.updateDerivedFields(true, true, false, true, true);
     }
 }

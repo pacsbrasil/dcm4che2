@@ -99,11 +99,11 @@ public abstract class DeviceBean implements EntityBean {
      *
      * @jboss.relation-table table-name="rel_dev_proto"
      *
-     * @jboss:relation
+     * @jboss.relation
      *  fk-column="prcode_fk"
      *  related-pk-field="pk"     
      *
-     * @jboss:target-relation
+     * @jboss.target-relation
      *  fk-column="device_fk"
      *  related-pk-field="pk"     
      */

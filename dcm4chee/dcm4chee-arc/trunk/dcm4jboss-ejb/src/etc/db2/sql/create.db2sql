@@ -55,7 +55,6 @@ CREATE TABLE study (
 	mods_in_study	VARCHAR(254),
 	num_series		INTEGER,
 	num_instances	INTEGER,
-	num_commited	INTEGER,
 	ext_retr_aet	VARCHAR(254),
 	retrieve_aets	VARCHAR(254),
 	fileset_iuid	VARCHAR(254),
@@ -98,7 +97,6 @@ CREATE TABLE series (
 	pps_start		TIMESTAMP,
 	pps_iuid		VARCHAR(254),
 	num_instances	INTEGER,
-	num_commited	INTEGER,
 	ext_retr_aet	VARCHAR(254),
 	retrieve_aets	VARCHAR(254),
 	fileset_iuid	VARCHAR(254),
@@ -155,11 +153,15 @@ FOREIGN KEY (srcode_fk) REFERENCES code(pk),
 FOREIGN KEY (media_fk) REFERENCES media(pk)
 );
 CREATE INDEX series_fk ON instance(series_fk);
+CREATE INDEX srcode_fk ON instance(srcode_fk);
+CREATE INDEX media_fk ON instance(media_fk);
 CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid);
 CREATE INDEX sop_cuid ON instance(sop_cuid);
 CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
+CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
+CREATE INDEX commitment ON instance(commitment);
 
 
 CREATE SEQUENCE filesystem_pk_seq;
