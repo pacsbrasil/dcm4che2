@@ -23,10 +23,12 @@ package org.dcm4cheri.net;
 
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.FutureRSP;
+import org.dcm4che.net.PDU;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 
@@ -45,7 +47,7 @@ import java.io.IOException;
  *   
  */
 final class ActiveAssociationImpl
-	implements ActiveAssociation, LF_ThreadPool.Handler {
+	implements ActiveAssociation, LF_ThreadPool.Handler, AssociationListener {
 	// Constants -----------------------------------------------------
 
 	// Attributes ----------------------------------------------------
@@ -67,6 +69,7 @@ final class ActiveAssociationImpl
 		this.assoc = (AssociationImpl) assoc;
 		this.services = services;
 		((AssociationImpl) assoc).setThreadPool(threadPool);
+		assoc.addAssociationListener(this);
 	}
 
 	// Public --------------------------------------------------------
@@ -269,5 +272,28 @@ final class ActiveAssociationImpl
 			throw new IllegalStateException("Not running: " + threadPool);
 	}
 
-	// Inner classes -------------------------------------------------
+	   // AssociationListener implementation ----------------------------
+	   public void write(Association src, PDU pdu) {
+	   }
+	   
+	   public void received(Association src, Dimse dimse) {
+	   }
+	   
+	   public void error(Association src, IOException ioe) {
+	   }
+	   
+	   public void close(Association src) {
+	       synchronized (rspDispatcher) {
+		       rspDispatcher.clear();
+		       rspDispatcher.notifyAll();
+	       }
+	       assoc.removeAssociationListener(this);
+	   }
+	   
+	   public void write(Association src, Dimse dimse) {
+	   }
+	   
+	   public void received(Association src, PDU pdu) {
+	   }
+	   
 }
