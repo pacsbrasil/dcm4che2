@@ -53,7 +53,7 @@ public class FileInfo {
 
     public final String instRetrieveAETs;
     
-    public final String fileRetrieveAETs;
+    public final String fileRetrieveAET;
 
     public final String basedir;
 
@@ -68,7 +68,7 @@ public class FileInfo {
     public FileInfo(int pk, String patID, String patName, byte[] patAttrs,
             String studyIUID, byte[] studyAttrs, byte[] seriesAttrs,
             byte[] instAttrs, String sopIUID, String sopCUID,
-            String instRetrieveAETs, String fileRetrieveAETs, String basedir,
+            String instRetrieveAETs, String fileRetrieveAET, String basedir,
             String fileID, String tsUID, String md5, int size) {
         this.pk = pk;
         this.patID = patID;
@@ -81,7 +81,7 @@ public class FileInfo {
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
         this.instRetrieveAETs = instRetrieveAETs;
-        this.fileRetrieveAETs = fileRetrieveAETs;
+        this.fileRetrieveAET = fileRetrieveAET;
         this.basedir = basedir;
         this.fileID = fileID;
         this.tsUID = tsUID;
@@ -92,9 +92,10 @@ public class FileInfo {
     public String toString() {
         return "FileInfo[pk=" + pk + "iuid=" + sopIUID + ", cuid=" + sopCUID
                 + ", instRetrieveAETs=" + instRetrieveAETs
-                + ", fileRetrieveAETs=" + fileRetrieveAETs + ", basedir="
+                + ", fileRetrieveAET=" + fileRetrieveAET + ", basedir="
                 + basedir + ", fileid=" + fileID + ", tsuid=" + tsUID;
     }
+    
     public byte[] getFileMd5() {
         char[] md5Hex = md5.toCharArray();
         byte[] retval = new byte[16];

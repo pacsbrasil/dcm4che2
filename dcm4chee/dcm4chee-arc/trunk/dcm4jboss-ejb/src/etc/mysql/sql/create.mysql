@@ -130,6 +130,7 @@ CREATE TABLE filesystem (
 	highwater_mark	BIGINT DEFAULT 0 NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
+CREATE INDEX retrieve_aets ON filesystem(retrieve_aets);
 
 CREATE TABLE files (
 	pk              INTEGER AUTO_INCREMENT PRIMARY KEY,

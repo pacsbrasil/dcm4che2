@@ -9,6 +9,7 @@
 
 package org.dcm4chex.archive.dcm.qrscp;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -23,6 +24,8 @@ import org.dcm4che.net.ExtNegotiator;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 
 /**
@@ -32,6 +35,39 @@ import org.dcm4chex.archive.exceptions.UnkownAETException;
  */
 public class QueryRetrieveScpService extends AbstractScpService {
 
+    private static String transactionIsolationLevelAsString(int level) {
+        switch (level) {
+        	case 0:
+        	    return "DEFAULT";
+        	case Connection.TRANSACTION_READ_UNCOMMITTED:
+        	    return "READ_UNCOMMITTED";
+        	case Connection.TRANSACTION_READ_COMMITTED:
+        	    return "READ_COMMITTED";
+        	case Connection.TRANSACTION_REPEATABLE_READ:
+        	    return "REPEATABLE_READ";
+        	case Connection.TRANSACTION_SERIALIZABLE:
+        	    return "SERIALIZABLE";
+        }
+        throw new IllegalArgumentException("level:" + level);
+    }
+    
+    private static int transactionIsolationLevelOf(String s) {
+        String uc = s.trim().toUpperCase();
+        if ("READ_UNCOMMITTED".equals(uc))
+            return Connection.TRANSACTION_READ_UNCOMMITTED;
+        if ("READ_COMMITTED".equals(uc))
+            return Connection.TRANSACTION_READ_COMMITTED;
+        if ("REPEATABLE_READ".equals(uc))
+            return Connection.TRANSACTION_REPEATABLE_READ;
+        if ("SERIALIZABLE".equals(uc))
+            return Connection.TRANSACTION_SERIALIZABLE;
+        return 0;
+    }
+    
+    private String queryTransactionIsolationLevel;
+
+    private String retrieveTransactionIsolationLevel;
+    
     private ObjectName fileSystemMgtName;
     
     private boolean sendPendingMoveRSP = true;
@@ -63,6 +99,22 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private FindScp findScp = new FindScp(this);
 
     private MoveScp moveScp = new MoveScp(this);
+
+    public final String getQueryTransactionIsolationLevel() {
+        return transactionIsolationLevelAsString(QueryCmd.transactionIsolationLevel);
+    }
+    
+    public final void setQueryTransactionIsolationLevel(String level) {
+        QueryCmd.transactionIsolationLevel = transactionIsolationLevelOf(level);
+    }
+    
+    public final String getRetrieveTransactionIsolationLevel() {
+        return transactionIsolationLevelAsString(RetrieveCmd.transactionIsolationLevel);
+    }
+    
+    public final void setRetrieveTransactionIsolationLevel(String level) {
+        RetrieveCmd.transactionIsolationLevel = transactionIsolationLevelOf(level);
+    }
 
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;

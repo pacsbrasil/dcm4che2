@@ -49,12 +49,16 @@ public abstract class BaseCmd {
     protected Connection con;
     protected Statement stmt;
     protected ResultSet rs = null;
+    protected int prevLevel = 0;
 
-    protected BaseCmd(DataSource ds) throws SQLException {
+    protected BaseCmd(DataSource ds, int transactionIsolationLevel) throws SQLException {
         InitialContext ctx = null;
         try {
             ctx = new InitialContext();
             con = ds.getConnection();
+            prevLevel = con.getTransactionIsolation();
+            if (transactionIsolationLevel > 0)
+                con.setTransactionIsolation(transactionIsolationLevel);
             stmt = con.createStatement();
         } catch (SQLException e) {
             close();
@@ -99,6 +103,9 @@ public abstract class BaseCmd {
             stmt = null;
         }
         if (con != null) {
+            try {
+                con.setTransactionIsolation(prevLevel);
+            } catch (SQLException ignore) {}
             try {
                 con.close();
             } catch (SQLException ignore) {}

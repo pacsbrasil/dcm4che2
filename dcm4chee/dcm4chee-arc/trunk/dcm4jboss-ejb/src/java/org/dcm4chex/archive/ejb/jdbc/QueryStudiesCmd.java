@@ -31,6 +31,8 @@ import org.dcm4chex.archive.common.PrivateTags;
  */
 public class QueryStudiesCmd extends BaseCmd {
 
+    public static int transactionIsolationLevel = 0;
+
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static final String[] SELECT_ATTRIBUTE = { "Patient.pk",
@@ -48,7 +50,7 @@ public class QueryStudiesCmd extends BaseCmd {
     
     public QueryStudiesCmd(DataSource ds, Dataset filter)
             throws SQLException {
-        super(ds);
+        super(ds, transactionIsolationLevel);
         sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
         sqlBuilder.addLiteralMatch("Patient.merge_fk", false, "IS NULL");

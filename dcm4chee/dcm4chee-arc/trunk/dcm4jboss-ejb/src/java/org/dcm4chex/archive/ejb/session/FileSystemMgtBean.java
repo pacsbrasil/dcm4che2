@@ -120,7 +120,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public FileSystemDTO addFileSystem(FileSystemDTO dto) throws CreateException {
-        return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAETs(), dto.getDiskUsage(), dto.getHighWaterMark()));
+        return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAET(), dto.getDiskUsage(), dto.getHighWaterMark()));
     }
 
     /**
@@ -133,7 +133,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
             return getFileSystem(dto.getDirectoryPath());
         } catch (ObjectNotFoundException e) {
             try {
-                return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAETs(), dto.getDiskUsage(), dto.getHighWaterMark()));
+                return toDTO(fileSystemHome.create(dto.getDirectoryPath(), dto.getRetrieveAET(), dto.getDiskUsage(), dto.getHighWaterMark()));
             } catch (CreateException e1) {
                 throw new EJBException(e1);
             }
@@ -171,9 +171,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public FileSystemDTO updateRetrieveAETs(String dirPath, String retrieveAETs)  throws FinderException {
+    public FileSystemDTO updateRetrieveAET(String dirPath, String retrieveAET)  throws FinderException {
         FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
-        fs.setRetrieveAETs(retrieveAETs);
+        fs.setRetrieveAET(retrieveAET);
         return toDTO(fs);
     }
 
@@ -208,7 +208,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setPk(fs.getPk().intValue());
         dto.setDirectoryPath(fs.getDirectoryPath());
-        dto.setRetrieveAETs(fs.getRetrieveAETs());
+        dto.setRetrieveAET(fs.getRetrieveAET());
         dto.setDiskUsage(fs.getDiskUsage());
         dto.setHighWaterMark(fs.getHighWaterMark());
         return dto;
@@ -218,7 +218,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
         FileSystemLocal fs = file.getFileSystem();
         FileDTO dto = new FileDTO();
         dto.setPk(file.getPk().intValue());
-        dto.setRetrieveAETs(fs.getRetrieveAETs());
+        dto.setRetrieveAET(fs.getRetrieveAET());
         dto.setDirectoryPath(fs.getDirectoryPath());
         dto.setFilePath(file.getFilePath());
         dto.setFileTsuid(file.getFileTsuid());

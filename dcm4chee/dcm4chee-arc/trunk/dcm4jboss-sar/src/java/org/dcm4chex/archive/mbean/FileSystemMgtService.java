@@ -50,7 +50,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 
     private Set fsPathSet = Collections.singleton("archive");
 
-    private String retrieveAETs = "QR_SCP";
+    private String retrieveAET = "QR_SCP";
 
     private File curDir = new File("archive");
 
@@ -89,12 +89,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         EJBHomeFactory.setEjbProviderURL(local2null(ejbProviderURL));
     }
 
-    public final String getRetrieveAETs() {
-        return retrieveAETs;
+    public final String getRetrieveAET() {
+        return retrieveAET;
     }
 
-    public final void setRetrieveAETs(String aets) {
-        this.retrieveAETs = aets;
+    public final void setRetrieveAET(String aet) {
+        this.retrieveAET = aet;
     }
 
     public final String getStorageDirectory() {
@@ -221,14 +221,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         return sb.toString();
     }
 
-    public String addFileSystem(String dirPath, String retrieveAETs,
+    public String addFileSystem(String dirPath, String retrieveAET,
             String highWaterMark) throws RemoteException, CreateException,
             FinderException {
         FileSystemMgt fsMgt = newFileSystemMgt();
         try {
             FileSystemDTO fs = new FileSystemDTO();
             fs.setDirectoryPath(dirPath);
-            fs.setRetrieveAETs(retrieveAETs);
+            fs.setRetrieveAET(retrieveAET);
             fs.setHighWaterMark(parseSize(highWaterMark));
             return fsMgt.addFileSystem(fs).toString();
         } finally {
@@ -253,11 +253,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     }
 
 
-    public FileSystemDTO updateRetrieveAETs(String dirPath, String retrieveAETs) throws RemoteException,
+    public FileSystemDTO updateRetrieveAET(String dirPath, String retrieveAET) throws RemoteException,
             CreateException, FinderException {
         FileSystemMgt fsMgt = newFileSystemMgt();
         try {
-            return fsMgt.updateRetrieveAETs(dirPath, retrieveAETs);
+            return fsMgt.updateRetrieveAET(dirPath, retrieveAET);
         } finally {
             try {
                 fsMgt.remove();
@@ -297,7 +297,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         try {
             FileSystemDTO dto = new FileSystemDTO();
             dto.setDirectoryPath(toFsPath(curDir));
-            dto.setRetrieveAETs(retrieveAETs);
+            dto.setRetrieveAET(retrieveAET);
             dto.setHighWaterMark(defHWM);
             return fsMgt.probeFileSystem(dto);
         } finally {

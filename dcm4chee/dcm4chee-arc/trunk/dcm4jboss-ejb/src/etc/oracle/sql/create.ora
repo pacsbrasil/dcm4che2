@@ -137,6 +137,7 @@ CREATE TABLE filesystem (
 	highwater_mark	NUMBER(19) DEFAULT 0 NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
+CREATE INDEX retrieve_aets ON filesystem(retrieve_aets);
 
 CREATE SEQUENCE files_pk_seq;
 CREATE TABLE files (

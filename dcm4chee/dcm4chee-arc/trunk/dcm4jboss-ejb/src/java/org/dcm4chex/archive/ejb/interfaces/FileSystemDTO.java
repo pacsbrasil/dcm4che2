@@ -23,7 +23,7 @@ public class FileSystemDTO implements Serializable {
 
     private String directoryPath;
 
-    private String retrieveAETs;
+    private String retrieveAET;
 
     private long diskUsage;
 
@@ -33,7 +33,7 @@ public class FileSystemDTO implements Serializable {
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
         sb.append(", dir=").append(directoryPath);
-        sb.append(", aets=").append(retrieveAETs);
+        sb.append(", aets=").append(retrieveAET);
         sb.append(", diskUsage=").append(diskUsage / 1000000f);
         sb.append("MB, highwater=").append(highWaterMark / 1000000f);
         sb.append("MB]");
@@ -72,12 +72,12 @@ public class FileSystemDTO implements Serializable {
         this.highWaterMark = highWaterMark;
     }
 
-    public final String getRetrieveAETs() {
-        return retrieveAETs;
+    public final String getRetrieveAET() {
+        return retrieveAET;
     }
 
-    public final void setRetrieveAETs(String retrieveAETs) {
-        this.retrieveAETs = retrieveAETs;
+    public final void setRetrieveAET(String retrieveAET) {
+        this.retrieveAET = retrieveAET;
     }
 
     public final long getDiskUsage() {

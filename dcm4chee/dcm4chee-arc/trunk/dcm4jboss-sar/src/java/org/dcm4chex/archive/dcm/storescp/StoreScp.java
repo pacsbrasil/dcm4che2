@@ -242,7 +242,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
                     ds.putAll(coercedElements);
                 }
-                updateIANInfo(assoc, ds, fs.getRetrieveAETs());
+                updateIANInfo(assoc, ds, fs.getRetrieveAET());
                 updateInstancesStored(assoc, ds);
             } catch (DuplicateStorageException e) {
                 log.warn("ignore attempt to store instance[uid="
@@ -590,14 +590,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void updateIANInfo(Association assoc, Dataset ds,
-            String retrieveAETs) {
+            String retrieveAET) {
         Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
         if (ians == null) {
             assoc.putProperty(StoreScpService.IANS_KEY, ians = new HashMap());
         }
         Dataset refSOP = getRefSOPSeq(ds, getRefSeriesSeq(ds, ians))
                 .addNewItem();
-        refSOP.putAE(Tags.RetrieveAET, retrieveAETs);
+        refSOP.putAE(Tags.RetrieveAET, retrieveAET);
         refSOP.putCS(Tags.InstanceAvailability, "ONLINE");
         refSOP.putUI(Tags.RefSOPClassUID, ds.getString(Tags.SOPClassUID));
         refSOP.putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));

@@ -47,11 +47,11 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getRetrieveAETs"
-      setMethod="setRetrieveAETs">
-      <description>Retrieve AETs associated with this DICOM Node. Multiple values have to be separated by \. 
+      getMethod="getRetrieveAET"
+      setMethod="setRetrieveAET">
+      <description>Retrieve AET associated with this DICOM Node. 
       </description>
-      <name>LocalRetrieveAETs</name>
+      <name>RetrieveAET</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="QR_SCP" />
@@ -126,8 +126,8 @@
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Associated Retrieve AETs (use \ as delimiter)</description>
-        <name>RetrieveAETs</name>
+        <description>Associated Retrieve AET</description>
+        <name>RetrieveAET</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
@@ -138,16 +138,16 @@
       <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Update Retrieve AETs of File System Configuration</description>
-      <name>updateRetrieveAETs</name>
+      <description>Update Retrieve AET of File System Configuration</description>
+      <name>updateRetrieveAET</name>
       <parameter>
         <description>Directory Path (use / as delimiter)</description>
         <name>DirPath</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>New Associated Retrieve AETs (use \ as delimiter)</description>
-        <name>RetrieveAETs</name>
+        <description>New Associated Retrieve AET</description>
+        <name>RetrieveAET</name>
         <type>java.lang.String</type>
       </parameter>
       <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>

@@ -29,6 +29,8 @@ import org.dcm4cheri.util.StringUtils;
  */
 public abstract class QueryCmd extends BaseCmd {
 
+    public static int transactionIsolationLevel = 0;
+
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static final String[] QRLEVEL = { "PATIENT", "STUDY", "SERIES",
@@ -66,7 +68,7 @@ public abstract class QueryCmd extends BaseCmd {
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
     protected QueryCmd(DataSource ds, Dataset keys) throws SQLException {
-        super(ds);
+        super(ds, transactionIsolationLevel);
         this.keys = keys;        
     }
 

@@ -20,7 +20,7 @@ public final class FileDTO implements Serializable {
 
     private int pk;
 
-    private String aets;
+    private String aet;
 
     private String basedir;
 
@@ -47,17 +47,17 @@ public final class FileDTO implements Serializable {
     }
 
     /**
-     * @return Returns the aets.
+     * @return Returns the aet.
      */
-    public final String getRetrieveAETs() {
-        return aets;
+    public final String getRetrieveAET() {
+        return aet;
     }
 
     /**
      * @param aets The aets to set.
      */
-    public final void setRetrieveAETs(String aets) {
-        this.aets = aets;
+    public final void setRetrieveAET(String aet) {
+        this.aet = aet;
     }
 
     /**

@@ -196,7 +196,7 @@ public abstract class FileBean implements EntityBean
         FileSystemLocal fs = getFileSystem();
         FileDTO retval = new FileDTO();
         retval.setPk(getPk().intValue());
-        retval.setRetrieveAETs(fs.getRetrieveAETs());      
+        retval.setRetrieveAET(fs.getRetrieveAET());      
         retval.setDirectoryPath(fs.getDirectoryPath());      
         retval.setFilePath(getFilePath());
         retval.setFileTsuid(getFileTsuid());

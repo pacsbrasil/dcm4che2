@@ -189,6 +189,30 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getQueryTransactionIsolationLevel"
+      setMethod="setQueryTransactionIsolationLevel">
+      <description>Transaction Isolation Level for Query 
+          (DEFAULT|READ_UNCOMMITTED|READ_COMMITTED|REPEATABLE_READ|SERIALIZABLE)
+      </description>
+      <name>RetrieveTransactionIsolationLevel</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DEFAULT" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getRetrieveTransactionIsolationLevel"
+      setMethod="setRetrieveTransactionIsolationLevel">
+      <description>Transaction Isolation Level for Retrieve 
+          (DEFAULT|READ_UNCOMMITTED|READ_COMMITTED|REPEATABLE_READ|SERIALIZABLE)
+      </description>
+      <name>RetrieveTransactionIsolationLevel</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DEFAULT" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
       <description>Size of buffer used to copy data file to TCP channel.

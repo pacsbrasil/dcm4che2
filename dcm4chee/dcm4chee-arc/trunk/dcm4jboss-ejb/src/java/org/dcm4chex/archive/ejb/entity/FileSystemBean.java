@@ -79,13 +79,13 @@ public abstract class FileSystemBean implements EntityBean {
 	 */
     public Integer ejbCreate(
         String dirpath,
-        String aets,
+        String aet,
         long diskUsage,
         long highwater)
         throws CreateException
     {
 		setDirectoryPath(dirpath);      
-		setRetrieveAETs(aets);      
+		setRetrieveAET(aet);      
         setDiskUsage(diskUsage);
         setHighWaterMark(highwater);
         return null;
@@ -111,8 +111,8 @@ public abstract class FileSystemBean implements EntityBean {
             + getPk()
             + ", dirpath="
             + getDirectoryPath()
-            + ", retrieveAETs="
-            + getRetrieveAETs()
+            + ", retrieveAET="
+            + getRetrieveAET()
             + ", diskUsage="
             + getDiskUsage()
             + ", highwaterMark="
@@ -148,18 +148,18 @@ public abstract class FileSystemBean implements EntityBean {
     public abstract void setDirectoryPath(String dirpath);
 
     /**
-	 * Retrieve AETs
+	 * Retrieve AET
 	 * 
      * @ejb.interface-method
 	 * @ejb.persistence
 	 * 	column-name="retrieve_aets"
 	 */
-    public abstract String getRetrieveAETs();
+    public abstract String getRetrieveAET();
 
     /**
      * @ejb.interface-method
      */ 
-    public abstract void setRetrieveAETs(String aets);
+    public abstract void setRetrieveAET(String aet);
 
     /**
 	 * Free Size

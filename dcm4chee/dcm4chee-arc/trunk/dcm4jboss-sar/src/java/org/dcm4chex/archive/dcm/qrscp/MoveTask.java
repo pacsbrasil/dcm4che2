@@ -480,8 +480,8 @@ class MoveTask implements Runnable {
     }
 
     private List getRemoteRetrieveAETs(FileInfo info) {
-        if (info.fileRetrieveAETs != null)
-                return toList(info.fileRetrieveAETs);
+        if (info.fileRetrieveAET != null)
+                return toList(info.fileRetrieveAET);
         // fall back to (external) retrieve AE
         List aets = toList(info.instRetrieveAETs);
         // mark aets as external
