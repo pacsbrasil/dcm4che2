@@ -212,7 +212,7 @@ final class AssociationImpl implements Association {
     }
 
     public final PDU connect(AAssociateRQ rq) throws IOException {
-        initMDC();
+		fsm.initMDC(rq);
         try {
             fsm.write(rq);
             return fsm.read(acTimeout, b10);
@@ -222,7 +222,7 @@ final class AssociationImpl implements Association {
     }
 
     public final PDU accept(AcceptorPolicy policy) throws IOException {
-        initMDC();
+		initMDC();
         try {
             PDU rq = fsm.read(rqTimeout, b10);
             if (!(rq instanceof AAssociateRQ))

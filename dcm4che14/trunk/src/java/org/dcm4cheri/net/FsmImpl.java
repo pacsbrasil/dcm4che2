@@ -991,7 +991,9 @@ final class FsmImpl
                 try {
                     switch (raw.type()) {
                         case 1:
-                            fireReceived(rq = AAssociateRQImpl.parse(raw));
+                            rq = AAssociateRQImpl.parse(raw);
+                            initMDC();
+                            fireReceived(rq);
                             changeState(STA3);
                             return rq;
                         case 2:
@@ -1490,7 +1492,11 @@ final class FsmImpl
             }
         };
 
-    void initMDC() {
+	void initMDC() {
+	    initMDC(rq);
+	}
+	
+    void initMDC(AAssociateRQ rq) {
         MDC.put("ip", s.getInetAddress().getHostAddress());
         if (rq != null) {
             MDC.put("calling", rq.getCallingAET());
