@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
@@ -468,7 +469,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
     {
         InputStream in = url.openStream();
         try {
-            return loadKeyStore(in, password, toKeyStoreType(url.getFile()));
+            return loadKeyStore(in, password, toKeyStoreType(url.getPath()));
         } finally {
             try {
                 in.close();
@@ -476,7 +477,16 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
         }
     }
 
-
+    public KeyStore loadKeyStore(String url, char[] password)
+    throws GeneralSecurityException, IOException
+	{
+    	try {
+    		return loadKeyStore(new URL(url), password);
+    	} catch (MalformedURLException e) {
+    		return loadKeyStore(new File(url), password);
+    	}
+    }
+    
     /**
      *  Description of the Method
      *

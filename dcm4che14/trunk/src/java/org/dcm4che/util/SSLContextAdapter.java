@@ -212,6 +212,8 @@ public abstract class SSLContextAdapter
     public abstract KeyStore loadKeyStore(URL url, char[] password)
         throws GeneralSecurityException, IOException;
 
+    public abstract KeyStore loadKeyStore(String url, char[] password)
+    throws GeneralSecurityException, IOException;
 
     /**
      *  Sets the key attribute of the SSLContextAdapter object

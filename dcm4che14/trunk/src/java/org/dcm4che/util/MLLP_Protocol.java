@@ -33,6 +33,7 @@ public class MLLP_Protocol
             new MLLP_Protocol("mllp-tls",
             new String[]{
             "SSL_RSA_WITH_NULL_SHA",
+			"TLS_RSA_WITH_AES_128_CBC_SHA",
             "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
             });
     /**  Description of the Field */
@@ -40,6 +41,13 @@ public class MLLP_Protocol
             new MLLP_Protocol("mllp-tls.3des",
             new String[]{
             "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
+            });
+    /**  Description of the Field */
+    public final static MLLP_Protocol MLLP_TLS_AES =
+            new MLLP_Protocol("mllp-tls.3des",
+            new String[]{
+            "TLS_RSA_WITH_AES_128_CBC_SHA",
+			"SSL_RSA_WITH_3DES_EDE_CBC_SHA"
             });
     /**  Description of the Field */
     public final static MLLP_Protocol MLLP_TLS_NODES =
@@ -66,6 +74,9 @@ public class MLLP_Protocol
         }
         if (lower.equals("mllp-tls.3des")) {
             return MLLP_TLS_3DES;
+        }
+        if (lower.equals("mllp-tls.aes")) {
+            return MLLP_TLS_AES;
         }
         if (lower.equals("mllp-tls.nodes")) {
             return MLLP_TLS_NODES;

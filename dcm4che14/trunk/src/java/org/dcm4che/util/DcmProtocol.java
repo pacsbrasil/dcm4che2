@@ -33,6 +33,7 @@ public class DcmProtocol
             new DcmProtocol("dicom-tls",
             new String[]{
             "SSL_RSA_WITH_NULL_SHA",
+			"TLS_RSA_WITH_AES_128_CBC_SHA",
             "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
             });
     /**  Description of the Field */
@@ -40,6 +41,13 @@ public class DcmProtocol
             new DcmProtocol("dicom-tls.3des",
             new String[]{
             "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
+            });
+    /**  Description of the Field */
+    public final static DcmProtocol DICOM_TLS_AES =
+            new DcmProtocol("dicom-tls.aes",
+            new String[]{
+            "TLS_RSA_WITH_AES_128_CBC_SHA",
+		    "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
             });
     /**  Description of the Field */
     public final static DcmProtocol DICOM_TLS_NODES =
@@ -66,6 +74,9 @@ public class DcmProtocol
         }
         if (lower.equals("dicom-tls.3des")) {
             return DICOM_TLS_3DES;
+        }
+        if (lower.equals("dicom-tls.aes")) {
+            return DICOM_TLS_AES;
         }
         if (lower.equals("dicom-tls.nodes")) {
             return DICOM_TLS_NODES;
