@@ -12,6 +12,7 @@
 
   <!-- Override with your JBoss/Web server bundle dist location -->
   <property name="jboss.dist" value="${user.home}/jboss-3.0.4"/>
+  <property name="jboss.bin" value="${jboss.dist}/bin"/>
   <property name="jboss.lib" value="${jboss.dist}/lib"/>
   <property name="jboss.conf" value="default"/>
   <property name="jboss.client" value="${jboss.dist}/client"/>
@@ -39,7 +40,7 @@
 
   <path id="build.path">
     <pathelement location="${lib.dir}/dcm4che.jar"/>
-    <pathelement location="${jboss.lib}/getopt.jar"/>
+    <pathelement location="${jboss.bin}/run.jar"/>
     <pathelement location="${jboss.lib}/jboss-common.jar"/>
     <pathelement location="${jboss.lib}/jboss-system.jar"/>
     <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
@@ -121,7 +122,7 @@
                includes="jboss-service.xml"
       />
       <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/scp/**,com/tiani/prnscp/print/**"
+               includes="com/tiani/prnscp/scp/*,com/tiani/prnscp/print/*,com/tiani/util/license/*"
       />
     </jar>
   </target>   
@@ -141,7 +142,7 @@
     <mkdir dir="${build.lib.dir}"/>
     <jar jarfile="${build.lib.dir}/prnscp.jar">
       <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/scp/**,com/tiani/prnscp/print/**"
+               includes="com/tiani/prnscp/scp/*,com/tiani/prnscp/print/*,com/tiani/util/license/*"
       />
     </jar>
   </target>

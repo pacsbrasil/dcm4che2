@@ -22,6 +22,8 @@
 
 package com.tiani.prnscp.print;
 
+import com.tiani.util.license.LicenseStore;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -69,15 +71,19 @@ import javax.print.attribute.standard.OrientationRequested;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * <description>
@@ -112,8 +118,14 @@ public class PrinterService
    };
    static final String ADF_FILE_EXT = ".adf";
    static final String LUT_FILE_EXT = ".lut";      
+   static final String LICENSE_FILE = "conf/license.pem";
+   static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.999.777";
+   static final int SHUTDOWN_DELAY_MIN = 5;
    
    // Attributes ----------------------------------------------------
+   /** Holds value of property license. */
+   private X509Certificate license;
+   
    /** Holds value of property printerName. */
    private String printerName;
    
@@ -235,7 +247,6 @@ public class PrinterService
 
    private final PrinterCalibration calibration = new PrinterCalibration();
    private final ScannerCalibration scanner = new ScannerCalibration(log);
-   private final License license = new License(log);
    
    private long notifCount = 0;
    private LinkedList highPriorQueue = new LinkedList();
@@ -1007,11 +1018,11 @@ public class PrinterService
             return name.endsWith(LUT_FILE_EXT);
          }
       };
-                           
+                                 
    /** Getter for property LUTs.
     * @return Value of property LUTs.
     */
-      public String[] getLUTs() {
+   public String[] getLUTs() {
       File dir = toFile(lutDir);
       if (!dir.isDirectory()) {
          return new String[]{};
@@ -1335,6 +1346,7 @@ public class PrinterService
    // ServiceMBeanSupport overrides ------------------------------------
    public void startService()
    throws Exception {
+      checkLicense();
       scheduler = new Thread(this);
       scheduler.start();
       if (scanner.getScanDir(printerName).mkdirs()) {
@@ -1344,6 +1356,28 @@ public class PrinterService
       if (printGrayscaleAtStartup) {
          printGrayscaleWithLinDDL();
       }      
+   }
+   
+   private void checkLicense() {
+      try {
+         LicenseStore store = new LicenseStore(toFile(LICENSE_FILE));
+         license = store.getLicenseFor(PRNSCP_PRODUCT_UID);
+         if (license != null) {
+            license.checkValidity();
+            if (LicenseStore.equalsSubjectIDs(license) > 0) {
+               return; // OK
+            }
+         }
+      } catch (Exception e) {
+         log.debug(e, e);
+      }
+      log.warn("No valid License detected - shutdown server in " 
+         + SHUTDOWN_DELAY_MIN + " minutes!");
+      new Timer().schedule(
+         new TimerTask(){
+            public void run() { org.jboss.Main.systemExit(null); }
+         },
+         SHUTDOWN_DELAY_MIN * 60000L);
    }
    
    public void stopService()
@@ -1756,6 +1790,35 @@ public class PrinterService
    public void setMaxQueuedJobCount(int maxQueuedJobCount) {
        this.maxQueuedJobCount = maxQueuedJobCount;
    }
+   
+   /** Getter for property license.
+    * @return Value of property license.
+    */
+   public X509Certificate getLicense() {
+      return this.license;
+   }
+   
+   public String getLicenseCN() {
+      if (license == null) {
+         return "nobody";
+      }
+      String dn = license.getSubjectX500Principal().getName();
+      int start = dn.indexOf("CN=");
+      int end = dn.indexOf(',', start + 3);
+      return dn.substring(start + 3, end);
+   }
+   
+   public Date getLicenseEndDate() {
+      if (license == null) {
+         return new Date();
+      }
+      return license.getNotAfter();
+   }
+   
+   public String showLicense() {
+      return "" + license;
+   }
+
    
    // Inner classes -------------------------------------------------
 }

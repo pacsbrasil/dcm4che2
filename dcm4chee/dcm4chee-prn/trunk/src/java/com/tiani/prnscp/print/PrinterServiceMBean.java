@@ -730,4 +730,5 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setMaxQueuedJobCount(int maxQueuedJobCount);
    
+   public String showLicense();
 }

@@ -72,6 +72,8 @@ class Annotation {
    private static final Pattern DATE = Pattern.compile("\\$DATE\\$");
    private static final Pattern PAGE = Pattern.compile("\\$PAGE\\$");
    private static final Pattern PAGES = Pattern.compile("\\$PAGES\\$");
+   private static final Pattern LICENSE_CN = Pattern.compile("\\$LICENSE-CN\\$");
+   private static final Pattern LICENSE_ENDDATE = Pattern.compile("\\$LICENSE-ENDDATE\\$");
    
    // Attributes ----------------------------------------------------
    private final PrinterService service;
@@ -152,6 +154,9 @@ class Annotation {
          s = DATE.matcher(s).replaceAll(dateStr);
          s = PAGE.matcher(s).replaceAll(pageNoStr);
          s = PAGES.matcher(s).replaceAll(numPagesStr);
+         s = LICENSE_CN.matcher(s).replaceAll(service.getLicenseCN());
+         s = LICENSE_ENDDATE.matcher(s).replaceAll(
+            dateFormat.format(service.getLicenseEndDate()));
          g2.setColor(getColor(i));
          g2.setFont(getFont(i));
          drawText(g2,
@@ -272,5 +277,5 @@ class Annotation {
    private float getAlignmentY(int index) {
       String s = props.getProperty("" + index + ".valign");
       return BOTTOM.equals(s) ? 0.f : CENTER.equals(s) ? .5f : 1.f;      
-   }   
+   }
 }
