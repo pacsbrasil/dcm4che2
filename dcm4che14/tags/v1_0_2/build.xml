@@ -1,0 +1,353 @@
+<?xml version="1.0"?>
+
+<project name="dcm4che" basedir="." default="main">
+   <!-- set global properties for this build -->
+   <property name="version.number" value="1.0.2"/>
+   <property name="src" value="src"/>
+   <property name="src.java" value="${src}/java"/>
+   <property name="src.etc" value="${src}/etc"/>
+   <property name="src.res" value="${src}/resources"/>
+   <property name="test" value="test"/>
+   <property name="test.java" value="${test}/java"/>
+   <property name="test.conf" value="${test}/conf"/>
+   <property name="samples" value="samples"/>
+   <property name="samples.java" value="${samples}/java"/>
+   <property name="samples.conf" value="${samples}/conf"/>
+   <property name="samples.res" value="${samples}/resources"/>
+   <property name="lib" value="lib"/>
+   <property name="doc" value="doc"/>
+   <property name="out" value="out"/>
+   <property name="dist" value="${out}/dcm4che-${version.number}"/>
+   <property name="etc_out" value="${dist}/etc"/>
+   <property name="lib_out" value="${dist}/lib"/>
+   <property name="samples_out" value="${dist}/samples"/>
+   <property name="doc_out" value="${dist}/doc"/>
+   <property name="javadoc" value="${doc_out}/api"/>
+   <property name="reports" value="${out}/reports"/>
+   <property name="dcm4che_jar" value="${lib_out}/dcm4che.jar"/>
+   <property name="local_out" value="${out}/dcm4che"/>
+   <property name="build" value="${local_out}/classes"/>
+   <path id="build.classpath">
+      <fileset dir="${lib}">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
+   <path id="run.classpath">
+      <pathelement location="${build}"/>
+      <path refid="build.classpath"/>
+   </path>
+   <path id="test.classpath">
+      <pathelement location="${test.conf}"/>
+      <path refid="run.classpath"/>
+   </path>
+
+   <target name="init">
+      <tstamp/>
+      <mkdir dir="${lib_out}"/>
+      <mkdir dir="${etc_out}"/>
+      <mkdir dir="${samples_out}"/>
+      <mkdir dir="${javadoc}"/>
+      <mkdir dir="${build}"/>
+      <mkdir dir="${reports}"/>
+   </target>
+
+   <target name="fetch"
+           description="Get the latest source from the CVS tree">
+     <cvs command="update -APd"/>
+   </target>
+   
+   <target name="clean"
+           description="Clean out the output directories" >
+      <delete dir="${out}"/>
+   </target>
+
+   <target name="main" depends="package"
+           description="Compile and build JAR files (default target)"/>
+
+   <target name="all" depends="clean,publish"
+           description="Clean and rebuild all"/>
+
+   <!-- Generate java source from XML via XSLT -->
+   <target name="xml2java" depends="init">
+      <mkdir dir="${src.java}/org/dcm4che/dict"/>
+      <style processor="trax"
+             style="${src.etc}/Tags.xsl"
+             in="${src.etc}/dictionary.xml"
+             out="${src.java}/org/dcm4che/dict/Tags.java"
+      />
+
+      <style processor="trax"
+             style="${src.etc}/VRMap.xsl"
+             in="${src.etc}/dictionary.xml"
+              out="${src.java}/org/dcm4che/dict/VRMap.java"
+      />
+
+      <style processor="trax"
+             style="${src.etc}/UIDs.xsl"
+             in="${src.etc}/dictionary.xml"
+             out="${src.java}/org/dcm4che/dict/UIDs.java"
+      />    
+   </target>
+
+   <target name="compile" depends="xml2java">
+      <javac srcdir="${src.java}"
+             destdir="${build}"
+             classpathref="build.classpath"/>
+      <javac srcdir="${samples.java}"
+             destdir="${build}"
+             classpathref="build.classpath"/>
+      <javac srcdir="${test.java}"
+             destdir="${build}"
+             classpathref="build.classpath"/>
+   </target>
+
+   <!-- Compile resource files if necessary -->
+   <target name="compile-res" depends="compile" unless="uptodate-res"> 
+      <mkdir dir="${src.res}/org/dcm4cheri/dict"/>
+      <java classname="org.dcm4cheri.dict.DictionaryFactoryImpl"
+            classpathref="run.classpath"
+            fork="yes">
+         <arg value="${src.etc}/dictionary.xml"/>
+         <arg value="${src.res}"/>
+      </java>
+   </target>
+      
+   <target name="prepare-res" depends="init">
+      <uptodate property="uptodate-res"
+	        targetfile="${src.res}/org/dcm4cheri/dict/TagDictionary.ser">
+         <srcfiles dir="${src.etc}" includes="dictionary.xml"/>
+      </uptodate>
+      <antcall target="compile-res"/>
+      <filter token="VERSIONNAME" value="DCM4CHE${DSTAMP}"/>
+      <filter token="VERSION" value="${version.number}"/>
+      <filter token="TODAY" value="${TODAY}"/>
+      <copy todir="${build}" filtering="true">
+         <fileset dir="${src.res}"
+                  includes="**/*.mf,**/*.properties"/>
+         <fileset dir="${samples.res}"
+                  includes="**/*.mf,**/*.properties"/>
+      </copy>
+      <copy todir="${build}">
+         <fileset dir="${src.res}"
+                  excludes="*/*.nbattrs,**/*.mf,**/*.properties"/>
+         <fileset dir="${samples.res}"
+                  excludes="*/*.nbattrs,**/*.mf,**/*.properties"/>
+      </copy>
+   </target>
+   
+   <target name="test" depends="compile,prepare-res"
+           description="Run the junit tests">
+      <junit printsummary="true" fork="yes" dir="${test.conf}">
+         <classpath refid="test.classpath"/>
+         <formatter type="xml" />
+         <test name="org.dcm4che.data.DcmParserTest" todir="${reports}"/>
+         <test name="org.dcm4che.data.DatasetTest" todir="${reports}"/>
+         <test name="org.dcm4che.data.DatasetSerializerTest" todir="${reports}"/>
+
+         <test name="org.dcm4che.dict.TagDictionaryTest" todir="${reports}"/>
+                  
+         <test name="org.dcm4che.media.DirReaderTest" todir="${reports}"/>
+         <test name="org.dcm4che.media.DirWriterTest" todir="${reports}"/>
+         <test name="org.dcm4che.media.DirBuilderTest" todir="${reports}"/>
+
+         <test name="org.dcm4che.net.AAssociateRQTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AAssociateACTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AAssociateRJTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.PDataTFTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AReleaseRPTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AReleaseRQTest" todir="${reports}"/>
+         <test name="org.dcm4che.net.AAbortTest" todir="${reports}"/>
+         
+         <test name="org.dcm4che.srom.SRDocumentFactoryTest" todir="${reports}"/>         
+      </junit>
+      <junitreport todir="${reports}">
+         <fileset dir="${reports}" includes="TEST-*.xml"/>
+         <report format="frames" todir="${reports}/html"/>
+      </junitreport>
+   </target>
+   
+   <target name="package" depends="compile,prepare-res">
+      <jar jarfile="${dcm4che_jar}"
+           basedir="${build}"
+           includes="org/dcm4che*/**,META-INF/services/**"
+           excludes="**/*Test*"
+           manifest="${build}/META-INF/dcm4che.mf"/>
+
+      <copy todir="${lib_out}">
+         <fileset dir="${lib}" includes="log4j.jar"/>
+      </copy>
+
+      <jar jarfile="${samples_out}/acr2dcm.jar"
+           basedir="${build}"
+           includes="Acr2Dcm*"
+           manifest="${build}/META-INF/dcm4che.mf"/>
+
+      <jar jarfile="${samples_out}/dcm2jpg.jar"
+           basedir="${build}"
+           includes="Dcm2Jpg*"
+           manifest="${build}/META-INF/dcm2jpg.mf"/>
+
+      <jar jarfile="${samples_out}/dcm2xml.jar"
+           basedir="${build}"
+           includes="Dcm2Xml*"
+           manifest="${build}/META-INF/dcm2xml.mf"/>
+
+      <jar jarfile="${samples_out}/xml2dcm.jar"
+           basedir="${build}"
+           includes="Xml2Dcm*"
+           manifest="${build}/META-INF/xml2dcm.mf"/>
+
+      <jar jarfile="${samples_out}/dcmdir.jar"
+           basedir="${build}"
+           includes="DcmDir*"
+           manifest="${build}/META-INF/dcmdir.mf"/>
+
+      <jar jarfile="${samples_out}/dcmrcv.jar"
+           basedir="${build}"
+           includes="DcmRcv*,Configuration*"
+           manifest="${build}/META-INF/dcmrcv.mf"/>
+
+      <jar jarfile="${samples_out}/dcmsnd.jar"
+           basedir="${build}"
+           includes="DcmSnd*,Configuration*"
+           manifest="${build}/META-INF/dcmsnd.mf"/>
+
+      <jar jarfile="${samples_out}/mppssnd.jar"
+           basedir="${build}"
+           includes="MppsSnd*,Configuration*"
+           manifest="${build}/META-INF/mppssnd.mf"/>
+
+      <jar jarfile="${samples_out}/imgdisp.jar"
+           basedir="${build}"
+           includes="ImageDisplay*,ImageBox*,*.gif"
+           manifest="${build}/META-INF/imgdisp.mf"/>
+
+      <jar jarfile="${samples_out}/imgdump.jar"
+           basedir="${build}"
+           includes="ImageDumper*,SimpleDcmMetadata*,de/**"
+           manifest="${build}/META-INF/imgdump.mf"/>
+           
+      <jar jarfile="${samples_out}/imgflip.jar"
+           basedir="${build}"
+           includes="ImageFlipper*"
+           manifest="${build}/META-INF/imgflip.mf"/>
+           
+      <jar jarfile="${samples_out}/imgread.jar"
+           basedir="${build}"
+           includes="ImageReadParamDemo*"
+           manifest="${build}/META-INF/imgread.mf"/>
+
+      <copy todir="${samples_out}">
+         <fileset dir="${samples.conf}" excludes="**/.nbattrs"/>
+         <fileset dir="${lib}" includes="getopt.jar"/>
+      </copy>
+   </target>
+   
+   <target name="check-javadoc" depends="xml2java">
+      <uptodate property="uptodate-javadoc"
+	             targetfile="${javadoc}/index.html">
+         <srcfiles dir="${src.java}" includes="org/dcm4che/**/*.java"/>
+      </uptodate>
+   </target>
+
+   <target name="doc" depends="check-javadoc" unless="uptodate-javadoc"
+           description="Generate javadoc for dcm4che API">
+      <javadoc destdir="${javadoc}" sourcepath="${src.java}">
+         <package name="org.dcm4che.*"/>
+      </javadoc>     
+   </target>
+   
+   <target name="publish" depends="package,doc"
+           description="Build destribution ZIP file">           
+      <copy todir="${dist}">
+         <fileset dir="${doc}" excludes="**/.nbattrs"/>
+      </copy>
+      <copy todir="${etc_out}">
+         <fileset dir="${src.etc}" excludes="**/.nbattrs"/>
+      </copy>
+      <mkdir dir="${samples_out}/data"/>
+      <copy todir="${samples_out}/data">
+         <fileset dir="${samples.java}">
+            <include name="Acr2Dcm.java"/>
+            <include name="Dcm2Xml.java"/>
+            <include name="Xml2Dcm.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="Dcm2Xml.xsl"/>
+         </fileset>
+      </copy>
+
+      <mkdir dir="${samples_out}/imageio"/>
+      <copy todir="${samples_out}/imageio">
+         <fileset dir="${samples.java}">
+            <include name="de/**/*.java"/>
+            <include name="Dcm2Jpg.java"/>
+            <include name="ImageDumper.java"/>
+            <include name="ImageFlipper.java"/>
+            <include name="ImageReadParamDemo.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="DcmImageReader.properties"/>
+            <include name="SimpleDcmMetadata.xml"/>
+            <include name="SimpleDcmMetadata.xsl"/>
+         </fileset>
+      </copy>
+
+      <mkdir dir="${samples_out}/imgdisp"/>
+      <copy todir="${samples_out}/imgdisp">
+         <fileset dir="${samples.java}">
+            <include name="ImageBox.java"/>
+            <include name="ImageDisplay.java"/>
+            <include name="ImageDisplayApplet.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="open.gif"/>
+         </fileset>
+      </copy>
+      
+      <mkdir dir="${samples_out}/media"/>
+      <copy todir="${samples_out}/media">
+         <fileset dir="${samples.java}">
+            <include name="DcmDir.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="DcmDir.xsl"/>
+            <include name="DcmDir.properties"/>
+         </fileset>
+      </copy>
+      
+      <mkdir dir="${samples_out}/net"/>
+      <copy todir="${samples_out}/net">
+         <fileset dir="${samples.java}">
+            <include name="Configuration.java"/>
+            <include name="DcmRcv.java"/>
+            <include name="DcmRcvFSU.java"/>
+            <include name="DcmSnd.java"/>
+            <include name="MppsSnd.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="DcmRcv.properties"/>
+            <include name="DcmSnd.properties"/>
+            <include name="MppsSnd.properties"/>
+         </fileset>
+      </copy>
+
+      <mkdir dir="${samples_out}/syslog"/>
+      <copy todir="${samples_out}/syslog">
+         <fileset dir="${samples.java}">
+            <include name="Syslog.java"/>
+         </fileset>
+         <fileset dir="${samples.res}">
+            <include name="Syslog.properties"/>
+         </fileset>
+      </copy>
+      
+      <zip zipfile="${dist}/src.zip" 
+           basedir="${src.java}"
+           includes="**/*.java"/>
+      
+      <zip zipfile="${out}/dcm4che14-${version.number}.zip" basedir="${dist}"/>
+      
+   </target>
+
+</project>
