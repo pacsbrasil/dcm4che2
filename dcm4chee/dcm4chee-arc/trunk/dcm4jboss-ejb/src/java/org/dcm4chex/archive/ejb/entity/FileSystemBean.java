@@ -8,11 +8,17 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
+import java.rmi.RemoteException;
+
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 
 
 /**
@@ -37,7 +43,7 @@ import org.apache.log4j.Logger;
  * 	name="hsqldb-fetch-key"
  * 
  * @ejb.finder
- *  signature="Collection findAll()"
+ *  signature="java.util.Collection findAll()"
  *  query="SELECT OBJECT(a) FROM FileSystem AS a"
  *  transaction-type="Supports"
  *
@@ -45,11 +51,27 @@ import org.apache.log4j.Logger;
  *  signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
  *  query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
  *  transaction-type="Supports"
+ * 
+ * @jboss.query 
+ * 	signature="long ejbSelectSumFileLength(org.dcm4chex.archive.ejb.interfaces.FileSystemLocal fs)"
+ * 	query="SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem = ?1"
  */
 public abstract class FileSystemBean implements EntityBean {
 
+    private EntityContext ctx;
+
+    
     private static final Logger log = Logger.getLogger(FileSystemBean.class);
 
+    public void setEntityContext(EntityContext ctx) throws EJBException,
+            RemoteException {
+        this.ctx = ctx;
+    }
+
+    public void unsetEntityContext() throws EJBException, RemoteException {
+        this.ctx = null;    
+    }
+    
     /**
 	 * Create File System.
 	 * 
@@ -173,5 +195,17 @@ public abstract class FileSystemBean implements EntityBean {
     public long getAvailable() {
         final long hwm = getHighWaterMark();
         return hwm == 0 ? 0 : hwm - getDiskUsage();
+    }
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract long ejbSelectSumFileLength(FileSystemLocal fs) throws FinderException;
+    
+    /**
+     * @ejb.interface-method
+     */ 
+    public void updateDiskUsage() throws FinderException {
+        setDiskUsage(ejbSelectSumFileLength((FileSystemLocal) ctx.getEJBLocalObject()));
     }
 }

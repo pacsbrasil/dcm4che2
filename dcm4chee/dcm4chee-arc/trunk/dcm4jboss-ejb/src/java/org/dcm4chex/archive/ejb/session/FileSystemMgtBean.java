@@ -162,6 +162,15 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public FileSystemDTO updateDiskUsage(String dirPath)  throws FinderException {
+        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
+        fs.updateDiskUsage();
+        return toDTO(fs);
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
     public FileSystemDTO updateRetrieveAETs(String dirPath, String retrieveAETs)  throws FinderException {
         FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
         fs.setRetrieveAETs(retrieveAETs);
