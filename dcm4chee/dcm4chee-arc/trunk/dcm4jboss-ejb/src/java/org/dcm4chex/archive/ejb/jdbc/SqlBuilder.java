@@ -149,22 +149,30 @@ class SqlBuilder {
                     sb.append(" ");
                     sb.append(limit);
                     sb.append(" ");
+                    appendTo(sb, select);
                     break;
                 case JdbcProperties.DB2 :
-                    sb.append("* FROM ( SELECT ROW_NUMBER() OVER (ORDER BY ");
+                    sb.append("* FROM ( SELECT ");
+                    appendTo(sb, select);
+                    sb.append(", ROW_NUMBER() OVER (ORDER BY ");
                     appendTo(
                         sb,
                         (String[]) orderby.toArray(new String[orderby.size()]));
-                    sb.append(") AS rownum, ");
+                    sb.append(") AS rownum ");
                     break;
                 case JdbcProperties.ORACLE :
-                    sb.append("* FROM ( SELECT ROWNUM as r1, ");
+                    sb.append("* FROM ( SELECT ");
                     appendTo(sb, select);
-                    sb.append(" FROM ( SELECT ");
+                    sb.append(", ROWNUM as r1 FROM ( SELECT ");
+                    appendTo(sb, select);
+                    break;
+                default:
+                    appendTo(sb, select);
                     break;
             }
+        } else {
+            appendTo(sb, select);            
         }
-        appendTo(sb, select);
         sb.append(" FROM ");
         appendTo(sb, from);
         if (leftJoin != null) {
