@@ -461,6 +461,5 @@ public class DcmRcv extends DcmServiceBase {
             throw new RuntimeException("Could not initalize TLS configuration - "
             + ex.getMessage());
         }
-    }
-    // Inner classes -------------------------------------------------
+    }        
 }

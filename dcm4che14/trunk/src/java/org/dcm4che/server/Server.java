@@ -22,44 +22,53 @@
 
 package org.dcm4che.server;
 
+import org.dcm4che.util.HandshakeFailedListener;
 import java.io.IOException;
 import java.net.Socket;
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.HandshakeCompletedListener;
 
 /**
- * <description> 
+ * <description>
  *
  * @see <related>
  * @author  <a href="mailto:{email}">{full name}</a>.
  * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
- *   
+ *
  * <p><b>Revisions:</b>
  *
  * <p><b>yyyymmdd author:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
+ * <li> explicit fix description (no line numbers but methods) go
  *            beyond the cvs commit message
  * </ul>
  */
-public interface Server
-{
-   interface Handler
-   {
-      void handle(Socket s) throws IOException;
-      
-      boolean isSockedClosedByHandler();
-   }
-
-   public void setMaxClients(int max);
-
-   public int getMaxClients();
-   
-   public int getNumClients();
-
-   public void start(int port) throws IOException;
-   
-   public void start(int port, ServerSocketFactory ssf) throws IOException;
-
-   public void stop();
+public interface Server {
+    interface Handler {
+        void handle(Socket s) throws IOException;
+        
+        boolean isSockedClosedByHandler();
+    }
+    
+    void addHandshakeCompletedListener(HandshakeCompletedListener listener);
+    
+    void addHandshakeFailedListener(HandshakeFailedListener listener);
+    
+    void removeHandshakeCompletedListener(HandshakeCompletedListener listener);
+    
+    void removeHandshakeFailedListener(HandshakeFailedListener listener);
+    
+    void setMaxClients(int max);
+    
+    int getMaxClients();
+    
+    int getNumClients();
+    
+    void start(int port) throws IOException;
+    
+    void start(int port, ServerSocketFactory ssf) throws IOException;
+    
+    void stop();
 }

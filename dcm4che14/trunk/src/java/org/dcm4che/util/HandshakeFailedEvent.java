@@ -20,12 +20,11 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.auditlog;
+package org.dcm4che.util;
 
-import org.dcm4che.auditlog.RemoteNode;
-import org.dcm4che.data.Dataset;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import javax.net.ssl.SSLSocket;
+import java.util.EventObject;
 
 /**
  * <description>
@@ -33,7 +32,7 @@ import java.io.IOException;
  * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
- * @since August 27, 2002
+ * @since September 1, 2002
  *
  * <p><b>Revisions:</b>
  *
@@ -43,41 +42,25 @@ import java.io.IOException;
  *            beyond the cvs commit message
  * </ul>
  */
-class DicomQuery implements IHEYr4.Message {
+public class HandshakeFailedEvent extends EventObject {
     
     // Constants -----------------------------------------------------
     
     // Variables -----------------------------------------------------
-    private String keys;
-    private RemoteNode requestor;
-    private String cuid;
+    private final IOException ex;
     
     // Constructors --------------------------------------------------
-    public DicomQuery(Dataset keys, RemoteNode requestor, String cuid) {
-        this.keys = DicomQuery.encode(keys);
-        this.requestor = requestor;
-        this.cuid = cuid;
+    public HandshakeFailedEvent(SSLSocket sock, IOException ex) {
+        super(sock);
+        this.ex = ex;
     }
     
     // Methods -------------------------------------------------------
-    private static String encode(Dataset keys) {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream(512);
-        try {
-            keys.writeDataset(bout, null);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to serialize keys", e);
-        }
-        return Base64.byteArrayToBase64(bout.toByteArray());
+    public SSLSocket getSocket() {
+        return (SSLSocket) source;
     }
     
-    public void writeTo(StringBuffer sb) {
-        sb.append("<DicomQuery><Keys>")
-          .append(keys)
-          .append("</Keys><Requestor>");
-        requestor.writeTo(sb);
-        sb.append("</Requestor><CUID>")
-          .append(cuid)
-          .append("</CUID></DicomQuery>");
+    public IOException getException() {
+        return ex;
     }
-    
 }

@@ -35,6 +35,8 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.HandshakeCompletedListener;
+
 /**
  * <description>
  *
@@ -76,6 +78,18 @@ public abstract class SSLContextAdapter {
 //    public abstract void setEnabledCipherSuites(String[] cipherSuites);
     
 //    public abstract String[] getEnabledCipherSuites();
+    
+    public abstract void addHandshakeCompletedListener(
+            HandshakeCompletedListener listener);
+
+    public abstract void addHandshakeFailedListener(
+            HandshakeFailedListener listener);
+    
+    public abstract void removeHandshakeCompletedListener(
+            HandshakeCompletedListener listener);
+
+    public abstract void removeHandshakeFailedListener(
+            HandshakeFailedListener listener);
     
     public abstract String[] getEnabledProtocols();
         

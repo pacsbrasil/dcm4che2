@@ -23,6 +23,8 @@
 package org.dcm4cheri.util;
 
 import org.dcm4che.util.SSLContextAdapter;
+import org.dcm4che.util.HandshakeFailedListener;
+import org.dcm4che.util.HandshakeFailedEvent;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -35,7 +37,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.util.Arrays;
-import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import java.security.cert.X509Certificate;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -48,6 +51,9 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.HandshakeCompletedEvent;
+import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -70,7 +76,8 @@ import org.apache.log4j.Logger;
  * <li> make enabledCipherSuites param of SocketFactory instead of Adapter
  * </ul>
  */
-public class SSLContextAdapterImpl extends SSLContextAdapter {
+public class SSLContextAdapterImpl extends SSLContextAdapter
+        implements HandshakeCompletedListener, HandshakeFailedListener {
     // Constants -----------------------------------------------------
     
     // Attributes ----------------------------------------------------
@@ -94,8 +101,9 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
     private KeyManager[] kms = null;
     private TrustManager[] tms = null;
     private boolean needClientAuth = true;
-    private boolean startHandshake = true;
     private SSLServerSocket unboundSSLServerSocket = null;
+    private List hcl = null;
+    private List hfl = null;
     
     // Static --------------------------------------------------------
     public static void main(String[] args) throws Exception {
@@ -105,7 +113,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
         System.out.println("SupportedProtocols"
             + Arrays.asList(inst.getSupportedProtocols()));
     }
-    
+        
     // Constructors --------------------------------------------------
     public SSLContextAdapterImpl() {
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
@@ -118,6 +126,8 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
         } catch (GeneralSecurityException e) {
             throw new ConfigurationError("could not instantiate SSLContext", e);
         }
+        addHandshakeCompletedListener(this);
+        addHandshakeFailedListener(this);
     }
     
     // Public --------------------------------------------------------
@@ -126,6 +136,51 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
     }
     
     // SSLContextAdapter implementation ------------------------------
+    public void addHandshakeCompletedListener(
+            HandshakeCompletedListener listener) {
+         hcl = addToList(hcl, listener);
+    }
+
+    public void addHandshakeFailedListener(
+            HandshakeFailedListener listener) {
+         hfl = addToList(hfl, listener);
+    }
+    
+    public void removeHandshakeCompletedListener(
+            HandshakeCompletedListener listener) {
+         hcl = removeFromList(hcl, listener);
+    }
+
+    public void removeHandshakeFailedListener(
+            HandshakeFailedListener listener) {
+         hfl = removeFromList(hfl, listener);
+    }
+     // Listeners
+
+    // Add an element to a list, creating a new list if the
+    // existing list is null, and return the list.
+    static List addToList(List l, Object elt) {
+        if (l == null) {
+            l = new ArrayList();
+        }
+        l.add(elt);
+        return l;
+    }
+
+
+    // Remove an element from a list, discarding the list if the
+    // resulting list is empty, and return the list or null.
+    static List removeFromList(List l, Object elt) {
+        if (l == null) {
+            return l;
+        }
+        l.remove(elt);
+        if (l.size() == 0) {
+            l = null;
+        }
+        return l;
+    }
+    
     public final SSLContext getSSLContext() {
         return ctx;
     }
@@ -166,10 +221,6 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
     
     public boolean isNeedClientAuth() {
         return needClientAuth;
-    }
-    
-    public void setStartHandshake(boolean startHandshake) {
-        this.startHandshake = startHandshake;
     }
     
     public void setEnabledProtocols(String[] protocols) {
@@ -234,34 +285,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
     
     // Protected -----------------------------------------------------
     
-    // Private -------------------------------------------------------
-    
-    public static String toInfoMsg(SSLSocket ssl, boolean local)
-    throws IOException {
-        return toInfoMsg(ssl, local, new StringBuffer()).toString();
-    }
-    
-    private static StringBuffer toInfoMsg(SSLSocket ssl, boolean local,
-    StringBuffer sb)
-    throws IOException {
-        sb.append(ssl.getInetAddress());
-        sb.append(local ? " << " : " >> ");
-        SSLSession se = ssl.getSession();
-        sb.append(se.getCipherSuite());
-        sb.append("[");
-        Certificate[] certs = local ? se.getLocalCertificates()
-        : se.getPeerCertificates();
-        if (certs.length == 0) {
-            sb.append("null");
-        } else if (certs[0] instanceof X509Certificate) {
-            sb.append(((X509Certificate)certs[0]).getSubjectX500Principal());
-        } else {
-            sb.append(certs[0].getType());
-        }
-        sb.append("]");
-        return sb;
-    }
-    
+    // Private -------------------------------------------------------    
     private String toKeyStoreType(String fname) {
         return fname.endsWith(".p12") 
             || fname.endsWith(".P12") 
@@ -371,12 +395,22 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
                 s.setEnabledCipherSuites(cipherSuites);
             }
             s.setEnabledProtocols(getEnabledProtocols());
-            if (startHandshake) {
-                s.startHandshake();
+            if (hcl != null) {
+                for (int i = 0, n = hcl.size(); i < n; ++i) {
+                    s.addHandshakeCompletedListener(
+                        (HandshakeCompletedListener) hcl.get(i));
+                }
             }
-            if (log.isInfoEnabled()) {
-                log.info(toInfoMsg(s, true));
-                log.info(toInfoMsg(s, false));
+            try {
+                s.startHandshake();
+            } catch (IOException e) {
+                if (hfl != null) {
+                    HandshakeFailedEvent event = new HandshakeFailedEvent(s,e);
+                    for (int i = 0, n = hfl.size(); i < n; ++i) {
+                        ((HandshakeFailedListener) hfl.get(i)).handshakeFailed(event);
+                    }
+                }
+                throw e;
             }
             return s;
         }
@@ -386,5 +420,24 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
         ConfigurationError(String msg, Exception x) {
             super(msg,x);
         }
+    }
+
+    //  HandshakeCompletedListener Implementation ---------------------------
+    public void handshakeCompleted(HandshakeCompletedEvent event) {
+        try {
+            X509Certificate cert = (X509Certificate)
+                event.getPeerCertificates()[0];
+            log.info(event.getSocket().getInetAddress().toString() + 
+                ": accept " + event.getCipherSuite() + " with "
+                + cert.getSubjectDN());
+        } catch (SSLPeerUnverifiedException e) {
+            log.error("SSL peer not verified:",e);
+        }
+    }
+    
+    //  HandshakeFailedListener Implementation-------------------------------
+    public void handshakeFailed(HandshakeFailedEvent event) {
+        log.warn(event.getSocket().getInetAddress().toString() + 
+            ": SSL handshake failed: ", event.getException());
     }
 }
