@@ -206,12 +206,12 @@ public class MediaData {
 	 */
 	private static Collection _getMediaStatusList() {
 		mapDefinedStati = new HashMap();//TODO get from MediaDTO!
-		mapDefinedStati.put( new Integer(MediaDTO.OPEN), new MediaStatus( MediaDTO.OPEN, "OPEN" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.QUEUED), new MediaStatus( MediaDTO.QUEUED, "QUEUED" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.TRANSFERING), new MediaStatus( MediaDTO.TRANSFERING, "TRANSFERING" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.BURNING), new MediaStatus( MediaDTO.BURNING, "CREATING" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.COMPLETED), new MediaStatus( MediaDTO.COMPLETED, "COMPLETED" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.ERROR), new MediaStatus( MediaDTO.ERROR, "FAILED" ) );
+		mapDefinedStati.put( new Integer(MediaDTO.OPEN), new MediaStatus( MediaDTO.OPEN, "OPEN", 1 ) );
+		mapDefinedStati.put( new Integer(MediaDTO.ERROR), new MediaStatus( MediaDTO.ERROR, "FAILED", 2 ) );
+		mapDefinedStati.put( new Integer(MediaDTO.QUEUED), new MediaStatus( MediaDTO.QUEUED, "QUEUED", 3 ) );
+		mapDefinedStati.put( new Integer(MediaDTO.TRANSFERING), new MediaStatus( MediaDTO.TRANSFERING, "TRANSFERING", 4 ) );
+		mapDefinedStati.put( new Integer(MediaDTO.BURNING), new MediaStatus( MediaDTO.BURNING, "CREATING", 5 ) );
+		mapDefinedStati.put( new Integer(MediaDTO.COMPLETED), new MediaStatus( MediaDTO.COMPLETED, "COMPLETED", 6 ) );
 		return mapDefinedStati.values();
 	}
 	
@@ -238,10 +238,12 @@ public class MediaData {
 	public static class MediaStatus {
 		int status;
 		String description;
+		int order;
 		
-		public MediaStatus( int status, String desc ) {
+		public MediaStatus( int status, String desc, int order ) {
 			this.status = status;
 			this.description = desc;
+			this.order = order;
 		}
 		/**
 		 * @return Returns the description.
@@ -254,6 +256,12 @@ public class MediaData {
 		 */
 		public int getStatus() {
 			return status;
+		}
+		/**
+		 * @return Returns the order.
+		 */
+		public int getOrder() {
+			return order;
 		}
 	}
 
