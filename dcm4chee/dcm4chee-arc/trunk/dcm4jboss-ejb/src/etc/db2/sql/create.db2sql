@@ -272,7 +272,7 @@ INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
 
 INSERT INTO ae (pk,aet,hostname,port)
-	VALUES(NEXTVAL FOR ae_pk_seq,'QR_SCP','localhost',2350);
+	VALUES(NEXTVAL FOR ae_pk_seq,'PACS_TIANI','localhost',2350);
 INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(NEXTVAL FOR ae_pk_seq,'LOCAL','localhost',2345);
 

@@ -248,5 +248,5 @@ INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
 
-INSERT INTO ae (aet,hostname,port) VALUES('QR_SCP','localhost',2350);
+INSERT INTO ae (aet,hostname,port) VALUES('PACS_TIANI','localhost',2350);
 INSERT INTO ae (aet,hostname,port) VALUES('LOCAL','localhost',2345);
