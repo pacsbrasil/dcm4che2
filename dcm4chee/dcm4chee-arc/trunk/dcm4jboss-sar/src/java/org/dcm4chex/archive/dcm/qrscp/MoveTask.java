@@ -48,6 +48,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -76,6 +77,8 @@ class MoveTask implements Runnable {
             .getInstance().getDefaultUIDDictionary();
 
     private final QueryRetrieveScpService service;
+    
+    private final Logger log;
 
     private final String moveDest;
 
@@ -125,7 +128,7 @@ class MoveTask implements Runnable {
                 try {
                     moveForwardCmd.cancel();
                 } catch (IOException e) {
-                    service.getLog().warn("Failed to forward C-CANCEL-RQ:", e);
+                    log.warn("Failed to forward C-CANCEL-RQ:", e);
                 }
             }
         }
@@ -136,6 +139,7 @@ class MoveTask implements Runnable {
             FileInfo[][] fileInfo, AEData aeData, String moveDest)
             throws DcmServiceException {
         this.service = service;
+        this.log = service.getLog();
         this.moveAssoc = moveAssoc;
         this.movePcid = movePcid;
         this.moveRqCmd = moveRqCmd;
@@ -174,14 +178,14 @@ class MoveTask implements Runnable {
             ac = a.connect(createAAssociateRQ());
         } catch (IOException e) {
             final String prompt = "Failed to connect " + moveDest;
-            service.getLog().error(prompt, e);
+            log.error(prompt, e);
             throw new DcmServiceException(Status.UnableToPerformSuboperations,
                     prompt, e);
         }
         if (!(ac instanceof AAssociateAC)) {
             final String prompt = "Association not accepted by " + moveDest
                     + ":\n" + ac;
-            service.getLog().error(prompt);
+            log.error(prompt);
             throw new DcmServiceException(Status.UnableToPerformSuboperations,
                     prompt);
         }
@@ -265,12 +269,12 @@ class MoveTask implements Runnable {
                         break;
                     default:
                         // General error
-                        service.getLog().error("Forwarded MOVE RQ to "
+                        log.error("Forwarded MOVE RQ to "
                                 + retrieveAET + " failed: " + fwdMoveRspCmd);
                         failedIUIDs.addAll(iuids);
                     }
                 } catch (IOException e) {
-                    service.getLog()
+                    log
                             .error("Failure during receive of C-MOVE_RSP:", e);
                 }
             }
@@ -283,7 +287,7 @@ class MoveTask implements Runnable {
                     .toArray(new String[size]));
             moveForwardCmd.execute(fwdmoveRspListener);
         } catch (Exception e) {
-            service.getLog().error("Failed to forward MOVE RQ to "
+            log.error("Failed to forward MOVE RQ to "
                     + retrieveAET,
                     e);
             failedIUIDs.addAll(iuids);
@@ -292,7 +296,10 @@ class MoveTask implements Runnable {
 
     private void retrieveLocal() {
         byte[] buffer = new byte[service.getBufferSize()];
-        for (int i = 0, n = toRetrieve.size(); !canceled && i < n; ++i) {
+        Association a = storeAssoc.getAssociation();
+        final int n = toRetrieve.size();
+        final int remainingAfter = remaining - n;
+        for (int i = 0; a.getState() == Association.ASSOCIATION_ESTABLISHED && !canceled && i < n; ++i) {
             final FileInfo fileInfo = (FileInfo) toRetrieve.get(i);
             final String iuid = fileInfo.sopIUID;
             DimseListener storeScpListener = new DimseListener() {
@@ -322,28 +329,31 @@ class MoveTask implements Runnable {
                 storeAssoc.invoke(makeCStoreRQ(fileInfo, buffer),
                         storeScpListener);
             } catch (Exception e) {
-                service.getLog().error("Exception during move of " + iuid, e);
-                for (; i < n; ++i, --remaining)
-                    failedIUIDs.add(((FileInfo) toRetrieve.get(i)).sopIUID);
-                if (remaining > 0)
-                    notifyMovePending(null); 
-                try {
-                    storeAssoc.getAssociation().abort(
-                            af.newAAbort(AAbort.SERVICE_PROVIDER, AAbort.REASON_NOT_SPECIFIED));
-                } catch (IOException e1) {
-                    service.getLog().error("Failed to send A-ABORT", e1);
-                }
-                logInstancesSent();
-                return;
+                log.error("Exception during move of " + iuid, e);
             }
         }
-        try {
-            storeAssoc.release(true);
-            // workaround to ensure that last STORE-RSP is processed before
-            // finally MOVE-RSP is sent
-            Thread.sleep(10);
-        } catch (Exception e) {
-            service.getLog().error("Execption during release:", e);
+        if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
+	        try {
+	            storeAssoc.release(true);
+	            // workaround to ensure that last STORE-RSP is processed before
+	            // finally MOVE-RSP is sent
+	            Thread.sleep(10);
+	        } catch (Exception e) {
+	            log.error("Execption during release:", e);
+	        }
+        } else {
+            try {
+                a.abort(af.newAAbort(AAbort.SERVICE_PROVIDER, AAbort.REASON_NOT_SPECIFIED));
+            } catch (IOException ignore) {
+            }
+        }
+        if (!canceled) {
+	        for (int i = n - (remaining - remainingAfter); i < n; ++i) {
+	            final FileInfo fileInfo = (FileInfo) toRetrieve.get(i);
+	            final String iuid = fileInfo.sopIUID;
+	            failedIUIDs.add(iuid);
+	            --remaining;
+	        }
         }
         logInstancesSent();
     }
@@ -418,7 +428,7 @@ class MoveTask implements Runnable {
                 moveAssoc.getAssociation()
                         .write(af.newDimse(movePcid, cmd, ds));
             } catch (Exception e) {
-                service.getLog()
+                log
                         .info("Failed to send Move RSP to Move Originator:", e);
                 moveAssoc = null;
             }
