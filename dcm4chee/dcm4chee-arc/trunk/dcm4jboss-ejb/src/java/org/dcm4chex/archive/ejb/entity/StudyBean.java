@@ -410,7 +410,11 @@ public abstract class StudyBean implements EntityBean {
     public void setAttributes(Dataset ds) {
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setStudyId(ds.getString(Tags.StudyID));
-        setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
+        try {
+	        setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
+	    } catch (IllegalArgumentException e) {
+	        log.warn("Illegal Study Date/Time format: " + e.getMessage());
+	    }
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
         Dataset tmp = ds.exclude(SUPPL_TAGS).excludePrivate();

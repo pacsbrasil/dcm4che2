@@ -451,8 +451,12 @@ public abstract class SeriesBean implements EntityBean {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
-        setPpsStartDateTime(ds
-                .getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
+        try {
+	        setPpsStartDateTime(ds
+	                .getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
+        } catch (IllegalArgumentException e) {
+            log.warn("Illegal Pps Date/Time format: " + e.getMessage());
+        }
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
         if (refPPS != null) {
             final String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);

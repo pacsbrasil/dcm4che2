@@ -261,7 +261,11 @@ public abstract class PatientBean implements EntityBean {
         setPatientId(ds.getString(Tags.PatientID));
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
         setPatientName(ds.getString(Tags.PatientName));
-        setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
+        try {
+	        setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
+	    } catch (IllegalArgumentException e) {
+	        log.warn("Illegal Patient Birth Date format: " + e.getMessage());
+	    }
         setPatientSex(ds.getString(Tags.PatientSex));
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp,
