@@ -23,30 +23,57 @@
 
 package org.dcm4che.srom;
 
-import java.io.*;
-import java.util.*;
-
-import junit.framework.*;
-
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public class PackageTest extends Object {
+public interface HL7SRExport {
     
-    private PackageTest() {
-    }
+    /** Getter for property sendingApplication.
+     * @return Value of property sendingApplication.
+     */
+    String getSendingApplication();
     
-    public static void main (String[] args) {
-        junit.textui.TestRunner.run (suite());
-    }
+    /** Setter for property sendingApplication.
+     * @param sendingApplication New value of property sendingApplication.
+     */
+    void setSendingApplication(String sendingApplication);
     
-    public static Test suite() {
-        TestSuite suite= new TestSuite();
-        suite.addTest(SRDocumentFactoryTest.suite());
-        suite.addTest(ReferencedContentTest.suite());
-        suite.addTest(HL7SRExportTest.suite());
-        return suite;
-    }
+    /** Getter for property sendingFacility.
+     * @return Value of property sendingFacility.
+     */
+    String getSendingFacility();
+    
+    /** Setter for property sendingFacility.
+     * @param sendingFacility New value of property sendingFacility.
+     */
+    void setSendingFacility(String sendingFacility);
+    
+    /** Getter for property receivingApplication.
+     * @return Value of property receivingApplication.
+     */
+    String getReceivingApplication();
+    
+    /** Setter for property receivingApplication.
+     * @param receivingApplication New value of property receivingApplication.
+     */
+    void setReceivingApplication(String receivingApplication);
+    
+    /** Getter for property receivingFacility.
+     * @return Value of property receivingFacility.
+     */
+    String getReceivingFacility();
+    
+    /** Setter for property receivingFacility.
+     * @param receivingFacility New value of property receivingFacility.
+     */
+    void setReceivingFacility(String receivingFacility);
+    
+    String nextMessageControlID();
+    
+    byte[] toHL7(SRDocument doc, String messageControlID,
+            String issuerOfPatientID, String patientAccountNumber,
+            String universalServiceID, String placerOrderNumber,
+            String fillerOrderNumber);
 }

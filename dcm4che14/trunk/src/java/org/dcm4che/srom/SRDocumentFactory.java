@@ -362,4 +362,8 @@ public abstract class SRDocumentFactory {
     
     public abstract KeyObject newKeyObject(Dataset ds) throws DcmValueException;
     
+    public abstract HL7SRExport newHL7SRExport(
+        String sendingApplication, String sendingFacility,
+        String receivingApplication, String receivingFacility);
+    
 }//end interface SRDocumentFactory

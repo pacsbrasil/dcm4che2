@@ -170,6 +170,7 @@
          
          <test name="org.dcm4che.srom.SRDocumentFactoryTest" todir="${build.reports.dir}"/>
          <test name="org.dcm4che.srom.ReferencedContentTest" todir="${build.reports.dir}"/>
+         <test name="org.dcm4che.srom.HL7SRExportTest" todir="${build.reports.dir}"/>
 
          <test name="org.dcm4che.hl7.HL7MessageTest" todir="${build.reports.dir}"/>
       </junit>

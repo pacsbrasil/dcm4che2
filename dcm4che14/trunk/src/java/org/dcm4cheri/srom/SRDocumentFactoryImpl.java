@@ -207,4 +207,10 @@ public class SRDocumentFactoryImpl extends SRDocumentFactory
         return IconImageImpl.newIconImage(ds);
     }
     
+    public HL7SRExport newHL7SRExport(
+            String sendingApplication, String sendingFacility,
+            String receivingApplication, String receivingFacility) {
+        return new HL7SRExportImpl(sendingApplication, sendingFacility,
+            receivingApplication, receivingFacility);
+    }
 }
