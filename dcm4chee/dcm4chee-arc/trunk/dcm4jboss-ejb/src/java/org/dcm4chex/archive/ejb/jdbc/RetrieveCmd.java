@@ -36,7 +36,7 @@ public class RetrieveCmd extends BaseCmd {
             "Instance.sopCuid", "Instance.externalRetrieveAET",
             "FileSystem.retrieveAET", "FileSystem.directoryPath",
             "File.filePath", "File.fileTsuid",
-            "File.fileMd5Field", "File.fileSize"};
+            "File.fileMd5Field", "File.fileSize", "File.fileStatus"};
 
     private static final String[] ENTITY = { "Patient", "Study", "Series",
             "Instance"};
@@ -131,7 +131,8 @@ public class RetrieveCmd extends BaseCmd {
                         .getBytes(7), rs.getBytes(8), rs.getBytes(9), rs
                         .getString(10), rs.getString(11), rs.getString(12), rs
                         .getString(13), rs.getString(14), rs.getString(15), rs
-                        .getString(16), rs.getString(17), rs.getInt(18));
+                        .getString(16), rs.getString(17), rs.getInt(18), rs
+                        .getInt(19));
                 key = key();
                 list = (ArrayList) result.get(key);
                 if (list == null) {

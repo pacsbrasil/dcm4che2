@@ -272,6 +272,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		dto.setFileTsuid(file.getFileTsuid());
 		dto.setFileMd5(file.getFileMd5());
 		dto.setFileSize(file.getFileSize());
+		dto.setFileStatus(file.getFileStatus());
 		return dto;
 	}
 	

@@ -32,6 +32,8 @@ public final class FileDTO implements Serializable {
     private int size;
 
     private byte[] md5;
+    
+    private int status;
 
     /**
      * @return Returns the pk.
@@ -87,6 +89,14 @@ public final class FileDTO implements Serializable {
      */
     public final void setFileMd5(byte[] md5) {
         this.md5 = md5;
+    }
+    
+    public final int getFileStatus() {
+        return status;
+    }
+
+    public final void setFileStatus(int status) {
+        this.status = status;
     }
     
     /**

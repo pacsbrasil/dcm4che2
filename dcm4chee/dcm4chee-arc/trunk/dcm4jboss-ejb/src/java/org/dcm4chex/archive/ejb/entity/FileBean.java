@@ -120,7 +120,7 @@ public abstract class FileBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="file_status"
      */
-    public abstract String getFileStatus();
+    public abstract int getFileStatus();
 
     /**
      * @ejb.interface-method
@@ -203,6 +203,7 @@ public abstract class FileBean implements EntityBean {
         retval.setFileTsuid(getFileTsuid());
         retval.setFileSize(getFileSize());
         retval.setFileMd5(getFileMd5());
+        retval.setFileStatus(getFileStatus());
         return retval;
     }
 
