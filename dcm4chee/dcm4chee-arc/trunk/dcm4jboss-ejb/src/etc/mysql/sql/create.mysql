@@ -77,7 +77,7 @@ FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
 CREATE UNIQUE INDEX mpps_iuid ON mpps (mpps_iuid);
-CREATE INDEX mpps_patient_fk ON study(patient_fk);
+CREATE INDEX mpps_patient_fk ON mpps(patient_fk);
 CREATE INDEX mpps_pps_start ON mpps (pps_start);
 CREATE INDEX mpps_station_aet ON mpps (station_aet);
 CREATE INDEX mpps_modality ON mpps (modality);
@@ -271,4 +271,3 @@ INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
 
 INSERT INTO ae (aet,hostname,port) VALUES('PACS_TIANI','localhost',2350);
-INSERT INTO ae (aet,hostname,port) VALUES('LOCAL','localhost',2345);
