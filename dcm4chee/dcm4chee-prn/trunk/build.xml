@@ -360,7 +360,7 @@
     <copy todir="${jboss.server}">
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>
-        <include name="conf/calibration/**/*.jpg"/>
+        <include name="conf/calibration/DSI256.ods"/>
         <include name="conf/lut/*.lut"/>
         <include name="conf/tls/*.p12"/>
         <include name="conf/tls/*.jks"/>

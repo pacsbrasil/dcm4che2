@@ -30,8 +30,7 @@ import org.jboss.system.ServiceMBean;
  *  <description>
  *
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @since      March 30, 2003
- * @created    November 3, 2003
+ * @since      November 3, 2003
  * @version    $Revision$
  */
 public interface PrinterServiceMBean extends ServiceMBean
@@ -596,54 +595,6 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Gets the dDLODs attribute of the PrinterServiceMBean object
-     *
-     * @return    The dDLODs value
-     */
-    public float[] getDDLODs();
-
-
-    /**
-     *  Sets the dDLODs attribute of the PrinterServiceMBean object
-     *
-     * @param  ods  The new dDLODs value
-     */
-    public void setDDLODs(float[] ods);
-
-
-    /**
-     *  Sets the dDLODsAsText attribute of the PrinterServiceMBean object
-     *
-     * @param  odsAsString  The new dDLODsAsText value
-     */
-    public void setDDLODsAsText(String odsAsString);
-
-
-    /**
-     *  Gets the refDSI256ODs attribute of the PrinterServiceMBean object
-     *
-     * @return    The refDSI256ODs value
-     */
-    public float[] getRefDSI256ODs();
-
-
-    /**
-     *  Sets the refDSI256ODs attribute of the PrinterServiceMBean object
-     *
-     * @param  refODs  The new refDSI256ODs value
-     */
-    public void setRefDSI256ODs(float[] refODs);
-
-
-    /**
-     *  Sets the refDSI256ODsAsText attribute of the PrinterServiceMBean object
-     *
-     * @param  refODsAsText  The new refDSI256ODsAsText value
-     */
-    public void setRefDSI256ODsAsText(String refODsAsText);
-
-
-    /**
      *  Gets the calibrationDir attribute of the PrinterServiceMBean object
      *
      * @return    The calibrationDir value
@@ -655,24 +606,10 @@ public interface PrinterServiceMBean extends ServiceMBean
      *  Sets the calibrationDir attribute of the PrinterServiceMBean object
      *
      * @param  scanGrayscaleDir  The new calibrationDir value
+     * @exception  IOException   Description of the Exception
      */
-    public void setCalibrationDir(String scanGrayscaleDir);
-
-
-    /**
-     *  Gets the refDSI256FileName attribute of the PrinterServiceMBean object
-     *
-     * @return    The refDSI256FileName value
-     */
-    public String getRefDSI256FileName();
-
-
-    /**
-     *  Sets the refDSI256FileName attribute of the PrinterServiceMBean object
-     *
-     * @param  fname  The new refDSI256FileName value
-     */
-    public void setRefDSI256FileName(String fname);
+    public void setCalibrationDir(String scanGrayscaleDir)
+        throws IOException;
 
 
     /**
@@ -884,29 +821,11 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Setter for property dateOfLastCalibration.
-     *
-     * @param  dateOfLastCalibration  New value of property
-     *      dateOfLastCalibration.
-     */
-    public void setDateOfLastCalibration(String dateOfLastCalibration);
-
-
-    /**
      *  Getter for property timeOfLastCalibration.
      *
      * @return    Value of property timeOfLastCalibration.
      */
     public String getTimeOfLastCalibration();
-
-
-    /**
-     *  Setter for property timeOfLastCalibration.
-     *
-     * @param  timeOfLastCalibration  New value of property
-     *      timeOfLastCalibration.
-     */
-    public void setTimeOfLastCalibration(String timeOfLastCalibration);
 
 
     /**

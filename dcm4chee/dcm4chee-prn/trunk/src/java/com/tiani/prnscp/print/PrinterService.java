@@ -20,15 +20,12 @@
  */
 package com.tiani.prnscp.print;
 
-import java.awt.Color;
 import java.awt.print.Pageable;
 import java.awt.print.Paper;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -69,8 +66,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
-import org.dcm4che.util.DAFormat;
-import org.dcm4che.util.TMFormat;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -218,6 +213,8 @@ public class PrinterService
 
     /**  Holds value of property lutDir. */
     private String lutDir;
+
+    private File odFile;
 
     /**  Holds value of property supportsAnnotationBox. */
     private boolean supportsAnnotationBox = false;
@@ -1312,26 +1309,24 @@ public class PrinterService
 
 
     /**
-     *  Getter for property minDensity.
+     *  Gets the minDensity attribute of the PrinterService object
      *
-     * @return    Value of property minDensity.
+     * @return    The minDensity value
      */
     public int getMinDensity()
     {
-        float[] od = getDDLODs();
-        return (int) (od[0] * 100);
+        return calibration.getMinDensity();
     }
 
 
     /**
-     *  Getter for property maxDensity.
+     *  Gets the maxDensity attribute of the PrinterService object
      *
-     * @return    Value of property maxDensity.
+     * @return    The maxDensity value
      */
     public int getMaxDensity()
     {
-        float[] od = getDDLODs();
-        return (int) (od[od.length - 1] * 100);
+        return calibration.getMaxDensity();
     }
 
 
@@ -1762,39 +1757,6 @@ public class PrinterService
 
 
     /**
-     *  Gets the dDLODs attribute of the PrinterService object
-     *
-     * @return    The dDLODs value
-     */
-    public float[] getDDLODs()
-    {
-        return calibration.getDDLODs();
-    }
-
-
-    /**
-     *  Sets the dDLODs attribute of the PrinterService object
-     *
-     * @param  ods  The new dDLODs value
-     */
-    public void setDDLODs(float[] ods)
-    {
-        calibration.setDDLODs(ods);
-    }
-
-
-    /**
-     *  Sets the dDLODsAsText attribute of the PrinterService object
-     *
-     * @param  ddlODsAsText  The new dDLODsAsText value
-     */
-    public void setDDLODsAsText(String ddlODsAsText)
-    {
-        calibration.setDDLODs(toFloatArray(ddlODsAsText));
-    }
-
-
-    /**
      *  Getter for property dateOfLastCalibration.
      *
      * @return    Value of property dateOfLastCalibration.
@@ -1806,23 +1768,6 @@ public class PrinterService
 
 
     /**
-     *  Setter for property dateOfLastCalibration.
-     *
-     * @param  dateOfLastCalibration  New value of property
-     *      dateOfLastCalibration.
-     */
-    public void setDateOfLastCalibration(String dateOfLastCalibration)
-    {
-        try {
-            new DAFormat().parse(dateOfLastCalibration);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException();
-        }
-        calibration.setDateOfLastCalibration(dateOfLastCalibration);
-    }
-
-
-    /**
      *  Getter for property timeOfLastCalibration.
      *
      * @return    Value of property timeOfLastCalibration.
@@ -1830,23 +1775,6 @@ public class PrinterService
     public String getTimeOfLastCalibration()
     {
         return calibration.getTimeOfLastCalibration();
-    }
-
-
-    /**
-     *  Setter for property timeOfLastCalibration.
-     *
-     * @param  timeOfLastCalibration  New value of property
-     *      timeOfLastCalibration.
-     */
-    public void setTimeOfLastCalibration(String timeOfLastCalibration)
-    {
-        try {
-            new TMFormat().parse(timeOfLastCalibration);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException();
-        }
-        calibration.setTimeOfLastCalibration(timeOfLastCalibration);
     }
 
 
@@ -1884,86 +1812,38 @@ public class PrinterService
 
 
     /**
-     *  Gets the refDSI256ODs attribute of the PrinterService object
-     *
-     * @return    The refDSI256ODs value
-     */
-    public float[] getRefDSI256ODs()
-    {
-        return scanner.getRefDSI256ODs();
-    }
-
-
-    /**
-     *  Sets the refDSI256ODs attribute of the PrinterService object
-     *
-     * @param  refODs  The new refDSI256ODs value
-     */
-    public void setRefDSI256ODs(float[] refODs)
-    {
-        scanner.setRefDSI256ODs(refODs);
-    }
-
-
-    /**
-     *  Sets the refDSI256ODsAsText attribute of the PrinterService object
-     *
-     * @param  refODsAsText  The new refDSI256ODsAsText value
-     */
-    public void setRefDSI256ODsAsText(String refODsAsText)
-    {
-        setRefDSI256ODs(toFloatArray(refODsAsText));
-    }
-
-
-    /**
      *  Gets the calibrationDir attribute of the PrinterService object
      *
      * @return    The calibrationDir value
      */
     public String getCalibrationDir()
     {
-        return scanner.getCalibrationDir().getAbsolutePath();
+        return odFile.getParentFile().getAbsolutePath();
     }
 
 
     /**
      *  Sets the calibrationDir attribute of the PrinterService object
      *
-     * @param  scanGrayscaleDir  The new calibrationDir value
+     * @param  dir  The new calibrationDir value
      */
-    public void setCalibrationDir(String scanGrayscaleDir)
+    public void setCalibrationDir(String dir)
+        throws IOException
     {
-        scanner.setCalibrationDir(toFile(scanGrayscaleDir));
+        File d = toFile(dir);
+        odFile = new File(d, calledAET + ".ods");
+        if (!odFile.isFile()) {
+            log.warn("Could not find file " + odFile
+                     + " required for basis calibration");
+        }
+        scanner.setScanDir(new File(d, calledAET));
     }
 
 
     /**
-     *  Gets the refDSI256FileName attribute of the PrinterService object
+     *  Gets the scanPointExtension attribute of the PrinterService object
      *
-     * @return    The refDSI256FileName value
-     */
-    public String getRefDSI256FileName()
-    {
-        return scanner.getRefDSI256FileName();
-    }
-
-
-    /**
-     *  Sets the refDSI256FileName attribute of the PrinterService object
-     *
-     * @param  fname  The new refDSI256FileName value
-     */
-    public void setRefDSI256FileName(String fname)
-    {
-        scanner.setRefDSI256FileName(fname);
-    }
-
-
-    /**
-     *  Getter for property scanArea.
-     *
-     * @return    Value of property scanArea.
+     * @return    The scanPointExtension value
      */
     public int getScanPointExtension()
     {
@@ -1972,9 +1852,9 @@ public class PrinterService
 
 
     /**
-     *  Setter for property scanPointExtension.
+     *  Sets the scanPointExtension attribute of the PrinterService object
      *
-     * @param  extension  New value of property scanPointExtension.
+     * @param  extension  The new scanPointExtension value
      */
     public void setScanPointExtension(int extension)
     {
@@ -1983,9 +1863,9 @@ public class PrinterService
 
 
     /**
-     *  Getter for property scanThreshold.
+     *  Gets the scanThreshold attribute of the PrinterService object
      *
-     * @return    Value of property scanThreshold.
+     * @return    The scanThreshold value
      */
     public String getScanThreshold()
     {
@@ -1994,9 +1874,9 @@ public class PrinterService
 
 
     /**
-     *  Setter for property scanThreshold.
+     *  Sets the scanThreshold attribute of the PrinterService object
      *
-     * @param  scanThreshold  New value of property scanThreshold.
+     * @param  scanThreshold  The new scanThreshold value
      */
     public void setScanThreshold(String scanThreshold)
     {
@@ -2005,9 +1885,9 @@ public class PrinterService
 
 
     /**
-     *  Getter for property autoCalibration.
+     *  Gets the autoCalibration attribute of the PrinterService object
      *
-     * @return    Value of property autoCalibration.
+     * @return    The autoCalibration value
      */
     public boolean isAutoCalibration()
     {
@@ -2016,9 +1896,9 @@ public class PrinterService
 
 
     /**
-     *  Setter for property autoCalibration.
+     *  Sets the autoCalibration attribute of the PrinterService object
      *
-     * @param  autoCalibration  New value of property autoCalibration.
+     * @param  autoCalibration  The new autoCalibration value
      */
     public void setAutoCalibration(boolean autoCalibration)
     {
@@ -2026,17 +1906,95 @@ public class PrinterService
     }
 
 
+
     /**
-     *  Gets the printerCalibration attribute of the PrinterService object
+     *  Gets the printGrayAsColor attribute of the PrinterService object
      *
-     * @return    The printerCalibration value
+     * @return    The printGrayAsColor value
      */
+    public boolean isPrintGrayAsColor()
+    {
+        return this.printGrayAsColor;
+    }
+
+
+    /**
+     *  Sets the printGrayAsColor attribute of the PrinterService object
+     *
+     * @param  printGrayAsColor  The new printGrayAsColor value
+     */
+    public void setPrintGrayAsColor(boolean printGrayAsColor)
+    {
+        this.printGrayAsColor = printGrayAsColor;
+    }
+
+
+    /**
+     *  Gets the maxQueuedJobCount attribute of the PrinterService object
+     *
+     * @return    The maxQueuedJobCount value
+     */
+    public int getMaxQueuedJobCount()
+    {
+        return this.maxQueuedJobCount;
+    }
+
+
+    /**
+     *  Sets the maxQueuedJobCount attribute of the PrinterService object
+     *
+     * @param  maxQueuedJobCount  The new maxQueuedJobCount value
+     */
+    public void setMaxQueuedJobCount(int maxQueuedJobCount)
+    {
+        this.maxQueuedJobCount = maxQueuedJobCount;
+    }
+
+
+    /**
+     *  Gets the license attribute of the PrinterService object
+     *
+     * @return    The license value
+     */
+    public X509Certificate getLicense()
+    {
+        try {
+            return (X509Certificate) server.getAttribute(printSCP, "License");
+        } catch (Exception e) {
+            throw new RuntimeException("JMX error", e);
+        }
+    }
+
+
+    String getLicenseCN()
+    {
+        X509Certificate license = getLicense();
+        if (license == null) {
+            return "nobody";
+        }
+        String dn = license.getSubjectX500Principal().getName();
+        int start = dn.indexOf("CN=");
+        int end = dn.indexOf(',', start + 3);
+        return dn.substring(start + 3, end);
+    }
+
+
+    Date getLicenseEndDate()
+    {
+        X509Certificate license = getLicense();
+        if (license == null) {
+            return new Date();
+        }
+        return license.getNotAfter();
+    }
+
+
+    /*
     protected PrinterCalibration getPrinterCalibration()
     {
         return calibration;
     }
-
-
+*/
     /**
      *  Gets the pValToDDL attribute of the PrinterService object
      *
@@ -2064,11 +2022,10 @@ public class PrinterService
     public void calibrate(boolean force)
         throws CalibrationException
     {
-        log.info("Calibrating " + printerName);
-        setDDLODs(scanner.calculateGrayscaleODs(calledAET, force));
-        setDateOfLastCalibration(scanner.getDateOfLastCalibration());
-        setTimeOfLastCalibration(scanner.getTimeOfLastCalibration());
-        log.info("Calibrated " + printerName);
+        log.info("Calibrating " + calledAET + "/" + printerName);
+        calibration.setODs(scanner.calculateGrayscaleODs(force));
+        calibration.setODsTS(scanner.getLastScanFileModified());
+        log.info("Calibrated " + calledAET + "/" + printerName);
     }
 
 
@@ -2129,10 +2086,6 @@ public class PrinterService
     {
         scheduler = new Thread(this);
         scheduler.start();
-        if (scanner.getScanDir(calledAET).mkdirs()) {
-            log.warn("Created new calibration sub-directory "
-                     + scanner.getScanDir(calledAET));
-        }
         putAcceptorPolicy(getAcceptorPolicy());
     }
 
@@ -2496,8 +2449,14 @@ public class PrinterService
                 calibrate(false);
                 calibrationErr = false;
             } catch (CalibrationException e) {
-                log.warn("Calibration fails, continue printing", e);
                 calibrationErr = true;
+                try {
+                    calibration.setODs(scanner.readODs(odFile));
+                    calibration.setODsTS(odFile.lastModified());
+                } catch (Exception e2) {
+                    throw new PrintException("Calibration fails", e2);
+                }
+                log.warn("Calibration fails, continue printing", e);
             }
         }
 
@@ -2519,89 +2478,5 @@ public class PrinterService
             pj.removePrintJobListener(this);
         }
     }
-
-
-    /**
-     *  Getter for property printGrayAsColor.
-     *
-     * @return    Value of property printGrayAsColor.
-     */
-    public boolean isPrintGrayAsColor()
-    {
-        return this.printGrayAsColor;
-    }
-
-
-    /**
-     *  Setter for property printGrayAsColor.
-     *
-     * @param  printGrayAsColor  New value of property printGrayAsColor.
-     */
-    public void setPrintGrayAsColor(boolean printGrayAsColor)
-    {
-        this.printGrayAsColor = printGrayAsColor;
-    }
-
-
-    /**
-     *  Getter for property maxQueuedJobCount.
-     *
-     * @return    Value of property maxQueuedJobCount.
-     */
-    public int getMaxQueuedJobCount()
-    {
-        return this.maxQueuedJobCount;
-    }
-
-
-    /**
-     *  Setter for property maxQueuedJobCount.
-     *
-     * @param  maxQueuedJobCount  New value of property maxQueuedJobCount.
-     */
-    public void setMaxQueuedJobCount(int maxQueuedJobCount)
-    {
-        this.maxQueuedJobCount = maxQueuedJobCount;
-    }
-
-
-    /**
-     *  Getter for property license.
-     *
-     * @return    Value of property license.
-     */
-    public X509Certificate getLicense()
-    {
-        try {
-            return (X509Certificate) server.getAttribute(printSCP, "License");
-        } catch (Exception e) {
-            throw new RuntimeException("JMX error", e);
-        }
-    }
-
-
-    String getLicenseCN()
-    {
-        X509Certificate license = getLicense();
-        if (license == null) {
-            return "nobody";
-        }
-        String dn = license.getSubjectX500Principal().getName();
-        int start = dn.indexOf("CN=");
-        int end = dn.indexOf(',', start + 3);
-        return dn.substring(start + 3, end);
-    }
-
-
-    Date getLicenseEndDate()
-    {
-        X509Certificate license = getLicense();
-        if (license == null) {
-            return new Date();
-        }
-        return license.getNotAfter();
-    }
-
-    // Inner classes -------------------------------------------------
 }
 

@@ -22,12 +22,13 @@ package com.tiani.prnscp.print;
 import java.awt.Rectangle;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -38,8 +39,6 @@ import gnu.getopt.LongOpt;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
-import org.dcm4che.util.DAFormat;
-import org.dcm4che.util.TMFormat;
 
 /**
  *  <description>
@@ -58,15 +57,11 @@ public class ScannerCalibration
     private final static int FIND_STEP_NUM_MIN = 3;
     private final static float FIND_STEP_ERR_MAX = 0.2f;
     private final static int BORDER_MIN = 50;
+    final static String DSI256_JPG = "DSI256.jpg";
+    final static String DSI256_ODS = "DSI256.ods";
 
     // Attributes ----------------------------------------------------
     private Category log;
-
-    /**  Holds value of property calibrationDir. */
-    private File calibrationDir;
-
-    /**  Holds value of property refODs. */
-    private float[] refODs;
 
     /**  Holds value of property scanArea. */
     private int scanPointExtension = 50;
@@ -77,23 +72,21 @@ public class ScannerCalibration
     /**  Holds value of property whiteThreshold. */
     private int whiteThreshold = 220;
 
-    private File lastRefFile;
+    private File scanDir;
 
-    private long lastRefFileModified;
+    private File dsi256jpg;
 
-    private float[] cachedRefData;
+    private File dsi256ods;
 
     private File lastScanFile;
 
     private long lastScanFileModified;
 
-    private float[] cachedScanData;
-
     private float[] cachedODs;
 
-    /**  Holds value of property refGrayscaleFileName. */
-    private String refFileName;
+    private float[] refODs;
 
+    private float[] invRefPx;
 
     // Constructors --------------------------------------------------
     /**
@@ -103,73 +96,99 @@ public class ScannerCalibration
      */
     public ScannerCalibration(Category log)
     {
+        if (log == null) {
+            throw new NullPointerException();
+        }
         this.log = log;
     }
 
 
     // Public --------------------------------------------------------
-
     /**
-     *  Getter for property scanGrayscaleDir.
+     *  Description of the Method
      *
-     * @return    Value of property scanGrayscaleDir.
+     * @param  f                Description of the Parameter
+     * @return                  Description of the Return Value
+     * @exception  IOException  Description of the Exception
      */
-    public File getCalibrationDir()
+    public float[] readODs(File f)
+        throws IOException
     {
-        return this.calibrationDir;
-    }
-
-
-    /**
-     *  Setter for property scanGrayscaleDir.
-     *
-     * @param  calibrationDir  The new calibrationDir value
-     */
-    public void setCalibrationDir(File calibrationDir)
-    {
-        this.calibrationDir = calibrationDir;
-    }
-
-
-    /**
-     *  Gets the refDSI256FileName attribute of the ScannerCalibration object
-     *
-     * @return    The refDSI256FileName value
-     */
-    public String getRefDSI256FileName()
-    {
-        return this.refFileName;
-    }
-
-
-    /**
-     *  Sets the refDSI256FileName attribute of the ScannerCalibration object
-     *
-     * @param  refFileName  The new refDSI256FileName value
-     */
-    public void setRefDSI256FileName(String refFileName)
-    {
-        this.refFileName = refFileName;
-    }
-
-
-    /**
-     *  Gets the refDSI256ODs attribute of the ScannerCalibration object
-     *
-     * @return    The refDSI256ODs value
-     */
-    public float[] getRefDSI256ODs()
-    {
-        return this.refODs;
-    }
-
-
-    public void setRefDSI256ODs(float[] refODs)
-    {
-        if (refODs.length != 256) {
-            throw new IllegalArgumentException("refODs[" + refODs.length + "]");
+        if (log.isDebugEnabled()) {
+            log.debug("Read ODs from " + f);
         }
-        this.refODs = (float[]) refODs.clone();
+        BufferedReader r = new BufferedReader(new FileReader(f));
+        int lineNo = 0;
+        try {
+            float[] ods = new float[256];
+            String line;
+            int i = 0;
+            while ((line = r.readLine()) != null) {
+                lineNo++;
+                if (line.startsWith("#")) {
+                    continue;
+                }
+                String s = line.trim();
+                if (s.length() == 0) {
+                    continue;
+                }
+                ods[i++] = Float.parseFloat(s);
+            }
+            if (i != 256) {
+                throw new IOException("Only " + i + " OD values in " + f);
+            }
+            return ods;
+        } catch (IllegalArgumentException e) {
+            throw new IOException("Error in line " + lineNo + " in " + f
+                     + ": " + e.getMessage());
+        } finally {
+            r.close();
+        }
+    }
+
+
+    /**
+     *  Gets the scanDir attribute of the ScannerCalibration object
+     *
+     * @return    The scanDir value
+     */
+    public File getScanDir()
+    {
+        return this.scanDir;
+    }
+
+
+    /**
+     *  Sets the scanDir attribute of the ScannerCalibration object
+     *
+     * @param  scanDir          The new scanDir value
+     * @exception  IOException  Description of the Exception
+     */
+    public void setScanDir(File scanDir)
+        throws IOException
+    {
+        if (!scanDir.isDirectory()) {
+            if (scanDir.mkdir()) {
+                log.warn("Scan Directory " + scanDir + " did not exits. Created new one.");
+            } else {
+                throw new IOException("Failed to create new Scan Directory " + scanDir);
+            }
+        }
+        if (scanDir.list().length == 0) {
+            log.warn("No scans in directory " + scanDir
+                     + " required for auto-calibration");
+        }
+        this.scanDir = scanDir;
+        this.dsi256jpg = new File(scanDir.getParent(), DSI256_JPG);
+        this.dsi256ods = new File(scanDir.getParent(), DSI256_ODS);
+        if (!dsi256ods.isFile()) {
+            log.warn("Could not find file " + dsi256ods
+                     + " required for auto-calibration");
+        }
+        if (!dsi256jpg.isFile()) {
+            log.warn("Could not find file " + dsi256jpg
+                     + " required for auto-calibration");
+        }
     }
 
 
@@ -234,63 +253,30 @@ public class ScannerCalibration
 
 
     /**
-     *  Getter for property dateOfLastCalibration.
+     *  Gets the lastScanFileModified attribute of the ScannerCalibration object
      *
-     * @return    Value of property dateOfLastCalibration.
+     * @return    The lastScanFileModified value
      */
-    public String getDateOfLastCalibration()
+    public long getLastScanFileModified()
     {
-        return new DAFormat().format(new Date(lastScanFileModified));
-    }
-
-
-    /**
-     *  Getter for property timeOfLastCalibration.
-     *
-     * @return    Value of property timeOfLastCalibration.
-     */
-    public String getTimeOfLastCalibration()
-    {
-        return new TMFormat().format(new Date(lastScanFileModified));
-    }
-
-
-    /**
-     *  Gets the scanDir attribute of the ScannerCalibration object
-     *
-     * @param  aet  Description of the Parameter
-     * @return      The scanDir value
-     */
-    public File getScanDir(String aet)
-    {
-        if (calibrationDir == null) {
-            throw new IllegalStateException("calibrationDir not initalized!");
-        }
-        return new File(calibrationDir, new String(aet));
+        return lastScanFileModified;
     }
 
 
     /**
      *  Description of the Method
      *
-     * @param  aet                       Description of the Parameter
      * @param  force                     Description of the Parameter
      * @return                           Description of the Return Value
      * @exception  CalibrationException  Description of the Exception
      */
-    public float[] calculateGrayscaleODs(String aet, boolean force)
+    public float[] calculateGrayscaleODs(boolean force)
         throws CalibrationException
     {
-        if (refODs == null) {
-            throw new IllegalStateException("refODs not initalized!");
+        if (scanDir == null) {
+            throw new IllegalStateException("Scan Dir not initalized!");
         }
         try {
-            File refFile = new File(calibrationDir, refFileName);
-            if (!refFile.isFile()) {
-                throw new FileNotFoundException(
-                        "Could not find file " + refFile);
-            }
-            File scanDir = getScanDir(aet);
             if (!scanDir.isDirectory()) {
                 throw new FileNotFoundException(
                         "Could not find directory " + scanDir);
@@ -309,47 +295,15 @@ public class ScannerCalibration
                                  - ((File) o1).lastModified());
                     }
                 });
-            if (force || cachedRefData == null
-                     || !refFile.equals(lastRefFile)
-                     || refFile.lastModified() > lastRefFileModified) {
-                if (log.isDebugEnabled()) {
-                    log.debug("analysing " + refFile.getName());
-                }
-                cachedRefData = analyse(refFile);
-                lastRefFile = refFile;
-                lastRefFileModified = refFile.lastModified();
-                cachedODs = null;
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("use cached data for " + lastRefFile.getName());
-                }
-            }
 
-            if (force || cachedScanData == null
+            if (force || cachedODs == null
                      || !scanFiles[0].equals(lastScanFile)
                      || scanFiles[0].lastModified() > lastScanFileModified) {
-                if (log != null && log.isDebugEnabled()) {
-                    log.debug("analysing " + scanFiles[0].getName());
-                }
-                cachedScanData = analyse(scanFiles[0]);
+                cachedODs = interpolate(analyse(scanFiles[0]));
                 lastScanFile = scanFiles[0];
                 lastScanFileModified = scanFiles[0].lastModified();
-                cachedODs = null;
             } else {
-                if (log != null && log.isDebugEnabled()) {
-                    log.debug("use cached data for " + lastScanFile.getName());
-                }
-            }
-
-            if (cachedODs == null) {
-                if (log != null) {
-                    log.debug("interpolating ODs");
-                }
-                cachedODs = interpolate(cachedRefData, cachedScanData);
-            } else {
-                if (log != null) {
-                    log.debug("use cached ODs");
-                }
+                log.debug("use cached ODs");
             }
             return cachedODs;
         } catch (IOException e) {
@@ -358,15 +312,18 @@ public class ScannerCalibration
     }
 
 
-    private float[] interpolate(float[] invRefPx, float[] invPx)
-        throws CalibrationException
+    private float[] interpolate(float[] invPx)
+        throws CalibrationException, IOException
     {
-        if (invRefPx.length != refODs.length) {
-            throw new CalibrationException("Mismatch of detected gray steps["
-                     + invRefPx.length + "] in "
-                     + (lastRefFile == null ? "?" : lastRefFile.getName())
-                     + " with refODs float[" + refODs.length + "]");
+        if (invRefPx == null) {
+            invRefPx = analyse(dsi256jpg);
+            Arrays.sort(invRefPx);
         }
+        if (refODs == null) {
+            refODs = readODs(dsi256ods);
+            Arrays.sort(refODs);
+        }
+        log.debug("interpolating ODs");
         float[] result = new float[invPx.length];
         for (int i = 0; i < invPx.length; ++i) {
             int index = Arrays.binarySearch(invRefPx, invPx[i]);
@@ -388,7 +345,7 @@ public class ScannerCalibration
                          / (invRefPx[index] - invRefPx[index - 1]);
             }
         }
-        if (log != null && log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             StringBuffer sb = new StringBuffer("calculated GrayscaleODs:");
             for (int i = 0; i < invPx.length; ++i) {
                 sb.append("\r\n\t");
@@ -400,7 +357,8 @@ public class ScannerCalibration
         return result;
     }
 
-/*
+
+    /*
     private boolean isMonotonic(float[] a)
     {
         for (int i = 1; i < a.length; ++i) {
@@ -411,7 +369,6 @@ public class ScannerCalibration
         return true;
     }
 */
-
     private ImageReader findReader(File f)
         throws CalibrationException
     {
@@ -428,6 +385,9 @@ public class ScannerCalibration
     private float[] analyse_old(File f)
         throws CalibrationException, IOException
     {
+        if (log.isDebugEnabled()) {
+            log.debug("analysing " + f);
+        }
         ImageReader r = findReader(f);
         ImageInputStream in = ImageIO.createImageInputStream(f);
         try {
@@ -505,14 +465,17 @@ public class ScannerCalibration
     private int[] subarray(int[] arr, int start, int end)
     {
         if (start > end || start < 0 || end < 0
-                || start >= arr.length || end > arr.length)
+                 || start >= arr.length || end > arr.length) {
             throw new IllegalArgumentException("illegal start=" + start + ", end=" + end);
-        int[] subarr = new int[end-start];
+        }
+        int[] subarr = new int[end - start];
         int index = 0;
-        for (int i=start; i<end;  i++)
+        for (int i = start; i < end; i++) {
             subarr[index++] = arr[i];
+        }
         return subarr;
     }
+
 
     private float[] analyse(File f)
         throws CalibrationException, IOException
@@ -535,7 +498,7 @@ public class ScannerCalibration
             int[] tb = findBorder(vline);
             int w_outer = lr[1] - lr[0];
             int h_outer = tb[1] - tb[0];
-            w_outer = (w_outer + h_outer) / 2; //avg
+            w_outer = (w_outer + h_outer) / 2;//avg
             //final int PatternBorderToPatternDistRatio = 512/136;  //3:1
             final int PatternNumberBoxesX = 4;
             final int PatternNumberBoxesY = 4;
@@ -545,7 +508,7 @@ public class ScannerCalibration
             final int AbsolutePatternBoxSize = (w_outer * 48) / 512;
             int pattern_left = lr[0] + (w_outer * 136) / 512;
             int pattern_top = tb[0] + (w_outer * 136) / 512;
-            
+
             // debug
             if (log != null && log.isDebugEnabled()) {
                 log.debug("tot width = " + w + ", tot height = " + h);
@@ -556,29 +519,30 @@ public class ScannerCalibration
                 log.debug("AbsolutePatternSpacing = " + AbsolutePatternSpacing);
                 log.debug("AbsolutePatternBoxSize = " + AbsolutePatternBoxSize);
             }
-            
+
             float[] px;
             float[] samples;
             int[] box;
             //if (portrait) {
-                px = new float[PatternNumberBoxesX * PatternNumberBoxesY *
-                               PatternNumberInnerBoxesX * PatternNumberInnerBoxesY];
-                final int TotWidth = PatternNumberBoxesX*AbsolutePatternBoxSize + (PatternNumberBoxesX-1)*AbsolutePatternSpacing;
-                int i,j;
-                for (int k=0; k<PatternNumberBoxesX*PatternNumberBoxesY; k++) {
-                    i = k / PatternNumberBoxesY;
-                    j = (i % 2 == 0) ? PatternNumberBoxesY - 1 - k % PatternNumberBoxesY :
-                                       k % PatternNumberBoxesY;
-                    rParam.setSourceRegion(new Rectangle(pattern_left + i * (AbsolutePatternBoxSize + AbsolutePatternSpacing),
-                                                         pattern_top + j * (AbsolutePatternBoxSize + AbsolutePatternSpacing),
-                                                         AbsolutePatternBoxSize, AbsolutePatternBoxSize));
-                    //log.debug("i=" + i + ", j=" + j);
-                    box = r.read(0, rParam).getRGB(0, 0, AbsolutePatternBoxSize, AbsolutePatternBoxSize,
-                                                       null, 0, AbsolutePatternBoxSize);
-                    samples = sampleBoxPattern(box, AbsolutePatternBoxSize, AbsolutePatternBoxSize,
-                                     PatternNumberInnerBoxesX, PatternNumberInnerBoxesY);
-                    System.arraycopy(samples, 0, px, samples.length*k, samples.length);
-                }
+            px = new float[PatternNumberBoxesX * PatternNumberBoxesY *
+                    PatternNumberInnerBoxesX * PatternNumberInnerBoxesY];
+            final int TotWidth = PatternNumberBoxesX * AbsolutePatternBoxSize + (PatternNumberBoxesX - 1) * AbsolutePatternSpacing;
+            int i;
+            int j;
+            for (int k = 0; k < PatternNumberBoxesX * PatternNumberBoxesY; k++) {
+                i = k / PatternNumberBoxesY;
+                j = (i % 2 == 0) ? PatternNumberBoxesY - 1 - k % PatternNumberBoxesY :
+                        k % PatternNumberBoxesY;
+                rParam.setSourceRegion(new Rectangle(pattern_left + i * (AbsolutePatternBoxSize + AbsolutePatternSpacing),
+                        pattern_top + j * (AbsolutePatternBoxSize + AbsolutePatternSpacing),
+                        AbsolutePatternBoxSize, AbsolutePatternBoxSize));
+                //log.debug("i=" + i + ", j=" + j);
+                box = r.read(0, rParam).getRGB(0, 0, AbsolutePatternBoxSize, AbsolutePatternBoxSize,
+                        null, 0, AbsolutePatternBoxSize);
+                samples = sampleBoxPattern(box, AbsolutePatternBoxSize, AbsolutePatternBoxSize,
+                        PatternNumberInnerBoxesX, PatternNumberInnerBoxesY);
+                System.arraycopy(samples, 0, px, samples.length * k, samples.length);
+            }
             /*} else {
             }*/
             if (log != null && log.isDebugEnabled()) {
@@ -596,37 +560,44 @@ public class ScannerCalibration
             } catch (IOException ignore) {}
         }
     }
-    
+
+
     private float[] sampleBoxPattern(int[] pixels, int width, int height, int nX, int nY)
     {
-        final int xstep = width/nX;
-        final int ystep = height/nY;
+        final int xstep = width / nX;
+        final int ystep = height / nY;
         final float[] samples = new float[nX * nY];
-        int left = xstep/2, top = ystep/2;
-        int x,y;
-        int i,j;
-        
-        for (int k=0; k<samples.length; k++) {
+        int left = xstep / 2;
+        int top = ystep / 2;
+        int x;
+        int y;
+        int i;
+        int j;
+
+        for (int k = 0; k < samples.length; k++) {
             i = k / nY;
             j = (i % 2 == 0) ? nY - 1 - k % nY :
-                               k % nY;
+                    k % nY;
             x = left + i * xstep;
             y = top + j * ystep;
-            samples[k] = average(pixels,width,x-2,y-2,5); //(pixels[x+y*width] & 0xff) ^ 0xff
+            samples[k] = average(pixels, width, x - 2, y - 2, 5);//(pixels[x+y*width] & 0xff) ^ 0xff
         }
         return samples;
     }
 
+
     private float average(int[] rgb, int width, int x, int y, int size)
     {
         int v = 0;
-        for (int i = x; i < x+size; ++i) {
-            for (int j = y; j < y+size; ++j) {
-                v += (rgb[i+j*width] & 0xff) ^ 0xff;
+        for (int i = x; i < x + size; ++i) {
+            for (int j = y; j < y + size; ++j) {
+                v += (rgb[i + j * width] & 0xff) ^ 0xff;
             }
         }
-        return (float) v / (size*size);
+        return (float) v / (size * size);
     }
+
+
     private float average(int[] rgb, int off, int len)
     {
         int v = 0;
@@ -653,10 +624,11 @@ public class ScannerCalibration
         return b;
     }
 
+
     private int[] findInnerBorder(int[] rgb)
         throws CalibrationException
     {
-        int[] b = {1, rgb.length-1};
+        int[] b = {1, rgb.length - 1};
         while (b[0] < b[1] && (rgb[b[0]] & 0xff) < whiteThreshold) {
             ++b[0];
         }

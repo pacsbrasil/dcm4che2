@@ -20,9 +20,12 @@
 package com.tiani.prnscp.print;
 
 import java.util.Arrays;
+import java.util.Date;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.util.DAFormat;
+import org.dcm4che.util.TMFormat;
 
 import org.jboss.logging.Logger;
 
@@ -30,8 +33,7 @@ import org.jboss.logging.Logger;
  *  <description>
  *
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @since      April 1, 2003
- * @created    November 19, 2002
+ * @since      November 19, 2003
  * @version    $Revision$
  */
 class PrinterCalibration
@@ -39,13 +41,9 @@ class PrinterCalibration
     // Constants -----------------------------------------------------
 
     // Attributes ----------------------------------------------------
-    /**  Holds value of property dateOfLastCalibration. */
-    private String dateOfLastCalibration = "19700101";
+    private long odsTS;
 
-    /**  Holds value of property timeOfLastCalibration. */
-    private String timeOfLastCalibration = "000000";
-
-    private float[] ddlODs = new float[256];
+    private float[] ods = new float[256];
 
     private final Logger log;
 
@@ -68,7 +66,7 @@ class PrinterCalibration
      */
     public int toDDL(float density)
     {
-        int i = Arrays.binarySearch(ddlODs, density);
+        int i = Arrays.binarySearch(ods, density);
         if (i >= 0) {
             return 255 - i;
         }
@@ -79,8 +77,8 @@ class PrinterCalibration
         if (i > 255) {
             return 0;
         }
-        float diff1 = ddlODs[i] - density;
-        float diff2 = density - ddlODs[i - 1];
+        float diff1 = ods[i] - density;
+        float diff2 = density - ods[i - 1];
         return 255 - (diff1 < diff2 ? i : i - 1);
     }
 
@@ -162,7 +160,7 @@ class PrinterCalibration
         for (int i = lut.length; --i >= 0; ) {
             int ddl = lut[i] & 0xff;
             sb.append("\n\tpv=").append(i).append("\tddl=")
-                    .append(ddl).append("\tod=").append(ddlODs[255 - ddl]);
+                    .append(ddl).append("\tod=").append(ods[255 - ddl]);
         }
         log.debug(sb.toString());
     }
@@ -227,69 +225,22 @@ class PrinterCalibration
 
 
     /**
-     *  Getter for property dateOfLastCalibration.
+     *  Sets the oDs attribute of the PrinterCalibration object
      *
-     * @return    Value of property dateOfLastCalibration.
+     * @param  newODs  The new oDs value
      */
-    public String getDateOfLastCalibration()
+    public void setODs(float[] newODs)
     {
-        return this.dateOfLastCalibration;
-    }
-
-
-    /**
-     *  Setter for property dateOfLastCalibration.
-     *
-     * @param  dateOfLastCalibration  New value of property
-     *      dateOfLastCalibration.
-     */
-    public void setDateOfLastCalibration(String dateOfLastCalibration)
-    {
-        this.dateOfLastCalibration = dateOfLastCalibration;
-    }
-
-
-    /**
-     *  Getter for property timeOfLastCalibration.
-     *
-     * @return    Value of property timeOfLastCalibration.
-     */
-    public String getTimeOfLastCalibration()
-    {
-        return this.timeOfLastCalibration;
-    }
-
-
-    /**
-     *  Setter for property timeOfLastCalibration.
-     *
-     * @param  timeOfLastCalibration  New value of property
-     *      timeOfLastCalibration.
-     */
-    public void setTimeOfLastCalibration(String timeOfLastCalibration)
-    {
-        this.timeOfLastCalibration = timeOfLastCalibration;
-    }
-
-
-    public float[] getDDLODs()
-    {
-        return (float[]) ddlODs.clone();
-    }
-
-
-    public void setDDLODs(float[] newDDLODs)
-    {
-        if (newDDLODs.length != 256) {
-            throw new IllegalArgumentException("newDDLODs.length:" + newDDLODs.length);
+        if (newODs.length != 256) {
+            throw new IllegalArgumentException("newODs.length:" + newODs.length);
         }
         // ensure monoton increasing
         int iMax = 0;
         int iMin = 0;
-        float max = newDDLODs[0];
-        float min = newDDLODs[0];
+        float max = newODs[0];
+        float min = newODs[0];
         for (int i = 1; i < 256; ++i) {
-            final float od = newDDLODs[i];
+            final float od = newODs[i];
             if (od < min) {
                 iMin = i;
                 min = od;
@@ -302,10 +253,71 @@ class PrinterCalibration
         if (iMin >= iMax) {
             throw new IllegalArgumentException("iMin:" + iMin + ", iMax:" + iMax);
         }
-        System.arraycopy(newDDLODs, iMin, ddlODs, iMin, iMax - iMin);
-        Arrays.fill(ddlODs, 0, iMin, min);
-        Arrays.fill(ddlODs, iMax, 256, max);
-        Arrays.sort(ddlODs, iMin, iMax);
+        System.arraycopy(newODs, iMin, ods, iMin, iMax - iMin);
+        Arrays.fill(ods, 0, iMin, min);
+        Arrays.fill(ods, iMax, 256, max);
+        Arrays.sort(ods, iMin, iMax);
+    }
+
+
+    /**
+     *  Gets the minDensity attribute of the PrinterCalibration object
+     *
+     * @return    The minDensity value
+     */
+    public int getMinDensity()
+    {
+        if (ods == null) {
+            throw new IllegalStateException("ODs not yet iitialized");
+        }
+        return (int) (ods[0] * 100);
+    }
+
+
+    /**
+     *  Gets the maxDensity attribute of the PrinterCalibration object
+     *
+     * @return    The maxDensity value
+     */
+    public int getMaxDensity()
+    {
+        if (ods == null) {
+            throw new IllegalStateException("ODs not yet iitialized");
+        }
+        return (int) (ods[ods.length - 1] * 100);
+    }
+
+
+    /**
+     *  Sets the oDsTS attribute of the PrinterCalibration object
+     *
+     * @param  odsTS  The new oDsTS value
+     */
+    public void setODsTS(long odsTS)
+    {
+        this.odsTS = odsTS;
+    }
+
+
+    /**
+     *  Gets the dateOfLastCalibration attribute of the PrinterCalibration object
+     *
+     * @return    The dateOfLastCalibration value
+     */
+    public String getDateOfLastCalibration()
+    {
+        return new DAFormat().format(new Date(odsTS));
+    }
+
+
+    /**
+     *  Gets the timeOfLastCalibration attribute of the PrinterCalibration object
+     *
+     * @return    The timeOfLastCalibration value
+     */
+    public String getTimeOfLastCalibration()
+    {
+        return new TMFormat().format(new Date(odsTS));
     }
 
 
