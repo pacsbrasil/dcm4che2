@@ -188,16 +188,16 @@ public class Syslog implements PollDirSrv.Handler {
    }
    
    private void send(File file) throws IOException {
-      BufferedReader br = new BufferedReader(new FileReader(file));
+      BufferedReader r = new BufferedReader(new FileReader(file));
       try {
-         String msg;
-         while ((msg = br.readLine()) != null) {
-            syslog.writeHeader(level);
-            syslog.write(msg);
-            send();
+         syslog.writeHeader(level);
+         int c;
+         while ((c = r.read()) != -1) {
+            syslog.write(c);
          }
+         send();
       } finally {
-         try { br.close(); } catch (IOException ignore) {}
+         try { r.close(); } catch (IOException ignore) {}
       }
    }
    
