@@ -67,12 +67,12 @@ import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
  * @ejb.finder
  *  signature="java.util.Collection findAll()"
  *  query="SELECT OBJECT(a) FROM Instance AS a"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  *
  * @ejb.finder
  *  signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
  *  query="SELECT OBJECT(a) FROM Instance AS a WHERE a.sopIuid = ?1"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  * 
  * @ejb.ejb-ref
  *  ejb-name="Code" 

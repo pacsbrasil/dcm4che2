@@ -29,13 +29,18 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.interfaces.PrincipalLocalHome;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
+import org.dcm4chex.archive.ejb.util.EJBHomeFactoryException;
+import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * @ejb:bean
@@ -58,12 +63,17 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
  * @ejb.finder
  *  signature="Collection findAll()"
  *  query="SELECT OBJECT(a) FROM Patient AS a"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  *
  * @ejb.finder
  *  signature="java.util.Collection findByPatientId(java.lang.String pid)"
  *  query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
+ *
+ * @ejb.ejb-ref
+ *  ejb-name="Principal" 
+ *  view-type="local"
+ *  ref-name="ejb/org.dcm4chex.archive.ejb.interfaces.PrincipalLocalHome"
  *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
@@ -75,6 +85,29 @@ public abstract class PatientBean implements EntityBean
 
     private static final String ATTRS_CFG = "patient-attrs.cfg";
 
+    private EntityContext ctx;
+    private PrincipalLocalHome principalHome;
+
+    public void setEntityContext(EntityContext ctx) 
+    {
+        this.ctx = ctx;
+        try
+        {
+            EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
+            principalHome = (PrincipalLocalHome) factory.lookup(PrincipalLocalHome.class);
+        }
+        catch (EJBHomeFactoryException e)
+        {
+            throw new EJBException(e);
+        }
+    }
+    
+    public void unsetEntityContext() 
+    {
+        ctx = null;
+        principalHome = null;
+    }
+    
     /**
      * Auto-generated Primary Key
      *
@@ -185,6 +218,29 @@ public abstract class PatientBean implements EntityBean
     public abstract java.util.Collection getStudies();
 
     /**
+     * @ejb:interface-method
+     * @ejb:relation
+     *  name="principal-patient"
+     *  role-name="patient-owned-by-principal"
+     *  target-ejb="Principal"
+     *  target-role-name="principal-of-patient"
+     *  target-multiple="true"
+     * @jboss.relation-table
+     *  table-name="link_principal_patient"
+     * @jboss:relation
+     *  fk-column="principal_fk"
+     *  related-pk-field="pk"
+     * @jboss:target-relation
+     *  fk-column="patient_fk"
+     *  related-pk-field="pk"
+     *    
+     * @return all principals of this patient
+     */
+   public abstract java.util.Set getPrincipals();
+
+   public abstract void setPrincipals(java.util.Set principals);
+   
+   /**
      * Create patient.
      *
      * @ejb.create-method

@@ -55,12 +55,12 @@ import org.apache.log4j.Logger;
  * @ejb.finder
  *  signature="Collection findAll()"
  *  query="SELECT OBJECT(a) FROM Code AS a"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  *
  * @ejb.finder
  *  signature="java.util.Collection findByValueAndDesignator(java.lang.String value, java.lang.String designator)"
  *  query="SELECT OBJECT(a) FROM Code AS a WHERE a.codeValue = ?1 AND a.codingSchemeDesignator = ?2"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *

@@ -57,12 +57,12 @@ import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
  * @ejb.finder
  *  signature="java.util.Collection findAll()"
  *  query="SELECT OBJECT(a) FROM File AS a"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  *
  * @ejb.finder
  *  signature="java.util.Collection findByRetrieveAet(java.lang.String aet)"
  *  query="SELECT OBJECT(a) FROM File AS a WHERE a.retrieveAet = ?1"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *

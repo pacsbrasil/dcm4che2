@@ -29,10 +29,16 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
+import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.ejb.interfaces.PrincipalLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrincipalLocalHome;
 
 /**
 /**
@@ -56,12 +62,12 @@ import org.apache.log4j.Logger;
  * @ejb.finder
  *  signature="Collection findAll()"
  *  query="SELECT OBJECT(a) FROM Principal AS a"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  *
  * @ejb.finder
- *  signature="java.util.Collection findByName(java.lang.String pid)"
+ *  signature="PrincipalLocal findByName(java.lang.String pid)"
  *  query="SELECT OBJECT(a) FROM Principal AS a WHERE a.name = ?1"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
@@ -69,6 +75,18 @@ import org.apache.log4j.Logger;
 public abstract class PrincipalBean implements EntityBean
 {
     private static final Logger log = Logger.getLogger(PrincipalBean.class);
+
+    private EntityContext ctx;
+
+    public void setEntityContext(EntityContext ctx) 
+    {
+        this.ctx = ctx;
+    }
+
+    public void unsetEntityContext() 
+    {
+        this.ctx = null;
+    }
 
     /**
      * Auto-generated Primary Key
@@ -97,75 +115,6 @@ public abstract class PrincipalBean implements EntityBean
     public abstract void setName(String name);
 
     /**
-     * @ejb:interface-method
-     * @ejb:relation
-     *  name="principal-patient"
-     *  role-name="principal-of-patient"
-     *  target-ejb="Patient"
-     *  target-role-name="patient-owned-by-principal"
-     *  target-multiple="true"
-     * @jboss.relation-table
-     *  table-name="link_principal_patient"
-     * @jboss:relation
-     *  fk-column="patient_fk"
-     *  related-pk-field="pk"
-     * @jboss:target-relation
-     *  fk-column="principal_fk"
-     *  related-pk-field="pk"
-     *    
-     * @return all patients of this principal
-     */
-    public abstract java.util.Collection getPatients();
-
-    public abstract void setPatients(java.util.Collection studies);
-
-    /**
-     * @ejb:interface-method
-     * @ejb:relation
-     *  name="principal-study"
-     *  role-name="principal-of-study"
-     *  target-ejb="Study"
-     *  target-role-name="study-owned-by-principal"
-     *  target-multiple="true"
-     * @jboss.relation-table
-     *  table-name="link_principal_study"
-     * @jboss:relation
-     *  fk-column="study_fk"
-     *  related-pk-field="pk"
-     * @jboss:target-relation
-     *  fk-column="principal_fk"
-     *  related-pk-field="pk"
-     *    
-     * @return all studies of this principal
-     */
-    public abstract java.util.Collection getStudies();
-
-    public abstract void setStudies(java.util.Collection studies);
-
-    /**
-     * @ejb:interface-method
-     * @ejb:relation
-     *  name="principal-series"
-     *  role-name="principal-of-series"
-     *  target-ejb="Series"
-     *  target-role-name="series-owned-by-principal"
-     *  target-multiple="true"
-     * @jboss.relation-table
-     *  table-name="link_principal_series"
-     * @jboss:relation
-     *  fk-column="series_fk"
-     *  related-pk-field="pk"
-     * @jboss:target-relation
-     *  fk-column="principal_fk"
-     *  related-pk-field="pk"
-     *    
-     * @return all series of this principal
-     */
-    public abstract java.util.Collection getSeries();
-
-    public abstract void setSeries(java.util.Collection studies);
-
-    /**
      * Create patient.
      *
      * @ejb.create-method
@@ -186,6 +135,32 @@ public abstract class PrincipalBean implements EntityBean
         log.info("Deleting " + prompt());
     }
 
+    /**
+     * @ejb.home-method  
+     */
+    public PrincipalLocal ejbHomeGetPrincipal(String name) {
+        PrincipalLocalHome home = (PrincipalLocalHome) ctx.getEJBLocalHome();
+        try
+        {
+            try
+            {
+                return home.findByName(name);
+            }
+            catch (ObjectNotFoundException e) {
+                return home.create(name);
+            }
+        }
+        catch (FinderException e)
+        {
+            throw new EJBException(e);
+        }
+        catch (CreateException e)
+        {
+            throw new EJBException(e);
+        }
+        
+    }
+    
     private String prompt()
     {
         return "Principal[pk="

@@ -55,17 +55,17 @@ import org.apache.log4j.Logger;
  * @ejb.finder
  *  signature="Collection findAll()"
  *  query="SELECT OBJECT(a) FROM Media AS a"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  *
  * @ejb.finder
  *  signature="org.dcm4chex.archive.ejb.interfaces.MediaLocal findByFilesetIuid(java.lang.String uid)"
  *  query="SELECT OBJECT(a) FROM Media AS a WHERE a.filesetIuid = ?1"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  *
  * @ejb.finder
  *  signature="Collection findByMediaStatus(int status)"
  *  query="SELECT OBJECT(a) FROM Media AS a WHERE a.mediaStatus = ?1"
- *  transaction-type="NotSupported"
+ *  transaction-type="Supports"
  *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
