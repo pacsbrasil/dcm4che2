@@ -41,6 +41,8 @@ public class SeriesDTO implements Serializable {
     private String seriesDateTime;
     private String bodyPartExamined;
     private String laterality;
+    private String manufacturer;
+    private String manufacturerModelName;
     private int numberOfInstances;
     private int availability;
     private String retrieveAETs;
@@ -212,5 +214,21 @@ public class SeriesDTO implements Serializable {
      */
     public final void setAvailability(int availability) {
         this.availability = availability;
+    }
+    
+    public final String getManufacturer() {
+        return manufacturer;
+    }
+    
+    public final void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
+    }
+    
+    public final String getManufacturerModelName() {
+        return manufacturerModelName;
+    }
+    
+    public final void setManufacturerModelName(String manufacturerModelName) {
+        this.manufacturerModelName = manufacturerModelName;
     }
 }

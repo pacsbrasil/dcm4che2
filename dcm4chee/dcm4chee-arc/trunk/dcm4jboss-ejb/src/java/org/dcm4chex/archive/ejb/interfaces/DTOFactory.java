@@ -96,6 +96,8 @@ public final class DTOFactory {
                 ds.getDateTime(Tags.SeriesDate, Tags.SeriesTime),
                 SeriesDTO.DATETIME_FORMAT));
         series.setSeriesDescription(ds.getString(Tags.SeriesDescription, ""));
+        series.setManufacturer(ds.getString(Tags.Manufacturer, ""));
+        series.setManufacturerModelName(ds.getString(Tags.ManufacturerModelName, ""));
         series.setNumberOfInstances(numInst);
         series.setRetrieveAETs(retrieveAETs);
         series.setAvailability(availability);

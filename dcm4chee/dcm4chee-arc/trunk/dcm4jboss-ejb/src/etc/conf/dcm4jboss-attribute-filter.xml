@@ -46,8 +46,12 @@
     <attr tag="(0008,0031)"/>
 <!-- Modality -->
     <attr tag="(0008,0060)"/>
+<!-- Manufacturer -->
+    <attr tag="(0008,0070)"/>
 <!-- Series Description -->
     <attr tag="(0008,103E)"/>
+<!-- Manufacturer Model Name -->
+    <attr tag="(0008,1090)"/>
 <!-- Referenced Performed Procedure Step Sequence -->
     <attr tag="(0008,1111)"/>
 <!-- Body Part Examined -->
