@@ -1,43 +1,29 @@
 <project name="dcm4jboss-web" default="war">
 
-	<!-- ========================================= -->
-	<!-- Include other stuff specified by the user -->
-	<!-- ========================================= -->
 	<property file="build.properties"/>
 
-	<!-- ================ -->
-	<!-- JBoss components -->
-	<!-- ================ -->
+	<!-- Override with your JBoss dist location -->
 	<property name="jboss.dir" value="${user.home}/jboss-3.2.3" />
 	<property name="jboss.server.lib.dir" value="${jboss.dir}/server/default/lib"/>
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
 	<property name="javax.servlet.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
 
-	<!-- =================== -->
-	<!-- Maverick components -->
-	<!-- =================== -->
+	<!-- Override with your Maverick dist location -->
 	<property name="maverick.dir" value="../maverick" />
 	<property name="maverick.lib.dir" value="${maverick.dir}/lib"/>
 	<property name="maverick.dist.dir" value="${maverick.dir}/dist"/>
 	<property name="maverick.jar" value="${maverick.dist.dir}/maverick.jar"/>
 
-	<!-- ============================== -->
-	<!-- Maverick opt-domify components -->
-	<!-- ============================== -->
+	<!-- Override with your Domify dist location -->
 	<property name="opt-domify.dir" value="../opt-domify" />
 	<property name="opt-domify.dist.dir" value="${opt-domify.dir}/dist"/>
 	<property name="opt-domify.lib.dir" value="${opt-domify.dir}/lib"/>
 
-	<!-- ======================== -->
-	<!-- dcm4jboss-ejb components -->
-	<!-- ======================== -->
+	<!-- Override with your dcm4jboss-ejb working directory -->
 	<property name="dcm4jboss-ejb.dir" value="../dcm4jboss-ejb/target" />
 	<property name="dcm4jboss-ejb-client.jar" value="${dcm4jboss-ejb.dir}/common/lib/dcm4jboss-ejb-client.jar" />
 
-	<!-- ================= -->
-	<!-- Basic build stuff -->
-	<!-- ================= -->
 	<property name="target.dir" value="target"/>
 	<property name="file" value="${ant.project.name}.war"/>
 	<property name="product" value="${target.dir}/deploy/${file}"/>
