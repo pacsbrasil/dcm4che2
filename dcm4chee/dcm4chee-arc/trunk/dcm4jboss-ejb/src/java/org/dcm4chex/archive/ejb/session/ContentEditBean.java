@@ -141,7 +141,7 @@ public abstract class ContentEditBean implements SessionBean {
 	            dominant.getStudies().addAll(priorPat.getStudies());
 	            dominant.getMpps().addAll(priorPat.getMpps());
 	            dominant.getMwlItems().addAll(priorPat.getMwlItems());                
-                dominant.getGspss().addAll(priorPat.getGspss());
+                dominant.getGsps().addAll(priorPat.getGsps());
 	            priorPat.setMergedWith(dominant);
             }
 	        ArrayList col = new ArrayList();
