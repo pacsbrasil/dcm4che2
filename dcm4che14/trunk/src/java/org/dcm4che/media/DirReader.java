@@ -20,7 +20,6 @@ package org.dcm4che.media;
 
 import java.io.File;
 import java.io.IOException;
-import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmValueException;

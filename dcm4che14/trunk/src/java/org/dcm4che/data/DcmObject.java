@@ -25,7 +25,6 @@ package org.dcm4che.data;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;

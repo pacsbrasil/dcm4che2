@@ -25,14 +25,11 @@ package org.dcm4cheri.data;
 
 import org.dcm4che.data.*;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.UIDs;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.nio.ByteOrder;
-import java.util.Iterator;
 
 /** Defines behavior of <code>Command</code> container objects.
  *

@@ -162,10 +162,10 @@ class DcmHandlerImpl implements DcmHandler
      *
      *@param  timeout  The new dimseTimeout value
      */
-    public void setDimseTimeout(int timeout)
+    public void setDimseTimeout(int dimseTimeout)
     {
-        if (timeout < 0) {
-            throw new IllegalArgumentException("timeout: " + timeout);
+        if (dimseTimeout < 0) {
+            throw new IllegalArgumentException("timeout: " + dimseTimeout);
         }
         this.dimseTimeout = dimseTimeout;
     }

@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.Socket;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.SSLSocket;
 
 import org.dcm4che.util.HandshakeFailedListener;
 

@@ -26,7 +26,6 @@ import org.dcm4che.server.PollDirSrv;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Timer;

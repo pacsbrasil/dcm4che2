@@ -27,7 +27,6 @@ import org.dcm4che.util.HandshakeFailedEvent;
 import org.dcm4che.util.HandshakeFailedListener;
 
 import org.dcm4cheri.util.LF_ThreadPool;
-import org.dcm4cheri.util.SSLContextAdapterImpl;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,7 +37,6 @@ import java.util.List;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import java.security.cert.X509Certificate;

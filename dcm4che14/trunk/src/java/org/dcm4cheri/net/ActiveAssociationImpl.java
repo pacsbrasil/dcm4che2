@@ -25,7 +25,6 @@ package org.dcm4cheri.net;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.net.DcmService;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.FutureRSP;

@@ -25,11 +25,8 @@ package org.dcm4cheri.srom;
 
 import org.dcm4che.srom.*;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmValueException;
-import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 
 import java.util.Date;
 

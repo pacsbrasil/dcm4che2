@@ -22,9 +22,6 @@
 
 package org.dcm4cheri.server;
 
-import java.lang.*;
-import java.util.*;
-import java.io.*;
 import java.net.DatagramPacket;
 import org.dcm4che.server.SyslogService;
 import org.dcm4che.server.UDPServer;

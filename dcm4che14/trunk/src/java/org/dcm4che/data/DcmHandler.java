@@ -23,8 +23,6 @@
 
 package org.dcm4che.data;
 
-import org.dcm4che.dict.VRMap;
-
 import java.io.IOException;
 
 /**

@@ -24,7 +24,6 @@
 package org.dcm4cheri.imageio.plugins;
 
 import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmParserFactory;
 
 import java.io.IOException;
 import java.util.Locale;

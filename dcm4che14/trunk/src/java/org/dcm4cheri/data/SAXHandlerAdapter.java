@@ -25,17 +25,12 @@ package org.dcm4cheri.data;
 
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmHandler;
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.VRs;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
 import org.dcm4cheri.util.StringUtils;

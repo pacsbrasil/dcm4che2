@@ -24,7 +24,6 @@
 package org.dcm4cheri.data;
 
 import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmHandler;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.TagDictionary;
@@ -37,7 +36,6 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 
 import org.dcm4cheri.util.StringUtils;
 
@@ -134,7 +132,7 @@ class DcmHandlerAdapter implements org.dcm4che.data.DcmHandler {
         
     public void setDcmDecodeParam(DcmDecodeParam param) {
         this.byteOrder = param.byteOrder;
-        this.explicitVR = explicitVR;
+        this.explicitVR = param.explicitVR;
     }
 
     public void startElement(int tag, int vr, long pos) throws IOException {

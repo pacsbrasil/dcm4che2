@@ -24,7 +24,6 @@ package org.dcm4cheri.hl7;
 
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Message;
-import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.hl7.MSHSegment;
 
 import java.util.ArrayList;

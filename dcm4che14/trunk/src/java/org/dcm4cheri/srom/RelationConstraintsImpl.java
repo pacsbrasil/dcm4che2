@@ -25,7 +25,6 @@ package org.dcm4cheri.srom;
 
 import org.dcm4che.srom.*;
 import org.dcm4che.dict.UIDs;
-import java.util.*;
 
 import org.apache.log4j.Logger;
 

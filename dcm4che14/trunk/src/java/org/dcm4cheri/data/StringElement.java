@@ -19,7 +19,6 @@
 package org.dcm4cheri.data;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -33,7 +32,6 @@ import org.dcm4che.dict.VRs;
 import org.dcm4che.util.DAFormat;
 import org.dcm4che.util.DTFormat;
 import org.dcm4che.util.TMFormat;
-import org.dcm4cheri.util.StringUtils;
 
 /**
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>

@@ -23,7 +23,6 @@
 
 package org.dcm4cheri.dict;
 
-import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.IntHashtable2;
 

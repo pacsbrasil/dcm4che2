@@ -29,7 +29,6 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
-import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.media.DirReader;
 import org.dcm4che.media.DirRecord;

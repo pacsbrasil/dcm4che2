@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
 
 /**

@@ -25,9 +25,6 @@ package org.dcm4che.srom;
 
 import org.dcm4che.data.Dataset;
 
-import java.util.Date;
-import java.util.List;
-
 
 /**
  * The <code>Series</code> interface represents the 

@@ -23,11 +23,9 @@
 
 package org.dcm4cheri.dict;
 
-import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.UIDDictionary;
 
-import org.xml.sax.InputSource;
 import java.io.*;
 
 /**

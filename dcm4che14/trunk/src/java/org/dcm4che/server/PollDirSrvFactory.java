@@ -23,8 +23,6 @@
 package org.dcm4che.server;
 
 import org.dcm4che.Implementation;
-import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.DcmServiceRegistry;
 
 /**
  * <description>

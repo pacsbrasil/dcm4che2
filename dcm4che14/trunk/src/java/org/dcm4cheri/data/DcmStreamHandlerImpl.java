@@ -25,9 +25,6 @@
 package org.dcm4cheri.data;
 
 import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmObject;
-import org.dcm4che.data.Dataset;
 
 import org.dcm4che.dict.VRs;
 
@@ -37,9 +34,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
-
-import java.util.LinkedList;
-import java.util.logging.*;
 
 import javax.imageio.stream.ImageOutputStream;
 

@@ -32,7 +32,6 @@ import org.dcm4che.net.AAbort;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
-import org.dcm4che.dict.Tags;
 
 import org.dcm4cheri.util.LF_ThreadPool;
 

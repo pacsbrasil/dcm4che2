@@ -25,15 +25,12 @@ package org.dcm4cheri.data;
 
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmHandler;
-import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParseException;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.VRMap;
-
-import org.dcm4cheri.util.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;

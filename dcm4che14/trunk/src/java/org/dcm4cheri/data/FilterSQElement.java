@@ -26,8 +26,6 @@ package org.dcm4cheri.data;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.data.*;
 
-import java.util.*;
-
 /**
  *
  * @author  gunter.zeilinger@tiani.com

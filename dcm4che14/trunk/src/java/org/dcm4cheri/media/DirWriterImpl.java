@@ -27,9 +27,7 @@ import org.dcm4cheri.util.IntHashtable2;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.media.DirWriter;
