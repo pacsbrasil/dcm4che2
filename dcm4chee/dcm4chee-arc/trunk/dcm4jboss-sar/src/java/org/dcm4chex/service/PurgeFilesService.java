@@ -19,6 +19,12 @@
  */
 package org.dcm4chex.service;
 
+import java.io.File;
+
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.PurgeFile;
+import org.dcm4chex.archive.ejb.interfaces.PurgeFileHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -31,6 +37,8 @@ import org.jboss.system.ServiceMBeanSupport;
 public class PurgeFilesService
     extends ServiceMBeanSupport
     implements org.dcm4chex.service.PurgeFilesServiceMBean {
+
+    private String retrieveAETs;
     
     /**
      * @jmx.managed-attribute
@@ -46,4 +54,73 @@ public class PurgeFilesService
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public final String getRetrieveAETs() {
+        return retrieveAETs;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setRetrieveAETs(String aets) {
+        if (aets == null || aets.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        this.retrieveAETs = aets;
+    }
+
+    /**
+     * @jmx.managed-operation
+     */
+    public void run() {
+        PurgeFile purgeFile;
+        try {
+            PurgeFileHome home =
+                (PurgeFileHome) EJBHomeFactory.getFactory().lookup(
+                    PurgeFileHome.class,
+                    PurgeFileHome.JNDI_NAME);
+            purgeFile = home.create();
+        } catch (Exception e) {
+            log.error("Failed to connect EJB service", e);
+            return;
+        }
+        try {
+            FileDTO[] toDelete;
+            try {
+                toDelete = purgeFile.findDereferencedFiles(retrieveAETs);
+            } catch (Exception e) {
+                log.warn("Failed to query dereferenced files:", e);
+                return;
+            }
+            for (int i = 0; i < toDelete.length; i++) {
+                if (delete(toDelete[i].toFile())) {
+                    try {
+                        purgeFile.deleteFile(toDelete[i].getPk());
+                    } catch (Exception e) {
+                        log.warn("Failed to remove entry from list of dereferenced files:", e);
+                    }
+                }
+            }
+        } finally {
+            try {
+                purgeFile.remove();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    private boolean delete(File file) {
+        log.info("M-DELETE file: " + file);
+        if (!file.exists()) {
+            log.warn("File: " + file + " was already deleted");
+            return true;
+        }
+        if (!file.delete()) {
+            log.warn("Failed to delete file: " + file);
+            return false;                    
+        }
+        return true;
+    }
 }

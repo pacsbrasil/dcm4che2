@@ -43,18 +43,20 @@ public class QueryRetrieveScpService
     extends AbstractScpService
     implements org.dcm4chex.service.QueryRetrieveScpServiceMBean
 {
-
     private DataSourceFactory dsf = new DataSourceFactory(log);
     private FindScp findScp = new FindScp(this);
     private MoveScp moveScp = new MoveScp(this);
     private String[] callingAETs;
+    private boolean sendPendingMoveRSP = true;
+    private boolean retrieveLastReceived = true;
+    private int acTimeout = 5000;
     private String patientRootFind;
     private String studyRootFind;
     private String patientStudyOnlyFind;
     private String patientRootMove;
     private String studyRootMove;
     private String patientStudyOnlyMove;
-
+    
     /**
       * @jmx.managed-attribute
       */
@@ -239,30 +241,45 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public final boolean isSendPendingMoveRSP() {
-        return moveScp.isSendPendingMoveRSP();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
-        moveScp.setSendPendingMoveRSP(sendPendingMoveRSP);
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
     public final int getAcTimeout() {
-        return moveScp.getAcTimeout();
+        return acTimeout;
     }
 
     /**
      * @jmx.managed-attribute
      */
     public final void setAcTimeout(int acTimeout) {
-        moveScp.setAcTimeout(acTimeout);
+        this.acTimeout = acTimeout;
     }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final boolean isSendPendingMoveRSP() {
+        return sendPendingMoveRSP;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
+        this.sendPendingMoveRSP = sendPendingMoveRSP;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final boolean isRetrieveLastReceived() {
+        return retrieveLastReceived;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setRetrieveLastReceived(boolean retrieveLastReceived) {
+        this.retrieveLastReceived = retrieveLastReceived;
+    }
+
 
     protected void bindDcmServices(DcmServiceRegistry services)
     {

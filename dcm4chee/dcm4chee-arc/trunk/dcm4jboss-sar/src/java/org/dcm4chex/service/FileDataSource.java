@@ -46,30 +46,32 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
  * @version $Revision$
  * @since 18.09.2003
  */
-class FileDataSource implements DataSource
-{
+class FileDataSource implements DataSource {
 
     private static final DcmParserFactory parserFact =
         DcmParserFactory.getInstance();
     private static final DcmObjectFactory objFact =
         DcmObjectFactory.getInstance();
 
+    private final QueryRetrieveScpService service;
     private final FileInfo fileInfo;
     private final byte[] buffer;
 
-    public FileDataSource(FileInfo fileInfo, byte[] buffer)
-    {
+    public FileDataSource(
+        QueryRetrieveScpService service,
+        FileInfo fileInfo,
+        byte[] buffer) {
+        this.service = service;
         this.fileInfo = fileInfo;
         this.buffer = buffer;
     }
 
-    public void writeTo(OutputStream out, String tsUID) throws IOException
-    {
+    public void writeTo(OutputStream out, String tsUID) throws IOException {
         DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
         File file = fileInfo.toFile();
+        service.getLog().info("M-READ file:" + file);
         FileInputStream fis = new FileInputStream(file);
-        try
-        {
+        try {
             BufferedInputStream bis = new BufferedInputStream(fis);
             DcmParser parser = parserFact.newDcmParser(bis);
             Dataset ds = objFact.newDataset();
@@ -79,20 +81,18 @@ class FileDataSource implements DataSource
             updateAttrs(ds, fileInfo.studyAttrs);
             updateAttrs(ds, fileInfo.seriesAttrs);
             updateAttrs(ds, fileInfo.instAttrs);
+            service.logDataset("Dataset:\n", ds);
             ds.writeDataset(out, enc);
-            if (parser.getReadTag() == Tags.PixelData)
-            {
+            if (parser.getReadTag() == Tags.PixelData) {
                 ds.writeHeader(
                     out,
                     enc,
                     Tags.PixelData,
                     parser.getReadVR(),
                     parser.getReadLength());
-                if (parser.getReadLength() == -1)
-                {
+                if (parser.getReadLength() == -1) {
                     parser.parseHeader();
-                    while (parser.getReadTag() == Tags.Item)
-                    {
+                    while (parser.getReadTag() == Tags.Item) {
                         ds.writeHeader(
                             out,
                             enc,
@@ -108,23 +108,19 @@ class FileDataSource implements DataSource
                         Tags.SeqDelimitationItem,
                         VRs.NONE,
                         0);
-                } else
-                {
+                } else {
                     copy(bis, out, parser.getReadLength());
                 }
                 ds.clear();
                 parser.parseDataset(parser.getDcmDecodeParam(), -1);
                 ds.writeDataset(out, enc);
             }
-        } finally
-        {
-            try
-            {
+        } finally {
+            try {
                 fis.close();
-            } catch (IOException ignore)
-            {}
-            if (enc.encapsulated)
-            {
+            } catch (IOException ignore) {
+            }
+            if (enc.encapsulated) {
                 file.delete();
             }
         }
@@ -132,13 +128,10 @@ class FileDataSource implements DataSource
     }
 
     private void copy(InputStream bis, OutputStream out, int totLen)
-        throws IOException
-    {
-        for (int len, toRead = totLen; toRead > 0; toRead -= len)
-        {
+        throws IOException {
+        for (int len, toRead = totLen; toRead > 0; toRead -= len) {
             len = bis.read(buffer, 0, Math.min(toRead, buffer.length));
-            if (len == -1)
-            {
+            if (len == -1) {
                 throw new EOFException();
             }
             out.write(buffer, 0, len);
@@ -146,10 +139,9 @@ class FileDataSource implements DataSource
     }
 
     /**
-	 * @param ds
-	 */
-    private void updateAttrs(Dataset ds, byte[] attrs) throws IOException
-    {
+     * @param ds
+     */
+    private void updateAttrs(Dataset ds, byte[] attrs) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(attrs);
         DcmParser parser = parserFact.newDcmParser(bis);
         parser.setDcmHandler(ds.getDcmHandler());

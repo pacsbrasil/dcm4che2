@@ -45,27 +45,9 @@ import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
  */
 public class MoveScp extends DcmServiceBase {
     private final QueryRetrieveScpService service;
-    private boolean sendPendingMoveRSP = true;
-    private int acTimeout = 5000;
 
     public MoveScp(QueryRetrieveScpService service) {
         this.service = service;
-    }
-
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    public final boolean isSendPendingMoveRSP() {
-        return sendPendingMoveRSP;
-    }
-
-    public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
-        this.sendPendingMoveRSP = sendPendingMoveRSP;
     }
 
     public void c_move(ActiveAssociation assoc, Dimse rq) throws IOException {
@@ -79,15 +61,13 @@ public class MoveScp extends DcmServiceBase {
             FileInfo[][] fileInfos = queryFileInfos(rqData);
             new Thread(
                 new MoveTask(
-                    service.getLog(),
+                    service,
                     assoc,
                     rq.pcid(),
                     rqCmd,
                     fileInfos,
                     aeData,
-                    dest,
-                    sendPendingMoveRSP,
-                    acTimeout))
+                    dest))
                 .start();
         } catch (DcmServiceException e) {
             Command rspCmd = objFact.newCommand();

@@ -30,6 +30,8 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.service.util.AETsEditor;
 
+import org.dcm4chex.archive.util.EJBHomeFactory;
+
 /**
  * @jmx.mbean extends="org.jboss.system.ServiceMBean"
  * 

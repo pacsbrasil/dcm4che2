@@ -187,6 +187,8 @@
 
     <attribute name="CallingAETs">__any__</attribute>
 
+    <attribute name="RetrieveLastReceived">true</attribute>
+
     <attribute name="SendPendingMoveRSP">true</attribute>    
 
     <attribute name="PatientRootFind">-</attribute>

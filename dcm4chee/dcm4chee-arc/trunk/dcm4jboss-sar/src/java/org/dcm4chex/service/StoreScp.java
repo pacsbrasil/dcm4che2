@@ -66,6 +66,8 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueueHome;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -170,11 +172,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private File checkStorageDir(String dir) throws IOException {
-        String path = dir.replace('/', File.separatorChar);
-        File f =
-            path.startsWith("/")
-                ? new File(path)
-                : new File(ServerConfigLocator.locate().getServerHomeDir(), path);
+        File f = new File(dir);
+        if (!f.isAbsolute()) {
+            f = new File(ServerConfigLocator.locate().getServerHomeDir(), dir);
+        }
         if (!f.exists()) {
             service.getLog().warn("directory " + dir + " does not exist - create new one");
             if (!f.mkdirs()) {

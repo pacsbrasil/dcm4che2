@@ -16,6 +16,14 @@
     <attribute name="DataSource">java:/DefaultDS</attribute>    
 
 	<!--
+	Specifies which file is selected for retrieval, if the storage service
+	associated to this Q/R service received several instances with equal
+	SOP Instance UID, resulting in several files with copies of the same
+	DICOM Composite Object.
+	-->
+    <attribute name="RetrieveLastReceived">true</attribute>
+
+	<!--
 	Specifies if the C-MOVE SCP shall send optional C-MOVE RSP DICOM Messages
 	with Pending Status to the C-MOVE SCU during the retrieve process.
 	-->
