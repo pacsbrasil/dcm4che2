@@ -31,7 +31,7 @@
   <mbean code="org.dcm4chex.service.DcmServerService" 
          name="dcm4chex:service=DcmServer,name=DCMSRV">
     <depends optional-attribute-name="AuditLogger">
-      dcm4chex:service=AuditLogger
+      dcm4chex:service=AuditLogger,name=AUDITLOG
     </depends>
          
     <!--
@@ -94,6 +94,13 @@
     Specifies maximal PDU package length for receiving PDUs.
     -->
     <attribute name="MaxPDULength">16352</attribute>
+    
+    <!--
+    Specifies if Command and Data PDVs can be packed in one PDU.
+    Warning: well-known bugs of some DICOM implementions in support
+    of this performance improving DICOM feature
+    -->
+    <attribute name="PackPDVs">false</attribute>
     
     <!--
     Defines file containing key used in SSL handshake, when running in TLS mode.

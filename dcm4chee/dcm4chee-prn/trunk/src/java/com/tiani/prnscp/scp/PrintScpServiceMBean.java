@@ -27,9 +27,9 @@ import org.jboss.system.ServiceMBean;
 /**
  *  <description>
  *
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  November 3, 2002
- * @version  $Revision$
+ *@author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ *@created    November 3, 2002
+ *@version    $Revision$
  */
 public interface PrintScpServiceMBean extends ServiceMBean
 {
@@ -42,9 +42,25 @@ public interface PrintScpServiceMBean extends ServiceMBean
 
 
     /**
+     *  Gets the auditLogger attribute of the DcmServerService object
+     *
+     *@return    The auditLogger value
+     */
+    public ObjectName getAuditLogger();
+
+
+    /**
+     *  Sets the auditLogger attribute of the DcmServerService object
+     *
+     *@param  auditLogName  The new auditLogger value
+     */
+    public void setAuditLogger(ObjectName auditLogName);
+
+
+    /**
      *  Getter for property dcmServer.
      *
-     * @return  Value of property dcmServer.
+     *@return    Value of property dcmServer.
      */
     ObjectName getDcmServer();
 
@@ -52,7 +68,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Setter for property dcmServer.
      *
-     * @param  dcmServer New value of property dcmServer.
+     *@param  dcmServer  New value of property dcmServer.
      */
     void setDcmServer(ObjectName dcmServer);
 
@@ -60,7 +76,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Getter for property spoolDirectory.
      *
-     * @return  Value of property spoolDirectory.
+     *@return    Value of property spoolDirectory.
      */
     String getSpoolDirectory();
 
@@ -68,7 +84,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Setter for property spoolDirectory.
      *
-     * @param  spoolDirectory The new spoolDirectory value
+     *@param  spoolDirectory  The new spoolDirectory value
      */
     void setSpoolDirectory(String spoolDirectory);
 
@@ -76,7 +92,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Getter for property keepSpoolFiles.
      *
-     * @return  Value of property keepSpoolFiles.
+     *@return    Value of property keepSpoolFiles.
      */
     public boolean isKeepSpoolFiles();
 
@@ -84,7 +100,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Setter for property keepSpoolFiles.
      *
-     * @param  keepSpoolFiles New value of property keepSpoolFiles.
+     *@param  keepSpoolFiles  New value of property keepSpoolFiles.
      */
     public void setKeepSpoolFiles(boolean keepSpoolFiles);
 
@@ -92,7 +108,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Getter for property numCreatedJobs.
      *
-     * @return  Value of property numCreatedJobs.
+     *@return    Value of property numCreatedJobs.
      */
     public int getNumCreatedJobs();
 
@@ -100,7 +116,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Getter for property numStoredPrints.
      *
-     * @return  Value of property numStoredPrints.
+     *@return    Value of property numStoredPrints.
      */
     public int getNumStoredPrints();
 
@@ -108,7 +124,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Getter for property license.
      *
-     * @return  Value of property license.
+     *@return    Value of property license.
      */
     public X509Certificate getLicense();
 
@@ -116,7 +132,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @return  Description of the Return Value
+     *@return    Description of the Return Value
      */
     public String showLicense();
 
@@ -124,8 +140,8 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @param  aet Description of the Parameter
-     * @param  policy Description of the Parameter
+     *@param  aet     Description of the Parameter
+     *@param  policy  Description of the Parameter
      */
     public void putAcceptorPolicy(String aet, AcceptorPolicy policy);
 
@@ -133,7 +149,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @param  job Description of the Parameter
+     *@param  job  Description of the Parameter
      */
     public void onJobStartPrinting(String job);
 
@@ -141,7 +157,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @param  job Description of the Parameter
+     *@param  job  Description of the Parameter
      */
     public void onJobFailed(String job);
 
@@ -149,7 +165,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     * @param  job Description of the Parameter
+     *@param  job  Description of the Parameter
      */
     public void onJobDone(String job);
 

@@ -44,6 +44,8 @@ import com.tiani.prnscp.print.PrinterStatus;
 import com.tiani.prnscp.print.PrinterStatusInfo;
 import com.tiani.util.license.LicenseStore;
 
+import org.dcm4che.auditlog.AuditLogger;
+import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -64,12 +66,14 @@ import org.dcm4che.server.DcmHandler;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
+import java.net.Socket;
+import org.dcm4che.auditlog.MediaDescription;
 
 /**
  *  <description>
  *
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  November 3, 2002
+ * @since  November 3, 2002
  * @version  $Revision$
  */
 public class PrintScpService
@@ -78,10 +82,11 @@ public class PrintScpService
 {
 
     // Constants -----------------------------------------------------
-    final static String LICENSE_FILE = "conf/license.pem";
-    final static String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1";
-    final static int SHUTDOWN_DELAY_MINUTES = 20;
-    final static Map dumpParam = new HashMap(5);
+    static final String UNKNOWN = "unkown";
+    static final String LICENSE_FILE = "conf/license.pem";
+    static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1";
+    static final int SHUTDOWN_DELAY_MINUTES = 20;
+    static final Map dumpParam = new HashMap(5);
     static {
         dumpParam.put("maxlen", new Integer(128));
         dumpParam.put("vallen", new Integer(64));
@@ -89,6 +94,9 @@ public class PrintScpService
     }
 
     // Attributes ----------------------------------------------------
+    private ObjectName auditLogName;
+    private AuditLogger auditLog;
+    private AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
     private String spoolDirectory;
     private File spoolDir;
     private boolean keepSpoolFiles = false;
@@ -116,6 +124,27 @@ public class PrintScpService
     // Public --------------------------------------------------------
 
     // PrintScpMBean implementation ----------------------------------
+    /**
+     *  Gets the auditLogger attribute of the DcmServerService object
+     *
+     *@return    The auditLogger value
+     */
+    public ObjectName getAuditLogger()
+    {
+        return auditLogName;
+    }
+
+
+    /**
+     *  Sets the auditLogger attribute of the DcmServerService object
+     *
+     *@param  auditLogName  The new auditLogger value
+     */
+    public void setAuditLogger(ObjectName auditLogName)
+    {
+        this.auditLogName = auditLogName;
+    }
+    
     /**
      *  Description of the Method
      *
@@ -279,6 +308,8 @@ public class PrintScpService
     public void startService()
         throws Exception
     {
+        auditLog = (AuditLogger) server.getAttribute(
+                auditLogName, "AuditLogger");
         File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
         checkLicense(new File(systemHomeDir, LICENSE_FILE));
         spoolDir = new File(spoolDirectory);
@@ -880,6 +911,32 @@ public class PrintScpService
     }
 
 
+    private void doAuditLog(Association as, FilmSession session) {
+        try {
+            String aet = as.getCalledAET();
+            Dataset sessionAttr = session.getAttributes();
+            Dataset proposedStudy = 
+                sessionAttr.getItem(Tags.ProposedStudySeq);
+            String patID = proposedStudy != null
+                ? proposedStudy.getString(Tags.PatientID, UNKNOWN)
+                : UNKNOWN;
+            String patName = proposedStudy != null
+                ? proposedStudy.getString(Tags.PatientName, UNKNOWN)
+                : UNKNOWN;
+            MediaDescription mediaDesc = alf.newMediaDescription(
+                alf.newPatient(patID, patName));
+            mediaDesc.setMediaType(sessionAttr.getString(Tags.MediumType,
+                (String) getPrinterAttribute(aet, "DefaultMediumType")));
+            mediaDesc.setDestination(alf.newLocalPrinter(
+                (String) getPrinterAttribute(aet, "PrinterName")));
+            auditLog.logExport(mediaDesc,
+                alf.newRemoteUser(alf.newRemoteNode(
+                    as.getSocket(), as.getCallingAET())));
+        } catch (Exception e) {
+            log.warn("Failed to send audit log:", e);
+        }
+    }
+    
     /**
      *  Description of the Method
      *
@@ -888,9 +945,11 @@ public class PrintScpService
      * @param  all Description of the Parameter
      * @exception  DcmServiceException Description of the Exception
      */
-    void createPrintJob(String aet, FilmSession session, boolean all)
+    void createPrintJob(Association as, FilmSession session, boolean all)
         throws DcmServiceException
     {
+        doAuditLog(as, session);
+        String aet = as.getCalledAET();
         String jobID = "J-" + ++numCreatedJobs;
         File jobdir = new File(new File(session.dir(), SPOOL_JOB_DIR_SUFFIX), jobID);
         if (!jobdir.mkdir()) {

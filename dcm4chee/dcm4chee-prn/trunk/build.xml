@@ -10,12 +10,16 @@
   <property name="javac.debug" value="on"/>
   <property name="javac.optimize" value="off"/>
 
+  <!-- Override with your dcm4che14 dist location -->
+  <property name="dcm4che.home" value="../dcm4che14"/>
+  <property name="dcm4che.jar" value="${dcm4che.home}/build/lib/dcm4che.jar"/>
+  
   <!-- Override with your JBoss/Web server bundle dist location -->
-  <property name="jboss.dist" value="${user.home}/jboss-3.0.4"/>
-  <property name="jboss.bin" value="${jboss.dist}/bin"/>
-  <property name="jboss.lib" value="${jboss.dist}/lib"/>
-  <property name="jboss.client" value="${jboss.dist}/client"/>
-  <property name="jboss.server" value="${jboss.dist}/server/default"/>
+  <property name="jboss.home" value="${user.home}/jboss-3.0.4"/>
+  <property name="jboss.bin" value="${jboss.home}/bin"/>
+  <property name="jboss.lib" value="${jboss.home}/lib"/>
+  <property name="jboss.client" value="${jboss.home}/client"/>
+  <property name="jboss.server" value="${jboss.home}/server/default"/>
   <property name="jboss.server.deploy" value="${jboss.server}/deploy"/>
   <property name="jboss.server.lib" value="${jboss.server}/lib"/>
   <property name="jboss.server.conf" value="${jboss.server}/conf"/>
@@ -25,14 +29,13 @@
   <property name="docbook-xsl.fo.dir" value="${docbook-xsl.dist}/fo"/>
 
   <!-- Override with your Apache FOP dist location -->
-  <property name="fop.dist" value="${user.home}/fop-0.20.4"/>
-  <property name="fop.jar" value="${fop.dist}/build/fop.jar"/>
+  <property name="fop.home" value="${user.home}/fop-0.20.4"/>
+  <property name="fop.jar" value="${fop.home}/build/fop.jar"/>
   
   <property name="doc.dir" value="${basedir}/doc"/>
   <property name="doc.xml" value="${doc.dir}/xml"/>
   <property name="doc.xsl" value="${doc.dir}/xsl"/>
   <property name="doc.img" value="${doc.dir}/img"/>
-  <property name="lib.dir" value="${basedir}/lib"/>
   <property name="src.dir" value="${basedir}/src"/>
   <property name="src.java" value="${src.dir}/java"/>
   <property name="src.conf" value="${src.dir}/conf"/>
@@ -50,34 +53,36 @@
 
   <path id="fop.path">
     <pathelement location="${fop.jar}"/>
-    <fileset dir="${fop.dist}/lib">
+    <fileset dir="${fop.home}/lib">
         <include name="*.jar"/>
     </fileset>
   </path>
 
-  <path id="build.path">
-    <pathelement location="${lib.dir}/dcm4che.jar"/>
-    <pathelement location="${jboss.bin}/run.jar"/>
-    <pathelement location="${jboss.lib}/jboss-common.jar"/>
-    <pathelement location="${jboss.lib}/jboss-system.jar"/>
-    <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
-    <pathelement location="${jboss.server.lib}/log4j.jar"/>
-    <pathelement location="${jboss.server.lib}/jbosssx.jar"/>
-    <pathelement location="${jboss.client}/jmx-rmi-connector-client.jar"/>
-    <pathelement location="${build.classes.dir}"/>
-  </path>
-
-  <target name="set_classpath_id">
-    <available property="classpath_id"
-               value="build.path"
-               file="${jboss.lib}/jboss-system.jar" />
-    <available property="fop_classpath_id"
-               value="fop.path"
-               file="${fop.jar}" />
+  <target name="build_dcm4che" unless="dcm4che.uptodate">
+      <ant inheritAll="false" dir="${dcm4che.home}" target="jar"/>
+  </target>
+  
+  <target name="build_path" depends="init,build_dcm4che">
+      <path id="build.path">
+        <pathelement location="${dcm4che.jar}"/>
+        <pathelement location="${jboss.bin}/run.jar"/>
+        <pathelement location="${jboss.lib}/jboss-common.jar"/>
+        <pathelement location="${jboss.lib}/jboss-system.jar"/>
+        <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
+        <pathelement location="${jboss.server.lib}/log4j.jar"/>
+        <pathelement location="${jboss.server.lib}/jbosssx.jar"/>
+        <pathelement location="${jboss.client}/jmx-rmi-connector-client.jar"/>
+        <pathelement location="${build.classes.dir}"/>
+      </path>
   </target>
 
-  <target name="fail_unless_classpath_id" unless="classpath_id">
-    <fail message="jboss.dist=${jboss.dist} is not a valid JBoss dist directory"/>
+  <target name="available_check">
+    <available property="dcm4che_present" file="${dcm4che.home}/build.xml" />
+    <available property="jboss_present" file="${jboss.lib}/jboss-system.jar" />
+    <available property="fop_present" file="${fop.jar}" />
+    <uptodate property="dcm4che.uptodate" targetfile="${dcm4che.jar}" >
+        <srcfiles dir= "${dcm4che.home}/src"/>
+    </uptodate>
   </target>
 
   <target name="fetch"
@@ -85,12 +90,20 @@
     <cvs command="update -APd"/>
   </target>
 
-  <target name="init" depends="set_classpath_id,fail_unless_classpath_id">
+  <target name="fail_unless_dcm4che_present" unless="dcm4che_present">
+    <fail message="dcm4che.home=${dcm4che.home} is not a valid dcm4che dist directory"/>
+  </target>
+  
+  <target name="fail_unless_jboss_present" unless="jboss_present">
+    <fail message="jboss.home=${jboss.home} is not a valid JBoss dist directory"/>
+  </target>
+
+  <target name="init" depends="available_check,fail_unless_dcm4che_present,fail_unless_jboss_present">
     <echo message="user.home = ${user.home}"/>
     <echo message="java.home = ${java.home}"/>
     <echo message="ant.home = ${ant.home}"/>
-    <echo message="jboss.dist = ${jboss.dist}"/>
-    <echo message="fop.dist = ${fop.dist}"/>
+    <echo message="jboss.home = ${jboss.home}"/>
+    <echo message="fop.home = ${fop.home}"/>
     <echo message="docbook-xsl.dist = ${docbook-xsl.dist}"/>
     <echo message="java.class.path = ${java.class.path}"/>
     <echo message="dasho.jar = ${dasho.jar}"/>
@@ -98,11 +111,11 @@
   </target>
 
   <!-- Compile all java source under src/java -->
-  <target name="compile" depends="init">
+  <target name="compile" depends="build_path">
     <mkdir dir="${build.classes.dir}"/>
     <javac srcdir="${src.java}"
            destdir="${build.classes.dir}"
-           classpathref="${classpath_id}"
+           classpathref="build.path"
            debug="${javac.debug}"
            deprecation="on"
            optimize="${javac.optimize}">
@@ -360,7 +373,7 @@
       </fileset>
     </copy>
 
-    <copy file="${lib.dir}/dcm4che.jar"
+    <copy file="${dcm4che.jar}"
         todir="${jboss.server.lib}" />
         
     <copy file="${build.deploy.dir}/auditlog.sar"
@@ -422,7 +435,7 @@
   <target name="release" depends="build, doc">
     <mkdir dir="${dist.dir}/server/default"/>
     <copy todir="${dist.dir}">
-      <fileset dir="${jboss.dist}">
+      <fileset dir="${jboss.home}">
         <include name="bin/run.*"/>
         <include name="bin/jboss_init_redhat.sh"/>
         <include name="client/jnp-client.jar"/>
@@ -454,11 +467,11 @@
       </fileset>
     </copy>
     <copy todir="${dist.dir}/server/default">
-      <fileset dir="${jboss.dist}/server/minimal">
+      <fileset dir="${jboss.home}/server/minimal">
         <include name="conf/*"/>
         <include name="lib/*"/>
       </fileset>
-      <fileset dir="${jboss.dist}/server/default">
+      <fileset dir="${jboss.home}/server/default">
         <include name="lib/jbosssx.jar"/>
       </fileset>
       <fileset dir="${src.dir}">
@@ -478,10 +491,10 @@
       </fileset>
     </copy> 
     <jar jarfile="${dist.dir}/server/default/deploy/jmx-rmi-adaptor.sar">
-      <metainf dir="${jboss.dist}/server/default/deploy/jmx-rmi-adaptor.sar/META-INF"
+      <metainf dir="${jboss.home}/server/default/deploy/jmx-rmi-adaptor.sar/META-INF"
                includes="jboss-service.xml"
       />
-      <fileset dir="${jboss.dist}/server/default/deploy/jmx-rmi-adaptor.sar">
+      <fileset dir="${jboss.home}/server/default/deploy/jmx-rmi-adaptor.sar">
         <exclude name="META-INF/**"/>
       </fileset>
     </jar>

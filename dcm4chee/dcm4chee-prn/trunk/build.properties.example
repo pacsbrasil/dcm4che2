@@ -1,14 +1,18 @@
-# set property "jboss.dist" to the path of your installation directory
+# set property "dcm4che.home" to the path of your installation directory
+# of dcm4che14 [http://sourceforge.org/projects/dcm4che]
+dcm4che.home=../dcm4che14
+
+# set property "jboss.home" to the path of your installation directory
 # of JBoss [http://sourceforge.org/projects/jboss]
-jboss.dist=C:/jboss-3.0.4
+jboss.home=C:/jboss-3.0.4
 
-# set property "docbook-xsl.dist" to the path of your installation directory
+# set property "docbook-xsl.home" to the path of your installation directory
 # of DocBook XSL Stylesheets [http://sourceforge.net/projects/docbook]
-docbook-xsl.dist=C:/docbook-xsl-1.60.1
+docbook-xsl.home=C:/docbook-xsl-1.60.1
 
-# set property "fop.dist" to the path of your installation directory 
+# set property "fop.home" to the path of your installation directory 
 # of Apache FOP [http://xml.apache.org/fop/]
-fop.dist=C:/fop-0.20.4
+fop.home=C:/fop-0.20.4
 
 # set property "dasho.jar" to your file path of DashoPro.jar
 # for obfuscation of commercial prnscp.jar module.
