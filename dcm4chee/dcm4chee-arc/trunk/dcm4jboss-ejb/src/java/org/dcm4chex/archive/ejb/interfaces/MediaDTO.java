@@ -26,7 +26,7 @@ public class MediaDTO implements Serializable {
     public static final int TRANSFERING = 2;
     public static final int BURNING = 3;
     public static final int COMPLETED = 4;
-    public static final int ERROR = -1;
+    public static final int ERROR = 999;
 
     private int pk;
     private String filesetId;
