@@ -259,6 +259,11 @@
 		<mkdir dir="${basedir}/target/${db.name}/deploy"/>
         <jar jarfile="${basedir}/target/${db.name}/deploy/dcm4jboss-arr-ejb.jar">
         	<metainf dir="${basedir}/target/meta-inf-${db.name}"/>
+        	<manifest>
+				<attribute name="Implementation-Title" value="dcm4jboss-arr-ejb"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+        	</manifest>
         	<fileset dir="${basedir}/target/classes">
                 <include name="**/ejb/**" />
             </fileset>
@@ -268,11 +273,21 @@
 	<target name="jar" depends="compile">
 		<mkdir dir="${basedir}/target/common/lib"/>
         <jar jarfile="${basedir}/target/common/lib/dcm4jboss-arr.jar">
+        	<manifest>
+				<attribute name="Implementation-Title" value="dcm4jboss-arr"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+        	</manifest>
         	<fileset dir="${basedir}/target/classes">
                 <include name="**/mbean/**" />
             </fileset>
         </jar>
         <jar jarfile="${basedir}/target/common/lib/dcm4jboss-arr-login.jar">
+        	<manifest>
+				<attribute name="Implementation-Title" value="dcm4jboss-arr-login"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+        	</manifest>
         	<fileset dir="${basedir}/target/classes">
                 <include name="**/security/**" />
             </fileset>
