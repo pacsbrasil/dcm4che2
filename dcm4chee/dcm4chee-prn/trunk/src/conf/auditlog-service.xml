@@ -4,7 +4,7 @@
 
 <!-- ===================================================================== -->
 <!--                                                                       -->
-<!--  User Service Configuration                                           -->
+<!--  Audit Logger Service Configuration                                   -->
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
@@ -15,10 +15,59 @@
   <mbean code="org.dcm4chex.service.AuditLoggerService" 
          name="dcm4chex:service=AuditLogger,name=AUDITLOG">
     <!-- @DEPENDS@ -->
-     
+
+    <!--
+    Specifies hostname or IP of the Audit Record Repository,
+    to which Audit Records shall be transmitted.
+    -->     
     <attribute name="SyslogHost">localhost</attribute>
+
+    <!--
+    Specifies UDP port on which the Audit Record Repository
+    is listening.
+    -->
     <attribute name="SyslogPort">4000</attribute>
-    <attribute name="Facility">authpriv</attribute>         
+
+    <!--
+    Specifies the value of the Facility element in the Syslog
+    header of transmitted Audit Records. Possible values are:
+      user,
+      auth,
+      authpriv,
+      local0,
+      local1,
+      local2,
+      local3,
+      local4,
+      local5,
+      local6,
+      local7
+    -->
+    <attribute name="Facility">authpriv</attribute>
+
+    <!--
+    Set to false, to deactivate transmission of
+    ActorStartStop Audit messages.
+    -->
+    <attribute name="LogActorStartStop">true</attribute>
+
+    <!--
+    Set to false, to deactivate transmission of
+    SecurityAlert Audit messages.
+    -->
+    <attribute name="LogSecurityAlert">true</attribute>
+
+    <!--
+    Set to false, to deactivate transmission of
+    ActorConfig Audit messages.
+    -->
+    <attribute name="LogActorConfig">true</attribute>
+
+    <!--
+    Set to false, to deactivate transmission of
+    Export Audit messages.
+    -->
+    <attribute name="LogExport">true</attribute>
   </mbean>
 
 </server>

@@ -1057,8 +1057,10 @@ public class PrintScpService
                 boolean color = asuid.equals(UIDs.BasicColorPrintManagement);
                 int[] tags = rq.getCommand().getTags(Tags.AttributeIdentifierList);
                 try {
-                    return getPrinterAttributes(aet, color,
+                    Dataset ds = getPrinterAttributes(aet, color,
                             tags != null ? tags : PRINTER_MODULE_ATTRS);
+                    logDataset("Get Printer Status:\n", ds);
+                    return ds;
                 } catch (Exception e) {
                     log.error("Failed to access printer status", e);
                     throw new DcmServiceException(Status.ProcessingFailure,
