@@ -34,7 +34,7 @@ import org.dcm4che.util.TMFormat;
  * @since      November 19, 2003
  * @version    $Revision$
  */
-class PrinterCalibration
+public class PrinterCalibration
 {
     // Constants -----------------------------------------------------
 

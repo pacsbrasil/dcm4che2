@@ -84,16 +84,12 @@ public class ODCurve
             lasty = y;
         }
         g.setStroke(new BasicStroke(1));
+        g.setColor(Color.BLACK);
         if (selected) {
             for (int i=0; i<ods.length; i++) {
                 x = x0 + (int)((ods.length - 1 - i) * fx + 0.5f);
                 y = y0 + (int)(height - 1 - (ods[i] * fy + 0.5f));
-                g.setColor(Color.BLACK);
-                g.drawRect(x-1, y-1, 3, 3);
-                g.setColor(Color.RED);
-                g.fillRect(x, y, 2, 2);
-                lastx = x;
-                lasty = y;
+                g.drawRect(x, y, 1, 1);
             }
         }
     }

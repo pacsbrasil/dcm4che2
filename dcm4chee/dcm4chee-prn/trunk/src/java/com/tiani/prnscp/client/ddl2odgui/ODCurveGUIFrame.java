@@ -1,11 +1,25 @@
 package com.tiani.prnscp.client.ddl2odgui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 
-import org.apache.log4j.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import com.tiani.prnscp.print.CalibrationException;
 
@@ -35,6 +49,8 @@ public class ODCurveGUIFrame extends JFrame
         //setup menus
         JMenuBar mnubar = new JMenuBar();
         JMenu mnuCurve = new JMenu("Curve");
+        //create right-click menu for button legend
+        
         //create "curve -> load" curve menu
         Action actLoadCurve = new AbstractAction()
             {
@@ -47,18 +63,19 @@ public class ODCurveGUIFrame extends JFrame
                             curvePanel.loadScannedImageCurve(lastFile = chooser.getSelectedFile());
                         }
                         catch (CalibrationException ce) {
-                            showMsgDialog("There is a problem with analyzing the selected image ("
+                            showMsgDialog("There is a problem analyzing the selected image ("
                                           + lastFile + "):\n"
                                           + ce.getMessage(),
                                           "Calibration Error");
                         }
                         catch (IOException ioe) {
-                            showMsgDialog("There is a problem with reading the selected image ("
+                            showMsgDialog("There is a problem reading the selected image ("
                                           + lastFile + "):\n"
                                           + ioe.getMessage(),
                                           "File Error");
                         }
                         ODCurveGUIFrame.this.validate();
+                        ODCurveGUIFrame.this.repaint();
                     }
                 }
             };
