@@ -9,7 +9,7 @@
    <xsl:include href  = "page.xsl" />
 
    <xsl:template match="model/patient">
-      <form action="patientUpdate.m" method="post">
+      <form NAME="PatientForm" action="patientUpdate.m" method="post"  >
          <input name="pk" type="hidden" value="{pk}" />
 
 		   <table border="1" cellspacing="0" cellpadding="0" width="100%"><tr><td>
@@ -89,7 +89,7 @@
                <td align="left">
 							   <xsl:choose>
 								 	<xsl:when test="pk = -1">
-										<input type="submit" name="submit" value="Add Patient" />									
+										<input type="submit" name="submit" value="Add Patient" onclick="return checkNotEmpty(this.form.patientID.value, 'Patient ID')"/>									
 									</xsl:when>
 									<xsl:otherwise>
 										<input type="submit" name="submit" value="Update" />
