@@ -197,6 +197,23 @@ CREATE INDEX mwl_perf_physician ON mwl_item(UPPER(perf_physician));
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 
+CREATE SEQUENCE device_pk_seq;
+CREATE TABLE device (
+	pk          	NUMBER PRIMARY KEY,
+	station_name    VARCHAR2(255) NOT NULL,
+	station_aet     VARCHAR2(255) NOT NULL
+);
+CREATE UNIQUE INDEX station_name ON device(station_name);
+
+CREATE TABLE rel_device_protocol (
+	device_fk      INTEGER,
+	prcode_fk      INTEGER,
+FOREIGN KEY (device_fk) REFERENCES device(pk),
+FOREIGN KEY (prcode_fk) REFERENCES code(pk)
+);
+CREATE INDEX device_fk ON rel_device_protocol(device_fk);
+CREATE INDEX prcode_fk ON rel_device_protocol(prcode_fk);
+
 CREATE SEQUENCE audit_record_pk_seq;
 CREATE TABLE audit_record(
 	pk 				NUMBER PRIMARY KEY,

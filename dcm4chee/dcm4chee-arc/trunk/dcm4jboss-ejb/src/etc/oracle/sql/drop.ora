@@ -1,6 +1,8 @@
 DROP TABLE roles;
 DROP TABLE users;
 DROP TABLE audit_record;
+DROP TABLE rel_device_protocol;
+DROP TABLE device;
 DROP TABLE mwl_item;
 DROP TABLE files;
 DROP TABLE filesystem;
@@ -25,4 +27,5 @@ DROP SEQUENCE instance_pk_seq;
 DROP SEQUENCE files_pk_seq;
 DROP SEQUENCE filesystem_pk_seq;
 DROP SEQUENCE mwl_item_pk_seq;
+DROP SEQUENCE device_pk_seq;
 DROP SEQUENCE audit_record_pk_seq;

@@ -245,14 +245,11 @@ public abstract class FileBean implements EntityBean
         setInstance(instance);
         instance.updateAvailability(0);
         setFileSystem(filesystem);
-//        filesystem.setDiskUsage(filesystem.getDiskUsage() + size);
         log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException
     {
-        final FileSystemLocal fs = getFileSystem();
-//        fs.setDiskUsage(fs.getDiskUsage() - getFileSize());
         log.info("Deleting " + prompt());
     }
 }

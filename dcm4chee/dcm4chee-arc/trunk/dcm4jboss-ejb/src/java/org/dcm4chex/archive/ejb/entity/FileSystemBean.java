@@ -49,9 +49,6 @@ import org.apache.log4j.Logger;
  *  signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
  *  query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
  *  transaction-type="Supports"
- * 
- * @jboss.query 
- *  signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
  */
 public abstract class FileSystemBean implements EntityBean {
 
