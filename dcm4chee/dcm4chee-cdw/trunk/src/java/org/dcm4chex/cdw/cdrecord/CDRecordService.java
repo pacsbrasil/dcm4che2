@@ -26,7 +26,7 @@ import org.dcm4chex.cdw.common.AbstractMediaWriterService;
 import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
-import org.dcm4chex.cdw.common.FileUtils;
+import org.dcm4chex.cdw.common.MD5Utils;
 import org.dcm4chex.cdw.common.JMSDelegate;
 import org.dcm4chex.cdw.common.LabelPrintDelegate;
 import org.dcm4chex.cdw.common.MediaCreationException;
@@ -405,7 +405,7 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     private void verify(File fsDir) throws MediaCreationException {
         try {
-            if (!FileUtils.verify(driveDir, fsDir, log)) { throw new MediaCreationException(
+            if (!MD5Utils.verify(driveDir, fsDir, log)) { throw new MediaCreationException(
                     ExecutionStatusInfo.PROC_FAILURE, "Verification failed!"); }
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,

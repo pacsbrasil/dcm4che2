@@ -251,21 +251,32 @@ public class MediaCreationRequest implements Serializable {
         }
     }
     
-    public void copyDone(Dataset attrs, Logger log) throws IOException {
-	    if (--remainingCopies > 0) return;
+    /**
+     * Reports one copy was done. Updates Media Creation Request.
+     * 
+     * @param attrs Media Creation Request attributes. 
+     * @param log service logger
+     * @return number of remaining copies to do.
+     * @throws IOException if the update of the Media Creation Request fails. 
+     */
+    public int copyDone(Dataset attrs, Logger log) throws IOException {
 	    attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated,
 	            attrs.getInt(Tags.TotalNumberOfPiecesOfMediaCreated, 0) + 1);
-        DcmElement sq = attrs.get(Tags.RefStorageMediaSeq);
-        if (sq == null) sq = attrs.putSQ(Tags.RefStorageMediaSeq);
-        Dataset item = sq.addNewItem();
-        item.putSH(Tags.StorageMediaFileSetID, filesetID);
-        item.putUI(Tags.StorageMediaFileSetUID, filesetDir.getName());
-        if (volsetSeqno == volsetSize) {
-            attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.DONE);
-            attrs.putCS(Tags.ExecutionStatusInfo,
-                    ExecutionStatusInfo.NORMAL);
-        }
+	    if (--remainingCopies > 0) {
+	        DcmElement sq = attrs.get(Tags.RefStorageMediaSeq);
+	        if (sq == null) sq = attrs.putSQ(Tags.RefStorageMediaSeq);
+	        Dataset item = sq.addNewItem();
+	        item.putSH(Tags.StorageMediaFileSetID, filesetID);
+	        item.putUI(Tags.StorageMediaFileSetUID, filesetDir.getName());
+	        if (volsetSeqno == volsetSize) {
+	            attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.DONE);
+	            attrs.putCS(Tags.ExecutionStatusInfo,
+	                    ExecutionStatusInfo.NORMAL);
+	        }
+	        log.info("Finished " + this);
+	    }
         writeAttributes(attrs, log);
+        return remainingCopies;
     }    
 
     public boolean cleanFiles(SpoolDirDelegate spoolDir) {

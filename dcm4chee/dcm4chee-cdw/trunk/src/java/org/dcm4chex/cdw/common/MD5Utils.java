@@ -29,7 +29,7 @@ import org.jboss.logging.Logger;
  * @version $Revision$ $Date$
  * @since 28.06.2004
  */
-public class FileUtils {
+public class MD5Utils {
 
     public static final long MEGA = 1000000L;
 
@@ -37,7 +37,7 @@ public class FileUtils {
 
     private static final int BUF_SIZE = 512;
 
-    private FileUtils() {
+    private MD5Utils() {
     }
 
     public static File makeMD5File(File f) {

@@ -35,7 +35,7 @@ import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4chex.cdw.common.FileUtils;
+import org.dcm4chex.cdw.common.MD5Utils;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -282,7 +282,7 @@ public class StoreScpService extends AbstractScpService {
         checkDataset(rqCmd, ds, parser);
         ds.setFileMetaInfo(dof.newFileMetaInfo(cuid, iuid, fileTS));
         File file = spoolDir.getInstanceFile(iuid);
-        File md5file = FileUtils.makeMD5File(file);
+        File md5file = MD5Utils.makeMD5File(file);
         try {
             spoolDir.delete(file);
             spoolDir.delete(md5file);
@@ -307,7 +307,7 @@ public class StoreScpService extends AbstractScpService {
             log.info("M-WRITE " + md5file);
             Writer md5out = new FileWriter(md5file);
             try {
-                md5out.write(FileUtils.toHexChars(digest.digest()));
+                md5out.write(MD5Utils.toHexChars(digest.digest()));
             } finally {
                 try {
                     md5out.close();

@@ -52,7 +52,7 @@ import org.dcm4che.media.DirWriter;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
-import org.dcm4chex.cdw.common.FileUtils;
+import org.dcm4chex.cdw.common.MD5Utils;
 import org.dcm4chex.cdw.common.Flag;
 import org.dcm4chex.cdw.common.MediaCreationException;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
@@ -246,7 +246,8 @@ class FilesetBuilder {
         String iuid = item.getString(Tags.RefSOPInstanceUID);
         String cuid = item.getString(Tags.RefSOPClassUID);
         File src = spoolDir.getInstanceFile(iuid);
-        log.debug("M-READ " + src);
+        if (debug)
+            log.debug("M-READ " + src);
         ImageInputStream in = new FileImageInputStream(src);
         String[] fileIDs;
         try {
@@ -340,6 +341,8 @@ class FilesetBuilder {
                 }
             }
             dirWriter.add(serRec.rec, recType, rec, fileIDs, cuid, iuid, tsuid);
+            if (debug)
+                logMemoryUsage();            
         } finally {
             try {
                 in.close();
@@ -353,16 +356,23 @@ class FilesetBuilder {
         if (preserveInstances) {
             spoolDir.copy(src, dest, bbuf);
             if (md5sums)
-                    spoolDir.copy(FileUtils.makeMD5File(src), FileUtils
+                    spoolDir.copy(MD5Utils.makeMD5File(src), MD5Utils
                             .makeMD5File(dest), bbuf);
         } else {
             spoolDir.move(src, dest);
-            File md5src = FileUtils.makeMD5File(src);
+            File md5src = MD5Utils.makeMD5File(src);
             if (md5sums)
-                spoolDir.move(md5src, FileUtils.makeMD5File(dest));
+                spoolDir.move(md5src, MD5Utils.makeMD5File(dest));
             else
                 spoolDir.delete(md5src);
         }
+    }
+
+    private void logMemoryUsage() {
+        Runtime rt = Runtime.getRuntime();
+        log.debug("Memory total:" + (rt.totalMemory()/1000000L)
+                + "MB, free:" + (rt.freeMemory()/1000000L)
+                + "MB");
     }
 
     private String toFilePath(String[] fileIDs, int n) {
@@ -818,7 +828,7 @@ class FilesetBuilder {
                 }
                 spoolDir.delete(md5file);
             } else {
-                FileUtils.md5sum(fileOrDir, cbuf, digest, bbuf);
+                MD5Utils.md5sum(fileOrDir, cbuf, digest, bbuf);
             }
             out.write(cbuf);
             out.write(' ');

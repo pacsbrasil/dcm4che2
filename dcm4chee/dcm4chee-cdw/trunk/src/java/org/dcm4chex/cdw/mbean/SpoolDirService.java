@@ -13,7 +13,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.dcm4chex.cdw.common.FileUtils;
+import org.dcm4chex.cdw.common.MD5Utils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -139,15 +139,15 @@ public class SpoolDirService extends ServiceMBeanSupport {
     }
 
     public final String getArchiveHighWaterMark() {
-        return FileUtils.formatSize(archiveHighWaterMark);
+        return MD5Utils.formatSize(archiveHighWaterMark);
     }
 
     public final void setArchiveHighWaterMark(String str) {
-        this.archiveHighWaterMark = FileUtils.parseSize(str, MIN_HWM);
+        this.archiveHighWaterMark = MD5Utils.parseSize(str, MIN_HWM);
     }
 
     public final String getArchiveDiskUsage() {
-        return FileUtils.formatSize(archiveDiskUsage);
+        return MD5Utils.formatSize(archiveDiskUsage);
     }
 
     public final boolean isFilesetHighWater() {
@@ -155,15 +155,15 @@ public class SpoolDirService extends ServiceMBeanSupport {
     }
 
     public final String getFilesetHighWaterMark() {
-        return FileUtils.formatSize(filesetHighWaterMark);
+        return MD5Utils.formatSize(filesetHighWaterMark);
     }
 
     public final void setFilesetHighWaterMark(String str) {
-        this.filesetHighWaterMark = FileUtils.parseSize(str, MIN_HWM);
+        this.filesetHighWaterMark = MD5Utils.parseSize(str, MIN_HWM);
     }
 
     public final String getFilesetDiskUsage() {
-        return FileUtils.formatSize(filesetDiskUsage);
+        return MD5Utils.formatSize(filesetDiskUsage);
     }
 
     public String refreshArchiveDiskUsage() {

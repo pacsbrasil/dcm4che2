@@ -31,7 +31,7 @@ import org.dcm4chex.cdw.common.ConfigurationException;
 import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
-import org.dcm4chex.cdw.common.FileUtils;
+import org.dcm4chex.cdw.common.MD5Utils;
 import org.dcm4chex.cdw.common.Flag;
 import org.dcm4chex.cdw.common.JMSDelegate;
 import org.dcm4chex.cdw.common.MediaCreationException;
@@ -70,7 +70,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private final File mergeDirWeb;
 
-    private long mediaCapacity = 700 * FileUtils.MEGA;
+    private long mediaCapacity = 700 * MD5Utils.MEGA;
 
     private int bufferSize = 512;
 
@@ -185,11 +185,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     public final String getMediaCapacity() {
-        return FileUtils.formatSize(mediaCapacity);
+        return MD5Utils.formatSize(mediaCapacity);
     }
 
     public final void setMediaCapacity(String mediaCapacity) {
-        this.mediaCapacity = FileUtils.parseSize(mediaCapacity,
+        this.mediaCapacity = MD5Utils.parseSize(mediaCapacity,
                 MIN_MEDIA_CAPACITY);
     }
 
@@ -410,17 +410,17 @@ public class MediaComposerService extends ServiceMBeanSupport {
             throws MediaCreationException, IOException {
         if (!Flag.isYES(attrs.getString(Tags.AllowMediaSplitting))) { throw new MediaCreationException(
                 ExecutionStatusInfo.SET_OVERSIZED, "File-set size: "
-                        + FileUtils.formatSize(fsSize)
+                        + MD5Utils.formatSize(fsSize)
                         + " exceeds Media Capacity: "
-                        + FileUtils.formatSize(mediaCapacity)); }
+                        + MD5Utils.formatSize(mediaCapacity)); }
         final long sizeOfNonDicomContent = fsSize
                 - builder.sizeOfDicomContent();
         if (sizeOfNonDicomContent > mediaCapacity) { throw new MediaCreationException(
                 ExecutionStatusInfo.SET_OVERSIZED,
                 "Size of Non-DICOM Content: "
-                        + FileUtils.formatSize(sizeOfNonDicomContent)
+                        + MD5Utils.formatSize(sizeOfNonDicomContent)
                         + " exceeds Media Capacity: "
-                        + FileUtils.formatSize(mediaCapacity)); }
+                        + MD5Utils.formatSize(mediaCapacity)); }
         long freeSizeFirst = mediaCapacity - sizeOfNonDicomContent;
         long freeSizeOther = mediaCapacity - rq.getDicomDirFile().length();
         if (includeDisplayApplicationOnAllMedia && builder.isViewer())

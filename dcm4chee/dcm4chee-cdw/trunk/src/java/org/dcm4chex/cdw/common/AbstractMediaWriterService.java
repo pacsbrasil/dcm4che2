@@ -102,6 +102,14 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
 
     }
 
-    protected abstract boolean handle(MediaCreationRequest r, Dataset attrs)
+    /**
+     * @param mcrq Media Creation Request
+     * @param attrs Attributes of Media Creation Request
+     * @return signals, if File Set and ISO image shall/can be deleted after
+     *  this method returns: <code>true</code> = delete, <code>false</code> = keep
+     * @throws MediaCreationException if the Media Creation fails.
+     * @throws IOException if an i/o error accesing the Media Creation Request occurs.
+     */
+    protected abstract boolean handle(MediaCreationRequest mcrq, Dataset attrs)
             throws MediaCreationException, IOException;
 }
