@@ -302,12 +302,5 @@ public final class ISO8601DateFormat extends DateFormat
         cal.set(Calendar.MILLISECOND,msec);
 		return cal.getTime();
 	}
-    
-    public static void main(String[] args)
-    {
-        Date d = new Date();
-        ISO8601DateFormat df = new ISO8601DateFormat();
-        System.out.println(df.format(d));
-    }
 }
 
