@@ -26,11 +26,10 @@ import org.dcm4chex.wado.mbean.WADOService;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class WADORequestObjectImpl implements WADORequestObject {
+public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WADORequestObject {
 
 	private static Logger log = Logger.getLogger( WADOService.class.getName() );
 
-	private String reqType;
 	private String studyUID;
 	private String seriesUID;
 	private String instanceUID;
@@ -48,7 +47,7 @@ public class WADORequestObjectImpl implements WADORequestObject {
 	 * @param request The http request.
 	 */
 	public WADORequestObjectImpl( HttpServletRequest request ) {
-		reqType  = request.getParameter( "requestType" );
+		super( request );
 		studyUID = request.getParameter( "studyUID" );
 		seriesUID = request.getParameter( "seriesUID" );
 		instanceUID = request.getParameter( "objectUID" );
@@ -57,8 +56,6 @@ public class WADORequestObjectImpl implements WADORequestObject {
 		rows = request.getParameter( "rows" );
 		columns = request.getParameter( "columns" );
 		frameNumber = request.getParameter("frameNumber");
-		paramMap = request.getParameterMap();
-		contentTypes = _string2List( contentType, "," );
 		
 		headerMap = new HashMap();
 		Enumeration enum1 = request.getHeaderNames();
@@ -68,17 +65,6 @@ public class WADORequestObjectImpl implements WADORequestObject {
 			if ( log.isDebugEnabled() ) log.debug("header: "+key+"="+request.getHeader(key) );
 			headerMap.put( key, request.getHeader(key) );
 		}
-	}
-	
-	/**
-	 * Returns the value of reqType request parameter.
-	 * 
-	 * @see org.dcm4chex.wado.common.WADORequestObject#getRequestType()
-	 * 
-	 * @return Returns the reqType.
-	 */
-	public String getRequestType() {
-		return reqType;
 	}
 	
 	/**
@@ -160,17 +146,6 @@ public class WADORequestObjectImpl implements WADORequestObject {
 		return contentTypes;
 	}
 
-	/**
-	 * Not implemented!
-	 * 
-	 * @see org.dcm4chex.wado.common.WADORequestObject#getAllowedContentTypes()
-	 * 
-	 * @return always null
-	 */
-	public List getAllowedContentTypes() {
-		// TODO not implemented yet
-		return null;
-	}
 
 	/** 
 	 * Checks this request object and returns an error code.
@@ -187,7 +162,7 @@ public class WADORequestObjectImpl implements WADORequestObject {
 	 * @return OK if it is a valid WADO request or an error code.
 	 */
 	public int checkRequest() {
-		if ( reqType == null || !"WADO".equalsIgnoreCase(reqType) ||
+		if ( getRequestType() == null || !"WADO".equalsIgnoreCase(getRequestType()) ||
 				studyUID == null  || seriesUID == null || instanceUID == null ) {
  			return INVALID_WADO_URL;
 		}
@@ -215,27 +190,6 @@ public class WADORequestObjectImpl implements WADORequestObject {
 		return OK;
 	}
 
-	/**
-	 * Returns a Map of all request parameters of the http request.
-	 * 
-	 * @see org.dcm4chex.wado.common.WADORequestObject#getRequestParams()
-	 * 
-	 * @return All request params in a map.
-	 */
-	public Map getRequestParams() {
-		return paramMap;
-	}
-
-	/**
-	 * Returns a Map of all request header fields of the http request.
-	 * 
-	 * @see org.dcm4chex.wado.common.WADORequestObject#getRequestHeaders()
-	 * 
-	 * @return All request header fields in a map.
-	 */
-	public Map getRequestHeaders() {
-		return headerMap;
-	}
 	
 	/**
 	 * Seperate the given String with delim character and return a List of the items.
