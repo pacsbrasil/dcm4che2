@@ -23,7 +23,8 @@ import org.dcm4chex.cdw.common.MediaWriterServiceSupport;
  */
 public class CDRecordService extends MediaWriterServiceSupport {
 
-    private static final int MIN_GRACE_TIME = 2;
+    private static final String DEFAULT = "default";
+	private static final int MIN_GRACE_TIME = 2;
 
     private static final String TAO = "tao";
 
@@ -59,7 +60,7 @@ public class CDRecordService extends MediaWriterServiceSupport {
 
     private String device = "0,0,0";
 
-    private String writeMode = SAO;
+    private String writeMode = null;
 
     private String trackType = DATA;
 
@@ -95,13 +96,17 @@ public class CDRecordService extends MediaWriterServiceSupport {
     }
 
     public final String getWriteMode() {
-        return writeMode;
+        return writeMode != null ? writeMode.toString() : DEFAULT;
     }
 
     public final void setWriteMode(String writeMode) {
-        if (Arrays.asList(WRITE_MODES).indexOf(writeMode) == -1)
-                throw new IllegalArgumentException("writeMode:" + writeMode);
-        this.writeMode = writeMode;
+    	if (DEFAULT.equalsIgnoreCase(writeMode)) {
+    		this.writeMode = null;
+    	} else {    		
+	        if (Arrays.asList(WRITE_MODES).indexOf(writeMode) == -1)
+	                throw new IllegalArgumentException("writeMode:" + writeMode);
+	        this.writeMode = writeMode;
+    	}
     }
 
     public final String getDevice() {
@@ -114,7 +119,7 @@ public class CDRecordService extends MediaWriterServiceSupport {
 
     public boolean checkDrive() throws MediaCreationException {
         String[] cmdarray = { executable, "dev=" + device, "-checkdrive"};
-        return super.check(cmdarray, writeMode.toUpperCase());
+        return super.check(cmdarray, "Supported modes");
     }
 
     public boolean checkDisk() throws MediaCreationException {
@@ -137,9 +142,9 @@ public class CDRecordService extends MediaWriterServiceSupport {
         if (simulate) cmd.add("-dummy");
         // eject for verify on windows
         if (verify ? !mount : eject) cmd.add("-eject");
-        if (!TAO.equals(writeMode)) cmd.add("-" + writeMode);
+        if (writeMode != null) cmd.add("-" + writeMode);
         cmd.add("-s");
-        cmd.add(padding ? "-pad" : "-nopad");
+      	cmd.add(padding ? "-pad" : "-nopad");
         cmd.add("-" + trackType);
         cmd.add(isoImageFile.getAbsolutePath());
         return (String[]) cmd.toArray(new String[cmd.size()]);

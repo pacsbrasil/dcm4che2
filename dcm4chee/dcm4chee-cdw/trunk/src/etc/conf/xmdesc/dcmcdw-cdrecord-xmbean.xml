@@ -101,13 +101,13 @@
    <attribute access="read-write"
       getMethod="getWriteMode"
       setMethod="setWriteMode">
-      <description>Write Mode: (tao|dao|sao|raw|raw96r|raw96p|raw16).
+      <description>Write Mode: (default|tao|dao|sao|raw|raw96r|raw96p|raw16).
       Run cdrecord -help for description.
       </description>
       <name>WriteMode</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="sao" />
+         <value value="default" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

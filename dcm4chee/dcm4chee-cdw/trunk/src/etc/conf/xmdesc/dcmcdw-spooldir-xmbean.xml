@@ -106,7 +106,7 @@
       <name>PurgeArchiveDirAfter</name>
       <type>java.lang.String</type>      
       <descriptors>
-         <value value="1d" />
+         <value value="2h" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -185,7 +185,7 @@
       <name>PurgeFilesetDirAfter</name>
       <type>java.lang.String</type>      
       <descriptors>
-         <value value="1h" />
+         <value value="2h" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

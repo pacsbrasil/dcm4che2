@@ -265,13 +265,6 @@ public abstract class MediaWriterServiceSupport extends
                 log.info("Burned " + rq);
                 if (verify) {
                     load();
-                    if (mountTime > 0) {
-                        try {
-                            Thread.sleep(mountTime * 1000L);
-                        } catch (InterruptedException e) {
-                            log.warn("Mount Time was interrupted:", e);
-                        }
-                    }
                     log.info("Verifying " + rq);
                     verify(rq.getFilesetDir());
                     log.info("Verified " + rq);
@@ -324,11 +317,21 @@ public abstract class MediaWriterServiceSupport extends
 
     private void verify(File fsDir) throws MediaCreationException {
         try {
+            if (mountTime > 0) {
+                try {
+                    Thread.sleep(mountTime * 1000L);
+                } catch (InterruptedException e) {
+                    log.warn("Mount Time was interrupted:", e);
+                }
+            }
+            if (mount) mount();
             if (!MD5Utils.verify(driveDir, fsDir, log)) { throw new MediaCreationException(
                     ExecutionStatusInfo.PROC_FAILURE, "Verification failed!"); }
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     "Verification failed:", e);
+        } finally {
+        	if (mount) umount();
         }
     }
 

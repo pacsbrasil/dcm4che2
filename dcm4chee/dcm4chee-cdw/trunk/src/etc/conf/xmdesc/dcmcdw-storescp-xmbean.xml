@@ -63,7 +63,7 @@
       <name>AcceptJPEG2000Lossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -74,7 +74,7 @@
       <name>AcceptJPEG2000Lossy</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -85,7 +85,7 @@
       <name>AcceptJPEGLSLossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -96,7 +96,7 @@
       <name>AcceptJPEGLSLossy</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -108,7 +108,7 @@
       <name>AcceptJPEGLossless</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -119,7 +119,7 @@
       <name>AcceptJPEGLossless14</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -141,7 +141,7 @@
       <name>AcceptJPEGExtended</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
