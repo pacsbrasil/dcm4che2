@@ -23,13 +23,10 @@
  */
 package org.dcm4cheri.imageio.plugins;
 
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,14 +34,12 @@ import java.util.Iterator;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.dcm4che.data.Dataset;
@@ -52,7 +47,6 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.dict.VRs;
 import org.dcm4che.imageio.plugins.DcmImageWriteParam;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che.util.UIDGenerator;
@@ -416,7 +410,9 @@ public class DcmImageWriter extends ImageWriter
      * @throws IllegalArgumentException if ioImage is null.
      * @throws IOException if an error occurs during writing.
      */
-    public void write(IIOMetadata streamMetadata, IIOImage ioImage, ImageWriteParam param) throws IOException {
+    public void write(IIOMetadata streamMetadata, IIOImage ioImage, ImageWriteParam param)
+        throws IOException
+    {
         Dataset             ds;
         DcmImageWriteParam  dcmParam;
         DcmMetadata dcmMetaData;
@@ -456,7 +452,7 @@ public class DcmImageWriter extends ImageWriter
             throw new IllegalArgumentException("streamMetadata != DcmImageMetadata" + this);
         }
         else if (streamMetadata == null) {
-            dcmMetaData = (DcmMetadata)getDefaultStreamMetadata(dcmParam); //ignores dcmParam, just creates a dummy dataset
+            dcmMetaData = (DcmMetadata)getDefaultStreamMetadata(dcmParam); //presently ignores dcmParam, just creates a dummy dataset
         }
         else {
             dcmMetaData = (DcmMetadata)streamMetadata;
@@ -486,7 +482,7 @@ public class DcmImageWriter extends ImageWriter
         
         if (writeAsMono) {
             System.out.println("writing as monochrome...");
-            writeMONOCHROME(bi, dcmParam, ds);
+            writeAsMonochrome(bi, dcmParam, ds);
         }
         else {
             boolean writeAsRGB = (dcmParam.isWriteAlwaysRGB()
@@ -495,11 +491,11 @@ public class DcmImageWriter extends ImageWriter
             
             if (writeAsRGB) {
                 System.out.println("writing as rgb...");
-                writeRGB(bi, dcmParam, ds);
+                writeAsRgb(bi, dcmParam, ds);
             }
             else {
                 System.out.println("writing as palette color...");
-                writePALETTE(bi, dcmParam, ds);
+                writeAsPaletteColor(bi, dcmParam, ds);
             }
         }
     }
@@ -511,63 +507,10 @@ public class DcmImageWriter extends ImageWriter
      * @param ds the Dataset as given by the IIOMetadata.
      * @throws IOException if an error occurs during writing.
      */
-    private void writeRGB(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds)
-        throws IOException, IllegalArgumentException
+    private void writeAsRgb(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds)
+        throws IOException
     {
-        Rectangle       rect;
-        Rectangle       sourceRect;
-        
-        rect = new Rectangle(sourceImage.getWidth(), sourceImage.getHeight());
-        if (dcmParam.getSourceRegion() == null) {
-          sourceRect = rect;
-        } else {
-          sourceRect = rect.intersection(dcmParam.getSourceRegion());
-        }
-        //IllegalArgumentException thrown if sourceRect is empty
-        if (sourceRect.isEmpty()) {
-          throw new IllegalArgumentException("Source region is empty." + this);
-        }
-        
-        int width = sourceRect.width;
-        int height = sourceRect.height;
-        boolean signed = false; //dcmParam.getPixelRepresentation();
-        int bitsAllocd = 8;
-        int bitsStored = 8; //forcing 8-bits per component!
-        int highBit = 7;
-        
-        // Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
-        ds.putUS(Tags.SamplesPerPixel, 3);                      // Type 1
-        ds.putUS(Tags.BitsAllocated, bitsAllocd);               // Type 1
-        ds.putUS(Tags.BitsStored, bitsStored);                  // Type 1
-        ds.putUS(Tags.HighBit, highBit);                        // Type 1
-        ds.putCS(Tags.PhotometricInterpretation, "RGB");        // Type 1
-        ds.putUS(Tags.Rows, height);                            // Type 1
-        ds.putUS(Tags.Columns, width);                          // Type 1
-        ds.putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);   // Type 1; 0x0=unsigned int, 0x1=2's complement
-        ds.putUS(Tags.PlanarConfiguration, 0);                  // Type 1C, if SamplesPerPixel > 1, should not present otherwise 
-        ds.putIS(Tags.PixelAspectRatio, new int[]{1,1});        // Type 1C, if vertical/horizontal != 1
-        
-        byte[] rgbOut = new byte[width * height * 3];
-        int dataType = sourceImage.getData().getDataBuffer().getDataType();
-        ColorModel cm = sourceImage.getColorModel();
-        int[] pixels = sourceImage.getRGB(sourceRect.x, sourceRect.y,
-                                          width, height,
-                                          (int[])null, 0, width);
-        int ind = 0;
-        
-        for (int i = 0; i < pixels.length; i++) {
-            rgbOut[ind++] = (byte)((pixels[i] >> 16) & 0xff);
-            rgbOut[ind++] = (byte)((pixels[i] >> 8) & 0xff);
-            rgbOut[ind++] = (byte)(pixels[i] & 0xff);
-            /*rgbOut[ind++] = (byte)cm.getRed(pixels[i]);
-            rgbOut[ind++] = (byte)cm.getGreen(pixels[i]);
-            rgbOut[ind++] = (byte)cm.getBlue(pixels[i]);*/
-        }
-        
-        //set pixeldata
-        ds.putOB(Tags.PixelData, ByteBuffer.wrap(rgbOut));                      // Type 1; OB or OW
-        
-        //write Dataset
+        ds.putBufferedImageAsRgb(sourceImage, dcmParam.getSourceRegion());
         ds.writeFile((ImageOutputStream) output, dcmParam.getDcmEncodeParameters());
     }
     
@@ -578,111 +521,11 @@ public class DcmImageWriter extends ImageWriter
      * @param ds the Dataset as given by the IIOMetadata.
      * @throws IOException if an error occurs during writing.
      */
-    private void writeMONOCHROME(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds)
-        throws IOException, IllegalArgumentException
+    private void writeAsMonochrome(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds)
+        throws IOException
     {
-        ByteBuffer byteBuf;
-        int max, min, value;
-        Rectangle rect;
-        short[] shortPixel;
-        Rectangle sourceRect;
-        
-        rect = new Rectangle(sourceImage.getWidth(), sourceImage.getHeight());
-        if (dcmParam.getSourceRegion() == null) {
-          sourceRect = rect;
-        } else {
-          sourceRect = rect.intersection(dcmParam.getSourceRegion());
-        }
-        //IllegalArgumentException thrown if sourceRect is empty
-        if (sourceRect.isEmpty()) {
-          throw new IllegalArgumentException("Source region is empty." + this);
-        }
-        
-        int dataType = sourceImage.getType();
-        int width = sourceRect.width;
-        int height = sourceRect.height;
-        boolean signed = false; //dcmParam.getPixelRepresentation();
-        int bitsAllocated = (dataType == BufferedImage.TYPE_BYTE_GRAY) ? 8 : 16;
-        int bitsStored = bitsAllocated;
-        int highBit = bitsStored - 1;
-        boolean mono2 = dcmParam.isMONOCHROME2();
-        
-        // Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
-        ds.putUS(Tags.SamplesPerPixel, 1);                          // Type 1
-        //TODO need seperate cases for monochrome1/2 ??
-        if (mono2) {
-          ds.putCS(Tags.PhotometricInterpretation, "MONOCHROME2");  // Type 1
-        }
-        else {
-          ds.putCS(Tags.PhotometricInterpretation, "MONOCHROME1");  // Type 1
-        }
-        ds.putUS(Tags.Rows, height);          // Type 1
-        ds.putUS(Tags.Columns, width);        // Type 1
-        ds.putUS(Tags.BitsAllocated, bitsAllocated);                // Type 1
-        ds.putUS(Tags.BitsStored, bitsStored);                      // Type 1
-        ds.putUS(Tags.HighBit, highBit);                            // Type 1
-        ds.putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);       // Type 1; 0x0=unsigned int, 0x1=2's complement
-        ds.putIS(Tags.PixelAspectRatio, new int[]{1,1});            // Type 1C, if vertical/horizontal != 1
-        
-        int[] pixels = sourceImage.getRaster().getPixels(sourceRect.x, sourceRect.y,
-                                                         width, height,
-                                                         (int[])null);
-        
-        //find min/max
-        min = max = pixels[0];
-        for (int i = 1; i < pixels.length; i++) {
-            value = pixels[i];
-            if (value > max)
-                max = value;
-            else if (value < min)
-                min = value;
-        }
-        
-        //write pixels to byte buffer
-        byte[] out;
-        if (bitsAllocated == 8) {
-            out = new byte[pixels.length];
-            for (int i = 1; i < pixels.length; i++)
-                out[i] = (byte)(pixels[(i % 2 == 0)? i+1 : i-1] & 0xff);
-        }
-        else { //bitsAllocated == 16
-            out = new byte[pixels.length * 2];
-            for (int i = 1; i < pixels.length; ) {
-                out[i++] = (byte)((pixels[i] >> 8) & 0xff);
-                out[i++] = (byte)(pixels[i] & 0xff);
-            }
-        }
-        byteBuf = ByteBuffer.wrap(out);
-        
-        //set pixeldata
-        ds.putOW(Tags.PixelData, byteBuf);
-        
-        //set min/max pixel values
-        ds.putSS(Tags.SmallestImagePixelValue, min);                  // Type 3
-        ds.putSS(Tags.LargestImagePixelValue, max);                   // Type 3
-        
-        // Image IE, Modality LUT Module, PS 3.3 - C.11.1, U
-        // don't overwrite if the Dataset already contains a Rescale Intercept/Slope
-        float rs = ds.getFloat(Tags.RescaleSlope, 1).floatValue();
-        float ri = ds.getFloat(Tags.RescaleIntercept, 0).floatValue();
-        if (!ds.contains(Tags.RescaleIntercept)) {
-          ds.putDS(Tags.RescaleIntercept, ri);                       // Type 1C; ModalityLUTSequence is not present
-          ds.putDS(Tags.RescaleSlope, rs);                           // Type 1C; ModalityLUTSequence is not present
-          ds.putLO(Tags.RescaleType, "PIXELVALUE");                   // Type 1C; ModalityLUTSequence is not present; arbitrary text
-        }
-        
-        // Image IE, VOI LUT Module, PS 3.3 - C.11.2, U
-        // don't overwrite if the Dataset already contains a Window Center/Width
-        if (!ds.contains(Tags.WindowCenter)) {
-          String[] wc = { Float.toString((rs * (max + min)) / 2 + ri) };
-          ds.putDS(Tags.WindowCenter, wc);                            // Type 3
-          String[] ww = { Float.toString((rs * (max - min)) / 2) };
-          ds.putDS(Tags.WindowWidth, ww);                             // Type 1C; WindowCenter is present
-          String[] we = { "DcmImageWriter" };
-          ds.putLO(Tags.WindowCenterWidthExplanation, we);            // Type 3; arbitrary text
-        }
-        
-        //write Dataset
+        ds.putBufferedImageAsMonochrome(sourceImage, dcmParam.getSourceRegion(),
+                                        dcmParam.isMONOCHROME2());
         ds.writeFile((ImageOutputStream) output, dcmParam.getDcmEncodeParameters());
     }
     
@@ -693,136 +536,10 @@ public class DcmImageWriter extends ImageWriter
      * @param ds the Dataset as given by the IIOMetadata.
      * @throws IOException if an error occurs during writing.
      */
-    private void writePALETTE(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds) throws IOException, IllegalArgumentException {
-        Rectangle       rect;
-        Rectangle       sourceRect;
-        
-        rect = new Rectangle(sourceImage.getWidth(), sourceImage.getHeight());
-        if (dcmParam.getSourceRegion() == null) {
-          sourceRect = rect;
-        } else {
-          sourceRect = rect.intersection(dcmParam.getSourceRegion());
-        }
-        //IllegalArgumentException thrown if sourceRect is empty
-        if (sourceRect.isEmpty()) {
-          throw new IllegalArgumentException("Source region is empty." + this);
-        }
-        
-        int dataType = sourceImage.getData().getDataBuffer().getDataType();
-        ColorModel cm = sourceImage.getColorModel();
-        IndexColorModel icm;
-        
-        if (!(cm instanceof IndexColorModel)) {
-            throw new IllegalArgumentException(
-                "sourceImage's ColorModel must be an IndexColorModel to write"
-                + " as a \"PALETTE COLOR\" DICOM image");
-        }
-        else {
-            icm = (IndexColorModel)cm;
-        }
-        
-        //write palette
-        final int maxPaletteSize = 65536;
-        final int paletteSize = icm.getMapSize();
-        final int paletteIndexSize = icm.getPixelSize();
-        
-        //System.out.println("icm.getMapSize() = " + paletteSize);
-        //System.out.println("icm.getPixelSize() = " + paletteIndexSize);
-        
-        //sanity check on palette size
-        if (paletteSize > maxPaletteSize)
-            throw new IllegalArgumentException(
-                "sourceImage contains a palette that is too large to be"
-                + " encoded as a DICOM Color LUT (" + paletteSize + ")");
-        
-        //sanity check on pixel size (the index into palette)
-        if (paletteIndexSize == 0 || paletteIndexSize > 16)
-            throw new UnsupportedOperationException("BufferedImages with a pixel size of "
-                + paletteIndexSize + " bits are not supported, only 1 to 16 bits are supported");
-        
-        int width = sourceRect.width;
-        int height = sourceRect.height;
-        boolean signed = false; //dcmParam.getPixelRepresentation();
-        int bitsAllocd = (paletteIndexSize <=8) ? 8 : 16;
-        int bitsStored = bitsAllocd;
-        int highBit = bitsStored - 1;
-        
-        // Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
-        ds.putUS(Tags.SamplesPerPixel, 1);                                      // Type 1
-        ds.putCS(Tags.PhotometricInterpretation, "PALETTE COLOR");              // Type 1
-        ds.putUS(Tags.Rows, height);                                            // Type 1
-        ds.putUS(Tags.Columns, width);                                          // Type 1
-        ds.putUS(Tags.BitsAllocated, bitsAllocd);                               // Type 1
-        ds.putUS(Tags.BitsStored, bitsStored);                                  // Type 1
-        ds.putUS(Tags.HighBit, highBit);                                        // Type 1
-        ds.putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);                   // Type 1; 0x0=unsigned int, 0x1=2's complement
-        ds.putIS(Tags.PixelAspectRatio, new int[]{1,1});                        // Type 1C, if vertical/horizontal != 1
-        
-        //write palette descriptor
-        ByteBuffer pDescriptor;
-        byte[] rPalette;
-        byte[] gPalette;
-        byte[] bPalette;
-        ByteBuffer rByteBuffer;
-        ByteBuffer gByteBuffer;
-        ByteBuffer bByteBuffer;
-        
-        pDescriptor = ByteBuffer.allocate(3 * 2);
-        pDescriptor.putShort((short) ((paletteSize == maxPaletteSize) ? 0 : paletteSize));  // number of entries
-        pDescriptor.putShort((short) 0);    // first stored pixel value mapped
-        pDescriptor.putShort((short) 8);    // number of bits, always 8 for IndexColorModel's internal color component tables
-        
-        ds.putXX(Tags.RedPaletteColorLUTDescriptor, VRs.US, pDescriptor);     // Type 1C; US/US or SS/US
-        ds.putXX(Tags.GreenPaletteColorLUTDescriptor, VRs.US, pDescriptor);   // Type 1C; US/US or SS/US
-        ds.putXX(Tags.BluePaletteColorLUTDescriptor, VRs.US, pDescriptor);    // Type 1C; US/US or SS/US
-        
-        rPalette = new byte[paletteSize];
-        gPalette = new byte[paletteSize];
-        bPalette = new byte[paletteSize];
-        icm.getReds(rPalette);
-        icm.getGreens(gPalette);
-        icm.getBlues(bPalette);
-        
-        //default is ByteOrder.BIG_ENDIAN byte ordering
-        rByteBuffer = ByteBuffer.allocate(paletteSize);
-        gByteBuffer = ByteBuffer.allocate(paletteSize);
-        bByteBuffer = ByteBuffer.allocate(paletteSize);
-        
-        //grab word chunks and place words in buffer
-        for (int idx = 0; idx < paletteSize; idx += 2) {
-            rByteBuffer.putShort((short) ((rPalette[idx+1] << 8) + rPalette[idx]));
-            gByteBuffer.putShort((short) ((gPalette[idx+1] << 8) + gPalette[idx]));
-            bByteBuffer.putShort((short) ((bPalette[idx+1] << 8) + bPalette[idx]));
-        }
-        
-        ds.putOW(Tags.RedPaletteColorLUTData,rByteBuffer);           // Type 1C; US or SS or OW
-        ds.putOW(Tags.GreenPaletteColorLUTData, gByteBuffer);        // Type 1C; US or SS or OW
-        ds.putOW(Tags.BluePaletteColorLUTData, bByteBuffer);         // Type 1C; US or SS or OW
-        
-        //read pixels as int's, should be one sample per each pixel (palette index)
-        int[] pixels = sourceImage.getRaster().getPixels(sourceRect.x, sourceRect.y,
-                                                         width, height,
-                                                         (int[])null);
-        byte[] indOut;
-        int ind = 0;
-        //put pixeldata (must be OW if transfer syntax is Implicit VR/Little Endian)
-        if (paletteIndexSize <= 8) {
-            indOut = new byte[width * height];
-            for (int i = 0; i < pixels.length; i++) {
-                indOut[i] = (byte)(pixels[(i % 2 == 0)? i+1 : i-1] & 0xff);
-            }
-            ds.putOW(Tags.PixelData, ByteBuffer.wrap(indOut));              // Type 1; OW
-        }
-        else if (paletteIndexSize > 8 && paletteIndexSize <= 16) {
-            indOut = new byte[width * height * 2];
-            for (int i = 0; i < pixels.length; i++) {
-                indOut[ind++] = (byte)((pixels[i] >> 8) & 0xff);
-                indOut[ind++] = (byte)(pixels[i] & 0xff);
-            }
-            ds.putOW(Tags.PixelData, ByteBuffer.wrap(indOut));              // Type 1; OW
-        }
-        
-        //write Dataset
+    private void writeAsPaletteColor(BufferedImage sourceImage, DcmImageWriteParam dcmParam, Dataset ds)
+        throws IOException
+    {
+        ds.putBufferedImageAsPaletteColor(sourceImage, dcmParam.getSourceRegion());
         ds.writeFile((ImageOutputStream) output, dcmParam.getDcmEncodeParameters());
     }
     
@@ -873,7 +590,7 @@ public class DcmImageWriter extends ImageWriter
         writer.setOutput(ImageIO.createImageOutputStream(new File(testimg + ".out")));
         //DcmMetadata dcmmd = (DcmMetadata)genrdr.getStreamMetadata();
         DcmImageWriteParam wparam = (DcmImageWriteParam)writer.getDefaultWriteParam();
-        wparam.setWriteAlwaysRGB(false);
+        wparam.setWriteAlwaysRGB(true);
         wparam.setWriteIndexedAsRGB(false);
         wparam.setMONOCHROME2(true);
         DcmMetadata dcmmd = (DcmMetadata)writer.getDefaultStreamMetadata(wparam);
