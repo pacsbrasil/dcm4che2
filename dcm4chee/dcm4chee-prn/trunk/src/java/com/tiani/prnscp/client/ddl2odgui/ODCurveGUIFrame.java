@@ -1,13 +1,13 @@
 package com.tiani.prnscp.client.ddl2odgui;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 import org.apache.log4j.*;
+
+import com.tiani.prnscp.print.CalibrationException;
 
 public class ODCurveGUIFrame extends JFrame
 {
@@ -31,10 +31,21 @@ public class ODCurveGUIFrame extends JFrame
                     int returnVal = chooser.showOpenDialog(ODCurveGUIFrame.this);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
                         try {
-                            curvePanel.loadCurve(lastFile = chooser.getSelectedFile());
+                            curvePanel.loadScannedImageCurve(lastFile = chooser.getSelectedFile());
                         }
-                        catch (FileNotFoundException fnf) {
+                        catch (CalibrationException ce) {
+                            showMsgDialog("There is a problem with analyzing the selected image ("
+                                          + lastFile + "):\n"
+                                          + ce.getMessage(),
+                                          "Calibration Error");
                         }
+                        catch (IOException ioe) {
+                            showMsgDialog("There is a problem with reading the selected image ("
+                                          + lastFile + "):\n"
+                                          + ioe.getMessage(),
+                                          "File Error");
+                        }
+                        curvePanel.repaint();
                     }
                 }
             };
@@ -56,6 +67,11 @@ public class ODCurveGUIFrame extends JFrame
     {
         this();
         setTitle(title);
+    }
+    
+    private void showMsgDialog(String msg, String title)
+    {
+        JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
     }
     
     public static void main(String[] args)

@@ -1,17 +1,12 @@
 package com.tiani.prnscp.client.ddl2odgui;
 
-import java.util.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import javax.swing.*;
-import javax.swing.event.*;
 
 public class ODCurve
 {
-    float[] ods;
-    float max;
-    Color color;
+    private float[] ods;
+    private float max;
+    private Color color;
     
     ODCurve(float[] ods, Color color)
     {
@@ -30,21 +25,27 @@ public class ODCurve
             this.color = color;
     }
     
-    public void draw(Graphics2D g, Rectangle rect)
+    public float getMax()
+    {
+        return max;
+    }
+    
+    public void draw(Graphics2D g, Rectangle rect, float maxOD)
     {
         final int x0 = (int)rect.getX();
         final int y0 = (int)rect.getY();
         final int width = (int)rect.getWidth();
         final int height = (int)rect.getHeight();
-        final float fx = (float)width/ods.length;
-        final float fy = (float)height/max;
-        int lastx = x0, lasty = y0;
+        final float fx = (float)(width - 1)/(ods.length - 1);
+        final float fy = (float)(height - 1)/maxOD;
+        int lastx = x0 + (int)(width - 1 + 0.5f);
+        int lasty = y0 + (int)(height - 1 - (ods[0] * fy + 0.5f));
         int x, y;
         
         g.setColor(color);
         for (int i=0; i<ods.length; i++) {
-            x = x0 + (int)(i*fx + 0.5f);
-            y = y0 + (int)(ods[i]*fy + 0.5f);
+            x = x0 + (int)((ods.length - 1 - i) * fx + 0.5f);
+            y = y0 + (int)(height - 1 - (ods[i] * fy + 0.5f));
             g.drawLine(lastx, lasty, x, y);
             lastx = x;
             lasty = y;
