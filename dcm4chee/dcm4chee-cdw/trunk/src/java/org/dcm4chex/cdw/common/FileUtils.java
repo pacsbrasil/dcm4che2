@@ -22,10 +22,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.FileFormat;
-import org.dcm4che.dict.Tags;
 import org.jboss.logging.Logger;
 
 /**
@@ -41,32 +37,7 @@ public class FileUtils {
 
     private static final int BUF_SIZE = 512;
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
     private FileUtils() {
-    }
-
-    public static Dataset readDataset(File f, Logger log) throws IOException {
-        if (log.isDebugEnabled()) log.debug("M-READ " + f);
-        Dataset ds = dof.newDataset();
-        try {
-            ds.readFile(f, FileFormat.DICOM_FILE, Tags.PixelData);
-        } catch (IOException e) {
-            log.error("Failed: M-READ " + f, e);
-            throw e;
-        }
-        return ds;
-    }
-
-    public static void writeDataset(Dataset ds, File f, Logger log)
-            throws IOException {
-        if (log.isDebugEnabled()) log.debug("M-UPDATE " + f);
-        try {
-            ds.writeFile(f, null);
-        } catch (IOException e) {
-            log.error("Failed M-UPDATE " + f);
-            throw e;
-        }
     }
 
     public static File makeMD5File(File f) {

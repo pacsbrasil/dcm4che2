@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.jboss.logging.Logger;
 
@@ -23,6 +26,8 @@ import org.jboss.logging.Logger;
  *
  */
 public class MediaCreationRequest implements Serializable {
+
+    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     static final long serialVersionUID = -8360703394721035942L;
     
@@ -206,20 +211,62 @@ public class MediaCreationRequest implements Serializable {
     }
 
     public Dataset readAttributes(Logger log) throws IOException {
-        return FileUtils.readDataset(requestFile, log);
+        if (log.isDebugEnabled()) log.debug("M-READ " + requestFile);
+        Dataset ds = dof.newDataset();
+        try {
+            ds.readFile(requestFile, FileFormat.DICOM_FILE, Tags.PixelData);
+        } catch (IOException e) {
+            log.error("Failed: M-READ " + requestFile, e);
+            throw e;
+        }
+        return ds;
     }
 
     public void updateStatus(String status, String info, Logger log)
             throws IOException {
-        Dataset attrs = FileUtils.readDataset(requestFile, log);
+        Dataset attrs = readAttributes(log);
+        updateStatus(status, info, log, attrs);
+    }
+
+    private void updateStatus(String status, String info, Logger log, Dataset attrs) throws IOException {
+        if (info.equals(attrs.getString((Tags.ExecutionStatusInfo)))
+                && status.equals(attrs.getString((Tags.ExecutionStatus))))
+                return;
         attrs.putCS(Tags.ExecutionStatus, status);
         attrs.putCS(Tags.ExecutionStatusInfo, info);
         writeAttributes(attrs, log);
     }
 
     public void writeAttributes(Dataset attrs, Logger log) throws IOException {
-        FileUtils.writeDataset(attrs, requestFile, log);
+        if (isCanceled()) {
+            log.info("" + this + " was canceled");
+            return;
+        }
+        if (log.isDebugEnabled()) log.debug("M-UPDATE " + requestFile);
+        try {
+            attrs.writeFile(requestFile, null);
+        } catch (IOException e) {
+            log.error("Failed M-UPDATE " + requestFile);
+            throw e;
+        }
     }
+    
+    public void copyDone(Dataset attrs, Logger log) throws IOException {
+	    if (--remainingCopies > 0) return;
+	    attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated,
+	            attrs.getInt(Tags.TotalNumberOfPiecesOfMediaCreated, 0) + 1);
+        DcmElement sq = attrs.get(Tags.RefStorageMediaSeq);
+        if (sq == null) sq = attrs.putSQ(Tags.RefStorageMediaSeq);
+        Dataset item = sq.addNewItem();
+        item.putSH(Tags.StorageMediaFileSetID, filesetID);
+        item.putUI(Tags.StorageMediaFileSetUID, filesetDir.getName());
+        if (volsetSeqno == volsetSize) {
+            attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.DONE);
+            attrs.putCS(Tags.ExecutionStatusInfo,
+                    ExecutionStatusInfo.NORMAL);
+        }
+        writeAttributes(attrs, log);
+    }    
 
     public boolean cleanFiles(SpoolDirDelegate spoolDir) {
         boolean retval = true;

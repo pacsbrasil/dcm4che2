@@ -315,23 +315,21 @@ public class CDRecordService extends AbstractMediaWriterService {
         this.logEnabled = logEnabled;
     }
 
-    protected void handle(MediaCreationRequest rq, Dataset attrs)
+    protected boolean handle(MediaCreationRequest rq, Dataset attrs)
             throws MediaCreationException, IOException {
         if (!checkDrive())
                 throw new MediaCreationException(
                         ExecutionStatusInfo.CHECK_MCD_SRV, "Drive Check failed");
-        int tot = attrs.getInt(Tags.TotalNumberOfPiecesOfMediaCreated, 0);
-        int remaining = rq.getRemainingCopies();
-        while (remaining > 0) {
+        while (rq.getRemainingCopies() > 0) {
             if (!checkDisk()) {
                 eject();
                 retry(rq, attrs, "No or Wrong Media");
-                return;
+                return false;
             }
             if (!appendEnabled && hasTOC()) {
                 eject();
                 retry(rq, attrs, "Media not empty");
-                return;
+                return false;
             }
             try {
                 log.info("Burning " + rq);
@@ -372,17 +370,16 @@ public class CDRecordService extends AbstractMediaWriterService {
 
             if (rq.isCanceled()) {
                 log.info("" + rq + " was canceled");
-                return;
+                return true;
             }
-            attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated, ++tot);
-            rq.setRemainingCopies(--remaining);
-            if (remaining > 0) rq.writeAttributes(attrs, log);
+            rq.copyDone(attrs, log);
             try {
                 Thread.sleep(pauseTime * 1000L);
             } catch (InterruptedException e) {
                 log.warn("Pause before next burn was interrupted:", e);
             }
         }
+        return true;
     }
 
     private void retry(MediaCreationRequest rq, Dataset attrs, String msg)

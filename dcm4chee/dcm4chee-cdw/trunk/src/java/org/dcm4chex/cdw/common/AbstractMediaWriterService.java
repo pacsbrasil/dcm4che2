@@ -16,7 +16,6 @@ import javax.jms.ObjectMessage;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -88,40 +87,13 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
                 log.info("" + rq + " already failed");
                 return;
             }
-            if (!ExecutionStatus.CREATING.equals(status)) {
-                attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.CREATING);
-                attrs.putCS(Tags.ExecutionStatusInfo,
-                        ExecutionStatusInfo.NORMAL);
-                rq.writeAttributes(attrs, log);
-            }
+            rq.updateStatus(ExecutionStatus.CREATING, ExecutionStatusInfo.NORMAL, log);
             try {
-                handle(rq, attrs);
-                if (rq.getRemainingCopies() == 0) {
-                    log.info("Finished processing " + rq);
-	                DcmElement sq = attrs.get(Tags.RefStorageMediaSeq);
-	                if (sq == null) sq = attrs.putSQ(Tags.RefStorageMediaSeq);
-	                Dataset item = sq.addNewItem();
-	                item.putSH(Tags.StorageMediaFileSetID, rq.getFilesetID());
-	                item.putUI(Tags.StorageMediaFileSetUID, rq.getFilesetDir()
-	                        .getName());
-	                if (rq.getVolsetSeqno() == rq.getVolsetSize()) {
-	                    attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.DONE);
-	                    attrs.putCS(Tags.ExecutionStatusInfo,
-	                            ExecutionStatusInfo.NORMAL);
-	                }
-                } else {
-                    cleanup = false;
-                }
+                cleanup = handle(rq, attrs);
             } catch (MediaCreationException e) {
                 log.error("Failed to process " + rq, e);
-                attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
-                attrs.putCS(Tags.ExecutionStatusInfo, e.getStatusInfo());
+                rq.updateStatus(ExecutionStatus.FAILURE, e.getStatusInfo(), log);
             }
-            if (rq.isCanceled()) {
-                log.info("" + rq + " was canceled");
-                return;
-            }
-            rq.writeAttributes(attrs, log);
         } catch (IOException e) {
             // error already logged
         } finally {
@@ -130,6 +102,6 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
 
     }
 
-    protected abstract void handle(MediaCreationRequest r, Dataset attrs)
+    protected abstract boolean handle(MediaCreationRequest r, Dataset attrs)
             throws MediaCreationException, IOException;
 }
