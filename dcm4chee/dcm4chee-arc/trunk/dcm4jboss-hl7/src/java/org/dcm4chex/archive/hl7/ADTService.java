@@ -12,6 +12,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -42,6 +43,9 @@ public class ADTService extends AbstractHL7Service {
             PatientUpdate update = getPatientUpdateHome().create();
             try {
                 if (isUpdate(msh)) {
+                    log.info("Update Patient Info of " 
+                            + pat.getString(Tags.PatientName)
+                            + ", PID:" + pat.getString(Tags.PatientID));
                     update.updatePatient(pat);
 
                 } else if (isMerge(msh)) {
@@ -50,6 +54,11 @@ public class ADTService extends AbstractHL7Service {
                             .newTransformer();
                     t2.transform(new DocumentSource(msg), new SAXResult(mrg
                             .getSAXHandler2(null)));
+                    log.info("Merge Patient " 
+                            + mrg.getString(Tags.PatientName)
+                            + ", PID:" + mrg.getString(Tags.PatientID)
+                            + " with "+ pat.getString(Tags.PatientName)
+                            + ", PID:" + pat.getString(Tags.PatientID));
                     update.mergePatient(pat, mrg);
                 }
             } finally {

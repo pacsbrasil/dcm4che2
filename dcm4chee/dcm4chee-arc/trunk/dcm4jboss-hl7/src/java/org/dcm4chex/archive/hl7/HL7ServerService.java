@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.hl7;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
@@ -53,6 +54,10 @@ import org.xml.sax.XMLReader;
 public class HL7ServerService extends ServiceMBeanSupport
 	implements Server.Handler {
 
+    private static final String ACK_XSL_URL = "resource:xsl/msh2ack.xsl";
+    
+    private static final String LOG_MSG_XSL_URL = "resource:xsl/logmsg.xsl";
+
     private static final TransformerFactory tf = 
         						TransformerFactory.newInstance();
 
@@ -67,8 +72,6 @@ public class HL7ServerService extends ServiceMBeanSupport
     private boolean fileReceivedHL7AsXML;
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
-    private String ACK_XSL_URL = "resource:xsl/msh2ack.xsl";
 
     private Hashtable templates = new Hashtable();
 
@@ -218,8 +221,9 @@ public class HL7ServerService extends ServiceMBeanSupport
                     xmlReader
                             .parse(new InputSource(mllpDriver.getInputStream()));
                     Document msg = hl7in.getDocument();
+                    logMessage(msg);
                     if (fileReceivedHL7AsXML)
-                        logMessage(msg);
+                        fileReceivedHL7AsXML(msg);
                     MSH msh = new MSH(msg);
                     HL7Service service = getService(msh);
                     if (service == null || service.process(msh, msg, hl7out)) ack(msg, hl7out, null);
@@ -234,7 +238,7 @@ public class HL7ServerService extends ServiceMBeanSupport
         }
     }
 
-    private void logMessage(Document msg) {
+    private void fileReceivedHL7AsXML(Document msg) {
         File f = new File(logDir, "hl7." + System.currentTimeMillis() + ".xml");
         try {
 	        Transformer tr = tf.newTransformer();
@@ -245,6 +249,19 @@ public class HL7ServerService extends ServiceMBeanSupport
         }
     }
 
+    public void logMessage(Document document) {
+        if (!log.isInfoEnabled()) return;
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            out.write("Received HL7 message:".getBytes());
+            Transformer t = getTemplates(LOG_MSG_XSL_URL).newTransformer();
+            t.transform(new DocumentSource(document), new StreamResult(out));
+            log.info(out.toString());
+        } catch (Exception e) {
+            log.warn("Failed to log message", e);
+        }
+    }
+    
     public boolean isSockedClosedByHandler() {
         return false;
     }

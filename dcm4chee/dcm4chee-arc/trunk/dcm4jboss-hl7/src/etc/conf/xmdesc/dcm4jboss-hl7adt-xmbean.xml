@@ -38,7 +38,7 @@
       <name>HL7ServerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=HL7Server" />
+         <value value="tiani.archive:service=HL7Server" />
       </descriptors>
    </attribute>
    &defaultAttributes;

@@ -3,13 +3,13 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss-hl7.jar"/>
   <mbean code="org.dcm4chex.archive.hl7.HL7ServerService" 
-         name="dcm4chex:service=HL7Server"
+         name="tiani.archive:service=HL7Server"
          xmbean-dd="xmdesc/dcm4jboss-hl7srv-xmbean.xml">
     <depends>
-      dcm4chex:service=TLSConfig
+      tiani.archive:service=TLSConfig
     </depends>
     <depends>
-      dcm4chex:service=AuditLogger
+      tiani.archive:service=AuditLogger
     </depends>
   </mbean>
 </server>
