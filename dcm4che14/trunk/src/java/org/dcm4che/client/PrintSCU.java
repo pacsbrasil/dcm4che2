@@ -20,10 +20,10 @@
 
 package org.dcm4che.client;
 
-import java.io.File;
-import java.io.IOException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -44,7 +44,7 @@ import org.dcm4che.util.UIDGenerator;
  */
 public class PrintSCU {
 	
-	static final AssociationFactory assocFact =
+    static final AssociationFactory assocFact =
 		AssociationFactory.getInstance();
 	static final DcmObjectFactory dcmFact =
 		DcmObjectFactory.getInstance();
@@ -149,7 +149,7 @@ public class PrintSCU {
 	private void updateAnnotationPresContext() {
 		if (negotiateAnnotation) {
 			if (pcidAnnotation == 0) {
-				requestor.addPresContext(
+                pcidAnnotation = requestor.addPresContext(
 						UIDs.BasicAnnotationBox, tsuids);				
 			}
 		} else {
@@ -338,6 +338,7 @@ public class PrintSCU {
 	
 	
 	public String createPLUT(Dataset attr) throws InterruptedException, IOException, DcmServiceException {
+        checkAssociation();
 		String iuid = createRQwithIUID ? UID_GEN.createUID() : null;
 		int msgid = requestor.nextMsgID();
 		Command nCreateRQ = dcmFact.newCommand();
@@ -347,14 +348,51 @@ public class PrintSCU {
 		Command nCreateRSP = rsp.getCommand();
 		int status = checkStatus(nCreateRSP);
 		curPLUT_IUID = checkIUID(iuid, nCreateRSP);
-		return iuid;
-	}	
+		return curPLUT_IUID;
+    }
 
 	public String createPLUT(String shape) throws InterruptedException, IOException, DcmServiceException {
 		Dataset plut = dcmFact.newDataset();
 		plut.putCS(Tags.PresentationLUTShape, shape);
 		return createPLUT(plut);
 	}
+
+    public int deletePLUT(String iuid) throws InterruptedException, IOException, DcmServiceException {
+        checkAssociation();
+        int msgid = requestor.nextMsgID();
+        Command nDeleteRQ = dcmFact.newCommand();
+        nDeleteRQ.initNDeleteRQ(msgid, UIDs.PresentationLUT, iuid);
+        Dimse rsp = requestor.invokeAndWaitForRSP(
+            pcidPLUT, nDeleteRQ);
+        return checkStatus(rsp.getCommand());
+    }
+
+    public void checkAssociation()
+    {
+        if (!requestor.isConnected()) {
+            throw new IllegalStateException("No Association exists");
+        }
+    }
+
+    public int setAnnotationBox(int index, String text) throws InterruptedException, IOException, DcmServiceException {
+        if (index < 0 || index >= countAnnotationBoxes()) {
+            throw new IndexOutOfBoundsException(
+                "index:" + index + ", count:" + countAnnotationBoxes());
+        }
+        int msgid = requestor.nextMsgID();
+        Dataset attr = dcmFact.newDataset();
+        attr.putUS(Tags.AnnotationPosition, index);
+        attr.putLO(Tags.TextString, text);
+        Dataset refAnnBox = curFilmBox.getItem(Tags.RefBasicAnnotationBoxSeq, index);
+        Command nSetRQ = dcmFact.newCommand();
+        nSetRQ.initNSetRQ(msgid,
+            refAnnBox.getString(Tags.RefSOPClassUID),
+            refAnnBox.getString(Tags.RefSOPInstanceUID));
+        Dimse rsp = requestor.invokeAndWaitForRSP(
+            pcidAnnotation, nSetRQ, attr);
+        Command nSetRSP = rsp.getCommand();
+        return checkStatus(nSetRSP);
+    }
 
 	private String checkIUID(String iuid, Command nCreateRSP) throws DcmServiceException {
 		if (iuid == null) {
@@ -366,15 +404,6 @@ public class PrintSCU {
 		return iuid;
 	}
 
-	public int deletePLUT(String iuid) throws InterruptedException, IOException, DcmServiceException {
-		int msgid = requestor.nextMsgID();
-		Command nDeleteRQ = dcmFact.newCommand();
-		nDeleteRQ.initNDeleteRQ(msgid, UIDs.PresentationLUT, iuid);
-		Dimse rsp = requestor.invokeAndWaitForRSP(
-			pcidPLUT, nDeleteRQ);
-		return checkStatus(rsp.getCommand());
-	}
-	
 	public int createFilmSession(Dataset attr, boolean color) throws InterruptedException, IOException, DcmServiceException {
 		pcidPrint = color
 			? pcidColorPrint
@@ -432,8 +461,16 @@ public class PrintSCU {
 			attr.putSQ(Tags.RefPresentationLUTSeq).addItem(
 				makeRefSOP(UIDs.PresentationLUT, curPLUT_IUID));
 		}
+        /*if (curAnnIUIDs.size() > 0
+                && attr.vm(Tags.RefBasicAnnotationBoxSeq) == -1) {
+            Iterator iterator = curAnnIUIDs.values().iterator();
+            DcmElement sq = attr.putSQ(Tags.RefBasicAnnotationBoxSeq);
+            while (iterator.hasNext())
+                sq.addItem(makeRefSOP(UIDs.BasicAnnotationBox,
+                             (String)iterator.next()));
+        }*/
 		Dimse rsp = null;
-		try {		
+		try {
 			rsp = requestor.invokeAndWaitForRSP(
 				pcidPrint, nCreateRQ, attr);
 		} finally {
@@ -473,12 +510,14 @@ public class PrintSCU {
 	
 	public int countImageBoxes() {
 		checkFilmBox();
-		return curFilmBox.vm(Tags.RefImageBoxSeq);
+		int count = curFilmBox.vm(Tags.RefImageBoxSeq);
+        return (count == -1) ? 0 : count;
 	}
 
 	public int countAnnotationBoxes() {
 		checkFilmBox();
-		return curFilmBox.vm(Tags.RefBasicAnnotationBoxSeq);
+        int count = curFilmBox.vm(Tags.RefBasicAnnotationBoxSeq);
+		return (count == -1) ? 0 : count;
 	}
 	
 	public int setImageBox(int index, File file, Dataset attr) throws InterruptedException, IOException, DcmServiceException {
