@@ -62,6 +62,7 @@ public class QueryStudiesCmd extends BaseCmd {
                 true);
         sqlBuilder.addWildCardMatch("Study.studyId", SqlBuilder.TYPE2, filter
                 .getString(Tags.StudyID), false);
+        sqlBuilder.addSingleValueMatch("Study.studyIuid", SqlBuilder.TYPE1, filter.getString( Tags.StudyInstanceUID));
         sqlBuilder.addRangeMatch("Study.studyDateTime",
                 SqlBuilder.TYPE2,
                 filter.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));

@@ -203,7 +203,7 @@
 				<xsl:value-of select="PPSStatus"/>
 		 	</td>
 	        <td title="StudyIUID">
-				<a href="foldersubmit.m?destination=LOCAL&amp;studyID={studyUIDs}&amp;accessionNumber=&amp;patientName=&amp;patientID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12"><!-- TODO if more than one studyIUID -->
+				<a href="foldersubmit.m?destination=LOCAL&amp;studyUID={studyUIDs}&amp;accessionNumber=&amp;patientName=&amp;patientID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12"><!-- TODO if more than one studyIUID -->
 					<xsl:value-of select="studyUIDs"/>
 				</a>
 		 	</td>

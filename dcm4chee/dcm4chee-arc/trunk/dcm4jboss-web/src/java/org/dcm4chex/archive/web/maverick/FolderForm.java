@@ -92,6 +92,8 @@ public class FolderForm {
 
     private String studyID;
 
+    private String studyUID;
+
     private String studyDateRange;
 
     private String modality;
@@ -188,6 +190,18 @@ public class FolderForm {
         this.studyID = studyID;
     }
 
+	/**
+	 * @return Returns the studyUID.
+	 */
+	public String getStudyUID() {
+		return studyUID;
+	}
+	/**
+	 * @param studyUID The studyUID to set.
+	 */
+	public void setStudyUID(String studyUID) {
+		this.studyUID = studyUID;
+	}
     public final void setTotal(int total) {
         this.total = total;
     }
@@ -253,6 +267,7 @@ public class FolderForm {
             studyFilter.setPatientName(patientName);
             studyFilter.setAccessionNumber(accessionNumber);
             studyFilter.setStudyID(studyID);
+            studyFilter.setStudyUID( studyUID );
             studyFilter.setStudyDateRange(studyDateRange);
             studyFilter.setModality(modality);
         }
