@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
-<project name="dcm4che" basedir="." default="main">
+<project name="dcm4che" basedir="." default="release">
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.0.5"/>
+   <property name="version" value="1.0.6"/>
    <property name="javac.debug" value="on"/>
    
    <target name="init">
@@ -127,7 +127,7 @@
          <srcfiles dir="${src.etc.dir}" includes="dictionary.xml"/>
       </uptodate>
       <antcall target="compile-res"/>
-      <filter token="VERSIONNAME" value="DCM4CHE${DSTAMP}"/>
+      <filter token="VERSIONNAME" value="DCM4CHE-${version}"/>
       <filter token="VERSION" value="${version}"/>
       <filter token="TODAY" value="${TODAY}"/>
       <copy todir="${build.res.dir}" filtering="true">

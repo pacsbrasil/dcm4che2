@@ -54,10 +54,11 @@ import org.apache.log4j.Logger;
  *
  * <p><b>Revisions:</b>
  *
- * <p><b>yyyymmdd author:</b>
+ * <p><b>20021105 Gunter Zeilinger:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
+ * <li> add property port and serverSocketFactory
+ * <li> deprecate use of {@link #start(int)} 
+ *                   and {@link #start(int,ServerSocketFactory)}
  * </ul>
  */
 class ServerImpl implements LF_ThreadPool.Handler, Server {
@@ -72,6 +73,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     private int port = 104;
     private List hcl = null;
     private List hfl = null;
+    private ServerSocketFactory ssf = ServerSocketFactory.getDefault();
     
     // Static --------------------------------------------------------
     
@@ -151,6 +153,12 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     }
     
     public void start(int port, ServerSocketFactory ssf) throws IOException {
+        setPort(port);
+        setServerSocketFactory(ssf);
+        start();
+    }
+    
+    public void start() throws IOException {
         checkNotRunning();
         if (log.isInfoEnabled())
             log.info("Start Server listening at port " + port);
@@ -256,4 +264,42 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         }
     }
         
+    /** Getter for property port.
+     * @return Value of property port.
+     *
+     */
+    public int getPort() {
+        return port;
+    }
+    
+    /** Setter for property port.
+     * @param port New value of property port.
+     *
+     */
+    public void setPort(int port) {
+        if (port <= 0) {
+            throw new IllegalArgumentException("port: " + port);
+        }
+        this.port = port;
+    }
+    
+    /** Getter for property serverSocketFactory.
+     * @return Value of property serverSocketFactory.
+     *
+     */
+    public ServerSocketFactory getServerSocketFactory() {
+        return ssf;
+    }
+    
+    /** Setter for property serverSocketFactory.
+     * @param serverSocketFactory New value of property serverSocketFactory.
+     *
+     */
+    public void setServerSocketFactory(ServerSocketFactory ssf) {
+        if (ssf == null) {
+            throw new NullPointerException();
+        }
+        this.ssf = ssf;
+    }
+    
 }

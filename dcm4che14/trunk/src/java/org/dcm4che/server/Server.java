@@ -39,10 +39,11 @@ import javax.net.ssl.HandshakeCompletedListener;
  *
  * <p><b>Revisions:</b>
  *
- * <p><b>yyyymmdd author:</b>
+ * <p><b>20021105 Gunter Zeilinger:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
+ * <li> add property port and serverSocketFactory
+ * <li> deprecate use of {@link #start(int)} 
+ *                   and {@link #start(int,ServerSocketFactory)}
  * </ul>
  */
 public interface Server {
@@ -66,9 +67,43 @@ public interface Server {
     
     int getNumClients();
     
+    /**
+     * @deprecated use {@link #setPort}, {@link #start()} 
+     */    
     void start(int port) throws IOException;
     
+    /**
+     * @deprecated use {@link #setPort}, {@link #setServerSocketFactory},
+     *                 {@link #start()}
+     */    
     void start(int port, ServerSocketFactory ssf) throws IOException;
     
+    void start() throws Exception;
+    
     void stop();
+    
+    /** Getter for property port.
+     * @return Value of property port.
+     *
+     */
+    public int getPort();
+    
+    /** Setter for property port.
+     * @param port New value of property port.
+     *
+     */
+    public void setPort(int port);
+    
+    /** Getter for property serverSocketFactory.
+     * @return Value of property serverSocketFactory.
+     *
+     */
+    public ServerSocketFactory getServerSocketFactory();
+    
+    /** Setter for property serverSocketFactory.
+     * @param serverSocketFactory New value of property serverSocketFactory.
+     *
+     */
+    public void setServerSocketFactory(ServerSocketFactory serverSocketFactory);
+    
 }

@@ -9,7 +9,7 @@ Create an environment variable pointing to
 the Ant home directory (ANT_HOME) or create a
 shell script calling "$ANT_HOME/bin/ant" or
 "%ANT_HOME%\bin\ant" and start the Ant script with:
-   $ANT_HOME/bin/ant all
+   $ANT_HOME/bin/ant release
 or the script - with this directory as working directory.
 
 To run the JUnit tests:
