@@ -156,6 +156,7 @@ class ImageBoxService extends DcmServiceBase
                 parser.setDcmHandler(box.getDcmHandler());
             }
             parser.parseDataset(tuid, -1);
+            scp.logDataset(box);
             session.getCurrentFilmBox().setImageBox(boxuid, box, pluts, rspCmd);
             return null;
         } catch (DcmServiceException e) {

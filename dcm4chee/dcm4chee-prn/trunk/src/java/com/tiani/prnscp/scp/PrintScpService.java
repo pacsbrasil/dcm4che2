@@ -1,18 +1,19 @@
-/*                                                                           *
+/*
+ *  *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
- *                                                                           *
+ *  *
  *  This file is part of dcm4che.                                            *
- *                                                                           *
+ *  *
  *  This library is free software; you can redistribute it and/or modify it  *
  *  under the terms of the GNU Lesser General Public License as published    *
  *  by the Free Software Foundation; either version 2 of the License, or     *
  *  (at your option) any later version.                                      *
- *                                                                           *
+ *  *
  *  This library is distributed in the hope that it will be useful, but      *
  *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
  *  Lesser General Public License for more details.                          *
- *                                                                           *
+ *  *
  *  You should have received a copy of the GNU Lesser General Public         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
@@ -61,18 +62,18 @@ import org.dcm4che.server.DcmHandler;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
+import java.io.StringWriter;
 
 /**
  *  <description>
  *
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @created  November 3, 2002
- * @version  $Revision$
+ *@author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ *@created    November 3, 2002
+ *@version    $Revision$
  */
 public class PrintScpService
          extends ServiceMBeanSupport
-         implements PrintScpServiceMBean
-{
+         implements PrintScpServiceMBean {
 
     // Constants -----------------------------------------------------
     final static String LICENSE_FILE = "conf/license.pem";
@@ -94,7 +95,9 @@ public class PrintScpService
     private int numCreatedJobs = 0;
     private int numStoredPrints = 0;
 
-    /**  Holds value of property license. */
+    /**
+     *  Holds value of property license.
+     */
     private X509Certificate license;
 
     // Static --------------------------------------------------------
@@ -110,20 +113,18 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  job Description of the Parameter
+     *@param  job  Description of the Parameter
      */
-    public void onJobStartPrinting(String job)
-    {
+    public void onJobStartPrinting(String job) {
     }
 
 
     /**
      *  Description of the Method
      *
-     * @param  job Description of the Parameter
+     *@param  job  Description of the Parameter
      */
-    public void onJobFailed(String job)
-    {
+    public void onJobFailed(String job) {
         deleteJob(new File(job));
     }
 
@@ -131,10 +132,9 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  job Description of the Parameter
+     *@param  job  Description of the Parameter
      */
-    public void onJobDone(String job)
-    {
+    public void onJobDone(String job) {
         deleteJob(new File(job));
     }
 
@@ -142,10 +142,9 @@ public class PrintScpService
     /**
      *  Getter for property dcmServer.
      *
-     * @return  Value of property dcmServer.
+     *@return    Value of property dcmServer.
      */
-    public ObjectName getDcmServer()
-    {
+    public ObjectName getDcmServer() {
         return dcmServer;
     }
 
@@ -153,10 +152,9 @@ public class PrintScpService
     /**
      *  Setter for property dcmServer.
      *
-     * @param  dcmServer New value of property dcmServer.
+     *@param  dcmServer  New value of property dcmServer.
      */
-    public void setDcmServer(ObjectName dcmServer)
-    {
+    public void setDcmServer(ObjectName dcmServer) {
         this.dcmServer = dcmServer;
     }
 
@@ -164,10 +162,9 @@ public class PrintScpService
     /**
      *  Getter for property spoolDirPath.
      *
-     * @return  Value of property spoolDirPath.
+     *@return    Value of property spoolDirPath.
      */
-    public String getSpoolDirectory()
-    {
+    public String getSpoolDirectory() {
         return spoolDirectory;
     }
 
@@ -175,10 +172,9 @@ public class PrintScpService
     /**
      *  Setter for property spoolDirPath.
      *
-     * @param  spoolDirectory The new spoolDirectory value
+     *@param  spoolDirectory  The new spoolDirectory value
      */
-    public void setSpoolDirectory(String spoolDirectory)
-    {
+    public void setSpoolDirectory(String spoolDirectory) {
         this.spoolDirectory = spoolDirectory;
     }
 
@@ -186,10 +182,9 @@ public class PrintScpService
     /**
      *  Getter for property keepSpoolFiles.
      *
-     * @return  Value of property keepSpoolFiles.
+     *@return    Value of property keepSpoolFiles.
      */
-    public boolean isKeepSpoolFiles()
-    {
+    public boolean isKeepSpoolFiles() {
         return keepSpoolFiles;
     }
 
@@ -197,10 +192,9 @@ public class PrintScpService
     /**
      *  Setter for property keepSpoolFiles.
      *
-     * @param  keepSpoolFiles New value of property keepSpoolFiles.
+     *@param  keepSpoolFiles  New value of property keepSpoolFiles.
      */
-    public void setKeepSpoolFiles(boolean keepSpoolFiles)
-    {
+    public void setKeepSpoolFiles(boolean keepSpoolFiles) {
         this.keepSpoolFiles = keepSpoolFiles;
     }
 
@@ -208,10 +202,9 @@ public class PrintScpService
     /**
      *  Getter for property numCreatedJobs.
      *
-     * @return  Value of property numCreatedJobs.
+     *@return    Value of property numCreatedJobs.
      */
-    public int getNumCreatedJobs()
-    {
+    public int getNumCreatedJobs() {
         return numCreatedJobs;
     }
 
@@ -219,10 +212,9 @@ public class PrintScpService
     /**
      *  Getter for property numStoredPrints.
      *
-     * @return  Value of property numStoredPrints.
+     *@return    Value of property numStoredPrints.
      */
-    public int getNumStoredPrints()
-    {
+    public int getNumStoredPrints() {
         return numStoredPrints;
     }
 
@@ -230,10 +222,9 @@ public class PrintScpService
     /**
      *  Getter for property license.
      *
-     * @return  Value of property license.
+     *@return    Value of property license.
      */
-    public X509Certificate getLicense()
-    {
+    public X509Certificate getLicense() {
         return this.license;
     }
 
@@ -241,10 +232,9 @@ public class PrintScpService
     /**
      *  Setter for property license.
      *
-     * @param  license New value of property license.
+     *@param  license  New value of property license.
      */
-    public void setLicense(X509Certificate license)
-    {
+    public void setLicense(X509Certificate license) {
         this.license = license;
     }
 
@@ -252,11 +242,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  aet Description of the Parameter
-     * @param  policy Description of the Parameter
+     *@param  aet     Description of the Parameter
+     *@param  policy  Description of the Parameter
      */
-    public void putAcceptorPolicy(String aet, AcceptorPolicy policy)
-    {
+    public void putAcceptorPolicy(String aet, AcceptorPolicy policy) {
         dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aet, policy);
     }
 
@@ -265,11 +254,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @exception  Exception Description of the Exception
+     *@exception  Exception  Description of the Exception
      */
     public void startService()
-        throws Exception
-    {
+             throws Exception {
         File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
         checkLicense(new File(systemHomeDir, LICENSE_FILE));
         spoolDir = new File(spoolDirectory);
@@ -292,11 +280,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @exception  Exception Description of the Exception
+     *@exception  Exception  Description of the Exception
      */
     public void stopService()
-        throws Exception
-    {
+             throws Exception {
         unbindDcmServices();
         dcmHandler = null;
         if (!keepSpoolFiles) {
@@ -305,8 +292,12 @@ public class PrintScpService
     }
 
 
-    private void checkLicense(File licenseFile)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  licenseFile  Description of the Parameter
+     */
+    private void checkLicense(File licenseFile) {
         try {
             LicenseStore store = new LicenseStore(licenseFile);
             license = store.getLicenseFor(PRNSCP_PRODUCT_UID);
@@ -324,10 +315,8 @@ public class PrintScpService
         log.warn("No valid License detected - shutdown server in "
                  + SHUTDOWN_DELAY_MINUTES + " minutes!");
         new Timer().schedule(
-            new TimerTask()
-            {
-                public void run()
-                {
+            new TimerTask() {
+                public void run() {
                     org.jboss.Main.systemExit(null);
                 }
             },
@@ -335,8 +324,10 @@ public class PrintScpService
     }
 
 
-    private void bindDcmServices()
-    {
+    /**
+     *  Description of the Method
+     */
+    private void bindDcmServices() {
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
         services.bind(UIDs.BasicFilmSession, filmSessionService);
         services.bind(UIDs.BasicFilmBoxSOP, filmBoxService);
@@ -348,8 +339,10 @@ public class PrintScpService
     }
 
 
-    private void unbindDcmServices()
-    {
+    /**
+     *  Description of the Method
+     */
+    private void unbindDcmServices() {
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
         services.unbind(UIDs.BasicFilmSession);
         services.unbind(UIDs.BasicFilmBoxSOP);
@@ -362,68 +355,146 @@ public class PrintScpService
 
 
     // Package protected ---------------------------------------------
+    /**
+     *  Description of the Method
+     *
+     *@param  ds  Description of the Parameter
+     */
+    void logDataset(Dataset ds) {
+        try {
+            StringWriter w = new StringWriter();
+            ds.dumpDataset(w);
+            log.info(w.toString());
+        } catch (Exception e) {
+            log.error("Failed to dump dataset", e);
+        }
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     *@param  aet                               Description of the Parameter
+     *@return                                   Description of the Return Value
+     *@exception  MalformedObjectNameException  Description of the Exception
+     */
     private ObjectName makePrinterName(String aet)
-        throws MalformedObjectNameException
-    {
+             throws MalformedObjectNameException {
         return new ObjectName(PrinterServiceMBean.OBJECT_NAME_PREFIX + aet);
     }
 
 
+    /**
+     *  Gets the printerAttribute attribute of the PrintScpService object
+     *
+     *@param  aet            Description of the Parameter
+     *@param  attribute      Description of the Parameter
+     *@return                The printerAttribute value
+     *@exception  Exception  Description of the Exception
+     */
     Object getPrinterAttribute(String aet, String attribute)
-        throws Exception
-    {
+             throws Exception {
         return server.getAttribute(makePrinterName(aet), attribute);
     }
 
 
+    /**
+     *  Gets the booleanPrinterAttribute attribute of the PrintScpService object
+     *
+     *@param  aet            Description of the Parameter
+     *@param  attribute      Description of the Parameter
+     *@return                The booleanPrinterAttribute value
+     *@exception  Exception  Description of the Exception
+     */
     boolean getBooleanPrinterAttribute(String aet, String attribute)
-        throws Exception
-    {
+             throws Exception {
         Boolean b = (Boolean) getPrinterAttribute(aet, attribute);
         return b.booleanValue();
     }
 
 
+    /**
+     *  Gets the intPrinterAttribute attribute of the PrintScpService object
+     *
+     *@param  aet            Description of the Parameter
+     *@param  attribute      Description of the Parameter
+     *@return                The intPrinterAttribute value
+     *@exception  Exception  Description of the Exception
+     */
     int getIntPrinterAttribute(String aet, String attribute)
-        throws Exception
-    {
+             throws Exception {
         Integer i = (Integer) getPrinterAttribute(aet, attribute);
         return i.intValue();
     }
 
 
+    /**
+     *  Gets the printer attribute of the PrintScpService object
+     *
+     *@param  aet            Description of the Parameter
+     *@param  methode        Description of the Parameter
+     *@param  arg            Description of the Parameter
+     *@return                The printer value
+     *@exception  Exception  Description of the Exception
+     */
     boolean isPrinter(String aet, String methode, String arg)
-        throws Exception
-    {
+             throws Exception {
         return isPrinter(aet, methode,
                 new Object[]{arg},
                 new String[]{String.class.getName()});
     }
 
 
+    /**
+     *  Gets the printer attribute of the PrintScpService object
+     *
+     *@param  aet            Description of the Parameter
+     *@param  methode        Description of the Parameter
+     *@param  arg1           Description of the Parameter
+     *@param  arg2           Description of the Parameter
+     *@return                The printer value
+     *@exception  Exception  Description of the Exception
+     */
     boolean isPrinter(String aet, String methode,
             String arg1, String arg2)
-        throws Exception
-    {
+             throws Exception {
         return isPrinter(aet, methode,
                 new Object[]{arg1, arg2},
                 new String[]{String.class.getName(), String.class.getName()});
     }
 
 
+    /**
+     *  Gets the printer attribute of the PrintScpService object
+     *
+     *@param  aet            Description of the Parameter
+     *@param  methode        Description of the Parameter
+     *@param  arg            Description of the Parameter
+     *@param  type           Description of the Parameter
+     *@return                The printer value
+     *@exception  Exception  Description of the Exception
+     */
     boolean isPrinter(String aet, String methode,
             Object[] arg, String[] type)
-        throws Exception
-    {
+             throws Exception {
         Boolean b = (Boolean)
                 server.invoke(makePrinterName(aet), methode, arg, type);
         return b.booleanValue();
     }
 
 
+    /**
+     *  Description of the Method
+     *
+     *@param  ds             Description of the Parameter
+     *@param  tag            Description of the Parameter
+     *@param  aet            Description of the Parameter
+     *@param  test           Description of the Parameter
+     *@param  rsp            Description of the Parameter
+     *@exception  Exception  Description of the Exception
+     */
     void checkAttribute(Dataset ds, int tag, String aet, String test, Command rsp)
-    throws Exception
-    {
+             throws Exception {
         String s = ds.getString(tag);
         if (s == null) {
             return;
@@ -437,8 +508,15 @@ public class PrintScpService
     }
 
 
-    void checkAttribute(Dataset ds, int tag, String[] enum, Command rsp)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  ds    Description of the Parameter
+     *@param  tag   Description of the Parameter
+     *@param  enum  Description of the Parameter
+     *@param  rsp   Description of the Parameter
+     */
+    void checkAttribute(Dataset ds, int tag, String[] enum, Command rsp) {
         String s = ds.getString(tag);
         if (s == null) {
             return;
@@ -454,14 +532,27 @@ public class PrintScpService
     }
 
 
-    void ignoreAttribute(Dataset ds, int tag, Command rsp)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  ds   Description of the Parameter
+     *@param  tag  Description of the Parameter
+     *@param  rsp  Description of the Parameter
+     */
+    void ignoreAttribute(Dataset ds, int tag, Command rsp) {
         ignoreAttribute(ds, tag, rsp, Status.AttributeListError);
     }
 
 
-    void ignoreAttribute(Dataset ds, int tag, Command rsp, int errcode)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  ds       Description of the Parameter
+     *@param  tag      Description of the Parameter
+     *@param  rsp      Description of the Parameter
+     *@param  errcode  Description of the Parameter
+     */
+    void ignoreAttribute(Dataset ds, int tag, Command rsp, int errcode) {
         DcmElement e = ds.get(tag);
         if (e == null) {
             return;
@@ -472,8 +563,15 @@ public class PrintScpService
     }
 
 
-    void checkAttributeLen(Dataset ds, int tag, int maxlen, Command rsp)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  ds      Description of the Parameter
+     *@param  tag     Description of the Parameter
+     *@param  maxlen  Description of the Parameter
+     *@param  rsp     Description of the Parameter
+     */
+    void checkAttributeLen(Dataset ds, int tag, int maxlen, Command rsp) {
         String s = ds.getString(tag);
         if (s == null) {
             return;
@@ -487,9 +585,16 @@ public class PrintScpService
     }
 
 
+    /**
+     *  Description of the Method
+     *
+     *@param  ds             Description of the Parameter
+     *@param  aet            Description of the Parameter
+     *@param  rsp            Description of the Parameter
+     *@exception  Exception  Description of the Exception
+     */
     void checkNumberOfCopies(Dataset ds, String aet, Command rsp)
-        throws Exception
-    {
+             throws Exception {
         Integer copies = ds.getInteger(Tags.NumberOfCopies);
         if (copies == null) {
             return;
@@ -504,14 +609,21 @@ public class PrintScpService
     }
 
 
+    /**
+     *  Description of the Method
+     *
+     *@param  ds             Description of the Parameter
+     *@param  aet            Description of the Parameter
+     *@param  rsp            Description of the Parameter
+     *@exception  Exception  Description of the Exception
+     */
     void checkMinMaxDensity(Dataset ds, String aet, Command rsp)
-        throws Exception
-    {
+             throws Exception {
         int minDensityPrinter = getIntPrinterAttribute(aet, "MinDensity");
         int minDensity = ds.getInt(Tags.MinDensity, minDensityPrinter);
         if (minDensity < minDensityPrinter) {
             log.warn("Min Density Value: " + minDensity
-                +" < Min Density Printer: " + minDensityPrinter);
+                     + " < Min Density Printer: " + minDensityPrinter);
             rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
             ds.putUS(Tags.MinDensity, minDensity = minDensityPrinter);
         }
@@ -519,22 +631,30 @@ public class PrintScpService
         int maxDensity = ds.getInt(Tags.MaxDensity, maxDensityPrinter);
         if (maxDensity > maxDensityPrinter) {
             log.warn("Max Density Value: " + maxDensity
-                +" > Max Density Printer: " + maxDensityPrinter);
+                     + " > Max Density Printer: " + maxDensityPrinter);
             rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
             ds.putUS(Tags.MaxDensity, maxDensity = maxDensityPrinter);
         }
         if (minDensity > maxDensity) {
             log.warn("Min Density Value: " + minDensity
-                +" < Max Density Value: " + maxDensity);
+                     + " < Max Density Value: " + maxDensity);
             rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
             ds.putUS(Tags.MinDensity, minDensityPrinter);
             ds.putUS(Tags.MaxDensity, maxDensityPrinter);
         }
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     *@param  ds             Description of the Parameter
+     *@param  aet            Description of the Parameter
+     *@param  rsp            Description of the Parameter
+     *@exception  Exception  Description of the Exception
+     */
     void checkImageDisplayFormat(Dataset ds, String aet, Command rsp)
-        throws Exception
-    {
+             throws Exception {
         String s = ds.getString(Tags.ImageDisplayFormat);
         if (s == null) {
             log.error("Missing Image Display Format");
@@ -549,9 +669,16 @@ public class PrintScpService
     }
 
 
+    /**
+     *  Description of the Method
+     *
+     *@param  aet                      Description of the Parameter
+     *@param  annotationID             Description of the Parameter
+     *@return                          Description of the Return Value
+     *@exception  DcmServiceException  Description of the Exception
+     */
     int countAnnotationBoxes(String aet, String annotationID)
-        throws DcmServiceException
-    {
+             throws DcmServiceException {
         try {
             Integer i = (Integer)
                     server.invoke(makePrinterName(aet),
@@ -566,14 +693,24 @@ public class PrintScpService
     }
 
 
-    FilmSession getFilmSession(ActiveAssociation as)
-    {
+    /**
+     *  Gets the filmSession attribute of the PrintScpService object
+     *
+     *@param  as  Description of the Parameter
+     *@return     The filmSession value
+     */
+    FilmSession getFilmSession(ActiveAssociation as) {
         return (FilmSession) as.getAssociation().getProperty("FilmSession");
     }
 
 
-    HashMap getPresentationLUTs(ActiveAssociation as)
-    {
+    /**
+     *  Gets the presentationLUTs attribute of the PrintScpService object
+     *
+     *@param  as  Description of the Parameter
+     *@return     The presentationLUTs value
+     */
+    HashMap getPresentationLUTs(ActiveAssociation as) {
         Association a = as.getAssociation();
         HashMap result = (HashMap) a.getProperty("PresentationLUTs");
         if (result == null) {
@@ -583,17 +720,28 @@ public class PrintScpService
     }
 
 
-    File getSessionSpoolDir(Association a, String uid)
-    {
+    /**
+     *  Gets the sessionSpoolDir attribute of the PrintScpService object
+     *
+     *@param  a    Description of the Parameter
+     *@param  uid  Description of the Parameter
+     *@return      The sessionSpoolDir value
+     */
+    File getSessionSpoolDir(Association a, String uid) {
         File dir = new File(spoolDir, a.getCalledAET());
         dir = new File(dir, a.getCallingAET());
         return new File(dir, uid);
     }
 
 
+    /**
+     *  Description of the Method
+     *
+     *@param  dir                      Description of the Parameter
+     *@exception  DcmServiceException  Description of the Exception
+     */
     void initSessionSpoolDir(File dir)
-        throws DcmServiceException
-    {
+             throws DcmServiceException {
         log.info("Create Spool Directory for Film Session[uid="
                  + dir.getName() + "]");
         if (!dir.mkdirs() || !lockSessionSpoolDir(dir)
@@ -606,8 +754,13 @@ public class PrintScpService
     }
 
 
-    private boolean lockSessionSpoolDir(File dir)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  dir  Description of the Parameter
+     *@return      Description of the Return Value
+     */
+    private boolean lockSessionSpoolDir(File dir) {
         try {
             new File(dir, SPOOL_SESSION_LOCK_SUFFIX).createNewFile();
             return true;
@@ -617,14 +770,24 @@ public class PrintScpService
     }
 
 
-    private int countJobsInSession(File dir)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  dir  Description of the Parameter
+     *@return      Description of the Return Value
+     */
+    private int countJobsInSession(File dir) {
         return new File(dir, SPOOL_JOB_DIR_SUFFIX).list().length;
     }
 
 
-    void purgeSessionSpoolDir(File dir, boolean unlock)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  dir     Description of the Parameter
+     *@param  unlock  Description of the Parameter
+     */
+    void purgeSessionSpoolDir(File dir, boolean unlock) {
         File lock = new File(dir, SPOOL_SESSION_LOCK_SUFFIX);
         if (unlock) {
             lock.delete();
@@ -639,8 +802,12 @@ public class PrintScpService
     }
 
 
-    void cleardir(File dir)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  dir  Description of the Parameter
+     */
+    void cleardir(File dir) {
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; ++i) {
             deltree(files[i]);
@@ -648,8 +815,13 @@ public class PrintScpService
     }
 
 
-    boolean deltree(File dir)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  dir  Description of the Parameter
+     *@return      Description of the Return Value
+     */
+    boolean deltree(File dir) {
         if (dir.isDirectory()) {
             cleardir(dir);
         }
@@ -657,9 +829,16 @@ public class PrintScpService
     }
 
 
+    /**
+     *  Description of the Method
+     *
+     *@param  aet                      Description of the Parameter
+     *@param  session                  Description of the Parameter
+     *@param  all                      Description of the Parameter
+     *@exception  DcmServiceException  Description of the Exception
+     */
     void createPrintJob(String aet, FilmSession session, boolean all)
-        throws DcmServiceException
-    {
+             throws DcmServiceException {
         String jobID = "J-" + ++numCreatedJobs;
         File jobdir = new File(new File(session.dir(), SPOOL_JOB_DIR_SUFFIX), jobID);
         if (!jobdir.mkdir()) {
@@ -700,8 +879,12 @@ public class PrintScpService
     }
 
 
-    void deleteJob(File job)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  job  Description of the Parameter
+     */
+    void deleteJob(File job) {
         log.info("Deleting job - " + job.getName());
         if (!job.exists()) {
             log.warn("No such job - " + job.getName());
@@ -720,9 +903,16 @@ public class PrintScpService
     // Protected -----------------------------------------------------
 
     // Private -------------------------------------------------------
+    /**
+     *  Description of the Method
+     *
+     *@param  job                      Description of the Parameter
+     *@param  session                  Description of the Parameter
+     *@param  filmBox                  Description of the Parameter
+     *@exception  DcmServiceException  Description of the Exception
+     */
     private void storePrint(File job, FilmSession session, FilmBox filmBox)
-        throws DcmServiceException
-    {
+             throws DcmServiceException {
         String spID = "SP-" + ++numStoredPrints;
         try {
             Dataset storedPrint = filmBox.createStoredPrint(session);
@@ -743,11 +933,9 @@ public class PrintScpService
 
     // Inner classes -------------------------------------------------
     private DcmServiceBase plutService =
-        new DcmServiceBase()
-        {
+        new DcmServiceBase() {
             protected Dataset doNCreate(ActiveAssociation as, Dimse rq, Command rspCmd)
-                throws IOException, DcmServiceException
-            {
+                     throws IOException, DcmServiceException {
                 try {
                     Dataset ds = rq.getDataset();
                     // read out dataset
@@ -771,8 +959,7 @@ public class PrintScpService
 
 
             protected Dataset doNDelete(ActiveAssociation as, Dimse rq, Command rspCmd)
-                throws IOException, DcmServiceException
-            {
+                     throws IOException, DcmServiceException {
                 try {
                     String uid = rq.getCommand().getRequestedSOPInstanceUID();
                     HashMap pluts = getPresentationLUTs(as);
@@ -801,11 +988,9 @@ public class PrintScpService
             };
 
     private DcmServiceBase printerService =
-        new DcmServiceBase()
-        {
+        new DcmServiceBase() {
             protected Dataset doNGet(ActiveAssociation as, Dimse rq, Command rspCmd)
-                throws IOException, DcmServiceException
-            {
+                     throws IOException, DcmServiceException {
                 String aet = as.getAssociation().getCalledAET();
                 int[] tags = rq.getCommand().getTags(Tags.AttributeIdentifierList);
                 try {
@@ -820,15 +1005,27 @@ public class PrintScpService
         };
 
 
-    private String toLO(String src)
-    {
+    /**
+     *  Description of the Method
+     *
+     *@param  src  Description of the Parameter
+     *@return      Description of the Return Value
+     */
+    private String toLO(String src) {
         return src != null ? src.replace('\\', '/') : null;
     }
 
 
+    /**
+     *  Gets the printerAttributes attribute of the PrintScpService object
+     *
+     *@param  aet            Description of the Parameter
+     *@param  tags           Description of the Parameter
+     *@return                The printerAttributes value
+     *@exception  Exception  Description of the Exception
+     */
     private Dataset getPrinterAttributes(String aet, int[] tags)
-        throws Exception
-    {
+             throws Exception {
         Dataset attrs = dof.newDataset();
         for (int i = 0; i < tags.length; ++i) {
             switch (tags[i]) {
@@ -879,10 +1076,9 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @return  Description of the Return Value
+     *@return    Description of the Return Value
      */
-    public String showLicense()
-    {
+    public String showLicense() {
         return "" + license;
     }
 

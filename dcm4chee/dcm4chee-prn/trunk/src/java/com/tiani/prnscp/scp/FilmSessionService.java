@@ -160,6 +160,7 @@ class FilmSessionService
         try {
             String uid = rspCmd.getAffectedSOPInstanceUID();
             Dataset ds = rq.getDataset();
+            scp.logDataset(ds);
             // read out dataset
             if (ds == null) {
                 scp.getLog().warn("Create Film Session without attributes");
@@ -208,6 +209,7 @@ class FilmSessionService
     {
         try {
             Dataset ds = rq.getDataset();
+            scp.logDataset(ds);
             // read out dataset
             String uid = rq.getCommand().getRequestedSOPInstanceUID();
             FilmSession session = scp.getFilmSession(as);
