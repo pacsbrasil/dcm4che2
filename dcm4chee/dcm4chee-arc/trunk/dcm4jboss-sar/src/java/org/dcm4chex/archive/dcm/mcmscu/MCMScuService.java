@@ -75,6 +75,9 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     /** Holds the max. number of bytes that can be used to collect instances for a singe media. */
 	private long maxMediaUsage;
 	
+    /** Holds the max age of a media for status COLLECTING. */
+	private int maxMediaAge;
+
 	/** Holds the prefix that is used to generate the fileset id. */
 	private String fileSetIdPrefix;
 	
@@ -159,6 +162,23 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 		this.maxMediaUsage = maxMediaUsage*MEGA_BYTE;
 	}
 
+	/**
+	 * Returns the maxMediaAge in days.
+	 * 
+	 * @return The maxMediaAge in days.
+	 */
+	public int getMaxMediaAge() {
+		return maxMediaAge;
+	}
+	
+	/**
+	 * Sets the max media age in days.
+	 *  
+	 * @param maxMediaAge The maxMediaAge to set.
+	 */
+	public void setMaxMediaAge(int maxMediaAge) {
+		this.maxMediaAge = maxMediaAge;
+	}
 	/**
 	 * This value is used to get the search date from current date.
 	 * <p>
@@ -864,6 +884,31 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 					log.error( "Cant release association for media creation status request"+assoc.getAssociation(),e1);
 				}
     	}
+    }
+    
+    /**
+     * Schedule all media with status COLLECTING and an age greater than <code>maxMediaAge</code>.
+     * 
+     * @return Number of media scheduled.
+     * 
+     * @throws RemoteException
+     * @throws FinderException
+     * @throws HomeFactoryException
+     * @throws CreateException
+     */
+    public int scheduleCollectingMedia() throws RemoteException, FinderException, HomeFactoryException, CreateException {
+    	int nrOfMedia = 0;
+    	Collection c = lookupMediaComposer().getWithStatus( MediaDTO.COLLECTING );
+    	long maxAgeDate = System.currentTimeMillis() - maxMediaAge * ONE_DAY_IN_MILLIS;
+    	MediaDTO mediaDTO;
+    	for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
+    		mediaDTO = (MediaDTO) iter.next();
+    		if ( mediaDTO.getCreatedTime().getTime() < maxAgeDate ) {
+    			process( mediaDTO );
+    			nrOfMedia++;
+    		}
+    	}
+		return nrOfMedia ;
     }
 	
     

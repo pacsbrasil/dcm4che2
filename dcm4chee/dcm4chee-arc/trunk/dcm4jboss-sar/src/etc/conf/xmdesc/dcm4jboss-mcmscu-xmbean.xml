@@ -43,6 +43,18 @@
    </attribute>
 
     <attribute access="read-write"
+      getMethod="getMaxMediaAge"
+      setMethod="setMaxMediaAge">
+      <description>The max. age of a media for status COLLECTING in days.
+      </description>
+      <name>MaxMediaAge</name>
+      <type>int</type>
+      <descriptors>
+         <value value="7" />
+      </descriptors>
+   </attribute>
+
+    <attribute access="read-write"
       getMethod="getDaysBefore"
       setMethod="setDaysBefore">
       <description>This value is used to calculate the search date from current date: Instances must be older than search date.
@@ -199,6 +211,13 @@
       <description>Update media creation status</description>
       <name>getMediaCreationStatus</name>
       <return-type>java.lang.String</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description>Schedule all media with status COLLECTING and an age greater than maxMediaAge.
+      </description>
+      <name>scheduleCollectingMedia</name>
+      <return-type>int</return-type>
    </operation>
    
 </mbean>
