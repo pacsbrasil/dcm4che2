@@ -44,7 +44,7 @@ public class MCMModel {
 	/** Holds the current offset for paging */
 	private int offset = 0;
 	/** Holds the limit for paging */
-	private int limit = 3;
+	private int limit = 10;
 	/** Holds the total number of results of last search. */
 	private int total = 0;
 	/** Holds the current list of media for the view. */
