@@ -44,14 +44,28 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getRetryIntervalls"
-      setMethod="setRetryIntervalls">
-      <description>Number and intervalls of retries of failed notifications
-      of Storage Commitment Results to StgCmt SCU by a list of comma
-      separated NUMBERxINTERVAL pairs. The intervall can be specified in
+      getMethod="getScuRetryIntervalls"
+      setMethod="setScuRetryIntervalls">
+      <description>Number and intervalls of retries of SCU to invoke a
+      Storage Commitment Requests. Format: comma separated list of 
+      NUMBERxINTERVAL pairs. The intervall can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      </description>
+      <name>ScuRetryIntervalls</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="5x1m,12x5m" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getScpRetryIntervalls"
+      setMethod="setScpRetryIntervalls">
+      <description>Number and intervalls of retries of SCP to send
+      Storage Commitment Results to SCU. Format: comma separated list of 
+      NUMBERxINTERVAL pairs. The intervall can be specified in
       seconds (##s), minutes (##m), hours (##h) or days (##d).
       </description>
-      <name>RetryIntervalls</name>
+      <name>ScpRetryIntervalls</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m" />
@@ -60,7 +74,8 @@
    <attribute access="read-write"
       getMethod="isAcceptExplicitVRLE"
       setMethod="setAcceptExplicitVRLE">
-      <description>Accept DICOM objects encoded in Explicit Value Representation Little Endian Transfer Syntax.
+      <description>Accept DICOM objects encoded in Explicit Value Representation
+      Little Endian Transfer Syntax.
       </description>
       <name>AcceptExplicitVRLE</name>
       <type>boolean</type>
@@ -150,6 +165,27 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Use internally.</description>
+      <name>queueStgCmtOrder</name>
+      <parameter>
+        <name>calling</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <name>called</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <name>actionInfo</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <name>scpRole</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
 
    <!-- Notifications -->
 </mbean>

@@ -43,7 +43,7 @@
       <name>RetrieveAET</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="QR_SCP" />
+         <value value="PACS_TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -125,7 +125,7 @@
       setMethod="setFlushStudiesOnMedia">
       <description>This policy checks if a study is stored on a media (offline storage)
       </description>
-      <name>flushStudiesOnMedia</name>
+      <name>FlushStudiesOnMedia</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -136,7 +136,7 @@
       setMethod="setFlushStudiesExternalRetrievable">
       <description>This policy checks if a study is external retrievable.
       </description>
-      <name>flushStudiesExternalRetrievable</name>
+      <name>FlushStudiesExternalRetrievable</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -149,7 +149,7 @@
       Deletes both files and database entries!
       Enable this policy only if archive is used only as caching system!
       </description>
-      <name>deleteStudiesUnconditional</name>
+      <name>DeleteStudiesUnconditional</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />

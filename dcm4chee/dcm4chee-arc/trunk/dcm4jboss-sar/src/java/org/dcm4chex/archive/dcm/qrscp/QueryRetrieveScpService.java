@@ -36,7 +36,6 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
@@ -446,9 +445,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
             Dataset actionInfo) {
         try {
             server.invoke(stgCmtScuScpName, "queueStgCmtOrder", new Object[] {
-                    calling, called, actionInfo, null }, new String[] {
+                    calling, called, actionInfo, Boolean.FALSE }, new String[] {
                     String.class.getName(), String.class.getName(),
-                    Dataset.class.getName(), FileInfo[][].class.getName() });
+                    Dataset.class.getName(), boolean.class.getName() });
         } catch (JMException e) {
             log.error("Failed to queue Storage C0mmitment Request", e);
         }

@@ -74,4 +74,10 @@ class StgCmtOrder implements Serializable {
     public final boolean isScpRole() {
         return scpRole;
     }
+    
+    public String toString() {
+        return "StgCmtOrder[calling=" + callingAET + ", called=" + calledAET
+        	+ ", role=" + (scpRole ? "SCP, failures=" : "SCU, failures=")
+        	+ failureCount + ", status=" + failureStatus + "]";
+    }
 }

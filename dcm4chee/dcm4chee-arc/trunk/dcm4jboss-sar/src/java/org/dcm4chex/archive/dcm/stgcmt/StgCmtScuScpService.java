@@ -44,12 +44,14 @@ import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.net.RoleSelection;
+import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
@@ -84,16 +86,26 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private int soCloseDelay = 500;
 
-    private RetryIntervalls retryIntervalls = new RetryIntervalls();
+    private RetryIntervalls scuRetryIntervalls = new RetryIntervalls();
+
+    private RetryIntervalls scpRetryIntervalls = new RetryIntervalls();
 
     private StgCmtScuScp stgCmtScuScp = new StgCmtScuScp(this);
 
-    public final String getRetryIntervalls() {
-        return retryIntervalls.toString();
+    public final String getScuRetryIntervalls() {
+        return scuRetryIntervalls.toString();
     }
 
-    public final void setRetryIntervalls(String s) {
-        this.retryIntervalls = new RetryIntervalls(s);
+    public final void setScuRetryIntervalls(String s) {
+        this.scuRetryIntervalls = new RetryIntervalls(s);
+    }
+
+    public final String getScpRetryIntervalls() {
+        return scpRetryIntervalls.toString();
+    }
+
+    public final void setScpRetryIntervalls(String s) {
+        this.scpRetryIntervalls = new RetryIntervalls(s);
     }
 
     public final ObjectName getTLSConfigName() {
@@ -153,8 +165,14 @@ public class StgCmtScuScpService extends AbstractScpService implements
     }
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        policy.putPresContext(UIDs.StorageCommitmentPushModel,
-                enable ? getTransferSyntaxUIDs() : null);
+        if (enable) {
+	        policy.putPresContext(UIDs.StorageCommitmentPushModel,
+	                getTransferSyntaxUIDs());
+	        policy.putRoleSelection(UIDs.StorageCommitmentPushModel, true, true);
+        } else {
+	        policy.putPresContext(UIDs.StorageCommitmentPushModel, null);
+	        policy.removeRoleSelection(UIDs.StorageCommitmentPushModel);            
+        }
     }
 
     Socket createSocket(AEData aeData) throws IOException {
@@ -193,7 +211,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
         try {
             StgCmtOrder order = (StgCmtOrder) om.getObject();
             log.info("Start processing " + order);
-            final int status = order.isScpRole() ? process(order) : invoke(order);
+            final int status = order.isScpRole() ? process(order)
+                    : invoke(order);
             if (status == 0) {
                 log.info("Finished processing " + order);
                 return;
@@ -201,6 +220,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
             order.setFailureStatus(status);
             final int failureCount = order.getFailureCount() + 1;
             order.setFailureCount(failureCount);
+            final RetryIntervalls retryIntervalls = order.isScpRole() 
+                    ? scpRetryIntervalls : scuRetryIntervalls;
             final long delay = retryIntervalls.getIntervall(failureCount);
             if (delay == -1L) {
                 log.error("Give up to process " + order);
@@ -220,8 +241,42 @@ public class StgCmtScuScpService extends AbstractScpService implements
     }
 
     private int invoke(StgCmtOrder order) {
-        // TODO Auto-generated method stub
-        return 0;
+        final String calledAET = order.getCalledAET();
+        final String callingAET = order.getCallingAET();
+        final Dataset actionInfo = order.getActionInfo();
+        actionInfo.putUI(Tags.TransactionUID,
+                UIDGenerator.getInstance().createUID());
+        try {
+            ActiveAssociation aa = openAssociation(calledAET, callingAET, false);
+            try {
+                Command cmd = dof.newCommand();
+                cmd.initNActionRQ(1, UIDs.StorageCommitmentPushModel,
+                        UIDs.StorageCommitmentPushModelSOPInstance, 1);
+                Dimse rq = asf.newDimse(1, cmd, actionInfo);
+                logDataset("Storage Commitment Request:\n", actionInfo);
+                FutureRSP rsp = aa.invoke(rq);
+                Command rspCmd = rsp.get().getCommand();
+                final int status = rspCmd.getStatus();
+                if (status != Status.Success) {
+                    log.warn("" + calledAET
+                            + " returns N-ACTION-RQ with error status: "
+                            + rspCmd);
+                }
+                return status;
+            } finally {
+                try {
+                    aa.release(false);
+                } catch (Exception e) {
+                    log.warn(
+                            "release association to " + calledAET + " failed:",
+                            e);
+                }
+            }
+        } catch (Exception e) {
+            log.error("sending storage commitment request to " + calledAET
+                    + " failed:", e);
+            return INVOKE_FAILED_STATUS;
+        }
     }
 
     private int process(StgCmtOrder order) {
@@ -412,7 +467,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 final int status = rspCmd.getStatus();
                 if (status != Status.Success) {
                     log.warn("" + calledAET
-                            + " returns N-EVENT-REPORT with error status: "
+                            + " returns N-EVENT-REPORT with error status:\n"
                             + rspCmd);
                 }
                 return status;
@@ -429,6 +484,24 @@ public class StgCmtScuScpService extends AbstractScpService implements
             log.error("sending storage commitment result to " + calledAET
                     + " failed:", e);
             return INVOKE_FAILED_STATUS;
+        }
+    }
+
+    void commited(Dataset stgcmtResult) throws DcmServiceException {
+        Storage storage = null;
+        try {
+            StorageHome home = (StorageHome) EJBHomeFactory.getFactory()
+                    .lookup(StorageHome.class, StorageHome.JNDI_NAME);
+            storage = home.create();
+            storage.commited(stgcmtResult);
+        } catch (Exception e) {
+            log.error("Failed update External AETs in DB records", e);
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        } finally {
+            if (storage != null)
+                try {
+                    storage.remove();
+                } catch (Exception ignore) {}
         }
     }
 }

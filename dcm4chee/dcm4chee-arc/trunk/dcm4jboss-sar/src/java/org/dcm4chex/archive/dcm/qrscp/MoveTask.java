@@ -42,7 +42,6 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
-import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
@@ -155,17 +154,12 @@ class MoveTask implements Runnable {
             if (!toRetrieve.isEmpty()) {
                 openAssociation();
                 initInstancesAction(fileInfo[0][0]);
-                initStgCmtActionInfo();
+                this.stgCmtActionInfo = QueryRetrieveScpService.dof.newDataset();
+                this.refSOPSeq = stgCmtActionInfo.putSQ(Tags.RefSOPSeq);
             }
             moveAssoc.addCancelListener(moveRqCmd.getMessageID(),
                     cancelListener);
         }
-    }
-
-    private void initStgCmtActionInfo() {
-        stgCmtActionInfo = QueryRetrieveScpService.dof.newDataset();
-        stgCmtActionInfo.putUI(Tags.TransactionUID, UIDGenerator.getInstance().createUID());
-        this.refSOPSeq = stgCmtActionInfo.putSQ(Tags.RefSOPSeq);
     }
 
     private void initInstancesAction(FileInfo info) {
