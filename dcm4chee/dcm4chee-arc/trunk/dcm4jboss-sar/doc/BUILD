@@ -1,7 +1,9 @@
 BUILD INSTRUCTIONS FOR DCM4JBOSS-SAR:
 ====================================
 
-In order to build dcm4jboss-web you have to download and install:
+In order to build dcm4jboss-sar you have to download and install:
+
+- jai_imageio-1_0_01-beta (from http://java.sun.com/products/java-media/jai)
 
 - Ant 1.6.x (from http://ant.apache.org)
 
