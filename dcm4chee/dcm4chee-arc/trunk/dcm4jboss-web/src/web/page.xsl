@@ -6,13 +6,15 @@
 				<script language = "JavaScript" src= "dcm4che.js"/>
 				<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
 			</head>
-			<body>
-				<table cellspacing="0" cellpadding="2" bgcolor="#eeeeee"  width="100%" border="1">
-					<tr align="left" style="text-align: center">
-						<td> <a href="default.jsp">Folder</a> </td>
-						<td> <a href="ae.m">AE Management</a> </td>
-					</tr>
-				</table>			
+			<body background="images/bg.jpg" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  		<tr valign="middle" bgcolor="#eeeeee" style="text-align: center">
+    	<td width="50" align="left"><img src="images/logo.jpg" alt="TIANI Medgraph AG" border="0"/></td>
+    	<td width="100" align="center"><a href="default.jsp">Folder</a></td>
+      <td width="120" align="center"><a href="ae.m">AE Management</a></td>
+			<td width="50%"></td>
+      </tr>
+      </table>
 			  <xsl:apply-templates select="model"/>
 		  </body>
 		</html>

@@ -6,34 +6,29 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:internal="urn:my-internal-data">
 
-	<xsl:output method="html"/>
-   <xsl:variable name="page_title">AE List</xsl:variable>
-   <xsl:include href  = "page.xsl" />
+<xsl:output method="html">
+</xsl:output>
+<xsl:variable name="page_title">AE List</xsl:variable>
+<xsl:include href  = "page.xsl" />
+<xsl:template match="model">
+<html><body background="images/bg.jpg">
+						<center><table width="70%" border="0" bordercolor="#ffffff" cellspacing="5" cellpadding="0"><tr><td>
+				<tr>
+					<td width="25%"><h2>AE Title</h2></td>
+					<td width="20%"><h2>Hostname</h2></td>
+					<td width="15%"><h2>Port</h2></td>	
+					<td colspan="2" width="10%" align="center"><a href="aenew.m"><img src="images/add_aet.gif" alt="add new AET" border="0"/></a></td>
+				</tr>
+				<xsl:apply-templates select="AEs/item"/>
+				</td></tr>
+		  </table>
+</center>
 
-   <xsl:template match="model">
-			<table border="1" cellspacing="0" cellpadding="0" width="100%"><tr><td>
-				<table border="0">
-					<tr>
-							<td>AE Title</td>
-							<td>Hostname</td>
-							<td>Port</td>														
-							<!--td>Cipher Suites</td-->
-							<td>&nbsp;</td>
-					</tr>
-					<xsl:apply-templates select="AEs/item">
-						<xsl:sort data-type="text" order="ascending" select="title"/>
-					</xsl:apply-templates>
-					<tr>
-						<td>
-							  <a href="aenew.m">Add New AE</a>						
-						</td>
-					</tr>
-				</table>
-			</td></tr></table>
+</body></html>
    </xsl:template>
 
 	<xsl:template match="item[@type='org.dcm4chex.archive.ejb.jdbc.AEData']">
-		<tr bgcolor="#eeeeee">
+		<tr>
 	        <td title="AE Title" >
 				<xsl:value-of select="title"/>
 			</td>
@@ -43,14 +38,15 @@
 	        <td title="Port">
 					<xsl:value-of select="port"/>
 	        </td>
-	        <!--td title="Cipher Suites">
-					<xsl:value-of select="cipherSuites"/>
-	        </td-->
-			<td>
-					<a href="aeedit.m?pk={pk}">Edit</a>
+			<td align="center">
+				<a href="aeedit.m?pk={pk}">
+					<img src="images/edit.gif" alt="edit" border="0"/>		
+				</a>
 	        </td>
-			<td>
-					<a href="aedelete.m?pk={pk}" onclick="return confirm('Are you sure you want to delete?')">Delete</a>					
+			<td align="left">
+					<a href="aedelete.m?pk={pk}" onclick="return confirm('Are you sure you want to delete?')">
+					<img src="images/delete.gif" alt="delete" border="0"/>							
+					</a>					
 			</td>
 		</tr>
 	</xsl:template>
