@@ -29,6 +29,17 @@
    <!-- Attributes -->
    &defaultAttributes;
    <attribute access="read-write"
+      getMethod="getLabelPrintName"
+      setMethod="setLabelPrintName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>LabelPrintName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="dcmcdw:service=LabelPrint" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isKeepSpoolFiles"
       setMethod="setKeepSpoolFiles">
       <description>Keep spool files (for debugging).

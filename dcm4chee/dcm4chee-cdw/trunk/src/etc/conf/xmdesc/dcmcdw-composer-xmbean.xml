@@ -52,7 +52,7 @@
    <attribute access="read-write"
       getMethod="getMediaCapacity"
       setMethod="setMediaCapacity">
-      <description>Media Capacity. Format: ##.#GB|##.#MB|##.#KB. 
+      <description>Media Capacity. Format: ##.#GB|##.#MB. 
       </description>
       <name>MediaCapacity</name>
       <type>java.lang.String</type>      
@@ -63,12 +63,13 @@
    <attribute access="read-write"
       getMethod="getFileSetDescriptorFile"
       setMethod="setFileSetDescriptorFile">
-      <description>File-set Descriptor File (a "readme" file).
+      <description>File-set Descriptor File (a "README" file).
+      "NO"= no File-set Descriptor File.
       </description>
       <name>FileSetDescriptorFilename</name>
       <type>java.lang.String</type>      
       <descriptors>
-         <value value="README.TXT" />
+         <value value="NO" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -136,6 +137,18 @@
       <type>int</type>      
       <descriptors>
          <value value="512" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCreateLabel"
+      setMethod="setCreateLabel">
+      <description>Controls creation of Media Label file.
+      Enumerated Values: NO|PS|PDF.
+      </description>
+      <name>CreateLabel</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="NO" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

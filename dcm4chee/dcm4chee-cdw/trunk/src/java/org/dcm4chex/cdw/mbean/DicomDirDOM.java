@@ -11,6 +11,7 @@ package org.dcm4chex.cdw.mbean;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -18,12 +19,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -45,6 +48,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.ContentHandler;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -54,6 +58,10 @@ import org.w3c.dom.Node;
  */
 class DicomDirDOM {
 
+    private static final String _PDF = ".pdf";
+
+    private static final String _PS = ".ps";
+    
     private static final String ROOT_ELM = "dicomdir";
 
     private static final String DICOMDIR = "DICOMDIR";
@@ -74,6 +82,10 @@ class DicomDirDOM {
 
     private static final String PATIENT_ID = "(0010,0020)";
 
+    private static final String MODALITY = "(0008,0060)";
+
+    private static final String MODALITIES_IN_STUDY = "(0008,0061)";
+    
     private static final String ATTR = "attr";
 
     private static final String TAG = "tag";
@@ -94,9 +106,13 @@ class DicomDirDOM {
 
     private static final String WEB_XSL_URI = "resource:xsl/web.xsl";
 
+    private static final String LABEL_XSL_URI = "resource:xsl/label.xsl";
+
     private static final Templates indexTpl;
 
     private static final Templates webTpl;
+
+    private static final Templates labelTpl;
 
     private final Document doc;
 
@@ -110,6 +126,7 @@ class DicomDirDOM {
                     .getDOMImplementation();
             indexTpl = tf.newTemplates(new StreamSource(INDEX_XSL_URI));
             webTpl = tf.newTemplates(new StreamSource(WEB_XSL_URI));
+            labelTpl = tf.newTemplates(new StreamSource(LABEL_XSL_URI));
         } catch (TransformerConfigurationException e) {
             throw new ConfigurationException(e);
         } catch (ParserConfigurationException e) {
@@ -143,6 +160,56 @@ class DicomDirDOM {
             }
         }
     }
+
+    public void insertModalitiesInStudy() {
+        Element root = doc.getDocumentElement();
+        for (Node pat = root.getFirstChild(); pat != null; pat = pat
+                .getNextSibling()) {
+            if (RECORD.equals(pat.getNodeName())) {
+                for (Node sty = pat.getFirstChild(); sty != null; sty = sty
+                        .getNextSibling()) {
+                    if (RECORD.equals(sty.getNodeName())) {
+                        insertModalitiesInStudy(sty);
+                    }
+                }
+            }
+        }
+    }
+
+    private void insertModalitiesInStudy(Node sty) {
+        HashSet set = new HashSet();
+        for (Node ser = sty.getFirstChild(); ser != null; ser = ser
+                .getNextSibling()) {
+            if (RECORD.equals(ser.getNodeName())) {
+                set.add(getModality(ser));
+            }
+        }
+        Iterator it = set.iterator();
+        if (!it.hasNext()) return;
+        String mds = (String) it.next();
+        if (it.hasNext()) {
+            StringBuffer sb = new StringBuffer(mds);
+            while (it.hasNext())
+                sb.append('\\').append(it.next());
+            mds = sb.toString();
+        }
+        Element elm = doc.createElement(ATTR);
+        elm.setAttribute(TAG, MODALITIES_IN_STUDY);
+        elm.appendChild(doc.createTextNode(mds));
+        sty.appendChild(elm);
+     }
+
+    private String getModality(Node attrs) {
+        for (Node attr = attrs.getFirstChild(); attr != null; attr = attr
+                .getNextSibling()) {
+            if (ATTR.equals(attr.getNodeName())) {
+                if (MODALITY.equals(attr.getAttributes().getNamedItem(TAG)
+                        .getNodeValue()))
+                        return attr.getFirstChild().getNodeValue();
+            }
+        }
+        return "";
+    }
     
     public void setPatientSeqNo(String pid, int seqNo) {
         setSeqNo(findPatient(pid), String.valueOf(seqNo), 1);
@@ -151,15 +218,18 @@ class DicomDirDOM {
     public void setStudySeqNo(String pid, String suid, int seqNo) {
         setSeqNo(findStudy(pid, suid), String.valueOf(seqNo), 2);
     }
-    
+
     public void setSeriesSeqNo(String pid, String suid, String seruid, int seqNo) {
         setSeqNo(findSeries(pid, suid, seruid), String.valueOf(seqNo), 3);
     }
-    
-    public void setInstanceSeqNo(String pid, String suid, String seruid, String iuid, int seqNo) {
-        setSeqNo(findInstance(pid, suid, seruid, iuid), String.valueOf(seqNo), 4);
+
+    public void setInstanceSeqNo(String pid, String suid, String seruid,
+            String iuid, int seqNo) {
+        setSeqNo(findInstance(pid, suid, seruid, iuid),
+                String.valueOf(seqNo),
+                4);
     }
-    
+
     private Element findPatient(String pid) {
         Element root = doc.getDocumentElement();
         return find(root, PATIENT_ID, pid);
@@ -206,20 +276,22 @@ class DicomDirDOM {
     public void updateSeqNo() {
         Element root = doc.getDocumentElement();
         for (Node pat = root.getFirstChild(); pat != null; pat = pat
-        .getNextSibling())
+                .getNextSibling())
             if (RECORD.equals(pat.getNodeName()))
-                updateSeqNo((Element) pat, 1);
+                    updateSeqNo((Element) pat, 1);
     }
-    
+
     private TreeSet updateSeqNo(Element elm, int level) {
         TreeSet seqNo = new TreeSet();
         for (Node child = elm.getFirstChild(); child != null; child = child
-        .getNextSibling())
+                .getNextSibling())
             if (RECORD.equals(child.getNodeName()))
-                if (level < 3)
-                    seqNo.addAll(updateSeqNo((Element) child, level+1));
-                else // child == inst
-                    seqNo.add(Integer.valueOf(((Element) child).getAttribute(SEQNO)));
+                    if (level < 3)
+                        seqNo.addAll(updateSeqNo((Element) child, level + 1));
+                    else
+                        // child == inst
+                        seqNo.add(Integer.valueOf(((Element) child)
+                                .getAttribute(SEQNO)));
         StringBuffer sb = new StringBuffer();
         Iterator it = seqNo.iterator();
         sb.append(it.next());
@@ -231,21 +303,23 @@ class DicomDirDOM {
 
     private void setSeqNo(Element elm, String seqNo, int level) {
         if (level < 4)
-	        for (Node child = elm.getFirstChild(); child != null; child = child
-	                .getNextSibling()) {
-	            if (RECORD.equals(child.getNodeName()))
-	                    setSeqNo((Element) child, seqNo, level+1);
-	        }
-	    else // elm == instance record
+            for (Node child = elm.getFirstChild(); child != null; child = child
+                    .getNextSibling()) {
+                if (RECORD.equals(child.getNodeName()))
+                        setSeqNo((Element) child, seqNo, level + 1);
+            }
+        else
+            // elm == instance record
             elm.setAttribute(SEQNO, seqNo);
     }
 
     private void appendRecords(Element node, DirRecord first)
             throws IOException {
         if (first != null)
-	        for (DirRecord rec = first; rec != null; rec = rec.getNextSibling())
-	            appendRecords(appendRecord(node, rec), rec.getFirstChild());
-        else // node == instance record
+            for (DirRecord rec = first; rec != null; rec = rec.getNextSibling())
+                appendRecords(appendRecord(node, rec), rec.getFirstChild());
+        else
+            // node == instance record
             node.setAttribute(SEQNO, "1");
     }
 
@@ -283,14 +357,14 @@ class DicomDirDOM {
         parent.appendChild(elm);
     }
 
-    private void xslt(Templates tpl, File f, MediaCreationRequest rq) throws MediaCreationException {
+    private void xslt(Templates tpl, Result result, MediaCreationRequest rq)
+            throws MediaCreationException {
         try {
             Transformer t = tpl.newTransformer();
-            t.setParameter("fsid",rq.getFilesetID());
-            t.setParameter("seqno",String.valueOf(rq.getVolsetSeqno()));
-            t.setParameter("size",String.valueOf(rq.getVolsetSize()));
-            t.transform(new DOMSource(doc),
-                    new StreamResult(f));
+            t.setParameter("fsid", rq.getFilesetID());
+            t.setParameter("seqno", String.valueOf(rq.getVolsetSeqno()));
+            t.setParameter("size", String.valueOf(rq.getVolsetSize()));
+            t.transform(new DOMSource(doc), result);
         } catch (TransformerConfigurationException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
@@ -314,12 +388,21 @@ class DicomDirDOM {
         }
     }
 
-    public void createIndex(MediaCreationRequest rq) throws MediaCreationException {
-        xslt(indexTpl, new File(rq.getFilesetDir(), INDEX_HTM), rq);
+    public void createIndex(MediaCreationRequest rq)
+            throws MediaCreationException {
+        xslt(indexTpl,
+                new StreamResult(new File(rq.getFilesetDir(), INDEX_HTM)),
+                rq);
     }
 
-    public void createWeb(MediaCreationRequest rq) throws MediaCreationException {
-        xslt(webTpl, new File(rq.getFilesetDir(), IHE_PDI + File.separatorChar
-                + INDEX_HTM), rq);
+    public void createWeb(MediaCreationRequest rq)
+            throws MediaCreationException {
+        xslt(webTpl, new StreamResult(new File(rq.getFilesetDir(), IHE_PDI
+                + File.separatorChar + INDEX_HTM)), rq);
+    }
+
+    public void createLabel(MediaCreationRequest rq, ContentHandler handler)
+            throws MediaCreationException {
+        xslt(labelTpl, new SAXResult(handler), rq);
     }
 }

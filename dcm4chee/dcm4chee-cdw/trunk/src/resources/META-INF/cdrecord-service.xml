@@ -25,5 +25,8 @@
       <depends>
         jboss.mq:service=InvocationLayer,type=JVM
       </depends>
+      <depends>
+        dcmcdw:service=LabelPrint
+      </depends>
    </mbean>
 </server>

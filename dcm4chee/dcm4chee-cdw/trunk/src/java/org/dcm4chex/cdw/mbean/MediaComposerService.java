@@ -47,18 +47,18 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private static final long BLOCK_SIZE = 2048L;
 
-    private static final long KB = 1024L;
+    private static final long MB = 1000000L;
 
-    private static final long MB = 1048576L;
+    private static final long GB = 1000000000L;
 
-    private static final long GB = 1073741824L;
-
-    private static final long MIN_MEDIA_SIZE = 1048576L;
+    private static final long MIN_MEDIA_SIZE = 1000000L;
 
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
     private DirRecordFactory dirRecordFactory = new DirRecordFactory(
             "resource:dicomdir-records.xml");
+
+    private LabelCreator labelCreator = new LabelCreator();
 
     private final File xmlFile;
 
@@ -70,7 +70,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private long mediaCapacity = 700 * MB;
 
-    private String fileSetDescriptorFile = "README.TXT";
+    private String fileSetDescriptorFile;
 
     private String charsetOfFileSetDescriptorFile = "ISO_IR 100";
 
@@ -87,11 +87,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private int jpegHeight = 512;
 
     private boolean makeIsoImage = true;
-
+    
     private boolean logXml = false;
 
     private final ImageReader imageReader;
-
+    
     private final MessageListener listener = new MessageListener() {
 
         public void onMessage(Message msg) {
@@ -146,9 +146,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     static String formatSize(long size) {
-        if (size < MB)
-            return "" + ((float) size / KB) + "KB";
-        else if (size < GB)
+        if (size < GB)
             return "" + ((float) size / MB) + "MB";
         else
             return "" + ((float) size / GB) + "GB";
@@ -160,8 +158,6 @@ public class MediaComposerService extends ServiceMBeanSupport {
             u = GB;
         else if (s.endsWith("MB"))
             u = MB;
-        else if (s.endsWith("KB"))
-            u = KB;
         else
             throw new IllegalArgumentException(s);
         try {
@@ -204,12 +200,32 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     public final String getFileSetDescriptorFile() {
-        return fileSetDescriptorFile;
+        return fileSetDescriptorFile == null ? "NO" : fileSetDescriptorFile;
     }
 
     public final void setFileSetDescriptorFile(String fname) {
-        checkExists(new File(mergeDir, fname));
-        this.fileSetDescriptorFile = fname;
+        if ("NO".equals(fname)) 
+            this.fileSetDescriptorFile = null;
+        else {
+            checkCS(fname);
+	        checkExists(new File(mergeDir, fname));
+	        this.fileSetDescriptorFile = fname;
+        }
+    }
+
+    private static void checkCS(String s) {
+        if (s.length() > 16)
+            throw new IllegalArgumentException("Illegal CS:" + s);
+        char[] a = s.toCharArray();
+        for (int i = 0; i < a.length; i++) {
+            char c = a[i];
+            if (!((c >= 'A' && c <= 'Z')
+                    || (c >= '0' && c <= '9')
+                    || c == ' '
+                    || c == '_')) {
+                        throw new IllegalArgumentException("Illegal CS:" + s);
+                    } 
+        }        
     }
 
     public final int getIconHeight() {
@@ -252,6 +268,13 @@ public class MediaComposerService extends ServiceMBeanSupport {
         this.jpegWidth = jpegWidth;
     }
 
+    public String getCreateLabel() {
+        return labelCreator.getCreateLabel();
+    }
+
+    public void setCreateLabel(String format) {
+        labelCreator.setCreateLabel(format);
+    }
     public final boolean isMakeIsoImage() {
         return makeIsoImage;
     }
@@ -306,6 +329,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 FilesetBuilder builder = new FilesetBuilder(this, rq, attrs);
                 builder.buildFileset();
                 DicomDirDOM dom = new DicomDirDOM(this, rq, attrs);
+                dom.insertModalitiesInStudy();
                 if (builder.isWeb()) dom.createWeb(rq);
                 final long fsSize = sizeOf(rq.getFilesetDir());
                 if (fsSize > mediaCapacity) {
@@ -331,12 +355,14 @@ public class MediaComposerService extends ServiceMBeanSupport {
                     for (int i = 0, n = rqList.size(); i < n; ++i) {
                         MediaCreationRequest rq1 =(MediaCreationRequest) rqList.get(i);
                         dom.createIndex(rq1);
+                        labelCreator.createLabel(rq1, dom);
                         if (!forward(rq1))
                                 return;
                     }
                 } else {
                     if (logXml) dom.toXML(xmlFile);
                     dom.createIndex(rq);
+                    labelCreator.createLabel(rq, dom);
                     if (!forward(rq)) return;
                 }
                 cleanup = false;

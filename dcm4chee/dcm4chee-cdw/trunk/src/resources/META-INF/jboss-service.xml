@@ -86,4 +86,9 @@
         jboss.mq:service=InvocationLayer,type=JVM
       </depends>
    </mbean>
+
+   <mbean code="org.dcm4chex.cdw.mbean.LabelPrintService"
+      name="dcmcdw:service=LabelPrint"
+      xmbean-dd="xmdesc/dcmcdw-labelprint-xmbean.xml">
+   </mbean>
 </server>

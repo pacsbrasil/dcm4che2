@@ -36,6 +36,8 @@ public class MediaCreationRequest implements Serializable {
 
     private File isoImageFile;
 
+    private File labelFile;
+    
     private String medium;
 
     private String filesetID = "";
@@ -57,6 +59,7 @@ public class MediaCreationRequest implements Serializable {
         this.numberOfCopies = other.numberOfCopies;
         this.filesetDir = other.filesetDir;
         this.isoImageFile = other.isoImageFile;
+        this.labelFile = other.labelFile;
         this.medium = other.medium;
         this.filesetID = other.filesetID;
         this.volsetID = other.volsetID;
@@ -116,6 +119,14 @@ public class MediaCreationRequest implements Serializable {
 
     public final void setIsoImageFile(File isoImageFile) {
         this.isoImageFile = isoImageFile;
+    }
+
+    public final File getLabelFile() {
+        return labelFile;
+    }
+
+    public final void setLabelFile(File labelFile) {
+        this.labelFile = labelFile;
     }
 
     public final File getFilesetDir() {
@@ -184,8 +195,10 @@ public class MediaCreationRequest implements Serializable {
 
     public boolean cleanFiles(Logger log) {
         boolean retval = true;
+        if (labelFile != null && labelFile.exists())
+            retval = FileUtils.delete(labelFile, log);
         if (isoImageFile != null && isoImageFile.exists())
-                retval = FileUtils.delete(isoImageFile, log);
+                retval = FileUtils.delete(isoImageFile, log) && retval;
         if (filesetDir != null && filesetDir.exists())
                 retval = FileUtils.delete(filesetDir, log) && retval;
         return retval;

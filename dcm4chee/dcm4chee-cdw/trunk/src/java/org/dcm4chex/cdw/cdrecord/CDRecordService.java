@@ -17,6 +17,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.cdw.common.AbstractMediaWriterService;
@@ -93,6 +98,8 @@ private static final int MIN_GRACE_TIME = 2;
     private int pauseTime = 10;
 
     private final File logFile;
+    
+    protected ObjectName labelPrintName;
 
     public CDRecordService() {
         File homedir = ServerConfigLocator.locate().getServerHomeDir();
@@ -100,6 +107,14 @@ private static final int MIN_GRACE_TIME = 2;
             new File(homedir, "log" + File.separatorChar + "cdrecord.log");
     }
 
+    public final ObjectName getLabelPrintName() {
+        return labelPrintName;
+    }
+    
+    public final void setLabelPrintName(ObjectName labelPrintName) {
+        this.labelPrintName = labelPrintName;
+    }
+    
     public final int getGraceTime() {
         return graceTime;
     }
@@ -212,9 +227,16 @@ private static final int MIN_GRACE_TIME = 2;
             throw new MediaCreationException(
                 ExecutionStatusInfo.CHECK_MCD_SRV,
                 "Drive Check failed");
-        int countDown = rq.getNumberOfCopies();
-        int tot = attrs.getInt(Tags.TotalNumberOfPiecesOfMediaCreated, 1);
-        while (countDown-- > 0) {
+        int tot = attrs.getInt(Tags.TotalNumberOfPiecesOfMediaCreated, 0);
+        for(int i = 0; i < rq.getNumberOfCopies(); ++i, ++tot) {
+            if (i > 0) {
+	            if (rq.isCanceled()) {
+	                log.info("" + rq + " was canceled");
+	                return;
+	            }
+	            attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated, tot);
+	            rq.writeAttributes(attrs, log);                
+            }
 	        if (!checkDisk()) {
 	            eject();
 	            throw new MediaCreationException(
@@ -228,14 +250,32 @@ private static final int MIN_GRACE_TIME = 2;
 	                "Media not empty");
 	        }
 	        burn(rq.getIsoImageFile());
-	        if (countDown > 0) {
-	            if (rq.isCanceled()) {
-	                log.info("" + rq + " was canceled");
-	                return;
-	            }
-	            attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated, ++tot);
-	            rq.writeAttributes(attrs, log);
+	        if (rq.getLabelFile() != null)
+	            printLabel(rq);
+	        try {
+	            Thread.sleep(pauseTime * 1000L);
+	        } catch (InterruptedException e) {
+	            log.warn("Pause after burn was interrupted:", e);
 	        }
+        }
+    }
+
+    private void printLabel(MediaCreationRequest rq) throws MediaCreationException {
+        try {
+            server.invoke(labelPrintName, "print", new Object[] { rq },
+                    new String[]{MediaCreationRequest.class.getName()});
+        } catch (InstanceNotFoundException e) {
+            throw new MediaCreationException(
+                    ExecutionStatusInfo.PROC_FAILURE,
+                    e);
+        } catch (MBeanException e) {
+            throw new MediaCreationException(
+                    ExecutionStatusInfo.PROC_FAILURE,
+                    e);
+        } catch (ReflectionException e) {
+            throw new MediaCreationException(
+                    ExecutionStatusInfo.PROC_FAILURE,
+                    e);
         }
     }
 
@@ -284,11 +324,6 @@ private static final int MIN_GRACE_TIME = 2;
                 ExecutionStatusInfo.MCD_FAILURE,
                 "cdrecord " + isoImageFile + " returns " + exitCode);
         }
-        try {
-            Thread.sleep(pauseTime * 1000L);
-        } catch (InterruptedException e) {
-            log.warn("Pause after burn was interrupted:", e);
-        }
     }
 
     public boolean checkDrive() throws MediaCreationException {
@@ -335,5 +370,4 @@ private static final int MIN_GRACE_TIME = 2;
                 e);
         }
     }
-
 }
