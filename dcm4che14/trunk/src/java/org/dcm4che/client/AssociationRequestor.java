@@ -37,6 +37,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.DataSource;
+import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
@@ -94,7 +95,15 @@ public class AssociationRequestor {
 	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
 		pcs.removePropertyChangeListener(propertyName, listener);
 	}
+    
+    public boolean bindService(String uid, DcmService service) {
+        return services.bind(uid, service);
+    }
 	
+    public boolean unbindService(String uid) {
+        return services.unbind(uid);
+    }
+    
 	/**
 	 * @return
 	 */
