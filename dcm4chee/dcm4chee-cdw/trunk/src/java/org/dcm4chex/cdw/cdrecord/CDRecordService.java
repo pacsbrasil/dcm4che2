@@ -34,6 +34,8 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class CDRecordService extends AbstractMediaWriterService {
 
+    
+private static final int MIN_GRACE_TIME = 2;
     private static final String TAO = "tao";
 
     private static final String DAO = "dao";
@@ -86,7 +88,9 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     private boolean logEnabled = false;
     
-    private long pauseAfterBurn = 10000;
+    private int graceTime = MIN_GRACE_TIME;
+
+    private int pauseTime = 10;
 
     private final File logFile;
 
@@ -96,14 +100,26 @@ public class CDRecordService extends AbstractMediaWriterService {
             new File(homedir, "log" + File.separatorChar + "cdrecord.log");
     }
 
-    public final int getPauseAfterBurn() {
-        return (int) (pauseAfterBurn / 1000);
+    public final int getGraceTime() {
+        return graceTime;
     }
     
-    public final void setPauseAfterBurn(int secs) {
-        this.pauseAfterBurn = secs * 1000;
+    public final void setGraceTime(int graceTime) {
+        if (graceTime < MIN_GRACE_TIME)
+            throw new IllegalArgumentException("graceTime: " + graceTime);
+        this.graceTime = graceTime;
     }
     
+    public final int getPauseTime() {
+        return pauseTime;
+    }
+    
+    public final void setPauseTime(int pauseTime) {
+        if (pauseTime < 0)
+            throw new IllegalArgumentException("pauseTime: " + pauseTime);
+        this.pauseTime = pauseTime;
+    }
+        
     public final boolean isPadding() {
         return padding;
     }
@@ -231,6 +247,7 @@ public class CDRecordService extends AbstractMediaWriterService {
             cmd.add("cdrecord");
             cmd.add("dev=" + device);
             cmd.add("speed=" + writeSpeed);
+            cmd.add("gracetime=" + graceTime);
             if (simulate)
                 cmd.add("-dummy");
             if (eject)
@@ -268,7 +285,7 @@ public class CDRecordService extends AbstractMediaWriterService {
                 "cdrecord " + isoImageFile + " returns " + exitCode);
         }
         try {
-            Thread.sleep(pauseAfterBurn);
+            Thread.sleep(pauseTime * 1000L);
         } catch (InterruptedException e) {
             log.warn("Pause after burn was interrupted:", e);
         }

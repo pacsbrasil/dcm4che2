@@ -65,6 +65,31 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getGraceTime"
+      setMethod="setGraceTime">
+      <description>Grace time before starting to write in seconds.
+      Values below 2 seconds are not allowed.
+      </description>
+      <name>GraceTime</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="2" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPauseTime"
+      setMethod="setPauseTime">
+      <description>Minimal Pause time between successive writes. Useful in case
+      of media splitting and multiple copies, to have time for manual
+      media exchange.
+      </description>
+      <name>PauseTime</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="10" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getWriteMode"
       setMethod="setWriteMode">
       <description>Write Mode: (tao|dao|sao|raw|raw96r|raw96p|raw16).
@@ -152,19 +177,6 @@
       <type>boolean</type>      
       <descriptors>
          <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getPauseAfterBurn"
-      setMethod="setPauseAfterBurn">
-      <description>Pause in seconds after finished burning. Useful in case
-      of media splitting and multiple copies, to have time for manual
-      media exchange.
-      </description>
-      <name>PauseAfterBurn</name>
-      <type>int</type>      
-      <descriptors>
-         <value value="10" />
       </descriptors>
    </attribute>
    
