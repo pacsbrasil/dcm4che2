@@ -19,15 +19,14 @@
  */
 package com.tiani.prnscp.print;
 import java.awt.Point;
-
 import java.awt.Rectangle;
-
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -202,7 +201,7 @@ public class ScannerCalibration
         if (scanDir.mkdir()) {
             log.warn("Scan Directory " + scanDir + " did not exits. Created new one.");
         }
-        if (scanDir.list().length == 0) {
+        if (scanDir.list(JPG_FILENAME_FILTER).length == 0) {
             log.warn("No scans in directory " + scanDir);
         }
     }
@@ -280,11 +279,21 @@ public class ScannerCalibration
     }
 
 
+    private final FilenameFilter JPG_FILENAME_FILTER =
+        new FilenameFilter()
+        {
+            public boolean accept(File dir, String name)
+            {
+                return name.endsWith(".jpg") || name.endsWith(".jpeg");
+            }
+        };
+
+
     /**
      *  Gets the mostRecentScanFile attribute of the ScannerCalibration object
      *
-     * @param  scanDirName      Description of the Parameter
-     * @return                  The mostRecentScanFile value
+     * @param  scanDirName  Description of the Parameter
+     * @return              The mostRecentScanFile value
      */
     public File getMostRecentScanFile(String scanDirName)
     {
@@ -293,7 +302,7 @@ public class ScannerCalibration
         if (!scanDir.isDirectory()) {
             return null;
         }
-        File[] scanFiles = scanDir.listFiles();
+        File[] scanFiles = scanDir.listFiles(JPG_FILENAME_FILTER);
         if (scanFiles.length == 0) {
             return null;
         }
@@ -417,7 +426,7 @@ public class ScannerCalibration
                 }
             }
         }
-/*        
+        /*
         if (log.isDebugEnabled()) {
             StringBuffer sb = new StringBuffer("calculated GrayscaleODs:");
             for (int i = 0; i < invPx.length; ++i) {

@@ -93,6 +93,7 @@ public class PrintScpService
     private File spoolDir;
     private File licenseFile;
     private char[] licensePasswd;
+    private boolean maskWarningAsSuccess = false;
     private boolean keepSpoolFiles = false;
     private boolean auditCreateSession = true;
     private boolean auditCreateFilmBox = true;
@@ -256,6 +257,26 @@ public class PrintScpService
         this.keepSpoolFiles = keepSpoolFiles;
     }
 
+    /**
+     *  Gets the maskWarningAsSuccess attribute of the PrintScpService object
+     *
+     * @return    The maskWarningAsSuccess value
+     */
+    public boolean isMaskWarningAsSuccess()
+    {
+        return maskWarningAsSuccess;
+    }
+
+
+    /**
+     *  Sets the maskWarningAsSuccess attribute of the PrintScpService object
+     *
+     * @param  maskWarningAsSuccess  The new maskWarningAsSuccess value
+     */
+    public void setMaskWarningAsSuccess(boolean maskWarningAsSuccess)
+    {
+        this.maskWarningAsSuccess = maskWarningAsSuccess;
+    }
 
     /**
      *  Gets the auditCreateSession attribute of the PrintScpService object
@@ -597,7 +618,9 @@ public class PrintScpService
             return;
         }
         log.warn("Attribute Value Out Of Range: " + ds.get(tag));
-        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        if (!maskWarningAsSuccess) {
+            rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        }
         ds.remove(tag);
     }
 
@@ -614,7 +637,9 @@ public class PrintScpService
             }
         }
         log.warn("Attribute Value Out Of Range: " + ds.get(tag));
-        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        if (!maskWarningAsSuccess) {
+            rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        }
         ds.remove(tag);
     }
 
@@ -632,7 +657,9 @@ public class PrintScpService
             return;
         }
         log.warn("Attribute not supported: " + e);
-        rsp.putUS(Tags.Status, errcode);
+        if (!maskWarningAsSuccess) {
+            rsp.putUS(Tags.Status, errcode);
+        }
         ds.remove(tag);
     }
 
@@ -647,7 +674,9 @@ public class PrintScpService
             return;
         }
         log.warn("Value Out Of Range: " + ds.get(tag));
-        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        if (!maskWarningAsSuccess) {
+            rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        }
         ds.remove(tag);
     }
 
@@ -664,7 +693,9 @@ public class PrintScpService
             return;
         }
         log.warn("Number Of Copies Value Out Of Range: " + i);
-        rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        if (!maskWarningAsSuccess) {
+            rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
+        }
         ds.remove(Tags.NumberOfCopies);
     }
 
@@ -677,7 +708,9 @@ public class PrintScpService
         if (minDensity < minDensityPrinter) {
             log.warn("Min Density Value: " + minDensity
                      + " < Min Density Printer: " + minDensityPrinter);
-            rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            if (!maskWarningAsSuccess) {
+                rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            }
             ds.remove(Tags.MinDensity);
             minDensity = minDensityPrinter;
         }
@@ -687,14 +720,18 @@ public class PrintScpService
         if (maxDensity > maxDensityPrinter) {
             log.warn("Max Density Value: " + maxDensity
                      + " > Max Density Printer: " + maxDensityPrinter);
-            rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            if (!maskWarningAsSuccess) {
+                rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            }
             ds.remove(Tags.MaxDensity);
             maxDensity = maxDensityPrinter;
         }
         if (minDensity > maxDensity) {
             log.warn("Min Density Value: " + minDensity
                      + " < Max Density Value: " + maxDensity);
-            rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            if (!maskWarningAsSuccess) {
+                rsp.putUS(Tags.Status, Status.MinMaxDensityOutOfRange);
+            }
             ds.remove(Tags.MinDensity);
             ds.remove(Tags.MaxDensity);
         }

@@ -139,6 +139,22 @@ public interface PrintScpServiceMBean extends ServiceMBean
 
 
     /**
+     *  Gets the maskWarningAsSuccess attribute of the PrintScpServiceMBean object
+     *
+     * @return    The maskWarningAsSuccess value
+     */
+    public boolean isMaskWarningAsSuccess();
+
+
+    /**
+     *  Sets the maskWarningAsSuccess attribute of the PrintScpServiceMBean object
+     *
+     * @param  maskWarningAsSuccess  The new maskWarningAsSuccess value
+     */
+    public void setMaskWarningAsSuccess(boolean maskWarningAsSuccess);
+
+
+    /**
      *  Gets the auditCreateSession attribute of the PrintScpServiceMBean object
      *
      * @return    The auditCreateSession value

@@ -448,7 +448,7 @@
   <target name="release-without-jaudit" depends="build, doc">
     <copy todir="${dist.dir}">
       <fileset dir="${jboss.home}">
-        <include name="bin/run.*"/>
+        <include name="bin/run.jar"/>
         <include name="bin/jboss_init_redhat.sh"/>
         <include name="client/jnp-client.jar"/>
         <include name="client/jmx-rmi-connector-client.jar"/>
