@@ -58,6 +58,15 @@ class AuditLoggerImpl implements AuditLogger {
     // Variables -----------------------------------------------------
     private final SyslogWriter writer = new SyslogWriter();
     
+    private boolean actorStartStopEnabled = true;
+    private boolean instancesStoredEnabled = true;
+    private boolean beginStoringInstancesEnabled = true;
+    private boolean instancesSentEnabled = true;
+    private boolean dicomQueryEnabled = true;
+    private boolean securityAlertEnabled = true;
+    private boolean userAuthenticatedEnabled = true;
+    private boolean actorConfigEnabled = true;
+    
     // Constructors --------------------------------------------------
     
     // Methods -------------------------------------------------------
@@ -86,6 +95,9 @@ class AuditLoggerImpl implements AuditLogger {
     }
 
     public void logActorStartStop(String actorName, String action, User user) {
+        if (!actorStartStopEnabled) {
+            return;
+        }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
@@ -99,6 +111,9 @@ class AuditLoggerImpl implements AuditLogger {
 
     public void logInstancesStored(RemoteNode rnode,
             InstancesAction instanceActionDescription) {
+        if (!instancesStoredEnabled) {
+            return;
+        }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
@@ -112,6 +127,9 @@ class AuditLoggerImpl implements AuditLogger {
     
     public void logBeginStoringInstances(RemoteNode rnode,
             InstancesAction instanceActionDescription) {
+        if (!beginStoringInstancesEnabled) {
+            return;
+        }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
@@ -125,6 +143,9 @@ class AuditLoggerImpl implements AuditLogger {
 
     public void logInstancesSent(RemoteNode rnode,
             InstancesAction instanceActionDescription) {
+        if (!instancesSentEnabled) {
+            return;
+        }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
@@ -137,6 +158,9 @@ class AuditLoggerImpl implements AuditLogger {
     }
     
     public void logDicomQuery(Dataset keys, RemoteNode requestor, String cuid) {
+        if (!dicomQueryEnabled) {
+            return;
+        }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
@@ -150,6 +174,9 @@ class AuditLoggerImpl implements AuditLogger {
 
     public void logSecurityAlert(String alertType, User user,
             String description) {
+        if (!securityAlertEnabled) {
+            return;
+        }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
@@ -162,6 +189,9 @@ class AuditLoggerImpl implements AuditLogger {
     }
 
     public void logUserAuthenticated(String localUserName, String action) {
+        if (!userAuthenticatedEnabled) {
+            return;
+        }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
@@ -175,6 +205,9 @@ class AuditLoggerImpl implements AuditLogger {
     
     public void logActorConfig(String description, User user,
             String configType) {
+        if (!actorConfigEnabled) {
+            return;
+        }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
@@ -184,5 +217,118 @@ class AuditLoggerImpl implements AuditLogger {
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
         }
+    }    
+    
+    /** Getter for property actorStartStopEnabled.
+     * @return Value of property actorStartStopEnabled.
+     */
+    public boolean isActorStartStopEnabled() {
+        return actorStartStopEnabled;
     }
+    
+    /** Setter for property actorStartStopEnabled.
+     * @param actorStartStopEnabled New value of property actorStartStopEnabled.
+     */
+    public void setActorStartStopEnabled(boolean actorStartStopEnabled) {
+        this.actorStartStopEnabled = actorStartStopEnabled;
+    }
+    
+    /** Getter for property instancesStoredEnabled.
+     * @return Value of property instancesStoredEnabled.
+     */
+    public boolean isInstancesStoredEnabled() {
+        return instancesStoredEnabled;
+    }
+    
+    /** Setter for property instancesStoredEnabled.
+     * @param instancesStoredEnabled New value of property instancesStoredEnabled.
+     */
+    public void setInstancesStoredEnabled(boolean instancesStoredEnabled) {
+        this.instancesStoredEnabled = instancesStoredEnabled;
+    }
+    
+    /** Getter for property beginStoringInstancesEnabled.
+     * @return Value of property beginStoringInstancesEnabled.
+     */
+    public boolean isBeginStoringInstancesEnabled() {
+        return beginStoringInstancesEnabled;
+    }
+    
+    /** Setter for property beginStoringInstancesEnabled.
+     * @param beginStoringInstancesEnabled New value of property beginStoringInstancesEnabled.
+     */
+    public void setBeginStoringInstancesEnabled(boolean beginStoringInstancesEnabled) {
+        this.beginStoringInstancesEnabled = beginStoringInstancesEnabled;
+    }
+    
+    /** Getter for property instancesSentEnabled.
+     * @return Value of property instancesSentEnabled.
+     */
+    public boolean isInstancesSentEnabled() {
+        return instancesSentEnabled;
+    }
+    
+    /** Setter for property instancesSentEnabled.
+     * @param instancesSentEnabled New value of property instancesSentEnabled.
+     */
+    public void setInstancesSentEnabled(boolean instancesSentEnabled) {
+        this.instancesSentEnabled = instancesSentEnabled;
+    }
+    
+    /** Getter for property dicomQueryEnabled.
+     * @return Value of property dicomQueryEnabled.
+     */
+    public boolean isDicomQueryEnabled() {
+        return dicomQueryEnabled;
+    }
+    
+    /** Setter for property dicomQueryEnabled.
+     * @param dicomQueryEnabled New value of property dicomQueryEnabled.
+     */
+    public void setDicomQueryEnabled(boolean dicomQueryEnabled) {
+        this.dicomQueryEnabled = dicomQueryEnabled;
+    }
+    
+    /** Getter for property securityAlertEnabled.
+     * @return Value of property securityAlertEnabled.
+     */
+    public boolean isSecurityAlertEnabled() {
+        return securityAlertEnabled;
+    }
+    
+    /** Setter for property securityAlertEnabled.
+     * @param securityAlertEnabled New value of property securityAlertEnabled.
+     */
+    public void setSecurityAlertEnabled(boolean securityAlertEnabled) {
+        this.securityAlertEnabled = securityAlertEnabled;
+    }
+    
+    /** Getter for property userAuthenticatedEnabled.
+     * @return Value of property userAuthenticatedEnabled.
+     */
+    public boolean isUserAuthenticatedEnabled() {
+        return userAuthenticatedEnabled;
+    }
+    
+    /** Setter for property userAuthenticatedEnabled.
+     * @param userAuthenticatedEnabled New value of property userAuthenticatedEnabled.
+     */
+    public void setUserAuthenticatedEnabled(boolean userAuthenticatedEnabled) {
+        this.userAuthenticatedEnabled = userAuthenticatedEnabled;
+    }
+    
+    /** Getter for property actorConfigEnabled.
+     * @return Value of property actorConfigEnabled.
+     */
+    public boolean isActorConfigEnabled() {
+        return actorConfigEnabled;
+    }
+    
+    /** Setter for property actorConfigEnabled.
+     * @param actorConfigEnabled New value of property actorConfigEnabled.
+     */
+    public void setActorConfigEnabled(boolean actorConfigEnabled) {
+        this.actorConfigEnabled = actorConfigEnabled;
+    }
+    
 }

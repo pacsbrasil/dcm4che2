@@ -58,6 +58,38 @@ public interface AuditLogger {
     
     void setFacility(String facility);
     
+    boolean isActorStartStopEnabled();
+
+    void setActorStartStopEnabled(boolean enable);
+    
+    boolean isInstancesStoredEnabled();
+    
+    void setInstancesStoredEnabled(boolean enable);
+    
+    boolean isBeginStoringInstancesEnabled();
+
+    void setBeginStoringInstancesEnabled(boolean enable);
+    
+    boolean isInstancesSentEnabled();
+    
+    void setInstancesSentEnabled(boolean enable);
+    
+    boolean isDicomQueryEnabled();
+
+    void setDicomQueryEnabled(boolean enable);
+    
+    boolean isSecurityAlertEnabled();
+    
+    void setSecurityAlertEnabled(boolean enable);
+    
+    boolean isUserAuthenticatedEnabled();
+    
+    void setUserAuthenticatedEnabled(boolean enable);
+    
+    boolean isActorConfigEnabled();
+    
+    void setActorConfigEnabled(boolean enable);
+    
     void logActorStartStop(String actorName, String action, User user);
 
     void logInstancesStored(RemoteNode rNode, InstancesAction action);

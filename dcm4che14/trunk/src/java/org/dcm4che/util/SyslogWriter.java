@@ -156,6 +156,25 @@ public class SyslogWriter extends OutputStreamWriter {
     /** reserved for local use */
     public static final int LOG_LOCAL7 = 23<<3;
     
+    private static final String[] LEVEL = {
+        "emerg",
+        "alert",
+        "crit",
+        "err",
+        "warning",
+        "notice",
+        "info",
+        "debug"
+    };
+    
+    public static String levelAsString(int level) {
+        try {
+            return LEVEL[level];
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("level: " + level);
+        }
+    }
+    
     public static final int forName(String name) {
         try {
             return SyslogWriter.class.getField("LOG_" + name.toUpperCase()).getInt(null);
