@@ -38,7 +38,14 @@ public class PatientEditCtrl extends Dcm4JbossController
 	}
 	
 	public PatientDTO getPatient() {
-		return FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(pk);
+		return pk == -1 ? newPatient() : FolderForm.getFolderForm(getCtx().getRequest()).getPatientByPk(pk);
 	}
+
+    private PatientDTO newPatient() {
+        PatientDTO pat = new PatientDTO();
+        pat.setPk(-1);
+        pat.setSpecificCharacterSet("ISO_IR 100");
+        return pat;
+    }
 
 }

@@ -36,37 +36,42 @@
 					<td width="150" bgcolor="eeeeee">
 					</td>
 					<td width="40" bgcolor="eeeeee">
-						<input type="image" value="Search" name="filter" src="images/search.gif" border="0"/>
+						<input type="image" value="Search" name="filter" src="images/search.gif" border="0"
+						 	title="New Search"/>
 					</td>
 					<td width="40" bgcolor="eeeeee">
-						<input type="image" value="Prev" name="prev" src="images/preview.gif" alt="preview" border="0">
+						<input type="image" value="Prev" name="prev" src="images/prev.gif" alt="prev" border="0"
+						 	title="Previous Search Results">
 							<xsl:if test="offset = 0">
                   <xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
 					</td>
 					<td width="40" bgcolor="eeeeee">
-						<input type="image" value="Next" name="next" src="images/next.gif" alt="next" border="0">
+						<input type="image" value="Next" name="next" src="images/next.gif" alt="next" border="0"
+						 	title="Next Search Results">
 							<xsl:if test="offset + limit &gt;= total">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
 					</td>
 					<td width="40" bgcolor="eeeeee">
-						<a href="addpat.m">
-							<img src="images/addpat.gif" alt="AddPatient" border="0"/>		
+						<a href="patientEdit.m?pk=-1">
+							<img src="images/addpat.gif" alt="Add Patient" border="0" title="Add new Patient"/>		
 						</a>
 					</td>
 					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0"
-							onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
+							title="Merge selected Patients" onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
 					</td>
 					<td width="40" bgcolor="eeeeee">
-						<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0" onclick="return confirm('Are you sure you want to delete?')">
+						<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0"
+							title="Delete selected Entities"
+							onclick="return confirm('Delete selected Entities?')">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
@@ -74,6 +79,7 @@
 					</td>
 					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Send" name="send" src="images/send.gif" alt="send" border="0"
+							title="Send selected Entities to specified Destination"
 							onclick="return confirm('Send selected entities to ' + document.myForm.destination.value  + '?')">
 							<xsl:if test="total &lt;= 0">
 								<xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -81,10 +87,15 @@
 						</input>
 					</td>
 					<td width="50" bgcolor="eeeeee">
-						<select size="1" name="destination">
+						<select size="1" name="destination" title="Send Destination">
 							<xsl:for-each select="aets/item">
 								<xsl:sort data-type="text" order="ascending" select="title"/>
-								<option><xsl:value-of select="title"/></option>
+								<option>
+									<xsl:if test="/model/destination = title">
+										<xsl:attribute name="selected"/>
+									</xsl:if>
+									<xsl:value-of select="title"/>
+								</option>
 							</xsl:for-each>						
 						</select>
 					</td>
@@ -334,7 +345,7 @@
       </td>
 			<td align="right">
 				<a href="patientEdit.m?pk={pk}">
-					<img src="images/edit.gif" alt="edit" border="0"/>		
+					<img src="images/edit.gif" alt="Edit Patient" border="0" title="Edit Patient Attributes"/>		
 				</a>
 			</td>
 			<td align="right" bgcolor="cccccc">

@@ -72,11 +72,30 @@
            <table border="0">
             <tr>
                <td class="label" bgcolor="#eeeeee">Patient ID:</td>
-               <td>
-                  <input size="25" name="patientID" type="text" value="{patientID}"  disabled="disabled"/>
-               </td>
+               <td>							 
+							   <xsl:choose>
+								 	<xsl:when test="pk = -1">
+                  <input size="25" name="patientID" type="text" value="{patientID}" />
+									</xsl:when>
+									<xsl:otherwise>
+										<input size="25" name="patientID" type="text" value="{patientID}" disabled="disabled" />
+									</xsl:otherwise>
+								 </xsl:choose>
+							 </td>
             </tr>
-
+            <tr>
+               <td class="label" bgcolor="#eeeeee">Issuer of Patient ID:</td>
+               <td>							 
+							   <xsl:choose>
+								 	<xsl:when test="pk = -1">
+                  <input size="25" name="issuerOfPatientID" type="text" value="{issuerOfPatientID}" />
+									</xsl:when>
+									<xsl:otherwise>
+										<input size="25" name="issuerOfPatientID" type="text" value="{issuerOfPatientID}" disabled="disabled" />
+									</xsl:otherwise>
+								 </xsl:choose>
+							 </td>
+            </tr>
             <tr>
                <td class="label" bgcolor="#eeeeee">Patient Name:</td>
                <td>
@@ -117,7 +136,14 @@
 
             <tr>
                <td align="left">
-                  <input type="submit" name="update" value="Update" />
+							   <xsl:choose>
+								 	<xsl:when test="pk = -1">
+										<input type="submit" name="submit" value="Add Patient" />									
+									</xsl:when>
+									<xsl:otherwise>
+										<input type="submit" name="submit" value="Update" />
+									</xsl:otherwise>
+								 </xsl:choose>
                   <input type="submit" name="cancel" value="Cancel" />
                </td>
             </tr>

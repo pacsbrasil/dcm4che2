@@ -193,7 +193,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientDTO pat = (PatientDTO) patients.get(i);
             if (folderForm.isSticky(pat))
-                edit.deleteStudy(pat.getPk());
+                edit.deletePatient(pat.getPk());
             else
                 deleteStudies(edit, pat.getStudies());
         }
