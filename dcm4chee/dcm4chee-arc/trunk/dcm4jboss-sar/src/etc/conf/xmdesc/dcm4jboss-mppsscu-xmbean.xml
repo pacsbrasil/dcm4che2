@@ -93,6 +93,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getQueueName"
+      setMethod="setQueueName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>QueueName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="MPPSScu" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMppsScpServiceName"
       setMethod="setMppsScpServiceName">
       <description>Used internally - do NOT modify.

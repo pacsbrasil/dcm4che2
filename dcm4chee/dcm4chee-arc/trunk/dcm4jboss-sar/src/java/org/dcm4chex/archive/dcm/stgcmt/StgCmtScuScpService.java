@@ -77,6 +77,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
     private static final int INVOKE_FAILED_STATUS = -1;
 
     private ObjectName fileSystemMgtName;
+    
+    private String queueName = "StgCmtScuScp";
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
@@ -116,6 +118,14 @@ public class StgCmtScuScpService extends AbstractScpService implements
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
+    public final String getQueueName() {
+        return queueName;
+    }
+    
+    public final void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+    
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -193,16 +203,16 @@ public class StgCmtScuScpService extends AbstractScpService implements
     public void queueStgCmtOrder(String calling, String called,
             Dataset actionInfo, boolean scpRole) throws JMSException {
         StgCmtOrder order = new StgCmtOrder(calling, called, actionInfo, scpRole);
-        JMSDelegate.queue(StgCmtOrder.QUEUE, order, 0, 0);        
+        JMSDelegate.queue(queueName, order, 0, 0);        
     }
     
     protected void startService() throws Exception {
         super.startService();
-        JMSDelegate.startListening(StgCmtOrder.QUEUE, this);
+        JMSDelegate.startListening(queueName, this);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.stopListening(StgCmtOrder.QUEUE);
+        JMSDelegate.stopListening(queueName);
         super.stopService();
     }
 
@@ -227,9 +237,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 log.error("Give up to process " + order);
             } else {
                 log.warn("Failed to process " + order + ". Scheduling retry.");
-                JMSDelegate.queue(StgCmtOrder.QUEUE, order, 0, System
-                        .currentTimeMillis()
-                        + delay);
+                JMSDelegate.queue(queueName, order, 0,
+                        System.currentTimeMillis() + delay);
             }
         } catch (JMSException e) {
             log.error("jms error during processing message: " + message, e);

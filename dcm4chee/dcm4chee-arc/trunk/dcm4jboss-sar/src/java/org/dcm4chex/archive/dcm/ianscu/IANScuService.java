@@ -67,7 +67,7 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     private static final String[] EMPTY = {};
 
-    private static final String QUEUE = "IANScu";
+//    private static final String QUEUE = "IANScu";
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -100,6 +100,8 @@ public class IANScuService extends ServiceMBeanSupport implements
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
     private ObjectName storeScpServiceName;
+    
+    private String queueName;
 
     private String callingAET = DEFAULT_CALLING_AET;
 
@@ -219,8 +221,16 @@ public class IANScuService extends ServiceMBeanSupport implements
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
+    public final String getQueueName() {
+        return queueName;
+    }
+    
+    public final void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+    
     protected void startService() throws Exception {
-        JMSDelegate.startListening(QUEUE, this);
+        JMSDelegate.startListening(queueName, this);
         server.addNotificationListener(storeScpServiceName,
                 this,
                 StoreScpService.NOTIF_FILTER,
@@ -232,7 +242,7 @@ public class IANScuService extends ServiceMBeanSupport implements
                 this,
                 StoreScpService.NOTIF_FILTER,
                 null);
-        JMSDelegate.stopListening(QUEUE);
+        JMSDelegate.stopListening(queueName);
     }
 
     public void handleNotification(Notification notif, Object handback) {
@@ -245,7 +255,7 @@ public class IANScuService extends ServiceMBeanSupport implements
                 IANOrder order = new IANOrder(notifiedAETs[i], ian);
                 try {
                     log.info("Scheduling " + order);
-                    JMSDelegate.queue(QUEUE,
+                    JMSDelegate.queue(queueName,
                             order,
                             Message.DEFAULT_PRIORITY,
                             0L);
@@ -274,7 +284,7 @@ public class IANScuService extends ServiceMBeanSupport implements
                 log.error("Give up to process " + order);
             } else {
                 log.warn("Failed to process " + order + ". Scheduling retry.");
-                JMSDelegate.queue(QUEUE, order, 0, System.currentTimeMillis()
+                JMSDelegate.queue(queueName, order, 0, System.currentTimeMillis()
                         + delay);
             }
         } catch (JMSException e) {

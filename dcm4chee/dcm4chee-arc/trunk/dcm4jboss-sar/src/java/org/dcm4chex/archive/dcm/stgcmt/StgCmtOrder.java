@@ -21,7 +21,7 @@ class StgCmtOrder implements Serializable {
 
     private static final long serialVersionUID = 3256442495255525432L;
 
-    public static final String QUEUE = "StgCmtScuScp";
+//    public static final String QUEUE = "StgCmtScuScp";
 
     private final String callingAET;
 

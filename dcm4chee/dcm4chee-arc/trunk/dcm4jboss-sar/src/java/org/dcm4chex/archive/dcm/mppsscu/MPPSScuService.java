@@ -87,6 +87,8 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     private String[] forwardAETs = EMPTY;
 
     private ObjectName mppsScpServiceName;
+    
+    private String queueName;
 
     private int acTimeout;
 
@@ -144,6 +146,14 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
     
+    public final String getQueueName() {
+        return queueName;
+    }
+    
+    public final void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+    
     public final String getCallingAET() {
         return callingAET;
     }
@@ -161,7 +171,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        JMSDelegate.startListening(MPPSOrder.QUEUE, this);
+        JMSDelegate.startListening(queueName, this);
         server.addNotificationListener(mppsScpServiceName,
                 this,
                 MPPSScpService.NOTIF_FILTER,
@@ -173,7 +183,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
                 this,
                 MPPSScpService.NOTIF_FILTER,
                 null);
-        JMSDelegate.stopListening(MPPSOrder.QUEUE);
+        JMSDelegate.stopListening(queueName);
     }
 
     public void handleNotification(Notification notif, Object handback) {
@@ -182,7 +192,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
             MPPSOrder order = new MPPSOrder(mpps, forwardAETs[i]);
             try {
                 log.info("Scheduling " + order);
-                JMSDelegate.queue(MPPSOrder.QUEUE,
+                JMSDelegate.queue(queueName,
                         order,
                         Message.DEFAULT_PRIORITY,
                         0L);
@@ -211,7 +221,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
                 log.error("Give up to process " + order);
             } else {
                 log.warn("Failed to process " + order + ". Scheduling retry.");
-                JMSDelegate.queue(MPPSOrder.QUEUE, order, 0, System
+                JMSDelegate.queue(queueName, order, 0, System
                         .currentTimeMillis()
                         + delay);
             }

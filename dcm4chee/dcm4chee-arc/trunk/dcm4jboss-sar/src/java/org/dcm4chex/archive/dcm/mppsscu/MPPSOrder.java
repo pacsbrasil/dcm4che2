@@ -22,7 +22,9 @@ import org.dcm4che.dict.Tags;
  */
 public class MPPSOrder implements Serializable {
 
-    public static final String QUEUE = "MPPSScu";
+    private static final long serialVersionUID = 3256725091219157049L;
+
+//    public static final String QUEUE = "MPPSScu";
 
     private final Dataset ds;
 
