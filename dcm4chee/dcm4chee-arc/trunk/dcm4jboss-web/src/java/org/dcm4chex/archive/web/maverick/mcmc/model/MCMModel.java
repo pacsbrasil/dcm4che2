@@ -55,6 +55,15 @@ public class MCMModel {
 	/** Holds availability status of MCM SCP */
 	private boolean mcmNotAvail = false;
 
+	/**
+	 * Holds the 'checked' flag for 'checkMCM' checkbox.
+	 * <p>
+	 * checkMCM request parameter is only present if mcmNotAvail is true.
+	 * <p>
+	 * The availability check of mcm is done either before 'queue' action or 
+	 * if checkMCM request parameter is true.
+	 */
+	private boolean checkAvail = false;
 	
 	/**
 	 * Creates the model.
@@ -258,6 +267,18 @@ public class MCMModel {
 	 */
 	public void setMcmNotAvail(boolean mcmNotAvail) {
 		this.mcmNotAvail = mcmNotAvail;
+	}
+	/**
+	 * @return Returns the checkAvail.
+	 */
+	public boolean isCheckAvail() {
+		return checkAvail;
+	}
+	/**
+	 * @param checkAvail The checkAvail to set.
+	 */
+	public void setCheckAvail(boolean checkAvail) {
+		this.checkAvail = checkAvail;
 	}
 	/**
 	 * Goto previous page.
