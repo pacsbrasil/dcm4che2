@@ -467,9 +467,9 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		  <td align="right" bgcolor="ccffcc" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
-		  			<a title="Show Instances" href="expandSeries.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
-						<img src="images/plus.gif" border="0" alt="+"/>
-              </a>				
+		  				<a title="Show Instances" href="expandSeries.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
+							<img src="images/plus.gif" border="0" alt="+"/>
+              			</a>				
 					</xsl:when>
 					<xsl:otherwise>
 		  			<a title="Hide Instances" href="collapseSeries.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
@@ -554,11 +554,18 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	  <td title="Retrieve AETs">
 			<xsl:value-of select="retrieveAETs"/>
     </td>
-			<td align="right" bgcolor="ffffcc">
-				<a href="{/model/wadoBaseURL}?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
-					<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
-				</a>
-			</td>
+		<td align="right" bgcolor="ffffcc">
+			<xsl:choose>
+				<xsl:when test="availability='ONLINE'" >			
+					<a href="{/model/wadoBaseURL}?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
+						<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
+					</a>
+				</xsl:when>
+				<xsl:otherwise>
+					<img src="images/invalid.gif" alt="Image not online" border="0" title="Image not online"/>		
+				</xsl:otherwise>
+			</xsl:choose>				
+		</td>
 		<td align="right" bgcolor="ffffcc">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">

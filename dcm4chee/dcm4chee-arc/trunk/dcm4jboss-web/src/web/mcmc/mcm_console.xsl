@@ -191,14 +191,14 @@
 			<xsl:if test="mediaStatus = /model/statiForQueue and /model/mcmNotAvail = 'false'">
 	        	<td title="Status info">
 					<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
-						<img src="images/send.gif" alt="Create media" border="0" title="Create media"/>		
+						<img src="images/burn.gif" width="20" height="20" alt="Create media" border="0" title="Create media"/>		
 					</a>
 	        	</td>
  			</xsl:if>
 			<xsl:if test="mediaStatus &lt; 0 and /model/mcmNotAvail = 'false'"><!-- error stati are lower than 0! -->
 	        	<td title="Status info">
 					<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
-						<img src="images/send.gif" alt="Retry" border="0" title="Retry"/>		
+						<img src="images/burn.gif" width="20" height="20" alt="Retry" border="0" title="Retry"/>		
 					</a>
 	        	</td>
  			</xsl:if>
