@@ -39,10 +39,13 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.prefs.Preferences;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Defines association acceptance/rejection behavior.
@@ -80,7 +83,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     
     private HashMap policyForCallingAET = new HashMap();
     
-    private HashMap presCtxMap = new HashMap();
+    private LinkedHashMap presCtxMap = new LinkedHashMap();
     
     private HashMap roleSelectionMap = new HashMap();
     
@@ -348,7 +351,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         if (accept != null) {
             result = PresContext.TRANSFER_SYNTAXES_NOT_SUPPORTED;
             for (Iterator it = accept.getTransferSyntaxUIDs().iterator();
-            it.hasNext();) {
+                    it.hasNext();) {
                 tsuid = (String)it.next();
                 if (offered.getTransferSyntaxUIDs().indexOf(tsuid) != -1) {
                     result = PresContext.ACCEPTANCE;
@@ -402,6 +405,11 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     
     static int minAOW(int a, int b) {
         return a == 0 ? b : b == 0 ? a : Math.min(a,b);
+    }
+    
+    public List listPresContext() {
+        return Collections.unmodifiableList(
+            new ArrayList(presCtxMap.values()));       
     }
     
     // Inner classes -------------------------------------------------

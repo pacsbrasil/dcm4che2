@@ -22,6 +22,8 @@
 
 package org.dcm4che.net;
 
+import java.util.List;
+
 /**
  * Defines association acceptance/rejection behavior.
  *
@@ -84,6 +86,8 @@ public interface AcceptorPolicy
 
    PresContext getPresContext(String asuid);
 
+   List listPresContext();
+   
    RoleSelection putRoleSelection(String uid, boolean scu, boolean scp);
    
    RoleSelection getRoleSelection(String uid);

@@ -9,12 +9,11 @@ it also contains (sample) applications which are useful for (end-)users on its
 own. 
 
 dcm4che 1.x is a complete rewrite of dcm4che 0.9.9 for java 1.4 (J2SE 1.4).
-dcm4che 1.0.0 only contains the DICOM core implementation. The migration of
-the IHE compliant image archive, based on J2EE, from dcm4che 0.9.9 to
-dcm4che 1.x will take some more time. The EJB layer - based on EJB 2.0 -
-should be available till October 2002.
+dcm4che 1.x only contains the DICOM core implementation.
+The - also rewritten - IHE compliant image archive, based on J2EE/EJB 2.0,
+is available as separate package: dcm4jboss 1.x.
 
-Improvements of the DICOM Implementation in dcm4che 1.0.0 against
+Improvements of the DICOM Implementation in dcm4che 1.x against
 dcm4che 0.x.x are
 + import/export of XML presentation of DICOM Data-Sets
 + serializable Data-Set (will simplify communication to EJBs)
@@ -22,7 +21,7 @@ dcm4che 0.x.x are
 + support of asynchrone operation mode
 :
 
-But I have not yet found any time to update the documentation to v1.0.0 -
+But I have not yet found any time to update the documentation to v1.x -
 and I am afraid, that I will not find time until October 2002, when I have
 to pass IHE Connectathon in Chicago
 (s. http://www.rsna.org/IHE/participation/index.shtml) with the system.

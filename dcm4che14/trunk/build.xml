@@ -7,7 +7,7 @@
    <property name="javac.debug" value="off"/>
    
    <target name="init">
-      <echo message="Build ${name}-${version} debug=${javac.debug}"/>
+      <tstamp/>
       <echo message="user.home = ${user.home}"/>
       <echo message="java.home = ${java.home}"/>
       <echo message="ant.home = ${ant.home}"/>
@@ -38,7 +38,8 @@
    <property name="build.res.dir" value="${build.dir}/resources"/>
    <property name="build.javadocs.dir" value="${build.dir}/doc/api"/>
    <property name="build.reports.dir" value="${build.dir}/reports"/>
-   <property name="dist.dir" value="${build.dir}/${name}-${version}"/>
+   <property name="dist" value="${name}-${version}"/>
+   <property name="dist.dir" value="${build.dir}/${dist}"/>
 
    <path id="base.path">
       <pathelement location="${lib.dir}/getopt.jar" />
@@ -351,13 +352,14 @@
          </fileset>
       </copy>
       
-      <zip zipfile="${build.dir}/dcm4che-${version}.zip"
-           basedir="${dist.dir}"
-           excludes="doc/**"/>      
-      <zip zipfile="${build.dir}/dcm4che-apidoc-${version}.zip"
-           basedir="${dist.dir}"
-           includes="doc/**"/>      
-      <zip zipfile="${build.dir}/dcm4che-src-${version}.zip"
+      <zip zipfile="${build.dir}/${name}-${version}.zip"
+           basedir="${dist.dir}/.."
+           includes="${dist}/**"     
+           excludes="${dist}/doc/**"/>      
+      <zip zipfile="${build.dir}/${name}-apidoc-${version}.zip"
+           basedir="${dist.dir}/.."
+           includes="${dist}/doc/**"/>      
+      <zip zipfile="${build.dir}/${name}-src-${version}.zip"
            basedir="${basedir}"
            excludes="build/**,test/conf/data/**,**/*.class,**/.nbattrs"/>     
    </target>
