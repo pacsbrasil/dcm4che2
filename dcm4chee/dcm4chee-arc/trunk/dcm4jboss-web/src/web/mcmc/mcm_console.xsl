@@ -9,7 +9,7 @@
 <xsl:template match="model">
 <!-- Filter -->
 	<form action="mcm_console.m" method="get" name="myForm">
-		<table border="0" cellspacing="0" cellpadding="0" width="100%">
+		<table border="0" cellspacing="0" cellpadding="0" width="100%" bgcolor="eeeeee">
 			<td valign="top">
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
 					<td bgcolor="eeeeee" align="center">Displaying media
@@ -73,7 +73,25 @@
 						<td width="90" bgcolor="eeeeee">
 							<input size="10" name="endCreationDate" type="text" value="{filter/endCreationDate}"/>
 						</td>
-						<td width="60%" bgcolor="eeeeee"></td>
+			      		<xsl:choose>
+							<xsl:when test="/model/mcmNotAvail = 'true'">
+								<td width="60%" bgcolor="eeeeee" rowspan="2" align="center">
+									<table border="1" cellpadding="4" cellspacing="4" bgcolor="eeeeee">
+										<tr>										
+											<td nowrap="" valign="middle" align="center" bgcolor="ee8888"><font color="000000">&#160;Media Creation Managment service not available!&#160;</font>
+												<a href="mcm_console.m?action=check_mcm_avail">
+													<img src="images/search.gif" alt="Retry" border="0" title="Retry"/>		
+												</a>
+											</td>
+										</tr>
+									</table>
+								</td>
+								<td width="100%" bgcolor="eeeeee" />
+							</xsl:when>
+							<xsl:otherwise>
+								<td width="60%" bgcolor="eeeeee"></td>
+							</xsl:otherwise>
+						</xsl:choose>
 					</tr>
 					<tr>
 						<td width="10" bgcolor="eeeeee" ></td>
@@ -125,6 +143,7 @@
 						<td width="10" bgcolor="eeeeee" />
 			      		<td width="90" bgcolor="eeeeee" /> 
 						<td width="60%" bgcolor="eeeeee" />
+						<td width="100%" bgcolor="eeeeee" />
 			      	</tr>
 				</table>
 			</td>
@@ -169,14 +188,14 @@
 	        <td title="Status info: {mediaStatusInfo}">
 					<xsl:value-of select="mediaStatusString"/>
 	        </td>
-			<xsl:if test="mediaStatus = /model/statiForQueue">
+			<xsl:if test="mediaStatus = /model/statiForQueue and /model/mcmNotAvail = 'false'">
 	        	<td title="Status info">
 					<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
 						<img src="images/send.gif" alt="Create media" border="0" title="Create media"/>		
 					</a>
 	        	</td>
  			</xsl:if>
-			<xsl:if test="mediaStatus &lt; 0"><!-- error stati are lower than 0! -->
+			<xsl:if test="mediaStatus &lt; 0 and /model/mcmNotAvail = 'false'"><!-- error stati are lower than 0! -->
 	        	<td title="Status info">
 					<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
 						<img src="images/send.gif" alt="Retry" border="0" title="Retry"/>		
