@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.jboss.logging.Logger;
 
@@ -25,8 +23,6 @@ import org.jboss.logging.Logger;
  *
  */
 public class MediaCreationRequest implements Serializable {
-
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private final File requestFile;
 
@@ -130,63 +126,28 @@ public class MediaCreationRequest implements Serializable {
     }
 
     public Dataset readAttributes(Logger log) throws IOException {
-        return readDataset(requestFile, log);
+        return FileUtils.readDataset(requestFile, log);
     }
 
     public void updateStatus(String status, String info, Logger log)
             throws IOException {
-        Dataset attrs = readDataset(requestFile, log);
+        Dataset attrs = FileUtils.readDataset(requestFile, log);
         attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
         attrs.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.PROC_FAILURE);
         writeAttributes(attrs, log);
     }
 
     public void writeAttributes(Dataset attrs, Logger log) throws IOException {
-        writeDataset(attrs, requestFile, log);
+        FileUtils.writeDataset(attrs, requestFile, log);
     }
 
     public boolean cleanFiles(Logger log) {
         boolean retval = true;
         if (isoImageFile != null && isoImageFile.exists())
-                retval = delete(isoImageFile, log);
+                retval = FileUtils.delete(isoImageFile, log);
         if (filesetDir != null && filesetDir.exists())
-                retval = delete(filesetDir, log) && retval;
+                retval = FileUtils.delete(filesetDir, log) && retval;
         return retval;
     }
 
-    private static Dataset readDataset(File f, Logger log) throws IOException {
-        if (log.isDebugEnabled()) log.debug("M-READ " + f);
-        Dataset ds = dof.newDataset();
-        try {
-            ds.readFile(f, FileFormat.DICOM_FILE, -1);
-        } catch (IOException e) {
-            log.error("Failed: M-READ " + f, e);
-            throw e;
-        }
-        return ds;
-    }
-
-    private static void writeDataset(Dataset ds, File f, Logger log)
-            throws IOException {
-        if (log.isDebugEnabled()) log.debug("M-UPDATE " + f);
-        try {
-            ds.writeFile(f, null);
-        } catch (IOException e) {
-            log.error("Failed M-UPDATE " + f);
-            throw e;
-        }
-    }
-
-    private static boolean delete(File f, Logger log) {
-        if (!f.exists()) return false;
-        if (f.isDirectory()) {
-            File[] files = f.listFiles();
-            for (int i = 0; i < files.length; i++)
-                delete(files[i], log);
-        }
-        log.debug("M-DELETE " + f);
-        boolean success = f.delete();
-        if (!success) log.warn("Failed M-DELETE " + f);
-        return success;
-    }
 }

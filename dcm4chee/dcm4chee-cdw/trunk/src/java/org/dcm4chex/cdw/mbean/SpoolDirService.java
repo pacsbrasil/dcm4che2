@@ -9,6 +9,9 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.io.File;
+import java.io.FileFilter;
+
+import org.dcm4chex.cdw.common.FileUtils;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -111,46 +114,30 @@ public class SpoolDirService extends ServiceMBeanSupport {
     }
 
     public void purgeExpiredMediaCreationRequests() {
-        if (purgeMediaCreationRequestsAfter == 0) return;
-        long modifiedBefore = System.currentTimeMillis()
-                - purgeMediaCreationRequestsAfter;
-        delete(new File(dir, REQUEST), modifiedBefore, true);
+        deleteFiles(REQUEST, purgeMediaCreationRequestsAfter);
     }
 
     public void purgeExpiredPreservedInstances() {
-        if (purgePreservedInstancesAfter == 0) return;
-        long modifiedBefore = System.currentTimeMillis() - purgePreservedInstancesAfter;
-        delete(new File(dir, ARCHIVE), modifiedBefore, true);
+        deleteFiles(ARCHIVE, purgePreservedInstancesAfter);
     }
     
     public void purgeResidualTemporaryFiles() {
-        if (purgeTemporaryFilesAfter == 0) return;
-        long modifiedBefore = System.currentTimeMillis() - purgeTemporaryFilesAfter;
-        delete(new File(dir, MEDIA), modifiedBefore, true);
-    }    
-
-    private boolean deleteFile(File file) {
-        String prompt = "M-DELETE " + file;
-        log.info(prompt);
-        boolean success = file.delete();
-        if (!success) log.error("Failed to " + prompt);
-        return success;
+        deleteFiles(MEDIA, purgeTemporaryFilesAfter);
     }
+    
+    private void deleteFiles(String subdir, long after) {
+        if (after == 0) return;
+        final long modifiedBefore = System.currentTimeMillis() - after;
+        File d = new File(dir, subdir);
+        File[] files = d.listFiles(new FileFilter(){
 
-    private boolean delete(File fileOrDirectory, long modifiedBefore,
-            boolean keepRoot) {
-        if (!fileOrDirectory.exists()) return false;
-        if (fileOrDirectory.isDirectory()) {
-            boolean emptyDir = true;
-            File[] files = fileOrDirectory.listFiles();
+            public boolean accept(File pathname) {
+                
+                return pathname.lastModified() <= modifiedBefore;
+            }});
+        if (files != null)
             for (int i = 0; i < files.length; i++)
-                emptyDir = delete(files[i], modifiedBefore, false) && emptyDir;
-            if (keepRoot || !emptyDir) return false;
-        }
-        if (fileOrDirectory.lastModified() > modifiedBefore)
-            return false;
-        else
-            return deleteFile(fileOrDirectory);
+                FileUtils.delete(files[i], log);
     }
 
     static String timeAsString(long ms) {
