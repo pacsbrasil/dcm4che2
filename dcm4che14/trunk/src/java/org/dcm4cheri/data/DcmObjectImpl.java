@@ -2537,8 +2537,9 @@ abstract class DcmObjectImpl implements DcmObject {
             case VRs.UT :
                 return putUT(tag);
             default :
-                throw new IllegalArgumentException(
-                    Tags.toString(tag) + " " + VRs.toString(vr));
+                log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                        + Integer.toHexString(vr) + "H");
+                return putXX(tag, VRMap.DEFAULT.lookup(tag));
         }
     }
 
@@ -2608,8 +2609,9 @@ abstract class DcmObjectImpl implements DcmObject {
             case VRs.UT :
                 return put(StringElement.createUT(tag, value));
             default :
-                throw new IllegalArgumentException(
-                    Tags.toString(tag) + " " + VRs.toString(vr));
+                log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                        + Integer.toHexString(vr) + "H");
+                return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
         }
     }
 
@@ -2650,12 +2652,11 @@ abstract class DcmObjectImpl implements DcmObject {
                 return putLO(tag, value);
             case VRs.LT :
                 return putLT(tag, value);
-                //            case VRs.OB:
-                //                return putOB(tag, value);
-                //            case VRs.OF:
-                //                return putOF(tag, value);
-                //            case VRs.OW:
-                //                return putOW(tag, value);
+            case VRs.OB:
+            case VRs.OF:
+            case VRs.OW:
+                throw new IllegalArgumentException(
+                        Tags.toString(tag) + " " + VRs.toString(vr));
             case VRs.PN :
                 return putPN(tag, value);
             case VRs.SH :
@@ -2670,8 +2671,9 @@ abstract class DcmObjectImpl implements DcmObject {
                 return putTM(tag, value);
             case VRs.UI :
                 return putUI(tag, value);
-                //            case VRs.UN:
-                //                return putUN(tag, value);
+            case VRs.UN:
+                throw new IllegalArgumentException(
+                        Tags.toString(tag) + " " + VRs.toString(vr));
             case VRs.UL :
                 return putUL(tag, value);
             case VRs.US :
@@ -2679,8 +2681,9 @@ abstract class DcmObjectImpl implements DcmObject {
             case VRs.UT :
                 return putUT(tag, value);
             default :
-                throw new IllegalArgumentException(
-                    Tags.toString(tag) + " " + VRs.toString(vr));
+                log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                        + Integer.toHexString(vr) + "H");
+                return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
         }
     }
 
@@ -2721,12 +2724,11 @@ abstract class DcmObjectImpl implements DcmObject {
                 return putLO(tag, values);
             case VRs.LT :
                 return putLT(tag, values);
-                //            case VRs.OB:
-                //                return putOB(tag, values);
-                //            case VRs.OF:
-                //                return putOF(tag, values);
-                //            case VRs.OW:
-                //                return putOW(tag, values);
+            case VRs.OB:
+            case VRs.OF:
+            case VRs.OW:
+                throw new IllegalArgumentException(
+                        Tags.toString(tag) + " " + VRs.toString(vr));
             case VRs.PN :
                 return putPN(tag, values);
             case VRs.SH :
@@ -2741,8 +2743,9 @@ abstract class DcmObjectImpl implements DcmObject {
                 return putTM(tag, values);
             case VRs.UI :
                 return putUI(tag, values);
-                //            case VRs.UN:
-                //                return putUN(tag, values);
+            case VRs.UN:
+                throw new IllegalArgumentException(
+                        Tags.toString(tag) + " " + VRs.toString(vr));
             case VRs.UL :
                 return putUL(tag, values);
             case VRs.US :
@@ -2750,8 +2753,9 @@ abstract class DcmObjectImpl implements DcmObject {
             case VRs.UT :
                 return putUT(tag, values);
             default :
-                throw new IllegalArgumentException(
-                    Tags.toString(tag) + " " + VRs.toString(vr));
+                log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                        + Integer.toHexString(vr) + "H");
+                return putXX(tag, VRMap.DEFAULT.lookup(tag), values);
         }
     }
 

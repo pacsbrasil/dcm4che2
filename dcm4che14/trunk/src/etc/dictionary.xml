@@ -833,10 +833,10 @@
   <element tag="(0028,1055)" name="Window Center &amp; Width Explanation" vr="LO" vm="1-n" key="WindowCenterWidthExplanation" />
   <element tag="(0028,1080)" name="Gray Scale (Retired)" key="GrayScaleRetired" retired="true" />
   <element tag="(0028,1090)" name="Recommended Viewing Mode" vr="CS" vm="1" key="RecommendedViewingMode" />
-  <element tag="(0028,1100)" name="Gray Lookup Table Descriptor (Retired)" vr="US,SS" vm="3" key="GreyLUTDescriptorRetired" retired="true" />
-  <element tag="(0028,1101)" name="Red Palette Color Lookup Table Descriptor" vr="US,SS" vm="3" key="RedPaletteColorLUTDescriptor" />
-  <element tag="(0028,1102)" name="Green Palette Color Lookup Table Descriptor" vr="US,SS" vm="3" key="GreenPaletteColorLUTDescriptor" />
-  <element tag="(0028,1103)" name="Blue Palette Color Lookup Table Descriptor" vr="US,SS" vm="3" key="BluePaletteColorLUTDescriptor" />
+  <element tag="(0028,1100)" name="Gray Lookup Table Descriptor (Retired)" vr="SS,US" vm="3" key="GreyLUTDescriptorRetired" retired="true" />
+  <element tag="(0028,1101)" name="Red Palette Color Lookup Table Descriptor" vr="SS,US" vm="3" key="RedPaletteColorLUTDescriptor" />
+  <element tag="(0028,1102)" name="Green Palette Color Lookup Table Descriptor" vr="SS,US" vm="3" key="GreenPaletteColorLUTDescriptor" />
+  <element tag="(0028,1103)" name="Blue Palette Color Lookup Table Descriptor" vr="SS,US" vm="3" key="BluePaletteColorLUTDescriptor" />
   <element tag="(0028,1199)" name="Palette Color Lookup Table UID" vr="UI" vm="1" key="PaletteColorLUTUID" />
   <element tag="(0028,1201)" name="Red Palette Color Lookup Table Data" vr="OW" vm="1" key="RedPaletteColorLUTData" />
   <element tag="(0028,1202)" name="Green Palette Color Lookup Table Data" vr="OW" vm="1" key="GreenPaletteColorLUTData" />
@@ -850,7 +850,7 @@
   <element tag="(0028,2110)" name="Lossy Image Compression" vr="CS" vm="1" key="LossyImageCompression" />
   <element tag="(0028,2112)" name="Lossy Image Compression Ratio" vr="DS" vm="1-n" key="LossyImageCompressionRatio" />
   <element tag="(0028,3000)" name="Modality LUT Sequence" vr="SQ" vm="1" key="ModalityLUTSeq" />
-  <element tag="(0028,3002)" name="LUT Descriptor" vr="US,SS" vm="3" key="LUTDescriptor" />
+  <element tag="(0028,3002)" name="LUT Descriptor" vr="SS,US" vm="3" key="LUTDescriptor" />
   <element tag="(0028,3003)" name="LUT Explanation" vr="LO" vm="1" key="LUTExplanation" />
   <element tag="(0028,3004)" name="Modality LUT Type" vr="LO" vm="1" key="ModalityLUTType" />
   <element tag="(0028,3006)" name="LUT Data" vr="OW,US,SS" vm="1-n" key="LUTData" />
