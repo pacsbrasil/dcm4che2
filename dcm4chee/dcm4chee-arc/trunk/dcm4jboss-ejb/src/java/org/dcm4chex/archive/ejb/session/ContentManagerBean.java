@@ -52,10 +52,10 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  * @since 14.01.2004
  * 
  * @ejb.bean
- *  name="BrowseStudies"
+ *  name="ContentManager"
  *  type="Stateless"
  *  view-type="local"
- *  jndi-name="ejb/BrowseStudies"
+ *  jndi-name="ejb/ContentManager"
  * 
  * @ejb.transaction-type 
  *  type="Container"
@@ -92,7 +92,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  res-ref-name="jdbc/DefaultDS"
  *  resource-name="java:/DefaultDS"
  */
-public abstract class BrowseStudiesBean implements SessionBean {
+public abstract class ContentManagerBean implements SessionBean {
 
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;

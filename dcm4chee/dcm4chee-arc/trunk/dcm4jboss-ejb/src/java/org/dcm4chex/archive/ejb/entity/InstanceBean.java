@@ -57,6 +57,9 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
  *  primkey-field="pk"
  *  local-jndi-name="ejb/Instance"
  * 
+ * @jboss.container-configuration
+ *  name="Standard CMP 2.x EntityBean with cache invalidation"
+ *  
  * @ejb.transaction 
  *  type="Required"
  * 

@@ -188,12 +188,12 @@ public abstract class StorageBean implements SessionBean {
             final String cuid = fmi.getMediaStorageSOPClassUID();
             final String tsuid = fmi.getTransferSyntaxUID();
             log.info("inserting instance " + iuid);
-            attrCoercions.coerce(callingAET, calledAET, ds, coercedElements);
             InstanceLocal instance = null;
             try {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
+                attrCoercions.coerce(callingAET, calledAET, ds, coercedElements);
                 instance =
                     instHome.create(
                         ds.subSet(attrFilter.getInstanceFilter()),
@@ -347,7 +347,11 @@ public abstract class StorageBean implements SessionBean {
                 coercedElements)) {
                 log.warn("Coerce " + el + " to " + refEl);
                 if (coercedElements != null) {
-                    coercedElements.putXX(refEl.tag(), refEl.getByteBuffer());
+                    if (VRs.isLengthField16Bit(refEl.vr())) {
+                        coercedElements.putXX(refEl.tag(), refEl.getByteBuffer());
+                    } else {
+                        coercedElements.putXX(refEl.tag());
+                    }
                 }
                 coercedIdentity = true;
             }

@@ -18,6 +18,7 @@ CREATE TABLE move_order (
 	failure_count	INT,
 	failure_status	INT
 );
+CREATE INDEX move_order_scheduled_time ON move_order(scheduled_time);
 
 CREATE TABLE code (
 	pk          	IDENTITY PRIMARY KEY,

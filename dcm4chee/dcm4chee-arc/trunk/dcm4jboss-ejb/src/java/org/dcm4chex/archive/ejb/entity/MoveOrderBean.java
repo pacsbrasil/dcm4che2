@@ -39,6 +39,9 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
  *  primkey-field="pk"
  *  local-jndi-name="ejb/MoveOrder"
  * 
+ * @jboss.container-configuration
+ *  name="Standard CMP 2.x EntityBean with cache invalidation"
+ *  
  * @ejb.persistence
  *  table-name="move_order"
  * 
@@ -51,7 +54,13 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
  *
  * @ejb.finder
  *  signature="java.util.Collection findBefore(java.util.Date scheduledTime)"
- *  query="SELECT OBJECT(a) FROM MoveOrder AS a WHERE a.scheduledTime IS NOT NULL AND a.scheduledTime < ?1"
+ *  query=""
+ * @jboss.query
+ *  signature="java.util.Collection findBefore(java.util.Date scheduledTime)"
+ *  query="SELECT OBJECT(a) FROM MoveOrder AS a WHERE a.scheduledTime IS NOT NULL AND a.scheduledTime < ?1 ORDER BY a.priority DESC, a.scheduledTime LIMIT 1"
+ *  strategy="on-find"
+ *  page-size="1"
+ *  eager-load-group="*"
  */
 public abstract class MoveOrderBean implements EntityBean {
 
@@ -77,12 +86,12 @@ public abstract class MoveOrderBean implements EntityBean {
      *  column-name="scheduled_time"
      * @ejb.interface-method
      */
-    public abstract java.util.Date getScheduledTime();
+    public abstract java.sql.Timestamp getScheduledTime();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setScheduledTime(java.util.Date time);
+    public abstract void setScheduledTime(java.sql.Timestamp time);
 
     /**
      * Priority
@@ -213,6 +222,8 @@ public abstract class MoveOrderBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes
+     *   read-only=true
      */
     public MoveOrderValue getMoveOrderValue() {
         MoveOrderValue retval =

@@ -21,7 +21,6 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
@@ -95,34 +94,13 @@ public abstract class MoveOrderQueueBean implements SessionBean {
             if (c.isEmpty()) {
                 return null;
             }
-            Iterator it = c.iterator();
-            MoveOrderLocal order = (MoveOrderLocal) it.next();
-            while (it.hasNext()) {
-                MoveOrderLocal other = (MoveOrderLocal) it.next();
-                if (compareOrder(order, other) > 0) {
-                    order = other;
-                }
-            }
+            MoveOrderLocal order = (MoveOrderLocal) c.iterator().next();
             MoveOrderValue value = order.getMoveOrderValue();
             order.remove();
             return value;
         } catch (Exception e) {
             throw new EJBException(e);
         }
-    }
-
-    private static int[][] CMP_PRIOR = 
-        {{ 0, 1, -1},
-         {-1, 0, -1},
-         { 1, 1,  0}};
-
-    private static int compareOrder(
-        MoveOrderLocal order,
-        MoveOrderLocal other) {
-        int cmp = CMP_PRIOR[order.getPriority()][other.getPriority()];
-        return cmp != 0
-            ? cmp
-            : order.getScheduledTime().compareTo(other.getScheduledTime());
     }
 
     /**

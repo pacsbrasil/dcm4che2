@@ -20,7 +20,6 @@
 package org.dcm4chex.archive.ejb.interfaces;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 
@@ -30,7 +29,9 @@ import java.util.Date;
  */
 public final class MoveOrderValue implements Serializable {
 
-    private Date scheduledTime;
+    private static int[] DICOM_PRIOR = { 2, 0, 1};
+
+    private long scheduledTime;
     private int priority;
     private String retrieveAET;
     private String moveDestination;
@@ -52,7 +53,17 @@ public final class MoveOrderValue implements Serializable {
      * @param priority
      */
     public final void setPriority(int priority) {
+        if (priority < 0 || priority > 2) {
+            throw new IllegalArgumentException("priority:" + priority);
+        }
         this.priority = priority;
+    }
+
+    /**
+     * @return
+     */
+    public final int getDICOMPriority() {
+        return DICOM_PRIOR[priority];
     }
 
     /**
@@ -72,15 +83,15 @@ public final class MoveOrderValue implements Serializable {
     /**
      * @return
      */
-    public final Date getScheduledTime() {
-        return scheduledTime;
+    public final java.sql.Timestamp getScheduledTime() {
+        return new java.sql.Timestamp(scheduledTime);
     }
 
     /**
      * @param scheduledTime
      */
-    public final void setScheduledTime(Date scheduledTime) {
-        this.scheduledTime = scheduledTime;
+    public final void setScheduledTime(java.util.Date scheduledTime) {
+        this.scheduledTime = scheduledTime.getTime();
     }
 
     /**
