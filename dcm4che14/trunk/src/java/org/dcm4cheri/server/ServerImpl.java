@@ -68,7 +68,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     static final Logger log = Logger.getLogger(ServerImpl.class);
     
     private final Handler handler;
-    private final LF_ThreadPool threadPool = new LF_ThreadPool(this);
+    private LF_ThreadPool threadPool = new LF_ThreadPool(this);
     private ServerSocket ss;
     private int port = 104;
     private List hcl = null;
@@ -181,11 +181,12 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         } catch (IOException ignore) {}
         
         // try to connect to server port to ensure to leave blocking accept
-        try {
+        /*try {
             new Socket(ia, port).close();
-        } catch (IOException ignore) {}
+        } catch (IOException ignore) {}*/
         ss = null;
         threadPool.shutdown();
+        threadPool = new LF_ThreadPool(this);
     }
     
     // LF_ThreadPool.Handler implementation --------------------------

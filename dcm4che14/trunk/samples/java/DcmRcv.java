@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -223,6 +225,13 @@ public class DcmRcv extends DcmServiceBase
             new Thread(fsu).start();
         }
         server.start();
+        /*//test code for stopping and starting server again 
+        System.out.println("STOPPING");
+        server.stop();
+        System.out.println("STARTING");
+        try{Thread.sleep(2500);}catch(Exception e){}
+        server.start();
+        new Socket(InetAddress.getLocalHost(), 4000);*/
     }
 
     // DcmServiceBase overrides --------------------------------------
