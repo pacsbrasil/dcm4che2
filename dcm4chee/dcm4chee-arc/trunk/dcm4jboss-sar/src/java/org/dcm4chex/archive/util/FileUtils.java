@@ -30,6 +30,7 @@ import org.jboss.system.server.ServerConfigLocator;
 public class FileUtils {
 
     private static final int BUFFER_SIZE = 512;
+    
 	public static final long MEGA = 1000000L;
 
     public static final long GIGA = 1000000000L;
@@ -96,7 +97,7 @@ public class FileUtils {
     			byte[] b2 = new byte[BUFFER_SIZE];
     			int len, len2;
     			while (toRead > 0) {
-    				toRead -= len = in1.read(b1, 0, BUFFER_SIZE);
+    				toRead -= len = in1.read(b1, 0, Math.min(toRead, BUFFER_SIZE));
     				if (len < 0) // EOF
     					return false;
     				int off = 0;
