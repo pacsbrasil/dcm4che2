@@ -30,18 +30,23 @@ public class DTO2Dataset
 		// TODO Auto-generated constructor stub
 	}
 
-	public static void updtateDataset (Dataset toUpdate, PatientDTO patient) //works by reference
+	public static void updtateDataset(
+		Dataset toUpdate,
+		PatientDTO patient) //works by reference
 	{
 		// note:Patient ID's couldn't be updated
 
-		if (patient.getPatientName()!=null)
-			toUpdate.putPN(Tags.PatientName,patient.getPatientName());
-		
+		toUpdate.putPN(Tags.PatientName, patient.getPatientName());
+
 		try
 		{
-			if (patient.getPatientBirthDate()!=null)
-				toUpdate.putDA(Tags.PatientBirthDate,
-					new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(patient.getPatientBirthDate()));
+			if (patient.getPatientBirthDate() == null)
+				toUpdate.putDA(Tags.PatientBirthDate);		
+			else
+			toUpdate.putDA(
+				Tags.PatientBirthDate,
+				new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
+					patient.getPatientBirthDate()));
 		}
 		catch (ParseException e)
 		{
@@ -49,8 +54,6 @@ public class DTO2Dataset
 			e.printStackTrace();
 		}
 
-		if (patient.getPatientSex()!=null)
-			toUpdate.putCS(Tags.PatientSex,patient.getPatientSex());
+		toUpdate.putCS(Tags.PatientSex, patient.getPatientSex());
 	}
-	
 }
