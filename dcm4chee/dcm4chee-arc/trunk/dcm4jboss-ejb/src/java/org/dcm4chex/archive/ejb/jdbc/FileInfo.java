@@ -1,27 +1,14 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Comparator;
 
 /**
@@ -108,16 +95,6 @@ public class FileInfo {
                 + ", fileRetrieveAETs=" + fileRetrieveAETs + ", basedir="
                 + basedir + ", fileid=" + fileID + ", tsuid=" + tsUID;
     }
-
-    public File toFile() {
-        String uri = (basedir.charAt(0) == '/' ? "file:" : "file:/") + basedir + '/' + fileID;
-        try {
-            return new File(new URI(uri));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(uri, e);
-        }
-    }
-
     public byte[] getFileMd5() {
         char[] md5Hex = md5.toCharArray();
         byte[] retval = new byte[16];
@@ -126,5 +103,10 @@ public class FileInfo {
                     .digit(md5Hex[(i << 1) + 1], 16));
         }
         return retval;
+    }
+    
+    public final File getFile() {
+        return new File(basedir.replace('/', File.separatorChar),
+                fileID.replace('/', File.separatorChar));
     }
 }

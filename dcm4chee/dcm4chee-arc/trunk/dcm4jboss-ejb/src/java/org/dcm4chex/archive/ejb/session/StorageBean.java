@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.session;
 
 import java.nio.charset.Charset;
@@ -44,6 +33,7 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
@@ -51,6 +41,8 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
@@ -81,6 +73,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  * 
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
  * 
+ * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
+ * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  * value="resource:dcm4jboss-attribute-filter.xml"
  * 
@@ -107,6 +101,8 @@ public abstract class StorageBean implements SessionBean {
 
     private FileLocalHome fileHome;
 
+    private FileSystemLocalHome fileSystemHome;
+
     private AttributeFilter attrFilter;
 
     private AttributeCoercions attrCoercions;
@@ -127,6 +123,8 @@ public abstract class StorageBean implements SessionBean {
             instHome = (InstanceLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Instance");
             fileHome = (FileLocalHome) jndiCtx.lookup("java:comp/env/ejb/File");
+            fileSystemHome = (FileSystemLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/FileSystem");
             attrFilter = new AttributeFilter((String) jndiCtx
                     .lookup("java:comp/env/AttributeFilterConfigURL"));
             attrCoercions = new AttributeCoercions((String) jndiCtx
@@ -152,6 +150,7 @@ public abstract class StorageBean implements SessionBean {
         seriesHome = null;
         instHome = null;
         fileHome = null;
+        fileSystemHome = null;
     }
 
     /**
@@ -159,9 +158,8 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(java.lang.String callingAET,
             java.lang.String calledAET, org.dcm4che.data.Dataset ds,
-            java.lang.String[] retrieveAETs, java.lang.String basedir,
-            java.lang.String fileid, int size, byte[] md5)
-            throws DcmServiceException, DuplicateStorageException {
+            java.lang.String dirpath, java.lang.String fileid, int size,
+            byte[] md5) throws DcmServiceException, DuplicateStorageException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
         final String cuid = fmi.getMediaStorageSOPClassUID();
@@ -172,7 +170,7 @@ public abstract class StorageBean implements SessionBean {
             InstanceLocal instance = null;
             try {
                 instance = instHome.findBySopIuid(iuid);
-                checkDuplicateStorage(instance, basedir, md5);
+                checkDuplicateStorage(instance, dirpath, md5);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
                 attrCoercions
@@ -180,29 +178,36 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.create(ds.subSet(attrFilter
                         .getInstanceFilter()), getSeries(ds, coercedElements));
             }
-            FileLocal file = fileHome.create(retrieveAETs, basedir, fileid,
-                    tsuid, size, md5, instance);
-            updateRetrieveAETs(instance, retrieveAETs);
+            FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirpath);
+            FileLocal file = fileHome.create(fileid,
+                    tsuid,
+                    size,
+                    md5,
+                    instance,
+                    fs);
+            updateRetrieveAETs(instance, fs.getRetrieveAETs());
             updateAvailability(instance);
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (DuplicateStorageException e) {
-            log.warn("ignore attempt to store instance[uid=" +  iuid + "] duplicated");
+            log.warn("ignore attempt to store instance[uid=" + iuid
+                    + "] duplicated");
             sessionCtx.setRollbackOnly();
             throw e;
         } catch (Exception e) {
-            log.error("inserting records for instance[uid=" +  iuid + "] failed:", e);
+            log.error("inserting records for instance[uid=" + iuid
+                    + "] failed:", e);
             sessionCtx.setRollbackOnly();
             throw new DcmServiceException(Status.ProcessingFailure);
         }
     }
 
-    private void checkDuplicateStorage(InstanceLocal instance, String basedir,
+    private void checkDuplicateStorage(InstanceLocal instance, String dirPath,
             byte[] md5) throws DuplicateStorageException {
         Collection c = instance.getFiles();
         for (Iterator it = c.iterator(); it.hasNext();) {
             FileLocal file = (FileLocal) it.next();
-            if (file.getDirectoryPath().equals(basedir)
+            if (file.getFileSystem().getDirectoryPath().equals(dirPath)
                     && Arrays.equals(file.getFileMd5(), md5)) { throw new DuplicateStorageException(); }
         }
     }
@@ -211,8 +216,9 @@ public abstract class StorageBean implements SessionBean {
      * @param instance
      * @param retrieveAETs
      */
-    private void updateRetrieveAETs(InstanceLocal instance, String[] retrieveAETs) {
-        if (instance.addRetrieveAETs(retrieveAETs)) {
+    private void updateRetrieveAETs(InstanceLocal instance,
+            String retrieveAETs) {
+        if (instance.addRetrieveAETs(StringUtils.split(retrieveAETs, '\\'))) {
             SeriesLocal series = instance.getSeries();
             if (series.updateRetrieveAETs()) {
                 StudyLocal study = series.getStudy();
@@ -244,10 +250,11 @@ public abstract class StorageBean implements SessionBean {
             coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
             series = seriesHome.create(ds.subSet(attrFilter.getSeriesFilter()),
-                    getStudy(ds, coercedElements));            
+                    getStudy(ds, coercedElements));
             MPPSLocal mpps;
             CodeLocal drcode;
-            if ((mpps = series.getMpps()) != null && mpps.isIncorrectWorklistEntrySelected()) {
+            if ((mpps = series.getMpps()) != null
+                    && mpps.isIncorrectWorklistEntrySelected()) {
                 series.hide();
             }
         }
@@ -331,7 +338,10 @@ public abstract class StorageBean implements SessionBean {
         for (Iterator it = ref.iterator(); it.hasNext();) {
             DcmElement refEl = (DcmElement) it.next();
             DcmElement el = ds.get(refEl.tag());
-            if (!equals(el, ds.getCharset(), refEl, ref.getCharset(),
+            if (!equals(el,
+                    ds.getCharset(),
+                    refEl,
+                    ref.getCharset(),
                     coercedElements)) {
                 log.warn("Coerce " + el + " to " + refEl);
                 if (coercedElements != null) {
@@ -353,9 +363,10 @@ public abstract class StorageBean implements SessionBean {
         final int vm = refEl.vm();
         if (el == null || el.vm() != vm) { return false; }
         final int vr = refEl.vr();
-        if (vr == VRs.OW || vr == VRs.OB || vr == VRs.UN) { 
-        // no check implemented!
-        return true; }
+        if (vr == VRs.OW || vr == VRs.OB || vr == VRs.UN) {
+            // no check implemented!
+            return true;
+        }
         for (int i = 0; i < vm; ++i) {
             if (vr == VRs.SQ) {
                 if (coerceIdentity(refEl.getItem(i), el.getItem(i), null)) {
@@ -365,8 +376,8 @@ public abstract class StorageBean implements SessionBean {
                 }
             } else {
                 try {
-                    if (!(vr == VRs.PN ? refEl.getPersonName(i, refCS).equals(
-                            el.getPersonName(i, cs)) : refEl
+                    if (!(vr == VRs.PN ? refEl.getPersonName(i, refCS)
+                            .equals(el.getPersonName(i, cs)) : refEl
                             .getString(i, refCS).equals(el.getString(i, cs)))) { return false; }
                 } catch (DcmValueException e) {
                     log.warn("Failure during coercion of " + el, e);

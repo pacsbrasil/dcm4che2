@@ -35,8 +35,19 @@ import org.dcm4cheri.util.DatasetUtils;
  * @since 10.02.2004
  */
 public class MWLQueryCmd extends BaseCmd {
+
+    private static final String[] FROM = { "Patient", "MWLItem"};
+
+    private static final String[] SELECT = { "Patient.encodedAttributes",
+            "MWLItem.encodedAttributes"};
+
+    private static final String[] RELATIONS = { "Patient.pk",
+    		"MWLItem.patient_fk"};
+
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+
     private final SqlBuilder sqlBuilder = new SqlBuilder();
+
     private final Dataset keys;
 
     /**
@@ -50,49 +61,42 @@ public class MWLQueryCmd extends BaseCmd {
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
         }
-        sqlBuilder.setSelect(new String[] { "MWLItem.encodedAttributes" });
-        sqlBuilder.setFrom(new String[] { "MWLItem" });
+        sqlBuilder.setSelect(SELECT);
+        sqlBuilder.setFrom(FROM);
+        sqlBuilder.setRelations(RELATIONS);
         Dataset spsItem = keys.getItem(Tags.SPSSeq);
         if (spsItem != null) {
-            sqlBuilder.addSingleValueMatch(
-                "MWLItem.spsId",
-                SqlBuilder.TYPE1,
-                spsItem.getString(Tags.SPSID));
-            sqlBuilder.addRangeMatch(
-                "MWLItem.spsStartDateTime",
-                SqlBuilder.TYPE1,
-                spsItem.getDateTimeRange(Tags.SPSStartDate, Tags.SPSStartTime));
-            sqlBuilder.addSingleValueMatch(
-                "MWLItem.modality",
-                SqlBuilder.TYPE1,
-                spsItem.getString(Tags.Modality));
-            sqlBuilder.addSingleValueMatch(
-                "MWLItem.scheduledStationAET",
-                SqlBuilder.TYPE1,
-                spsItem.getString(Tags.ScheduledStationAET));
-            sqlBuilder.addWildCardMatch(
-                "MWLItem.performingPhysicianName",
-                SqlBuilder.TYPE2,
-                spsItem.getString(Tags.PerformingPhysicianName),
-                false);
+            sqlBuilder.addSingleValueMatch("MWLItem.spsId",
+                    SqlBuilder.TYPE1,
+                    spsItem.getString(Tags.SPSID));
+            sqlBuilder.addRangeMatch("MWLItem.spsStartDateTime",
+                    SqlBuilder.TYPE1,
+                    spsItem.getDateTimeRange(Tags.SPSStartDate,
+                            Tags.SPSStartTime));
+            sqlBuilder.addSingleValueMatch("MWLItem.modality",
+                    SqlBuilder.TYPE1,
+                    spsItem.getString(Tags.Modality));
+            sqlBuilder.addSingleValueMatch("MWLItem.scheduledStationAET",
+                    SqlBuilder.TYPE1,
+                    spsItem.getString(Tags.ScheduledStationAET));
+            sqlBuilder.addWildCardMatch("MWLItem.performingPhysicianName",
+                    SqlBuilder.TYPE2,
+                    spsItem.getString(Tags.PerformingPhysicianName),
+                    false);
         }
-        sqlBuilder.addSingleValueMatch(
-            "MWLItem.requestedProcedureId",
-            SqlBuilder.TYPE1,
-            keys.getString(Tags.RequestedProcedureID));
-        sqlBuilder.addSingleValueMatch(
-            "MWLItem.accessionNumber",
-            SqlBuilder.TYPE2,
-            keys.getString(Tags.AccessionNumber));
-        sqlBuilder.addSingleValueMatch(
-            "MWLItem.patientId",
-            SqlBuilder.TYPE1,
-            keys.getString(Tags.PatientID));
-        sqlBuilder.addWildCardMatch(
-            "MWLItem.patientName",
-            SqlBuilder.TYPE1,
-            keys.getString(Tags.PatientName),
-            true);
+        sqlBuilder.addSingleValueMatch("MWLItem.requestedProcedureId",
+                SqlBuilder.TYPE1,
+                keys.getString(Tags.RequestedProcedureID));
+        sqlBuilder.addSingleValueMatch("MWLItem.accessionNumber",
+                SqlBuilder.TYPE2,
+                keys.getString(Tags.AccessionNumber));
+        sqlBuilder.addSingleValueMatch("Patient.patientId",
+                SqlBuilder.TYPE1,
+                keys.getString(Tags.PatientID));
+        sqlBuilder.addWildCardMatch("Patient.patientName",
+                SqlBuilder.TYPE1,
+                keys.getString(Tags.PatientName),
+                true);
     }
 
     public void execute() throws SQLException {
@@ -101,11 +105,10 @@ public class MWLQueryCmd extends BaseCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = dof.newDataset();
-        ds.putAll(
-            DatasetUtils.fromByteArray(
-                rs.getBytes(1),
-                DcmDecodeParam.EVR_LE).subSet(
-                keys));
+        ds.putAll(DatasetUtils.fromByteArray(rs.getBytes(1),
+                DcmDecodeParam.EVR_LE).subSet(keys));
+        ds.putAll(DatasetUtils.fromByteArray(rs.getBytes(2),
+                DcmDecodeParam.EVR_LE).subSet(keys));
         QueryCmd.adjustDataset(ds, keys);
         return ds;
     }

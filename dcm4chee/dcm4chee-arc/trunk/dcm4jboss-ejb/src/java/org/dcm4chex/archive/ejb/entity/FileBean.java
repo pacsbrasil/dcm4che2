@@ -1,23 +1,11 @@
-/*
- * $Id$ Copyright (c)
- * 2002,2003 by TIANI MEDGRAPH AG
- * 
- * This file is part of dcm4che.
- * 
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
@@ -25,8 +13,8 @@ import javax.ejb.EntityBean;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 
 /**
@@ -55,11 +43,11 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
  *  transaction-type="Supports"
  * 
  * @ejb.finder
- *  signature="java.util.Collection findDereferenced()"
- *  query="SELECT OBJECT(a) FROM File AS a WHERE a.instance IS NULL"
+ *  signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath)"
+ *  query="SELECT OBJECT(a) FROM File AS a WHERE a.instance IS NULL AND a.fileSystem.directoryPath = ?1"
  *  transaction-type="Supports"
  * @jboss.query
- *  signature="java.util.Collection findDereferenced()"
+ *  signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath)"
  *  strategy="on-find"
  *  eager-load-group="*"
  */
@@ -82,32 +70,6 @@ public abstract class FileBean implements EntityBean
     public abstract Integer getPk();
 
     public abstract void setPk(Integer pk);
-
-    /**
-	 * Directory Path
-	 * 
-	 * @ejb.interface-method
-	 * @ejb.persistence
-	 * 	column-name="dirpath"
-	 */
-    public abstract String getDirectoryPath();
-
-    public abstract void setDirectoryPath(String dirpath);
-
-    /**
-	 * Retrieve AETs
-	 * 
-     * @ejb.interface-method
-	 * @ejb.persistence
-	 * 	column-name="retrieve_aets"
-	 */
-    public abstract String getRetrieveAETs();
-
-    /**
-     * @ejb.interface-method
-     */ 
-    public abstract void setRetrieveAETs(String aets);
-
 
     /**
 	 * File Path (relative path to Directory).
@@ -203,15 +165,39 @@ public abstract class FileBean implements EntityBean
     public abstract InstanceLocal getInstance();
 
     /**
+	 * @ejb.relation
+	 * 	name="filesystem-files"
+	 * 	role-name="files-of-filesystem"
+     *  target-role-name="filesystem-of-file"
+     *  target-ejb="FileSystem"
+     *  target-multiple="yes"
+	 * 
+	 * @jboss:relation
+	 * 	fk-column="filesystem_fk"
+	 * 	related-pk-field="pk"
+	 * 
+	 * @ejb.interface-method
+	 * 	view-type="local"
+	 */
+    public abstract void setFileSystem(FileSystemLocal fs);
+
+    /**
+	 * @ejb.interface-method
+	 * 	view-type="local"
+	 */
+    public abstract FileSystemLocal getFileSystem();
+    
+    /**
      * @ejb.interface-method
      * @jboss.method-attributes
      *   read-only=true
      */
     public FileDTO getFileDTO() {
+        FileSystemLocal fs = getFileSystem();
         FileDTO retval = new FileDTO();
         retval.setPk(getPk().intValue());
-        retval.setRetrieveAETs(getRetrieveAETs());      
-        retval.setDirectoryPath(getDirectoryPath());      
+        retval.setRetrieveAETs(fs.getRetrieveAETs());      
+        retval.setDirectoryPath(fs.getDirectoryPath());      
         retval.setFilePath(getFilePath());
         retval.setFileTsuid(getFileTsuid());
         retval.setFileSize(getFileSize());
@@ -232,14 +218,12 @@ public abstract class FileBean implements EntityBean
     {
         return "File[pk="
             + getPk()
-            + ", retrieveAETs="
-            + getRetrieveAETs()
-            + ", dirpath="
-            + getDirectoryPath()
             + ", filepath="
             + getFilePath()
             + ", tsuid="
             + getFileTsuid()
+            + ", filesystem->"
+            + getFileSystem()
             + ", inst->"
             + getInstance()
             + "]";
@@ -251,17 +235,14 @@ public abstract class FileBean implements EntityBean
 	 * @ejb.create-method
 	 */
     public Integer ejbCreate(
-        String[] aets,
-        String basedir,
         String path,
         String tsuid,
         int size,
         byte[] md5,
-        InstanceLocal instance)
+        InstanceLocal instance,
+        FileSystemLocal filesystem)
         throws CreateException
     {
-		setRetrieveAETs(StringUtils.toString(aets, '\\'));      
-		setDirectoryPath(basedir);      
         setFilePath(path);
         setFileTsuid(tsuid);
         setFileSize(size);
@@ -270,21 +251,24 @@ public abstract class FileBean implements EntityBean
     }
 
     public void ejbPostCreate(
-        String[] aets,
-        String basedir,
         String path,
         String tsuid,
         int size,
         byte[] md5,
-        InstanceLocal instance)
+        InstanceLocal instance,
+        FileSystemLocal filesystem)
         throws CreateException
     {
         setInstance(instance);
+        setFileSystem(filesystem);
+        filesystem.setUsed(filesystem.getUsed() + size);
         log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException
     {
+        final FileSystemLocal fs = getFileSystem();
+        fs.setUsed(fs.getUsed() - getFileSize());
         log.info("Deleting " + prompt());
     }
 }

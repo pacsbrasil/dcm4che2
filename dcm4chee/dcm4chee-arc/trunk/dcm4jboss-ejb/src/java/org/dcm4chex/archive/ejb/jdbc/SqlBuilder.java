@@ -1,24 +1,11 @@
-/*
- * $Id$ Copyright (c)
- * 2002,2003 by TIANI MEDGRAPH AG
- * 
- * This file is part of dcm4che.
- * 
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.util.ArrayList;
@@ -76,7 +63,7 @@ class SqlBuilder {
             this.leftJoin = null;
             return;
         }
-        if (leftJoin.length != 3) {
+        if (leftJoin.length % 3 != 0) {
             throw new IllegalArgumentException("" + Arrays.asList(leftJoin));
         }
         this.leftJoin = JdbcProperties.getInstance().getProperties(leftJoin);
@@ -251,57 +238,63 @@ class SqlBuilder {
 
     private void appendLeftJoinToFrom(StringBuffer sb) {
         if (leftJoin == null) return;
-        if (getDatabase() == JdbcProperties.ORACLE) {
-            sb.append(", ");
-            sb.append(leftJoin[0]);            
-        } else {
-	        sb.append(" LEFT JOIN ");
-	        sb.append(leftJoin[0]);
-	        sb.append(" ON (");
-	        sb.append(leftJoin[1]);
-	        sb.append(" = ");
-	        sb.append(leftJoin[2]);
-	        sb.append(")");
+        for (int i = 0, n = leftJoin.length/3; i < n; ++i) {
+            final int i3 = 3*i;
+	        if (getDatabase() == JdbcProperties.ORACLE) {
+	            sb.append(", ");
+	            sb.append(leftJoin[i3]);            
+	        } else {
+		        sb.append(" LEFT JOIN ");
+		        sb.append(leftJoin[i3]);
+		        sb.append(" ON (");
+		        sb.append(leftJoin[i3+1]);
+		        sb.append(" = ");
+		        sb.append(leftJoin[i3+2]);
+		        sb.append(")");
+	        }
         }
     }
 
     private void appendLeftJoinToWhere(StringBuffer sb) {
         if (leftJoin == null || getDatabase() != JdbcProperties.ORACLE) return;
-        sb.append(whereOrAnd);
-        whereOrAnd = AND;
-        sb.append(leftJoin[1]);
-        sb.append(" = ");
-        sb.append(leftJoin[2]);
-        sb.append("(+)");
+        for (int i = 0, n = leftJoin.length/3; i < n; ++i) {
+            final int i3 = 3*i;
+	        sb.append(whereOrAnd);
+	        whereOrAnd = AND;
+	        sb.append(leftJoin[i+1]);
+	        sb.append(" = ");
+	        sb.append(leftJoin[i+2]);
+	        sb.append("(+)");
+        }
     }
         
 	private void appendInnerJoinsToFrom(StringBuffer sb) {
-		if (relations == null || getDatabase() == JdbcProperties.ORACLE
-		        || getDatabase() == JdbcProperties.HSQL) {
+		if (relations == null || getDatabase() == JdbcProperties.ORACLE) {
 			appendTo(sb,from);
 		} else {
 			sb.append(from[0]);
-			for (int i = 1; i < from.length; i++) {
-				sb.append(" JOIN ");
-				sb.append(from[i]);
+			for (int i = 0, n = relations.length/2; i < n; ++i) {
+			    final int i2 = 2*i;
+				sb.append(" INNER JOIN ");
+				sb.append(from[i+1]);
 				sb.append(" ON (");
-				sb.append(relations[(i-1)*2]);
+				sb.append(relations[i2]);
 				sb.append(" = ");
-				sb.append(relations[(i-1)*2+1]);
+				sb.append(relations[i2+1]);
 				sb.append(")");
 			}
 		}
 	}
 	
 	private void appendInnerJoinsToWhere(StringBuffer sb) {
-		if (relations == null || !(getDatabase() == JdbcProperties.ORACLE 
-		        || getDatabase() == JdbcProperties.HSQL)) return;
-        for (int i = 0; i < relations.length; i++, i++) {
+		if (relations == null || getDatabase() != JdbcProperties.ORACLE) return;
+        for (int i = 0, n = relations.length/2; i < n; ++i) {
+            final int i2 = 2*i;
             sb.append(whereOrAnd);
             whereOrAnd = AND;
-            sb.append(relations[i]);
+            sb.append(relations[i2]);
             sb.append(" = ");
-            sb.append(relations[i + 1]);
+            sb.append(relations[i2+1]);
         }
 	}
 

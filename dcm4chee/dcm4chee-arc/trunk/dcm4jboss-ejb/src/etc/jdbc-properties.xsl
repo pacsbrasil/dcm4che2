@@ -24,6 +24,15 @@
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'File']" mode="fk">
 <xsl:with-param name="fk" select="'instance_fk'"/>
 </xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'File']" mode="fk">
+<xsl:with-param name="fk" select="'filesystem_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'MWLItem']" mode="fk">
+<xsl:with-param name="fk" select="'patient_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'MPPS']" mode="fk">
+<xsl:with-param name="fk" select="'patient_fk'"/>
+</xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity"/>
 </xsl:template>
 

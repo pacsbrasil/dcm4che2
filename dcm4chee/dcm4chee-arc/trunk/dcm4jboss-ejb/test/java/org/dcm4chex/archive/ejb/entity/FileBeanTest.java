@@ -1,31 +1,11 @@
-/*
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 11.07.2003
- * Time: 18:50:40
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
 import java.net.InetAddress;
@@ -37,21 +17,26 @@ import javax.naming.InitialContext;
 import org.apache.cactus.ServletTestCase;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- *
+ * @version $Revision$ $Date$
  */
 public class FileBeanTest extends ServletTestCase {
-    public static final String[] RETRIEVE_AETS = {"QR_SCP" };
-    public static final String BASEDIR = "/var/local/archive";
+    public static final String RETRIEVE_AETS = "QR_SCP";
+    public static final String DIRPATH = "/var/local/archive";
     public static final String FILEID = "2003/07/11/12345678/9ABCDEF0";
     public static final String TSUID = "1.2.40.0.13.1.1.9999.3";
     public static final int SIZE = 567890;
+    public static final long USED = 0L;
+    public static final long HIGH_WATER_MARK = 1000000000L;
     public static final byte[] MD5 =
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
     private FileLocalHome fileHome;
+    private FileSystemLocalHome fileSystemHome;
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(FileBeanTest.class);
@@ -62,6 +47,7 @@ public class FileBeanTest extends ServletTestCase {
      */
     protected void setUp() throws Exception {
         Context ctx = new InitialContext();
+        fileSystemHome = (FileSystemLocalHome) ctx.lookup("java:comp/env/ejb/FileSystem");
         fileHome = (FileLocalHome) ctx.lookup("java:comp/env/ejb/File");
         ctx.close();
     }
@@ -80,16 +66,22 @@ public class FileBeanTest extends ServletTestCase {
     }
 
     public void testCreate() throws Exception {
+        FileSystemLocal fs =
+            fileSystemHome.create(
+                DIRPATH,
+                RETRIEVE_AETS,
+                USED,
+                HIGH_WATER_MARK);
         FileLocal file =
             fileHome.create(
-                RETRIEVE_AETS,
-                BASEDIR,
                 FILEID,
                 TSUID,
                 SIZE,
                 MD5,
-                null);
+                null,
+                fs);
         file.remove();
+        fs.remove();
     }
 
     private static String getHostName() throws UnknownHostException {

@@ -1,24 +1,19 @@
 -- Update DB from dcm4jboss-0.7.x/0.8.x to dcm4jboss-0.9.x
 
-CONNECT TO tiani;
-SET CURRENT SCHEMA TIANI;
-
 DROP TABLE move_order;
-DROP SEQUENCE move_order_pk_seq;
 
 DROP TABLE mwl_item;
 CREATE TABLE mwl_item (
-	pk          	INTEGER PRIMARY KEY NOT NULL,
+	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
 	patient_fk      INTEGER,
-	sps_id			VARCHAR(254) NOT NULL,
-	start_datetime	TIMESTAMP NOT NULL,
-	station_aet     VARCHAR(254) NOT NULL,
-	modality	    VARCHAR(254) NOT NULL,
-	perf_physician  VARCHAR(254),
-	perf_physician_up GENERATED ALWAYS AS (UPPER(perf_physician)),
-	req_proc_id    	VARCHAR(254) NOT NULL,
-	accession_no	VARCHAR(254),
-	item_attrs		BLOB(64000),
+	sps_id			VARCHAR(250) BINARY NOT NULL,
+	start_datetime	DATETIME NOT NULL,
+	station_aet     VARCHAR(250) BINARY NOT NULL,
+	modality	    VARCHAR(250) BINARY NOT NULL,
+	perf_physician  VARCHAR(250),
+	req_proc_id    	VARCHAR(250) BINARY NOT NULL,
+	accession_no	VARCHAR(250) BINARY,
+	item_attrs		BLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
@@ -26,7 +21,7 @@ CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id);
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet);
 CREATE INDEX mwl_modality ON mwl_item(modality);
-CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician_up);
+CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 
@@ -40,18 +35,14 @@ ALTER TABLE series
 ALTER TABLE series
 	ADD COLUMN updated_time TIMESTAMP;
 
-CREATE SEQUENCE filesystem_pk_seq;
 CREATE TABLE filesystem (
-	pk              INTEGER PRIMARY KEY  NOT NULL,
-	dirpath			VARCHAR(254) NOT NULL,
-	retrieve_aets	VARCHAR(254) NOT NULL,
+	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
+	dirpath			VARCHAR(250) BINARY NOT NULL,
+	retrieve_aets	VARCHAR(250) BINARY NOT NULL,
 	used			BIGINT DEFAULT 0 NOT NULL,
 	hwm				BIGINT DEFAULT 0 NOT NULL
 );
 CREATE UNIQUE INDEX dirpath ON filesystem(dirpath);
-
-GRANT ALL PRIVILEGES ON TABLE filesystem TO USER tiani;
-GRANT USAGE ON SEQUENCE filesystem_pk_seq TO USER tiani;
 
 INSERT INTO filesystem (dirpath, retrieve_aets)
 	SELECT DISTINCT dirpath, retrieve_aets FROM files;
@@ -68,5 +59,4 @@ UPDATE files, filesystem SET files.filesystem_fk=filesystem.pk
 
 ALTER TABLE files DROP COLUMN dirpath;
 ALTER TABLE files DROP COLUMN retrieve_aets;
-
-TERMINATE;
+	

@@ -47,15 +47,15 @@ public abstract class RetrieveCmd extends BaseCmd {
             "Patient.encodedAttributes", "Study.studyIuid",
             "Study.encodedAttributes", "Series.encodedAttributes",
             "Instance.encodedAttributes", "Instance.sopIuid",
-            "Instance.sopCuid", "Instance.retrieveAETs", "File.retrieveAETs",
-            "File.directoryPath", "File.filePath", "File.fileTsuid",
+            "Instance.sopCuid", "Instance.retrieveAETs", "FileSystem.retrieveAETs",
+            "FileSystem.directoryPath", "File.filePath", "File.fileTsuid",
             "File.fileMd5Field", "File.fileSize"};
 
     private static final String[] ENTITY = { "Patient", "Study", "Series",
             "Instance"};
 
     private static final String[] LEFT_JOIN = { "File", "Instance.pk",
-    		"File.instance_fk" };
+    		"File.instance_fk", "FileSystem", "File.filesystem_fk", "FileSystem.pk" };
     
     private static final String[] RELATIONS = { "Patient.pk",
             "Study.patient_fk", "Study.pk", "Series.study_fk", "Series.pk",

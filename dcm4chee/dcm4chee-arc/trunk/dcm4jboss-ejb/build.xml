@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.8.5"/>
+	<property name="version" value="0.9"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
@@ -513,8 +513,8 @@
          	<pathelement location="${test.conf}"/>
          </classpath>
          <formatter type="xml" />
-         <!--test name="org.dcm4chex.archive.ejb.session.StorageBeanTest"
-         	todir="${target.reports}"/-->
+         <test name="org.dcm4chex.archive.ejb.session.StorageBeanTest"
+         	todir="${target.reports}"/>
          <test name="org.dcm4chex.archive.ejb.session.MWLManagerBeanTest"
          	todir="${target.reports}"/>
       </junit>

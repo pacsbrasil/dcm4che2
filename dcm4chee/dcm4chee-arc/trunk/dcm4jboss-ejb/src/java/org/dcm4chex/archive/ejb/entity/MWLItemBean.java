@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
 import java.rmi.RemoteException;
@@ -36,6 +25,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.DatasetUtils;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
  * @ejb.bean
@@ -187,32 +177,6 @@ public abstract class MWLItemBean implements EntityBean {
     public abstract void setAccessionNumber(String no);
 
     /**
-     * Patient ID
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="pat_id"
-     */
-    public abstract String getPatientId();
-
-    public abstract void setPatientId(String pid);
-
-    /**
-     * Patient Name
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="pat_name"
-     */
-    public abstract String getPatientName();
-
-    /**
-     *
-     * @param name
-     */
-    public abstract void setPatientName(String name);
-
-    /**
      * MWL Item DICOM Attributes
      *
      * @ejb.persistence
@@ -224,16 +188,38 @@ public abstract class MWLItemBean implements EntityBean {
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
+     * @ejb.interface-method view-type="local"
+     * 
+     * @ejb.relation
+     *  name="patient-mwlitems"
+     *  role-name="mwlitem-of-patient"
+     *  cascade-delete="yes"
+     *
+     * @jboss:relation
+     *  fk-column="patient_fk"
+     *  related-pk-field="pk"
+     */
+    public abstract void setPatient(PatientLocal patient);
+
+    /**
+     * @ejb.interface-method view-type="local"
+     * 
+     * @return patient of this mwl_item
+     */
+    public abstract PatientLocal getPatient();
+
+    /**
      * Create MWLItem.
      *
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds) throws CreateException {
+    public Integer ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
         setAttributes(ds);
         return null;
     }
 
-    public void ejbPostCreate(Dataset ds) throws CreateException {
+    public void ejbPostCreate(Dataset ds, PatientLocal patient) throws CreateException {
+        setPatient(patient);
         if (getSpsId().length() == 0) {
             String id = spsIdPrefix + getPk();
             setSpsId(id);
@@ -275,8 +261,6 @@ public abstract class MWLItemBean implements EntityBean {
         setModality(spsItem.getString(Tags.Modality));
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
-        setPatientId(ds.getString(Tags.PatientID));
-        setPatientName(ds.getString(Tags.PatientName));
     }
 
     /**
@@ -310,10 +294,8 @@ public abstract class MWLItemBean implements EntityBean {
             + getModality()
             + ", accessionNo="
             + getAccessionNumber()
-            + ", patId="
-            + getPatientId()
-            + ", patName="
-            + getPatientName()
+            + ", patient->"
+            + getPatient()
             + "]";
     }
 

@@ -46,6 +46,8 @@ CREATE TABLE study (
 	num_instances	INTEGER,
 	retrieve_aets	TEXT,
 	availability	INTEGER,
+	created_time	TIMESTAMP,
+	updated_time	TIMESTAMP,
 	study_attrs		BYTEA,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
@@ -82,6 +84,8 @@ CREATE TABLE series (
 	retrieve_aets	TEXT,
 	availability	INTEGER,
 	hidden			BOOLEAN,
+	created_time	TIMESTAMP,
+	updated_time	TIMESTAMP,
 	series_attrs	BYTEA,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
@@ -117,11 +121,19 @@ CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 
+CREATE TABLE filesystem (
+	pk          	SERIAL PRIMARY KEY,
+	dirpath			TEXT NOT NULL,
+	retrieve_aets	TEXT NOT NULL,
+	used			BIGINT DEFAULT 0 NOT NULL,
+	hwm				BIGINT DEFAULT 0 NOT NULL
+);
+CREATE UNIQUE INDEX dirpath ON file_system(dirpath);
+
 CREATE TABLE files (
 	pk              SERIAL PRIMARY KEY,
 	instance_fk     INTEGER,
-	retrieve_aets	TEXT NOT NULL,
-	dirpath			TEXT NOT NULL,
+	filesystem_fk	INTEGER,
 	filepath		TEXT NOT NULL,
 	file_tsuid      TEXT NOT NULL,
 	file_md5        TEXT,
@@ -129,9 +141,11 @@ CREATE TABLE files (
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);
+CREATE INDEX filesystem_fk ON files(filesystem_fk);
 
 CREATE TABLE mwl_item (
 	pk          	SERIAL PRIMARY KEY,
+	patient_fk      INTEGER,
 	sps_id			TEXT NOT NULL,
 	start_datetime	TIMESTAMP NOT NULL,
 	station_aet     TEXT NOT NULL,
@@ -139,10 +153,10 @@ CREATE TABLE mwl_item (
 	perf_physician  TEXT,
 	req_proc_id    	TEXT NOT NULL,
 	accession_no	TEXT,
-	pat_id         	TEXT NOT NULL,
-	pat_name    	TEXT NOT NULL,
-	item_attrs		BYTEA
+	item_attrs		BYTEA,
+FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
+CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item (sps_id);
 CREATE INDEX mwl_start_time ON mwl_item (start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item (station_aet);
@@ -150,8 +164,6 @@ CREATE INDEX mwl_modality ON mwl_item (modality);
 CREATE INDEX mwl_perf_physician ON mwl_item (UPPER(perf_physician));
 CREATE INDEX mwl_req_proc_id ON mwl_item (req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item (accession_no);
-CREATE INDEX mwl_pat_id ON mwl_item (pat_id);
-CREATE INDEX mwl_pat_name ON mwl_item (UPPER(pat_name));
 
 CREATE TABLE audit_record(
 	pk 				SERIAL PRIMARY KEY,

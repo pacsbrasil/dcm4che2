@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.ejb.session;
 
 import java.io.BufferedInputStream;
@@ -36,6 +25,9 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 
@@ -47,14 +39,14 @@ public class StorageBeanTest extends TestCase {
 
     public static final String CALLING_AET = "STORE_SCU";
     public static final String CALLED_AET = "STORE_SCP";
-    public static final String[] RETRIEVE_AETS = { "QR_SCP" };
+    public static final String RETRIEVE_AETS = "QR_SCP";
     public static final String DIR = "storage";
     public static final String AET = "StorageBeanTest";
     public static final DcmObjectFactory objFact =
         DcmObjectFactory.getInstance();
 
     private Storage storage;
-
+ 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(StorageBeanTest.class);
     }
@@ -65,8 +57,18 @@ public class StorageBeanTest extends TestCase {
     protected void setUp() throws Exception {
         Context ctx = new InitialContext();
         StorageHome home = (StorageHome) ctx.lookup(StorageHome.JNDI_NAME);
+        FileSystemMgtHome  fsMgtHome = (FileSystemMgtHome) ctx.lookup(FileSystemMgtHome.JNDI_NAME);
         ctx.close();
         storage = home.create();
+        FileSystemMgt fsMgt = fsMgtHome.create();
+        try {
+            FileSystemDTO fs = new FileSystemDTO();
+            fs.setDirectoryPath("/");
+            fs.setRetrieveAETs(RETRIEVE_AETS);
+            fsMgt.addFileSystem(fs);
+        } catch (Exception e) {            
+        }
+        fsMgt.remove();
     }
 
     /*
@@ -102,7 +104,6 @@ public class StorageBeanTest extends TestCase {
             CALLING_AET,
             CALLED_AET,
             ds,
-            RETRIEVE_AETS,
             "/",
             path.substring(1),
             (int) file.length(),

@@ -243,9 +243,9 @@ public final class DTOFactory {
                 InstanceDTO.DATETIME_FORMAT));
         ps.setPresentationCreatorName(
             ds.getString(Tags.PresentationCreatorName, ""));
-        ps.setPresentationLabel(ds.getString(Tags.PresentationLabel, ""));
+        ps.setPresentationLabel(ds.getString(Tags.ContentLabel, ""));
         ps.setPresentationDescription(
-            ds.getString(Tags.PresentationDescription, ""));
+            ds.getString(Tags.ContentDescription, ""));
         ps.setNumberOfReferencedImages(countRefImages(ds));
         return ps;
     }
