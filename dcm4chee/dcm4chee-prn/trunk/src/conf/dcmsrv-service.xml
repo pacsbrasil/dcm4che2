@@ -17,11 +17,7 @@
     <depends optional-attribute-name="AuditLoggerName">
       dcm4chex:service=AuditLogger,name=AUDITLOG
     </depends>
-    <!-- Uncomment to delay start of DICOM server, after (optionally) bundled
-    Audit Record Repository (jaudit) is ready to receive the ActorStart record 
-    <depends>dcm4chex:service=AuditRepServer</depends>
-    -->
-     
+    
     <!--
     Set maximal number of simultaneously conncected DICOM clients.
     -->

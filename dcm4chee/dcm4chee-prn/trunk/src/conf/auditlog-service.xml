@@ -12,24 +12,10 @@
 
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
-  <!--
-     | Add custom MBeans here.  MBeans should be registered under the
-     | 'user' JMX domain, or a domain specific to the component application.
-     |
-     | Do not place user components in the 'jboss' domain or any sub-domain.
-   -->
- 
-  <!-- Example Service Configuration  
-
-  <mbean code="my.company.MyService" 
-         name="user:service=MyService">
-    <attribute name="MyAttribute">AttributeValue</attribute>
-  </mbean>
-  
-  -->
-
   <mbean code="org.dcm4chex.service.AuditLoggerService" 
          name="dcm4chex:service=AuditLogger,name=AUDITLOG">
+    <!-- @DEPENDS@ -->
+     
     <attribute name="SyslogHost">localhost</attribute>
     <attribute name="SyslogPort">4000</attribute>
     <attribute name="Facility">authpriv</attribute>         

@@ -77,10 +77,11 @@ public class PrintScpService
 {
 
     // Constants -----------------------------------------------------
-    final static String UNKNOWN = "unknown";
-    final static String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1.2";
-    final static int SHUTDOWN_DELAY_MINUTES = 20;
-    final static Map dumpParam = new HashMap(5);
+    private final static String UNKNOWN = "unknown";
+    private final static String PRODUCT_UID = "1.2.40.0.13.2.1.1.2";
+    private final static String DEF_LICENSE = "conf/license.jks";
+    private final static int SHUTDOWN_DELAY_MINUTES = 20;
+    private final static Map dumpParam = new HashMap(5);
     static {
         dumpParam.put("maxlen", new Integer(128));
         dumpParam.put("vallen", new Integer(64));
@@ -118,6 +119,9 @@ public class PrintScpService
 
 
     // Constructors --------------------------------------------------
+    public PrintScpService() {
+        setLicenseFile(DEF_LICENSE);
+    }
 
     // Public --------------------------------------------------------
 
@@ -193,7 +197,7 @@ public class PrintScpService
      *
      * @return    The licenseFile value
      */
-    public String getLicenseFile()
+    public final String getLicenseFile()
     {
         return licenseFile.getPath();
     }
@@ -204,7 +208,7 @@ public class PrintScpService
      *
      * @param  fname  The new licenseFile value
      */
-    public void setLicenseFile(String fname)
+    public final void setLicenseFile(String fname)
     {
         this.licenseFile = toFile(fname);
     }
@@ -220,6 +224,16 @@ public class PrintScpService
         this.licensePasswd = passwd.length() > 0 ? passwd.toCharArray() : null;
     }
 
+
+    /**
+     *  Gets the license attribute of the PrintScpService object
+     *
+     * @return    The license value
+     */
+    public X509Certificate getLicense()
+    {
+        return this.license;
+    }
 
     /**
      *  Gets the keepSpoolFiles attribute of the PrintScpService object
@@ -332,28 +346,6 @@ public class PrintScpService
 
 
     /**
-     *  Gets the license attribute of the PrintScpService object
-     *
-     * @return    The license value
-     */
-    public X509Certificate getLicense()
-    {
-        return this.license;
-    }
-
-
-    /**
-     *  Sets the license attribute of the PrintScpService object
-     *
-     * @param  license  The new license value
-     */
-    public void setLicense(X509Certificate license)
-    {
-        this.license = license;
-    }
-
-
-    /**
      *  Description of the Method
      *
      * @param  aet     Description of the Parameter
@@ -450,11 +442,12 @@ public class PrintScpService
     {
         try {
             LicenseStore store = new LicenseStore(licenseFile, licensePasswd);
-            license = store.getLicenseFor(PRNSCP_PRODUCT_UID);
+            license = store.getLicenseFor(PRODUCT_UID);
             if (license != null) {
                 license.checkValidity();
                 if (LicenseStore.countSubjectIDs(license) == 0
                          || LicenseStore.countMatchingSubjectIDs(license) > 0) {
+                    log.info("Detect valid License for " + license.getSubjectDN());
                     return;
                     // OK
                 }
@@ -1289,17 +1282,5 @@ public class PrintScpService
         }
         return attrs;
     }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
-     */
-    public String showLicense()
-    {
-        return "" + license;
-    }
-
 }
 

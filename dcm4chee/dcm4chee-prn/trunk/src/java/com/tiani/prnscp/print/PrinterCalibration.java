@@ -112,9 +112,9 @@ class PrinterCalibration
         for (int p = 0; p < lut.length; ++p) {
             lut[p] = (byte) toDDL(dmin + (dmax - dmin) * p / ((1 << n) - 1));
         }
-        if (log.isDebugEnabled()) {
-            logLut("PValToDDLwLinOD[dmin=" + dmin + ", dmax=" + dmax + "]:", lut);
-        }
+//        if (log.isDebugEnabled()) {
+//            logLut("PValToDDLwLinOD[dmin=" + dmin + ", dmax=" + dmax + "]:", lut);
+//        }
         return lut;
     }
 
@@ -145,14 +145,14 @@ class PrinterCalibration
         for (int pv = 0; pv < lut.length; ++pv) {
             lut[pv] = (byte) toDDL((float) density(pv, n, jmin, jmax, l0, la));
         }
-        if (log.isDebugEnabled()) {
-            logLut("PValToDDLwGSDF[dmin=" + dmin + ", dmax=" + dmax
-                     + ", L0=" + l0 + ", La=" + la + "]:", lut);
-        }
+//        if (log.isDebugEnabled()) {
+//            logLut("PValToDDLwGSDF[dmin=" + dmin + ", dmax=" + dmax
+//                     + ", L0=" + l0 + ", La=" + la + "]:", lut);
+//        }
         return lut;
     }
 
-
+/*
     private void logLut(String prompt, byte[] lut)
     {
         StringBuffer sb = new StringBuffer(prompt);
@@ -163,7 +163,7 @@ class PrinterCalibration
         }
         log.debug(sb.toString());
     }
-
+*/
 
     /**
      *  Gets the pValToDDL attribute of the PrinterCalibration object

@@ -99,6 +99,14 @@ public interface PrintScpServiceMBean extends ServiceMBean
 
 
     /**
+     *  Gets the license attribute of the PrintScpServiceMBean object
+     *
+     * @return    The license value
+     */
+    public X509Certificate getLicense();
+
+
+    /**
      *  Gets the spoolDirectory attribute of the PrintScpServiceMBean object
      *
      * @return    The spoolDirectory value
@@ -192,22 +200,6 @@ public interface PrintScpServiceMBean extends ServiceMBean
      * @return    The numStoredPrints value
      */
     public int getNumStoredPrints();
-
-
-    /**
-     *  Gets the license attribute of the PrintScpServiceMBean object
-     *
-     * @return    The license value
-     */
-    public X509Certificate getLicense();
-
-
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
-     */
-    public String showLicense();
 
 
     /**

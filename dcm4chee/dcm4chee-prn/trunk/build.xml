@@ -28,7 +28,7 @@
   
   
   <!-- Override with your JBoss/Web server bundle dist location -->
-  <property name="jboss.home" value="${user.home}/jboss-3.0.6"/>
+  <property name="jboss.home" value="${user.home}/jboss-3.0.7"/>
   <property name="jboss.bin" value="${jboss.home}/bin"/>
   <property name="jboss.lib" value="${jboss.home}/lib"/>
   <property name="jboss.client" value="${jboss.home}/client"/>
@@ -42,7 +42,7 @@
   <property name="docbook-xsl.fo.dir" value="${docbook-xsl.home}/fo"/>
 
   <!-- Override with your Apache FOP dist location -->
-  <property name="fop.home" value="${user.home}/fop-0.20.4"/>
+  <property name="fop.home" value="${user.home}/fop-0.20.5rc2"/>
   <property name="fop.jar" value="${fop.home}/build/fop.jar"/>
   
   <property name="doc.dir" value="${basedir}/doc"/>
@@ -93,9 +93,9 @@
     <antcall target="fail_if_no_dcm4jboss"/>
     <available property="jboss.present" file="${jboss.lib}/jboss-system.jar" />
     <antcall target="fail_if_no_jboss"/>
-    <available property="fop.present" file="${fop.jar}" />
     <available property="license.present" file="${check-license.jar}" />
     <antcall target="fail_if_no_license"/>
+    <available property="fop.present" file="${fop.jar}" />
     <available property="jaudit.present" file="${jaudit.home}" />
   </target>
 
@@ -129,7 +129,7 @@
     <echo message="license.home = ${license.home}"/>
     <echo message="jboss.home = ${jboss.home}"/>
     <echo message="fop.home = ${fop.home}"/>
-    <echo message="docbook-xsl.dist = ${docbook-xsl.dist}"/>
+    <echo message="docbook-xsl.home = ${docbook-xsl.home}"/>
     <echo message="java.class.path = ${java.class.path}"/>
     <echo message="dasho.jar = ${dasho.jar}"/>
     <tstamp/>
@@ -154,7 +154,7 @@
     <copy file="${src.conf}/prnscp-service.xml" 
           tofile="${build.dir}/prnscp/jboss-service.xml">
       <filterset>
-        <filter token="ARCHIVES" value="dcm4che.jar"/>
+        <filter token="ARCHIVES" value="dcm4che.jar,check-license.jar"/>
       </filterset>
     </copy>
     <mkdir dir="${build.deploy.dir}"/>
@@ -329,12 +329,13 @@
           todir="${build.deploy.dir}">
       <filterset>
         <filter token="ARCHIVES" value="dcm4che.jar,auditlog.jar"/>
+        <filter token="DEPENDS" value=""/>
       </filterset>
     </copy>
     <copy file="${src.conf}/prnscp-service.xml" 
           todir="${build.deploy.dir}">
       <filterset>
-        <filter token="ARCHIVES" value="dcm4che.jar,prnscp.jar"/>
+        <filter token="ARCHIVES" value="dcm4che.jar,prnscp.jar,check-license.jar"/>
       </filterset>
     </copy>
     <copy file="${src.conf}/printer-service.xml" 
@@ -576,7 +577,16 @@
         <include name="lib/*"/>
         <include name="conf/*"/>
         <include name="deploy/*.xml"/>
+        <exclude name="deploy/auditlog-service.xml"/>
       </fileset>
+    </copy>
+    <copy file="${src.conf}/auditlog-service.xml" 
+          todir="${dist-with-jaudit.dir}/server/default/deploy">
+      <filterset>
+        <filter token="ARCHIVES" value="dcm4che.jar,auditlog.jar"/>
+        <filter token="DEPENDS"
+            value="--> &lt;depends>dcm4chex:service=AuditRepServer&lt;/depends> &lt;!--"/>
+      </filterset>
     </copy>
     <fixcrlf srcdir="${dist-with-jaudit.dir}/bin" eol="crlf" includes="*.bat"/>
     <fixcrlf srcdir="${dist-with-jaudit.dir}/bin" eol="lf" includes="*.sh"/>
