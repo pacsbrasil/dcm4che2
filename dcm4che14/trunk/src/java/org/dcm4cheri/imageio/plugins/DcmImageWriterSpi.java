@@ -43,7 +43,7 @@ public class DcmImageWriterSpi extends ImageWriterSpi {
   static final private String[]    suffixes = { "dcm" };
   static final private String[]    MIMETypes = { "Application/dicom" };
   static final private String      writerClassName = "org.dcm4cheri.imageio.plugins.DcmImageWriter";
-  static final private Class[]     outputTypes = { ImageOutputStream.class }; // ????
+  static final private Class[]     outputTypes = { ImageOutputStream.class };
   static final private String[]    readerSpiNames = null;
   static final private boolean     supportsStandardStreamMetadataFormat = false;
   static final private String      nativeStreamMetadataFormatName = org.dcm4che.imageio.plugins.DcmMetadata.nativeMetadataFormatName;
