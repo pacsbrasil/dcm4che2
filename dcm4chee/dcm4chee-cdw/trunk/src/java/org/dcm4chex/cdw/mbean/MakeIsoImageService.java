@@ -50,7 +50,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
 
     private boolean joliet = false;
 
-    private boolean utf = false;
+    private boolean udf = false;
     
     private boolean volsetInfoEnabled = false;
 
@@ -116,12 +116,12 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         this.joliet = joliet;
     }
 
-    public final boolean isUtf() {
-        return utf;
+    public final boolean isUdf() {
+        return udf;
     }
 
-    public final void setUtf(boolean utf) {
-        this.utf = utf;
+    public final void setUdf(boolean udf) {
+        this.udf = udf;
     }
     
     public final boolean isLogEnabled() {
@@ -161,7 +161,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
             cmd.add(String.valueOf(isoLevel));
             if (rockRidge) cmd.add("-r");
             if (joliet) cmd.add("-J");
-            if (utf) cmd.add("-utf");
+            if (udf) cmd.add("-udf");
             if (volId != null && volId.length() != 0) {
                 cmd.add("-V");
                 cmd.add(volId);

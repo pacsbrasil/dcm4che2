@@ -73,11 +73,11 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isUtf"
-      setMethod="setUtf">
+      getMethod="isUdf"
+      setMethod="setUdf">
       <description>Description not yet written.
       </description>
-      <name>Utf</name>
+      <name>Udf</name>
       <type>boolean</type>      
       <descriptors>
          <value value="false" />
