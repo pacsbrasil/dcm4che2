@@ -253,6 +253,7 @@ public class WADOCacheImpl implements WADOCache {
 		if ( !file.isDirectory() ) return;
 		
 		File[] files = file.listFiles();
+		if ( files == null ) return;
 		for ( int i = 0, len = files.length ; i < len ; i++ ) {
 			if ( files[i].isFile() ) {
 				files[i].delete();
