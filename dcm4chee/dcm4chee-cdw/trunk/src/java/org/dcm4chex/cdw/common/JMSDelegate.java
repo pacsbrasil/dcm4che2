@@ -8,7 +8,7 @@
  ******************************************/
 package org.dcm4chex.cdw.common;
 
-import java.util.HashMap;
+import java.util.Hashtable;
 
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -41,44 +41,48 @@ public class JMSDelegate {
      */
     public static final String PROPERTY_SCHEDULED_DELIVERY = "JMS_JBOSS_SCHEDULED_DELIVERY";
     
+    public static void startListening(String name, MessageListener listener) {
+        if (map.containsKey(name))
+            throw new IllegalStateException("Already listening on queue " + name);
+        map.put(name, new JMSDelegate(name, listener));
+    }
+
+    public static void stopListening(String name) {
+        JMSDelegate jms = (JMSDelegate) map.remove(name);
+        if (jms == null)
+            throw new IllegalStateException("No listener on queue " + name);
+        jms.close();
+    }
+    
+    public static void queue(String name, String prompt, Logger log, 
+            MediaCreationRequest rq, long scheduledTime) throws JMSException {
+        JMSDelegate jms = (JMSDelegate) map.get(name);
+        if (jms == null)
+            throw new IllegalStateException("No listener on queue " + name);
+        jms.queue(prompt, log, rq, scheduledTime);
+    }
+    
+    
     static int toJMSPriority(String dcmPriority) {
         if (dcmPriority.equals(Priority.LOW)) return 3;
         if (dcmPriority.equals(Priority.HIGH)) return 5;
         return 4;
     }
 
-    private static HashMap map = new HashMap();
+    private static Hashtable map = new Hashtable();
 
-    public synchronized static JMSDelegate getInstance(String name) {
-        JMSDelegate instance = (JMSDelegate) map.get(name);
-        if (instance == null)
-            map.put(name, instance = new JMSDelegate(name));
-        return instance;
-    }
-
-    private static QueueConnection conn;
-
-    private final String name;
+    private final QueueConnection conn;
 
     private final Queue queue;
 
-    private final QueueReceiver receiver;
-
-    private JMSDelegate(String name) {
-        this.name = name;
+    private JMSDelegate(String name, MessageListener listener) {
         InitialContext iniCtx = null;
+        QueueConnectionFactory qcf = null;
         try {
             iniCtx = new InitialContext();
-            if (conn == null) {
-	            Object tmp = iniCtx.lookup(CONNECTION_FACTORY);
-	            QueueConnectionFactory qcf = (QueueConnectionFactory) tmp;
-	            conn = qcf.createQueueConnection();
-	            conn.start();
-            }
+	        qcf = (QueueConnectionFactory) iniCtx.lookup(CONNECTION_FACTORY);
             queue = (Queue) iniCtx.lookup("queue/" + name);
-            QueueSession session = conn.createQueueSession(false,
-                    QueueSession.AUTO_ACKNOWLEDGE);
-            receiver = session.createReceiver(queue);
+            conn = qcf.createQueueConnection();
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         } catch (JMSException e) {
@@ -91,18 +95,25 @@ public class JMSDelegate {
                 }
             }
         }
-    }
-
-    public void setMessageListener(MessageListener listener) {
         try {
+            QueueSession session = conn.createQueueSession(false,
+                    QueueSession.AUTO_ACKNOWLEDGE);
+            QueueReceiver receiver = session.createReceiver(queue);
             receiver.setMessageListener(listener);
+            conn.start();
         } catch (JMSException e) {
-            throw new ConfigurationException(e);
+            close();
+        }
+    }
+    
+    private void close() {
+        try {
+            conn.close();
+        } catch (Exception ignore) {
         }
     }
 
-
-    public void queue(String prompt, Logger log, MediaCreationRequest rq, long scheduledTime)
+    private void queue(String prompt, Logger log, MediaCreationRequest rq, long scheduledTime)
             throws JMSException {
         QueueSession session = null;
         QueueSender send = null;
@@ -117,7 +128,7 @@ public class JMSDelegate {
             send.send(msg, DeliveryMode.PERSISTENT, toJMSPriority(rq
                     .getPriority()), 0);
         } catch (JMSException e) {
-            log.error("Failed: " + name, e);
+            log.error("Failed: " + prompt, e);
             throw e;
         } finally {
             if (send != null) {

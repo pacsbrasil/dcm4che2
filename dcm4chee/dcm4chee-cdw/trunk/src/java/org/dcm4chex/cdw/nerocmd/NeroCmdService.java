@@ -307,7 +307,7 @@ public class NeroCmdService extends AbstractMediaWriterService {
                 ExecutionStatusInfo.OUT_OF_SUPPLIES);
         rq.writeAttributes(attrs, log);
         try {
-            JMSDelegate.getInstance(rq.getMediaWriterName()).queue(
+            JMSDelegate.queue(rq.getMediaWriterName(),
                     "Schedule Writing Media for " + rq,
                     log,
                     rq,

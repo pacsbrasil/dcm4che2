@@ -327,11 +327,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     protected void startService() throws Exception {
         log.info("Initialize " + DicomDirDOM.class.getName());
-        JMSDelegate.getInstance("MediaComposer").setMessageListener(listener);
+        JMSDelegate.startListening("MediaComposer", listener);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.getInstance("MediaComposer").setMessageListener(null);
+        JMSDelegate.stopListening("MediaComposer");
     }
 
     protected void process(MediaCreationRequest rq) {
@@ -470,10 +470,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
         try {
             log.info("Finished Composing media for " + rq);
             if (makeIsoImage)
-                JMSDelegate.getInstance("MakeIsoImage").queue(
+                JMSDelegate.queue("MakeIsoImage",
                         "Schedule Creating ISO image for " + rq, log, rq, 0L);
             else
-                JMSDelegate.getInstance("MediaWriter").queue(
+                JMSDelegate.queue("MediaWriter",
                         "Schedule Writing Media for " + rq, log, rq, 0L);
             
         } catch (JMSException e) {

@@ -254,11 +254,11 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
     
 
     protected void startService() throws Exception {
-        JMSDelegate.getInstance("MakeIsoImage").setMessageListener(listener);
+        JMSDelegate.startListening("MakeIsoImage", listener);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.getInstance("MakeIsoImage").setMessageListener(null);
+        JMSDelegate.stopListening("MakeIsoImage");
     }
 
     protected void process(MediaCreationRequest rq) {
@@ -326,7 +326,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
                     }
                 }
                 log.info("Finished Creating ISO 9660 image for " + rq);
-                JMSDelegate.getInstance(rq.getMediaWriterName()).queue(
+                JMSDelegate.queue(rq.getMediaWriterName(),
                         "Schedule Writing Media for " + rq, log, rq, 0L);
                 cleanup = false;
             } catch (Exception e) {

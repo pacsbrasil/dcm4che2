@@ -505,8 +505,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
                 try {
-                    JMSDelegate.getInstance("MediaComposer")
-                            .queue("Schedule Composing media for " + rq,
+                    JMSDelegate.queue("MediaComposer",
+                            		"Schedule Composing media for " + rq,
                                     log,
                                     mcrq,
                                     0L);
