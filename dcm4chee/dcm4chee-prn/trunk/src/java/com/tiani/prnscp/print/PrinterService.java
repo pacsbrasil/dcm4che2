@@ -2588,8 +2588,10 @@ public class PrinterService
             }
             invokeOnPrintSCPName("onJobStartPrinting", scheduledJob.getPath());
             PrintService ps = getPrintService();
-            PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
             Chromaticity chromaticity = toChromaticity(scheduledJob.isColor());
+            calibrate(chromaticity);
+            scheduledJob.initFilmBoxes(this);
+            PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
             setPrintRequestAttribute(ps, chromaticity, aset);
             String resId = scheduledJob.getRequestedResolutionID();
             setPrintRequestAttribute(ps,
@@ -2604,8 +2606,6 @@ public class PrinterService
             }
             setPrintRequestAttribute(ps,
                     new JobName(scheduledJob.getName(), null), aset);
-            calibrate(chromaticity);
-            scheduledJob.initFilmBoxes(this);
             print(scheduledJob, aset);
             log.info("Finished processing job - " + scheduledJob.getJobID());
             try {
