@@ -135,7 +135,7 @@ public class MPPSScpService
         callingAETs = (String[]) pe.getValue();
         if (getState() == STARTED)
         {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -155,7 +155,7 @@ public class MPPSScpService
         this.tsUIDs = tsUIDs;
         if (getState() == STARTED)
         {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
     

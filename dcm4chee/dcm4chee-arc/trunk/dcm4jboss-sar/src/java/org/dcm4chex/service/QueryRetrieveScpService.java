@@ -109,7 +109,7 @@ public class QueryRetrieveScpService
         pe.setAsText(newCallingAETs);
         callingAETs = (String[]) pe.getValue();
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -126,7 +126,7 @@ public class QueryRetrieveScpService
     public final void setPatientRootFind(String patientRootFind) {
         this.patientRootFind = patientRootFind;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -143,7 +143,7 @@ public class QueryRetrieveScpService
     public final void setPatientRootMove(String patientRootMove) {
         this.patientRootMove = patientRootMove;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -160,7 +160,7 @@ public class QueryRetrieveScpService
     public final void setPatientStudyOnlyFind(String patientStudyOnlyFind) {
         this.patientStudyOnlyFind = patientStudyOnlyFind;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -177,7 +177,7 @@ public class QueryRetrieveScpService
     public final void setPatientStudyOnlyMove(String patientStudyOnlyMove) {
         this.patientStudyOnlyMove = patientStudyOnlyMove;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -194,7 +194,7 @@ public class QueryRetrieveScpService
     public final void setStudyRootFind(String studyRootFind) {
         this.studyRootFind = studyRootFind;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -211,7 +211,7 @@ public class QueryRetrieveScpService
     public final void setStudyRootMove(String studyRootMove) {
         this.studyRootMove = studyRootMove;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 

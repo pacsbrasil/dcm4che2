@@ -421,7 +421,7 @@ public class StoreScpService
         pe.setAsText(newCallingAETs);
         callingAETs = (String[]) pe.getValue();
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -438,7 +438,7 @@ public class StoreScpService
     public final void setAmbulatoryECGWaveformStorage(String ambulatoryECGWaveformStorage) {
         this.ambulatoryECGWaveformStorage = ambulatoryECGWaveformStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -455,7 +455,7 @@ public class StoreScpService
     public final void setBasicTextSR(String basicTextSR) {
         this.basicTextSR = basicTextSR;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -472,7 +472,7 @@ public class StoreScpService
     public final void setBasicVoiceAudioWaveformStorage(String basicVoiceAudioWaveformStorage) {
         this.basicVoiceAudioWaveformStorage = basicVoiceAudioWaveformStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -490,7 +490,7 @@ public class StoreScpService
         this.cardiacElectrophysiologyWaveformStorage =
             cardiacElectrophysiologyWaveformStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -507,7 +507,7 @@ public class StoreScpService
     public final void setComprehensiveSR(String comprehensiveSR) {
         this.comprehensiveSR = comprehensiveSR;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -524,7 +524,7 @@ public class StoreScpService
     public final void setComputedRadiographyImageStorage(String computedRadiographyImageStorage) {
         this.computedRadiographyImageStorage = computedRadiographyImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -541,7 +541,7 @@ public class StoreScpService
     public final void setCtImageStorage(String ctImageStorage) {
         this.ctImageStorage = ctImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -559,7 +559,7 @@ public class StoreScpService
         this.digitalIntraoralXRayImageStorageForPresentation =
             digitalIntraoralXRayImageStorageForPresentation;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -577,7 +577,7 @@ public class StoreScpService
         this.digitalIntraoralXRayImageStorageForProcessing =
             digitalIntraoralXRayImageStorageForProcessing;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -595,7 +595,7 @@ public class StoreScpService
         this.digitalMammographyXRayImageStorageForPresentation =
             digitalMammographyXRayImageStorageForPresentation;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -613,7 +613,7 @@ public class StoreScpService
         this.digitalMammographyXRayImageStorageForProcessing =
             digitalMammographyXRayImageStorageForProcessing;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -631,7 +631,7 @@ public class StoreScpService
         this.digitalXRayImageStorageForPresentation =
             digitalXRayImageStorageForPresentation;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -649,7 +649,7 @@ public class StoreScpService
         this.digitalXRayImageStorageForProcessing =
             digitalXRayImageStorageForProcessing;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -666,7 +666,7 @@ public class StoreScpService
     public final void setEnhancedMRImageStorage(String enhancedMRImageStorage) {
         this.enhancedMRImageStorage = enhancedMRImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -683,7 +683,7 @@ public class StoreScpService
     public final void setEnhancedSR(String enhancedSR) {
         this.enhancedSR = enhancedSR;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -700,7 +700,7 @@ public class StoreScpService
     public final void setGeneralECGWaveformStorage(String generalECGWaveformStorage) {
         this.generalECGWaveformStorage = generalECGWaveformStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -718,7 +718,7 @@ public class StoreScpService
         this.grayscaleSoftcopyPresentationStateStorage =
             grayscaleSoftcopyPresentationStateStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -735,7 +735,7 @@ public class StoreScpService
     public final void setHardcopyColorImageStorage(String hardcopyColorImageStorage) {
         this.hardcopyColorImageStorage = hardcopyColorImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -752,7 +752,7 @@ public class StoreScpService
     public final void setHardcopyGrayscaleImageStorage(String hardcopyGrayscaleImageStorage) {
         this.hardcopyGrayscaleImageStorage = hardcopyGrayscaleImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -769,7 +769,7 @@ public class StoreScpService
     public final void setHemodynamicWaveformStorage(String hemodynamicWaveformStorage) {
         this.hemodynamicWaveformStorage = hemodynamicWaveformStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -786,7 +786,7 @@ public class StoreScpService
     public final void setKeyObjectSelectionDocument(String keyObjectSelectionDocument) {
         this.keyObjectSelectionDocument = keyObjectSelectionDocument;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -803,7 +803,7 @@ public class StoreScpService
     public final void setMammographyCADSR(String mammographyCADSR) {
         this.mammographyCADSR = mammographyCADSR;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -820,7 +820,7 @@ public class StoreScpService
     public final void setMrImageStorage(String mrImageStorage) {
         this.mrImageStorage = mrImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -837,7 +837,7 @@ public class StoreScpService
     public final void setMrSpectroscopyStorage(String mrSpectroscopyStorage) {
         this.mrSpectroscopyStorage = mrSpectroscopyStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -855,7 +855,7 @@ public class StoreScpService
         this.multiframeColorSecondaryCaptureImageStorage =
             multiframeColorSecondaryCaptureImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -873,7 +873,7 @@ public class StoreScpService
         this.multiframeGrayscaleByteSecondaryCaptureImageStorage =
             multiframeGrayscaleByteSecondaryCaptureImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -891,7 +891,7 @@ public class StoreScpService
         this.multiframeGrayscaleWordSecondaryCaptureImageStorage =
             multiframeGrayscaleWordSecondaryCaptureImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -909,7 +909,7 @@ public class StoreScpService
         this.multiframeSingleBitSecondaryCaptureImageStorage =
             multiframeSingleBitSecondaryCaptureImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -926,7 +926,7 @@ public class StoreScpService
     public final void setNuclearMedicineImageStorage(String nuclearMedicineImageStorage) {
         this.nuclearMedicineImageStorage = nuclearMedicineImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -944,7 +944,7 @@ public class StoreScpService
         this.nuclearMedicineImageStorageRetired =
             nuclearMedicineImageStorageRetired;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -962,7 +962,7 @@ public class StoreScpService
         this.positronEmissionTomographyImageStorage =
             positronEmissionTomographyImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -979,7 +979,7 @@ public class StoreScpService
     public final void setRawDataStorage(String rawDataStorage) {
         this.rawDataStorage = rawDataStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -996,7 +996,7 @@ public class StoreScpService
     public final void setRtBeamsTreatmentRecordStorage(String rtBeamsTreatmentRecordStorage) {
         this.rtBeamsTreatmentRecordStorage = rtBeamsTreatmentRecordStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1013,7 +1013,7 @@ public class StoreScpService
     public final void setRtDoseStorage(String rtDoseStorage) {
         this.rtDoseStorage = rtDoseStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1030,7 +1030,7 @@ public class StoreScpService
     public final void setRtImageStorage(String rtImageStorage) {
         this.rtImageStorage = rtImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1047,7 +1047,7 @@ public class StoreScpService
     public final void setRtPlanStorage(String rtPlanStorage) {
         this.rtPlanStorage = rtPlanStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1064,7 +1064,7 @@ public class StoreScpService
     public final void setRtStructureSetStorage(String rtStructureSetStorage) {
         this.rtStructureSetStorage = rtStructureSetStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1081,7 +1081,7 @@ public class StoreScpService
     public final void setRtTreatmentSummaryRecordStorage(String rtTreatmentSummaryRecordStorage) {
         this.rtTreatmentSummaryRecordStorage = rtTreatmentSummaryRecordStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1098,7 +1098,7 @@ public class StoreScpService
     public final void setSecondaryCaptureImageStorage(String secondaryCaptureImageStorage) {
         this.secondaryCaptureImageStorage = secondaryCaptureImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1115,7 +1115,7 @@ public class StoreScpService
     public final void setStandaloneCurveStorage(String standaloneCurveStorage) {
         this.standaloneCurveStorage = standaloneCurveStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1132,7 +1132,7 @@ public class StoreScpService
     public final void setStandaloneModalityLUTStorage(String standaloneModalityLUTStorage) {
         this.standaloneModalityLUTStorage = standaloneModalityLUTStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1149,7 +1149,7 @@ public class StoreScpService
     public final void setStandaloneOverlayStorage(String standaloneOverlayStorage) {
         this.standaloneOverlayStorage = standaloneOverlayStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1166,7 +1166,7 @@ public class StoreScpService
     public final void setStandalonePETCurveStorage(String standalonePETCurveStorage) {
         this.standalonePETCurveStorage = standalonePETCurveStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1183,7 +1183,7 @@ public class StoreScpService
     public final void setStandaloneVOILUTStorage(String standaloneVOILUTStorage) {
         this.standaloneVOILUTStorage = standaloneVOILUTStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1200,7 +1200,7 @@ public class StoreScpService
     public final void setTwelveLeadECGWaveformStorage(String twelveLeadECGWaveformStorage) {
         this.twelveLeadECGWaveformStorage = twelveLeadECGWaveformStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1217,7 +1217,7 @@ public class StoreScpService
     public final void setUltrasoundImageStorage(String ultrasoundImageStorage) {
         this.ultrasoundImageStorage = ultrasoundImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1234,7 +1234,7 @@ public class StoreScpService
     public final void setUltrasoundImageStorageRetired(String ultrasoundImageStorageRetired) {
         this.ultrasoundImageStorageRetired = ultrasoundImageStorageRetired;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1252,7 +1252,7 @@ public class StoreScpService
         this.ultrasoundMultiframeImageStorage =
             ultrasoundMultiframeImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1270,7 +1270,7 @@ public class StoreScpService
         this.ultrasoundMultiframeImageStorageRetired =
             ultrasoundMultiframeImageStorageRetired;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1287,7 +1287,7 @@ public class StoreScpService
     public final void setVlEndoscopicImageStorage(String vlEndoscopicImageStorage) {
         this.vlEndoscopicImageStorage = vlEndoscopicImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1304,7 +1304,7 @@ public class StoreScpService
     public final void setVlImageStorageRetired(String vlImageStorageRetired) {
         this.vlImageStorageRetired = vlImageStorageRetired;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1321,7 +1321,7 @@ public class StoreScpService
     public final void setVlMicroscopicImageStorage(String vlMicroscopicImageStorage) {
         this.vlMicroscopicImageStorage = vlMicroscopicImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1338,7 +1338,7 @@ public class StoreScpService
     public final void setVlMultiframeImageStorageRetired(String vlMultiframeImageStorageRetired) {
         this.vlMultiframeImageStorageRetired = vlMultiframeImageStorageRetired;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1355,7 +1355,7 @@ public class StoreScpService
     public final void setVlPhotographicImageStorage(String vlPhotographicImageStorage) {
         this.vlPhotographicImageStorage = vlPhotographicImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1373,7 +1373,7 @@ public class StoreScpService
         this.vlSlideCoordinatesMicroscopicImageStorage =
             vlSlideCoordinatesMicroscopicImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1391,7 +1391,7 @@ public class StoreScpService
         xRayAngiographicBiPlaneImageStorageRetired =
             rayAngiographicBiPlaneImageStorageRetired;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1408,7 +1408,7 @@ public class StoreScpService
     public final void setXRayAngiographicImageStorage(String rayAngiographicImageStorage) {
         xRayAngiographicImageStorage = rayAngiographicImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
@@ -1425,7 +1425,7 @@ public class StoreScpService
     public final void setXRayRadiofluoroscopicImageStorage(String rayRadiofluoroscopicImageStorage) {
         xRayRadiofluoroscopicImageStorage = rayRadiofluoroscopicImageStorage;
         if (getState() == STARTED) {
-            updatePolicy();
+            updatePolicy(makeAcceptorPolicy());
         }
     }
 
