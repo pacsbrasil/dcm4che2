@@ -93,6 +93,10 @@ class SqlBuilder {
         if (!match.isUniveralMatch())
             matches.add(match);
     }
+    
+    public void addNULLValueMatch( String field, boolean inverter ) {
+    	addMatch( new Match.NULLValue( field, inverter ) );
+    }
 
     public void addSingleValueMatch(
         String field,
