@@ -1072,6 +1072,7 @@
   <element tag="(0040,A180)" name="Annotation Group Number" vr="US" vm="1" key="AnnotationGroupNumber" />
   <element tag="(0040,A195)" name="Modifier Code Sequence" vr="SQ" vm="1" key="ModifierCodeSeq" />
   <element tag="(0040,A300)" name="Measured Value Sequence" vr="SQ" vm="1" key="MeasuredValueSeq" />
+  <element tag="(0040,A301)" name="Numeric Value Qualifier Code Sequence" vr="SQ" vm="1" key="NumericValueQualifierCodeSeq" />
   <element tag="(0040,A30A)" name="Numeric Value" vr="DS" vm="1-n" key="NumericValue" />
   <element tag="(0040,A360)" name="Predecessor Documents Sequence" vr="SQ" vm="1" key="PredecessorDocumentsSeq" />
   <element tag="(0040,A370)" name="Referenced Request Sequence" vr="SQ" vm="1" key="RefRequestSeq" />
