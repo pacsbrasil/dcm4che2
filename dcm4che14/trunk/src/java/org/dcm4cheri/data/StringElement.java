@@ -241,7 +241,7 @@ abstract class StringElement extends ValueElement
      * @return                        The string value
      * @exception  DcmValueException  Description of the Exception
      */
-    public String getString(int index, Charset cs)
+    public synchronized String getString(int index, Charset cs)
         throws DcmValueException
     {
         if (index >= vm()) {
@@ -268,7 +268,7 @@ abstract class StringElement extends ValueElement
      * @return                        The strings value
      * @exception  DcmValueException  Description of the Exception
      */
-    public String[] getStrings(Charset cs)
+    public synchronized String[] getStrings(Charset cs)
         throws DcmValueException
     {
         String[] a = new String[vm()];
@@ -285,7 +285,7 @@ abstract class StringElement extends ValueElement
      * @param  index  Description of the Parameter
      * @return        The byteBuffer value
      */
-    public ByteBuffer getByteBuffer(int index)
+    public synchronized ByteBuffer getByteBuffer(int index)
     {
         if (index >= vm()) {
             return null;
@@ -562,7 +562,7 @@ abstract class StringElement extends ValueElement
         }
 
 
-        public ByteBuffer getByteBuffer(int index)
+        public synchronized ByteBuffer getByteBuffer(int index)
         {
             if (index >= vm()) {
                 return null;

@@ -46,14 +46,14 @@ abstract class ValueElement extends DcmElementImpl {
         this.data = data;
     }
 
-    public int hashCode() {
+    public synchronized int hashCode() {
         if (data == null || data.limit() == 0)
             return tag;
         data.rewind();
         return tag ^ data.hashCode();
     }
 
-    public boolean equals(Object o) {
+    public synchronized boolean equals(Object o) {
         if (this == o)
             return true;
         if (!(o instanceof ValueElement))
@@ -96,7 +96,7 @@ abstract class ValueElement extends DcmElementImpl {
      *
      * @return    The byteBuffer value
      */
-    public final ByteBuffer getByteBuffer() {
+    public synchronized final ByteBuffer getByteBuffer() {
         return (ByteBuffer) data.rewind();
     }
 
@@ -106,7 +106,7 @@ abstract class ValueElement extends DcmElementImpl {
      * @param  byteOrder  Description of the Parameter
      * @return            The byteBuffer value
      */
-    public final ByteBuffer getByteBuffer(ByteOrder byteOrder) {
+    public synchronized final ByteBuffer getByteBuffer(ByteOrder byteOrder) {
         if (data.order() != byteOrder) {
             swapOrder();
         }
