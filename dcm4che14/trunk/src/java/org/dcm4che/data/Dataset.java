@@ -21,6 +21,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -88,6 +89,10 @@ public interface Dataset extends DcmObject, Serializable
     void readFile(ImageInputStream iin, FileFormat format, int stopTag)
         throws IOException;
 
+    
+    void readFile(File file, FileFormat format, int stopTag)
+    	throws IOException;
+
 
     void writeFile(OutputStream out, DcmEncodeParam param)
         throws IOException;
@@ -95,6 +100,10 @@ public interface Dataset extends DcmObject, Serializable
 
     void writeFile(ImageOutputStream iout, DcmEncodeParam param)
         throws IOException;
+
+    
+    void writeFile(File file, DcmEncodeParam param)
+		throws IOException;
 
 
     void writeFile(ContentHandler handler, TagDictionary dict)

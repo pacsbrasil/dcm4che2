@@ -31,6 +31,7 @@ import org.dcm4che.data.FileFormat;
 
 import org.dcm4che.dict.Tags;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -181,6 +182,11 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
         throw new UnsupportedOperationException();
     }
 
+    public void readFile(File f, FileFormat format, int stopTag)
+	    	throws IOException {
+        throw new UnsupportedOperationException();
+	}
+    
     static final class Selection extends FilterDataset {
         private final Dataset filter;
         Selection(Dataset backend, Dataset filter) {

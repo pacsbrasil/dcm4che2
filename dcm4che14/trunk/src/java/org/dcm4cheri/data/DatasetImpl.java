@@ -25,6 +25,10 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -138,4 +142,16 @@ final class DatasetImpl extends BaseDatasetImpl
         parser.setDcmHandler(getDcmHandler());
         parser.parseDcmFile(format, stopTag);
     }
+
+    public void readFile(File f, FileFormat format, int stopTag)
+    	throws IOException
+	{
+	    InputStream in = new BufferedInputStream(new FileInputStream(f));
+	    try {
+	        readFile(in, format, stopTag);
+	    } finally {
+	        try { in.close(); } catch (IOException ignore) {}
+	    }
+	}
+    
 }

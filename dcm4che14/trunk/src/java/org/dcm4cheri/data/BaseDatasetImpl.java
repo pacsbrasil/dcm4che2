@@ -28,6 +28,9 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
 import java.awt.image.PixelInterleavedSampleModel;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -417,6 +420,16 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         writeDataset(out, param);
     }
 
+    public void writeFile(File f, DcmEncodeParam param)
+	    throws IOException
+	{
+        OutputStream in = new BufferedOutputStream(new FileOutputStream(f));
+        try {
+            writeFile(in, param);
+        } finally {
+            try { in.close(); } catch (IOException ignore) {}
+        }
+    }
 
     /**
      *  Description of the Method
