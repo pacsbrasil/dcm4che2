@@ -1,0 +1,35 @@
+# Annotation Display Format TITLE
+
+inset.left=0
+inset.right=0
+inset.top=20
+inset.bottom=20
+
+font.name=Serif
+font.size=8
+font.style=plain
+font.color=0
+
+1=$SESSION_LABEL$
+1.x=left
+1.y=top-2
+1.align=left
+1.valign=bottom
+
+2=printed at $DATE$ $TIME$
+2.x=right
+2.y=top-2
+2.align=right
+2.valign=bottom
+
+3=Licensed for $LICENSE_CN$\nvalid until $LICENSE_ENDDATE$
+3.x=left
+3.y=bottom
+3.align=left
+3.valign=top
+
+4=$PAGE$ of $PAGES$
+4.x=right
+4.y=bottom
+4.align=right
+4.valign=top

@@ -1588,24 +1588,26 @@ public class PrinterService
     }
 
 
-    private static int parseAnnotationBoxCount(String id)
+    private static int parseAnnotationBoxCount(String fname)
     {
-        return Integer.parseInt(id.substring(id.lastIndexOf('_') + 1));
+        if (!fname.endsWith(ADF_FILE_EXT)) {
+            throw new IllegalArgumentException("fname:" + fname);
+        }
+        int extPos = fname.length() - ADF_FILE_EXT.length();
+        int numPos = fname.lastIndexOf('.', extPos-1);
+        return Integer.parseInt(fname.substring(numPos+1, extPos));
     }
 
 
-    private final static FilenameFilter ADF_FILENAME_FILTER =
+    private final FilenameFilter ADF_FILENAME_FILTER =
         new FilenameFilter()
         {
             public boolean accept(File dir, String name)
             {
-                if (!name.endsWith(ADF_FILE_EXT)) {
-                    return false;
-                }
-                String id = name.substring(0, name.length() - ADF_FILE_EXT.length());
                 try {
-                    return parseAnnotationBoxCount(id) > 0;
+                    return parseAnnotationBoxCount(name) >= 0;
                 } catch (RuntimeException e) {
+                    log.warn("Illegal ADF Filename - " +  name);
                     return false;
                 }
             }
@@ -1629,11 +1631,12 @@ public class PrinterService
     public String[] getAnnotationDisplayFormatIDs()
     {
         File dir = toFile(annotationDir);
-        if (!dir.isDirectory()) {
-            return new String[]{};
-        }
         String[] fnames = dir.list(ADF_FILENAME_FILTER);
-        skipFileExt(fnames, ADF_FILE_EXT);
+        for (int i = 0; i < fnames.length; ++i) {
+            int extPos = fnames[i].length() - ADF_FILE_EXT.length();
+            int numPos = fname.lastIndexOf('.', extPos-1);
+            fnames[i] = fnames[i].substring(0, numPos);
+        }
         return fnames;
     }
 
@@ -1646,11 +1649,23 @@ public class PrinterService
      */
     public int countAnnotationBoxes(String annotationID)
     {
-        String[] ids = getLUTs();
-        if (Arrays.asList(ids).indexOf(annotationID) == -1) {
+        File f = getAnnotationFile(annotationID);
+        if (f == null) {
             return -1;
         }
-        return parseAnnotationBoxCount(annotationID);
+
+        return parseAnnotationBoxCount(f.getName());
+    }
+    
+    File getAnnotationFile(String annotationID) {
+        File dir = toFile(annotationDir);
+        File[] files =  dir.listFiles(ADF_FILENAME_FILTER);
+        for (int i = 0; i < files.length; ++i) {
+            if (files[i].getName().startsWith(annotationID)) {
+                return  files[i];
+            }
+        }
+        return null;
     }
 
 

@@ -232,11 +232,11 @@
     Format: <calling-aet>:<lut-name> 
     -->
     <attribute name="LUTForCallingAET">
-      LINEAR:linear256us
-      PHILIPS:philips4096us
-      MIDTONE:midtone4096us
-      LIGHTEN:lighten4096us
-      DARKEN:darken4096us
+      IDENTITY:IDENTITY
+      LINOD:LINOD
+      MIDTONE:MIDTONE
+      LIGHTEN:LIGHTEN
+      DARKEN:DARKEN
     </attribute>
 
     <!--
@@ -307,8 +307,8 @@
     Format: <calling-aet>:<annotation ID> 
     -->
     <attribute name="AnnotationForCallingAET">
-        TITLE:TITLE_1
-        GRAYSCALE:GRAYSCALE_1
+        TITLE:TITLE
+        NO_TITLE:NO_TITLE
     </attribute>
         
     <!--
@@ -316,7 +316,7 @@
     grayscale pattern prinout.
     Usually, you need not change the default value: GRAYSCALE_1
     -->    
-    <attribute name="GrayscaleAnnotation">GRAYSCALE_1</attribute>
+    <attribute name="GrayscaleAnnotation">NO_TITLE</attribute>
     
     <!--
     Specifies number of gray steps in printed grayscale pattern.

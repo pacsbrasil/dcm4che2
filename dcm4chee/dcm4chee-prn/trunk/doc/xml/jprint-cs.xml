@@ -51,7 +51,8 @@
       <title>Revision History</title>
 
       <para><revhistory><revision><revnumber>0.1</revnumber><date>18 Feb 2003</date><authorinitials>gz</authorinitials><revremark>Initial
-      draft</revremark></revision></revhistory></para>
+      draft</revremark></revision><revision><revnumber>0.2</revnumber><date>1
+      Mar 2003, gz, minimal corrections</date></revision></revhistory></para>
     </section>
 
     <section>
@@ -1036,7 +1037,7 @@
                     type="vert"><member>YES</member><member>NO</member></simplelist></entry><entry>NO
                     (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Configuration
                     Information</entry><entry>(2010,0150)</entry><entry><simplelist
-                    type="vert"><member>IDENTITY</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist>(Configurable)</entry><entry>IDENTITY
+                    type="vert"><member>IDENTITY</member><member>LINOD</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist>(Configurable)</entry><entry>IDENTITY
                     (Different configurable for different Calling AETs)</entry><entry>Warning
                     (0116H)</entry></row><row><entry>Illumination</entry><entry>(2010,015E)</entry><entry>Any
                     valid value in the unit of cd/m^2</entry><entry>150
@@ -3263,7 +3264,7 @@
         Information (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called
         AET&#62; or IDENTITY</entry></row><row><entry>Supported Configuration
         Information (= IDs of local P-LUTs)</entry><entry>Yes</entry><entry><simplelist
-        type="vert"><member>IDENTITY</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist></entry></row><row><entry>Annotation
+        type="vert"><member>IDENTITY</member><member>LINOD</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist></entry></row><row><entry>Annotation
         Display Format (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called
         AET&#62; or TITLE</entry></row><row><entry>Supported Annotation
         Display Format IDs</entry><entry>Yes</entry><entry><simplelist

@@ -113,8 +113,7 @@ class Annotation
         throws IOException
     {
         this.service = service;
-        this.file = new File(service.getAnnotationDir(),
-                adfID + PrinterService.ADF_FILE_EXT);
+        this.file = service.getAnnotationFile(adfID);
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             props.load(in);
