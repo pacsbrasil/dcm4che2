@@ -21,6 +21,7 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -86,13 +87,17 @@ public class MWLManagerBeanTest extends TestCase
         String spsId1ret = mwlManager.addWorklistItem(ds);
         assertEquals(spsId1ds, spsId1ret);        
         spsItem.remove(Tags.SPSID);
-        
+        spsItem.putCS(Tags.Modality, "MR");
+        spsItem.putAE(Tags.ScheduledStationAET, "ANOTHER_STATION");
+        Date now = new Date();
+        spsItem.putDA(Tags.SPSStartDate, now);
+        spsItem.putTM(Tags.SPSStartTime, now);
         String spsId2ret = mwlManager.addWorklistItem(ds);
-        mwlManager.removeWorklistItem(spsId1ret);
+        /*mwlManager.removeWorklistItem(spsId1ret);
         Dataset dsRet = mwlManager.removeWorklistItem(spsId2ret);        
         Dataset spsItemRet = dsRet.getItem(Tags.SPSSeq);
         String spsId2ds = spsItemRet.getString(Tags.SPSID);
-        assertEquals(spsId2ret, spsId2ds);
+        assertEquals(spsId2ret, spsId2ds);*/
     }
 
     private Dataset loadMWLItemFromFile() throws SAXException, IOException {

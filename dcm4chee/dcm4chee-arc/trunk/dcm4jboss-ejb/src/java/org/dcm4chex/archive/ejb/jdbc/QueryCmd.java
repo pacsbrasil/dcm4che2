@@ -19,8 +19,6 @@
  */
 package org.dcm4chex.archive.ejb.jdbc;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -33,6 +31,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -218,20 +217,20 @@ public abstract class QueryCmd extends BaseCmd {
         }
     }
 
-    public Dataset getDataset() throws SQLException, IOException {
+    public Dataset getDataset() throws SQLException {
         Dataset ds = dof.newDataset();
         fillDataset(ds);
         adjustDataset(ds, keys);
         return ds;
     }
 
-    private void adjustDataset(Dataset ds, Dataset keys) {
+    static void adjustDataset(Dataset ds, Dataset keys) {
         for (Iterator it = keys.iterator(); it.hasNext();) {
             DcmElement key = (DcmElement) it.next();
             final int tag = key.tag();
             if (tag == Tags.SpecificCharacterSet)
                 continue;
-
+            
             final int vr = key.vr();
             DcmElement el = ds.get(tag);
             if (el == null) {
@@ -248,9 +247,15 @@ public abstract class QueryCmd extends BaseCmd {
             }
         }
     }
-
-    protected abstract void fillDataset(Dataset ds)
-        throws SQLException, IOException;
+    
+    protected abstract void fillDataset(Dataset ds) throws SQLException;
+    protected void fillDataset(Dataset ds, int column) throws SQLException {
+        ds.putAll(
+            DatasetUtils.fromByteArray(
+                rs.getBytes(column),
+                DcmDecodeParam.EVR_LE).subSet(
+                keys));
+    }
 
     static class PatientQueryCmd extends QueryCmd {
         PatientQueryCmd(DataSource ds, Dataset keys) throws SQLException {
@@ -262,9 +267,8 @@ public abstract class QueryCmd extends BaseCmd {
             addPatientMatch();
         }
 
-        protected void fillDataset(Dataset ds)
-            throws IOException, SQLException {
-            ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
+        protected void fillDataset(Dataset ds) throws SQLException {
+            fillDataset(ds, 1);
             ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
         }
 
@@ -306,10 +310,9 @@ public abstract class QueryCmd extends BaseCmd {
             return new String[] { "Patient.pk", "Study.patient_fk" };
         }
 
-        protected void fillDataset(Dataset ds)
-            throws IOException, SQLException {
-            ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
-            ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
+        protected void fillDataset(Dataset ds) throws SQLException {
+            fillDataset(ds, 1);
+            fillDataset(ds, 2);
             ds.putCS(
                 Tags.ModalitiesInStudy,
                 StringUtils.split(rs.getString(3), '\\'));
@@ -352,11 +355,10 @@ public abstract class QueryCmd extends BaseCmd {
                 "Series.study_fk" };
         }
 
-        protected void fillDataset(Dataset ds)
-            throws IOException, SQLException {
-            ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
-            ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
-            ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));
+        protected void fillDataset(Dataset ds) throws SQLException {
+            fillDataset(ds, 1);
+            fillDataset(ds, 2);
+            fillDataset(ds, 3);
             ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(4));
             putRetrieveAETs(ds, rs.getString(5));
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
@@ -404,15 +406,15 @@ public abstract class QueryCmd extends BaseCmd {
                 "Instance.series_fk" };
         }
 
-        protected void fillDataset(Dataset ds)
-            throws IOException, SQLException {
-            ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
-            ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
-            ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));
-            ds.putAll(toDataset(rs.getBytes(4)).subSet(keys));
+        protected void fillDataset(Dataset ds) throws SQLException {
+            fillDataset(ds, 1);
+            fillDataset(ds, 2);
+            fillDataset(ds, 3);
+            fillDataset(ds, 4);
             putRetrieveAETs(ds, rs.getString(5));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
+
     }
 
     protected boolean isMatchSrCode() {
@@ -420,13 +422,6 @@ public abstract class QueryCmd extends BaseCmd {
         return code != null
             && (code.vm(Tags.CodeValue) > 0
                 || code.vm(Tags.CodingSchemeDesignator) > 0);
-    }
-
-    private static Dataset toDataset(byte[] data) throws IOException {
-        ByteArrayInputStream bin = new ByteArrayInputStream(data);
-        Dataset ds = dof.newDataset();
-        ds.readDataset(bin, DcmDecodeParam.EVR_LE, -1);
-        return ds;
     }
 
     private static void putRetrieveAETs(Dataset ds, String aets) {
