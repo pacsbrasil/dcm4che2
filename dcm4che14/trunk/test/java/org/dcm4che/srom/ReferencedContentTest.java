@@ -79,6 +79,8 @@ public class ReferencedContentTest extends TestCase {
             doc.createReferencedContent(imgRef));
         Dataset ds = doc.toDataset();
 
+//        ds.writeFile(new java.io.FileOutputStream("testSR1.dcm"), null);
+        
         SRDocument doc2 = srf.newSRDocument(ds);
         Content imgRef2 = doc2.getFirstChild();
         assertTrue(imgRef2 instanceof ImageContent);
@@ -111,6 +113,8 @@ public class ReferencedContentTest extends TestCase {
         scoord.appendChild(Content.RelationType.SELECTED_FROM,
             doc.createReferencedContent(imgRef));
         Dataset ds = doc.toDataset();
+        
+//        ds.writeFile(new java.io.FileOutputStream("testSR2.dcm"), null);
         
         SRDocument doc2 = srf.newSRDocument(ds);
         Content text2 = doc2.getFirstChild();
