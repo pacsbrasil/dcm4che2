@@ -128,7 +128,7 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 	 */
 	private boolean checkFilter(HttpServletRequest rq) throws ParseException {
 		MCMFilter filter = model.getFilter();
-		if ( rq.getParameter("mediaStatus") != null ) filter.setSelectedStatus(rq.getParameter("mediaStatus") );
+		filter.setSelectedStati(rq.getParameterValues("mediaStatus") );
 		if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
 		if ( rq.getParameter("endDate") != null ) filter.setEndDate(rq.getParameter("endDate") );
 		if ( rq.getParameter("createOrUpdateDate") != null ) filter.setCreateOrUpdateDate(rq.getParameter("createOrUpdateDate") );
