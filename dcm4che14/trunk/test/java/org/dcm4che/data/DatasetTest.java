@@ -270,35 +270,46 @@ public class DatasetTest extends TestCase {
    public void testGetStrings() throws Exception {
       putStrings();
       assertEquals(SCHEDULED_STATION_AET,
-      ds.getStrings(Tags.ScheduledStationAET));
+         ds.getStrings(Tags.ScheduledStationAET));
       assertEquals(PATIENT_AGE, ds.getStrings(Tags.PatientAge));
       assertEquals(IMAGE_TYPE, ds.getStrings(Tags.ImageType));
       assertEquals(STUDY_DATE, ds.getStrings(Tags.StudyDate));
       assertEquals(STUDY_TIME.length, ds.getStrings(Tags.StudyTime).length);
       assertEquals(ACQUISITION_DATETIME,
-      ds.getStrings(Tags.AcquisitionDatetime));
+         ds.getStrings(Tags.AcquisitionDatetime));
       assertEquals(IMAGE_POSITION, ds.getStrings(Tags.ImagePosition));
       assertEquals(ANCHOR_POINT, ds.getStrings(Tags.AnchorPoint));
       assertEquals(TABLE_OF_Y_BREAK_POINTS,
-      ds.getStrings(Tags.TableOfYBreakPoints));
+         ds.getStrings(Tags.TableOfYBreakPoints));
       assertEquals(REF_FRAME_NUMBER, ds.getStrings(Tags.RefFrameNumber));
       assertEquals(OTHER_PATIENT_IDS, ds.getStrings(Tags.OtherPatientIDs));
       assertEquals(ADDITIONAL_PATIENT_HISTORY,
-      ds.getStrings(Tags.AdditionalPatientHistory));
+         ds.getStrings(Tags.AdditionalPatientHistory));
       assertEquals(OTHER_PATIENT_NAMES,
-      ds.getStrings(Tags.OtherPatientNames));
+         ds.getStrings(Tags.OtherPatientNames));
       assertEquals(ACCESSION_NUMBER, ds.getStrings(Tags.AccessionNumber));
       assertEquals(DISPLAYED_AREA_BRHC,
-      ds.getStrings(Tags.DisplayedAreaBottomRightHandCorner));
+         ds.getStrings(Tags.DisplayedAreaBottomRightHandCorner));
       assertEquals(OVERLAY_ORIGIN, ds.getStrings(Tags.OverlayOrigin));
       assertEquals(DERIVATION_DESCRIPTION,
-      ds.getStrings(Tags.DerivationDescription));
+         ds.getStrings(Tags.DerivationDescription));
       assertEquals(SOP_CLASSES_SUPPORTED,
-      ds.getStrings(Tags.SOPClassesSupported));
+         ds.getStrings(Tags.SOPClassesSupported));
       assertEquals(REF_SAMPLE_POSITIONS,
-      ds.getStrings(Tags.RefSamplePositions));
+         ds.getStrings(Tags.RefSamplePositions));
       assertEquals(REF_FRAME_NUMBER, ds.getStrings(Tags.RefFrameNumbers));
       assertEquals(TEXT_VALUE, ds.getStrings(Tags.TextValue));
+   }
+
+   public void testSubSet() throws Exception {
+      putStrings();
+      Dataset sub0008 = ds.subSet(0x00080000,0x00090000);
+      assertEquals(8, sub0008.size());
+      assertEquals(21, ds.size());
+      sub0008.clear();
+      assertTrue(sub0008.isEmpty());
+      assertEquals(0, sub0008.size());
+      assertEquals(13, ds.size());
    }
    
    private void assertEquals(String[] expected, String[] value) {

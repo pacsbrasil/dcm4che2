@@ -40,50 +40,50 @@ import javax.imageio.stream.ImageOutputStream;
  * @see "DICOM Part 5: Data Structures and Encoding, 7. The Data Set"
  */
 public interface Dataset extends DcmObject, java.io.Serializable {
-    
-    public Dataset setFileMetaInfo(FileMetaInfo fmi);
-
-    public FileMetaInfo getFileMetaInfo();
-
-    public Dataset getParent();
-
-    public Dataset setItemOffset(long itemOffset);
-
-    public long getItemOffset();
-
-    public int calcLength(DcmEncodeParam param);
-    
-    public void writeDataset(DcmHandler handler, DcmEncodeParam param)
-            throws IOException;
-    
-    public void writeDataset(OutputStream out, DcmEncodeParam param)
-            throws IOException;
-
-    public void writeDataset(ImageOutputStream out, DcmEncodeParam param)
-            throws IOException;
-
-    public void readDataset(InputStream in, DcmDecodeParam param, int stopTag)
-            throws IOException;
-
-    public void readFile(InputStream in, FileFormat format, int stopTag)
-            throws IOException;
-
-    public void readFile(ImageInputStream iin, FileFormat format, int stopTag)
-            throws IOException;
-
-    public void writeFile(OutputStream out, DcmEncodeParam param)
-            throws IOException;
-
-    public void writeFile(ImageOutputStream iout, DcmEncodeParam param)
-            throws IOException;
-
-    public void writeFile(ContentHandler handler, TagDictionary dict)
-            throws IOException;
-
-    public void writeDataset(ContentHandler handler, TagDictionary dict)
-            throws IOException;
-
-    public Dataset subset(int fromTag, int toTag);
-    
-    public Dataset subset(Dataset filter);    
+   
+   public Dataset setFileMetaInfo(FileMetaInfo fmi);
+   
+   public FileMetaInfo getFileMetaInfo();
+   
+   public Dataset getParent();
+   
+   public Dataset setItemOffset(long itemOffset);
+   
+   public long getItemOffset();
+   
+   public int calcLength(DcmEncodeParam param);
+   
+   public void writeDataset(DcmHandler handler, DcmEncodeParam param)
+   throws IOException;
+   
+   public void writeDataset(OutputStream out, DcmEncodeParam param)
+   throws IOException;
+   
+   public void writeDataset(ImageOutputStream out, DcmEncodeParam param)
+   throws IOException;
+   
+   public void readDataset(InputStream in, DcmDecodeParam param, int stopTag)
+   throws IOException;
+   
+   public void readFile(InputStream in, FileFormat format, int stopTag)
+   throws IOException;
+   
+   public void readFile(ImageInputStream iin, FileFormat format, int stopTag)
+   throws IOException;
+   
+   public void writeFile(OutputStream out, DcmEncodeParam param)
+   throws IOException;
+   
+   public void writeFile(ImageOutputStream iout, DcmEncodeParam param)
+   throws IOException;
+   
+   public void writeFile(ContentHandler handler, TagDictionary dict)
+   throws IOException;
+   
+   public void writeDataset(ContentHandler handler, TagDictionary dict)
+   throws IOException;
+   
+   public Dataset subSet(int fromTag, int toTag);
+   
+   public Dataset subSet(Dataset filter);
 }

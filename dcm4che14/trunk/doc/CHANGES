@@ -30,6 +30,9 @@ dcmdir sample:
   with referenced files do not exist anymore
 
 CHANGES:
+dcm4che API:
++ org.dcm4cheri.data.Dataset#subset -> #subSet: adjust method name and
+  semantic according java.util.SortedSet#subSet
 dcm4che Impl:
 + DcmImageReaderConf: change default resource location of properties from
   /resources/DcmImageReader.properties to /DcmImageReader.properties

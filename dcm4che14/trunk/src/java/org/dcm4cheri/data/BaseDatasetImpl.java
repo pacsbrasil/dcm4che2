@@ -253,11 +253,11 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
       xml.endDcmFile();
    }
    
-   public Dataset subset(int fromTag, int toTag) {
+   public Dataset subSet(int fromTag, int toTag) {
       return new FilterDataset.Segment(this, fromTag, toTag);
    }
    
-   public Dataset subset(Dataset filter) {
+   public Dataset subSet(Dataset filter) {
       return new FilterDataset.Selection(this, filter);
    }
    

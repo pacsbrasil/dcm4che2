@@ -156,7 +156,7 @@ final class DcmMetadataImpl extends DcmMetadata {
                 th.setResult(new SAXResult(ch));
                 ch = th;
             }
-            ds.subset(filter).writeFile(ch, dict);
+            ds.subSet(filter).writeFile(ch, dict);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException("Exception in getTree", ex);

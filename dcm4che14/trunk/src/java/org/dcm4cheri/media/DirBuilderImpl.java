@@ -125,7 +125,7 @@ final class DirBuilderImpl implements DirBuilder {
          count += addSeriesRec(ds, seriesUID);
       }
       writer.add(curSeriesRec, type,
-         ds.subset(filter), fileIDs, classUID, instUID, tsUID);
+         ds.subSet(filter), fileIDs, classUID, instUID, tsUID);
       ++count;
       return count;
    }
@@ -146,7 +146,7 @@ final class DirBuilderImpl implements DirBuilder {
          }
       }
       curPatRec = writer.add(null, "PATIENT",
-         ds.subset(pref.getFilterForRecordType("PATIENT")));
+         ds.subSet(pref.getFilterForRecordType("PATIENT")));
       return 1;
    }
    
@@ -164,7 +164,7 @@ final class DirBuilderImpl implements DirBuilder {
          }
       }
       curStudyRec = writer.add(curPatRec, "STUDY",
-         ds.subset(pref.getFilterForRecordType("STUDY")));
+         ds.subSet(pref.getFilterForRecordType("STUDY")));
       return 1;
    }
    
@@ -180,7 +180,7 @@ final class DirBuilderImpl implements DirBuilder {
          }
       }
       curSeriesRec = writer.add(curStudyRec, "SERIES",
-         ds.subset(pref.getFilterForRecordType("SERIES")));
+         ds.subSet(pref.getFilterForRecordType("SERIES")));
       return 1;
    }
    

@@ -29,9 +29,12 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmHandler;
 import org.dcm4che.data.FileFormat;
 
+import org.dcm4che.dict.Tags;
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -46,11 +49,11 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     
-    protected final Dataset backend;
+    protected final BaseDatasetImpl backend;
     
     /** Creates a new instance of DatasetView */
     public FilterDataset(Dataset backend) {
-        this.backend = backend;
+        this.backend = (BaseDatasetImpl)backend;
     }
                     
     protected abstract boolean filter(int tag);
@@ -112,16 +115,29 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
         throw new UnsupportedOperationException();
     }
     
-    protected DcmElement set(DcmElement newElem) {
-        throw new UnsupportedOperationException();
+    protected DcmElement put(DcmElement el) {
+       if (!filter(el.tag())) {
+          throw new IllegalArgumentException(
+            "" + el + " does not fit in this sub DataSet");
+       }
+       return backend.put(el);
     }
     
     public DcmElement remove(int tag) {
-        throw new UnsupportedOperationException();
+        return filter(tag) ? backend.remove(tag) : null;
     }
     
     public void clear() {
-        throw new UnsupportedOperationException();
+      ArrayList toRemove = new ArrayList();
+      for (Iterator iter = backend.iterator(); iter.hasNext();) {
+         DcmElement el = (DcmElement)iter.next();
+         if (filter(el.tag())) {
+            toRemove.add(el);
+         }
+      }
+      for (int i = 0, n = toRemove.size(); i < n; ++i) {
+         backend.remove(((DcmElement)toRemove.get(i)).tag());
+      }
     }
 
     public Dataset setItemOffset(long itemOffset) {
@@ -155,8 +171,10 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
                 return backend.size();
             }
             int count = 0;
-            for (Iterator iter = iterator(); iter.hasNext();)
-                ++count;
+            for (Iterator iter = iterator(); iter.hasNext();) {
+               iter.next();
+               ++count;
+            }
             return count;
         }
         
@@ -200,6 +218,11 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             super(backend);
             this.fromTag = fromTag & 0xFFFFFFFFL;
             this.toTag = toTag & 0xFFFFFFFFL;
+            if (this.fromTag > this.toTag) {
+               throw new IllegalArgumentException(
+                  "fromTag:" + Tags.toString(fromTag)
+                  + " greater toTag:" + Tags.toString(toTag));
+            }
         }
         
         public int size() {
@@ -208,7 +231,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             for (Iterator iter = backend.iterator(); iter.hasNext();) {
                 ltag = ((DcmElement)iter.next()).tag() & 0xFFFFFFFFL;
                 if (ltag < fromTag) continue;
-                if (ltag > toTag) break;
+                if (ltag >= toTag) break;
                 ++count;
             }
             return count;
@@ -216,7 +239,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
 
         protected boolean filter(int tag) {
             long ltag = tag & 0xFFFFFFFF;
-            return ltag >= fromTag && ltag <= toTag;
+            return ltag >= fromTag && ltag < toTag;
         }
         
         public DcmElement get(int tag) {
