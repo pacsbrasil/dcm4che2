@@ -20,11 +20,15 @@
 	<!-- Override with your dcm4jboss-ejb working directory -->
 	<property name="dcm4jboss-ejb.dir" value="../dcm4jboss-ejb/target" />
 	<property name="dcm4jboss-ejb-client.jar" value="${dcm4jboss-ejb.dir}/common/lib/dcm4jboss-ejb-client.jar" />
+	<property name="dcm4jboss-ejb-server.jar" value="${dcm4jboss-ejb.dir}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
 
 	<!-- Override with your dcm4jboss-sar working directory -->
 	<property name="dcm4jboss-sar.dir" value="../dcm4jboss-sar/target" />
 	<property name="dcm4jboss.jar" value="${dcm4jboss-sar.dir}/lib/dcm4jboss.jar" />
 	
+      <!-- Override with your FOP dist location -->
+      <property name="fop.home" value="${user.home}/fop-0.20.5"/>
+
 	<property name="lib.dir" value="lib" />
 	<property name="mogio.jar" value="${lib.dir}/mogio.jar" />
 	
@@ -37,9 +41,10 @@
 	<property name="classes.dir" value="${target.dir}/classes"/>
 	<property name="web.dir" value="src/web"/>
 	<property name="etc.dir" value="src/etc"/>
-	<property name="service.xml.file" value="${etc.dir}/deploy/${product}-service.xml"/>
-	<property name="xmbean.xml.file" value="${etc.dir}/config/xmdesc/${product}-xmbean.xml"/>
+	<property name="service.xml.dir" value="${etc.dir}/deploy"/>
+	<property name="xmbean.xml.dir" value="${etc.dir}/config/xmdesc"/>
 	
+	<!-- deploy properties. Overwrite deploy.root with your running application instance. -->
 	<property name="deploy.root" value="${jboss.dir}/server/pacs"/>
 	<property name="war.deploy.dir" value="${deploy.root}/deploy"/>
 	<property name="jar.deploy.dir" value="${deploy.root}/lib"/>
@@ -60,8 +65,11 @@
 		<pathelement location="${commons-beanutils.jar}"/>
 		<pathelement location="${dcm4che.jar}"/>
 		<pathelement location="${dcm4jboss-ejb-client.jar}"/>
+		<pathelement location="${dcm4jboss-ejb-server.jar}"/>
 		<pathelement location="${dcm4jboss.jar}"/>
 		<pathelement location="${mogio.jar}"/>
+        	<pathelement location="${fop.home}/build/fop.jar"/>
+	    	<pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
 	</path>
 
 	<path id="test-classpath">
@@ -120,8 +128,12 @@
 	<target name="deploy-only">
 		<copy file="${war.file}" todir="${war.deploy.dir}" />
 		<copy file="${jar.file}" todir="${jar.deploy.dir}" />
-		<copy file="${service.xml.file}" todir="${service.deploy.dir}" />
-		<copy file="${xmbean.xml.file}" todir="${xmbean.deploy.dir}" />
+		<copy todir="${service.deploy.dir}" >
+			<fileset dir="${service.xml.dir}" includes="**/*.xml" />
+		</copy>
+		<copy todir="${xmbean.deploy.dir}" >
+			<fileset dir="${xmbean.xml.dir}" includes="**/*.xml" />
+		</copy>
 	</target>
 
  	<target name="testclasses" depends="classes">
