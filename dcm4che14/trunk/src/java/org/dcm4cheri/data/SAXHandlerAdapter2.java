@@ -135,8 +135,13 @@ class SAXHandlerAdapter2 extends DefaultHandler {
     private void onEndElement() throws IOException {
         switch (state) {
         case EXPECT_VAL_OR_FIRST_ITEM:
-            byte[] data = src != null ? readData() : getData();
-            handler.value(data, 0, data.length);
+            if (vr == VRs.SQ) {
+                handler.startSequence(0);
+                handler.endSequence(0);
+            } else {
+	            byte[] data = src != null ? readData() : getData();
+	            handler.value(data, 0, data.length);
+            }
             break;
         case EXPECT_NEXT_ITEM:
             handler.endSequence(-1);
@@ -270,13 +275,13 @@ class SAXHandlerAdapter2 extends DefaultHandler {
         int begin = 0;
         int end;
         while ((end = sb.indexOf("\\", begin)) != -1) {
-            writeTag((int) Long.parseLong(sb.substring(begin, end)));
+            writeTag((int) Long.parseLong(sb.substring(begin, end), 16));
             begin = end + 1;
         }
         String remain = sb.substring(begin);
         sb.setLength(0);
         if (last)
-            writeTag((int) Long.parseLong(remain));
+            writeTag((int) Long.parseLong(remain, 16));
         else
             sb.append(remain);
     }
