@@ -515,6 +515,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
      * @throws CreateException
      */
     private void process(MediaDTO mediaDTO) throws RemoteException, FinderException, HomeFactoryException, CreateException {
+    	this.lookupMediaComposer().setMediaCreationRequestIuid( mediaDTO.getPk(), null );
     	this.lookupMediaComposer().setMediaStatus( mediaDTO.getPk(), MediaDTO.PROCESSING, "" );
         if ( processMove( mediaDTO ) ) {
         	log.info("Move instances of "+mediaDTO.getFilesetId()+" done!");
