@@ -459,7 +459,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     && ExecutionStatus.CREATING.equals(status))
                     throw new DcmServiceException(
                             Status.MediaCreationRequestAlreadyInProgress);
-            if (f.delete())
+            if (!f.delete())
                     throw new DcmServiceException(
                             Status.CancellationDeniedForUnspecifiedReason);
             spoolDir.deleteRefInstances(attrs);
