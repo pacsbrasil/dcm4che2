@@ -22,6 +22,7 @@ package org.dcm4cheri.data;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.VRs;
@@ -112,7 +113,7 @@ class DcmElementImpl implements DcmElement {
                 && (isEmpty() || key.isEmpty()
                 || matchValue(key, ignorePNCase, keyCS, dsCS)));
     }
-
+    
     protected boolean matchValue(DcmElement key, boolean ignorePNCase,
             Charset keyCS, Charset dsCS) {
         throw new UnsupportedOperationException("" + this);
@@ -142,6 +143,14 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
 
+    public final PersonName getPersonName(Charset cs)  throws DcmValueException {
+        return getPersonName(0, cs);
+    }
+    
+    public PersonName getPersonName(int index, Charset cs) throws DcmValueException {
+        throw new UnsupportedOperationException("" + this);
+    }
+ 
     public final String getString(Charset cs)  throws DcmValueException {
         return getString(0, cs);
     }

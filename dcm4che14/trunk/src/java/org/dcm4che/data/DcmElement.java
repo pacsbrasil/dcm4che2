@@ -109,6 +109,10 @@ public interface DcmElement extends Comparable {
 
    Date[] getDateRange(int index) throws DcmValueException;
    
+   PersonName getPersonName(Charset cs)  throws DcmValueException;
+    
+   PersonName getPersonName(int index, Charset cs) throws DcmValueException;
+   
    void addDataFragment(ByteBuffer byteBuffer);
    
    boolean hasItems();

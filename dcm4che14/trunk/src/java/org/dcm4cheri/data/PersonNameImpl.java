@@ -26,6 +26,7 @@ package org.dcm4cheri.data;
 
 import org.dcm4che.data.PersonName;
 
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
@@ -130,5 +131,14 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
                 phonetic.appendComponents(sb.append('='));
         }
         return sb.toString();
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof PersonNameImpl)) {
+            return false;
+        }
+        
+        PersonNameImpl other = (PersonNameImpl)o;
+        return Arrays.equals(components, other.components);
     }
 }
