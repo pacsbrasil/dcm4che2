@@ -249,18 +249,29 @@ abstract class Match
 
     static class ModalitiesInStudy extends Match
     {
-        private final String md;
+        private final char[] wc;
         public ModalitiesInStudy(String md)
         {
             super("Series.modality", false);
-            this.md = md;
+            this.wc = md != null ? md.toCharArray() : new char[0];
         }
 
         public boolean isUniveralMatch()
         {
-            return md == null || md.length() == 0;
+            for (int i = wc.length; --i >= 0;)
+                if (wc[i] != '*')
+                    return false;
+            return true;
         }
 
+        public boolean isLike()
+        {
+            for (int i = wc.length; --i >= 0;)
+                if (wc[i] == '*' || wc[i] == '?')
+                    return true;
+            return false;
+        }
+        
         protected void appendBodyTo(StringBuffer sb)
         {
             JdbcProperties jp = JdbcProperties.getInstance();
@@ -272,8 +283,31 @@ abstract class Match
             sb.append(jp.getProperty("Study.pk"));
             sb.append(" AND ");
             sb.append(column);
-            sb.append(" = '");
-            sb.append(md);
+            final boolean like = isLike();
+            sb.append(like ? " LIKE '" : " = '");
+            char c;
+            for (int i = 0; i < wc.length; i++)
+            {
+                switch (c = wc[i])
+                {
+                    case '?' :
+                        c = '_';
+                        break;
+                    case '*' :
+                        c = '%';
+                        break;
+                    case '\'' :
+                        sb.append('\'');
+                        break;
+                    case '_' :
+                    case '%' :
+                        if (like) {
+                            sb.append('\\');
+                        }
+                        break;
+                }
+                sb.append(c);
+            }
             sb.append("') > 0");
         }
     }
