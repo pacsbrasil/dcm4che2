@@ -40,6 +40,7 @@ import org.dcm4che.data.Dataset;
 
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.jboss.logging.Logger;
 
 /**
  *  <description>
@@ -73,6 +74,7 @@ class Annotation
 
     // Attributes ----------------------------------------------------
     private final PrinterService service;
+	private final Logger log;
     private final File file;
     private final Properties props = new Properties();
     private final float insetLeft;
@@ -112,6 +114,7 @@ class Annotation
         throws IOException
     {
         this.service = service;
+        this.log = service.getLog();
         this.file = service.getAnnotationFile(adfID);
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
@@ -230,7 +233,7 @@ class Annotation
 
     private String getText(int index)
     {
-        return props.getProperty("" + index, "");
+        return props.getProperty("" + index);
     }
 
 

@@ -243,20 +243,20 @@ class PrintableFilmBox implements Printable
         }
         // Skip first invocation of print with identity tranformation
         // Unknown, why it's done, but painting nothing in this case seems be ok.
-        if (g2.getTransform().isIdentity()) {
-            return Printable.PAGE_EXISTS;
+        if (!g2.getTransform().isIdentity()) {
+	        annotation.print(g2, pf, pageIndex);
+	
+	        g2.translate(annotation.getImageableX(pf), annotation.getImageableY(pf));
+	
+	        double w = annotation.getImageableWidth(pf);
+	        double h = annotation.getImageableHeight(pf);
+	        Rectangle2D filmboxRect = new Rectangle2D.Double(0, 0, w, h);
+	        for (int i = 0; i < imageBoxes.length; ++i) {
+	            imageBoxes[i].print(g2, getImageBoxRect(
+	                    imageBoxes[i].getImagePosition(), filmboxRect));
+	        }
         }
-        annotation.print(g2, pf, pageIndex);
-
-        g2.translate(annotation.getImageableX(pf), annotation.getImageableY(pf));
-
-        double w = annotation.getImageableWidth(pf);
-        double h = annotation.getImageableHeight(pf);
-        Rectangle2D filmboxRect = new Rectangle2D.Double(0, 0, w, h);
-        for (int i = 0; i < imageBoxes.length; ++i) {
-            imageBoxes[i].print(g2, getImageBoxRect(
-                    imageBoxes[i].getImagePosition(), filmboxRect));
-        }
+        log.debug("Exit print");
         return Printable.PAGE_EXISTS;
     }
 

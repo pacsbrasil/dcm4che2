@@ -62,6 +62,7 @@ import javax.print.event.PrintJobListener;
 import javax.print.event.PrintServiceAttributeEvent;
 import javax.print.event.PrintServiceAttributeListener;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -210,10 +211,8 @@ public class PrinterService
 
     private boolean decimateByNearestNeighbor;
 
-    private final PrinterCalibration calibration =
-            new PrinterCalibration(log.getCategory());
-    private final ScannerCalibration scanner =
-            new ScannerCalibration(log.getCategory());
+    private final PrinterCalibration calibration;
+    private final ScannerCalibration scanner;
 
     private LinkedList highPriorQueue = new LinkedList();
     private LinkedList medPriorQueue = new LinkedList();
@@ -225,6 +224,12 @@ public class PrinterService
 
 
     // Public --------------------------------------------------------
+	public PrinterService() {
+		Logger log = Logger.getLogger(getClass().getName());
+		calibration = new PrinterCalibration(log);
+		scanner = new ScannerCalibration(log);		
+	}
+	
     /**
      *  Gets the auditLoggerName attribute of the PrinterService object
      *
