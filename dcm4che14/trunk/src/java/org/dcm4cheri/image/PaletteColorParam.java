@@ -25,7 +25,6 @@ package org.dcm4cheri.image;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
 import java.awt.image.ColorModel;
@@ -44,7 +43,7 @@ final class PaletteColorParam extends BasicColorModelParam {
     private final byte[] r,g,b;
 
     /** Creates a new instance of PaletteColorParam */
-    public PaletteColorParam(Dataset ds) throws DcmValueException {
+    public PaletteColorParam(Dataset ds) {
         super(ds);
         if (super.min < 0) {
             throw new UnsupportedOperationException(
@@ -65,41 +64,37 @@ final class PaletteColorParam extends BasicColorModelParam {
         return new IndexColorModel(bits, size, r, g, b);
     }
     
-    private static void throwLengthMismatch(int lutLen, int descLen)
-            throws DcmValueException {
-        throw new DcmValueException("LUT Data length: " + lutLen
+    private static void throwLengthMismatch(int lutLen, int descLen) {
+        throw new IllegalArgumentException("LUT Data length: " + lutLen
                 +  " mismatch entry value: " + descLen + " in LUT Descriptor");
     }
-    
+        
     private static byte[] generate(int size, Dataset ds, int descTag,
-                int dataTag, int segmTag) throws DcmValueException {
-        DcmElement desc = ds.get(descTag);
+                int dataTag, int segmTag) {
+        int[] desc = ds.getInts(descTag);
         if (desc == null) {
-            throw new DcmValueException("Missing LUT Descriptor!");
+            throw new IllegalArgumentException("Missing LUT Descriptor!");
         }
-        if (desc.vm() != 3) {
-            throw new DcmValueException("Illegal LUT Descriptor: " + desc);
+        if (desc.length != 3) {
+            throw new IllegalArgumentException("Illegal LUT Descriptor: " + desc);
         }
-        int len = desc.getInt(0);
-        if (len == 0) {
-            len = 0x10000;
-        }
+        int len = desc[0] == 0 ? 0x10000 : desc[0];
+        int off = desc[1];
         if (len < 0)
-            throw new DcmValueException("Illegal LUT Descriptor: len=" + len);
-        int off = desc.getInt(1);
+            throw new IllegalArgumentException("Illegal LUT Descriptor: len=" + len);
         if (off < 0)
-            throw new DcmValueException("off: " + off);
+            throw new IllegalArgumentException("off: " + off);
         ByteBuffer data = ds.getByteBuffer(dataTag);
         ByteBuffer segm = ds.getByteBuffer(segmTag);
 
         if (data == null && segm == null)
-            throw new DcmValueException("Missing LUT Data!");
+            throw new IllegalArgumentException("Missing LUT Data!");
 
 //        if (data != null && segm != null)
-//            throw new DcmValueException("Native & Segmented LUT Data!");
+//            throw new IllegalArgumentException("Native & Segmented LUT Data!");
 
         byte[] out = new byte[size];
-        switch (desc.getInt(2)) {
+        switch (desc[2]) {
             case 16:
                 if (data != null) {
                     if (data.limit() != len * 2) {
@@ -123,15 +118,14 @@ final class PaletteColorParam extends BasicColorModelParam {
                     break;
                 }
             default:
-                throw new DcmValueException(
-                    "Illegal LUT Descriptor: bits=" + desc.getInt(2));
+                throw new IllegalArgumentException (
+                    "Illegal LUT Descriptor: bits=" + desc[2]);
         }
         Arrays.fill(out, off + len, size, out[off + len - 1]);
         return out;
     }
 
-    private static void inflate(ByteBuffer segm, byte[] out, int off, int len)
-            throws DcmValueException {
+    private static void inflate(ByteBuffer segm, byte[] out, int off, int len) {
         int x0 = off;
         int y0 = 0;
         int y1,dy;
@@ -177,7 +171,7 @@ final class PaletteColorParam extends BasicColorModelParam {
                                 y0 = y1;
                                 break;
                             default:
-                                throw new DcmValueException(
+                                throw new IllegalArgumentException(
                                         "illegal op code:" + op2
                                         + ", index:" + (segm.position()-4));
                         }
@@ -185,7 +179,7 @@ final class PaletteColorParam extends BasicColorModelParam {
                     segm.reset();
                     break;
                 default:
-                    throw new DcmValueException("illegal op code:" + op
+                    throw new IllegalArgumentException("illegal op code:" + op
                             + ", index:" + (segm.position()-4));
             }
         }

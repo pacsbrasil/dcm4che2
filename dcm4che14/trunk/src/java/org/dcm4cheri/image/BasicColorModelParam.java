@@ -24,7 +24,6 @@
 package org.dcm4cheri.image;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
 
@@ -45,7 +44,7 @@ abstract class BasicColorModelParam implements ColorModelParam {
     protected final int shiftmask;
 
     /** Creates a new instance of PaletteColorParam */
-    protected BasicColorModelParam(Dataset ds) throws DcmValueException {
+    protected BasicColorModelParam(Dataset ds) {
         int alloc = ds.getInt(Tags.BitsAllocated,8);
         switch (alloc) {
             case 8:

@@ -24,7 +24,6 @@
 package org.dcm4cheri.image;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
 
@@ -53,7 +52,7 @@ final class MonochromeParam extends BasicColorModelParam  {
     }
 
     /** Creates a new instance of MonochromeParam */
-    public MonochromeParam(Dataset ds, String shape) throws DcmValueException {
+    public MonochromeParam(Dataset ds, String shape) {
         super(ds);
         this.inverse = "INVERSE".equals(
                 ds.getString(Tags.PresentationLUTShape, shape))

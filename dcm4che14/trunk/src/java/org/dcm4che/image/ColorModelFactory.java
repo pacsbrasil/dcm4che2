@@ -25,7 +25,6 @@ package org.dcm4che.image;
 
 import org.dcm4che.Implementation;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmValueException;
 import java.awt.image.ColorModel;
 
 /**
@@ -40,8 +39,7 @@ public abstract class ColorModelFactory {
             "dcm4che.image.ColorModelFactory");
    }
 
-    public abstract ColorModelParam makeParam(Dataset ds)
-            throws DcmValueException;
+    public abstract ColorModelParam makeParam(Dataset ds);
 
     public abstract ColorModel getColorModel(ColorModelParam param);
 }

@@ -24,7 +24,6 @@
 package org.dcm4cheri.image;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelFactory;
 import org.dcm4che.image.ColorModelParam;
@@ -55,7 +54,7 @@ public class ColorModelFactoryImpl extends ColorModelFactory {
         return cm;
     }
 
-    public ColorModelParam makeParam(Dataset ds) throws DcmValueException {
+    public ColorModelParam makeParam(Dataset ds) {
         String pmi =
             ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
         if ("PALETTE COLOR".equals(pmi)) {
