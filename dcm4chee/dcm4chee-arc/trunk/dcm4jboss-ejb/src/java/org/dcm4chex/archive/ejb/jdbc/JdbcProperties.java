@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -124,9 +124,7 @@ public class JdbcProperties extends Properties {
             "File",
             "instance_fk",
             "File",
-            "media_fk",
-            "File",
-            "node_fk",
+            "directory_fk",
             };
     private static final JdbcProperties instance = new JdbcProperties();
     private static final String JBOSSCMP_JDBC_XML =

@@ -20,13 +20,25 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
+import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.ejb.interfaces.DirectoryLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.DirectoryLocal;
 
 /**
+ * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$ $Date$
+ *
  * @ejb.bean
  *  name="File"
  *  type="CMP"
@@ -47,15 +59,49 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
  *  signature="java.util.Collection findAll()"
  *  query="SELECT OBJECT(a) FROM File AS a"
  *  transaction-type="Supports"
- *
- * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- * @version $Revision$ $Date$
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="Directory" 
+ *  view-type="local"
+ *  ref-name="ejb/Directory"
  *
  */
 public abstract class FileBean implements EntityBean
 {
 
     private static final Logger log = Logger.getLogger(FileBean.class);
+
+    private DirectoryLocalHome dirHome;
+
+    public void setEntityContext(EntityContext ctx)
+    {
+        Context jndiCtx = null;
+        try
+        {
+            jndiCtx = new InitialContext();
+            dirHome =
+                (DirectoryLocalHome) jndiCtx.lookup(
+                    "java:comp/env/ejb/Directory");
+        } catch (NamingException e)
+        {
+            throw new EJBException(e);
+        } finally
+        {
+            if (jndiCtx != null)
+            {
+                try
+                {
+                    jndiCtx.close();
+                } catch (NamingException ignore)
+                {}
+            }
+        }
+    }
+
+    public void unsetEntityContext()
+    {
+        dirHome = null;
+    }
 
     /**
      * Auto-generated Primary Key
@@ -73,34 +119,14 @@ public abstract class FileBean implements EntityBean
     public abstract void setPk(Integer pk);
 
     /**
-     * Hostname.
+     * File Path (relative path to Directory).
      *
      * @ejb.interface-method
      * @ejb.persistence
-     *  column-name="hostname"
+     *  column-name="filepath"
      */
-    public abstract String getHostName();
-    public abstract void setHostName(String hostname);
-
-    /**
-     * Base Directory (mount point).
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="basedir"
-     */
-    public abstract String getBaseDir();
-    public abstract void setBaseDir(String basedir);
-
-    /**
-     * File ID (relative path to Base Directory).
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="file_id"
-     */
-    public abstract String getFileId();
-    public abstract void setFileId(String fileid);
+    public abstract String getFilePath();
+    public abstract void setFilePath(String path);
 
     /**
      * Transfer Syntax UID
@@ -185,6 +211,28 @@ public abstract class FileBean implements EntityBean
     public abstract InstanceLocal getInstance();
 
     /**
+     * @ejb.relation
+     *  name="directory-file"
+     *  role-name="file-in-directory"
+     *  target-ejb="Directory"
+     *  target-role-name="directory-of-file"
+     *  target-multiple="yes"
+     *
+     * @jboss:relation
+     *  fk-column="directory_fk"
+     *  related-pk-field="pk"
+     * 
+     * @param dir Directory of File
+     */
+    public abstract void setDirectory(DirectoryLocal dir);
+
+    /**
+     * @ejb.interface-method view-type="local"
+     * 
+     * @return Directory of File
+     */
+    public abstract DirectoryLocal getDirectory();
+    /**
      * 
      * @ejb.interface-method
      */
@@ -197,16 +245,14 @@ public abstract class FileBean implements EntityBean
     {
         return "File[pk="
             + getPk()
-            + ", host="
-            + getHostName()
-            + ", dir="
-            + getBaseDir()
-            + ", id="
-            + getFileId()
+            + ", filepath="
+            + getFilePath()
             + ", tsuid="
             + getFileTsuid()
             + ", inst->"
             + getInstance()
+            + ", dir->"
+            + getDirectory()
             + "]";
     }
 
@@ -218,16 +264,14 @@ public abstract class FileBean implements EntityBean
     public Integer ejbCreate(
         String hostname,
         String basedir,
-        String fileid,
+        String path,
         String tsuid,
         int size,
         byte[] md5,
         InstanceLocal instance)
         throws CreateException
     {
-        setHostName(hostname);
-        setBaseDir(basedir);
-        setFileId(fileid);
+        setFilePath(path);
         setFileTsuid(tsuid);
         setFileSize(size);
         setFileMd5(md5);
@@ -237,7 +281,7 @@ public abstract class FileBean implements EntityBean
     public void ejbPostCreate(
         String hostname,
         String basedir,
-        String fileid,
+        String path,
         String tsuid,
         int size,
         byte[] md5,
@@ -245,7 +289,26 @@ public abstract class FileBean implements EntityBean
         throws CreateException
     {
         setInstance(instance);
+        setDirectory(getOrCreateDirectory(hostname, basedir));
         log.info("Created " + prompt());
+    }
+
+    private DirectoryLocal getOrCreateDirectory(
+        String hostname,
+        String basedir)
+        throws CreateException
+    {
+        try
+        {
+            return dirHome.findByHostNameAndDirectoryPath(hostname, basedir);
+        } catch (ObjectNotFoundException onfe)
+        {
+            return dirHome.create(hostname, basedir);
+        } catch (FinderException e)
+        {
+            throw new EJBException(e);
+        }
+
     }
 
     public void ejbRemove() throws RemoveException

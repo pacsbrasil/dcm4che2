@@ -72,8 +72,7 @@ public class FileBeanTest extends ServletTestCase
      * @see TestCase#tearDown()
      */
     protected void tearDown() throws Exception
-    {
-    }
+    {}
 
     /**
      * Constructor for StudyBeanTest.
@@ -86,13 +85,22 @@ public class FileBeanTest extends ServletTestCase
 
     public void testCreate() throws Exception
     {
-        FileLocal file = fileHome.create(getHostName(), BASEDIR, FILEID, TSUID, SIZE, MD5, null);
+        FileLocal file =
+            fileHome.create(
+                getHostName(),
+                BASEDIR,
+                FILEID,
+                TSUID,
+                SIZE,
+                MD5,
+                null);
         file.remove();
     }
-    
-    private static String getHostName() throws UnknownHostException {
+
+    private static String getHostName() throws UnknownHostException
+    {
         String hostname = InetAddress.getLocalHost().getHostName();
-        int pos = hostname.lastIndexOf('.');
-        return pos != -1 ? hostname.substring(pos+1) : hostname;
+        int pos = hostname.indexOf('.');
+        return pos != -1 ? hostname.substring(0, pos) : hostname;
     }
 }
