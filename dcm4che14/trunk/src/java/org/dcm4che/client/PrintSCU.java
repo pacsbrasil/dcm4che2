@@ -488,7 +488,7 @@ public class PrintSCU {
 		}
 		Dataset imageBox = dcmFact.newDataset();
 		if (attr != null) {
-			imageBox.putAll(imageBox);
+			imageBox.putAll(attr);
 		}
 		imageBox.putUS(Tags.ImagePositionOnFilm, index+1);
 			
@@ -511,4 +511,36 @@ public class PrintSCU {
 	byte[] getBuffer() {
 		return buffer;		
 	}
+    
+    public int printFilmBox()
+        throws InterruptedException, IOException, DcmServiceException
+    {
+        checkFilmBox();
+        int msgid = requestor.nextMsgID();
+        Command nActionRQ = dcmFact.newCommand();
+        nActionRQ.initNActionRQ(msgid,
+            UIDs.BasicFilmBoxSOP, curFilmBoxIUID, 1);
+        Dimse rsp = requestor.invokeAndWaitForRSP(
+            pcidPrint, nActionRQ);
+        Command nActionRSP = rsp.getCommand();
+        curFilmBoxIUID = null;
+        curFilmBox = null;
+        return checkStatus(nActionRSP);
+    }
+
+    public int printFilmSession()
+        throws InterruptedException, IOException, DcmServiceException
+    {
+        checkSession();
+        int msgid = requestor.nextMsgID();
+        Command nActionRQ = dcmFact.newCommand();
+        nActionRQ.initNActionRQ(msgid,
+            UIDs.BasicFilmSession, curFilmSessionIUID, 1);
+        Dimse rsp = requestor.invokeAndWaitForRSP(
+            pcidPrint, nActionRQ);
+        Command nActionRSP = rsp.getCommand();
+        curFilmBoxIUID = null;
+        curFilmBox = null;
+        return checkStatus(nActionRSP);
+    }
 }
