@@ -109,13 +109,13 @@
    		<property name="dist.standalone" value="${dist.name}"/>
    		<zip destfile="${build.dir}/${dist.standalone}.zip">
 			<zipfileset dir="target/${dist.name}" prefix="${dist.standalone}">
+				<include name="bin/acroread.bat"/>
 				<include name="bin/init_redhat.sh"/>
 				<include name="bin/install_service.bat"/>
 				<include name="bin/fop.sh"/>
 				<include name="bin/fop.bat"/>
 				<include name="bin/xalan.sh"/>
 				<include name="bin/xalan.bat"/>
-				<include name="bin/acrobat.bat"/>
    			</zipfileset>	
 			<zipfileset dir="${src.etc}" prefix="${dist.standalone}">
 				<include name="bin/fopcfg.xml"/>
