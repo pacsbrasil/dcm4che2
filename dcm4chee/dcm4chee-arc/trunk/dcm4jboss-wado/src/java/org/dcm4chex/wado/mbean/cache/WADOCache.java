@@ -151,7 +151,7 @@ public interface WADOCache {
 	 * 
 	 * @param background If true clean process runs in a seperate thread.
 	 */
-	void cleanCache( boolean background );
+	void freeDiskSpace( boolean background );
 	
 	/**
 	 * Setter for root directory of this cache.
