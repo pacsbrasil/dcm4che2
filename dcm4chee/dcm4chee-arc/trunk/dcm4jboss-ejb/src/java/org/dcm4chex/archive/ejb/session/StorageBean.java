@@ -165,6 +165,7 @@ public abstract class StorageBean implements SessionBean {
             final String iuid = fmi.getMediaStorageSOPInstanceUID();
             final String cuid = fmi.getMediaStorageSOPClassUID();
             final String tsuid = fmi.getTransferSyntaxUID();
+            log.info("inserting instance " + iuid);
             InstanceLocal instance = null;
             try {
                 instance = instHome.findBySopIuid(iuid);
@@ -174,6 +175,7 @@ public abstract class StorageBean implements SessionBean {
             }
             FileLocal file =
                 fileHome.create(host, basedir, fileid, tsuid, size, md5, instance);
+            log.info("inserted instance " + iuid);
             return modified.isEmpty()
                 ? Status.Success
                 : Status.CoercionOfDataElements;
@@ -322,5 +324,20 @@ public abstract class StorageBean implements SessionBean {
             }
         }
         return true;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateStudy(String siud) {
+        try {
+            log.info("updating study " + siud);
+            studyHome.findByStudyIuid(siud).update();
+            log.info("updated study " + siud);
+            return true;
+        } catch (Exception e) {
+            log.error("update study failed:", e);
+            return false;
+        }
     }
 }

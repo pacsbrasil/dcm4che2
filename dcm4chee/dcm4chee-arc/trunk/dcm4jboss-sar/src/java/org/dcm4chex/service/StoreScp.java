@@ -32,7 +32,10 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -67,6 +70,7 @@ import org.jboss.logging.Logger;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener
 {
+    private static final String SUID_KEY = "org.dcm4chex.service.StoreScp";
     private static final int[] TYPE1_ATTR =
         {
             Tags.StudyInstanceUID,
@@ -129,13 +133,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
 
     public void prepareBaseDir() throws IOException
     {
-        if (basedir == null) {
+        if (basedir == null)
+        {
             throw new IllegalStateException("BaseDir not initialized");
         }
         File dir = new File(basedir);
-        if (!dir.isDirectory()) {
+        if (!dir.isDirectory())
+        {
             log.warn("basedir " + dir + " does not exist - create new basedir");
-            if (!dir.mkdirs()) {
+            if (!dir.mkdirs())
+            {
                 throw new IOException("Failed to create basedir");
             }
         }
@@ -166,12 +173,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
                     instUID,
                     rq.getTransferSyntaxUID()));
 
-            String aet = assoc.getAssociation().getCalledAET();
             File file = makeFile(ds);
             MessageDigest md = MessageDigest.getInstance("MD5");
             storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
-            storage.store(ds, hostname, basedir, toFileIds(file), (int)file.length(), md.digest());
+            storage.store(
+                ds,
+                hostname,
+                basedir,
+                toFileIds(file),
+                (int) file.length(),
+                md.digest());
             rspCmd.putUS(Tags.Status, Status.Success);
+            getUIDsOfStoredStudies(assoc.getAssociation(), true).add(
+                ds.getString(Tags.StudyInstanceUID));
         } catch (DcmServiceException e)
         {
             throw e;
@@ -195,7 +209,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
 
     private String toFileIds(File file)
     {
-        final int off = "/".equals(basedir) ? 0 : basedir.length(); 
+        final int off = "/".equals(basedir) ? 0 : basedir.length();
         return file.getAbsolutePath().substring(off + 1).replace(
             File.separatorChar,
             '/');
@@ -380,5 +394,46 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
     {}
 
     public void close(Association src)
-    {}
+    {
+        Set suids = getUIDsOfStoredStudies(src, false);
+        if (suids == null)
+        {
+            return;
+        }
+        Storage storage;
+        try
+        {
+            storage = storageHome().create();
+        } catch (Exception e)
+        {
+            log.error("Failed to update Studies with UIDs " + suids, e);
+            return;
+        }
+        for (Iterator it = suids.iterator(); it.hasNext();)
+        {
+            final String suid = (String) it.next();
+            try
+            {
+                storage.updateStudy(suid);
+            } catch (Exception e)
+            {
+                log.error("Failed to update Study with UID:" + suid, e);
+            }
+        }
+        try
+        {
+            storage.remove();
+        } catch (Exception ignore)
+        {}
+    }
+
+    private Set getUIDsOfStoredStudies(Association a, boolean insert)
+    {
+        Set suids = (Set) a.getProperty(SUID_KEY);
+        if (suids == null && insert)
+        {
+            a.putProperty(SUID_KEY, suids = new HashSet());
+        }
+        return suids;
+    }
 }

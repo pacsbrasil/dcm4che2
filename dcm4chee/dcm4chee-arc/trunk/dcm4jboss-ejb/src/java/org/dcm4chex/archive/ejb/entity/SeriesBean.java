@@ -133,6 +133,18 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract java.util.Date getPpsStartDateTime();
 
+    /**
+     * Number Of Series Related Instances
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="num_instances"
+     * 
+     */
+    public abstract int getNumberOfSeriesRelatedInstances();
+
+    public abstract void setNumberOfSeriesRelatedInstances(int num);
+
     public abstract void setPpsStartDateTime(java.util.Date datetime);
     
     /**
@@ -206,9 +218,9 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset getAttributes()
+    public void update()
     {
-        return DatasetUtil.fromByteArray(getEncodedAttributes());
+        setNumberOfSeriesRelatedInstances(getInstances().size());
     }
 
     /**
@@ -224,6 +236,14 @@ public abstract class SeriesBean implements EntityBean {
         setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));        
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset getAttributes()
+    {
+        return DatasetUtil.fromByteArray(getEncodedAttributes());
+    }
+    
     /**
      * 
      * @ejb.interface-method

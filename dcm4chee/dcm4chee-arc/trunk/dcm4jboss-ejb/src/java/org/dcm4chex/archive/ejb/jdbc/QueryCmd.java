@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -16,15 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-/* 
- * File: $Source$
- * Author: gunter
- * Date: 20.07.2003
- * Time: 16:21:45
- * CVS Revision: $Revision$
- * Last CVS Commit: $Date$
- * Author of last CVS Commit: $Author$
  */
 package org.dcm4chex.archive.ejb.jdbc;
 
@@ -45,7 +36,7 @@ import org.dcm4che.dict.VRs;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- *
+ * @version $Revision$ $Date$
  */
 public abstract class QueryCmd extends BaseCmd {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
@@ -299,7 +290,10 @@ public abstract class QueryCmd extends BaseCmd {
         protected String[] getSelectAttributes() {
             return new String[] {
                 "Patient.encodedAttributes",
-                "Study.encodedAttributes" };
+                "Study.encodedAttributes", 
+                "Study.numberOfStudyRelatedSeries", 
+                "Study.numberOfStudyRelatedInstances" 
+                };
         }
 
         protected String[] getTables() {
@@ -314,6 +308,8 @@ public abstract class QueryCmd extends BaseCmd {
             throws IOException, SQLException {
             ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(3));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(4));
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
     }
@@ -333,7 +329,9 @@ public abstract class QueryCmd extends BaseCmd {
             return new String[] {
                 "Patient.encodedAttributes",
                 "Study.encodedAttributes",
-                "Series.encodedAttributes" };
+                "Series.encodedAttributes",
+                "Series.numberOfSeriesRelatedInstances" 
+                 };
         }
 
         protected String[] getTables() {
@@ -353,6 +351,7 @@ public abstract class QueryCmd extends BaseCmd {
             ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(4));
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -417,7 +416,7 @@ public abstract class QueryCmd extends BaseCmd {
     private static Dataset toDataset(byte[] data) throws IOException {
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         Dataset ds = dof.newDataset();
-        ds.readDataset(bin, DcmDecodeParam.IVR_LE, -1);
+        ds.readDataset(bin, DcmDecodeParam.EVR_LE, -1);
         return ds;
     }
 }

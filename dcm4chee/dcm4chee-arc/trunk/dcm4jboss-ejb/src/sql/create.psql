@@ -36,6 +36,8 @@ CREATE TABLE study (
 	study_datetime	TIMESTAMP,
 	accession_no	TEXT,
 	ref_physician   TEXT,
+	num_series		INTEGER,
+	num_instances	INTEGER,
 	study_attrs		BYTEA,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
@@ -52,6 +54,7 @@ CREATE TABLE series (
 	series_no		TEXT,
 	modality		TEXT,
 	pps_start		TIMESTAMP,
+	num_instances	INTEGER,
 	series_attrs	BYTEA,
 FOREIGN KEY (study_fk) REFERENCES study(pk)
 );

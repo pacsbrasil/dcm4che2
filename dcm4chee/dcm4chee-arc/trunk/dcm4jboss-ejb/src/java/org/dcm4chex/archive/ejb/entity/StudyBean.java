@@ -28,6 +28,8 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -40,6 +42,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
 
 /**
@@ -74,12 +77,13 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public abstract class StudyBean implements EntityBean {
+public abstract class StudyBean implements EntityBean
+{
 
     private static final String ATTRS_CFG = "study-attrs.cfg";
 
     private static final Logger log = Logger.getLogger(StudyBean.class);
-        
+
     /**
      * Auto-generated Primary Key
      *
@@ -151,6 +155,45 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setReferringPhysicianName(String physician);
 
     /**
+     * Number Of Study Related Series
+     *
+     * @ejb.persistence
+     *  column-name="num_series"
+     * 
+     */
+    public abstract int getNumberOfStudyRelatedSeries();
+
+    public abstract void setNumberOfStudyRelatedSeries(int num);
+
+    /**
+     * Number Of Study Related Instances
+     *
+     * @ejb.persistence
+     *  column-name="num_instances"
+     * 
+     */
+    public abstract int getNumberOfStudyRelatedInstances();
+
+    public abstract void setNumberOfStudyRelatedInstances(int num);
+
+    /**
+     * @ejb.interface-method
+     */
+    public void update()
+    {
+        Collection c = getSeries();
+        setNumberOfStudyRelatedSeries(c.size());
+        int numInstances = 0;
+        for (Iterator it = c.iterator(); it.hasNext();)
+        {
+            SeriesLocal series = (SeriesLocal) it.next();
+            series.update();
+            numInstances += series.getNumberOfSeriesRelatedInstances();
+        }
+        setNumberOfStudyRelatedInstances(numInstances);
+    }
+
+    /**
      * Study DICOM Attributes
      *
      * @ejb.persistence
@@ -174,14 +217,14 @@ public abstract class StudyBean implements EntityBean {
      * @param patient patient of this study
      */
     public abstract void setPatient(PatientLocal patient);
-    
+
     /**
      * @ejb.interface-method view-type="local"
      * 
      * @return patient of this study
      */
     public abstract PatientLocal getPatient();
-    
+
     /**
      * @ejb.interface-method view-type="local"
      *
@@ -198,26 +241,31 @@ public abstract class StudyBean implements EntityBean {
      * @return all series of this study
      */
     public abstract java.util.Collection getSeries();
-    
+
     /**
      * Create study.
      *
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
+    public Integer ejbCreate(Dataset ds, PatientLocal patient)
+        throws CreateException
+    {
         setAttributes(ds);
         return null;
     }
 
-    public void ejbPostCreate(Dataset ds, PatientLocal patient) throws CreateException {
+    public void ejbPostCreate(Dataset ds, PatientLocal patient)
+        throws CreateException
+    {
         setPatient(patient);
         log.info("Created " + prompt());
     }
 
-    public void ejbRemove() throws RemoveException {
+    public void ejbRemove() throws RemoveException
+    {
         log.info("Deleting " + prompt());
     }
-    
+
     /**
      * @ejb.interface-method
      */
@@ -236,31 +284,33 @@ public abstract class StudyBean implements EntityBean {
         setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        setEncodedAttributes(
+            DatasetUtil.toByteArray(
+                ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
     }
-    
+
     /**
      * @ejb.select
      *  query="SELECT s.modality FROM Study AS a, IN(a.series) s"
      */
-    public abstract Set ejbSelectModalitiesInStudy() throws FinderException; 
+    public abstract Set ejbSelectModalitiesInStudy() throws FinderException;
 
     /**
      * Modalities In Study
      *
      * @ejb.interface-method
      */
-    public Set getModalitiesInStudy() {
+    public Set getModalitiesInStudy()
+    
+    {
         try
         {
             return ejbSelectModalitiesInStudy();
-        }
-        catch (FinderException e)
+        } catch (FinderException e)
         {
             throw new EJBException(e);
         }
     }
-
 
     /**
      * 
@@ -271,7 +321,8 @@ public abstract class StudyBean implements EntityBean {
         return prompt();
     }
 
-    private String prompt() {
+    private String prompt()
+    {
         return "Study[pk="
             + getPk()
             + ", uid="
