@@ -143,6 +143,7 @@
 				<include name="conf/server.policy"/>
 				<include name="conf/web.xml"/>
 				<include name="conf/xmdesc/*"/>
+				<include name="conf/xsl/*"/>
 				<include name="lib/autonumber-plugin.jar"/>
 				<include name="lib/bcel.jar"/>
 				<include name="lib/hsqldb.jar"/>

@@ -30,6 +30,7 @@ import org.dcm4chex.cdw.common.MediaCreationException;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
 import org.dcm4chex.cdw.common.SpoolDirDelegate;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfig;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -45,10 +46,14 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private DirRecordFactory dirRecordFactory = new DirRecordFactory(
             "resource:dicomdir-records.xml");
 
+    private final File xmlFile;
+    
     private final File mergeDir;
 
     private final File mergeDirViewer;
 
+    private final File mergeDirWeb;
+    
     private String fileSetDescriptorFile = "README.TXT";
 
     private String charsetOfFileSetDescriptorFile = "ISO_IR 100";
@@ -67,6 +72,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private boolean makeIsoImage = true;
 
+    private boolean logXml = false;
+    
     private final ImageReader imageReader;
 
     private final MessageListener listener = new MessageListener() {
@@ -84,9 +91,13 @@ public class MediaComposerService extends ServiceMBeanSupport {
     };
 
     public MediaComposerService() {
-        File datadir = ServerConfigLocator.locate().getServerDataDir();
+        ServerConfig config = ServerConfigLocator.locate();
+        File homedir = config.getServerHomeDir();
+        xmlFile = new File(homedir, "log" + File.separatorChar + "dicomdir.xml");
+        File datadir = config.getServerDataDir();
         checkExists(mergeDir = new File(datadir, "mergedir"));
         checkExists(mergeDirViewer = new File(datadir, "mergedir-viewer"));
+        checkExists(mergeDirWeb = new File(datadir, "mergedir-web"));
         Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
         if (!it.hasNext())
                 throw new ConfigurationException("DICOM Image Reader not found");
@@ -102,6 +113,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
         return mergeDir;
     }
 
+    final File getMergeDirWeb() {
+        return mergeDirWeb;
+    }
+    
     final File getMergeDirViewer() {
         return mergeDirViewer;
     }
@@ -189,6 +204,12 @@ public class MediaComposerService extends ServiceMBeanSupport {
         this.makeIsoImage = makeIsoImage;
     }
 
+    public final boolean isLogXml() {
+        return logXml;
+    }
+    public final void setLogXml(boolean logXml) {
+        this.logXml = logXml;
+    }
     public final ObjectName getSpoolDirName() {
         return spoolDir.getSpoolDirName();
     }
@@ -226,6 +247,12 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 FilesetBuilder builder = new FilesetBuilder(this, rq, attrs);
                 builder.build();
                 // TODO split fileset on several media
+                WebBuilder webBuilder = new WebBuilder(this, rq, attrs);
+                if (logXml)
+                    webBuilder.toXML(xmlFile);
+                webBuilder.createIndex();
+                if (builder.isWeb())
+                    webBuilder.createWeb();
                 if (rq.isCanceled()) {
                     log.info("" + rq + " was canceled");
                     return;

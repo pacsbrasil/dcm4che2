@@ -83,9 +83,7 @@ class FilesetBuilder {
 
     private final boolean preserveInstances;
 
-    private final String html;
-
-    private final File mergeDir;
+    private final String web;
 
     private BufferedImage imageBI;
 
@@ -94,6 +92,8 @@ class FilesetBuilder {
     private BufferedImage iconBI;
 
     private byte[] iconPixelData;
+
+    private boolean viewer;
 
     private static String toHex(int val) {
         char[] ch8 = new char[8];
@@ -121,10 +121,13 @@ class FilesetBuilder {
         this.attrs = attrs;
         this.preserveInstances = Flag.isYes(attrs
                 .getString(Tags.PreserveCompositeInstancesAfterMediaCreation));
-        this.mergeDir = Flag.isYes(attrs
-                .getString(Tags.IncludeDisplayApplication)) ? service
-                .getMergeDirViewer() : service.getMergeDir();
-        this.html = attrs.getString(Tags.IncludeNonDICOMObjects, "NONE");
+        this.viewer = Flag.isYes(attrs
+                .getString(Tags.IncludeDisplayApplication));
+        this.web = attrs.getString(Tags.IncludeNonDICOMObjects, "NONE");
+    }
+
+    final boolean isWeb() {
+        return !"NONE".equals(web);
     }
 
     public void build() throws MediaCreationException {
@@ -150,12 +153,27 @@ class FilesetBuilder {
             } finally {
                 dirWriter.close();
             }
-            File[] files = mergeDir.listFiles();
-            for (int i = 0; i < files.length; ++i)
-                makeSymLink(files[i], new File(rootDir, files[i].getName()));
+            mergeDir(service.getMergeDir(), rootDir);
+            if (isWeb()) {
+                (new File(rootDir, "IHE_PDI")).mkdir();
+                mergeDir(service.getMergeDirWeb(), rootDir);
+            }
+            if (viewer) mergeDir(service.getMergeDirViewer(), rootDir);
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
+        }
+    }
+
+    private void mergeDir(File src, File dest) throws IOException {
+        if (log.isDebugEnabled()) log.debug("merge " + src + " to " + dest);
+        File[] files = src.listFiles();
+        for (int i = 0; i < files.length; ++i) {
+            File link = new File(dest, files[i].getName());
+            if (link.isDirectory())
+                mergeDir(files[i], link);
+            else
+                makeSymLink(files[i], link);
         }
     }
 
@@ -216,7 +234,7 @@ class FilesetBuilder {
                         }
                 if (iconItem != null)
                         rec.putSQ(Tags.IconImageSeq).addItem(iconItem);
-                if (!"NONE".equals(html)) {
+                if (!"NONE".equals(web)) {
                     if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
                             && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
                         log
@@ -380,6 +398,8 @@ class FilesetBuilder {
     }
 
     private void makeSymLink(File src, File dst) throws IOException {
+        if (dst.delete())
+                if (log.isDebugEnabled()) log.debug("M-DELETE " + dst);
         String[] cmd = new String[] { "ln", "-s", src.getAbsolutePath(),
                 dst.getAbsolutePath()};
         try {
