@@ -85,6 +85,7 @@ public class DcmImageReader extends javax.imageio.ImageReader {
    private String pmi = null;
    private int dataType = 0;
    private float aspectRatio = 0;
+   private boolean encapsulated = false;
    
    private int sourceXOffset;
    private int sourceYOffset;
@@ -201,24 +202,22 @@ public class DcmImageReader extends javax.imageio.ImageReader {
             "" + alloc + " Bits Allocated not supported!");
       }
       
-      this.frameStartPos = new long[theDataset.getInt(Tags.NumberOfFrames,1)];
-      
-      int rLen = theParser.getReadLength();
-      if (rLen == -1) {
-         throw new IOException(
-         "Encapsulate Pixel Data not supported by this version!");
-      }
-      int frameLength = rLen / frameStartPos.length;
-      frameStartPos[0] = theParser.getStreamPosition();
-      for (int i = 1; i < frameStartPos.length; ++i) {
-         frameStartPos[i] = frameStartPos[i-1] + frameLength;
-      }
-      
       this.width = theDataset.getInt(Tags.Columns,0);
       this.height = theDataset.getInt(Tags.Rows,0);
       this.pmi = theDataset.getString(Tags.PhotometricInterpretation,null);
       this.planes = theDataset.getInt(Tags.PlanarConfiguration,0);
       this.aspectRatio = width * pixelRatio() / height;
+      
+      this.frameStartPos = new long[theDataset.getInt(Tags.NumberOfFrames,1)];
+      
+      frameStartPos[0] = theParser.getStreamPosition();
+      int rLen = theParser.getReadLength();
+      this.encapsulated = rLen == -1;
+      if (encapsulated) return;
+      int frameLength = rLen / frameStartPos.length;
+      for (int i = 1; i < frameStartPos.length; ++i) {
+         frameStartPos[i] = frameStartPos[i-1] + frameLength;
+      }
       
       if ("RGB".equals(this.pmi)) {
          if (alloc == 16) {
@@ -305,6 +304,10 @@ public class DcmImageReader extends javax.imageio.ImageReader {
    throws IOException {
       readMetadata();
       checkIndex(imageIndex);
+      if (encapsulated) {
+          throw new IOException(
+          "Encapsulate Pixel Data not supported by this version!");
+      }
       stream.seek(this.frameStartPos[imageIndex]);
       if (param == null) {
          param = getDefaultReadParam();
