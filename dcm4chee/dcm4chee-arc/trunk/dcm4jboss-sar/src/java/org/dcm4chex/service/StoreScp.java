@@ -88,7 +88,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
     private final Logger log;
-    private int forwardPriority = Command.LOW;
+    private int forwardPriority = 0;
     private String retrieveAETs;
     private ForwardAETs forwardAETs = new ForwardAETs();
     private String storageDirs;

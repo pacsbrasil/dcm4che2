@@ -150,7 +150,7 @@ public class MoveScuService
             try {
                 process(order);
             } catch (Exception e) {
-                log.error("Failed to invoke " + order);
+                log.error("Failed to invoke " + order, e);
                 queueFailedMoveOrder(order, INVOKE_FAILED_STATUS);
             }
         }
@@ -170,7 +170,7 @@ public class MoveScuService
             cmd.initCMoveRQ(
                 moveAssoc.getAssociation().nextMsgID(),
                 UIDs.StudyRootQueryRetrieveInformationModelMOVE,
-                order.getPriority(),
+                order.getDICOMPriority(),
                 order.getMoveDestination());
             Dataset ds = dof.newDataset();
             ds.putCS(Tags.QueryRetrieveLevel, order.getQueryRetrieveLevel());
