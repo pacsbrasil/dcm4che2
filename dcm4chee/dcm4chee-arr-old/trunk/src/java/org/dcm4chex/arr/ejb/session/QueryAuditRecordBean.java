@@ -248,54 +248,60 @@ public abstract class QueryAuditRecordBean implements SessionBean {
             String aet, String userName, String patientName, String patientId,
             int offset, int limit, String[] orderBy, String[] orderDir) {
         StringBuffer sb = new StringBuffer("SELECT ");
-        switch (database) {
-        case HSQL:
-            sb.append("LIMIT ");
-            sb.append(offset);
-            sb.append(" ");
-            sb.append(limit);
-            sb.append(" ");
-            sb.append(COLUMNS);
-            break;
-        case DB2:
-            sb.append("* FROM ( SELECT ");
-            sb.append(COLUMNS);
-            sb.append(", ROW_NUMBER() OVER (");
-            appendOrderBy(sb, orderBy, orderDir);
-            sb.append(") AS rownum ");
-            break;
-        case ORACLE:
-            sb.append("* FROM ( SELECT ");
-            sb.append(COLUMNS);
-            sb.append(", ROWNUM as r1 FROM ( SELECT ");
-            sb.append(COLUMNS);
-            break;
-        default:
-            sb.append(COLUMNS);
-            break;
+        if (limit > 0) {
+	        switch (database) {
+	        case HSQL:
+	            sb.append("LIMIT ");
+	            sb.append(offset);
+	            sb.append(" ");
+	            sb.append(limit);
+	            sb.append(" ");
+	            sb.append(COLUMNS);
+	            break;
+	        case DB2:
+	            sb.append("* FROM ( SELECT ");
+	            sb.append(COLUMNS);
+	            sb.append(", ROW_NUMBER() OVER (");
+	            appendOrderBy(sb, orderBy, orderDir);
+	            sb.append(") AS rownum ");
+	            break;
+	        case ORACLE:
+	            sb.append("* FROM ( SELECT ");
+	            sb.append(COLUMNS);
+	            sb.append(", ROWNUM as r1 FROM ( SELECT ");
+	            sb.append(COLUMNS);
+	            break;
+	        default:
+	            sb.append(COLUMNS);
+	            break;
+	        }
+        } else {
+            sb.append(COLUMNS);            
         }
         appendFromWhere(sb, type, host, from, to, aet, userName, patientName,
                 patientId);
         appendOrderBy(sb, orderBy, orderDir);
-        switch (database) {
-        case PSQL:
-            sb.append(" OFFSET ");
-            sb.append(offset);
-            sb.append(" LIMIT ");
-            sb.append(limit);
-            break;
-        case DB2:
-            sb.append(" ) AS foo WHERE rownum > ");
-            sb.append(offset);
-            sb.append(" AND rownum <= ");
-            sb.append(offset + limit);
-            break;
-        case ORACLE:
-            sb.append(" ) WHERE ROWNUM <= ");
-            sb.append(offset + limit);
-            sb.append(" ) WHERE ROWNUM r1 > ");
-            sb.append(offset);
-            break;
+        if (limit > 0) {
+	        switch (database) {
+	        case PSQL:
+	            sb.append(" OFFSET ");
+	            sb.append(offset);
+	            sb.append(" LIMIT ");
+	            sb.append(limit);
+	            break;
+	        case DB2:
+	            sb.append(") AS foo WHERE rownum>");
+	            sb.append(offset);
+	            sb.append(" AND rownum<=");
+	            sb.append(offset + limit);
+	            break;
+	        case ORACLE:
+	            sb.append(") WHERE ROWNUM<= ");
+	            sb.append(offset + limit);
+	            sb.append(") WHERE r1>");
+	            sb.append(offset);
+	            break;
+	        }
         }
         return sb.toString();
     }
@@ -314,12 +320,12 @@ public abstract class QueryAuditRecordBean implements SessionBean {
     private StringBuffer appendFromWhere(StringBuffer sb, String[] type,
             String host, String from, String to, String aet, String userName,
             String patientName, String patientId) {
-        sb.append(" FROM audit_record WHERE ");
+        sb.append(" FROM audit_record WHERE");
         if (type != null && type.length > 0) {
             sb.append('(');
             for (int i = 0; i < type.length; i++) {
-                sb.append("audit_record.msg_type='").append(
-                        type[i].replaceAll("'", "''")).append("' OR ");
+                sb.append(" audit_record.msg_type='").append(
+                        type[i].replaceAll("'", "''")).append("' OR");
             }
             sb.setLength(sb.length() - 4);
             sb.append(") AND");
@@ -333,32 +339,32 @@ public abstract class QueryAuditRecordBean implements SessionBean {
         if (matchFrom && matchTo) {
             sb.append(" time_stamp BETWEEN '").append(
                     from.replaceAll("'", "''")).append("' AND '").append(
-                    to.replaceAll("'", "''")).append("' AND ");
+                    to.replaceAll("'", "''")).append("' AND");
         } else if (matchFrom) {
             sb.append(" time_stamp>='").append(from.replaceAll("'", "''"))
-                    .append("' AND ");
+                    .append("' AND");
         } else if (matchTo) {
             sb.append(" time_stamp<='").append(to.replaceAll("'", "''"))
-                    .append("' AND ");
+                    .append("' AND");
         }
         if (aet.length() != 0) {
             sb.append(" aet='").append(aet.replaceAll("'", "''")).append(
-                    "' AND ");
+                    "' AND");
         }
         if (userName.length() != 0) {
             sb.append(" user_name='").append(userName.replaceAll("'", "''"))
-                    .append("' AND ");
+                    .append("' AND");
         }
         if (patientName.length() != 0) {
             sb.append(" UPPER(patient_name)=UPPER('").append(
-                    patientName.replaceAll("'", "''")).append("') AND ");
+                    patientName.replaceAll("'", "''")).append("') AND");
         }
         if (patientId.length() != 0) {
             sb.append(" patient_id='").append(patientId.replaceAll("'", "''"))
-                    .append("' AND ");
+                    .append("' AND");
         }
         sb.setLength(sb.length()
-                - ((sb.charAt(sb.length() - 2) == 'D') ? 5 : 7));
+                - ((sb.charAt(sb.length() - 1) == 'D') ? 4 : 6));
         return sb;
     }
 

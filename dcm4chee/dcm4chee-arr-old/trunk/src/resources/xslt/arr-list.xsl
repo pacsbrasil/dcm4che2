@@ -9,7 +9,6 @@
 		<html>
 			<head>
 				<title>Audit Repository Log</title>
-				<script language="JavaScript" src="js/global.js"></script>
 				<link rel="stylesheet" type="text/css" href="arr-style.css"/>
 			</head>
 			<body>
@@ -165,45 +164,29 @@
         <td>
           <xsl:if test="$nrec != 0">
             <!-- audit record list -->
-            <form name="frmArrAction" method="get" action="/jaudit">
-	            <table class="c1">
-	              <tr class="head">
-	                <td><input type="checkbox" name="allbox" value="" onClick="checkAll()"></input></td>
-	                <td><a href="/jaudit?{$lastquery}&amp;orderby=type&amp;orderdir={$vsortdir-type}"><div class="width: 100%">Audit Event</div></a></td>
-	                <td><a href="/jaudit?{$lastquery}&amp;orderby=host&amp;orderdir={$vsortdir-host}"><div class="width: 100%">Host</div></a></td>
-	                <td><a href="/jaudit?{$lastquery}&amp;orderby=timestamp&amp;orderdir={$vsortdir-timestamp}"><div class="width: 100%">Timestamp (local)</div></a></td>
-	                <td>Information</td>
-	                <td><!-- for view xml --></td>
-	              </tr>
-	              <xsl:for-each select="record">
-	                <xsl:variable name="pos" select="(position() mod 2)"/>
-	                <tr class="row{$pos}">
-	                  <td><input type="checkbox" name="selpk" value="{@pk}"></input></td>
-	                  <td><a href="arr-view.do?pk={@pk}">
-	                    <xsl:call-template name="Event">
-	                      <xsl:with-param name="type" select="@type"/>
-	                    </xsl:call-template></a>
-	                  </td>
-	                  <td><xsl:value-of select="@host"/></td>
-	                  <td><xsl:value-of select="@timestamp"/></td>
-	                  <td><xsl:call-template name="Info"/></td>
-	                  <td><a href="arr-view.do?pk={@pk}&amp;viewxml=1">(xml)</a></td>
-	                </tr>
-	              </xsl:for-each>
-	              <!--<xsl:apply-templates select="record"/>-->
-	              <tr>
-	              	<td></td>
-	                <td>
-	                  <input class="query-submit" type="submit" value="Delete"/>
-	                  <input type="hidden" name="Delete" value="1"/>
+ 	          <table class="c1">
+	            <tr class="head">
+	              <td><a href="/jaudit?{$lastquery}&amp;orderby=type&amp;orderdir={$vsortdir-type}"><div class="width: 100%">Audit Event</div></a></td>
+	              <td><a href="/jaudit?{$lastquery}&amp;orderby=host&amp;orderdir={$vsortdir-host}"><div class="width: 100%">Host</div></a></td>
+	              <td><a href="/jaudit?{$lastquery}&amp;orderby=timestamp&amp;orderdir={$vsortdir-timestamp}"><div class="width: 100%">Timestamp (local)</div></a></td>
+	              <td>Information</td>
+	              <td><!-- for view xml --></td>
+	            </tr>
+	            <xsl:for-each select="record">
+	              <xsl:variable name="pos" select="(position() mod 2)"/>
+	              <tr class="row{$pos}">
+	                <td><a href="arr-view.do?pk={@pk}">
+	                  <xsl:call-template name="Event">
+	                    <xsl:with-param name="type" select="@type"/>
+	                  </xsl:call-template></a>
 	                </td>
-	              	<td></td>
-	              	<td></td>
-	              	<td></td>
-	              	<td></td>
+	                <td><xsl:value-of select="@host"/></td>
+	                <td><xsl:value-of select="@timestamp"/></td>
+	                <td><xsl:call-template name="Info"/></td>
+	                <td><a href="arr-view.do?pk={@pk}&amp;viewxml=1">(xml)</a></td>
 	              </tr>
-	            </table>
-	        </form>
+	            </xsl:for-each>
+	          </table>
           </xsl:if>
         </td>
       </tr>

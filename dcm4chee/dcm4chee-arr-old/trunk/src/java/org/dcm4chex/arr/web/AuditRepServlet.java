@@ -249,20 +249,6 @@ public class AuditRepServlet extends HttpServlet
                     else
                         tpl = viewTpl;
                 } else { // assume LIST_PATH.equals(path)
-                    //check for delete operation
-                    boolean delAction = (rq.getParameter("Delete") != null);
-                    String[] delPK = rq.getParameterValues("selpk");
-                    if (delAction && delPK != null) {
-                        try {
-                            for (int i = 0; i < delPK.length; i++) {
-                                logger.info("removing row with pk=" + delPK[i]);
-                                getStoreAuditRecord().delete(Integer.parseInt(delPK[i]));
-                            }
-                        }
-                        catch (NumberFormatException nfe) {
-                            logger.error("Bad delete arg: " + nfe);
-                        }
-                    }
                     //check for empty or aggregated types to query
                     String[] types = rq.getParameterValues("type");
                     if (types != null && types.length == 1) {

@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.ejb.RemoveException;
 
 import javax.ejb.SessionBean;
 
@@ -65,20 +64,6 @@ public abstract class StoreAuditRecordBean implements SessionBean
     	}
     	return home;
 	}
-
-    /**
-     * @param  pk PK of row to remove
-     * @ejb:interface-method
-     */
-    public void delete(int pk)
-    {
-        try {
-            getAuditRecordHome().remove(new Integer(pk));
-        }
-        catch (RemoveException re) {
-            log.error("Could not delete audit record [pk=" + pk + "]");
-        }
-    }
 
     /**
      * @param  xmldata Description of the Parameter
