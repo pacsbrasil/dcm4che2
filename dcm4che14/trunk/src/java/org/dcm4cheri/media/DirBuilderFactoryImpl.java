@@ -24,6 +24,13 @@
 
 package org.dcm4cheri.media;
 
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageInputStream;
+
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
@@ -33,12 +40,6 @@ import org.dcm4che.media.DirBuilderFactory;
 import org.dcm4che.media.DirBuilderPref;
 import org.dcm4che.media.DirReader;
 import org.dcm4che.media.DirWriter;
-
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageInputStream;
 
 /**
  *
@@ -94,4 +95,5 @@ public final class DirBuilderFactoryImpl extends DirBuilderFactory {
     public DirBuilderPref newDirBuilderPref() {
         return new DirBuilderPrefImpl();
     }
+
 }

@@ -34,6 +34,23 @@ public interface DirRecord
     public final static int INACTIVE = 0x0000;
     /**  Description of the Field */
     public final static int IN_USE = 0xFFFF;
+    public static final String PATIENT = "PATIENT";
+    public static final String RT_PLAN = "RT PLAN";
+    public static final String RT_TREAT_RECORD = "RT TREAT RECORD";
+    public static final String RT_STRUCTURE_SET = "RT STRUCTURE SET";
+    public static final String RT_DOSE = "RT DOSE";
+    public static final String KEY_OBJECT_DOC = "KEY OBJECT DOC";
+    public static final String SR_DOCUMENT = "SR DOCUMENT";
+    public static final String PRESENTATION = "PRESENTATION";
+    public static final String VOI_LUT = "VOI LUT";
+    public static final String MODALITY_LUT = "MODALITY LUT";
+    public static final String WAVEFORM = "WAVEFORM";
+    public static final String CURVE = "CURVE";
+    public static final String OVERLAY = "OVERLAY";
+    public static final String IMAGE = "IMAGE";
+    public static final String STORED_PRINT = "STORED PRINT";
+    public static final String SERIES = "SERIES";
+    public static final String STUDY = "STUDY";
 
 
     /**

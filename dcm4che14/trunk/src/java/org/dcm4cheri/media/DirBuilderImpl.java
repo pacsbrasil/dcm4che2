@@ -23,22 +23,21 @@
 
 package org.dcm4cheri.media;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4che.media.DirBuilder;
+import org.dcm4che.media.DirBuilderFactory;
 import org.dcm4che.media.DirBuilderPref;
 import org.dcm4che.media.DirRecord;
 import org.dcm4che.media.DirWriter;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.util.HashMap;
 
 /**
  *
@@ -95,10 +94,7 @@ final class DirBuilderImpl implements DirBuilder {
       if (!classUID.equals(ds.getString(Tags.SOPClassUID))) {
          throw new IllegalArgumentException("Mismatch SOP Class UID");
       }
-      String type = (String)REC_TYPE_MAP.get(classUID);
-      if (type == null) {
-         throw new UnsupportedOperationException("classUID:" + classUID);
-      }
+      String type = DirBuilderFactory.getRecordType(classUID);
       Dataset filter = pref.getFilterForRecordType(type);
       if (filter == null) {
          return 0;
@@ -144,14 +140,14 @@ final class DirBuilderImpl implements DirBuilder {
       this.curPatID = patID;
       for (DirRecord dr = writer.getFirstRecord(true); dr != null;
       dr = dr.getNextSibling(true)) {
-         if ("PATIENT".equals(dr.getType()) && patID.equals(
+         if (DirRecord.PATIENT.equals(dr.getType()) && patID.equals(
          dr.getDataset().getString(Tags.PatientID))) {
             curPatRec = dr;
             return 0;
          }
       }
-      curPatRec = writer.add(null, "PATIENT",
-         ds.subSet(pref.getFilterForRecordType("PATIENT")));
+      curPatRec = writer.add(null, DirRecord.PATIENT,
+         ds.subSet(pref.getFilterForRecordType(DirRecord.PATIENT)));
       return 1;
    }
    
@@ -162,14 +158,14 @@ final class DirBuilderImpl implements DirBuilder {
       this.curStudyUID = studyUID;
       for (DirRecord dr = curPatRec.getFirstChild(true); dr != null;
       dr = dr.getNextSibling(true)) {
-         if ("STUDY".equals(dr.getType()) && studyUID.equals(
+         if (DirRecord.STUDY.equals(dr.getType()) && studyUID.equals(
          dr.getDataset().getString(Tags.StudyInstanceUID))) {
             curStudyRec = dr;
             return 0;
          }
       }
-      curStudyRec = writer.add(curPatRec, "STUDY",
-         ds.subSet(pref.getFilterForRecordType("STUDY")));
+      curStudyRec = writer.add(curPatRec, DirRecord.STUDY,
+         ds.subSet(pref.getFilterForRecordType(DirRecord.STUDY)));
       return 1;
    }
    
@@ -178,14 +174,14 @@ final class DirBuilderImpl implements DirBuilder {
       this.curSeriesUID = seriesUID;
       for (DirRecord dr = curStudyRec.getFirstChild(true); dr != null;
       dr = dr.getNextSibling(true)) {
-         if ("SERIES".equals(dr.getType()) && seriesUID.equals(
+         if (DirRecord.SERIES.equals(dr.getType()) && seriesUID.equals(
          dr.getDataset().getString(Tags.SeriesInstanceUID))) {
             curSeriesRec = dr;
             return 0;
          }
       }
-      curSeriesRec = writer.add(curStudyRec, "SERIES",
-         ds.subSet(pref.getFilterForRecordType("SERIES")));
+      curSeriesRec = writer.add(curStudyRec, DirRecord.SERIES,
+         ds.subSet(pref.getFilterForRecordType(DirRecord.SERIES)));
       return 1;
    }
    
@@ -193,65 +189,4 @@ final class DirBuilderImpl implements DirBuilder {
       writer.close();
    }
    
-   private static HashMap REC_TYPE_MAP = new HashMap(79);
-   static {
-      REC_TYPE_MAP.put(UIDs.StoredPrintStorage, "STORED PRINT");
-      REC_TYPE_MAP.put(UIDs.HardcopyGrayscaleImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.HardcopyGrayscaleImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.HardcopyColorImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.ComputedRadiographyImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.DigitalXRayImageStorageForPresentation, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.DigitalXRayImageStorageForProcessing, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.DigitalMammographyXRayImageStorageForPresentation, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.DigitalMammographyXRayImageStorageForProcessing, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.DigitalIntraoralXRayImageStorageForPresentation, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.DigitalIntraoralXRayImageStorageForProcessing, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.CTImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.UltrasoundMultiframeImageStorageRetired, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.UltrasoundMultiframeImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.MRImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.NuclearMedicineImageStorageRetired, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.UltrasoundImageStorageRetired, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.UltrasoundImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.SecondaryCaptureImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.MultiframeSingleBitSecondaryCaptureImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.MultiframeColorSecondaryCaptureImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.StandaloneOverlayStorage, "OVERLAY");
-      REC_TYPE_MAP.put(UIDs.StandaloneCurveStorage, "CURVE");
-      REC_TYPE_MAP.put(UIDs.TwelveLeadECGWaveformStorage, "WAVEFORM");
-      REC_TYPE_MAP.put(UIDs.GeneralECGWaveformStorage, "WAVEFORM");
-      REC_TYPE_MAP.put(UIDs.AmbulatoryECGWaveformStorage, "WAVEFORM");
-      REC_TYPE_MAP.put(UIDs.HemodynamicWaveformStorage, "WAVEFORM");
-      REC_TYPE_MAP.put(UIDs.CardiacElectrophysiologyWaveformStorage, "WAVEFORM");
-      REC_TYPE_MAP.put(UIDs.BasicVoiceAudioWaveformStorage, "WAVEFORM");
-      REC_TYPE_MAP.put(UIDs.StandaloneModalityLUTStorage, "MODALITY LUT");
-      REC_TYPE_MAP.put(UIDs.StandaloneVOILUTStorage, "VOI LUT");
-      REC_TYPE_MAP.put(UIDs.GrayscaleSoftcopyPresentationStateStorage, "PRESENTATION");
-      REC_TYPE_MAP.put(UIDs.XRayAngiographicImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.XRayRadiofluoroscopicImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.XRayAngiographicBiPlaneImageStorageRetired, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.NuclearMedicineImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.VLImageStorageRetired, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.VLMultiframeImageStorageRetired, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.VLEndoscopicImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.VLMicroscopicImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.VLSlideCoordinatesMicroscopicImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.VLPhotographicImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.BasicTextSR, "SR DOCUMENT");
-      REC_TYPE_MAP.put(UIDs.EnhancedSR, "SR DOCUMENT");
-      REC_TYPE_MAP.put(UIDs.ComprehensiveSR, "SR DOCUMENT");
-      REC_TYPE_MAP.put(UIDs.MammographyCADSR, "SR DOCUMENT");
-      REC_TYPE_MAP.put(UIDs.KeyObjectSelectionDocument, "KEY OBJECT DOC");
-      REC_TYPE_MAP.put(UIDs.PositronEmissionTomographyImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.StandalonePETCurveStorage, "CURVE");
-      REC_TYPE_MAP.put(UIDs.RTImageStorage, "IMAGE");
-      REC_TYPE_MAP.put(UIDs.RTDoseStorage, "RT DOSE");
-      REC_TYPE_MAP.put(UIDs.RTStructureSetStorage, "RT STRUCTURE SET");
-      REC_TYPE_MAP.put(UIDs.RTBeamsTreatmentRecordStorage, "RT TREAT RECORD");
-      REC_TYPE_MAP.put(UIDs.RTPlanStorage, "RT PLAN");
-      REC_TYPE_MAP.put(UIDs.RTBrachyTreatmentRecordStorage, "RT TREAT RECORD");
-      REC_TYPE_MAP.put(UIDs.RTTreatmentSummaryRecordStorage, "RT TREAT RECORD");
-   }
 }
