@@ -8,7 +8,7 @@
 
    <xsl:template match="model/AE">
 	 <html><body background="images/bg.jpg" cellpadding="0" cellspacing="0" border="0">
-			<center><form action="aeeditsubmit.m" method="post">
+			<center><form name="ae_edit" action="aeeditsubmit.m" method="post">
 			<input type="hidden" name="pk" value="{pk}"/>
 			<table border="0" cellspacing="0" cellpadding="0" width="35%"><tr><td>
 				<center><table border="0">
@@ -28,15 +28,24 @@
 						<td width="50">Port</td>														
 				        <td title="Port">
 			                <input size="25" name="port" type="text" value="{port}"/>
-				    </td>
+				    	</td>
 					</tr>
-				  <!--              <input name="cipherSuites" type="hidden" value="{cipherSuites}"/>
-					tr>
-						<td bgcolor="#eeeeee">Cipher Suites</td>
+					<tr>
+						<td>Cipher Suites</td> 
 				        <td title="Cipher Suites">
-				                <input size="35" name="cipherSuites" type="text" value="{cipherSuites}"/>
+				                <input size="35" name="cipherSuites" type="text" value="{cipherSuitesAsString}"/>
 				        </td>
-					</tr-->
+				        <td title="Cipher select">
+							<select name="cipherSelect" onChange="selectCipher()">
+								<option value="--" selected="true">&lt;select&gt;</option>
+								<option value="">DICOM</option>
+								<option value="SSL_RSA_WITH_NULL_SHA,TLS_RSA_WITH_AES_128_CBC_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA">dicom-tls</option>
+								<option value="SSL_RSA_WITH_NULL_SHA">dicom-tls[No encryption]</option>
+								<option value="TLS_RSA_WITH_AES_128_CBC_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA">dicom-tls[encryption]</option>
+								<option value="SSL_RSA_WITH_3DES_EDE_CBC_SHA">dicom-tls[encryption 3DES]</option>
+							</select>
+				        </td>
+					</tr>
 					<tr>
 						<td colspan="2">
 <center><input type="submit" name="update" value="Apply Changes"/>
