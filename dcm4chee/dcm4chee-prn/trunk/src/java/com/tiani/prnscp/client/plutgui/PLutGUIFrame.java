@@ -189,10 +189,13 @@ public class PLutGUIFrame extends JFrame
         mnuFile.add(mnuImportTxtPres);
         JMenuItem mnuExportTxtPres = new JMenuItem(actExportTxtPres);
         mnuFile.add(mnuExportTxtPres);
+        mnuFile.addSeparator();
         JMenuItem mnuPrint = new JMenuItem(actPrint);
         mnuFile.add(mnuPrint);
+        mnuFile.addSeparator();
         JMenuItem mnuDisplayImageInfo = new JMenuItem(actDisplayImageInfo);
         mnuFile.add(mnuDisplayImageInfo);
+        mnuFile.addSeparator();
         JMenuItem mnuExit = new JMenuItem(actExit);
         mnuFile.add(mnuExit);
         //View Menu
