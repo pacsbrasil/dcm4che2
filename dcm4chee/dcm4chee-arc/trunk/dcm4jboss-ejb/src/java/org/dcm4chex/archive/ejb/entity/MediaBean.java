@@ -141,8 +141,19 @@ public abstract class MediaBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setMediaStatus(int mediaStatus);
-    
+
     /**
+     * @ejb.relation
+     * 	name="instance-media"
+     * 	role-name="media-with-instance"
+     *    
+     * @ejb.interface-method
+     */
+    public abstract java.util.Collection getInstances();
+
+    public abstract void setInstances(java.util.Collection insts);
+
+   /**
     * @ejb.create-method
     */
    public Integer ejbCreate(String fsIuid) throws CreateException {

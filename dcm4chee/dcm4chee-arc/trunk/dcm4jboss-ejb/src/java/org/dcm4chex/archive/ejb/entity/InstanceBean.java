@@ -299,8 +299,6 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.relation
      *  name="instance-media"
      *  role-name="instance-on-media"
-     *  target-ejb="Media"
-     *  target-role-name="media-with-instance"
      * @jboss:relation fk-column="media_fk" related-pk-field="pk"
      *    
      * @ejb.interface-method view-type="local"
