@@ -187,7 +187,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	/**
 	 * Returns the DICOM priority as int value.
 	 * <p>
-	 * This value is used for Move and media creation action (N-Action).
+	 * This value is used for CFIN.
 	 * 0..MED, 1..HIGH, 2..LOW
 	 * 
 	 * @return Returns the priority.
@@ -241,7 +241,7 @@ public class MWLScuService extends ServiceMBeanSupport {
     	try {
 //get association for mwl find.    		
     		AEData aeData = new AECmd( this.getMwlScpAET() ).execute();
-			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getMediaCreationAssocReq() );
+			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getCFINDAssocReq() );
 			if ( assoc == null ) {
 				log.error( "Couldnt open association! AET:"+getMwlScpAET()+" host:"+aeData.getHostName()+":"+aeData.getPort() );
 				return list;
@@ -254,7 +254,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 //send media creation request.			
 			Command cmd = oFact.newCommand();
             cmd.initCFindRQ(1, UIDs.ModalityWorklistInformationModelFIND, getPriority() );
-            Dataset ds = getMediaCreationReqDS();
+            Dataset ds = getMWLReqDS();
             Dimse mcRQ = aFact.newDimse(1, cmd, ds);
             FutureRSP rsp = assoc.invoke(mcRQ);
             Dimse dimse = rsp.get();
@@ -289,7 +289,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 	 * @throws FinderException
 	 * @throws RemoteException
 	 */
-	private Dataset getMediaCreationReqDS( ) throws RemoteException, FinderException, HomeFactoryException, CreateException {
+	private Dataset getMWLReqDS( ) throws RemoteException, FinderException, HomeFactoryException, CreateException {
 		Dataset ds = oFact.newDataset();
 		ds.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");
 
@@ -329,16 +329,16 @@ public class MWLScuService extends ServiceMBeanSupport {
      * 
 	 * @return Association for media creation.
 	 */
-	private AAssociateRQ getMediaCreationAssocReq() {
-    	AAssociateRQ mcAssocRQ = aFact.newAAssociateRQ();
-    	mcAssocRQ.setCalledAET( this.getMwlScpAET() );
-    	mcAssocRQ.setCallingAET( getCallingAET() );
-    	mcAssocRQ.setMaxPDULength( maxPDUlen );
-    	mcAssocRQ.addPresContext(aFact.newPresContext(1,
-                UIDs.MediaCreationManagementSOPClass,
+	private AAssociateRQ getCFINDAssocReq() {
+    	AAssociateRQ assocRQ = aFact.newAAssociateRQ();
+    	assocRQ.setCalledAET( this.getMwlScpAET() );
+    	assocRQ.setCallingAET( getCallingAET() );
+    	assocRQ.setMaxPDULength( maxPDUlen );
+    	assocRQ.addPresContext(aFact.newPresContext(1,
+                UIDs.ModalityWorklistInformationModelFIND,
                 new String[]{UIDs.forName("ExplicitVRLittleEndian"),
         					 UIDs.forName("ImplicitVRLittleEndian")} ));
-    	return mcAssocRQ;
+    	return assocRQ;
 	}
 	
 }
