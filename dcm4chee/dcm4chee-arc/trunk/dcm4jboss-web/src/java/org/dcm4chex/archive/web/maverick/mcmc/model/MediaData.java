@@ -6,6 +6,8 @@
  */
 package org.dcm4chex.archive.web.maverick.mcmc.model;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -22,6 +24,8 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
  */
 public class MediaData {
 
+	private static final long GBYTE = 1000000000L;
+	private static final long MBYTE = 1000000L;
 	private static final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
 	private static Map mapDefinedStati;
 	public static final Collection DEFINED_MEDIA_STATI = _getMediaStatusList();
@@ -37,6 +41,11 @@ public class MediaData {
 	private String mediaStatusInfo;
 	private long mediaUsage;
 	
+	/**
+	 * Creates a MediaData object with given MediaDTO object.
+	 * 
+	 * @param mediaDTO The MediaDTO object.
+	 */
 	public MediaData( MediaDTO mediaDTO ) {
 		mediaPk = mediaDTO.getPk();
 		createdTime = mediaDTO.getCreatedTime();
@@ -50,10 +59,20 @@ public class MediaData {
 		mediaUsage = mediaDTO.getMediaUsage();
 	}
 	
+	/**
+	 * Creates an empty MediaData object with given pk.
+	 * 
+	 * @param pk Primary key of media.
+	 */
 	public MediaData( int pk ) {
 		mediaPk = pk;
 	}
 	
+	/**
+	 * Returns a mediaDTO object from this MediaData object.
+	 * 
+	 * @return MediaDTO object.
+	 */
 	public MediaDTO asMediaDTO() {
 		MediaDTO dto = new MediaDTO();
 		dto.setPk( this.mediaPk );
@@ -132,12 +151,41 @@ public class MediaData {
 		return mediaUsage;
 	}
 	/**
+	 * Returns a String representation with trailing (G|M|K)B.
+	 * <p>
+	 * Rounds the value to a more readable form.
+	 * <p>
+	 * Use 1000 instead of 1024 for one KB.
+	 * 
+	 * @param size the size in bytes.
+	 * 
+	 * @return The size with unit. e.g. 2GB
+	 */
+	public String getMediaUsageWithUnit() {
+		NumberFormat nf = new DecimalFormat();
+		nf.setGroupingUsed( true );
+		if ( mediaUsage >= GBYTE ){
+				return nf.format(mediaUsage/MBYTE)+" GB";//##,### GByte
+		} else if ( mediaUsage > MBYTE ) {
+				return nf.format(mediaUsage/1000L)+" MB";
+		} else {
+			return nf.format(mediaUsage)+" KB";
+		}
+	}
+	/**
 	 * @return Returns the updatedTime.
 	 */
 	public String getUpdatedTime() {
 		return formatter.format(updatedTime);
 	}
 	
+	/**
+	 * Returns the String representation of the given media status.
+	 * 
+	 * @param status The media status
+	 * 
+	 * @return Media status as String.
+	 */
 	public static String getStatusString( int status ) {
 		MediaStatus ms = (MediaStatus) mapDefinedStati.get( new Integer( status ) );
 		if ( ms == null ) {
@@ -148,7 +196,13 @@ public class MediaData {
 	}
 	
 	/**
-	 * @return
+	 * Return a collection of all defined media stati.
+	 * <p>
+	 * Build the map <code>mapDefinedStati</code> with status as Integer as key, value is a MediaStatus object.
+	 * <p>
+	 * Returns the values from the map.
+	 * 
+	 * @return Collection of all defined media stati.
 	 */
 	private static Collection _getMediaStatusList() {
 		mapDefinedStati = new HashMap();//TODO get from MediaDTO!
@@ -156,7 +210,8 @@ public class MediaData {
 		mapDefinedStati.put( new Integer(MediaDTO.QUEUED), new MediaStatus( MediaDTO.QUEUED, "QUEUED" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.PROCESSING), new MediaStatus( MediaDTO.PROCESSING, "PROCESSING" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.COMPLETED), new MediaStatus( MediaDTO.COMPLETED, "COMPLETED" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.QUEUE_ERROR), new MediaStatus( MediaDTO.QUEUE_ERROR, "QUEUE_ERROR" ) );
+		mapDefinedStati.put( new Integer(MediaDTO.QUEUE_ERROR), new MediaStatus( MediaDTO.QUEUE_ERROR, "QUEUE ERROR" ) );
+		mapDefinedStati.put( new Integer(MediaDTO.CREATE_ERROR), new MediaStatus( MediaDTO.CREATE_ERROR, "CREATE ERROR" ) );
 		return mapDefinedStati.values();
 	}
 	
@@ -168,6 +223,7 @@ public class MediaData {
     public int hashCode() {
     	return mediaPk;
     }
+
 	
 	/**
 	 * Container Class for MediaStatus.
