@@ -1,3 +1,5 @@
+-- Update DB from dcm4jboss-0.6.x to dcm4jboss-0.7.x
+
 CONNECT TO tiani;
 SET CURRENT SCHEMA TIANI;
 
