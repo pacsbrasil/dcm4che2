@@ -1033,7 +1033,9 @@ abstract class StringElement extends ValueElement {
                     range[0] = f.parse(s.substring(0, delim));
                 }
                 if (delim + 1 < s.length()) {
-                    range[1] = f.parse(s.substring(delim + 1));
+                    range[1] = new Date(
+                    		f.parse(s.substring(delim + 1)).getTime()
+                    		+ resolution - 1);
                 }
             }
         } catch (ParseException e) {
