@@ -1,24 +1,22 @@
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
- *                                                                           *
- *  This file is part of dcm4che.                                            *
- *                                                                           *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
+/*
+ *  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ *  This file is part of dcm4che.
+ *
+ *  This library is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 package org.dcm4che.util;
 
@@ -39,13 +37,6 @@ import java.util.Calendar;
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
  *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
  */
 public class SyslogWriter extends OutputStreamWriter {
     // Constants -----------------------------------------------------
@@ -187,7 +178,6 @@ public class SyslogWriter extends OutputStreamWriter {
     // Attributes ----------------------------------------------------
     public String syslogHost;
     public int syslogPort = 514;
-    private String localHostName;
     private String tag;
     private int facility = LOG_USER;
     private InetAddress address;
@@ -209,23 +199,6 @@ public class SyslogWriter extends OutputStreamWriter {
     }
     
     // Public --------------------------------------------------------
-    public String getLocalHostName() {
-        if (localHostName == null) {
-            try {
-                String name = InetAddress.getLocalHost().getHostName();
-                if (Character.isDigit(name.charAt(0))) {
-                    localHostName = name;
-                } else {
-                    int pos = name.indexOf('.');
-                    localHostName = pos == -1 ? name : name.substring(0,pos);
-                }
-            } catch (UnknownHostException e) {
-                localHostName = "localhost";
-            }
-        }
-        return localHostName; 
-    }
-    
     public void setSyslogHost(String syslogHost) throws UnknownHostException {
         this.address = InetAddress.getByName(syslogHost);
         this.syslogHost = syslogHost;
@@ -360,7 +333,7 @@ public class SyslogWriter extends OutputStreamWriter {
         this.write(MINUTE[cal.get(Calendar.SECOND)]);
         this.write(' ');
         if (printHostName) {
-            this.write(getLocalHostName());
+            this.write(HostNameUtils.getLocalHostName());
             this.write(' ');
         }
         
@@ -415,7 +388,7 @@ public class SyslogWriter extends OutputStreamWriter {
         super.flush();
         if (bout.size() > 0) {
             ds.send(new DatagramPacket(bout.getBuffer(), bout.size(),
-            address, syslogPort));
+                address, syslogPort));
             bout.reset();
         }
     }

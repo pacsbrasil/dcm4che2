@@ -30,6 +30,7 @@ import org.dcm4che.auditlog.MediaDescription;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.auditlog.User;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.util.HostNameUtils;
 import org.dcm4che.util.SyslogWriter;
 
 /**
@@ -147,7 +148,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newActorStartStop(actorName, action, user,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
@@ -171,7 +172,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newInstancesStored(rnode, instanceActionDescription,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
@@ -195,7 +196,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newBeginStoringInstances(rnode, instanceActionDescription,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
@@ -219,7 +220,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newInstancesSent(rnode, instanceActionDescription,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
@@ -243,7 +244,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newDicomQuery(keys, requestor, cuid,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
@@ -268,7 +269,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newSecurityAlert(alertType, user, description,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
@@ -291,7 +292,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newUserAuthenticated(localUserName, action,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
@@ -316,7 +317,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newActorConfig(description, user, configType,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
@@ -537,7 +538,7 @@ class AuditLoggerImpl implements AuditLogger
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO,
                     IHEYr4.newExport(media, user,
-                    writer.getLocalHostName(), millis).toString(),
+                    HostNameUtils.getLocalHostName(), millis).toString(),
                     millis);
         } catch (IOException e) {
             log.error("Could not write to syslog:", e);
