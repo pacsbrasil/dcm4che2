@@ -41,19 +41,20 @@ final class DirRecordImpl implements DirRecord
 
     final DcmParser parser;
     final Dataset dataset;
-    final String type;
-    final int next;
-    final int lower;
+    final int pos;
+    int next;
+    int lower;
 
-    final int inUse;
-    final String[] refFileIDs;
-    final String refSOPClassUID;
-    final String refSOPInstanceUID;
-    final String refTransferSyntaxUID;
+    String type;
+    int inUse;
+    String[] refFileIDs;
+    String refSOPClassUID;
+    String refSOPInstanceUID;
+    String refTransferSyntaxUID;
 
-    final long inUsePos;
-    final long nextValPos;
-    final long lowerValPos;
+    long inUsePos;
+    long nextValPos;
+    long lowerValPos;
 
 
     /**
@@ -68,6 +69,13 @@ final class DirRecordImpl implements DirRecord
     {
         this.parser = parser;
         this.dataset = factory.newDataset();
+        this.pos = pos;
+        reload();
+    }
+
+
+    public void reload() throws IOException, DcmValueException
+    {
         parser.seek(pos & 0xFFFFFFFFL);
         parser.setDcmHandler(dataset.getDcmHandler());
         try {

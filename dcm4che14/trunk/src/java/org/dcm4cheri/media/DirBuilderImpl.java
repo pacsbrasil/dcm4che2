@@ -156,6 +156,7 @@ final class DirBuilderImpl implements DirBuilder {
       this.curSeriesUID = null;
       this.curSeriesRec = null;
       this.curStudyUID = studyUID;
+      curPatRec.reload();
       for (DirRecord dr = curPatRec.getFirstChild(true); dr != null;
       dr = dr.getNextSibling(true)) {
          if (DirRecord.STUDY.equals(dr.getType()) && studyUID.equals(
@@ -172,6 +173,7 @@ final class DirBuilderImpl implements DirBuilder {
    private int addSeriesRec(Dataset ds, String seriesUID) throws IOException {
       writer.commit();
       this.curSeriesUID = seriesUID;
+      curStudyRec.reload();
       for (DirRecord dr = curStudyRec.getFirstChild(true); dr != null;
       dr = dr.getNextSibling(true)) {
          if (DirRecord.SERIES.equals(dr.getType()) && seriesUID.equals(

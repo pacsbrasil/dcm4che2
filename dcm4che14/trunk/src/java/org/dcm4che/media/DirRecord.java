@@ -21,6 +21,7 @@ package org.dcm4che.media;
 import java.io.IOException;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmValueException;
 
 /**
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
@@ -52,7 +53,8 @@ public interface DirRecord
     public static final String SERIES = "SERIES";
     public static final String STUDY = "STUDY";
 
-
+    public void reload() throws IOException, DcmValueException;
+    
     /**
      *  Gets the type attribute of the DirRecord object
      *
