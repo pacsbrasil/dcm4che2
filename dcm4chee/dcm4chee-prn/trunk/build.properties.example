@@ -1,6 +1,6 @@
 # set property "dcm4che.home" to the path of your installation directory
 # of dcm4che14 [http://sourceforge.org/projects/dcm4che]
-dcm4che.home=../dcm4che14
+dcm4che.home=../dcm4che14/build
 
 # set property "jboss.home" to the path of your installation directory
 # of JBoss [http://sourceforge.org/projects/jboss]

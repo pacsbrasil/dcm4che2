@@ -11,8 +11,8 @@
   <property name="javac.optimize" value="off"/>
 
   <!-- Override with your dcm4che14 dist location -->
-  <property name="dcm4che.home" value="../dcm4che14"/>
-  <property name="dcm4che.jar" value="${dcm4che.home}/build/lib/dcm4che.jar"/>
+  <property name="dcm4che.home" value="../dcm4che14/build"/>
+  <property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>
   
   <!-- Override with your JBoss/Web server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-3.0.4"/>
@@ -58,33 +58,24 @@
     </fileset>
   </path>
 
-  <target name="build_dcm4che" unless="dcm4che.uptodate">
-      <ant inheritAll="false" dir="${dcm4che.home}" target="jar"/>
-  </target>
-  
-  <target name="build_path" depends="init,build_dcm4che">
-      <path id="build.path">
-        <pathelement location="${dcm4che.jar}"/>
-        <pathelement location="${jboss.bin}/run.jar"/>
-        <pathelement location="${jboss.lib}/jboss-common.jar"/>
-        <pathelement location="${jboss.lib}/jboss-system.jar"/>
-        <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
-        <pathelement location="${jboss.server.lib}/log4j.jar"/>
-        <pathelement location="${jboss.server.lib}/jbosssx.jar"/>
-        <pathelement location="${jboss.client}/jmx-rmi-connector-client.jar"/>
-        <pathelement location="${build.classes.dir}"/>
-      </path>
-  </target>
+  <path id="build.path">
+    <pathelement location="${dcm4che.jar}"/>
+    <pathelement location="${jboss.bin}/run.jar"/>
+    <pathelement location="${jboss.lib}/jboss-common.jar"/>
+    <pathelement location="${jboss.lib}/jboss-system.jar"/>
+    <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
+    <pathelement location="${jboss.server.lib}/log4j.jar"/>
+    <pathelement location="${jboss.server.lib}/jbosssx.jar"/>
+    <pathelement location="${jboss.client}/jmx-rmi-connector-client.jar"/>
+    <pathelement location="${build.classes.dir}"/>
+  </path>
 
   <target name="check-env">
-    <available property="dcm4che.present" file="${dcm4che.home}/build.xml" />
+    <available property="dcm4che.present" file="${dcm4che.jar}" />
     <antcall target="fail_if_no_dcm4che"/>
     <available property="jboss.present" file="${jboss.lib}/jboss-system.jar" />
     <antcall target="fail_if_no_jboss"/>
     <available property="fop.present" file="${fop.jar}" />
-    <uptodate property="dcm4che.uptodate" targetfile="${dcm4che.jar}" >
-        <srcfiles dir= "${dcm4che.home}/src"/>
-    </uptodate>
   </target>
 
   <target name="fetch"
@@ -113,7 +104,7 @@
   </target>
 
   <!-- Compile all java source under src/java -->
-  <target name="compile" depends="build_path">
+  <target name="compile" depends="init">
     <mkdir dir="${build.classes.dir}"/>
     <javac srcdir="${src.java}"
            destdir="${build.classes.dir}"
@@ -468,6 +459,7 @@
         <include name="bin/*.bat"/>
       </fileset>
     </copy>
+    <copy file="${dcm4che.jar}" todir="${dist.dir}/server/default/lib"/>
     <copy todir="${dist.dir}/server/default">
       <fileset dir="${jboss.home}/server/minimal">
         <include name="conf/*"/>
@@ -482,9 +474,6 @@
         <include name="conf/lut/*.lut"/>
         <include name="conf/tls/*.jks"/>
         <include name="conf/tls/*.p12"/>
-      </fileset>
-      <fileset dir="${basedir}">
-        <include name="lib/dcm4che.jar"/>
       </fileset>
       <fileset dir="${build.dir}">
         <include name="lib/*"/>
