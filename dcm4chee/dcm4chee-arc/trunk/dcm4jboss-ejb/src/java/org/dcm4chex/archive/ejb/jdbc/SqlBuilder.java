@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -26,10 +26,11 @@ import java.util.Date;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$
+ * @version $Revision$ $Date$
  * @since 26.08.2003
  */
-class SqlBuilder {
+class SqlBuilder
+{
 
     public static final boolean TYPE1 = false;
     public static final boolean TYPE2 = true;
@@ -39,39 +40,54 @@ class SqlBuilder {
     private String[] relations = {};
     private ArrayList matches = new ArrayList();
 
-    public void setSelect(String[] fields) {
+    public void setSelect(String[] fields)
+    {
         select = JdbcProperties.getInstance().getProperties(fields);
     }
 
-    public void setFrom(String[] entities) {
+    public void setFrom(String[] entities)
+    {
         JdbcProperties jp = JdbcProperties.getInstance();
         from = jp.getProperties(entities);
     }
 
-    public void setLeftJoin(String[] leftJoin) {
-        if (leftJoin == null) {
+    public void setLeftJoin(String[] leftJoin)
+    {
+        if (leftJoin == null)
+        {
             this.leftJoin = null;
             return;
         }
-        if (leftJoin.length != 3) {
+        if (leftJoin.length != 3)
+        {
             throw new IllegalArgumentException("" + Arrays.asList(leftJoin));
         }
         this.leftJoin = JdbcProperties.getInstance().getProperties(leftJoin);
     }
 
-    public void setRelations(String[] relations) {
-        if ((relations.length & 1) != 0) {
-            throw new IllegalArgumentException("relations[" + relations.length + "]");
+    public void setRelations(String[] relations)
+    {
+        if ((relations.length & 1) != 0)
+        {
+            throw new IllegalArgumentException(
+                "relations[" + relations.length + "]");
         }
         this.relations = JdbcProperties.getInstance().getProperties(relations);
     }
 
-    private void addMatch(Match match) {
+    private void addMatch(Match match)
+    {
         if (!match.isUniveralMatch())
             matches.add(match);
     }
 
-    public void addListOfUidMatch(String field, boolean type2, String[] uids) {
+    public void addSingleValueMatch(String field, boolean type2, String value)
+    {
+        addMatch(new Match.SingleValue(field, type2, value));
+    }
+
+    public void addListOfUidMatch(String field, boolean type2, String[] uids)
+    {
         addMatch(new Match.ListOfUID(field, type2, uids));
     }
 
@@ -79,19 +95,23 @@ class SqlBuilder {
         String field,
         boolean type2,
         String wc,
-        boolean ignoreCase) {
+        boolean ignoreCase)
+    {
         addMatch(new Match.WildCard(field, type2, wc, ignoreCase));
     }
 
-    public void addRangeMatch(String field, boolean type2, Date[] range) {
+    public void addRangeMatch(String field, boolean type2, Date[] range)
+    {
         addMatch(new Match.Range(field, type2, range));
     }
 
-    public void addModalitiesInStudyMatch(String md) {
+    public void addModalitiesInStudyMatch(String md)
+    {
         addMatch(new Match.ModalitiesInStudy(md));
     }
 
-    public String getSql() {
+    public String getSql()
+    {
         if (select == null)
             throw new IllegalStateException("select not initalized");
         if (from == null)
@@ -103,9 +123,11 @@ class SqlBuilder {
         appendTo(sb, from);
         if (leftJoin != null)
             appendLeftJoinTo(sb);
-        if (relations.length != 0 || !matches.isEmpty()) {
+        if (relations.length != 0 || !matches.isEmpty())
+        {
             sb.append(" WHERE ");
-            if (relations.length != 0) {
+            if (relations.length != 0)
+            {
                 appendRelationsTo(sb);
                 if (!matches.isEmpty())
                     sb.append(" AND ");
@@ -115,15 +137,18 @@ class SqlBuilder {
         return sb.toString();
     }
 
-    private void appendTo(StringBuffer sb, String[] a) {
-        for (int i = 0; i < a.length; i++) {
+    private void appendTo(StringBuffer sb, String[] a)
+    {
+        for (int i = 0; i < a.length; i++)
+        {
             if (i > 0)
                 sb.append(", ");
             sb.append(a[i]);
         }
     }
 
-    private void appendLeftJoinTo(StringBuffer sb) {
+    private void appendLeftJoinTo(StringBuffer sb)
+    {
         sb.append(" LEFT JOIN ");
         sb.append(leftJoin[0]);
         sb.append(" ON (");
@@ -133,18 +158,22 @@ class SqlBuilder {
         sb.append(")");
     }
 
-    private void appendRelationsTo(StringBuffer sb) {
-        for (int i = 0; i < relations.length; i++,i++) {
+    private void appendRelationsTo(StringBuffer sb)
+    {
+        for (int i = 0; i < relations.length; i++, i++)
+        {
             if (i > 0)
                 sb.append(" AND ");
             sb.append(relations[i]);
             sb.append(" = ");
-            sb.append(relations[i+1]);
+            sb.append(relations[i + 1]);
         }
     }
 
-    private void appendMatchesTo(StringBuffer sb) {
-        for (int i = 0; i < matches.size(); i++) {
+    private void appendMatchesTo(StringBuffer sb)
+    {
+        for (int i = 0; i < matches.size(); i++)
+        {
             if (i > 0)
                 sb.append(" AND ");
             ((Match) matches.get(i)).appendTo(sb);

@@ -85,7 +85,7 @@ public class AEService
         String[] retval = new String[c.size()];
         Iterator it = c.iterator();
         for (int i = 0; i < retval.length; ++i) {
-            retval[i] = ((AELocal) it.next()).getAEData().toString();
+            retval[i] = ((AELocal) it.next()).asString();
         }
         return retval;
     }

@@ -71,20 +71,6 @@ public class MoveScpService
     /**
      * @jmx.managed-attribute
      */
-    public String getProviderURL() {
-        return scp.getProviderURL();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setProviderURL(String providerURL) {
-        scp.setProviderURL(providerURL);
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
     public String getDsJndiName() {
         return dsJndiName;
     }

@@ -83,7 +83,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
 
     private final StoreScpService scp;
     private final Logger log;
-    private String providerURL;
+    private String ejbHostName;
     private String basedir;
     private String hostname;
 
@@ -106,14 +106,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
         }
     }
 
-    public String getProviderURL()
+    public String getEjbHostName()
     {
-        return providerURL;
+        return ejbHostName;
     }
 
-    public void setProviderURL(String providerURL)
+    public void setEjbHostName(String ejbHostName)
     {
-        this.providerURL = providerURL;
+        this.ejbHostName = ejbHostName;
     }
 
     public String getBaseDir()
@@ -211,9 +211,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
             env.put(
                 "java.naming.factory.url.pkgs",
                 "org.jboss.naming:org.jnp.interfaces");
-            if (providerURL != null && providerURL.length() > 0)
+            if (ejbHostName != null && ejbHostName.length() > 0)
             {
-                env.put("java.naming.provider", providerURL);
+                env.put("java.naming.provider", ejbHostName);
             }
             Context jndiCtx = new InitialContext(env);
             try

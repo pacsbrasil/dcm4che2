@@ -23,7 +23,7 @@
     in the same jboss instance as the Storage EJB. Otherwise
     in VM calls to go over RMI!
         
-    <attribute name="ProviderURL">localhost</attribute>
+    <attribute name="EjbHostName">localhost</attribute>
     -->
 
     <attribute name="BaseDir">/var/local/dcm4jboss</attribute>

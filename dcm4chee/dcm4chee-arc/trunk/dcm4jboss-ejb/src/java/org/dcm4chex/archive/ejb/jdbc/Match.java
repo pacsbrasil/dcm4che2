@@ -28,25 +28,29 @@ import java.util.Date;
  * @version $Revision$
  * @since 25.08.2003
  */
-abstract class Match {
+abstract class Match
+{
 
     private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSSZ''";
     protected final String column;
     protected final boolean type2;
 
-    protected Match(String field, boolean type2) {
+    protected Match(String field, boolean type2)
+    {
         this.column = JdbcProperties.getInstance().getProperty(field);
         if (column == null)
             throw new IllegalArgumentException("field: " + field);
-        
+
         this.type2 = type2;
     }
 
-    public boolean appendTo(StringBuffer sb) {
+    public boolean appendTo(StringBuffer sb)
+    {
         if (isUniveralMatch())
             return false;
         sb.append('(');
-        if (type2) {
+        if (type2)
+        {
             sb.append(column);
             sb.append(" = NULL OR ");
         }
@@ -58,19 +62,47 @@ abstract class Match {
     public abstract boolean isUniveralMatch();
     protected abstract void appendBodyTo(StringBuffer sb);
 
-    static class ListOfUID extends Match {
+    static class SingleValue extends Match
+    {
+        private final String value;
+        public SingleValue(String field, boolean type2, String value)
+        {
+            super(field, type2);
+            this.value = value;
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return value == null;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            sb.append(column);
+            sb.append(" = \'");
+            sb.append(value);
+            sb.append('\'');
+        }
+    }
+
+    static class ListOfUID extends Match
+    {
         private final String[] uids;
-        public ListOfUID(String field, boolean type2, String[] uids) {
+        public ListOfUID(String field, boolean type2, String[] uids)
+        {
             super(field, type2);
             this.uids = uids != null ? (String[]) uids.clone() : new String[0];
         }
 
-        public boolean isUniveralMatch() {
+        public boolean isUniveralMatch()
+        {
             return uids.length == 0;
         }
 
-        protected void appendBodyTo(StringBuffer sb) {
-            for (int i = 0; i < uids.length; i++) {
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            for (int i = 0; i < uids.length; i++)
+            {
                 if (i > 0)
                     sb.append(" OR ");
                 sb.append(column);
@@ -81,30 +113,39 @@ abstract class Match {
         }
     }
 
-    static class WildCard extends Match {
+    static class WildCard extends Match
+    {
         private final char[] wc;
         private final boolean ignoreCase;
-        public WildCard(String field, boolean type2, String wc, boolean ignoreCase) {
+        public WildCard(
+            String field,
+            boolean type2,
+            String wc,
+            boolean ignoreCase)
+        {
             super(field, type2);
             this.wc = wc != null ? wc.toCharArray() : new char[0];
             this.ignoreCase = ignoreCase;
         }
 
-        public boolean isUniveralMatch() {
+        public boolean isUniveralMatch()
+        {
             for (int i = wc.length; --i >= 0;)
                 if (wc[i] != '*')
                     return false;
             return true;
         }
 
-        public boolean isSimpleValue() {
+        public boolean isSimpleValue()
+        {
             for (int i = wc.length; --i >= 0;)
                 if (wc[i] == '*' || wc[i] == '?')
                     return false;
-            return true;            
+            return true;
         }
 
-        protected void appendBodyTo(StringBuffer sb) {
+        protected void appendBodyTo(StringBuffer sb)
+        {
             if (ignoreCase)
                 sb.append(" UPPER(");
             sb.append(column);
@@ -116,8 +157,10 @@ abstract class Match {
 
             sb.append('\'');
             char c;
-            for (int i = 0; i < wc.length; i++) {
-                switch (c = wc[i]) {
+            for (int i = 0; i < wc.length; i++)
+            {
+                switch (c = wc[i])
+                {
                     case '?' :
                         c = '_';
                         break;
@@ -142,27 +185,34 @@ abstract class Match {
 
     }
 
-    static class Range extends Match {
+    static class Range extends Match
+    {
         private final Date[] range;
-        public Range(String field, boolean type2, Date[] range) {
-            super(field, type2);            
+        public Range(String field, boolean type2, Date[] range)
+        {
+            super(field, type2);
             this.range = range != null ? (Date[]) range.clone() : null;
         }
 
-        public boolean isUniveralMatch() {
+        public boolean isUniveralMatch()
+        {
             return range == null;
         }
 
-        protected void appendBodyTo(StringBuffer sb) {
+        protected void appendBodyTo(StringBuffer sb)
+        {
             SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
             sb.append(column);
-            if (range[0] == null) {
+            if (range[0] == null)
+            {
                 sb.append(" <= ");
                 sb.append(df.format(range[1]));
-            } else if (range[1] == null) {
+            } else if (range[1] == null)
+            {
                 sb.append(" >= ");
                 sb.append(df.format(range[0]));
-            } else {
+            } else
+            {
                 sb.append(" BETWEEN ");
                 sb.append(df.format(range[0]));
                 sb.append(" AND ");
@@ -172,19 +222,23 @@ abstract class Match {
         }
 
     }
-    
-    static class ModalitiesInStudy extends Match {
+
+    static class ModalitiesInStudy extends Match
+    {
         private final String md;
-        public ModalitiesInStudy(String md) {
+        public ModalitiesInStudy(String md)
+        {
             super("Series.modality", false);
             this.md = md;
         }
 
-        public boolean isUniveralMatch() {
+        public boolean isUniveralMatch()
+        {
             return md == null;
         }
 
-        protected void appendBodyTo(StringBuffer sb) {
+        protected void appendBodyTo(StringBuffer sb)
+        {
             JdbcProperties jp = JdbcProperties.getInstance();
             sb.append("(SELECT count(*) FROM ");
             sb.append(jp.getProperty("Series"));

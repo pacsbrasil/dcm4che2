@@ -45,7 +45,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
-import org.dcm4chex.archive.ejb.interfaces.AEData;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.jboss.logging.Logger;
 
@@ -177,7 +177,7 @@ class MoveTask implements Runnable
     private Socket createSocket()
         throws DcmServiceException, UnknownHostException, IOException
     {
-        return new Socket(aeData.getHost(), aeData.getPort());
+        return new Socket(aeData.getHostName(), aeData.getPort());
     }
 
     private void prepareRetrieveInfo(FileInfo[][] fileInfoArray)

@@ -20,7 +20,7 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4chex.archive.ejb.interfaces;
+package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;
@@ -49,14 +49,14 @@ public class AEData implements Serializable {
     
     // Variables -----------------------------------------------------
     private final String title;
-    private final String host;
+    private final String hostname;
     private final int port;
     private final String cipherSuites;
     
     // Constructors --------------------------------------------------
-    public AEData(String title, String host, int port, String cipherSuites) {
+    public AEData(String title, String hostname, int port, String cipherSuites) {
         this.title = title;
-        this.host = host;
+        this.hostname = hostname;
         this.port = port;
         this.cipherSuites = cipherSuites;
     }
@@ -71,8 +71,8 @@ public class AEData implements Serializable {
     /** Getter for property host.
      * @return Value of property host.
      */
-    public java.lang.String getHost() {
-        return host;
+    public java.lang.String getHostName() {
+        return hostname;
     }
     
     /** Getter for property port.
@@ -97,25 +97,4 @@ public class AEData implements Serializable {
         return retval;
     }
         
-    // Methods -------------------------------------------------------
-    private String prefix() {
-        if (cipherSuites == null || cipherSuites.length() == 0) {
-            return "dicom://";
-        }
-        if ("SSL_RSA_WITH_NULL_SHA".equals(cipherSuites)) {
-            return "dicom-tls.nodes://";
-        }
-        if ("SSL_RSA_WITH_3DES_EDE_CBC_SHA".equals(cipherSuites)) {
-            return "dicom-tls.3des://";
-        }
-        return "dicom-tls://";
-    }
-    
-    public String toString() {
-        StringBuffer sb = new StringBuffer(64);
-        sb.append(prefix())
-          .append(getTitle()).append('@')
-          .append(getHost()).append(':').append(getPort());
-        return sb.toString();
-    }
 }

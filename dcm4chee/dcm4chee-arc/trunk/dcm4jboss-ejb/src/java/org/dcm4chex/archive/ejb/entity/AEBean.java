@@ -20,10 +20,10 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import javax.ejb.EntityBean;
 import javax.ejb.CreateException;
+import javax.ejb.EntityBean;
+
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.ejb.interfaces.AEData;
 
 /**
  * Application Entity bean.
@@ -75,8 +75,8 @@ public abstract class AEBean implements EntityBean
      * @ejb.persistence
      *  column-name="hostname"
      */
-    public abstract String getHost();
-    public abstract void setHost(String name);
+    public abstract String getHostName();
+    public abstract void setHostName(String name);
 
     /**
      * @ejb.interface-method
@@ -99,7 +99,7 @@ public abstract class AEBean implements EntityBean
      */
     public String ejbCreate(
         String title,
-        String host,
+        String hostname,
         int port,
         String cipherSuites)
         throws CreateException
@@ -109,7 +109,7 @@ public abstract class AEBean implements EntityBean
             log.debug("create AEBean(" + title + ")");
         }
         setTitle(title);
-        setHost(host);
+        setHostName(hostname);
         setPort(port);
         setCipherSuites(cipherSuites);
         return null;
@@ -126,8 +126,26 @@ public abstract class AEBean implements EntityBean
     /**
      * @ejb.interface-method
      */
-    public AEData getAEData()
+    public String asString()
     {
-        return new AEData(getTitle(), getHost(), getPort(), getCipherSuites());
+        StringBuffer sb = new StringBuffer(64);
+        sb.append(getProtocol()).append("://")
+          .append(getTitle()).append('@')
+          .append(getHostName()).append(':').append(getPort());
+        return sb.toString();
+    }
+
+    private String getProtocol() {
+        String cipherSuites = getCipherSuites();
+        if (cipherSuites == null || cipherSuites.length() == 0) {
+            return "dicom";
+        }
+        if ("SSL_RSA_WITH_NULL_SHA".equals(cipherSuites)) {
+            return "dicom-tls.nodes";
+        }
+        if ("SSL_RSA_WITH_3DES_EDE_CBC_SHA".equals(cipherSuites)) {
+            return "dicom-tls.3des/";
+        }
+        return "dicom-tls";
     }
 }

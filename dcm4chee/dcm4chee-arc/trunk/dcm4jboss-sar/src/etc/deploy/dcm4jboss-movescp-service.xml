@@ -19,13 +19,6 @@
         dcm4chex:service=DcmServer,name=DCMSRV
     </depends>
     
-    <!-- Do NOT uncomment this line if the service is deployed
-    in the same jboss instance as the Storage EJB. Otherwise
-    in VM calls to go over RMI!
-        
-    <attribute name="ProviderURL">localhost</attribute>
-    -->
-    
     <attribute name="DsJndiName">java:/PostgresDS</attribute>    
          
   </mbean>
