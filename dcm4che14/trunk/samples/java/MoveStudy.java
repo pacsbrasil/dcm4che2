@@ -1,3 +1,14 @@
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 /*
  *  Copyright (c) 2003 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
@@ -19,13 +30,6 @@
  */
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
-import java.io.IOException;
-import java.net.Socket;
-import java.security.GeneralSecurityException;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -46,9 +50,9 @@ import org.dcm4che.util.SSLContextAdapter;
 /**
  *  <description>
  *
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @since  February 19, 2003
- * @version  $Revision$ <p>
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      February 19, 2003
+ * @version    $Revision$ <p>
  */
 public class MoveStudy
 {
@@ -85,14 +89,16 @@ public class MoveStudy
     private Association assoc = null;
     private ActiveAssociation aassoc = null;
     private String dest;
+    private boolean dump = false;
+    private final Map dumpParam = new HashMap(5);
 
 
     // Constructors --------------------------------------------------
     /**
      *  Constructor for the MoveStudy object
      *
-     * @param  cfg Description of the Parameter
-     * @param  url Description of the Parameter
+     * @param  cfg  Description of the Parameter
+     * @param  url  Description of the Parameter
      */
     public MoveStudy(Configuration cfg, DcmURL url)
     {
@@ -103,12 +109,21 @@ public class MoveStudy
         initAssocParam(cfg, url);
         initTLS(cfg);
         initKeys(cfg);
-        dest = cfg.getProperty("dest");
+        this.dest = cfg.getProperty("dest");
+        this.dump =  "true".equalsIgnoreCase(
+                cfg.getProperty("dump", "false"));
+        dumpParam.put("maxlen", cfg.getProperty("maxlen", "80"));
+        dumpParam.put("vallen", cfg.getProperty("vallen", "64"));
+        dumpParam.put("prefix", cfg.getProperty("prefix", ""));
+
     }
 
-    private static String maskNull(String aet) {
+
+    private static String maskNull(String aet)
+    {
         return aet != null ? aet : "MOVESTUDY";
     }
+
 
     private final void initAssocParam(Configuration cfg, DcmURL url)
     {
@@ -144,7 +159,7 @@ public class MoveStudy
                     cfg.getProperty("tls-cacerts-passwd", "passwd").toCharArray()));
             tls.init();
         } catch (Exception ex) {
-           throw new RuntimeException("Could not initalize TLS configuration: ", ex);
+            throw new RuntimeException("Could not initalize TLS configuration: ", ex);
         }
     }
 
@@ -178,8 +193,8 @@ public class MoveStudy
     /**
      *  Description of the Method
      *
-     * @return  Description of the Return Value
-     * @exception  Exception Description of the Exception
+     * @return                Description of the Return Value
+     * @exception  Exception  Description of the Exception
      */
     public List query()
         throws Exception
@@ -191,6 +206,12 @@ public class MoveStudy
         rqCmd.initCFindRQ(assoc.nextMsgID(),
                 UIDs.StudyRootQueryRetrieveInformationModelFIND, priority);
         Dimse findRq = af.newDimse(PCID_FIND, rqCmd, keys);
+        if (dump) {
+            StringWriter w = new StringWriter();
+            w.write("C-FIND RQ Identifier:\n");
+            keys.dumpDataset(w, dumpParam);
+            log.info(w.toString());
+        }
         FutureRSP future = aassoc.invoke(findRq);
         Dimse findRsp = future.get();
         return future.listPending();
@@ -200,8 +221,8 @@ public class MoveStudy
     /**
      *  Description of the Method
      *
-     * @param  findRspList Description of the Parameter
-     * @exception  Exception Description of the Exception
+     * @param  findRspList    Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     public void move(List findRspList)
         throws Exception
@@ -218,6 +239,12 @@ public class MoveStudy
         for (int i = 0; i < numStudies; ++i) {
             Dimse findRsp = (Dimse) findRspList.get(i);
             Dataset findRspDs = findRsp.getDataset();
+            if (dump) {
+                StringWriter w = new StringWriter();
+                w.write("C-FIND RSP Identifier:\n");
+                findRspDs.dumpDataset(w, dumpParam);
+                log.info(w.toString());
+            }
             if (numSeries >= 0) {
                 numSeries += findRspDs.getInt(
                         Tags.NumberOfStudyRelatedSeries, Integer.MIN_VALUE);
@@ -290,7 +317,7 @@ public class MoveStudy
                 break;
             default:
                 log.error("Failed to move " + prompt
-                    + "\n\terror tstatus: " + Integer.toHexString(status));
+                         + "\n\terror tstatus: " + Integer.toHexString(status));
                 break;
         }
         return status;
@@ -300,9 +327,9 @@ public class MoveStudy
     /**
      *  Description of the Method
      *
-     * @return  Description of the Return Value
-     * @exception  IOException Description of the Exception
-     * @exception  GeneralSecurityException Description of the Exception
+     * @return                               Description of the Return Value
+     * @exception  IOException               Description of the Exception
+     * @exception  GeneralSecurityException  Description of the Exception
      */
     public boolean open()
         throws IOException, GeneralSecurityException
@@ -331,8 +358,8 @@ public class MoveStudy
     /**
      *  Description of the Method
      *
-     * @exception  InterruptedException Description of the Exception
-     * @exception  IOException Description of the Exception
+     * @exception  InterruptedException  Description of the Exception
+     * @exception  IOException           Description of the Exception
      */
     public void close()
         throws InterruptedException, IOException
@@ -374,6 +401,10 @@ public class MoveStudy
             new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("dump", LongOpt.NO_ARGUMENT, null, 'd'),
+            new LongOpt("maxlen", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("vallen", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("prefix", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
             };
@@ -382,8 +413,8 @@ public class MoveStudy
     /**
      *  Description of the Method
      *
-     * @param  args Description of the Parameter
-     * @exception  Exception Description of the Exception
+     * @param  args           Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     public static void main(String args[])
         throws Exception
@@ -398,6 +429,9 @@ public class MoveStudy
             switch (c) {
                 case 2:
                     cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
+                    break;
+                case 'd':
+                    cfg.put("dump", "true");
                     break;
                 case 'P':
                     cfg.put("prior", "1");
