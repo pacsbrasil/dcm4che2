@@ -14,9 +14,9 @@ if "%1" == "server" goto install
 if "%1" == "client" goto install
 echo "Usage: %0 server|client|uninstall"
 echo Options:
-echo   client    install prnscp 1.0.0 service, using client hotspot vm
-echo   server    install prnscp 1.0.0 service, using server hotspot vm
-echo   uninstall uninstall prnscp 1.0.0 service
+echo   client    install prnscp-@VERSION@ service, using client hotspot vm
+echo   server    install prnscp-@VERSION@ service, using server hotspot vm
+echo   uninstall uninstall prnscp-@VERSION@ service
 goto eof
 
 :install
@@ -40,11 +40,11 @@ echo Could not locate %TOOLS_JAR%. Unexpected results may occur.
 echo Make sure that JAVA_HOME points to a JDK and not a JRE.
 
 :install
-JavaService.exe -install prnscp-1.0.0 "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out %DIRNAME%\out.txt -current %DIRNAME%
+JavaService.exe -install prnscp-@VERSION@ "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out %DIRNAME%\out.txt -current %DIRNAME%
 goto eof
 
 :uninstall
-JavaService.exe -uninstall prnscp-1.0.0
+JavaService.exe -uninstall prnscp-@VERSION@
 goto eof
 
 :eof

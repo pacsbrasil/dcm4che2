@@ -301,18 +301,20 @@
         <include name="lib/jboss-system.jar"/>        
         <include name="lib/log4j-boot.jar"/>
       </fileset>
-      <fileset dir="${src.dir}">
+      <fileset dir="${basedir}">
         <include name="bin/JavaService.exe"/>
-        <include name="bin/*.sh"/>
-        <include name="bin/*.bat"/>
-      </fileset>
-      <fileset dir="${src.dir}">
-        <include name="bin/JavaService.exe"/>
-        <include name="bin/*.sh"/>
-        <include name="bin/*.bat"/>
       </fileset>
       <fileset dir="${build.dir}">
-        <include name="bin/*.jar"/>
+        <include name="bin/*"/>
+      </fileset>
+    </copy>
+    <copy todir="${dist.dir}">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+      </filterset>
+      <fileset dir="${src.dir}">
+        <include name="bin/*.sh"/>
+        <include name="bin/*.bat"/>
       </fileset>
     </copy>
     <copy todir="${dist.dir}/server/default">
