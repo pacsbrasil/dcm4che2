@@ -103,7 +103,7 @@
       		</td>
 				</table>
 					<xsl:call-template name="overview"/>
-   			<table bgcolor="bbbbbb" border="0" cellpadding="0" cellspacing="0" width="100%">
+   			<table border="0" cellpadding="0" cellspacing="0" width="100%">
 					<tr>
 						<td>
 							<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -132,7 +132,7 @@
 			<col width="3%"/>
 		</colgroup>
 		<tr bgcolor="eeeeee">
-			<td bgcolor="ccee00">
+			<td bgcolor="cccccc">
 				<font size="1">
 					Patient:</font>
 			</td>
@@ -154,7 +154,7 @@
     	</td>
 			<td>
 			</td>
-			<td bgcolor="ccee00">
+			<td bgcolor="cccccc">
 			</td>
 			</tr>
 	</table>	
@@ -174,7 +174,7 @@
 
 </colgroup>
 		<tr bgcolor="eeeeee">
-			<td bgcolor="00eeee">
+			<td bgcolor="ccccff">
 				<font size="1">
 					Study:</font>
 			</td>
@@ -210,7 +210,7 @@
 				<font size="1" color="ff0000">
 					NoI:</font>
 			</td>
-			<td bgcolor="00eeee"> 
+			<td bgcolor="ccccff"> 
 			</td>
 		</tr>
 	</table>
@@ -227,7 +227,7 @@
 			<col width="3%"/>
 		</colgroup>
 		<tr bgcolor="eeeeee">
-			<td bgcolor="ccccee">
+			<td bgcolor="ccffcc">
 				<font size="1">
 					Serie:</font>
 			</td>
@@ -255,7 +255,7 @@
 				<font size="1" color="ff0000">
 					NoI:</font>
 			</td>
-			<td bgcolor="ccccee"> 
+			<td bgcolor="ccffcc"> 
 			</td>
 		</tr>
 	</table>
@@ -277,7 +277,7 @@
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
-			<td align="right" bgcolor="ccee00" rowspan="{$rowspan}">
+			<td align="right" bgcolor="cccccc" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
 						<a title="Show Studies" href="expandPat.m?patPk={pk}">
@@ -318,7 +318,7 @@
             <font size="1">Edit</font>
           </a> 				  
 			</td>
-			<td align="right" bgcolor="ccee00">
+			<td align="right" bgcolor="cccccc">
 				<input type="checkbox" name="stickyPat" value="{pk}">
 					<xsl:if test="/model/stickyPatients/item = pk">
 						<xsl:attribute name="checked"/>
@@ -348,7 +348,7 @@
 			<col width="4%"/>
 			<col width="2%"/>
 		</colgroup>
-			<td align="right" bgcolor="00eeee" rowspan="{$rowspan}">
+			<td align="right" bgcolor="ccccff" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
 						<a title="Show Series" href="expandStudy.m?patPk={../../pk}&amp;studyPk={pk}">
@@ -375,7 +375,7 @@
 				<xsl:value-of select="studyDescription"/>
 			</td>
       <td title="Referring Physican">
-				<xsl:value-of select="referringPhysican"/>
+				<xsl:value-of select="referringPhysician"/>
 			</td>
 			<td title="Accession Number">
 				<xsl:value-of select="accessionNumber"/>
@@ -386,7 +386,7 @@
       <td title="Number of Instances">
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
-			<td align="right" bgcolor="00eeee">
+			<td align="right" bgcolor="ccccff">
 				<input type="checkbox" name="stickyStudy" value="{pk}">
 					<xsl:if test="/model/stickyStudies/item = pk">
 						<xsl:attribute name="checked"/>
@@ -414,7 +414,7 @@
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
-		  <td align="right" bgcolor="ccccee" rowspan="{$rowspan}">
+		  <td align="right" bgcolor="ccffcc" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
 		  			<a title="Show Instances" href="expandSeries.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
@@ -448,7 +448,7 @@
 			<td title="Number of Instances">
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
-			<td align="right" bgcolor="ccccee">
+			<td align="right" bgcolor="ccffcc">
 				<input type="checkbox" name="stickySeries" value="{pk}">
 					<xsl:if test="/model/stickySeries/item = pk">
 						<xsl:attribute name="checked"/>
@@ -475,7 +475,7 @@
 			<col width="30%"/>
 			<col width="2%"/>
 		</colgroup>
-		<td bgcolor="eeeeee">
+		<td bgcolor="ffffcc">
 		</td>
 		<td title="Content Datetime">
 			<xsl:value-of select="contentDateTime"/>
@@ -499,7 +499,7 @@
 	  <td title="Retrieve AETs">
 			<xsl:value-of select="retrieveAETs"/>
     </td>
-		<td align="right" bgcolor="#eeeeee">
+		<td align="right" bgcolor="ffffcc">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
 					<xsl:attribute name="checked"/>
@@ -524,7 +524,7 @@
 			<col width="38%"/>
 			<col width="2%"/>
 		</colgroup>
-		<td bgcolor="eeeeee">
+		<td bgcolor="ffffcc">
 		</td>
 		<td title="Creation Datetime">
       <xsl:value-of select="presentationCreationDateTime"/>
@@ -547,7 +547,7 @@
 		<td title="Retrieve AETs">
       <xsl:value-of select="retrieveAETs"/>
     </td>
-		<td align="right" bgcolor="#eeeeee">
+		<td align="right" bgcolor="ffffcc">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
 					<xsl:attribute name="checked"/>
@@ -572,7 +572,7 @@
 			<col width="2%"/>
 		</colgroup>
  
-		<td bgcolor="eeeeee">
+		<td bgcolor="ffffcc">
 		</td>
 		<td title="Content Datetime">
     	<xsl:value-of select="contentDateTime"/>
@@ -592,7 +592,7 @@
 	  <td title="Retrieve AETs">
 			<xsl:value-of select="retrieveAETs"/>
     </td>
-		<td align="right" bgcolor="eeeeee">
+		<td align="right" bgcolor="ffffcc">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
 					<xsl:attribute name="checked"/>
