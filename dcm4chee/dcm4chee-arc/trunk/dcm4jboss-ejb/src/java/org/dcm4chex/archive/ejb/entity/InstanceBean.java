@@ -380,6 +380,7 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     private static String toString(Set s) {
+        s.remove(null);
         String[] a = (String[]) s.toArray(new String[s.size()]);
         return StringUtils.toString(a, '\\');
     }
