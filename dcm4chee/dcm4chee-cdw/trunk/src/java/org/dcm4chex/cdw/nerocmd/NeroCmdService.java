@@ -257,9 +257,9 @@ public class NeroCmdService extends AbstractMediaWriterService {
                 return false;
             }
             try {
-                log.info("Burning " + rq);
+                log.info("Start Burning " + rq);
                 burn(rq.getIsoImageFile());
-                log.info("Burned " + rq);
+                log.info("Finished Burning " + rq);
                 if (verify) {
                     load();
                     if (mountTime > 0) {
@@ -269,9 +269,9 @@ public class NeroCmdService extends AbstractMediaWriterService {
                             log.warn("Mount Time was interrupted:", e);
                         }
                     }
-                    log.info("Verifying " + rq);
+                    log.info("Start Verifying " + rq);
                     verify(rq.getFilesetDir());
-                    log.info("Verified " + rq);
+                    log.info("Finsihed Verifying " + rq);
                     if (eject) eject();
                 }
             } catch (MediaCreationException e) {
@@ -307,7 +307,9 @@ public class NeroCmdService extends AbstractMediaWriterService {
                 ExecutionStatusInfo.OUT_OF_SUPPLIES);
         rq.writeAttributes(attrs, log);
         try {
-            JMSDelegate.getInstance(rq.getMediaWriterName()).queue(log,
+            JMSDelegate.getInstance(rq.getMediaWriterName()).queue(
+                    "Schedule Writing Media for " + rq,
+                    log,
                     rq,
                     System.currentTimeMillis() + retryInterval * 1000L);
         } catch (JMSException e) {

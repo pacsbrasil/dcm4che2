@@ -167,19 +167,19 @@ public class SpoolDirService extends ServiceMBeanSupport {
     }
 
     public String refreshArchiveDiskUsage() {
-        log.info("Calculating Archive Disk Usage");
+        log.info("Start Calculating Archive Disk Usage");
         archiveDiskUsage = 0L;
         register(archiveDir);
-        log.info("Calculated Archive Disk Usage: " + getArchiveDiskUsage());
+        log.info("Finished Calculating Archive Disk Usage: " + getArchiveDiskUsage());
         aduRefreshTime = System.currentTimeMillis();
         return getArchiveDiskUsage();        
     }
 
     public String refreshFilesetDiskUsage() {
-        log.info("Calculating Fileset Disk Usage");
+        log.info("Start Calculating Fileset Disk Usage");
         filesetDiskUsage = 0L;
         register(filesetDir);
-        log.info("Calculated Fileset Disk Usage: " + getFilesetDiskUsage());
+        log.info("Finished Calculating Fileset Disk Usage: " + getFilesetDiskUsage());
         fsduRefreshTime = System.currentTimeMillis();
         return getFilesetDiskUsage();
     }

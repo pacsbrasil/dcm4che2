@@ -400,10 +400,10 @@ class DicomDirDOM {
             throws MediaCreationException {
         File dir = new File(rq.getFilesetDir(), IHE_PDI);
         try {
-	        log.info("Creating HTML content for " + rq);
+	        log.info("Start Creating HTML content for " + rq);
 	        xslt(webTpl, new StreamResult(new File(rq.getFilesetDir(), IHE_PDI
 	                + File.separatorChar + INDEX_HTM)), rq);
-	        log.info("Created HTML content for " + rq);
+	        log.info("Finished Creating HTML content for " + rq);
         } finally {
             service.getSpoolDir().register(dir);
         }
@@ -412,8 +412,8 @@ class DicomDirDOM {
 
     public void createLabel(MediaCreationRequest rq, ContentHandler handler)
             throws MediaCreationException {
-        log.info("Creating Label for " + rq);
+        log.info("Start Creating Label for " + rq);
         xslt(labelTpl, new SAXResult(handler), rq);
-        log.info("Created Label for " + rq);
+        log.info("Finished Creating Label for " + rq);
     }
 }

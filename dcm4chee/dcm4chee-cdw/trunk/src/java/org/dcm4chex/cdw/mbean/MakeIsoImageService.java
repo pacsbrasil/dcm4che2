@@ -264,7 +264,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
     protected void process(MediaCreationRequest rq) {
         boolean cleanup = true;
         try {
-            log.info("Make ISO 9660 image for " + rq);
+            log.info("Start Creating ISO 9660 image for " + rq);
             if (rq.isCanceled()) {
                 log.info("" + rq + " was canceled");
                 return;
@@ -325,15 +325,16 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
                         return;
                     }
                 }
-                log.info("Finished ISO 9660 image for " + rq);
-                JMSDelegate.getInstance(rq.getMediaWriterName()).queue(log, rq, 0L);
+                log.info("Finished Creating ISO 9660 image for " + rq);
+                JMSDelegate.getInstance(rq.getMediaWriterName()).queue(
+                        "Schedule Writing Media for " + rq, log, rq, 0L);
                 cleanup = false;
             } catch (Exception e) {
                 if (rq.isCanceled()) {
                     log.info("" + rq + " was canceled");
                     return;
                 }
-                log.error("Failed to make ISO 9660 image for " + rq, e);
+                log.error("Failed to create ISO 9660 image for " + rq, e);
                 attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
                 attrs.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.PROC_FAILURE);
                 try {

@@ -270,7 +270,7 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
 
     private void javaPrint(File file) throws IOException, PrintException {
         BufferedInputStream in = null;
-        log.info("Initializing print of " + file);
+        log.info("Start Initializing print of " + file);
         try {
             String fname = file.getName().toUpperCase();
             DocFlavor flavor = fname.endsWith(".PS") ? DocFlavor.INPUT_STREAM.POSTSCRIPT
@@ -295,7 +295,7 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
             in = new BufferedInputStream(new FileInputStream(file));
             Doc doc = new SimpleDoc(in, flavor, null);
             pj.print(doc, attrs);
-            log.error("Initialized print of " + file);
+            log.info("Finished Initializing print of " + file);
         } catch (PrintException e) {
             log.error("Failed: Printing of " + file, e);
             throw e;

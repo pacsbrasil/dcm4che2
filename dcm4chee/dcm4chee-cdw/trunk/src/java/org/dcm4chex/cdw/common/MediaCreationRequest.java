@@ -273,7 +273,7 @@ public class MediaCreationRequest implements Serializable {
 	            attrs.putCS(Tags.ExecutionStatusInfo,
 	                    ExecutionStatusInfo.NORMAL);
 	        }
-	        log.info("Finished " + this);
+	        log.info("Finished Writing Media " + this);
 	    }
         writeAttributes(attrs, log);
         return remainingCopies;

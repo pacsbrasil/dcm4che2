@@ -783,7 +783,7 @@ class FilesetBuilder {
             String[] subDirs = rootDir.list();
             File md5sums = new File(rootDir, MD5_SUMS);
             int strip = rootDir.toURI().toString().length();
-            log.info("Creating MD5 sums for " + rq);
+            log.info("Start Creating MD5 sums for " + rq);
             Writer out = new BufferedWriter(new FileWriter(md5sums));
             try {
                 for (int i = 0; i < subDirs.length; i++) {
@@ -804,7 +804,7 @@ class FilesetBuilder {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
         }
-        log.info("Created MD5 sums for " + rq);
+        log.info("Finished Creating MD5 sums for " + rq);
     }
 
     private void writeMd5Sums(Writer out, File fileOrDir, int strip,

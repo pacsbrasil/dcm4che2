@@ -332,9 +332,9 @@ public class CDRecordService extends AbstractMediaWriterService {
                 return false;
             }
             try {
-                log.info("Burning " + rq);
+                log.info("Start Burning " + rq);
                 burn(rq.getIsoImageFile());
-                log.info("Burned " + rq);
+                log.info("Finished Burning " + rq);
                 if (verify) {
                     if (!hasTOC())
                             // load media
@@ -353,9 +353,9 @@ public class CDRecordService extends AbstractMediaWriterService {
                         mount();
                     }
                     try {
-                        log.info("Verifying " + rq);
+                        log.info("Start Verifying " + rq);
                         verify(rq.getFilesetDir());
-                        log.info("Verified " + rq);
+                        log.info("Finished Verifing " + rq);
                     } finally {
                         if (mount) umount();
                     }
@@ -394,7 +394,9 @@ public class CDRecordService extends AbstractMediaWriterService {
                 ExecutionStatusInfo.OUT_OF_SUPPLIES);
         rq.writeAttributes(attrs, log);
         try {
-            JMSDelegate.getInstance(rq.getMediaWriterName()).queue(log,
+            JMSDelegate.getInstance(rq.getMediaWriterName()).queue(
+                    "Schedule Writing Media for " + rq,
+                    log,
                     rq,
                     System.currentTimeMillis() + retryInterval * 1000L);
         } catch (JMSException e) {

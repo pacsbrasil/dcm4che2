@@ -76,7 +76,7 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
     protected void process(MediaCreationRequest rq) {
         boolean cleanup = true;
         try {
-            log.info("Start processing " + rq);
+            log.info("Start Writing Media " + rq);
             if (rq.isCanceled()) {
                 log.info("" + rq + " was canceled");
                 return;

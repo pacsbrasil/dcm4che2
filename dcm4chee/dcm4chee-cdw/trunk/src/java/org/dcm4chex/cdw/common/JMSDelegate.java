@@ -102,11 +102,11 @@ public class JMSDelegate {
     }
 
 
-    public void queue(Logger log, MediaCreationRequest rq, long scheduledTime)
+    public void queue(String prompt, Logger log, MediaCreationRequest rq, long scheduledTime)
             throws JMSException {
         QueueSession session = null;
         QueueSender send = null;
-        log.info("Queue " + rq + " for " + name);
+        log.info(prompt);
         try {
             session = conn.createQueueSession(false,
                     QueueSession.AUTO_ACKNOWLEDGE);
@@ -117,7 +117,7 @@ public class JMSDelegate {
             send.send(msg, DeliveryMode.PERSISTENT, toJMSPriority(rq
                     .getPriority()), 0);
         } catch (JMSException e) {
-            log.error("Failed to queue " + rq + " for " + name, e);
+            log.error("Failed: " + name, e);
             throw e;
         } finally {
             if (send != null) {

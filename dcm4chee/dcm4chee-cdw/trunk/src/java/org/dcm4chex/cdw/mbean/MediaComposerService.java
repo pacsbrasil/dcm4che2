@@ -314,7 +314,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        log.info("initialize " + DicomDirDOM.class.getName());
+        log.info("Initialize " + DicomDirDOM.class.getName());
         JMSDelegate.getInstance("MediaComposer").setMessageListener(listener);
     }
 
@@ -326,7 +326,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
         boolean cleanup = true;
         Dataset attrs = null;
         try {
-            log.info("Composing media for " + rq);
+            log.info("Start Composing media for " + rq);
             if (rq.isCanceled()) {
                 log.info("" + rq + " was canceled");
                 return;
@@ -448,9 +448,14 @@ public class MediaComposerService extends ServiceMBeanSupport {
             rq.writeAttributes(attrs, log);
         }
         try {
-            log.info("Finished composing media for " + rq);
-            JMSDelegate.getInstance(makeIsoImage ? "MakeIsoImage"
-                    : "MediaWriter").queue(log, rq, 0L);
+            log.info("Finished Composing media for " + rq);
+            if (makeIsoImage)
+                JMSDelegate.getInstance("MakeIsoImage").queue(
+                        "Schedule Creating ISO image for " + rq, log, rq, 0L);
+            else
+                JMSDelegate.getInstance("MediaWriter").queue(
+                        "Schedule Writing Media for " + rq, log, rq, 0L);
+            
         } catch (JMSException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
