@@ -136,7 +136,8 @@ public abstract class CompressCmd extends CodecCmd {
         }
     };
     
-    public static byte[] compressFile(File inFile, File outFile, String tsuid)
+    public static byte[] compressFile(File inFile, File outFile, String tsuid,
+    		int[] pxdataVR)
     		throws Exception {
         log.info("M-READ file:" + inFile);
     	InputStream in = new BufferedInputStream(new FileInputStream(inFile));
@@ -146,6 +147,7 @@ public abstract class CompressCmd extends CodecCmd {
 			Dataset ds = of.newDataset();
     		p.setDcmHandler(ds.getDcmHandler());
     		p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+    		pxdataVR[0] = p.getReadVR();
     		FileMetaInfo fmi = of.newFileMetaInfo(ds, tsuid);
     		ds.setFileMetaInfo(fmi);
             log.info("M-WRITE file:" + outFile);

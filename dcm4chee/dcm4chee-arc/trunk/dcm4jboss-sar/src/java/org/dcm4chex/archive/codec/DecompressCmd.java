@@ -38,7 +38,6 @@ import org.dcm4che.data.FileFormat;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.dict.VRs;
 import org.dcm4cheri.image.ItemParser;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
@@ -59,7 +58,8 @@ public class DecompressCmd extends CodecCmd {
     
     private final ImageInputStream iis;
 
-    public static byte[] decompressFile(File inFile, File outFile, String tsuid)
+    public static byte[] decompressFile(File inFile, File outFile, String tsuid,
+    		int pxdataVR)
 		throws Exception {
         log.info("M-READ file:" + inFile);
         FileImageInputStream fiis = new FileImageInputStream(inFile);
@@ -81,7 +81,7 @@ public class DecompressCmd extends CodecCmd {
         		FileMetaInfo fmi = dof.newFileMetaInfo(ds, tsuid);
         		ds.setFileMetaInfo(fmi);
                 ds.writeFile(dos, encParam);
-                ds.writeHeader(dos, encParam, Tags.PixelData, VRs.OW, (len+1)&~1);
+                ds.writeHeader(dos, encParam, Tags.PixelData, pxdataVR, (len+1)&~1);
                 try {
 	                cmd.decompress(encParam.byteOrder, dos);
 				} catch (IOException e) {
