@@ -231,9 +231,8 @@
     <mkdir dir="${dist.dir}/server/default"/>
     <copy todir="${dist.dir}">
       <fileset dir="${jboss.dist}">
-        <include name="bin/*.jar"/>
-        <include name="bin/*.sh"/>
-        <include name="bin/*.bat"/>
+        <include name="bin/run.*"/>
+        <include name="bin/jboss_init_redhat.sh"/>
         <include name="client/jnp-client.jar"/>
         <include name="client/jmx-rmi-connector-client.jar"/>
         <include name="lib/concurrent.jar"/>        
