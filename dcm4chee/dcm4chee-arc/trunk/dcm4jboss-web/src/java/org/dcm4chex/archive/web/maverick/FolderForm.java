@@ -41,6 +41,9 @@ public class FolderForm {
     }
 
     public static final int LIMIT = 10;
+    
+    public static final String NO_ERROR ="OK";
+    public static final String ERROR_MOVE ="moveError";
 
     private String patientID;
 
@@ -73,6 +76,11 @@ public class FolderForm {
     private int offset;
 
     private int total;
+    
+    /** Error code for rendering message.
+     * 
+     */
+    private String errorCode = NO_ERROR;
 
     public final int getLimit() {
         return LIMIT;
@@ -199,6 +207,15 @@ public class FolderForm {
 
     public final int getTotal() {
         return total;
+    }
+    
+    public final String getErrorCode() {
+    	return errorCode;
+    }
+    
+    
+    public final void setErrorCode( String err ) {
+    	errorCode = err;
     }
 
     public void updatePatients(List newPatients) {
