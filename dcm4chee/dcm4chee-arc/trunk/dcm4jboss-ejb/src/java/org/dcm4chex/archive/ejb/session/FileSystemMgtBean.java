@@ -121,17 +121,42 @@ public abstract class FileSystemMgtBean implements SessionBean {
 			throws FinderException {
 		log.debug("Querying for dereferenced files in " + dirPath);
 		Collection c = fileHome.findDereferencedInFileSystem(dirPath);
+		log.debug("Found " + c.size() + " dereferenced files in " + dirPath);
+		return toFileDTOs(c);
+	}
+
+	private FileDTO[] toFileDTOs(Collection c) {
 		FileDTO[] dto = new FileDTO[c.size()];
 		Iterator it = c.iterator();
 		for (int i = 0; i < dto.length; ++i) {
 			dto[i] = toDTO((FileLocal) it.next());
 		}
-		log.debug("Found " + dto.length + " dereferenced files in " + dirPath);
 		return dto;
 	}
 
 	/**
-	 * @throws CreateException
+	 * @ejb.interface-method
+	 */
+	public FileDTO[] findToCompress(String tsuid, String cuid, String srcaet,
+			String dirPath, Timestamp before, int limit) throws FinderException {
+		log.debug("Querying for files to compress in " + dirPath);
+		Collection c = fileHome.findToCompress(tsuid, cuid, srcaet, dirPath, before, limit);
+		log.debug("Found " + c.size()+ " files to compress in " + dirPath);
+		return toFileDTOs(c);
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public void replaceFile(int pk, String path, String tsuid, int size,
+			byte[] md5) throws FinderException, CreateException {
+		FileLocal oldFile = fileHome.findByPrimaryKey(new Integer(pk));
+		FileLocal newFile = fileHome.create(path, tsuid, size, md5, 
+				oldFile.getInstance(), oldFile.getFileSystem());
+		oldFile.setInstance(null);
+	}
+	
+	/**
 	 * @ejb.interface-method
 	 */
 	public FileSystemDTO addFileSystem(FileSystemDTO dto)
