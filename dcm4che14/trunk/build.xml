@@ -529,7 +529,10 @@
     <zip zipfile="${release.root}/src.zip">
       <fileset dir="${source.java}">
         <include name="**/*.java"/>
-        <include name="**/*.ser"/>
+      </fileset>
+      <fileset dir="${source.etc}">
+        <include name="**/*.xsl"/>
+        <include name="**/*.xml"/>
       </fileset>
     </zip>
           
