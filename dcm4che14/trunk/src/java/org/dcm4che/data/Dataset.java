@@ -110,7 +110,8 @@ public interface Dataset extends DcmObject, Serializable
 
     Dataset subSet(Dataset filter);
 
-
+    Dataset subSet(int[] tags, boolean exclude);
+    
     boolean match(Dataset keys, boolean ignorePNCase, boolean ignoreEmpty);
 
 

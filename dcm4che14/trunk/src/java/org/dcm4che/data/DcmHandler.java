@@ -31,7 +31,7 @@ import java.io.IOException;
  * @version 1.0.0
  */
 public interface DcmHandler {
-
+    
     public void startCommand() throws IOException;
     
     public void endCommand() throws IOException;

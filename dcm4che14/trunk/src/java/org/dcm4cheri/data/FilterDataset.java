@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import javax.imageio.stream.ImageInputStream;
@@ -56,6 +57,20 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     }
                     
     protected abstract boolean filter(int tag);
+ 
+    public int size() {
+        int count = 0;
+        for (Iterator iter = backend.iterator(); iter.hasNext();) {
+            if (filter(((DcmElement)iter.next()).tag())) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    public DcmElement get(int tag) {
+        return filter(tag) ? backend.get(tag) : null;
+    }
     
     public Iterator iterator() {
         final Iterator backendIter = backend.iterator();
@@ -173,18 +188,6 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             this.filter = filter;
         }
 
-        public int size() {
-            if (filter == null) {
-                return backend.size();
-            }
-            int count = 0;
-            for (Iterator iter = iterator(); iter.hasNext();) {
-               iter.next();
-               ++count;
-            }
-            return count;
-        }
-        
         protected  boolean filter(int tag) {
             return filter == null || filter.contains(tag);
         }
@@ -248,9 +251,22 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             long ltag = tag & 0xFFFFFFFF;
             return ltag >= fromTag && ltag < toTag;
         }
-        
-        public DcmElement get(int tag) {
-            return filter(tag) ? backend.get(tag) : null;
-        }
     } 
+
+    static final class TagFilter extends FilterDataset {
+        private final int[] tags;
+		private final boolean exclude;
+        TagFilter(Dataset backend, int[] tags, boolean exclude) {
+            super(backend);
+            this.tags = (int[]) tags.clone();
+            this.exclude = exclude;
+            Arrays.sort(tags);
+        }
+        
+        protected boolean filter(int tag) {
+            return Arrays.binarySearch(tags, tag) < 0 ? exclude : !exclude;
+        }
+        
+    } 
+        
 }
