@@ -22,6 +22,9 @@
 
 package org.dcm4che.net;
 
+import org.dcm4che.data.Command;
+import org.dcm4che.dict.Tags;
+
 /**
  * <description>
  *
@@ -41,6 +44,9 @@ package org.dcm4che.net;
 public class DcmServiceException extends Exception {
     
     private final int status;
+    private int errorID = -1;
+    private int actionTypeID = -1;
+    private int eventTypeID = -1;
     
     public DcmServiceException(int status) {
         this.status = status;
@@ -61,12 +67,49 @@ public class DcmServiceException extends Exception {
         this.status = status;
     }
     
-    public String getErrorComment() {
-        String msg = getMessage();
-        return msg.length() > 64 ? msg.substring(0, 64) : msg;
-    }
-
     public int getStatus() {
         return status;
+    }
+
+    public void setErrorID(int errorID) {
+        this.errorID = errorID;
+    }
+
+    public int getErrorID() {
+        return errorID;
+    }
+
+    public void setEventTypeID(int eventTypeID) {
+        this.eventTypeID = eventTypeID;
+    }
+
+    public int getEventTypeID() {
+        return eventTypeID;
+    }
+
+    public void setActionTypeID(int actionTypeID) {
+        this.actionTypeID = actionTypeID;
+    }
+
+    public int getActionTypeID() {
+        return actionTypeID;
+    }
+
+    public void writeTo(Command cmd) {
+        cmd.putUS(Tags.Status, status);
+        String msg = getMessage();
+        if (msg != null && msg.length() > 0) {
+            cmd.putLO(Tags.ErrorComment,
+                msg.length() > 64 ? msg.substring(0, 64) : msg);
+        }
+        if (errorID >= 0) {
+            cmd.putUS(Tags.ErrorID, errorID);
+        }
+        if (actionTypeID >= 0) {
+            cmd.putUS(Tags.ActionTypeID, actionTypeID);
+        }
+        if (eventTypeID >= 0) {
+            cmd.putUS(Tags.EventTypeID, eventTypeID);
+        }
     }
 }

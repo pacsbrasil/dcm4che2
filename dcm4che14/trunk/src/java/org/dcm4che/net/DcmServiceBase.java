@@ -87,14 +87,6 @@ public class DcmServiceBase implements DcmService {
     // Public --------------------------------------------------------
     
     // DcmService implementation -------------------------------------
-    private void copy(DcmServiceException e, Command  rspCmd) {
-        String errComment = e.getErrorComment();
-        rspCmd.putUS(Tags.Status, e.getStatus());
-        if (errComment.length() > 0) {
-            rspCmd.putLO(Tags.ErrorComment,errComment);
-        }
-    }
-    
     public void c_store(ActiveAssociation assoc, Dimse rq)
     throws IOException {
         Command rqCmd = rq.getCommand();
@@ -107,7 +99,7 @@ public class DcmServiceBase implements DcmService {
         try {
             doCStore(assoc, rq, rspCmd);
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
         assoc.getAssociation().write(rsp);
@@ -125,7 +117,7 @@ public class DcmServiceBase implements DcmService {
         try {
             doMultiRsp(assoc, rq, rspCmd, doCGet(assoc, rq, rspCmd));
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);
             doAfterRsp(assoc, rsp);
@@ -143,7 +135,7 @@ public class DcmServiceBase implements DcmService {
         try {
             doMultiRsp(assoc, rq, rspCmd, doCFind(assoc, rq, rspCmd));
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);
             doAfterRsp(assoc, rsp);
@@ -161,7 +153,7 @@ public class DcmServiceBase implements DcmService {
         try {
             doMultiRsp(assoc, rq, rspCmd, doCMove(assoc, rq, rspCmd));
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);
             doAfterRsp(assoc, rsp);
@@ -179,7 +171,7 @@ public class DcmServiceBase implements DcmService {
         try {
             doCEcho(assoc, rq, rspCmd);
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
         assoc.getAssociation().write(rsp);
@@ -199,7 +191,7 @@ public class DcmServiceBase implements DcmService {
         try {
             rspData = doNEventReport(assoc, rq, rspCmd);
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
@@ -219,7 +211,7 @@ public class DcmServiceBase implements DcmService {
         try {
             rspData = doNGet(assoc, rq, rspCmd);
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
@@ -239,7 +231,7 @@ public class DcmServiceBase implements DcmService {
         try {
             rspData = doNSet(assoc, rq, rspCmd);
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
@@ -259,7 +251,7 @@ public class DcmServiceBase implements DcmService {
         try {
             rspData = doNAction(assoc, rq, rspCmd);
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
@@ -279,7 +271,7 @@ public class DcmServiceBase implements DcmService {
         try {
             rspData = doNCreate(assoc, rq, rspCmd);
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
@@ -299,7 +291,7 @@ public class DcmServiceBase implements DcmService {
         try {
             rspData = doNDelete(assoc, rq, rspCmd);
         } catch (DcmServiceException e) {
-            copy(e, rspCmd);
+            e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
         assoc.getAssociation().write(rsp);
