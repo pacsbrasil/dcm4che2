@@ -69,5 +69,27 @@ public class MCMScuDelegate {
 			}
 	        return resp;
 		}
+		
+		/**
+		 * Checks if Media Creation SCP is available.
+		 * <p>
+		 * Checks move destination AET and MCM_SCP AET.
+		 * 
+		 * @return true if available.
+		 */
+		public boolean checkMcmScpAvail() {
+			String resp = "";
+			try {
+		        Object o = server.invoke(mcmScuServiceName,
+		                "checkMcmScpAvail",
+		                null,
+		                null );
+		        resp = (String) o;
+			} catch ( Exception x ) {
+				if ( log.isDebugEnabled() ) log.debug( "Exception occured in checkMcmScpAvail: "+x.getMessage(), x );
+			}
+			return "OK".equals( resp );
+			
+		}
 
 }

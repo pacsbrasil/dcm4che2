@@ -51,17 +51,23 @@ public class MCMModel {
 	private MediaList mediaList;
 	/** Holds the filter for media search. */
 	private MCMFilter filter;
+	
+	/** Holds availability status of MCM SCP */
+	private boolean mcmNotAvail = false;
 
 	
 	/**
 	 * Creates the model.
 	 * <p>
 	 * Perform an initial media search with the default filter. <br>
-	 * (search for all media with status COLELCTING)
+	 * (search for all media with status COLLECTING)
+	 * <p>
+	 * performs an initial availability check for MCM_SCP service.
 	 */
 	private MCMModel() {
 		getFilter();
 		filterMediaList( true );
+		mcmNotAvail = ! MCMConsoleCtrl.getMcmScuDelegate().checkMcmScpAvail();
 	}
 	
 	/**
@@ -158,7 +164,7 @@ public class MCMModel {
 					filter.setSelectedStatus( MCMFilter.MEDIA_TYPE_DEFAULT ); //set to default media type (COLLECTING)
 				} 
 			}
-			if ( stati == null || stati.intValue() == MediaDTO.PROCESSING ) {
+			if ( ! mcmNotAvail && ( stati == null || stati.intValue() == MediaDTO.PROCESSING ) ) {
 				//perform get media creation status if filter contains PROCESSING media status.
 				MCMConsoleCtrl.getMcmScuDelegate().getMediaCreationStatus();
 			}
@@ -242,6 +248,18 @@ public class MCMModel {
 		return total;
 	}
 
+	/**
+	 * @return Returns the mcmNotAvail.
+	 */
+	public boolean isMcmNotAvail() {
+		return mcmNotAvail;
+	}
+	/**
+	 * @param mcmNotAvail The mcmNotAvail to set.
+	 */
+	public void setMcmNotAvail(boolean mcmNotAvail) {
+		this.mcmNotAvail = mcmNotAvail;
+	}
 	/**
 	 * Goto previous page.
 	 */

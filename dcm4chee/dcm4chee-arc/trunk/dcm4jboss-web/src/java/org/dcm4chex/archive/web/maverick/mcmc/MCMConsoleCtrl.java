@@ -86,6 +86,8 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 	 */
 	private void performAction(String action, HttpServletRequest request) {
 		if ( action.equalsIgnoreCase("queue") ) {
+			model.setMcmNotAvail( ! delegate.checkMcmScpAvail() );
+			if ( model.isMcmNotAvail() ) return;
 			int mediaPk = Integer.parseInt( request.getParameter("mediaPk"));
            	MediaData md = model.mediaDataFromList( mediaPk );
            	if ( md != null ) {
@@ -99,7 +101,9 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 					model.updateMediaStatus( mediaPk, MediaDTO.QUEUED, e.getMessage() );
 				}
 				model.updateMediaStatus( mediaPk, MediaDTO.QUEUED, "" );
-           	} //TODO 
+           	}
+		} else if ( action.equalsIgnoreCase("check_mcm_avail") ) {
+			model.setMcmNotAvail( ! delegate.checkMcmScpAvail() );
 		} else {
 			model.setErrorCode( MCMModel.ERROR_UNSUPPORTED_ACTION );
 		}
