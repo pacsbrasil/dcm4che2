@@ -82,6 +82,14 @@ public class Tags {
         return sb;
     }
 
+    public static final int groupOf(int tag) {
+        return (tag >>> 16);
+    }
+    
+    public static final int elementOf(int tag) {
+        return (tag &amp; 0xffff);
+    }
+    
     public static final int valueOf(short grTag, short elTag) {
         return (grTag &lt;&lt; 16) | (elTag &amp; 0xffff);
     }
