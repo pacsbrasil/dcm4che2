@@ -159,6 +159,15 @@ default-transform-type="xslt">
      </command>
 
 	<!-- ****** END AE related commands ******-->
+ 
+	<!-- ****** Media Creation Manager Console (MCMConsole) related commands ******-->
+
+    <command name="mcm_console">
+        <controller class="org.dcm4chex.archive.web.maverick.mcmc.MCMConsoleCtrl" />    
+	    <view name="success">
+    	  <transform path="mcmc/mcm_console.xsl" />
+	    </view>
+     </command>
      
   </commands>
 </maverick>
