@@ -91,9 +91,9 @@ public abstract class MediaComposerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int prepareMedia(long studyReceivedBefore) throws FinderException {
+    public int collectStudiesReceivedBefore(long time) throws FinderException {
         Collection c = instHome.findNotOnMediaAndStudyReceivedBefore(
-                new Timestamp(studyReceivedBefore));
+                new Timestamp(time));
         //TODO
         return c.size();
     }
@@ -101,17 +101,10 @@ public abstract class MediaComposerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List getPreparingMedia() throws FinderException {
-        return toMediaDTOs(mediaHome.findPreparing());
+    public List getWithStatus(int status) throws FinderException {
+        return toMediaDTOs(mediaHome.findByStatus(status));
     }
-    
-    /**
-     * @ejb.interface-method
-     */
-    public List getBurningMedia() throws FinderException {
-        return toMediaDTOs(mediaHome.findBurning());
-    }
-    
+        
     private List toMediaDTOs(Collection c) {
         ArrayList list = new ArrayList();
         for (Iterator it = c.iterator(); it.hasNext();) {
@@ -126,6 +119,7 @@ public abstract class MediaComposerBean implements SessionBean {
         dto.setCreatedTime(media.getCreatedTime());
         dto.setUpdatedTime(media.getUpdatedTime());
         dto.setMediaUsage(media.getMediaUsage());
+        dto.setMediaStatus(media.getMediaStatus());
         dto.setFilesetId(media.getFilesetId());
         dto.setFilesetIuid(media.getFilesetIuid());
         dto.setMediaCreationRequestIuid(media.getMediaCreationRequestIuid());
@@ -135,20 +129,16 @@ public abstract class MediaComposerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void update(MediaDTO dto) throws FinderException {
-        MediaLocal media = mediaHome.findByPrimaryKey(
-                new Integer(dto.getPk()));
-        if (!equals(media.getFilesetId(), dto.getFilesetId()))
-            media.setFilesetId(dto.getFilesetId());
-        if (!equals(media.getFilesetIuid(), dto.getFilesetIuid()))
-            media.setFilesetIuid(dto.getFilesetIuid());
-        if (!equals(media.getMediaCreationRequestIuid(), 
-                dto.getMediaCreationRequestIuid()))
-            media.setMediaCreationRequestIuid(dto.getMediaCreationRequestIuid());
+    public void setMediaCreationRequestIuid(int pk, String iuid) throws FinderException {
+        MediaLocal media = mediaHome.findByPrimaryKey(new Integer(pk));
+        media.setMediaCreationRequestIuid(iuid);
     }
 
-    private boolean equals(Object o1, Object o2) {
-        return o1 == null ? o2 == null : o1.equals(o2);
+    /**
+     * @ejb.interface-method
+     */
+    public void setMediaStatus(int pk, int status) throws FinderException {
+        MediaLocal media = mediaHome.findByPrimaryKey(new Integer(pk));
+        media.setMediaStatus(status);
     }
-
 }

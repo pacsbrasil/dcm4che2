@@ -32,14 +32,24 @@ import org.apache.log4j.Logger;
  *  transaction-type="Supports"
  *
  * @ejb.finder
- *  signature="java.util.Collection findPreparing()"
- *  query="SELECT OBJECT(m) FROM Media AS m WHERE m.filesetIuid IS NULL AND m.mediaCreationRequestIuid IS NULL"
+ *  signature="java.util.Collection findByStatus(int status)"
+ *  query="SELECT OBJECT(m) FROM Media AS m WHERE m.mediaStatus = ?1"
  *  transaction-type="Supports"
  *
+ * @jboss.query
+ *  signature="java.util.Collection findByStatus(int status)"
+ *  strategy="on-find"
+ *  eager-load-group="*"
+ *
  * @ejb.finder
- *  signature="java.util.Collection findBurning()"
- *  query="SELECT OBJECT(m) FROM Media AS m WHERE m.mediaCreationRequestIuid IS NOT NULL"
+ *  signature="org.dcm4chex.archive.ejb.interface.MediaLocal findByFilesetIuid()"
+ *  query="SELECT OBJECT(m) FROM Media AS m WHERE m.filesetIuid = ?1"
  *  transaction-type="Supports"
+ *
+ * @jboss.query
+ *  signature="org.dcm4chex.archive.ejb.interface.MediaLocal findByFilesetIuid()"
+ *  strategy="on-find"
+ *  eager-load-group="*"
  *
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
@@ -97,9 +107,6 @@ public abstract class MediaBean implements EntityBean {
      */
     public abstract String getFilesetIuid();
 
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setFilesetIuid(String iuid);
 
     /**
@@ -125,12 +132,24 @@ public abstract class MediaBean implements EntityBean {
     public abstract void setMediaUsage(long mediaUsage);
     
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="media_status"
+     */
+    public abstract int getMediaStatus();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setMediaStatus(int mediaStatus);
+    
+    /**
     * @ejb.create-method
     */
-   public Integer ejbCreate() throws CreateException {
+   public Integer ejbCreate(String fsIuid) throws CreateException {
+       setFilesetIuid(fsIuid);
        return null;
    }
 
-   public void ejbPostCreate() throws CreateException {
+   public void ejbPostCreate(String fsIuid) throws CreateException {
    }
 }

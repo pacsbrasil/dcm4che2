@@ -19,10 +19,20 @@ import java.util.Date;
 
 public class MediaDTO implements Serializable {
 
+    private static final long serialVersionUID = 3545516192564721461L;
+
+    public static final int COLLECTING = 0;
+    public static final int TRANSFERING = 1;
+    public static final int CREATING = 2;
+    public static final int COMPLETED = 3;
+    public static final int TRANSFER_ERROR = -1;
+    public static final int CREATE_ERROR = -2;
+
     private int pk;
     private String filesetId;
     private String filesetIuid;
     private String mediaCreationRequestIuid;
+    private int mediaStatus;
     private long mediaUsage;
     private long createdTime;
     private long updatedTime;
@@ -84,4 +94,11 @@ public class MediaDTO implements Serializable {
         this.mediaUsage = mediaUsage;
     }
     
+    public final int getMediaStatus() {
+        return mediaStatus;
+    }
+
+    public final void setMediaStatus(int mediaStatus) {
+        this.mediaStatus = mediaStatus;
+    }
 }

@@ -104,15 +104,15 @@ CREATE INDEX series_pps_iuid ON series (pps_iuid);
 
 CREATE TABLE media (
 	pk          	IDENTITY PRIMARY KEY,
-	fileset_id		VARCHAR(256) NOT NULL,
-	fileset_iuid	VARCHAR(256), 
+	fileset_iuid	VARCHAR(256) NOT NULL,
+	fileset_id		VARCHAR(256), 
 	mcrq_iuid		VARCHAR(256),
 	media_usage		BIGINT NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP
 );
-CREATE INDEX fileset_iuid ON media(fileset_iuid);
-CREATE INDEX mcrq_iuid ON media(mcrq_iuid);
+CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
+CREATE INDEX media_status ON media(media_status);
 
 CREATE TABLE instance (
 	pk             	IDENTITY PRIMARY KEY,
