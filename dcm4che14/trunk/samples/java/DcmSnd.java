@@ -403,11 +403,11 @@ public class DcmSnd implements PollDirSrv.Handler {
                 return false;
             }
         } else if ((pc = assoc.getAcceptedPresContext(sopClassUID,
-                UIDs.ImplicitVRLittleEndian)) == null
+                    UIDs.ImplicitVRLittleEndian)) == null
                 && (pc = assoc.getAcceptedPresContext(sopClassUID,
-                UIDs.ExplicitVRLittleEndian)) == null
+                    UIDs.ExplicitVRLittleEndian)) == null
                 && (pc = assoc.getAcceptedPresContext(sopClassUID,
-                UIDs.ExplicitVRBigEndian)) == null) {
+                    UIDs.ExplicitVRBigEndian)) == null) {
             log.error(
                 MessageFormat.format(messages.getString("noPCStore2"),
                 new Object[]{ uidDict.lookup(sopClassUID),file }));

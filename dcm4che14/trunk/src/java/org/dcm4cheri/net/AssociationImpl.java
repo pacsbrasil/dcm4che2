@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
@@ -39,15 +38,26 @@ import org.dcm4cheri.util.LF_ThreadPool;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.List;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 
 /**
+ * <description> 
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @see <related>
+ * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @version $Revision$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20020728 gunter:</b>
+ * <ul>
+ * <li> add {@link #getAcceptedPresContext(String)}
+ * <li> add {@link #countAcceptedPresContext()}
+ * </ul>
  */
 final class AssociationImpl implements Association {
     
@@ -235,4 +245,13 @@ final class AssociationImpl implements Association {
     public final PresContext getAcceptedPresContext(String asuid, String tsuid) {
         return fsm.getAcceptedPresContext(asuid, tsuid);
     }
+    
+    public final Collection getAcceptedPresContext(String asuid) {
+        return fsm.getAcceptedPresContext(asuid);
+    }
+
+    public final int countAcceptedPresContext() {
+        return fsm.countAcceptedPresContext();
+    }
+    
 }
