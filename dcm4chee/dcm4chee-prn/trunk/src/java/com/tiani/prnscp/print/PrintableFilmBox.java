@@ -68,8 +68,7 @@ class PrintableFilmBox implements Printable {
    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
    private final PrinterService service;
    private final Logger log;
-   private final Dataset storedPrint;
-   private final Dataset filmbox;
+   private final PageFormat pageFormat;
    private final Annotation annotation;
    private final int totPages;
    private final File hcDir;
@@ -88,15 +87,15 @@ class PrintableFilmBox implements Printable {
       this.log = service.getLog();
       this.hcDir = hcDir;
       this.totPages = totPages;
-      this.storedPrint = dof.newDataset();
+      Dataset storedPrint = dof.newDataset();
       InputStream in = new BufferedInputStream(new FileInputStream(spFile));
       try {
          storedPrint.readFile(in, FileFormat.DICOM_FILE, -1);
       } finally {
          try { in.close(); } catch (IOException ignore) {}
       }
-      this.filmbox = storedPrint.getItem(Tags.FilmBoxContentSeq);
-      
+      Dataset filmbox = storedPrint.getItem(Tags.FilmBoxContentSeq);
+      this.pageFormat = toPageFormat(filmbox);
       // parse ImageDisplayFormat
       String displayFormat = filmbox.getString(Tags.ImageDisplayFormat);
       int pos = displayFormat.lastIndexOf(',');
@@ -126,7 +125,7 @@ class PrintableFilmBox implements Printable {
    }
       
    // Public --------------------------------------------------------
-   public PageFormat getPageFormat() {
+   private PageFormat toPageFormat(Dataset filmbox) {
       String sizeID = filmbox.getString(Tags.FilmSizeID,
          service.getDefaultFilmSizeID());
       String orient = filmbox.getString(Tags.FilmOrientation,
@@ -140,6 +139,10 @@ class PrintableFilmBox implements Printable {
                ? PageFormat.REVERSE_LANDSCAPE
                : PageFormat.LANDSCAPE);
       return pf;
+   }
+   
+   public PageFormat getPageFormat() {
+      return pageFormat;
    }
 
    private Color getBorderDensityColor() {
@@ -162,7 +165,6 @@ class PrintableFilmBox implements Printable {
       // Skip first invocation of print with identity tranformation
       // Unknown, why it's done, but painting nothing in this case seems be ok.
       if (g2.getTransform().isIdentity()) {
-         log.debug("Exit print: Skip print with identity transform");
          return Printable.PAGE_EXISTS;
       }
       annotation.print(g2, pf, pageIndex);
@@ -178,9 +180,6 @@ class PrintableFilmBox implements Printable {
          imageBoxes[i].print(g2, getImageBoxRect(
             imageBoxes[i].getImagePosition(), filmboxRect));
       }
-//      new Page(annotation.getImageableWidth(pf), annotation.getImageableHeight(pf),
-//         g2, log, storedPrint, hcDir, service);
-      log.debug("Exit print");
       return Printable.PAGE_EXISTS;
    }
    

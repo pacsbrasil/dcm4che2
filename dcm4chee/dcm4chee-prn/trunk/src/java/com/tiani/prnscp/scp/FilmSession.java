@@ -174,9 +174,9 @@ class FilmSession {
          rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
       }
       scp.checkAttributeValue(aet, "isSupportsMediumType",
-         ds.getString(Tags.MediumType), !TYPE1);
+         ds, Tags.MediumType, !TYPE1);
       scp.checkAttributeValue(aet, "isSupportsFilmDestination",
-         ds.getString(Tags.FilmDestination), !TYPE1);
+         ds, Tags.FilmDestination, !TYPE1);
       if (ds.getInt(Tags.MemoryAllocation, 0) != 0) {
          rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
       }      

@@ -84,7 +84,7 @@
     for portrait orientation. Landscape image display formats are derived
     automatically.
     -->
-    <attribute name="DisplayFormat">1,1\1,2\2,2\2,3\3,3\3,4\3,5\4,4\4,5</attribute>
+    <attribute name="DisplayFormat">1,1\1,2\2,2\2,3\3,3\3,4\3,5\4,4\4,5\4,6\5,5\5,6\6,6</attribute>
 
     <!--
     Defines the default film orientation that is used when the Print SCU does not 
@@ -143,8 +143,6 @@
     -->
     <attribute name="BorderDensity">WHITE</attribute>
       
-    
-    <attribute name="UseBorderDensForGrid">true</attribute>
     <!--
     Defines the default Empty Image Density identifier that is used when the
     Print SCU does not specify Empty Image Density.
@@ -191,12 +189,23 @@
     <attribute name="LUTDir">conf/lut</attribute>
 
     <!--
-    Selects a Presentation LUT in the directory specified by attribute LUTDir,
-    which shall be applied, if the PrintSCU does whether provide a PLUT using
-    the PLUT SOP class, nor specifies a value of Film Box attribute (2010,0150)
-    Configuration Information.
+    Associates Calling AETs with Presentation LUTs available in the directory
+    specified by attribute LUTDir. Only effective, if the calling Print SCU
+    does whether provide a PLUT using the PLUT SOP class, nor specifies
+    a value of Film Box attribute (2010,0150) Configuration Information.
+    Multiple entires must be separated by  '\' characters or line breaks.
+    If no entry match the calling AET, the Presentation LUT specified in the
+    first entry will be used.
+    At least, one entry must be configured!
+    Format: <calling-aet>:<lut-name> 
     -->
-    <attribute name="DefaultLUT">midtone256us</attribute>
+    <attribute name="LUTForCallingAET">
+      LINEAR:linear256us
+      PHILIPS:philips4096us
+      MIDTONE:midtone4096us
+      LIGHTEN:lighten4096us
+      DARKEN:darken4096us
+    </attribute>
 
     <!--
     Defines the page margin for portrait orientation.
@@ -238,55 +247,6 @@
     -->
     <attribute name="DecimateByNearestNeighbor">true</attribute>
            
-    <!--
-    Defines the thickness of Trim Box in mm.
-    -->
-    <attribute name="TrimBoxThickness">1.0</attribute>
-   
-    <!--
-    Defines the vertical space between Img Boxes in mm.
-    -->
-    <attribute name="SpaceBetweenVisH">2.0</attribute>
-
-    <!--
-    Defines the horizontal space between Img Boxes in mm.
-    -->
-    <attribute name="SpaceBetweenVisW">2.0</attribute>
-    
-    <!--
-    Defines the Color for ImageableArea -Annotation
-    -->
-    <attribute name="ColorAllOfPage">255,255,255</attribute>
-    
-    <!--
-    Defines the Color for TrimBox
-    -->
-    <attribute name="ColorTrimBox">255,255,255</attribute>
-    
-    <!--
-    Defines the Color for ImgBox background if EmptyImgDens is not set and border Dens is not set
-    -->
-    <attribute name="ColorVis">0,0,0</attribute>
-    
-    <!--
-    Defines the start size for scale BufferedImg in pieces
-    size is BufferedImgH * scaleH * AspectRatio
-    -->
-    <attribute name="PuzzleScaleStartSize">500</attribute>
-    
-    <!--
-    Defines the count of pieces for cut Img if( BufferedImgH * scaleH * AspectRatio> puzzleScaleStartSize)
-    < 1000 use 5 pieces
-    > 1000 use 10 pieces
-    > 2000 use 10 pieces
-    > 3000 use 20 pieces
-    > 4000 use 20 pieces
-    > 5000 use 30 pieces
-    ........
-    -->
-    
-    <attribute name="PuzzleScalePackageSize">5\10\10\20\20\30\30\40\40\50\50</attribute>
-
     <!--
     Requested Resolution ID identifiers supported by the printer for the
     Basic Film Box. Multiple values can be specified, must be separated by 

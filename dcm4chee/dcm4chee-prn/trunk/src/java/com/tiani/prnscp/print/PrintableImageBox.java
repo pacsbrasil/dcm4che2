@@ -98,6 +98,7 @@ class PrintableImageBox {
    private final boolean debug;
    
    private final File hcFile;
+   private final String callingAET;
    private final Color borderDensityColor;
    private final int pos;
    private final boolean trim;
@@ -125,6 +126,7 @@ class PrintableImageBox {
 
       Dataset refImage =  imageBox.getItem(Tags.RefImageSeq);
       this.hcFile = new File(hcDir, refImage.getString(Tags.RefSOPInstanceUID));
+      this.callingAET = hcDir.getParentFile().getParentFile().getName();
 
       this.pos = imageBox.getInt(Tags.ImagePositionOnFilm, 1);
       this.trim = YES.equals(
@@ -218,7 +220,7 @@ class PrintableImageBox {
       
       String configInfo = imageBox.getString(Tags.ConfigurationInformation,
          filmbox.getString(Tags.ConfigurationInformation,
-            service.getDefaultLUT()));
+            service.getLUTForCallingAET(callingAET)));
       pLUT = dof.newDataset();
       File pLutFile = new File(service.getLUTDir(),
          configInfo + PrinterService.LUT_FILE_EXT);

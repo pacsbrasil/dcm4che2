@@ -188,32 +188,6 @@ public class PrinterService
    /** Holds value of property trimBoxDensity. */
    private String trimBoxDensity = BLACK;
    
-   /** Holds value of property trimBoxThickness. */
-   private float trimBoxThickness;
-   
-   /** Holds value of property colorVis. */
-   private String colorVis;
-   
-   /** Holds value of property colorAllOfPage. */
-   private String colorAllOfPage;
-   
-   /** Holds value of property colorTrimBox. */
-   private String colorTrimBox;
-   
-   /** Holds value of property spaceBetweenVisW. */
-   private float spaceBetweenVisW;
-   
-   /** Holds value of property spaceBetweenVisH. */
-   private float spaceBetweenVisH;
-   
-   /** Holds value of property useBorderDensForGrid. */
-   private boolean useBorderDensForGrid;
-   
-   /** Holds value of property puzzleScaleStartSize. */
-   private int puzzleScaleStartSize;
-   
-   private int[] puzzleScalePackageSize = new int[11];
-   
    /** Holds value of property printGrayAsColor. */
    private boolean printGrayAsColor;
    
@@ -277,8 +251,8 @@ public class PrinterService
    /** Holds value of property supportsAnnotationBox. */
    private boolean supportsAnnotationBox = false;
    
-   /** Holds value of property defaultLUT. */
-   private String defaultLUT ;
+   /** Holds value of property lutForCallingAET. */
+   private LinkedHashMap lutForCallingAETMap;
    
    /** Holds value of property defaultAnnotation. */
    private String defaultAnnotation;
@@ -415,10 +389,6 @@ public class PrinterService
     */
    public void setChunkSize(double chunkSize) {
       this.chunkSize = chunkSize;
-   }
-   
-   int[] getPuzzleScalePackSize(){
-      return puzzleScalePackageSize;
    }
    
    private PrintService getPrintService() throws PrintException {
@@ -1154,19 +1124,51 @@ public class PrinterService
       this.supportsAnnotationBox = supportsAnnotationBox;
    }
    
-   /** Getter for property defaultLUT.
-    * @return Value of property defaultLUT.
+   /** Getter for property lutForCallingAET.
+    * @return Value of property lutForCallingAET.
     */
-   public String getDefaultLUT() {
-      return this.defaultLUT;
+   public String getLUTForCallingAET() {
+      StringBuffer sb = new StringBuffer();
+      for (Iterator it = lutForCallingAETMap.entrySet().iterator(); it.hasNext();) {
+         Map.Entry item = (Map.Entry) it.next();
+         sb.append(item.getKey());
+         sb.append(':');
+         sb.append(item.getValue());
+         sb.append('\\');
+      }
+      sb.setLength(sb.length()-1);
+      return sb.toString();
+   }
+
+   String getLUTForCallingAET(String aet) {
+      if (lutForCallingAETMap.isEmpty()) {
+         log.error("Configuration Error: missing attribute LUTForCallingAET value!");
+         return null;
+      }
+      String lut = (String) lutForCallingAETMap.get(aet);
+      return  lut != null
+         ? lut
+         : (String) lutForCallingAETMap.values().iterator().next();
    }
    
-   /** Setter for property defaultLUT.
-    * @param defaultLUT New value of property defaultLUT.
+   /** Setter for property lutForCallingAET.
+    * @param lutForCallingAET New value of property lutForCallingAET.
     */
-   public void setDefaultLUT(String defaultLUT) {
-      this.defaultLUT = defaultLUT;
+   public void setLUTForCallingAET(String lutForCallingAET) {
+      LinkedHashMap tmp = new LinkedHashMap();
+      String[] strings = toStringArray(lutForCallingAET);
+      for (int i = 0; i < strings.length; ++i) {
+         String s = strings[i];
+         int c1 = s.indexOf(':');
+         if (c1 == -1) {
+            throw new IllegalArgumentException(s);
+         }
+         tmp.put(s.substring(0, c1), s.substring(c1 + 1));
+      }
+      lutForCallingAETMap = tmp;
    }
+   
+   
    
    /** Getter for property defaultAnnotation.
     * @return Value of property defaultAnnotation.
@@ -1424,31 +1426,32 @@ public class PrinterService
    protected PrinterCalibration getPrinterCalibration(){return calibration;}
    
    public byte[] getPValToDDL(int n, float dmin, float dmax,
-   float l0, float la, Dataset plut) {
+         float l0, float la, Dataset plut)
+   {
       return calibration.getPValToDDL(n, dmin, dmax, l0, la, plut);
    }
    
    public void printGrayscaleWithLinDDL() throws PrintException, IOException {
       log.info("Printing grayscale [LIN DDL]");
       print(new Grayscale(this, calibration.getIdentityPValToDDL(),
-      printerName + "[LIN DDL]"), null, false);
+         printerName + "[LIN DDL]"), null, false);
       log.info("Printed grayscale [LIN DDL]");
    }
    
    public void printGrayscaleWithGSDF() throws PrintException, IOException {
       log.info("Printing grayscale [GSDF]");
       print(new Grayscale(this, calibration.getPValToDDLwGSDF(8,
-      minDensity/100.f, maxDensity/100.f,
-      illumination, reflectedAmbientLight),
-      printerName + "[GSDF]"), null, false);
+         minDensity/100.f, maxDensity/100.f,
+         illumination, reflectedAmbientLight),
+         printerName + "[GSDF]"), null, false);
       log.info("Printed grayscale [GSDF]");
    }
    
    public void printGrayscaleWithLinOD() throws PrintException, IOException {
       log.info("Printing grayscale [LIN OD]");
       print(new Grayscale(this, calibration.getPValToDDLwLinOD(8,
-      minDensity/100.f, maxDensity/100.f),
-      printerName + "[LIN OD]"), null, false);
+         minDensity/100.f, maxDensity/100.f),
+         printerName + "[LIN OD]"), null, false);
       log.info("Printed grayscale [LIN OD]");
    }
    
@@ -1529,17 +1532,19 @@ public class PrinterService
       });
    }
    
-   public void scheduleJob(Boolean color, String job, Dataset sessionAttr) {
-      log.info("Scheduling job - " + new File(job).getName());
+   public void scheduleJob(Boolean color, String job, Dataset sessionAttr)
+   {
+      PageableJob pageableJob =
+         new PageableJob(job, sessionAttr, color.booleanValue());
+      log.info("Scheduling job - " + pageableJob.getJobID());
       String prior = sessionAttr.getString(Tags.PrintPriority);
-      Object[] jobAttr = { color, job, sessionAttr };
       synchronized (queueMonitor) {
          if ("LOW".equals(prior)) {
-            lowPriorQueue.add(jobAttr);
+            lowPriorQueue.add(pageableJob);
          } else if ("HIGH".equals(prior)) {
-            highPriorQueue.add(jobAttr);
+            highPriorQueue.add(pageableJob);
          } else {
-            medPriorQueue.add(jobAttr);
+            medPriorQueue.add(pageableJob);
          }
          queueMonitor.notify();
       }
@@ -1550,13 +1555,13 @@ public class PrinterService
       log.info("Scheduler Started");
       while (scheduler != null) {
          try {
-            Object[] jobAttr;
+            PageableJob job;
             synchronized (queueMonitor) {
-               while ((jobAttr = nextJobFromQueue()) == null) {
+               while ((job = nextJobFromQueue()) == null) {
                   queueMonitor.wait();
                }
             }
-            processJob(jobAttr);
+            processJob(job);
          } catch (InterruptedException ignore) {
          }
       }
@@ -1572,24 +1577,20 @@ public class PrinterService
       return qjc.getValue();
    }
    
-   private Object[] nextJobFromQueue() {
+   private PageableJob nextJobFromQueue() {
       if (!highPriorQueue.isEmpty()) {
-         return (Object[]) highPriorQueue.removeFirst();
+         return (PageableJob) highPriorQueue.removeFirst();
       }
       if (!medPriorQueue.isEmpty()) {
-         return (Object[]) medPriorQueue.removeFirst();
+         return (PageableJob) medPriorQueue.removeFirst();
       }
       if (!lowPriorQueue.isEmpty()) {
-         return (Object[]) lowPriorQueue.removeFirst();
+         return (PageableJob) lowPriorQueue.removeFirst();
       }
       return null;
    }
    
-   private void processJob(Object[] jobAttr) {
-      String job = (String) jobAttr[1];
-      File jobDir = new File(job);
-      String jobID = new File(job).getName();
-      Dataset sessionAttr = (Dataset) jobAttr[2];
+   private void processJob(PageableJob pageableJob) {
       try {
          synchronized (printerMonitor) {
             while (getQueuedJobCount() > maxQueuedJobCount) {
@@ -1598,22 +1599,17 @@ public class PrinterService
                printerMonitor.wait();
             }
          }
-         log.info("Start processing job - " + jobID);
-         invokeOnPrintSCP("onJobStartPrinting", job);
-         long mil = System.currentTimeMillis();
-         Boolean color = (Boolean) jobAttr[0];
-         print(new Films(this, jobDir, sessionAttr),
-            sessionAttr,
-            color.booleanValue());
-         log.info("Finished processing job - " + jobID);
-         log.info("Finished processing job in "+(System.currentTimeMillis()-mil));
+         invokeOnPrintSCP("onJobStartPrinting", pageableJob.getJob());
+         pageableJob.initFilmBoxes(this);
+         print(pageableJob, pageableJob.getSession(), pageableJob.isColor());
+         log.info("Finished processing job - " + pageableJob.getJobID());
          try {
-            invokeOnPrintSCP("onJobDone", job);
+            invokeOnPrintSCP("onJobDone", pageableJob.getJob());
          } catch (Exception ignore) {}
       } catch (Throwable e) {
-         log.error("Failed processing job - " + jobID, e);
+         log.error("Failed processing job - " + pageableJob.getJobID(), e);
          try {
-            invokeOnPrintSCP("onJobFailed", job);
+            invokeOnPrintSCP("onJobFailed", pageableJob.getJob());
          } catch (Throwable ignore) {}
       }
    }
@@ -1751,144 +1747,6 @@ public class PrinterService
          pj.removePrintJobAttributeListener(this);
          pj.removePrintJobListener(this);
       }
-   }
-   
-   /** Getter for property trimBoxThickness.
-    * @return Value of property trimBoxThickness.
-    */
-   public float getTrimBoxThickness() {
-      return this.trimBoxThickness;
-   }
-   
-   /** Setter for property trimBoxThickness.
-    * @param trimBoxThickness New value of property trimBoxThickness.
-    */
-   public void setTrimBoxThickness(float trimBoxThickness) {
-      this.trimBoxThickness = trimBoxThickness;
-   }
-   
-   /** Getter for property colorVis.
-    * @return Value of property colorVis.
-    */
-   public String getColorVis() {
-      return this.colorVis;
-   }
-   
-   /** Setter for property colorVis.
-    * @param colorVis New value of property colorVis.
-    */
-   public void setColorVis(String colorVis) {
-      this.colorVis = colorVis;
-   }
-   
-   /** Getter for property colorAllOfPage.
-    * @return Value of property colorAllOfPage.
-    */
-   public String getColorAllOfPage() {
-      return this.colorAllOfPage;
-   }
-   
-   /** Setter for property colorAllOfPage.
-    * @param colorAllOfPage New value of property colorAllOfPage.
-    */
-   public void setColorAllOfPage(String colorAllOfPage) {
-      this.colorAllOfPage = colorAllOfPage;
-   }
-   
-   /** Getter for property colorTrimBox.
-    * @return Value of property colorTrimBox.
-    */
-   public String getColorTrimBox() {
-      return this.colorTrimBox;
-   }
-   
-   /** Setter for property colorTrimBox.
-    * @param colorTrimBox New value of property colorTrimBox.
-    */
-   public void setColorTrimBox(String colorTrimBox) {
-      this.colorTrimBox = colorTrimBox;
-   }
-   
-   /** Getter for property spaceBetweenVisW.
-    * @return Value of property spaceBetweenVisW.
-    */
-   public float getSpaceBetweenVisW() {
-      return this.spaceBetweenVisW;
-   }
-   
-   /** Setter for property spaceBetweenVisW.
-    * @param spaceBetweenVisW New value of property spaceBetweenVisW.
-    */
-   public void setSpaceBetweenVisW(float spaceBetweenVisW) {
-      this.spaceBetweenVisW = spaceBetweenVisW;
-   }
-   
-   /** Getter for property spaceBetweenVisH.
-    * @return Value of property spaceBetweenVisH.
-    */
-   public float getSpaceBetweenVisH() {
-      return this.spaceBetweenVisH;
-   }
-   
-   /** Setter for property spaceBetweenVisH.
-    * @param spaceBetweenVisH New value of property spaceBetweenVisH.
-    */
-   public void setSpaceBetweenVisH(float spaceBetweenVisH) {
-      this.spaceBetweenVisH = spaceBetweenVisH;
-   }
-   
-   /** Getter for property useBorderDensForGrid.
-    * @return Value of property useBorderDensForGrid.
-    */
-   public boolean isUseBorderDensForGrid() {
-      return this.useBorderDensForGrid;
-   }
-   
-   /** Setter for property useBorderDensForGrid.
-    * @param useBorderDensForGrid New value of property useBorderDensForGrid.
-    */
-   public void setUseBorderDensForGrid(boolean useBorderDensForGrid) {
-      this.useBorderDensForGrid = useBorderDensForGrid;
-   }
-   
-   /** Getter for property puzzleScaleStartSize.
-    * @return Value of property puzzleScaleStartSize.
-    */
-   public int getPuzzleScaleStartSize() {
-      return this.puzzleScaleStartSize;
-   }
-   
-   /** Setter for property puzzleScaleStartSize.
-    * @param puzzleScaleStartSize New value of property puzzleScaleStartSize.
-    */
-   public void setPuzzleScaleStartSize(int puzzleScaleStartSize) {
-      this.puzzleScaleStartSize = puzzleScaleStartSize;
-   }
-   
-   /** Getter for property puzzleScalePackageSize.
-    * @return Value of property puzzleScalePackageSize.
-    */
-   public String getPuzzleScalePackageSize() {
-      return ""
-      + puzzleScalePackageSize[0] + '\\'
-      + puzzleScalePackageSize[1] + '\\'
-      + puzzleScalePackageSize[2] + '\\'
-      + puzzleScalePackageSize[3] + '\\'
-      + puzzleScalePackageSize[4] + '\\'
-      + puzzleScalePackageSize[5] + '\\'
-      + puzzleScalePackageSize[6] + '\\'
-      + puzzleScalePackageSize[7] + '\\'
-      + puzzleScalePackageSize[8] + '\\'
-      + puzzleScalePackageSize[9] + '\\'
-      + puzzleScalePackageSize[10];
-   }
-   
-   public void setPuzzleScalePackageSize(String str) {
-      int[] tmp = toIntArray(str);
-      if (tmp.length != 11) {
-         throw new IllegalArgumentException("puzzleScalePackageSize: (need 11 values)" + str);
-      }
-      puzzleScalePackageSize = tmp;
    }
    
    /** Getter for property printGrayAsColor.

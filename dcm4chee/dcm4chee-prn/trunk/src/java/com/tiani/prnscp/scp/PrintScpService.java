@@ -276,11 +276,13 @@ public class PrintScpService
    
    // Package protected ---------------------------------------------
    
-   String checkAttributeValue(String aet, String test, String val, boolean type1)
-      throws DcmServiceException
+   String checkAttributeValue(String aet, String test, Dataset ds, int tag,
+      boolean type1) throws DcmServiceException
    {
+      String val = ds.getString(tag);
       if (val == null) {
          if (type1) {
+            log.warn("Missing attribute " + Tags.toString(tag));
             throw new DcmServiceException(Status.MissingAttributeValue);
          }
          return null;
@@ -296,7 +298,14 @@ public class PrintScpService
          log.error("Failed to checkAttributeValue " + test, e);
          throw new DcmServiceException(Status.ProcessingFailure);
       }
-      throw new DcmServiceException(Status.InvalidAttributeValue);
+      if (type1) {
+         log.warn("Invalid attribute value " + ds.get(tag));
+         throw new DcmServiceException(Status.InvalidAttributeValue);
+      } else {
+         log.warn("Ignore invalid attribute value " + ds.get(tag));
+         ds.remove(tag);
+         return null;
+      }
    }
 
    String checkImageDisplayFormat(String aet, String val, String orientation)

@@ -506,15 +506,15 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public String[] getLUTs();
 
-   /** Getter for property defaultLUT.
-    * @return Value of property defaultLUT.
+   /** Getter for property lutForCallingAET.
+    * @return Value of property lutForCallingAET.
     */
-   public String getDefaultLUT();
+   public String getLUTForCallingAET();
    
-   /** Setter for property defaultLUT.
-    * @param defaultLUT New value of property defaultLUT.
+   /** Setter for property lutForCallingAET.
+    * @param lutForCallingAET New value of property lutForCallingAET.
     */
-   public void setDefaultLUT(String defaultLUT);
+   public void setLUTForCallingAET(String lutForCallingAET);
    
    /** Getter for property defaultAnnotation.
     * @return Value of property defaultAnnotation.
@@ -553,14 +553,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
    public boolean isSupportsConfigurationInformation(String configInfo);
  
    public int countAnnotationBoxes(String annotationID);
-   
-   public void printGrayscaleWithLinDDL() throws PrintException, IOException;
-   
-   public void printGrayscaleWithGSDF() throws PrintException, IOException;
-   
-   public void printGrayscaleWithLinOD() throws PrintException, IOException;
-   
-   public void calibrate(boolean force) throws CalibrationException;            
    
    /** Getter for property dateOfLastCalibration.
     * @return Value of property dateOfLastCalibration.
@@ -606,145 +598,33 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setPrintGrayscaleAtStartup(boolean printGrayscaleAtStartup);
    
-   /** Getter for property trimBoxThickness.
-    * @return Value of property trimBoxThickness.
-    *
-    */
-   public float getTrimBoxThickness();
-   
-   /** Setter for property trimBoxThickness.
-    * @param trimBoxThickness New value of property trimBoxThickness.
-    *
-    */
-   public void setTrimBoxThickness(float trimBoxThickness);
-   
-   /** Getter for property colorVis.
-    * @return Value of property colorVis.
-    *
-    */
-   public String getColorVis();
-   
-   /** Setter for property colorVis.
-    * @param colorVis New value of property colorVis.
-    *
-    */
-   public void setColorVis(String colorVis);
-   
-   /** Getter for property colorAllOfPage.
-    * @return Value of property colorAllOfPage.
-    *
-    */
-   public String getColorAllOfPage();
-   
-   /** Setter for property colorAllOfPage.
-    * @param colorAllOfPage New value of property colorAllOfPage.
-    *
-    */
-   public void setColorAllOfPage(String colorAllOfPage);
-   
-   /** Getter for property colorTrimBox.
-    * @return Value of property colorTrimBox.
-    *
-    */
-   public String getColorTrimBox();
-   
-   /** Setter for property colorTrimBox.
-    * @param colorTrimBox New value of property colorTrimBox.
-    *
-    */
-   public void setColorTrimBox(String colorTrimBox);
-   
-   /** Getter for property spaceBetweenVisW.
-    * @return Value of property spaceBetweenVisW.
-    *
-    */
-   public float getSpaceBetweenVisW();
-   
-   /** Setter for property spaceBetweenVisW.
-    * @param spaceBetweenVisW New value of property spaceBetweenVisW.
-    *
-    */
-   public void setSpaceBetweenVisW(float spaceBetweenVisW);
-   
-   /** Getter for property spaceBetweenVisH.
-    * @return Value of property spaceBetweenVisH.
-    *
-    */
-   public float getSpaceBetweenVisH();
-   
-   /** Setter for property spaceBetweenVisH.
-    * @param spaceBetweenVisH New value of property spaceBetweenVisH.
-    *
-    */
-   public void setSpaceBetweenVisH(float spaceBetweenVisH);
-   
-   /** Getter for property useBorderDensForGrid.
-    * @return Value of property useBorderDensForGrid.
-    *
-    */
-   public boolean isUseBorderDensForGrid();
-   
-   /** Setter for property useBorderDensForGrid.
-    * @param useBorderDensForGrid New value of property useBorderDensForGrid.
-    *
-    */
-   public void setUseBorderDensForGrid(boolean useBorderDensForGrid);
-   
-   /** Getter for property puzzleScaleStartSize.
-    * @return Value of property puzzleScaleStartSize.
-    *
-    */
-   public int getPuzzleScaleStartSize();
-   
-   /** Setter for property puzzleScaleStartSize.
-    * @param puzzleScaleStartSize New value of property puzzleScaleStartSize.
-    *
-    */
-   public void setPuzzleScaleStartSize(int puzzleScaleStartSize);
-   
-   /** Getter for property puzzleScalePackageSizeMin.
-    * @return Value of property puzzleScalePackageSizeMin.
-    *
-    */
-
-   
-   public String getPuzzleScalePackageSize();
-   
-   public void setPuzzleScalePackageSize(String s);
-   
    /** Getter for property printGrayAsColor.
     * @return Value of property printGrayAsColor.
-    *
     */
    public boolean isPrintGrayAsColor();
    
    /** Setter for property printGrayAsColor.
     * @param printGrayAsColor New value of property printGrayAsColor.
-    *
     */
    public void setPrintGrayAsColor(boolean printGrayAsColor);
    
    /** Getter for property maxQueuedJobCount.
     * @return Value of property maxQueuedJobCount.
-    *
     */
    public int getMaxQueuedJobCount();
    
    /** Setter for property maxQueuedJobCount.
     * @param maxQueuedJobCount New value of property maxQueuedJobCount.
-    *
     */
    public void setMaxQueuedJobCount(int maxQueuedJobCount);
    
    /** Getter for property supportsMonochrome.
     * @return Value of property supportsMonochrome.
-    *
     */
    public boolean isSupportsGrayscale();
    
    /** Setter for property supportsMonochrome.
     * @param supportsMonochrome New value of property supportsMonochrome.
-    *
     */
    public void setSupportsGrayscale(boolean supportsMonochrome);
    
@@ -777,6 +657,14 @@ public interface PrinterServiceMBean extends ServiceMBean {
     * @param decimateByNearestNeighbor New value of property decimateByNearestNeighbor.
     */
    public void setDecimateByNearestNeighbor(boolean decimateByNearestNeighbor);
+   
+   public void printGrayscaleWithLinDDL() throws PrintException, IOException;
+   
+   public void printGrayscaleWithGSDF() throws PrintException, IOException;
+   
+   public void printGrayscaleWithLinOD() throws PrintException, IOException;
+   
+   public void calibrate(boolean force) throws CalibrationException;            
    
    public void scheduleJob(Boolean color, String job, Dataset sessionAttr);
    

@@ -146,7 +146,7 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar, list-printers-jar, plut-jar"/>
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar, list-printers-jar, plut-jar, localhost-jar"/>
   
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
@@ -196,6 +196,16 @@
     </jar>
   </target>
 
+  <target name="localhost-jar" depends="compile">
+    <mkdir dir="${build.bin.dir}"/>
+    <jar jarfile="${build.bin.dir}/localhost.jar"
+         manifest="${src.res}/META-INF/localhost.mf">
+      <fileset dir="${build.classes.dir}"
+               includes="com/tiani/prnscp/client/GetLocalHost*"
+      />
+    </jar>
+  </target>
+  
   <target name="dasho-prnscp-jar" depends="compile" if="dasho.jar">
     <copy file="prnscp-${os.name}.dop" todir="${build.dir}">
       <filterset>

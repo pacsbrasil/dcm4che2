@@ -259,14 +259,14 @@ class FilmBox {
       scp.checkImageDisplayFormat(aet, ds.getString(Tags.ImageDisplayFormat),
          checkFilmOrientation(ds.getString(Tags.FilmOrientation)));
       scp.checkAttributeValue(aet, "isSupportsFilmSizeID",
-         ds.getString(Tags.FilmSizeID), !TYPE1);
+         ds, Tags.FilmSizeID, !TYPE1);
       scp.checkAttributeValue(aet, "isSupportsMagnificationType",
-         ds.getString(Tags.MagnificationType), !TYPE1);
+         ds, Tags.MagnificationType, !TYPE1);
       scp.checkAttributeValue(aet, "isSupportsSmoothingType",
-         ds.getString(Tags.SmoothingType), !TYPE1);
+         ds, Tags.SmoothingType, !TYPE1);
       checkDensity(ds.getString(Tags.BorderDensity));
       checkDensity(ds.getString(Tags.EmptyImageDensity));
       scp.checkAttributeValue(aet, "isSupportsResolutionID",
-         ds.getString(Tags.RequestedResolutionID), !TYPE1);
+         ds, Tags.RequestedResolutionID, !TYPE1);
    }
 }
