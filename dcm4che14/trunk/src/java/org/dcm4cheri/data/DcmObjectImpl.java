@@ -132,13 +132,13 @@ abstract class DcmObjectImpl implements DcmObject {
     public void clear() {
         list.clear();
     }
-    
+
     public void shareElements() {
         synchronized (list) {
             final int size = list.size();
             for (int i = 0; i < size; ++i)
                 list.set(i, ((DcmElement) list.get(i)).share());
-        }        
+        }
     }
 
     private int indexOf(int tag) {
@@ -847,8 +847,10 @@ abstract class DcmObjectImpl implements DcmObject {
             Date[] dateRange = date.getDateRange();
             DcmElement time = get(timeTag);
             if (time == null || time.isEmpty()) {
-                dateRange[1] =
-                    new Date(dateRange[1].getTime() + MS_PER_DAY - 1);
+                if (dateRange[1] != null) {
+                    dateRange[1] =
+                        new Date(dateRange[1].getTime() + MS_PER_DAY - 1);
+                }
                 return dateRange;
             }
 

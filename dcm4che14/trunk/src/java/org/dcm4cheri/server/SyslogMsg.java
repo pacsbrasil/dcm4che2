@@ -60,12 +60,11 @@ final class SyslogMsg
     {
         InvalidSyslogMsgException(byte[] bMsg)
         {
-            super();
+            super(content = new String(bMsg));
             isValid = false;
             //if (bMsg.length>1024)
             //content = new String(bMsg,0,1024);
             //else
-            content = new String(bMsg);
         }
     }
 
@@ -108,7 +107,7 @@ final class SyslogMsg
         iStart = iEnd + 1;
         final String MyDateFormat = "MMM dd HH:mm:ss";
         Date date;
-        SimpleDateFormat dateFmt = new SimpleDateFormat(MyDateFormat);
+        SimpleDateFormat dateFmt = new SimpleDateFormat(MyDateFormat, Locale.US);
         String sDate = new String(bMsg,iStart,15);
         if (bMsg[iStart+3]!=FieldDelim || bMsg[iStart+6]!=FieldDelim ||
             bMsg[iStart+15]!=FieldDelim ||
