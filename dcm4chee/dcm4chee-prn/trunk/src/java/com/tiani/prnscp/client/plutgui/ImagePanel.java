@@ -80,12 +80,24 @@ public class ImagePanel extends JPanel
     public void setPLut(byte[] plut)
         throws Exception
     {
+        final int MaxWidth = 512;
+        final int MaxHeight = 512;
+        int subx,suby;
+        
         lastPLut = plut;
         readParam = (DcmImageReadParam)reader.getDefaultReadParam();
         readParam.setPValToDDL(plut);
         if (fis != null) { //check if reader input stream has been set
-            if (bi == null) //first time?
+            if (bi == null) { //first time?
+                subx = reader.getWidth(0);
+                suby = reader.getHeight(0);
+                if (subx > MaxWidth)
+                    subx = subx/MaxWidth;
+                if (suby > MaxHeight)
+                    suby = suby/MaxHeight;
+                readParam.setSourceSubsampling(subx, suby, 0, 0);
                 bi = reader.read(0, readParam);
+            }
             else
                 bi = updateImageParams(bi, readParam);
         }

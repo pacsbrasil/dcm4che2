@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import java.io.File;
+import java.io.*;
 
 import org.apache.log4j.*;
 
@@ -14,6 +14,7 @@ public class PLutGUIFrame extends JFrame
     private final int DEF_WIDTH = 800, DEF_HEIGHT = 600;
     PLutGUIPanel guiPanel;
     File lastFile = null; //for JFileChooser to remember last dir
+    JFileChooser chooser = new JFileChooser();
     
     PLutGUIFrame()
     {
@@ -28,7 +29,6 @@ public class PLutGUIFrame extends JFrame
             {
                 public void actionPerformed(ActionEvent e)
                 {
-                    JFileChooser chooser = new JFileChooser();
                     chooser.setCurrentDirectory(lastFile);
                     int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -49,7 +49,16 @@ public class PLutGUIFrame extends JFrame
             {
                 public void actionPerformed(ActionEvent e)
                 {
-                    //TODO!
+                    chooser.setCurrentDirectory(lastFile);
+                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
+                    if(returnVal == JFileChooser.APPROVE_OPTION) {
+                        try {
+                            guiPanel.getPLutPanel().exportPLutDicom(lastFile = chooser.getSelectedFile());
+                        }
+                        catch (IOException ioe) {
+                            JOptionPane.showMessageDialog(PLutGUIFrame.this,"Problem with export");
+                        }
+                    }
                 }
             };
         actExportDcmPres.putValue(Action.NAME,"Export DICOM Presentation...");
@@ -57,7 +66,16 @@ public class PLutGUIFrame extends JFrame
             {
                 public void actionPerformed(ActionEvent e)
                 {
-                    //TODO!
+                    chooser.setCurrentDirectory(lastFile);
+                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
+                    if(returnVal == JFileChooser.APPROVE_OPTION) {
+                        try {
+                            guiPanel.getPLutPanel().importPLutDicom(lastFile = chooser.getSelectedFile());
+                        }
+                        catch (IOException ioe) {
+                            JOptionPane.showMessageDialog(PLutGUIFrame.this,"Problem with import");
+                        }
+                    }
                 }
             };
         actImportDcmPres.putValue(Action.NAME,"Import DICOM Presentation...");

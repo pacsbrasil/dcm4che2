@@ -42,6 +42,10 @@ public class PLutGUIPanel extends JPanel
         add(plutPanel);
     }
     
+    public ImagePanel getImagePanel() { return imgPanel; }
+    
+    public PLutPanel getPLutPanel() { return plutPanel; }
+    
     public void equalize()
     {
         plutPanel.equalize();
