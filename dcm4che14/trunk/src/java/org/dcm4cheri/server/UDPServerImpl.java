@@ -86,7 +86,7 @@ public class UDPServerImpl implements LF_ThreadPool.Handler, UDPServer
 	checkNotRunning();
 	if (log.isInfoEnabled())
 	    log.info("Start Server listening at port " + port);
-	InetAddress iaddr = InetAddress.getLocalHost();
+	InetAddress iaddr = InetAddress.getByAddress(new byte[] {0,0,0,0});
 	ss = new DatagramSocket(port,iaddr);
 	ss.setSoTimeout(0);
 	new Thread(new Runnable() {
