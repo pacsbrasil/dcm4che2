@@ -103,6 +103,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
             if (policy1 == null) {
                 policy1 = asf.newAcceptorPolicy();
+                policy1.setMaxPDULength(policy.getMaxPDULength());
                 policy1.setCallingAETs(callingAETs);
                 policy.putPolicyForCalledAET(calledAETs[i], policy1);                
             } else {
