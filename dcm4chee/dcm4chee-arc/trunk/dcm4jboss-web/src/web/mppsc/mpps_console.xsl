@@ -195,7 +195,7 @@
 		</colgroup>
 		<tr>
 	        <td align="left" title="Accession No." >
-				<a href="foldersubmit.m?destination=LOCAL&amp;accessionNumber={accNumbers}&amp;patientName=&amp;patientID=&amp;studyID=&amp;studyDateRange=&amp;modality="><!-- TODO if more than one accNumber -->
+				<a href="foldersubmit.m?destination=LOCAL&amp;accessionNumber={accNumbers}&amp;patientName=&amp;patientID=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12"><!-- TODO if more than one accNumber -->
 					<xsl:value-of select="accNumbers"/>
 				</a>
 		 	</td>
@@ -203,7 +203,7 @@
 				<xsl:value-of select="PPSStatus"/>
 		 	</td>
 	        <td title="StudyIUID">
-				<a href="foldersubmit.m?destination=LOCAL&amp;studyID={studyUIDs}&amp;accessionNumber=&amp;patientName=&amp;patientID=&amp;studyDateRange=&amp;modality="><!-- TODO if more than one studyIUID -->
+				<a href="foldersubmit.m?destination=LOCAL&amp;studyID={studyUIDs}&amp;accessionNumber=&amp;patientName=&amp;patientID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12"><!-- TODO if more than one studyIUID -->
 					<xsl:value-of select="studyUIDs"/>
 				</a>
 		 	</td>
@@ -223,7 +223,7 @@
 				<xsl:value-of select="numberOfInstances"/>
 	        </td>
 	        <td align="left" title="Patient" >
-				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=">
+				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
 					<xsl:value-of select="patientName"/>
 				</a>
 			</td>

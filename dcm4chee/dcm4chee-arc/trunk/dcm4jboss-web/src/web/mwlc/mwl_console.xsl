@@ -13,7 +13,7 @@
 				<table border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
 					<td bgcolor="eeeeee" align="center">
 						<xsl:if test="total &gt; 0">
-							Displaying procedure step 
+							<b>Modality Worklist:</b> Displaying procedure step 
 							<b>
 								<xsl:value-of select="offset + 1"/>
 							</b>
@@ -34,7 +34,7 @@
 							</b>matching procedure steps.
 						</xsl:if>
 						<xsl:if test="total = 0">
-							No matching procedure steps found!
+							<b>Modality Worklist:</b> No matching procedure steps found!
 						</xsl:if>
  					</td>
 
@@ -214,7 +214,7 @@
 				<xsl:value-of select="stationAET"/>[<xsl:value-of select="modality"/>]
 	        </td>
 	        <td align="left" title="Patient" >
-				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}">
+				<a href="foldersubmit.m?destination=LOCAL&amp;patientID={patientID}&amp;accessionNumber=&amp;patientName=&amp;studyID=&amp;studyDateRange=&amp;modality=&amp;filter.x=5&amp;filter.y=12">
 					<xsl:value-of select="patientName"/> [<xsl:value-of select="patientID"/>]
 				</a>
 			</td>
