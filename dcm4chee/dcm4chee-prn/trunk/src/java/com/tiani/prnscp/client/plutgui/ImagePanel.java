@@ -19,7 +19,6 @@ import org.dcm4cheri.imageio.plugins.DcmImageReader;
 public class ImagePanel extends JPanel
 {
     private ImageReader reader;
-    private DcmImageReadParam readParam;
     private Dataset ds;
     private int windowMin, windowMax;
     private BufferedImage bi;
@@ -37,7 +36,7 @@ public class ImagePanel extends JPanel
             try {
                 setImage(image);
             }
-            catch (Exception e) {
+            catch (UnsupportedOperationException e) {
                 e.printStackTrace();
             }
             repaint();
@@ -102,18 +101,33 @@ public class ImagePanel extends JPanel
     }
 
     public void setImage(File newImg)
-        throws Exception
+        throws UnsupportedOperationException
     {
+        FileImageInputStream oldFIS = fis;
         try {
             fis = new FileImageInputStream(newImg);
         }
         catch(Exception e) {
+            fis = oldFIS;
             e.printStackTrace();
             return;
         }
+        
+        BufferedImage oldBI = bi;
+        Dataset oldDS = ds;
+        
         bi = null;
         reader.setInput(fis);
-        setPLut(lastPLut);
+        try {
+            setPLut(lastPLut);
+        }
+        catch (Exception e) {
+            //restore old state
+            bi = oldBI;
+            fis = oldFIS;
+            ds = oldDS;
+            throw new UnsupportedOperationException("Could not open image");
+        }
     }
     
     void setPLut(byte[] plut)
@@ -123,7 +137,7 @@ public class ImagePanel extends JPanel
         final int maxHeight = 1024;
         
         lastPLut = plut;
-        readParam = (DcmImageReadParam)reader.getDefaultReadParam();
+        DcmImageReadParam readParam = (DcmImageReadParam)reader.getDefaultReadParam();
         readParam.setPValToDDL(plut);
         if (fis != null) { //check if reader input stream has been set
             if (bi == null) { //first time?
@@ -146,7 +160,7 @@ public class ImagePanel extends JPanel
 				//generate color model params that would be the same
 				// as those used in the actual image
 				ColorModelFactory cmFactory = ColorModelFactory.getInstance();
-				cmParam = cmFactory.makeParam(ds, plut);
+			    cmParam = cmFactory.makeParam(ds, plut);
                 //set window min/max
                 // these only need to be set when an image is loaded sine a
                 // change in the P-LUT will not affect the ColorModels returned

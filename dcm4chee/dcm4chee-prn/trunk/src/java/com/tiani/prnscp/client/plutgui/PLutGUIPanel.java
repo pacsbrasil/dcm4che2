@@ -55,18 +55,18 @@ public class PLutGUIPanel extends JPanel
     {
         try {
             imgPanel.setImage(newImg);
-            imgPanel.repaint();
-            plutPanel.buildHisto();
-            plutPanel.repaint();
         }
-        catch (Exception e) {
-            //bi = null;
+        catch (UnsupportedOperationException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Image could not be read or loaded:\n"
+            JOptionPane.showMessageDialog(this,
+                                          "Image could not be read or loaded:\n"
                                           + "- May not be a DICOM image file, or\n"
-                                          + "- The color model may not be applicable to a P-LUT transformation.");
-            repaint();
+                                          + "- The color model may not be applicable"
+                                          + "to a P-LUT transformation.");
         }
+        imgPanel.repaint();
+        plutPanel.buildHisto();
+        plutPanel.repaint();
     }
     
     public void displayImageInfo()
