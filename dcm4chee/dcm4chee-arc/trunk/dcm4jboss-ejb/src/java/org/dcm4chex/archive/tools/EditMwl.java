@@ -49,7 +49,7 @@ public final class EditMwl {
 
     private final static LongOpt[] LONG_OPTS =
         new LongOpt[] {
-            new LongOpt("ejb-url", LongOpt.REQUIRED_ARGUMENT, null, 'U'),
+            new LongOpt("url", LongOpt.REQUIRED_ARGUMENT, null, 'u'),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
             };
@@ -57,7 +57,7 @@ public final class EditMwl {
     private String ejbProviderURL = "jnp://localhost:1099";
 
     public static void main(String[] args) {
-         Getopt g = new Getopt("mwlitem.jar", args, "af:r:hv", LONG_OPTS);
+         Getopt g = new Getopt("mwlitem.jar", args, "af:r:u:hv", LONG_OPTS);
 
         EditMwl mwl = new EditMwl();
         int c;
@@ -76,8 +76,9 @@ public final class EditMwl {
                 case 'f' :
                     fpath = g.getOptarg();
                     break;
-                case 'U' :
+                case 'u' :
                     mwl.ejbProviderURL = g.getOptarg();
+                    break;
                 case 'v' :
                     exit(messages.getString("version"), false);
                 case 'h' :

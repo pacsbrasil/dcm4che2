@@ -153,7 +153,7 @@
    <!-- ================ -->
 
    <!-- Limit the org.infohazard category to INFO -->
-   <category name="org.infohazard.">
+   <category name="org.infohazard">
       <priority value="INFO"/>
    </category>
 
