@@ -105,7 +105,7 @@ public class StoreScpService extends AbstractScpService {
     private int dimseTimeout = 0;
 
     private int soCloseDelay = 500;
-
+    
     private StoreScp scp = new StoreScp(this);
 
     private StgCmtScp stgCmtScp = new StgCmtScp(this);

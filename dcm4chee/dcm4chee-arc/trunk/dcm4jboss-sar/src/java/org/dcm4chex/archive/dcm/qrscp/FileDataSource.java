@@ -20,14 +20,13 @@
 
 package org.dcm4chex.archive.dcm.qrscp;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+
+import javax.imageio.stream.FileImageInputStream;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -70,10 +69,9 @@ class FileDataSource implements DataSource {
         DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
         File file = fileInfo.toFile();
         service.getLog().info("M-READ file:" + file);
-        FileInputStream fis = new FileInputStream(file);
-        BufferedInputStream bis = new BufferedInputStream(fis);
+        FileImageInputStream fiis = new FileImageInputStream(file);
         try {
-            DcmParser parser = parserFact.newDcmParser(bis);
+            DcmParser parser = parserFact.newDcmParser(fiis);
             Dataset ds = objFact.newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
@@ -81,48 +79,54 @@ class FileDataSource implements DataSource {
             updateAttrs(ds, fileInfo.studyAttrs);
             updateAttrs(ds, fileInfo.seriesAttrs);
             updateAttrs(ds, fileInfo.instAttrs);
-            service.logDataset("Dataset:\n", ds);
-            ds.writeDataset(out, enc);
-            if (parser.getReadTag() != Tags.PixelData) return;            
+            if (parser.getReadTag() != Tags.PixelData) {
+                service.logDataset("Dataset:\n", ds);
+                ds.writeDataset(out, enc);
+                return;                
+            }
             int len = parser.getReadLength();
             if (len == -1 && !enc.encapsulated) {
-                decompress(ds, bis, out);
+                DecompressCmd cmd = new DecompressCmd(service, ds, parser);
+                len = cmd.getPixelDataLength();
+                service.logDataset("Dataset:\n", ds);
+                ds.writeDataset(out, enc);
+                ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
+                cmd.execute(out);
+                if ((len&1)!=0)
+                    out.write(0);
             } else {
-                ds.writeHeader(out, enc, parser.getReadTag(), parser
-                        .getReadVR(), len);
+                service.logDataset("Dataset:\n", ds);
+                ds.writeDataset(out, enc);
+                ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
                 if (len == -1) {
 		            parser.parseHeader();
 		            int itemlen;
 	                while (parser.getReadTag() == Tags.Item) {
 	                    itemlen = parser.getReadLength();
 	                    ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
-	                    copy(bis, out, itemlen, buffer);
+	                    copy(fiis, out, itemlen, buffer);
 	                    parser.parseHeader();
 	                }
 	                ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
 	                        VRs.NONE, 0);
 	            } else {
-	                copy(bis, out, len, buffer);
+	                copy(fiis, out, len, buffer);
 	            }
             }
             parser.parseDataset(parser.getDcmDecodeParam(), -1);
             ds.subSet(Tags.PixelData, -1).writeDataset(out, enc);
         } finally {
             try {
-                bis.close();
+                fiis.close();
             } catch (IOException ignore) {
             }
         }
     }
 
-    private void decompress(Dataset ds, BufferedInputStream bis, OutputStream out) {
-        throw new UnsupportedOperationException("decompression not yet implemented");        
-    }
-
-    private void copy(InputStream in, OutputStream out, int totLen,
+    private void copy(FileImageInputStream fiis, OutputStream out, int totLen,
             byte[] buffer) throws IOException {
         for (int len, toRead = totLen; toRead > 0; toRead -= len) {
-            len = in.read(buffer, 0, Math.min(toRead, buffer.length));
+            len = fiis.read(buffer, 0, Math.min(toRead, buffer.length));
             if (len == -1) { throw new EOFException(); }
             out.write(buffer, 0, len);
         }
@@ -138,5 +142,4 @@ class FileDataSource implements DataSource {
         parser.parseDataset(DcmDecodeParam.EVR_LE, -1);
         bis.close();
     }
-
 }

@@ -51,7 +51,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private int dimseTimeout = 0;
 
     private int soCloseDelay = 500;
-    
+
     private int bufferSize = 512;
 
     private boolean patientRootFind;
@@ -199,7 +199,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
-    
+
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 findScp);
@@ -231,13 +231,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
         if (studyRootFind)
                 asuids.add(UIDs.StudyRootQueryRetrieveInformationModelFIND);
         if (patientStudyOnlyFind)
-                asuids.add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
+                asuids
+                        .add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
         if (patientRootMove)
                 asuids.add(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
         if (studyRootMove)
                 asuids.add(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
         if (patientStudyOnlyMove)
-                asuids.add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
+                asuids
+                        .add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
         return (String[]) asuids.toArray(new String[asuids.size()]);
     }
 
