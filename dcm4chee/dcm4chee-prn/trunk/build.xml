@@ -15,7 +15,7 @@
   <property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>
   
   <!-- Override with your JBoss/Web server bundle dist location -->
-  <property name="jboss.home" value="${user.home}/jboss-3.0.4"/>
+  <property name="jboss.home" value="${user.home}/jboss-3.0.6"/>
   <property name="jboss.bin" value="${jboss.home}/bin"/>
   <property name="jboss.lib" value="${jboss.home}/lib"/>
   <property name="jboss.client" value="${jboss.home}/client"/>
@@ -25,8 +25,8 @@
   <property name="jboss.server.conf" value="${jboss.server}/conf"/>
 
   <!-- Override with your docbook-xsl dist location -->
-  <property name="docbook-xsl.dist" value="${user.home}/docbook-xsl-1.60.1"/>
-  <property name="docbook-xsl.fo.dir" value="${docbook-xsl.dist}/fo"/>
+  <property name="docbook-xsl.home" value="${user.home}/docbook-xsl-1.60.1"/>
+  <property name="docbook-xsl.fo.dir" value="${docbook-xsl.home}/fo"/>
 
   <!-- Override with your Apache FOP dist location -->
   <property name="fop.home" value="${user.home}/fop-0.20.4"/>
@@ -433,17 +433,18 @@
         <include name="bin/jboss_init_redhat.sh"/>
         <include name="client/jnp-client.jar"/>
         <include name="client/jmx-rmi-connector-client.jar"/>
-        <include name="lib/concurrent.jar"/>        
-        <include name="lib/getopt.jar"/>        
-        <include name="lib/gnu-regexp.jar"/>        
-        <include name="lib/jboss-boot.jar"/>        
-        <include name="lib/jboss-common.jar"/>        
+        <include name="lib/concurrent.jar"/>
+        <include name="lib/getopt.jar"/>
+        <include name="lib/gnu-regexp.jar"/>
+        <include name="lib/jboss-boot.jar"/>
+        <include name="lib/jboss-common.jar"/>
         <include name="lib/jboss-jmx.jar"/>
-        <include name="lib/jboss-system.jar"/>        
+        <include name="lib/jboss-system.jar"/>
         <include name="lib/log4j-boot.jar"/>
       </fileset>
       <fileset dir="${basedir}">
         <include name="bin/JavaService.exe"/>
+        <include name="images/*.dcm"/>
       </fileset>
       <fileset dir="${build.dir}">
         <include name="bin/*"/>

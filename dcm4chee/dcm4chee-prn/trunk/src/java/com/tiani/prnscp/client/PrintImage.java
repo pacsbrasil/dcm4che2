@@ -18,19 +18,21 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package com.tiani.prnscp.client;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
+import java.io.File;
 
 import java.util.Hashtable;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
 import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
 
 /**
  *  Description of the Class
  *
- * @author    gunter
- * @since     March 31, 2003
+ *@author     gunter
+ *@created    March 31, 2003
+ *@since      March 31, 2003
  */
 public class PrintImage
 {
@@ -38,33 +40,20 @@ public class PrintImage
             "Usage: java -jar print-image.jar [OPTIONS] <file>\n\n" +
             "Print DICOM image <file>\n\n" +
             "Options:\n" +
-            " -r --remote <host> print on remote host instead local.\n" +
             " -a --aet    <aet>  printer Application Entity Title. Default: TIANI_PRINT\n" +
             " -c --cfg    <info> print image with specified Configuration Information\n" +
             " -h --help          show this help and exit\n";
 
     private final static String NAME_PREFIX = "dcm4chex:service=Printer,calledAET=";
 
-    private String host = "localhost";
     private String aet = "TIANI_PRINT";
     private String cfg = "";
 
 
     /**
-     *  Sets the host attribute of the PrintImage object
-     *
-     * @param  host  The new host value
-     */
-    public void setHost(String host)
-    {
-        this.host = host;
-    }
-
-
-    /**
      *  Sets the aET attribute of the PrintImage object
      *
-     * @param  aet  The new aET value
+     *@param  aet  The new aET value
      */
     public void setAET(String aet)
     {
@@ -75,7 +64,7 @@ public class PrintImage
     /**
      *  Sets the configInfo attribute of the PrintImage object
      *
-     * @param  cfg  The new configInfo value
+     *@param  cfg  The new configInfo value
      */
     public void setConfigInfo(String cfg)
     {
@@ -86,19 +75,21 @@ public class PrintImage
     /**
      *  Description of the Method
      *
-     * @param  fname  Description of the Parameter
+     *@param  file           Description of the Parameter
+     *@exception  Exception  Description of the Exception
      */
-    public void print(String fname) throws Exception
+    public void print(File file)
+        throws Exception
     {
         Hashtable env = new Hashtable();
         env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
         env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-        env.put("java.naming.provider.url", host);
+        env.put("java.naming.provider.url", "localhost");
         InitialContext ic = new InitialContext(env);
         RMIAdaptor server = (RMIAdaptor) ic.lookup("jmx/rmi/RMIAdaptor");
         server.invoke(new ObjectName(NAME_PREFIX + aet), "printImage",
                 new Object[]{
-                fname,
+                file.getCanonicalPath(),
                 cfg
                 },
                 new String[]{
@@ -111,27 +102,23 @@ public class PrintImage
     /**
      *  The main program for the PrintImage class
      *
-     * @param  args           The command line arguments
-     * @exception  Exception  Description of the Exception
+     *@param  args           The command line arguments
+     *@exception  Exception  Description of the Exception
      */
     public static void main(String[] args)
         throws Exception
     {
         LongOpt[] longopts = {
-                new LongOpt("remote", LongOpt.REQUIRED_ARGUMENT, null, 'r'),
                 new LongOpt("aet", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
                 new LongOpt("cfg", LongOpt.REQUIRED_ARGUMENT, null, 'c'),
                 new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h')
                 };
 
-        Getopt g = new Getopt("plut.jar", args, "r:a:c:h", longopts, true);
+        Getopt g = new Getopt("plut.jar", args, "a:c:h", longopts, true);
         PrintImage inst = new PrintImage();
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
-                case 'r':
-                    inst.setHost(g.getOptarg());
-                    break;
                 case 'a':
                     inst.setAET(g.getOptarg());
                     break;
@@ -149,10 +136,15 @@ public class PrintImage
         if (argc != 1) {
             exit("print-image.jar: wrong number of arguments\n");
         }
-        inst.print(args[optind]);
+        inst.print(new File(args[optind]));
     }
 
 
+    /**
+     *  Description of the Method
+     *
+     *@param  prompt  Description of the Parameter
+     */
     private static void exit(String prompt)
     {
         System.err.println(prompt);
