@@ -38,8 +38,9 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.awt.image.BufferedImage;
 import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
 import java.awt.print.PrinterException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -72,6 +73,7 @@ import java.util.List;
 class PrintableImageBox {
    
    // Constants -----------------------------------------------------
+   private static final int MEGA_PX = 1024 * 1024;
    private static final String[] MAGNIFICATION_TYPES = {
          "NONE",
          "REPLICATE",
@@ -287,38 +289,58 @@ class PrintableImageBox {
          destRect.getWidth() / srcRect.getWidth(), 
          destRect.getHeight() / srcRect.getHeight());
 
+      Rectangle clip = g2.getClipBounds();
+      if (!srcRect.intersects(clip)) {
+         return; // nothing to draw inside clip bounds;
+      }
+      AffineTransform saveAT1 = g2.getTransform();
+      Rectangle clippedSrcRect = srcRect.intersection(clip);
+      double[] d2 = { clippedSrcRect.getWidth(), clippedSrcRect.getHeight() };
+      saveAT1.deltaTransform(d2, 0, d2, 0, 1);
+      double sizeMPx = Math.abs(d2[0] * d2[1])  / MEGA_PX;
+      int chunks = (int) (sizeMPx / service.getChunkSize()) + 1;
+      Rectangle chunkRect =  new Rectangle(0, 0, 
+         clippedSrcRect.width, clippedSrcRect.height / chunks + 1);
+      log.info("Rendering Clip: " + clippedSrcRect + " = " + sizeMPx 
+                    + " MPx, in " + chunks + " chunks");
+      
       Object hint = RENDERING_HINTS[magnificationType];
       RenderingHints hints = new RenderingHints(
          RenderingHints.KEY_INTERPOLATION, hint);
       g2.setRenderingHints(hints);
       
-      Rectangle clip = g2.getClipBounds();
-      Rectangle clip4 = new Rectangle(0, 0, clip.width, clip.height / 4 + 1);
-      for (int i = 0; i < 4; ++i) {
-         clip4.setLocation(clip.x, clip.y + i * clip.height / 4);
-         if (clip4.intersects(srcRect)) {
-            AffineTransform saveAT1 = g2.getTransform();
-            Rectangle clippedSrcRect = srcRect.intersection(clip4);
-            g2.setClip(clip4);
-            g2.translate(
-               clippedSrcRect.getX() - srcRect.getX(),
-               clippedSrcRect.getY() - srcRect.getY());
-            readParam.setSourceRegion(clippedSrcRect);
-            BufferedImage bi = reader.read(0, readParam);
-
-            if (hint != RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR) {
-               AffineTransform at = g2.getTransform();
-               AffineTransformOp op = new AffineTransformOp(at, hints);
-               try {
-                  g2.transform(at.createInverse());
-               } catch (NoninvertibleTransformException e) {
-                  throw new RuntimeException("Failed to inverse Transform", e);
-               }
-               bi = op.filter(bi, null);
-            }
-            g2.drawImage(bi, new AffineTransform(), null);
-            g2.setTransform(saveAT1);
+      for (int i = 0; i < chunks; ++i) {
+         chunkRect.setLocation(
+            clippedSrcRect.x,
+            clippedSrcRect.y + i * clippedSrcRect.height / chunks);
+         log.info("Rendering Chunk #" + (i+1) + ": " + chunkRect);
+         g2.setClip(chunkRect);
+         g2.translate(
+            chunkRect.getX() - srcRect.getX(),
+            chunkRect.getY() - srcRect.getY());
+         readParam.setSourceRegion(chunkRect);
+         BufferedImage bi = reader.read(0, readParam);
+         if(!(bi.getColorModel() instanceof IndexColorModel)){
+            int w = bi.getWidth();
+            int h = bi.getHeight();
+            int[] b = bi.getRGB(0, 0, w, h, null, 0, w);
+            bi.flush();
+            bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            bi.setRGB(0,0,w,h,b, 0,w);
          }
+
+         if (hint != RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR) {
+            AffineTransform at = g2.getTransform();
+            AffineTransformOp op = new AffineTransformOp(at, hints);
+            try {
+               g2.transform(at.createInverse());
+            } catch (NoninvertibleTransformException e) {
+               throw new RuntimeException("Failed to inverse Transform", e);
+            }
+            bi = op.filter(bi, null);
+         }
+         g2.drawImage(bi, new AffineTransform(), null);
+         g2.setTransform(saveAT1);
       }
 
       g2.setTransform(saveAT);

@@ -275,6 +275,9 @@ public class PrinterService
    /** Holds value of property grayscaleAnnotation. */
    private String grayscaleAnnotation;
    
+   /** Holds value of property chunkSize. */
+   private double chunkSize = 2;
+   
    private int status = NORMAL;
    private String statusInfo = "NORMAL";
 
@@ -354,6 +357,20 @@ public class PrinterService
       }
    }
 
+   /** Getter for property chunkSize.
+    * @return Value of property chunkSize.
+    */
+   public double getChunkSize() {
+      return this.chunkSize;
+   }
+   
+   /** Setter for property chunkSize.
+    * @param chunkSize New value of property chunkSize.
+    */
+   public void setChunkSize(double chunkSize) {
+      this.chunkSize = chunkSize;
+   }
+   
    int[] getPuzzleScalePackSize(){
       return puzzleScalePackageSize;
    }
@@ -1054,7 +1071,7 @@ public class PrinterService
             return name.endsWith(LUT_FILE_EXT);
          }
       };
-                                 
+                                       
    /** Getter for property LUTs.
     * @return Value of property LUTs.
     */
@@ -1894,5 +1911,6 @@ public class PrinterService
       int ddl = calibration.toDDL(val/100);
       return new Color(ddl, ddl, ddl);
    }   
+   
    // Inner classes -------------------------------------------------
 }

@@ -750,4 +750,15 @@ public interface PrinterServiceMBean extends ServiceMBean {
    
    public void scheduleJob(Boolean color, String job, Dataset sessionAttr);
    
+   /** Getter for property chunkSize.
+    * @return Value of property chunkSize.
+    */
+   public double getChunkSize();
+   
+   /** Setter for property chunkSize.
+    * @param chunkSize New value of property chunkSize.
+    *
+    */
+   public void setChunkSize(double chunkSize);
+   
 }

@@ -221,6 +221,11 @@
     <attribute name="BorderThickness">2.0</attribute>
    
     <!--
+    Defines the max size chunk size in Mega Px of image part, rendered once.
+    -->
+    <attribute name="ChunkSize">2</attribute>
+   
+    <!--
     Defines the thickness of Trim Box in mm.
     -->
     <attribute name="TrimBoxThickness">1.0</attribute>
@@ -249,7 +254,7 @@
     Defines the Color for ImgBox background if EmptyImgDens is not set and border Dens is not set
     -->
     <attribute name="ColorVis">0,0,0</attribute>
-
+    
     <!--
     Defines the start size for scale BufferedImg in pieces
     size is BufferedImgH * scaleH * AspectRatio
