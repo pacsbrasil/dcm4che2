@@ -31,6 +31,7 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -159,9 +160,14 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      */
     public String toString()
     {
-        return "[" + size() + " elements]";
+        StringWriter w = new StringWriter();
+        try {
+            dumpDataset(w, null);
+        } catch (IOException e) {
+            return "" + e;
+        }
+        return w.toString();
     }
-
 
     private int[] ensureCapacity(int[] old, int n)
     {
