@@ -20,7 +20,6 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,10 +39,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.jdbc.CountStudiesCmd;
-import org.dcm4chex.archive.ejb.jdbc.RetrievePatientDatasetCmd;
 
 /**
  * 
@@ -92,111 +88,93 @@ import org.dcm4chex.archive.ejb.jdbc.RetrievePatientDatasetCmd;
  *  res-ref-name="jdbc/DefaultDS"
  *  resource-name="java:/DefaultDS"
  */
-public abstract class ContentEditBean implements SessionBean
-{
+public abstract class ContentEditBean implements SessionBean {
 
-	private DataSource ds;
-	private PatientLocalHome patHome;
-	private StudyLocalHome studyHome;
-	private SeriesLocalHome seriesHome;
+    private DataSource ds;
+    private PatientLocalHome patHome;
+    private StudyLocalHome studyHome;
+    private SeriesLocalHome seriesHome;
 
-	public void setSessionContext(SessionContext arg0)
-		throws EJBException, RemoteException
-	{
-		Context jndiCtx = null;
-		try
-		{
-			jndiCtx = new InitialContext();
-			ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
-			patHome =
-				(PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
-			studyHome =
-				(StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
-			seriesHome =
-				(SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
-		}
-		catch (NamingException e)
-		{
-			throw new EJBException(e);
-		}
-		finally
-		{
-			if (jndiCtx != null)
-			{
-				try
-				{
-					jndiCtx.close();
-				}
-				catch (NamingException ignore)
-				{
-				}
-			}
-		}
-	}
+    public void setSessionContext(SessionContext arg0)
+        throws EJBException, RemoteException {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
+            patHome =
+                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+            studyHome =
+                (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
+            seriesHome =
+                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
 
-	public void unsetSessionContext()
-	{
-		patHome = null;
-		studyHome = null;
-		seriesHome = null;
-	}
+    public void unsetSessionContext() {
+        patHome = null;
+        studyHome = null;
+        seriesHome = null;
+    }
 
-	/**
-	 * @ejb.interface-method
-	 */
-	public void updatePatient(PatientDTO to_update)
-	{
+    /**
+     * @ejb.interface-method
+     */
+    public void updatePatient(PatientDTO to_update) {
 
-		try
-		{
-			PatientLocal patientLocal =
-				patHome.findByPrimaryKey(new Integer(to_update.getPk()));
+        try {
+            boolean modified = false;
+            PatientLocal patientLocal =
+                patHome.findByPrimaryKey(new Integer(to_update.getPk()));
 
-			if (!equals(to_update.getPatientName(),patientLocal.getPatientName()))
-					patientLocal.setPatientName(to_update.getPatientName());
+            if (!equals(to_update.getPatientName(),
+                patientLocal.getPatientName())) {
+                patientLocal.setPatientName(to_update.getPatientName());
+                modified = true;
+            }
 
-			if (!equals(to_update.getPatientSex(),patientLocal.getPatientSex()))
-					patientLocal.setPatientSex(to_update.getPatientSex());
+            if (!equals(to_update.getPatientSex(),
+                patientLocal.getPatientSex())) {
+                patientLocal.setPatientSex(to_update.getPatientSex());
+                modified = true;
+            }
+            Date date_to_update = null;
+            if (to_update.getPatientBirthDate() != null) {
+                try {
+                    date_to_update =
+                        new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
+                            to_update.getPatientBirthDate());
+                    if (!equals(date_to_update,
+                        patientLocal.getPatientBirthDate())) {
+                        patientLocal.setPatientBirthDate(date_to_update);
+                        modified = true;
+                    }
+                } catch (ParseException e) {
+                } //do nothing
+            } else if (patientLocal.getPatientBirthDate() != null) {
+                patientLocal.setPatientBirthDate(null);
+                modified = true;
+            }
 
-			Date date_to_update =null; 
-			if (to_update.getPatientBirthDate() != null)
-			{
-				try
-				{
-					date_to_update =
-							new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
-									to_update.getPatientBirthDate());
-					if (!equals(date_to_update,patientLocal.getPatientBirthDate()))
-							patientLocal.setPatientBirthDate(date_to_update);
-				}
-				catch (ParseException e) { }//do nothing
-			}
-			else if (patientLocal.getPatientBirthDate() != null)
-				patientLocal.setPatientBirthDate(null);
-			
-			//dataset retrieve &update
-			Dataset oldPat =
-				new RetrievePatientDatasetCmd(ds, to_update.getPatientID())
-					.execute();
-			if (oldPat != null)
-			{
-				DTO2Dataset.updtateDataset(oldPat, to_update);
-				patientLocal.setAttributes(oldPat);
-			}
+            if (modified = true) {
+                Dataset oldPat = patientLocal.getAttributes();
+                DTO2Dataset.updtateDataset(oldPat, to_update);
+                patientLocal.setAttributes(oldPat);
+            }
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
 
-		}
-		catch (SQLException e)
-		{
-			//e1.printStackTrace();
-		}
-		catch (FinderException e)
-		{
-			throw new EJBException(e);
-		}
-	}
-	
-	private boolean equals(Object a, Object b)
-	{
-		return a == null ? b == null : a.equals(b); 
-	}
+    private boolean equals(Object a, Object b) {
+        return a == null ? b == null : a.equals(b);
+    }
 }
