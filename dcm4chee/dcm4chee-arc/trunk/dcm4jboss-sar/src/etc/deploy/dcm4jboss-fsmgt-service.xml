@@ -3,12 +3,12 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.FileSystemMgtService" 
-	name="dcm4chex:service=FileSystemMgt"
+	name="tiani.archive:service=FileSystemMgt"
 	xmbean-dd="xmdesc/dcm4jboss-fsmgt-xmbean.xml">
   </mbean>
 
   <mbean code="org.jboss.varia.scheduler.Scheduler" 
-	 name="dcm4chex:service=Scheduler,name=Scheduler of PurgeFiles"
+	 name="tiani.archive:service=Scheduler,name=Scheduler of PurgeFiles"
 	 xmbean-dd="xmdesc/dcm4jboss-purge-scheduler-xmbean.xml">
 
     <!-- To avoid NameNotBoundExceptions during server startup. MUST be

@@ -3,13 +3,13 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.dcm.storescp.StoreScpService" 
-	     name="dcm4chex:service=StoreScp"
+	     name="tiani.archive:service=StoreScp"
 	     xmbean-dd="xmdesc/dcm4jboss-storescp-xmbean.xml">
     <depends>
-      dcm4chex:service=DcmServer
+      tiani.archive:service=DcmServer
     </depends>
     <depends>
-    	dcm4chex:service=FileSystemMgt
+    	tiani.archive:service=FileSystemMgt
     </depends>    
   </mbean>
 </server>

@@ -3,13 +3,13 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.dcm.mwlscp.MWLFindScpService" 
-	     name="dcm4chex:service=MWLFindScp"
+	     name="tiani.archive:service=MWLFindScp"
 	     xmbean-dd="xmdesc/dcm4jboss-mwlscp-xmbean.xml">
     <depends>
-      dcm4chex:service=DcmServer
+      tiani.archive:service=DcmServer
     </depends>
     <depends>
-      dcm4chex:service=MPPSScp
+      tiani.archive:service=MPPSScp
     </depends>
   </mbean>
 </server>

@@ -3,9 +3,9 @@
 <server>
     <classpath codebase="lib" archives="dcm4jboss.jar"/>
     <mbean code="org.dcm4chex.archive.dcm.qrscp.QueryRetrieveScpService"
-        name="dcm4chex:service=QueryRetrieveScp" xmbean-dd="xmdesc/dcm4jboss-qrscp-xmbean.xml">
-        <depends>dcm4chex:service=DcmServer</depends>
-        <depends>dcm4chex:service=FileSystemMgt</depends>
-        <depends>dcm4chex:service=StgCmtScuScp</depends>
+        name="tiani.archive:service=QueryRetrieveScp" xmbean-dd="xmdesc/dcm4jboss-qrscp-xmbean.xml">
+        <depends>tiani.archive:service=DcmServer</depends>
+        <depends>tiani.archive:service=FileSystemMgt</depends>
+        <depends>tiani.archive:service=StgCmtScuScp</depends>
     </mbean>
 </server>

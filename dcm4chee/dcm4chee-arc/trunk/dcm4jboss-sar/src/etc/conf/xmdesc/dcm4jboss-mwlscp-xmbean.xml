@@ -73,7 +73,7 @@
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=DcmServer" />
+         <value value="tiani.archive:service=DcmServer" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -84,7 +84,7 @@
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=MPPSScp" />
+         <value value="tiani.archive:service=MPPSScp" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -95,7 +95,7 @@
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=AuditLogger" />
+         <value value="tiani.archive:service=AuditLogger" />
       </descriptors>
    </attribute>
    &defaultAttributes;

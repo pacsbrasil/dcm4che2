@@ -148,7 +148,7 @@
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=StoreScp" />
+         <value value="tiani.archive:service=StoreScp" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -159,7 +159,7 @@
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=TLSConfig" />
+         <value value="tiani.archive:service=TLSConfig" />
       </descriptors>
    </attribute>
    &defaultAttributes;

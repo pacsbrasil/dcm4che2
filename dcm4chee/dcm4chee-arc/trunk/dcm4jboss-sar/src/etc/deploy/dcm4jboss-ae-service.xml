@@ -4,10 +4,10 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.AEService" 
-	name="dcm4chex:service=AE"
+	name="tiani.archive:service=AE"
 	xmbean-dd="xmdesc/dcm4jboss-ae-xmbean.xml">	
     <depends>
-      dcm4chex:service=AuditLogger
+      tiani.archive:service=AuditLogger
     </depends> 
   </mbean>
 </server>

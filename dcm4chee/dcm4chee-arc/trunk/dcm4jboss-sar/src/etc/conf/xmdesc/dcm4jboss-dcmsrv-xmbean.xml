@@ -152,7 +152,7 @@
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=TLSConfig" />
+         <value value="tiani.archive:service=TLSConfig" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -163,7 +163,7 @@
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=AuditLogger" />
+         <value value="tiani.archive:service=AuditLogger" />
       </descriptors>
    </attribute>
    &defaultAttributes;

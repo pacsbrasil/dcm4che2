@@ -3,13 +3,13 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.dcm.movescu.MoveScuService" 
-	     name="dcm4chex:service=MoveScu"
+	     name="tiani.archive:service=MoveScu"
 	     xmbean-dd="xmdesc/dcm4jboss-movescu-xmbean.xml">
     <depends>
-      dcm4chex:service=TLSConfig
+      tiani.archive:service=TLSConfig
     </depends>
     <depends>
-      dcm4chex:service=Queue,name=MoveScu
+      tiani.archive:service=Queue,name=MoveScu
     </depends>
     <depends>
       jboss.mq:service=InvocationLayer,type=JVM

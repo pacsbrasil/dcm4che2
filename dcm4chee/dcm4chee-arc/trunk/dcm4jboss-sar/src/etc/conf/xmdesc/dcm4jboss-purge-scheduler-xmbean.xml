@@ -38,7 +38,7 @@
       <name>SchedulableMBean</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="dcm4chex:service=FileSystemMgt" />
+         <value value="tiani.archive:service=FileSystemMgt" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

@@ -3,13 +3,13 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
   <mbean code="org.dcm4chex.archive.dcm.ianscu.IANScuService" 
-	     name="dcm4chex:service=IANScu"
+	     name="tiani.archive:service=IANScu"
 	     xmbean-dd="xmdesc/dcm4jboss-ianscu-xmbean.xml">
     <depends>
-      dcm4chex:service=StoreScp
+      tiani.archive:service=StoreScp
     </depends>
     <depends>
-      dcm4chex:service=Queue,name=IANScu
+      tiani.archive:service=Queue,name=IANScu
     </depends>
     <depends>
       jboss.mq:service=InvocationLayer,type=JVM

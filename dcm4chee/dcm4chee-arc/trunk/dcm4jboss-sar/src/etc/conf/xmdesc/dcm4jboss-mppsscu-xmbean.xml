@@ -100,7 +100,7 @@
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=MPPSScp" />
+         <value value="tiani.archive:service=MPPSScp" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -111,7 +111,7 @@
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chex:service=TLSConfig" />
+         <value value="tiani.archive:service=TLSConfig" />
       </descriptors>
    </attribute>
    &defaultAttributes;
