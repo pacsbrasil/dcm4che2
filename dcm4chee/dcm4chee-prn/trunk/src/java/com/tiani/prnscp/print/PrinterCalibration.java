@@ -149,7 +149,7 @@ class PrinterCalibration
       if (src == null) {
          throw new IllegalArgumentException("Missing LUT Data");
       }
-      if (src.length != (1<<desc[2])) {
+      if (src.length != desc[0]) {
          throw new IllegalArgumentException("LUT Data Lenth: " + src.length
          + " does not match 1.value of LUT Descriptor: " + desc[0]);
       }

@@ -60,7 +60,7 @@
     for portrait orientation. Landscape image display formats are derived
     automatically.
     -->
-    <attribute name="DisplayFormat">1,1\1,2\2,2\2,3\3,3\3,4\3,5\4,4\4,5</attribute>
+    <attribute name="DisplayFormat">1,1\1,2\2,1\2,2\2,3\3,2\3,3\3,4\3,5\4,4\4,5</attribute>
 
     <!--
     Defines the default film orientation that is used when the Print SCU does not 
