@@ -183,8 +183,7 @@ CREATE TABLE study_on_filesystem (
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 );
-CREATE INDEX sof_study_fk ON study_on_filesystem(study_fk);
-CREATE INDEX sof_filesystem_fk ON study_on_filesystem(filesystem_fk);
+CREATE UNIQUE INDEX i_study_on_filesystem ON study_on_filesystem(filesystem_fk,study_fk);
 
 CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (
