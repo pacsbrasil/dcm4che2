@@ -5,7 +5,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.0.1"/>
+	<property name="version" value="2.1.0"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
@@ -15,7 +15,7 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your XDoclet bundle dist location -->
-	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.1"/>
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.2"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 	<property name="xdoclet.force" value="off"/>	
 	<property name="xdoclet.verbose" value="off"/>	
