@@ -11,7 +11,7 @@ url="http://www.tiani.com"
 >http://www.tiani.com</ulink
 ></corpauthor
 ><pubdate
->2 June 2003</pubdate
+>10 June 2003</pubdate
 ></articleinfo
 ><section
 ><title
@@ -2041,7 +2041,11 @@ HIGH:1200x1200</literallayout
 ></row
 ><row
 ><entry
->ConfigurationInformation ForCallingAET</entry
+id="ConfInfoForCallingAET"
+><literallayout
+>ConfigurationInformation
+ForCallingAET</literallayout
+></entry
 ><entry
 ><literallayout
 >.grayscale:shape=IDENTITY
@@ -2057,7 +2061,7 @@ linkend="local-luts"
 >Multiple entires must be separated by &#39;\&#39; characters or line breaks.</para
 ><para
 >Format: &#60;calling-aet&#62;[.grayscale|.color]:&#60;Configuration Information Value&#62; (see. <xref
-linkend="config-info"
+linkend="local-luts"
 ></xref
 >)</para
 ><para
@@ -2409,127 +2413,89 @@ id="local-luts"
 id="lut"
 >Local Lookup Tables</title
 ><para
->jPrint supports the configuration of local lookup tables provided by the Print Server. This feature is intended as workaround for Print Composers, which does not provide proper P-LUTs via the N-CREATE Service of the DICOM Presentation Lookup Table SOP Class. The use of local LUTs needs/shall only be configured for Print Composers with no - or inappropriate - support of the DICOM P-LUT SOP Class.</para
+>jPrint supports the configuration of local lookup tables at the Print Server. This feature is intended as workaround for Print Composers, which does not provide proper P-LUTs via the N-CREATE Service of the DICOM Presentation Lookup Table SOP Class. The use of local LUTs needs/shall only be configured for Print Composers with no - or inappropriate - support of the DICOM P-LUT SOP Class.</para
 ><para
->The selection</para
-><section
-id="config-info"
+>A local LUT can be defined by an explicit DICOM file with a Presentation LUT Information Object or by 1-3 parameters of a proprietary generation function for S-shaped P-LUTs. </para
+><para
+>A Print SCU can select such (jPrint) local LUT by providing a value for Film Box attribute (2010,0150) Configuration Information:</para
+><table
 ><title
 >Configuration Information Syntax</title
-><para
->jPrint supports the selection of P-LUTs by a Print SCU via the value of the Film Box attribute (2010,0150) Configuration Information. This option shall only be used, if a Print SCU does not provide appropriate P-LUTs using services of the DICOM Presentation LUT SOP Class.</para
-><para
->P-LUTs stored in DICOM files <replaceable
->&#60;LUT-name&#62;</replaceable
-><literal
->.lut</literal
-> in the directory, specified by attribute LUTDir - default: <literal
+><tgroup
+cols="2"
+><colspec
+colwidth="180"
+></colspec
+><thead
+><row
+><entry
+>Configuration Information</entry
+><entry
+>applied LUT</entry
+></row
+></thead
+><tbody
+><row
+><entry
+>shape=IDENTITY</entry
+><entry
+>interprets pixel values as P-values</entry
+></row
+><row
+><entry
+>shape=LIN OD</entry
+><entry
+>interprets pixel values as linear optical density over the range of Min Density (2010,0120) and Max Density (2010,1030).</entry
+></row
+><row
+><entry
+>shape=&#60;LUT-name&#62;</entry
+><entry
+>P-LUT Information Object in file &#60;LUT-name&#62;.lut in directory <literal
 >server/default/conf/lut</literal
-> - can be selected by Configuration Information values <literal
->shape=</literal
-><replaceable
->&#60;LUT-name&#62;</replaceable
->.</para
-><para
->The LUT-names <literal
->IDENTITY</literal
-> and <literal
->LIN OD</literal
-> are reserved for selecting Presentation LUT Shapes defined by DICOM:</para
-><variablelist
-><varlistentry
-><term
-><literal
->shape=IDENTITY</literal
-></term
-><listitem
-><para
->interprets pixel values as P-values,</para
-></listitem
-></varlistentry
-><varlistentry
-><term
-><literal
->shape=LIN OD</literal
-></term
-><listitem
-><para
->interprets pixel values as linear optical density over the range of Min Density (2010,0120) and Max Density (2010,1030).</para
-></listitem
-></varlistentry
-></variablelist
-><para
->Its also possible to specify a P-LUT based on the error-function (S-shaped) and/or power-function by several parameters:</para
-><variablelist
-><varlistentry
-><term
-><literal
->gamma=</literal
-><replaceable
->&#60;g&#62;</replaceable
-></term
-><listitem
+>.</entry
+></row
+><row
+><entry
 ><literallayout
->with <replaceable
->&#60;g&#62;</replaceable
-> in interval [0.1,10], specifies a P-LUT based on f(x) ~ x^(1/g):
+>gamma=&#60;g&#62;
+{with &#60;g&#62; in interval [0.1,10]}</literallayout
+></entry
+><entry
+><literallayout
+>applies a LUT based on f(x) ~ x^(1/g):
 g &#62; 1 will increase the contrast in the dark and lighten the image as a whole,
 g &#60; 1 will increase the contrast of brighten parts and darken then image as a whole.</literallayout
-></listitem
-></varlistentry
-><varlistentry
-><term
-><literal
->center=</literal
-><replaceable
->&#60;c&#62;</replaceable
-><literal
->,slope=</literal
-><replaceable
->&#60;s&#62;</replaceable
-></term
-><listitem
+></entry
+></row
+><row
+><entry
+><literallayout
+>center=&#60;c&#62;,slope=&#60;s&#62;
+{with &#60;c&#62; in intervall [0,1],
+and &#60;s&#62; in intervall [0,10]} </literallayout
+></entry
+><entry
+>applies a S-shaped P-LUT, which enhanced the contrast around a defined center (c = 0.5 specifies middle of pixel value range), with the factor specified by slope (e.g.: s=2 doubles the contrast).</entry
+></row
+><row
+><entry
+><literallayout
+>center=&#60;c&#62;,slope=&#60;s&#62;,gamma=&#60;g&#62;</literallayout
+></entry
+><entry
+>applies a P-LUT generated as combination of the S-shaped function defined by center=&#60;c&#62;,slope=&#60;s&#62; and the power function defined by gamma=&#60;g&#62;.</entry
+></row
+></tbody
+></tgroup
+></table
 ><para
->with <replaceable
->&#60;c&#62;</replaceable
-> in intervall [0,1], and <replaceable
->&#60;s&#62;</replaceable
-> in intervall [0,10], specifies a S-shaped P-LUT, which enhanced the contrast around a defined center (c = 0.5 specifies middle of pixel value range), about the factor specified by slope (e.g.: s=2 doubles the contrast).</para
-></listitem
-></varlistentry
-><varlistentry
-><term
-><literal
->center=</literal
-><replaceable
->&#60;c&#62;</replaceable
-><literal
->,slope=</literal
-><replaceable
->&#60;s&#62;</replaceable
-><literal
->,gamma=</literal
-><replaceable
->&#60;g&#62;</replaceable
-></term
-><listitem
-><para
->specifies a P-LUT based on a S-shaped function defined by <literal
->center=</literal
-><replaceable
->&#60;c&#62;</replaceable
-><literal
->,slope=</literal
-><replaceable
->&#60;s&#62;</replaceable
-> and the power function defined by <literal
->gamma=</literal
-><replaceable
->&#60;g&#62;</replaceable
->.</para
-></listitem
-></varlistentry
-></variablelist
+>This values can also be used in the Printer Service configuration <filename
+>server/default/deploy/printer-service.xml</filename
+>, to associate a LUT to the Calling AET of a Print SCU (s. Printer Service attribute <link
+linkend="ConfInfoForCallingAET"
+>ConfigurationInformationForCallingAET</link
+>), in the (common) case, that the Print SCU cannot be configured, to provide a Configuration Information value as described above.</para
 ><para
 >Utility <link
 linkend="view-plut.jar"
@@ -2552,11 +2518,6 @@ linkend="view-plut.jar"
 linkend="print-image.jar"
 >print-image.jar</link
 > can be used to print out a local DICOM image with a P-LUT specified by a Configuration Information value directly - without the need of a DICOM Print Client.</para
-><para
->If a Print SCU cannot be configured to provide a Configuration Information to select a proper P-LUT, a default Configuration Information can be specified for its Calling AET by attribute ConfigurationInformationForCallingAET in <filename
->server/default/deploy/printer-service.xml</filename
->.</para
-></section
 ></section
 ><section
 ><title
