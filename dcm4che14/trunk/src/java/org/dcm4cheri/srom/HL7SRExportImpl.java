@@ -40,6 +40,7 @@ import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -175,7 +176,7 @@ public class HL7SRExportImpl implements HL7SRExport {
             w.write("|||ORU^R01|");
             w.write(messageControlID);
             w.write("|P|2.3.1|");
-            w.write(maskNull(doc.getSpecificCharacterSet()));
+            w.write(toHL7Charset(doc.getSpecificCharacterSet()));
             w.write("\r");
 
             // Write PID
@@ -277,6 +278,31 @@ public class HL7SRExportImpl implements HL7SRExport {
         }
     }
     
+    private final static HashMap csMap = new HashMap();
+    static {
+        csMap.put("ISO_IR 100","8859/1");
+        csMap.put("ISO_IR 101","8859/2");
+        csMap.put("ISO_IR 109","8859/3");
+        csMap.put("ISO_IR 110","8859/4");
+        csMap.put("ISO_IR 144","8859/5");
+        csMap.put("ISO_IR 127","8859/6");
+        csMap.put("ISO_IR 126","8859/7");
+        csMap.put("ISO_IR 138","8859/8");
+        csMap.put("ISO_IR 148","8859/9");
+    }
+    
+    private String toHL7Charset(String dicomCharset) {
+        if (dicomCharset == null || dicomCharset.length() == 0) {
+            return "";
+        }
+        String retval = (String) csMap.get(dicomCharset);
+        if (retval == null) {
+            log.warn("Unrecognized Charset: " + dicomCharset + " - use 8859/1 in MSH");
+            return "8859/1";
+        }
+        return retval;
+    }
+
     private void findTextAndImage(SRDocument doc, Content node,
             ArrayList txts, ArrayList imgs) {
         if (node instanceof TextContent) {

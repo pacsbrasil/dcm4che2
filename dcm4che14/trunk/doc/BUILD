@@ -28,12 +28,12 @@ from the project CVS repository at sourceforge:
 
 At first time, connecting to the project CVS repository, you have to login by
 
->cvs -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che login
+>cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/dcm4che login
 CVS password:<enter>
 
 , before you can checkout the testdata:
 
->cvs -z3 -d:pserver:anonymous@cvs.dcm4che.sourceforge.net:/cvsroot/dcm4che
+>cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/dcm4che
   checkout dcm4che14/test/conf/data
 
 
