@@ -169,11 +169,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
+    protected void doCStore(ActiveAssociation activeAssoc, Dimse rq, Command rspCmd)
         throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         InputStream in = rq.getDataAsStream();
         Storage storage = null;
+        Association assoc = activeAssoc.getAssociation();
         try {
             storage = getStorageHome().create();
             DcmDecodeParam decParam =
@@ -205,6 +206,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     dirPath.length() + 1);
             Dataset coercedElements =
                 storage.store(
+                    assoc.getCallingAET(),
+                    assoc.getCalledAET(),
                     ds,
                     retrieveAETs,
                     dirPath,
@@ -223,7 +226,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
                 ds.putAll(coercedElements);
             }
-            updateStoredStudiesInfo(assoc.getAssociation(), ds);
+            updateStoredStudiesInfo(assoc, ds);
         } catch (DcmServiceException e) {
 			log.warn(e.getMessage(), e);
             throw e;
