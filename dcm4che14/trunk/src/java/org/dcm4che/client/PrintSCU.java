@@ -521,7 +521,7 @@ public class PrintSCU {
         }
         int msgid = requestor.nextMsgID();
         Dataset attr = dcmFact.newDataset();
-        attr.putUS(Tags.AnnotationPosition, index);
+        attr.putUS(Tags.AnnotationPosition, index + 1);
         attr.putLO(Tags.TextString, text);
         Dataset refAnnBox =
             curFilmBox.getItem(Tags.RefBasicAnnotationBoxSeq, index);
@@ -692,7 +692,7 @@ public class PrintSCU {
             requestor.invokeAndWaitForRSP(
                 pcidPrint,
                 nSetRQ,
-                new PrintSCUDataSource(this, imageBox, file));
+                new PrintSCUDataSource(this, imageBox, file, true));
         return checkStatus(rsp.getCommand());
     }
 
