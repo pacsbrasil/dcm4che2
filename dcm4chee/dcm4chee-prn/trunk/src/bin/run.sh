@@ -9,7 +9,7 @@
 
 # Set maximum size of the memory allocation pool
 # default value of 64MB may not be sufficient for jprint
-JAVA_OPTS="-Xms64m -Xmx100m -server"
+JAVA_OPTS="-server -Xmx100m -Djava.awt.headless=true"
 
 DIRNAME=`dirname $0`
 PROGNAME=`basename $0`

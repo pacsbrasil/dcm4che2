@@ -26,7 +26,7 @@ JPRINT_USER=${JPRINT_USER:-"root"}
 PID_FILE=/var/run/jprint.pid
 
 JAVA="$JAVA_HOME/bin/java"
-JAVA_OPTS="-server -Xmx100m"
+JAVA_OPTS="-server -Xmx100m -Djava.awt.headless=true"
 JAVA_CP="$JPRINT_HOME/bin/run.jar:$JAVA_HOME/lib/tools.jar"
 ARGS="$JAVA_OPTS -cp $JAVA_CP org.jboss.Main"
 
