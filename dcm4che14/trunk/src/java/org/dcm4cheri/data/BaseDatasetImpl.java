@@ -1,21 +1,11 @@
-/*  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- *  This file is part of dcm4che.
- *
- *  This library is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU Lesser General Public License as published
- *  by the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4cheri.data;
 
 import java.awt.Rectangle;
@@ -73,56 +63,56 @@ import org.xml.sax.ContentHandler;
  * @version    $Revision$ $Date$
  * @see        "DICOM Part 5: Data Structures and Encoding, 7. The Data Set"
  */
-abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
-{
+abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
 
     private FileMetaInfo fmi = null;
 
     private int[] grTags = new int[8];
+
     private int[] grLens = new int[8];
+
     private int grCount = 0;
+
     /**  Description of the Field */
     protected int totLen = 0;
 
     private static SAXTransformerFactory tfFactory;
+
     private static Templates templates;
+
     private static TagDictionary tagDictionary;
 
-
-    private static SAXTransformerFactory getTransformerFactory()
-    {
+    private static SAXTransformerFactory getTransformerFactory() {
         if (tfFactory == null) {
-            tfFactory = (SAXTransformerFactory) TransformerFactory.newInstance();
+            tfFactory = (SAXTransformerFactory) TransformerFactory
+                    .newInstance();
         }
         return tfFactory;
     }
 
+    static class ConfigurationError extends Error {
 
-    static class ConfigurationError extends Error
-    {
-        ConfigurationError(String msg, Exception x)
-        {
+        ConfigurationError(String msg, Exception x) {
             super(msg, x);
         }
     }
 
-
-    private static Templates getTemplates()
-    {
+    private static Templates getTemplates() {
         if (templates == null) {
-            InputStream in = BaseDatasetImpl.class.getResourceAsStream("dump.xsl");
+            InputStream in = BaseDatasetImpl.class
+                    .getResourceAsStream("dump2.xsl");
             try {
-                templates = getTransformerFactory().newTemplates(new StreamSource(in));
+                templates = getTransformerFactory()
+                        .newTemplates(new StreamSource(in));
             } catch (Exception e) {
-                throw new ConfigurationError("Failed to load/compile dump.xsl", e);
+                throw new ConfigurationError(
+                        "Failed to load/compile dump2.xsl", e);
             }
         }
         return templates;
     }
 
-
-    private static TagDictionary getTagDictionary()
-    {
+    private static TagDictionary getTagDictionary() {
         if (tagDictionary == null) {
             DictionaryFactory df = DictionaryFactory.getInstance();
             tagDictionary = df.getDefaultTagDictionary();
@@ -130,51 +120,41 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         return tagDictionary;
     }
 
-
     /**
      *  Sets the fileMetaInfo attribute of the BaseDatasetImpl object
      *
      * @param  fmi  The new fileMetaInfo value
      * @return      Description of the Return Value
      */
-    public final Dataset setFileMetaInfo(FileMetaInfo fmi)
-    {
+    public final Dataset setFileMetaInfo(FileMetaInfo fmi) {
         this.fmi = fmi;
         return this;
     }
-
 
     /**
      *  Gets the fileMetaInfo attribute of the BaseDatasetImpl object
      *
      * @return    The fileMetaInfo value
      */
-    public FileMetaInfo getFileMetaInfo()
-    {
+    public FileMetaInfo getFileMetaInfo() {
         return fmi;
     }
-
 
     /**
      *  Description of the Method
      *
      * @return    Description of the Return Value
      */
-    public String toString()
-    {
+    public String toString() {
         return "Dataset[size=" + size() + "]";
     }
 
-    private int[] ensureCapacity(int[] old, int n)
-    {
-        if (n <= old.length) {
-            return old;
-        }
+    private int[] ensureCapacity(int[] old, int n) {
+        if (n <= old.length) { return old; }
         int[] retval = new int[old.length << 1];
         System.arraycopy(old, 0, retval, 0, old.length);
         return retval;
     }
-
 
     /**
      *  Description of the Method
@@ -182,15 +162,14 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  param  Description of the Parameter
      * @return        Description of the Return Value
      */
-    public int calcLength(DcmEncodeParam param)
-    {
+    public int calcLength(DcmEncodeParam param) {
         totLen = 0;
         grCount = 0;
 
         int curGrTag;
 
         int prevGrTag = -1;
-        for (Iterator iter = iterator(); iter.hasNext(); ) {
+        for (Iterator iter = iterator(); iter.hasNext();) {
             DcmElement el = (DcmElement) iter.next();
             curGrTag = el.tag() & 0xffff0000;
             if (curGrTag != prevGrTag) {
@@ -200,8 +179,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
                 grTags[grCount - 1] = prevGrTag = curGrTag;
                 grLens[grCount - 1] = 0;
             }
-            grLens[grCount - 1] +=
-                    (param.explicitVR && !VRs.isLengthField16Bit(el.vr())) ? 12 : 8;
+            grLens[grCount - 1] += (param.explicitVR && !VRs
+                    .isLengthField16Bit(el.vr())) ? 12 : 8;
             if (el instanceof ValueElement) {
                 grLens[grCount - 1] += el.length();
             } else if (el instanceof FragmentElement) {
@@ -220,25 +199,20 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         return totLen;
     }
 
-
     /**
      *  Description of the Method
      *
      * @return    Description of the Return Value
      */
-    public int length()
-    {
+    public int length() {
         return totLen;
     }
 
-
     /**  Description of the Method */
-    public void clear()
-    {
+    public void clear() {
         super.clear();
         totLen = 0;
     }
-
 
     /**
      *  Description of the Method
@@ -248,8 +222,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @exception  IOException  Description of the Exception
      */
     public void writeDataset(DcmHandler handler, DcmEncodeParam param)
-        throws IOException
-    {
+            throws IOException {
         if (!(param.skipGroupLen && param.undefItemLen && param.undefSeqLen)) {
             calcLength(param);
         }
@@ -259,20 +232,18 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         handler.endDataset();
     }
 
-
     private void doWrite(DcmHandler handler, DcmEncodeParam param)
-        throws IOException
-    {
+            throws IOException {
         int grIndex = 0;
-        for (Iterator iter = iterator(); iter.hasNext(); ) {
+        for (Iterator iter = iterator(); iter.hasNext();) {
             DcmElement el = (DcmElement) iter.next();
             if (!param.skipGroupLen
-                     && grTags[grIndex] == (el.tag() & 0xffff0000)) {
+                    && grTags[grIndex] == (el.tag() & 0xffff0000)) {
                 byte[] b4 = new byte[4];
                 ByteBuffer.wrap(b4).order(param.byteOrder)
                         .putInt(grLens[grIndex]);
-                handler.startElement(grTags[grIndex], VRs.UL,
-                        el.getStreamPosition());
+                handler.startElement(grTags[grIndex], VRs.UL, el
+                        .getStreamPosition());
                 handler.value(b4, 0, 4);
                 handler.endElement();
                 ++grIndex;
@@ -281,7 +252,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
                 int len = param.undefSeqLen ? -1 : el.length();
                 handler.startElement(el.tag(), VRs.SQ, el.getStreamPosition());
                 handler.startSequence(len);
-                for (int j = 0, m = el.vm(); j < m; ) {
+                for (int j = 0, m = el.vm(); j < m;) {
                     BaseDatasetImpl ds = (BaseDatasetImpl) el.getItem(j);
                     int itemlen = param.undefItemLen ? -1 : ds.length();
                     handler.startItem(++j, ds.getItemOffset(), itemlen);
@@ -297,9 +268,12 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
                 if (offset != -1L) {
                     offset += 12;
                 }
-                for (int j = 0, m = el.vm(); j < m; ) {
+                for (int j = 0, m = el.vm(); j < m;) {
                     ByteBuffer bb = el.getDataFragment(j, param.byteOrder);
-                    handler.fragment(++j, offset, bb.array(), bb.arrayOffset(),
+                    handler.fragment(++j,
+                            offset,
+                            bb.array(),
+                            bb.arrayOffset(),
                             bb.limit());
                     if (offset != -1L) {
                         offset += (bb.limit() + 9) & (~1);
@@ -317,7 +291,6 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         }
     }
 
-
     /**
      *  Description of the Method
      *
@@ -326,16 +299,13 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @exception  IOException  Description of the Exception
      */
     public void writeDataset(OutputStream out, DcmEncodeParam param)
-        throws IOException
-    {
+            throws IOException {
         if (param == null) {
             param = DcmDecodeParam.IVR_LE;
         }
-        writeDataset(new DcmStreamHandlerImpl(param.deflated ?
-                new DeflaterOutputStream(out) : out),
-                param);
+        writeDataset(new DcmStreamHandlerImpl(
+                param.deflated ? new DeflaterOutputStream(out) : out), param);
     }
-
 
     /**
      *  Description of the Method
@@ -345,8 +315,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @exception  IOException  Description of the Exception
      */
     public void writeFile(OutputStream out, DcmEncodeParam param)
-        throws IOException
-    {
+            throws IOException {
         FileMetaInfo fmi = getFileMetaInfo();
         if (fmi != null) {
             param = checkCompatibility(fmi, param);
@@ -354,7 +323,6 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         }
         writeDataset(out, param);
     }
-
 
     /**
      *  Description of the Method
@@ -364,36 +332,27 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @exception  IOException  Description of the Exception
      */
     public void writeDataset(ImageOutputStream out, DcmEncodeParam param)
-        throws IOException
-    {
+            throws IOException {
         if (param == null) {
             param = DcmDecodeParam.IVR_LE;
         }
-        writeDataset(param.deflated
-                 ? new DcmStreamHandlerImpl(new DeflaterOutputStream(
-                new OutputStreamAdapter(out)))
-                 : new DcmStreamHandlerImpl(out),
-                param);
+        writeDataset(param.deflated ? new DcmStreamHandlerImpl(
+                new DeflaterOutputStream(new OutputStreamAdapter(out)))
+                : new DcmStreamHandlerImpl(out), param);
     }
-
 
     private DcmEncodeParam checkCompatibility(FileMetaInfo fmi,
-            DcmEncodeParam param)
-    {
-        DcmEncodeParam fmiParam = DcmDecodeParam.valueOf(fmi.getTransferSyntaxUID());
-        if (param == null) {
-            return fmiParam;
-        }
+            DcmEncodeParam param) {
+        DcmEncodeParam fmiParam = DcmDecodeParam.valueOf(fmi
+                .getTransferSyntaxUID());
+        if (param == null) { return fmiParam; }
         if (param.byteOrder == fmiParam.byteOrder
-                 && param.explicitVR == fmiParam.explicitVR
-                 && param.encapsulated == fmiParam.encapsulated
-                 && param.deflated == fmiParam.deflated) {
-            return param;
-        }
+                && param.explicitVR == fmiParam.explicitVR
+                && param.encapsulated == fmiParam.encapsulated
+                && param.deflated == fmiParam.deflated) { return param; }
         throw new IllegalArgumentException("param: " + param
-                 + " does not match with " + fmi);
+                + " does not match with " + fmi);
     }
-
 
     /**
      *  Description of the Method
@@ -403,8 +362,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @exception  IOException  Description of the Exception
      */
     public void writeFile(ImageOutputStream out, DcmEncodeParam param)
-        throws IOException
-    {
+            throws IOException {
         FileMetaInfo fmi = getFileMetaInfo();
         if (fmi != null) {
             param = checkCompatibility(fmi, param);
@@ -413,14 +371,15 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         writeDataset(out, param);
     }
 
-    public void writeFile(File f, DcmEncodeParam param)
-	    throws IOException
-	{
+    public void writeFile(File f, DcmEncodeParam param) throws IOException {
         OutputStream in = new BufferedOutputStream(new FileOutputStream(f));
         try {
             writeFile(in, param);
         } finally {
-            try { in.close(); } catch (IOException ignore) {}
+            try {
+                in.close();
+            } catch (IOException ignore) {
+            }
         }
     }
 
@@ -432,49 +391,42 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @exception  IOException  Description of the Exception
      */
     public void writeDataset(ContentHandler ch, TagDictionary dict)
-        throws IOException
-    {
+            throws IOException {
         writeDataset(new DcmHandlerAdapter(ch, dict), DcmDecodeParam.EVR_LE);
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     * @param  out              Description of the Parameter
-     * @param  param            Description of the Parameter
-     * @exception  IOException  Description of the Exception
-     */
-    public void dumpDataset(OutputStream out, Map param)
-        throws IOException
-    {
-        dumpDataset(new StreamResult(out), param);
+    public void writeDataset2(ContentHandler ch, TagDictionary dict,
+            int[] excludeTags, File basedir) throws IOException {
+        writeDataset(new DcmHandlerAdapter2(ch, dict, excludeTags, basedir),
+                DcmDecodeParam.EVR_LE);
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     * @param  w                Description of the Parameter
-     * @param  param            Description of the Parameter
-     * @exception  IOException  Description of the Exception
-     */
-    public void dumpDataset(Writer w, Map param)
-        throws IOException
-    {
-        dumpDataset(new StreamResult(w), param);
+    public void dumpDataset(OutputStream out, Map param) throws IOException {
+        dumpDataset(new StreamResult(out), param, null);
     }
 
+    public void dumpDataset(OutputStream out, Map param, int[] excludeTags)
+            throws IOException {
+        dumpDataset(new StreamResult(out), param, excludeTags);
+    }
 
-    private void dumpDataset(Result result, Map param)
-        throws IOException
-    {
+    public void dumpDataset(Writer w, Map param) throws IOException {
+        dumpDataset(new StreamResult(w), param, null);
+    }
+
+    public void dumpDataset(Writer w, Map param, int[] excludeTags)
+            throws IOException {
+        dumpDataset(new StreamResult(w), param, excludeTags);
+    }
+
+    private void dumpDataset(Result result, Map param, int[] excludeTags)
+            throws IOException {
         TransformerHandler th;
         try {
             th = getTransformerFactory().newTransformerHandler(getTemplates());
             if (param != null) {
                 Transformer t = th.getTransformer();
-                for (Iterator it = param.entrySet().iterator(); it.hasNext(); ) {
+                for (Iterator it = param.entrySet().iterator(); it.hasNext();) {
                     Map.Entry e = (Map.Entry) it.next();
                     t.setParameter((String) e.getKey(), e.getValue());
                 }
@@ -483,9 +435,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
             throw new ConfigurationError("Failed to initialize XSLT", e);
         }
         th.setResult(result);
-        writeDataset(th, getTagDictionary());
+        writeDataset2(th, getTagDictionary(), excludeTags, null);
     }
-
 
     /**
      *  Description of the Method
@@ -495,8 +446,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @exception  IOException  Description of the Exception
      */
     public void writeFile(ContentHandler ch, TagDictionary dict)
-        throws IOException
-    {
+            throws IOException {
         DcmHandlerAdapter xml = new DcmHandlerAdapter(ch, dict);
         xml.startDcmFile();
         FileMetaInfo fmi = getFileMetaInfo();
@@ -507,6 +457,18 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         xml.endDcmFile();
     }
 
+    public void writeFile2(ContentHandler ch, TagDictionary dict,
+            int[] excludeTags, File basedir) throws IOException {
+        DcmHandlerAdapter2 xml = new DcmHandlerAdapter2(ch, dict, excludeTags,
+                basedir);
+        xml.startDcmFile();
+        FileMetaInfo fmi = getFileMetaInfo();
+        if (fmi != null) {
+            fmi.write(xml);
+        }
+        writeDataset(xml, DcmDecodeParam.EVR_LE);
+        xml.endDcmFile();
+    }
 
     /**
      *  Description of the Method
@@ -515,11 +477,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  toTag    Description of the Parameter
      * @return          Description of the Return Value
      */
-    public Dataset subSet(int fromTag, int toTag)
-    {
+    public Dataset subSet(int fromTag, int toTag) {
         return new FilterDataset.Segment(this, fromTag, toTag);
     }
-
 
     /**
      *  Description of the Method
@@ -527,21 +487,21 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  filter  Description of the Parameter
      * @return         Description of the Return Value
      */
-    public Dataset subSet(Dataset filter)
-    {
+    public Dataset subSet(Dataset filter) {
         return new FilterDataset.Selection(this, filter);
     }
 
-    public Dataset subSet(int[] tags, boolean exclude)
-    {
-        return new FilterDataset.TagFilter(this, tags, exclude);
-    }
-
-    public Dataset subSet(int[] tags)
-    {
-        return new FilterDataset.TagFilter(this, tags, false);
+    public Dataset subSet(int[] tags, boolean exclude) {
+        return new FilterDataset.TagFilter(this, tags, exclude, false);
     }
     
+    public Dataset subSet(int[] tags) {
+        return new FilterDataset.TagFilter(this, tags, false, false);
+    }
+
+    public Dataset exclude(int[] tags, boolean excludePrivate) {
+        return new FilterDataset.TagFilter(this, tags, true, excludePrivate);
+    }
     
     /**
      *  Description of the Method
@@ -550,30 +510,24 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  ignorePNCase  Description of the Parameter
      * @return               Description of the Return Value
      */
-    public boolean match(Dataset keys, boolean ignorePNCase, boolean ignoreEmpty)
-    {
-        if (keys == null) {
-            return true;
-        }
+    public boolean match(Dataset keys, boolean ignorePNCase, boolean ignoreEmpty) {
+        if (keys == null) { return true; }
         Charset keyCS = keys.getCharset();
-        for (Iterator iter = keys.iterator(); iter.hasNext(); ) {
-            if (!match((DcmElementImpl) iter.next(), ignorePNCase, ignoreEmpty, keyCS)) {
-                return false;
-            }
+        for (Iterator iter = keys.iterator(); iter.hasNext();) {
+            if (!match((DcmElementImpl) iter.next(),
+                    ignorePNCase,
+                    ignoreEmpty,
+                    keyCS)) { return false; }
         }
         return true;
     }
 
-
-    private boolean match(DcmElementImpl key, boolean ignorePNCase, boolean ignoreEmpty, Charset keyCS)
-    {
+    private boolean match(DcmElementImpl key, boolean ignorePNCase,
+            boolean ignoreEmpty, Charset keyCS) {
         DcmElementImpl e = (DcmElementImpl) get(key.tag());
-        if (e == null) {
-            return ignoreEmpty || key.isEmpty();
-        }
+        if (e == null) { return ignoreEmpty || key.isEmpty(); }
         return e.match(key, ignorePNCase, ignoreEmpty, keyCS, getCharset());
     }
-
 
     /**
      *  Description of the Method
@@ -581,42 +535,39 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @return                                    Description of the Return Value
      * @exception  java.io.ObjectStreamException  Description of the Exception
      */
-    protected Object writeReplace()
-        throws java.io.ObjectStreamException
-    {
+    protected Object writeReplace() throws java.io.ObjectStreamException {
         return new DatasetSerializer(this);
     }
 
     //used by toBufferedImage()
-    private final static ColorSpace sRGB =
-            ColorSpace.getInstance(ColorSpace.CS_sRGB);
+    private final static ColorSpace sRGB = ColorSpace
+            .getInstance(ColorSpace.CS_sRGB);
 
     //used by toBufferedImage()
-    private final static ImageTypeSpecifier RGB_PLANE =
-            ImageTypeSpecifier.createBanded(sRGB,
-            new int[]{0, 1, 2},
-            new int[]{0, 0, 0},
-            DataBuffer.TYPE_BYTE,
-            false, false);
+    private final static ImageTypeSpecifier RGB_PLANE = ImageTypeSpecifier
+            .createBanded(sRGB,
+                    new int[] { 0, 1, 2},
+                    new int[] { 0, 0, 0},
+                    DataBuffer.TYPE_BYTE,
+                    false,
+                    false);
 
     //used by toBufferedImage()
-    private final static ImageTypeSpecifier RGB_PIXEL =
-            ImageTypeSpecifier.createInterleaved(sRGB,
-            new int[]{0, 1, 2},
-            DataBuffer.TYPE_BYTE,
-            false, false);
-
+    private final static ImageTypeSpecifier RGB_PIXEL = ImageTypeSpecifier
+            .createInterleaved(sRGB,
+                    new int[] { 0, 1, 2},
+                    DataBuffer.TYPE_BYTE,
+                    false,
+                    false);
 
     /**
      *  Description of the Method
      *
      * @return    Description of the Return Value
      */
-    public BufferedImage toBufferedImage()
-    {
+    public BufferedImage toBufferedImage() {
         return toBufferedImage(1);
     }
-
 
     /**
      *  Description of the Method
@@ -624,15 +575,13 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  frame  Description of the Parameter
      * @return        Description of the Return Value
      */
-    public BufferedImage toBufferedImage(int frame)
-    {
+    public BufferedImage toBufferedImage(int frame) {
         int width = getInt(Tags.Columns, -1);
         int height = getInt(Tags.Rows, -1);
 
-        if (width == -1 || height == -1) {
-            throw new IllegalStateException("Illegal width/height: width = "
-                     + width + ", height = " + height);
-        }
+        if (width == -1 || height == -1) { throw new IllegalStateException(
+                "Illegal width/height: width = " + width + ", height = "
+                        + height); }
 
         int bitsAllocd = getInt(Tags.BitsAllocated, -1);
         int bitsStored = getInt(Tags.BitsStored, -1);
@@ -645,19 +594,16 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
 
         //some error checking
         if (bitsAllocd == -1 || bitsStored == -1 || highBit == -1
-                 || pixelRep == -1 || pmi == null || spp == -1
-                 || (planarConf == -1 && spp > 1) || pixelData == null) {
-            throw new IllegalStateException("Missing required Image Pixel Module attributes");
-        }
+                || pixelRep == -1 || pmi == null || spp == -1
+                || (planarConf == -1 && spp > 1) || pixelData == null) { throw new IllegalStateException(
+                "Missing required Image Pixel Module attributes"); }
 
         if (!((pmi.equals("RGB") && spp == 3)
-                 || (pmi.equals("PALETTE COLOR") && spp == 1)
-                 || (pmi.equals("MONOCHROME1") && spp == 1)
-                 || (pmi.equals("MONOCHROME2") && spp == 1))) {
-            throw new IllegalStateException("Invalid Photometric Interpretation ("
-                     + pmi + ") and Samples per Pixel ("
-                     + spp + ") configuration");
-        }
+                || (pmi.equals("PALETTE COLOR") && spp == 1)
+                || (pmi.equals("MONOCHROME1") && spp == 1) || (pmi
+                .equals("MONOCHROME2") && spp == 1))) { throw new IllegalStateException(
+                "Invalid Photometric Interpretation (" + pmi
+                        + ") and Samples per Pixel (" + spp + ") configuration"); }
 
         int dataBufType;
         boolean signed = (pixelRep == 1);
@@ -671,35 +617,35 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
             dataBufType = DataBuffer.TYPE_USHORT;
         } else {
             throw new IllegalStateException("Bits Allocated must be 8 or 16, "
-                     + bitsAllocd + " is not supported");
+                    + bitsAllocd + " is not supported");
         }
 
-        if (highBit != bitsStored - 1) {
-            throw new IllegalStateException("High bit must be Bits Stored - 1 "
-                     + highBit + " is not supported");
-        }
+        if (highBit != bitsStored - 1) { throw new IllegalStateException(
+                "High bit must be Bits Stored - 1 " + highBit
+                        + " is not supported"); }
 
         BufferedImage bi = null;
 
         //create BufferedImage
         if (pmi.equals("RGB")) {
             switch (planarConf) {
-                case 0:
-                    bi = RGB_PIXEL.createBufferedImage(width, height);
-                    break;
-                case 1:
-                    bi = RGB_PLANE.createBufferedImage(width, height);
-                    break;
-                default:
-                    throw new IllegalStateException("Invalid Planar Configuration for RGB");
+            case 0:
+                bi = RGB_PIXEL.createBufferedImage(width, height);
+                break;
+            case 1:
+                bi = RGB_PLANE.createBufferedImage(width, height);
+                break;
+            default:
+                throw new IllegalStateException(
+                        "Invalid Planar Configuration for RGB");
             }
         } else if (pmi.equals("MONOCHROME1") || pmi.equals("MONOCHROME2")
-                 || pmi.equals("PALETTE COLOR")) {
+                || pmi.equals("PALETTE COLOR")) {
             ColorModelFactory cmFactory = ColorModelFactory.getInstance();
-            bi = new ImageTypeSpecifier(
-                    cmFactory.getColorModel(cmFactory.makeParam(this)),
-                    new PixelInterleavedSampleModel(dataBufType, 1, 1, 1, 1,
-                    new int[]{0})).createBufferedImage(width, height);
+            bi = new ImageTypeSpecifier(cmFactory.getColorModel(cmFactory
+                    .makeParam(this)), new PixelInterleavedSampleModel(
+                    dataBufType, 1, 1, 1, 1, new int[] { 0}))
+                    .createBufferedImage(width, height);
         }
 
         //read pixeldata into the BufferedImage
@@ -707,27 +653,45 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         Object dest = null;
         if (planarConf == 0) {//read single bank for PixelInterleavedModel
             switch (dataBufType) {
-                case DataBuffer.TYPE_BYTE:
-                    dest = ((DataBufferByte) dataBuf).getData();
-                    break;
-                case DataBuffer.TYPE_USHORT:
-                    dest = ((DataBufferUShort) dataBuf).getData();
-                    break;
+            case DataBuffer.TYPE_BYTE:
+                dest = ((DataBufferByte) dataBuf).getData();
+                break;
+            case DataBuffer.TYPE_USHORT:
+                dest = ((DataBufferUShort) dataBuf).getData();
+                break;
             }
-            readPixelData(pixelData, dest, dataBufType, frame, bitsAllocd,
-                    bitsStored, highBit, signed, spp, width, height);
+            readPixelData(pixelData,
+                    dest,
+                    dataBufType,
+                    frame,
+                    bitsAllocd,
+                    bitsStored,
+                    highBit,
+                    signed,
+                    spp,
+                    width,
+                    height);
         } else {
             for (int i = 0; i < spp; i++) {//read each bank of BandedSampleModel seperately
                 switch (dataBufType) {
-                    case DataBuffer.TYPE_BYTE:
-                        dest = ((DataBufferByte) dataBuf).getData(i);
-                        break;
-                    case DataBuffer.TYPE_USHORT:
-                        dest = ((DataBufferUShort) dataBuf).getData(i);
-                        break;
+                case DataBuffer.TYPE_BYTE:
+                    dest = ((DataBufferByte) dataBuf).getData(i);
+                    break;
+                case DataBuffer.TYPE_USHORT:
+                    dest = ((DataBufferUShort) dataBuf).getData(i);
+                    break;
                 }
-                readPixelData(pixelData, dest, dataBufType, frame, bitsAllocd,
-                        bitsStored, highBit, signed, 1, width, height);
+                readPixelData(pixelData,
+                        dest,
+                        dataBufType,
+                        frame,
+                        bitsAllocd,
+                        bitsStored,
+                        highBit,
+                        signed,
+                        1,
+                        width,
+                        height);
             }
         }
 
@@ -735,50 +699,43 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     }
 
     //only supports Bits Allocated 8 or 16. signed, hb, bs are ignored.
-    private void readPixelData(ByteBuffer pixelData,
-            Object dest, int destDataType,
-            int frame,
-            int ba, int bs, int hb, boolean signed,
-            int spp, int width, int height)
-    {
+    private void readPixelData(ByteBuffer pixelData, Object dest,
+            int destDataType, int frame, int ba, int bs, int hb,
+            boolean signed, int spp, int width, int height) {
         final int size = width * height * spp;
         final int frameSize = size * (ba / 8);
         int i = 0;
 
         //seek to frame offset
-        if (frame * frameSize > pixelData.limit()) {
-            throw new IllegalArgumentException("Bad frame number: " + frame);
-        }
+        if (frame * frameSize > pixelData.limit()) { throw new IllegalArgumentException(
+                "Bad frame number: " + frame); }
         frame--;
         pixelData.position(frameSize * frame);
         //fill dest
         switch (destDataType) {
-            case DataBuffer.TYPE_BYTE:
-                byte[] bufByte = (byte[]) dest;
-                while (i < size) {
-                    bufByte[i++] = pixelData.get();
-                }
-                break;
-            case DataBuffer.TYPE_USHORT:
-                short[] bufUShort = (short[]) dest;
-                while (i < size) {
-                    bufUShort[i++] = pixelData.getShort();
-                }
-                break;
+        case DataBuffer.TYPE_BYTE:
+            byte[] bufByte = (byte[]) dest;
+            while (i < size) {
+                bufByte[i++] = pixelData.get();
+            }
+            break;
+        case DataBuffer.TYPE_USHORT:
+            short[] bufUShort = (short[]) dest;
+            while (i < size) {
+                bufUShort[i++] = pixelData.getShort();
+            }
+            break;
         }
     }
-
 
     /**
      *  Description of the Method
      *
      * @param  bi  Description of the Parameter
      */
-    public void putBufferedImage(BufferedImage bi)
-    {
+    public void putBufferedImage(BufferedImage bi) {
         putBufferedImage(bi, null, true);
     }
-
 
     /**
      *  Description of the Method
@@ -786,11 +743,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  bi            Description of the Parameter
      * @param  sourceRegion  Description of the Parameter
      */
-    public void putBufferedImage(BufferedImage bi, Rectangle sourceRegion)
-    {
+    public void putBufferedImage(BufferedImage bi, Rectangle sourceRegion) {
         putBufferedImage(bi, sourceRegion, true);
     }
-
 
     /**
      *  Description of the Method
@@ -800,19 +755,17 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  writeIndexedAsPaletteColor  Description of the Parameter
      */
     public void putBufferedImage(BufferedImage bi, Rectangle sourceRegion,
-            boolean writeIndexedAsPaletteColor)
-    {
+            boolean writeIndexedAsPaletteColor) {
         //choose proper photometric interpretation
         int dataType = bi.getType();
-        boolean writeAsMono = (dataType == BufferedImage.TYPE_BYTE_GRAY
-                 || dataType == BufferedImage.TYPE_USHORT_GRAY);
+        boolean writeAsMono = (dataType == BufferedImage.TYPE_BYTE_GRAY || dataType == BufferedImage.TYPE_USHORT_GRAY);
 
         //place Image Pixel Module and image data
         if (writeAsMono) {
             putBufferedImageAsMonochrome(bi, sourceRegion, true);
         } else {
-            boolean writeAsRGB = !(writeIndexedAsPaletteColor
-                     && bi.getColorModel() instanceof IndexColorModel);
+            boolean writeAsRGB = !(writeIndexedAsPaletteColor && bi
+                    .getColorModel() instanceof IndexColorModel);
 
             if (writeAsRGB) {
                 putBufferedImageAsRgb(bi, sourceRegion);
@@ -822,15 +775,13 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         }
     }
 
-
     /**
      *  Description of the Method
      *
      * @param  bi            Description of the Parameter
      * @param  sourceRegion  Description of the Parameter
      */
-    public void putBufferedImageAsRgb(BufferedImage bi, Rectangle sourceRegion)
-    {
+    public void putBufferedImageAsRgb(BufferedImage bi, Rectangle sourceRegion) {
         Rectangle rect;
         Rectangle sourceRect;
 
@@ -841,9 +792,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
             sourceRect = rect.intersection(sourceRegion);
         }
         //IllegalArgumentException thrown if sourceRect is empty
-        if (sourceRect.isEmpty()) {
-            throw new IllegalArgumentException("Source region is empty." + this);
-        }
+        if (sourceRect.isEmpty()) { throw new IllegalArgumentException(
+                "Source region is empty." + this); }
 
         int width = sourceRect.width;
         int height = sourceRect.height;
@@ -862,14 +812,18 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         putUS(Tags.Columns, width);// Type 1
         putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);// Type 1; 0x0=unsigned int, 0x1=2's complement
         putUS(Tags.PlanarConfiguration, 0);// Type 1C, if SamplesPerPixel > 1, should not present otherwise
-        putIS(Tags.PixelAspectRatio, new int[]{1, 1});// Type 1C, if vertical/horizontal != 1
+        putIS(Tags.PixelAspectRatio, new int[] { 1, 1});// Type 1C, if vertical/horizontal != 1
 
         byte[] rgbOut = new byte[width * height * 3];
         int dataType = bi.getData().getDataBuffer().getDataType();
         ColorModel cm = bi.getColorModel();
-        int[] pixels = bi.getRGB(sourceRect.x, sourceRect.y,
-                width, height,
-                (int[]) null, 0, width);
+        int[] pixels = bi.getRGB(sourceRect.x,
+                sourceRect.y,
+                width,
+                height,
+                (int[]) null,
+                0,
+                width);
         int ind = 0;
 
         for (int i = 0; i < pixels.length; i++) {
@@ -877,14 +831,13 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
             rgbOut[ind++] = (byte) ((pixels[i] >> 8) & 0xff);
             rgbOut[ind++] = (byte) (pixels[i] & 0xff);
             /*rgbOut[ind++] = (byte)cm.getRed(pixels[i]);
-            rgbOut[ind++] = (byte)cm.getGreen(pixels[i]);
-            rgbOut[ind++] = (byte)cm.getBlue(pixels[i]);*/
+             rgbOut[ind++] = (byte)cm.getGreen(pixels[i]);
+             rgbOut[ind++] = (byte)cm.getBlue(pixels[i]);*/
         }
 
         //set pixeldata
         putOB(Tags.PixelData, ByteBuffer.wrap(rgbOut));// Type 1; OB or OW
     }
-
 
     /**
      *  Description of the Method
@@ -893,9 +846,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  sourceRegion        Description of the Parameter
      * @param  writeAsMonochrome2  Description of the Parameter
      */
-    public void putBufferedImageAsMonochrome(BufferedImage bi, Rectangle sourceRegion,
-            boolean writeAsMonochrome2)
-    {
+    public void putBufferedImageAsMonochrome(BufferedImage bi,
+            Rectangle sourceRegion, boolean writeAsMonochrome2) {
         Rectangle rect;
         Rectangle sourceRect;
 
@@ -906,9 +858,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
             sourceRect = rect.intersection(sourceRegion);
         }
         //IllegalArgumentException thrown if sourceRect is empty
-        if (sourceRect.isEmpty()) {
-            throw new IllegalArgumentException("Source region is empty." + this);
-        }
+        if (sourceRect.isEmpty()) { throw new IllegalArgumentException(
+                "Source region is empty." + this); }
 
         int dataType = bi.getType();
         int width = sourceRect.width;
@@ -933,15 +884,17 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         putUS(Tags.BitsStored, bitsStored);// Type 1
         putUS(Tags.HighBit, highBit);// Type 1
         putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);// Type 1; 0x0=unsigned int, 0x1=2's complement
-        putIS(Tags.PixelAspectRatio, new int[]{1, 1});// Type 1C, if vertical/horizontal != 1
+        putIS(Tags.PixelAspectRatio, new int[] { 1, 1});// Type 1C, if vertical/horizontal != 1
 
         int max;// Type 1C, if vertical/horizontal != 1
 
         int min;// Type 1C, if vertical/horizontal != 1
 
         int value;
-        int[] pixels = bi.getRaster().getPixels(sourceRect.x, sourceRect.y,
-                width, height,
+        int[] pixels = bi.getRaster().getPixels(sourceRect.x,
+                sourceRect.y,
+                width,
+                height,
                 (int[]) null);
 
         //find min/max
@@ -966,7 +919,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
             }
         } else {//bitsAllocated == 16
             out = new byte[pixels.length * 2];
-            for (int i = 1; i < pixels.length; ) {
+            for (int i = 1; i < pixels.length;) {
                 out[i++] = (byte) ((pixels[i] >> 8) & 0xff);
                 out[i++] = (byte) (pixels[i] & 0xff);
             }
@@ -993,13 +946,12 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         // Image IE, VOI LUT Module, PS 3.3 - C.11.2, U
         // don't overwrite if the Dataset already contains a Window Center/Width
         if (!contains(Tags.WindowCenter)) {
-            String[] wc = {Float.toString((rs * (max + min)) / 2 + ri)};
+            String[] wc = { Float.toString((rs * (max + min)) / 2 + ri)};
             putDS(Tags.WindowCenter, wc);// Type 3
-            String[] ww = {Float.toString((rs * (max - min)) / 2)};
+            String[] ww = { Float.toString((rs * (max - min)) / 2)};
             putDS(Tags.WindowWidth, ww);// Type 1C; WindowCenter is present
         }
     }
-
 
     /**
      *  Description of the Method
@@ -1007,8 +959,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  bi            Description of the Parameter
      * @param  sourceRegion  Description of the Parameter
      */
-    public void putBufferedImageAsPaletteColor(BufferedImage bi, Rectangle sourceRegion)
-    {
+    public void putBufferedImageAsPaletteColor(BufferedImage bi,
+            Rectangle sourceRegion) {
         Rectangle rect;
         Rectangle sourceRect;
 
@@ -1019,9 +971,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
             sourceRect = rect.intersection(sourceRegion);
         }
         //IllegalArgumentException thrown if sourceRect is empty
-        if (sourceRect.isEmpty()) {
-            throw new IllegalArgumentException("Source region is empty." + this);
-        }
+        if (sourceRect.isEmpty()) { throw new IllegalArgumentException(
+                "Source region is empty." + this); }
 
         int dataType = bi.getData().getDataBuffer().getDataType();
         ColorModel cm = bi.getColorModel();
@@ -1030,7 +981,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         if (!(cm instanceof IndexColorModel)) {
             throw new IllegalArgumentException(
                     "BufferedImage's ColorModel must be an IndexColorModel to represent"
-                     + " as a \"PALETTE COLOR\" DICOM image");
+                            + " as a \"PALETTE COLOR\" DICOM image");
         } else {
             icm = (IndexColorModel) cm;
         }
@@ -1044,17 +995,15 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         //System.out.println("icm.getPixelSize() = " + paletteIndexSize);
 
         //sanity check on palette size
-        if (paletteSize > maxPaletteSize) {
-            throw new IllegalArgumentException(
-                    "BufferedImage contains a palette that is too large to be"
-                     + " encoded as a DICOM Color LUT (" + paletteSize + ")");
-        }
+        if (paletteSize > maxPaletteSize) { throw new IllegalArgumentException(
+                "BufferedImage contains a palette that is too large to be"
+                        + " encoded as a DICOM Color LUT (" + paletteSize + ")"); }
 
         //sanity check on pixel size (the index into palette)
-        if (paletteIndexSize == 0 || paletteIndexSize > 16) {
-            throw new UnsupportedOperationException("BufferedImages with a pixel size of "
-                     + paletteIndexSize + " bits are not supported, only 1 to 16 bits are supported");
-        }
+        if (paletteIndexSize == 0 || paletteIndexSize > 16) { throw new UnsupportedOperationException(
+                "BufferedImages with a pixel size of "
+                        + paletteIndexSize
+                        + " bits are not supported, only 1 to 16 bits are supported"); }
 
         int width = sourceRect.width;
         int height = sourceRect.height;
@@ -1072,7 +1021,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         putUS(Tags.BitsStored, bitsStored);// Type 1
         putUS(Tags.HighBit, highBit);// Type 1
         putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);// Type 1; 0x0=unsigned int, 0x1=2's complement
-        putIS(Tags.PixelAspectRatio, new int[]{1, 1});// Type 1C, if vertical/horizontal != 1
+        putIS(Tags.PixelAspectRatio, new int[] { 1, 1});// Type 1C, if vertical/horizontal != 1
 
         //write palette descriptor
         ByteBuffer pDescriptor;
@@ -1084,7 +1033,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         ByteBuffer bByteBuffer;
 
         pDescriptor = ByteBuffer.allocate(3 * 2);
-        pDescriptor.putShort((short) ((paletteSize == maxPaletteSize) ? 0 : paletteSize));// number of entries
+        pDescriptor.putShort((short) ((paletteSize == maxPaletteSize) ? 0
+                : paletteSize));// number of entries
         pDescriptor.putShort((short) 0);// first stored pixel value mapped
         pDescriptor.putShort((short) 8);// number of bits, always 8 for IndexColorModel's internal color component tables
 
@@ -1106,9 +1056,12 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
 
         //grab word chunks and place words in buffer
         for (int idx = 0; idx < paletteSize; idx += 2) {
-            rByteBuffer.putShort((short) ((rPalette[idx + 1] << 8) + rPalette[idx]));
-            gByteBuffer.putShort((short) ((gPalette[idx + 1] << 8) + gPalette[idx]));
-            bByteBuffer.putShort((short) ((bPalette[idx + 1] << 8) + bPalette[idx]));
+            rByteBuffer
+                    .putShort((short) ((rPalette[idx + 1] << 8) + rPalette[idx]));
+            gByteBuffer
+                    .putShort((short) ((gPalette[idx + 1] << 8) + gPalette[idx]));
+            bByteBuffer
+                    .putShort((short) ((bPalette[idx + 1] << 8) + bPalette[idx]));
         }
 
         putOW(Tags.RedPaletteColorLUTData, rByteBuffer);// Type 1C; US or SS or OW
@@ -1116,8 +1069,10 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         putOW(Tags.BluePaletteColorLUTData, bByteBuffer);// Type 1C; US or SS or OW
 
         //read pixels as int's, should be one sample per each pixel (palette index)
-        int[] pixels = bi.getRaster().getPixels(sourceRect.x, sourceRect.y,
-                width, height,
+        int[] pixels = bi.getRaster().getPixels(sourceRect.x,
+                sourceRect.y,
+                width,
+                height,
                 (int[]) null);
         byte[] indOut;
         int ind = 0;

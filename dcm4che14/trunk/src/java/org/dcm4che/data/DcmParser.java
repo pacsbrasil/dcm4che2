@@ -28,6 +28,7 @@ import org.dcm4che.dict.VRMap;
 
 import org.xml.sax.ContentHandler;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -46,17 +47,20 @@ public interface DcmParser {
     long getStreamPosition();
 
     void setStreamPosition(long pos);
-    
+
     void seek(long pos) throws IOException;
 
     void setDcmHandler(DcmHandler handler);
 
     void setSAXHandler(ContentHandler hc, TagDictionary dict);
-    
+
+    void setSAXHandler2(ContentHandler hc, TagDictionary dict,
+            int[] excludeTags, File basedir);
+
     void setVRMap(VRMap vrMap);
-    
+
     void setDcmDecodeParam(DcmDecodeParam decodeParam);
-    
+
     DcmDecodeParam getDcmDecodeParam();
 
     FileFormat detectFileFormat() throws IOException;
@@ -67,24 +71,21 @@ public interface DcmParser {
             throws IOException;
 
     long parseFileMetaInfo() throws IOException;
-    
+
     long parseCommand() throws IOException;
-    
-    long parseDataset(String tuid, int stopTag)
-            throws IOException;
 
-    long parseDataset(DcmDecodeParam param, int stopTag)
-            throws IOException;
+    long parseDataset(String tuid, int stopTag) throws IOException;
 
-    long parseDcmFile(FileFormat format, int stopTag)
-            throws IOException;
-    
+    long parseDataset(DcmDecodeParam param, int stopTag) throws IOException;
+
+    long parseDcmFile(FileFormat format, int stopTag) throws IOException;
+
     long parseItemDataset() throws IOException;
 
     int getReadTag();
-        
+
     int getReadVR();
-        
+
     int getReadLength();
 
     boolean hasSeenEOF();

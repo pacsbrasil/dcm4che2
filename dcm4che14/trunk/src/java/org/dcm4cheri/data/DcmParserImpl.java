@@ -35,6 +35,7 @@ import org.dcm4che.dict.VRMap;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.EOFException;
@@ -140,7 +141,12 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     public final void setSAXHandler(ContentHandler hc, TagDictionary dict) {
         this.handler = new DcmHandlerAdapter(hc, dict);
     }
-/*    
+
+    public final void setSAXHandler2(ContentHandler ch, TagDictionary dict,
+            int[] excludeTags, File basedir) {
+        this.handler = new DcmHandlerAdapter2(ch, dict, excludeTags, basedir);
+    }
+    /*    
     public final void setInput(InputStream in) {
         if (in != null) {
             this.in = in instanceof DataInput ? (DataInput)in

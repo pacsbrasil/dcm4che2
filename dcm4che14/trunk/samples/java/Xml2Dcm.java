@@ -1,25 +1,11 @@
-/*$Id$*/
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
- *                                                                           *
- *  This file is part of dcm4che.                                            *
- *                                                                           *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmValueException;
@@ -33,56 +19,71 @@ import gnu.getopt.*;
 /**
  *
  * @author  gunter.zeilinger@tiani.com
+ * @version $Revision$ $Date$
  */
 public class Xml2Dcm {
 
     private Dataset ds = DcmObjectFactory.getInstance().newDataset();
-    
+
+    private File baseDir = new File(".");
+
     /** Creates a new instance of Xml2Dcm */
     public Xml2Dcm() {
     }
-    
+
+    public final void setBaseDir(File baseDir) {
+        this.baseDir = baseDir;
+    }
+
     public void read(DataInputStream in) throws IOException, DcmValueException {
         ds.clear();
         try {
             ds.readFile(in, null, -1);
         } finally {
-            try { in.close(); } catch (IOException ignore) {}
+            try {
+                in.close();
+            } catch (IOException ignore) {
+            }
         }
     }
-            
+
     public void process(String xml_file, DataOutputStream out)
             throws IOException, DcmValueException,
-                ParserConfigurationException, SAXException {
+            ParserConfigurationException, SAXException {
         try {
             SAXParserFactory f = SAXParserFactory.newInstance();
             SAXParser p = f.newSAXParser();
-            p.parse(new File(xml_file), ds.getSAXHandler());
+            p.parse(new File(xml_file), ds.getSAXHandler2(baseDir));
             ds.writeFile(out, null);
         } finally {
-            try { out.close(); } catch (IOException ignore) {}
-        }        
-    }        
-    
+            try {
+                out.close();
+            } catch (IOException ignore) {
+            }
+        }
+    }
+
     /**
-    * @param args the command line arguments
-    */
-    public static void main (String args[]) throws Exception {
-        Getopt g = new Getopt("xml2dcm.jar", args, "i:");
-        
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) throws Exception {
+        Getopt g = new Getopt("xml2dcm.jar", args, "2i:d:");
+
         Xml2Dcm xml2dcm = new Xml2Dcm();
         int c;
         while ((c = g.getopt()) != -1) {
-            switch (c) {                
-                case 'i':
-                    xml2dcm.read(new DataInputStream(
-                            new BufferedInputStream(
-                            new FileInputStream(g.getOptarg()))));
-                    break;
-                case '?':
-                    exit("");
-                    break;
-                }
+            switch (c) {
+            case 'd':
+                xml2dcm.setBaseDir(new File(g.getOptarg()));
+                break;
+            case 'i':
+                xml2dcm.read(new DataInputStream(new BufferedInputStream(
+                        new FileInputStream(g.getOptarg()))));
+                break;
+            case '?':
+                exit("");
+                break;
+            }
         }
         int optind = g.getOptind();
         int argc = args.length - optind;
@@ -93,20 +94,22 @@ public class Xml2Dcm {
         if (argc > 2) {
             exit("xml2dcm.jar: To many arguments\n");
         }
-        xml2dcm.process(args[optind], new DataOutputStream(
-                            new BufferedOutputStream(
-                            new FileOutputStream(args[optind+1]))));
+        xml2dcm.process(args[optind],
+                new DataOutputStream(new BufferedOutputStream(
+                        new FileOutputStream(args[optind + 1]))));
     }
-    
+
     private static void exit(String prompt) {
         System.err.println(prompt);
         System.err.println(USAGE);
         System.exit(1);
     }
 
-    private static final String USAGE =
-"Usage: java -jar xml2dcm.jar [-i <dcm_file>] <xml_file> <dcm_file>\n\n" +
-"Create or update DICOM file <dcm_file> according XML specification <xml_file>.\n\n" +
-"Options:\n" +
-" -i <dcm_file>  Update specified DICOM file but store it as new one.\n";
+    private static final String USAGE = "Usage:\n\n"
+            + " java -jar xml2dcm.jar [-i <dcm_file>] [-d <base_di>] <xml_file> <dcm_file>\n\n"
+            + "Create or update DICOM file <dcm_file> according XML specification <xml_file>.\n\n"
+            + "Options:\n"
+            + " -i <dcm_file>  Update specified DICOM file but store it as new one.\n"
+            + " -d <base_dir>  Specifies directory where referenced source files are located\n"
+            + "                Default: current working directory.\n";
 }

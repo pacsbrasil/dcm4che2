@@ -3,7 +3,7 @@
 <project name="dcm4che" basedir="." default="release">
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.0.26"/>
+   <property name="version" value="1.0.27"/>
    <property name="javac.debug" value="on"/>
    
    <target name="init">
@@ -233,7 +233,7 @@
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
 	    	</manifest>
           <fileset dir="${build.classes.dir}" includes="Dcm2Xml*"/>
-           <fileset dir="${build.res.dir}" includes="Dcm2Xml*"/>
+           <fileset dir="${build.res.dir}" includes="Dcm2Xml2.xsl"/>
       </jar>
       <jar jarfile="${build.samples.dir}/xml2dcm.jar">
         	<manifest>
@@ -248,7 +248,8 @@
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}" includes="DcmDir*"/>
-           <fileset dir="${build.res.dir}" includes="DcmDir*"/>
+           <fileset dir="${build.res.dir}" includes="DcmDir.properties"/>
+           <fileset dir="${build.res.dir}" includes="Dcm2Xml2.xsl"/>
       </jar>
       <jar jarfile="${build.samples.dir}/dcmrcv.jar">
         	<manifest>
@@ -407,7 +408,7 @@
             <include name="Xml2Dcm.java"/>
          </fileset>
          <fileset dir="${samples.res.dir}">
-            <include name="Dcm2Xml.xsl"/>
+            <include name="Dcm2Xml2.xsl"/>
          </fileset>
       </copy>
 

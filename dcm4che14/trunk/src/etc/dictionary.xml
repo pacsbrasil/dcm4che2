@@ -1103,6 +1103,7 @@
   <element tag="(0040,A13A)" name="Referenced Datetime" vr="DT" vm="1-n" key="RefDatetime" />
   <element tag="(0040,A160)" name="Text Value" vr="UT" vm="1" key="TextValue" />
   <element tag="(0040,A168)" name="Concept Code Sequence" vr="SQ" vm="1" key="ConceptCodeSeq" />
+  <element tag="(0040,A170)" name="Purpose of Reference Code Sequence" vr="SQ" vm="1" key="PurposeOfReferenceCodeSeq" />
   <element tag="(0040,A180)" name="Annotation Group Number" vr="US" vm="1" key="AnnotationGroupNumber" />
   <element tag="(0040,A195)" name="Modifier Code Sequence" vr="SQ" vm="1" key="ModifierCodeSeq" />
   <element tag="(0040,A300)" name="Measured Value Sequence" vr="SQ" vm="1" key="MeasuredValueSeq" />

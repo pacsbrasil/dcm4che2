@@ -1,22 +1,13 @@
-/*  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- *  This file is part of dcm4che.
- *
- *  This library is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU Lesser General Public License as published
- *  by the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4che.data;
+
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -43,110 +34,80 @@ import org.xml.sax.ContentHandler;
  * @see        "DICOM Part 5: Data Structures and Encoding, 7. The Data Set"
  * @version    $Revision$ $Date$ <p>
  */
-public interface Dataset extends DcmObject, Serializable
-{
+public interface Dataset extends DcmObject, Serializable {
 
     void shareElements();
-    
-    Dataset setFileMetaInfo(FileMetaInfo fmi);
 
+    Dataset setFileMetaInfo(FileMetaInfo fmi);
 
     FileMetaInfo getFileMetaInfo();
 
-
     Dataset getParent();
-
 
     Dataset setItemOffset(long itemOffset);
 
-
     long getItemOffset();
-
 
     int calcLength(DcmEncodeParam param);
 
-
     void writeDataset(DcmHandler handler, DcmEncodeParam param)
-        throws IOException;
-
+            throws IOException;
 
     void writeDataset(OutputStream out, DcmEncodeParam param)
-        throws IOException;
-
+            throws IOException;
 
     void writeDataset(ImageOutputStream out, DcmEncodeParam param)
-        throws IOException;
-
+            throws IOException;
 
     void readDataset(InputStream in, DcmDecodeParam param, int stopTag)
-        throws IOException;
-
+            throws IOException;
 
     void readFile(InputStream in, FileFormat format, int stopTag)
-        throws IOException;
-
+            throws IOException;
 
     void readFile(ImageInputStream iin, FileFormat format, int stopTag)
-        throws IOException;
+            throws IOException;
 
-    
-    void readFile(File file, FileFormat format, int stopTag)
-    	throws IOException;
+    void readFile(File file, FileFormat format, int stopTag) throws IOException;
 
-
-    void writeFile(OutputStream out, DcmEncodeParam param)
-        throws IOException;
-
+    void writeFile(OutputStream out, DcmEncodeParam param) throws IOException;
 
     void writeFile(ImageOutputStream iout, DcmEncodeParam param)
-        throws IOException;
+            throws IOException;
 
-    
-    void writeFile(File file, DcmEncodeParam param)
-		throws IOException;
-
+    void writeFile(File file, DcmEncodeParam param) throws IOException;
 
     void writeFile(ContentHandler handler, TagDictionary dict)
-        throws IOException;
+            throws IOException;
 
+    void writeFile2(ContentHandler ch, TagDictionary dict, int[] excludeTags,
+            File basedir) throws IOException;
 
     void writeDataset(ContentHandler handler, TagDictionary dict)
-        throws IOException;
+            throws IOException;
 
+    void writeDataset2(ContentHandler ch, TagDictionary dict,
+            int[] excludeTags, File basedir) throws IOException;
 
     Dataset subSet(int fromTag, int toTag);
-
 
     Dataset subSet(Dataset filter);
 
     Dataset subSet(int[] tags);
-    
+
     Dataset subSet(int[] tags, boolean exclude);
     
+    Dataset exclude(int[] tags, boolean privateTags);
+
     boolean match(Dataset keys, boolean ignorePNCase, boolean ignoreEmpty);
 
+    public void dumpDataset(OutputStream out, Map map, int[] excludeTags) throws IOException;
 
-    /**
-     *  Description of the Method
-     *
-     * @param  out              Description of the Parameter
-     * @param  map              Description of the Parameter
-     * @exception  IOException  Description of the Exception
-     */
-    public void dumpDataset(OutputStream out, Map map)
-        throws IOException;
+    public void dumpDataset(OutputStream out, Map map) throws IOException;
 
+    public void dumpDataset(Writer w, Map map, int[] excludeTags) throws IOException;
 
-    /**
-     *  Description of the Method
-     *
-     * @param  w                Description of the Parameter
-     * @param  map              Description of the Parameter
-     * @exception  IOException  Description of the Exception
-     */
-    public void dumpDataset(Writer w, Map map)
-        throws IOException;
-
+    public void dumpDataset(Writer w, Map map) throws IOException;
 
     /**
      * Constructs a <code>BufferedImage</code> representing this datasets image. The
@@ -157,7 +118,6 @@ public interface Dataset extends DcmObject, Serializable
      * Image Pixel Module attributes describing the encoding of DICOM image pixel data
      */
     BufferedImage toBufferedImage();
-
 
     /**
      * Constructs a <code>BufferedImage</code> of the given <code>frame</code>
@@ -171,7 +131,6 @@ public interface Dataset extends DcmObject, Serializable
      */
     BufferedImage toBufferedImage(int frame);
 
-
     /**
      * Place the attributes to represent the given <code>BufferedImage</code>
      * into this dataset. The most appropriate Image Pixel Module attributes to
@@ -183,20 +142,15 @@ public interface Dataset extends DcmObject, Serializable
      */
     void putBufferedImage(BufferedImage bi);
 
-
     void putBufferedImage(BufferedImage bi, Rectangle sourceRegion);
-
 
     void putBufferedImage(BufferedImage bi, Rectangle sourceRegion,
             boolean writeIndexedAsPaletteColor);
 
-
     void putBufferedImageAsRgb(BufferedImage bi, Rectangle sourceRegion);
-
 
     void putBufferedImageAsMonochrome(BufferedImage bi, Rectangle sourceRegion,
             boolean writeAsMonochrome2);
-
 
     void putBufferedImageAsPaletteColor(BufferedImage bi, Rectangle sourceRegion);
 }
