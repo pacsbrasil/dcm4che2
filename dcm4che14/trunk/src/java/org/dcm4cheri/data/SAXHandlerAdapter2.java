@@ -48,13 +48,13 @@ class SAXHandlerAdapter2 extends DefaultHandler {
 
     private final Stack vrStack = new Stack();
 
+    private final Stack idStack = new Stack();
+    
     private final DcmHandler handler;
     
     private final File baseDir;
 
     private int vr;
-
-    private int itemId;
 
     private int state = EXPECT_ELM;
     
@@ -77,7 +77,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
             if ("attr".equals(qName)) {
                 onStartElement(attrs.getValue("tag"), attrs.getValue("vr"), attrs.getValue("src"));
             } else if ("item".equals(qName)) {
-                onStartItem(attrs.getValue("id"), attrs.getValue("src"));
+                onStartItem(attrs.getValue("src"));
             } else if ("filemetainfo".equals(qName)) {
                 handler.startFileMetaInfo(new byte[128]);
             } else if ("dataset".equals(qName)) {
@@ -140,6 +140,8 @@ class SAXHandlerAdapter2 extends DefaultHandler {
             break;
         case EXPECT_NEXT_ITEM:
             handler.endSequence(-1);
+            vrStack.pop();
+            idStack.pop();
             break;
         default:
             throw new IllegalArgumentException("state:" + state);
@@ -148,15 +150,16 @@ class SAXHandlerAdapter2 extends DefaultHandler {
         state = EXPECT_ELM;
     }
 
-    private void onStartItem(String id, String src) throws IOException {
+    private void onStartItem(String src) throws IOException {
         if (state == EXPECT_VAL_OR_FIRST_ITEM) {
             handler.startSequence(-1);
             vrStack.push(new Integer(vr));
+            idStack.push(new int[]{0});
         }
         this.src = src;
-        this.itemId = Integer.parseInt(id);
+        int id = ++((int[])(idStack.peek()))[0];
         if (((Integer) (vrStack.peek())).intValue() == VRs.SQ) {
-            handler.startItem(itemId, -1, -1);
+            handler.startItem(id, -1, -1);
             state = EXPECT_ELM;
         } else {
             state = EXPECT_FRAG;
@@ -164,13 +167,14 @@ class SAXHandlerAdapter2 extends DefaultHandler {
     }
 
     private void onEndItem() throws IOException {
+        int id = ((int[])(idStack.peek()))[0]--;
         switch (state) {
         case EXPECT_ELM:
             handler.endItem(-1);
             break;
         case EXPECT_FRAG:
             byte[] data =  src != null ? readData() : getData();
-            handler.fragment(itemId, -1, data, 0, data.length);
+            handler.fragment(id, -1, data, 0, data.length);
             break;
         default:
             throw new IllegalArgumentException("state:" + state);
@@ -210,8 +214,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
             parseFD(last);
             break;
         case VRs.OB:
-        case VRs.UN:
-            parseOB_UN(last);
+            parseOB(last);
             break;
         case VRs.OW:
         case VRs.SS:
@@ -221,6 +224,9 @@ class SAXHandlerAdapter2 extends DefaultHandler {
         case VRs.SL:
         case VRs.UL:
             parseSL_UL(last);
+        	break;
+        case VRs.UN:
+            parseUN(last);
         	break;
         }
     }
@@ -245,6 +251,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
             if ((out.size() & 1) != 0) out.write(0);
 	        data = out.toByteArray();
 	        out.reset();
+	        break;
         default:
             if ((sb.length() & 1) != 0)
                     sb.append(vr == VRs.UI ? '\0' : ' ');
@@ -338,7 +345,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
         out.write((int) ((l >> 56) & 0xff));
     }
 
-    private void parseOB_UN(boolean last) {
+    private void parseOB(boolean last) {
         if (sb.length() == 0) return;
         int begin = 0;
         int end;
@@ -352,6 +359,26 @@ class SAXHandlerAdapter2 extends DefaultHandler {
             out.write(Integer.parseInt(remain));
         else
             sb.append(remain);
+    }
+
+    private void parseUN(boolean last) {
+        if (sb.length() == 0) return;
+        int begin = 0;
+        for (int end = sb.length() - 2; begin < end; ++begin) {
+            char ch = sb.charAt(begin);
+            if (ch != '\\' || sb.charAt(++begin) == '\\') {
+                out.write(ch);
+                continue;
+            }
+            out.write(Integer.parseInt(sb.substring(begin, begin+2), 16));
+            ++begin;
+        }
+        String remain = sb.substring(begin);
+        sb.setLength(0);
+        if (last)
+            out.write(remain.getBytes(), 0, remain.length());
+        else
+            sb.append(remain);            
     }
 
     private void parseOW_SS_US(boolean last) {

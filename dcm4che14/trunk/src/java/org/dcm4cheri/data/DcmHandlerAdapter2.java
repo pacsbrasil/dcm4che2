@@ -34,6 +34,9 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 class DcmHandlerAdapter2 implements DcmHandler {
 
+    private static final char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
     private static final Attributes EMPTY_ATTR = new AttributesImpl();
 
     private final ContentHandler handler;
@@ -100,7 +103,7 @@ class DcmHandlerAdapter2 implements DcmHandler {
         if (preamble == null) return;
         try {
             handler.startElement("", "preamble", "preamble", EMPTY_ATTR);
-            outOB_UN(preamble, 0, preamble.length);
+            outOB(preamble, 0, preamble.length);
             handler.endElement("", "preamble", "preamble");
         } catch (SAXException se) {
             throw (IOException) new IOException(
@@ -341,8 +344,7 @@ class DcmHandlerAdapter2 implements DcmHandler {
             outFD(data, start, length);
             return;
         case VRs.OB:
-        case VRs.UN:
-            outOB_UN(data, start, length);
+            outOB(data, start, length);
             return;
         case VRs.OW:
         case VRs.US:
@@ -353,6 +355,9 @@ class DcmHandlerAdapter2 implements DcmHandler {
             return;
         case VRs.SS:
             outOW_SS_US(data, start, length, -1);
+            return;
+        case VRs.UN:
+            outUN(data, start, length);
             return;
         case VRs.UL:
             outSL_UL(data, start, length, 0xffffffffL);
@@ -435,13 +440,27 @@ class DcmHandlerAdapter2 implements DcmHandler {
         flushChars();
     }
 
-    private void outOB_UN(byte[] data, int start, int length)
-            throws SAXException {
+    private void outOB(byte[] data, int start, int length) throws SAXException {
         for (int i = 0, j = start; i < length; i++, j++) {
             if (sb.length() + 4 > cbuf.length) flushChars();
             sb.append(data[j] & 0xff).append('\\');
         }
         sb.setLength(sb.length() - 1);
+        flushChars();
+    }
+
+    private void outUN(byte[] data, int start, int length) throws SAXException {
+        for (int i = 0, j = start; i < length; i++, j++) {            
+            if (sb.length() + 3 > cbuf.length) flushChars();
+            int v = data[j];
+            if (v >= 32 && v < 128) {
+                sb.append((char)v);
+                if (v == '\\')
+                    sb.append('\\');
+            } else {
+                sb.append('\\').append(HEX_DIGIT[(v>>4)&0xf]).append(HEX_DIGIT[v&0xf]);
+            }
+        }
         flushChars();
     }
 
