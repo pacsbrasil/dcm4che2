@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package org.dcm4che.data;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -132,8 +133,41 @@ public interface Dataset extends DcmObject, Serializable
         throws IOException;
 
 
+    /**
+     * Constructs a <code>BufferedImage</code> representing this datasets image. The
+     * first image, if multiframe.
+     * @throws IllegalStateException If this dataset contains invalid or unsupported
+     * Image Pixel Module attributes describing the encoding of DICOM image pixel data
+     * @return A <code>BufferedImage</code> representing the encoded DICOM image.
+     */
     BufferedImage toBufferedImage();
 
+    /**
+     * Constructs a <code>BufferedImage</code> of the given <code>frame</code>
+     * number of this dataset
+     * @param frame The frame number to convert to a <code>BufferedImage</code>
+     * @throws IllegalStateException If this dataset contains invalid or unsupported
+     * Image Pixel Module attributes describing the encoding of DICOM image pixel data
+     * @throws IllegalArgumentException If <code>frame</code> does not appear to exist
+     * @return A <code>BufferedImage</code> representing the encoded DICOM image.
+     */
+    BufferedImage toBufferedImage(int frame);
 
-    Dataset putBufferedImage(BufferedImage bi);
+    /**
+     * Place the attributes to represent the given <code>BufferedImage</code>
+     * into this dataset. The most appropriate Image Pixel Module attributes to
+     * represent the BufferedImage are placed in the dataset as well as the actual
+     * image data and any other related attributes (palette LUTs, etc). No other
+     * attributes are set.
+     * @param bi A <code>BufferedImage</code>
+     */
+    void putBufferedImage(BufferedImage bi);
+    void putBufferedImage(BufferedImage bi, Rectangle sourceRegion);
+    void putBufferedImage(BufferedImage bi, Rectangle sourceRegion,
+                          boolean writeIndexedAsPaletteColor);
+
+    void putBufferedImageAsRgb(BufferedImage bi, Rectangle sourceRegion);
+    void putBufferedImageAsMonochrome(BufferedImage bi, Rectangle sourceRegion,
+                                      boolean writeAsMonochrome2);
+    void putBufferedImageAsPaletteColor(BufferedImage bi, Rectangle sourceRegion);
 }
