@@ -69,8 +69,12 @@ public abstract class StoreAuditRecordBean implements SessionBean
      * @param  xmldata Description of the Parameter
      * @ejb:interface-method
      */
-    public void store(String xmldata)
+    public void store(String content)
     {
+        int start = content.indexOf('<');
+        if (start == -1)
+            throw new IllegalArgumentException("No XML content: " + content);
+        String xmldata = content.substring(start);
         Timestamp ts = null;
         String type, host, aet, userName, patientName, patientId;
         
