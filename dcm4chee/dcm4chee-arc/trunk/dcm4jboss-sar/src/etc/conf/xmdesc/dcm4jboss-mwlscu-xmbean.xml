@@ -117,5 +117,17 @@
       </parameter>
       <return-type>java.util.List</return-type>
    </operation>
+
+   <operation impact="ACTION">
+      <description>Delete an MWL entry.
+      </description>
+      <name>deleteMWLEntry</name>
+      <parameter>
+        <description>ID of MWL entry (Scheduled Procedure Step ID)</description>
+        <name>spsID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
  
 </mbean>

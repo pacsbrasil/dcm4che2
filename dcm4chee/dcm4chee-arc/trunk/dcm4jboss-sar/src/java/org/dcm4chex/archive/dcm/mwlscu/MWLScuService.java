@@ -10,11 +10,14 @@ package org.dcm4chex.archive.dcm.mwlscu;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.ejb.CreateException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -28,9 +31,13 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
+import org.dcm4chex.archive.ejb.interfaces.MWLManager;
+import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -67,6 +74,8 @@ public class MWLScuService extends ServiceMBeanSupport {
 
 	private static final AssociationFactory aFact = AssociationFactory.getInstance();
     private static final DcmObjectFactory oFact = DcmObjectFactory.getInstance();
+
+	private MWLManager mwlManager;
     
             
 	/**
@@ -213,6 +222,17 @@ public class MWLScuService extends ServiceMBeanSupport {
     protected void stopService() throws Exception {
         super.stopService();
     }
+    
+    public boolean deleteMWLEntry( String spsID ) {
+    	try {
+			lookupMWLManager().removeWorklistItem( spsID );
+			log.info("MWL entry with id "+spsID+" removed!");
+			return true;
+		} catch (Exception x) {
+			log.error("Can't delete MWLEntry with id:"+spsID, x );
+			return false;
+		}
+    }
 
     
     /**
@@ -335,5 +355,25 @@ public class MWLScuService extends ServiceMBeanSupport {
         					 UIDs.forName("ImplicitVRLittleEndian")} ));
     	return assocRQ;
 	}
+	
+	/**
+	 * Returns the MWLManager session bean.
+	 * 
+	 * @return The MWLManager.
+	 * 
+	 * @throws HomeFactoryException
+	 * @throws RemoteException
+	 * @throws CreateException
+	 */
+    private MWLManager lookupMWLManager() throws HomeFactoryException, RemoteException, CreateException {
+    	if ( mwlManager == null ) {
+    		MWLManagerHome home = (MWLManagerHome) EJBHomeFactory
+	        .getFactory().lookup(MWLManagerHome.class,
+	        		MWLManagerHome.JNDI_NAME);
+    		mwlManager = home.create();
+    	}
+    	return mwlManager;
+    }
+	
 	
 }
