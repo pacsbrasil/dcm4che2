@@ -70,18 +70,18 @@ class MPPSScp extends DcmServiceBase {
         final String iuid = rspCmd.getAffectedSOPInstanceUID();
         service.logDataset("Creating MPPS:\n", mpps);
         checkCreateAttributs(mpps);
-        createMPPS(iuid, mpps);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
+        createMPPS(mpps);
         service.sendMPPSNotification(mpps);
         return null;
     }
 
-    private void createMPPS(String iuid, Dataset mpps)
+    private void createMPPS(Dataset mpps)
             throws DcmServiceException {
         try {
             MPPSManager mgr = getMPPSManagerHome().create();
             try {
-                mgr.createMPPS(iuid, mpps);
+                mgr.createMPPS(mpps);
             } finally {
                 try {
                     mgr.remove();
@@ -103,18 +103,18 @@ class MPPSScp extends DcmServiceBase {
         final String iuid = cmd.getRequestedSOPInstanceUID();
         service.logDataset("Set MPPS:\n", mpps);
         checkSetAttributs(mpps);
-        updateMPPS(iuid, mpps);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
+        updateMPPS(mpps);
         service.sendMPPSNotification(mpps);
         return null;
     }
     
-    private void updateMPPS(String iuid, Dataset mpps)
+    private void updateMPPS(Dataset mpps)
             throws DcmServiceException {
         try {
             MPPSManager mgr = getMPPSManagerHome().create();
             try {
-                 mgr.updateMPPS(iuid, mpps);
+                 mgr.updateMPPS(mpps);
             } finally {
                 try {
                     mgr.remove();

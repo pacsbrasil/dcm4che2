@@ -230,18 +230,18 @@ public abstract class MPPSBean implements EntityBean {
 	 * 
 	 * @ejb.create-method
 	 */
-	public Integer ejbCreate(String iuid, Dataset ds, PatientLocal patient)
+	public Integer ejbCreate(Dataset ds, PatientLocal patient)
 			throws CreateException {
-		setSopIuid(iuid);
+		setSopIuid(ds.getString(Tags.SOPInstanceUID));
 		return null;
 	}
 
-	public void ejbPostCreate(String iuid, Dataset ds, PatientLocal patient)
+	public void ejbPostCreate(Dataset ds, PatientLocal patient)
 			throws CreateException {
 		setPatient(patient);
 		setAttributes(ds);
 		try {
-			setSeries(seriesHome.findByPpsIuid(iuid));
+			setSeries(seriesHome.findByPpsIuid(getSopIuid()));
 		} catch (FinderException e) {
 			throw new EJBException(e);
 		}

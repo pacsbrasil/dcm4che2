@@ -95,13 +95,13 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void createMPPS(String iuid, Dataset ds)
+    public void createMPPS(Dataset ds)
         throws DcmServiceException {
         try {
-            mppsHome.create(iuid, ds.subSet(PATIENT_ATTRS_EXC, true, true), getPatient(ds));
+            mppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true), getPatient(ds));
         } catch (CreateException ce) {
             try {
-                mppsHome.findBySopIuid(iuid);
+                mppsHome.findBySopIuid(ds.getString(Tags.SOPInstanceUID));
                 throw new DcmServiceException(Status.DuplicateSOPInstance);
             } catch (FinderException fe) {
                 throw new DcmServiceException(Status.ProcessingFailure, ce);
@@ -141,11 +141,11 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updateMPPS(String iuid, Dataset ds)
+    public void updateMPPS(Dataset ds)
         throws DcmServiceException {
         MPPSLocal mpps;
         try {
-            mpps = mppsHome.findBySopIuid(iuid);
+            mpps = mppsHome.findBySopIuid(ds.getString(Tags.SOPInstanceUID));
         } catch (ObjectNotFoundException e) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
         } catch (FinderException e) {

@@ -65,7 +65,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
     private static final int[] STUDY_SSA_TAGS = { Tags.AccessionNumber,
             Tags.StudyInstanceUID };
 
-    private static final int[] SERIES_PPS_TAGS = { Tags.RefPPSSeq, 
+    private static final int[] SERIES_PPS_TAGS = {  
             Tags.PPSStartDate, Tags.PPSStartTime, Tags.PPSID };
 
     private SeriesLocalHome seriesHome;
@@ -142,6 +142,9 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             SeriesLocal series = (SeriesLocal) list.get(i);
             Dataset seriesAttrs = series.getAttributes(false);
             seriesAttrs.putAll(mpps.subSet(SERIES_PPS_TAGS));
+            Dataset refPPS = seriesAttrs.putSQ(Tags.RefPPSSeq).addNewItem();
+            refPPS.putUI(Tags.RefSOPClassUID, mpps.getString(Tags.SOPClassUID));
+            refPPS.putUI(Tags.RefSOPInstanceUID, mpps.getString(Tags.SOPInstanceUID));            
             series.setAttributes(seriesAttrs);
         }
         return mpps;
@@ -166,13 +169,13 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             Dataset ssa = mpps.putSQ(Tags.ScheduledStepAttributesSeq)
                     .addNewItem();
             ssa.putAll(studyAttrs.subSet(STUDY_SSA_TAGS));
-            Dataset refPPS = mpps.putSQ(Tags.RefPPSSeq).addNewItem();
-            refPPS.putUI(Tags.RefSOPClassUID, UIDs.ModalityPerformedProcedureStep);
-            refPPS.putUI(Tags.RefSOPInstanceUID, UIDGenerator.getInstance()
-                    .createUID());
+            final String iuid = UIDGenerator.getInstance().createUID();
+            mpps.putUI(Tags.SOPInstanceUID, iuid);
+            mpps.putUI(Tags.SOPClassUID, UIDs.ModalityPerformedProcedureStep);
             mpps.putAE(Tags.PerformedStationAET, sourceAET);
             mpps.putSH(Tags.PerformedStationName, seriesAttrs
                     .getString(Tags.StationName));
+            mpps.putCS(Tags.Modality, seriesAttrs.getString(Tags.Modality));
             mpps.putSH(Tags.PPSID, makePPSID(md, suid));
             mpps.putLO(Tags.PerformedProcedureTypeDescription, studyAttrs
                     .getString(Tags.StudyDescription));
