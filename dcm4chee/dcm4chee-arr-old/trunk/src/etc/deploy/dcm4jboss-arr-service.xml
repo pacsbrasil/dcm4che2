@@ -3,7 +3,7 @@
 <server>
   <classpath codebase="lib" archives="dcm4jboss-arr.jar"/>
   <mbean code="org.dcm4chex.arr.mbean.ARRServer" 
-         name="dcm4chex:service=AuditRecordRepository"
+         name="tiani.audit:service=AuditRecordRepository"
          xmbean-dd="xmdesc/dcm4jboss-arr-xmbean.xml">
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/AuditRecord</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/StoreAuditRecord</depends>
