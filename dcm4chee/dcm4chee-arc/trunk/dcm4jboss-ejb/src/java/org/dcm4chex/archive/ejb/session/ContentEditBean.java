@@ -137,15 +137,24 @@ public abstract class ContentEditBean implements SessionBean {
         try 
 		{
         	PatientLocal patientLocal = patHome.findByPrimaryKey(new Integer(to_update.getPk()));
-        	if (to_update.getPatientName() != null)
+        	
+        	if (to_update.getPatientName()==null && patientLocal.getPatientName()!=null)
+        		patientLocal.setPatientName(null);
+        	else if (!to_update.getPatientName().equals(patientLocal.getPatientName()))
         		patientLocal.setPatientName(to_update.getPatientName());
-        	if (to_update.getPatientSex() !=null)
-        		patientLocal.setPatientSex(to_update.getPatientSex());
-        
-        	try { patientLocal.setPatientBirthDate(new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(to_update.getPatientBirthDate()));}
-        	catch (ParseException e)
-			{ if (to_update.getPatientBirthDate() ==null || to_update.getPatientBirthDate().equals(""))
-        			patientLocal.setPatientBirthDate(null);}
+
+        	if (to_update.getPatientSex()==null && patientLocal.getPatientSex()!=null)
+        		patientLocal.setPatientSex(null);
+        	else if (!to_update.getPatientSex().equals(patientLocal.getPatientSex()))
+        		patientLocal.setPatientSex(to_update.getPatientName());
+        	
+        	if (to_update.getPatientBirthDate()==null && patientLocal.getPatientBirthDate()!=null)
+        		patientLocal.setPatientBirthDate(null);
+        	else if (!to_update.getPatientBirthDate().equals(patientLocal.getPatientBirthDate()))
+        	{	
+	        	try { patientLocal.setPatientBirthDate(new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(to_update.getPatientBirthDate()));}
+	        	catch (ParseException e){}
+        	}
 			
 			//dataset retrieve &update
 			Dataset oldPat = new RetrievePatientDatasetCmd(ds,to_update.getPatientID()).execute();
