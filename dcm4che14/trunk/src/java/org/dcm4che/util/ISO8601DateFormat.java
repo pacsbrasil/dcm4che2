@@ -186,8 +186,11 @@ public final class ISO8601DateFormat extends org.apache.log4j.helpers.ISO8601Dat
 		}
 		//return
 		Calendar cal = new GregorianCalendar(year,month-1,day,hour,min,sec);
+        //set time to be in GMT timezone, by telling the Calendar it's offset from GMT
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
         cal.set(Calendar.ZONE_OFFSET,off);
+        //don't forget to set the milliseconds!
+        cal.set(Calendar.MILLISECOND,msec);
 		return cal.getTime();
 	}
 }
