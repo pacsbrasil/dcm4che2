@@ -455,12 +455,12 @@ abstract class DcmObjectImpl implements DcmObject {
    
    public DcmElement putFL(int tag, String value) {
       return put(value != null
-         ? StringElement.createFL(tag, Float.parseFloat(value))
-         : StringElement.createFL(tag));
+         ? ValueElement.createFL(tag, Float.parseFloat(value))
+         : ValueElement.createFL(tag));
    }
    
    public DcmElement putFL(int tag, String[] values) {
-      return put(StringElement.createFL(tag, StringUtils.parseFloats(values)));
+      return put(ValueElement.createFL(tag, StringUtils.parseFloats(values)));
    }
    
    public DcmElement putFD(int tag) {
@@ -477,13 +477,12 @@ abstract class DcmObjectImpl implements DcmObject {
    
    public DcmElement putFD(int tag, String value) {
       return put(value != null
-         ? StringElement.createFD(tag, Double.parseDouble(value))
-         : StringElement.createFD(tag));
+         ? ValueElement.createFD(tag, Double.parseDouble(value))
+         : ValueElement.createFD(tag));
    }
    
    public DcmElement putFD(int tag, String[] values) {
-      return put(StringElement.createFD(tag,
-      StringUtils.parseDoubles(values)));
+      return put(ValueElement.createFD(tag, StringUtils.parseDoubles(values)));
    }
    
    public DcmElement putIS(int tag) {
@@ -640,13 +639,13 @@ abstract class DcmObjectImpl implements DcmObject {
    
    public DcmElement putSL(int tag, String value) {
       return put(value != null
-         ? StringElement.createSL(tag, StringUtils.parseInt(value,
+         ? ValueElement.createSL(tag, StringUtils.parseInt(value,
                Integer.MIN_VALUE,  Integer.MAX_VALUE))
-         : StringElement.createSL(tag));
+         : ValueElement.createSL(tag));
    }
    
    public DcmElement putSL(int tag, String[] values) {
-      return put(StringElement.createSL(tag, StringUtils.parseInts(values,
+      return put(ValueElement.createSL(tag, StringUtils.parseInts(values,
             Integer.MIN_VALUE,  Integer.MAX_VALUE)));
    }
    
@@ -668,13 +667,13 @@ abstract class DcmObjectImpl implements DcmObject {
    
    public DcmElement putSS(int tag, String value) {
       return put(value != null
-         ? StringElement.createSS(tag, StringUtils.parseInt(value,
+         ? ValueElement.createSS(tag, StringUtils.parseInt(value,
                Short.MIN_VALUE,  Short.MAX_VALUE))
-         : StringElement.createSS(tag));
+         : ValueElement.createSS(tag));
    }
    
    public DcmElement putSS(int tag, String[] values) {
-      return put(StringElement.createSS(tag, StringUtils.parseInts(values,
+      return put(ValueElement.createSS(tag, StringUtils.parseInts(values,
             Short.MIN_VALUE,  Short.MAX_VALUE)));
    }
    
@@ -748,13 +747,13 @@ abstract class DcmObjectImpl implements DcmObject {
    
    public DcmElement putUL(int tag, String value) {
       return put(value != null
-         ? StringElement.createUL(tag, StringUtils.parseInt(value,
+         ? ValueElement.createUL(tag, StringUtils.parseInt(value,
                0L,  0xFFFFFFFFL))
-         : StringElement.createUL(tag));
+         : ValueElement.createUL(tag));
    }
    
    public DcmElement putUL(int tag, String[] values) {
-      return put(StringElement.createUL(tag, StringUtils.parseInts(values,
+      return put(ValueElement.createUL(tag, StringUtils.parseInts(values,
             0L,  0xFFFFFFFFL)));
    }
    
@@ -788,13 +787,13 @@ abstract class DcmObjectImpl implements DcmObject {
    
    public DcmElement putUS(int tag, String value) {
       return put(value != null
-         ? StringElement.createUS(tag, StringUtils.parseInt(value,
+         ? ValueElement.createUS(tag, StringUtils.parseInt(value,
                0L,  0xFFFFL))
-         : StringElement.createUL(tag));
+         : ValueElement.createUS(tag));
    }
    
    public DcmElement putUS(int tag, String[] values) {
-      return put(StringElement.createUS(tag, StringUtils.parseInts(values,
+      return put(ValueElement.createUS(tag, StringUtils.parseInts(values,
             0L,  0xFFFFL)));
    }
    

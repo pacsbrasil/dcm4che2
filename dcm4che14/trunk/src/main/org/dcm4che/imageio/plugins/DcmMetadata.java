@@ -26,8 +26,15 @@ package org.dcm4che.imageio.plugins;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.TagDictionary;
 
+import org.w3c.dom.Node;
+
 /**
- *
+ * Change history:<br>
+ * 2002.06.13, Thomas Hacklaender: Method setDataset(Dataset ds) added.<br>
+ * 2002.06.16, Thomas Hacklaender: Methods reset(), setFromTree(String formatName, 
+ * Node root) and mergeTree(String formatName, Node root) added. Method 
+ * isReadOnly() modified.<br>
+ * <br>
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
@@ -47,6 +54,62 @@ public abstract class DcmMetadata extends javax.imageio.metadata.IIOMetadata {
     }
 
     public abstract Dataset getDataset();
+    
+    /**
+     * Sets a new Dataset as a base for the metadata.
+     * @param ds the new Dataset.
+     * @author Thomas Hacklaender
+     * @version 2002.06.13
+     * @since 1.0.0
+     */
+    public abstract void setDataset(Dataset ds);
 
     public abstract void setDictionary(TagDictionary dict);
+    
+    /**
+     * Sets the internal state of this IIOMetadata object from a tree of XML 
+     * DOM Nodes whose syntax is defined by the given metadata format. The 
+     * previous state is discarded. If the tree's structure or contents are 
+     * invalid, an IIOInvalidTreeException will be thrown.
+     * @param formatName the desired metadata format.
+     * @param root an XML DOM Node object forming the root of a tree.
+     * @throws IllegalStateException if this object is read-only.
+     * @throws IllegalArgumentException if formatName is null or is not one of 
+     *         the names returned by getMetadataFormatNames.
+     * @throws IIOInvalidTreeException if the tree cannot be parsed successfully 
+     *         using the rules of the given format.
+     * @author Thomas Hacklaender
+     * @version 2002.06.16
+     * @since 1.0.0
+     */
+    public abstract void setFromTree(String formatName, Node root);
+    
+    /**
+     * Alters the internal state of this IIOMetadata object from a tree of 
+     * XML DOM Nodes whose syntax is defined by the given metadata format. The 
+     * previous state is altered only as necessary to accomodate the nodes that 
+     * are present in the given tree. If the tree structure or contents are 
+     * invalid, an IIOInvalidTreeException will be thrown.
+     * @param formatName the desired metadata format.
+     * @param root an XML DOM Node object forming the root of a tree.
+     * @throws IllegalStateException if this object is read-only.
+     * @throws IllegalArgumentException if formatName is null or is not one of 
+     *         the names returned by getMetadataFormatNames.
+     * @throws IIOInvalidTreeException if the tree cannot be parsed successfully 
+     *         using the rules of the given format.
+     * @author Thomas Hacklaender
+     * @version 2002.06.16
+     * @since 1.0.0
+     */
+    public abstract void mergeTree(String formatName, Node root);
+    
+    /**
+     * Resets all the data stored in this object to default values to the state 
+     * this object was in immediately after construction.
+     * @author Thomas Hacklaender
+     * @version 2002.06.16
+     * @since 1.0.0
+     */
+    public abstract void reset();
+    
 }
