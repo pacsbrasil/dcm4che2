@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.7"/>
+	<property name="version" value="0.7.2"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
@@ -130,7 +130,7 @@
     
     <target name="init">
     	<tstamp>
-            <format property="TODAY" pattern="dd.MM.yyyy"/>
+            <format property="TODAY" pattern="yyyy-MM-dd"/>
         </tstamp>
         <taskdef
             name="xdoclet"
@@ -334,6 +334,11 @@
     		<param name="db.name" value="db2"/>
     	</antcall>
         <jar jarfile="${target.common.lib}/dcm4jboss-ejb-client.jar">
+         	<manifest>
+				<attribute name="Implementation-Title" value="dcm4jboss-ejb-client"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+          	</manifest>	
         	<fileset dir="${target.classes}">
                 <include name="**/util/*"/>
                 <include name="**/interfaces/*"/>
@@ -342,8 +347,11 @@
         </jar>
         <jar jarfile="${target.common.bin}/editmwl.jar">
          	<manifest>
-	        	<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditMwl"/>
-	        	<attribute name="Class-Path" value="../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar "/>
+				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditMwl"/>
+				<attribute name="Class-Path" value="../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar "/>
+				<attribute name="Implementation-Title" value="editmwl"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
           	</manifest>	
         	<fileset dir="${target.classes}">
                 <include name="**/tools/EditMwl*"/>
@@ -356,6 +364,12 @@
     <target name="ejb-jdbc-jar">
         <jar jarfile="${target.dir}/${db.name}/deploy/dcm4jboss-ejb-${db.name}.jar">
         	<metainf dir="${target.meta-inf}-${db.name}"/>
+        	<manifest>
+				<attribute name="Implementation-Title" value="dcm4jboss-ejb-${db.name}"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+	    	</manifest>
+	        	
         	<fileset dir="${target.classes}">
                 <exclude name="**/*Test.class"/>
                 <exclude name="**/jdbc/**"/>
@@ -372,6 +386,11 @@
 		    </xmlcatalog>        
         </style>
         <jar jarfile="${target.dir}/${db.name}/lib/dcm4jboss-jdbc-${db.name}.jar">
+        	<manifest>
+				<attribute name="Implementation-Title" value="dcm4jboss-jdbc-${db.name}"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+	    	</manifest>
         	<fileset dir="${target.classes}">
                 <include name="**/jdbc/*"/>
             </fileset>
