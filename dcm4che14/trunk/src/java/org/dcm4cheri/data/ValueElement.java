@@ -275,14 +275,14 @@ abstract class ValueElement extends DcmElementImpl {
         }
         
         public String getString(int index, Charset cs) {
-            if (index >= vm()) {
+            if (index >= super.vm()) {
                 return null;
             }
             return String.valueOf(getInt(index) & 0xFFFFFFFFL);
         }
         
         public String[] getStrings(Charset cs) throws DcmValueException {
-            String[] a = new String[vm()];
+            String[] a = new String[super.vm()];
             for (int i = 0; i < a.length; ++i)
                 a[i] = String.valueOf(getInt(i) & 0xFFFFFFFFL);
             return a;

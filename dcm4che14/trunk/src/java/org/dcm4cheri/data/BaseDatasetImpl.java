@@ -18,16 +18,25 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package org.dcm4cheri.data;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.PixelInterleavedSampleModel;
 import java.io.IOException;
 import java.io.InputStream;
 
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
 
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.ImageOutputStream;
 import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
@@ -43,11 +52,16 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmHandler;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.image.ColorModelFactory;
+import org.dcm4che.util.UIDGenerator;
 
 import org.xml.sax.ContentHandler;
 import javax.xml.transform.Transformer;
@@ -521,6 +535,157 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         throws java.io.ObjectStreamException
     {
         return new DatasetSerializer(this);
+    }
+
+    private static final ColorSpace sRGB =
+       ColorSpace.getInstance(ColorSpace.CS_sRGB);
+   
+    private static final ImageTypeSpecifier RGB_PLANE =
+       ImageTypeSpecifier.createBanded(sRGB,
+          new int[]{0,1,2},
+          new int[]{0,0,0},
+          DataBuffer.TYPE_BYTE,
+          false,false);
+   
+    private static final ImageTypeSpecifier RGB_PIXEL =
+       ImageTypeSpecifier.createInterleaved(sRGB,
+          new int[]{0,1,2},
+          DataBuffer.TYPE_BYTE,
+          false,false);
+    
+    public BufferedImage toBufferedImage()
+    {
+        int width = getInt(Tags.Columns, -1);
+        int height = getInt(Tags.Rows, -1);
+        
+        if (width == -1 || height == -1)
+            throw new IllegalStateException("Illegal width/height: width = "
+                                            + width + ", height = " + height);
+        
+        int bitsAllocd = getInt(Tags.BitsAllocated, -1);
+        int bitsStored = getInt(Tags.BitsStored, -1);
+        int highBit = getInt(Tags.HighBit, -1);
+        int pixelRep = getInt(Tags.PixelRepresentation, -1);
+        String pmi = getString(Tags.PhotometricInterpretation, null);
+        int spp = getInt(Tags.SamplesPerPixel, -1);
+        int planarConf = getInt(Tags.PlanarConfiguration, -1);
+        ByteBuffer pixelData = getByteBuffer(Tags.PixelData);
+        
+        //TODO better error checking!
+        if (bitsAllocd == -1 || bitsStored == -1 || highBit == -1
+            || pixelRep == -1 || pmi == null || spp == -1
+            || (planarConf == -1 && spp > 1) || pixelData == null) {
+                throw new IllegalStateException("Invalid Image Pixel Module!");
+        }
+        
+        boolean signed = (pixelRep == 1);
+        if (planarConf == -1)
+            planarConf = 1;
+        //TODO check for other types here
+        int dataBufType = (bitsAllocd <= 8) ? DataBuffer.TYPE_BYTE
+                                            : DataBuffer.TYPE_USHORT;
+        BufferedImage bi;
+        
+        //create BufferedImage
+        if (pmi.equals("RGB")) {
+            switch (planarConf) {
+                case 0:
+                    bi = RGB_PIXEL.createBufferedImage(width, height);
+                    break;
+                case 1:
+                    bi = RGB_PLANE.createBufferedImage(width, height);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid Planar Configuration");
+            }
+        }
+        else if (pmi.equals("MONOCHROME1") || pmi.equals("MONOCHROME2")
+                 || pmi.equals("PALETTE COLOR")) {
+            ColorModelFactory cmFactory = ColorModelFactory.getInstance();
+            bi = new ImageTypeSpecifier(
+                cmFactory.getColorModel(cmFactory.makeParam(this)),
+                new PixelInterleavedSampleModel(dataBufType, 1, 1, 1, 1,
+                    new int[]{0})).createBufferedImage(width, height);
+        }
+        else { //unsupported photometric interpretation
+            throw new UnsupportedOperationException(
+                "Unsupported Photometric Interpretation: " + pmi);
+        }
+        
+        //read pixeldata into the BufferedImage
+        DataBuffer dataBuf = bi.getRaster().getDataBuffer();
+        Object dest = null;
+        if (planarConf == 0) { //read single bank for PixelInterleavedModel
+            switch (dataBufType) {
+                case DataBuffer.TYPE_BYTE:
+                    dest = ((DataBufferByte)dataBuf).getData();
+                    break;
+                case DataBuffer.TYPE_USHORT:
+                    dest = ((DataBufferUShort)dataBuf).getData();
+                    break;
+            }
+            readPixelData(pixelData, dest, dataBufType, bitsAllocd, bitsStored,
+                          highBit, spp, width, height);
+        }
+        else {
+            for (int i = 0; i < spp; i++) { //read each bank of BandedSampleModel seperately
+                switch (dataBufType) {
+                    case DataBuffer.TYPE_BYTE:
+                        dest = ((DataBufferByte)dataBuf).getData(i);
+                        break;
+                    case DataBuffer.TYPE_USHORT:
+                        dest = ((DataBufferUShort)dataBuf).getData(i);
+                        break;
+                }
+                readPixelData(pixelData, dest, dataBufType, bitsAllocd, bitsStored,
+                              highBit, 1, width, height);
+            }
+        }
+        
+        return bi;
+    }
+    
+    private void readPixelData(ByteBuffer pixelData,
+                               Object dest, int dataType,
+                               int ba, int bs, int hb,
+                               int spp, int width, int height)
+    {
+        int size = width * height * spp;
+        int i = 0;
+        
+        switch (dataType) {
+            case DataBuffer.TYPE_BYTE:
+                byte[] bufByte = (byte[])dest;
+                while (i < size) {
+                    bufByte[i++] = pixelData.get();
+                }
+                break;
+            case DataBuffer.TYPE_USHORT:
+                short[] bufUShort = (short[])dest;
+                while (i < size) {
+                    bufUShort[i++] = pixelData.getShort();
+                }
+                break;
+        }
+    }
+    
+    public Dataset putBufferedImage(BufferedImage bi)
+    {
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        UIDGenerator uidGen = UIDGenerator.getInstance();
+        Date now = new Date();
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat timeFormatter = new SimpleDateFormat("HHmmss.SSS");
+        
+        ds.putCS(Tags.ConversionType, "WSD");                               // Type 1
+        ds.putCS(Tags.Modality, "OT");                                      // Type 3
+        ds.putIS(Tags.InstanceNumber, "1");                                 // Type 2
+        ds.putDA(Tags.DateOfSecondaryCapture, dateFormatter.format(now));   // Type 3
+        ds.putTM(Tags.TimeOfSecondaryCapture, timeFormatter.format(now));   // Type 3
+        ds.putUI(Tags.SOPClassUID, UIDs.SecondaryCaptureImageStorage);      // Type 1
+        ds.putUI(Tags.SOPInstanceUID, uidGen.createUID());                  // Type 1
+        
+        return ds;
     }
 }
 

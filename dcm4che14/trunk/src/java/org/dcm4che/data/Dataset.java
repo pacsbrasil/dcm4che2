@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package org.dcm4che.data;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import java.io.InputStream;
@@ -129,5 +130,10 @@ public interface Dataset extends DcmObject, Serializable
      */
     public void dumpDataset(Writer w, Map map)
         throws IOException;
-}
 
+
+    BufferedImage toBufferedImage();
+
+
+    Dataset putBufferedImage(BufferedImage bi);
+}

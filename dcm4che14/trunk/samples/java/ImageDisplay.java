@@ -95,12 +95,13 @@ public class ImageDisplay extends JPanel {
     }
     
     private void open(File f) {
-        try {
+        /*try {
             ImageInputStream iis = ImageIO.createImageInputStream(f);
             Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
             ImageReader reader = (ImageReader)iter.next();
             reader.setInput(iis, false);
-            JPanel p = new ImageBox(reader);
+            JPanel p = new ImageBox(reader);*/
+            JPanel p = new ImageBox(f);
             JFrame jf = new JFrame("ImageDisplay - Display Panel");
             jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             jf.getContentPane().add(p);
@@ -108,9 +109,9 @@ public class ImageDisplay extends JPanel {
             jf.setSize(Math.min(jf.getWidth(),800),
                     Math.min(jf.getHeight(),600));
             jf.setVisible(true);
-        } catch (IOException e) {
+        /*} catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     /**

@@ -856,7 +856,7 @@ public class DcmImageWriter extends ImageWriter
         }
         
         BufferedImage bi;
-        final String testimg = "/home/joe/work/dicom-images/sbarre/OT-PAL-8-face"; //dicom-images/sbarre/OT-PAL-8-face";//OT-PAL-8-face,MR001.dcm
+        final String testimg = "/home/joe/work/dicom/dicom-images/MR001.dcm"; //dicom-images/sbarre/OT-PAL-8-face";//OT-PAL-8-face,MR001.dcm
         DcmImageReader rdr;
         
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");

@@ -29,14 +29,19 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.image.ColorModelFactory;
 
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.PixelInterleavedSampleModel;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.HashSet;
-import java.util.zip.InflaterInputStream;
 
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.ImageInputStream;
 
 /** Implementation of <code>Dataset</code> container objects.

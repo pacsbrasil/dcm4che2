@@ -565,7 +565,7 @@ abstract class StringElement extends ValueElement {
         }
         public final float getFloat(int index)
                 throws DcmValueException {
-            return Float.parseFloat(getString(index, null));
+            return Float.parseFloat(super.getString(index, null));
         }
 
         public final float[] getFloats() throws DcmValueException {
@@ -630,7 +630,7 @@ abstract class StringElement extends ValueElement {
         }
 
         public final int getInt(int index) throws DcmValueException {
-            String s = getString(index, null);
+            String s = super.getString(index, null);
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException ex) {
@@ -770,19 +770,19 @@ abstract class StringElement extends ValueElement {
         }
 
         public final Date getDate(int index) throws DcmValueException {
-            return DTF.parseDate(getString(index, null));
+            return DTF.parseDate(super.getString(index, null));
         }
 
         public final Date[] getDates() throws DcmValueException {
             Date[] a = new Date[vm()];
             for (int i = 0; i < a.length; ++i)
-                a[i] = DTF.parseDate(getString(i, null));
+                a[i] = DTF.parseDate(super.getString(i, null));
             return a;
         }
 
         public final Date[] getDateRange(int index)
                 throws DcmValueException {
-            return DTF.parseDateRange(getString(index, null));
+            return DTF.parseDateRange(super.getString(index, null));
         }
     }
 
@@ -837,19 +837,19 @@ abstract class StringElement extends ValueElement {
         }
 
         public final Date getDate(int index) throws DcmValueException {
-            return DTF.parseDateTime(getString(index, null));
+            return DTF.parseDateTime(super.getString(index, null));
         }
 
         public final Date[] getDates() throws DcmValueException {
             Date[] a = new Date[vm()];
             for (int i = 0; i < a.length; ++i)
-                a[i] = DTF.parseDateTime(getString(i, null));
+                a[i] = DTF.parseDateTime(super.getString(i, null));
             return a;
         }
 
         public final Date[] getDateRange(int index)
                 throws DcmValueException {
-            return DTF.parseDateTimeRange(getString(index, null));
+            return DTF.parseDateTimeRange(super.getString(index, null));
         }
     }
 
@@ -904,19 +904,19 @@ abstract class StringElement extends ValueElement {
         }
 
         public final Date getDate(int index) throws DcmValueException {
-            return DTF.parseTime(getString(index, null));
+            return DTF.parseTime(super.getString(index, null));
         }
 
         public final Date[] getDates() throws DcmValueException {
             Date[] a = new Date[vm()];
             for (int i = 0; i < a.length; ++i)
-                a[i] = DTF.parseTime(getString(i, null));
+                a[i] = DTF.parseTime(super.getString(i, null));
             return a;
         }
 
         public final Date[] getDateRange(int index)
                 throws DcmValueException {
-            return DTF.parseTimeRange(getString(index, null));
+            return DTF.parseTimeRange(super.getString(index, null));
         }
     }
 

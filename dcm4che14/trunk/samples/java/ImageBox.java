@@ -25,6 +25,9 @@ import org.dcm4che.image.ColorModelFactory;
 import org.dcm4che.image.ColorModelParam;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Tags;
 
 import java.awt.*;
@@ -120,6 +123,108 @@ class ImageBox extends JPanel {
         }
 
         int nframes = reader.getNumImages(true);
+        if (nframes > 1) {
+            frameSlider =
+                new JSlider(SwingConstants.HORIZONTAL, 0, nframes-1, 0);
+            frameSlider.setMajorTickSpacing(1);
+            frameSlider.setPaintTicks(true);
+            frameSlider.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    frameChanged();
+                }
+            });
+            add(frameSlider, BorderLayout.SOUTH);
+        }
+        add(new JScrollPane(view), BorderLayout.CENTER);
+    }
+    
+    public ImageBox(File f)
+    {
+        super(new BorderLayout());
+        reader = null;
+        BufferedInputStream fis = null;
+        try{
+            fis = new BufferedInputStream(new FileInputStream(f));
+        }catch(Exception e){e.printStackTrace();}
+        DcmObjectFactory dcmof = DcmObjectFactory.getInstance();
+        this.dataset = dcmof.newDataset();
+        try{
+            dataset.readFile(fis, null, -1);
+        }catch(Exception e){e.printStackTrace();}
+        this.image = this.origImage = this.dataset.toBufferedImage();
+        
+        //debug
+        int width = dataset.getInt(Tags.Columns, -1);
+        int height = dataset.getInt(Tags.Rows, -1);
+        int bitsAllocd = dataset.getInt(Tags.BitsAllocated, -1);
+        int bitsStored = dataset.getInt(Tags.BitsStored, -1);
+        int highBit = dataset.getInt(Tags.HighBit, -1);
+        int pixelRep = dataset.getInt(Tags.PixelRepresentation, -1);
+        String pmi = dataset.getString(Tags.PhotometricInterpretation, null);
+        int spp = dataset.getInt(Tags.SamplesPerPixel, -1);
+        int planarConf = dataset.getInt(Tags.PlanarConfiguration, -1);
+        System.out.println("width, height: " + width + "," + height);
+        System.out.println("ba=" + bitsAllocd + ", bs=" + bitsStored + ", hb=" + highBit);
+        System.out.println("signed: " + (pixelRep == 1));
+        System.out.println("spp: " + spp);
+        System.out.println("pmi: " + pmi);
+        System.out.println("planar conf: " + planarConf);
+        //
+        
+        origWidth = origImage.getWidth();
+        origHeight = origImage.getHeight();
+        view.setPreferredSize(new Dimension(origWidth, origHeight));
+
+        zoomSlider = new JSlider(SwingConstants.VERTICAL, 0, 40, 10);
+        zoomSlider.setMinorTickSpacing(5);
+        zoomSlider.setMajorTickSpacing(10);
+        zoomSlider.setPaintTicks(true);
+        zoomSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                zoomChanged();
+            }
+        });
+        add(zoomSlider, BorderLayout.EAST);
+        
+        if ("MONOCHROME1".equals(pmi) || "MONOCHROME2".equals(pmi)) {
+            cmParam = cmFactory.makeParam(dataset);
+            int bits = dataset.getInt(Tags.BitsStored, 8);
+            int size = 1 << bits;
+            int signed = dataset.getInt(Tags.PixelRepresentation, 0);
+            int min = dataset.getInt(Tags.SmallestImagePixelValue,
+                    signed == 0 ? 0 : -(size>>1));
+            int max = dataset.getInt(Tags.LargestImagePixelValue,
+                    signed == 0 ? size-1 : (size>>1)-1);
+            int c = (int)cmParam.toMeasureValue((min + max) >> 1);
+            int cMin = (int)cmParam.toMeasureValue(min);
+            int cMax = (int)cmParam.toMeasureValue(max-1);
+            int wMax = cMax - cMin;
+            int w = wMax;
+            
+            int nWindow = cmParam.getNumberOfWindows();
+            if (nWindow > 0) {
+                c = (int)cmParam.getWindowCenter(0);
+                w = (int)cmParam.getWindowWidth(0);
+            }
+            widthSlider = new JSlider(SwingConstants.HORIZONTAL,
+                    0, Math.max(w, wMax), w);
+            widthSlider.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    windowChanged();
+                }
+            });
+            add(widthSlider, BorderLayout.NORTH);
+            centerSlider = new JSlider(SwingConstants.VERTICAL,
+                    Math.min(c<<1, cMin), Math.max(c<<1, cMax), c); 
+            centerSlider.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    windowChanged();
+                }
+            });
+            add(centerSlider, BorderLayout.WEST);
+        }
+
+        int nframes = 0; //don't support multiframe when using Dataset.toBufferedImage()
         if (nframes > 1) {
             frameSlider =
                 new JSlider(SwingConstants.HORIZONTAL, 0, nframes-1, 0);
