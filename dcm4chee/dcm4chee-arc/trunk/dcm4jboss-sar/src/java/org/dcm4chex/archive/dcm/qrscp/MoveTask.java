@@ -280,11 +280,12 @@ class MoveTask implements Runnable {
             }
         };
         try {
-            moveForwardCmd = new MoveForwardCmd(service, service
-                    .isForwardAsMoveOriginator() ? moveOriginatorAET
-                    : moveCalledAET, retrieveAET, moveRqCmd
-                    .getInt(Tags.Priority, 0), moveDest, (String[]) iuids
-                    .toArray(new String[size]));
+            moveForwardCmd = new MoveForwardCmd(service, moveRqCmd
+                    .getMessageID(),
+                    service.isForwardAsMoveOriginator() ? moveOriginatorAET
+                            : moveCalledAET, retrieveAET, moveRqCmd
+                            .getInt(Tags.Priority, 0), moveDest,
+                    (String[]) iuids.toArray(new String[size]));
             moveForwardCmd.execute(fwdmoveRspListener);
         } catch (Exception e) {
             log.error("Failed to forward MOVE RQ to "

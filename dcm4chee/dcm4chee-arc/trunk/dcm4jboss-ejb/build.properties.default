@@ -9,3 +9,7 @@ cactus.home=${user.home}/jakarta-cactus-13-1.5
 
 #Override with your JBoss dist location
 jboss.home=${user.home}/jboss-3.2.6
+
+#Uncomment to skip patch task (=not available on Windows)
+#meta-inf-oracle.notRequired=true
+#meta-inf-db2.notRequired=true
