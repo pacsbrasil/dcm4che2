@@ -180,6 +180,18 @@ public class DcmServerService extends ServiceMBeanSupport implements
         return dcmsrv.getNumClients();
     }
 
+    public int getMaxIdleThreads() {
+        return dcmsrv.getMaxIdleThreads();
+    }
+    
+    public int getNumIdleThreads() {
+        return dcmsrv.getNumIdleThreads();
+    }
+    
+    public void setMaxIdleThreads(int max) {
+        dcmsrv.setMaxIdleThreads(max);
+    }
+        
     public String[] getCallingAETs() {
         return policy.getCallingAETs();
     }
