@@ -33,6 +33,9 @@ import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
 import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -41,8 +44,6 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
-import org.dcm4chex.archive.ejb.util.EJBHomeFactoryException;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * Instance Bean
@@ -77,35 +78,36 @@ import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
  * @ejb.ejb-ref
  *  ejb-name="Code" 
  *  view-type="local"
- *  ref-name="ejb/org.dcm4chex.archive.ejb.interfaces.CodeLocalHome"
+ *  ref-name="ejb/Code"
  *  
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public abstract class InstanceBean implements EntityBean
-{
+public abstract class InstanceBean implements EntityBean {
     private static final String ATTRS_CFG = "instance-attrs.cfg";
     private static final Logger log = Logger.getLogger(InstanceBean.class);
     private CodeLocalHome codeHome;
 
-    public void setEntityContext(EntityContext ctx) 
-    {
-        try
-        {
-            EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-            codeHome = (CodeLocalHome) factory.lookup(CodeLocalHome.class);
-        }
-        catch (EJBHomeFactoryException e)
-        {
+    public void setEntityContext(EntityContext ctx) {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
+        } catch (NamingException e) {
             throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {}
+            }
         }
     }
-    
-    public void unsetEntityContext() 
-    {
+
+    public void unsetEntityContext() {
         codeHome = null;
     }
-    
+
     /**
      * Auto-generated Primary Key
      *
@@ -259,22 +261,20 @@ public abstract class InstanceBean implements EntityBean
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, SeriesLocal series)
-        throws CreateException
-    {
+        throws CreateException {
         setAttributes(ds);
         return null;
     }
 
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
-        throws CreateException
-    {
-        setSrCode(DatasetUtil.toCode(ds.getItem(Tags.ConceptNameCodeSeq), codeHome));
+        throws CreateException {
+        setSrCode(
+            DatasetUtil.toCode(ds.getItem(Tags.ConceptNameCodeSeq), codeHome));
         setSeries(series);
         log.info("Created " + prompt());
     }
 
-    public void ejbRemove() throws RemoveException
-    {
+    public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
 
     }
@@ -282,8 +282,7 @@ public abstract class InstanceBean implements EntityBean
     /**
      * @ejb:interface-method view-type="local"
      */
-    public Dataset getAttributes()
-    {
+    public Dataset getAttributes() {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
     }
 
@@ -291,27 +290,26 @@ public abstract class InstanceBean implements EntityBean
      * 
      * @ejb.interface-method
      */
-    public void setAttributes(Dataset ds)
-    {
+    public void setAttributes(Dataset ds) {
         setSopIuid(ds.getString(Tags.SOPInstanceUID));
         setSopCuid(ds.getString(Tags.SOPClassUID));
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        setEncodedAttributes(
+            DatasetUtil.toByteArray(
+                ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
     }
 
     /**
      * 
      * @ejb.interface-method
      */
-    public String asString()
-    {
+    public String asString() {
         return prompt();
     }
 
-    private String prompt()
-    {
+    private String prompt() {
         return "Instance[pk="
             + getPk()
             + ", iuid="

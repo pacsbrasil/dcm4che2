@@ -36,6 +36,9 @@ import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import junit.framework.TestCase;
 
 import org.dcm4che.data.Dataset;
@@ -44,7 +47,6 @@ import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.ejb.util.EJBHomeFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -68,8 +70,9 @@ public class StorageBeanTest extends TestCase
      */
     protected void setUp() throws Exception
     {
-        EJBHomeFactory factory = EJBHomeFactory.getInstance();
-        StorageHome home = (StorageHome) factory.lookup(StorageHome.class);
+        Context ctx = new InitialContext();
+        StorageHome home = (StorageHome) ctx.lookup(StorageHome.JNDI_NAME);
+        ctx.close();
         storage = home.create();
     }
 

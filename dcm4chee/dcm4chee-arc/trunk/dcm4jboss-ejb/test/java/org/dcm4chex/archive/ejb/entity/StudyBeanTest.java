@@ -28,6 +28,9 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.apache.cactus.ServletTestCase;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -36,7 +39,6 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -61,9 +63,10 @@ public class StudyBeanTest extends ServletTestCase {
      * @see TestCase#setUp()
      */
     protected void setUp() throws Exception {
-        EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-        patHome = (PatientLocalHome) factory.lookup(PatientLocalHome.class);
-        studyHome = (StudyLocalHome) factory.lookup(StudyLocalHome.class);
+        Context ctx = new InitialContext();
+        patHome = (PatientLocalHome) ctx.lookup("java:comp/env/ejb/Patient");
+        studyHome = (StudyLocalHome) ctx.lookup("java:comp/env/ejb/Study");
+        ctx.close();
         Dataset ds = dof.newDataset();
         ds.putLO(Tags.PatientID, PID);
         ds.putPN(Tags.PatientName, PNAME);

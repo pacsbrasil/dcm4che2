@@ -39,6 +39,9 @@ import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -59,8 +62,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.util.EJBHomeFactoryException;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * Storage Bean
@@ -80,27 +81,27 @@ import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
  * @ejb.ejb-ref
  *  ejb-name="Patient" 
  *  view-type="local"
- *  ref-name="ejb/org.dcm4chex.archive.ejb.interfaces.PatientLocalHome" 
+ *  ref-name="ejb/Patient" 
  * 
  * @ejb.ejb-ref
  *  ejb-name="Study" 
  *  view-type="local"
- *  ref-name="ejb/org.dcm4chex.archive.ejb.interfaces.StudyLocalHome" 
+ *  ref-name="ejb/Study" 
  * 
  * @ejb.ejb-ref
  *  ejb-name="Series" 
  *  view-type="local"
- *  ref-name="ejb/org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome" 
+ *  ref-name="ejb/Series" 
  * 
  * @ejb.ejb-ref
  *  ejb-name="Instance" 
  *  view-type="local"
- *  ref-name="ejb/org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome" 
+ *  ref-name="ejb/Instance" 
  * 
  * @ejb.ejb-ref
  *  ejb-name="File" 
  *  view-type="local"
- *  ref-name="ejb/org.dcm4chex.archive.ejb.interfaces.FileLocalHome" 
+ *  ref-name="ejb/File" 
  *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
@@ -117,20 +118,22 @@ public abstract class StorageBean implements SessionBean
 
     public void setSessionContext(SessionContext ctx)
     {
-        try
-        {
-            EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-            patHome = (PatientLocalHome) factory.lookup(PatientLocalHome.class);
-            studyHome = (StudyLocalHome) factory.lookup(StudyLocalHome.class);
-            seriesHome =
-                (SeriesLocalHome) factory.lookup(SeriesLocalHome.class);
-            instHome =
-                (InstanceLocalHome) factory.lookup(InstanceLocalHome.class);
-            fileHome = (FileLocalHome) factory.lookup(FileLocalHome.class);
-        }
-        catch (EJBHomeFactoryException e)
-        {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            patHome = (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+            studyHome = (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
+            seriesHome = (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+            instHome = (InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
+            fileHome = (FileLocalHome) jndiCtx.lookup("java:comp/env/ejb/File");
+        } catch (NamingException e) {
             throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {}
+            }
         }
     }
 

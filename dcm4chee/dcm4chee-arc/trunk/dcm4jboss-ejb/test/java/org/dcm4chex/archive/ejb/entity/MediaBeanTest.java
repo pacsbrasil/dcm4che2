@@ -28,10 +28,12 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.apache.cactus.ServletTestCase;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocalHome;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -54,8 +56,9 @@ public class MediaBeanTest extends ServletTestCase
      */
     protected void setUp() throws Exception
     {
-        EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-        mediaHome = (MediaLocalHome) factory.lookup(MediaLocalHome.class);
+        Context ctx = new InitialContext();
+        mediaHome = (MediaLocalHome) ctx.lookup("java:comp/env/ejb/Media");
+        ctx.close();
         mediaPks = new Object[5];
         for (int i = 0; i < 5; ++i)
         {

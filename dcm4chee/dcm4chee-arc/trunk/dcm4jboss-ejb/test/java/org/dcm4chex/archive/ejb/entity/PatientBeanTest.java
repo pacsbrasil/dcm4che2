@@ -30,6 +30,9 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Collection;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -39,7 +42,6 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -52,7 +54,7 @@ public class PatientBeanTest extends ServletTestCase {
         { "Marinescu^Floyd", "Cavaness^Chuck", "Keeton^Brian", };
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private PatientLocalHome home;
+    private PatientLocalHome patHome;
     private Object[] pk = new Object[PAT_NAME.length];
 
     public static void main(String[] args) {
@@ -68,13 +70,14 @@ public class PatientBeanTest extends ServletTestCase {
      * @see TestCase#setUp()
      */
     protected void setUp() throws Exception {
-        EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-        home = (PatientLocalHome) factory.lookup(PatientLocalHome.class);
+        Context ctx = new InitialContext();
+        patHome = (PatientLocalHome) ctx.lookup("java:comp/env/ejb/Patient");
+        ctx.close();
         for (int i = 0; i < PAT_NAME.length; i++) {
             Dataset ds = dof.newDataset();
             ds.putLO(Tags.PatientID, PID_ + i);
             ds.putPN(Tags.PatientName, PAT_NAME[i]);
-            PatientLocal p = home.create(ds);
+            PatientLocal p = patHome.create(ds);
             pk[i] = p.getPrimaryKey();
         }
     }
@@ -84,7 +87,7 @@ public class PatientBeanTest extends ServletTestCase {
      */
     protected void tearDown() throws Exception {
         for (int i = 0; i < pk.length; i++) {
-            home.remove(pk[i]);
+            patHome.remove(pk[i]);
         }
     }
 
@@ -98,7 +101,7 @@ public class PatientBeanTest extends ServletTestCase {
 
     public void testFindByPatientId() throws Exception {
         for (int i = 0; i < PAT_NAME.length; i++) {
-            Collection c = home.findByPatientId(PID_ + i);
+            Collection c = patHome.findByPatientId(PID_ + i);
             assertEquals(1, c.size());
             PatientLocal pat = (PatientLocal) c.iterator().next();
             if (!PAT_NAME[i].equals(pat.getPatientName())) {

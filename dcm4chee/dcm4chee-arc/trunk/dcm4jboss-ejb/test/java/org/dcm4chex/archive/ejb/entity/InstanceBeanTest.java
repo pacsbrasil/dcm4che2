@@ -28,6 +28,9 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.apache.cactus.ServletTestCase;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -40,7 +43,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -70,11 +72,12 @@ public class InstanceBeanTest extends ServletTestCase {
      * @see TestCase#setUp()
      */
     protected void setUp() throws Exception {
-        EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-        patHome = (PatientLocalHome) factory.lookup(PatientLocalHome.class);
-        studyHome = (StudyLocalHome) factory.lookup(StudyLocalHome.class);
-        seriesHome = (SeriesLocalHome) factory.lookup(SeriesLocalHome.class);
-        instHome = (InstanceLocalHome) factory.lookup(InstanceLocalHome.class);
+        Context ctx = new InitialContext();
+        patHome = (PatientLocalHome) ctx.lookup("java:comp/env/ejb/Patient");
+        studyHome = (StudyLocalHome) ctx.lookup("java:comp/env/ejb/Study");
+        seriesHome = (SeriesLocalHome) ctx.lookup("java:comp/env/ejb/Series");
+        instHome = (InstanceLocalHome) ctx.lookup("java:comp/env/ejb/Instance");
+        ctx.close();
         Dataset ds = dof.newDataset();
         ds.putLO(Tags.PatientID, PID);
         ds.putPN(Tags.PatientName, PNAME);

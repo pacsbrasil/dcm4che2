@@ -28,9 +28,11 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.apache.cactus.ServletTestCase;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -55,8 +57,9 @@ public class CodeBeanTest extends ServletTestCase
      */
     protected void setUp() throws Exception
     {
-        EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-        codeHome = (CodeLocalHome) factory.lookup(CodeLocalHome.class);
+        Context ctx = new InitialContext();
+        codeHome = (CodeLocalHome) ctx.lookup("java:comp/env/ejb/Code");
+        ctx.close();
         codePks = new Object[5];
         for (int i = 0; i < 5; ++i)
         {

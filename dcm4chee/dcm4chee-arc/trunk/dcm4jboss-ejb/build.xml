@@ -9,7 +9,7 @@
     <!--property name="datasource.name" value="java:/MySqlDS"/-->
     <property name="datasource.name" value="java:/PostgresDS"/>
 			
-    <!-- Override with your JBoss/Web server bundle dist location -->
+    <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="${user.home}/work/dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
@@ -94,7 +94,7 @@
     
     <target name="init">
     	<tstamp>
-            <format property="TODAY" pattern="d-MM-yy"/>
+            <format property="TODAY" pattern="dd.MM.yyyy"/>
         </tstamp>
         <taskdef
             name="xdoclet"
@@ -137,7 +137,7 @@
 
         <ejbdoclet
             destdir="${target.java}"
-            excludedtags="@version,@author,@todo"
+            excludedtags="@version,@author,@todo,@since"
             addedtags="@xdoclet-generated at ${TODAY},@copyright The XDoclet Team,@author XDoclet,@version ${version}"
             ejbspec="2.0"
             force="${xdoclet.force}"
@@ -312,6 +312,19 @@
          </classpath>
          <formatter type="xml" />
          <test name="org.dcm4chex.archive.ejb.session.StorageBeanTest"
+         	todir="${target.reports}"/>
+      </junit>
+    </target>
+    
+    <target name="test-query">
+      <junit printsummary="true" fork="yes">
+         <classpath>
+	    	<path refid="cactus.client.path"/>
+         	<pathelement location="${target.classes}"/>
+         	<pathelement location="${test.conf}"/>
+         </classpath>
+         <formatter type="xml" />
+         <test name="org.dcm4chex.archive.ejb.jdbc.QueryCmdTest"
          	todir="${target.reports}"/>
       </junit>
     </target>

@@ -30,10 +30,12 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Collection;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.apache.cactus.ServletTestCase;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -62,8 +64,9 @@ public class FileBeanTest extends ServletTestCase
      */
     protected void setUp() throws Exception
     {
-        EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-        fileHome = (FileLocalHome) factory.lookup(FileLocalHome.class);
+        Context ctx = new InitialContext();
+        fileHome = (FileLocalHome) ctx.lookup("java:comp/env/ejb/File");
+        ctx.close();
         filePks = new Object[5];
         for (int i = 0; i < filePks.length; ++i)
         {
