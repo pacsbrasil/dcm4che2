@@ -57,7 +57,6 @@ class ScannerCalibration {
    private static final int FIND_STEP_NUM_MIN = 3;
    private static final float FIND_STEP_ERR_MAX = 0.2f;
    private static final int BORDER_MIN = 50;
-   private static final String REF_FILENAME = "refgraystep.jpg";
    
    // Attributes ----------------------------------------------------
    private Logger log;
@@ -91,6 +90,9 @@ class ScannerCalibration {
 
    private float[] cachedODs;
    
+   /** Holds value of property refGrayStepFileName. */
+   private String refFileName;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -112,6 +114,20 @@ class ScannerCalibration {
     */
    public void setCalibrationDir(File calibrationDir) {
       this.calibrationDir = calibrationDir;
+   }
+   
+   /** Getter for property refFileName.
+    * @return Value of property refFileName.
+    */
+   public String getRefGrayStepFileName() {
+      return this.refFileName;
+   }
+   
+   /** Setter for property refFileName.
+    * @param refFileName New value of property refFileName.
+    */
+   public void setRefGrayStepFileName(String refFileName) {
+      this.refFileName = refFileName;
    }
    
    /** Getter for property refGrayStepODs.
@@ -196,7 +212,7 @@ class ScannerCalibration {
          throw new IllegalStateException("calibrationDir not initalized!");
       }
       try {
-         File refFile = new File(calibrationDir, REF_FILENAME);
+         File refFile = new File(calibrationDir, refFileName);
          if (!refFile.isFile()) {
             throw new FileNotFoundException(
                "Could not find file " + refFile);

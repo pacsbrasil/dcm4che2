@@ -1065,6 +1065,20 @@ public class PrinterService
       scanner.setCalibrationDir(toFile(scanGrayStepDir));
    }
    
+   /** Getter for property refGrayStepFileName.
+    * @return Value of property refGrayStepFileName.
+    */
+   public String getRefGrayStepFileName() {
+      return scanner.getRefGrayStepFileName();
+   }
+   
+   /** Setter for property refGrayStepFileName.
+    * @param refGrayStepFileName New value of property refGrayStepFileName.
+    */
+   public void setRefGrayStepFileName(String refGrayStepFileName) {
+      scanner.setRefGrayStepFileName(refGrayStepFileName);
+   }
+   
    /** Getter for property scanArea.
     * @return Value of property scanArea.
     */

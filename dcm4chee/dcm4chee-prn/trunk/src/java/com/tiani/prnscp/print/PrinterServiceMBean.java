@@ -528,4 +528,17 @@ public interface PrinterServiceMBean extends ServiceMBean {
    public void printGrayStepsWithLinOD() throws PrintException;
    
    public void calibrate(boolean force) throws CalibrationException;            
+   
+   /** Getter for property refFileName.
+    * @return Value of property refFileName.
+    *
+    */
+   public String getRefGrayStepFileName();
+   
+   /** Setter for property refFileName.
+    * @param refFileName New value of property refFileName.
+    *
+    */
+   public void setRefGrayStepFileName(String refFileName);
+   
 }
