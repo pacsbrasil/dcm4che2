@@ -179,7 +179,10 @@ public abstract class AEBean implements EntityBean
             return "dicom-tls.nodes";
         }
         if ("SSL_RSA_WITH_3DES_EDE_CBC_SHA".equals(cipherSuites)) {
-            return "dicom-tls.3des/";
+            return "dicom-tls.3des";
+        }
+        if ("TLS_RSA_WITH_AES_128_CBC_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA".equals(cipherSuites)) {
+            return "dicom-tls.aes";
         }
         return "dicom-tls";
     }
