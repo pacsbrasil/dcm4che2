@@ -298,7 +298,7 @@ public class CompressionService extends TimerSupport {
             if (log.isDebugEnabled())
                 log.debug("replace File " + srcFile + " with " + destFile);
             fsMgt.replaceFile(fileDTO.getPk(), destFilePath, info
-                    .getTransferSyntax(), (int) srcFile.length(), md5);
+                    .getTransferSyntax(), (int) destFile.length(), md5);
         } catch (Exception x) {
             log.error("Can't compress file:" + srcFile, x);
             if (destFile.exists())
