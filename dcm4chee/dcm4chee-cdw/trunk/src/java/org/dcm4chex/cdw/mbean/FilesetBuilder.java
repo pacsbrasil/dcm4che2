@@ -21,6 +21,7 @@ import org.dcm4che.media.DirRecord;
 import org.dcm4che.media.DirWriter;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.FileUtils;
 import org.dcm4chex.cdw.common.Flag;
@@ -99,10 +100,8 @@ class FilesetBuilder {
             HashMap patRecs = new HashMap();
             HashMap styRecs = new HashMap();
             HashMap serRecs = new HashMap();
-            File readmeFile = null;
-            String readmeFileID = service.getFileSetDescriptorFile();
-            if (readmeFileID.indexOf('.') == -1 && readmeFileID.length() <= 8)
-                readmeFile = new File(rootDir, readmeFileID);
+            File readmeFile =
+                	new File(rootDir, service.getFileSetDescriptorFile());
             DirWriter dirWriter = dbf.newDirWriter(ddFile, rootDir.getName(),
                     rq.getFilesetID(), readmeFile, service
                             .getCharsetOfFileSetDescriptorFile(), null);
@@ -185,26 +184,19 @@ class FilesetBuilder {
     }
 
     private void move(File src, File dst) throws IOException {
-        if (log.isDebugEnabled()) log.debug("M-MOVE " + src + " => " + dst);
+        if (log.isDebugEnabled()) log.debug("mv " + src + " " + dst);
         if (!src.renameTo(dst))
-                throw new IOException("M-MOVE " + src + " => " + dst
-                        + " failed!");
+                throw new IOException("mv " + src + " " + dst + " failed!");
     }
 
     private void makeSymLink(File src, File dst) throws IOException {
         String[] cmd = new String[] { "ln", "-s", src.getAbsolutePath(),
                 dst.getAbsolutePath()};
-        if (log.isDebugEnabled()) log.debug("M-LINK " + src + " => " + dst);
-        int exitCode;
+        Executer ex = new Executer(cmd, log);
         try {
-            Process p = Runtime.getRuntime().exec(cmd);
-            exitCode = p.waitFor();
-        } catch (Exception e) {
-            throw new IOException("M-LINK " + src + " => " + dst + " failed!"
-                    + e);
-        }
-        if (exitCode != 0) { throw new IOException("M-LINK " + src + " => "
-                + dst + " failed!" + " failed! Exit Code: " + exitCode); }
+            if (ex.waitFor(null, null) == 0) return;
+        } catch (InterruptedException e) {}
+        throw new IOException(ex.cmd() + " failed!");
     }
 
 }

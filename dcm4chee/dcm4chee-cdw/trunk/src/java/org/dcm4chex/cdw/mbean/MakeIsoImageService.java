@@ -22,7 +22,7 @@ import javax.jms.ObjectMessage;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.JMSDelegate;
@@ -202,12 +202,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
             cmd.add(isoImageFile.getAbsolutePath());
             cmd.add(srcDir.getAbsolutePath());
             String[] a = (String[]) cmd.toArray(new String[cmd.size()]);
-            if (log.isDebugEnabled())
-                    log.debug("invoke: " + StringUtils.toString(a, ' '));
-            Process p = Runtime.getRuntime().exec(a);
-            exitCode = p.waitFor();
-            if (log.isDebugEnabled())
-                    log.debug("finished: " + StringUtils.toString(a, ' '));
+            exitCode = new Executer(a, log).waitFor(null, null);
         } catch (InterruptedException e) {
             throw new IOException(e.getMessage());
         } finally {

@@ -10,6 +10,7 @@ package org.dcm4chex.cdw.mbean;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashSet;
 
 import javax.jms.JMSException;
@@ -251,9 +252,13 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     private Dataset doNCreate(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
-        Dataset ds = rq.getDataset();
-        if (log.isDebugEnabled()) log.debug("N-Create Attributes:\n" + ds);
-        checkCreateAttributes(ds, rspCmd);
+        Dataset info = rq.getDataset();
+        if (log.isDebugEnabled())
+            logDataset("N-Create Information:\n",
+                    info.subSet(new int[]{Tags.RefSOPSeq}, true), 
+                    "\n" + info.get(Tags.RefSOPSeq));
+        
+        checkCreateAttributes(info, rspCmd);
         String iuid = rspCmd.getAffectedSOPInstanceUID();
         File f = spoolDir.getMediaCreationRequestFile(iuid);
         if (f.exists())
@@ -261,17 +266,29 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         String cuid = rqCmd.getAffectedSOPClassUID();
         String tsuid = rq.getTransferSyntaxUID();
         FileMetaInfo fmi = dof.newFileMetaInfo(cuid, iuid, tsuid);
-        ds.setFileMetaInfo(fmi);
-        ds.putUI(Tags.SOPInstanceUID, iuid);
-        ds.putUI(Tags.SOPClassUID, cuid);
-        ds.putCS(Tags.ExecutionStatus, ExecutionStatus.IDLE);
-        ds.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.NORMAL);
+        info.setFileMetaInfo(fmi);
+        info.putUI(Tags.SOPInstanceUID, iuid);
+        info.putUI(Tags.SOPClassUID, cuid);
+        info.putCS(Tags.ExecutionStatus, ExecutionStatus.IDLE);
+        info.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.NORMAL);
         try {
-            ds.writeFile(f, null);
+            info.writeFile(f, null);
         } catch (IOException e) {
             throw new DcmServiceException(Status.ProcessingFailure);
         }
-        return ds;
+        return info;
+    }
+
+    private void logDataset(String prefix, Dataset ds, String suffix) {
+        try {
+            StringWriter w = new StringWriter();
+            w.write(prefix);
+            ds.dumpDataset(w, null);
+            w.write(suffix);
+            log.debug(w.toString());
+        } catch (Exception e) {
+            log.warn("Failed to dump dataset", e);
+        }
     }
 
     private void checkCreateAttributes(Dataset ds, Command rspCmd)
@@ -360,7 +377,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         Command rqCmd = rq.getCommand();
         Dataset actionInfo = rq.getDataset();
         if (log.isDebugEnabled())
-                log.debug("N-Action Information:\n" + actionInfo);
+            logDataset("N-Action Information:\n", actionInfo, "");
+        
         String iuid = rqCmd.getAffectedSOPInstanceUID();
 
         File f = spoolDir.getMediaCreationRequestFile(iuid);

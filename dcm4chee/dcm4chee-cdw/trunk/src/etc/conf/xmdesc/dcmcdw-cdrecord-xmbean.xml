@@ -100,6 +100,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isAppendEnabled"
+      setMethod="setAppendEnabled">
+      <description>Allow to append already exisiting session.
+      </description>
+      <name>AppendEnabled</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isPadding"
       setMethod="setPadding">
       <description>Pad data track with 15 zeroed sectors.
@@ -122,11 +133,11 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isLogEnabled"
-      setMethod="setLogEnabled">
-      <description>Log to server/dcmcdw/log/cdrecord.log.
+      getMethod="isEject"
+      setMethod="setEject">
+      <description>Eject disk after write process.
       </description>
-      <name>LogEnabled</name>
+      <name>Eject</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -135,4 +146,19 @@
    
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Check Drive</description>
+      <name>checkDrive</name>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Check Disk</description>
+      <name>checkDisk</name>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Query Media Content</description>
+      <name>hasTOC</name>
+      <return-type>boolean</return-type>
+   </operation>
 </mbean>
