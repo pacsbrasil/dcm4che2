@@ -19,7 +19,7 @@
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 
 	<property name="hapi.dist" value="../hapi/dist"/>
-	<property name="hapi.jar" value="hapi-0.4.1.jar"/>
+	<property name="hapi.jar" value="hapi-0.4.2.jar"/>
 	
 	<property name="src.java" value="${basedir}/src/java"/>
 	
