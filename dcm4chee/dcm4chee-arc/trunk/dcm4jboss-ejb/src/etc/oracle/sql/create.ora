@@ -27,7 +27,7 @@ CREATE TABLE patient (
 	pat_name    	VARCHAR2(255),
 	pat_birthdate  	DATE,
 	pat_sex		  	VARCHAR2(255),
-	pat_attrs		BLOB,
+	pat_attrs		LONG RAW,
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
@@ -55,7 +55,7 @@ CREATE TABLE study (
 	availability	INTEGER,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	study_attrs		BLOB,
+	study_attrs		LONG RAW,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX patient_fk ON study(patient_fk);
@@ -77,12 +77,12 @@ CREATE TABLE mpps (
 	modality	    	VARCHAR2(255),
 	accession_no		VARCHAR2(255),
 	mpps_status			INTEGER NOT NULL,
-	mpps_attrs			BLOB,
+	mpps_attrs			LONG RAW,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
 CREATE UNIQUE INDEX mpps_iuid ON mpps (mpps_iuid);
-CREATE INDEX mpps_patient_fk ON study(patient_fk);
+CREATE INDEX mpps_patient_fk ON mpps(patient_fk);
 CREATE INDEX mpps_pps_start ON mpps (pps_start);
 CREATE INDEX mpps_station_aet ON mpps (station_aet);
 CREATE INDEX mpps_modality ON mpps (modality);
@@ -108,7 +108,7 @@ CREATE TABLE series (
 	hidden			NUMBER(1) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	series_attrs	BLOB,
+	series_attrs	LONG RAW,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
 );
@@ -130,7 +130,7 @@ CREATE TABLE media (
 	media_rq_iuid		VARCHAR2(255),
 	media_status		INTEGER NOT NULL,
 	media_status_info	VARCHAR2(255),
-	media_usage		INTEGER(19) NOT NULL,
+	media_usage		NUMBER(19) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP
 );
@@ -152,7 +152,7 @@ CREATE TABLE instance (
 	retrieve_aets	VARCHAR2(255),
 	availability	INTEGER,
 	commitment		NUMBER(1),
-	inst_attrs		BLOB,
+	inst_attrs		LONG RAW,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk),
 FOREIGN KEY (media_fk) REFERENCES media(pk)
@@ -219,7 +219,7 @@ CREATE TABLE mwl_item (
 	perf_physician  VARCHAR2(255),
 	req_proc_id    	VARCHAR2(255) NOT NULL,
 	accession_no	VARCHAR2(255),
-	item_attrs		BLOB,
+	item_attrs		LONG RAW,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
@@ -259,10 +259,10 @@ CREATE TABLE audit_record(
 	user_name 		VARCHAR2(255),
 	patient_name	VARCHAR2(255),
 	patient_id 		VARCHAR2(255),
-	xml_data 		CLOB
+	xml_data 		VARCHAR2(4000)
 );
 CREATE INDEX arr_msg_type ON audit_record(msg_type);
-CREATE INDEX arr_host_name ON audit_record(UPPER(host_name_up));
+CREATE INDEX arr_host_name ON audit_record(UPPER(host_name));
 CREATE INDEX arr_time_stamp ON audit_record(time_stamp);
 CREATE INDEX arr_aet ON audit_record(aet);
 CREATE INDEX arr_user_name ON audit_record(user_name);
@@ -285,6 +285,4 @@ INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
 
 INSERT INTO ae (pk,aet,hostname,port)
-	VALUES(NEXTVAL FOR ae_pk_seq,'PACS_TIANI','localhost',2350);
-INSERT INTO ae (pk,aet,hostname,port)
-	VALUES(NEXTVAL FOR ae_pk_seq,'LOCAL','localhost',2345);
+	VALUES(ae_pk_seq.nextval,'PACS_TIANI','localhost',2350);

@@ -21,6 +21,7 @@ DROP SEQUENCE ae_pk_seq;
 DROP SEQUENCE code_pk_seq;
 DROP SEQUENCE patient_pk_seq;
 DROP SEQUENCE study_pk_seq;
+DROP SEQUENCE study_on_fs_pk_seq;
 DROP SEQUENCE mpps_pk_seq;
 DROP SEQUENCE series_pk_seq;
 DROP SEQUENCE media_pk_seq;
