@@ -37,8 +37,11 @@ public class PixelDataWriterImpl implements PixelDataWriter
     private final ByteOrder byteOrder;
     private final int pixelDataVr;
 
-    PixelDataWriterImpl(int[][][] data, boolean containsOverlayData, PixelDataDescription desc, ImageOutputStream out)
+    PixelDataWriterImpl(int[][][] data, boolean containsOverlayData,
+        PixelDataDescription desc, ImageOutputStream out)
     {
+        if (desc == null)
+            throw new IllegalArgumentException("pixel data description can not be null");
         this.containsOverlayData = containsOverlayData;
         pdDesc = desc;
         //attributes from pixel data description
@@ -58,7 +61,11 @@ public class PixelDataWriterImpl implements PixelDataWriter
         byteOrder = desc.getByteOrder();
         pixelDataVr = desc.getPixelDataVr();
         //
+        if (out == null)
+            throw new IllegalArgumentException("out can not be null");
         this.out = out;
+        if (data == null)
+            throw new IllegalArgumentException("data can not be null");
         this.data = data;
         //offset in bits from low-order bit of a sample
         sampleOffset = hb - bs + 1;
@@ -68,8 +75,8 @@ public class PixelDataWriterImpl implements PixelDataWriter
         else
             out.setByteOrder(ByteOrder.LITTLE_ENDIAN);
     }
-    
-    public ByteBuffer writePixelDataToByteBuffer(boolean writeOverlayData)
+
+    public ByteBuffer writePixelDataToByteBuffer()
     {
         ByteArrayOutputStream buff = new ByteArrayOutputStream((size * ba) >>> 3)
             {
@@ -81,7 +88,7 @@ public class PixelDataWriterImpl implements PixelDataWriter
             };
         try {
             ImageOutputStream out = ImageIO.createImageOutputStream(new BufferedOutputStream(buff));
-            writePixelData(out, writeOverlayData);
+            writePixelData(out);
             out.flush();
             out.close();
             return ByteBuffer.wrap(buff.toByteArray(), 0, buff.size());
@@ -91,20 +98,16 @@ public class PixelDataWriterImpl implements PixelDataWriter
         }
     }
 
-    public void writePixelData(boolean writeOverlayData)
+    public void writePixelData()
         throws IOException
     {
-        writePixelData(out, true);
+        writePixelData(out);
     }
 
-    public void writePixelData(ImageOutputStream out, boolean writeOverlayData)
+    public void writePixelData(ImageOutputStream out)
         throws IOException
     {
-        if (data == null)
-            throw new IllegalStateException("No pixel data has been read");
-
-        final int shift = (writeOverlayData || !containsOverlayData) ? 0 : sampleOffset;
-        final int cellBits = (writeOverlayData && containsOverlayData) ? ba : bs;
+        final int cellBits = ba; // (writeOverlayData && containsOverlayData) ? ba : bs;
         int w = 0, bNeeded = 16, bUsed = 0, read;
         int f, p, s;
 
@@ -113,7 +116,7 @@ public class PixelDataWriterImpl implements PixelDataWriter
                 for (s = 0; s < spp; s++) {
                     for (p = 0; p < frameSize; ) {
                         //pre-conditions: bUsed is setup, bNeeded is [1..16]
-                        w |= (data[f][s][p] >>> (bUsed + shift)) << (16 - bNeeded);
+                        w |= (data[f][s][p] >>> (bUsed)) << (16 - bNeeded);
                         read = cellBits - bUsed;
                         if (read < bNeeded) {
                             bUsed = 0;
@@ -139,7 +142,7 @@ public class PixelDataWriterImpl implements PixelDataWriter
                 for (p = 0; p < frameSize; p++) {
                     for (s = 0; s < spp; ) {
                         //pre-conditions: bUsed is setup, bNeeded is [1..16]
-                        w |= (data[f][s][p] >>> (bUsed + shift)) << (16 - bNeeded);
+                        w |= (data[f][s][p] >>> (bUsed)) << (16 - bNeeded);
                         read = cellBits - bUsed;
                         if (read < bNeeded) {
                             bUsed = 0;
