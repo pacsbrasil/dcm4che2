@@ -37,22 +37,22 @@ public abstract class QueryCmd extends BaseCmd {
     private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
             "OFFLINE", "UNAVAILABLE"};
 
-    public static QueryCmd create(Dataset keys)
+    public static QueryCmd create(Dataset keys, boolean filterResult)
             throws SQLException {
         QueryCmd cmd;
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
         case 0:
-            cmd = new PatientQueryCmd(keys);
+            cmd = new PatientQueryCmd(keys, filterResult);
             break;
         case 1:
-            cmd = new StudyQueryCmd(keys);
+            cmd = new StudyQueryCmd(keys, filterResult);
             break;
         case 2:
-            cmd = new SeriesQueryCmd(keys);
+            cmd = new SeriesQueryCmd(keys, filterResult);
             break;
         case 3:
-            cmd = new ImageQueryCmd(keys);
+            cmd = new ImageQueryCmd(keys, filterResult);
             break;
         default:
             throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
@@ -65,9 +65,13 @@ public abstract class QueryCmd extends BaseCmd {
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    protected QueryCmd(Dataset keys) throws SQLException {
+	private final boolean filterResult;
+
+    protected QueryCmd(Dataset keys, boolean filterResult)
+    		throws SQLException {
         super(transactionIsolationLevel);
-        this.keys = keys;        
+        this.keys = keys;
+        this.filterResult = filterResult;
     }
 
     protected void init() {
@@ -186,6 +190,7 @@ public abstract class QueryCmd extends BaseCmd {
         Dataset ds = dof.newDataset();
         fillDataset(ds);
         adjustDataset(ds, keys);
+        if (!filterResult) return ds;
         keys.putCS(Tags.SpecificCharacterSet);
         keys.putAE(Tags.RetrieveAET);
         keys.putSH(Tags.StorageMediaFileSetID);
@@ -227,8 +232,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     static class PatientQueryCmd extends QueryCmd {
 
-        PatientQueryCmd(Dataset keys) throws SQLException {
-            super(keys);
+        PatientQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
+            super(keys, filterResult);
         }
 
         protected void init() {
@@ -253,8 +258,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     static class StudyQueryCmd extends QueryCmd {
 
-        StudyQueryCmd(Dataset keys) throws SQLException {
-            super(keys);
+        StudyQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
+            super(keys, filterResult);
         }
 
         protected void init() {
@@ -297,8 +302,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     static class SeriesQueryCmd extends QueryCmd {
 
-        SeriesQueryCmd(Dataset keys) throws SQLException {
-            super(keys);
+        SeriesQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
+            super(keys, filterResult);
         }
 
         protected void init() {
@@ -340,8 +345,8 @@ public abstract class QueryCmd extends BaseCmd {
 
     static class ImageQueryCmd extends QueryCmd {
 
-        ImageQueryCmd(Dataset keys) throws SQLException {
-            super(keys);
+        ImageQueryCmd(Dataset keys, boolean filterResult) throws SQLException {
+            super(keys, filterResult);
         }
 
         protected void init() {
