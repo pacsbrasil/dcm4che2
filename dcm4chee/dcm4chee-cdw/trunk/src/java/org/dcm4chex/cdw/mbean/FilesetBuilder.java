@@ -619,8 +619,6 @@ class FilesetBuilder {
             dirReader.close();
             spoolDir.delete(oldDDFile);
         }
-        if (dom != null)
-            dom.updateSeqNo();
         return rqList;
     }
 

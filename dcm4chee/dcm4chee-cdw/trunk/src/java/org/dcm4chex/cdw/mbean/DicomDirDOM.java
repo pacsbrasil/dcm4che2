@@ -14,7 +14,6 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -280,34 +279,6 @@ class DicomDirDOM {
             }
         }
         return false;
-    }
-
-    public void updateSeqNo() {
-        Element root = doc.getDocumentElement();
-        for (Node pat = root.getFirstChild(); pat != null; pat = pat
-                .getNextSibling())
-            if (RECORD.equals(pat.getNodeName()))
-                    updateSeqNo((Element) pat, 1);
-    }
-
-    private TreeSet updateSeqNo(Element elm, int level) {
-        TreeSet seqNo = new TreeSet();
-        for (Node child = elm.getFirstChild(); child != null; child = child
-                .getNextSibling())
-            if (RECORD.equals(child.getNodeName()))
-                    if (level < 3)
-                        seqNo.addAll(updateSeqNo((Element) child, level + 1));
-                    else
-                        // child == inst
-                        seqNo.add(Integer.valueOf(((Element) child)
-                                .getAttribute(SEQNO)));
-        StringBuffer sb = new StringBuffer();
-        Iterator it = seqNo.iterator();
-        sb.append(it.next());
-        while (it.hasNext())
-            sb.append(',').append(it.next());
-        elm.setAttribute(SEQNO, sb.toString());
-        return seqNo;
     }
 
     private void setSeqNo(Element elm, String seqNo, int level) {

@@ -4,8 +4,8 @@
         doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
     <xsl:include href="common.xsl"/>
     <xsl:param name="seqno" select="1"/>
-    <xsl:param name="size" select="1"/>
-    <xsl:param name="fsid" select="''"/>
+    <xsl:param name="size" select="2"/>
+    <xsl:param name="fsid" select="'DISK007'"/>
     <xsl:template match="/dicomdir">
         <html xmlns="http://www.w3.org/1999/xhtml">
             <head>
@@ -15,6 +15,18 @@
                 <div align="center">
                     <h2>PDI - IHE Portable Data for Imaging</h2>
                     <h2>RSNA 2004 Demonstration</h2>
+                    <!-- if File-set ID defined or several disks -->
+                    <xsl:if test="$fsid!='' or $size &gt; 1">
+                        <h2>
+                            <xsl:text>Media</xsl:text>
+                            <!-- if several disks -->
+                            <xsl:if test="$size &gt; 1">[<xsl:value-of
+                                    select="$seqno"/>/<xsl:value-of select="$size"/>]</xsl:if>
+                            <!-- if File-set ID -->
+                            <xsl:if test="$fsid!=''"> ID: <xsl:value-of select="$fsid"/>
+                            </xsl:if>
+                        </h2>
+                    </xsl:if>
                 </div>
                 <p>This is a sample CD for the RSNA 2004 Demonstration of the IHE Portable Data for
                     Imaging (PDI) Integration Profile.</p>
@@ -35,23 +47,25 @@
                             href="IHE_PDI/HOME.HTM">web content</a>.</p>
                 </xsl:if>
                 <h3>Manifest of Importable Data</h3>
-                <p>This disk contains <xsl:value-of
-                    select="count(record/record/record/record)"/> DICOM SOP Instances in
-                        <xsl:value-of select="count(record/record/record)"/> Series of
-                        <xsl:value-of select="count(record/record)"/> Studie(s) from
-                        <xsl:value-of select="count(record)"/> Patient(s):</p>
+                <xsl:variable name="pats" select="record[record/record/record[@seqno=$seqno]]"/>
+                <xsl:variable name="studies" select="record/record[record/record[@seqno=$seqno]]"/>
+                <xsl:variable name="series" select="record/record/record[record[@seqno=$seqno]]"/>
+                <xsl:variable name="insts" select="record/record/record/record[@seqno=$seqno]"/>
+                <p>This disk contains <xsl:value-of select="count($insts)"/> DICOM SOP Instances in
+                        <xsl:value-of select="count($series)"/> Series of <xsl:value-of
+                    select="count($studies)"/> Studie(s) from <xsl:value-of select="count($pats)"/> Patient(s):</p>
                 <p>
-                    <xsl:for-each select="record">Patient: <xsl:call-template name="formatPN">
+                    <xsl:for-each select="$pats">Patient: <xsl:call-template name="formatPN">
                             <xsl:with-param name="pn" select="attr[@tag='(0010,0010)']"/>
                         </xsl:call-template>
-                        <xsl:for-each select="record">
+                        <xsl:for-each select="$studies">
                             <br/>Study <xsl:call-template name="formatDateTime">
                                 <xsl:with-param name="date" select="attr[@tag='(0008,0020)']"/>
                                 <xsl:with-param name="time" select="attr[@tag='(0008,0030)']"/>
                             </xsl:call-template>
                             <xsl:text>: </xsl:text>
                             <xsl:value-of select="attr[@tag='(0008,1030)']"/>
-                            <xsl:for-each select="record">
+                            <xsl:for-each select="$series">
                                 <br/>
                                 <xsl:value-of select="attr[@tag='(0008,0060)']"/>
                                 <xsl:text> Series #</xsl:text>
@@ -59,7 +73,7 @@
                                 <xsl:text>: </xsl:text>
                                 <xsl:value-of select="attr[@tag='(0008,103E)']"/>
                                 <br/>
-                                <xsl:for-each select="record">
+                                <xsl:for-each select="$insts">
                                     <code>
                                         <xsl:value-of select="attr[@tag='(0004,1500)']"/>
                                     </code>
