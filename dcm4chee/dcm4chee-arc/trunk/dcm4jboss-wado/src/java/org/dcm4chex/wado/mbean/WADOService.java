@@ -40,20 +40,20 @@ public class WADOService extends ServiceMBeanSupport  {
 		return cache.getCacheRoot();
 	}
 	
-	public void setMinFreeSpace( long minFree ) {
+	public void setMinFreeSpace( int minFree ) {
 		cache.setMinFreeSpace( minFree * MEGA );
 	}
 	
-	public long getMinFreeSpace() {
-		return cache.getMinFreeSpace() / MEGA;
+	public int getMinFreeSpace() {
+		return (int) (cache.getMinFreeSpace() / MEGA);
 	}
 
-	public void setPreferredFreeSpace( long minFree ) {
+	public void setPreferredFreeSpace( int minFree ) {
 		cache.setPreferredFreeSpace( minFree * MEGA );
 	}
 	
-	public long getPreferredFreeSpace() {
-		return cache.getPreferredFreeSpace() / MEGA;
+	public int getPreferredFreeSpace() {
+		return (int) (cache.getPreferredFreeSpace() / MEGA);
 	}
 	
 	/**

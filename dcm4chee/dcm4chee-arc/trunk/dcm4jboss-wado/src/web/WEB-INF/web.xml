@@ -20,7 +20,7 @@
 		
 		<init-param>
 			<param-name>wadoServiceName</param-name>
-			<param-value>dcm4chex:service=WADOService</param-value>
+			<param-value>tiani.archive:service=WADOService</param-value>
 		</init-param>
 		
 		<!-- 
@@ -30,7 +30,7 @@
 		-->
 		<init-param>
 			<param-name>fileSystemMgtName</param-name>
-			<param-value>dcm4chex:service=FileSystemMgt</param-value>
+			<param-value>tiani.archive:service=FileSystemMgt</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>

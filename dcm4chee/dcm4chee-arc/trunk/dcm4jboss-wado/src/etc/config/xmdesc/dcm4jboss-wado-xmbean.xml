@@ -26,7 +26,7 @@
       <name>CacheRoot</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="/var/wadocache" />
+         <value value="wadocache" />
       </descriptors>
    </attribute>
  
@@ -36,9 +36,9 @@
       <description>Min space that must be available on cache drive in MByte (1.000.000 Bytes).
       </description>
       <name>MinFreeSpace</name>
-      <type>long</type>
+      <type>int</type>
       <descriptors>
-         <value value="200000000" />
+         <value value="5" />
       </descriptors>
    </attribute>
 
@@ -48,9 +48,9 @@
       <description>Preferred free disk space in MByte (1.000.000 Bytes).
       </description>
       <name>PreferredFreeSpace</name>
-      <type>long</type>
+      <type>int</type>
       <descriptors>
-         <value value="400000000" />
+         <value value="10" />
       </descriptors>
     </attribute>
 
@@ -87,7 +87,7 @@
       <name>FileSystemMgtName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="dcm4chex:service=FileSystemMgt" />
+         <value value="tiani.archive:service=FileSystemMgt" />
       </descriptors>
    </attribute>
 
