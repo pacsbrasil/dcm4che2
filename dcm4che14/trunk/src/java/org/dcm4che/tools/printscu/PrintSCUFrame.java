@@ -47,7 +47,7 @@ public class PrintSCUFrame extends JFrame
 
     private static final int DEF_WIDTH = 600, DEF_HEIGHT = 500;
 
-    private final Logger log = Logger.getLogger("PrintSCU Client");
+    private final Logger log = Logger.getLogger(PrintSCUFrame.class);
 
     private AssociationRequestor assocRq = new AssociationRequestor();
     private PrintSCU printSCU;
@@ -77,7 +77,7 @@ public class PrintSCUFrame extends JFrame
         Container contentPane = this.getContentPane();
         btnPanel = new JPanel();
         btnPanel.setLayout(new GridLayout(2, 3));
-        propPanel = new PropertiesPanel(this, log, DEFAULT_PROPERTIES_FILE);
+        propPanel = new PropertiesPanel(this, DEFAULT_PROPERTIES_FILE);
         JScrollPane scrollingPanel = new JScrollPane(propPanel);
         contentPane.add(panel = new JSplitPane(
             JSplitPane.VERTICAL_SPLIT, btnPanel, scrollingPanel));
@@ -742,10 +742,13 @@ public class PrintSCUFrame extends JFrame
         return (Integer)getFromProperty(propertyName, Integer.class);
     }
 
+    /* 
+     * Passing an unknown Class (or missing property value) returns null to caller
+     */
     private final Object getFromProperty(String propertyName, Class argType)
     {
         String prop;
-        Object ret = null; //sending an unknown Class returns null to caller
+        Object ret = null;
         
         if ((prop = propPanel.getProperty(propertyName)) != null) {
             try {
@@ -767,43 +770,6 @@ public class PrintSCUFrame extends JFrame
         }
         return ret;
     }
-
-    /*protected void setFromProperty(Method method, String propertyName, Optionality optionality)
-    {
-        if (method.getParameterTypes().length > 1)
-            throw new IllegalArgumentException("method passed to \"setFromProp\""
-                + "must take only one parameter");
-        boolean missing = true;
-        String prop;
-        
-        if ((prop = propPanel.getProperty(propertyName)) != null) {
-            Class argType = method.getParameterTypes()[0];
-            Class[] args;
-            try {
-                if (argType == String.class)
-                    method.invoke(assocRq, new Object[] { prop });
-                else if (argType == int.class)
-                    method.invoke(assocRq, new Object[] { Integer.valueOf(prop) });
-                missing = false;
-            }
-            catch (NumberFormatException e) {
-                log.warn(propertyName + " is an invalid integer");
-            }
-            catch (InvocationTargetException e) {
-                log.error(e.getCause());
-            }
-            catch (IllegalAccessException e) {
-                log.error(e.getCause());
-            }
-        }
-        if (missing && optionality == Optionality.Required) {
-            log.debug(propertyName + " is a required property!");
-            throw new PrintSCUConfigurationException(propertyName + " is a required property!");
-        }
-        else {
-            log.debug("setting " + propertyName + " = " + prop);
-        }
-    }*/
 
     private void onDisconnect()
     {

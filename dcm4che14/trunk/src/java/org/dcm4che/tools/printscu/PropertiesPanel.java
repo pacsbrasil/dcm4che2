@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BoxLayout;
@@ -21,7 +23,8 @@ import org.apache.log4j.Logger;
 
 public class PropertiesPanel extends JPanel implements TableModelListener, MouseListener
 {
-    private Logger log;
+    private final Logger log = Logger.getLogger(PrintSCUFrame.class);
+    
     private Properties props;
     /*private String host;
     private String callingAET, calledAET;
@@ -164,15 +167,35 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
       "0","1","2","3","4","5","6"
     };
 
+    //maps property names to their corresponding Strng[] of enumerations for the UI
+    private static final Map PROP_ENUMS;
+
+    static {
+        PROP_ENUMS = new HashMap();
+        PROP_ENUMS.put("Session.FilmDestination", FILM_DESTINATION);
+        PROP_ENUMS.put("Session.FilmOrientation", FILM_ORIENTATION);
+        PROP_ENUMS.put("Session.MediumType", MEDIUM_TYPE);
+        PROP_ENUMS.put("Session.PrintPriority", PRINT_PRIORITY);
+        PROP_ENUMS.put("FilmBox.ImageDisplayFormat", IMAGE_DISPLAY_FORMAT);
+        PROP_ENUMS.put("FilmBox.FilmSizeID", FILM_SIZE_ID);
+        PROP_ENUMS.put("FilmBox.MagnificationType", MAGNIFICATION_TYPE);
+        PROP_ENUMS.put("FilmBox.RequestedResolutionID", REQUESTED_RESOLUTION_ID);
+        PROP_ENUMS.put("ImageBox.RequestedDecimateCropBehavior",
+            REQUESTED_DECIMATE_CROP_BEHAVIOR);
+        PROP_ENUMS.put("ImageBox.Polarity", POLARITY);
+        PROP_ENUMS.put("User.SendAspectRatio", SEND_ASPECTRATIO);
+        PROP_ENUMS.put("User.BurnInInfo", BURNIN_INFO);
+        PROP_ENUMS.put("Verbose", VERBOSE);
+    }
+
     private PrintSCUFrame printSCUFrame;
     private JTable table;
     private TableModel model;
 
-    PropertiesPanel(PrintSCUFrame printSCUFrame, Logger log, String fileName)
+    PropertiesPanel(PrintSCUFrame printSCUFrame, String fileName)
     {
         super();
         this.printSCUFrame = printSCUFrame;
-        this.log = log;
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         //load properties file
         File file = new File(fileName);
@@ -196,34 +219,8 @@ public class PropertiesPanel extends JPanel implements TableModelListener, Mouse
         if (column == 0) {
             String prop = (String)table.getValueAt(row, 0);
             String value = props.getProperty(prop);
-            String[] choices;
-            if (prop.equals("Session.FilmDestination"))
-                choices = FILM_DESTINATION;
-            else if (prop.equals("Session.FilmOrientation"))
-                choices = FILM_ORIENTATION;
-            else if (prop.equals("Session.MediumType"))
-                choices = MEDIUM_TYPE;
-            else if (prop.equals("Session.PrintPriority"))
-                choices = PRINT_PRIORITY;
-            else if (prop.equals("FilmBox.ImageDisplayFormat"))
-                choices = IMAGE_DISPLAY_FORMAT;
-            else if (prop.equals("FilmBox.FilmSizeID"))
-                choices = FILM_SIZE_ID;
-            else if (prop.equals("FilmBox.MagnificationType"))
-                choices = MAGNIFICATION_TYPE;
-            else if (prop.equals("FilmBox.RequestedResolutionID"))
-                choices = REQUESTED_RESOLUTION_ID;
-            else if (prop.equals("ImageBox.RequestedDecimateCropBehavior"))
-                choices = REQUESTED_DECIMATE_CROP_BEHAVIOR;
-            else if (prop.equals("ImageBox.Polarity"))
-                choices = POLARITY;
-            else if (prop.equals("User.SendAspectRatio"))
-                choices = SEND_ASPECTRATIO;
-            else if (prop.equals("User.BurnInInfo"))
-                choices = BURNIN_INFO;
-            else if (prop.equals("Verbose"))
-                choices = VERBOSE;
-            else
+            String[] choices = (String[])PROP_ENUMS.get(prop);
+            if (choices == null)
                 return;
             value = (String)JOptionPane.showInputDialog(printSCUFrame,
                 "Choose a value:", prop, JOptionPane.QUESTION_MESSAGE,
