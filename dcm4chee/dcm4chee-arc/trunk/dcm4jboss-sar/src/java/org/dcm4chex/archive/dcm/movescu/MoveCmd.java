@@ -67,7 +67,10 @@ class MoveCmd implements Runnable, DimseListener {
         log.info("Start processing " + order);
         ActiveAssociation moveAssoc = null;
         try {
-            moveAssoc = openAssociation(queryAEData(order.getRetrieveAET()));
+            String retrieveAET = order.getRetrieveAET();
+            if (retrieveAET == null)
+                retrieveAET = service.getCalledAET();
+            moveAssoc = openAssociation(queryAEData(retrieveAET));
             Command cmd = dof.newCommand();
             cmd.initCMoveRQ(moveAssoc.getAssociation().nextMsgID(),
                     UIDs.StudyRootQueryRetrieveInformationModelMOVE,

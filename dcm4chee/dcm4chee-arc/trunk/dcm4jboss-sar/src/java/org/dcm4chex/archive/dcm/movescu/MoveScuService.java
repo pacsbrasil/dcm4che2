@@ -38,16 +38,20 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 public class MoveScuService extends ServiceMBeanSupport implements
         MessageListener {
 
+    private static final String DEF_CALLING_AET = "MOVE_SCU";
+
+    private static final String DEF_CALLED_AET = "QR_SCP";
+
     private static final Map dumpParam = new HashMap(5);
     static {
         dumpParam.put("maxlen", new Integer(128));
         dumpParam.put("vallen", new Integer(64));
         dumpParam.put("prefix", "\t");
     }
-    
-    private static final String DEFAULT_AET = "MOVE_SCU";
 
-    private String callingAET = DEFAULT_AET;
+    private String callingAET = DEF_CALLING_AET;
+
+    private String calledAET = DEF_CALLED_AET;
 
     private String dsJndiName = "java:/DefaultDS";
 
@@ -56,13 +60,21 @@ public class MoveScuService extends ServiceMBeanSupport implements
     private QueueSession jmsSession;
 
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
-    
+
     private PooledExecutor pool = new PooledExecutor();
-    
+
     public MoveScuService() {
         pool.waitWhenBlocked();
     }
-    
+
+    public final String getCalledAET() {
+        return calledAET;
+    }
+
+    public final void setCalledAET(String retrieveAET) {
+        this.calledAET = retrieveAET;
+    }
+
     public final String getDataSourceJndiName() {
         return dsJndiName;
     }
@@ -70,7 +82,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
     public final void setDataSourceJndiName(String jndiName) {
         this.dsJndiName = jndiName;
     }
-    
+
     public final int getConcurrency() {
         return pool.getMaximumPoolSize();
     }
@@ -78,7 +90,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
     public final void setConcurrency(int concurrency) {
         pool.setMaximumPoolSize(concurrency);
     }
-    
+
     public DataSource getDataSource() throws ConfigurationException {
         if (datasource == null) {
             try {
@@ -113,7 +125,7 @@ public class MoveScuService extends ServiceMBeanSupport implements
 
     public void setCallingAET(String aet) {
         this.callingAET = aet;
-    }    
+    }
 
     protected void startService() throws Exception {
         if (this.jmsSession != null) {

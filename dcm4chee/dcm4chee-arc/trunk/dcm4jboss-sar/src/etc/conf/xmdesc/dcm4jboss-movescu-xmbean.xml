@@ -34,6 +34,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getCalledAET"
+      setMethod="setCalledAET">
+      <description>AET of default MOVE SCP. Only effective, if a
+      Move Order does not specify a Retrieve AET.
+      </description>
+      <name>CalledAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="QR_SCP" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getRetryIntervalls"
       setMethod="setRetryIntervalls">
       <description>Number and intervalls of retries of failed Move Requests
