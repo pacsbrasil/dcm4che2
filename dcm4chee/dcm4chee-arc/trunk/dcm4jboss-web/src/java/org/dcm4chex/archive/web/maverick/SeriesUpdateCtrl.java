@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
+import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -95,7 +96,10 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
     
     protected String perform() throws Exception {
         if (submit != null)
-            executeUpdate();
+        	if ( seriesPk != -1 )
+        		executeUpdate();
+        	else 
+        		executeCreate();
         return SUCCESS;
     }
 
@@ -105,6 +109,41 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
         return home.create();
     }
 
+    private void executeCreate() {
+        try {
+        	SeriesModel series = new SeriesModel();
+        	series.setSpecificCharacterSet("ISO_IR 100");
+        	series.setPk( -1 );
+        	series.setSeriesIUID( UIDGenerator.getInstance().createUID() );
+        	
+        	series.setBodyPartExamined(bodyPartExamined);
+        	series.setLaterality(laterality);
+        	series.setModality(modality);
+        	series.setSeriesDateTime(seriesDateTime);
+        	series.setSeriesDescription(seriesDescription);
+        	series.setSeriesNumber(seriesNumber);
+        	
+            ContentEdit ce = lookupContentEdit();
+            ce.createSeries( series.toDataset(), studyPk );
+            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+            PatientModel pat = form.getPatientByPk(patPk);
+            StudyModel study = form.getStudyByPk(patPk, studyPk);
+            AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                    AuditLoggerDelegate.CREATE,
+                    pat.getPatientID(),
+                    pat.getPatientName(),
+                    study.getPlacerOrderNumber(),
+                    study.getFillerOrderNumber(),
+                    study.getStudyIUID(),
+                    study.getAccessionNumber(),
+                    "new series:"+series.getSeriesIUID() );
+
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
     private void executeUpdate() {
         try {
             SeriesModel series = FolderForm.getFolderForm(getCtx().getRequest())
