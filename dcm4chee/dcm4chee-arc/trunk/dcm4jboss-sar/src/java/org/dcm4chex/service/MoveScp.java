@@ -21,6 +21,12 @@
 package org.dcm4chex.service;
 
 import java.io.IOException;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.rmi.PortableRemoteObject;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -30,9 +36,11 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
+import org.dcm4chex.archive.ejb.interfaces.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AERemote;
+import org.dcm4chex.archive.ejb.interfaces.AERemoteHome;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.config.NetworkAEInfo;
 import org.jboss.logging.Logger;
 
 /**
@@ -43,10 +51,20 @@ import org.jboss.logging.Logger;
 public class MoveScp extends DcmServiceBase {
     private final MoveScpService scp;
     private final Logger log;
+    private String providerURL;
+    private AERemoteHome aeHome;
 
     public MoveScp(MoveScpService scp) {
         this.scp = scp;
         this.log = scp.getLog();
+    }
+
+    public String getProviderURL() {
+        return providerURL;
+    }
+
+    public void setProviderURL(String providerURL) {
+        this.providerURL = providerURL;
     }
 
     public void c_move(ActiveAssociation assoc, Dimse rq) throws IOException {
@@ -54,7 +72,8 @@ public class MoveScp extends DcmServiceBase {
         String dest = rqCmd.getString(Tags.MoveDestination);
         Dataset rqData = rq.getDataset();
         try {
-            NetworkAEInfo aeInfo = getNetworkAEInfo(dest);
+            AEData aeData = getAEData(dest);
+//            NetworkAEInfo aeInfo = getNetworkAEInfo(dest);
             FileInfo[] fileInfo;
             try {
                 RetrieveCmd retrieveCmd =
@@ -66,7 +85,7 @@ public class MoveScp extends DcmServiceBase {
                         rq.pcid(),
                         rqCmd,
                         retrieveCmd.execute(),
-                        aeInfo,
+                        aeData,
                         dest))
                     .start();
             } catch (Exception e) {
@@ -85,21 +104,51 @@ public class MoveScp extends DcmServiceBase {
         }
     }
 
-    private NetworkAEInfo getNetworkAEInfo(String dest)
+    private AEData getAEData(String dest)
         throws DcmServiceException {
-            NetworkAEInfo aeInfo = scp.findNetworkAE(dest);
-            if (aeInfo == null) {
+            AEData aeData = null;
+            try
+            {
+                AERemote ae = aeHome().create();
+                aeData = ae.getAEData(dest);
+            } catch (Exception e)
+            {
+                log.error("Query AE Data failed:", e);
+                throw new DcmServiceException(Status.ProcessingFailure, e);
+            }
+            if (aeData == null) {
                 log.warn("Unkown Move Destination - " + dest);
                 throw new DcmServiceException(Status.MoveDestinationUnknown);
             }
-            
-            if (aeInfo.getNetworkConnections().isEmpty()) {
-                log.error(
-                    "No configured connection of Move Destination - " + dest);
-                throw new DcmServiceException(
-                    Status.UnableToPerformSuboperations);
-            }
-            return aeInfo;
+            return aeData;
     }
 
+    private AERemoteHome aeHome() throws NamingException {
+        if (aeHome == null) {
+            Hashtable env = new Hashtable();
+            env.put(
+                "java.naming.factory.initial",
+                "org.jnp.interfaces.NamingContextFactory");
+            env.put(
+                "java.naming.factory.url.pkgs",
+                "org.jboss.naming:org.jnp.interfaces");
+            if (providerURL != null && providerURL.length() > 0) {
+                env.put("java.naming.provider", providerURL);
+            }
+            Context jndiCtx = new InitialContext(env);
+            try {
+                Object o = jndiCtx.lookup(AERemoteHome.JNDI_NAME);
+                aeHome =
+                    (AERemoteHome) PortableRemoteObject.narrow(
+                        o,
+                AERemoteHome.class);
+            } finally {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+        return aeHome;
+    }
 }

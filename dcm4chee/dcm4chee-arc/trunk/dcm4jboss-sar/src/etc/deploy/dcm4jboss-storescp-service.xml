@@ -25,6 +25,8 @@
         
     <attribute name="ProviderURL">localhost</attribute>
     -->
+
+    <attribute name="BaseDir">/var/local/dcm4jboss</attribute>
     
   </mbean>
 

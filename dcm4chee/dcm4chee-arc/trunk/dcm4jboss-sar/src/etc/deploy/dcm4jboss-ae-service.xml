@@ -4,7 +4,7 @@
 
 <!-- ===================================================================== -->
 <!--                                                                       -->
-<!--  DICOM Query Service Configuration                                   -->
+<!--  Application Enitity Service Configuration                                   -->
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
@@ -12,12 +12,9 @@
 
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
-  <mbean code="org.dcm4chex.service.DeviceConfigService" 
-         name="dcm4chex:service=DeviceConfig,device=PACS_TIANI">
+  <mbean code="org.dcm4chex.service.AEService" 
+         name="dcm4chex:service=AE">
 
-    <attribute name="LdapURL">ldap://cn=admin,dc=tiani,dc=com:admin@localhost:389/dc=tiani,dc=com</attribute>    
-
-         
   </mbean>
 
 </server>

@@ -143,8 +143,23 @@ public class StoreScpService
         scp.setProviderURL(providerURL);
     }
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getBaseDir() {
+        return scp.getBaseDir();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setBaseDir(String basedir) {
+        scp.setBaseDir(basedir);
+    }
+
 
     protected void startService() throws Exception {
+        scp.prepareBaseDir();
         dcmHandler =
                 (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
         bindDcmServices();

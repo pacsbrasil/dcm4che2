@@ -40,7 +40,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DataSource;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.codec.Transcoder;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -69,18 +68,7 @@ class FileDataSource implements DataSource
     public void writeTo(OutputStream out, String tsUID) throws IOException
     {
         DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
-        File file = null;
-        if (enc.encapsulated)
-        {
-            file = File.createTempFile("dcm4jboss", "dcm");
-            Transcoder t = new Transcoder();
-            t.setTransferSyntax(tsUID);
-            t.setEncodingRate(encodingRate);
-            t.transcode(fileInfo.toFile(), file);
-        } else
-        {
-            file = fileInfo.toFile();
-        }
+        File file = fileInfo.toFile();
         FileInputStream fis = new FileInputStream(file);
         try
         {

@@ -15,15 +15,18 @@
   <mbean code="org.dcm4chex.service.MoveScpService" 
          name="dcm4chex:service=MoveScp">
 
-    <depends optional-attribute-name="DeviceConfigName">
-        dcm4chex:service=DeviceConfig,device=PACS_TIANI
-    </depends>
     <depends optional-attribute-name="DcmServerName">
         dcm4chex:service=DcmServer,name=DCMSRV
     </depends>
     
+    <!-- Do NOT uncomment this line if the service is deployed
+    in the same jboss instance as the Storage EJB. Otherwise
+    in VM calls to go over RMI!
+        
+    <attribute name="ProviderURL">localhost</attribute>
+    -->
+    
     <attribute name="DsJndiName">java:/PostgresDS</attribute>    
-    <attribute name="EncodingRate">1</attribute>    
          
   </mbean>
 

@@ -18,51 +18,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-package org.dcm4chex.service.util;
+package org.dcm4chex.service;
+
+import org.dcm4che.net.PresContext;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$
- * @since 02.08.2003
+ * @since 21.11.2003
  */
-public class ConfigurationException extends RuntimeException
+final class FileSelection
 {
-
-    /**
-     * 
-     */
-    public ConfigurationException()
-    {
-        super();
-        // TODO Auto-generated constructor stub
+    public final FileInfo fileInfo;
+    public final PresContext presContext;
+    public FileSelection(FileInfo fileInfo, PresContext presContext) {
+        this.fileInfo = fileInfo;
+        this.presContext = presContext;        
     }
-
-    /**
-     * @param message
-     */
-    public ConfigurationException(String message)
-    {
-        super(message);
-        // TODO Auto-generated constructor stub
-    }
-
-    /**
-     * @param cause
-     */
-    public ConfigurationException(Throwable cause)
-    {
-        super(cause);
-        // TODO Auto-generated constructor stub
-    }
-
-    /**
-     * @param message
-     * @param cause
-     */
-    public ConfigurationException(String message, Throwable cause)
-    {
-        super(message, cause);
-        // TODO Auto-generated constructor stub
-    }
-
 }

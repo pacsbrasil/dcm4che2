@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -27,14 +27,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.URI;
+import java.net.UnknownHostException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -66,271 +65,319 @@ import org.jboss.logging.Logger;
  * @version $Revision$
  * @since 03.08.2003
  */
-public class StoreScp extends DcmServiceBase implements AssociationListener {
-	private static final int[] TYPE1_ATTR =
-		{
-			Tags.StudyInstanceUID,
-			Tags.SeriesInstanceUID,
-			Tags.SOPInstanceUID,
-			Tags.SOPClassUID,
-			};
+public class StoreScp extends DcmServiceBase implements AssociationListener
+{
+    private static final int[] TYPE1_ATTR =
+        {
+            Tags.StudyInstanceUID,
+            Tags.SeriesInstanceUID,
+            Tags.SOPInstanceUID,
+            Tags.SOPClassUID,
+            };
 
-	private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-	private static final DcmParserFactory pf = DcmParserFactory.getInstance();
+    private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
-	private StorageHome storageHome;
+    private StorageHome storageHome;
 
-	private final StoreScpService scp;
-	private final Logger log;
-	private String providerURL;
+    private final StoreScpService scp;
+    private final Logger log;
+    private String providerURL;
+    private String basedir;
+    private String hostname;
 
-	public StoreScp(StoreScpService scp) {
-		this.scp = scp;
-		this.log = scp.getLog();
-	}
+    public StoreScp(StoreScpService scp)
+    {
+        this.scp = scp;
+        this.log = scp.getLog();
+        this.hostname = getHostName();
+    }
 
-	public String getProviderURL() {
-		return providerURL;
-	}
+    private String getHostName()
+    {
+        try
+        {
+            String dn = InetAddress.getLocalHost().getCanonicalHostName();
+            return dn.substring(dn.lastIndexOf('.') + 1);
+        } catch (UnknownHostException e)
+        {
+            throw new ConfigurationException(e);
+        }
+    }
 
-	public void setProviderURL(String providerURL) {
-		this.providerURL = providerURL;
-	}
+    public String getProviderURL()
+    {
+        return providerURL;
+    }
 
-	protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-		throws IOException, DcmServiceException {
-		Command rqCmd = rq.getCommand();
-		InputStream in = rq.getDataAsStream();
-		Storage storage = null;
-		try {
-			storage = storageHome().create();
-			String instUID = rqCmd.getAffectedSOPInstanceUID();
-			String classUID = rqCmd.getAffectedSOPClassUID();
-			DcmDecodeParam decParam =
-				DcmDecodeParam.valueOf(rq.getTransferSyntaxUID());
-			Dataset ds = objFact.newDataset();
-			DcmParser parser = pf.newDcmParser(in);
-			parser.setDcmHandler(ds.getDcmHandler());
-			parser.parseDataset(decParam, Tags.PixelData);
-			checkDataset(ds, classUID, instUID);
-			ds.setFileMetaInfo(
-				objFact.newFileMetaInfo(
-					classUID,
-					instUID,
-					rq.getTransferSyntaxUID()));
+    public void setProviderURL(String providerURL)
+    {
+        this.providerURL = providerURL;
+    }
 
-			String aet = assoc.getAssociation().getCalledAET();
-			URI uri = getNodeURI(storage, aet);
-			File file = makeFile(uri, ds);
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
-			storage.store(
-				ds,
-				aet,
-				toRelPath(uri, file),
-				file.length(),
-				md.digest());
-			rspCmd.putUS(Tags.Status, Status.Success);
-		} catch (DcmServiceException e) {
-			throw e;
-		} catch (Exception e) {
-			scp.getLog().error(e.getMessage(), e);
-			throw new DcmServiceException(Status.ProcessingFailure, e);
-		} finally {
-			if (storage != null) {
-				try {
-					storage.remove();
-				} catch (Exception ignore) {
-				}
-			}
-			in.close();
-		}
-	}
+    public String getBaseDir()
+    {
+        return basedir;
+    }
 
-	private URI getNodeURI(Storage storage, String aet) throws Exception {
-		URI uri = null;
-		try {
-			uri = new URI(storage.getNodeURI(aet));
-		} catch (ObjectNotFoundException e) {
-			throw new ConfigurationException(
-				"Missing Node Configuration for Storage AET:" + aet);
-		}
-		if (!uri.getScheme().equalsIgnoreCase("file")) {
-			throw new ConfigurationException(
-				"No support of URI scheme:" + uri.getScheme() + " by " + aet);
-		}
-		String myHost = InetAddress.getLocalHost().getHostName();
-		if (!uri.getHost().equalsIgnoreCase(myHost)) {
-			throw new ConfigurationException(
-				"Mismatch of node host:" + uri.getHost()
-				+ " with local host:"
-				+ myHost
-				+ " of "
-				+ aet);
-		}
-		return uri;
-	}
+    public void setBaseDir(String basedir)
+    {
+        this.basedir = basedir;
+    }
 
-	private String toRelPath(URI uri, File file) {
-		String fpath = file.toURI().getPath();
-		return fpath.substring(uri.getPath().length());
-	}
+    public void prepareBaseDir() throws IOException
+    {
+        if (basedir == null) {
+            throw new IllegalStateException("BaseDir not initialized");
+        }
+        File dir = new File(basedir);
+        if (!dir.isDirectory()) {
+            log.warn("basedir " + dir + " does not exist - create new basedir");
+            if (!dir.mkdirs()) {
+                throw new IOException("Failed to create basedir");
+            }
+        }
+        basedir = dir.getCanonicalPath();
+    }
 
-	private StorageHome storageHome() throws NamingException {
-		if (storageHome == null) {
-			Hashtable env = new Hashtable();
-			env.put(
-				"java.naming.factory.initial",
-				"org.jnp.interfaces.NamingContextFactory");
-			env.put(
-				"java.naming.factory.url.pkgs",
-				"org.jboss.naming:org.jnp.interfaces");
-			if (providerURL != null && providerURL.length() > 0) {
-				env.put("java.naming.provider", providerURL);
-			}
-			Context jndiCtx = new InitialContext(env);
-			try {
-				Object o = jndiCtx.lookup(StorageHome.JNDI_NAME);
-				storageHome =
-					(StorageHome) PortableRemoteObject.narrow(
-						o,
-						StorageHome.class);
-			} finally {
-				try {
-					jndiCtx.close();
-				} catch (NamingException ignore) {
-				}
-			}
-		}
-		return storageHome;
-	}
+    protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
+        throws IOException, DcmServiceException
+    {
+        Command rqCmd = rq.getCommand();
+        InputStream in = rq.getDataAsStream();
+        Storage storage = null;
+        try
+        {
+            storage = storageHome().create();
+            String instUID = rqCmd.getAffectedSOPInstanceUID();
+            String classUID = rqCmd.getAffectedSOPClassUID();
+            DcmDecodeParam decParam =
+                DcmDecodeParam.valueOf(rq.getTransferSyntaxUID());
+            Dataset ds = objFact.newDataset();
+            DcmParser parser = pf.newDcmParser(in);
+            parser.setDcmHandler(ds.getDcmHandler());
+            parser.parseDataset(decParam, Tags.PixelData);
+            checkDataset(ds, classUID, instUID);
+            ds.setFileMetaInfo(
+                objFact.newFileMetaInfo(
+                    classUID,
+                    instUID,
+                    rq.getTransferSyntaxUID()));
 
-	private void storeToFile(
-		DcmParser parser,
-		Dataset ds,
-		File file,
-		DcmEncodeParam encParam,
-		MessageDigest md)
-		throws IOException {
-		log.info("M-WRITE file:" + file);
-		BufferedOutputStream out =
-			new BufferedOutputStream(new FileOutputStream(file));
-		DigestOutputStream dos = new DigestOutputStream(out, md);
-		try {
-			ds.writeFile(dos, encParam);
-			if (parser.getReadTag() == Tags.PixelData) {
-				ds.writeHeader(
-					dos,
-					encParam,
-					parser.getReadTag(),
-					parser.getReadVR(),
-					parser.getReadLength());
-				copy(parser.getInputStream(), dos);
-			}
-		} finally {
-			try {
-				dos.close();
-			} catch (IOException ignore) {
-			}
-		}
-	}
+            String aet = assoc.getAssociation().getCalledAET();
+            File file = makeFile(ds);
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
+            storage.store(ds, hostname, basedir, toFileIds(file), (int)file.length(), md.digest());
+            rspCmd.putUS(Tags.Status, Status.Success);
+        } catch (DcmServiceException e)
+        {
+            throw e;
+        } catch (Exception e)
+        {
+            scp.getLog().error(e.getMessage(), e);
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        } finally
+        {
+            if (storage != null)
+            {
+                try
+                {
+                    storage.remove();
+                } catch (Exception ignore)
+                {}
+            }
+            in.close();
+        }
+    }
 
-	private void copy(InputStream in, OutputStream out) throws IOException {
-		byte[] buffer = new byte[512];
-		int c;
-		while ((c = in.read(buffer, 0, buffer.length)) != -1) {
-			out.write(buffer, 0, c);
-		}
-	}
+    private String toFileIds(File file)
+    {
+        final int off = "/".equals(basedir) ? 0 : basedir.length(); 
+        return file.getAbsolutePath().substring(off + 1).replace(
+            File.separatorChar,
+            '/');
+    }
 
-	private void checkDataset(Dataset ds, String classUID, String instUID)
-		throws DcmServiceException {
-		for (int i = 0; i < TYPE1_ATTR.length; ++i) {
-			if (ds.vm(TYPE1_ATTR[i]) <= 0) {
-				throw new DcmServiceException(
-					Status.DataSetDoesNotMatchSOPClassError,
-					"Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i]));
-			}
-			if (!instUID.equals(ds.getString(Tags.SOPInstanceUID))) {
-				throw new DcmServiceException(
-					Status.DataSetDoesNotMatchSOPClassError,
-					"SOP Instance UID in Dataset differs from Affected SOP Instance UID");
-			}
-			if (!classUID.equals(ds.getString(Tags.SOPClassUID))) {
-				throw new DcmServiceException(
-					Status.DataSetDoesNotMatchSOPClassError,
-					"SOP Class UID in Dataset differs from Affected SOP Class UID");
-			}
-		}
-	}
+    private StorageHome storageHome() throws NamingException
+    {
+        if (storageHome == null)
+        {
+            Hashtable env = new Hashtable();
+            env.put(
+                "java.naming.factory.initial",
+                "org.jnp.interfaces.NamingContextFactory");
+            env.put(
+                "java.naming.factory.url.pkgs",
+                "org.jboss.naming:org.jnp.interfaces");
+            if (providerURL != null && providerURL.length() > 0)
+            {
+                env.put("java.naming.provider", providerURL);
+            }
+            Context jndiCtx = new InitialContext(env);
+            try
+            {
+                Object o = jndiCtx.lookup(StorageHome.JNDI_NAME);
+                storageHome =
+                    (StorageHome) PortableRemoteObject.narrow(
+                        o,
+                        StorageHome.class);
+            } finally
+            {
+                try
+                {
+                    jndiCtx.close();
+                } catch (NamingException ignore)
+                {}
+            }
+        }
+        return storageHome;
+    }
 
-	private File makeFile(URI uri, Dataset ds) throws Exception {
-		File file, dir = new File(new URI("file:" + uri.getPath()));
-		String id123 = new SimpleDateFormat("yyyyMMdd").format(new Date());
-		String id4 = toHex(ds.getString(Tags.StudyInstanceUID).hashCode());
-		String id5 = toHex(ds.getString(Tags.SeriesInstanceUID).hashCode());
-		int i6 = ds.getString(Tags.SOPInstanceUID).hashCode();
-		mkdir(dir = new File(dir, id123.substring(0,4)));
-		mkdir(dir = new File(dir, id123.substring(4,6)));
-		mkdir(dir = new File(dir, id123.substring(6)));
-		mkdir(dir = new File(dir, id4));
-		mkdir(dir = new File(dir, id5));
-		while ((file = new File(dir, toHex(i6))).exists()) {
-			++i6;
-		}
-		return file;
-	}
+    private void storeToFile(
+        DcmParser parser,
+        Dataset ds,
+        File file,
+        DcmEncodeParam encParam,
+        MessageDigest md)
+        throws IOException
+    {
+        log.info("M-WRITE file:" + file);
+        BufferedOutputStream out =
+            new BufferedOutputStream(new FileOutputStream(file));
+        DigestOutputStream dos = new DigestOutputStream(out, md);
+        try
+        {
+            ds.writeFile(dos, encParam);
+            if (parser.getReadTag() == Tags.PixelData)
+            {
+                ds.writeHeader(
+                    dos,
+                    encParam,
+                    parser.getReadTag(),
+                    parser.getReadVR(),
+                    parser.getReadLength());
+                copy(parser.getInputStream(), dos);
+            }
+        } finally
+        {
+            try
+            {
+                dos.close();
+            } catch (IOException ignore)
+            {}
+        }
+    }
 
-	private static char[] HEX_DIGIT =
-		{
-			'0',
-			'1',
-			'2',
-			'3',
-			'4',
-			'5',
-			'6',
-			'7',
-			'8',
-			'9',
-			'A',
-			'B',
-			'C',
-			'D',
-			'E',
-			'F' };
+    private void copy(InputStream in, OutputStream out) throws IOException
+    {
+        byte[] buffer = new byte[512];
+        int c;
+        while ((c = in.read(buffer, 0, buffer.length)) != -1)
+        {
+            out.write(buffer, 0, c);
+        }
+    }
 
-	private String toHex(int val) {
-		char[] ch8 = new char[8];
-		for (int i = 8; --i >= 0; val >>= 4) {
-			ch8[i] = HEX_DIGIT[val & 0xf];
-		}
-		return String.valueOf(ch8);
-	}
+    private void checkDataset(Dataset ds, String classUID, String instUID)
+        throws DcmServiceException
+    {
+        for (int i = 0; i < TYPE1_ATTR.length; ++i)
+        {
+            if (ds.vm(TYPE1_ATTR[i]) <= 0)
+            {
+                throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i]));
+            }
+            if (!instUID.equals(ds.getString(Tags.SOPInstanceUID)))
+            {
+                throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "SOP Instance UID in Dataset differs from Affected SOP Instance UID");
+            }
+            if (!classUID.equals(ds.getString(Tags.SOPClassUID)))
+            {
+                throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "SOP Class UID in Dataset differs from Affected SOP Class UID");
+            }
+        }
+    }
 
-	private void mkdir(File dir) {
-		if (dir.mkdir()) {
-			log.info("M-WRITE dir:" + dir);
-		}
-	}
+    private File makeFile(Dataset ds) throws Exception
+    {
+        File file, dir = new File(basedir);
+        String id123 = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String id4 = toHex(ds.getString(Tags.StudyInstanceUID).hashCode());
+        String id5 = toHex(ds.getString(Tags.SeriesInstanceUID).hashCode());
+        int i6 = ds.getString(Tags.SOPInstanceUID).hashCode();
+        mkdir(dir = new File(dir, id123.substring(0, 4)));
+        mkdir(dir = new File(dir, id123.substring(4, 6)));
+        mkdir(dir = new File(dir, id123.substring(6)));
+        mkdir(dir = new File(dir, id4));
+        mkdir(dir = new File(dir, id5));
+        while ((file = new File(dir, toHex(i6))).exists())
+        {
+            ++i6;
+        }
+        return file;
+    }
 
-	// Implementation of AssociationListener
-	public void write(Association src, PDU pdu) {
-	}
+    private static char[] HEX_DIGIT =
+        {
+            '0',
+            '1',
+            '2',
+            '3',
+            '4',
+            '5',
+            '6',
+            '7',
+            '8',
+            '9',
+            'A',
+            'B',
+            'C',
+            'D',
+            'E',
+            'F' };
 
-	public void received(Association src, PDU pdu) {
-	}
+    private String toHex(int val)
+    {
+        char[] ch8 = new char[8];
+        for (int i = 8; --i >= 0; val >>= 4)
+        {
+            ch8[i] = HEX_DIGIT[val & 0xf];
+        }
+        return String.valueOf(ch8);
+    }
 
-	public void write(Association src, Dimse dimse) {
-	}
+    private void mkdir(File dir)
+    {
+        if (dir.mkdir())
+        {
+            log.info("M-WRITE dir:" + dir);
+        }
+    }
 
-	public void received(Association src, Dimse dimse) {
-	}
+    // Implementation of AssociationListener
+    public void write(Association src, PDU pdu)
+    {}
 
-	public void error(Association src, IOException ioe) {
-	}
+    public void received(Association src, PDU pdu)
+    {}
 
-	public void close(Association src) {
-	}
+    public void write(Association src, Dimse dimse)
+    {}
+
+    public void received(Association src, Dimse dimse)
+    {}
+
+    public void error(Association src, IOException ioe)
+    {}
+
+    public void close(Association src)
+    {}
 }

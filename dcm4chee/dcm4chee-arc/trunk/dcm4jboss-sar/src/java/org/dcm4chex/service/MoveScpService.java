@@ -26,13 +26,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
-import org.dcm4chex.config.NetworkAEInfo;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -58,20 +55,6 @@ public class MoveScpService
     private MoveScp scp = new MoveScp(this);
 
     /**
-     * @jmx.managed-attribute
-     */
-    public ObjectName getDeviceConfigName() {
-        return deviceConfigName;
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setDeviceConfigName(ObjectName deviceConfigName) {
-        this.deviceConfigName = deviceConfigName;
-    }
-
-    /**
       * @jmx.managed-attribute
       */
     public ObjectName getDcmServerName() {
@@ -83,6 +66,20 @@ public class MoveScpService
      */
     public void setDcmServerName(ObjectName dcmServerName) {
         this.dcmServerName = dcmServerName;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getProviderURL() {
+        return scp.getProviderURL();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setProviderURL(String providerURL) {
+        scp.setProviderURL(providerURL);
     }
 
     /**
@@ -173,22 +170,4 @@ public class MoveScpService
         }
         return datasource;
     }
-
-    public NetworkAEInfo findNetworkAE(String dest)
-        throws DcmServiceException {
-        try {
-            log.info("Query NetworkAE Info for " + dest + " from LDAP");
-            NetworkAEInfo aeInfo = (NetworkAEInfo) server.invoke(
-                deviceConfigName,
-                "findNetworkAE",
-                new Object[] { dest },
-                new String[] { String.class.getName()});
-            log.info("find NetworkAE Info for " + dest + ": " + aeInfo);
-            return aeInfo;
-        } catch (Exception e) {
-            log.error("Query  NetworkAE failed", e);
-            throw new DcmServiceException(Status.UnableToPerformSuboperations);
-        }
-    }
-
 }
