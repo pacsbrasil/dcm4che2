@@ -47,15 +47,20 @@ class StudyDeleted implements IHEYr4.Message {
     // Variables -----------------------------------------------------
     private InstancesAction instancesAction;
     
+    private final String desc;
+    
     // Constructors --------------------------------------------------
-    public StudyDeleted(InstancesAction instancesAction) {
+    public StudyDeleted(InstancesAction instancesAction, String desc) {
         this.instancesAction = instancesAction;
+        this.desc = desc;
     }
     
     // Methods -------------------------------------------------------
     public void writeTo(StringBuffer sb) {
         sb.append("<StudyDeleted>");
         instancesAction.writeTo(sb);
+        if (desc != null)
+            sb.append("<Description>").append(desc).append("</Description>");
         sb.append("</StudyDeleted>");
     }
     

@@ -98,7 +98,8 @@ public interface AuditLogger {
 
     public void logDicomQuery(Dataset keys, RemoteNode requestor, String cuid);
 
-    public void logSecurityAlert(String alertType, User user, String description);
+    public void logSecurityAlert(String alertType, User user,
+            String description);
 
     public void logUserAuthenticated(String localUserName, String action);
 
@@ -106,11 +107,16 @@ public interface AuditLogger {
 
     public void logExport(MediaDescription media, User user);
 
-    public void logPatientRecord(String action, Patient patient, User user, String description);
+    public void logPatientRecord(String action, Patient patient, User user, 
+            String description);
 
     public void logProcedureRecord(String action, Patient patient,
             String placerOrderNumber, String fillerOrderNumber, String suid,
             String accessionNumber, User user, String description);
 
-    public void logStudyDeleted(InstancesAction action);
+    public void logStudyDeleted(InstancesAction action, String description);
+
+    public boolean isStrictIHEYr4();
+    
+    public void setStrictIHEYr4(boolean strictIHEYr4);
 }

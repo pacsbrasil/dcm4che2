@@ -59,6 +59,8 @@ class AuditLoggerImpl implements AuditLogger {
     private boolean logPatientRecord = true;
 
     private boolean logProcedureRecord = true;
+    
+    private boolean strictIHEYr4 = false;
 
     // Constructors --------------------------------------------------
     AuditLoggerImpl(Logger log) {
@@ -186,6 +188,14 @@ class AuditLoggerImpl implements AuditLogger {
         this.logStudyDeleted = logStudyDeleted;
     }
 
+    public final boolean isStrictIHEYr4() {
+        return strictIHEYr4;
+    }
+    
+    public final void setStrictIHEYr4(boolean strictIHEYr4) {
+        this.strictIHEYr4 = strictIHEYr4;
+    }
+    
     public void logActorStartStop(String actorName, String action, User user) {
         if (!actorStartStop) { return; }
         try {
@@ -324,7 +334,7 @@ class AuditLoggerImpl implements AuditLogger {
             writer.write(SyslogWriter.LOG_INFO, IHEYr4.newPatientRecord(action,
                     patient,
                     user,
-                    desc,
+                    strictIHEYr4 ? null : desc,
                     HostNameUtils.getLocalHostName(),
                     millis).toString(), millis);
         } catch (IOException e) {
@@ -346,7 +356,7 @@ class AuditLoggerImpl implements AuditLogger {
                             accessionNumber,
                             patient,
                             user,
-                            desc,
+                            strictIHEYr4 ? null : desc,
                             HostNameUtils.getLocalHostName(),
                             millis).toString(), millis);
         } catch (IOException e) {
@@ -354,11 +364,12 @@ class AuditLoggerImpl implements AuditLogger {
         }
     }
 
-    public void logStudyDeleted(InstancesAction action) {
+    public void logStudyDeleted(InstancesAction action, String desc) {
         if (!logStudyDeleted) { return; }
         try {
             long millis = System.currentTimeMillis();
             writer.write(SyslogWriter.LOG_INFO, IHEYr4.newStudyDeleted(action,
+                    strictIHEYr4 ? null : desc,
                     HostNameUtils.getLocalHostName(),
                     millis).toString(), millis);
         } catch (IOException e) {

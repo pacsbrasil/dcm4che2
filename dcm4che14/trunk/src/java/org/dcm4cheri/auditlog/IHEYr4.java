@@ -77,9 +77,9 @@ class IHEYr4 {
                 millis);
     }
 
-    public static IHEYr4 newStudyDeleted(InstancesAction action, String host,
-            long millis) {
-        return new IHEYr4(new StudyDeleted(action), host, millis);
+    public static IHEYr4 newStudyDeleted(InstancesAction action, String desc,
+            String host, long millis) {
+        return new IHEYr4(new StudyDeleted(action, desc), host, millis);
     }
 
     public static IHEYr4 newPatientRecord(String action, Patient patient,
