@@ -1,12 +1,13 @@
 package org.dcm4che.util;
 
+import java.text.DateFormat;
+import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.NoSuchElementException;
-import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
@@ -15,17 +16,123 @@ import java.util.TimeZone;
  *
  * the parse(String, ParsePosition) is working in this one...
  */
-public final class ISO8601DateFormat extends org.apache.log4j.helpers.ISO8601DateFormat {
+public final class ISO8601DateFormat extends DateFormat
+{
 	private int p = 0;
 
 	public ISO8601DateFormat()
 	{
-		super();
+        super();
+        setCalendar(new GregorianCalendar());
 	}
+
 	public ISO8601DateFormat(TimeZone timeZone)
 	{
-		super(timeZone);
+        this();
+        setTimeZone(timeZone);
 	}
+
+    /**
+     * Formats a <code>Date</code> into a <code>StringBuffer</code>
+     * 
+     * @param date The date to format into a string
+     * @param toAppendTo <code>StringBuffer</code> to which the formatted date will be appended
+     * @param pos Keeps track of the position of the field within the returned
+     * string. On input: an alignment field, if desired. On output: the offsets
+     * of the alignment field.Unsupported field positions are ignored.
+     * @see java.text.DateFormat#format(java.util.Date, java.lang.StringBuffer, java.text.FieldPosition)
+     */
+    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos)
+    {
+        StringBuffer fmtsb = new StringBuffer(20);
+        int fieldStart, fieldEnd;
+        Calendar cal = getCalendar();
+        
+        cal.setTime(date);
+        //year
+        fieldStart = 0;
+        fieldEnd = fmtsb.append(pad(cal.get(Calendar.YEAR), 4)).length();
+        if (pos.getField() == DateFormat.YEAR_FIELD)
+            setFieldPosition(pos, fieldStart, fieldEnd);
+        //month
+        fmtsb.append("-");
+        fieldStart = fmtsb.length();
+        fieldEnd = fmtsb.append(pad(cal.get(Calendar.MONTH) + 1, 2)).length();
+        if (pos.getField() == DateFormat.MONTH_FIELD)
+            setFieldPosition(pos, fieldStart, fieldEnd);
+        //day
+        fmtsb.append("-");
+        fieldStart = fmtsb.length();
+        fieldEnd = fmtsb.append(pad(cal.get(Calendar.DAY_OF_MONTH), 2)).length();
+        if (pos.getField() == DateFormat.DAY_OF_WEEK_IN_MONTH_FIELD)
+            setFieldPosition(pos, fieldStart, fieldEnd);
+        //hour
+        fmtsb.append("T");
+        fieldStart = fmtsb.length();
+        fieldEnd = fmtsb.append(pad(cal.get(Calendar.HOUR_OF_DAY), 2)).length();
+        if (pos.getField() == DateFormat.HOUR_OF_DAY0_FIELD)
+            setFieldPosition(pos, fieldStart, fieldEnd);
+        //minute
+        fmtsb.append(":");
+        fieldStart = fmtsb.length();
+        fieldEnd = fmtsb.append(pad(cal.get(Calendar.MINUTE), 2)).length();
+        if (pos.getField() == DateFormat.MINUTE_FIELD)
+            setFieldPosition(pos, fieldStart, fieldEnd);
+        //second
+        fmtsb.append(":");
+        fieldStart = fmtsb.length();
+        fieldEnd = fmtsb.append(pad(cal.get(Calendar.SECOND), 2)).length();
+        if (pos.getField() == DateFormat.SECOND_FIELD)
+            setFieldPosition(pos, fieldStart, fieldEnd);
+        //timezone
+        fieldStart = fieldEnd;
+        int zoneOffsetMinutes = cal.get(Calendar.ZONE_OFFSET) / (1000 * 60);
+        if (zoneOffsetMinutes == 0) {
+            fieldEnd = fieldStart + 1;
+            fmtsb.append("Z");
+        }
+        else {
+            final boolean neg;
+            if (zoneOffsetMinutes < 0) {
+                zoneOffsetMinutes = Math.abs(zoneOffsetMinutes);
+                neg = true;
+            }
+            else
+                neg = false;
+            int hourOff = zoneOffsetMinutes / 60;
+            int minOff = zoneOffsetMinutes % 60;
+            fieldEnd = fmtsb.append((neg ? "-" : "+") + pad(hourOff, 2) + ":"
+                                    + pad(minOff, 2)).length();
+        }
+        if (pos.getField() == DateFormat.TIMEZONE_FIELD)
+            setFieldPosition(pos, fieldStart, fieldEnd);
+        else if (pos.getField() == DateFormat.DATE_FIELD)
+            setFieldPosition(pos, 0, fieldEnd);
+        //append
+        toAppendTo.append(fmtsb);
+        return fmtsb;
+    }
+
+    //throws exception if num < 0
+    //if num formats to a larger string than size, the former is returned
+    //base 10
+    private static StringBuffer pad(int num, int size)
+    {
+        if (num < 0)
+            throw new IllegalArgumentException("num can not be negative");
+        String snum = Integer.toString(num);
+        StringBuffer sb = new StringBuffer(size);
+        for (int i = 0, n = size - snum.length(); i < n; i++)
+            sb.append('0');
+        sb.append(snum);
+        return sb;
+    }
+
+    private static void setFieldPosition(FieldPosition pos, int startPos, int endPos)
+    {
+        pos.setBeginIndex(startPos);
+        pos.setEndIndex(endPos);
+    }
 
 	public Date parse(String s, ParsePosition pos)
 	{
@@ -60,13 +167,12 @@ public final class ISO8601DateFormat extends org.apache.log4j.helpers.ISO8601Dat
 	 *  allow:
 	 *  - Improper (extra) leading zeros on year portion.
 	 *  If parser is set to be lenient it will allow anything above and:
-	 *  - Improper length of elements, if they are not out of range (ie '1'
-	 *    would be allowed in addition to '01', but '33' would not).
-	 *  - Lowercase 'z' would be acceptable for the end of string.
-	 *  - Extra data at the end of string is ignored.
+	 *  - Improper length of elements, if they are not out of range (ie, '1'
+	 *    would be allowed in addition to '01', but '33' would not be allowed).
+	 *  - Extra data at the end of string may be ignored.
 	 * 
 	 * The (approximate) position at which parsing stopped is left in
-	 *  <code>p></code>.
+	 *  <code>p</code>.
 	 *
 	 * @param s <code>String</code> to parse for date/time
 	 * @param pos The <code>ParsePosition</code> representing the position
@@ -196,5 +302,12 @@ public final class ISO8601DateFormat extends org.apache.log4j.helpers.ISO8601Dat
         cal.set(Calendar.MILLISECOND,msec);
 		return cal.getTime();
 	}
+    
+    public static void main(String[] args)
+    {
+        Date d = new Date();
+        ISO8601DateFormat df = new ISO8601DateFormat();
+        System.out.println(df.format(d));
+    }
 }
 
