@@ -21,41 +21,24 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
- * @ejb.bean
- *  name="Patient"
- *  type="CMP"
- *  view-type="local"
- *  primkey-field="pk"
- *  local-jndi-name="ejb/Patient"
+ * @ejb.bean name="Patient" type="CMP" view-type="local"
+ *           local-jndi-name="ejb/Patient" primkey-field="pk"
+ * @ejb.transaction type="Required"
+ * @ejb.persistence table-name="patient"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * 
- * @ejb.transaction 
- *  type="Required"
+ * @ejb.finder signature="Collection findAll()"
+ *             query="SELECT OBJECT(a) FROM Patient AS a"
+ *             transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findByPatientId(java.lang.String pid)"
+ *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientId(java.lang.String pid)"
+ *              strategy="on-find" eager-load-group="*"
  * 
- * @ejb.persistence
- *  table-name="patient"
- * 
- * @jboss.entity-command
- *  name="hsqldb-fetch-key"
- * 
- * @ejb.finder
- *  signature="Collection findAll()"
- *  query="SELECT OBJECT(a) FROM Patient AS a"
- *  transaction-type="Supports"
- *
- * @ejb.finder
- *  signature="java.util.Collection findByPatientId(java.lang.String pid)"
- *  query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1"
- *  transaction-type="Supports"
- *
- * @jboss.query
- *  signature="java.util.Collection findByPatientId(java.lang.String pid)"
- *  strategy="on-find"
- *  eager-load-group="*"
- * 
- * @ejb.finder
- *  signature="java.util.Collection findByPatientIdWithIssuer(java.lang.String pid, java.lang.String issuer)"
- *  query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND (a.issuerOfPatientId IS NULL OR a.issuerOfPatientId = ?2)"
- *  transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findByPatientIdWithIssuer(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND (a.issuerOfPatientId IS NULL OR a.issuerOfPatientId = ?2)"
+ *             transaction-type="Supports"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
@@ -69,11 +52,8 @@ public abstract class PatientBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.pk-field
-     * @ejb.persistence
-     *  column-name="pk"
-     * @jboss.persistence
-     *  auto-increment="true"
-     *
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
      */
     public abstract Integer getPk();
 
@@ -83,8 +63,7 @@ public abstract class PatientBean implements EntityBean {
      * Patient ID
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="pat_id"
+     * @ejb.persistence column-name="pat_id"
      */
     public abstract String getPatientId();
 
@@ -94,8 +73,7 @@ public abstract class PatientBean implements EntityBean {
      * Patient ID Issuer
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="pat_id_issuer"
+     * @ejb.persistence column-name="pat_id_issuer"
      */
     public abstract String getIssuerOfPatientId();
 
@@ -108,14 +86,12 @@ public abstract class PatientBean implements EntityBean {
      * Patient Name
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="pat_name"
+     * @ejb.persistence column-name="pat_name"
      */
     public abstract String getPatientName();
 
     /**
      * @ejb.interface-method
-     * @param name
      */
     public abstract void setPatientName(String name);
 
@@ -123,8 +99,7 @@ public abstract class PatientBean implements EntityBean {
      * Patient Birth Date
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="pat_birthdate"
+     * @ejb.persistence column-name="pat_birthdate"
      */
     public abstract java.sql.Timestamp getPatientBirthDate();
 
@@ -137,8 +112,7 @@ public abstract class PatientBean implements EntityBean {
      * Patient Sex
      *
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="pat_sex"
+     * @ejb.persistence column-name="pat_sex"
      */
     public abstract String getPatientSex();
 
@@ -163,17 +137,14 @@ public abstract class PatientBean implements EntityBean {
      * @return Patient, with which this Patient was merged.
      *
      * @ejb.interface-method view-type="local"
-     * @ejb.relation
-     *    name="merged-patients"
+     * @ejb.relation name="merged-patients"
      *    role-name="dereferenced-patient"
      *    target-role-name="dominant-patient"
      *    target-ejb="Patient"
      *    target-multiple="yes"
      *    cascade-delete="yes"
      *
-     * @jboss.relation
-     *    fk-column="merge_fk"
-     *    related-pk-field="pk"
+     * @jboss.relation k-column="merge_fk" related-pk-field="pk"
      */
     public abstract PatientLocal getMergedWith();
 
@@ -193,9 +164,7 @@ public abstract class PatientBean implements EntityBean {
 
     /**
      * @ejb.interface-method view-type="local"
-     * @ejb.relation
-     *  name="patient-study"
-     *  role-name="patient-has-studies"
+     * @ejb.relation name="patient-study" role-name="patient-has-studies"
      *    
      * @return all studies of this patient
      */
@@ -208,9 +177,7 @@ public abstract class PatientBean implements EntityBean {
 
     /**
      * @ejb.interface-method view-type="local"
-     * @ejb.relation
-     *  name="patient-mwlitems"
-     *  role-name="patient-has-mwlitems"
+     * @ejb.relation name="patient-mwlitems" role-name="patient-has-mwlitems"
      */
     public abstract java.util.Collection getMwlItems();
 
@@ -221,11 +188,20 @@ public abstract class PatientBean implements EntityBean {
 
     /**
      * @ejb.interface-method view-type="local"
-     * @ejb.relation
-     *  name="patient-mpps"
-     *  role-name="patient-has-mpps"
+     * @ejb.relation name="patient-mpps" role-name="patient-has-mpps"
      */
     public abstract java.util.Collection getMpps();
+
+    /**
+     * @ejb.interface-method view-type="local"
+     * @ejb.relation name="patient-gpsps" role-name="patient-has-gpsps"
+     */
+    public abstract java.util.Collection getGspss();
+
+    /**
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract void setGspss(java.util.Collection gspss);
 
     /**
      * Create patient.

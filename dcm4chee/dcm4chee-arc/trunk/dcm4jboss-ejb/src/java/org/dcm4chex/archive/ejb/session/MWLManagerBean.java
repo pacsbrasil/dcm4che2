@@ -136,7 +136,9 @@ public abstract class MWLManagerBean implements SessionBean {
 		try {
 			Dataset sps = ds.getItem(Tags.SPSSeq);
 			MWLItemLocal mwlItem = mwlItemHome.findBySpsId(sps.getString(Tags.SPSID));
-			mwlItem.setAttributes(ds.subSet(PATIENT_ATTRS, true, true));
+            Dataset attrs = mwlItem.getAttributes();
+            attrs.putAll(ds.subSet(PATIENT_ATTRS, true, true));
+			mwlItem.setAttributes(attrs);
 		} catch (Exception e) {
 			throw new EJBException(e);
 		}

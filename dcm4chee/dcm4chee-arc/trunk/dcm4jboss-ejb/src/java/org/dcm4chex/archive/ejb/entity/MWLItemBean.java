@@ -28,34 +28,18 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
- * @ejb.bean
- *  name="MWLItem"
- *  type="CMP"
- *  view-type="local"
- *  primkey-field="pk"
- *  local-jndi-name="ejb/MWLItem"
- * 
- * @ejb.transaction 
- *  type="Required"
- * 
- * @ejb.persistence
- *  table-name="mwl_item"
- * 
- * @jboss.entity-command
- *  name="hsqldb-fetch-key"
- * 
- * @ejb.env-entry
- *  name="SpsIdPrefix"
- *  type="java.lang.String"
- *  value="" 
+ * @ejb.bean name="MWLItem" type="CMP" view-type="local"
+ *  primkey-field="pk" local-jndi-name="ejb/MWLItem"
+ * @ejb.transaction type="Required"
+ * @ejb.persistence table-name="mwl_item"
+ * @jboss.entity-command name="hsqldb-fetch-key"
+ * @ejb.env-entry name="SpsIdPrefix" type="java.lang.String" value="" 
  *
- * @ejb.finder
- *  signature="Collection findAll()"
+ * @ejb.finder signature="Collection findAll()"
  *  query="SELECT OBJECT(a) FROM MWLItem AS a"
  *  transaction-type="Supports"
  * 
- * @ejb.finder
- *  signature="org.dcm4chex.archive.ejb.interfaces.MWLItemLocal findBySpsId(java.lang.String id)"
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.MWLItemLocal findBySpsId(java.lang.String id)"
  *  query="SELECT OBJECT(a) FROM MWLItem AS a WHERE a.spsId = ?1"
  *  transaction-type="Supports"
  *
@@ -214,20 +198,20 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
-        setAttributes(ds);
         return null;
     }
 
     public void ejbPostCreate(Dataset ds, PatientLocal patient) throws CreateException {
         setPatient(patient);
-        if (getSpsId().length() == 0) {
-            String id = spsIdPrefix + getPk();
-            setSpsId(id);
-            log.debug("generate SPS ID from pk - " + prompt());
-            ds.getItem(Tags.SPSSeq).putCS(Tags.SPSID, id);
+        Dataset spsItem = ds.getItem(Tags.SPSSeq);
+        if (spsItem == null) {
+            throw new IllegalArgumentException("Missing Scheduled Procedure Step Sequence (0040,0100) Item");
         }
-        setEncodedAttributes(
-            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+        if (spsItem.getString(Tags.SPSID) == null) {
+            String id = spsIdPrefix + getPk();
+            spsItem.putCS(Tags.SPSID, id);
+        }
+        setAttributes(ds);
         log.info("Created " + prompt());
     }
 
@@ -252,7 +236,7 @@ public abstract class MWLItemBean implements EntityBean {
         if (spsItem == null) {
             throw new IllegalArgumentException("Missing Scheduled Procedure Step Sequence (0040,0100) Item");
         }
-        setSpsId(spsItem.getString(Tags.SPSID, ""));
+        setSpsId(spsItem.getString(Tags.SPSID));
         setSpsStartDateTime(
             spsItem.getDateTime(Tags.SPSStartDate, Tags.SPSStartTime));
         setScheduledStationAET(spsItem.getString(Tags.ScheduledStationAET));
@@ -261,6 +245,8 @@ public abstract class MWLItemBean implements EntityBean {
         setModality(spsItem.getString(Tags.Modality));
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
+        setEncodedAttributes(
+                DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
     }
 
     /**
