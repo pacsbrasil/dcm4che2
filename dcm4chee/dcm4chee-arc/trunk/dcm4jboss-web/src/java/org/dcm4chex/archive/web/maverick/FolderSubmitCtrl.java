@@ -454,9 +454,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		ce.moveStudies( iaSrc, iDest );
 		
 		PatientModel destModel = folderForm.getPatientByPk( iDest );
-		List l = findModelHistory( folderForm.getPatients(), iaSrc[0], 1 );
+		List path = findModelPath( folderForm.getPatients(), iaSrc[0], 1 );
 		_updatePatientWithStudies( destModel, cm );
-		_updatePatientWithStudies( (PatientModel) l.get(0), cm );
+		_updatePatientWithStudies( (PatientModel) path.get(0), cm );
 	}
 	
     /**
@@ -478,12 +478,12 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		int[] iaSrc = getIntArrayFromSet( folderForm.getStickySeries() );
 		ce.moveSeries( iaSrc, iDest );
 
-		List l = findModelHistory( folderForm.getPatients(), iDest, 1 );
+		List destPath = findModelPath( folderForm.getPatients(), iDest, 1 );
 
-		StudyModel destModel = (StudyModel) l.get(1);
-		l = findModelHistory( folderForm.getPatients(), iaSrc[0], 2 );
+		StudyModel destModel = (StudyModel) destPath.get(1);
+		List sourcePath = findModelPath( folderForm.getPatients(), iaSrc[0], 2 );
 		_updateStudyWithSeries( destModel, cm );
-		_updateStudyWithSeries( (StudyModel) l.get(1), cm );//0..patient,1..study,2..series
+		_updateStudyWithSeries( (StudyModel) sourcePath.get(1), cm );//0..patient,1..study,2..series
 	}
 	
 	private void _updateStudyWithSeries(StudyModel study, ContentManager cm) throws Exception {
@@ -500,12 +500,12 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		int[] iaSrc = getIntArrayFromSet( folderForm.getStickyInstances() );
 		ce.moveInstances( iaSrc, iDest );
 
-		List l = findModelHistory( folderForm.getPatients(), iDest, 2 );
+		List destPath = findModelPath( folderForm.getPatients(), iDest, 2 );
 
-		SeriesModel destModel = (SeriesModel) l.get(2);//0..patient,1..study,2..series
-		l = findModelHistory( folderForm.getPatients(), iaSrc[0], 3 );
+		SeriesModel destModel = (SeriesModel) destPath.get(2);//0..patient,1..study,2..series
+		List sourcePath = findModelPath( folderForm.getPatients(), iaSrc[0], 3 );
 		_updateSeriesWithInstances( destModel, cm );
-		_updateSeriesWithInstances( (SeriesModel) l.get(2), cm );//0..patient,1..study,2..series,3..instances
+		_updateSeriesWithInstances( (SeriesModel) sourcePath.get(2), cm );//0..patient,1..study,2..series,3..instances
 	}
 	
 	private void _updateSeriesWithInstances(SeriesModel series, ContentManager cm) throws Exception {
@@ -586,7 +586,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	 */
     private List findModelHistory( List parent, String pk, int depth ) {
        	int iPk = Integer.parseInt(pk);
-   	    return findModelHistory( parent, iPk, depth );
+   	    return findModelPath( parent, iPk, depth );
     }
  
 	/**
@@ -601,7 +601,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	 * @param depth		The tree depth where the pk should be found.
 	 * @return A list with all nodes to get the model.
 	 */
-    private List findModelHistory( List parent, int iPk, int depth ) {
+    private List findModelPath( List parent, int iPk, int depth ) {
     	Iterator iter = parent.iterator();
     	AbstractModel model = null;
     	List l = new ArrayList();
@@ -613,7 +613,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		    			return l;
 	    		}
     		} else { //search in next tree segment.
- 				List l1 = findModelHistory( model.getChilds(), iPk, depth-1 );
+ 				List l1 = findModelPath( model.getChilds(), iPk, depth-1 );
 				if ( l1 != null ) {
 					l.add( model );
 					l.addAll( l1 );
