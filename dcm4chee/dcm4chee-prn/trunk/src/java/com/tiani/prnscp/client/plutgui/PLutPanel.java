@@ -283,6 +283,9 @@ public class PLutPanel extends JPanel
 
     void buildHisto()
     {
+        if (imgPanel.isApplyingPLutToRGB())
+            return;
+        
         //build histogram
         int[] samples;
         int val;
@@ -374,6 +377,12 @@ public class PLutPanel extends JPanel
 
     private void drawHisto(Graphics2D g)
     {
+        if (imgPanel.isApplyingPLutToRGB()) {
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, getWidth(), getHeight());
+            return;
+        }
+        
         final float binH = (float) getHeight() / NUM_BINS;
         int curveColor;
         BufferedImage bi = imgPanel.getBI();
@@ -389,7 +398,7 @@ public class PLutPanel extends JPanel
                 : ((double) histo[i] / histoMax)));
             curveColor = cm.getRGB(
                 cmParam.toPixelValueRaw(
-                    ((int) (i * f + 0.5) + binMin)));
+                    (int) (i * f + 0.5) + binMin));
             g.setColor(Color.BLACK);
             g.drawLine(dx, (int) (binH * i), dx, (int) (binH * (i + 1)) - 1);
             // g.drawRect( 0, (int) (binH * i), dx, (int) binH);

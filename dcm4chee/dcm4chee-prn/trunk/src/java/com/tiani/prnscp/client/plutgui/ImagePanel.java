@@ -25,6 +25,10 @@ public class ImagePanel extends JPanel
     private ColorModelParam cmParam;
     private FileImageInputStream fis;
     private byte[] lastPLut;
+    //only used for saving the originally loaded BufferedImage when we have to
+    // apply (and reapply) the P-LUT to an RGB image's Raster (thereby changing it)
+    private BufferedImage oldBI;
+    private boolean applyingPLutToRGB;
     
     ImagePanel(File image)
     {
@@ -67,7 +71,25 @@ public class ImagePanel extends JPanel
     {
         return windowMax;
     }
-    
+
+    boolean isApplyingPLutToRGB() {
+        return applyingPLutToRGB;
+    }
+
+    void setApplyPLutToRGB(boolean b) {
+        applyingPLutToRGB = b;
+    }
+
+    private int rgbToGrayThreshold = 10; //default
+
+    int getRgbToGrayThreshold() {
+        return rgbToGrayThreshold;
+    }
+
+    void setRgbToGrayThreshold(int i) {
+        rgbToGrayThreshold = i;
+    }
+
     int[] getSamples()
     {
         int[] samples = new int[bi.getWidth() * bi.getHeight()];
@@ -89,15 +111,20 @@ public class ImagePanel extends JPanel
     private BufferedImage updateImageParams(BufferedImage bi, DcmImageReadParam param)
         throws IOException
     {
-        ColorModelFactory cmFactory = ColorModelFactory.getInstance();
-        BufferedImage newbi = new BufferedImage(
-            cmFactory.getColorModel(
-                cmFactory.makeParam(ds,
-                    param != null ? param.getPValToDDL() : null)),
-            bi.getRaster(),
-            bi.isAlphaPremultiplied(),
-            null);
-        return newbi;
+        if (applyingPLutToRGB) {
+            return applyPLutToRGB(bi, param.getPValToDDL());
+        }
+        else {
+            ColorModelFactory cmFactory = ColorModelFactory.getInstance();
+            BufferedImage newbi = new BufferedImage(
+                cmFactory.getColorModel(
+                    cmFactory.makeParam(ds,
+                        param != null ? param.getPValToDDL() : null)),
+                bi.getRaster(),
+                bi.isAlphaPremultiplied(),
+                null);
+            return newbi;
+        }
     }
 
     public void setImage(File newImg)
@@ -126,6 +153,7 @@ public class ImagePanel extends JPanel
             bi = oldBI;
             fis = oldFIS;
             ds = oldDS;
+            e.printStackTrace();
             throw new UnsupportedOperationException("Could not open image");
         }
     }
@@ -160,12 +188,21 @@ public class ImagePanel extends JPanel
 				//generate color model params that would be the same
 				// as those used in the actual image
 				ColorModelFactory cmFactory = ColorModelFactory.getInstance();
-			    cmParam = cmFactory.makeParam(ds, plut);
+			    try {
+                    cmParam = cmFactory.makeParam(ds, plut);
+                    applyingPLutToRGB = false;
+			    }
+                catch (UnsupportedOperationException uoe) {
+                    //on failure, apply the P-LUT directly to gray RGB values
+                    // in the BufferedImage raster
+                    bi = applyPLutToRGB(oldBI = bi, plut);
+                    applyingPLutToRGB = true;
+                }
                 //set window min/max
                 // these only need to be set when an image is loaded sine a
                 // change in the P-LUT will not affect the ColorModels returned
                 // windowing parameters
-                if (cmParam.getNumberOfWindows() > 0) {
+                if (!applyingPLutToRGB && cmParam.getNumberOfWindows() > 0) {
                     float wCenter, wWidth;
                     wCenter = cmParam.getWindowCenter(0);
                     wWidth = cmParam.getWindowWidth(0);
@@ -178,11 +215,45 @@ public class ImagePanel extends JPanel
                     windowMin = windowMax = 0;
                 }
             }
-            else
+            else {
                 bi = updateImageParams(bi, readParam);
+            }
         }
     }
+
+    private boolean isGray(int rgb)
+    {
+        final int b = rgb & 0xff;
+        final int g = (rgb >> 8) & 0xff;
+        final int r = (rgb >> 16) & 0xff;
+        return rgbToGrayThreshold >=
+                Math.max(Math.max(r, g), b) - Math.min(Math.min(r, g), b);
+    }
     
+    private BufferedImage applyPLutToRGB(BufferedImage bi, byte[] pValToDDL)
+    {
+        bi = oldBI;  //restore original RGB image
+        
+        final int w = bi.getWidth();
+        final int h = bi.getHeight();
+        final int[] data = bi.getRGB(0, 0, w, h, null, 0, w);
+
+        int count = 0;
+        int shift = pValToDDL.length == 4096 ? 4 : 0;
+        for (int rgb, i = 0; i < data.length; ++i) {
+            rgb = data[i];
+            if (isGray(rgb)) {
+                data[i] = (pValToDDL[(rgb & 0xff) << shift] & 0xff)
+                     | ((pValToDDL[(rgb >> 8 & 0xff) << shift] & 0xff) << 8)
+                     | ((pValToDDL[(rgb >> 16 & 0xff) << shift] & 0xff) << 16);
+                ++count;
+            }
+        }
+        BufferedImage newbi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        newbi.setRGB(0, 0, w, h, data, 0, w);
+        return newbi;
+    }
+
     public void paintComponent(Graphics g)
     {
         super.paintComponent(g);
@@ -204,4 +275,3 @@ public class ImagePanel extends JPanel
         }
     }
 }
-
