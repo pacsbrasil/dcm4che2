@@ -267,6 +267,7 @@ public abstract class FileBean implements EntityBean
         String tsuid,
         int size,
         byte[] md5,
+        Date filetime,
         InstanceLocal instance)
         throws CreateException
     {
