@@ -144,7 +144,7 @@ public abstract class PatientBean implements EntityBean {
      *    target-multiple="yes"
      *    cascade-delete="yes"
      *
-     * @jboss.relation k-column="merge_fk" related-pk-field="pk"
+     * @jboss.relation fk-column="merge_fk" related-pk-field="pk"
      */
     public abstract PatientLocal getMergedWith();
 
@@ -196,12 +196,12 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method view-type="local"
      * @ejb.relation name="patient-gpsps" role-name="patient-has-gpsps"
      */
-    public abstract java.util.Collection getGspss();
+    public abstract java.util.Collection getGsps();
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public abstract void setGspss(java.util.Collection gspss);
+    public abstract void setGsps(java.util.Collection gsps);
 
     /**
      * Create patient.
