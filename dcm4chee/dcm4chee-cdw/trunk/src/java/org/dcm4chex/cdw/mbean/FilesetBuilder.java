@@ -117,7 +117,7 @@ class FilesetBuilder {
     private final boolean icons;
 
     private final boolean indexFile;
-
+    
     private BufferedImage imageBI;
 
     private BufferedImage jpegBI;
@@ -309,41 +309,30 @@ class FilesetBuilder {
             serRec.comp.addChild(comp);
             String recType = DirBuilderFactory.getRecordType(cuid);
             Dataset rec = recFact.makeRecord(recType, ds);
+
             if (DirRecord.IMAGE.equals(recType)) {
                 Dataset iconItem = item.getItem(Tags.IconImageSeq);
                 if (iconItem == null && icons)
-                        if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
-                                && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
-                            log
-                                    .info("Generation from icon from compressed image not supported - "
-                                            + src);
-                        } else {
-                            try {
-                                iconItem = mkIconItem(ds);
-                            } catch (Exception e) {
-                                log.warn("Failed to generate icon from " + src,
-                                        e);
-                            }
-                        }
+                    try {
+                        iconItem = mkIconItem(ds, 
+                                !UIDs.ImplicitVRLittleEndian.equals(tsuid) &&
+                                !UIDs.ExplicitVRLittleEndian.equals(tsuid));
+                    } catch (Exception e) {
+                        log.warn("Failed to generate icon from " + src,
+                                e);
+                    }
                 if (iconItem != null)
                         rec.putSQ(Tags.IconImageSeq).addItem(iconItem);
                 if (web) {
-                    if (!UIDs.ExplicitVRLittleEndian.equals(tsuid)
-                            && !UIDs.ImplicitVRLittleEndian.equals(tsuid)) {
-                        log
-                                .info("Generation from jpeg from compressed image not supported - "
-                                        + src);
-                    } else {
-                        try {
-                            fileIDs[0] = IHE_PDI;
-                            File jpegDir = new File(rq.getFilesetDir(),
-                                    StringUtils.toString(fileIDs,
-                                            File.separatorChar));
-                            fileIDs[0] = DICOM;
-                            mkJpegs(jpegDir);
-                        } catch (Exception e) {
-                            log.warn("Failed to generate jpeg from " + src, e);
-                        }
+                     try {
+                        fileIDs[0] = IHE_PDI;
+                        File jpegDir = new File(rq.getFilesetDir(),
+                                StringUtils.toString(fileIDs,
+                                        File.separatorChar));
+                        fileIDs[0] = DICOM;
+                        mkJpegs(jpegDir);
+                    } catch (Exception e) {
+                        log.warn("Failed to generate jpeg from " + src, e);
                     }
                 }
             }
@@ -447,7 +436,7 @@ class FilesetBuilder {
         return dst;
     }
 
-    private Dataset mkIconItem(Dataset ds) throws IOException {
+    private Dataset mkIconItem(Dataset ds, boolean decompress) throws IOException {
         int frame = ds.getInt(Tags.RepresentativeFrameNumber, 1) - 1;
         frame = Math.max(0, frame);
         frame = Math.min(frame, ds.getInt(Tags.NumberOfFrames, 1) - 1);
@@ -467,9 +456,31 @@ class FilesetBuilder {
                 log.debug("create icon[w=" + w + ",h=" + h + "] from image[w="
                         + w0 + ",h=" + h0 + "]");
         ImageReadParam param = reader.getDefaultReadParam();
-        param.setSourceSubsampling(xSubsampling, ySubsampling, 0, 0);
-        param.setDestination(checkReusable(iconBI, w, h));
-        iconBI = reader.read(frame, param);
+        iconBI = checkReusable(iconBI, w, h);
+        if (!decompress) {
+	        param.setSourceSubsampling(xSubsampling, ySubsampling, 0, 0);
+	        param.setDestination(iconBI);
+	        iconBI = reader.read(frame, param);
+        } else {
+	        param.setDestination(checkReusable(imageBI, w0, h0));
+            imageBI = reader.read(frame, param);
+            AffineTransform scale = AffineTransform.getScaleInstance((double) w
+                    / w0, (double) h / h0);
+            AffineTransformOp scaleOp = new AffineTransformOp(scale,
+                    AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+            // workaround for ImagingLib.filter(this, bi, dst) == null 
+            // if bi.getSampleModel() instanceof BandedSampleModel 
+            if (imageBI.getSampleModel() instanceof BandedSampleModel) {
+                log.debug("convert RGB plane to RGB pixel");
+                BufferedImage newbi = convertBI(imageBI,
+                        BufferedImage.TYPE_INT_RGB);
+                imageBI.flush();
+                imageBI = newbi;
+                iconBI = null;
+            }
+            iconBI = scaleOp.filter(imageBI, iconBI);
+            imageBI.flush();
+        }
         if (w != iconBI.getWidth() || h != iconBI.getHeight()) {
             log.warn("created icon with unexpected dimension[w="
                     + iconBI.getWidth() + ",h=" + iconBI.getHeight()

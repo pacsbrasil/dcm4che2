@@ -33,7 +33,7 @@ import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.PrintQuality;
 
-import org.dcm4chex.cdw.common.Executer;
+import org.dcm4che.util.Executer;
 
 /**
  * @author gunter.zeilinger@tiani.com
