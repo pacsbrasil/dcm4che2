@@ -29,12 +29,17 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.text.DecimalFormat;
 
 import javax.swing.JPanel;
@@ -498,5 +503,59 @@ public class PLutPanel extends JPanel
         plut = item.getInts(Tags.LUTData);
         updatePLut(false);
     }
-}
 
+
+    private int countLines(File file)
+        throws IOException
+    {
+        BufferedReader in = new BufferedReader(new FileReader(file));
+        int cnt = 0;
+        while (in.readLine() != null) {
+            cnt++;
+        }
+        return cnt;
+    }
+
+
+    void exportPLutText(File file)
+        throws IOException
+    {
+        Writer out = new BufferedWriter(new FileWriter(file));
+        try {
+            for (int i = 0; i < plut.length; i++)
+                out.write(Integer.toString(plut[i]) + "\n");
+        } finally {
+            try {
+                out.close();
+            } catch (IOException ignore) {}
+        }
+    }
+
+
+    void importPLutText(File file)
+        throws IOException
+    {
+        plut = new int[countLines(file)];
+        BufferedReader in = new BufferedReader(new FileReader(file));
+        int ind = 0;
+        try {
+            for (int i = 0; i < plut.length; i++)
+                plut[ind++] = Integer.parseInt(in.readLine());
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ignore) {}
+        }
+        updatePLut(false);
+    }
+
+
+    public boolean isLogHisto() {
+        return logHisto;
+    }
+
+
+    public void setLogHisto(boolean b) {
+        logHisto = b;
+    }
+}

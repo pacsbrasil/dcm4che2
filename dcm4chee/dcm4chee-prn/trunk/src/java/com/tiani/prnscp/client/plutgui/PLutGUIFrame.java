@@ -11,6 +11,7 @@ import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -28,17 +29,24 @@ public class PLutGUIFrame extends JFrame
     PLutGUIPanel guiPanel;
     File lastFile = null; //for JFileChooser to remember last dir
     JFileChooser chooser = new JFileChooser();
-    Action actOpenImg,actExit, actExportDcmPres, actImportDcmPres, actDisplayImageInfo, actHistoEq;
+    Action actOpenImg,actExit, actExportDcmPres, actImportDcmPres,
+           actDisplayImageInfo, actHistoEq, actExportTxtPres,
+           actImportTxtPres, actHistoScale;
     
     PLutGUIFrame()
     {
         Container panel = this.getContentPane();
         guiPanel = new PLutGUIPanel();
         panel.add(guiPanel);
-        //menu
+        //Main Menus
         JMenuBar mnubar = new JMenuBar();
         JMenu mnuFile = new JMenu("File");
+        JMenu mnuView = new JMenu("View");
         JMenu mnuProccess = new JMenu("Process");
+        mnubar.add(mnuFile);
+        mnubar.add(mnuView);
+        mnubar.add(mnuProccess);
+        //File Menu
         actOpenImg = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
@@ -82,7 +90,7 @@ public class PLutGUIFrame extends JFrame
                 public void actionPerformed(ActionEvent e)
                 {
                     chooser.setCurrentDirectory(lastFile);
-                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
+                    int returnVal = chooser.showSaveDialog(PLutGUIFrame.this);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
                         try {
                             guiPanel.getPLutPanel().importPLutDicom(lastFile = chooser.getSelectedFile());
@@ -94,6 +102,40 @@ public class PLutGUIFrame extends JFrame
                 }
             };
         actImportDcmPres.putValue(Action.NAME,"Import DICOM Presentation...");
+        actExportTxtPres = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    chooser.setCurrentDirectory(lastFile);
+                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
+                    if(returnVal == JFileChooser.APPROVE_OPTION) {
+                        try {
+                            guiPanel.getPLutPanel().exportPLutText(lastFile = chooser.getSelectedFile());
+                        }
+                        catch (IOException ioe) {
+                            JOptionPane.showMessageDialog(PLutGUIFrame.this,"Problem with export");
+                        }
+                    }
+                }
+            };
+        actExportTxtPres.putValue(Action.NAME,"Export Text Presentation...");
+        actImportTxtPres = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    chooser.setCurrentDirectory(lastFile);
+                    int returnVal = chooser.showSaveDialog(PLutGUIFrame.this);
+                    if(returnVal == JFileChooser.APPROVE_OPTION) {
+                        try {
+                            guiPanel.getPLutPanel().importPLutText(lastFile = chooser.getSelectedFile());
+                        }
+                        catch (IOException ioe) {
+                            JOptionPane.showMessageDialog(PLutGUIFrame.this,"Problem with import");
+                        }
+                    }
+                }
+            };
+        actImportTxtPres.putValue(Action.NAME,"Import Text Presentation...");
         actDisplayImageInfo = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
@@ -108,10 +150,29 @@ public class PLutGUIFrame extends JFrame
         mnuFile.add(mnuImportDcmPres);
         JMenuItem mnuExportDcmPres = new JMenuItem(actExportDcmPres);
         mnuFile.add(mnuExportDcmPres);
+        JMenuItem mnuImportTxtPres = new JMenuItem(actImportTxtPres);
+        mnuFile.add(mnuImportTxtPres);
+        JMenuItem mnuExportTxtPres = new JMenuItem(actExportTxtPres);
+        mnuFile.add(mnuExportTxtPres);
         JMenuItem mnuDisplayImageInfo = new JMenuItem(actDisplayImageInfo);
         mnuFile.add(mnuDisplayImageInfo);
         JMenuItem mnuExit = new JMenuItem(actExit);
         mnuFile.add(mnuExit);
+        //View Menu
+        actHistoScale = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    PLutPanel panel = guiPanel.getPLutPanel();
+                    panel.setLogHisto(!panel.isLogHisto());
+                    panel.repaint();
+                }
+            };
+        JCheckBoxMenuItem mnuHistoScale = new JCheckBoxMenuItem(actHistoScale);
+        mnuHistoScale.setSelected(true);
+        mnuView.add(mnuHistoScale);
+        actHistoScale.putValue(Action.NAME,"Log Histogram Scale");
+        //Process Menu
         actHistoEq = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
@@ -119,11 +180,10 @@ public class PLutGUIFrame extends JFrame
                     guiPanel.equalize();
                 }
             };
-        actHistoEq.putValue(Action.NAME,"Histo-Eq");
+        actHistoEq.putValue(Action.NAME,"Equalize Histogram");
         JMenuItem mnuHistoEq = new JMenuItem(actHistoEq);
         mnuProccess.add(mnuHistoEq);
-        mnubar.add(mnuFile);
-        mnubar.add(mnuProccess);
+        //
         setJMenuBar(mnubar);
         setSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
     }
