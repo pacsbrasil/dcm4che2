@@ -96,15 +96,14 @@
    <attribute access="read-write"
       getMethod="getOutOfResourcesThreshold"
       setMethod="setOutOfResourcesThreshold">
-      <description>Minimal Available Disk Space in MB(=1000000 Bytes) in Stroage
-      Directory to accept received Objects. If the available Disk Space falls
-      below this value, storage of received objects is rejected
-      with Error Status "Out Of Resource".
+      <description>Minimal Available Disk Space in Storage Directory to accept
+      received Objects. If the available Disk Space falls below this value,
+      storage of received objects is rejected with Error Status "Out Of Resource".
       </description>
       <name>OutOfResourcesThreshold</name>
-      <type>int</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="30" />
+         <value value="30MB" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

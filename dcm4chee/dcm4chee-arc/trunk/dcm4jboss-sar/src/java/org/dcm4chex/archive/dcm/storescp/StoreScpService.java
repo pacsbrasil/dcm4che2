@@ -27,6 +27,7 @@ import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -34,6 +35,8 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  * @since 03.08.2003
  */
 public class StoreScpService extends AbstractScpService {
+
+    private static final long MIN_OUT_OF_RESOURCES_THRESHOLD = 20 * FileUtils.MEGA;    
 
     public static final String IANS_KEY = "ians";
 
@@ -192,12 +195,13 @@ public class StoreScpService extends AbstractScpService {
         scp.setUpdateDatabaseRetryInterval(interval);
     }
     
-    public final int getOutOfResourcesThreshold() {
-        return scp.getOutOfResourcesThreshold();
+    public final String getOutOfResourcesThreshold() {
+        return FileUtils.formatSize(scp.getOutOfResourcesThreshold());
     }
     
-    public final void setOutOfResourcesThreshold(int outOfResourcesThreshold) {
-        scp.setOutOfResourcesThreshold(outOfResourcesThreshold);
+    public final void setOutOfResourcesThreshold(String str) {
+        scp.setOutOfResourcesThreshold(FileUtils.parseSize(str,
+        		MIN_OUT_OF_RESOURCES_THRESHOLD));
     }
     
     public final boolean isAcceptJPEG2000Lossless() {

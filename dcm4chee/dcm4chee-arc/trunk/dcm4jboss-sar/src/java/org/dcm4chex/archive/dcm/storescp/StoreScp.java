@@ -55,6 +55,7 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
 
@@ -64,8 +65,6 @@ import org.jboss.logging.Logger;
  * @since 03.08.2003
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
-
-    private static final long MEGA = 1000000L;
 
     private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
@@ -172,12 +171,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.updateDatabaseRetryInterval = interval;
     }
 
-    public final int getOutOfResourcesThreshold() {
-        return (int) (outOfResourcesThreshold / MEGA);
+    public final long getOutOfResourcesThreshold() {
+        return outOfResourcesThreshold;
     }
 
-    public final void setOutOfResourcesThreshold(int outOfResourcesThreshold) {
-        this.outOfResourcesThreshold = outOfResourcesThreshold * MEGA;
+    public final void setOutOfResourcesThreshold(long threshold) {
+        this.outOfResourcesThreshold = threshold;
     }
 
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
