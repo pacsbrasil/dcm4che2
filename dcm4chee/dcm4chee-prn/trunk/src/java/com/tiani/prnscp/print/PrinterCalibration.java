@@ -288,7 +288,7 @@ class PrinterCalibration
      */
     public void setGrayscaleODs(float[] stepODs)
     {
-        if (stepODs.length < 4 || stepODs.length > 128) {
+        if (stepODs.length < 4 || stepODs.length > 256) {
             throw new IllegalArgumentException("steps: " + stepODs.length);
         }
         if (this.stepODs != null && Arrays.equals(this.stepODs, stepODs)) {
