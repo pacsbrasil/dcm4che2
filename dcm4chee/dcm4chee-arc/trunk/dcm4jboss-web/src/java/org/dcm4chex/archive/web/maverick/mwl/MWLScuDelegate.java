@@ -1,9 +1,11 @@
-/*
- * Created on 29.12.2004
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.web.maverick.mwl;
 
 import java.util.List;
@@ -18,9 +20,7 @@ import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * @author franz.willer
- * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
+ * @version $Revision$ $Date$
  */
 public class MWLScuDelegate {
 	private static ObjectName mwlScuServiceName = null;
@@ -62,8 +62,6 @@ public class MWLScuDelegate {
 	 * (ds).
 	 * 
 	 * @param ds
-	 *            The WADO request.
-	 * 
 	 * @return The list of worklist entries ( Each item in the list is a Dataset
 	 *         of one scheduled procedure step).
 	 */
