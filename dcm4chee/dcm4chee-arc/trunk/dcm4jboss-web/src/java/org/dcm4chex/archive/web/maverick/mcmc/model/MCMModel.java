@@ -165,15 +165,16 @@ public class MCMModel {
 			Collection col = new ArrayList();
 			Long start = null;
 			Long end = null;
-			Integer stati = null;
-			if ( ! MCMFilter.MEDIA_TYPE_ALL.equals( filter.getSelectedStatus() ) ) { //not all
+			int[] stati = null;
+			if ( filter.selectedStati() != null ) { //not all
 				try {
-					stati = new Integer( filter.getSelectedStatus() );
+					stati = filter.selectedStati();//TODO search for all selected!
 				} catch ( Exception x ) {
-					filter.setSelectedStatus( MCMFilter.MEDIA_TYPE_DEFAULT ); //set to default media type (COLLECTING)
+					filter.setSelectedStati( MCMFilter.MEDIA_TYPE_DEFAULT ); //set to default media type (COLLECTING)
 				} 
 			}
-			if ( ! mcmNotAvail && ( stati == null || stati.intValue() == MediaDTO.PROCESSING ) ) {
+			if ( ! mcmNotAvail && ( stati == null || 
+					filter.getSelectedStatiAsString().indexOf( String.valueOf( MediaDTO.BURNING ) ) != -1 ) ) {
 				//perform get media creation status if filter contains PROCESSING media status.
 				MCMConsoleCtrl.getMcmScuDelegate().updateMediaStatus();
 			}

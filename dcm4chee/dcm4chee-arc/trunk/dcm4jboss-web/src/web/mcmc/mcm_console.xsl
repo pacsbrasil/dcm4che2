@@ -63,41 +63,52 @@
 				<table border="0" width="100%" cellpadding="0" cellspacing="0" bgcolor="eeeeee">
 					<tr>
 						<td width="20" bgcolor="eeeeee">&#160;</td>
-						<td width="130" bgcolor="eeeeee" class="label">Media Status</td>
+						<td width="130" bgcolor="eeeeee" class="label">Media Status:</td>
 						<td width="20" bgcolor="eeeeee">&#160;</td>
-						<td width="20" bgcolor="eeeeee" colspan="4" align="center">
-							<table>
-								<td>Date:</td>
-								<td>
-									<input type="radio" name="createOrUpdateDate" value="all">
-										<xsl:if test="filter/createOrUpdateDate = 'all'">
-			                  				<xsl:attribute name="checked">true</xsl:attribute>
-										</xsl:if>
-									</input>
-								</td>
-								<td>all</td>
-								<td>
-									<input type="radio" name="createOrUpdateDate" value="create">
-										<xsl:if test="filter/createOrUpdateDate = 'create'">
-			                  				<xsl:attribute name="checked">true</xsl:attribute>
-										</xsl:if>
-									</input>
-								</td>
-								<td nowrap="">Creation date</td>
-								<td>
-									<input type="radio" name="createOrUpdateDate" value="update">
-										<xsl:if test="filter/createOrUpdateDate = 'update'">
-			                  				<xsl:attribute name="checked">true</xsl:attribute>
-										</xsl:if>
-									</input>
-								</td>
-								<td nowrap="">Update date</td>
-							</table>
-						</td> 
-
+						<td width="130" bgcolor="eeeeee" colspan="2">Date: </td>
+						<td width="20" bgcolor="eeeeee">&#160;&#160;&#160;</td>
+						<td width="20" bgcolor="eeeeee">from: </td>
+						<td width="100%" bgcolor="eeeeee">&#160;</td>
+					</tr><tr>
+						<td width="20" bgcolor="eeeeee" rowspan="3"></td>
+						<xsl:variable name="stati" select="filter/selectedStatiAsString"/>
+						<td width="130" bgcolor="eeeeee" rowspan="3">
+							<select multiple="multiple" size="4" name="mediaStatus" title="Media Status:">
+								<!-- additional 'all media types' option -->
+								<option value="-all-" >
+									<xsl:if test="$stati = '-all-'">
+										<xsl:attribute name="selected"/>
+									</xsl:if>
+									all
+								</option>
+								<xsl:for-each select="filter/mediaStatusList/item">
+									<xsl:sort data-type="number" order="ascending" select="status"/>
+										<option>
+											<xsl:attribute name="value"><xsl:value-of select="status"/></xsl:attribute>
+											<xsl:if test="contains( $stati, concat( ' ',status ) )">
+												<xsl:attribute name="selected"/>
+											</xsl:if>
+											<xsl:value-of select="description"/>
+										</option>
+								</xsl:for-each>
+							</select>
+						</td>
+						<td width="20" bgcolor="eeeeee" rowspan="3">&#160;</td>
+						<td bgcolor="eeeeee">
+							<input type="radio" name="createOrUpdateDate" value="all" >
+								<xsl:if test="filter/createOrUpdateDate = 'all'">
+	                  				<xsl:attribute name="checked">true</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+						<td bgcolor="eeeeee">all</td>
+						<td width="20" bgcolor="eeeeee" rowspan="3">&#160;</td>
+						<td width="90" bgcolor="eeeeee">
+							<input size="10" name="startDate" type="text" value="{filter/startDate}"/>
+			      		</td>
 			      		<xsl:choose>
 							<xsl:when test="/model/mcmNotAvail = 'true'">
-								<td width="60%" bgcolor="eeeeee" rowspan="2" align="center">
+								<td width="60%" bgcolor="eeeeee" rowspan="3" align="center">
 									<table border="1" cellpadding="4" cellspacing="4" bgcolor="eeeeee">
 										<tr>										
 											<td nowrap="" valign="middle" align="center" bgcolor="ee8888">
@@ -112,51 +123,38 @@
 										</tr>
 									</table>
 								</td>
-								<td width="100%" bgcolor="eeeeee" />
+								<td width="100%" bgcolor="eeeeee" rowspan="3"/>
 							</xsl:when>
 							<xsl:otherwise>
 								<td width="60%" bgcolor="eeeeee"></td>
-								<td width="100%" bgcolor="eeeeee" />
+								<td width="100%" bgcolor="eeeeee" rowspan="3" />
 							</xsl:otherwise>
 						</xsl:choose>
-					</tr>
-					<tr>
-						<td width="20" bgcolor="eeeeee" ></td>
-						<td width="130" bgcolor="eeeeee">
-							<select size="1" name="mediaStatus" title="Media Status:">
-								<xsl:for-each select="filter/mediaStatusList/item">
-									<xsl:sort data-type="number" order="ascending" select="status"/>
-									<option>
-										<xsl:attribute name="value"><xsl:value-of select="status"/></xsl:attribute>
-										<xsl:if test="/model/filter/selectedStatus = status">
-											<xsl:attribute name="selected"/>
-										</xsl:if>
-										<xsl:value-of select="description"/>
-									</option>
-								</xsl:for-each>
-								<!-- additional 'all media types' option -->
-								<option value="-all-" >
-									<xsl:if test="/model/filter/selectedStatus = '-all-'">
-										<xsl:attribute name="selected"/>
-									</xsl:if>
-									all
-								</option>
-							</select>
+					</tr><tr>
+						<td bgcolor="eeeeee">
+							<input type="radio" name="createOrUpdateDate" value="create" >
+								<xsl:if test="filter/createOrUpdateDate = 'create'">
+	                  				<xsl:attribute name="checked">true</xsl:attribute>
+								</xsl:if>
+							</input>
 						</td>
-						<td width="20" bgcolor="eeeeee" />
-
-						<td width="90" bgcolor="eeeeee">
-							<input size="10" name="startDate" type="text" value="{filter/startDate}"/>
-			      		</td>
-						<td width="10" bgcolor="eeeeee" class="label">-</td>
+						<td nowrap="" bgcolor="eeeeee">Creation date</td>
+						<td bgcolor="eeeeee">To: </td>
+						<td width="100%" bgcolor="eeeeee"/>
+					</tr><tr>
+						<td bgcolor="eeeeee">
+							<input type="radio" name="createOrUpdateDate" value="update" bgcolor="eeeeee">
+								<xsl:if test="filter/createOrUpdateDate = 'update'">
+	                  				<xsl:attribute name="checked">true</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+						<td nowrap="" bgcolor="eeeeee">Update date</td>
 						<td width="90" bgcolor="eeeeee">
 							<input size="10" name="endDate" type="text" value="{filter/endDate}"/>
 						</td>
-						<td bgcolor="eeeeee">&#160;(yyyy/MM/dd)</td>
-
-						<td width="60%" bgcolor="eeeeee" />
 						<td width="100%" bgcolor="eeeeee" />
-			      	</tr>
+					</tr>
 			      	<tr height="10">
 						<td width="10" bgcolor="eeeeee" />
 						<td width="130" bgcolor="eeeeee" />
@@ -178,8 +176,8 @@
 			<td>
 				<tr>
 					<td width="20%"><h2>Fileset ID</h2></td>
-					<td width="15%"><h2>Created</h2></td>
-					<td width="15%"><h2>Updated</h2></td>
+					<td width="15%"><h2>Initialized</h2></td>
+					<td width="15%"><h2>Modified</h2></td>
 					<td width="15%"><h2>Usage</h2></td>
 					<td width="10%"><h2>Status</h2></td>	
 					<td width="10"><h2>Action</h2></td>	
@@ -217,9 +215,12 @@
 						<img src="images/cdrom-queued.gif" alt="Media status: queued" border="0" title="Status: queued - info: {mediaStatusInfo}"/>		
 					</xsl:when>
 					<xsl:when test="mediaStatus = 2">
-						<img src="images/cdrom-creating.gif" alt="Media status: creating" border="0" title="Status: creating - info: {mediaStatusInfo}"/>		
+						<img src="images/cdrom-transfering.gif" alt="Media status: transfering" border="0" title="Status: creating - info: {mediaStatusInfo}"/>		
 					</xsl:when>
 					<xsl:when test="mediaStatus = 3">
+						<img src="images/cdrom-creating.gif" alt="Media status: creating" border="0" title="Status: completed - info: {mediaStatusInfo}"/>		
+					</xsl:when>
+					<xsl:when test="mediaStatus = 4">
 						<img src="images/cdrom-completed.gif" alt="Media status: completed" border="0" title="Status: completed - info: {mediaStatusInfo}"/>		
 					</xsl:when>
 					<xsl:when test="mediaStatus = -1">

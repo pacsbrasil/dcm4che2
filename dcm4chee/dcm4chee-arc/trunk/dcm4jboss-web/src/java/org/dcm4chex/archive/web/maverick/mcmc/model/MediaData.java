@@ -208,7 +208,8 @@ public class MediaData {
 		mapDefinedStati = new HashMap();//TODO get from MediaDTO!
 		mapDefinedStati.put( new Integer(MediaDTO.OPEN), new MediaStatus( MediaDTO.OPEN, "OPEN" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.QUEUED), new MediaStatus( MediaDTO.QUEUED, "QUEUED" ) );
-		mapDefinedStati.put( new Integer(MediaDTO.PROCESSING), new MediaStatus( MediaDTO.PROCESSING, "PROCESSING" ) );
+		mapDefinedStati.put( new Integer(MediaDTO.TRANSFERING), new MediaStatus( MediaDTO.TRANSFERING, "TRANSFERING" ) );
+		mapDefinedStati.put( new Integer(MediaDTO.BURNING), new MediaStatus( MediaDTO.BURNING, "CREATING" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.COMPLETED), new MediaStatus( MediaDTO.COMPLETED, "COMPLETED" ) );
 		mapDefinedStati.put( new Integer(MediaDTO.ERROR), new MediaStatus( MediaDTO.ERROR, "FAILED" ) );
 		return mapDefinedStati.values();
