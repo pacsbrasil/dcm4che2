@@ -213,7 +213,7 @@ public abstract class ContentManagerBean implements SessionBean {
                     inst.getRetrieveAETs(),
                     inst.getFiles().size(),
                     inst.getAvailability(),
-                    inst.isCommitment()));
+                    inst.getCommitment()));
         }
         return result;
     }

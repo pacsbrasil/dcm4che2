@@ -322,7 +322,7 @@ public abstract class QueryCmd extends BaseCmd {
             ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(4));
             ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(5));
             putRetrieveAETs(ds, rs.getString(6));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(6)]);
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(7)]);
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
     }

@@ -170,11 +170,11 @@ CREATE INDEX mwl_pat_id ON mwl_item(pat_id);
 CREATE INDEX mwl_pat_name ON mwl_item(pat_name_up);
 
 CREATE TABLE users(
-	user_id		VARCHAR(254) PRIMARY KEY,
+	user_id		VARCHAR(254) PRIMARY KEY NOT NULL,
 	passwd 		VARCHAR(254)
 );
 CREATE TABLE roles(
-	user_id		VARCHAR(254),
+	user_id		VARCHAR(254) NOT NULL,
 	roles	 	VARCHAR(254),
 FOREIGN KEY (user_id) REFERENCES users(user_id)
 );

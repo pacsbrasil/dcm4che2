@@ -232,7 +232,7 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence
      *  column-name="commitment"
      */
-    public abstract boolean isCommitment();
+    public abstract boolean getCommitment();
 
     /**
      * @ejb.interface-method

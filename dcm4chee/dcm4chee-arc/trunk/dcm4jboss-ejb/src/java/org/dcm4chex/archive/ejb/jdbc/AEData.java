@@ -120,7 +120,7 @@ public class AEData implements Serializable {
     }
 
     public boolean isTLS() {
-        return cipherSuites != null || cipherSuites.length() != 0;
+        return cipherSuites != null && cipherSuites.length() != 0;
     }
 
     public String toString() {

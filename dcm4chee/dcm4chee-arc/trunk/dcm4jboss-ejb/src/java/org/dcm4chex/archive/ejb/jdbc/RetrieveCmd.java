@@ -129,7 +129,7 @@ public abstract class RetrieveCmd extends BaseCmd
                         rs.getString(8),
                         rs.getString(9),
                         rs.getString(10),
-                        rs.getString(12),
+                        rs.getString(11),
                         rs.getString(12),
                         rs.getInt(13));
                 list = (ArrayList) map.get(info.sopIUID);

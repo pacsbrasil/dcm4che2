@@ -153,8 +153,8 @@ public abstract class FileBean implements EntityBean
         for (int i = 0; i < md5.length; i++)
         {
             md5[i] =
-                (byte) ((Character.digit(md5Hex[i >> 1], 16) << 4)
-                    + Character.digit(md5Hex[(i >> 1) + 1], 16));
+                (byte) ((Character.digit(md5Hex[i << 1], 16) << 4)
+                    + Character.digit(md5Hex[(i << 1) + 1], 16));
         }
         return md5;
     }

@@ -156,7 +156,7 @@ public class InstanceDTO implements Serializable {
     /**
      * @return
      */
-    public final boolean isCommitment() {
+    public final boolean getCommitment() {
         return commitment;
     }
 

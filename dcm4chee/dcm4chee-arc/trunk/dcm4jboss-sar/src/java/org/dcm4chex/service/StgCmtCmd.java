@@ -20,9 +20,11 @@
 package org.dcm4chex.service;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.DigestInputStream;
@@ -224,21 +226,39 @@ class StgCmtCmd {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        BufferedInputStream in =
-            new BufferedInputStream(new FileInputStream(file));
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+        DigestInputStream dis = new DigestInputStream(in, md);
         try {
-            DigestInputStream dis = new DigestInputStream(in, md);
             DcmParser parser = pFact.newDcmParser(dis);
-            parser.parseDcmFile(FileFormat.DICOM_FILE, -1);
+            parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+            if (parser.getReadTag() == Tags.PixelData) {
+                if (parser.getReadLength() == -1) {
+                    while (parser.parseHeader() == Tags.Item) {
+                        readOut(parser.getInputStream(), parser.getReadLength());                        
+                    }
+                }
+                readOut(parser.getInputStream(), parser.getReadLength());
+                parser.parseDataset(parser.getDcmDecodeParam(),-1);
+            }
         } finally {
             try {
-                in.close();
-            } catch (IOException ignore) {
-            }
+                dis.close();
+            } catch (IOException ignore) {}
         }
-        if (!Arrays.equals(md.digest(), info.getFileMd5())) {
+        byte[] md5 = md.digest();
+        if (!Arrays.equals(md5, info.getFileMd5())) {
             throw new IOException("MD5 mismatch");
         }
+    }
+
+    private void readOut(InputStream in, int len) throws IOException {
+        int toRead = len;
+        while (toRead-- > 0) {
+            if (in.read() < 0) {
+                throw new EOFException();
+            }
+        }
+        
     }
 
     private Dimse makeNEventReportRQ() {
@@ -255,8 +275,8 @@ class StgCmtCmd {
         try {
             Association assoc = aFact.newRequestor(createSocket());
             assoc.setAcTimeout(service.getAcTimeout());
-//            assoc.setDimseTimeout(service.getDimseTimeout());
-//            assoc.setSoCloseDelay(service.getSoCloseDelay());
+            //            assoc.setDimseTimeout(service.getDimseTimeout());
+            //            assoc.setSoCloseDelay(service.getSoCloseDelay());
             PDU pdu = assoc.connect(makeAAssociateRQ());
             if (!(pdu instanceof AAssociateAC)) {
                 service.getLog().error(
