@@ -72,9 +72,9 @@ public abstract class QueryBean implements SessionBean
     /**
      * @ejb:create-method
      */
-    public void ejbCreate(Dataset keys, String principal)
+    public void ejbCreate(Dataset keys)
     throws CreateException, DcmServiceException {
-        cmd = QueryCmd.create(keys, principal);
+        cmd = QueryCmd.create(keys);
         cmd.execute();
     }
 

@@ -95,30 +95,3 @@ FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (media_fk)  	REFERENCES media(pk)
 );
 CREATE INDEX retrieve_aet ON file(retrieve_aet);
-
-CREATE TABLE principal (
-	pk          	SERIAL PRIMARY KEY,
-	name         	TEXT
-);
-CREATE UNIQUE INDEX principal_name ON principal(name);
-
-CREATE TABLE link_principal_patient (
-	principal_fk	INTEGER NOT NULL,
-	patient_fk		INTEGER NOT NULL,
-FOREIGN KEY (principal_fk)	REFERENCES principal(pk),
-FOREIGN KEY (patient_fk)	REFERENCES patient(pk)
-);
-
-CREATE TABLE link_principal_study (
-	principal_fk	INTEGER NOT NULL,
-	study_fk		INTEGER NOT NULL,
-FOREIGN KEY (principal_fk)	REFERENCES principal(pk),
-FOREIGN KEY (study_fk) 		REFERENCES study(pk)
-);
-
-CREATE TABLE link_principal_series (
-	principal_fk	INTEGER NOT NULL,
-	series_fk		INTEGER NOT NULL,
-FOREIGN KEY (principal_fk)	REFERENCES principal(pk),
-FOREIGN KEY (series_fk)  	REFERENCES series(pk)
-);

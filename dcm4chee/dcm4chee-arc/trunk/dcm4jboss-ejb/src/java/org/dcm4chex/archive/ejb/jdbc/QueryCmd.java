@@ -58,23 +58,11 @@ public abstract class QueryCmd extends BaseQueryCmd
     private static final String BETWEEN = " BETWEEN ";
     private static final String SELECT_PATIENT = "SELECT patient.pat_attrs";
     private static final String FROM_PATIENT = " FROM patient";
-    private static final String FROM_PATIENT_WHERE_PRINCIPAL =
-        " FROM patient, link_principal_patient, principal"
-            + " WHERE patient.pk=link_principal_patient.patient_fk"
-            + " AND principal.pk=link_principal_patient.principal_fk"
-            + " AND principal.name='";
     private static final String SELECT_STUDY =
         "SELECT patient.pat_attrs, study.study_attrs";
     private static final String FROM_STUDY_WHERE =
         " FROM patient, study"
-            + " WHERE patient.pk=study.patient_fk"
-            + " AND study.pk=link_principal_study.study_fk";
-    private static final String FROM_STUDY_WHERE_PRINCIPAL =
-        " FROM patient, study, link_principal_study, principal"
-            + " WHERE patient.pk=study.patient_fk"
-            + " AND study.pk=link_principal_study.study_fk"
-            + " AND principal.pk=link_principal_study.principal_fk"
-            + " AND principal.name='";
+            + " WHERE patient.pk=study.patient_fk";
     private static final String WHERE_MODALITY_IN_STUDY_HEAD =
         " AND (SELECT count(*) FROM series"
             + " WHERE study.pk=series.study_fk AND modality='";
@@ -85,13 +73,6 @@ public abstract class QueryCmd extends BaseQueryCmd
         " FROM patient, study, series"
             + " WHERE patient.pk=study.patient_fk"
             + " AND study.pk=series.study_fk";
-    private static final String FROM_SERIES_WHERE_PRINCIPAL =
-        " FROM patient, study, series, link_principal_series, principal"
-            + " WHERE patient.pk=study.patient_fk"
-            + " AND study.pk=series.study_fk"
-            + " AND series.pk=link_principal_series.series_fk"
-            + " AND principal.pk=link_principal_series.principal_fk"
-            + " AND principal.name='";
     private static final String SELECT_INSTANCE =
         "SELECT patient.pat_attrs, study.study_attrs, series.series_attrs, instance.inst_attrs";
     private static final String FROM_INSTANCE_WHERE =
@@ -99,27 +80,11 @@ public abstract class QueryCmd extends BaseQueryCmd
             + " WHERE patient.pk=study.patient_fk"
             + " AND study.pk=series.study_fk"
             + " AND series.pk=instance.series_fk";
-    private static final String FROM_INSTANCE_WHERE_PRINCIPAL =
-        " FROM patient, study, series, instance, link_principal_series, principal"
-            + " WHERE patient.pk=study.patient_fk"
-            + " AND study.pk=series.study_fk"
-            + " AND series.pk=instance.series_fk"
-            + " AND series.pk=link_principal_series.series_fk"
-            + " AND principal.pk=link_principal_series.principal_fk"
-            + " AND principal.name='";
     private static final String FROM_SR_WHERE =
         " FROM patient, study, series, instance LEFT JOIN code ON (code.pk=instance.srcode_fk)"
             + " WHERE patient.pk=study.patient_fk"
             + " AND study.pk=series.study_fk"
             + " AND series.pk=instance.series_fk";
-    private static final String FROM_SR_WHERE_PRINCIPAL =
-        " FROM patient, study, series, instance LEFT JOIN code ON (code.pk=instance.srcode_fk), link_principal_series, principal"
-            + " WHERE patient.pk=study.patient_fk"
-            + " AND study.pk=series.study_fk"
-            + " AND series.pk=instance.series_fk"
-            + " AND series.pk=link_principal_series.series_fk"
-            + " AND principal.pk=link_principal_series.principal_fk"
-            + " AND principal.name='";
     private static final String STUDIES_PER_PATIENT =
         ", (SELECT count(*) FROM study" + " WHERE patient.pk=study.patient_fk)";
     private static final String SERIES_PER_PATIENT =
@@ -141,20 +106,19 @@ public abstract class QueryCmd extends BaseQueryCmd
         ", (SELECT count(*) FROM instance"
             + " WHERE series.pk=instance.series_fk)";
 
-    public static QueryCmd create(Dataset keys, String principal)
-        throws DcmServiceException
+    public static QueryCmd create(Dataset keys) throws DcmServiceException
     {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         switch (Arrays.asList(QRLEVEL).indexOf(qrLevel))
         {
             case 0 :
-                return new PatientQueryCmd(keys, principal);
+                return new PatientQueryCmd(keys);
             case 1 :
-                return new StudyQueryCmd(keys, principal);
+                return new StudyQueryCmd(keys);
             case 2 :
-                return new SeriesQueryCmd(keys, principal);
+                return new SeriesQueryCmd(keys);
             case 3 :
-                return new ImageQueryCmd(keys, principal);
+                return new ImageQueryCmd(keys);
             default :
                 throw new DcmServiceException(
                     Status.IdentifierDoesNotMatchSOPClass,
@@ -163,12 +127,10 @@ public abstract class QueryCmd extends BaseQueryCmd
     }
 
     protected final Dataset keys;
-    protected final String principal;
 
-    protected QueryCmd(Dataset keys, String principal)
+    protected QueryCmd(Dataset keys)
     {
         this.keys = keys;
-        this.principal = principal;
         // ensure keys contains (8,0005) for use as result filter  
         if (!keys.contains(Tags.SpecificCharacterSet))
         {
@@ -187,27 +149,17 @@ public abstract class QueryCmd extends BaseQueryCmd
 
     static class PatientQueryCmd extends QueryCmd
     {
-        PatientQueryCmd(Dataset keys, String principal)
+        PatientQueryCmd(Dataset keys)
         {
-            super(keys, principal);
+            super(keys);
         }
 
         protected String buildSQL()
         {
             StringBuffer sql = new StringBuffer(SELECT_PATIENT);
             appendNumPerPatient(sql);
-            if (principal == null)
-            {
-                sql.append(FROM_PATIENT);
-                appendMatchPatient(sql, WHERE);
-            }
-            else
-            {
-                sql.append(FROM_PATIENT_WHERE_PRINCIPAL);
-                sql.append(principal);
-                sql.append('\'');
-                appendMatchPatient(sql, AND);
-            }
+            sql.append(FROM_PATIENT);
+            appendMatchPatient(sql, WHERE);
             return sql.toString();
         }
 
@@ -230,9 +182,9 @@ public abstract class QueryCmd extends BaseQueryCmd
 
     static class StudyQueryCmd extends QueryCmd
     {
-        StudyQueryCmd(Dataset keys, String principal)
+        StudyQueryCmd(Dataset keys)
         {
-            super(keys, principal);
+            super(keys);
         }
 
         protected String buildSQL()
@@ -240,16 +192,7 @@ public abstract class QueryCmd extends BaseQueryCmd
             StringBuffer sql = new StringBuffer(SELECT_STUDY);
             appendNumPerPatient(sql);
             appendNumPerStudy(sql);
-            if (principal == null)
-            {
-                sql.append(FROM_STUDY_WHERE);
-            }
-            else
-            {
-                sql.append(FROM_STUDY_WHERE_PRINCIPAL);
-                sql.append(principal);
-                sql.append('\'');
-            }
+            sql.append(FROM_STUDY_WHERE);
             appendMatchStudy(sql);
             return sql.toString();
         }
@@ -275,9 +218,9 @@ public abstract class QueryCmd extends BaseQueryCmd
 
     static class SeriesQueryCmd extends QueryCmd
     {
-        SeriesQueryCmd(Dataset keys, String principal)
+        SeriesQueryCmd(Dataset keys)
         {
-            super(keys, principal);
+            super(keys);
         }
 
         protected String buildSQL()
@@ -286,16 +229,7 @@ public abstract class QueryCmd extends BaseQueryCmd
             appendNumPerPatient(sql);
             appendNumPerStudy(sql);
             appendNumPerSeries(sql);
-            if (principal == null)
-            {
-                sql.append(FROM_SERIES_WHERE);
-            }
-            else
-            {
-                sql.append(FROM_SERIES_WHERE_PRINCIPAL);
-                sql.append(principal);
-                sql.append('\'');
-            }
+            sql.append(FROM_SERIES_WHERE);
             appendMatchPatient(sql, AND);
             appendMatchStudy(sql);
             appendMatchSeries(sql);
@@ -325,9 +259,9 @@ public abstract class QueryCmd extends BaseQueryCmd
 
     static class ImageQueryCmd extends QueryCmd
     {
-        ImageQueryCmd(Dataset keys, String principal)
+        ImageQueryCmd(Dataset keys)
         {
-            super(keys, principal);
+            super(keys);
         }
 
         protected String buildSQL()
@@ -336,20 +270,8 @@ public abstract class QueryCmd extends BaseQueryCmd
             appendNumPerPatient(sql);
             appendNumPerStudy(sql);
             appendNumPerSeries(sql);
-            if (principal == null)
-            {
-                sql.append(
-                    isMatchSrCode() ? FROM_INSTANCE_WHERE : FROM_SR_WHERE);
-            }
-            else
-            {
-                sql.append(
-                    isMatchSrCode()
-                        ? FROM_INSTANCE_WHERE_PRINCIPAL
-                        : FROM_SR_WHERE_PRINCIPAL);
-                sql.append(principal);
-                sql.append('\'');
-            }
+            sql.append(
+                isMatchSrCode() ? FROM_INSTANCE_WHERE : FROM_SR_WHERE);
             appendMatchPatient(sql, AND);
             appendMatchStudy(sql);
             appendMatchSeries(sql);

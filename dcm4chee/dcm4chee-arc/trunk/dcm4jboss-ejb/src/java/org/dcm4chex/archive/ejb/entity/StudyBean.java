@@ -33,7 +33,6 @@ import java.util.Set;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
-import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
@@ -41,10 +40,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
-import org.dcm4chex.archive.ejb.interfaces.PrincipalLocalHome;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
-import org.dcm4chex.archive.ejb.util.EJBHomeFactoryException;
-import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 
 /**
 
@@ -76,11 +72,6 @@ import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
  *  query="SELECT OBJECT(a) FROM Study AS a WHERE a.studyIuid = ?1"
  *  transaction-type="Supports"
  *
- * @ejb.ejb-ref
- *  ejb-name="Principal" 
- *  view-type="local"
- *  ref-name="ejb/org.dcm4chex.archive.ejb.interfaces.PrincipalLocalHome"
- * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
@@ -89,30 +80,7 @@ public abstract class StudyBean implements EntityBean {
     private static final String ATTRS_CFG = "study-attrs.cfg";
 
     private static final Logger log = Logger.getLogger(StudyBean.class);
-    
-    private EntityContext ctx;
-    private PrincipalLocalHome principalHome;
-
-    public void setEntityContext(EntityContext ctx) 
-    {
-        this.ctx = ctx;
-        try
-        {
-            EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
-            principalHome = (PrincipalLocalHome) factory.lookup(PrincipalLocalHome.class);
-        }
-        catch (EJBHomeFactoryException e)
-        {
-            throw new EJBException(e);
-        }
-    }
-    
-    public void unsetEntityContext() 
-    {
-        ctx = null;
-        principalHome = null;
-    }
-    
+        
     /**
      * Auto-generated Primary Key
      *
@@ -232,29 +200,6 @@ public abstract class StudyBean implements EntityBean {
      */
     public abstract java.util.Collection getSeries();
     
-    /**
-     * @ejb:interface-method
-     * @ejb:relation
-     *  name="principal-study"
-     *  role-name="study-owned-by-principal"
-     *  target-ejb="Principal"
-     *  target-role-name="principal-of-study"
-     *  target-multiple="true"
-     * @jboss.relation-table
-     *  table-name="link_principal_study"
-     * @jboss:relation
-     *  fk-column="principal_fk"
-     *  related-pk-field="pk"
-     * @jboss:target-relation
-     *  fk-column="study_fk"
-     *  related-pk-field="pk"
-     *    
-     * @return all principals of this study
-     */
-    public abstract java.util.Set getPrincipals();
-
-    public abstract void setPrincipals(java.util.Set principals);
-
     /**
      * Create study.
      *
