@@ -54,10 +54,12 @@ import java.util.LinkedHashMap;
 class FilmSession {
    
    // Constants -----------------------------------------------------
+   private static final boolean TYPE1 = true;
    
    // Attributes ----------------------------------------------------
    private final PrintScpService scp;
    private final File dir;
+   private final String aet;
    private final String uid;
    private final Dataset session;
    private final boolean color;
@@ -68,12 +70,13 @@ class FilmSession {
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   public FilmSession(PrintScpService scp, String metaCUID, String uid,
+   public FilmSession(PrintScpService scp, String aet, boolean color, String uid,
          Dataset session, File dir, Command rspCmd)
       throws DcmServiceException
    {
       this.scp = scp;
-      this.color = metaCUID.equals(UIDs.BasicColorPrintManagement);
+      this.aet = aet;
+      this.color = color;// metaCUID.equals(UIDs.BasicColorPrintManagement);
       this.uid = uid;
       this.session = session;
       this.dir = dir;
@@ -151,7 +154,7 @@ class FilmSession {
       if (curFilmBox == null) {
          throw new IllegalStateException();
       }
-      curFilmBox.updateAttributes(filmbox, rspCmd, pluts, session);
+      curFilmBox.updateAttributes(filmbox, pluts, session);
    }
    
    public void deleteFilmBox() {
@@ -170,10 +173,10 @@ class FilmSession {
       if (!checkPrintPriority(ds.getString(Tags.PrintPriority))) {
          rsp.putUS(Tags.Status, Status.AttributeValueOutOfRange);
       }
-      scp.checkAttributeValue("isSupportsMediumType",
-         scp.getCSorDefConfig(ds, Tags.MediumType, "DefaultMediumType"));
-      scp.checkAttributeValue("isSupportsFilmDestination",
-         scp.getCSorDefConfig(ds, Tags.FilmDestination, "DefaultFilmDestination"));
+      scp.checkAttributeValue(aet, "isSupportsMediumType",
+         ds.getString(Tags.MediumType), !TYPE1);
+      scp.checkAttributeValue(aet, "isSupportsFilmDestination",
+         ds.getString(Tags.FilmDestination), !TYPE1);
       if (ds.getInt(Tags.MemoryAllocation, 0) != 0) {
          rsp.putUS(Tags.Status, Status.MemoryAllocationNotSupported);
       }      

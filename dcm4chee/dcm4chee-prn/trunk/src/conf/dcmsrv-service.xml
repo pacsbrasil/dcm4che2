@@ -47,7 +47,7 @@
     '\' characters. Use the single value "any" to accept any Called AET
     in the A-ASSOCIATE RQ.    
     -->
-    <attribute name="CalledAETs">TIANI_PRINT</attribute>
+    <attribute name="CalledAETs">any</attribute>
     
     <!--
     Specifies Calling AETs, which the DICOM server shall accept.

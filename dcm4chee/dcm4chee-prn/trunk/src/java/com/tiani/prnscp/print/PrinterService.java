@@ -135,6 +135,9 @@ public class PrinterService
    /** Holds value of property supportsColor. */
    private boolean supportsColor;
    
+   /** Holds value of property supportsGrayscale. */
+   private boolean supportsGrayscale = true;
+
    /** Holds value of property supportsPresentationLUT. */
    private boolean supportsPresentationLUT;
    
@@ -451,6 +454,20 @@ public class PrinterService
     */
    public void setSupportsColor(boolean supportsColor) {
       this.supportsColor = supportsColor;
+   }
+   
+   /** Getter for property supportsGrayscale.
+    * @return Value of property supportsGrayscale.
+    */
+   public boolean isSupportsGrayscale() {
+      return this.supportsGrayscale;
+   }   
+   
+   /** Setter for property supportsGrayscale.
+    * @param supportsGrayscale New value of property supportsGrayscale.
+    */
+   public void setSupportsGrayscale(boolean supportsGrayscale) {
+      this.supportsGrayscale = supportsGrayscale;
    }
    
    /** Getter for property supportsPresentationLUT.
@@ -1820,6 +1837,5 @@ public class PrinterService
       return "" + license;
    }
 
-   
    // Inner classes -------------------------------------------------
 }

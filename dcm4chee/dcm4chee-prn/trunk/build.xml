@@ -87,7 +87,7 @@
     </javac>
   </target>
 
-  <target name="sar" depends="dcmsrv-sar,prnscp-sar"/>
+  <target name="sar" depends="dcmsrv-sar,prnscp-sar,printer-sar"/>
   
   <target name="dcmsrv-sar" depends="compile">
     <mkdir dir="${build.dir}/dcmsrv"/>
@@ -122,7 +122,26 @@
                includes="jboss-service.xml"
       />
       <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/scp/*,com/tiani/prnscp/print/*,com/tiani/util/license/*"
+               includes="com/tiani/prnscp/scp/*"
+      />
+    </jar>
+  </target>   
+
+  <target name="printer-sar" depends="compile">
+    <mkdir dir="${build.dir}/printer"/>
+    <copy file="${src.conf}/printer-service.xml" 
+          tofile="${build.dir}/printer/jboss-service.xml">
+      <filterset>
+        <filter token="ARCHIVES" value="dcm4che.jar"/>
+      </filterset>
+    </copy>
+    <mkdir dir="${build.deploy.dir}"/>
+    <jar jarfile="${build.deploy.dir}/printer.sar">
+      <metainf dir="${build.dir}/printer"
+               includes="jboss-service.xml"
+      />
+      <fileset dir="${build.classes.dir}"
+               includes="com/tiani/prnscp/print/*,com/tiani/util/license/*"
       />
     </jar>
   </target>   
@@ -203,6 +222,12 @@
   <target name="service-xml">
     <mkdir dir="${build.deploy.dir}"/>
     <copy file="${src.conf}/prnscp-service.xml" 
+          todir="${build.deploy.dir}">
+      <filterset>
+        <filter token="ARCHIVES" value="dcm4che.jar,prnscp.jar"/>
+      </filterset>
+    </copy>
+    <copy file="${src.conf}/printer-service.xml" 
           todir="${build.deploy.dir}">
       <filterset>
         <filter token="ARCHIVES" value="dcm4che.jar,prnscp.jar"/>

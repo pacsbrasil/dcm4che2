@@ -52,27 +52,13 @@ public interface PrintScpServiceMBean extends ServiceMBean {
    
    /** Getter for property dcmServer.
     * @return Value of property dcmServer.
-    *
     */
    ObjectName getDcmServer();
    
    /** Setter for property dcmServer.
     * @param dcmServer New value of property dcmServer.
-    *
     */
    void setDcmServer(ObjectName dcmServer);
-   
-   /** Getter for property printer.
-    * @return Value of property printer.
-    *
-    */
-   ObjectName getPrinter();
-   
-   /** Setter for property printer.
-    * @param printer New value of property printer.
-    *
-    */
-   void setPrinter(ObjectName printer);
    
    /** Getter for property spoolDirectory.
     * @return Value of property spoolDirectory.

@@ -106,6 +106,7 @@ class FilmSessionService
          String uid = rspCmd.getAffectedSOPInstanceUID();
          Dataset ds = rq.getDataset(); // read out dataset
          Association a = as.getAssociation();
+         String aet = a.getCalledAET();
          AAssociateRQ aarq = a.getAAssociateRQ();
          PresContext pc =aarq.getPresContext(rq.pcid());
          String asuid = pc.getAbstractSyntaxUID();
@@ -117,8 +118,9 @@ class FilmSessionService
          File dir = scp.getSessionSpoolDir(a, uid);
          if (dir.exists()) {
             throw new DcmServiceException(Status.DuplicateSOPInstance);
-         }         
-         FilmSession session = new FilmSession(scp, asuid, uid, ds, dir, rspCmd);
+         }
+         boolean color = asuid.equals(UIDs.BasicColorPrintManagement);
+         FilmSession session = new FilmSession(scp, aet, color, uid, ds, dir, rspCmd);
          scp.initSessionSpoolDir(dir);
          a.putProperty("FilmSession", session);
          a.addAssociationListener(this);

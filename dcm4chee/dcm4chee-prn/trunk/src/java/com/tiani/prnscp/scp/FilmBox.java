@@ -55,9 +55,11 @@ import java.util.LinkedHashMap;
 class FilmBox {
    
    // Constants -----------------------------------------------------
+   private static final boolean TYPE1 = true;
    
    // Attributes ----------------------------------------------------
    private final PrintScpService scp;
+   private final String aet;
    private final String uid;
    private final Dataset dataset;
    private final LinkedHashMap imageBoxes = new LinkedHashMap();
@@ -68,14 +70,15 @@ class FilmBox {
    private static final UIDGenerator uidgen = UIDGenerator.getInstance();
    
    // Constructors --------------------------------------------------
-   public FilmBox(PrintScpService scp, String uid, Dataset dataset,
-         Command rspCmd, HashMap pluts, Dataset sessionAttr)
+   public FilmBox(PrintScpService scp, String aet, String uid, Dataset dataset,
+         HashMap pluts, Dataset sessionAttr)
       throws DcmServiceException
    {
       this.scp = scp;
+      this.aet = aet;
       this.uid = uid;
       this.dataset = dataset;
-      checkCreateData(dataset, rspCmd);
+      checkCreateData(dataset);
       addPLUT(dataset, pluts);
       sessionAttr.putCS(Tags.RequestedResolutionID,
          dataset.getString(Tags.RequestedResolutionID));
@@ -90,11 +93,12 @@ class FilmBox {
       return dataset;
    }
 
-   public void updateAttributes(Dataset modification, Command rspCmd, 
+   public void updateAttributes(Dataset modification, 
          HashMap pluts, Dataset sessionAttr)
       throws DcmServiceException
    {
-//      check(modification, rspCmd);
+// TODO!
+//      check(modification);
       addPLUT(modification, pluts);
       dataset.putAll(modification);
       sessionAttr.putCS(Tags.RequestedResolutionID,
@@ -105,8 +109,7 @@ class FilmBox {
       throws DcmServiceException
    {
       checkDecimateCropBehavior(
-         scp.getCSorDefConfig(imageBox, Tags.RequestedDecimateCropBehavior, 
-            "DecimateCropBehavior"));
+         imageBox.getString(Tags.RequestedDecimateCropBehavior));
       addPLUT(imageBox, pluts);
       imageBoxes.remove(imageBoxUID);
       imageBoxes.put(imageBoxUID, imageBox);
@@ -206,7 +209,12 @@ class FilmBox {
    private String checkFilmOrientation(String val)
       throws DcmServiceException
    {
-      if (!val.equals("PORTRAIT") && !val.equals("LANDSCAPE")) {
+      if (val == null) {
+         return null;
+      }
+      if (!val.equals("PORTRAIT")
+         && !val.equals("LANDSCAPE"))
+      {
          throw new DcmServiceException(Status.InvalidAttributeValue);
       }
       return val;
@@ -215,7 +223,13 @@ class FilmBox {
    private String checkDecimateCropBehavior(String val)
       throws DcmServiceException
    {
-      if (!val.equals("DECIMATE") && !val.equals("CROP") && !val.equals("FAIL")) {
+      if (val == null) {
+         return null;
+      }
+      if (!val.equals("DECIMATE")
+         && !val.equals("CROP")
+         && !val.equals("FAIL"))
+      {
          throw new DcmServiceException(Status.InvalidAttributeValue);
       }
       return val;
@@ -224,7 +238,12 @@ class FilmBox {
    private String checkDensity(String val)
       throws DcmServiceException
    {
-      if (!val.equals("WHITE") && !val.equals("BLACK")) {
+      if (val == null) {
+         return null;
+      }
+      if (!val.equals("WHITE")
+         && !val.equals("BLACK"))
+      {
          try {
             Integer.parseInt(val);
          } catch (NumberFormatException e) {
@@ -234,27 +253,20 @@ class FilmBox {
       return val;
    }
    
-   private void checkCreateData(Dataset ds, Command rsp)
+   private void checkCreateData(Dataset ds)
       throws DcmServiceException
    {
-      scp.checkImageDisplayFormat(ds.getString(Tags.ImageDisplayFormat),
-         checkFilmOrientation(
-            scp.getCSorDefConfig(ds, Tags.FilmOrientation, "DefaultFilmOrientation")));
-      scp.checkAttributeValue("isSupportsFilmSizeID",
-         scp.getCSorDefConfig(ds, Tags.FilmSizeID, "DefaultFilmSizeID"));
-      scp.checkAttributeValue("isSupportsMagnificationType",
-         scp.getCSorDefConfig(ds, Tags.MagnificationType, "DefaultMagnificationType"));
-      scp.checkAttributeValue("isSupportsSmoothingType",
-         scp.getCSorDefConfig(ds, Tags.SmoothingType, "DefaultSmoothingType"));
-      scp.getUSorDefConfig(ds, Tags.Illumination, "Illumination");
-      scp.getUSorDefConfig(ds, Tags.ReflectedAmbientLight, "ReflectedAmbientLight");
-      scp.getUSorDefConfig(ds, Tags.MinDensity, "MinDensity");
-      scp.getUSorDefConfig(ds, Tags.MaxDensity, "MaxDensity");
-      checkDensity(
-         scp.getCSorDefConfig(ds, Tags.BorderDensity, "BorderDensity"));
-      checkDensity(
-         scp.getCSorDefConfig(ds, Tags.EmptyImageDensity, "EmptyImageDensity"));
-      scp.checkAttributeValue("isSupportsResolutionID",
-         scp.getCSorDefConfig(ds, Tags.RequestedResolutionID, "DefaultResolutionID"));
+      scp.checkImageDisplayFormat(aet, ds.getString(Tags.ImageDisplayFormat),
+         checkFilmOrientation(ds.getString(Tags.FilmOrientation)));
+      scp.checkAttributeValue(aet, "isSupportsFilmSizeID",
+         ds.getString(Tags.FilmSizeID), !TYPE1);
+      scp.checkAttributeValue(aet, "isSupportsMagnificationType",
+         ds.getString(Tags.MagnificationType), !TYPE1);
+      scp.checkAttributeValue(aet, "isSupportsSmoothingType",
+         ds.getString(Tags.SmoothingType), !TYPE1);
+      checkDensity(ds.getString(Tags.BorderDensity));
+      checkDensity(ds.getString(Tags.EmptyImageDensity));
+      scp.checkAttributeValue(aet, "isSupportsResolutionID",
+         ds.getString(Tags.RequestedResolutionID), !TYPE1);
    }
 }

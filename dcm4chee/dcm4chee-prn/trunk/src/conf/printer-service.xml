@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server>
+<!-- $Id$ -->
+
+<!-- ===================================================================== -->
+<!--                                                                       -->
+<!--  Printer Service Configuration                                        -->
+<!--                                                                       -->
+<!-- ===================================================================== -->
+
+<server>
+
+  <classpath codebase="lib" archives="@ARCHIVES@"/>
+
+  <mbean code="com.tiani.prnscp.print.PrinterService" 
+         name="dcm4chex:service=Printer,aet=PRINTER_AET">
+         
+    <!--
+    Specifies name of the printer used by the system.
+    -->
+    <attribute name="PrinterName">MINOLTA</attribute>
+    
+    <!--
+    Specifies maximal number of jobs in printer job queue. Printer Jobs will
+    be locally buffered, as long the current number of jobs queued by the
+    printer exceeds this 
+    -->
+    <attribute name="MaxQueuedJobCount">10</attribute>
+    
+    <!--
+    Activates redirection of all printing into a postscript file.
+    -->
+    <attribute name="PrintToFile">false</attribute>
+    
+    <!--
+    Specifies path of the postscript file, to which all printing will be
+    redirection if attribute "PrintToFile" is true.
+    -->
+    <attribute name="PrintToFilePath">out.ps</attribute>
+    
+    <!--
+    Activate support for the Basic Color Print Management Meta SOP Class.
+    -->
+    <attribute name="SupportsColor">true</attribute>
+
+    <!--
+    Activate support for the Basic Grayscale Print Management Meta SOP Class.
+    -->
+    <attribute name="SupportsGrayscale">true</attribute>
+
+    <!--
+    Specifies if color printing mode of the printer shall be also used for
+    printing of monochrome (=grayscale) images.
+    -->
+    <attribute name="PrintGrayAsColor">false</attribute>
+    
+    <!--
+    Activate support for the Presentation LUT SOP Class.
+    -->
+    <attribute name="SupportsPresentationLUT">true</attribute>
+    
+    <!--
+    Activate support for the Basic Annotation Box SOP Class.
+    -->
+    <attribute name="SupportsAnnotationBox">true</attribute>
+    
+    <!--
+    Medium Type identifiers supported by the printer for the Basic Film Session.
+    Multiple values can be specified, must be separated by '\' characters.
+    The first specified value is used as the default.
+    -->
+    <attribute name="MediumType">PAPER</attribute>
+    
+    <!--
+    Film Destination identifiers supported by the Print SCP for the Basic 
+    Film Session. Multiple values can be specified, must be separated by '\' 
+    characters.  The first specified value is used as the default.
+    -->
+    <attribute name="FilmDestination">BIN_1</attribute>
+    
+    <!--
+    Specifies all STANDARD\C,R image display formats accepted by the Print SCP
+    for portrait orientation. Landscape image display formats are derived
+    automatically.
+    -->
+    <attribute name="DisplayFormat">1,1\1,2\2,2\2,3\3,3\3,4\3,5\4,4\4,5</attribute>
+
+    <!--
+    Defines the default film orientation that is used when the Print SCU does not 
+    specify film orientation.
+    -->
+    <attribute name="DefaultPortrait">true</attribute>
+    
+    <!--
+    Film Size ID identifiers supported by the printer for the Basic Film Box. 
+    Multiple values can be specified, must be separated by '\' characters. 
+    Format: id:WidthxHeight, with  width and height in mm.
+    The first specified value is used as the default Film Size.
+    -->
+    <attribute name="FilmSizeID">A4:210x297\A3:297x420</attribute>
+        
+    <!--
+    Magnification Type identifiers supported by the printer for the Basic 
+    Film Box or Basic Grayscale Image Box. Multiple values can be specified, 
+    must be separated by '\' characters. The first specified value is used as
+    the default.
+    -->
+    <attribute name="MagnificationType">BILINEAR\REPLICATE\NONE</attribute>
+
+    <!-- 
+    Smoothing Type identifiers supported by the printer for the Basic Film 
+    Box or Image Box. Multiple values can be specified, must be separated by 
+    '\' characters.  The first specified value is used as the default. If no
+    value is specified, the Print SCP does not support the attribute and
+    rejects N-CREATE or N-SET requests containing the attribute.
+    -->
+    <attribute name="SmoothingType"></attribute>
+    
+    <!--
+    Defines the default Decimate/Crop Behavior that is used when the
+    Print SCU does not specify a Requested Decimate/Crop Behavior.
+    -->
+    <attribute name="DecimateCropBehavior">DECIMATE</attribute>
+   
+    <!--
+    Defines the default Border Density identifier that is used when the
+    Print SCU does not specify Border Density.
+    -->
+    <attribute name="BorderDensity">WHITE</attribute>
+      
+    
+    <attribute name="UseBorderDensForGrid">true</attribute>
+    <!--
+    Defines the default Empty Image Density identifier that is used when the
+    Print SCU does not specify Empty Image Density.
+    -->
+    <attribute name="EmptyImageDensity">WHITE</attribute>
+    
+    <!--
+    Defines density of trim box. Same format than for BorderDensity and 
+    EmptyImageDensity attribute defined by DICOM.
+    -->
+    <attribute name="TrimBoxDensity">BLACK</attribute>
+    
+    <!--
+    Defines the default min density that is used when the Print SCU does not 
+    specify min density.
+    -->
+    <attribute name="MinDensity">0</attribute>
+   
+    <!--
+    Defines the default max density that is used when the Print SCU does not 
+    specify max density.
+    -->
+    <attribute name="MaxDensity">160</attribute>
+
+    <!--
+    Defines the default illumination that is used when the Print SCU does not 
+    specify an illumination value for applying the presentation LUT.
+    -->
+    <attribute name="Illumination">150</attribute>
+          
+    <!--
+    Defines the default Reflected Ambient Light that is used when the Print SCU
+    does not specify a Reflected Ambient Light value for applying the
+    presentation LUT.
+    -->
+    <attribute name="ReflectedAmbientLight">0</attribute>
+    
+    <!--
+    Defines the default directory, which contains Presentation LUTs as
+    DICOM files, which can be selected by a PrintSCU via the value of the
+    Film Box attribute (2010,0150) Configuration Information. Only effective,
+    if the Print SCU does not provide a PLUT itself using the PLUT SOP class.
+    -->
+    <attribute name="LUTDir">conf/lut</attribute>
+
+    <!--
+    Selects a Presentation LUT in the directory specified by attribute LUTDir,
+    which shall be applied, if the PrintSCU does whether provide a PLUT using
+    the PLUT SOP class, nor specifies a value of Film Box attribute (2010,0150)
+    Configuration Information.
+    -->
+    <attribute name="DefaultLUT">midtone256us</attribute>
+
+    <!--
+    Defines the page margin for portrait orientation.
+    Format: left,right,top,bottom margin in mm.
+    Page margins for landscape orientation are derived automatically
+    (s. property "ReverseLandscape").
+    -->
+    <attribute name="PageMargin">7,7,7,7</attribute>
+   
+    <!--
+    Defines the direction of printing in landscape orientation.
+    Page margin for landscape format derived from the specification
+    for portrait orientatiion depends on it.
+    If true, the left side of the page in landscape orientation
+    correspondes to the top side in portrait orientation.
+    -->
+    <attribute name="ReverseLandscape">true</attribute>
+    
+    <!--
+    Defines the minimal spacing between images on the page in mm.
+    -->
+    <attribute name="BorderThickness">2.0</attribute>
+   
+    <!--
+    Defines the thickness of Trim Box in mm.
+    -->
+    <attribute name="TrimBoxThickness">1.0</attribute>
+   
+    <!--
+    Defines the vertical space between Img Boxes in mm.
+    -->
+    <attribute name="SpaceBetweenVisH">2.0</attribute>
+
+    <!--
+    Defines the horizontal space between Img Boxes in mm.
+    -->
+    <attribute name="SpaceBetweenVisW">2.0</attribute>
+    
+    <!--
+    Defines the Color for ImageableArea -Annotation
+    -->
+    <attribute name="ColorAllOfPage">255,255,255</attribute>
+    
+    <!--
+    Defines the Color for TrimBox
+    -->
+    <attribute name="ColorTrimBox">255,255,255</attribute>
+    
+    <!--
+    Defines the Color for ImgBox background if EmptyImgDens is not set and border Dens is not set
+    -->
+    <attribute name="ColorVis">0,0,0</attribute>
+
+    <!--
+    Defines the start size for scale BufferedImg in pieces
+    size is BufferedImgH * scaleH * AspectRatio
+    -->
+    <attribute name="PuzzleScaleStartSize">500</attribute>
+    
+    <!--
+    Defines the count of pieces for cut Img if( BufferedImgH * scaleH * AspectRatio> puzzleScaleStartSize)
+    < 1000 use 5 pieces
+    > 1000 use 10 pieces
+    > 2000 use 10 pieces
+    > 3000 use 20 pieces
+    > 4000 use 20 pieces
+    > 5000 use 30 pieces
+    ........
+    -->
+    
+    <attribute name="PuzzleScalePackageSize">5\10\10\20\20\30\30\40\40\50\50</attribute>
+
+    <!--
+    Requested Resolution ID identifiers supported by the printer for the
+    Basic Film Box. Multiple values can be specified, must be separated by 
+    '\' characters. The first specified value is used as the default.
+    -->
+    <attribute name="ResolutionID">STANDARD:600x600\HIGH:600x600</attribute>
+    
+    <!--
+    Specifies directory with contains configuration files for supported
+    annotation display formats.
+    -->    
+    <attribute name="AnnotationDir">conf/annotation</attribute>
+
+    <!--
+    Specifies name of annotation display format, which is used, when the
+    Print SCU does not specify an annotation display format.
+    -->    
+    <attribute name="DefaultAnnotation">TITLE_1</attribute>
+        
+    <!--
+    Specifies name of annotation display format used for the
+    grayscale pattern prinout.
+    -->    
+    <attribute name="GrayscaleAnnotation">GRAYSCALE_1</attribute>
+    
+    <!--
+    Specifies number of gray steps in printed grayscale pattern.
+    -->    
+    <attribute name="Grayscales">32</attribute>
+    
+    <!--
+    Specifies gap width in pts between two gray steps in printed gray scale
+    pattern.
+    -->    
+    <attribute name="GrayscaleGap">1</attribute>
+
+    <!--
+    Activates automatic print of the gray scale pattern at every server start-up.
+    -->    
+    <attribute name="PrintGrayscaleAtStartup">false</attribute>    
+    
+    <!--
+    Density mesurements of the printed gray scale pattern. Only used for the
+    case of manuell density mesurement using a grayscale densitometer.
+    Not needed, if semi-automatic calibration by scanned  gray scale printouts
+    is used. 
+    -->    
+    <attribute name="GrayscaleODsAsText">
+        0.00
+	0.07
+	0.10
+	0.13
+	0.15
+	0.16
+	0.20
+	0.21
+	0.24
+	0.27
+	0.33
+	0.38
+	0.42
+	0.49
+	0.54
+	0.57
+	0.65
+	0.67
+	0.69
+	0.73
+	0.79
+	0.89
+	0.94
+	1.06
+	1.20
+	1.27
+	1.33
+	1.37
+	1.46
+	1.62
+	1.64
+	1.66
+    </attribute>
+    
+    <!--
+    Date [YYYYMMDD] of the density mesurements of the printed gray scale
+    pattern specified in attribute GrayscaleOD.
+    Only used in the case of manuell density mesurement using a grayscale
+    densitometer. Not needed, if semi-automatic calibration by scanned 
+    gray scale printouts is used. 
+    -->    
+    <attribute name="DateOfLastCalibration">20030104</attribute>
+
+    <!--
+    Time [HHmm[ss]] of the density mesurements of the printed gray scale
+    pattern specified in attribute GrayscaleOD.
+    Only used in the case of manuell density mesurement using a grayscale
+    densitometer. Not needed, if semi-automatic calibration by scanned 
+    gray scale printouts is used. 
+    -->    
+    <attribute name="TimeOfLastCalibration">1230</attribute>
+
+    <!--
+    Specifies directory with contains scanned reference gray step file
+    (s. attribute "RefGrayscaleFileName") and sub-directories with gray step
+    print outs of available printers used for semi-automatic calibration.
+    -->    
+    <attribute name="CalibrationDir">conf/calibration</attribute>
+    
+    <!--
+    Specifies file name of scanned reference gray step file in calibration
+    directoy (s. attribute "CalibrationDir") used for semi-automatic calibration.
+    -->    
+    <attribute name="RefGrayscaleFileName">refgrayscale.jpg</attribute>
+        
+    <!--
+    Activates automatic check for new scanned gray scale print out in 
+    calibration from scanned in calibration directoy
+    (s. attribute "CalibrationDir") - and performing a new calibration, if
+    a new scan file is found - immediately before each film/paper print.
+    -->    
+    <attribute name="AutoCalibration">true</attribute>
+                            
+    <!--
+    Specifies (measured) density values of scanned reference gray step
+    refgrayscale.jpg in calibration directoy (s. property "CalibrationDir")
+    used for semi-automatic calibration. Need not be modified as long the 
+    delivered reference gray step pattern is used: It has to be scanned and
+    stored in the calibration directoy as reference image with the filename
+    specified by attribute RefGrayscaleFileName.
+    -->    
+    <attribute name="RefGrayscaleODsAsText">
+        0.00
+	0.07
+	0.10
+	0.13
+	0.15
+	0.16
+	0.20
+	0.21
+	0.24
+	0.27
+	0.33
+	0.38
+	0.42
+	0.49
+	0.54
+	0.57
+	0.65
+	0.67
+	0.69
+	0.73
+	0.79
+	0.89
+	0.94
+	1.06
+	1.20
+	1.27
+	1.33
+	1.37
+	1.46
+	1.62
+	1.64
+	1.66
+    </attribute>
+    
+             
+    <!--
+    Specifies black\white threshold in device driving levels, used by
+    semi-automatic calibration from scanned gray step printout.
+    Usually, you need not change the default value 180\220.
+    -->    
+    <attribute name="ScanThreshold">180\220</attribute>
+    
+    <!--
+    Specifies extension of measurement area in % of step width x step height,
+    used by semi-automatic calibration from scanned gray step printout.
+    Usually, you need not change the default value 50x50.
+    -->
+   <attribute name="ScanPointExtension">50x50</attribute>
+    
+  </mbean>
+</server>
+

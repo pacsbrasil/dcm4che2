@@ -34,6 +34,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
@@ -59,6 +60,7 @@ import java.io.OutputStream;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * <description>
@@ -96,18 +98,17 @@ public class PrintScpService
    private FilmSessionService filmSessionService = new FilmSessionService(this);
    private FilmBoxService filmBoxService = new FilmBoxService(this);
    private ImageBoxService imageBoxService = new ImageBoxService(this);
-         
-   private ObjectName printer;
+
+   private HashMap printerMap = new HashMap();
    private ObjectName dcmServer;
    private DcmHandler dcmHandler;
-   private AcceptorPolicy policy;
-   private DcmServiceRegistry services;
    private String[] ts_uids = LITTLE_ENDIAN_TS;
    private int numCreatedJobs = 0;
    private int numStoredPrints = 0;
             
    // Static --------------------------------------------------------
    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+   static final AssociationFactory asf = AssociationFactory.getInstance();
    
    // Constructors --------------------------------------------------
    
@@ -128,21 +129,7 @@ public class PrintScpService
    public void setDcmServer(ObjectName dcmServer) {
       this.dcmServer = dcmServer;
    }
-   
-   /** Getter for property printer.
-    * @return Value of property printer.
-    */
-   public ObjectName getPrinter() {
-      return printer;
-   }
-   
-   /** Setter for property printer.
-    * @param printer New value of property printer.
-    */
-   public void setPrinter(ObjectName printer) {
-      this.printer = printer;
-   }
-        
+           
    /** Getter for property spoolDirPath.
     * @return Value of property spoolDirPath.
     */
@@ -236,158 +223,225 @@ public class PrintScpService
          throw new IOException("No writeable spool directory - " + spoolDir);
       }
       cleardir(spoolDir);
-      
-      server.addNotificationListener(getServiceName(), printer,
-         makeNotificationFilter(
-            PrinterServiceMBean.NOTIF_SCHEDULE_COLOR,
-            PrinterServiceMBean.NOTIF_SCHEDULE_GRAY),
-         null);
-      server.addNotificationListener(printer, printingListener, 
-         makeNotificationFilter(PrinterServiceMBean.NOTIF_PRINTING), null);
-      server.addNotificationListener(printer, doneListener, 
-         makeNotificationFilter(PrinterServiceMBean.NOTIF_DONE), null);
-      server.addNotificationListener(printer, failureListener, 
-         makeNotificationFilter(PrinterServiceMBean.NOTIF_FAILURE), null);
-      
+      queryPrinters();
       dcmHandler = (DcmHandler)server.getAttribute(dcmServer, "DcmHandler");
-      services = dcmHandler.getDcmServiceRegistry();
+      try {
+         addNotificationListeners();
+         bindServices();
+         enableServices();
+      } catch (Exception e) {
+         try { stopService(); } catch (Exception ignore) {} 
+         throw e;
+      }      
+   }
+   
+   private void queryPrinters()
+      throws Exception 
+   {
+      Set printerNames = server.queryNames(
+         new ObjectName("dcm4chex:service=Printer,*"), null);
+      printerMap.clear();
+      for (Iterator it = printerNames.iterator(); it.hasNext();) {
+         ObjectName printer = (ObjectName) it.next();
+         String aet = printer.getKeyProperty("aet");
+         if (aet == null || aet.length() == 0) {
+            throw new IllegalArgumentException(
+               "Missing aet property in printer object name - " + printer);
+         }
+         if (printerMap.containsKey(aet)) {
+            throw new IllegalArgumentException(
+               "Duplicate printer aet - " + aet);
+         }
+         printerMap.put(aet, printer);
+      }
+   }
+
+   private void addNotificationListeners()
+      throws Exception
+   {
+      for (Iterator it = printerMap.values().iterator(); it.hasNext();) {
+         ObjectName printer = (ObjectName) it.next();
+         server.addNotificationListener(getServiceName(), printer,
+            makeNotificationFilter(
+               PrinterServiceMBean.NOTIF_SCHEDULE_COLOR,
+               PrinterServiceMBean.NOTIF_SCHEDULE_GRAY),
+            null);
+         server.addNotificationListener(printer, printingListener, 
+            makeNotificationFilter(PrinterServiceMBean.NOTIF_PRINTING), null);
+         server.addNotificationListener(printer, doneListener, 
+            makeNotificationFilter(PrinterServiceMBean.NOTIF_DONE), null);
+         server.addNotificationListener(printer, failureListener, 
+            makeNotificationFilter(PrinterServiceMBean.NOTIF_FAILURE), null);
+      }
+   }
+
+   private void removeNotificationListeners()
+      throws Exception
+   {
+      for (Iterator it = printerMap.values().iterator(); it.hasNext();) {
+         ObjectName printer = (ObjectName) it.next();
+         server.removeNotificationListener(getServiceName(), printer);
+         server.removeNotificationListener(printer, printingListener);
+         server.removeNotificationListener(printer, doneListener);
+         server.removeNotificationListener(printer, failureListener);
+      }
+   }
+   
+   private void bindServices() {
+      DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
       services.bind(UIDs.BasicFilmSession, filmSessionService);
       services.bind(UIDs.BasicFilmBoxSOP, filmBoxService);
       services.bind(UIDs.BasicColorImageBox, imageBoxService);
       services.bind(UIDs.BasicGrayscaleImageBox, imageBoxService);
       services.bind(UIDs.Printer, printerService);
       services.bind(UIDs.PresentationLUT, plutService);
-      policy = dcmHandler.getAcceptorPolicy();
-      policy.putPresContext(UIDs.BasicGrayscalePrintManagement, ts_uids);
-      if (isSupported("SupportsColor")) {
-         policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
-      }
-      if (isSupported("SupportsPresentationLUT")) {
-         policy.putPresContext(UIDs.PresentationLUT, ts_uids);
-      }
    }
    
-   public void stopService()
-      throws Exception
-   {
-      policy.putPresContext(UIDs.BasicGrayscalePrintManagement, null);
-      policy.putPresContext(UIDs.BasicColorPrintManagement, null);
-      policy.putPresContext(UIDs.PresentationLUT, null);
-      policy = null;
+   private void unbindServices() {
+      DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
       services.unbind(UIDs.BasicFilmSession);
       services.unbind(UIDs.BasicFilmBoxSOP);
       services.unbind(UIDs.BasicColorImageBox);
       services.unbind(UIDs.BasicGrayscaleImageBox);
       services.unbind(UIDs.Printer);
       services.unbind(UIDs.PresentationLUT);
-      services = null;
+   }
+
+   
+   private void enableServices()
+      throws Exception
+   {
+      AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
+      for (Iterator it = printerMap.keySet().iterator(); it.hasNext();) {
+         String aet = (String) it.next();
+         policy.putPolicyForCalledAET(aet, makeAcceptorPolicy(aet));
+         log.info("Enabled Print Service with AET: " + aet);
+      }
+   }
+   
+   private AcceptorPolicy makeAcceptorPolicy(String aet)
+      throws Exception
+   {
+      AcceptorPolicy policy = asf.newAcceptorPolicy();
+      if (getBooleanPrinterAttribute(aet, "SupportsGrayscale")) {
+         policy.putPresContext(UIDs.BasicGrayscalePrintManagement, ts_uids);
+         if (getBooleanPrinterAttribute(aet, "SupportsPresentationLUT")) {
+            policy.putPresContext(UIDs.PresentationLUT, ts_uids);
+         }
+      }
+      if (getBooleanPrinterAttribute(aet, "SupportsColor")) {
+         policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
+      }
+//      if (getBooleanPrinterAttribute(aet, "SupportsAnnotationBox")) {
+//         policy.putPresContext(UIDs.BasicAnnotationBox, ts_uids);
+//      }
+      return policy;
+   }
+
+   private void disableServices() {
+      AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
+      for (Iterator it = printerMap.keySet().iterator(); it.hasNext();) {
+         String aet = (String) it.next();
+         policy.putPolicyForCalledAET(aet, null);
+         log.info("Disabled Print Service with AET: " + aet);
+      }
+   }
+   
+   public void stopService()
+      throws Exception
+   {
+      disableServices();
+      unbindServices();
+      removeNotificationListeners();
       dcmHandler = null;
-      
-      server.removeNotificationListener(getServiceName(), printer);
-      server.removeNotificationListener(printer, printingListener);
-      server.removeNotificationListener(printer, doneListener);
-      server.removeNotificationListener(printer, failureListener);
-      
       if (!keepSpoolFiles) {
          cleardir(spoolDir);
       }
-   }
-   
-   
+   }      
    
    // Package protected ---------------------------------------------
-   String getCSorDefConfig(Dataset ds, int tag, String configAttr)
-      throws DcmServiceException
-   {
-      String val = ds.getString(tag);
-      if (val == null) {
-         ds.putCS(tag, val = getStringConfigParam(configAttr));
-         log.info("set defualt: " + val);
-      }
-      return val;
-   }
-
-   int getUSorDefConfig(Dataset ds, int tag, String configAttr)
-      throws DcmServiceException
-   {
-      Integer val = ds.getInteger(tag);
-      if (val == null) {
-         int defVal = getIntConfigParam(configAttr);
-         ds.putUS(tag, defVal);
-         return defVal;
-      }
-      return val.intValue();
-   }
    
-   String checkAttributeValue(String test, String val)
+   String checkAttributeValue(String aet, String test, String val, boolean type1)
       throws DcmServiceException
    {
-      if (val != null) {
-         Boolean flag = (Boolean) invokeOnConfig(test,
-            new Object[]{ val },
-            new String[]{ "java.lang.String" });
-         if (!flag.booleanValue()) {
-            throw new DcmServiceException(Status.InvalidAttributeValue);
+      if (val == null) {
+         if (type1) {
+            throw new DcmServiceException(Status.MissingAttributeValue);
          }
+         return null;
       }
-      return val;
+      try {
+         if (invokeBooleanOnPrinter(aet, test,
+               new Object[]{ val },
+               new String[]{ String.class.getName() }))
+         {
+            return val;
+         }
+      } catch (Exception e) {
+         log.error("Failed to checkAttributeValue " + test, e);
+         throw new DcmServiceException(Status.ProcessingFailure);
+      }
+      throw new DcmServiceException(Status.InvalidAttributeValue);
    }
 
-   String checkImageDisplayFormat(String val, String orientation)
+   String checkImageDisplayFormat(String aet, String val, String orientation)
       throws DcmServiceException
    {
       if (val == null) {
          throw new DcmServiceException(Status.MissingAttributeValue);
       }
-      Boolean flag = (Boolean) invokeOnConfig("isSupportsDisplayFormat",
-         new Object[]{ val, orientation },
-         new String[]{"java.lang.String", "java.lang.String"});
-      if (!flag.booleanValue()) {
-         throw new DcmServiceException(Status.InvalidAttributeValue);
+      try {
+         if (orientation == null) {
+            orientation = 
+               (String) getPrinterAttribute(aet, "DefaultFilmOrientation");
+         }
+         if (invokeBooleanOnPrinter(aet, "isSupportsDisplayFormat",
+               new Object[]{ val, orientation },
+               new String[]{ String.class.getName(), String.class.getName() }))
+         {
+            return val;
+         }
+      } catch (Exception e) {
+         log.error("Failed to checkImageDisplayFormat:", e);
+         throw new DcmServiceException(Status.ProcessingFailure);
       }
-      return val;
+      throw new DcmServiceException(Status.InvalidAttributeValue);
    }
 
-   private boolean isSupported(String attribute) throws Exception {
-      Boolean b = (Boolean) server.getAttribute(printer, attribute);
+   private Object getPrinterAttribute(String aet, String attribute)
+      throws Exception
+   {
+      ObjectName printer = (ObjectName) printerMap.get(aet);
+      if (printer == null) {
+         throw new IllegalArgumentException("No printer with aet: " + aet);
+      }
+      return server.getAttribute(printer, attribute);
+   }
+
+   private boolean getBooleanPrinterAttribute(String aet, String attribute)
+      throws Exception
+   {
+      Boolean b = (Boolean) getPrinterAttribute(aet, attribute);
       return b.booleanValue();
    }
 
-   String getStringConfigParam(String attribute) throws DcmServiceException {
-      try {
-         return (String) server.getAttribute(printer, attribute);
-      } catch (Exception e) {
-         log.error("Failed to access attribute " + attribute
-            + " of " + printer, e);
-         throw new DcmServiceException(Status.ProcessingFailure, 
-            "Internal JMX Access Error");
-      }
-   }
-
-   int getIntConfigParam(String attribute) throws DcmServiceException {
-      try {
-         Integer i =
-            (Integer) server.getAttribute(printer, attribute);
-         return i.intValue();
-      } catch (Exception e) {
-         log.error("Failed to access attribute " + attribute
-            + " of " + printer, e);
-         throw new DcmServiceException(Status.ProcessingFailure, 
-            "Internal JMX Access Error");
-      }
-   }
-      
-   Object invokeOnConfig(String methode, Object[] arg, String[] type)
-      throws DcmServiceException
+   private int getIntPrinterAttribute(String aet, String attribute)
+      throws Exception
    {
-      try {
-         return server.invoke(printer, methode, arg, type);
-      } catch (Exception e) {
-         log.error("Failed to invoke " + methode
-            + " of " + printer, e);
-         throw new DcmServiceException(Status.ProcessingFailure, 
-            "Internal JMX Access Error");
+      Integer i = (Integer) getPrinterAttribute(aet, attribute);
+      return i.intValue();
+   }
+   
+   boolean invokeBooleanOnPrinter(String aet, String methode,
+         Object[] arg, String[] type)
+      throws Exception
+   {
+      ObjectName printer = (ObjectName) printerMap.get(aet);
+      if (printer == null) {
+         throw new IllegalArgumentException("No printer with aet: " + aet);
       }
+      Boolean b = (Boolean) server.invoke(printer, methode, arg, type);
+      return b.booleanValue();
    }
        
    FilmSession getFilmSession(ActiveAssociation as) {
@@ -583,14 +637,15 @@ public class PrintScpService
       {
          Dataset result = dof.newDataset();
          try {
+            String aet = as.getAssociation().getCalledAET();
             result.putCS(Tags.PrinterStatus,
-               (String)server.getAttribute(printer, "Status"));
+               (String) getPrinterAttribute(aet, "Status"));
             result.putCS(Tags.PrinterStatusInfo,
-               (String)server.getAttribute(printer, "StatusInfo"));
+               (String) getPrinterAttribute(aet, "StatusInfo"));
             result.putDA(Tags.DateOfLastCalibration,
-               (String)server.getAttribute(printer, "DateOfLastCalibration"));
+               (String) getPrinterAttribute(aet, "DateOfLastCalibration"));
             result.putTM(Tags.TimeOfLastCalibration,
-               (String)server.getAttribute(printer, "TimeOfLastCalibration"));
+               (String) getPrinterAttribute(aet, "TimeOfLastCalibration"));
          } catch (Exception e) {
             log.error("Failed to access printer status", e);
             throw new DcmServiceException(Status.ProcessingFailure, 

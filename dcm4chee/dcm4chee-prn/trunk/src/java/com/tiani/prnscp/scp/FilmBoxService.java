@@ -82,6 +82,7 @@ class FilmBoxService extends DcmServiceBase
       throws IOException, DcmServiceException 
    {
       try {
+         String aet = as.getAssociation().getCalledAET();
          String uid = rspCmd.getAffectedSOPInstanceUID();
          Dataset ds = rq.getDataset(); // read out dataset
          scp.getLog().info("Creating Film Box[uid=" + uid + "]");         
@@ -93,7 +94,7 @@ class FilmBoxService extends DcmServiceBase
          }
          addRefImageBox(ds, session.getImageBoxCUID());
          session.addFilmBox(uid, 
-            new FilmBox(scp, uid, ds, rspCmd, pluts, session.getAttributes()));
+            new FilmBox(scp, aet, uid, ds, pluts, session.getAttributes()));
          scp.getLog().info("Created Film Box[uid=" + uid + "]");         
          return ds;
       } catch (DcmServiceException e) {
@@ -169,7 +170,7 @@ class FilmBoxService extends DcmServiceBase
             throw new DcmServiceException(Status.NoSuchObjectInstance);
          }
          FilmBox film = session.getCurrentFilmBox();
-         film.updateAttributes(ds, rspCmd, pluts, session.getAttributes());
+         film.updateAttributes(ds, pluts, session.getAttributes());
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to update Basic Film Box SOP Instance", e);
