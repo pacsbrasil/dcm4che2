@@ -38,7 +38,7 @@ public class MWLFilter {
 	/** The Date/Time formatter to parse input field values. */
 	private static final SimpleDateFormat dFormatter = new SimpleDateFormat("yyyy/MM/dd");
 	/** The Date/Time formatter to parse input field values. */
-	private static final SimpleDateFormat dtFormatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	private static final SimpleDateFormat dtFormatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 	
 	
 	public MWLFilter() {
