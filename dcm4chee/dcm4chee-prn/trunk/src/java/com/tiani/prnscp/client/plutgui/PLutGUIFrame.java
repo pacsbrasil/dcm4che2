@@ -1,10 +1,8 @@
 package com.tiani.prnscp.client.plutgui;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 import java.io.*;
 
 import org.apache.log4j.*;

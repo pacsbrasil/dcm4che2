@@ -64,8 +64,8 @@ public class PLutPanel extends JPanel
     //histo stuff
     private final int NUM_BINS = 100;
     private int[] histo = new int[NUM_BINS];
-    private int binMin = 1;//raw min
-    private int binMax = 1024;//raw max
+    private int binMin = 1;    //raw min
+    private int binMax = 1024; //raw max
     private int binRange = binMax - binMin;//raw range of histo
     private int histoMax = 0;
 
@@ -228,31 +228,31 @@ public class PLutPanel extends JPanel
             drawHisto(g2);
             drawPLut(g2);
             g2.setColor(Color.WHITE);
-            g2.fillRect(10, 10, 100, 30);
+            g2.fillRect(10, 10, 100, 34);
             g2.setColor(Color.BLACK);
-            g2.drawRect(10, 10, 100, 30);
-            g2.setClip(10, 10, 100, 30);
+            g2.drawRect(10, 10, 100, 34);
+            g2.setClip(10, 10, 100, 34);
             g2.setColor(
                     (changingParam & CHANGING_CENTER) != 0
                      ? Color.RED
                      : Color.BLACK);
             g2.drawString(
                     "Center = " + numFormat.format(builder.getCenter()),
-                    10, 20);
+                    12, 22);
             g2.setColor(
                     (changingParam & CHANGING_SLOPE) != 0
                      ? Color.RED
                      : Color.BLACK);
             g2.drawString(
                     "Slope = " + numFormat.format(builder.getSlope()),
-                    10, 30);
+                    12, 32);
             g2.setColor(
                     (changingParam & CHANGING_GAMMA) != 0
                      ? Color.RED
                      : Color.BLACK);
             g2.drawString(
                     "Gamma = " + numFormat.format(builder.getGamma()),
-                    10, 40);
+                    12, 42);
             g2.setClip(0, 0, getWidth(), getHeight());
         }
     }
@@ -268,6 +268,12 @@ public class PLutPanel extends JPanel
         return samples;
     }
 
+    void clearHisto()
+    {
+        histoMax = 0;
+        for (int i = 0; i < histo.length; i++)
+            histo[i] = 0;
+    }
 
     void buildHisto()
     {
@@ -276,10 +282,13 @@ public class PLutPanel extends JPanel
         int val;
         float x;
 
-        samples = getSamples();//guaranteed not to be null since this is called by imgPanel
+        //get image samples. these are guaranteed not to be null since this
+        // is called by imgPanel
+        samples = getSamples();
         if (samples.length == 0) {
             return;
         }
+        //find min/max of samples for histogram min/max range
         binMin = binMax = samples[0];
         for (int i = 1; i < samples.length; i++) {
             if (binMin > samples[i]) {
@@ -289,10 +298,13 @@ public class PLutPanel extends JPanel
             }
         }
         binRange = binMax - binMin;
+        //clear histogram
+        clearHisto();
+        //calculate histogram
         for (int i = 0; i < samples.length; i++) {
             if (samples[i] >= binMin && samples[i] <= binMax) {
-                x = (samples[i] - binMin) / (float) binRange;//x in [0..1]
-                val = ++histo[(int) (x * (NUM_BINS - 1) + 0.5)];//put in closest bin
+                x = (samples[i] - binMin) / (float) binRange;  //x in [0..1]
+                val = ++histo[(int) (x * (NUM_BINS - 1) + 0.5)];  //put in closest bin
                 if (histoMax < val) {
                     histoMax = val;
                 }
@@ -334,10 +346,11 @@ public class PLutPanel extends JPanel
         int curveColor;
         ColorModel cm = imgPanel.getBI().getColorModel();
 
-        //g.setColor(new Color(100,250,250));
         float f = (float) binRange / (NUM_BINS - 1);
         for (int i = 0; i < NUM_BINS; i++) {
+            int index;
             curveColor = cm.getRGB((int) (i * f + 0.5) + binMin);
+            //System.out.println("ind="+index);
             g.setColor(Color.BLACK);
             g.drawRect(
                     0,
@@ -359,17 +372,23 @@ public class PLutPanel extends JPanel
 
     private void drawPLut(Graphics2D g)
     {
+        //get window min/max in pixel units
+        final int winMin = imgPanel.getWindowMin();
+        final int winMax = imgPanel.getWindowMax();
         final float fx = (float) (getWidth() - 1) / 255f;
-        final float fy = (float) (getHeight() - 1) / (float) (plut.length - 1);
+        final float y0 = (float)((getHeight() - 1) * (winMin - binMin))
+                         / (binMax - binMin);
+        //final float fy = (float) (getHeight() - 1) / (float) (plut.length - 1);
+        final float fy = (float)((getHeight() - 1) * (winMax - winMin))
+                         / (binMax - binMin);
         int lastx = 0;
         int lasty = 0;
-        int x;
-        int y;
+        int x, y;
 
         //g.setStroke(new BasicStroke(2,BasicStroke.CAP_BUTT,BasicStroke.JOIN_BEVEL,0));
         for (int i = 0; i < plut.length; i++) {
             x = (int) ((plut[i] < 0 ? plut[i] + 256 : plut[i]) * fx);
-            y = (int) (i * fy);
+            y = (int) (i * fy + y0 + 0.5f);
             g.setColor(Color.BLACK);
             //g.drawLine(lastx, lasty-2, x, y-2);
             g.drawLine(lastx, lasty - 1, x, y - 1);
