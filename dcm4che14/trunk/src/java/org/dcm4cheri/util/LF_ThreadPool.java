@@ -122,7 +122,7 @@ public class LF_ThreadPool
    
    public void join()
    {
-      log.info("Thread: " + Thread.currentThread().getName() + " JOIN ThreadPool " + name);
+      log.debug("Thread: " + Thread.currentThread().getName() + " JOIN ThreadPool " + name);
       try {
 	      while (!shutdown && (running == 0 || maxWaiting == -1 || waiting < maxWaiting)
 	              && (maxRunning == 0 || (waiting + running) < maxRunning))
@@ -163,7 +163,7 @@ public class LF_ThreadPool
 	         } finally { --running; }
 	      }
       } finally {
-          log.info("Thread: " + Thread.currentThread().getName() + " LEFT ThreadPool " + name);
+          log.debug("Thread: " + Thread.currentThread().getName() + " LEFT ThreadPool " + name);
       }
    }
    
