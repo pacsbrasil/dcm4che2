@@ -32,6 +32,8 @@ import java.io.InputStream;
  */
 public interface PDataTF extends PDU {
 
+    public static final int DEF_MAX_PDU_LENGTH = 16352;
+
     public PDV readPDV();
 
     public int free();

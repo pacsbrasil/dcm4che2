@@ -31,6 +31,7 @@ import org.dcm4che.net.PresContext;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDUException;
+import org.dcm4che.net.PDataTF;
 import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 
@@ -56,7 +57,7 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
     
     private String appCtxUID = UIDs.DICOMApplicationContextName;
     private int version = 1;
-    private int maxLength = DEFAULT_MAX_LENGTH;
+    private int maxLength = PDataTF.DEF_MAX_PDU_LENGTH;
     private String callingAET = "ANONYMOUS";
     private String calledAET = "ANONYMOUS";
     private String implClassUID = Implementation.getClassUID();
@@ -210,11 +211,11 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         this.implVers = name != null ? StringUtils.checkAET(name) : null;
     }
 
-    public final int getMaxLength() {
+    public final int getMaxPDULength() {
         return maxLength;
     }
 
-    public final void setMaxLength(int maxLength) {
+    public final void setMaxPDULength(int maxLength) {
         if (maxLength < 0) {
             throw new IllegalArgumentException("maxLength:" + maxLength);
         }

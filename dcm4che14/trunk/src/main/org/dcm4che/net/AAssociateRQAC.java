@@ -31,8 +31,6 @@ import java.util.Collection;
  * @version 1.0.0
  */
 public interface AAssociateRQAC extends PDU {
-
-    public static final int DEFAULT_MAX_LENGTH = 16352;
     
     /** Returns Protocol-Version.
      * @return Protocol-Version. */    
@@ -140,14 +138,14 @@ public interface AAssociateRQAC extends PDU {
 
     /** Returns maximum size for received PDUs.
      * Default = 16352.
-     * @see #setMaxLength
+     * @see #setMaxPDULength
      * @return maximum size for received PDUs */    
-    public int getMaxLength();
+    public int getMaxPDULength();
 
     /** Sets maximum size for received PDUs.
-     * @see #getMaxLength
+     * @see #getMaxPDULength
      * @param maxLength maximum size for received PDUs */    
-    public void setMaxLength(int maxLength);
+    public void setMaxPDULength(int maxLength);
     
     /** Returns Asynchronous Operations Window or
      * <CODE>null</CODE> if no Asynchronous Operations Windo shall be negotiated.

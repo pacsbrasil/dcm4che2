@@ -32,6 +32,7 @@ import org.dcm4che.net.AsyncOpsWindow;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.ExtNegotiator;
+import org.dcm4che.net.PDataTF;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.dict.UIDs;
 
@@ -41,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.prefs.Preferences;
 
 /**
  * Defines association acceptance/rejection behavior.
@@ -61,7 +63,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------   
-   private int maxLength = AAssociateAC.DEFAULT_MAX_LENGTH;
+   private int maxLength = PDataTF.DEF_MAX_PDU_LENGTH;
    
    private AsyncOpsWindow aow = null;
 
@@ -97,7 +99,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy
    // Public --------------------------------------------------------
       
    // AcceptorPolicy implementation ---------------------------------
-   public void setReceivedPDUMaxLength(int maxLength)
+   public void setMaxPDULength(int maxLength)
    {
       if (maxLength < 0)
          throw new IllegalArgumentException("maxLength:" + maxLength);
@@ -105,7 +107,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy
       this.maxLength = maxLength;
    }
 
-   public int getReceivedPDUMaxLength()
+   public int getMaxPDULength()
    {
         return maxLength;
    }
@@ -115,6 +117,11 @@ class AcceptorPolicyImpl implements AcceptorPolicy
       return aow;
    }
         
+   public void setAsyncOpsWindow(int maxOpsInvoked, int maxOpsPerformed)
+   {
+      this.aow = new AsyncOpsWindowImpl(maxOpsInvoked, maxOpsPerformed);
+   }
+
    public void setAsyncOpsWindow(AsyncOpsWindow aow)
    {
       this.aow = aow;
@@ -160,7 +167,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy
 
    public boolean removeCalledAET(String aet)
    {
-      return calledAETs.remove(aet);
+      return calledAETs != null && calledAETs.remove(aet);
    }
 
    public void setCalledAETs(String[] aets)
@@ -189,7 +196,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy
 
    public boolean removeCallingAET(String aet)
    {
-      return callingAETs.remove(aet);
+      return callingAETs != null && callingAETs.remove(aet);
    }
    
    public void setCallingAETs(String[] aets)
@@ -341,7 +348,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy
       ac.setApplicationContext(appCtx);
       ac.setCalledAET(rq.getCalledAET());
       ac.setCallingAET(rq.getCallingAET());
-      ac.setMaxLength(this.maxLength);
+      ac.setMaxPDULength(this.maxLength);
       ac.setImplClassUID(this.implClassUID);
       ac.setImplVersionName(this.implVers);
       ac.setAsyncOpsWindow(negotiateAOW(rq.getAsyncOpsWindow()));
@@ -441,5 +448,6 @@ class AcceptorPolicyImpl implements AcceptorPolicy
    {
       return a == 0 ? b : b == 0 ? a : Math.min(a,b);
    }
+   
    // Inner classes -------------------------------------------------
 }

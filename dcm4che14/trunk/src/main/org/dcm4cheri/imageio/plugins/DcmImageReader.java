@@ -229,9 +229,14 @@ public class DcmImageReader extends javax.imageio.ImageReader {
             return;
         }
         
-        if (frameLength !=  width * height * (alloc >> 3)) {
-            throw new DcmValueException("Invalid Length of Pixel Data: "
-                + rLen);
+        int delta = frameLength - width * height * (alloc >> 3);
+        if (delta != 0) {
+           if (delta < 0) {
+               throw new DcmValueException("Invalid Length of Pixel Data: "
+                   + rLen);
+           }
+           System.err.println(
+               "Warning: Pixel Data too long. Try to read anyway");
         }
     }
     

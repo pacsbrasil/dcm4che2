@@ -37,69 +37,69 @@ package org.dcm4che.net;
  * </ul>
  */
 public interface AcceptorPolicy
-{   
-   public void setReceivedPDUMaxLength(int maxLength);
+{
+   void setMaxPDULength(int maxLength);
    
-   public int getReceivedPDUMaxLength();
+   int getMaxPDULength();
    
-   public AsyncOpsWindow getAsyncOpsWindow();
+   AsyncOpsWindow getAsyncOpsWindow();
     
-   public void setAsyncOpsWindow(AsyncOpsWindow aow);
+   void setAsyncOpsWindow(int maxOpsInvoked, int maxOpsPerformed);
    
-   public void setImplClassUID(String implClassUID);
+   void setAsyncOpsWindow(AsyncOpsWindow aow);
+   
+   void setImplClassUID(String implClassUID);
 
-   public String getImplClassUID();
+   String getImplClassUID();
    
-   public void setImplVersionName(String implVers);
+   void setImplVersionName(String implVers);
    
-   public String getImplVersionName();
+   String getImplVersionName();
    
-   public String putApplicationContextName(String proposed, String returned);
+   String putApplicationContextName(String proposed, String returned);
    
-   public boolean addCalledAET(String aet);
+   boolean addCalledAET(String aet);
 
-   public boolean removeCalledAET(String aet);
+   boolean removeCalledAET(String aet);
 
-   public void setCalledAETs(String[] aets);
+   void setCalledAETs(String[] aets);
    
-   public String[] getCalledAETs();
+   String[] getCalledAETs();
    
-   public boolean addCallingAET(String aet);
+   boolean addCallingAET(String aet);
 
-   public boolean removeCallingAET(String aet);
+   boolean removeCallingAET(String aet);
    
-   public void setCallingAETs(String[] aets);
+   void setCallingAETs(String[] aets);
    
-   public String[] getCallingAETs();
+   String[] getCallingAETs();
    
-   public AcceptorPolicy addPolicyForCalledAET(String aet,
-         AcceptorPolicy policy);
+   AcceptorPolicy addPolicyForCalledAET(String aet, AcceptorPolicy policy);
    
-   public AcceptorPolicy getPolicyForCalledAET(String aet);
+   AcceptorPolicy getPolicyForCalledAET(String aet);
    
-   public AcceptorPolicy addPolicyForCallingAET(String aet,
-         AcceptorPolicy policy);
+   AcceptorPolicy addPolicyForCallingAET(String aet, AcceptorPolicy policy);
 
-   public AcceptorPolicy getPolicyForCallingAET(String aet);
+   AcceptorPolicy getPolicyForCallingAET(String aet);
 
-   public PresContext addPresContext(String asuid, String[] tsuids);
+   PresContext addPresContext(String asuid, String[] tsuids);
 
-   public PresContext getPresContext(String as);
+   PresContext getPresContext(String as);
 
-   public PresContext removePresContext(String as);
+   PresContext removePresContext(String as);
       
-   public RoleSelection addRoleSelection(RoleSelection rs);
+   RoleSelection addRoleSelection(RoleSelection rs);
    
-   public RoleSelection getRoleSelection(String uid);
+   RoleSelection getRoleSelection(String uid);
 
-   public RoleSelection removeRoleSelection(String uid);
+   RoleSelection removeRoleSelection(String uid);
 
-   public ExtNegotiator addExtNegPolicy(String uid, ExtNegotiator en);
+   ExtNegotiator addExtNegPolicy(String uid, ExtNegotiator en);
    
-   public ExtNegotiator getExtNegPolicy(String uid);
+   ExtNegotiator getExtNegPolicy(String uid);
 
-   public ExtNegotiator removeExtNegPolicy(String uid);
+   ExtNegotiator removeExtNegPolicy(String uid);
    
-   public PDU negotiate(AAssociateRQ rq);
+   PDU negotiate(AAssociateRQ rq);
   
 }

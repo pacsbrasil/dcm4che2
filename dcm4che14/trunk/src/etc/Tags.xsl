@@ -78,6 +78,15 @@ public class Tags {
         return sb;
     }
 
+    public static final int forName(String name)
+    throws NoSuchFieldException {
+       try {
+          return UIDs.class.getField(name).getInt(null);
+       } catch (IllegalAccessException e) {
+          throw new Error(e);
+       }
+    }
+
     public static String toHexString(int v, int l) {
         return toHexString(new StringBuffer(l),v,l).toString();
     }

@@ -129,14 +129,14 @@ final class FsmImpl {
       if (ac == null || rq == null) {
          throw new IllegalStateException(state.toString());
       }
-      return requestor ? ac.getMaxLength() : rq.getMaxLength();
+      return requestor ? ac.getMaxPDULength() : rq.getMaxPDULength();
    }
    
    final int getReadMaxLength() {
       if (ac == null || rq == null) {
          throw new IllegalStateException(state.toString());
       }
-      return requestor ? rq.getMaxLength() : ac.getMaxLength();
+      return requestor ? rq.getMaxPDULength() : ac.getMaxPDULength();
    }
    
    final String getAcceptedTransferSyntaxUID(int pcid) {

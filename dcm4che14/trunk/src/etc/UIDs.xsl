@@ -66,9 +66,18 @@ package org.dcm4che.dict;
  */
 public class UIDs {
 
-    /** Private constructor */
-    private UIDs() {
+  /** Private constructor */
+  private UIDs() {
+  }
+
+  public static final String forName(String name)
+  throws NoSuchFieldException {
+    try {
+      return (String)UIDs.class.getField(name).get(null);
+    } catch (IllegalAccessException e) {
+      throw new Error(e);
     }
+  }    
 
 </xsl:text>
 <xsl:apply-templates select="dictionary/uids/uid"/>
@@ -76,9 +85,9 @@ public class UIDs {
 </xsl:template>
 
 <xsl:template match="uid">
-<xsl:text>    /** </xsl:text><xsl:value-of select="../@type"/>
+<xsl:text>  /** </xsl:text><xsl:value-of select="../@type"/>
 <xsl:text>: </xsl:text><xsl:value-of select="@name"/><xsl:text> */
-    public static final String </xsl:text><xsl:value-of select="@key"/>
+  public static final String </xsl:text><xsl:value-of select="@key"/>
 <xsl:text> = "</xsl:text><xsl:value-of select="@value"/>
 <xsl:text>";
 

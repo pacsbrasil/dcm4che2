@@ -43,10 +43,13 @@ import java.io.OutputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.text.MessageFormat;
-import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.PropertyResourceBundle;
+import java.util.Properties;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.security.GeneralSecurityException;
@@ -71,93 +74,7 @@ import gnu.getopt.LongOpt;
  */
 public class DcmRcv extends DcmServiceBase {
    // Constants -----------------------------------------------------
-   private static final int SUCCESS = 0x0000;
-   
-   private static final String[] IMAGE_SOP_CLASS_UIDs = {
-      UIDs.HardcopyGrayscaleImageStorage,
-      UIDs.HardcopyColorImageStorage,
-      UIDs.ComputedRadiographyImageStorage,
-      UIDs.DigitalXRayImageStorageForPresentation,
-      UIDs.DigitalXRayImageStorageForProcessing,
-      UIDs.DigitalMammographyXRayImageStorageForPresentation,
-      UIDs.DigitalMammographyXRayImageStorageForProcessing,
-      UIDs.DigitalIntraoralXRayImageStorageForPresentation,
-      UIDs.DigitalIntraoralXRayImageStorageForProcessing,
-      UIDs.CTImageStorage,
-      UIDs.UltrasoundMultiframeImageStorageRetired,
-      UIDs.UltrasoundMultiframeImageStorage,
-      UIDs.MRImageStorage,
-      UIDs.EnhancedMRImageStorage,
-      UIDs.MRSpectroscopyStorage,
-      UIDs.NuclearMedicineImageStorageRetired,
-      UIDs.UltrasoundImageStorageRetired,
-      UIDs.UltrasoundImageStorage,
-      UIDs.SecondaryCaptureImageStorage,
-      UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
-      UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
-      UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
-      UIDs.MultiframeColorSecondaryCaptureImageStorage,
-      UIDs.XRayAngiographicImageStorage,
-      UIDs.XRayRadiofluoroscopicImageStorage,
-      UIDs.XRayAngiographicBiPlaneImageStorageRetired,
-      UIDs.NuclearMedicineImageStorage,
-      UIDs.VLImageStorageRetired,
-      UIDs.VLMultiframeImageStorageRetired,
-      UIDs.VLEndoscopicImageStorage,
-      UIDs.VLMicroscopicImageStorage,
-      UIDs.VLSlideCoordinatesMicroscopicImageStorage,
-      UIDs.VLPhotographicImageStorage,
-      UIDs.PositronEmissionTomographyImageStorage,
-      UIDs.RTImageStorage,
-   };
-   
-   private static final String[] OTHER_STORAGE_SOP_CLASS_UIDs = {
-      UIDs.BasicStudyContentNotification,
-      UIDs.StoredPrintStorage,
-      UIDs.StandaloneOverlayStorage,
-      UIDs.StandaloneCurveStorage,
-      UIDs.TwelveLeadECGWaveformStorage,
-      UIDs.GeneralECGWaveformStorage,
-      UIDs.AmbulatoryECGWaveformStorage,
-      UIDs.HemodynamicWaveformStorage,
-      UIDs.CardiacElectrophysiologyWaveformStorage,
-      UIDs.BasicVoiceAudioWaveformStorage,
-      UIDs.StandaloneModalityLUTStorage,
-      UIDs.StandaloneVOILUTStorage,
-      UIDs.GrayscaleSoftcopyPresentationStateStorage,
-      UIDs.RawDataStorage,
-      UIDs.BasicTextSR,
-      UIDs.EnhancedSR,
-      UIDs.ComprehensiveSR,
-      UIDs.MammographyCADSR,
-      UIDs.KeyObjectSelectionDocument,
-      UIDs.StandalonePETCurveStorage,
-      UIDs.RTDoseStorage,
-      UIDs.RTStructureSetStorage,
-      UIDs.RTBeamsTreatmentRecordStorage,
-      UIDs.RTTreatmentSummaryRecordStorage,
-   };
-   
-   private static final String[] NATIVE_TS_UIDs = {
-      UIDs.ExplicitVRLittleEndian,
-      UIDs.ExplicitVRBigEndian,
-      UIDs.ImplicitVRLittleEndian,
-   };
-   
-   private static final String[] SUPPORTED_TS_UIDs = {
-      UIDs.JPEGBaseline,
-      UIDs.JPEGExtended,
-      UIDs.JPEGLossless14,
-      UIDs.JPEGLossless,
-      UIDs.JPEGLSLossless,
-      UIDs.JPEGLSLossy,
-      UIDs.JPEG2000Lossless,
-      UIDs.JPEG2000Lossy,
-      UIDs.RLELossless,
-      UIDs.ExplicitVRLittleEndian,
-      UIDs.ExplicitVRBigEndian,
-      UIDs.ImplicitVRLittleEndian,
-   };
+   private static final int SUCCESS = 0x0000;   
    
    // Attributes ----------------------------------------------------
    private static ResourceBundle messages = ResourceBundle.getBundle(
@@ -175,111 +92,82 @@ public class DcmRcv extends DcmServiceBase {
    private int bufferSize = 2048;
    private byte[] buffer = null;
    private File dir = null;
-   private long delay = 0L;
-   
-   
+   private long rspDelay = 0L;
+      
    // Static --------------------------------------------------------
+   private static final LongOpt[] LONG_OPTS = new LongOpt[] {
+      new LongOpt("called-aets", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("calling-aets", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("rsp-delay", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 0),
+      new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
+      new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
+   };
+   
    public static void main(String args[]) throws Exception {
-      LongOpt[] longopts = new LongOpt[] {
-         new LongOpt("async", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
-         new LongOpt("delay", LongOpt.REQUIRED_ARGUMENT, null, 'd'),
-         new LongOpt("tls", LongOpt.NO_ARGUMENT, null, 's'),
-         new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 'b'),
-         new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 'L'),
-         new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
-         new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
-      };
-      Getopt g = new Getopt("dcmrcv", args, "", longopts, true);
+      Getopt g = new Getopt("dcmrcv", args, "", LONG_OPTS);
       
-      DcmRcv dcmrcv = new DcmRcv();
-      String num = null;
+      Properties cfg = loadConfig();
       int c;
-      try {
-         while ((c = g.getopt()) != -1) {
-            switch (c) {
-               case 'a':
-                  dcmrcv.policy.setAsyncOpsWindow(
-                        fact.newAsyncOpsWindow(
-                           Integer.parseInt(num = g.getOptarg()), 1));
-                  break;
-               case 's':
-                  dcmrcv.initTLS();
-                  break;
-               case 'L':
-                  dcmrcv.policy.setReceivedPDUMaxLength(
-                        Integer.parseInt(num = g.getOptarg()));
-                  break;
-               case 'd':
-                  dcmrcv.delay = Integer.parseInt(num = g.getOptarg()) * 1000L;
-                  break;
-               case 'b':
-                  dcmrcv.bufferSize =
-                     Integer.parseInt(num = g.getOptarg()) & 0xfffffffe;
-                  break;
-               case 'v':
-                  exit(messages.getString("version"), false);
-               case 'h':
-                  exit(messages.getString("usage"), false);
-               case '?':
-                  exit(null, true);
-                  break;
-            }
-         }
-         int optind = g.getOptind();
-         switch(args.length - optind) {
-            case 2:
-               dcmrcv.dir = new File(args[optind+1]);
-               if (!dcmrcv.dir.exists()) {
-                  if (dcmrcv.dir.mkdirs()) {
-                     System.out.println(
-                     MessageFormat.format(messages.getString("mkdir"),
-                     new Object[]{ dcmrcv.dir }));
-                  } else {
-                     exit(MessageFormat.format(messages.getString("failmkdir"),
-                     new Object[]{ args[optind+1] }), true);
-                  }
-               } else {
-                  if (!dcmrcv.dir.isDirectory())
-                     exit(MessageFormat.format(messages.getString("errdir"),
-                     new Object[]{ args[optind+1] }), true);
-               }
-            case 1:
-               dcmrcv.port = Integer.parseInt(num = args[optind]);
-               break;
+      while ((c = g.getopt()) != -1) {
+         switch (c) {
             case 0:
-               exit(messages.getString("missing"), true);
-            default:
-               exit(messages.getString("many"), true);
+               cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
+               break;
+            case 'v':
+               exit(messages.getString("version"), false);
+            case 'h':
+               exit(messages.getString("usage"), false);
+            case '?':
+               exit(null, true);
+               break;
          }
-      } catch (NumberFormatException nfe) {
-         exit(MessageFormat.format(messages.getString("errnum"),
-               new Object[]{ num }), true);
       }
-      
-      dcmrcv.enable(IMAGE_SOP_CLASS_UIDs, SUPPORTED_TS_UIDs);
-      dcmrcv.enable(OTHER_STORAGE_SOP_CLASS_UIDs, NATIVE_TS_UIDs);
-      dcmrcv.start();
+      int optind = g.getOptind();
+      switch(args.length - optind) {
+         case 0:
+            exit(messages.getString("missing"), true);
+         case 1:
+            cfg.put("port", args[optind]);
+            break;
+         default:
+            exit(messages.getString("many"), true);
+      }
+      listConfig(cfg);
+      try {
+         new DcmRcv(cfg).start();
+      } catch (IllegalArgumentException e) {
+         exit(e.getMessage(), true);
+      }
    }
    
    // Constructors --------------------------------------------------
-   
-   // Public --------------------------------------------------------
-   public void enable(String[] sopClassUIDs, String[] tsUIDs) {
-      for (int i = 0; i < sopClassUIDs.length; ++i) {
-         policy.addPresContext(sopClassUIDs[i], tsUIDs);
-         services.bind(sopClassUIDs[i], this);
-      }
+   DcmRcv(Properties cfg) {
+      port = Integer.parseInt(cfg.getProperty("port"));
+      rspDelay = Integer.parseInt(cfg.getProperty("rsp-delay", "0")) * 1000L;
+      bufferSize = Integer.parseInt(
+            cfg.getProperty("buf-len", "2048")) & 0xfffffffe;
+      initDest(cfg);
+      initTLS(cfg);
+      initPolicy(cfg);
    }
-   
+      
+   // Public --------------------------------------------------------
    public void start() throws GeneralSecurityException, IOException {
       if (bufferSize > 0) {
          buffer = new byte[bufferSize];
       }
       System.out.println(MessageFormat.format(messages.getString("start"),
-      new Object[]{ new Date(), "" + port }));
+            new Object[]{ new Date(), "" + port }));
       if (tls != null) {
-         System.out.println(MessageFormat.format(messages.getString("tls"),
-         new Object[] { Arrays.asList(tls.getEnabledCipherSuites()) }));
          server.start(port, tls.getServerSocketFactory());
       } else {
          server.start(port);
@@ -312,9 +200,9 @@ public class DcmRcv extends DcmServiceBase {
       } finally {
          in.close();
       }
-      if (delay > 0) {
+      if (rspDelay > 0L) {
          try {
-            Thread.sleep(delay);
+            Thread.sleep(rspDelay);
          } catch (InterruptedException ie) {
             ie.printStackTrace();
          }
@@ -327,14 +215,6 @@ public class DcmRcv extends DcmServiceBase {
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   private static void exit(String prompt, boolean error) {
-      if (prompt != null)
-         System.err.println(prompt);
-      if (error)
-         System.err.println(messages.getString("try"));
-      System.exit(1);
-   }
-   
    private void copy(InputStream in, OutputStream out)
    throws IOException {
       if (buffer == null) {
@@ -349,33 +229,140 @@ public class DcmRcv extends DcmServiceBase {
          }
       }
    }
-   
-   private void initTLS() throws GeneralSecurityException, IOException {
-      InputStream in = DcmRcv.class.getResourceAsStream("dcmrcv.tls");
-      ResourceBundle rb;
+      
+   private static Properties loadConfig() {
+      InputStream in = DcmRcv.class.getResourceAsStream("dcmrcv.cfg");
       try {
-         rb = new PropertyResourceBundle(in);
+         Properties retval = new Properties();
+         retval.load(in);
+         return retval;
+      } catch (Exception e) {
+         throw new RuntimeException("Could not read dcmrcv.cfg", e);
       } finally {
-         try { in.close(); } catch (IOException ignore) {}
+         if (in != null) {
+            try { in.close(); } catch (IOException ignore) {}
+         }
       }
-      tls = SSLContextAdapter.getInstance();
-      tls.setEnabledCipherSuites(tokenize(rb.getString("tls.cipher")));
-      char[] keypasswd = rb.getString("tls.key.passwd").toCharArray();
-      tls.setKey(tls.loadKeyStore(
-      DcmRcv.class.getResource(rb.getString("tls.key")), keypasswd),
-      keypasswd);
-      tls.setTrust(tls.loadKeyStore(
-      DcmRcv.class.getResource(rb.getString("tls.cacerts")),
-      rb.getString("tls.cacerts.passwd").toCharArray()));
+   }            
+         
+   private static void listConfig(Properties cfg) {
+      for (int i = 0, n = LONG_OPTS.length - 2; i < n; ++i) {
+         System.out.print(LONG_OPTS[i].getName());
+         System.out.print('=');
+         System.out.println(cfg.getProperty(LONG_OPTS[i].getName(),""));
+      }
+   }
+
+   private static void exit(String prompt, boolean error) {
+      if (prompt != null)
+         System.err.println(prompt);
+      if (error)
+         System.err.println(messages.getString("try"));
+      System.exit(1);
    }
    
-   private String[] tokenize(String s) {
+   private static List tokenize(Properties cfg, String s, List result) {
       StringTokenizer stk = new StringTokenizer(s, ", ");
-      String[] retval = new String[stk.countTokens()];
-      for (int i = 0; i < retval.length; ++i)
-         retval[i] = stk.nextToken();
-      return retval;
+      while (stk.hasMoreTokens()) {
+         String tk = stk.nextToken();
+         if (tk.startsWith("$")) {
+            tokenize(cfg, cfg.getProperty(tk.substring(1),""), result);
+         } else {
+            result.add(tk);
+         }
+      }
+      return result;
    }
    
+   private static final String[] EMPTY_STRING_ARRAY = {};
+   private static String[] tokenize(Properties cfg, String s) {
+      return s != null ? (String[])tokenize(cfg, s, new LinkedList())
+                                       .toArray(EMPTY_STRING_ARRAY)
+                       : null;
+   }
+   
+   private static String replace(String val, String from, String to) {
+      return from.equals(val) ? to : val;
+   }
+   
+   private final void initDest(Properties cfg) {
+      String dest = replace(cfg.getProperty("dest"), "<none>", "");
+      if (dest.length() == 0)
+         return;
+      
+      this.dir = new File(dest);
+      if (!dir.exists()) {
+         if (dir.mkdirs()) {
+            System.out.println(
+            MessageFormat.format(messages.getString("mkdir"),
+            new Object[]{ dir }));
+         } else {
+            exit(MessageFormat.format(messages.getString("failmkdir"),
+            new Object[]{ dest }), true);
+         }
+      } else {
+         if (!dir.isDirectory())
+            exit(MessageFormat.format(messages.getString("errdir"),
+            new Object[]{ dest }), true);
+      }
+   }
+
+   private final void initPolicy(Properties cfg) {
+      policy.setCalledAETs(tokenize(cfg,
+            replace(cfg.getProperty("called-aets"), "<any>", null)));
+      policy.setCallingAETs(tokenize(cfg,
+                  replace(cfg.getProperty("calling-aets"), "<any>", null)));
+      policy.setMaxPDULength(
+            Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
+      policy.setAsyncOpsWindow(fact.newAsyncOpsWindow(
+            Integer.parseInt(cfg.getProperty("max-op-invoked", "0")),1));
+      for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
+         String key = (String)it.nextElement();
+         if (key.startsWith("pc.")) {
+            initPresContext(cfg,
+               tokenize(cfg, cfg.getProperty(key), new LinkedList()));
+         }
+      }
+   }
+   
+   private final void initPresContext(Properties cfg, List val) {
+      try {
+         Iterator it = val.iterator();
+         String as = UIDs.forName((String)it.next());
+         String[] tsUIDs = new String[val.size()-1];
+         for (int i = 0; i < tsUIDs.length; ++i) {
+            tsUIDs[i] = UIDs.forName((String)it.next());
+         }
+         policy.addPresContext(as, tsUIDs);
+         services.bind(as, this);
+      } catch (NoSuchFieldException nfe) {
+         throw new IllegalArgumentException(
+            "Illegal entry in dcmrcv.cfg - " + nfe.getMessage());
+      }
+   }
+   
+   private final void initTLS(Properties cfg) {
+      try {
+         String[] chiperSuites = tokenize(cfg,
+               replace(cfg.getProperty("tls", ""), "<none>", ""));
+         if (chiperSuites.length == 0)
+            return;
+
+         tls = SSLContextAdapter.getInstance();
+         tls.setEnabledCipherSuites(chiperSuites);
+         char[] keypasswd = cfg.getProperty("key-passwd","dcm4che").toCharArray();
+         tls.setKey(
+            tls.loadKeyStore(
+               DcmRcv.class.getResource(cfg.getProperty("tls-key","dcmrcv.key")),
+               keypasswd),
+            keypasswd);
+         tls.setTrust(tls.loadKeyStore(
+            DcmRcv.class.getResource(cfg.getProperty("tls-cacerts", "cacerts")),
+            cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
+      } catch (Exception ex) {
+         throw new RuntimeException("Could not initalize TLS configuration - "
+               + ex.getMessage());
+      }
+   }
    // Inner classes -------------------------------------------------
 }

@@ -56,10 +56,8 @@ public class ColorModelFactoryImpl extends ColorModelFactory {
     }
 
     public ColorModelParam makeParam(Dataset ds) throws DcmValueException {
-        String pmi = ds.getString(Tags.PhotometricInterpretation, null);
-        if (pmi == null) {
-            throw new DcmValueException("Missing Photometric Interpretation");
-        }
+        String pmi =
+            ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
         if ("PALETTE COLOR".equals(pmi)) {
             return new PaletteColorParam(ds);
         }
