@@ -77,13 +77,12 @@ public class DcmServerService extends ServiceMBeanSupport {
         return Arrays.asList(aets).indexOf(ANY) == -1 ? aets : null;
     }
 
-    public void setAETofMediaWriter(String aetMediaWriterMap) {
-        String s = aetMediaWriterMap.replace(';','\n');
+    public void setAETofMediaWriter(String s) {
         Properties p = new Properties();
         try {
             p.load(new ByteArrayInputStream(s.getBytes()));
         } catch (IOException e) {
-            throw new IllegalArgumentException(aetMediaWriterMap);
+            throw new IllegalArgumentException(s);
         }
         aetMap = p;
     }
