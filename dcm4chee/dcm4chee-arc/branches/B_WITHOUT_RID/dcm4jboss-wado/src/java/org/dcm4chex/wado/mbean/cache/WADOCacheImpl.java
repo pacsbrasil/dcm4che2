@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.jboss.system.server.ServerConfigLocator;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
@@ -31,6 +32,8 @@ public class WADOCacheImpl implements WADOCache {
 	public static final String DEFAULT_CACHE_ROOT = "/wadocache";
 
 	private static WADOCacheImpl singleton = null;
+	
+	private static Logger log = Logger.getLogger( WADOCacheImpl.class.getName() );
 	
 	/** the root folder where this cache stores the image files. */
 	private File cacheRoot = null;
@@ -238,6 +241,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * Remove all images in this cache.
 	 */
 	public void clearCache() {
+		log.info("Clear cache called: cacheRoot:"+getAbsCacheRoot() );
 		delTree( this.getAbsCacheRoot() );
 	}
 
@@ -253,13 +257,20 @@ public class WADOCacheImpl implements WADOCache {
 		if ( !file.isDirectory() ) return;
 		
 		File[] files = file.listFiles();
-		if ( files == null ) return;
+		if ( files == null ) {
+			log.warn("WADOCache: File "+file+" should be a directory! But listFiles returns null!");
+			return;
+		}
 		for ( int i = 0, len = files.length ; i < len ; i++ ) {
-			if ( files[i].isFile() ) {
-				files[i].delete();
-			} else {
+			if ( files[i].isDirectory() ) {
 				delTree( files[i] );
-				files[i].delete();
+				if ( ! files[i].delete() ) {
+					log.warn("WADOCache: Diretory can't be deleted:"+files[i]);
+				}
+			} else {
+				if ( ! files[i].delete() ) {
+					log.warn("WADOCache: File can't be deleted:"+files[i]);
+				}
 			}
 		}
 	}
@@ -278,7 +289,7 @@ public class WADOCacheImpl implements WADOCache {
 	 */
 	public void cleanCache( boolean background ) {
 		long currFree = getFreeSpace();
-		//System.out.println("WADOCache.cleancache: free:"+currFree+" minFreeSpace:"+getMinFreeSpace() );
+		if ( log.isDebugEnabled() ) log.debug("WADOCache.cleancache: free:"+currFree+" minFreeSpace:"+getMinFreeSpace() );
 		if ( currFree < getMinFreeSpace() ) {
 			final long sizeToDel = getPreferredFreeSpace() - currFree;
 			if ( background ) {
@@ -292,7 +303,7 @@ public class WADOCacheImpl implements WADOCache {
             	_clean( sizeToDel );
 			}
 		} else {
-			//System.out.println("WADOCache.cleancache: nothing todo" );
+			if ( log.isDebugEnabled() ) log.debug("WADOCache.cleancache: nothing todo" );
 		}
 	}
 
