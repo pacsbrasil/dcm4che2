@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,47 +21,56 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.image;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmValueException;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.image.ColorModelFactory;
+import org.dcm4che.image.ColorModelParam;
+
+import java.awt.image.ColorModel;
+import java.util.WeakHashMap;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class DcmObjectFactory {
+public class ColorModelFactoryImpl extends ColorModelFactory {    
+    private static final WeakHashMap cache = new WeakHashMap();
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
+    /** Creates a new instance of ColorModelFactoryImpl */
+    public ColorModelFactoryImpl() {
+    }
+
+    public ColorModel getColorModel(ColorModelParam param) {
+        if (!param.isCacheable()) {
+            return param.newColorModel();
         }
-    }
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
+        ColorModel cm = (ColorModel)cache.get(param);
+        if (cm == null) {
+            cache.put(param, cm = param.newColorModel());
         }
+        return cm;
     }
 
-    protected DcmObjectFactory() {
+    public ColorModelParam makeParam(Dataset ds) throws DcmValueException {
+        String pmi = ds.getString(Tags.PhotometricInterpretation, null);
+        if (pmi == null) {
+            throw new DcmValueException("Missing Photometric Interpretation");
+        }
+        if ("PALETTE COLOR".equals(pmi)) {
+            return new PaletteColorParam(ds);
+        }
+        if ("MONOCHROME1".equals(pmi)) {
+            return new MonochromeParam(ds, "INVERSE");
+        }
+        if ("MONOCHROME2".equals(pmi)) {
+            return new MonochromeParam(ds, "IDENTITY");
+        }
+        throw new UnsupportedOperationException("Photometric Interpretation "
+                + pmi + " not supported!");
     }
-    
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
     
 }

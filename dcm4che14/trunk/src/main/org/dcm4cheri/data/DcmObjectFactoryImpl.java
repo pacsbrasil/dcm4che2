@@ -21,47 +21,58 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.data;
+
+import org.dcm4cheri.util.Impl;
+
+import org.dcm4che.data.Command;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmValueException;
+import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.data.PersonName;
+import org.dcm4che.dict.Tags;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class DcmObjectFactory {
+public final class DcmObjectFactoryImpl extends DcmObjectFactory {
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
+    /** Creates a new instance of DcmParserFactoryImpl */
+    public DcmObjectFactoryImpl() {
+    }
+
+    public Dataset newDataset() {
+        return new DatasetImpl();
+    }    
+
+    public FileMetaInfo newFileMetaInfo(String sopClassUID,
+            String sopInstanceUID, String transferSyntaxUID,
+            String implClassUID, String implVersName) {
+        return new FileMetaInfoImpl().init(sopClassUID, sopInstanceUID,
+                transferSyntaxUID, implClassUID, implVersName);
+    }
+
+    public FileMetaInfo newFileMetaInfo(String sopClassUID,
+            String sopInstanceUID, String transferSyntaxUID) {
+        return new FileMetaInfoImpl().init(sopClassUID, sopInstanceUID,
+                transferSyntaxUID, Impl.CLASS_UID, Impl.VERSION_NAME);
+    }
+
+    public PersonName newPersonName(String s) {
+        return new PersonNameImpl(s);
+    }
+    
+    public FileMetaInfo newFileMetaInfo(Dataset ds, String transferSyntaxUID) {
         try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
+            return new FileMetaInfoImpl().init(
+                    ds.getString(Tags.SOPClassUID, null),
+                    ds.getString(Tags.SOPInstanceUID, null),
+                    transferSyntaxUID, Impl.CLASS_UID, Impl.VERSION_NAME);
+        } catch (DcmValueException ex) {
+            throw new IllegalArgumentException(ex.getMessage());
         }
-    }
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
-    protected DcmObjectFactory() {
-    }
-    
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
-    
+   }
 }

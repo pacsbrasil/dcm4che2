@@ -291,7 +291,7 @@
 
   <target name="res-check" depends="init">
     <uptodate property="res-generated-already"
-	      targetfile="${source.res}/tiani/dcm4che/dict/TagDictionary.ser">
+	      targetfile="${source.res}/org/dcm4cheri/dict/TagDictionary.ser">
       <srcfiles dir="${source.etc}" includes="dictionary.xml"/>
     </uptodate>
   </target>	      
@@ -301,7 +301,7 @@
 	  depends="res-check,compile-classes" 
 	  unless="res-generated-already"> 
     
-    <java classname="tiani.dcm4che.dict.DictionaryFactoryImpl" fork="yes">
+    <java classname="org.dcm4cheri.dict.DictionaryFactoryImpl" fork="yes">
        <classpath>
          <pathelement location="${build.classes}"/>
          <pathelement path="${java.class.path}"/>
@@ -335,7 +335,6 @@
       </fileset>
       <fileset dir="${build.classes}">
         <include name="org/**"/>
-        <include name="tiani/**"/>
       </fileset>
     </jar>
 

@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
@@ -21,47 +20,37 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+/*$Id$*/
+
+package org.dcm4cheri.data;
+
+import org.dcm4che.data.DcmParser;
+
+import java.io.InputStream;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class DcmObjectFactory {
+public final class DcmParserFactoryImpl
+        extends org.dcm4che.data.DcmParserFactory {
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
+    /** Creates a new instance of DcmParserFactoryImpl */
+    public DcmParserFactoryImpl() {
     }
+/*
+    public DcmParser newDcmParser() {
+        return new DcmParserImpl();
+    }    
+*/
+    public DcmParser newDcmParser(InputStream in) {
+        return new DcmParserImpl(in);
+    }    
 
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
+    public DcmParser newDcmParser(ImageInputStream in) {
+        return new DcmParserImpl(in);
+    }    
 
-    protected DcmObjectFactory() {
-    }
-    
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
-    
 }

@@ -67,10 +67,6 @@
     <pathelement path="${junit.junit.lib}/junit.jar"/>
   </path>
 
-  <!-- JDicom -->
-  <property name="tiani.jdicom.root" value="${thirdparty.root}/tiani/jdicom"/>
-  <property name="tiani.jdicom.lib" value="${tiani.jdicom.root}/lib"/>
-
   <!-- The combined library classpath -->
   <path id="library.classpath">
     <path refid="gnu.getopt.classpath"/>

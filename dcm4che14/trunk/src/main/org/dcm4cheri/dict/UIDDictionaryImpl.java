@@ -21,41 +21,75 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.util;
+package org.dcm4cheri.dict;
+
+import org.dcm4che.dict.UIDDictionary;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import java.util.HashMap;
+import java.util.Iterator;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class UIDGenerator {
+public class UIDDictionaryImpl implements UIDDictionary, java.io.Serializable {
 
-    public static UIDGenerator getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.util.UIDGenerator",
-                "org.dcm4cheri.util.UIDGeneratorImpl");
-        try {
-            return (UIDGenerator)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
+    static final long serialVersionUID = -4793624142653062179L;
+
+    private transient HashMap map = new HashMap(257);
+
+    /** Creates a new instance of TagDictionaryImpl */
+    public UIDDictionaryImpl() {
+    }
+
+    public Entry lookup(String uid) {
+        return (Entry)map.get(uid);
     }
     
-    protected UIDGenerator() {
+    public String toString(String uid) {
+        Entry entry = lookup(uid);
+        return entry != null ? entry.name : uid;
     }
     
-    public abstract String createUID();
-
-    public abstract String createUID(String root);
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
+    public final void add(Entry entry) {
+        map.put(entry.uid, entry);
+    }
+    
+    public int size() {
+        return map.size();
+    }
+    
+    public void load(InputSource xmlSource) throws IOException, SAXException {
+        new UIDDictionaryLoader(this).parse(xmlSource);
     }
 
+    public void load(File xmlFile) throws IOException, SAXException {
+        new UIDDictionaryLoader(this).parse(xmlFile);
+    }
+    
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeInt(map.size());
+        for (Iterator iter = map.values().iterator(); iter.hasNext();) {
+            Entry e = (Entry)iter.next();
+            out.writeUTF(e.uid);
+            out.writeUTF(e.name);
+       }
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException {
+        int n = in.readInt();
+        map = new HashMap(n * 4 / 3 + 1);
+        for (int i = 0; i < n; ++i) {
+            add(new Entry(in.readUTF(), in.readUTF()));
+        }
+    }
 }

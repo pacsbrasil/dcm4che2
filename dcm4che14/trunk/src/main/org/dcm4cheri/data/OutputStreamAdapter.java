@@ -21,47 +21,31 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.data;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 /**
- *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class DcmObjectFactory {
+public class OutputStreamAdapter extends OutputStream {
+    
+    ImageOutputStream stream;
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
+    public OutputStreamAdapter(ImageOutputStream stream) {
+        super();
+
+        this.stream = stream;
     }
 
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
-    protected DcmObjectFactory() {
+    public void write(int b) throws IOException {
+        stream.write(b);
     }
     
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
-    
+    public void write(byte b[], int off, int len) throws IOException {
+        stream.write(b, off, len);
+    }   
 }

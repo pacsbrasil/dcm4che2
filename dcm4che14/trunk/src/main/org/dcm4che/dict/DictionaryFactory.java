@@ -33,7 +33,7 @@ public abstract class DictionaryFactory {
     public static DictionaryFactory getInstance() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         String name = System.getProperty("dcm4che.dict.DictionaryFactory",
-                "tiani.dcm4che.dict.DictionaryFactoryImpl");
+                "org.dcm4cheri.dict.DictionaryFactoryImpl");
         try {
             return (DictionaryFactory)loader.loadClass(name).newInstance();
         } catch (ClassNotFoundException ex) {

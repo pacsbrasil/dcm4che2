@@ -21,47 +21,57 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.data;
 
-/**
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmHandler;
+import org.dcm4che.dict.VRs;
+
+import java.io.OutputStream;
+import java.io.IOException;
+import java.nio.ByteOrder;
+import java.util.Iterator;
+
+/** Defines behavior of <code>Command</code> container objects.
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
+ * @see "DICOM Part 7: Message Exchange, 6.3.1 Command Set Structure"
  */
-public abstract class DcmObjectFactory {
+final class CommandImpl extends DcmObjectImpl
+        implements org.dcm4che.data.Command {
+    
+    protected DcmElement set(DcmElement newElem) {
+        if ((newElem.tag() & 0xFFFF0000) != 0x00000000)
+            throw new IllegalArgumentException(newElem.toString());
+        
+        if (newElem.getByteBuffer().order() != ByteOrder.LITTLE_ENDIAN)
+            throw new IllegalArgumentException(
+                    newElem.getByteBuffer().toString());
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
-    protected DcmObjectFactory() {
+        return super.set(newElem);
     }
     
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
+    public int length() {
+        return grLen() + 12;
+    }
     
+    private int grLen() {
+        int len = 0;
+        for (int i = 0, n = list.size(); i < n; ++i)
+            len += ((DcmElement)list.get(i)).length() + 8;
+
+        return len;
+    }
+    
+    public void write(DcmHandler handler) throws IOException {
+        handler.setDcmDecodeParam(DcmDecodeParam.IVR_LE);
+        write(0x00000000, grLen(), handler);
+    }
+
+    public void write(OutputStream out) throws IOException {
+        write(new DcmStreamHandlerImpl(out));
+    }
 }
+

@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>*
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,47 +21,49 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.srom;
+
+import org.dcm4che.srom.SOPInstanceRef;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @version 1.0
  */
-public abstract class DcmObjectFactory {
+class SOPInstanceRefImpl extends RefSOPImpl implements SOPInstanceRef {
+    // Constants -----------------------------------------------------
+    static final SOPInstanceRef[] EMPTY_ARRAY = {};
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
+    // Attributes ----------------------------------------------------
+    private final String studyInstanceUID;
+    private final String seriesInstanceUID;
+
+    // Constructors --------------------------------------------------
+    public SOPInstanceRefImpl(String refSOPClassUID, String refSOPInstanceUID,
+            String seriesInstanceUID, String studyInstanceUID)
+    {
+        super(refSOPClassUID, refSOPInstanceUID);
+        if ((this.studyInstanceUID = studyInstanceUID).length() == 0)
+            throw new IllegalArgumentException();
+        if ((this.seriesInstanceUID = seriesInstanceUID).length() == 0)
+            throw new IllegalArgumentException();
     }
 
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
+    // Methodes ------------------------------------------------------
+    
 
-    protected DcmObjectFactory() {
+    public String toString() {
+        return "[study=" + studyInstanceUID
+             + ",series=" + seriesInstanceUID
+             + ",sop=" + super.toString()
+             + "]";
     }
     
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
+    public String getStudyInstanceUID() {
+        return studyInstanceUID;
+    }
     
+    public String getSeriesInstanceUID() {
+        return seriesInstanceUID;
+    }
 }

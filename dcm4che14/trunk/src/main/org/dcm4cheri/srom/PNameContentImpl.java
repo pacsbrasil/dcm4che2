@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>*
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,45 +21,63 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.image;
+package org.dcm4cheri.srom;
 
+import org.dcm4che.srom.*;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmValueException;
-import java.awt.image.ColorModel;
+import org.dcm4che.dict.Tags;
+
+import java.util.Date;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @version 1.0
  */
-public abstract class ColorModelFactory {
+class PNameContentImpl extends NamedContentImpl implements PNameContent {
+    // Constants -----------------------------------------------------
+    
+    // Attributes ----------------------------------------------------
+    private String pname;
 
-    public static ColorModelFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.image.ColorModelFactory",
-                "org.dcm4cheri.image.ColorModelFactoryImpl");
-        try {
-            return (ColorModelFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
+    // Constructors --------------------------------------------------
+    PNameContentImpl(KeyObject owner, Date obsDateTime, Template template,
+            Code name, String pname) {
+        super(owner, obsDateTime, template, checkNotNull(name));
+        setPName(pname);
     }
     
-    protected ColorModelFactory() {
+    Content clone(KeyObject newOwner,  boolean inheritObsDateTime) {
+        return new PNameContentImpl(newOwner,
+                getObservationDateTime(inheritObsDateTime),
+                template, name, pname);
     }
     
-    public abstract ColorModelParam makeParam(Dataset ds)
-            throws DcmValueException;
+    // Methodes --------------------------------------------------------
+    public final void setName(Code newName) {
+        this.name = checkNotNull(newName);
+    }
+    
+    public String toString() {
+        return prompt().append('\"').append(pname).append('\"').toString();
+    }
 
-    public abstract ColorModel getColorModel(ColorModelParam param);
+    public final ValueType getValueType() {
+        return ValueType.PNAME;
+    }    
+    
+    public final String getPName() {
+        return pname;
+    }
+    
+    public final void setPName(String pname) {
+        if (pname.length() == 0)
+            throw new IllegalArgumentException();
+        this.pname = pname;
+    }
 
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
+    public void toDataset(Dataset ds) {
+        super.toDataset(ds);
+        ds.setPN(Tags.PersonName, pname);
     }
 }

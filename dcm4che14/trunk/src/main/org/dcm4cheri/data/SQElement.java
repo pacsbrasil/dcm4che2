@@ -1,4 +1,3 @@
-/*$Id$*/
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
@@ -21,47 +20,59 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+/*$Id$*/
+
+package org.dcm4cheri.data;
+
+import org.dcm4che.dict.VRs;
+import org.dcm4che.data.*;
+
+import java.util.*;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class DcmObjectFactory {
+class SQElement extends DcmElementImpl {
+    
+    private final ArrayList list = new ArrayList();
+    private final Dataset parent;
+    private int totlen = -1;
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
-    protected DcmObjectFactory() {
+    /** Creates a new instance of ElementImpl */
+    public SQElement(int tag, Dataset parent) {
+        super(tag);
+        this.parent = parent;
     }
     
-    public abstract Dataset newDataset();
+    public final int vr() {
+        return VRs.SQ;
+    }
 
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
+    public final int vm() {
+        return list.size();
+    }
     
+    public Dataset getDataset(int index) {
+        return (Dataset)list.get(index);
+    }
+    
+    public Dataset addNewDataset() {
+        Dataset ds = new DatasetImpl(parent);
+        list.add(ds);
+        return ds;
+    }
+
+    public int calcLength(DcmEncodeParam param) {
+        totlen = param.undefSeqLen ? 8 : 0;
+        for (int i = 0, n = vm(); i < n; ++i)
+            totlen += getDataset(i).calcLength(param) +
+                    (param.undefItemLen ? 16 : 8);
+        return totlen;
+    }
+    
+    public int length() {
+        return totlen;
+    }        
 }

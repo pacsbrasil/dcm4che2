@@ -36,7 +36,7 @@ public abstract class DcmParserFactory {
     public static DcmParserFactory getInstance() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         String name = System.getProperty("dcm4che.data.DcmParserFactory",
-                "tiani.dcm4che.data.DcmParserFactoryImpl");
+                "org.dcm4cheri.data.DcmParserFactoryImpl");
         try {
             return (DcmParserFactory)loader.loadClass(name).newInstance();
         } catch (ClassNotFoundException ex) {

@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,47 +21,60 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.dict;
+
+import org.dcm4che.dict.UIDDictionary;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class DcmObjectFactory {
+final class UIDDictionaryLoader extends org.xml.sax.helpers.DefaultHandler {
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
+    private final UIDDictionaryImpl dict;
+    private final SAXParser parser;
+    
+    /** Creates a new instance of UIDDictionaryLoader */
+    public UIDDictionaryLoader(UIDDictionaryImpl dict) {
+        this.dict = dict;
         try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
+            parser = SAXParserFactory.newInstance().newSAXParser();
+        } catch (Exception ex) {
+            throw new ConfigurationError("Could not create SAX Parser", ex);
+        }
+    }    
+
+    public void startElement (String uri, String localName, String qName,
+            Attributes attr) throws SAXException {
+        if ("uid".equals(qName)) {
+            dict.add(new UIDDictionary.Entry(
+                    attr.getValue("value"), attr.getValue("name")));
         }
     }
-
+    
+    public void parse(InputSource xmlSource) throws SAXException, IOException {
+        parser.parse(xmlSource, this);
+    }
+    
+    public void parse(File xmlFile) throws SAXException, IOException {
+        parser.parse(xmlFile, this);
+    }
+    
     static class ConfigurationError extends Error {
         ConfigurationError(String msg, Exception x) {
             super(msg,x);
         }
     }
-
-    protected DcmObjectFactory() {
-    }
-    
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
-    
 }

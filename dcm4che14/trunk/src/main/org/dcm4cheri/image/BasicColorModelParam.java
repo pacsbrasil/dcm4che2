@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,45 +21,63 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.image;
+package org.dcm4cheri.image;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmValueException;
-import java.awt.image.ColorModel;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.image.ColorModelParam;
+
+import java.awt.image.DataBuffer;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class ColorModelFactory {
+abstract class BasicColorModelParam implements ColorModelParam {   
+    protected final int size;
+    protected final int bits;
+    protected final int bits_8;
+    protected final int min;
+    protected final int max;
+    protected final int shiftmask;
 
-    public static ColorModelFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.image.ColorModelFactory",
-                "org.dcm4cheri.image.ColorModelFactoryImpl");
-        try {
-            return (ColorModelFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
+    /** Creates a new instance of PaletteColorParam */
+    protected BasicColorModelParam(Dataset ds) throws DcmValueException {
+        this.bits = ds.getInt(Tags.BitsStored, 8);
+        if (bits < 8 || bits > 16) {
+            throw new UnsupportedOperationException("Bits Stored: " + bits
+                    + " not supported!");
         }
-    }
-    
-    protected ColorModelFactory() {
-    }
-    
-    public abstract ColorModelParam makeParam(Dataset ds)
-            throws DcmValueException;
-
-    public abstract ColorModel getColorModel(ColorModelParam param);
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
+        this.bits_8 = bits - 8;
+        int hBit = ds.getInt(Tags.HighBit, bits-1);
+        if (hBit != bits-1) {
+            throw new UnsupportedOperationException("High Bit: " + hBit
+                    + " not supported!");
         }
+        this.size = 1 << bits;
+        if (ds.getInt(Tags.PixelRepresentation, 0) == 0) {
+            this.min = 0;
+            this.max = size;
+        } else {
+            this.min = -(size>>1);
+            this.max = -min;
+        }
+        this.shiftmask = 32-bits;
+    }
+
+    protected BasicColorModelParam(BasicColorModelParam other) {
+        this.size = other.size;
+        this.bits = other.bits;
+        this.bits_8 = other.bits_8;
+        this.min = other.min;
+        this.max = other.max;
+        this.shiftmask = other.shiftmask;
+    }
+        
+    protected final int mask(int pxValue) {
+        return min == 0 ? ((pxValue<<shiftmask)>>>shiftmask)
+                        : ((pxValue<<shiftmask)>>shiftmask);
     }
 }

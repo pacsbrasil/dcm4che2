@@ -1,4 +1,4 @@
-/*$Id$*/
+/* $Id$ */
 /*****************************************************************************
  *                                                                           *
  *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
@@ -21,47 +21,24 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.util;
 
 /**
+ * This class includes the static data of the DICOM implementation.
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @author  gunter zeilinger
+ * @version 1.0
  */
-public abstract class DcmObjectFactory {
+public class Impl {
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
-    protected DcmObjectFactory() {
-    }
+    /**
+     * The DICOM UID prefix of the Tiani DICOM implementation.
+     */
+    public static final String CLASS_UID = "1.2.40.0.13.1.1";
     
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
+    /**
+     * Reflects the version name of Tiani DICOM implementation.
+     */
+    public static final String VERSION_NAME = "DCM4CHE01APR02";
     
-}
+}//end class Implementation

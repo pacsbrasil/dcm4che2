@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>*
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,47 +21,60 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.srom;
+
+import org.dcm4che.srom.*;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+
+import java.util.Date;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @version 1.0
  */
-public abstract class DcmObjectFactory {
+class CodeContentImpl extends NamedContentImpl implements CodeContent {
+    // Constants -----------------------------------------------------
+    
+    // Attributes ----------------------------------------------------
+    private Code code;
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
-    protected DcmObjectFactory() {
+    // Constructors --------------------------------------------------
+    CodeContentImpl(KeyObject owner, Date obsDateTime, Template template,
+            Code name, Code code) {
+        super(owner, obsDateTime, template, checkNotNull(name));
+        this.code = checkNotNull(code);
     }
     
-    public abstract Dataset newDataset();
+    Content clone(KeyObject newOwner,  boolean inheritObsDateTime) {
+        return new CodeContentImpl(newOwner,
+                getObservationDateTime(inheritObsDateTime),
+                template, name, code);
+    }
 
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
+    public final void setCode(Code code) {
+        this.code = checkNotNull(code);
+    }        
 
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
+    public final void setName(Code newName) {
+        this.name = checkNotNull(newName);
+    }
     
+    public final ValueType getValueType() {
+        return ValueType.CODE;
+    }
+    
+    public final Code getCode() {
+        return code;
+    }        
+
+    public String toString() {
+        return prompt().append(code).toString();
+    }
+
+    public void toDataset(Dataset ds) {
+        super.toDataset(ds);
+        code.toDataset(ds.setSQ(Tags.ConceptCodeSeq).addNewDataset());
+    }
 }

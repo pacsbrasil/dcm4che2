@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>*
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,47 +21,60 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.srom;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.srom.*;
+import java.util.Date;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @version 1.0
  */
-public abstract class DcmObjectFactory {
+class CompositeContentImpl extends NamedContentImpl
+        implements org.dcm4che.srom.CompositeContent {
+    // Constants -----------------------------------------------------
+    
+    // Attributes ----------------------------------------------------
+    protected RefSOP refSOP;
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
-        try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }
-    }
-
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
-    }
-
-    protected DcmObjectFactory() {
+    // Constructors --------------------------------------------------
+    CompositeContentImpl(KeyObject owner, Date obsDateTime, Template template,
+            Code name, RefSOP refSOP) {
+        super(owner, obsDateTime, template, name);
+        setRefSOP(refSOP);
     }
     
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
+    Content clone(KeyObject newOwner,  boolean inheritObsDateTime) {
+        return new CompositeContentImpl(newOwner,
+                getObservationDateTime(inheritObsDateTime),
+                template, name, refSOP);
+    }
     
+    public final void setRefSOP(RefSOP refSOP) {
+        if (refSOP == null)
+            throw new NullPointerException();
+        this.refSOP = refSOP;
+    }
+
+
+    // Methodes --------------------------------------------------------
+    public String toString() {
+        return prompt().append(refSOP).toString();
+    }
+
+    public ValueType getValueType() {
+        return ValueType.COMPOSITE;
+    }
+    
+    public final RefSOP getRefSOP() {
+        return refSOP;
+    }
+
+    public void toDataset(Dataset ds) {
+        super.toDataset(ds);
+        refSOP.toDataset(ds.setSQ(Tags.RefSOPSeq).addNewDataset());
+    }
 }

@@ -1,0 +1,349 @@
+/*$Id$*/
+/*****************************************************************************
+ *                                                                           *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
+ *                                                                           *
+ *  This file is part of dcm4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU Lesser General Public License as published    *
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  Lesser General Public License for more details.                          *
+ *                                                                           *
+ *  You should have received a copy of the GNU Lesser General Public         *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
+
+package org.dcm4cheri.media;
+
+import org.dcm4cheri.util.IntHashtable2;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.media.DirWriter;
+import org.dcm4che.media.DirRecord;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteOrder;
+import java.util.*;
+import javax.imageio.stream.ImageOutputStream;
+
+/**
+ *
+ * @author  gunter.zeilinger@tiani.com
+ * @version 1.0.0
+ */
+final class DirWriterImpl extends DirReaderImpl implements DirWriter {
+    
+   private static final String[] TYPE_CODE = {
+        "PATIENT",
+        "STUDY",
+        "SERIES",
+        "IMAGE",
+        "OVERLAY",
+        "MODALITY LUT",
+        "VOI LUT",
+        "CURVE",
+        "TOPIC",
+        "VISIT",
+        "RESULTS",
+        "INTERPRETATION",
+        "STUDY COMPONENT",
+        "STORED PRINT",
+        "RT DOSE",
+        "RT STRUCTURE SET",
+        "RT PLAN",
+        "RT TREAT RECORD",
+        "PRESENTATION",
+        "WAVEFORM",
+        "SR DOCUMENT",
+        "KEY OBJECT DOC",
+        "PRIVATE",
+        "MRDR",
+    };
+    private static final List TYPE_CODE_LIST = Arrays.asList(TYPE_CODE);
+    
+    private static final byte[] ITEM = {
+        (byte)0xFE,(byte)0xFF,(byte)0x00,(byte)0xE0,
+        (byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,
+    };
+    
+    private static final byte[] ITEM_DELIMITER = {
+        (byte)0xFE,(byte)0xFF,(byte)0x0D,(byte)0xE0,
+        (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+    };
+
+    private static final byte[] SEQ_DELIMITER = {
+        (byte)0xFE,(byte)0xFF,(byte)0xDD,(byte)0xE0,
+        (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+    };
+
+    private static final byte[] PADDING_TAG_OB = {
+        (byte)0xFC,(byte)0xFF,(byte)0xFC,(byte)0xFF,(byte)'O',(byte)'B',0,0
+    };
+    
+    private String dirPath;
+    private final ImageOutputStream out;
+    private final DcmEncodeParam encParam;
+    private boolean autoCommit = false;
+    private long newRecPos;
+    private long rollbackPos;
+    private int rollbackOffLastRootRec;
+    private TreeMap dirtyOffsets = new TreeMap();
+
+    /** Creates a new instance of DirWriterImpl */
+    DirWriterImpl(File file, ImageOutputStream out, DcmEncodeParam encParam) {        
+        super(file, out);
+        this.out = out;
+        out.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        this.encParam = encParam != null ? encParam : DcmDecodeParam.EVR_LE;
+    }
+    
+    public String[] toFileIDs(File refFile) throws IOException {
+        if (dirPath == null) {
+           this.dirPath = file.getParentFile().getAbsolutePath();
+        }            
+        String path = refFile.getAbsolutePath();
+        if (!path.startsWith(dirPath)) {
+            throw new IllegalArgumentException(path);
+        }
+        StringTokenizer strTk = new StringTokenizer(
+                path.substring(dirPath.length()), File.separator);
+        String retVal[] = new String[strTk.countTokens()];
+        for (int i = 0; i < retVal.length; ++i) {
+            retVal[i] = strTk.nextToken();
+        }
+        return retVal;
+    }
+
+    DirWriterImpl initWriter(FileMetaInfo fmi, String filesetID,
+            File descriptorFile, String specCharset) throws IOException {
+        parser.setDcmDecodeParam(DcmDecodeParam.EVR_LE);
+        fsi = factory.newDataset();
+        fsi.setFileMetaInfo(fmi);
+        fsi.setCS(Tags.FileSetID, filesetID);
+        if (descriptorFile != null) {
+            fsi.setCS(Tags.FileSetDescriptorFileID,
+                    toFileIDs(descriptorFile.getAbsoluteFile()));
+            if (specCharset != null) {
+               fsi.setCS(Tags.SpecificCharacterSetOfFileSetDescriptorFile,
+                    specCharset);
+            }
+        }
+        fsi.setUL(Tags.OffsetOfFirstRootDirectoryRecord,
+                this.offFirstRootRec = 0);
+        fsi.setUL(Tags.OffsetOfLastRootDirectoryRecord, this.offLastRootRec = 0);
+        fsi.setUS(Tags.FileSetConsistencyFlag, 0);
+        fsi.setSQ(Tags.DirectoryRecordSeq);
+        fsi.writeFile(out, encParam);
+        fsi.remove(Tags.DirectoryRecordSeq);
+        if (encParam.undefSeqLen) {
+            this.seqLength = -1;
+            this.seqValuePos = out.getStreamPosition() - 8;
+        } else {
+            this.seqLength = 0;
+            this.seqValuePos = out.getStreamPosition();
+        }
+        this.offFirstRootRecValPos = seqValuePos - 38L;
+        this.offLastRootRecValPos = seqValuePos-26L;
+        this.newRecPos = this.rollbackPos = seqValuePos;
+        this.rollbackOffLastRootRec = offLastRootRec;
+        return this;
+    }
+    
+    DirWriterImpl initWriter() throws IOException {
+        initReader();
+        this.newRecPos = this.rollbackPos = seqLength != -1
+                ? seqValuePos + (seqLength & 0xffffffffL)
+                : offLastRootRec == 0 ? seqValuePos : parseItems();
+        this.rollbackOffLastRootRec = offLastRootRec;
+        return this;
+    }
+
+    private long parseItems() throws IOException {
+        parser.seek(offLastRootRec & 0xffffffffL);
+        while (parser.parseItemDataset() != -1L)
+            ; // noop
+        return parser.getStreamPosition() - 8;
+    }
+    
+    public void close() throws IOException {
+        commit();
+        super.close();
+    }
+
+    public boolean isAutoCommit() {
+        return autoCommit;
+    }
+    
+    public void setAutoCommit(boolean autoCommit) throws IOException {
+        if (this.autoCommit == autoCommit) {
+            return;
+        }
+        if (this.autoCommit = autoCommit) {
+            commit();
+        }
+    }
+    
+    public void commit() throws IOException {
+        if (newRecPos == rollbackPos) { // nothing to commit
+            return;
+        }
+        writeTrailer();
+        if (seqLength != -1) {
+            dirtyOffsets.put(new Long(seqValuePos - 4),
+                    new Integer(seqLength += (int)(newRecPos - rollbackPos)));
+        }
+        for (Iterator iter = dirtyOffsets.entrySet().iterator();
+                iter.hasNext();) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            out.seek(((Long)entry.getKey()).longValue());
+            out.writeInt(((Integer)entry.getValue()).intValue());
+        }
+        
+        dirtyOffsets.clear();
+        rollbackOffLastRootRec = offLastRootRec;
+        rollbackPos = newRecPos;
+    }
+    
+    public void rollback() throws IOException {
+        if (newRecPos == rollbackPos) { // nothing to rollback
+            return;
+        }
+        dirtyOffsets.clear();
+        lastRecNextValPosCache.clear();
+        lastRootRecNextValPos = null;
+        if ((this.offLastRootRec = rollbackOffLastRootRec) == 0) {
+            this.offFirstRootRec = 0;
+        }
+        newRecPos = rollbackPos;
+        writeTrailer();
+    }
+    
+    private void writeTrailer() throws IOException {
+        out.seek(newRecPos);
+        if (seqLength == -1) {
+            out.write(SEQ_DELIMITER);
+        }
+        int padlen = (int)(out.length() - out.getStreamPosition());
+        if (padlen > 0) {
+            out.write(PADDING_TAG_OB);
+            padlen = Math.max(0,padlen - 12);
+            out.writeInt((padlen + 1) & ~1);
+            if ((padlen & 1) != 0) {
+                out.seek(out.length());
+                out.write(0);
+            }
+        }
+    }
+        
+    public DirRecord addRecord(DirRecord parent, String type, Dataset ds)
+            throws IOException {
+        return addRecord(parent, type, ds, null, null, null, null);
+    }
+    
+    public DirRecord addRecord(DirRecord parent, String type, Dataset ds,
+            String[] fileIDs, String classUID, String instUID, String tsUID)
+            throws IOException {
+        if (TYPE_CODE_LIST.indexOf(type) == -1) {
+            throw new IllegalArgumentException("type:" + type);
+        }
+        Dataset ds0004 = factory.newDataset();
+        ds0004.setUL(Tags.OffsetOfNextDirectoryRecord, 0);
+        ds0004.setUS(Tags.RecordInUseFlag, DirRecord.IN_USE);
+        ds0004.setUL(Tags.OffsetOfLowerLevelDirectoryEntity, 0);
+        ds0004.setCS(Tags.DirectoryRecordType, type);
+        if (fileIDs != null) {
+            if (classUID == null) {
+                throw new NullPointerException();
+            }
+            if (instUID == null) {
+                throw new NullPointerException();
+            }
+            if (tsUID == null) {
+                throw new NullPointerException();
+            }
+            ds0004.setCS(Tags.RefFileID, fileIDs);
+            ds0004.setUI(Tags.RefSOPClassUIDInFile, classUID);
+            ds0004.setUI(Tags.RefSOPInstanceUIDInFile, instUID);
+            ds0004.setUI(Tags.RefSOPTransferSyntaxUIDInFile, tsUID);
+        }
+        out.seek(newRecPos);
+        out.write(ITEM, 0, 8);
+        ds0004.writeDataset(out, encParam);
+        ds.newView(8,-1,null).writeDataset(out, encParam);
+        long nextNewRecPos = out.getStreamPosition();
+        if (encParam.undefItemLen) {
+            out.write(ITEM_DELIMITER, 0, 8);
+            nextNewRecPos += 8;
+        } else {
+            out.seek(newRecPos + 4);
+            out.writeInt((int)(nextNewRecPos - newRecPos - 8));
+        }
+        DirRecordImpl retval = new DirRecordImpl(parser, (int)newRecPos);
+        Integer newOff = new Integer((int)newRecPos);
+        if (parent == null) {
+            dirtyOffsets.put(
+                    setLastRootRecNextValPos(retval.nextValPos), newOff);
+            dirtyOffsets.put(new Long(offLastRootRecValPos), newOff);
+            offLastRootRec = (int)newRecPos;
+            if (offFirstRootRec == 0) {
+                offFirstRootRec = (int)newRecPos;
+            }
+        } else {
+            dirtyOffsets.put(
+                    setLastRecNextValPos(parent, retval.nextValPos),
+                    newOff);
+        }
+        newRecPos = nextNewRecPos;
+        if (autoCommit) {
+            commit();
+        }
+        return retval;
+    }
+
+    private Long lastRootRecNextValPos = null;
+    private Long setLastRootRecNextValPos(long newval) throws IOException {
+        Long retval = lastRootRecNextValPos;
+        lastRootRecNextValPos = new Long(newval);
+        if (offLastRootRec == 0) {
+            return new Long(offFirstRootRecValPos);
+        }
+        if (retval != null) {
+            return retval;
+        }
+        return new Long(new DirRecordImpl(parser, offLastRootRec).nextValPos);
+    }
+    
+    private IntHashtable2 lastRecNextValPosCache = new IntHashtable2();
+    private Long setLastRecNextValPos(DirRecord parent, long newval)
+            throws IOException {
+        int key = parent.hashCode();
+        Long retval = (Long)lastRecNextValPosCache.get(key);
+        lastRecNextValPosCache.put(key, new Long(newval));
+        if (retval != null) {
+            return retval;
+        }
+        DirRecordImpl child = (DirRecordImpl)parent.getFirstChild();
+        if (child == null) {
+            return new Long(((DirRecordImpl)parent).lowerValPos);
+        }
+        while (child.next != 0) {
+            child = new DirRecordImpl(parser, child.next);
+        }
+        return new Long(child.nextValPos);
+    }    
+}

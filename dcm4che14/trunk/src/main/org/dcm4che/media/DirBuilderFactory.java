@@ -41,7 +41,7 @@ public abstract class DirBuilderFactory {
     public static DirBuilderFactory getInstance() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         String name = System.getProperty("dcm4che.media.DirBuilderFactory",
-                "tiani.dcm4che.media.DirBuilderFactoryImpl");
+                "org.dcm4cheri.media.DirBuilderFactoryImpl");
         try {
             return (DirBuilderFactory)loader.loadClass(name).newInstance();
         } catch (ClassNotFoundException ex) {

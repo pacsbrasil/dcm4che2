@@ -1,7 +1,7 @@
 /*$Id$*/
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG                             *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -21,47 +21,58 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.data;
+package org.dcm4cheri.data;
+
+import java.util.*;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public abstract class DcmObjectFactory {
+class Charsets {
+    static final Charset ASCII = Charset.forName("US-ASCII");         
+    static Charset lookup(String[] specCharset) {
+        if (specCharset == null || specCharset.length == 0)
+            return ASCII;
+        
+        if (specCharset.length > 1)
+            throw new UnsupportedCharsetException(
+                Arrays.asList(specCharset).toString());
+        
+        Charset retval = (Charset)CHARSETS.get(specCharset[0]);
+        if (retval == null)
+            throw new UnsupportedCharsetException(specCharset[0]);
 
-    public static DcmObjectFactory getInstance() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = System.getProperty("dcm4che.data.DcmObjectFactory",
-                "org.dcm4cheri.data.DcmObjectFactoryImpl");
+        return retval;
+    }
+
+    private static HashMap CHARSETS = new HashMap(17);
+    private static void put(String dcmCharset, String charsetName) {
         try {
-            return (DcmObjectFactory)loader.loadClass(name).newInstance();
-        } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("class not found: " + name, ex); 
-        } catch (InstantiationException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
+            CHARSETS.put(dcmCharset,Charset.forName(charsetName));
+        } catch (Exception ignore) {
         }
     }
+        
+    static {
+        CHARSETS.put("",ASCII);
+        put("ISO_IR 100","ISO-8859-1");
+        put("ISO_IR 101","ISO-8859-2");
+        put("ISO_IR 109","ISO-8859-3");
+        put("ISO_IR 110","ISO-8859-4");
+        put("ISO_IR 144","ISO-8859-5");
+        put("ISO_IR 127","ISO-8859-6");
+        put("ISO_IR 126","ISO-8859-7");
+        put("ISO_IR 138","ISO-8859-8");
+        put("ISO_IR 148","ISO-8859-9");
+        put("ISO_IR 13","EUC-JP");
+        put("ISO_IR 166","TIS-620");
+    }    
 
-    static class ConfigurationError extends Error {
-        ConfigurationError(String msg, Exception x) {
-            super(msg,x);
-        }
+    /** Private constructor */
+    private Charsets() {
     }
-
-    protected DcmObjectFactory() {
-    }
-    
-    public abstract Dataset newDataset();
-
-    public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
-            String sopInstanceUID, String transferSyntaxUID);
-
-    public abstract FileMetaInfo newFileMetaInfo(Dataset ds,
-            String transferSyntaxUID) throws DcmValueException;
-
-    public abstract PersonName newPersonName(String s);
-    
 }

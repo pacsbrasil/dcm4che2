@@ -44,7 +44,7 @@ public abstract class SRDocumentFactory {
     public static SRDocumentFactory getInstance() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         String name = System.getProperty("dcm4che.srom.SRDocumentFactory",
-        "tiani.dcm4che.srom.SRDocumentFactoryImpl");
+        "org.dcm4cheri.srom.SRDocumentFactoryImpl");
         try {
             return (SRDocumentFactory)loader.loadClass(name).newInstance();
         } catch (ClassNotFoundException ex) {
