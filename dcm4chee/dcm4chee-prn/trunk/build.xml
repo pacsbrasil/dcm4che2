@@ -174,10 +174,12 @@
   </target>           
 
   <target name="release" depends="build">
-    <mkdir dir="${dist.dir}/server/default"/>
+    <mkdir dir="${dist.dir}/server/deafult"/>
     <copy todir="${dist.dir}">
       <fileset dir="${jboss.dist}">
-        <include name="bin/run.*"/>
+        <include name="bin/*.jar"/>
+        <include name="bin/*.sh"/>
+        <include name="bin/*.bat"/>
         <include name="lib/concurrent.jar"/>        
         <include name="lib/getopt.jar"/>        
         <include name="lib/gnu-regexp.jar"/>        
@@ -188,8 +190,9 @@
         <include name="lib/log4j-boot.jar"/>
       </fileset>
       <fileset dir="${src.dir}">
-        <include name="bin/install_service.bat"/>
         <include name="bin/JavaService.exe"/>
+        <include name="bin/*.sh"/>
+        <include name="bin/*.bat"/>
       </fileset>
     </copy>
     <copy todir="${dist.dir}/server/default">
@@ -210,12 +213,10 @@
         <include name="conf/*"/>
         <include name="deploy/*.xml"/>
       </fileset>
-    </copy>
-    <chmod file="${dist.dir}/bin/run.sh" perm="ugo+rx"/>
-    <fixcrlf srcdir="${dist.dir}/bin"
-         eol="crlf"
-         includes="*.bat"
-    />
+    </copy>    
+    <fixcrlf srcdir="${dist.dir}/bin" eol="crlf" includes="*.bat"/>
+    <fixcrlf srcdir="${dist.dir}/bin" eol="lf" includes="*.sh"/>
+    <chmod dir="${dist.dir}/bin" perm="ugo+rx" includes="*.sh"/>
     <zip destfile="${build.dir}/${dist.name}.zip"
          basedir="${dist.dir}"
     />
