@@ -175,7 +175,7 @@ public class SyslogWriter extends OutputStreamWriter {
     private InetAddress address;
     private DatagramSocket ds;
     private boolean printHostName = true;
-    private String contentPrefix = ": ";
+    private String contentPrefix = "";
     private final MyByteArrayOutputStream bout;
     
     // Static --------------------------------------------------------
