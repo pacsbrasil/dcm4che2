@@ -68,7 +68,7 @@
       <name>MaxHtmlSize</name>
       <type>java.lang.String</type>      
       <descriptors>
-         <value value="1MB" />
+         <value value="100KB" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -94,17 +94,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isKeepSpoolFiles"
-      setMethod="setKeepSpoolFiles">
-      <description>Keep spool files (for debugging) in failure case.
-      </description>
-      <name>KeepSpoolFiles</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isIncludeDisplayApplicationOnlyOnFirstMedia"
       setMethod="setIncludeDisplayApplicationOnlyOnFirstMedia">
       <description>Include Display Application only on first media if
@@ -112,6 +101,18 @@
       the Display Application is included on every media.
       </description>
       <name>IncludeDisplayApplicationOnlyOnFirstMedia</name>
+      <type>boolean</type>      
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isCreateIcon"
+      setMethod="setCreateIcon">
+      <description>Creates an icon to include in DICOMDIR for image instances
+      for which no icon is provided in the Media Creation Request.
+      </description>
+      <name>CreateIcon</name>
       <type>boolean</type>      
       <descriptors>
          <value value="true" />

@@ -100,7 +100,7 @@
       <name>MaxNumberOfCopies</name>
       <type>int</type>      
       <descriptors>
-         <value value="50" />
+         <value value="10" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -155,7 +155,7 @@
       <name>MediaSplittingSupported</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

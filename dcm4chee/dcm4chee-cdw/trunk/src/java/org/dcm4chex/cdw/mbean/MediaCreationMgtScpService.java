@@ -58,7 +58,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
     private String defaultRequestPriority = Priority.LOW;
 
-    private int maxNumberOfCopies = 50;
+    private int maxNumberOfCopies = 10;
 
     private boolean defaultLabelUsingInformationExtractedFromInstances = true;
 
@@ -68,7 +68,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
     private boolean defaultAllowMediaSplitting = false;
 
-    private boolean mediaSplittingSupported = false;
+    private boolean mediaSplittingSupported = true;
 
     private boolean defaultAllowLossyCompression = false;
 

@@ -10,11 +10,10 @@ package org.dcm4chex.cdw.mbean;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
-import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.cdw.common.ExecutionStatusInfo;
-import org.dcm4chex.cdw.common.MediaCreationException;
-import org.jboss.logging.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -22,7 +21,20 @@ import org.jboss.logging.Logger;
  * @since 19.07.2004
  *
  */
-final class FilesetComponent implements Comparable {
+class FilesetComponent implements Comparable {
+
+    private static final String[] PROMPTS = { "File-set", "Patient", "Study",
+            "Series", "Instance"};
+
+    public static final int ROOT = 0;
+
+    public static final int PATIENT = 1;
+
+    public static final int STUDY = 2;
+
+    public static final int SERIES = 3;
+
+    public static final int INSTANCE = 4;
 
     private final String id;
 
@@ -33,23 +45,99 @@ final class FilesetComponent implements Comparable {
     private ArrayList childs = null;
 
     private long size = 0L;
-    
-    private String[] fileIDs;
-    
-    public FilesetComponent(String id, Comparable comparable, String[] fileIDs) {
+
+    private final String[] fileIDs;
+
+    private final int level;
+
+    public final long size() {
+        return size;
+    }
+
+    public final int level() {
+        return level;
+    }
+
+    public final FilesetComponent root() {
+        return parent != null ? parent.root() : this;
+    }
+
+    public final List childs() {
+        return Collections.unmodifiableList(childs);
+    }
+
+    public final String id() {
+        return id;
+    }
+
+    public final String[] fileIDs() {
+        return (String[]) fileIDs.clone();
+    }
+
+    private static String padWithLeadingZeros(String s) {
+        return "0000000000".substring(Math.min(10, s.length())) + s;
+    }
+
+    public static FilesetComponent makeRootFilesetComponent() {
+        return new FilesetComponent(null, null, new String[0], ROOT);
+    }
+
+    public static FilesetComponent makePatientFilesetComponent(Dataset ds,
+            String[] fileIDs) {
+        return new FilesetComponent(ds.getString(Tags.PatientID), ds
+                .getString(Tags.PatientName), new String[] { fileIDs[0],
+                fileIDs[1]}, PATIENT);
+    }
+
+    public static FilesetComponent makeStudyFilesetComponent(Dataset ds,
+            String[] fileIDs) {
+        return new FilesetComponent(ds.getString(Tags.StudyInstanceUID), ds
+                .getDateTime(Tags.StudyDate, Tags.StudyTime), new String[] {
+                fileIDs[0], fileIDs[1], fileIDs[2]}, STUDY);
+    }
+
+    public static FilesetComponent makeSeriesFilesetComponent(Dataset ds,
+            String[] fileIDs) {
+        return new FilesetComponent(ds.getString(Tags.SeriesInstanceUID), ds
+                .getString(Tags.Modality)
+                + padWithLeadingZeros(ds.getString(Tags.SeriesNumber, "")),
+                new String[] { fileIDs[0], fileIDs[1], fileIDs[2], fileIDs[3]},
+                SERIES);
+    }
+
+    public static FilesetComponent makeInstanceFilesetComponent(Dataset ds,
+            String[] fileIDs) {
+        return new FilesetComponent(ds.getString(Tags.SOPInstanceUID),
+                padWithLeadingZeros(ds.getString(Tags.InstanceNumber, "")),
+                (String[]) fileIDs.clone(), INSTANCE);
+    }
+
+    public String toString() {
+        return PROMPTS[level]
+                + "[id="
+                + id
+                + ", size="
+                + size
+                + (level < INSTANCE ? (", #" + PROMPTS[level + 1] + "=" + childs
+                        .size())
+                        : "") + "]";
+    }
+
+    private FilesetComponent(String id, Comparable comparable,
+            String[] fileIDs, int level) {
         this.id = id;
         this.comparable = comparable;
         this.fileIDs = fileIDs;
+        this.level = level;
     }
-    
-    public String toString() {
-        return "FilesetComponent[" + StringUtils.toString(fileIDs, '/')
-        	+ ", size=" + size + ", cmp=" + comparable + "]";
+
+    public boolean isEmpty() {
+        return size == 0L;
     }
 
     public int compareTo(Object o) {
         if (comparable == null || ((FilesetComponent) o).comparable == null)
-            return 0;
+                return 0;
         return comparable.compareTo(((FilesetComponent) o).comparable);
     }
 
@@ -76,59 +164,23 @@ final class FilesetComponent implements Comparable {
         if (parent != null) parent.incSize(delta);
     }
 
-    private void moveChilds(FilesetComponent dest, long maxSize, Logger log) {
-        while (!childs.isEmpty()) {
-            FilesetComponent child = (FilesetComponent) childs.get(0);
-            if (dest.size + child.size > maxSize) break;
-            log.info("move " + child);
-            removeChild(child);
-            dest.addChild(child);
+    public FilesetComponent takeChilds(long maxSize) {
+        FilesetComponent dest = newFilesetComponent();
+        for (int i = 0; i < childs.size();) {
+            FilesetComponent child = (FilesetComponent) childs.get(i);
+            if (dest.size + child.size <= maxSize) {
+                removeChild(child);
+                dest.addChild(child);
+            } else
+                ++i;
         }
-    }
-    
-    public void split(long freeSizeFirst, long freeSizeOther, ArrayList result, Logger log)
-		throws MediaCreationException {
-        log.info("split " + this);
-        Collections.sort(childs);
-        while (!childs.isEmpty()) {
-			FilesetComponent dest = newFilesetComponent();
-			moveChilds(dest, result.isEmpty() ? freeSizeFirst : freeSizeOther, log);
-			if (dest.childs == null) {
-				FilesetComponent child = (FilesetComponent) childs.get(0);
-				if (child.childs == null)
-					throw new MediaCreationException(
-					        ExecutionStatusInfo.INST_OVERSIZED,
-                            "Instance size exceeds Media Capacity");
-				child.split(freeSizeFirst, freeSizeOther, result, log);				
-			} else
-				result.add(dest);				
-		}		
+        return dest;
     }
 
     private FilesetComponent newFilesetComponent() {
-        FilesetComponent result = new FilesetComponent(id, comparable, fileIDs);
-		if (parent != null)
-			parent.newFilesetComponent().addChild(result); 
+        FilesetComponent result = new FilesetComponent(id, comparable, fileIDs,
+                level);
+        if (parent != null) parent.newFilesetComponent().addChild(result);
         return result;
     }
-
-    public final long size() {
-        return size;
-    }
-
-	public final FilesetComponent root() {
-		return parent != null ? parent.root() : this; 
-	}
-
-	public final ArrayList childs() {
-		return childs; 
-	}
-
-	public final String id() {
-		return id; 
-	}
-
-	public final String[] fileIDs() {
-		return fileIDs; 
-	}
 }

@@ -154,6 +154,19 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getPauseAfterBurn"
+      setMethod="setPauseAfterBurn">
+      <description>Pause in seconds after finished burning. Useful in case
+      of media splitting and multiple copies, to have time for manual
+      media exchange.
+      </description>
+      <name>PauseAfterBurn</name>
+      <type>int</type>      
+      <descriptors>
+         <value value="10" />
+      </descriptors>
+   </attribute>
    
    <!-- Operations -->
    &defaultOperations;

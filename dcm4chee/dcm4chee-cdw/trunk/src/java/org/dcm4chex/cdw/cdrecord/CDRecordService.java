@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.cdw.common.AbstractMediaWriterService;
 import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
@@ -84,6 +85,8 @@ public class CDRecordService extends AbstractMediaWriterService {
     private boolean eject = true;
 
     private boolean logEnabled = false;
+    
+    private long pauseAfterBurn = 10000;
 
     private final File logFile;
 
@@ -93,6 +96,14 @@ public class CDRecordService extends AbstractMediaWriterService {
             new File(homedir, "log" + File.separatorChar + "cdrecord.log");
     }
 
+    public final int getPauseAfterBurn() {
+        return (int) (pauseAfterBurn / 1000);
+    }
+    
+    public final void setPauseAfterBurn(int secs) {
+        this.pauseAfterBurn = secs * 1000;
+    }
+    
     public final boolean isPadding() {
         return padding;
     }
@@ -179,25 +190,37 @@ public class CDRecordService extends AbstractMediaWriterService {
         this.logEnabled = logEnabled;
     }
 
-    protected void handle(MediaCreationRequest r, Dataset attrs)
-        throws MediaCreationException {
+    protected void handle(MediaCreationRequest rq, Dataset attrs)
+        throws MediaCreationException, IOException {
         if (!checkDrive())
             throw new MediaCreationException(
                 ExecutionStatusInfo.CHECK_MCD_SRV,
                 "Drive Check failed");
-        if (!checkDisk()) {
-            eject();
-            throw new MediaCreationException(
-                ExecutionStatusInfo.OUT_OF_SUPPLIES,
-                "No or Wrong Media");
+        int countDown = rq.getNumberOfCopies();
+        int tot = attrs.getInt(Tags.TotalNumberOfPiecesOfMediaCreated, 1);
+        while (countDown-- > 0) {
+	        if (!checkDisk()) {
+	            eject();
+	            throw new MediaCreationException(
+	                ExecutionStatusInfo.OUT_OF_SUPPLIES,
+	                "No or Wrong Media");
+	        }
+	        if (!appendEnabled && hasTOC()) {
+	            eject();
+	            throw new MediaCreationException(
+	                ExecutionStatusInfo.OUT_OF_SUPPLIES,
+	                "Media not empty");
+	        }
+	        burn(rq.getIsoImageFile());
+	        if (countDown > 0) {
+	            if (rq.isCanceled()) {
+	                log.info("" + rq + " was canceled");
+	                return;
+	            }
+	            attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated, ++tot);
+	            rq.writeAttributes(attrs, log);
+	        }
         }
-        if (!appendEnabled && hasTOC()) {
-            eject();
-            throw new MediaCreationException(
-                ExecutionStatusInfo.OUT_OF_SUPPLIES,
-                "Media not empty");
-        }
-        burn(r.getIsoImageFile());
     }
 
     public void burn(File isoImageFile) throws MediaCreationException {
@@ -243,6 +266,11 @@ public class CDRecordService extends AbstractMediaWriterService {
             throw new MediaCreationException(
                 ExecutionStatusInfo.MCD_FAILURE,
                 "cdrecord " + isoImageFile + " returns " + exitCode);
+        }
+        try {
+            Thread.sleep(pauseAfterBurn);
+        } catch (InterruptedException e) {
+            log.warn("Pause after burn was interrupted:", e);
         }
     }
 

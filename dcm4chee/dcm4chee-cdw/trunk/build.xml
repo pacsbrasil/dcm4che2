@@ -10,8 +10,7 @@
     <property name="jboss.home" value="${user.home}/jboss-3.2.5"/>
 
     <!-- Override with your dcm4che dist location -->
-	<property name="dcm4che.home" value="../dcm4che14/build"/>
-	<property name="dcm4che.lib" value="../dcm4che14/lib"/>
+	<property name="dcm4che.home" value="../dcm4che14/build/dcm4che-1.0.23"/>
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>	
 
     <property name="src.dir" value="${basedir}/src/java"/>
@@ -104,6 +103,13 @@
    			</zipfileset>	
 			<zipfileset dir="${dcm4che.home}" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="lib/dcm4che.jar"/>
+				<include name="samples/getopt.jar"/>
+				<include name="samples/log4j.properties"/>
+				<include name="samples/dcmsnd.jar"/>
+				<include name="samples/dcmsnd.cfg"/>
+				<include name="samples/mcmscu.jar"/>
+				<include name="samples/mcmscu.cfg"/>
+				<include name="samples/dcm2xml.jar"/>
    			</zipfileset>	
 			<zipfileset dir="${src.etc}" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="conf/**"/>

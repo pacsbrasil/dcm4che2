@@ -104,6 +104,10 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
                 attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.FAILURE);
                 attrs.putCS(Tags.ExecutionStatusInfo, e.getStatusInfo());
             }
+            if (rq.isCanceled()) {
+                log.info("" + rq + " was canceled");
+                return;
+            }
             rq.writeAttributes(attrs, log);
         } catch (IOException e) {
             // error already logged
@@ -114,5 +118,5 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
     }
 
     protected abstract void handle(MediaCreationRequest r, Dataset attrs)
-            throws MediaCreationException;
+            throws MediaCreationException, IOException;
 }

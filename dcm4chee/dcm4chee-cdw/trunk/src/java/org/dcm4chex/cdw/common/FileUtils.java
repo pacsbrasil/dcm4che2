@@ -26,6 +26,8 @@ public class FileUtils {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
+    private FileUtils() {}
+    
     public static Dataset readDataset(File f, Logger log) throws IOException {
         if (log.isDebugEnabled())
             log.debug("M-READ " + f);
@@ -66,5 +68,13 @@ public class FileUtils {
         return success;
     }
     
-    private FileUtils() {};
+    public static void purgeDir(File d, Logger log) {
+        if (d.isDirectory() && d.list().length == 0) {
+            log.debug("M-DELETE " + d);
+            if (!d.delete())
+                log.warn("Failed M-DELETE " + d);
+            else
+                purgeDir(d.getParentFile(), log);
+        }
+    };
 }
