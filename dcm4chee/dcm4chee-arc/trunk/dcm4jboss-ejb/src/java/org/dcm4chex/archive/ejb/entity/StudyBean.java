@@ -1,0 +1,259 @@
+/*
+ * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ * This file is part of dcm4che.
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+/* 
+ * File: $Source$
+ * Author: gunter
+ * Date: 09.07.2003
+ * Time: 09:08:46
+ * CVS Revision: $Revision$
+ * Last CVS Commit: $Date$
+ * Author of last CVS Commit: $Author$
+ */
+package org.dcm4chex.archive.ejb.entity;
+
+import javax.ejb.CreateException;
+import javax.ejb.EntityBean;
+import javax.ejb.RemoveException;
+
+import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.util.DatasetUtil;
+
+/**
+
+/**
+ * @ejb:bean
+ *  name="Study"
+ *  type="CMP"
+ *  view-type="local"
+ *  primkey-field="pk"
+ *  local-jndi-name="ejb/Study"
+ * 
+ * @ejb:transaction 
+ *  type="Required"
+ * 
+ * @ejb.persistence
+ *  table-name="study"
+ * 
+ * @jboss.entity-command
+ *  name="get-last-oid"
+ *  class="org.jboss.ejb.plugins.cmp.jdbc.postgres.JDBCPostgresCreateCommand"
+ * 
+ * @ejb.finder
+ *  signature="Collection findAll()"
+ *  query="SELECT OBJECT(a) FROM Study AS a"
+ *  transaction-type="NotSupported"
+ *
+ * @ejb.finder
+ *  signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
+ *  query="SELECT OBJECT(a) FROM Study AS a WHERE a.studyIuid = ?1"
+ *  transaction-type="NotSupported"
+ *
+ * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ *
+ */
+public abstract class StudyBean implements EntityBean {
+
+    private static final String ATTRS_CFG = "study-attrs.cfg";
+
+    private Logger log = Logger.getLogger(StudyBean.class);
+    /**
+     * Auto-generated Primary Key
+     *
+     * @ejb.interface-method
+     * @ejb.pk-field
+     * @ejb.persistence
+     *  column-name="pk"
+     * @jboss.persistence
+     *  auto-increment="true"
+     *
+     */
+    public abstract Integer getPk();
+
+    public abstract void setPk(Integer pk);
+
+    /**
+     * Study Instance UID
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="study_iuid"
+     */
+    public abstract String getStudyIuid();
+
+    public abstract void setStudyIuid(String uid);
+
+    /**
+     * Study ID
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="study_id"
+     */
+    public abstract String getStudyId();
+
+    public abstract void setStudyId(String uid);
+
+    /**
+     * Study Datetime
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="study_datetime"
+     */
+    public abstract java.util.Date getStudyDateTime();
+
+    public abstract void setStudyDateTime(java.util.Date dateTime);
+
+    /**
+     * Accession Number
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="accession_no"
+     */
+    public abstract String getAccessionNumber();
+
+    public abstract void setAccessionNumber(String no);
+
+    /**
+     * Referring Physician
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="ref_physician"
+     */
+    public abstract String getReferringPhysicianName();
+
+    public abstract void setReferringPhysicianName(String physician);
+
+    /**
+     * Modalities In Study
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="modalities"
+     */
+    public abstract String getModalitiesInStudy();
+
+    public abstract void setModalitiesInStudy(String mds);
+
+    /**
+     * Study DICOM Attributes
+     *
+     * @ejb.persistence
+     *  column-name="study_attrs"
+     * 
+     */
+    public abstract byte[] getEncodedAttributes();
+
+    public abstract void setEncodedAttributes(byte[] bytes);
+
+    /**
+     * @ejb:relation
+     *  name="patient-study"
+     *  role-name="study-of-patient"
+     *  cascade-delete="yes"
+     *
+     * @jboss:relation
+     *  fk-column="patient_fk"
+     *  related-pk-field="pk"
+     * 
+     * @param patient patient of this study
+     */
+    public abstract void setPatient(PatientLocal patient);
+    
+    /**
+     * @ejb:interface-method view-type="local"
+     * 
+     * @return patient of this study
+     */
+    public abstract PatientLocal getPatient();
+    
+    /**
+     * @ejb:interface-method view-type="local"
+     *
+     * @param series all series of this study
+     */
+    public abstract void setSeries(java.util.Collection series);
+
+    /**
+     * @ejb:interface-method view-type="local"
+     * @ejb:relation
+     *  name="study-series"
+     *  role-name="study-has-series"
+     *    
+     * @return all series of this study
+     */
+    public abstract java.util.Collection getSeries();
+    
+    /**
+     * Create study.
+     *
+     * @ejb.create-method
+     */
+    public Integer ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
+        setStudyIuid(ds.getString(Tags.StudyInstanceUID));
+        setStudyId(ds.getString(Tags.StudyID));
+        setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
+        setAccessionNumber(ds.getString(Tags.AccessionNumber));
+        setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
+        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        return null;
+    }
+
+    public void ejbPostCreate(Dataset ds, PatientLocal patient) throws CreateException {
+        setPatient(patient);
+        log.info("Created " + prompt());
+    }
+
+    public void ejbRemove() throws RemoveException {
+        log.info("Deleting " + prompt());
+    }
+    
+    /**
+     * @ejb:interface-method
+     */
+    public Dataset getAttributes()
+    {
+        return DatasetUtil.fromByteArray(getEncodedAttributes());
+    }
+
+    /**
+     * 
+     * @ejb.interface-method
+     */
+    public String asString()
+    {
+        return prompt();
+    }
+
+    private String prompt() {
+        return "Study[pk="
+            + getPk()
+            + ", uid="
+            + getStudyIuid()
+            + ", patient->"
+            + getPatient()
+            + "]";
+    }
+}

@@ -1,0 +1,100 @@
+/*
+ * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ * This file is part of dcm4che.
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+/* 
+ * File: $Source$
+ * Author: gunter
+ * Date: 11.07.2003
+ * Time: 18:50:40
+ * CVS Revision: $Revision$
+ * Last CVS Commit: $Date$
+ * Author of last CVS Commit: $Author$
+ */
+package org.dcm4chex.archive.ejb.entity;
+
+import java.util.Collection;
+
+import org.apache.cactus.ServletTestCase;
+import org.dcm4chex.archive.ejb.interfaces.FileLocal;
+import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
+import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
+
+/**
+ * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ *
+ */
+public class FileBeanTest extends ServletTestCase
+{
+
+    public static final String AET = "FILE_BEAN_TEST_AET";
+    public static final String PATH_ = "2003/07/11/12345678/9ABCDEF0/";
+    public static final String TSUID = "1.2.40.0.13.1.1.9999.3";
+    public static final long SIZE = 567890L;
+    public static final byte[] MD5 =
+        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+
+    private FileLocalHome fileHome;
+    private Object[] filePks;
+
+    public static void main(String[] args)
+    {
+        junit.textui.TestRunner.run(FileBeanTest.class);
+    }
+
+    /*
+     * @see TestCase#setUp()
+     */
+    protected void setUp() throws Exception
+    {
+        EJBLocalHomeFactory factory = EJBLocalHomeFactory.getInstance();
+        fileHome = (FileLocalHome) factory.lookup(FileLocalHome.class);
+        filePks = new Object[5];
+        for (int i = 0; i < filePks.length; ++i)
+        {
+            FileLocal file = fileHome.create(AET, PATH_ + i, TSUID, SIZE, MD5, null);
+            filePks[i] = file.getPrimaryKey();
+        }
+    }
+
+    /*
+     * @see TestCase#tearDown()
+     */
+    protected void tearDown() throws Exception
+    {
+        for (int i = 0; i < filePks.length; ++i)
+        {
+            fileHome.remove(filePks[i]);
+        }
+    }
+
+    /**
+     * Constructor for StudyBeanTest.
+     * @param arg0
+     */
+    public FileBeanTest(String arg0)
+    {
+        super(arg0);
+    }
+
+    public void testFindByRetrieveAet() throws Exception
+    {
+        Collection c = fileHome.findByRetrieveAet(AET);
+        assertEquals(filePks.length, c.size());
+    }
+}
