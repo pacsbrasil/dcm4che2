@@ -42,6 +42,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class FileSystemMgtService extends ServiceMBeanSupport {
 
+    private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;    
     private static final String LOCAL = "local";
     private static final String CHECK_STRING_ONMEDIA = "ON_MEDIA";
     private static final String CHECK_STRING_EXTERNAL = "EXTERNAL";
@@ -50,9 +51,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 	/** Milliseconds of one day. Is used to calculate search date. */
 	private static final long ONE_DAY_IN_MILLIS = 86400000;// one day has 86400000 milli seconds
 
-	private static final long MEGA = 1000000L;
-
-    private long highWaterMark = 50000000L;
+    private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
     private List dirPathList = Arrays.asList(new File[] { new File("archive")});
 
@@ -70,9 +69,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 
     private boolean makeStorageDirectory = true;
 
-	private float freeDiskSpaceWaterMarkFactor = 1.5f;
+	private float freeDiskSpaceLowerThreshold = 1.5f;
 	
-	private float stopFreeDiskSpaceWaterMarkFactor = 2.5f;
+	private float freeDiskSpaceUpperThreshold = 2.5f;
 	
 	private boolean flushStudiesExternalRetrievable = false;
 	
@@ -80,7 +79,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 	
 	private boolean deleteStudiesUnconditional = false;
 	
-	private int freeDiskSpaceNotAccessedForDays = 356;
+	private int flushStudiesNotAccessedForDays = 3560;
 	
 	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and isFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
@@ -174,52 +173,53 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
         this.retrieveAET = aet;
     }
 
-    public final int getHighWaterMark() {
-        return (int) (highWaterMark / MEGA);
+    public final String getMinFreeDiskSpace() {
+        return FileUtils.formatSize(minFreeDiskSpace);
     }
 
-    public final void setHighWaterMark(int highWaterMark) {
-        this.highWaterMark = highWaterMark * MEGA;
+    public final void setMinFreeDiskSpace(String str) {
+        this.minFreeDiskSpace = FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
     }
 
 	/**
 	 * Return the factor to calculate watermark for free disk space process.
 	 * <p>
-	 * The watermark for freeDiskSpace process is calculated: <code>highWaterMark * freeDiskSpaceWaterMarkFactor * numberOfFilesystems</code>
+	 * The threshold for freeDiskSpace process is calculated: <code>minFreeDiskSpace * freeDiskSpaceLowerThreshold * numberOfFilesystems</code>
 	 * 
 	 * @return Returns the cleanWaterMarkFactor.
 	 */
-	public float getFreeDiskSpaceWaterMarkFactor() {
-		return freeDiskSpaceWaterMarkFactor;
+	public float getFreeDiskSpaceLowerThreshold() {
+		return freeDiskSpaceLowerThreshold;
 	}
 	/**
 	 * Set the factor to calculate watermark for free disk space process.
-	 * @param freeDiskSpaceWaterMarkFactor The freeDiskSpaceWaterMarkFactor to set.
+	 * @param freeDiskSpaceLowerThreshold The freeDiskSpaceLowerThreshold to set.
 	 */
-	public void setFreeDiskSpaceWaterMarkFactor(float freeDiskSpaceWaterMarkFactor) {
-		if ( freeDiskSpaceWaterMarkFactor < 1.0f ) throw new IllegalArgumentException("cleanWaterMarkFactor must NOT be smaller than 1!");
-		this.freeDiskSpaceWaterMarkFactor = freeDiskSpaceWaterMarkFactor;
+	public void setFreeDiskSpaceLowerThreshold(float threshold) {
+		if ( threshold < 1.0f ) throw new IllegalArgumentException("FreeDiskSpaceLowerThreshold must NOT be smaller than 1!");
+		this.freeDiskSpaceLowerThreshold = threshold;
 	}
+	
 	/**
 	 * Returns the factor to calculate the watermark to stop free disk space process.
 	 * <p>
-	 * The watermark to stop freeDiskSpace process is calculated: <code>highWaterMark * stopFreeDiskSpaceWaterMarkFactor * numberOfFileSytsems</code>
+	 * The threshold to stop freeDiskSpace process is calculated: <code>minFreeDiskSpace * freeDiskSpaceUpperThreshold * numberOfFileSytsems</code>
 	 * 
 	 * @return Returns the stopCleanWaterMarkFactor.
 	 */
-	public float getStopFreeDiskSpaceWaterMarkFactor() {
-		return stopFreeDiskSpaceWaterMarkFactor;
+	public float getFreeDiskSpaceUpperThreshold() {
+		return freeDiskSpaceUpperThreshold;
 	}
 	/**
 	 * Set the factor to calculate the watermark to stop free disk space process.
 	 * <p>
-	 * The watermark to stop freeDiskSpace process is calculated: <code>highWaterMark * stopFreeDiskSpaceWaterMarkFactor * numberOfFileSytsems</code>
+	 * The watermark to stop freeDiskSpace process is calculated: <code>minFreeDiskSpace * freeDiskSpaceUpperThreshold * numberOfFileSytsems</code>
 	 * 
 	 * @param stopCleanWaterMarkFactor The stopCleanWaterMarkFactor to set.
 	 */
-	public void setStopFreeDiskSpaceWaterMarkFactor(float stopCleanWaterMarkFactor) {
-		if ( stopCleanWaterMarkFactor < freeDiskSpaceWaterMarkFactor ) throw new IllegalArgumentException("cleanWaterMarkFactor must be higher than cleanWaterMarkFactor!");
-		this.stopFreeDiskSpaceWaterMarkFactor = stopCleanWaterMarkFactor;
+	public void setFreeDiskSpaceUpperThreshold(float threshold) {
+		if ( threshold < freeDiskSpaceLowerThreshold ) throw new IllegalArgumentException("FreeDiskSpaceUpperThreshold must be higher than FreeDiskSpaceLowerThreshold");
+		this.freeDiskSpaceUpperThreshold = threshold;
 	}
 
 	/**
@@ -313,20 +313,20 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
 	 * In this case the freeDiskSpace policies (flushStudiesExternalRetrievable, flushStudiesOnMedia 
 	 * and deleteStudiesUnconditional) are used to determine if the files of a study can be deleted.  
 	 * 
-	 * @return Returns the freeDiskSpaceNotAccessedForDays.
+	 * @return Returns the flushStudiesNotAccessedForDays.
 	 */
-	public int getFreeDiskSpaceNotAccessedForDays() {
-		return freeDiskSpaceNotAccessedForDays;
+	public int getFlushStudiesNotAccessedForDays() {
+		return flushStudiesNotAccessedForDays;
 	}
 	
 	/**
 	 * Set number of days a study is not accessed for freeDiskSpace.
 	 * 
-	 * @param freeDiskSpaceNotAccessedForDays The freeDiskSpaceNotAccessedForDays to set in days.
+	 * @param flushStudiesNotAccessedForDays The flushStudiesNotAccessedForDays to set in days.
 	 */
-	public void setFreeDiskSpaceNotAccessedForDays(
+	public void setFlushStudiesNotAccessedForDays(
 			int freeDiskSpaceNotAccessedForDays) {
-		this.freeDiskSpaceNotAccessedForDays = freeDiskSpaceNotAccessedForDays;
+		this.flushStudiesNotAccessedForDays = freeDiskSpaceNotAccessedForDays;
 	}
 	
 	public final boolean isMakeStorageDirectory() {
@@ -397,13 +397,13 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     public FileSystemInfo selectStorageFileSystem() throws IOException {
         File curDir = (File) dirPathList.get(curDirIndex);
         FileSystemInfo info = initFileSystemInfo(curDir);
-        if (info.getAvailable() > highWaterMark)
+        if (info.getAvailable() > minFreeDiskSpace)
             return info;
         for (int i = 1, n = dirPathList.size(); i < n; ++i) {
             int dirIndex = (curDirIndex + i) % n;
             File dir = (File) dirPathList.get(dirIndex);
             info = initFileSystemInfo(dir);
-            if (info.getAvailable() > highWaterMark) {
+            if (info.getAvailable() > minFreeDiskSpace) {
                 log.info("High Water Mark reached on current Storage Directory "
                         + curDir + " - switch Storage Directory to " + dir);
                 curDirIndex = dirIndex;
@@ -503,14 +503,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
     	Long olderThan = null;
     	String prefix;
     	if ( ! isFreeDiskSpaceNecessary() ) {
-    		olderThan = new Long( System.currentTimeMillis() - this.freeDiskSpaceNotAccessedForDays * ONE_DAY_IN_MILLIS );
+    		olderThan = new Long( System.currentTimeMillis() - this.flushStudiesNotAccessedForDays * ONE_DAY_IN_MILLIS );
     		prefix = "FreeDiskSpace Status: Available disk space: OK ; Delete old files:";
     	} else {
     		prefix = "FreeDiskSpace Status: filesystems full! ; free disk space:";
     	}
     	
         FileSystemMgt fsMgt = newFileSystemMgt();
-		long maxSizeToDel = (long) ( (float) this.highWaterMark * stopFreeDiskSpaceWaterMarkFactor ) * dirPathList.size() - availableDiskSpace;
+		long maxSizeToDel = (long) ( (float) this.minFreeDiskSpace * freeDiskSpaceUpperThreshold ) * dirPathList.size() - availableDiskSpace;
 		long releasedSize = fsMgt.releaseStudies( fsPathSet, maxSizeToDel, deleteStudiesUnconditional, flushStudiesOnMedia, flushStudiesExternalRetrievable, olderThan );
     	return releasedSize;
     }
@@ -521,7 +521,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
      * Check if a cleaning process is ncessary.
      * <p>
      * <OL>
-     * <LI>Calculate the total space that should be available on all file systems. (<code>minAvail = highWaterMark * cleanWaterMarkFactor * dirPathList.size() </code>)</LI>
+     * <LI>Calculate the total space that should be available on all file systems. (<code>minAvail = minFreeDiskSpace * cleanWaterMarkFactor * dirPathList.size() </code>)</LI>
      * <LI>Cumulate available space from all file systems to get current available space on all file systems (=currAvail).</LI>
      * </OL>
      * <p>
@@ -533,7 +533,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
      * @throws IOException
      */
     public boolean isFreeDiskSpaceNecessary() throws IOException {
-    	long minAvail = (long) ( (float) this.highWaterMark * freeDiskSpaceWaterMarkFactor ) * dirPathList.size();
+    	long minAvail = (long) ( (float) this.minFreeDiskSpace * freeDiskSpaceLowerThreshold ) * dirPathList.size();
     	long currAvail = getAvailableDiskSpace();
     	if ( log.isDebugEnabled() ) log.debug( "currAvail:"+currAvail+" < minAvail:"+minAvail);
     	return currAvail < minAvail; 

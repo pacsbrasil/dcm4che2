@@ -41,6 +41,7 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.JMSDelegate;
 import org.jboss.system.ServiceMBeanSupport;
@@ -57,11 +58,10 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class MCMScuService extends ServiceMBeanSupport implements MessageListener {
 	
-	/** Milliseconds of one day. Is used to calculate search date. */
-	private static final long ONE_DAY_IN_MILLIS = 86400000;// one day has 86400000 milli seconds
+    private static final long MIN_MAX_MEDIA_USAGE = 20 * FileUtils.MEGA;
 
-	/** Defines the size of one MByte (1.000.000 Bytes). */
-	private static final long MEGA_BYTE = 1000000L;
+    /** Milliseconds of one day. Is used to calculate search date. */
+	private static final long ONE_DAY_IN_MILLIS = 86400000;// one day has 86400000 milli seconds
 
 	/** Name of the JMS queue to receive media creation requests from scheduler or WEB interface. */ 
     private static final String QUEUE = "MCMScu";
@@ -73,7 +73,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     private static final int CANCEL_MEDIA_CREATION = 2;
     
     /** Holds the max. number of bytes that can be used to collect instances for a singe media. */
-	private long maxMediaUsage;
+	private long maxMediaUsage = 680 * FileUtils.MEGA;
 	
     /** Holds the max age of a media for status COLLECTING. */
 	private int maxStudyAge;
@@ -124,7 +124,6 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     
 	private MediaComposer mediaComposer;
 
-
 	/**
 	 * Returns the prefix for FileSetID creation.
 	 * 
@@ -150,16 +149,16 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * 
 	 * @return Returns the maxMediaUsage in bytes.
 	 */
-	public long getMaxMediaUsage() {
-		return maxMediaUsage/MEGA_BYTE;
+	public String getMaxMediaUsage() {
+		return FileUtils.formatSize(maxMediaUsage);
 	}
 	/**
 	 * Set the max media usage for collecting studies.
 	 * 
-	 * @param maxMediaUsage The maxMediaUsage to set (in bytes).
+	 * @param maxMediaUsage The maxMediaUsage to set.
 	 */
-	public void setMaxMediaUsage(long maxMediaUsage) {
-		this.maxMediaUsage = maxMediaUsage*MEGA_BYTE;
+	public void setMaxMediaUsage(String str) {
+		this.maxMediaUsage = FileUtils.parseSize(str, MIN_MAX_MEDIA_USAGE);
 	}
 
 	/**

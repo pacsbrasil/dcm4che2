@@ -62,16 +62,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getHighWaterMark"
-      setMethod="setHighWaterMark">
-      <description>High Water Mark in MB(=1000000 Bytes).
+      getMethod="getMinFreeDiskSpace"
+      setMethod="setMinFreeDiskSpace">
+      <description>Minimal Available Disk Space.
       Storage Directory switches to next entry in DirectoryPathList,
-      if amount of available disk space falls below this value.      
+      if amount of available disk space falls below this value.
+      1MB = 1000000 Byte, 1GB = 1000MB.    
       </description>
-      <name>HighWaterMark</name>
-      <type>int</type>
+      <name>MinFreeDiskSpace</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="50" />
+         <value value="50MB" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -97,48 +98,53 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFreeDiskSpaceWaterMarkFactor"
-      setMethod="setFreeDiskSpaceWaterMarkFactor">
-      <description>Factor to calculate High Water Mark for freeDiskSpace.
-      freeDiskSpace starts with deletion if currAvail &lt; minAvail.
-      currAvail = Available space of all defined filesystems.
-      minAvail = highWaterMark * freeDiskSpaceWaterMarkFactor * nrOfFileSystems.
+      getMethod="getFreeDiskSpaceLowerThreshold"
+      setMethod="setFreeDiskSpaceLowerThreshold">
+      <description>Defines lower threshold of available disk space for 
+          deleting least-recently accessed studies: if the average available
+          disk space on storage filesystems falls below 
+          MinFreeDiskSpace * FreeDiskSpaceLowerThreshold,
+          least-recently accessed studies will be deleted.
       </description>
-      <name>FreeDiskSpaceWaterMarkFactor</name>
+      <name>FreeDiskSpaceLowerThreshold</name>
       <type>float</type>
       <descriptors>
          <value value="1.5" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getStopFreeDiskSpaceWaterMarkFactor"
-      setMethod="setStopFreeDiskSpaceWaterMarkFactor">
-      <description>Factor to calculate High Water Mark indicating the end of the FreeDiskSpace process.
-      The FreeDiskSpace process works until current available space exceeds this value.
+      getMethod="getFreeDiskSpaceUpperThreshold"
+      setMethod="setFreeDiskSpaceUpperThreshold">
+      <description>Defines upper threshold of available disk space for 
+          deleting least-recently accessed studies: least-recently accessed
+          studies will be deleted, until the average available
+          disk space on storage filesystems exceeds 
+          MinFreeDiskSpace * FreeDiskSpaceUpperThreshold.
       </description>
-      <name>StopFreeDiskSpaceWaterMarkFactor</name>
+      <name>FreeDiskSpaceUpperThreshold</name>
       <type>float</type>
       <descriptors>
          <value value="2.0" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFreeDiskSpaceNotAccessedForDays"
-      setMethod="setFreeDiskSpaceNotAccessedForDays">
-      <description>The number of days a study must not be accessed for freeDiskSpace.
-      This value is used if the  freeDiskSpaceWaterMark is not reached to delete the files of studies
-      that not accessed in the given time.
+      getMethod="getFlushStudiesNotAccessedForDays"
+      setMethod="setFlushStudiesNotAccessedForDays">
+      <description>Flush Studies which were not accessed for specified number
+      of days, independent of available disk space.
       </description>
-      <name>StudiesNotAccessedForDays</name>
+      <name>FlushStudiesNotAccessedForDays</name>
       <type>int</type>
       <descriptors>
-         <value value="365" />
+         <value value="3650" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="isFlushStudiesOnMedia"
       setMethod="setFlushStudiesOnMedia">
-      <description>This policy checks if a study is stored on a media (offline storage)
+      <description>Enables deletion of objects in local filesystems of Studies
+      stored on media (offline storage). DB Entries for the Studies will not
+      be removed! 
       </description>
       <name>FlushStudiesOnMedia</name>
       <type>boolean</type>
@@ -149,20 +155,23 @@
    <attribute access="read-write"
       getMethod="isFlushStudiesExternalRetrievable"
       setMethod="setFlushStudiesExternalRetrievable">
-      <description>This policy checks if a study is external retrievable.
+      <description>Enables deletion of objects in local filesystems of Studies
+      which are retrieveable from an external Retrieve AE. DB Entries for
+      the Studies will not be removed! 
       </description>
       <name>FlushStudiesExternalRetrievable</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="isDeleteStudiesUnconditional"
       setMethod="setDeleteStudiesUnconditional">
-      <description>If this policy is active, the oldest studies will be deleted immediately!
-      Deletes both files and database entries!
-      Enable this policy only if archive is used only as caching system!
+      <description>Enables deletion of least-recently accessed studies without
+          checking the availibility of the Study on Media or from an external 
+          retrieve AE. Deletes files AND database entries! Do only activate
+          if you know what you are doing!
       </description>
       <name>DeleteStudiesUnconditional</name>
       <type>boolean</type>

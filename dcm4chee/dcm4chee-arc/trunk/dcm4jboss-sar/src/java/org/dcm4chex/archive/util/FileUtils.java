@@ -20,6 +20,11 @@ import org.jboss.system.server.ServerConfigLocator;
  *
  */
 public class FileUtils {
+
+    public static final long MEGA = 1000000L;
+
+    public static final long GIGA = 1000000000L;
+
     public static String slashify(File f) {
         return f.getPath().replace(File.separatorChar, '/');
     }
@@ -37,5 +42,29 @@ public class FileUtils {
     public static File toFile(String unixDirPath, String unixFilePath) {
         return resolve(new File(unixDirPath.replace('/', File.separatorChar),
                 unixFilePath.replace('/', File.separatorChar)));
+    }
+    
+    public static String formatSize(long size) {
+        if (size < GIGA)
+            return ((float) size / MEGA) + "MB";
+        else
+            return ((float) size / GIGA) + "GB";
+    }
+
+    public static long parseSize(String s, long minSize) {
+        long u;
+        if (s.endsWith("GB"))
+            u = GIGA;
+        else if (s.endsWith("MB"))
+            u = MEGA;
+        else
+            throw new IllegalArgumentException(s);
+        try {
+            long size = (long) (Float.parseFloat(s.substring(0, s.length() - 2)) * u);
+            if (size >= minSize)
+                return size;
+        } catch (IllegalArgumentException e) {
+        }
+        throw new IllegalArgumentException(s);
     }
 }

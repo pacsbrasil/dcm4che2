@@ -27,7 +27,7 @@
       <name>SchedulePeriod</name>
       <type>long</type>
       <descriptors>
-         <value value="600000" />
+         <value value="60000" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

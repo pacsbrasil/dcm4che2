@@ -33,37 +33,41 @@
     <attribute access="read-write"
       getMethod="getMaxMediaUsage"
       setMethod="setMaxMediaUsage">
-      <description>Max media usage for collecting studies in MB (=1.000.000 Bytes).
+      <description>Maximal media usage for DICOM files. This values is usually
+      smaller than the real media size to keep space for index and optional html
+      files. 1MB = 1000000 Byte, 1GB = 1000MB
       </description>
       <name>MaxMediaUsage</name>
-      <type>long</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="600" />
-      </descriptors>
-   </attribute>
-
-    <attribute access="read-write"
-      getMethod="getMaxStudyAge"
-      setMethod="setMaxStudyAge">
-      <description>The max. age in days instances are allowed to be not stored on media.
-      </description>
-      <name>MaxStudyAge</name>
-      <type>int</type>
-      <descriptors>
-         <value value="7" />
+         <value value="600MB" />
       </descriptors>
    </attribute>
 
     <attribute access="read-write"
       getMethod="getMinStudyAge"
       setMethod="setMinStudyAge">
-      <description>The min. age in days instances should not be collected for offline storage.
-      This value is used to ensure that all instances of a study will be stored on a single media.
+      <description>The minimal number of days before instances of studies are
+      scheduled for offline storage. Increasing the delay for scheduling
+      ensures that all instances of a study will be stored on a single media.
       </description>
       <name>MinStudyAge</name>
       <type>int</type>
       <descriptors>
          <value value="2" />
+      </descriptors>
+   </attribute>
+
+    <attribute access="read-write"
+      getMethod="getMaxStudyAge"
+      setMethod="setMaxStudyAge">
+      <description>The maximal number of days before studies are archived on
+      media. Only effective, if media creation is triggered automatically.
+      </description>
+      <name>MaxStudyAge</name>
+      <type>int</type>
+      <descriptors>
+         <value value="30" />
       </descriptors>
    </attribute>
 
