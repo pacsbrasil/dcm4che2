@@ -37,8 +37,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
  * 	           query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study.studyIuid=?1 AND sof.fileSystem.directoryPath=?2"
  *             transaction-type="Supports"
- * @jboss.query signature="long ejbSelectStudySize(java.lang.Integer pk)"
- *              query="SELECT SUM(f.fileSize) FROM StudyOnFileSystem sof, File f WHERE sof.pk = ?1 AND f.fileSystem = sof.fileSystem AND f.instance.series.study = sof.study"
  * @jboss.query signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
  *              dynamic="true"
  */
@@ -116,13 +114,6 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
         setAccessTime(new Timestamp(System.currentTimeMillis()));
     }
 
-    /**
-     * @ejb.interface-method
-     */
-    public long getStudySize() throws FinderException {
-        return ejbSelectStudySize(getPk());
-    }
-
     /**    
      * @ejb.home-method
      */
@@ -148,11 +139,18 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
      */
     public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
             throws FinderException;
-
+    
     /**
-     * @ejb.select query=""
+     * @ejb.select query="SELECT OBJECT(f) FROM StudyOnFileSystem sof, File f WHERE sof.pk = ?1 AND f.fileSystem = sof.fileSystem AND f.instance.series.study = sof.study"
      *             transaction-type="Supports"
      */
-    public abstract long ejbSelectStudySize(Integer pk) throws FinderException;
+    public abstract Collection ejbSelectFiles(java.lang.Integer pk)
+            throws FinderException;
 
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getFiles() throws FinderException {
+        return ejbSelectFiles(getPk());
+    }
 }

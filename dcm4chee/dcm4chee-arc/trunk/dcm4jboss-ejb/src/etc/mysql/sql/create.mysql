@@ -157,7 +157,7 @@ CREATE TABLE files (
 	filepath		VARCHAR(250) BINARY NOT NULL,
 	file_tsuid      VARCHAR(250) BINARY NOT NULL,
 	file_md5        VARCHAR(250) BINARY,
-	file_size       BIGINT,
+	file_size       INTEGER,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (filesystem_fk)	REFERENCES filesystem(pk)
 );
