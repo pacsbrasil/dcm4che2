@@ -769,7 +769,7 @@
   <element tag="(0018,9322)" name="Reconstruction Pixel Spacing" vr="FD" vm="2" key="ReconstructionPixelSpacing" />
   <element tag="(0018,9323)" name="Exposure Modulation Type" vr="CS" vm="1" key="ExposureModulationType" />
   <element tag="(0018,9324)" name="Estimated Dose Saving" vr="FD" vm="1" key="EstimatedDoseSaving" />
-  <element tag="(0018,9325)" name="CT X-ray Details Sequence" vr="SQ 1" key="CTXRayDetailsSeq" />
+  <element tag="(0018,9325)" name="CT X-ray Details Sequence" vr="SQ" vm="1" key="CTXRayDetailsSeq" />
   <element tag="(0018,9326)" name="CT Position Sequence" vr="SQ" vm="1" key="CTPositionSeq" />
   <element tag="(0018,9327)" name="Table Position" vr="FD" vm="1" key="TablePosition" />
   <element tag="(0018,9328)" name="Exposure Time in ms" vr="FD" vm="1" key="ExposureTimeInMs" />
@@ -1374,7 +1374,103 @@
   <element tag="(0070,031A)" name="Fiducial UID" vr="UI" vm="1" key="FiducialUID" /> 
   <element tag="(0070,031C)" name="Fiducial Set Sequence" vr="SQ" vm="1" key="FiducialSetSeq" /> 
   <element tag="(0070,031E)" name="Fiducial Sequence" vr="SQ" vm="1" key="FiducialSeq" />
-  
+    
+  <element tag="(0072,0002)" name="Hanging Protocol Name" vr="SH" vm="1" key="HangingProtocolName" />
+  <element tag="(0072,0004)" name="Hanging Protocol Description" vr="LO" vm="1" key="HangingProtocolDescription" />
+  <element tag="(0072,0006)" name="Hanging Protocol Level" vr="CS" vm="1" key="HangingProtocolLevel" />
+  <element tag="(0072,0008)" name="Hanging Protocol Creator" vr="LO" vm="1" key="HangingProtocolCreator" />
+  <element tag="(0072,000A)" name="Hanging Protocol Creation Datetime" vr="DT" vm="1" key="HangingProtocolCreationDatetime" />
+  <element tag="(0072,000C)" name="Hanging Protocol Definition Sequence" vr="SQ" vm="1" key="HangingProtocolDefinitionSeq" />
+  <element tag="(0072,000E)" name="Hanging Protocol User Identification Code Sequence" vr="SQ" vm="1" key="HangingProtocolUserIdentificationCodeSeq" />
+  <element tag="(0072,0010)" name="Hanging Protocol User Group Name" vr="LO" vm="1" key="HangingProtocolUserGroupName" />
+  <element tag="(0072,0012)" name="Source Hanging Protocol Sequence" vr="SQ" vm="1" key="SourceHangingProtocolSeq" />
+  <element tag="(0072,0014)" name="Number of Priors Referenced" vr="US" vm="1" key="NumberOfPriorsReferenced" />
+  <element tag="(0072,0020)" name="Image Sets Sequence" vr="SQ" vm="1" key="ImageSetsSeq" />
+  <element tag="(0072,0022)" name="Image Set Selector Sequence" vr="SQ" vm="1" key="ImageSetSelectorSeq" />
+  <element tag="(0072,0024)" name="Image Set Selector Usage Flag" vr="CS" vm="1" key="ImageSetSelectorUsageFlag" />
+  <element tag="(0072,0026)" name="Selector Attribute" vr="AT" vm="1" key="SelectorAttribute" />
+  <element tag="(0072,0028)" name="Selector Value Number" vr="US" vm="1" key="SelectorValueNumber" />
+  <element tag="(0072,0030)" name="Time Based Image Sets Sequence" vr="SQ" vm="1" key="TimeBasedImageSetsSeq" />
+  <element tag="(0072,0032)" name="Image Set Number" vr="US" vm="1" key="ImageSetNumber" />
+  <element tag="(0072,0034)" name="Image Set Selector Category" vr="CS" vm="1" key="ImageSetSelectorCategory" />
+  <element tag="(0072,0038)" name="Relative Time" vr="US" vm="2" key="RelativeTime" />
+  <element tag="(0072,003A)" name="Relative Time Units" vr="CS" vm="1" key="RelativeTimeUnits" />
+  <element tag="(0072,003C)" name="Abstract Prior Value" vr="SS" vm="2" key="AbstractValue" />
+  <element tag="(0072,003E)" name="Abstract Prior Code Sequence" vr="SQ" vm="1" key="AbstractPriorCodeSeq" />
+  <element tag="(0072,0040)" name="Image Set Label" vr="LO" vm="1" key="ImageSetLabel" />
+  <element tag="(0072,0050)" name="Selector Attribute VR" vr="CS" vm="1" key="SelectorAttributeVR" />
+  <element tag="(0072,0052)" name="Selector Sequence Pointer" vr="AT" vm="1" key="SelectorSequencePointer" />
+  <element tag="(0072,0054)" name="Selector Sequence Pointer Private Creator" vr="LO" vm="1" key="SelectorSequencePointerPrivateCreator" />
+  <element tag="(0072,0056)" name="Selector Attribute Private Creator" vr="LO" vm="1" key="SelectorAttributePrivateCreator" />
+  <element tag="(0072,0060)" name="Selector AT Value" vr="AT" vm="1-n" key="SelectorATValue" />
+  <element tag="(0072,0062)" name="Selector CS Value" vr="CS" vm="1-n" key="SelectorCSValue" />
+  <element tag="(0072,0064)" name="Selector IS Value" vr="IS" vm="1-n" key="SelectorISValue" />
+  <element tag="(0072,0066)" name="Selector LO Value" vr="LO" vm="1-n" key="SelectorLOValue" />
+  <element tag="(0072,0068)" name="Selector LT Value" vr="LT" vm="1-n" key="SelectorLTValue" />
+  <element tag="(0072,006A)" name="Selector PN Value" vr="PN" vm="1-n" key="SelectorPNValue" />
+  <element tag="(0072,006C)" name="Selector SH Value" vr="SH" vm="1-n" key="SelectorSHValue" />
+  <element tag="(0072,006E)" name="Selector ST Value" vr="ST" vm="1-n" key="SelectorSTValue" />
+  <element tag="(0072,0070)" name="Selector UT Value" vr="UT" vm="1-n" key="SelectorUTValue" />
+  <element tag="(0072,0072)" name="Selector DS Value" vr="DS" vm="1-n" key="SelectorDSValue" />
+  <element tag="(0072,0074)" name="Selector FD Value" vr="FD" vm="1-n" key="SelectorFDValue" />
+  <element tag="(0072,0076)" name="Selector FL Value" vr="FL" vm="1-n" key="SelectorFLValue" />
+  <element tag="(0072,0078)" name="Selector UL Value" vr="UL" vm="1-n" key="SelectorULValue" />
+  <element tag="(0072,007A)" name="Selector US Value" vr="US" vm="1-n" key="SelectorUSValue" />
+  <element tag="(0072,007C)" name="Selector SL Value" vr="SL" vm="1-n" key="SelectorSLValue" />
+  <element tag="(0072,007E)" name="Selector SS Value" vr="SS" vm="1-n" key="SelectorSSValue" />
+  <element tag="(0072,0080)" name="Selector Code Sequence Value" vr="SQ" vm="1" key="SelectorCodeSequenceValue" />
+  <element tag="(0072,0100)" name="Number of Screens" vr="US" vm="1" key="NumberOfScreens" />
+  <element tag="(0072,0102)" name="Nominal Screen Definition Sequence" vr="SQ" vm="1" key="NominalScreenDefinitionSeq" />
+  <element tag="(0072,0104)" name="Number of Vertical Pixels" vr="US" vm="1" key="NumberOfVerticalPixels" />
+  <element tag="(0072,0106)" name="Number of Horizontal Pixels" vr="US" vm="1" key="NumberOfHorizontalPixels" />
+  <element tag="(0072,0108)" name="Display Environment Spatial Position" vr="FD" vm="4" key="DisplayEnvironmentSpatialPosition" />
+  <element tag="(0072,010A)" name="Screen Minimum Grayscale Bit Depth" vr="US" vm="1" key="ScreenMinimumGrayscaleBitDepth" />
+  <element tag="(0072,010C)" name="Screen Minimum Color Bit Depth" vr="US" vm="1" key="ScreenMinimumColorBitDepth" />
+  <element tag="(0072,010E)" name="Application Maximum Repaint Time" vr="US" vm="1" key="ApplicationMaximumRepaintTime" />
+  <element tag="(0072,0200)" name="Display Sets Sequence" vr="SQ" vm="1" key="DisplaySetsSeq" />
+  <element tag="(0072,0202)" name="Display Set Number" vr="US" vm="1" key="DisplaySetNumber" />
+  <element tag="(0072,0204)" name="Display Set Presentation Group" vr="US" vm="1" key="DisplaySetPresentationGroup" />
+  <element tag="(0072,0206)" name="Display Set Presentation Group Description" vr="LO" vm="1" key="DisplaySetPresentationGroupDescription" />
+  <element tag="(0072,0208)" name="Partial Data Display Handling" vr="CS" vm="1" key="PartialDataDisplayHandling" />
+  <element tag="(0072,0210)" name="Synchronized Scrolling Sequence" vr="SQ" vm="1" key="SynchronizedScrollingSeq" />
+  <element tag="(0072,0212)" name="Display Set Scrolling Group" vr="US 2-n" key="DisplaySetScrollingGroup" />
+  <element tag="(0072,0214)" name="Navigation Indicator Sequence" vr="SQ" vm="1" key="NavigationIndicatorSeq" />
+  <element tag="(0072,0216)" name="Navigation Display Set" vr="US" vm="1" key="NavigationDisplaySet" />
+  <element tag="(0072,0218)" name="Reference Display Sets" vr="US" vm="1-n" key="ReferenceDisplaySets" />
+  <element tag="(0072,0300)" name="Image Boxes Sequence" vr="SQ" vm="1" key="ImageBoxesSeq" />
+  <element tag="(0072,0302)" name="Image Box Number" vr="US" vm="1" key="ImageBoxNumber" />
+  <element tag="(0072,0304)" name="Image Box Layout Type" vr="CS" vm="1" key="ImageBoxLayoutType" />
+  <element tag="(0072,0306)" name="Image Box Tile Horizontal Dimension" vr="US" vm="1" key="ImageBoxTileHorizontalDimension" />
+  <element tag="(0072,0308)" name="Image Box Tile Vertical Dimension" vr="US" vm="1" key="ImageBoxTileVerticalDimension" />
+  <element tag="(0072,0310)" name="Image Box Scroll Direction" vr="CS" vm="1" key="ImageBoxScrollDirection" />
+  <element tag="(0072,0312)" name="Image Box Small Scroll Type" vr="CS" vm="1" key="ImageBoxSmallScrollType" />
+  <element tag="(0072,0314)" name="Image Box Small Scroll Amount" vr="US" vm="1" key="ImageBoxSmallScrollAmount" />
+  <element tag="(0072,0316)" name="Image Box Large Scroll Type" vr="CS" vm="1" key="ImageBoxLargeScrollType" />
+  <element tag="(0072,0318)" name="Image Box Large Scroll Amount" vr="US" vm="1" key="ImageBoxLargeScrollAmount" />
+  <element tag="(0072,0320)" name="Image Box Overlap Priority" vr="US" vm="1" key="ImageBoxOverlapPriority" />
+  <element tag="(0072,0330)" name="Cine Relative to Real-Time" vr="FD" vm="1" key="CineRelativeToRealTime" />
+  <element tag="(0072,0400)" name="Filter Operations Sequence" vr="SQ" vm="1" key="FilterOperationsSeq" />
+  <element tag="(0072,0402)" name="Filter-by Category" vr="CS" vm="1" key="FilterByCategory" />
+  <element tag="(0072,0404)" name="Filter-by Attribute Presence" vr="CS" vm="1" key="FilterByAttributePresence" />
+  <element tag="(0072,0406)" name="Filter-by Operator" vr="CS" vm="1" key="FilterByOperator" />
+  <element tag="(0072,0500)" name="Blending Operation Type" vr="CS" vm="1" key="BlendingOperationType" />
+  <element tag="(0072,0510)" name="Reformatting Operation Type" vr="CS" vm="1" key="ReformattingOperationType" />
+  <element tag="(0072,0512)" name="Reformatting Thickness" vr="FD" vm="1" key="ReformattingThickness" />
+  <element tag="(0072,0514)" name="Reformatting Interval" vr="FD" vm="1" key="ReformattingInterval" />
+  <element tag="(0072,0516)" name="Reformatting Operation Initial View Direction" vr="CS" vm="1" key="ReformattingOperationInitialViewDirection" />
+  <element tag="(0072,0520)" name="3D Rendering Type" vr="CS" vm="1-n" key="_3DRenderingType" />
+  <element tag="(0072,0600)" name="Sorting Operations Sequence" vr="SQ" vm="1" key="SortingOperationsSeq" />
+  <element tag="(0072,0602)" name="Sort-by Category" vr="CS" vm="1" key="SortByCategory" />
+  <element tag="(0072,0604)" name="Sorting Direction" vr="CS" vm="1" key="SortingDirection" />
+  <element tag="(0072,0700)" name="Display Set Patient Orientation" vr="CS" vm="2" key="DisplaySetPatientOrientation" />
+  <element tag="(0072,0702)" name="VOI Type" vr="CS" vm="1" key="VOIType" />
+  <element tag="(0072,0704)" name="Pseudo-color Type" vr="CS" vm="1" key="PseudoColorType" />
+  <element tag="(0072,0706)" name="Show Grayscale Inverted" vr="CS" vm="1" key="ShowGrayscaleInverted" />
+  <element tag="(0072,0710)" name="Show Image True Size Flag" vr="CS" vm="1" key="ShowImageTrueSizeFlag" />
+  <element tag="(0072,0712)" name="Show Graphic Annotation Flag" vr="CS" vm="1" key="ShowGraphicAnnotationFlag" />
+  <element tag="(0072,0714)" name="Show Patient Demographics Flag" vr="CS" vm="1" key="ShowPatientDemographicsFlag" />
+  <element tag="(0072,0716)" name="Show Acquisition Techniques Flag" vr="CS" vm="1" key="ShowAcquisitionTechniquesFlag" />
+    
   <element tag="(0088,0130)" name="Storage Media File-set ID" vr="SH" vm="1" key="StorageMediaFileSetID" />
   <element tag="(0088,0140)" name="Storage Media File-set UID" vr="UI" vm="1" key="StorageMediaFileSetUID" />
   <element tag="(0088,0200)" name="Icon Image Sequence" vr="SQ" vm="1" key="IconImageSeq" />
@@ -2210,6 +2306,9 @@
   <uid value="1.2.840.10008.5.1.4.37.1" name="General Relevant Patient Information Query General Relevant" key="PatientInformationQuery" />
   <uid value="1.2.840.10008.5.1.4.37.2" name="Breast Imaging Relevant Patient Information Query" key="BreastImagingRelevantPatientInformationQuery" />
   <uid value="1.2.840.10008.5.1.4.37.3" name="Cardiac Relevant Patient Information Query" key="CardiacRelevantPatientInformationQuery" />
+  <uid value="1.2.840.10008.5.1.4.38.1" name="Hanging Protocol Storage" key="HangingProtocolStorage" />
+  <uid value="1.2.840.10008.5.1.4.38.2" name="Hanging Protocol Information Model - FIND" key="HangingProtocolInformationModelFIND" />
+  <uid value="1.2.840.10008.5.1.4.38.3" name="Hanging Protocol Information Model - MOVE" key="HangingProtocolInformationModelMOVE" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.1.1" name="Tiani Patient Root Query/Retrieve Information Model - FIND" key="TianiPatientRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.2.1" name="Tiani Study Root Query/Retrieve Information Model - FIND" key="TianiStudyRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.3.1" name="Tiani Patient/Study Only Query/Retrieve Information Model - FIND" key="TianiPatientStudyOnlyQueryRetrieveInformationModelFIND" />
