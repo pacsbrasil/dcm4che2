@@ -356,6 +356,7 @@ class FilmBox
         fbContent.putAll(dataset);
         fbContent.remove(Tags.RefFilmSessionSeq);
         copyImageBoxSeq(fbContent.remove(Tags.RefImageBoxSeq), result);
+		copyAnnotationBoxSeq(fbContent.remove(Tags.RefBasicAnnotationBoxSeq), result);
 
         if (!pluts.isEmpty()) {
             DcmElement plutSeq = result.putSQ(Tags.PresentationLUTContentSeq);

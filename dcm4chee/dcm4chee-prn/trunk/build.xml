@@ -42,7 +42,7 @@
   <property name="docbook-xsl.fo.dir" value="${docbook-xsl.home}/fo"/>
 
   <!-- Override with your Apache FOP dist location -->
-  <property name="fop.home" value="${user.home}/fop-0.20.5rc2"/>
+  <property name="fop.home" value="${user.home}/fop-0.20.5rc3a"/>
   <property name="fop.jar" value="${fop.home}/build/fop.jar"/>
   
   <property name="doc.dir" value="${basedir}/doc"/>
