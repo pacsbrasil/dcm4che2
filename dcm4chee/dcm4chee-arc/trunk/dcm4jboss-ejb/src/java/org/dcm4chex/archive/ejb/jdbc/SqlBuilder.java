@@ -221,6 +221,8 @@ class SqlBuilder {
                     break;
             }
         }
+        if (getDatabase() == JdbcProperties.DB2)
+            sb.append(" FOR READ ONLY");
         return sb.toString();
     }
 
