@@ -3,19 +3,19 @@ BUILD INSTRUCTIONS FOR DCM4JBOSS-SAR:
 
 In order to build dcm4jboss-sar you have to download and install:
 
-- jai_imageio-1_0_01-beta
-  (from http://java.sun.com/developer/earlyAccess/jai_imageio/)
+- jai_imageio-1_0_01
+  (from http://java.sun.com/products/java-media/jai/downloads/download-iio-1_0_01.htm)
 
 - Ant 1.6.x (from http://ant.apache.org)
 
 - JUnit 3.8.x (from http://junit.org)
 
-- Jakarta Cactus 1.5 for J2EE 1.3 [http://jakarta.apache.org/cactus/]
+- Jakarta Cactus 1.6.1 for J2EE 1.3 [http://jakarta.apache.org/cactus/]
 (needed to build dcm4jboss-ejb, which itself required to build dcm4jboss-sar)
 
-- XDoclet 1.2 [http://xdoclet.sourceforge.net]
+- XDoclet 1.2.2 [http://xdoclet.sourceforge.net]
 
-- JBoss 3.2.5 [http://jboss.org]
+- JBoss 3.2.6 [http://jboss.org]
 
 - Maverick 2.2.2 + Domify 2.0.3 [http://mav.sourceforge.net]
 
@@ -59,13 +59,13 @@ components required for building dcm4jboss-ejb:
 <property name="dcm4che.home" value="../dcm4che14/build"/>		
 
 <!-- Override with your XDoclet bundle dist location -->
-<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
+<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.2"/>
 
 <!-- Override with your Cactus bundle dist location -->
-<property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.5"/>
+<property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.6.1"/>
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-3.2.5"/>		
+<property name="jboss.home" value="${user.home}/jboss-3.2.6"/>		
 
 Instead of modifying the build script directly, you may adjust these values
 to your build environment by renaming file build.properties.default to
@@ -91,7 +91,7 @@ The default build script (build.xml) assumes following locations of
 components required for building dcm4jboss-web:
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.dir" value="${user.home}/jboss-3.2.5" />
+<property name="jboss.dir" value="${user.home}/jboss-3.2.6" />
 
 <!-- Override with your Maverick dist location -->
 <property name="maverick.dir" value="../maverick" />
@@ -134,10 +134,10 @@ components required for building dcm4jboss-sar:
 <property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
 
 <!-- Override with your XDoclet bundle dist location -->
-<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
+<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.2"/>
 
 <!-- Override with your JBoss/Web server bundle dist location -->
-<property name="jboss.home" value="${user.home}/jboss-3.2.5"/>		
+<property name="jboss.home" value="${user.home}/jboss-3.2.6"/>		
 
 Instead of modifying the build script directly, you may adjust these values
 to your build environment by renaming file build.properties.default to
@@ -153,6 +153,7 @@ generates the distribution packages
 target/dcm4jboss-<version>.zip
 target/dcm4jboss-standalone-hsql-<version>.zip
 target/dcm4jboss-standalone-psql-<version>.zip
+target/dcm4jboss-standalone-mysql-<version>.zip
 target/dcm4jboss-standalone-db2-<version>.zip
 target/dcm4jboss-standalone-oracle-<version>.zip
 .
