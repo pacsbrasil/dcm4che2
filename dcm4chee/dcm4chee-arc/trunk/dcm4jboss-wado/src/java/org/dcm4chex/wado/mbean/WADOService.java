@@ -26,7 +26,7 @@ import org.jboss.system.ServiceMBeanSupport;
 public class WADOService extends ServiceMBeanSupport  {
 
 	private Logger log = Logger.getLogger( getClass().getName() );
-	private WADOCache cache = WADOCacheImpl.getInstance();
+	private WADOCache cache = WADOCacheImpl.getWADOCache();
 	private WADOSupport support = new WADOSupport( this.server );
 	
 	private static final long GIGA = 1000000000L;

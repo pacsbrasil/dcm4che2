@@ -99,14 +99,14 @@ public WADOResponseObject handleDicom( WADORequestObject req ) {
 	try {
 		file = this.getDICOMFile( req.getStudyUID(), req.getSeriesUID(), req.getObjectUID() );
 		if ( file == null ) {
-			if ( log.isDebugEnabled() ) log.debug("Dicom objkect not found: "+req);
+			if ( log.isDebugEnabled() ) log.debug("Dicom object not found: "+req);
 			return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
 		}
 	} catch (IOException x) {
 		log.error("Exception in handleDicom: "+x.getMessage(), x);
 		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get dicom object");
 	} catch ( NeedRedirectionException nre ) {
-		if ( ! WADOCacheImpl.getInstance().isClientRedirect() )  {
+		if ( ! WADOCacheImpl.getWADOCache().isClientRedirect() )  {
 			return getRemoteDICOMFile( nre.getHostname(), req);
 		} else {
 			return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
@@ -146,7 +146,7 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 		if ( frameNumber != null ) {
 			frame = Integer.parseInt( frameNumber );
 		}
-		WADOCache cache = WADOCacheImpl.getInstance();
+		WADOCache cache = WADOCacheImpl.getWADOCache();
 		File file;
 		BufferedImage bi = null;
 		if ( rows == null ) {
@@ -273,8 +273,8 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
 			return new WADOResponseObjectImpl( null, conn.getContentType(), conn.getResponseCode(), conn.getResponseMessage() );
 		}
 		InputStream is = conn.getInputStream();
-		if ( WADOCacheImpl.getInstance().isRedirectCaching() && CONTENT_TYPE_JPEG.equals( conn.getContentType() ) ) {
-			File file = WADOCacheImpl.getInstance().putStream( is, req.getStudyUID(), 
+		if ( WADOCacheImpl.getWADOCache().isRedirectCaching() && CONTENT_TYPE_JPEG.equals( conn.getContentType() ) ) {
+			File file = WADOCacheImpl.getWADOCache().putStream( is, req.getStudyUID(), 
 													req.getSeriesUID(), 
 													req.getObjectUID(), 
 													req.getRows(), 
