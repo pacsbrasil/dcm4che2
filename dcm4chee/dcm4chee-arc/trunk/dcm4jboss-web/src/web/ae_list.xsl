@@ -20,7 +20,9 @@
 							<!--td>Cipher Suites</td-->
 							<td>&nbsp;</td>
 					</tr>
-					<xsl:apply-templates select="AEs/item"/>
+					<xsl:apply-templates select="AEs/item">
+						<xsl:sort data-type="text" order="ascending" select="title"/>
+					</xsl:apply-templates>
 					<tr>
 						<td>
 							  <a href="aenew.m">Add New AE</a>						
