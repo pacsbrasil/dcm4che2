@@ -8,10 +8,12 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.StringWriter;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -22,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -32,6 +35,8 @@ import org.dcm4che.client.AssociationRequestor;
 import org.dcm4che.client.PrintSCU;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.util.UIDGenerator;
@@ -42,11 +47,11 @@ public class PrintSCUFrame extends JFrame
 
     private static final int DEF_WIDTH = 600, DEF_HEIGHT = 500;
 
-    private final Logger log = Logger.getRootLogger();
+    private final Logger log = Logger.getLogger("PrintSCU Client");
 
     private AssociationRequestor assocRq = new AssociationRequestor();
     private PrintSCU printSCU;
-    private List plutUidList;
+    private String curPLutUid;
     private int nextImageBoxIndex = 0;
     private boolean colorMode = false;
     private Action actConnect, actRelease, actCreateFilmSession, actDeleteFilmSession,
@@ -60,6 +65,12 @@ public class PrintSCUFrame extends JFrame
     private JPanel btnPanel;
     private PropertiesPanel propPanel;
 
+    public static final class PrintSCUConfigurationException extends RuntimeException
+    {
+        PrintSCUConfigurationException() { super(); }
+        PrintSCUConfigurationException(String msg) { super(msg); }
+    }
+
     PrintSCUFrame()
     {
         Container contentPane = this.getContentPane();
@@ -68,7 +79,7 @@ public class PrintSCUFrame extends JFrame
         btnPanel = new JPanel();
         btnPanel.setLayout(new GridLayout(4, 3));
         panel.add(btnPanel, BorderLayout.NORTH);
-        propPanel = new PropertiesPanel(log, DEFAULT_PROPERTIES_FILE);
+        propPanel = new PropertiesPanel(this, log, DEFAULT_PROPERTIES_FILE);
         JScrollPane scrollingPanel = new JScrollPane(propPanel);
         panel.add(scrollingPanel, BorderLayout.CENTER);
         //Main Menus
@@ -95,25 +106,50 @@ public class PrintSCUFrame extends JFrame
         //Connect
         actConnect = new AbstractAction()
         {
-             public void actionPerformed(ActionEvent e)
-             {
-                 //connect
-                 printSCU = new PrintSCU(assocRq);
-                 plutUidList = new LinkedList();
-                 assocRq.setCallingAET(propPanel.getProperty("CallingAET"));
-                 assocRq.setCalledAET(propPanel.getProperty("CalledAET"));
-                 assocRq.setHost(propPanel.getProperty("Host"));
-                 assocRq.setPort(propPanel.getIntProperty("Port"));
-                 try {
-                     assocRq.connect();
-                 }
-                 catch (IOException e1) {
-                     e1.printStackTrace();
-                     return;
-                 }
-                 actCreateFilmSession.setEnabled(true);
-                 actRelease.setEnabled(true);
-             }
+            public void actionPerformed(ActionEvent e)
+            {
+                //connect
+                Integer anInt;
+                String aString;
+                
+                try {
+                    if ((anInt = getIntegerFromProperty("MaxPduSize")) != null)
+                        assocRq.setMaxPDULength(anInt.intValue());
+                    if ((aString = getStringFromProperty("CallingAET")) == null)
+                        throw new PrintSCUConfigurationException();
+                    assocRq.setCallingAET(aString);
+                    if ((aString = getStringFromProperty("CalledAET")) == null)
+                        throw new PrintSCUConfigurationException();
+                    assocRq.setCalledAET(aString);
+                    if ((aString = getStringFromProperty("Host")) == null)
+                        throw new PrintSCUConfigurationException();
+                    assocRq.setHost(aString);
+                    if ((anInt = getIntegerFromProperty("Port")) == null)
+                        throw new PrintSCUConfigurationException();
+                    assocRq.setPort(anInt.intValue());
+                }
+                catch (PrintSCUConfigurationException e1) {
+                    JOptionPane.showMessageDialog(PrintSCUFrame.this, e1);
+                }
+                
+                printSCU = new PrintSCU(assocRq);
+                printSCU.setAutoRefPLUT(true); //always create when Film Box is created
+                printSCU.setCreateRQwithIUID(true);
+                printSCU.setNegotiatePLUT(true);
+                printSCU.setNegotiateAnnotation(true);
+                printSCU.setNegotiateColorPrint(colorMode);
+                printSCU.setNegotiateGrayscalePrint(!colorMode);
+                curPLutUid = new String();
+                try {
+                    assocRq.connect();
+                }
+                catch (IOException e1) {
+                    e1.printStackTrace();
+                    return;
+                }
+                actCreateFilmSession.setEnabled(true);
+                actRelease.setEnabled(true);
+            }
         };
         actConnect.putValue(Action.NAME, "Connect");
         //Release
@@ -147,6 +183,25 @@ public class PrintSCUFrame extends JFrame
             public void actionPerformed(ActionEvent e)
             {
                 Dataset attr = dcmFactory.newDataset();
+                String prop;
+                
+                if ((prop = getStringFromProperty("Session.NumberOfCopies")) != null)
+                    attr.putIS(Tags.NumberOfCopies, propPanel.getIntProperty("Session.NumberOfCopies"));
+                if ((prop = getStringFromProperty("Session.PrintPriority")) != null)
+                    attr.putCS(Tags.PrintPriority, prop);
+                if ((prop = getStringFromProperty("Session.MediumType")) != null)
+                    attr.putCS(Tags.MediumType, prop);
+                if ((prop = getStringFromProperty("Session.FilmDestination")) != null)
+                    attr.putCS(Tags.FilmDestination, prop);
+                if ((prop = getStringFromProperty("Session.FilmSessionLabel")) != null)
+                    attr.putLO(Tags.FilmSessionLabel, prop);
+                if ((prop = getStringFromProperty("Session.MemoryAllocation")) != null)
+                    attr.putIS(Tags.MemoryAllocation, propPanel.getIntProperty("Session.MemoryAllocation"));
+                if ((prop = getStringFromProperty("Session.OwnerID")) != null)
+                    attr.putSH(Tags.OwnerID, prop);
+
+                //dump to log
+                dump(attr, "Film Session");
                 
                 try {
                     printSCU.createFilmSession(attr, colorMode);
@@ -179,9 +234,44 @@ public class PrintSCUFrame extends JFrame
             public void actionPerformed(ActionEvent e)
             {
                 Dataset attr = dcmFactory.newDataset();
+                String prop;
+                Integer propInt;
                 
                 //printSCU.setAutoRefPLUT(true);
-                attr.putST(Tags.ImageDisplayFormat, propPanel.getProperty("FilmBox.ImageDisplayFormat"));
+                if ((prop = getStringFromProperty("FilmBox.ImageDisplayFormat")) != null)
+                    attr.putST(Tags.ImageDisplayFormat, prop);
+                if ((prop = getStringFromProperty("FilmBox.FilmOrientation")) != null)
+                    attr.putCS(Tags.FilmOrientation, prop);
+                if ((prop = getStringFromProperty("FilmBox.FilmSizeID")) != null)
+                    attr.putCS(Tags.FilmSizeID, prop);
+                if ((prop = getStringFromProperty("FilmBox.RequestedResolutionID")) != null)
+                    attr.putCS(Tags.RequestedResolutionID, prop);
+                if ((prop = getStringFromProperty("FilmBox.AnnotationDisplayFormatID")) != null)
+                    attr.putCS(Tags.AnnotationDisplayFormatID, prop);
+                if ((prop = getStringFromProperty("FilmBox.MagnificationType")) != null)
+                    attr.putCS(Tags.MagnificationType, prop);
+                if ((prop = getStringFromProperty("FilmBox.SmoothingType")) != null)
+                    attr.putCS(Tags.SmoothingType, prop);
+                if ((prop = getStringFromProperty("FilmBox.BorderDensity")) != null)
+                    attr.putCS(Tags.BorderDensity, prop);
+                if ((prop = getStringFromProperty("FilmBox.EmptyImageDensity")) != null)
+                    attr.putCS(Tags.EmptyImageDensity, prop);
+                if ((propInt = getIntegerFromProperty("FilmBox.MinDensity")) != null)
+                    attr.putUS(Tags.MinDensity, propInt.intValue());
+                if ((propInt = getIntegerFromProperty("FilmBox.MaxDensity")) != null)
+                    attr.putUS(Tags.MaxDensity, propInt.intValue());
+                if ((prop = getStringFromProperty("FilmBox.Trim")) != null)
+                    attr.putCS(Tags.Trim, prop);
+                if ((prop = getStringFromProperty("FilmBox.ConfigurationInformation")) != null)
+                    attr.putST(Tags.ConfigurationInformation, prop);
+                if ((propInt = getIntegerFromProperty("FilmBox.Illumination")) != null)
+                    attr.putUS(Tags.Illumination, propInt.intValue());
+                if ((propInt = getIntegerFromProperty("FilmBox.ReflectedAmbientLight")) != null)
+                    attr.putUS(Tags.ReflectedAmbientLight, propInt.intValue());
+
+                //dump to log
+                dump(attr, "Film Box");
+                
                 try {
                     printSCU.createFilmBox(attr);
                 }
@@ -216,8 +306,51 @@ public class PrintSCUFrame extends JFrame
                         == JFileChooser.APPROVE_OPTION) {
                     file = chooser.getSelectedFile();
                     Dataset attr = dcmFactory.newDataset();
+                    String prop;
+                    Integer propInt;
+                    String configInfo;
+
+                    if ((prop = getStringFromProperty("FilmBox.Polarity")) != null)
+                        attr.putCS(Tags.Polarity, prop);
+                    if ((prop = getStringFromProperty("FilmBox.MagnificationType")) != null)
+                        attr.putCS(Tags.MagnificationType, prop);
+                    if ((prop = getStringFromProperty("FilmBox.SmoothingType")) != null)
+                        attr.putCS(Tags.SmoothingType, prop);
+                    if ((propInt = getIntegerFromProperty("FilmBox.MinDensity")) != null)
+                        attr.putUS(Tags.MinDensity, propInt.intValue());
+                    if ((propInt = getIntegerFromProperty("FilmBox.MaxDensity")) != null)
+                        attr.putUS(Tags.MaxDensity, propInt.intValue());
+                    if ((prop = getStringFromProperty("FilmBox.RequestedDecimateCropBehavior")) != null)
+                        attr.putCS(Tags.RequestedDecimateCropBehavior, prop);
+                    if ((prop = getStringFromProperty("FilmBox.RequestedImageSize")) != null)
+                        attr.putDS(Tags.RequestedImageSize, prop);
+                    configInfo = getStringFromProperty("FilmBox.ConfigurationInformation");
+                    
                     try {
+                        if (curPLutUid == null) {
+                            if ((prop = getStringFromProperty("LUT.Gamma")) != null) {
+                                if (configInfo == null)
+                                    configInfo = "gamma=" + prop;
+                                else
+                                    configInfo = configInfo + "\\gamma=" + prop;
+                            }
+                            else if ((prop = getStringFromProperty("LUT.Shape")) != null) {
+                                curPLutUid = printSCU.createPLUT(prop);
+                            }
+                            else
+                                throw new PrintSCUConfigurationException(
+                                    "You need to either create a P-LUT, set LUT.Shape, or LUT.Gamma");
+                        }
+                        //finally write config info (with the plut gamma placed, if it exists)
+                        if (configInfo != null)
+                            attr.putST(Tags.ConfigurationInformation, configInfo);
+                        //dump to log
+                        dump(attr, "Image Box");
+                        //create image box
                         printSCU.setImageBox(nextImageBoxIndex++, file, attr);
+                    }
+                    catch (PrintSCUConfigurationException e1) {
+                        JOptionPane.showMessageDialog(PrintSCUFrame.this, e1);
                     }
                     catch (InterruptedException e1) {
                         // TODO Auto-generated catch block
@@ -245,9 +378,31 @@ public class PrintSCUFrame extends JFrame
         {
             public void actionPerformed(ActionEvent e)
             {
-                String shape = "IDENTITY";
+                String shape;
+                Dataset ds = dcmFactory.newDataset();
+                
+                if (chooser.showOpenDialog(PrintSCUFrame.this) != JFileChooser.APPROVE_OPTION)
+                    return;
+                File file = chooser.getSelectedFile();
                 try {
-                    plutUidList.add(printSCU.createPLUT(shape));
+                    DcmParser parser = DcmParserFactory.getInstance().newDcmParser(
+                        new BufferedInputStream(new FileInputStream(file)));
+                    parser.setDcmHandler(ds.getDcmHandler());
+                    parser.parseDcmFile(null, -1);
+                    if (ds.vm(Tags.PresentationLUTSeq) == -1)
+                        throw new IOException();
+                }
+                catch (FileNotFoundException e1) {
+                    JOptionPane.showMessageDialog(PrintSCUFrame.this,
+                        "Could not open file: " + file);
+                }
+                catch (IOException e1) {
+                    JOptionPane.showMessageDialog(PrintSCUFrame.this,
+                        "Could not read file: " + file);
+                }
+                
+                try {
+                    curPLutUid = printSCU.createPLUT(ds);
                 }
                 catch (InterruptedException e1) {
                     // TODO Auto-generated catch block
@@ -264,6 +419,7 @@ public class PrintSCUFrame extends JFrame
                     e1.printStackTrace();
                     return;
                 }
+                setEnabled(false);
                 actDeletePlut.setEnabled(true);
             }
         };
@@ -330,8 +486,8 @@ public class PrintSCUFrame extends JFrame
             public void actionPerformed(ActionEvent e)
             {
                 try {
-                    String uid = (String)plutUidList.remove(plutUidList.size() - 1);
-                    printSCU.deletePLUT(uid);
+                    printSCU.deletePLUT(curPLutUid);
+                    curPLutUid = null;
                 } catch (InterruptedException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
@@ -342,9 +498,7 @@ public class PrintSCUFrame extends JFrame
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
-                if (plutUidList.size() == 0) {
-                    actDeletePlut.setEnabled(false);
-                }
+                actDeletePlut.setEnabled(false);
             }
         };
         actDeletePlut.putValue(Action.NAME, "Delete P-LUT");
@@ -431,6 +585,19 @@ public class PrintSCUFrame extends JFrame
         btnPanel.add(btnDeletePlut);
         JButton btnPrintFilmBox = new JButton(actPrintFilmBox);
         btnPanel.add(btnPrintFilmBox);
+        
+        updateFromProperties();
+    }
+
+    public void updateFromProperties()
+    {
+        //Verbose
+        Boolean verbose;
+        if ((verbose = (Boolean)getFromProperty("Verbose", Boolean.class)) != null)
+            log.setLevel((verbose.booleanValue()) ? Level.ALL : Level.WARN);
+        else
+            log.setLevel(Level.WARN);
+        //
     }
 
     PrintSCUFrame(String title)
@@ -438,6 +605,90 @@ public class PrintSCUFrame extends JFrame
         this();
         setTitle(title);
     }
+
+    protected void dump(Dataset ds, String from)
+    {
+        StringWriter out = new StringWriter();
+        try {
+            ds.dumpDataset(out, null);
+        }
+        catch (IOException ioe) {
+            log.warn("Could not dump attributes for " + from);
+        }
+        //log.info(out.toString());
+    }
+
+    protected String getStringFromProperty(String propertyName)
+    {
+        return (String)getFromProperty(propertyName, String.class);
+    }
+    protected Integer getIntegerFromProperty(String propertyName)
+    {
+        return (Integer)getFromProperty(propertyName, Integer.class);
+    }
+
+    private final Object getFromProperty(String propertyName, Class argType)
+    {
+        String prop;
+        Object ret = null; //sending an unknown Class returns null to caller
+        
+        if ((prop = propPanel.getProperty(propertyName)) != null) {
+            try {
+                if (argType == String.class)
+                    ret = prop;
+                else if (argType == Integer.class)
+                    ret = Integer.valueOf(prop);
+                else if (argType == Boolean.class)
+                    ret = Boolean.valueOf("true".equalsIgnoreCase(prop)
+                                          || "yes".equalsIgnoreCase(prop)
+                                          || "1".equals(prop));
+            }
+            catch (NumberFormatException e) {
+                log.warn(propertyName + " is an invalid number");
+            }
+        }
+        if (ret != null) {
+            log.debug("Setting property " + propertyName + " = " + ret);
+        }
+        return ret;
+    }
+
+    /*protected void setFromProperty(Method method, String propertyName, Optionality optionality)
+    {
+        if (method.getParameterTypes().length > 1)
+            throw new IllegalArgumentException("method passed to \"setFromProp\""
+                + "must take only one parameter");
+        boolean missing = true;
+        String prop;
+        
+        if ((prop = propPanel.getProperty(propertyName)) != null) {
+            Class argType = method.getParameterTypes()[0];
+            Class[] args;
+            try {
+                if (argType == String.class)
+                    method.invoke(assocRq, new Object[] { prop });
+                else if (argType == int.class)
+                    method.invoke(assocRq, new Object[] { Integer.valueOf(prop) });
+                missing = false;
+            }
+            catch (NumberFormatException e) {
+                log.warn(propertyName + " is an invalid integer");
+            }
+            catch (InvocationTargetException e) {
+                log.error(e.getCause());
+            }
+            catch (IllegalAccessException e) {
+                log.error(e.getCause());
+            }
+        }
+        if (missing && optionality == Optionality.Required) {
+            log.debug(propertyName + " is a required property!");
+            throw new PrintSCUConfigurationException(propertyName + " is a required property!");
+        }
+        else {
+            log.debug("setting " + propertyName + " = " + prop);
+        }
+    }*/
 
     private void onDisconnect()
     {
@@ -491,7 +742,6 @@ public class PrintSCUFrame extends JFrame
                 exit("printSCU: wrong number of arguments\n");
             }
             PrintSCUFrame printSCU = new PrintSCUFrame("Print SCU Client");
-            printSCU.log.setLevel(Level.WARN);
             printSCU.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             printSCU.show();
         }

@@ -102,7 +102,7 @@ class PrintSCUDataSource implements DataSource {
 				}
 			} else {
 				if (!"MONOCHROME2".equals(pmi) && !"MONOCHROME1".equals(pmi)) {
-					throw new IOException("Conversion from " + pmi + " to MONCHROME not yet supported");
+					throw new IOException("Conversion from " + pmi + " to MONOCHROME not yet supported");
 				}
 				int bitsStored = ds.getInt(Tags.BitsStored, -1);
 				if (bitsStored != 8 && bitsStored != 12) {
