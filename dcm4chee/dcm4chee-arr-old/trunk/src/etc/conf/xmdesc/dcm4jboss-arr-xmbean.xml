@@ -67,7 +67,7 @@
       setMethod="setMaxIdleThreads">
       <description>Maximal number of idle threads.
       </description>
-      <name>MaxClients</name>
+      <name>MaxIdleThreads</name>
       <type>int</type>
       <descriptors>
          <value value="5" />
