@@ -6,14 +6,17 @@
  */
 package org.dcm4chex.wado.mbean;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
-import org.dcm4chex.wado.mbean.cache.IconCache;
-import org.dcm4chex.wado.mbean.cache.IconCacheImpl;
+import org.dcm4chex.wado.mbean.cache.WADOCache;
+import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -21,24 +24,23 @@ import org.jboss.system.ServiceMBeanSupport;
  *
  * The MBean to manage the WADO service.
  * <p>
- * This class use WADOSupport for the WADO methods and IconCache for caching jpg images.
+ * This class use WADOSupport for the WADO methods and WADOCache for caching jpg images.
  */
 public class WADOService extends ServiceMBeanSupport  {
 
 	private Logger log = Logger.getLogger( getClass().getName() );
-	private IconCache cache = IconCacheImpl.getInstance();
+	private WADOCache cache = WADOCacheImpl.getInstance();
 	private WADOSupport support = new WADOSupport( this.server );
 	
 	private static final long GBYTE = 1000000000L;
 	private static final long MBYTE = 1000000L;
-	
 	
 	public void setCacheRoot( String newRoot ) {
 		cache.setCacheRoot( newRoot );
 	}
 	
 	public String getCacheRoot() {
-		return cache.getCacheRoot().getAbsolutePath();
+		return cache.getCacheRoot();
 	}
 	
 	public void setMinFreeSpace( long minFree ) {

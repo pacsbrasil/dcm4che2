@@ -129,7 +129,8 @@ public class FileToDelContainerTest extends TestCase {
 		while ( iter.hasNext() ) {
 			_doTest( (String) iter.next() );
 		}
-		IconCacheImpl.delTree( rootPath );		
+		WADOCacheImpl.delTree( rootPath );	
+		rootPath.delete();
 	}
 
 	/**
