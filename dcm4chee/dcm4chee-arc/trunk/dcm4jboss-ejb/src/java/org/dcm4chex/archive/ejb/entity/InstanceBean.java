@@ -37,13 +37,14 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
-import org.dcm4chex.archive.util.DatasetUtil;
 
 /**
  * Instance Bean
@@ -102,8 +103,7 @@ public abstract class InstanceBean implements EntityBean {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
+                } catch (NamingException ignore) {}
             }
         }
     }
@@ -303,7 +303,9 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method view-type="local"
      */
     public Dataset getAttributes() {
-        return DatasetUtil.fromByteArray(getEncodedAttributes());
+        return DatasetUtils.fromByteArray(
+            getEncodedAttributes(),
+            DcmDecodeParam.EVR_LE);
     }
 
     /**
@@ -316,7 +318,8 @@ public abstract class InstanceBean implements EntityBean {
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds));
+        setEncodedAttributes(
+            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
     }
 
     /**

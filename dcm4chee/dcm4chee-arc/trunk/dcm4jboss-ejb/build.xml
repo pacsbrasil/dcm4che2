@@ -448,6 +448,8 @@
          <formatter type="xml" />
          <test name="org.dcm4chex.archive.ejb.session.StorageBeanTest"
          	todir="${target.reports}"/>
+         <test name="org.dcm4chex.archive.ejb.session.MWLManagerBeanTest"
+         	todir="${target.reports}"/>
       </junit>
     </target>
     

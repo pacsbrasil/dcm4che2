@@ -31,11 +31,12 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
-import org.dcm4chex.archive.util.DatasetUtil;
 
 /**
 
@@ -211,7 +212,7 @@ public abstract class SeriesBean implements EntityBean {
     public void ejbLoad() {
         retrieveAETSet = null;
     }
-    
+
     /**
      * Create series.
      *
@@ -248,14 +249,17 @@ public abstract class SeriesBean implements EntityBean {
         setModality(ds.getString(Tags.Modality));
         setPpsStartDateTime(
             ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds));
+        setEncodedAttributes(
+            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
     }
 
     /**
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        return DatasetUtil.fromByteArray(getEncodedAttributes());
+        return DatasetUtils.fromByteArray(
+            getEncodedAttributes(),
+            DcmDecodeParam.EVR_LE);
     }
 
     /**
@@ -295,9 +299,9 @@ public abstract class SeriesBean implements EntityBean {
                 + aet);
         if (getRetrieveAETSet().contains(aet)) {
             log.debug(
-                    "series[pk="
+                "series[pk="
                     + getPk()
-                    + "]: no update of retrieveAETs " 
+                    + "]: no update of retrieveAETs "
                     + getRetrieveAETSet()
                     + " necessary");
             return false;
@@ -329,8 +333,7 @@ public abstract class SeriesBean implements EntityBean {
         Collection c = getInstances();
         for (Iterator it = c.iterator(); it.hasNext();) {
             InstanceLocal instance = (InstanceLocal) it.next();
-            if (!instance.getRetrieveAETSet()
-                .contains(aet)) {
+            if (!instance.getRetrieveAETSet().contains(aet)) {
                 return false;
             }
         }

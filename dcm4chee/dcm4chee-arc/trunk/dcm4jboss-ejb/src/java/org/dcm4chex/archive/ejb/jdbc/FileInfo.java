@@ -20,7 +20,6 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -95,22 +94,22 @@ public class FileInfo
         return new File(fpath.replace('/', File.separatorChar));
     }
 
-    public Dataset getPatientAttrs() throws IOException
+    public Dataset getPatientAttrs()
     {
         return DatasetUtils.fromByteArray(patAttrs, DcmDecodeParam.IVR_LE);
     }
 
-    public Dataset getStudyAttrs() throws IOException
+    public Dataset getStudyAttrs()
     {
         return DatasetUtils.fromByteArray(studyAttrs, DcmDecodeParam.IVR_LE);
     }
 
-    public Dataset getSeriesAttrs() throws IOException
+    public Dataset getSeriesAttrs()
     {
         return DatasetUtils.fromByteArray(seriesAttrs, DcmDecodeParam.IVR_LE);
     }
 
-    public Dataset getInstanceAttrs() throws IOException
+    public Dataset getInstanceAttrs()
     {
         return DatasetUtils.fromByteArray(instAttrs, DcmDecodeParam.IVR_LE);
     }

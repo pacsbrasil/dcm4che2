@@ -25,8 +25,9 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.util.DatasetUtil;
+import org.dcm4cheri.util.DatasetUtils;
 
 /**
  * @ejb.bean
@@ -196,7 +197,9 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        return DatasetUtil.fromByteArray(getEncodedAttributes());
+        return DatasetUtils.fromByteArray(
+            getEncodedAttributes(),
+            DcmDecodeParam.EVR_LE);
     }
 
     /**
@@ -208,7 +211,8 @@ public abstract class PatientBean implements EntityBean {
         setPatientName(ds.getString(Tags.PatientName));
         setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
         setPatientSex(ds.getString(Tags.PatientSex));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds));
+        setEncodedAttributes(
+            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
     }
 
     /**

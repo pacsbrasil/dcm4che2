@@ -20,6 +20,8 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -32,8 +34,9 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.util.DatasetUtil;
+import org.dcm4cheri.util.DatasetUtils;
 
 /**
  * @ejb.bean
@@ -74,11 +77,12 @@ import org.dcm4chex.archive.util.DatasetUtil;
  *
  */
 public abstract class MWLItemBean implements EntityBean {
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private static final Logger log = Logger.getLogger(MWLItemBean.class);
     private String spsIdPrefix;
 
     public void setEntityContext(EntityContext arg0)
-    throws EJBException, RemoteException {
+        throws EJBException, RemoteException {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
@@ -234,13 +238,14 @@ public abstract class MWLItemBean implements EntityBean {
     }
 
     public void ejbPostCreate(Dataset ds) throws CreateException {
-        if (getSpsId().length() == 0) {            
+        if (getSpsId().length() == 0) {
             String id = spsIdPrefix + getPk();
             setSpsId(id);
-            log.debug("generate SPS ID from pk - " + prompt());   
+            log.debug("generate SPS ID from pk - " + prompt());
             ds.getItem(Tags.SPSSeq).putCS(Tags.SPSID, id);
         }
-        setEncodedAttributes(DatasetUtil.toByteArray(ds));
+        setEncodedAttributes(
+            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
         log.info("Created " + prompt());
     }
 
@@ -252,7 +257,9 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        return DatasetUtil.fromByteArray(getEncodedAttributes());
+        return DatasetUtils.fromByteArray(
+            getEncodedAttributes(),
+            DcmDecodeParam.EVR_LE);
     }
 
     /**
@@ -285,12 +292,13 @@ public abstract class MWLItemBean implements EntityBean {
     }
 
     private String prompt() {
+        Date spsDT = getSpsStartDateTime();
         return "MWLItem[pk="
             + getPk()
             + ", spsId="
             + getSpsId()
             + ", spsStartDateTime="
-            + getSpsStartDateTime()
+            + (spsDT != null ? new SimpleDateFormat(DATE_FORMAT).format(spsDT) : "")
             + ", stationAET="
             + getScheduledStationAET()
             + ", rqProcId="

@@ -31,11 +31,12 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.DatasetUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
-import org.dcm4chex.archive.util.DatasetUtil;
 
 /**
  * @ejb.bean
@@ -262,7 +263,9 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes() {
-        return DatasetUtil.fromByteArray(getEncodedAttributes());
+        return DatasetUtils.fromByteArray(
+            getEncodedAttributes(),
+            DcmDecodeParam.EVR_LE);
     }
 
     /**
@@ -274,7 +277,8 @@ public abstract class StudyBean implements EntityBean {
         setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds));
+        setEncodedAttributes(
+            DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
     }
 
     /**
@@ -320,9 +324,9 @@ public abstract class StudyBean implements EntityBean {
                 + aet);
         if (getRetrieveAETSet().contains(aet)) {
             log.debug(
-                    "study[pk="
+                "study[pk="
                     + getPk()
-                    + "]: no update of retrieveAETs " 
+                    + "]: no update of retrieveAETs "
                     + getRetrieveAETSet()
                     + " necessary");
             return false;
