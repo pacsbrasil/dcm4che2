@@ -285,7 +285,6 @@ public class ScannerCalibration
      *
      * @param  scanDirName      Description of the Parameter
      * @return                  The mostRecentScanFile value
-     * @exception  IOException  Description of the Exception
      */
     public File getMostRecentScanFile(String scanDirName)
     {

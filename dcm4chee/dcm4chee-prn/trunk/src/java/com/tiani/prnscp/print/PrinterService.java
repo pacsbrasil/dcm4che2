@@ -75,10 +75,10 @@ import org.jboss.system.server.ServerConfigLocator;
 /**
  *  <description>
  *
- *@author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- *@created    April 24, 2003
- *@since      November 3, 2003
- *@version    $Revision$ $Date$
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      November 3, 2003
+ * @created    April 24, 2003
+ * @version    $Revision$ $Date$
  */
 public class PrinterService
          extends ServiceMBeanSupport
@@ -208,7 +208,8 @@ public class PrinterService
 
     private boolean decimateByNearestNeighbor;
 
-    private final PrinterCalibration calibration = new PrinterCalibration();
+    private final PrinterCalibration calibration =
+            new PrinterCalibration(log.getCategory());
     private final ScannerCalibration scanner =
             new ScannerCalibration(log.getCategory());
 
@@ -225,7 +226,7 @@ public class PrinterService
     /**
      *  Gets the auditLoggerName attribute of the PrinterService object
      *
-     *@return    The auditLoggerName value
+     * @return    The auditLoggerName value
      */
     public ObjectName getAuditLoggerName()
     {
@@ -236,7 +237,7 @@ public class PrinterService
     /**
      *  Sets the auditLoggerName attribute of the PrinterService object
      *
-     *@param  auditLogName  The new auditLoggerName value
+     * @param  auditLogName  The new auditLoggerName value
      */
     public void setAuditLoggerName(ObjectName auditLogName)
     {
@@ -248,7 +249,7 @@ public class PrinterService
     /**
      *  Gets the calledAET attribute of the PrinterService object
      *
-     *@return    The calledAET value
+     * @return    The calledAET value
      */
     public String getCalledAET()
     {
@@ -256,12 +257,6 @@ public class PrinterService
     }
 
 
-    /**
-     *  Gets the calibrationTime attribute of the PrinterService object
-     *
-     *@param  color  Description of the Parameter
-     *@return        The calibrationTime value
-     */
     private long getCalibrationTime(Boolean color)
     {
         return (printGrayAsColor || color.booleanValue())
@@ -270,12 +265,24 @@ public class PrinterService
     }
 
 
-    /**
-     *  Description of the Method
-     *
-     *@param  color  Description of the Parameter
-     *@return        Description of the Return Value
-     */
+    private long getCalibrationTime(Chromaticity chromaticity)
+    {
+        return Chromaticity.COLOR.equals(chromaticity)
+                 ? colorCalibrationTime
+                 : monochromeCalibrationTime;
+    }
+
+
+    private void setCalibrationTime(Chromaticity chromaticity, long time)
+    {
+        if (Chromaticity.COLOR.equals(chromaticity)) {
+            colorCalibrationTime = time;
+        } else {
+            monochromeCalibrationTime = time;
+        }
+    }
+
+
     Chromaticity toChromaticity(Boolean color)
     {
         return (printGrayAsColor || color.booleanValue())
@@ -287,8 +294,8 @@ public class PrinterService
     /**
      *  Gets the status attribute of the PrinterService object
      *
-     *@param  color  Description of the Parameter
-     *@return        The status value
+     * @param  color  Description of the Parameter
+     * @return        The status value
      */
     public PrinterStatus getStatus(Boolean color)
     {
@@ -310,8 +317,8 @@ public class PrinterService
     /**
      *  Gets the statusInfo attribute of the PrinterService object
      *
-     *@param  color  Description of the Parameter
-     *@return        The statusInfo value
+     * @param  color  Description of the Parameter
+     * @return        The statusInfo value
      */
     public PrinterStatusInfo getStatusInfo(Boolean color)
     {
@@ -336,7 +343,7 @@ public class PrinterService
     /**
      *  Getter for property printSCPName.
      *
-     *@return    Value of property printSCPName.
+     * @return    Value of property printSCPName.
      */
     public ObjectName getPrintSCPName()
     {
@@ -347,7 +354,7 @@ public class PrinterService
     /**
      *  Setter for property printSCPName.
      *
-     *@param  printSCPName  New value of property printSCPName.
+     * @param  printSCPName  New value of property printSCPName.
      */
     public void setPrintSCPName(ObjectName printSCPName)
     {
@@ -358,7 +365,7 @@ public class PrinterService
     /**
      *  Getter for property printerName.
      *
-     *@return    Value of property printerName.
+     * @return    Value of property printerName.
      */
     public String getPrinterName()
     {
@@ -369,7 +376,7 @@ public class PrinterService
     /**
      *  Setter for property printerName.
      *
-     *@param  printerName  New value of property printerName.
+     * @param  printerName  New value of property printerName.
      */
     public void setPrinterName(String printerName)
     {
@@ -388,7 +395,7 @@ public class PrinterService
     /**
      *  Getter for property manufacturer.
      *
-     *@return    Value of property manufacturer.
+     * @return    Value of property manufacturer.
      */
     public String getManufacturer()
     {
@@ -399,7 +406,7 @@ public class PrinterService
     /**
      *  Setter for property manufacturer.
      *
-     *@param  manufacturer  New value of property manufacturer.
+     * @param  manufacturer  New value of property manufacturer.
      */
     public void setManufacturer(String manufacturer)
     {
@@ -410,7 +417,7 @@ public class PrinterService
     /**
      *  Getter for property manufacturerModelName.
      *
-     *@return    Value of property manufacturerModelName.
+     * @return    Value of property manufacturerModelName.
      */
     public String getManufacturerModelName()
     {
@@ -421,7 +428,7 @@ public class PrinterService
     /**
      *  Setter for property manufacturerModelName.
      *
-     *@param  manufacturerModelName  New value of property
+     * @param  manufacturerModelName  New value of property
      *      manufacturerModelName.
      */
     public void setManufacturerModelName(String manufacturerModelName)
@@ -433,7 +440,7 @@ public class PrinterService
     /**
      *  Getter for property deviceSerialNumber.
      *
-     *@return    Value of property deviceSerialNumber.
+     * @return    Value of property deviceSerialNumber.
      */
     public String getDeviceSerialNumber()
     {
@@ -444,7 +451,7 @@ public class PrinterService
     /**
      *  Getter for property softwareVersion.
      *
-     *@return    Value of property softwareVersion.
+     * @return    Value of property softwareVersion.
      */
     public String getSoftwareVersion()
     {
@@ -455,7 +462,7 @@ public class PrinterService
     /**
      *  Setter for property softwareVersion.
      *
-     *@param  softwareVersion  New value of property softwareVersion.
+     * @param  softwareVersion  New value of property softwareVersion.
      */
     public void setSoftwareVersion(String softwareVersion)
     {
@@ -466,7 +473,7 @@ public class PrinterService
     /**
      *  Setter for property deviceSerialNumber.
      *
-     *@param  deviceSerialNumber  New value of property deviceSerialNumber.
+     * @param  deviceSerialNumber  New value of property deviceSerialNumber.
      */
     public void setDeviceSerialNumber(String deviceSerialNumber)
     {
@@ -477,7 +484,7 @@ public class PrinterService
     /**
      *  Getter for property ignorePrinterIsAcceptingJobs.
      *
-     *@return    Value of property ignorePrinterIsAcceptingJobs.
+     * @return    Value of property ignorePrinterIsAcceptingJobs.
      */
     public boolean isIgnorePrinterIsAcceptingJobs()
     {
@@ -488,7 +495,7 @@ public class PrinterService
     /**
      *  Setter for property ignorePrinterIsAcceptingJobs.
      *
-     *@param  ignorePrinterIsAcceptingJobs  New value of property
+     * @param  ignorePrinterIsAcceptingJobs  New value of property
      *      ignorePrinterIsAcceptingJobs.
      */
     public void setIgnorePrinterIsAcceptingJobs(boolean ignorePrinterIsAcceptingJobs)
@@ -500,7 +507,7 @@ public class PrinterService
     /**
      *  Getter for property minimizeJobsize.
      *
-     *@return    Value of property minimizeJobsize.
+     * @return    Value of property minimizeJobsize.
      */
     public boolean isMinimizeJobsize()
     {
@@ -511,7 +518,7 @@ public class PrinterService
     /**
      *  Setter for property minimizeJobsize.
      *
-     *@param  minimizeJobsize  New value of property minimizeJobsize.
+     * @param  minimizeJobsize  New value of property minimizeJobsize.
      */
     public void setMinimizeJobsize(boolean minimizeJobsize)
     {
@@ -522,7 +529,7 @@ public class PrinterService
     /**
      *  Getter for property decimateByNearestNeighbor.
      *
-     *@return    Value of property decimateByNearestNeighbor.
+     * @return    Value of property decimateByNearestNeighbor.
      */
     public boolean isDecimateByNearestNeighbor()
     {
@@ -533,7 +540,7 @@ public class PrinterService
     /**
      *  Setter for property decimateByNearestNeighbor.
      *
-     *@param  decimateByNearestNeighbor  New value of property
+     * @param  decimateByNearestNeighbor  New value of property
      *      decimateByNearestNeighbor.
      */
     public void setDecimateByNearestNeighbor(boolean decimateByNearestNeighbor)
@@ -545,7 +552,7 @@ public class PrinterService
     /**
      *  Getter for property chunkSize.
      *
-     *@return    Value of property chunkSize.
+     * @return    Value of property chunkSize.
      */
     public double getChunkSize()
     {
@@ -556,7 +563,7 @@ public class PrinterService
     /**
      *  Setter for property chunkSize.
      *
-     *@param  chunkSize  New value of property chunkSize.
+     * @param  chunkSize  New value of property chunkSize.
      */
     public void setChunkSize(double chunkSize)
     {
@@ -567,8 +574,8 @@ public class PrinterService
     /**
      *  Gets the printService attribute of the PrinterService object
      *
-     *@return                     The printService value
-     *@exception  PrintException  Description of the Exception
+     * @return                     The printService value
+     * @exception  PrintException  Description of the Exception
      */
     private PrintService getPrintService()
         throws PrintException
@@ -596,7 +603,7 @@ public class PrinterService
     /**
      *  Getter for property printToFile.
      *
-     *@return    Value of property printToFile.
+     * @return    Value of property printToFile.
      */
     public boolean isPrintToFile()
     {
@@ -607,7 +614,7 @@ public class PrinterService
     /**
      *  Setter for property printToFile.
      *
-     *@param  printToFile  New value of property printToFile.
+     * @param  printToFile  New value of property printToFile.
      */
     public void setPrintToFile(boolean printToFile)
     {
@@ -618,7 +625,7 @@ public class PrinterService
     /**
      *  Getter for property printToFilePath.
      *
-     *@return    Value of property printToFilePath.
+     * @return    Value of property printToFilePath.
      */
     public String getPrintToFilePath()
     {
@@ -629,7 +636,7 @@ public class PrinterService
     /**
      *  Setter for property printToFilePath.
      *
-     *@param  printToFilePath  New value of property printToFilePath.
+     * @param  printToFilePath  New value of property printToFilePath.
      */
     public void setPrintToFilePath(String printToFilePath)
     {
@@ -640,7 +647,7 @@ public class PrinterService
     /**
      *  Getter for property availableDestinations.
      *
-     *@return    Value of property availableDestinations.
+     * @return    Value of property availableDestinations.
      */
     public String[] getAvailablePrinters()
     {
@@ -657,7 +664,7 @@ public class PrinterService
     /**
      *  Getter for property printServiceAttributes.
      *
-     *@return    Value of property printServiceAttributes.
+     * @return    Value of property printServiceAttributes.
      */
     public String[] getPrintServiceAttributes()
     {
@@ -672,8 +679,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  as  Description of the Parameter
-     *@return     Description of the Return Value
+     * @param  as  Description of the Parameter
+     * @return     Description of the Return Value
      */
     static String[] toStringArray(AttributeSet as)
     {
@@ -690,7 +697,7 @@ public class PrinterService
     /**
      *  Getter for property supportedAttributeValues.
      *
-     *@return    Value of property supportedAttributeValues.
+     * @return    Value of property supportedAttributeValues.
      */
     public String[] getSupportedAttributeValues()
     {
@@ -715,7 +722,7 @@ public class PrinterService
     /**
      *  Getter for property supportsColor.
      *
-     *@return    Value of property supportsColor.
+     * @return    Value of property supportsColor.
      */
     public boolean isSupportsColor()
     {
@@ -726,7 +733,7 @@ public class PrinterService
     /**
      *  Setter for property supportsColor.
      *
-     *@param  supportsColor  New value of property supportsColor.
+     * @param  supportsColor  New value of property supportsColor.
      */
     public void setSupportsColor(boolean supportsColor)
     {
@@ -737,7 +744,7 @@ public class PrinterService
     /**
      *  Getter for property supportsGrayscale.
      *
-     *@return    Value of property supportsGrayscale.
+     * @return    Value of property supportsGrayscale.
      */
     public boolean isSupportsGrayscale()
     {
@@ -748,7 +755,7 @@ public class PrinterService
     /**
      *  Setter for property supportsGrayscale.
      *
-     *@param  supportsGrayscale  New value of property supportsGrayscale.
+     * @param  supportsGrayscale  New value of property supportsGrayscale.
      */
     public void setSupportsGrayscale(boolean supportsGrayscale)
     {
@@ -759,7 +766,7 @@ public class PrinterService
     /**
      *  Getter for property supportsPresentationLUT.
      *
-     *@return    Value of property supportsPresentationLUT.
+     * @return    Value of property supportsPresentationLUT.
      */
     public boolean isSupportsPresentationLUT()
     {
@@ -770,7 +777,7 @@ public class PrinterService
     /**
      *  Setter for property supportsPresentationLUT.
      *
-     *@param  supportsPresentationLUT  New value of property
+     * @param  supportsPresentationLUT  New value of property
      *      supportsPresentationLUT.
      */
     public void setSupportsPresentationLUT(boolean supportsPresentationLUT)
@@ -782,7 +789,7 @@ public class PrinterService
     /**
      *  Gets the dateFormat attribute of the PrinterService object
      *
-     *@return    The dateFormat value
+     * @return    The dateFormat value
      */
     public String getDateFormat()
     {
@@ -793,7 +800,7 @@ public class PrinterService
     /**
      *  Sets the dateFormat attribute of the PrinterService object
      *
-     *@param  dateFormat  The new dateFormat value
+     * @param  dateFormat  The new dateFormat value
      */
     public void setDateFormat(String dateFormat)
     {
@@ -804,7 +811,7 @@ public class PrinterService
     /**
      *  Gets the timeFormat attribute of the PrinterService object
      *
-     *@return    The timeFormat value
+     * @return    The timeFormat value
      */
     public String getTimeFormat()
     {
@@ -815,7 +822,7 @@ public class PrinterService
     /**
      *  Sets the timeFormat attribute of the PrinterService object
      *
-     *@param  timeFormat  The new timeFormat value
+     * @param  timeFormat  The new timeFormat value
      */
     public void setTimeFormat(String timeFormat)
     {
@@ -826,7 +833,7 @@ public class PrinterService
     /**
      *  Gets the sessionLabel attribute of the PrinterService object
      *
-     *@return    The sessionLabel value
+     * @return    The sessionLabel value
      */
     public String getSessionLabel()
     {
@@ -837,7 +844,7 @@ public class PrinterService
     /**
      *  Sets the sessionLabel attribute of the PrinterService object
      *
-     *@param  sessionLabel  The new sessionLabel value
+     * @param  sessionLabel  The new sessionLabel value
      */
     public void setSessionLabel(String sessionLabel)
     {
@@ -848,7 +855,7 @@ public class PrinterService
     /**
      *  Gets the maxNumberOfCopies attribute of the PrinterService object
      *
-     *@return    The maxNumberOfCopies value
+     * @return    The maxNumberOfCopies value
      */
     public int getMaxNumberOfCopies()
     {
@@ -859,7 +866,7 @@ public class PrinterService
     /**
      *  Sets the maxNumberOfCopies attribute of the PrinterService object
      *
-     *@param  maxNumberOfCopies  The new maxNumberOfCopies value
+     * @param  maxNumberOfCopies  The new maxNumberOfCopies value
      */
     public void setMaxNumberOfCopies(int maxNumberOfCopies)
     {
@@ -873,7 +880,7 @@ public class PrinterService
     /**
      *  Getter for property mediaType.
      *
-     *@return    Value of property mediaType.
+     * @return    Value of property mediaType.
      */
     public String getMediumType()
     {
@@ -884,7 +891,7 @@ public class PrinterService
     /**
      *  Setter for property mediaType.
      *
-     *@param  mediumType  The new mediumType value
+     * @param  mediumType  The new mediumType value
      */
     public void setMediumType(String mediumType)
     {
@@ -895,7 +902,7 @@ public class PrinterService
     /**
      *  Getter for property defaultMediumType.
      *
-     *@return    Value of property defaultMediumType.
+     * @return    Value of property defaultMediumType.
      */
     public String getDefaultMediumType()
     {
@@ -906,8 +913,8 @@ public class PrinterService
     /**
      *  Gets the supportsMediumType attribute of the PrinterService object
      *
-     *@param  mediumType  Description of the Parameter
-     *@return             The supportsMediumType value
+     * @param  mediumType  Description of the Parameter
+     * @return             The supportsMediumType value
      */
     public boolean isSupportsMediumType(String mediumType)
     {
@@ -918,7 +925,7 @@ public class PrinterService
     /**
      *  Getter for property defaultPortrait.
      *
-     *@return    Value of property defaultPortrait.
+     * @return    Value of property defaultPortrait.
      */
     public boolean isDefaultPortrait()
     {
@@ -929,7 +936,7 @@ public class PrinterService
     /**
      *  Setter for property defaultPortrait.
      *
-     *@param  defaultPortrait  New value of property defaultPortrait.
+     * @param  defaultPortrait  New value of property defaultPortrait.
      */
     public void setDefaultPortrait(boolean defaultPortrait)
     {
@@ -940,7 +947,7 @@ public class PrinterService
     /**
      *  Getter for property defaultFilmOrientation.
      *
-     *@return    Value of property defaultFilmOrientation.
+     * @return    Value of property defaultFilmOrientation.
      */
     public String getDefaultFilmOrientation()
     {
@@ -951,7 +958,7 @@ public class PrinterService
     /**
      *  Getter for property displayFormat.
      *
-     *@return    Value of property displayFormat.
+     * @return    Value of property displayFormat.
      */
     public String getDisplayFormat()
     {
@@ -962,7 +969,7 @@ public class PrinterService
     /**
      *  Setter for property displayFormat.
      *
-     *@param  displayFormat  New value of property displayFormat.
+     * @param  displayFormat  New value of property displayFormat.
      */
     public void setDisplayFormat(String displayFormat)
     {
@@ -973,9 +980,9 @@ public class PrinterService
     /**
      *  Gets the supportsDisplayFormat attribute of the PrinterService object
      *
-     *@param  displayFormat    Description of the Parameter
-     *@param  filmOrientation  Description of the Parameter
-     *@return                  The supportsDisplayFormat value
+     * @param  displayFormat    Description of the Parameter
+     * @param  filmOrientation  Description of the Parameter
+     * @return                  The supportsDisplayFormat value
      */
     public boolean isSupportsDisplayFormat(String displayFormat,
             String filmOrientation)
@@ -997,8 +1004,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  list  Description of the Parameter
-     *@return       Description of the Return Value
+     * @param  list  Description of the Parameter
+     * @return       Description of the Return Value
      */
     private static String firstOf(String list)
     {
@@ -1013,9 +1020,9 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  list   Description of the Parameter
-     *@param  value  Description of the Parameter
-     *@return        Description of the Return Value
+     * @param  list   Description of the Parameter
+     * @param  value  Description of the Parameter
+     * @return        Description of the Return Value
      */
     private static boolean contains(String list, String value)
     {
@@ -1035,7 +1042,7 @@ public class PrinterService
     /**
      *  Getter for property filmSizeID.
      *
-     *@return    Value of property filmSizeID.
+     * @return    Value of property filmSizeID.
      */
     public String getFilmSizeID()
     {
@@ -1058,7 +1065,7 @@ public class PrinterService
     /**
      *  Setter for property filmSizeID.
      *
-     *@param  filmSizeID  New value of property filmSizeID.
+     * @param  filmSizeID  New value of property filmSizeID.
      */
     public void setFilmSizeID(String filmSizeID)
     {
@@ -1085,7 +1092,7 @@ public class PrinterService
     /**
      *  Getter for property defaultFilmSizeID.
      *
-     *@return    Value of property defaultFilmSizeID.
+     * @return    Value of property defaultFilmSizeID.
      */
     public String getDefaultFilmSizeID()
     {
@@ -1099,8 +1106,8 @@ public class PrinterService
     /**
      *  Gets the supportsFilmSizeID attribute of the PrinterService object
      *
-     *@param  filmSizeID  Description of the Parameter
-     *@return             The supportsFilmSizeID value
+     * @param  filmSizeID  Description of the Parameter
+     * @return             The supportsFilmSizeID value
      */
     public boolean isSupportsFilmSizeID(String filmSizeID)
     {
@@ -1112,8 +1119,8 @@ public class PrinterService
      *  Gets the supportsAnnotationDisplayFormatID attribute of the
      *  PrinterService object
      *
-     *@param  annotationID  Description of the Parameter
-     *@return               The supportsAnnotationDisplayFormatID value
+     * @param  annotationID  Description of the Parameter
+     * @return               The supportsAnnotationDisplayFormatID value
      */
     public boolean isSupportsAnnotationDisplayFormatID(String annotationID)
     {
@@ -1124,8 +1131,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  wh  Description of the Parameter
-     *@return     Description of the Return Value
+     * @param  wh  Description of the Parameter
+     * @return     Description of the Return Value
      */
     private Paper toPaper(float[] wh)
     {
@@ -1143,8 +1150,8 @@ public class PrinterService
     /**
      *  Gets the paper attribute of the PrinterService object
      *
-     *@param  filmSizeID  Description of the Parameter
-     *@return             The paper value
+     * @param  filmSizeID  Description of the Parameter
+     * @return             The paper value
      */
     Paper getPaper(String filmSizeID)
     {
@@ -1155,7 +1162,7 @@ public class PrinterService
     /**
      *  Gets the defaultPaper attribute of the PrinterService object
      *
-     *@return    The defaultPaper value
+     * @return    The defaultPaper value
      */
     Paper getDefaultPaper()
     {
@@ -1169,7 +1176,7 @@ public class PrinterService
     /**
      *  Getter for property resolutionID.
      *
-     *@return    Value of property resolutionID.
+     * @return    Value of property resolutionID.
      */
     public String getResolutionID()
     {
@@ -1192,7 +1199,7 @@ public class PrinterService
     /**
      *  Setter for property resolutionID.
      *
-     *@param  resolutionID  New value of property resolutionID.
+     * @param  resolutionID  New value of property resolutionID.
      */
     public void setResolutionID(String resolutionID)
     {
@@ -1215,7 +1222,7 @@ public class PrinterService
     /**
      *  Getter for property defaultResolutionID.
      *
-     *@return    Value of property defaultResolutionID.
+     * @return    Value of property defaultResolutionID.
      */
     public String getDefaultResolutionID()
     {
@@ -1229,7 +1236,7 @@ public class PrinterService
     /**
      *  Gets the defaultPrinterResolution attribute of the PrinterService object
      *
-     *@return    The defaultPrinterResolution value
+     * @return    The defaultPrinterResolution value
      */
     public PrinterResolution getDefaultPrinterResolution()
     {
@@ -1243,8 +1250,8 @@ public class PrinterService
     /**
      *  Gets the supportsResolutionID attribute of the PrinterService object
      *
-     *@param  resolutionID  Description of the Parameter
-     *@return               The supportsResolutionID value
+     * @param  resolutionID  Description of the Parameter
+     * @return               The supportsResolutionID value
      */
     public boolean isSupportsResolutionID(String resolutionID)
     {
@@ -1255,7 +1262,7 @@ public class PrinterService
     /**
      *  Getter for property magnificationType.
      *
-     *@return    Value of property magnificationType.
+     * @return    Value of property magnificationType.
      */
     public String getMagnificationType()
     {
@@ -1266,7 +1273,7 @@ public class PrinterService
     /**
      *  Setter for property magnificationType.
      *
-     *@param  magnificationType  New value of property magnificationType.
+     * @param  magnificationType  New value of property magnificationType.
      */
     public void setMagnificationType(String magnificationType)
     {
@@ -1277,7 +1284,7 @@ public class PrinterService
     /**
      *  Getter for property defaultMagnificationType.
      *
-     *@return    Value of property defaultMagnificationType.
+     * @return    Value of property defaultMagnificationType.
      */
     public String getDefaultMagnificationType()
     {
@@ -1289,8 +1296,8 @@ public class PrinterService
      *  Gets the supportsMagnificationType attribute of the PrinterService
      *  object
      *
-     *@param  magnificationType  Description of the Parameter
-     *@return                    The supportsMagnificationType value
+     * @param  magnificationType  Description of the Parameter
+     * @return                    The supportsMagnificationType value
      */
     public boolean isSupportsMagnificationType(String magnificationType)
     {
@@ -1301,7 +1308,7 @@ public class PrinterService
     /**
      *  Getter for property decimateCropBehavior.
      *
-     *@return    Value of property decimateCropBehavior.
+     * @return    Value of property decimateCropBehavior.
      */
     public String getDecimateCropBehavior()
     {
@@ -1312,7 +1319,7 @@ public class PrinterService
     /**
      *  Setter for property decimateCropBehavior.
      *
-     *@param  decimateCropBehavior  New value of property decimateCropBehavior.
+     * @param  decimateCropBehavior  New value of property decimateCropBehavior.
      */
     public void setDecimateCropBehavior(String decimateCropBehavior)
     {
@@ -1323,7 +1330,7 @@ public class PrinterService
     /**
      *  Getter for property borderDensity.
      *
-     *@return    Value of property borderDensity.
+     * @return    Value of property borderDensity.
      */
     public String getBorderDensity()
     {
@@ -1334,7 +1341,7 @@ public class PrinterService
     /**
      *  Setter for property borderDensity.
      *
-     *@param  borderDensity  New value of property borderDensity.
+     * @param  borderDensity  New value of property borderDensity.
      */
     public void setBorderDensity(String borderDensity)
     {
@@ -1345,7 +1352,7 @@ public class PrinterService
     /**
      *  Gets the trim attribute of the PrinterService object
      *
-     *@return    The trim value
+     * @return    The trim value
      */
     public String getTrim()
     {
@@ -1356,7 +1363,7 @@ public class PrinterService
     /**
      *  Sets the trim attribute of the PrinterService object
      *
-     *@param  trim  The new trim value
+     * @param  trim  The new trim value
      */
     public void setTrim(String trim)
     {
@@ -1367,8 +1374,8 @@ public class PrinterService
     /**
      *  Gets the minDensity attribute of the PrinterService object
      *
-     *@param  color  Description of the Parameter
-     *@return        The minDensity value
+     * @param  color  Description of the Parameter
+     * @return        The minDensity value
      */
     public int getMinDensity(Boolean color)
     {
@@ -1379,8 +1386,8 @@ public class PrinterService
     /**
      *  Gets the minDensity attribute of the PrinterService object
      *
-     *@param  chromaticity  Description of the Parameter
-     *@return               The minDensity value
+     * @param  chromaticity  Description of the Parameter
+     * @return               The minDensity value
      */
     int getMinDensity(Chromaticity chromaticity)
     {
@@ -1391,8 +1398,8 @@ public class PrinterService
     /**
      *  Gets the maxDensity attribute of the PrinterService object
      *
-     *@param  chromaticity  Description of the Parameter
-     *@return               The maxDensity value
+     * @param  chromaticity  Description of the Parameter
+     * @return               The maxDensity value
      */
     int getMaxDensity(Chromaticity chromaticity)
     {
@@ -1403,8 +1410,8 @@ public class PrinterService
     /**
      *  Gets the maxDensity attribute of the PrinterService object
      *
-     *@param  color  Description of the Parameter
-     *@return        The maxDensity value
+     * @param  color  Description of the Parameter
+     * @return        The maxDensity value
      */
     public int getMaxDensity(Boolean color)
     {
@@ -1415,7 +1422,7 @@ public class PrinterService
     /**
      *  Getter for property margin.
      *
-     *@return    Value of property margin.
+     * @return    Value of property margin.
      */
     public String getPageMargin()
     {
@@ -1430,7 +1437,7 @@ public class PrinterService
     /**
      *  Setter for property margin.
      *
-     *@param  pageMargin  The new pageMargin value
+     * @param  pageMargin  The new pageMargin value
      */
     public void setPageMargin(String pageMargin)
     {
@@ -1445,7 +1452,7 @@ public class PrinterService
     /**
      *  Getter for property reverseLandscape.
      *
-     *@return    Value of property reverseLandscape.
+     * @return    Value of property reverseLandscape.
      */
     public boolean isReverseLandscape()
     {
@@ -1456,7 +1463,7 @@ public class PrinterService
     /**
      *  Setter for property reverseLandscape.
      *
-     *@param  reverseLandscape  New value of property reverseLandscape.
+     * @param  reverseLandscape  New value of property reverseLandscape.
      */
     public void setReverseLandscape(boolean reverseLandscape)
     {
@@ -1467,7 +1474,7 @@ public class PrinterService
     /**
      *  Getter for property borderThickness.
      *
-     *@return    Value of property borderThickness.
+     * @return    Value of property borderThickness.
      */
     public float getBorderThickness()
     {
@@ -1478,7 +1485,7 @@ public class PrinterService
     /**
      *  Setter for property borderThickness.
      *
-     *@param  borderThickness  New value of property borderThickness.
+     * @param  borderThickness  New value of property borderThickness.
      */
     public void setBorderThickness(float borderThickness)
     {
@@ -1489,7 +1496,7 @@ public class PrinterService
     /**
      *  Getter for property illumination.
      *
-     *@return    Value of property illumination.
+     * @return    Value of property illumination.
      */
     public int getIllumination()
     {
@@ -1500,7 +1507,7 @@ public class PrinterService
     /**
      *  Setter for property illumination.
      *
-     *@param  illumination  New value of property illumination.
+     * @param  illumination  New value of property illumination.
      */
     public void setIllumination(int illumination)
     {
@@ -1511,7 +1518,7 @@ public class PrinterService
     /**
      *  Getter for property reflectedAmbientLight.
      *
-     *@return    Value of property reflectedAmbientLight.
+     * @return    Value of property reflectedAmbientLight.
      */
     public int getReflectedAmbientLight()
     {
@@ -1522,7 +1529,7 @@ public class PrinterService
     /**
      *  Setter for property reflectedAmbientLight.
      *
-     *@param  reflectedAmbientLight  New value of property
+     * @param  reflectedAmbientLight  New value of property
      *      reflectedAmbientLight.
      */
     public void setReflectedAmbientLight(int reflectedAmbientLight)
@@ -1534,7 +1541,7 @@ public class PrinterService
     /**
      *  Getter for property annotationDir.
      *
-     *@return    Value of property annotationDir.
+     * @return    Value of property annotationDir.
      */
     public String getAnnotationDir()
     {
@@ -1545,7 +1552,7 @@ public class PrinterService
     /**
      *  Setter for property annotationDir.
      *
-     *@param  annotationDir  New value of property annotationDir.
+     * @param  annotationDir  New value of property annotationDir.
      */
     public void setAnnotationDir(String annotationDir)
     {
@@ -1557,7 +1564,7 @@ public class PrinterService
     /**
      *  Sets the annotationDir attribute of the PrinterService object
      *
-     *@param  annotationDir  The new annotationDir value
+     * @param  annotationDir  The new annotationDir value
      */
     void setAnnotationDir(File annotationDir)
     {
@@ -1568,8 +1575,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  fname  Description of the Parameter
-     *@return        Description of the Return Value
+     * @param  fname  Description of the Parameter
+     * @return        Description of the Return Value
      */
     private static int parseAnnotationBoxCount(String fname)
     {
@@ -1600,8 +1607,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  fnames  Description of the Parameter
-     *@param  ext     Description of the Parameter
+     * @param  fnames  Description of the Parameter
+     * @param  ext     Description of the Parameter
      */
     private static void skipFileExt(String[] fnames, String ext)
     {
@@ -1615,7 +1622,7 @@ public class PrinterService
     /**
      *  Getter for property annotationDisplayFormatIDs.
      *
-     *@return    Value of property annotationDisplayFormatIDs.
+     * @return    Value of property annotationDisplayFormatIDs.
      */
     public String[] getAnnotationDisplayFormatIDs()
     {
@@ -1634,8 +1641,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  annotationID  Description of the Parameter
-     *@return               Description of the Return Value
+     * @param  annotationID  Description of the Parameter
+     * @return               Description of the Return Value
      */
     public int countAnnotationBoxes(String annotationID)
     {
@@ -1651,8 +1658,8 @@ public class PrinterService
     /**
      *  Gets the annotationFile attribute of the PrinterService object
      *
-     *@param  annotationID  Description of the Parameter
-     *@return               The annotationFile value
+     * @param  annotationID  Description of the Parameter
+     * @return               The annotationFile value
      */
     File getAnnotationFile(String annotationID)
     {
@@ -1670,7 +1677,7 @@ public class PrinterService
     /**
      *  Getter for property lutDir.
      *
-     *@return    Value of property lutDir.
+     * @return    Value of property lutDir.
      */
     public String getLUTDir()
     {
@@ -1681,7 +1688,7 @@ public class PrinterService
     /**
      *  Setter for property lutDir.
      *
-     *@param  lutDir  New value of property lutDir.
+     * @param  lutDir  New value of property lutDir.
      */
     public void setLUTDir(String lutDir)
     {
@@ -1693,8 +1700,8 @@ public class PrinterService
      *  Gets the supportsConfigurationInformation attribute of the
      *  PrinterService object
      *
-     *@param  configInfo  Description of the Parameter
-     *@return             The supportsConfigurationInformation value
+     * @param  configInfo  Description of the Parameter
+     * @return             The supportsConfigurationInformation value
      */
     public boolean isSupportsConfigurationInformation(String configInfo)
     {
@@ -1710,7 +1717,7 @@ public class PrinterService
     /**
      *  Getter for property supportsAnnotationBox.
      *
-     *@return    Value of property supportsAnnotationBox.
+     * @return    Value of property supportsAnnotationBox.
      */
     public boolean isSupportsAnnotationBox()
     {
@@ -1721,7 +1728,7 @@ public class PrinterService
     /**
      *  Setter for property supportsAnnotationBox.
      *
-     *@param  supportsAnnotationBox  New value of property
+     * @param  supportsAnnotationBox  New value of property
      *      supportsAnnotationBox.
      */
     public void setSupportsAnnotationBox(boolean supportsAnnotationBox)
@@ -1734,7 +1741,7 @@ public class PrinterService
      *  Gets the configurationInformationForCallingAET attribute of the
      *  PrinterService object
      *
-     *@return    The configurationInformationForCallingAET value
+     * @return    The configurationInformationForCallingAET value
      */
     public String getConfigurationInformationForCallingAET()
     {
@@ -1755,9 +1762,9 @@ public class PrinterService
      *  Gets the configurationInformationForCallingAET attribute of the
      *  PrinterService object
      *
-     *@param  aet    Description of the Parameter
-     *@param  color  Description of the Parameter
-     *@return        The configurationInformationForCallingAET value
+     * @param  aet    Description of the Parameter
+     * @param  color  Description of the Parameter
+     * @return        The configurationInformationForCallingAET value
      */
     String getConfigurationInformationForCallingAET(String aet, Boolean color)
     {
@@ -1781,7 +1788,7 @@ public class PrinterService
      *  Sets the configurationInformationForCallingAET attribute of the
      *  PrinterService object
      *
-     *@param  ciForCallingAET  The new configurationInformationForCallingAET
+     * @param  ciForCallingAET  The new configurationInformationForCallingAET
      *      value
      */
     public void setConfigurationInformationForCallingAET(String ciForCallingAET)
@@ -1803,7 +1810,7 @@ public class PrinterService
     /**
      *  Getter for property annotationForCallingAET.
      *
-     *@return    Value of property annotationForCallingAET.
+     * @return    Value of property annotationForCallingAET.
      */
     public String getAnnotationForCallingAET()
     {
@@ -1823,8 +1830,8 @@ public class PrinterService
     /**
      *  Gets the annotationForCallingAET attribute of the PrinterService object
      *
-     *@param  callingAET  Description of the Parameter
-     *@return             The annotationForCallingAET value
+     * @param  callingAET  Description of the Parameter
+     * @return             The annotationForCallingAET value
      */
     String getAnnotationForCallingAET(String callingAET)
     {
@@ -1842,7 +1849,7 @@ public class PrinterService
     /**
      *  Setter for property annotationForCallingAET.
      *
-     *@param  annotationForCallingAET  New value of property
+     * @param  annotationForCallingAET  New value of property
      *      annotationForCallingAET.
      */
     public void setAnnotationForCallingAET(String annotationForCallingAET)
@@ -1864,7 +1871,7 @@ public class PrinterService
     /**
      *  Getter for property annotationForPrintImage.
      *
-     *@return    Value of property annotationForPrintImage.
+     * @return    Value of property annotationForPrintImage.
      */
     public String getAnnotationForPrintImage()
     {
@@ -1875,7 +1882,7 @@ public class PrinterService
     /**
      *  Setter for property annotationForPrintImage.
      *
-     *@param  annotationForPrintImage  New value of property
+     * @param  annotationForPrintImage  New value of property
      *      annotationForPrintImage.
      */
     public void setAnnotationForPrintImage(String annotationForPrintImage)
@@ -1887,8 +1894,8 @@ public class PrinterService
     /**
      *  Gets the dateOfLastCalibration attribute of the PrinterService object
      *
-     *@param  color  Description of the Parameter
-     *@return        The dateOfLastCalibration value
+     * @param  color  Description of the Parameter
+     * @return        The dateOfLastCalibration value
      */
     public String getDateOfLastCalibration(Boolean color)
     {
@@ -1900,8 +1907,8 @@ public class PrinterService
     /**
      *  Gets the timeOfLastCalibration attribute of the PrinterService object
      *
-     *@param  color  Description of the Parameter
-     *@return        The timeOfLastCalibration value
+     * @param  color  Description of the Parameter
+     * @return        The timeOfLastCalibration value
      */
     public String getTimeOfLastCalibration(Boolean color)
     {
@@ -1913,8 +1920,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  text  Description of the Parameter
-     *@return       Description of the Return Value
+     * @param  text  Description of the Parameter
+     * @return       Description of the Return Value
      */
     private static String[] toStringArray(String text)
     {
@@ -1930,8 +1937,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  text  Description of the Parameter
-     *@return       Description of the Return Value
+     * @param  text  Description of the Parameter
+     * @return       Description of the Return Value
      */
     private static float[] toFloatArray(String text)
     {
@@ -1947,8 +1954,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  text  Description of the Parameter
-     *@return       Description of the Return Value
+     * @param  text  Description of the Parameter
+     * @return       Description of the Return Value
      */
     private static int[] toIntArray(String text)
     {
@@ -1964,7 +1971,7 @@ public class PrinterService
     /**
      *  Gets the calibrationDir attribute of the PrinterService object
      *
-     *@return    The calibrationDir value
+     * @return    The calibrationDir value
      */
     public String getCalibrationDir()
     {
@@ -1975,7 +1982,7 @@ public class PrinterService
     /**
      *  Sets the calibrationDir attribute of the PrinterService object
      *
-     *@param  dir  The new calibrationDir value
+     * @param  dir  The new calibrationDir value
      */
     public void setCalibrationDir(String dir)
     {
@@ -1986,7 +1993,7 @@ public class PrinterService
     /**
      *  Gets the scanPointExtension attribute of the PrinterService object
      *
-     *@return    The scanPointExtension value
+     * @return    The scanPointExtension value
      */
     public int getScanPointExtension()
     {
@@ -1997,7 +2004,7 @@ public class PrinterService
     /**
      *  Sets the scanPointExtension attribute of the PrinterService object
      *
-     *@param  extension  The new scanPointExtension value
+     * @param  extension  The new scanPointExtension value
      */
     public void setScanPointExtension(int extension)
     {
@@ -2008,7 +2015,7 @@ public class PrinterService
     /**
      *  Gets the scanThreshold attribute of the PrinterService object
      *
-     *@return    The scanThreshold value
+     * @return    The scanThreshold value
      */
     public int getScanThreshold()
     {
@@ -2019,7 +2026,7 @@ public class PrinterService
     /**
      *  Sets the scanThreshold attribute of the PrinterService object
      *
-     *@param  scanThreshold  The new scanThreshold value
+     * @param  scanThreshold  The new scanThreshold value
      */
     public void setScanThreshold(int scanThreshold)
     {
@@ -2030,7 +2037,7 @@ public class PrinterService
     /**
      *  Gets the assumeZeroMinOD attribute of the PrinterService object
      *
-     *@return    The assumeZeroMinOD value
+     * @return    The assumeZeroMinOD value
      */
     public boolean isAssumeZeroMinOD()
     {
@@ -2041,7 +2048,7 @@ public class PrinterService
     /**
      *  Sets the assumeZeroMinOD attribute of the PrinterService object
      *
-     *@param  assumeZeroMinOD  The new assumeZeroMinOD value
+     * @param  assumeZeroMinOD  The new assumeZeroMinOD value
      */
     public void setAssumeZeroMinOD(boolean assumeZeroMinOD)
     {
@@ -2050,9 +2057,31 @@ public class PrinterService
 
 
     /**
+     *  Gets the skipNonMonotonicODs attribute of the PrinterService object
+     *
+     * @return    The skipNonMonotonicODs value
+     */
+    public int getSkipNonMonotonicODs()
+    {
+        return calibration.getSkipNonMonotonicODs();
+    }
+
+
+    /**
+     *  Sets the skipNonMonotonicODs attribute of the PrinterService object
+     *
+     * @param  skipNonMonotonicODs  The new skipNonMonotonicODs value
+     */
+    public void setSkipNonMonotonicODs(int skipNonMonotonicODs)
+    {
+        calibration.setSkipNonMonotonicODs(skipNonMonotonicODs);
+    }
+
+
+    /**
      *  Gets the printGrayAsColor attribute of the PrinterService object
      *
-     *@return    The printGrayAsColor value
+     * @return    The printGrayAsColor value
      */
     public boolean isPrintGrayAsColor()
     {
@@ -2063,7 +2092,7 @@ public class PrinterService
     /**
      *  Sets the printGrayAsColor attribute of the PrinterService object
      *
-     *@param  printGrayAsColor  The new printGrayAsColor value
+     * @param  printGrayAsColor  The new printGrayAsColor value
      */
     public void setPrintGrayAsColor(boolean printGrayAsColor)
     {
@@ -2074,7 +2103,7 @@ public class PrinterService
     /**
      *  Gets the printColorWithPLUT attribute of the PrinterService object
      *
-     *@return    The printColorWithPLUT value
+     * @return    The printColorWithPLUT value
      */
     public boolean isPrintColorWithPLUT()
     {
@@ -2085,7 +2114,7 @@ public class PrinterService
     /**
      *  Sets the printColorWithPLUT attribute of the PrinterService object
      *
-     *@param  printColorWithPLUT  The new printColorWithPLUT value
+     * @param  printColorWithPLUT  The new printColorWithPLUT value
      */
     public void setPrintColorWithPLUT(boolean printColorWithPLUT)
     {
@@ -2096,7 +2125,7 @@ public class PrinterService
     /**
      *  Gets the maxQueuedJobCount attribute of the PrinterService object
      *
-     *@return    The maxQueuedJobCount value
+     * @return    The maxQueuedJobCount value
      */
     public int getMaxQueuedJobCount()
     {
@@ -2107,7 +2136,7 @@ public class PrinterService
     /**
      *  Sets the maxQueuedJobCount attribute of the PrinterService object
      *
-     *@param  maxQueuedJobCount  The new maxQueuedJobCount value
+     * @param  maxQueuedJobCount  The new maxQueuedJobCount value
      */
     public void setMaxQueuedJobCount(int maxQueuedJobCount)
     {
@@ -2118,7 +2147,7 @@ public class PrinterService
     /**
      *  Gets the license attribute of the PrinterService object
      *
-     *@return    The license value
+     * @return    The license value
      */
     public X509Certificate getLicense()
     {
@@ -2133,7 +2162,7 @@ public class PrinterService
     /**
      *  Gets the licenseCN attribute of the PrinterService object
      *
-     *@return    The licenseCN value
+     * @return    The licenseCN value
      */
     String getLicenseCN()
     {
@@ -2151,7 +2180,7 @@ public class PrinterService
     /**
      *  Gets the licenseEndDate attribute of the PrinterService object
      *
-     *@return    The licenseEndDate value
+     * @return    The licenseEndDate value
      */
     Date getLicenseEndDate()
     {
@@ -2166,8 +2195,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  desc  Description of the Parameter
-     *@param  type  Description of the Parameter
+     * @param  desc  Description of the Parameter
+     * @param  type  Description of the Parameter
      */
     private void logActorConfig(String desc, String type)
     {
@@ -2190,14 +2219,14 @@ public class PrinterService
     /**
      *  Gets the pValToDDL attribute of the PrinterService object
      *
-     *@param  chromaticity  Description of the Parameter
-     *@param  n             Description of the Parameter
-     *@param  dmin          Description of the Parameter
-     *@param  dmax          Description of the Parameter
-     *@param  l0            Description of the Parameter
-     *@param  la            Description of the Parameter
-     *@param  plut          Description of the Parameter
-     *@return               The pValToDDL value
+     * @param  chromaticity  Description of the Parameter
+     * @param  n             Description of the Parameter
+     * @param  dmin          Description of the Parameter
+     * @param  dmax          Description of the Parameter
+     * @param  l0            Description of the Parameter
+     * @param  la            Description of the Parameter
+     * @param  plut          Description of the Parameter
+     * @return               The pValToDDL value
      */
     byte[] getPValToDDL(Chromaticity chromaticity,
             int n, float dmin, float dmax, float l0, float la, Dataset plut)
@@ -2209,14 +2238,11 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  chromaticity  Description of the Parameter
+     * @param  chromaticity  Description of the Parameter
      */
     private void calibrate(Chromaticity chromaticity)
     {
         try {
-            final long calibrationTime = Chromaticity.COLOR.equals(chromaticity)
-                     ? colorCalibrationTime
-                     : monochromeCalibrationTime;
             String scanDirName = toScanDirName(chromaticity);
             File scanFile = scanner.getMostRecentScanFile(scanDirName);
             if (scanFile == null) {
@@ -2224,7 +2250,7 @@ public class PrinterService
                     log.debug("No scanned print outs for Calibration of Printer " + calledAET
                              + ", chromaticity=" + chromaticity);
                 }
-                if (calibrationTime == 0) {
+                if (getCalibrationTime(chromaticity) == 0) {
                     log.warn("No scanned print outs for Calibration of Printer " + calledAET
                              + ", chromaticity=" + chromaticity + " -> print UNCALIBRATED!");
                 }
@@ -2232,7 +2258,7 @@ public class PrinterService
             }
             long scanFileLastModified = scanFile.lastModified();
 
-            if (scanFileLastModified <= calibrationTime) {
+            if (scanFileLastModified <= getCalibrationTime(chromaticity)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Calibration of Printer " + calledAET
                              + ", chromaticity=" + chromaticity + " is uptodate");
@@ -2246,11 +2272,7 @@ public class PrinterService
             File odFile = scanner.getODsFile(scanDirName);
             scanner.writeODs(odFile, ods);
             odFile.setLastModified(scanFileLastModified);
-            if (Chromaticity.COLOR.equals(chromaticity)) {
-                colorCalibrationTime = scanFileLastModified;
-            } else {
-                monochromeCalibrationTime = scanFileLastModified;
-            }
+            setCalibrationTime(chromaticity, scanFileLastModified);
             log.info("Calibrated Printer " + calledAET + ", chromaticity=" + chromaticity);
             logActorConfig(
                     "Calibrated Printer " + calledAET + ", chromaticity=" + chromaticity, "PrinterCalibration");
@@ -2263,11 +2285,11 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  fname               Description of the Parameter
-     *@param  configInfo          Description of the Parameter
-     *@param  color               Description of the Parameter
-     *@exception  IOException     Description of the Exception
-     *@exception  PrintException  Description of the Exception
+     * @param  fname               Description of the Parameter
+     * @param  configInfo          Description of the Parameter
+     * @param  color               Description of the Parameter
+     * @exception  IOException     Description of the Exception
+     * @exception  PrintException  Description of the Exception
      */
     public void printImage(String fname, String configInfo, Boolean color)
         throws IOException, PrintException
@@ -2294,10 +2316,10 @@ public class PrinterService
     /**
      *  Gets the objectName attribute of the PrinterService object
      *
-     *@param  server                            Description of the Parameter
-     *@param  name                              Description of the Parameter
-     *@return                                   The objectName value
-     *@exception  MalformedObjectNameException  Description of the Exception
+     * @param  server                            Description of the Parameter
+     * @param  name                              Description of the Parameter
+     * @return                                   The objectName value
+     * @exception  MalformedObjectNameException  Description of the Exception
      */
     protected ObjectName getObjectName(MBeanServer server, ObjectName name)
         throws MalformedObjectNameException
@@ -2313,7 +2335,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@exception  Exception  Description of the Exception
+     * @exception  Exception  Description of the Exception
      */
     public void startService()
         throws Exception
@@ -2330,8 +2352,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  chromaticity  Description of the Parameter
-     *@return               Description of the Return Value
+     * @param  chromaticity  Description of the Parameter
+     * @return               Description of the Return Value
      */
     private String toScanDirName(Chromaticity chromaticity)
     {
@@ -2342,9 +2364,9 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  chromaticity  Description of the Parameter
-     *@param  refODs        Description of the Parameter
-     *@return               Description of the Return Value
+     * @param  chromaticity  Description of the Parameter
+     * @param  refODs        Description of the Parameter
+     * @return               Description of the Return Value
      */
     private long initCalibration(Chromaticity chromaticity, float[] refODs)
     {
@@ -2366,7 +2388,7 @@ public class PrinterService
     /**
      *  Gets the acceptorPolicy attribute of the PrinterService object
      *
-     *@return    The acceptorPolicy value
+     * @return    The acceptorPolicy value
      */
     private AcceptorPolicy getAcceptorPolicy()
     {
@@ -2390,7 +2412,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@exception  Exception  Description of the Exception
+     * @exception  Exception  Description of the Exception
      */
     public void stopService()
         throws Exception
@@ -2405,9 +2427,9 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  methode        Description of the Parameter
-     *@param  arg            Description of the Parameter
-     *@exception  Exception  Description of the Exception
+     * @param  methode        Description of the Parameter
+     * @param  arg            Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     private void invokeOnPrintSCPName(String methode, String arg)
         throws Exception
@@ -2421,8 +2443,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  policy         Description of the Parameter
-     *@exception  Exception  Description of the Exception
+     * @param  policy         Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     private void putAcceptorPolicy(AcceptorPolicy policy)
         throws Exception
@@ -2442,9 +2464,9 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  job      Description of the Parameter
-     *@param  session  Description of the Parameter
-     *@param  color    Description of the Parameter
+     * @param  job      Description of the Parameter
+     * @param  session  Description of the Parameter
+     * @param  color    Description of the Parameter
      */
     public void scheduleJob(String job, Dataset session, Boolean color)
     {
@@ -2494,8 +2516,8 @@ public class PrinterService
     /**
      *  Gets the queuedJobCount attribute of the PrinterService object
      *
-     *@return                     The queuedJobCount value
-     *@exception  PrintException  Description of the Exception
+     * @return                     The queuedJobCount value
+     * @exception  PrintException  Description of the Exception
      */
     private int getQueuedJobCount()
         throws PrintException
@@ -2512,8 +2534,8 @@ public class PrinterService
     /**
      *  Gets the printerIsAcceptingJobs attribute of the PrinterService object
      *
-     *@return                     The printerIsAcceptingJobs value
-     *@exception  PrintException  Description of the Exception
+     * @return                     The printerIsAcceptingJobs value
+     * @exception  PrintException  Description of the Exception
      */
     private boolean isPrinterIsAcceptingJobs()
         throws PrintException
@@ -2531,7 +2553,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@return    Description of the Return Value
+     * @return    Description of the Return Value
      */
     private ScheduledJob nextJobFromQueue()
     {
@@ -2551,7 +2573,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  scheduledJob  Description of the Parameter
+     * @param  scheduledJob  Description of the Parameter
      */
     private void processJob(ScheduledJob scheduledJob)
     {
@@ -2601,9 +2623,9 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  prompt  Description of the Parameter
-     *@param  set     Description of the Parameter
-     *@return         Description of the Return Value
+     * @param  prompt  Description of the Parameter
+     * @param  set     Description of the Parameter
+     * @return         Description of the Return Value
      */
     static String toMsg(String prompt, AttributeSet set)
     {
@@ -2614,9 +2636,9 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  prompt  Description of the Parameter
-     *@param  pje     Description of the Parameter
-     *@return         Description of the Return Value
+     * @param  prompt  Description of the Parameter
+     * @param  pje     Description of the Parameter
+     * @return         Description of the Return Value
      */
     static String toMsg(String prompt, PrintJobEvent pje)
     {
@@ -2627,7 +2649,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  psae  Description of the Parameter
+     * @param  psae  Description of the Parameter
      */
     public void attributeUpdate(PrintServiceAttributeEvent psae)
     {
@@ -2644,7 +2666,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  pjae  Description of the Parameter
+     * @param  pjae  Description of the Parameter
      */
     public void attributeUpdate(PrintJobAttributeEvent pjae)
     {
@@ -2658,7 +2680,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  pje  Description of the Parameter
+     * @param  pje  Description of the Parameter
      */
     public void printDataTransferCompleted(PrintJobEvent pje)
     {
@@ -2671,7 +2693,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  pje  Description of the Parameter
+     * @param  pje  Description of the Parameter
      */
     public void printJobCanceled(PrintJobEvent pje)
     {
@@ -2684,7 +2706,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  pje  Description of the Parameter
+     * @param  pje  Description of the Parameter
      */
     public void printJobCompleted(PrintJobEvent pje)
     {
@@ -2697,7 +2719,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  pje  Description of the Parameter
+     * @param  pje  Description of the Parameter
      */
     public void printJobFailed(PrintJobEvent pje)
     {
@@ -2710,7 +2732,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  pje  Description of the Parameter
+     * @param  pje  Description of the Parameter
      */
     public void printJobNoMoreEvents(PrintJobEvent pje)
     {
@@ -2723,7 +2745,7 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  pje  Description of the Parameter
+     * @param  pje  Description of the Parameter
      */
     public void printJobRequiresAttention(PrintJobEvent pje)
     {
@@ -2737,8 +2759,8 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  path  Description of the Parameter
-     *@return       Description of the Return Value
+     * @param  path  Description of the Parameter
+     * @return       Description of the Return Value
      */
     static File toFile(String path)
     {
@@ -2760,9 +2782,9 @@ public class PrinterService
     /**
      *  Sets the printRequestAttribute attribute of the PrinterService object
      *
-     *@param  ps    The new printRequestAttribute value
-     *@param  attr  The new printRequestAttribute value
-     *@param  aset  The new printRequestAttribute value
+     * @param  ps    The new printRequestAttribute value
+     * @param  attr  The new printRequestAttribute value
+     * @param  aset  The new printRequestAttribute value
      */
     private void setPrintRequestAttribute(PrintService ps, Attribute attr,
             PrintRequestAttributeSet aset)
@@ -2780,9 +2802,9 @@ public class PrinterService
     /**
      *  Description of the Method
      *
-     *@param  printData           Description of the Parameter
-     *@param  aset                Description of the Parameter
-     *@exception  PrintException  Description of the Exception
+     * @param  printData           Description of the Parameter
+     * @param  aset                Description of the Parameter
+     * @exception  PrintException  Description of the Exception
      */
     private void print(Pageable printData, PrintRequestAttributeSet aset)
         throws PrintException

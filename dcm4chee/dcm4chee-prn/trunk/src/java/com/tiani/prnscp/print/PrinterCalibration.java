@@ -21,8 +21,10 @@ package com.tiani.prnscp.print;
 
 import java.util.Arrays;
 import javax.print.attribute.standard.Chromaticity;
+import org.apache.log4j.Category;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.apache.log4j.Category;
 
 /**
  *  <description>
@@ -36,14 +38,49 @@ public class PrinterCalibration
     // Constants -----------------------------------------------------
 
     // Attributes ----------------------------------------------------
-    private float[] monochromeODs = new float[256];
-    private float[] colorODs = new float[256];
+    private Category log;
+    private int skipNonMonotonicODs = 10;
+    private int monochromeMinDensity;
+    private int monochromeMaxDensity;
+    private int colorMinDensity;
+    private int colorMaxDensity;
+    private final float[] monochromeODs = new float[256];
+    private final float[] colorODs = new float[256];
+
 
     // Static --------------------------------------------------------
 
     // Constructors --------------------------------------------------
+    public PrinterCalibration(Category log)
+    {
+        if (log == null) {
+            throw new NullPointerException();
+        }
+        this.log = log;
+    }
 
     // Public --------------------------------------------------------
+    /**
+     *  Gets the skipNonMonotonicODs attribute of the PrinterCalibration object
+     *
+     * @return    The skipNonMonotonicODs value
+     */
+    public int getSkipNonMonotonicODs()
+    {
+        return skipNonMonotonicODs;
+    }
+
+
+    /**
+     *  Sets the skipNonMonotonicODs attribute of the PrinterCalibration object
+     *
+     * @param  skipNonMonotonicODs  The new skipNonMonotonicODs value
+     */
+    public void setSkipNonMonotonicODs(int skipNonMonotonicODs)
+    {
+        this.skipNonMonotonicODs = skipNonMonotonicODs;
+    }
+
     /**
      *  Description of the Method
      *
@@ -254,6 +291,12 @@ public class PrinterCalibration
         return dst;
     }
 
+    private float[] odsFor(Chromaticity chromaticity)
+    {
+        return Chromaticity.COLOR.equals(chromaticity)
+                 ? colorODs
+                 : monochromeODs;
+    }
 
     /**
      *  Sets the oDs attribute of the PrinterCalibration object
@@ -266,39 +309,53 @@ public class PrinterCalibration
         if (src.length != 256) {
             throw new IllegalArgumentException("src.length:" + src.length);
         }
+
+        float[] ddl2od = odsFor(chromaticity);
+        System.arraycopy(src, 0, ddl2od, 0, 256);
+        
         // ensure monoton increasing
-        int iMax = 0;
-        int iMin = 0;
-        float max = src[0];
-        float min = src[0];
-        for (int i = 1; i < 256; ++i) {
-            final float od = src[i];
-            if (od < min) {
-                iMin = i;
-                min = od;
+        float max = ddl2od[255];
+        float minMax = max * (100 - skipNonMonotonicODs) / 100;
+        int minUsed = 0;
+        int maxUsed = 255;
+        for (int i = 254; i > 0; --i) {
+            final float val = ddl2od[i];
+            if (val < ddl2od[i + 1]) {
+                continue;
             }
-            if (od >= max) {
-                iMax = i;
-                max = od;
+            if (val > max) {
+                max = val;
+                minMax = max * (100 - skipNonMonotonicODs) / 100;
+            }
+            if (val > minMax) {
+                maxUsed = i;
             }
         }
-        if (iMin >= iMax) {
-            throw new IllegalArgumentException("iMin:" + iMin + ", iMax:" + iMax);
+        Arrays.sort(ddl2od, 0, maxUsed);
+        Arrays.fill(ddl2od, maxUsed+1, 256, Float.POSITIVE_INFINITY);
+        while (ddl2od[minUsed] == ddl2od[minUsed+1]) {
+            ddl2od[minUsed++] = Float.NEGATIVE_INFINITY;
+        }        
+        if (Chromaticity.COLOR.equals(chromaticity)) {
+            colorMinDensity = (int) (ddl2od[minUsed] * 100);
+            colorMaxDensity = (int) (ddl2od[maxUsed] * 100);
+        } else {
+            monochromeMinDensity = (int) (ddl2od[minUsed] * 100);
+            monochromeMaxDensity = (int) (ddl2od[maxUsed] * 100);
         }
-
-        float[] dst = odsFor(chromaticity);
-        System.arraycopy(src, iMin, dst, iMin, iMax - iMin);
-        Arrays.fill(dst, 0, iMin, min);
-        Arrays.fill(dst, iMax, 256, max);
-        Arrays.sort(dst, iMin, iMax);
-    }
-
-
-    private float[] odsFor(Chromaticity chromaticity)
-    {
-        return Chromaticity.COLOR.equals(chromaticity)
-                 ? colorODs
-                 : monochromeODs;
+        if (log.isDebugEnabled()) {
+            StringBuffer prompt = new StringBuffer(2000);
+            prompt.append("Used Printer ODs, chromaticity=")
+                .append(chromaticity).append(':');
+            for (int i = 0; i < ddl2od.length; ++i) {
+                prompt.append("\n\t").append(ddl2od[i]);
+            }
+            log.debug(prompt.toString());
+        }
+        log.info("Printer OD range [" + chromaticity
+            + "]: total=" + ddl2od[minUsed] + "-" + max
+            + ", used=" + ddl2od[minUsed] + "-" + ddl2od[maxUsed]
+            + ", DDL=" + (255-minUsed) + "-" + (255-maxUsed));
     }
 
 
@@ -310,7 +367,9 @@ public class PrinterCalibration
      */
     public int getMinDensity(Chromaticity chromaticity)
     {
-        return (int) (odsFor(chromaticity)[0] * 100);
+        return Chromaticity.COLOR.equals(chromaticity)
+                 ? colorMinDensity
+                 : monochromeMinDensity;
     }
 
 
@@ -322,7 +381,9 @@ public class PrinterCalibration
      */
     public int getMaxDensity(Chromaticity chromaticity)
     {
-        return (int) (odsFor(chromaticity)[255] * 100);
+        return Chromaticity.COLOR.equals(chromaticity)
+                 ? colorMaxDensity
+                 : monochromeMaxDensity;
     }
 
 

@@ -697,6 +697,22 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
+     *  Gets the skipNonMonotonicODs attribute of the PrinterServiceMBean object
+     *
+     * @return    The skipNonMonotonicODs value
+     */
+    public int getSkipNonMonotonicODs();
+
+
+    /**
+     *  Sets the skipNonMonotonicODs attribute of the PrinterServiceMBean object
+     *
+     * @param  skipNonMonotonicODs  The new skipNonMonotonicODs value
+     */
+    public void setSkipNonMonotonicODs(int skipNonMonotonicODs);
+
+
+    /**
      *  Gets the annotationDir attribute of the PrinterServiceMBean object
      *
      * @return    The annotationDir value

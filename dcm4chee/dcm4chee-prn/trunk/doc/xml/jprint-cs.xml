@@ -54,7 +54,9 @@
       draft</revremark></revision><revision><revnumber>0.2</revnumber><date>1
       Mar 2003</date><authorinitials>gz</authorinitials><revremark>Update</revremark></revision><revision><revnumber>0.3</revnumber><date>6
       Apr 2003</date><authorinitials>gz</authorinitials><revremark>Update
-      Configuration Information Syntax</revremark></revision></revhistory></para>
+      Configuration Information Syntax</revremark></revision><revision><revnumber>0.4</revnumber><date>22
+      Apr 2003</date><authorinitials>gz</authorinitials><revremark>Update
+      Color Print with P-LUT</revremark></revision></revhistory></para>
     </section>
 
     <section>
@@ -190,11 +192,11 @@
 
           <para>If several Print Composers (SCU) request printing on the same
           printer simultaneously, jPrint will serialize the requests; the
-          printer itself receives one print-job at a time from it&#39;s queue.
-          If the number of print-jobs within the printer queue exceeds a
-          configurable limit, jPrint defers the transmission of further
-          print-jobs to the printer, until the number of print-jobs within the
-          queue decreases below this limit.</para>
+          printer itself receives one print-job at a time at its queue. If the
+          number of print-jobs within the printer queue exceeds a configurable
+          limit, jPrint defers the transmission of further print-jobs to the
+          printer, until the number of print-jobs within the queue decreases
+          below this limit.</para>
 
           <para>If the printer is operating normally, then the pages described
           in the print-job will be printed. Changes in the printer operation
@@ -205,11 +207,11 @@
           consistency, the connected Printers must be calibrated at regular
           intervals. jPrint supports calibration by manual measurements using
           a gray scale densitometer or semi-automatic calibration, that only
-          requires the user to scan a current gray scale print-out of the
-          printer and a reference gray scale page, placing the resulting JPEG
-          files into a configuration folder. The jPrint Service Manual
-          describes the jPrint calibration of connected printers to the DICOM
-          GSDF curve in detail.</para>
+          requires the user to print out a test pattern and scan the
+          print-out, together with a delivered reference page, placing the
+          resulting JPEG files into a configuration folder. The jPrint Service
+          Manual describes the jPrint calibration of connected printers to the
+          DICOM GSDF curve in detail.</para>
 
           <para>jPrint includes:</para>
 
@@ -2416,10 +2418,28 @@
 
                 <note>
                   <para>Currently, there is no Standard Display Function for
-                  Hard- or Softcopies of Color Images defined by DICOM. Hence
-                  quality and consistency of color prints cannot be guaranteed
-                  by the usage of jPrint, but are dependent on the
-                  characteristic of the connected color printer(s).</para>
+                  Hard- or Softcopies of Color Images defined by DICOM.</para>
+
+                  <para>jPrint supports calibration according GSDF and
+                  consider (local configured or remote received via
+                  Presentation LUT SOP) P-LUTs also for Color Print
+                  Management: jPrint treats RGB pixel values with R=G=B like
+                  image pixels value in the MONCHROME case; but pass pixel
+                  values with different RGB sample values verbatim (=without
+                  applying P-LUT and/or GSDF) to the print driver. The
+                  appearance of colors on the hardcopy is dependent </para>
+
+                  <para>The transformation of color less RGB values to DDL
+                  values according GSDF can be disabled by configuration. Then
+                  jPrint forwards all pixel values - independent if pure gray
+                  shade or colored - as DDL values to the print driver
+                  verbatime.</para>
+
+                  <para>In both cases, the appearance of colors on the
+                  hardcopy is dependent on the characteristic of the connected
+                  color printer and cannot be controled by jPrint
+                  configuration/calibration. Hence quality and consistency of
+                  color prints cannot be guaranteed by the usage of jPrint.</para>
                 </note>
 
                 <section>

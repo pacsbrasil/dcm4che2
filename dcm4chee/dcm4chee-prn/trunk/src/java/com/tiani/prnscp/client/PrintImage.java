@@ -41,7 +41,7 @@ public class PrintImage
             "Print DICOM image in FILE\n\n" +
             "Options:\n" +
             " -a, --aet=AET   print on printer bound to specified AET. Default: TIANI_PRINT\n" +
-            " -k, --cfg=INFO  print image with specified Configuration Information\n" +
+            " -i, --info=CFG  print image with specified Configuration Information\n" +
             " -c, --color     print image in color print mode (default grayscale)\n" +
             " -h, --help      show this help and exit\n";
 
@@ -125,12 +125,12 @@ public class PrintImage
     {
         LongOpt[] longopts = {
                 new LongOpt("aet", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
-                new LongOpt("cfg", LongOpt.REQUIRED_ARGUMENT, null, 'k'),
+                new LongOpt("info", LongOpt.REQUIRED_ARGUMENT, null, 'i'),
                 new LongOpt("color", LongOpt.NO_ARGUMENT, null, 'c'),
                 new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h')
                 };
 
-        Getopt g = new Getopt("plut.jar", args, "a:k:ch", longopts, true);
+        Getopt g = new Getopt("plut.jar", args, "a:i:ch", longopts, true);
         PrintImage inst = new PrintImage();
         int c;
         while ((c = g.getopt()) != -1) {
@@ -138,7 +138,7 @@ public class PrintImage
                 case 'a':
                     inst.setAET(g.getOptarg());
                     break;
-                case 'k':
+                case 'i':
                     inst.setConfigInfo(g.getOptarg());
                     break;
                 case 'c':
