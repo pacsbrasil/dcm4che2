@@ -260,13 +260,15 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
         }
     } 
 
+    static final int[] EMPTY_INT = {};
+    
     static final class TagFilter extends FilterDataset {
         private final int[] tags;
 		private final boolean exclude;
 		private final boolean excludePrivate;
         TagFilter(Dataset backend, int[] tags, boolean exclude, boolean excludePrivate) {
             super(backend);
-            this.tags = (int[]) tags.clone();
+            this.tags = tags == null ? EMPTY_INT : (int[]) tags.clone();
             this.exclude = exclude;
             this.excludePrivate = excludePrivate;
             Arrays.sort(this.tags);

@@ -119,6 +119,7 @@ public class DcmSnd implements PollDirSrv.Handler {
     private ActiveAssociation activeAssociation = null;
     private int sentCount = 0;
     private long sentBytes = 0L;
+    private boolean excludePrivate = false;
 
     // Static --------------------------------------------------------
     private static final LongOpt[] LONG_OPTS =
@@ -132,6 +133,7 @@ public class DcmSnd implements PollDirSrv.Handler {
             new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("pack-pdvs", LongOpt.NO_ARGUMENT, null, 'k'),
             new LongOpt("trunc-post-pixeldata", LongOpt.NO_ARGUMENT, null, 't'),
+            new LongOpt("exclude-private", LongOpt.NO_ARGUMENT, null, 'x'),
             new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("set", LongOpt.REQUIRED_ARGUMENT, null, 's'),
             new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -191,6 +193,9 @@ public class DcmSnd implements PollDirSrv.Handler {
                 case 't' :
                     cfg.put("trunc-post-pixeldata", "true");
                     break;
+                case 'x' :
+                    cfg.put("exclude-private", "true");
+                    break;
                 case 's' :
                     set(cfg, g.getOptarg());
                     break;
@@ -227,6 +232,9 @@ public class DcmSnd implements PollDirSrv.Handler {
         this.truncPostPixelData =
             "true".equalsIgnoreCase(
                 cfg.getProperty("trunc-post-pixeldata", "false"));
+        this.excludePrivate =
+            "true".equalsIgnoreCase(
+                cfg.getProperty("exclude-private", "false"));
         this.bufferSize =
             Integer.parseInt(cfg.getProperty("buf-len", "2048")) & 0xfffffffe;
         this.repeatWhole =
@@ -539,7 +547,10 @@ public class DcmSnd implements PollDirSrv.Handler {
             throws IOException {
             DcmEncodeParam netParam =
                 (DcmEncodeParam) DcmDecodeParam.valueOf(tsUID);
-            ds.writeDataset(out, netParam);
+            if (excludePrivate)
+                ds.exclude(null, true).writeDataset(out, netParam);
+            else
+                ds.writeDataset(out, netParam);
             if (parser.getReadTag() == Tags.PixelData) {
                 DcmDecodeParam fileParam = parser.getDcmDecodeParam();
                 ds.writeHeader(
@@ -591,7 +602,10 @@ public class DcmSnd implements PollDirSrv.Handler {
                 } catch (IOException e) {
                     log.warn("Error reading post-pixeldata attributes:", e);
                 }
-                ds.writeDataset(out, netParam);
+                if (excludePrivate)
+                    ds.exclude(null, true).writeDataset(out, netParam);
+                else
+                    ds.writeDataset(out, netParam);
             }
         }
 
