@@ -132,11 +132,10 @@
     	<copy todir="${basedir}/target/meta-inf-psql">
     		<fileset dir="${basedir}/target/meta-inf-hsql"/>
     	</copy>
-		<replace dir="${basedir}/target/meta-inf-psql"
-					token="DefaultDS"
-					value="MySqlDS"
-		/>
-    	<replace file="${basedir}/target/meta-inf-psql/jbosscmp-jdbc.xml">
+    	<replace dir="${basedir}/target/meta-inf-psql">
+  			<replacefilter
+  				token="DefaultDS"
+  				value="PostgresDS"/>
   			<replacefilter
   				token="Hypersonic SQL"
   				value="PostgreSQL 7.2"/>
@@ -150,11 +149,10 @@
     	<copy todir="${basedir}/target/meta-inf-mysql">
     		<fileset dir="${basedir}/target/meta-inf-hsql"/>
     	</copy>
-		<replace dir="${basedir}/target/meta-inf-mysql"
-					token="DefaultDS"
-					value="MySqlDS"
-		/>
-    	<replace file="${basedir}/target/meta-inf-mysql/jbosscmp-jdbc.xml">
+    	<replace dir="${basedir}/target/meta-inf-mysql">
+  			<replacefilter
+  				token="DefaultDS"
+  				value="MySqlDS"/>
   			<replacefilter
   				token="Hypersonic SQL"
   				value="mySQL"/>
@@ -172,11 +170,10 @@
     		patchfile="${basedir}/src/etc/patch/meta-inf-oracle.patch"
     		originalfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
     	/>
-    	<replace dir="${basedir}/target/meta-inf-oracle"
+    	<replace dir="${basedir}/target/meta-inf-oracle" excludes="jbosscmp-jdbc.xml">
+  			<replacefilter
   				token="DefaultDS"
-  				value="OracleDS"
-    	/>
-    	<replace file="${basedir}/target/meta-inf-oracle/ejb-jar.xml">
+  				value="OracleDS"/>
   			<replacefilter
   				token="Hypersonic SQL"
   				value="Oracle9i"/>
@@ -191,10 +188,14 @@
     		patchfile="${basedir}/src/etc/patch/meta-inf-db2.patch"
     		originalfile="${basedir}/target/meta-inf-db2/jbosscmp-jdbc.xml"
     	/>
-    	<replace dir="${basedir}/target/meta-inf-db2"
+    	<replace dir="${basedir}/target/meta-inf-db2" excludes="jbosscmp-jdbc.xml">
+  			<replacefilter
   				token="DefaultDS"
-  				value="DB2DS"
-    	/>
+  				value="DB2DS"/>
+  			<replacefilter
+  				token="Hypersonic SQL"
+  				value="DB2"/>
+		</replace>
     </target>
     
 
