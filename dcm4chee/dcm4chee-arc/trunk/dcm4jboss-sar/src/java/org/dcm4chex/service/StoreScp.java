@@ -255,7 +255,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     filePath,
                     (int) file.length(),
                     md.digest(),
-                    new Date(file.lastModified()));
+                    file.lastModified());
             if (coercedElements.isEmpty()
                 || warningAsSuccessSet.contains(assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
@@ -297,7 +297,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         String filePath,
         int fileLength,
         byte[] md5,
-        Date fileTime)
+        long timestamp)
         throws
             DcmServiceException,
             RemoteException,
@@ -317,7 +317,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         filePath,
                         fileLength,
                         md5,
-                        fileTime);
+                        timestamp);
                 } catch (Exception e) {
                     if (retry++ >= updateDatabaseMaxRetries) {
                         service.getLog().error(

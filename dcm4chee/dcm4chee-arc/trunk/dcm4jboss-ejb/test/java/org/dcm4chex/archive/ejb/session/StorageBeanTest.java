@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -108,7 +107,7 @@ public class StorageBeanTest extends TestCase {
             path.substring(1),
             (int) file.length(),
             md.digest(),
-            new Date(file.lastModified()));
+            file.lastModified());
     }
 
     private Dataset loadDataset(File file, MessageDigest md)

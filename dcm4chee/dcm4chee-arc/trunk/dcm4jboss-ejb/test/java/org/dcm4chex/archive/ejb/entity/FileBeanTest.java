@@ -30,7 +30,6 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -51,7 +50,7 @@ public class FileBeanTest extends ServletTestCase {
     public static final int SIZE = 567890;
     public static final byte[] MD5 =
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-    public static final Date TIMESTAMP = new Date();
+    public static final long TIMESTAMP = System.currentTimeMillis();
 
     private FileLocalHome fileHome;
 
