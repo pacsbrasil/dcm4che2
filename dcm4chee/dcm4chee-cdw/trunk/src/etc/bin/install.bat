@@ -16,7 +16,6 @@ xcopy /E %DEFAULT%\deploy\jbossweb-tomcat50.sar %DCMCDW%\deploy\jbossweb-tomcat5
 xcopy /E %DEFAULT%\deploy\jmx-invoker-adaptor-server.sar %DCMCDW%\deployjmx-invoker-adaptor-server.sar\
 xcopy /E %DEFAULT%\deploy\jmx-console.war %DCMCDW%\deploy\jmx-console.war\
 
-mkdir %DCMCDW%\deploy\jms
 copy %DEFAULT%\deploy\jms\hsqldb-jdbc2-service.xml %DCMCDW%\deploy\jms\
 copy %DEFAULT%\deploy\jms\jvm-il-service.xml %DCMCDW%\deploy\jms\
   

@@ -15,7 +15,6 @@ cp -R \
   $DEFAULT/deploy/transaction-service.xml \
   $DCMCDW/deploy
 
-mkdir $DCMCDW/deploy/jms
 cp \
   $DEFAULT/deploy/jms/hsqldb-jdbc2-service.xml \
   $DEFAULT/deploy/jms/jvm-il-service.xml \
