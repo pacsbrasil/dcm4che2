@@ -7,16 +7,19 @@ dcm4che 1.0.5 -  - Changes since dcm4che 1.0.4
 BUG FIXES:
 + org.dcm4che.srom.HL7Export#toHL7(String..):
   Fix Inconsistence between API and Implementation of String argument order
-+ Fix bug in mppssnd utility (did not work at all)
++ Fix bug in mppssnd utility (did not send anything)
 
 ENHANCEMENTS:
 org.dcm4che.data.Dataset:
 + Float getFloat(tag, index)
 + Double getDouble(tag, index)
+org.dcm4che.hl7.MSHSegment
++ String getCharset
 
 CHANGES:
 + ren build target publish to release
 + import TIANI IHE connectathon certficate to trusted cacerts
++ Tag.RefStudyComponentSeq -> Tag.RefPPSSeq (s. DICOM CP 257)
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.4 -  - Changes since dcm4che 1.0.3

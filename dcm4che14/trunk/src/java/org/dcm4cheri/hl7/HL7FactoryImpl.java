@@ -35,13 +35,12 @@ import org.dcm4che.hl7.HL7Exception;
  */
 public class HL7FactoryImpl extends HL7Factory {
   
-   public MSHSegment parseMSH(byte[] data)
-   throws HL7Exception { 
+    public MSHSegment parseMSH(byte[] data) throws HL7Exception { 
       return new MSHSegmentImpl(data);
    }
 
    public HL7Message parse(byte[] data)
    throws HL7Exception {   
       return new HL7MessageImpl(data);
-   }
+   }   
 }

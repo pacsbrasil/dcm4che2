@@ -173,7 +173,7 @@
   <element tag="(0008,1090)" name="Manufacturer's Model Name" vr="LO" vm="1" key="ManufacturerModelName" />
   <element tag="(0008,1100)" name="Referenced Results Sequence" vr="SQ" vm="1" key="RefResultsSeq" />
   <element tag="(0008,1110)" name="Referenced Study Sequence" vr="SQ" vm="1" key="RefStudySeq" />
-  <element tag="(0008,1111)" name="Referenced Study Component Sequence" vr="SQ" vm="1" key="RefStudyComponentSeq" />
+  <element tag="(0008,1111)" name="Referenced Performed Procedure Step Sequence" vr="SQ" vm="1" key="RefPPSSeq" />
   <element tag="(0008,1115)" name="Referenced Series Sequence" vr="SQ" vm="1" key="RefSeriesSeq" />
   <element tag="(0008,1120)" name="Referenced Patient Sequence" vr="SQ" vm="1" key="RefPatientSeq" />
   <element tag="(0008,1125)" name="Referenced Visit Sequence" vr="SQ" vm="1" key="RefVisitSeq" />

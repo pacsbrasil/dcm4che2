@@ -22,6 +22,7 @@
 
 package org.dcm4cheri.hl7;
 
+import org.dcm4che.hl7.HL7;
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.MSHSegment;
 
@@ -70,13 +71,6 @@ public class MSHSegmentImpl extends HL7SegmentImpl implements MSHSegment
    };
       
    // Attributes ----------------------------------------------------
-   public final String sendingApplication;
-   public final String sendingFacility;
-   public final String receivingApplication;
-   public final String receivingFacility;
-   public final String messageType;
-   public final String triggerEvent;
-   public final String messageControlID;
 
    // Static --------------------------------------------------------
    
@@ -94,44 +88,9 @@ public class MSHSegmentImpl extends HL7SegmentImpl implements MSHSegment
             throw new IllegalArgumentException(toString());
          }
       }
-      sendingApplication = get(3);
-      sendingFacility = get(4);
-      receivingApplication = get(5);
-      receivingFacility = get(6);
-      messageType = get(9, 1, 1);
-      triggerEvent = get(9, 1, 2);
-      messageControlID = get(10);
    }
    
-   // Public --------------------------------------------------------
-   public final String getSendingApplication() {
-      return sendingApplication;
-   }
-   
-   public final String getSendingFacility() {
-      return sendingFacility;
-   }
-   
-   public final String getReceivingApplication() {
-      return receivingApplication;
-   }
-   
-   public final String getReceivingFacility() {
-      return receivingFacility;
-   }
-   
-   public final String getMessageType() {
-      return messageType;
-   }
-   
-   public final String getTriggerEvent() {
-      return triggerEvent;
-   }
-   
-   public final String getMessageControlID() {
-      return messageControlID;
-   }
-   
+   // Public --------------------------------------------------------   
    public int size() {
       return super.size() + 1;
    }
@@ -175,6 +134,38 @@ public class MSHSegmentImpl extends HL7SegmentImpl implements MSHSegment
       super.writeTo(seq-1, out);
    }
 
+   public String getMessageControlID() {
+       return get(HL7.MSHMessageControlID);
+   }
+   
+   public String getReceivingApplication() {
+       return get(HL7.MSHReceivingApplication);
+   }
+   
+   public String getReceivingFacility() {
+       return get(HL7.MSHReceivingFacility);
+   }
+   
+   public String getSendingApplication() {
+       return get(HL7.MSHSendingApplication);
+   }
+   
+   public String getSendingFacility() {
+       return get(HL7.MSHSendingFacility);
+   }
+   
+   public String getMessageType() {
+       return get(HL7.MSHMessageType,1,1);
+   }
+   
+   public String getTriggerEvent() {
+       return get(HL7.MSHMessageType,1,2);
+   }
+   
+   public String getCharacterSet() {
+       return get(HL7.MSHCharacterSet);
+   }
+   
    private void writeTo(byte[] b, ByteArrayOutputStream out) {
       out.write(b, 0, b.length);
    }
@@ -194,27 +185,23 @@ public class MSHSegmentImpl extends HL7SegmentImpl implements MSHSegment
    byte[] ack(byte[] ackCode, String errText, String errCode, String errComment) {
       ByteArrayOutputStream out = new ByteArrayOutputStream(64);
       writeTo(START_WITH, out);
-      writeTo(5, out);
+      writeTo(HL7.MSHReceivingApplication, out);
       out.write('|');
-      writeTo(6, out);
+      writeTo(HL7.MSHReceivingFacility, out);
       out.write('|');
-      writeTo(3, out);
+      writeTo(HL7.MSHSendingApplication, out);
       out.write('|');
-      writeTo(4, out);
+      writeTo(HL7.MSHSendingFacility, out);
       writeTo(ACK, out);
-      if (messageControlID.length() < 20) {
-         writeTo(10, out);
-      } else {
-         writeTo(messageControlID.substring(1).getBytes(), out);
-      }
+      writeTo(HL7.MSHMessageControlID, out);
       out.write('|');
-      writeTo(11, out);
+      writeTo(HL7.MSHProcessingID, out);
       out.write('|');
-      writeTo(12, out);
+      writeTo(HL7.MSHVersionID, out);
       writeTo(MSA, out);
       writeTo(ackCode, out);
       out.write('|');
-      writeTo(10, out);
+      writeTo(HL7.MSHMessageControlID, out);
       if (errText != null || errCode != null) {
          out.write('|');
          if (errText != null) {

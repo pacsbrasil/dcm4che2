@@ -63,7 +63,7 @@ class SeriesImpl implements org.dcm4che.srom.Series {
             ds.getString(Tags.SeriesInstanceUID),
             ds.getInt(Tags.SeriesNumber, -1),
             RefSOPImpl.newRefSOP(
-                ds.getItem(Tags.RefStudyComponentSeq)));
+                ds.getItem(Tags.RefPPSSeq)));
     }
 
     // Constants -----------------------------------------------------
@@ -111,7 +111,7 @@ class SeriesImpl implements org.dcm4che.srom.Series {
         ds.putCS(Tags.Modality, modality);
         ds.putUI(Tags.SeriesInstanceUID, seriesInstanceUID);
         ds.putIS(Tags.SeriesNumber, seriesNumber);
-        DcmElement sq = ds.putSQ(Tags.RefStudyComponentSeq);
+        DcmElement sq = ds.putSQ(Tags.RefPPSSeq);
         if (refStudyComponent != null) {
             refStudyComponent.toDataset(sq.addNewItem());
         }

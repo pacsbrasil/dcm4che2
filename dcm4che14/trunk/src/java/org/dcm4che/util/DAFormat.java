@@ -20,36 +20,62 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.hl7;
+package org.dcm4che.util;
+
+import java.text.SimpleDateFormat;
+import java.text.ParsePosition;
+import java.util.Date;
+import java.util.Calendar;
 
 /**
- * <description> 
+ * <description>
  *
  * @see <related>
- * @author  <a href="mailto:{email}">{full name}</a>.
- * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
- *   
+ * @since September 21, 2002
+ *
  * <p><b>Revisions:</b>
  *
  * <p><b>yyyymmdd author:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
+ * <li> explicit fix description (no line numbers but methods) go
  *            beyond the cvs commit message
  * </ul>
  */
-public interface MSHSegment extends HL7Segment
-{
-   String getSendingApplication();
-   String getSendingFacility();
-   String getReceivingApplication();
-   String getReceivingFacility();
-   String getMessageType();   
-   String getTriggerEvent();
-   String getMessageControlID();
-   String getCharacterSet();
-
-   byte[] makeACK_AA();    
-   byte[] makeACK_AR(String errText, String errCode, String errComment);    
-   byte[] makeACK_AE(String errText, String errCode, String errComment);
+public class DAFormat extends SimpleDateFormat {
+    
+    
+    // Constants -----------------------------------------------------
+    
+    // Variables -----------------------------------------------------
+    
+    // Constructors --------------------------------------------------
+    public DAFormat() {
+        super("yyyyMMdd");
+    }
+    
+    // Methods -------------------------------------------------------
+    public Date parse(String s, ParsePosition pos) {        
+        calendar.clear();
+        try {
+            int l = s.length();
+            int delim = l == 8 ? 0 : l == 10 ? 1 : -1;
+            if (delim < 0) {
+                return null;
+            }
+            calendar.set(Calendar.YEAR,
+                Integer.parseInt(s.substring(0,4)));
+            pos.setIndex(4);
+            calendar.set(Calendar.MONTH,
+                Integer.parseInt(s.substring(4 + delim, 6 + delim)) - 1);
+            pos.setIndex(6 + delim + delim);
+            calendar.set(Calendar.DAY_OF_MONTH,
+                Integer.parseInt(s.substring(6 + delim + delim)));
+            pos.setIndex(l);
+            return calendar.getTime();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
