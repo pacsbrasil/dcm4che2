@@ -40,7 +40,7 @@
       <name>CallingAET</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="IAN_SCU" />
+         <value value="PACS_TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

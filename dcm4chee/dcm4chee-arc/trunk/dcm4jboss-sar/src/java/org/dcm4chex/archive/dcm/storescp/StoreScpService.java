@@ -9,8 +9,6 @@
 
 package org.dcm4chex.archive.dcm.storescp;
 
-import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
 
 import javax.management.JMException;
@@ -26,7 +24,6 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.mbean.FileSystemInfo;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -90,8 +87,6 @@ public class StoreScpService extends AbstractScpService {
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
-    private boolean acceptStorageCommitment = true;
-
     private boolean acceptJPEGBaseline = true;
 
     private boolean acceptJPEGExtended = true;
@@ -110,15 +105,7 @@ public class StoreScpService extends AbstractScpService {
 
     private boolean acceptRLELossless = false;
 
-    private int acTimeout = 5000;
-
-    private int dimseTimeout = 0;
-
-    private int soCloseDelay = 500;
-
     private StoreScp scp = new StoreScp(this);
-
-    private StgCmtScp stgCmtScp = new StgCmtScp(this);
 
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
@@ -208,39 +195,6 @@ public class StoreScpService extends AbstractScpService {
         scp.setOutOfResourcesThreshold(outOfResourcesThreshold);
     }
     
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    public final void setSoCloseDelay(int soCloseDelay) {
-        this.soCloseDelay = soCloseDelay;
-    }
-
-    public boolean isAcceptStorageCommitment() {
-        return acceptStorageCommitment;
-    }
-
-    public void setAcceptStorageCommitment(boolean accept) {
-        this.acceptStorageCommitment = accept;
-        if (getState() == STARTED) enableService();
-    }
-
     public final boolean isAcceptJPEG2000Lossless() {
         return acceptJPEG2000Lossless;
     }
@@ -341,7 +295,6 @@ public class StoreScpService extends AbstractScpService {
         for (int i = 0; i < OTHER_CUIDS.length; ++i) {
             services.bind(OTHER_CUIDS[i], scp);
         }
-        services.bind(UIDs.StorageCommitmentPushModel, stgCmtScp);
         dcmHandler.addAssociationListener(scp);
     }
 
@@ -352,7 +305,6 @@ public class StoreScpService extends AbstractScpService {
         for (int i = 0; i < OTHER_CUIDS.length; ++i) {
             services.unbind(OTHER_CUIDS[i]);
         }
-        services.unbind(UIDs.StorageCommitmentPushModel);
         dcmHandler.removeAssociationListener(scp);
     }
 
@@ -395,8 +347,6 @@ public class StoreScpService extends AbstractScpService {
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         putPresContexts(policy, IMAGE_CUIDS, enable ? getImageTS() : null);
         putPresContexts(policy, OTHER_CUIDS, enable ? getTransferSyntaxUIDs() : null);
-        policy.putPresContext(UIDs.StorageCommitmentPushModel,
-                enable && acceptStorageCommitment ? getTransferSyntaxUIDs() : null);
     }
 
     private void putPresContexts(AcceptorPolicy policy, String[] asuids, String[] tsuids) {
@@ -423,18 +373,6 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    boolean isLocalFileSystem(String dirpath) {
-        try {
-            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
-                    "isLocalFileSystem",
-                    new Object[] { dirpath},
-                    new String[] { String.class.getName()});
-            return b.booleanValue();
-        } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
-        }
-    }
-
     void logInstancesStored(RemoteNode node, InstancesAction action) {
         if (auditLogName == null) return;
         try {
@@ -447,8 +385,16 @@ public class StoreScpService extends AbstractScpService {
             log.warn("Audit Log failed:", e);
         }
     }
-
-    Socket createSocket(AEData aeData) throws IOException {
-        return tlsConfig.createSocket(aeData);
+    
+    boolean isLocalFileSystem(String dirpath) {
+        try {
+            Boolean b = (Boolean) server.invoke(fileSystemMgtName,
+                    "isLocalFileSystem",
+                    new Object[] { dirpath},
+                    new String[] { String.class.getName()});
+            return b.booleanValue();
+        } catch (JMException e) {
+            throw new RuntimeException("Failed to invoke isLocalFileSystem", e);
+        }
     }
 }

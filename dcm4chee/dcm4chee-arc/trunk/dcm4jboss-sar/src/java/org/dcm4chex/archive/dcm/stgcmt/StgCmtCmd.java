@@ -6,7 +6,7 @@
  *  See terms of license at gnu.org.      *
  *                                        *
  ******************************************/
-package org.dcm4chex.archive.dcm.storescp;
+package org.dcm4chex.archive.dcm.stgcmt;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -70,7 +70,7 @@ class StgCmtCmd {
     private static final AssociationFactory aFact = AssociationFactory
             .getInstance();
 
-    private final StoreScpService service;
+    private final StgCmtScuScpService service;
 
     private final String callingAET;
 
@@ -82,7 +82,7 @@ class StgCmtCmd {
 
     private final Dataset eventInfo = objFact.newDataset();
 
-    public StgCmtCmd(StoreScpService service, Association a, Dataset actionInfo)
+    public StgCmtCmd(StgCmtScuScpService service, Association a, Dataset actionInfo)
             throws DcmServiceException {
         this.service = service;
         this.callingAET = a.getCalledAET();

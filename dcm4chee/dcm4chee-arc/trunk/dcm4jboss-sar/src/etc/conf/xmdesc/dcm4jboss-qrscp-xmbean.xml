@@ -28,7 +28,7 @@
       <name>CalledAETs</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="QR_SCP" />
+         <value value="PACS_TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

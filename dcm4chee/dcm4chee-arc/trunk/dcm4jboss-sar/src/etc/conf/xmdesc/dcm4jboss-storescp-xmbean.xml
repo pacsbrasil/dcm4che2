@@ -28,7 +28,7 @@
       <name>CalledAETs</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="STORE_SCP" />
+         <value value="PACS_TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -136,17 +136,6 @@
       <type>long</type>
       <descriptors>
          <value value="0" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAcceptStorageCommitment"
-      setMethod="setAcceptStorageCommitment">
-      <description>Support Storage Commitment Push Model SOP Class.
-      </description>
-      <name>AcceptStorageCommitment</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -258,39 +247,6 @@
       <type>boolean</type>
       <descriptors>
          <value value="false" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getAcTimeout"
-      setMethod="setAcTimeout">
-      <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
-      </description>
-      <name>AcTimeout</name>
-      <type>int</type>
-      <descriptors>
-         <value value="10000" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getDimseTimeout"
-      setMethod="setDimseTimeout">
-      <description>DIMSE message timeout in ms. 0 = no timeout.
-      </description>
-      <name>DimseTimeout</name>
-      <type>int</type>
-      <descriptors>
-         <value value="60000" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getSoCloseDelay"
-      setMethod="setSoCloseDelay">
-      <description>Socket close delay in ms after A-RELEASE RSP.
-      </description>
-      <name>SoCloseDelay</name>
-      <type>int</type>
-      <descriptors>
-         <value value="50" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

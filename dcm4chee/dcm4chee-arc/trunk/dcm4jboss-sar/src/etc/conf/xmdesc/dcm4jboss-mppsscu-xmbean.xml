@@ -42,7 +42,7 @@
       <name>CallingAET</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MPPS_SCU" />
+         <value value="PACS_TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

@@ -4,7 +4,7 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>MCM_SCU</description>
+   <description>Media Creation Mgt. SCU</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
@@ -26,7 +26,7 @@
       <name>FileSetIdPrefix</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MCM_" />
+         <value value="DISK_" />
       </descriptors>
    </attribute>
  
@@ -71,10 +71,10 @@
       setMethod="setCallingAET">
       <description>The calling AET.
       </description>
-      <name>callingAET</name>
+      <name>CallingAET</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="" />
+         <value value="PACS_TIANI" />
       </descriptors>
    </attribute>
 
@@ -83,10 +83,10 @@
       setMethod="setRetrieveAET">
       <description>The retrieve AET (for move).
       </description>
-      <name>retrieveAET</name>
+      <name>RetrieveAET</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="" />
+         <value value="PACS_TIANI" />
       </descriptors>
    </attribute>
    
@@ -95,10 +95,10 @@
       setMethod="setMoveDestinationAET">
       <description>The move destination AET.
       </description>
-      <name>moveDestinationAET</name>
+      <name>MoveDestinationAET</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="" />
+         <value value="CDRECORD" />
       </descriptors>
    </attribute>
 
@@ -110,7 +110,7 @@
       <name>McmScpAET</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="" />
+         <value value="CDRECORD" />
       </descriptors>
    </attribute>
 
@@ -119,7 +119,7 @@
       setMethod="setAcTimeout">
       <description>A-ASSOCIATE AC timeout in ms. 0 = no timeout.
       </description>
-      <name>acTimeout</name>
+      <name>AcTimeout</name>
       <type>int</type>
       <descriptors>
          <value value="60000" />
@@ -131,7 +131,7 @@
       setMethod="setDimseTimeout">
       <description>DIMSE message timeout in ms. 0 = no timeout.
       </description>
-      <name>dimseTimeout</name>
+      <name>DimseTimeout</name>
       <type>int</type>
       <descriptors>
          <value value="10000" />
@@ -155,7 +155,7 @@
       setMethod="setMaxPDUlen">
       <description>Max. PDU size in bytes.
       </description>
-      <name>maxPDUlen</name>
+      <name>MaxPDUlen</name>
       <type>int</type>
       <descriptors>
          <value value="16352" />
@@ -167,7 +167,7 @@
       setMethod="setPriority">
       <description>Priority for move and media creation request. 0=medium, 1=high, 2=low.
       </description>
-      <name>priority</name>
+      <name>Priority</name>
       <type>int</type>
       <descriptors>
          <value value="0" />
@@ -179,7 +179,7 @@
       setMethod="setIncludeNonDICOMObj">
       <description>A flag indicating if the SCP should include in the media additional Non-DICOM information/objects
       </description>
-      <name>includeNonDicomObj</name>
+      <name>IncludeNonDicomObj</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
@@ -191,7 +191,7 @@
       setMethod="setUseInstanceInfo">
       <description>Specifies whether or not to extract label information from the instances.
       </description>
-      <name>useInstanceInfo</name>
+      <name>UseInstanceInfo</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />

@@ -27,7 +27,7 @@
       <name>CalledAETs</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MWL_SCP" />
+         <value value="PACS_TIANI" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
