@@ -40,43 +40,34 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  * 
- * @ejb.bean
- *  name="Instance"
- *  type="CMP"
- *  view-type="local"
- *  primkey-field="pk"
- *  local-jndi-name="ejb/Instance"
+ * @ejb.bean name="Instance"
+ *           type="CMP"
+ *           view-type="local"
+ *  		 primkey-field="pk"
+ *  		 local-jndi-name="ejb/Instance"
+ * @ejb.transaction type="Required"
+ * @ejb.persistence table-name="instance"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * 
- * @ejb.transaction 
- *  type="Required"
- * 
- * @ejb.persistence
- *  table-name="instance"
- * 
- * @jboss.entity-command
- *  name="hsqldb-fetch-key"
- * 
- * @ejb.finder
- *  signature="java.util.Collection findAll()"
- *  query="SELECT OBJECT(a) FROM Instance AS a"
- *  transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findAll()"
+ *             query="SELECT OBJECT(a) FROM Instance AS a"
+ *             transaction-type="Supports"
  *
- * @ejb.finder
- *  signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
- *  query="SELECT OBJECT(a) FROM Instance AS a WHERE a.sopIuid = ?1"
- *  transaction-type="Supports"
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
+ *             query="SELECT OBJECT(a) FROM Instance AS a WHERE a.sopIuid = ?1"
+ *             transaction-type="Supports"
  * 
- * @jboss.query
- *  signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
- *  strategy="on-find"
- *  eager-load-group="*"
+ * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
+ *              strategy="on-find"
+ *              eager-load-group="*"
  * 
- * @ejb.finder
- *  signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
- *  query="SELECT OBJECT(a) FROM Instance AS a WHERE a.media IS NULL AND a.series.hidden = false AND a.series.study.createdTime < ?1"
- *  transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
+ *             query="SELECT OBJECT(a) FROM Instance AS a WHERE a.media IS NULL AND a.series.hidden = false AND a.series.study.createdTime < ?1"
+ *             transaction-type="Supports"
  *
- * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
+ * @ejb.ejb-ref ejb-name="Code"
+ *              view-type="local"
+ *              ref-name="ejb/Code"
  *
  */
 public abstract class InstanceBean implements EntityBean {
@@ -189,11 +180,7 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setSrVerificationFlag(String flag);
 
     /**
-     * Instance DICOM Attributes
-     *
-     * @ejb.persistence
-     *  column-name="inst_attrs"
-     * 
+     * @ejb.persistence column-name="inst_attrs"
      */
     public abstract byte[] getEncodedAttributes();
 
@@ -201,27 +188,25 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="ext_retr_aet"
+     * @ejb.persistence column-name="ext_retr_aet"
      */
     public abstract String getExternalRetrieveAET();
 
+    /**
+     * @ejb.interface-method
+     */ 
     public abstract void setExternalRetrieveAET(String aet);
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="retrieve_aets"
+     * @ejb.persistence column-name="retrieve_aets"
      */
     public abstract String getRetrieveAETs();
 
     public abstract void setRetrieveAETs(String aets);
 
     /**
-     * Instance Availability
-     *
-     * @ejb.persistence
-     *  column-name="availability"
+     * @ejb.persistence column-name="availability"
      */
     public abstract int getAvailability();
 
@@ -239,10 +224,7 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
-     * Storage Commitment
-     *
-     * @ejb.persistence
-     *  column-name="commitment"
+     * @ejb.persistence column-name="commitment"
      */
     public abstract boolean getCommitment();
 
@@ -263,32 +245,28 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setCommitment(boolean commitment);
 
     /**
-     * @ejb.relation
-     *  name="series-instance"
-     *  role-name="instance-of-series"
-     *  cascade-delete="yes"
-     *
-     * @jboss:relation
-     *  fk-column="series_fk"
-     *  related-pk-field="pk"
+     * @ejb.relation name="series-instance"
+     *               role-name="instance-of-series"
+     *               cascade-delete="yes"
+     * @jboss:relation fk-column="series_fk"
+     *                 related-pk-field="pk"
      * 
      * @param series series of this instance
      */
     public abstract void setSeries(SeriesLocal series);
 
     /**
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method 
      * 
      * @return series of this series
      */
     public abstract SeriesLocal getSeries();
 
     /**
-     * @ejb.relation
-     *  name="instance-files"
-     *  role-name="instance-in-files"
+     * @ejb.relation name="instance-files"
+     *               role-name="instance-in-files"
      *    
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method
      * 
      * @return all files of this instance
      */
@@ -297,48 +275,41 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setFiles(java.util.Collection files);
 
     /**
-     * @ejb.relation
-     *  name="instance-media"
-     *  role-name="instance-on-media"
-     * @jboss:relation fk-column="media_fk" related-pk-field="pk"
+     * @ejb.relation name="instance-media"
+     *               role-name="instance-on-media"
+     * @jboss:relation fk-column="media_fk" 
+     *                 related-pk-field="pk"
      *    
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method
      */
     public abstract MediaLocal getMedia();
 
     /**
-     * @ejb.interface-method view-type="local"
-     * 
-     * @param media
+     * @ejb.interface-method
      */
     public abstract void setMedia(MediaLocal media);
 
     /**
-     * @ejb.relation
-     *  name="instance-srcode"
-     *  role-name="sr-with-title"
-     *  target-ejb="Code"
-     *  target-role-name="title-of-sr"
-     *  target-multiple="yes"
-     *
-     * @jboss:relation
-     *  fk-column="srcode_fk"
-     *  related-pk-field="pk"
+     * @ejb.relation name="instance-srcode"
+     *               role-name="sr-with-title"
+     *               target-ejb="Code"
+     *               target-role-name="title-of-sr"
+     *               target-multiple="yes"
+     * @jboss:relation fk-column="srcode_fk"
+     *                 related-pk-field="pk"
      * 
      * @param srCode code of SR title
      */
     public abstract void setSrCode(CodeLocal srCode);
 
     /**
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method
      * 
      * @return code of SR title
      */
     public abstract CodeLocal getSrCode();
 
     /**
-     * Create Instance.
-     *
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, SeriesLocal series)

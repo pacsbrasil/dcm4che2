@@ -10,6 +10,7 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
@@ -51,30 +52,38 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 /**
  * Storage Bean
  * 
- * @ejb.bean name="Storage" type="Stateless" view-type="remote"
- * jndi-name="ejb/Storage"
- * 
+ * @ejb.bean name="Storage"
+ *      type="Stateless"
+ *      view-type="remote"
+ *      jndi-name="ejb/Storage"
  * @ejb.transaction-type type="Container"
- * 
  * @ejb.transaction type="Required"
  * 
- * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
+ * @ejb.ejb-ref ejb-name="Patient"
+ *              view-type="local"
+ *              ref-name="ejb/Patient"
+ * @ejb.ejb-ref ejb-name="Study"
+ *              view-type="local"
+ *              ref-name="ejb/Study"
+ * @ejb.ejb-ref ejb-name="Series"
+ *              view-type="local"
+ *              ref-name="ejb/Series"
+ * @ejb.ejb-ref ejb-name="Instance"
+ *              view-type="local"
+ *              ref-name="ejb/Instance"
+ * @ejb.ejb-ref ejb-name="File"
+ *              view-type="local"
+ *              ref-name="ejb/File"
+ * @ejb.ejb-ref ejb-name="FileSystem"
+ *              view-type="local"
+ *              ref-name="ejb/FileSystem"
  * 
- * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study"
- * 
- * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
- * 
- * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
- * 
- * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
- * 
- * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
- * 
- * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
- * value="resource:dcm4jboss-attribute-filter.xml"
- * 
- * @ejb.env-entry name="AttributeCoercionConfigURL" type="java.lang.String"
- * value="resource:dcm4jboss-attribute-coercion.xml"
+ * @ejb.env-entry name="AttributeFilterConfigURL"
+ *                type="java.lang.String"
+ *                value="resource:dcm4jboss-attribute-filter.xml"
+ * @ejb.env-entry name="AttributeCoercionConfigURL"
+ *                type="java.lang.String"
+ *                value="resource:dcm4jboss-attribute-coercion.xml"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  * @version $Revision$ $Date$
@@ -348,6 +357,33 @@ public abstract class StorageBean implements SessionBean {
      */
     public void commit(String iuid) throws FinderException {
         instHome.findBySopIuid(iuid).setCommitment(true);
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void commited(Dataset stgCmtResult) throws FinderException {
+        DcmElement refSOPSeq = stgCmtResult.get(Tags.RefSOPSeq);
+        if (refSOPSeq == null) return;
+        HashSet seriesSet = new HashSet();
+        HashSet studySet = new HashSet();
+        for (int i = 0, n = refSOPSeq.vm(); i < n; ++i) {
+            final Dataset refSOP = refSOPSeq.getItem(i);
+            final String iuid = refSOP.getString(Tags.RefSOPInstanceUID);
+            final String aet = refSOP.getString(Tags.RetrieveAET);
+            if (iuid == null || aet == null) continue;
+            InstanceLocal inst = instHome.findBySopIuid(iuid);
+            inst.setExternalRetrieveAET(aet);
+            inst.updateDerivedFields();
+            SeriesLocal series = inst.getSeries();
+            seriesSet.add(series.getSeriesIuid());
+            StudyLocal study = series.getStudy();
+            studySet.add(study.getStudyIuid());
+        }
+        for (Iterator series = seriesSet.iterator(); series.hasNext();)
+            seriesHome.findBySeriesIuid((String) series.next()).updateDerivedFields();            
+        for (Iterator series = studySet.iterator(); series.hasNext();)
+            studyHome.findByStudyIuid((String) series.next()).updateDerivedFields();            
     }
     
     /**
