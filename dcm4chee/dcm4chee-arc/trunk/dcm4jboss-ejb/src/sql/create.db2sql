@@ -5,6 +5,21 @@ CREATE TABLE ae (
 	cipher_suites  	VARCHAR(254)
 );
 
+CREATE SEQUENCE move_order_pk_seq;
+CREATE TABLE move_order (
+	pk          	INTEGER PRIMARY KEY NOT NULL,
+	scheduled_time	TIMESTAMP,
+	priority		INT NOT NULL,
+	retrieve_aet    VARCHAR(254) NOT NULL,
+	move_dest	    VARCHAR(254) NOT NULL,
+	pat_id         	VARCHAR(254),
+	study_iuids		VARCHAR(254),
+	series_iuids	VARCHAR(254),
+	sop_iuids		CLOB(64000),
+	failure_count	INT,
+	failure_status	INT
+);
+
 CREATE SEQUENCE code_pk_seq;
 CREATE TABLE code (
 	pk          	INTEGER PRIMARY KEY NOT NULL,
@@ -24,7 +39,7 @@ CREATE TABLE patient (
 	pat_name_up    	GENERATED ALWAYS AS (UPPER(pat_name)),
 	pat_birthdate  	DATE,
 	pat_sex		  	VARCHAR(254),
-	pat_attrs		BLOB(2000)
+	pat_attrs		BLOB(64000)
 );
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(pat_name_up);
@@ -44,7 +59,7 @@ CREATE TABLE study (
 	num_series		INTEGER,
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR(254),
-	study_attrs		BLOB(2000),
+	study_attrs		BLOB(64000),
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX patient_fk ON study(patient_fk);
@@ -64,7 +79,7 @@ CREATE TABLE series (
 	pps_start		TIMESTAMP,
 	num_instances	INTEGER,
 	retrieve_aets	VARCHAR(254),
-	series_attrs	BLOB(2000),
+	series_attrs	BLOB(64000),
 FOREIGN KEY (study_fk) REFERENCES study(pk)
 );
 CREATE INDEX study_fk ON series(study_fk);
@@ -84,7 +99,7 @@ CREATE TABLE instance (
 	sr_complete		VARCHAR(254),
 	sr_verified		VARCHAR(254),
 	retrieve_aets	VARCHAR(254),
-	inst_attrs		BLOB(2000),
+	inst_attrs		BLOB(64000),
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk)
 );
@@ -102,11 +117,11 @@ CREATE SEQUENCE file_pk_seq;
 CREATE TABLE file (
 	pk              INTEGER PRIMARY KEY  NOT NULL,
 	instance_fk     INTEGER,
-	filepath	VARCHAR(254) NOT NULL,
+	filepath		VARCHAR(254) NOT NULL,
 	file_tsuid      VARCHAR(254) NOT NULL,
 	file_md5        VARCHAR(254),
 	file_size       INTEGER,
-	dirpath		VARCHAR(254) NOT NULL,
+	dirpath			VARCHAR(254) NOT NULL,
 	retrieve_aets	VARCHAR(254) NOT NULL,
 	
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)

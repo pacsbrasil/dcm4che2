@@ -1,5 +1,5 @@
-*** target/xdoclet/META-INF-psql/jbosscmp-jdbc.xml	Mon Dec 15 19:28:04 2003
---- target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	Mon Dec 15 19:28:15 2003
+*** target/xdoclet/META-INF-psql/jbosscmp-jdbc.xml	Thu Dec 18 10:16:27 2003
+--- target/xdoclet/META-INF-db2/jbosscmp-jdbc.xml	Thu Dec 18 10:59:42 2003
 ***************
 *** 3,10 ****
   
@@ -87,7 +87,7 @@
           </cmp-field>
   
 ! 	<entity-command name="pk-sql">
-!          <attribute name="pk-sql">values nextval for series_pk_seq</attribute>
+!          <attribute name="pk-sql">values nextval for move_order_pk_seq</attribute>
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
@@ -105,7 +105,7 @@
           </cmp-field>
   
 ! 	<entity-command name="pk-sql">
-!          <attribute name="pk-sql">values nextval for file_pk_seq</attribute>
+!          <attribute name="pk-sql">values nextval for series_pk_seq</attribute>
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
@@ -119,6 +119,24 @@
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 --- 371,378 ----
+  
+          </cmp-field>
+  
+! 	<entity-command name="pk-sql">
+!          <attribute name="pk-sql">values nextval for file_pk_seq</attribute>
+  	</entity-command>
+  <!-- jboss 3.2 features -->
+  <!-- optimistic locking does not express the exclusions needed -->
+***************
+*** 403,409 ****
+  
+          </cmp-field>
+  
+! 	<entity-command name="postgresql-fetch-seq">
+  	</entity-command>
+  <!-- jboss 3.2 features -->
+  <!-- optimistic locking does not express the exclusions needed -->
+--- 409,416 ----
   
           </cmp-field>
   
