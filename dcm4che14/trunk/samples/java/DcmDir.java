@@ -122,7 +122,7 @@ public class DcmDir {
    };
    
    public static void main(String args[]) throws Exception {
-      Getopt g = new Getopt("dcmdir", args, "c:t:a:x:X:z:", LONG_OPTS);
+      Getopt g = new Getopt("dcmdir", args, "c:t:a:x:X:z:P:", LONG_OPTS);
       
       Properties cfg = loadConfig();
       int cmd = 0;
@@ -141,6 +141,7 @@ public class DcmDir {
             case 'a':
             case 'x':
             case 'X':
+            case 'P':
             case 'z':
                cmd = c;
                dirfile = new File(g.getOptarg());
@@ -191,6 +192,9 @@ public class DcmDir {
             case 'z':
                dcmdir.compact();
                break;
+            case 'P':
+               dcmdir.purge();
+               break;
             default:
                throw new RuntimeException();
          }
@@ -204,10 +208,11 @@ public class DcmDir {
    DcmDir(File dirfile, Properties cfg) {
       this.dirFile = dirfile;
       this.cfg = cfg;
-      if (cfg.containsKey("readme")) {
-         this.readMeFile = new File(cfg.getProperty("readme"));
+      String rm = replace(cfg.getProperty("readme"), "<none>", null);
+      if (rm != null) {
+         this.readMeFile = new File(rm);
          this.readMeCharset = 
-               replace(cfg.getProperty("readme-charset",""), "<none>", "");
+               replace(cfg.getProperty("readme-charset"), "<none>", null);
       }
       this.id =  replace(cfg.getProperty("fs-id",""), "<none>", "");
       this.uid =  replace(cfg.getProperty("fs-uid",""), "<auto>", "");
@@ -272,6 +277,7 @@ public class DcmDir {
       if (uid == null || uid.length() == 0) {
          uid = UIDGenerator.getInstance().createUID();
       }
+      dirFile.getParentFile().mkdirs();
       DirWriter writer = fact.newDirWriter(dirFile, uid,  id,
          readMeFile, readMeCharset, encodeParam());
       try {
@@ -391,6 +397,26 @@ public class DcmDir {
             }));
    }
    
+   public void purge() throws IOException  {
+      DirWriter writer = fact.newDirWriter(dirFile, encodeParam());
+      long t1 = System.currentTimeMillis();
+      long len1 = dirFile.length();
+      int count = 0;
+      try {
+         count = doPurge(writer);
+      } finally {
+         writer.close();
+      }
+      long t2 = System.currentTimeMillis();
+      long len2 = dirFile.length();
+      System.out.println(MessageFormat.format(
+         messages.getString("purgeDone"),
+            new Object[] {
+               String.valueOf(count),
+               String.valueOf((t2-t1)/1000f),
+            }));
+   }
+
    private void addFileIDs(DirWriter w, File file)
    throws IOException {
       if (file.isDirectory()) {
@@ -420,7 +446,7 @@ public class DcmDir {
       System.out.println(MessageFormat.format(messages.getString("removeDone"),
          new Object[] {
             String.valueOf(counter[1]), 
-            String.valueOf(counter[2]),
+            String.valueOf(counter[0]),
             String.valueOf((t2-t1)/1000f)
          }));
    }
@@ -553,6 +579,83 @@ public class DcmDir {
       }
    }
    
+   private int doPurge(DirWriter w)
+   throws IOException  {
+      int[] counter = { 0 };
+      for (DirRecord rec = w.getFirstRecord(true); rec != null;
+         rec = rec.getNextSibling(true)) {
+         if (doPurgeStudy(w, rec, counter)) {
+            counter[0] += w.remove(rec);
+         }
+      }
+      return counter[0];
+   }
+   
+   private boolean doPurgeStudy(DirWriter w, DirRecord parent, int[] counter)
+   throws IOException  {
+      boolean matchAll = true;
+      LinkedList toRemove = new LinkedList();
+      for (DirRecord rec = parent.getFirstChild(true); rec != null;
+            rec = rec.getNextSibling(true)) {
+         if (doPurgeSeries(w, rec, counter)) {
+            toRemove.add(rec);
+         } else {
+            matchAll = false;
+         }
+      }
+      if (matchAll) {
+         return true;
+      }
+      for (Iterator it = toRemove.iterator(); it.hasNext();) {
+         counter[0] += w.remove((DirRecord)it.next());
+      }
+      return false;
+   }
+   
+   private boolean doPurgeSeries(DirWriter w, DirRecord parent, int[] counter)
+   throws IOException  {
+      boolean matchAll = true;
+      LinkedList toRemove = new LinkedList();
+      for (DirRecord rec = parent.getFirstChild(true); rec != null;
+      rec = rec.getNextSibling(true)) {
+         if (doPurgeInstances(w, rec, counter)) {
+            toRemove.add(rec);
+         } else {
+            matchAll = false;
+         }
+      }
+      if (matchAll) {
+         return true;
+      }
+      for (Iterator it = toRemove.iterator(); it.hasNext();) {
+         counter[0] += w.remove((DirRecord)it.next());
+      }
+      return false;
+   }
+   
+   private boolean doPurgeInstances(DirWriter w, DirRecord parent,
+         int[] counter)
+   throws IOException  {
+      boolean matchAll = true;
+      LinkedList toRemove = new LinkedList();
+      for (DirRecord rec = parent.getFirstChild(true); rec != null;
+            rec = rec.getNextSibling(true)) {
+         File file = w.getRefFile(rec.getRefFileIDs());
+         if (!file.exists()) {
+            toRemove.add(rec);
+         } else {
+            matchAll = false;
+         }
+      }
+      if (matchAll) {
+         return true;
+      }
+      for (Iterator it = toRemove.iterator(); it.hasNext();) {
+         counter[0] += w.remove((DirRecord)it.next());
+      }
+      return false;
+   }
+
    private static Properties loadConfig() {
       InputStream in = DcmDir.class.getResourceAsStream("dcmdir.cfg");
       try {

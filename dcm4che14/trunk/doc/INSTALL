@@ -5,5 +5,5 @@ It will NOT run  with JDK/JRE 1.3 anymore!
 
 To run a sample applications:
 
-cd $DCM4CHE_HOME/demo
+cd $DCM4CHE_HOME/samples
 java -jar SAMPLE.jar --help

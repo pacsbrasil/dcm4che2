@@ -4,13 +4,35 @@ Revision History
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1
 -------------------------------------------------------------------------------
-Bug Fixes:
+DISTRIBUTION:
++ demo -> samples
++ include javadoc
+
+BUG FIXES:
 org.dcm4cheri.data
 + Fix DcmObject.putUT (inserted element returned wrong vr(=UL))
-Enhancements:
-dcm4che API:
-+ org.dcm4cheri.data.DicomObject#vm(int)
++ Fix BaseDatasetImpl.calcLength (ArrayOutOfBoundsException if #groups=8^n)
++ org.dcm4che.imageio.plugins.DcmMetadataFormat:
+  org.dcm4che.imageio.plugins.DcmMetadataFormatResources:
+  Add missing definitions for "pos" attribute of elements "elm", "item", "frag"
++ samples/DcmDir.java: Fix remove operation (ArrayOutOfBoundsException)
++ samples/DcmDir.java: Fix load of readme file configuration parameter
 
+ENHANCEMENTS:
+dcm4che API:
++ add org.dcm4cheri.data.DicomObject#vm(int)
+dcmdir sample:
++ command -c create root directory, if no such directory exists
++ add command -P dir-file: purge records from existing DICOMDIR file,
+  with referenced files do not exist anymore
+
+CHANGES:
+dcm4che Impl:
++ DcmImageReaderConf: change default resource location of properties from
+  /resources/DcmImageReader.properties to /DcmImageReader.properties
+samples:
++ change resource location of Resource Bundles from
+  resources/BUNDLE.properties to BUNDLE.properties
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.1 -  - Changes since dcm4che 1.0.0

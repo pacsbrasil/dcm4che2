@@ -23,7 +23,7 @@
 
 package org.dcm4che.data;
 
-import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.Dataset;
 
@@ -187,7 +187,19 @@ public class DatasetTest extends TestCase {
       "Text Value"
    };
    
-   private void setStrings() {
+   public void testCalcLength8Groups() {
+      ds.putLO(0x00090010, "TIANI");
+      ds.putLO(0x00110010, "TIANI");
+      ds.putLO(0x00130010, "TIANI");
+      ds.putLO(0x00150010, "TIANI");
+      ds.putLO(0x00170010, "TIANI");
+      ds.putLO(0x00190010, "TIANI");
+      ds.putLO(0x00210010, "TIANI");
+      ds.putLO(0x00230010, "TIANI");
+      assertEquals(208, ds.calcLength(DcmDecodeParam.IVR_LE));
+   }
+
+   private void putStrings() {
       ds.putAE(Tags.ScheduledStationAET, SCHEDULED_STATION_AET);
       ds.putAS(Tags.PatientAge, PATIENT_AGE);
       ds.putCS(Tags.ImageType, IMAGE_TYPE);
@@ -212,7 +224,7 @@ public class DatasetTest extends TestCase {
    }
    
    public void testGetString() throws Exception {
-      setStrings();
+      putStrings();
       Dataset ds2 = DcmObjectFactory.getInstance().newDataset();
       ds2.putAll(ds);
       ds = ds2;
@@ -256,7 +268,7 @@ public class DatasetTest extends TestCase {
    }
    
    public void testGetStrings() throws Exception {
-      setStrings();
+      putStrings();
       assertEquals(SCHEDULED_STATION_AET,
       ds.getStrings(Tags.ScheduledStationAET));
       assertEquals(PATIENT_AGE, ds.getStrings(Tags.PatientAge));

@@ -44,6 +44,7 @@ public class DcmMetadataFormatResources extends ListResourceBundle {
 
         // Node name + "/" + AttributeName, followed by description
         { "filemetainfo/preamble", "128 byte File Preamble" },
+        { "elm/pos", "offset of first byte of this attribute in stream" },
         { "elm/tag", "data element tag as 4 byte hex number" },
         { "elm/vr", "value representation" },
         { "elm/name", "attribute name" },
@@ -51,8 +52,10 @@ public class DcmMetadataFormatResources extends ListResourceBundle {
         { "val/len", "value length" },
         { "val/data", "value data" },
         { "seq/len", "sequence length or -1 for undefined length" },
+        { "item/pos", "offset of first byte of this item in stream" },
         { "item/id", "item index, starting with 1" },
         { "item/len", "item length or -1 for undefined length" },
+        { "frag/pos", "offset of first byte of this fragment in stream" },
         { "frag/id", "data fragment index, starting with 1" },
         { "frag/len", "data fragment length" },
         { "frag/data", "fragment data" },

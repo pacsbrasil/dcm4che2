@@ -56,6 +56,7 @@ public class DcmMetadataFormat extends IIOMetadataFormatImpl {
                 CHILD_POLICY_REPEAT);
 
         addElement("elm", "dataset", CHILD_POLICY_CHOICE);
+        addAttribute("elm", "pos", DATATYPE_INTEGER, true, null);
         addAttribute("elm", "tag", DATATYPE_STRING, true, null); 
         addAttribute("elm", "vr", DATATYPE_STRING, true, null, VR_LIST);
         addAttribute("elm", "name", DATATYPE_STRING, false, null);
@@ -71,12 +72,14 @@ public class DcmMetadataFormat extends IIOMetadataFormatImpl {
         addAttribute("seq", "len", DATATYPE_INTEGER, true, null); 
         
         addElement("item", "seq", CHILD_POLICY_REPEAT);
+        addAttribute("item", "pos", DATATYPE_INTEGER, true, null);
         addAttribute("item", "id", DATATYPE_INTEGER, true, null); 
         addAttribute("item", "len", DATATYPE_INTEGER, true, null); 
 
         addChildElement("elm", "item");
         
         addElement("frag", "seq", CHILD_POLICY_EMPTY);
+        addAttribute("frag", "pos", DATATYPE_INTEGER, true, null);
         addAttribute("frag", "id", DATATYPE_INTEGER, true, null); 
         addAttribute("frag", "len", DATATYPE_INTEGER, true, null); 
         addAttribute("frag", "data", DATATYPE_STRING, true, null); 

@@ -91,8 +91,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
          curGrTag = el.tag() & 0xffff0000;
          if (curGrTag != prevGrTag) {
             grCount++;
-            grTags = ensureCapacity(grTags, grCount);
-            grLens = ensureCapacity(grLens, grCount);
+            grTags = ensureCapacity(grTags, grCount + 1);
+            grLens = ensureCapacity(grLens, grCount + 1);
             grTags[grCount-1] = prevGrTag = curGrTag;
             grLens[grCount-1] = 0;
          }
