@@ -70,7 +70,7 @@ public class PLutGUIFrame extends JFrame
                     }
                 }
             };
-        actOpenImg.putValue(Action.NAME,"Open DICOM Image");
+        actOpenImg.putValue(Action.NAME,"Open DICOM Image...");
         actPrint = new AbstractAction()
             {
                 public void actionPerformed(ActionEvent e)
@@ -108,7 +108,7 @@ public class PLutGUIFrame extends JFrame
                 public void actionPerformed(ActionEvent e)
                 {
                     chooser.setCurrentDirectory(lastFile);
-                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
+                    int returnVal = chooser.showSaveDialog(PLutGUIFrame.this);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
                         try {
                             guiPanel.getPLutPanel().exportPLutDicom(lastFile = chooser.getSelectedFile());
@@ -125,7 +125,7 @@ public class PLutGUIFrame extends JFrame
                 public void actionPerformed(ActionEvent e)
                 {
                     chooser.setCurrentDirectory(lastFile);
-                    int returnVal = chooser.showSaveDialog(PLutGUIFrame.this);
+                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
                         try {
                             guiPanel.getPLutPanel().importPLutDicom(lastFile = chooser.getSelectedFile());
@@ -142,7 +142,7 @@ public class PLutGUIFrame extends JFrame
                 public void actionPerformed(ActionEvent e)
                 {
                     chooser.setCurrentDirectory(lastFile);
-                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
+                    int returnVal = chooser.showSaveDialog(PLutGUIFrame.this);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
                         try {
                             guiPanel.getPLutPanel().exportPLutText(lastFile = chooser.getSelectedFile());
@@ -159,7 +159,7 @@ public class PLutGUIFrame extends JFrame
                 public void actionPerformed(ActionEvent e)
                 {
                     chooser.setCurrentDirectory(lastFile);
-                    int returnVal = chooser.showSaveDialog(PLutGUIFrame.this);
+                    int returnVal = chooser.showOpenDialog(PLutGUIFrame.this);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
                         try {
                             guiPanel.getPLutPanel().importPLutText(lastFile = chooser.getSelectedFile());

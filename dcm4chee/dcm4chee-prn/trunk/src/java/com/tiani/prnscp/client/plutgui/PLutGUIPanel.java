@@ -20,10 +20,8 @@ public class PLutGUIPanel extends JPanel
         GridBagConstraints c = new GridBagConstraints();
         //set layout
         setLayout(gridbag);
-        //read img
-        final String TEST = "../dcm4che14/test/conf/data/MRABDO";
         //
-        imgPanel = new ImagePanel(null); //new File(TEST)
+        imgPanel = new ImagePanel(null);
         plutPanel = new PLutPanel(imgPanel);
         //add image panel
         //plutPanel.setPreferredSize(new Dimension(300,600));

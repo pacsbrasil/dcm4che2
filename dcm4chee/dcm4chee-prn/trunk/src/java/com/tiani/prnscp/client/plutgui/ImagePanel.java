@@ -179,7 +179,7 @@ public class ImagePanel extends JPanel
                 if (height > maxHeight)
                     suby = height / maxHeight;
                 //read pixel data
-                System.out.println("sx="+subx+",sy="+suby);
+                //System.out.println("sx="+subx+",sy="+suby);
                 readParam.setSourceSubsampling(subx, suby, 0, 0);
                 bi = reader.read(0, readParam);
 				//get the actual dataset
