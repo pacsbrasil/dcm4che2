@@ -79,6 +79,16 @@ class ScannerCalibration {
    /** Holds value of property whiteThreshold. */
    private int whiteThreshold = 220;
    
+   private File lastRefGrayStepFile;
+
+   private float[] cachedRefData;
+
+   private File lastScanGrayStepFile;
+   
+   private float[] cachedScanData;
+
+   private float[] cachedODs;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -188,7 +198,7 @@ class ScannerCalibration {
       return "" + blackThreshold + "/" + whiteThreshold;
    }
    
-   public float[] calculateGrayStepODs()
+   public float[] calculateGrayStepODs(boolean force)
       throws CalibrationException
    {
       if (refGrayStepODs == null) {
@@ -202,26 +212,63 @@ class ScannerCalibration {
       }
       try {
          if (!scanGrayStepDir.isDirectory()) {
-            throw new FileNotFoundException("scanGrayStepDir " + scanGrayStepDir
-            + " is not a directory!");
+            throw new FileNotFoundException(
+               "scanGrayStepDir " + scanGrayStepDir + " is not a directory!");
          }
-         File[] imageFiles = scanGrayStepDir.listFiles();
-         if (imageFiles.length == 0) {
-            throw new FileNotFoundException("empty scanGrayStepDir " + scanGrayStepDir);
+         File[] scanFiles = scanGrayStepDir.listFiles();
+         if (scanFiles.length == 0) {
+            throw new FileNotFoundException(
+               "empty scanGrayStepDir " + scanGrayStepDir);
          }
-         Arrays.sort(imageFiles,
+         Arrays.sort(scanFiles,
          new Comparator() {
             public int compare(Object o1, Object o2) {
                return (int)(((File)o2).lastModified()
                - ((File)o1).lastModified());
             }
          });
-
-         return interpolate(
-            imgToPx(ImageIO.read(refGrayStepFile), 0xff, refGrayStepFile),
-            imgToPx(ImageIO.read(imageFiles[0]), 0xff, imageFiles[0]),
-            refGrayStepFile,
-            imageFiles[0]);
+         
+         if (force || cachedRefData == null
+                   || !refGrayStepFile.equals(lastRefGrayStepFile))
+         {
+            if (log != null && log.isDebugEnabled()) {
+               log.debug("analysing " + refGrayStepFile.getName());
+            }
+            cachedRefData = analyse(ImageIO.read(refGrayStepFile));
+            lastRefGrayStepFile = refGrayStepFile;
+            cachedODs = null;
+         } else {
+            if (log != null && log.isDebugEnabled()) {
+               log.debug("use cached data for " + lastRefGrayStepFile.getName());
+            }
+         }
+         
+         if (force || cachedScanData == null
+                   || !scanFiles[0].equals(lastScanGrayStepFile))
+         {
+            if (log != null && log.isDebugEnabled()) {
+               log.debug("analysing " + scanFiles[0].getName());
+            }
+            cachedScanData = analyse(ImageIO.read(scanFiles[0]));
+            lastScanGrayStepFile = scanFiles[0];
+            cachedODs = null;
+         } else {
+            if (log != null && log.isDebugEnabled()) {
+               log.debug("use cached data for " + lastScanGrayStepFile.getName());
+            }
+         }
+         
+         if (cachedODs == null) {
+            if (log != null) {
+               log.debug("interpolating ODs");
+            }
+            cachedODs = interpolate(cachedRefData, cachedScanData);
+         } else {
+            if (log != null) {
+               log.debug("use cached ODs");
+            }
+         }
+         return cachedODs;
       } catch (IOException e) {
          throw new CalibrationException("calculateGrayStepODs failed: ", e);
       }
@@ -231,23 +278,20 @@ class ScannerCalibration {
                                 BufferedImage grayStepImage)
       throws CalibrationException
    {
-      return interpolate(
-         imgToPx(refGrayStepImage, 0xff, null),
-         imgToPx(grayStepImage, 0xff, null),
-         null, null);
+      return interpolate(analyse(refGrayStepImage), analyse(grayStepImage));
    }
    
-   private float[] interpolate(float[] invRefPx, float[] invPx,
-         File refSrc, File src)
+   private float[] interpolate(float[] invRefPx, float[] invPx)
       throws CalibrationException
    {
       if (invRefPx.length != refGrayStepODs.length) {
-         throw new CalibrationException("Mismatch refGrayStepImage[steps="
-            + invRefPx.length + "] with refGrayStepODs[length="
-            + refGrayStepODs.length + "]");
-      }      
-      invRefPx = ensureMonotonic(invRefPx, refSrc);
-      invPx = ensureMonotonic(invPx, src);
+         throw new CalibrationException("Mismatch of detected gray steps["
+            + invRefPx.length + "] in "
+            + (lastRefGrayStepFile == null ? "?" : lastRefGrayStepFile.getName())
+            + " with refGrayStepODs float[" + refGrayStepODs.length + "]");
+      }
+      ensureMonotonic(invRefPx, lastRefGrayStepFile);
+      ensureMonotonic(invPx, lastScanGrayStepFile);
       float[] result = new float[invPx.length];
       for (int i = 0; i < invPx.length; ++i) {
          int index = Arrays.binarySearch(invRefPx, invPx[i]);
@@ -267,7 +311,7 @@ class ScannerCalibration {
          }
       }
       if (log != null && log.isDebugEnabled()) {
-         StringBuffer sb = new StringBuffer("Calculated GrayStepODs:");
+         StringBuffer sb = new StringBuffer("calculated GrayStepODs:");
          for (int i = 0; i < invPx.length; ++i) { 
             sb.append("\r\n\t");
             sb.append(result[i]);
@@ -278,167 +322,175 @@ class ScannerCalibration {
       return result;
    }
    
-   private float[] ensureMonotonic(float[] invPx, File src) {
-      float[] tmp = (float[]) invPx.clone();
-      Arrays.sort(tmp);
-      if (Arrays.equals(tmp, invPx)) {
-         return invPx;
-      }
-      if (log != null) {
-         log.warn("Gray steps in " + src
-            + " not monotonic increasing - sort steps to continue!");
-      }
-      return tmp;
-   }
-      
-   
-   private float[] imgToPx(BufferedImage bi, int xor, File src)
-      throws CalibrationException
-   {
-      int[] border = findBorder(bi, src);
-      int[] steps = findSteps(bi, border, src);
-      int w = border[2] - border[0];
-      int h = border[3] - border[1];
-      int n = Math.abs(steps[0] + steps[1]);
-      float[] px = new float[n];
-      if (steps[0] == 0) {
-      // top to bottom orientation
-         int dw = w * scanPointExtension[0] / 100 + 1;
-         int dh = h * scanPointExtension[1] / (100 * n) + 1;
-         int x0 = (border[0] + border[2] - dw) / 2;
-         int y0 = border[1] + (h / n - dh) / 2;
-      
-         for (int i = 0; i < n; ++i) {
-            px[steps[1] < 0 ? n - i - 1 : i] =
-               getMeanPxVal(bi, x0, y0 + h * i/n, dw, dh, xor);
-         }
-      } else {
-         // left to right orientation
-         int dw = w * scanPointExtension[1] / (100 * n) + 1;
-         int dh = h * scanPointExtension[0] / 100 + 1;
-         int x0 = border[0] + (w / n - dw) / 2;
-         int y0 = (border[1] + border[3] - dh) / 2;
-         
-         for (int i = 0; i < n; ++i) {
-            px[steps[0] < 0 ? n - i - 1 : i] =
-               getMeanPxVal(bi, x0 + w * i/n, y0, dw, dh, xor);
+   private boolean isMonotonic(float[] a) {
+      for (int i = 1; i < a.length; ++i) {
+         if (a[i] < a[i-1]) {
+            return false;
          }
       }
-      return px;
+      return true;
    }
    
-   private float getMeanPxVal(BufferedImage bi,
-         int x, int y, int w, int h, int xor)
-   {
-      float px = 0;
-      for (int i = 0; i < w; ++i) {
-         for (int j = 0; j < h; ++j) {
-            px += (bi.getRGB(x + i, y + j) & 0xff) ^ xor;
+   private void ensureMonotonic(float[] a, File src) {
+      if (!isMonotonic(a)) {
+         Arrays.sort(a);
+         if (log != null) {
+            log.warn("Graystep " + (src == null ? "" : src.getName())
+               + " not monotonic increasing! Calibrate with sorted steps!");
          }
       }
-      return px / (w * h);
    }
-   
-   private int[] findBorder(BufferedImage bi, File src)
+
+            
+   private float[] analyse(BufferedImage bi)
       throws CalibrationException
    {
       int w = bi.getWidth();
       int h = bi.getHeight();
       int x0 = w / 2;
-      int y0 = h / 2;
-      int[] b = { 0, 0, w - 1, h - 1 };
-      while (b[0] < b[2] && (bi.getRGB(b[0], y0) & 0xff) > blackThreshold)
-         ++b[0];
-      while (b[1] < b[3] && (bi.getRGB(x0, b[1]) & 0xff) > blackThreshold)
-         ++b[1];
-      while (b[0] < b[2] && (bi.getRGB(b[2], y0) & 0xff) > blackThreshold)
-         --b[2];
-      while (b[1] < b[3] && (bi.getRGB(x0, b[3]) & 0xff) > blackThreshold)
-         --b[3];
-      if ((b[2] - b[0]) * 100 < BORDER_MIN * w 
-            || (b[3] - b[1]) * 100 < BORDER_MIN * h)
-      {
-         throw new CalibrationException("Failed to detect border in " + src);
+      int y0 = h / 2; 
+      int[] hline = bi.getRGB(0, y0, w, 1, null, 0, w);
+      int[] vline = bi.getRGB(x0, 0, 1, h, null, 0, 1);
+      int[] lr = findBorder(hline);
+      int[] tb = findBorder(vline);
+      int hgrad = gradient(hline, lr);
+      int vgrad = gradient(vline, tb);
+      boolean portrait = Math.abs(vgrad) > Math.abs(hgrad);
+      if (log != null && log.isDebugEnabled()) {
+         log.debug("detected Border[left=" + lr[0] + ", right=" + lr[1]
+            + ", top=" + tb[0] + ", bottom=" + tb[1] + "], Gradient["
+            + (portrait ? (vgrad > 0 ? "bottom-top" : "top-bottom")
+                        : (hgrad > 0 ? "right-left" : "left-right"))
+            + "]");
+      }
+      int n = portrait
+         ? findSteps(vline, tb[0], tb[1], vgrad > 0)
+         : findSteps(hline, lr[0], lr[1], hgrad > 0);
+      float[] px = new float[n];
+      if (portrait) {
+      // top to bottom orientation
+         int h1 = tb[1] - tb[0];
+         int dw = (lr[1] - lr[0]) * scanPointExtension[0] / 100 + 1;
+         int dh = h1 * scanPointExtension[1] / (100 * n) + 1;
+         int x1 = (lr[0] + lr[1] - dw) / 2;
+         int y = tb[0] + (h1 / n - dh) / 2;
+         int[] buf = new int[dw * dh];
+      
+         for (int i = 0; i < n; ++i) {
+            px[vgrad > 0 ? n - i - 1 : i] =
+               average(bi.getRGB(x1, y + h1 * i/n, dw, dh, buf, 0, dw));
+         }
+      } else {
+         // left to right orientation
+         int w1 = lr[1] - lr[0];
+         int dw = w1 * scanPointExtension[1] / (100 * n) + 1;
+         int dh = (tb[1] - tb[0]) * scanPointExtension[0] / 100 + 1;
+         int x = lr[0] + (w1/ n - dw) / 2;
+         int y1 = (tb[0] + tb[1] - dh) / 2;
+         int[] buf = new int[dw * dh];
+         
+         for (int i = 0; i < n; ++i) {
+            px[hgrad > 0 ? n - i - 1 : i] =
+               average(bi.getRGB(x + w1 * i/n, y1, dw, dh, buf, 0, dw));
+         }
       }
       if (log != null && log.isDebugEnabled()) {
-         log.debug("Detected border[left=" + b[0] + ", top=" + b[1]
-            + ", right=" + b[2] + ", bottom=" + b[3] + "] in " + src);
+         StringBuffer sb = new StringBuffer("detected GrayStep 255-pxval:");
+         for (int i = 0; i < px.length; ++i) { 
+            sb.append("\r\n\t");
+            sb.append(px[i]);
+         }
+         log.debug(sb.toString());
+      }
+      return px;
+   }
+   
+   private float average(int[] rgb) {
+      int v = 0;
+      for (int i = 0; i < rgb.length; ++i) {
+         v += (rgb[i] & 0xff) ^ 0xff;
+      }
+      return (float) v /  rgb.length;
+   }
+   
+   private int[] findBorder(int[] rgb)
+      throws CalibrationException
+   {
+      int[] b = { 0, rgb.length };
+      while (b[0] < b[1] && (rgb[b[0]] & 0xff) > blackThreshold)
+         ++b[0];
+      while (b[0] < b[1] && (rgb[b[1]-1] & 0xff) > blackThreshold)
+         --b[1];
+      if ((b[1] - b[0]) * 100 < rgb.length * BORDER_MIN) {
+         throw new CalibrationException("Failed to detect border");
       }
       return b;
    }
 
-   private int[] findSteps(BufferedImage bi, int border[], File src)
-      throws CalibrationException
-   {
-      int w = border[2] - border[0];
-      int h = border[3] - border[1];
-      int x0 = border[0] + w / 2;
-      int y0 = border[1] + h / 2;
-      int[] hLine = bi.getRGB(border[0], y0, w, 1, null, 0, w);
-      int[] vLine = bi.getRGB(x0, border[1], 1, h, null, 0, 1);
-      int hG = gradient(hLine);
-      int vG = gradient(vLine);
-      boolean portait = Math.abs(vG) > Math.abs(hG);
-      if (log != null && log.isDebugEnabled()) {
-         log.debug("Detected "
-            + (portait ? (vG > 0 ? "bottom-top" : "top-bottom")
-                       : (hG > 0 ? "right-left" : "left-right"))
-            + " gray step gradient in " + src);
-      }
-      
-      int[] result = new int[2];
-      result[portait ? 1 : 0] = portait
-         ? detectSteps(vLine, vG > 0, src) 
-         : detectSteps(hLine, hG > 0, src); 
-      return result;
-   }
-   
-   private int gradient(int[] argb) {
+   private int gradient(int[] argb, int[] firstLast) {
       int g = 0;
-      int n2 = n2 = argb.length/2;
-      for (int i = 0; i < n2; ++i) {
+      int m = (firstLast[1] + firstLast[0]) / 2;
+      for (int i = firstLast[0]; i < m; ++i) {
          g -= argb[i] & 0xff;
       }
-      for (int i = n2; i < argb.length; ++i) {
+      for (int i = m; i < firstLast[1]; ++i) {
          g += argb[i] & 0xff;
       }
       return g;
    }
-   
-   private int detectSteps(int[] a, boolean b2w, File src)
+      
+   private int findSteps(int[] a, int first, int last, boolean b2w)
       throws CalibrationException
    {
       float h = 0.f;
       float err = 0.f;
       int n = 0;
-      for (int i = 0; i < a.length && err < FIND_STEP_ERR_MAX; ++n) { 
-         if (n > 0) {
-            h = (float) i / n;
+      if (b2w) {
+         for (int i = first; i < last && err < FIND_STEP_ERR_MAX; ++n) { 
+            if (n > 0) {
+               h = (float) (i - first) / n;
+            }
+            int d = 0;         
+            while (i < last && (a[i] & 0xff) < whiteThreshold)
+            {
+               ++i; ++d;
+            }
+            while (i < last &&  (a[i] & 0xff) > blackThreshold)
+            {
+               ++i; ++d;
+            }
+            if (n > 0) {
+               err = Math.abs(h - d) / h;
+            }
          }
-         int d = 0;
-         while (i < a.length
-               && (a[b2w ? i : a.length-i-1] & 0xff) < whiteThreshold)
-         {
-            ++i; ++d;
-         }
-         while (i < a.length
-               && (a[b2w ? i : a.length-i-1] & 0xff) > blackThreshold)
-         {
-            ++i; ++d;
-         }
-         if (n > 0) {
-            err = Math.abs(h - d) / h;
+      } else {
+        for (int i = last - 1; i >= first && err < FIND_STEP_ERR_MAX; ++n) { 
+            if (n > 0) {
+               h = (float) (last - 1 - i) / n;
+            }
+            int d = 0;         
+            while (i >= first && (a[i] & 0xff) < whiteThreshold)
+            {
+               --i; ++d;
+            }
+            while (i >= first &&  (a[i] & 0xff) > blackThreshold)
+            {
+               --i; ++d;
+            }
+            if (n > 0) {
+               err = Math.abs(h - d) / h;
+            }
          }
       }
       if (n < FIND_STEP_NUM_MIN) {
-         throw new CalibrationException(
-            "Failed to detect more than " + (n-1) + " steps on " + src);
+         throw new CalibrationException("Failed to detect more than "
+            + (n-1) + " gray steps");
       }
-      int steps = Math.round(a.length / h);
+      int steps = Math.round((last - first) / h);
       if (log != null && log.isDebugEnabled()) {
-         log.debug("Detected " + (n-1) + " from " + steps + " gray steps in " + src);
+         log.debug("detected " + (n-1) + " from " + steps + " gray steps");
       }
-      return b2w ? -steps : steps;
+      return steps;
    }
-      
+
 }

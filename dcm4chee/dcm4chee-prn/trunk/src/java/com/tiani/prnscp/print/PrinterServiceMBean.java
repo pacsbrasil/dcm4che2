@@ -463,6 +463,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
    
    public void printGrayStepsWithLinOD() throws PrintException;
    
-   public void calibrate() throws CalibrationException;
+   public void calibrate(boolean force) throws CalibrationException;
    
 }

@@ -909,9 +909,9 @@ public class PrinterService
             getDefaultFilmSizeID()));
    }
    
-   public void calibrate() throws CalibrationException {
+   public void calibrate(boolean force) throws CalibrationException {
       log.info("Calibrating...");
-      setGrayStepODs(scanner.calculateGrayStepODs());
+      setGrayStepODs(scanner.calculateGrayStepODs(force));
       log.info("Calibrated");
    }
    
