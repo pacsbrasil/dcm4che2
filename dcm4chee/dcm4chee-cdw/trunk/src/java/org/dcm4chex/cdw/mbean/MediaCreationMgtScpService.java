@@ -359,7 +359,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             String iuid = item.getString(Tags.RefSOPInstanceUID);
             if (!checkForDuplicate.add(iuid))
                     throw new MediaCreationException(
-                            ExecutionStatusInfo.DUPL_REF_INST);
+                            ExecutionStatusInfo.DUPL_REF_INST,
+                            "Duplicate referenced SOP Instance: " + iuid);
             String profile = item
                     .getString(Tags.RequestedMediaApplicationProfile);
             /*            if (profiles.add(profile))
@@ -370,7 +371,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             File f = spoolDir.getInstanceFile(iuid);
             if (!f.exists())
                     throw new MediaCreationException(
-                            ExecutionStatusInfo.NO_INSTANCE);
+                            ExecutionStatusInfo.NO_INSTANCE,
+                            "No Instance: " + iuid);
         }
     }
 

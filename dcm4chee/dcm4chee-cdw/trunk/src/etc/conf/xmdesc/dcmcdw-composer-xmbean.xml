@@ -50,6 +50,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMediaCapacity"
+      setMethod="setMediaCapacity">
+      <description>Media Capacity. Format: nnnGB|nnnMB|nnnKB. 
+      </description>
+      <name>MediaCapacity</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="700MB" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getFileSetDescriptorFile"
       setMethod="setFileSetDescriptorFile">
       <description>File-set Descriptor File (a "readme" file).

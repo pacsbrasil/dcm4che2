@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.cdw.mbean;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -23,6 +24,7 @@ import javax.management.ObjectName;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.cdw.common.ConfigurationException;
+import org.dcm4chex.cdw.common.Executer;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.JMSDelegate;
@@ -41,19 +43,29 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class MediaComposerService extends ServiceMBeanSupport {
 
+    private static final long BLOCK_SIZE = 2048L;
+
+    private final long MB = 1048576;
+
+    private final long GB = 1073741824;
+
+    private final long MIN_MEDIA_SIZE = 1048576L;
+
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
     private DirRecordFactory dirRecordFactory = new DirRecordFactory(
             "resource:dicomdir-records.xml");
 
     private final File xmlFile;
-    
+
     private final File mergeDir;
 
     private final File mergeDirViewer;
 
     private final File mergeDirWeb;
-    
+
+    private long mediaCapacity = 700 * MB;
+
     private String fileSetDescriptorFile = "README.TXT";
 
     private String charsetOfFileSetDescriptorFile = "ISO_IR 100";
@@ -73,7 +85,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private boolean makeIsoImage = true;
 
     private boolean logXml = false;
-    
+
     private final ImageReader imageReader;
 
     private final MessageListener listener = new MessageListener() {
@@ -116,7 +128,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
     final File getMergeDirWeb() {
         return mergeDirWeb;
     }
-    
+
     final File getMergeDirViewer() {
         return mergeDirViewer;
     }
@@ -127,6 +139,42 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     final ImageReader getImageReader() {
         return imageReader;
+    }
+
+    public final String getMediaCapacity() {
+        return formatSize(mediaCapacity);
+    }
+
+    private String formatSize(long size) {
+        if (size < 2 * GB)
+            return "" + ((float) mediaCapacity / MB) + "MB";
+        else
+            return "" + ((float) mediaCapacity / GB) + "GB";
+    }
+
+    public final void setMediaCapacity(String mediaCapacity) {
+        if (mediaCapacity.endsWith("GB"))
+            setMediaCapacity(mediaCapacity, GB);
+        else if (mediaCapacity.endsWith("MB"))
+            setMediaCapacity(mediaCapacity, MB);
+        else
+            throw new IllegalArgumentException("mediaCapacity:" + mediaCapacity);
+    }
+
+    private void setMediaCapacity(String s, long u) {
+        try {
+            setMediaCapacity((long) (Float.parseFloat(s.substring(0,
+                    s.length() - 2)) * u));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("mediaCapacity:" + s);
+        }
+    }
+
+    private void setMediaCapacity(long mediaCapacity) {
+        if (mediaCapacity < MIN_MEDIA_SIZE)
+                throw new IllegalArgumentException("mediaCapacity:"
+                        + mediaCapacity);
+        this.mediaCapacity = mediaCapacity;
     }
 
     public final boolean isKeepSpoolFiles() {
@@ -206,11 +254,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
     public final boolean isLogXml() {
         return logXml;
     }
-    
+
     public final void setLogXml(boolean logXml) {
         this.logXml = logXml;
     }
-    
+
     public final ObjectName getSpoolDirName() {
         return spoolDir.getSpoolDirName();
     }
@@ -250,11 +298,16 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 builder.build();
                 // TODO split fileset on several media
                 WebBuilder webBuilder = new WebBuilder(this, rq, attrs);
-                if (logXml)
-                    webBuilder.toXML(xmlFile);
+                if (logXml) webBuilder.toXML(xmlFile);
                 webBuilder.createIndex();
-                if (builder.isWeb())
-                    webBuilder.createWeb();
+                if (builder.isWeb()) webBuilder.createWeb();
+                final long fsSize = sizeOf(rq.getFilesetDir());
+                if (fsSize > mediaCapacity)
+                        throw new MediaCreationException(
+                                ExecutionStatusInfo.SET_OVERSIZED,
+                                "File-set size: " + formatSize(fsSize)
+                                        + " exceeds Media Capacity: "
+                                        + formatSize(mediaCapacity));
                 if (rq.isCanceled()) {
                     log.info("" + rq + " was canceled");
                     return;
@@ -299,6 +352,23 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 if (attrs != null) spoolDir.deleteRefInstances(attrs);
                 rq.cleanFiles(log);
             }
+        }
+    }
+
+    private long sizeOf(File file) throws MediaCreationException {
+        String[] cmdarray = { "mkisofs", "-quiet", "-print-size",
+                file.getAbsolutePath()};
+        try {
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            Executer ex = new Executer(cmdarray, stdout, null);
+            int exit = ex.waitFor();
+            String result = stdout.toString();
+            if (log.isDebugEnabled())
+                    log.debug("mkisofs -print-size: " + result);
+            return Long.parseLong(result.trim()) * BLOCK_SIZE;
+        } catch (Exception e) {
+            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
+                    e);
         }
     }
 }

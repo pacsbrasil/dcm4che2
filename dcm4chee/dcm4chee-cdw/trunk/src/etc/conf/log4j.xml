@@ -26,7 +26,7 @@
      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
      <param name="File" value="${jboss.server.home.dir}/log/server.log"/>
      <param name="Append" value="false"/>
-     <param name="MaxFileSize" value="500KB"/>
+     <param name="MaxFileSize" value="1000KB"/>
      <param name="MaxBackupIndex" value="10"/>
 
      <layout class="org.apache.log4j.PatternLayout">
