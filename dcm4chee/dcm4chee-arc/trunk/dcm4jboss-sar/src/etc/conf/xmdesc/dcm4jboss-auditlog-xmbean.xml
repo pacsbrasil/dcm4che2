@@ -251,6 +251,11 @@
         <name>patname</name>
         <type>java.lang.String</type>
       </parameter>
+      <parameter>
+        <description>Description</description>
+        <name>description</name>
+        <type>java.lang.String</type>
+      </parameter>
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
@@ -289,6 +294,11 @@
       <parameter>
         <description>Accession Number</description>
         <name>accNo</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Description</description>
+        <name>description</name>
         <type>java.lang.String</type>
       </parameter>
       <return-type>void</return-type>

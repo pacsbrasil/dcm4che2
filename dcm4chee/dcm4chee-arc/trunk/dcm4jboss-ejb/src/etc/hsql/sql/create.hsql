@@ -121,7 +121,7 @@ CREATE TABLE instance (
 	inst_no			VARCHAR(256),
 	sr_complete		VARCHAR(256),
 	sr_verified		VARCHAR(256),
-	ext_retr_aet	VARCHAR(256) NOT NULL,
+	ext_retr_aet	VARCHAR(256),
 	retrieve_aets	VARCHAR(256),
 	availability	INTEGER,
 	commitment		BIT,

@@ -38,19 +38,31 @@ public class PatientMergeCtrl extends Errable {
             return ERROR_VIEW;
         }
     }
+    
+    private String makeMergeDesc(Dataset ds) {
+        return "Merged with [" + ds.getString(Tags.PatientID) +
+        	"]" +  ds.getString(Tags.PatientName);
+    }
 
     private void executeMerge() throws Exception {
+        Dataset dominant = getPatient(pk).toDataset();
         Dataset[] priors = new Dataset[to_be_merged.length - 1];
         for (int i = 0, j = 0; i < to_be_merged.length; i++) {
             if (to_be_merged[i] != pk)
                 priors[j++] = getPatient(to_be_merged[i]).toDataset();
-        }
-        lookupPatientUpdate().mergePatient(getPatient(pk).toDataset(), priors);
+        }        
+        lookupPatientUpdate().mergePatient(dominant, priors);
         for (int i = 0; i < priors.length; i++) {
+            AuditLoggerDelegate.logPatientRecord(getCtx(),
+                    AuditLoggerDelegate.MODIFY,
+                    dominant.getString(Tags.PatientID),
+                    dominant.getString(Tags.PatientName),
+                    makeMergeDesc(priors[i]));
             AuditLoggerDelegate.logPatientRecord(getCtx(),
                     AuditLoggerDelegate.DELETE,
                     priors[i].getString(Tags.PatientID),
-                    priors[i].getString(Tags.PatientName));
+                    priors[i].getString(Tags.PatientName),
+                    makeMergeDesc(dominant));
         }
     }
 

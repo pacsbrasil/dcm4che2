@@ -63,7 +63,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	        ContentEdit ce = lookupContentEdit();
 	        ce.createPatient(pat.toDataset());        
             AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.CREATE, pat
-                    .getPatientID(), pat.getPatientName());
+                    .getPatientID(), pat.getPatientName(), null);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -75,20 +75,36 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
                 .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
         return home.create();
     }
-
+    
     private void executeUpdate() {
         try {
             PatientModel pat = FolderForm.getFolderForm(
                     getCtx().getRequest()).getPatientByPk(pk);
-            pat.setPatientSex(patientSex);
-            pat.setPatientName(patientName);
-
-            pat.setPatientBirthDate(patientBirthDate);
-            //updating data model
-            ContentEdit ce = lookupContentEdit();
-            ce.updatePatient(pat.toDataset());
-            AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.MODIFY, pat
-                    .getPatientID(), pat.getPatientName());
+            StringBuffer sb = new StringBuffer();
+            boolean modified = false;            
+            if (AuditLoggerDelegate.isModified("Patient Name",
+                    pat.getPatientName(), patientName, sb)) {
+                pat.setPatientName(patientName);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Patient Sex",
+                    pat.getPatientSex(), patientSex, sb)) {
+                pat.setPatientSex(patientSex);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Birth Date",
+                    pat.getPatientBirthDate(), patientBirthDate, sb)) {
+                pat.setPatientBirthDate(patientBirthDate);
+                modified = true;
+            }
+            if (modified) {
+	            //updating data model
+	            ContentEdit ce = lookupContentEdit();
+	            ce.updatePatient(pat.toDataset());
+	            AuditLoggerDelegate.logPatientRecord(getCtx(), 
+	                    AuditLoggerDelegate.MODIFY, pat.getPatientID(),
+	                    pat.getPatientName(), AuditLoggerDelegate.trim(sb));
+            }
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

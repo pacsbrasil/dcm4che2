@@ -109,26 +109,57 @@ public class SeriesUpdateCtrl extends Dcm4JbossController {
         try {
             SeriesModel series = FolderForm.getFolderForm(getCtx().getRequest())
                     .getSeriesByPk(patPk, studyPk, seriesPk);
+            
             //updating data model
-            series.setBodyPartExamined(bodyPartExamined);
-            series.setLaterality(laterality);
-            series.setModality(modality);
-            series.setSeriesDateTime(seriesDateTime);
-            series.setSeriesDescription(seriesDescription);
-            series.setSeriesNumber(seriesNumber);
-            ContentEdit ce = lookupContentEdit();
-            ce.updateSeries(series.toDataset());
-            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
-            PatientModel pat = form.getPatientByPk(patPk);
-            StudyModel study = form.getStudyByPk(patPk, studyPk);
-            AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                    AuditLoggerDelegate.MODIFY,
-                    pat.getPatientID(),
-                    pat.getPatientName(),
-                    study.getPlacerOrderNumber(),
-                    study.getFillerOrderNumber(),
-                    study.getStudyIUID(),
-                    study.getAccessionNumber());
+            StringBuffer sb = new StringBuffer("Series[");
+            sb.append(series.getSeriesIUID()).append(" ] modified: ");
+            boolean modified = false;            
+            if (AuditLoggerDelegate.isModified("Body Part Examined",
+                    series.getBodyPartExamined(), bodyPartExamined, sb)) {
+                series.setBodyPartExamined(bodyPartExamined);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Laterality",
+                    series.getLaterality(), laterality, sb)) {
+                series.setLaterality(laterality);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Modality",
+                    series.getModality(), modality, sb)) {
+                series.setModality(modality);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Series Date/Time",
+                    series.getSeriesDateTime(), seriesDateTime, sb)) {
+                series.setSeriesDateTime(seriesDateTime);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Series Description",
+                    series.getSeriesDescription(), seriesDescription, sb)) {
+                series.setSeriesDescription(seriesDescription);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Series Number",
+                    series.getSeriesNumber(), seriesNumber, sb)) {
+                series.setSeriesNumber(seriesNumber);
+                modified = true;
+            }
+            if (modified) {
+	            ContentEdit ce = lookupContentEdit();
+	            ce.updateSeries(series.toDataset());
+	            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+	            PatientModel pat = form.getPatientByPk(patPk);
+	            StudyModel study = form.getStudyByPk(patPk, studyPk);
+	            AuditLoggerDelegate.logProcedureRecord(getCtx(),
+	                    AuditLoggerDelegate.MODIFY,
+	                    pat.getPatientID(),
+	                    pat.getPatientName(),
+	                    study.getPlacerOrderNumber(),
+	                    study.getFillerOrderNumber(),
+	                    study.getStudyIUID(),
+	                    study.getAccessionNumber(),
+	                    AuditLoggerDelegate.trim(sb));
+            }
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

@@ -115,13 +115,14 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
             PatientModel pat = form.getPatientByPk(patPk);
             
             AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                    AuditLoggerDelegate.MODIFY,
+                    AuditLoggerDelegate.CREATE,
                     pat.getPatientID(),
                     pat.getPatientName(),
                     study.getPlacerOrderNumber(),
                     study.getFillerOrderNumber(),
                     study.getStudyIUID(),
-                    study.getAccessionNumber());
+                    study.getAccessionNumber(),
+                    null);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -133,25 +134,58 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
             StudyModel study = FolderForm.getFolderForm(getCtx().getRequest())
                     .getStudyByPk(patPk, studyPk);
             //updating data model
-            study.setPlacerOrderNumber(placerOrderNumber);
-            study.setFillerOrderNumber(fillerOrderNumber);
-            study.setAccessionNumber(accessionNumber);
-            study.setReferringPhysician(referringPhysician);
-            study.setStudyDateTime(studyDateTime);
-            study.setStudyDescription(studyDescription);
-            study.setStudyID(studyID);
-            ContentEdit ce = lookupContentEdit();
-            ce.updateStudy(study.toDataset());
-            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
-            PatientModel pat = form.getPatientByPk(patPk);
-            AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                    AuditLoggerDelegate.MODIFY,
-                    pat.getPatientID(),
-                    pat.getPatientName(),
-                    study.getPlacerOrderNumber(),
-                    study.getFillerOrderNumber(),
-                    study.getStudyIUID(),
-                    study.getAccessionNumber());
+            StringBuffer sb = new StringBuffer();
+            boolean modified = false;            
+            if (AuditLoggerDelegate.isModified("Placer Order Number",
+                    study.getPlacerOrderNumber(), placerOrderNumber, sb)) {
+                study.setPlacerOrderNumber(placerOrderNumber);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Filler Order Number",
+                    study.getFillerOrderNumber(), fillerOrderNumber, sb)) {
+                study.setFillerOrderNumber(fillerOrderNumber);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Accession Number",
+                    study.getAccessionNumber(), accessionNumber, sb)) {
+                study.setAccessionNumber(accessionNumber);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Referring Physician",
+                    study.getReferringPhysician(), referringPhysician, sb)) {
+                study.setReferringPhysician(referringPhysician);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Study Date/Time",
+                    study.getStudyDateTime(), studyDateTime, sb)) {
+                study.setStudyDateTime(studyDateTime);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Study Description",
+                    study.getStudyDescription(), studyDescription, sb)) {
+                study.setStudyDescription(studyDescription);
+                modified = true;
+            }
+            if (AuditLoggerDelegate.isModified("Study ID",
+                    study.getStudyID(), studyID, sb)) {
+                study.setStudyID(studyID);
+                modified = true;
+            }
+            if (modified) {
+	            ContentEdit ce = lookupContentEdit();
+	            ce.updateStudy(study.toDataset());
+	            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+	            PatientModel pat = form.getPatientByPk(patPk);
+	            AuditLoggerDelegate.logProcedureRecord(getCtx(),
+	                    AuditLoggerDelegate.MODIFY,
+	                    pat.getPatientID(),
+	                    pat.getPatientName(),
+	                    study.getPlacerOrderNumber(),
+	                    study.getFillerOrderNumber(),
+	                    study.getStudyIUID(),
+	                    study.getAccessionNumber(),
+	                    AuditLoggerDelegate.trim(sb));
+            }
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

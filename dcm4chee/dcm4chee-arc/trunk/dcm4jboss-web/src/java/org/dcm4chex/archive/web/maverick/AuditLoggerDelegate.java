@@ -76,14 +76,15 @@ public class AuditLoggerDelegate {
     }
 
     public static void logPatientRecord(ControllerContext ctx, String action,
-            String patid, String patname) {
+            String patid, String patname, String desc) {
         try {
             init(ctx);
             AuditLoggerDelegate.server.invoke(auditLogName,
                     "logPatientRecord",
-                    new Object[] { action, patid, patname},
+                    new Object[] { action, patid, patname, desc},
                     new String[] { String.class.getName(),
-                            String.class.getName(), String.class.getName()});
+                            String.class.getName(), String.class.getName(),
+                            String.class.getName()});
         } catch (Exception e) {
             log.warn("Failed to log patientRecord:", e);
         }
@@ -91,20 +92,52 @@ public class AuditLoggerDelegate {
 
     public static void logProcedureRecord(ControllerContext ctx, String action,
             String patid, String patname, String placerOrderNo,
-            String fillerOrderNo, String suid, String accNo) {
+            String fillerOrderNo, String suid, String accNo, String desc) {
         try {
             init(ctx);
             AuditLoggerDelegate.server.invoke(auditLogName,
                     "logProcedureRecord",
                     new Object[] { action, patid, patname, placerOrderNo,
-                            fillerOrderNo, suid, accNo},
+                            fillerOrderNo, suid, accNo, desc},
                     new String[] { String.class.getName(),
                             String.class.getName(), String.class.getName(),
                             String.class.getName(), String.class.getName(),
-                            String.class.getName(), String.class.getName()});
+                            String.class.getName(), String.class.getName(),
+                            String.class.getName()});
         } catch (Exception e) {
             log.warn("Failed to log procedureRecord:", e);
         }
     }
 
+    public static boolean equals(String prevVal, String newVal) {
+        return prevVal == null || prevVal.length() == 0
+        ? newVal == null || newVal.length() == 0
+                : prevVal.equals(newVal);
+    }
+    
+    public static boolean isModified(String name, String prevVal, String newVal,
+            StringBuffer desc) {
+        if (prevVal == null || prevVal.length() == 0
+                ? newVal == null || newVal.length() == 0
+                : prevVal.equals(newVal))
+            return false;
+        desc.append(name);
+        desc.append(" changed from \"");
+        if (prevVal != null)
+            desc.append(prevVal);
+        desc.append("\" to \"");
+        if (newVal != null)
+            desc.append(newVal);
+        desc.append("\", ");
+        return true;
+    }
+    
+    public static String trim(StringBuffer sb) {
+        int len = sb.length();
+        char ch;
+        while (len > 0 && ((ch = sb.charAt(len-1)) == ' ' || ch == ',')) --len;
+        sb.setLength(len);
+        return sb.toString();
+    }
+    
 }

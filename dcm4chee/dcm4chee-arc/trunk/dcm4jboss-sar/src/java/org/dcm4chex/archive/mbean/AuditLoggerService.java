@@ -267,16 +267,17 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
         }
     }
 
-    public void logPatientRecord(String action, String patid, String patname) {
+    public void logPatientRecord(String action, String patid, String patname,
+            String desc) {
         if (getState() == STARTED) {
             Patient patient = alf.newPatient(patid, patname);
-            logger.logPatientRecord(action, patient, getCurrentUser());
+            logger.logPatientRecord(action, patient, getCurrentUser(), desc);
         }
     }
 
     public void logProcedureRecord(String action, String patid, String patname,
             String placerOrderNo, String fillerOrderNo, String suid,
-            String accNo) {
+            String accNo, String desc) {
         if (getState() == STARTED) {
             Patient patient = alf.newPatient(patid, patname);
             logger.logProcedureRecord(action,
@@ -285,7 +286,8 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
                     fillerOrderNo,
                     suid,
                     accNo,
-                    getCurrentUser());
+                    getCurrentUser(),
+                    desc);
         }
     }
 

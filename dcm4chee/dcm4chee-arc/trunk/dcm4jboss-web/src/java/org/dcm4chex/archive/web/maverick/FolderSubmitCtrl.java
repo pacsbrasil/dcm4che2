@@ -232,7 +232,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                             .getInt(Tags.NumberOfStudyRelatedInstances, 0));
                 }
                 AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
-                        .getPatientID(), pat.getPatientName());
+                        .getPatientID(), pat.getPatientName(), null);
             } else
                 deleteStudies(edit, pat);
         }
