@@ -66,5 +66,9 @@ class FilterSQElement extends DcmElementImpl {
     
     public int length() {
         return totlen;
-    }        
+    }  
+    
+    public String toString() {
+    	return "FilterSQElement["+sqElem.toString()+"]";
+    }
 }
