@@ -16,6 +16,7 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -61,7 +62,14 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	        pat.setPatientName(patientName);
 	        pat.setPatientBirthDate(patientBirthDate);
 	        ContentEdit ce = lookupContentEdit();
-	        ce.createPatient(pat.toDataset());        
+	        Dataset ds = ce.createPatient(pat.toDataset());
+	        
+	        //add new patient to model (as first element) and set sticky flag!
+	        pat = new PatientModel( ds );
+	        FolderForm form = FolderForm.getFolderForm( getCtx().getRequest() );
+	        form.getStickyPatients().add( String.valueOf( pat.getPk() ) );
+	        form.getPatients().add(0, pat);
+	        
             AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.CREATE, pat
                     .getPatientID(), pat.getPatientName(), null);
         } catch (Exception e) {
