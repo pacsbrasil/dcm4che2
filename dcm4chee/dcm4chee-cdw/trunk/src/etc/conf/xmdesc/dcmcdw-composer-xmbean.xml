@@ -74,6 +74,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getValuesForIndexFile"
+      setMethod="setValuesForIndexFile">
+      <description>Comma separated list of values of flag
+      "Include Non-DICOM Objects" (2200,0008), to include
+      INDEX.HTM in root directory on media.
+      </description>
+      <name>ValuesForIndexFile</name>
+      <type>[Ljava.lang.String;</type>      
+      <descriptors>
+         <value value="NO,FOR_PHYSICIAN,FOR_PATIENT,FOR_TEACHING,FOR_RESEARCH" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getValuesForCreateIcons"
       setMethod="setValuesForCreateIcons">
       <description>Comma separated list of values of flag

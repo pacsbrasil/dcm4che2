@@ -102,6 +102,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private Set valuesForCreateIcons = new HashSet();
 
+    private Set valuesForIndexFile = new HashSet();
+    
     private final ImageReader imageReader;
 
     private final MessageListener listener = new MessageListener() {
@@ -174,6 +176,16 @@ public class MediaComposerService extends ServiceMBeanSupport {
     public final void setValuesForCreateIcons(String[] values) {
         valuesForCreateIcons.clear();
         valuesForCreateIcons.addAll(Arrays.asList(values));
+    }
+
+    public final String[] getValuesForIndexFile() {
+        return (String[]) valuesForIndexFile
+                .toArray(new String[valuesForIndexFile.size()]);
+    }
+
+    public final void setValuesForIndexFile(String[] values) {
+        valuesForIndexFile.clear();
+        valuesForIndexFile.addAll(Arrays.asList(values));
     }
 
     final DirRecordFactory getDirRecordFactory() {
@@ -396,7 +408,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     private void finishFileset(FilesetBuilder builder, DicomDirDOM dom, MediaCreationRequest rq) throws MediaCreationException {
-        dom.createIndex(rq);
+        if (builder.isIndexFile())
+            dom.createIndex(rq);
         builder.createMd5Sums(rq);
         if (labelCreator.isActive()) {
             File f = spoolDir.getLabelFile(rq.getFilesetUID(), labelCreator.getLabelFileFormat());
@@ -490,6 +503,10 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     final boolean createIcons(String value) {
         return valuesForCreateIcons.contains(value);
+    }
+
+    final boolean indexFile(String value) {
+        return valuesForIndexFile.contains(value);
     }
 
     final boolean isArchiveHighWater() {

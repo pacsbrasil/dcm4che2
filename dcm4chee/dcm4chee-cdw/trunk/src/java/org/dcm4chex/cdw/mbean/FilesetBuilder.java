@@ -116,6 +116,8 @@ class FilesetBuilder {
 
     private final boolean icons;
 
+    private final boolean indexFile;
+
     private BufferedImage imageBI;
 
     private BufferedImage jpegBI;
@@ -176,6 +178,7 @@ class FilesetBuilder {
         this.nonDICOM = attrs.getString(Tags.IncludeNonDICOMObjects, "NO");
         this.web = service.includeWeb(nonDICOM);
         this.md5sums = service.includeMd5Sums(nonDICOM);
+        this.indexFile = service.indexFile(nonDICOM);
         this.icons = service.createIcons(nonDICOM);
         this.bbuf = new byte[service.getBufferSize()];
     }
@@ -196,6 +199,10 @@ class FilesetBuilder {
         return viewer;
     }
 
+    final boolean isIndexFile() {
+        return indexFile;
+    }
+    
     public void buildFileset() throws MediaCreationException {
         try {
             File rootDir = mkRootDir(spoolDir, false);
