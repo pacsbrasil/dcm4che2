@@ -38,7 +38,7 @@ import org.dcm4cheri.util.LF_ThreadPool;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Collection;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
@@ -55,7 +55,7 @@ import org.apache.log4j.NDC;
  *
  * <p><b>20020728 gunter:</b>
  * <ul>
- * <li> add {@link #getAcceptedPresContext(String)}
+ * <li> add {@link #listAcceptedPresContext(String)}
  * <li> add {@link #countAcceptedPresContext()}
  * </ul>
  */
@@ -246,8 +246,8 @@ final class AssociationImpl implements Association {
         return fsm.getAcceptedPresContext(asuid, tsuid);
     }
     
-    public final Collection getAcceptedPresContext(String asuid) {
-        return fsm.getAcceptedPresContext(asuid);
+    public final List listAcceptedPresContext(String asuid) {
+        return fsm.listAcceptedPresContext(asuid);
     }
 
     public final int countAcceptedPresContext() {

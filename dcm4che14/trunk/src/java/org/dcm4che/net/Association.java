@@ -23,7 +23,7 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * <description>
@@ -99,7 +99,7 @@ public interface Association {
     
     PresContext getAcceptedPresContext(String asuid, String tsuid);
     
-    Collection getAcceptedPresContext(String asuid);
+    List listAcceptedPresContext(String asuid);
     
     int countAcceptedPresContext();
     

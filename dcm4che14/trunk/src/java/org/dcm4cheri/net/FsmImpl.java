@@ -42,7 +42,7 @@ import org.dcm4cheri.util.LF_ThreadPool;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collection;
+import java.util.List;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -65,7 +65,7 @@ import org.apache.log4j.NDC;
  *
  * <p><b>20020728 gunter:</b>
  * <ul>
- * <li> add {@link #getAcceptedPresContext(String)}
+ * <li> add {@link #listAcceptedPresContext(String)}
  * <li> add {@link #countAcceptedPresContext()}
  * </ul>
  */
@@ -209,7 +209,7 @@ final class FsmImpl {
         return null;
     }
     
-    public final Collection getAcceptedPresContext(String asuid) {
+    public final List listAcceptedPresContext(String asuid) {
         if (ac == null) {
             throw new IllegalStateException(state.toString());
         }
