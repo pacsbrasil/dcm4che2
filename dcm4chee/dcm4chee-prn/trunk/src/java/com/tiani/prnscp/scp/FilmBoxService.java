@@ -25,7 +25,6 @@ package com.tiani.prnscp.scp;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -40,7 +39,7 @@ import org.dcm4che.util.UIDGenerator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.StringTokenizer;
+import java.util.HashMap;
 
 /**
  * <description>
@@ -84,13 +83,14 @@ class FilmBoxService extends DcmServiceBase
       try {
          Dataset ds = rq.getDataset(); // read out dataset
          FilmSession session = scp.getFilmSession(as);
+         HashMap pluts = scp.getPresentationLUTs(as);
          checkRefFilmSession(ds, session);
          String uid = rq.getCommand().getAffectedSOPInstanceUID();
          if (session.containsFilmBox(uid)) {
             throw new DcmServiceException(Status.DuplicateSOPInstance);
          }
          addRefImageBox(ds, session.getImageBoxCUID());
-         session.addFilmBox(uid, new FilmBox(ds));
+         session.addFilmBox(uid, new FilmBox(scp, uid, ds, pluts));
          return ds;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to create Basic Film Box SOP Instance", e);
@@ -113,8 +113,6 @@ class FilmBoxService extends DcmServiceBase
          if (!ref.getString(Tags.RefSOPInstanceUID).equals(session.uid())) {
             throw new DcmServiceException(Status.InvalidAttributeValue);
          }         
-      } catch (DcmValueException e) {
-         throw new DcmServiceException(Status.InvalidAttributeValue, e);
       } catch (NullPointerException e) {
          throw new DcmServiceException(Status.MissingAttribute);
       }
@@ -123,12 +121,7 @@ class FilmBoxService extends DcmServiceBase
    void addRefImageBox(Dataset data, String cuid)
       throws DcmServiceException
    {
-      int n;
-      try {
-         n = scp.countImageBoxes(data.getString(Tags.ImageDisplayFormat));
-      } catch (DcmValueException e) {
-         throw new DcmServiceException(Status.InvalidAttributeValue, e);
-      }
+      int n = scp.countImageBoxes(data.getString(Tags.ImageDisplayFormat));
       DcmElement sq = data.putSQ(Tags.RefImageBoxSeq);
       for (int i = 0; i < n; ++i) {
          Dataset item = sq.addNewItem();
@@ -144,10 +137,11 @@ class FilmBoxService extends DcmServiceBase
          Dataset ds = rq.getDataset(); // read out dataset
          String uid = rq.getCommand().getRequestedSOPInstanceUID();
          FilmSession session = scp.getFilmSession(as);
+         HashMap pluts = scp.getPresentationLUTs(as);
          if (session == null || !uid.equals(session.getCurrentFilmBoxUID())) {
             throw new DcmServiceException(Status.NoSuchObjectInstance);
          }
-         session.getCurrentFilmBox().setDataset(ds);
+         session.getCurrentFilmBox().setDataset(ds, pluts);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to update Basic Film Box SOP Instance", e);
@@ -187,6 +181,7 @@ class FilmBoxService extends DcmServiceBase
          scp.getLog().warn("Failed to delete Basic Film Box SOP Instance", e);
          throw e;
       }
+      
    }
    
    // Package protected ---------------------------------------------

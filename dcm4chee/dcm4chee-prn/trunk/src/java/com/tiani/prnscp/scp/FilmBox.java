@@ -25,14 +25,15 @@ package com.tiani.prnscp.scp;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.util.UIDGenerator;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
  * <description>
@@ -55,35 +56,55 @@ class FilmBox {
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   private final PrintScpService scp;
+   private final String uid;
    private final Dataset dataset;
    private final LinkedHashMap imageBoxes = new LinkedHashMap();
+   private final HashMap pluts = new HashMap();
    
    // Static --------------------------------------------------------
    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
    private static final UIDGenerator uidgen = UIDGenerator.getInstance();
    
    // Constructors --------------------------------------------------
-   public FilmBox(Dataset dataset) {
+   public FilmBox(PrintScpService scp, String uid, Dataset dataset,
+         HashMap pluts)
+      throws DcmServiceException
+   {
+      this.scp = scp;
+      this.uid = uid;
       this.dataset = dataset;
+      addPLUT(dataset, pluts);
    }
    
    // Public --------------------------------------------------------
+   public String toString() {
+      return "FilmBox[uid=" + uid + ", " + imageBoxes.size() + " ImageBoxes]";
+   }      
+   
    public Dataset getDataset() {
       return dataset;
    }
 
-   public void setDataset(Dataset dataset) {
-      this.dataset.putAll(dataset);
+   public void setDataset(Dataset modification, HashMap pluts)
+      throws DcmServiceException
+   {
+      addPLUT(modification, pluts);
+      dataset.putAll(modification);
    }
 
-   public void setImageBox(String imageBoxUID, Dataset imageBox) {
+   public void setImageBox(String imageBoxUID, Dataset imageBox, HashMap pluts)
+      throws DcmServiceException
+   {
+      addPLUT(imageBox, pluts);
       imageBoxes.remove(imageBoxUID);
       imageBoxes.put(imageBoxUID, imageBox);
    }
    
    public Dataset createStoredPrint(FilmSession session)
-      throws DcmValueException
    {
+      boolean debug = scp.getLog().isDebugEnabled();
+      
       Dataset result = dof.newDataset();
       String cuid = UIDs.StoredPrintStorage;
       String iuid = uidgen.createUID();
@@ -112,7 +133,9 @@ class FilmBox {
       pmcs.addNewItem().putUI(Tags.RefSOPClassUID, UIDs.BasicFilmBoxSOP);
       pmcs.addNewItem().putUI(Tags.RefSOPClassUID, session.getImageBoxCUID());
       pmcs.addNewItem().putUI(Tags.RefSOPClassUID, session.getHardcopyCUID());
-      
+      if (!pluts.isEmpty()) {
+         pmcs.addNewItem().putUI(Tags.RefSOPClassUID, UIDs.PresentationLUT);
+      }
       result.putSQ(Tags.PrinterCharacteristicsSeq);
       
       Dataset fbContent = result.putSQ(Tags.FilmBoxContentSeq).addNewItem();
@@ -121,20 +144,52 @@ class FilmBox {
       DcmElement refImageBoxSeq = fbContent.remove(Tags.RefImageBoxSeq);
       
       Dataset[] boxes = new Dataset[refImageBoxSeq.vm()];
-      Iterator it = imageBoxes.values().iterator();
-      while (it.hasNext()) {
+      for (Iterator it = imageBoxes.values().iterator(); it.hasNext();) {
          Dataset box = (Dataset) it.next();
          int ipos = box.getInt(Tags.ImagePositionOnFilm, -1);
          boxes[ipos-1] = box;
       }
       
-      DcmElement ibContentSeq = result.putSQ(Tags.ImageBoxContentSeq);
+      DcmElement boxSeq = result.putSQ(Tags.ImageBoxContentSeq);
       for (int i = 0; i < boxes.length; ++i) {
          if (boxes[i] != null && boxes[i].contains(Tags.RefImageSeq)) {
-            ibContentSeq.addItem(boxes[i]);
+            boxSeq.addItem(boxes[i]);
+         }
+      }
+      
+      if (!pluts.isEmpty()) {
+         DcmElement plutSeq = result.putSQ(Tags.PresentationLUTContentSeq);
+         for (Iterator it = pluts.values().iterator(); it.hasNext();) {
+            plutSeq.addItem((Dataset) it.next());
          }
       }
       return result;
+   }
+   
+   private void addPLUT(Dataset dataset, HashMap pluts)
+      throws DcmServiceException
+   {
+      Dataset ref = dataset.getItem(Tags.RefPresentationLUTSeq);
+      if (ref == null) {
+         return;
+      }
+      String cuid = ref.getString(Tags.RefSOPClassUID);
+      if (cuid == null) {
+         throw new DcmServiceException(Status.MissingAttributeValue);
+      }
+      if (!UIDs.PresentationLUT.equals(cuid)) {
+         throw new DcmServiceException(Status.InvalidAttributeValue);
+      }
+      String iuid = ref.getString(Tags.RefSOPInstanceUID);
+      if (iuid == null) {
+         throw new DcmServiceException(Status.MissingAttributeValue);
+      }
+      Dataset plut = (Dataset) pluts.get(iuid);
+      if (plut == null) {
+         throw new DcmServiceException(Status.InvalidAttributeValue,
+            "No such Presentation LUT");
+      }
+      this.pluts.put(iuid, plut);
    }
    
 }

@@ -26,8 +26,10 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.DcmServiceException;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 /**
@@ -51,6 +53,7 @@ class FilmSession {
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   private final PrintScpService scp;
    private final File dir;
    private final String uid;
    private final Dataset session;
@@ -64,7 +67,10 @@ class FilmSession {
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   public FilmSession(String asuid, String uid, Dataset session, File dir) {
+   public FilmSession(PrintScpService scp, String asuid, String uid,
+         Dataset session, File dir)
+   {
+      this.scp = scp;
       if (asuid.equals(UIDs.BasicGrayscalePrintManagement)) {
          imageBoxCUID = UIDs.BasicGrayscaleImageBox;
          hardcopyCUID = UIDs.HardcopyGrayscaleImageStorage;
@@ -82,6 +88,9 @@ class FilmSession {
    }
    
    // Public --------------------------------------------------------
+   public String toString() {
+      return "FilmSession[uid=" + uid + ", " + filmBoxes.size() + " FilmBoxes]";
+   }      
    
    public String uid() {
       return uid;
@@ -107,8 +116,8 @@ class FilmSession {
       return imageSeqTag;
    }
 
-   public void setDataset(Dataset session) {
-      this.session.putAll(session);
+   public void setDataset(Dataset modification) {
+      session.putAll(modification);
    }
 
    public void addFilmBox(String uid, FilmBox filmbox) {
@@ -136,11 +145,13 @@ class FilmSession {
       return filmBoxes.containsKey(uid);
    }   
    
-   public void setFilmBox(Dataset filmbox) {
+   public void setFilmBox(Dataset filmbox, HashMap pluts)
+      throws DcmServiceException
+   {
       if (curFilmBox == null) {
          throw new IllegalStateException();
       }
-      curFilmBox.setDataset(filmbox);
+      curFilmBox.setDataset(filmbox, pluts);
    }
    
    public void deleteFilmBox() {

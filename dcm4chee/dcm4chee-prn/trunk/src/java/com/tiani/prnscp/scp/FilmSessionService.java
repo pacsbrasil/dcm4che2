@@ -117,7 +117,7 @@ class FilmSessionService
          AAssociateRQ aarq = a.getAAssociateRQ();
          PresContext pc =aarq.getPresContext(rq.pcid());
          String asuid = pc.getAbstractSyntaxUID();
-         FilmSession session = new FilmSession(asuid, uid, ds, dir);
+         FilmSession session = new FilmSession(scp, asuid, uid, ds, dir);
          scp.initSessionSpoolDir(dir);
          a.putProperty("FilmSession", session);
          a.addAssociationListener(this);

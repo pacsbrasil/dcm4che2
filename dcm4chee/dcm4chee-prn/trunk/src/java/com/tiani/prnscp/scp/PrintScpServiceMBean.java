@@ -96,4 +96,24 @@ public interface PrintScpServiceMBean extends ServiceMBean {
     */
    void setSpoolDirectory(String spoolDirectory);
    
+   /** Getter for property keepSpoolFiles.
+    * @return Value of property keepSpoolFiles.
+    */
+   public boolean isKeepSpoolFiles();
+   
+   /** Setter for property keepSpoolFiles.
+    * @param keepSpoolFiles New value of property keepSpoolFiles.
+    */
+   public void setKeepSpoolFiles(boolean keepSpoolFiles);
+   
+   /** Getter for property numCreatedJobs.
+    * @return Value of property numCreatedJobs.
+    */
+   public int getNumCreatedJobs();
+      
+   /** Getter for property numStoredPrints.
+    * @return Value of property numStoredPrints.
+    */
+   public int getNumStoredPrints();
+   
 }

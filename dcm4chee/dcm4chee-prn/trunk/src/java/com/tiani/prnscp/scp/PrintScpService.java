@@ -29,7 +29,6 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -67,6 +66,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -110,6 +110,7 @@ public class PrintScpService
    private String queueName;
    private String spoolDirectory;
    private File spoolDir;
+   private boolean keepSpoolFiles = false;
    private FilmSessionService filmSessionService = new FilmSessionService(this);
    private FilmBoxService filmBoxService = new FilmBoxService(this);
    private ImageBoxService imageBoxService = new ImageBoxService(this);
@@ -120,7 +121,8 @@ public class PrintScpService
    private AcceptorPolicy policy;
    private DcmServiceRegistry services;
    private String[] ts_uids = LITTLE_ENDIAN_TS;
-   private int jobCounter = 0;
+   private int numCreatedJobs = 0;
+   private int numStoredPrints = 0;
    
    // Static --------------------------------------------------------
    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
@@ -201,10 +203,37 @@ public class PrintScpService
       this.spoolDirectory = spoolDirectory;
    }
    
+   /** Getter for property keepSpoolFiles.
+    * @return Value of property keepSpoolFiles.
+    */
+   public boolean isKeepSpoolFiles() {
+      return keepSpoolFiles;
+   }   
+
+   /** Setter for property keepSpoolFiles.
+    * @param keepSpoolFiles New value of property keepSpoolFiles.
+    */
+   public void setKeepSpoolFiles(boolean keepSpoolFiles) {
+      this.keepSpoolFiles = keepSpoolFiles;
+   }
+   
+   /** Getter for property numCreatedJobs.
+    * @return Value of property numCreatedJobs.
+    */
+   public int getNumCreatedJobs() {
+      return numCreatedJobs;
+   }
+   
+   /** Getter for property numStoredPrints.
+    * @return Value of property numStoredPrints.
+    */
+   public int getNumStoredPrints() {
+      return numStoredPrints;
+   }
+      
    // NotificationListener implementation -----------------------------
    public void handleNotification(Notification n, Object handback) {
       PrintJobNotification pjn = (PrintJobNotification) n;
-      log.info("handleNotification - eventID:" + pjn.getEventID());
       switch (pjn.getEventID()) {
          case PrintJobNotification.FAILURE:
          case PrintJobNotification.DONE:
@@ -250,9 +279,13 @@ public class PrintScpService
       services.bind(UIDs.BasicColorImageBox, imageBoxService);
       services.bind(UIDs.BasicGrayscaleImageBox, imageBoxService);
       services.bind(UIDs.Printer, printerService);
+      services.bind(UIDs.PresentationLUT, plutService);
+      services.bind(UIDs.PrinterConfigurationRetrieval, printerConfigService);
       policy = dcmHandler.getAcceptorPolicy();
       policy.putPresContext(UIDs.BasicGrayscalePrintManagement, ts_uids);
       policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
+      policy.putPresContext(UIDs.PresentationLUT, ts_uids);
+      policy.putPresContext(UIDs.PrinterConfigurationRetrieval, ts_uids);
    }
    
    public void stopService()
@@ -281,7 +314,9 @@ public class PrintScpService
       
       server.removeNotificationListener(printer, this);
       
-      cleardir(spoolDir);
+      if (!keepSpoolFiles) {
+         cleardir(spoolDir);
+      }
    }
    
    
@@ -291,6 +326,15 @@ public class PrintScpService
    
    FilmSession getFilmSession(ActiveAssociation as) {
       return (FilmSession) as.getAssociation().getProperty("FilmSession");
+   }
+
+   HashMap getPresentationLUTs(ActiveAssociation as) {
+      Association a = as.getAssociation();
+      HashMap result = (HashMap) a.getProperty("PresentationLUTs");
+      if (result == null) {
+         a.putProperty("PresentationLUTs", result = new HashMap());
+      }
+      return result;
    }
    
    File getSessionSpoolDir(String uid) {
@@ -319,7 +363,7 @@ public class PrintScpService
 
    void unlockSessionSpoolDir(File dir) {
       new File(dir, SPOOL_SESSION_LOCK_SUFFIX).delete();
-      if (countJobsInSession(dir) == 0) {
+      if (!keepSpoolFiles && countJobsInSession(dir) == 0) {
          deltree(dir);
       }
    }
@@ -333,7 +377,8 @@ public class PrintScpService
    }
    
    private void purgeSessionSpoolDir(File dir) {
-      if (!isSessionSpoolDirLocked(dir) && countJobsInSession(dir) == 0) {
+      if (!keepSpoolFiles && !isSessionSpoolDirLocked(dir)
+                        && countJobsInSession(dir) == 0) {
          deltree(dir);
       }
    }
@@ -370,10 +415,22 @@ public class PrintScpService
       }
    }
    
+   Dataset getPrinterConfiguration()
+      throws DcmServiceException
+   {
+      try {
+         return (Dataset) server.getAttribute(printer, "PrinterConfiguration");
+      } catch (Exception e) {
+         log.error("Failed to access printer configuration", e);
+         throw new DcmServiceException(Status.ProcessingFailure, 
+            "Failed to access printer configuration");
+      }
+   }
+   
    void createPrintJob(FilmSession session, boolean all)
       throws DcmServiceException
    {
-      String jobID = "J-" + ++jobCounter;
+      String jobID = "J-" + ++numCreatedJobs;
       File jobdir = new File(new File(session.dir(), SPOOL_JOB_DIR_SUFFIX), jobID);
       if (!jobdir.mkdir()) {
          throw new DcmServiceException(Status.ProcessingFailure,
@@ -398,8 +455,6 @@ public class PrintScpService
             queueSend.send(msg);
          } catch (JMSException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
-         } catch (DcmValueException e) {
-            throw new DcmServiceException(Status.ProcessingFailure, e);
          }
       } catch (DcmServiceException e) {
          deltree(jobdir);
@@ -411,6 +466,9 @@ public class PrintScpService
       log.info("Deleting job - " + job.getName());
       if (!job.exists()) {
          log.warn("No such job - " + job.getName());
+         return;
+      }
+      if (keepSpoolFiles) {
          return;
       }
       if (!deltree(job)) {
@@ -426,24 +484,62 @@ public class PrintScpService
    private void storePrint(File job, FilmSession session, FilmBox filmBox) 
       throws DcmServiceException
    {
+      String spID = "SP-" + ++numStoredPrints;
       try {
          Dataset storedPrint = filmBox.createStoredPrint(session);
-         File f = File.createTempFile("SP-","",job);
+         File f = new File(job, spID);
          OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
          try {
             storedPrint.writeFile(out, null);
          } finally {
             try { out.close(); } catch (IOException ignore) {}
          }
-      } catch (DcmValueException e) {
-         throw new DcmServiceException(Status.ProcessingFailure, e);
       } catch (IOException e) {
          throw new DcmServiceException(Status.ProcessingFailure, e);
       }
    }
-   
-
+      
    // Inner classes -------------------------------------------------      
+   private DcmServiceBase plutService = new DcmServiceBase(){
+      protected Dataset doNCreate(ActiveAssociation as, Dimse rq, Command rspCmd)
+         throws IOException, DcmServiceException 
+      {
+         try {
+            Dataset ds = rq.getDataset(); // read out dataset
+            String uid = rq.getCommand().getAffectedSOPInstanceUID();            
+            HashMap pluts = getPresentationLUTs(as);
+            if (pluts.get(uid) != null) {
+               throw new DcmServiceException(Status.DuplicateSOPInstance);
+            }
+            // add SOP Instane UID for use as Presentation LUT Content Seq Item
+            // in Stored Print Object
+            ds.putUI(Tags.SOPInstanceUID, uid);
+            pluts.put(uid, ds);
+            return null;
+         } catch (DcmServiceException e) {
+            log.warn("Failed to create Presentation LUT SOP Instance", e);
+            throw e;
+         }
+      }
+      
+      protected Dataset doNDelete(ActiveAssociation as, Dimse rq, Command rspCmd)
+         throws IOException, DcmServiceException 
+      {
+         try {
+            String uid = rq.getCommand().getRequestedSOPInstanceUID();
+            HashMap pluts = getPresentationLUTs(as);
+            if (pluts.get(uid) == null) {
+               throw new DcmServiceException(Status.NoSuchObjectInstance);
+            }
+            pluts.remove(uid);
+            return null;
+         } catch (DcmServiceException e) {
+            log.warn("Failed to delete Presentation LUT SOP Instance", e);
+            throw e;
+         }
+      }
+   };
+
    private DcmServiceBase printerService = new DcmServiceBase(){
       protected Dataset doNGet(ActiveAssociation as, Dimse rq, Command rspCmd)
          throws IOException, DcmServiceException
@@ -460,6 +556,14 @@ public class PrintScpService
                "Failed to access printer status");
          }
          return result;
+      }      
+   };
+
+   private DcmServiceBase printerConfigService = new DcmServiceBase(){
+      protected Dataset doNGet(ActiveAssociation as, Dimse rq, Command rspCmd)
+         throws IOException, DcmServiceException
+      {
+         return getPrinterConfiguration();
       }      
    };
 }

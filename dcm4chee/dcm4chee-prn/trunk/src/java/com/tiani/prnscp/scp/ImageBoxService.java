@@ -29,7 +29,6 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -46,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 
 /**
  * <description>
@@ -96,6 +96,7 @@ class ImageBoxService extends DcmServiceBase
          String boxuid = cmd.getRequestedSOPInstanceUID();
          String tuid = rq.getTransferSyntaxUID();
          FilmSession session = scp.getFilmSession(as);
+         HashMap pluts = scp.getPresentationLUTs(as);
          checkRefImageBoxSeq(cuid, boxuid, session);
          int stopTag = session.getImageSeqTag();
          DcmParser parser = dpf.newDcmParser(in);
@@ -144,7 +145,7 @@ class ImageBoxService extends DcmServiceBase
             parser.setDcmHandler(box.getDcmHandler());
          }
          parser.parseDataset(tuid, -1);
-         session.getCurrentFilmBox().setImageBox(boxuid, box);
+         session.getCurrentFilmBox().setImageBox(boxuid, box, pluts);
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to set Image Box SOP Instance", e);
@@ -164,19 +165,15 @@ class ImageBoxService extends DcmServiceBase
       if (filmbox == null) {
          throw new DcmServiceException(Status.NoSuchObjectInstance);
       }
-      try {
-         DcmElement sq = filmbox.getDataset().get(Tags.RefImageBoxSeq);
-         for (int i = 0, n = sq.vm(); i < n; ++i) {
-            Dataset ref = sq.getItem(i);
-            if (ref.getString(Tags.RefSOPInstanceUID).equals(boxuid)) {
-               if (ref.getString(Tags.RefSOPClassUID).equals(cuid)) {
-                  return;
-               }
-               throw new DcmServiceException(Status.ClassInstanceConflict);
+      DcmElement sq = filmbox.getDataset().get(Tags.RefImageBoxSeq);
+      for (int i = 0, n = sq.vm(); i < n; ++i) {
+         Dataset ref = sq.getItem(i);
+         if (ref.getString(Tags.RefSOPInstanceUID).equals(boxuid)) {
+            if (ref.getString(Tags.RefSOPClassUID).equals(cuid)) {
+               return;
             }
+            throw new DcmServiceException(Status.ClassInstanceConflict);
          }
-      } catch (DcmValueException e) {
-         throw new DcmServiceException(Status.ProcessingFailure, e);
       }
    }
 
