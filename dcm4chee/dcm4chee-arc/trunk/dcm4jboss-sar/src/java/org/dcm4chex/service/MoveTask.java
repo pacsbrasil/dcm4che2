@@ -425,25 +425,34 @@ class MoveTask implements Runnable {
         return rspCmd;
     }
 
+    private Set getRemoteRetrieveAETs(FileInfo[] instFiles) {
+        Set aets = new HashSet();
+        for (int i = 0; i < instFiles.length; ++i) {
+            Set tmp = instFiles[i].getRetrieveAETSet();
+            if (tmp.contains(retrieveAET)) { // local accessable
+                toRetrieve.add(instFiles[i]);
+                return null;
+            }
+            aets.addAll(tmp);
+        }
+        return aets;
+    }
+    
     private void prepareRetrieveInfo(FileInfo[][] fileInfo) {
         HashMap iuidsAtAE = new HashMap();
         for (int i = 0; i < fileInfo.length; ++i) {
             FileInfo[] instFiles = fileInfo[i];
-            for (int j = 0; j < instFiles.length; ++j) {
-                Set aets = instFiles[j].getRetrieveAETSet();
-                if (aets.contains(retrieveAET)) { // is local accessable
-                    toRetrieve.add(instFiles[j]);
-                    break;
-                }
-                for (Iterator it = aets.iterator(); it.hasNext();) {
-                    final String aet = (String) it.next();
-                    Set iuids = (Set) iuidsAtAE.get(aet);
-                    if (iuids == null) {
-                        iuids = new HashSet();
-                        iuidsAtAE.put(aet, iuids);
-                    }
-                    iuids.add(instFiles[j].sopIUID);
-                }
+            Set aets = getRemoteRetrieveAETs(instFiles);
+            if (aets != null) {
+	            for (Iterator it = aets.iterator(); it.hasNext();) {
+	                final String aet = (String) it.next();
+	                Set iuids = (Set) iuidsAtAE.get(aet);
+	                if (iuids == null) {
+	                    iuids = new HashSet();
+	                    iuidsAtAE.put(aet, iuids);
+	                }
+	                iuids.add(instFiles[0].sopIUID);
+	            }
             }
         }
         while (!iuidsAtAE.isEmpty()) {
