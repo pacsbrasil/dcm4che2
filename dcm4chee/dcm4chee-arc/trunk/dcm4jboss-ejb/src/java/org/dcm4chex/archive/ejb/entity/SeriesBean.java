@@ -435,30 +435,33 @@ public abstract class SeriesBean implements EntityBean {
         final int numI = ejbSelectNumberOfSeriesRelatedInstances(pk);
         if (getNumberOfSeriesRelatedInstances() != numI)
             setNumberOfSeriesRelatedInstances(numI);
-        Set aetSet = ejbSelectRetrieveAETs(pk);
-        for (Iterator it = aetSet.iterator(); it.hasNext();) {
-            final String aet = (String) it.next();
-            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
-                it.remove();
-        }
-        String aets = toString(aetSet);
-        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
-            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
-            if (extAetSet.size() == 1) {
-                final String extAet = (String) extAetSet.iterator().next();
-                if (extAet != null && extAet.length() != 0)
-                    aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;                
-            }
+        String aets = "";
+        int availability = 0;
+        if (numI > 0) {
+	        Set aetSet = ejbSelectRetrieveAETs(pk);
+	        for (Iterator it = aetSet.iterator(); it.hasNext();) {
+	            final String aet = (String) it.next();
+	            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
+	                it.remove();
+	        }
+	        aets = toString(aetSet);
+	        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
+	            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
+	            if (extAetSet.size() == 1) {
+	                final String extAet = (String) extAetSet.iterator().next();
+	                if (extAet != null && extAet.length() != 0)
+	                    aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;                
+	            }
+	        }
+	        availability = ejbSelectAvailability(pk);
         }
         if (!aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
-        final int availability = ejbSelectAvailability(pk);
         if (getAvailability() != availability)
             setAvailability(availability);
     }
 
     private static String toString(Set s) {
-        s.remove(null);
         String[] a = (String[]) s.toArray(new String[s.size()]);
         return StringUtils.toString(a, '\\');
     }

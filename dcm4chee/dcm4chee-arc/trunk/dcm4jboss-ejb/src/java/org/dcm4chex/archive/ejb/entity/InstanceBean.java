@@ -81,8 +81,6 @@ public abstract class InstanceBean implements EntityBean {
         
     private CodeLocalHome codeHome;
 
-//    private Set retrieveAETSet;
-
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
         try {
@@ -336,7 +334,6 @@ public abstract class InstanceBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
-//        retrieveAETSet = null;
         setAttributes(ds);
         return null;
     }
@@ -352,7 +349,6 @@ public abstract class InstanceBean implements EntityBean {
             throw new CreateException(e.getMessage());
         }
         setSeries(series);
-//        series.incNumberOfSeriesRelatedInstances(1);
         log.info("Created " + prompt());
     }
 
@@ -380,7 +376,6 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     private static String toString(Set s) {
-        s.remove(null);
         String[] a = (String[]) s.toArray(new String[s.size()]);
         return StringUtils.toString(a, '\\');
     }
@@ -428,34 +423,6 @@ public abstract class InstanceBean implements EntityBean {
                 .toByteArray(tmp, DcmDecodeParam.EVR_LE));
     }
 
-    /*
-     * ejb.interface-method
-     *
-    public Set getRetrieveAETSet() {
-        return Collections.unmodifiableSet(retrieveAETSet());
-    }
-
-    private Set retrieveAETSet() {
-        if (retrieveAETSet == null) {
-            retrieveAETSet = new HashSet();
-            String aets = getRetrieveAETs();
-            if (aets != null)
-                retrieveAETSet.addAll(Arrays.asList(StringUtils.split(aets,
-                        '\\')));
-        }
-        return retrieveAETSet;
-    }
-
-    /**
-     * @ejb.interface-method
-     *
-    public boolean addRetrieveAETs(String[] aets) {
-        if (!retrieveAETSet().addAll(Arrays.asList(aets))) return false;
-        setRetrieveAETs(StringUtils.toString((String[]) retrieveAETSet()
-                .toArray(new String[retrieveAETSet.size()]), '\\'));
-        return true;
-    }
-    */
     /**
      * 
      * @ejb.interface-method

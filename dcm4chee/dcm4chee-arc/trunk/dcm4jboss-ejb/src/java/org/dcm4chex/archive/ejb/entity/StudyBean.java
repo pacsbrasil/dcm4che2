@@ -87,10 +87,6 @@ public abstract class StudyBean implements EntityBean {
     private static final int[] SUPPL_TAGS = { Tags.RetrieveAET,
             Tags.InstanceAvailability, Tags.NumberOfSeriesRelatedInstances};
 
-//    private Set retrieveAETSet;
-
-//    private Set modalitySet;
-
     /**
      * Auto-generated Primary Key
      *
@@ -383,37 +379,40 @@ public abstract class StudyBean implements EntityBean {
         final Integer pk = getPk();
         final int numS = ejbSelectNumberOfStudyRelatedSeries(pk);
         if (getNumberOfStudyRelatedSeries() != numS)
-            setNumberOfStudyRelatedSeries(numS);
-        final int numI = ejbSelectNumberOfStudyRelatedInstances(pk);
+            setNumberOfStudyRelatedSeries(numS);        
+        final int numI = numS > 0 ? 0 : ejbSelectNumberOfStudyRelatedInstances(pk);
         if (getNumberOfStudyRelatedInstances() != numI)
             setNumberOfStudyRelatedInstances(numI);
-        Set aetSet = ejbSelectRetrieveAETs(pk);
-        for (Iterator it = aetSet.iterator(); it.hasNext();) {
-            final String aet = (String) it.next();
-            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
-                it.remove();
-        }
-        String aets = toString(aetSet);
-        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
-            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
-            if (extAetSet.size() == 1) {
-                final String extAet = (String) extAetSet.iterator().next();
-                if (extAet != null && extAet.length() != 0)
-                    aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;                
-            }
+        final String mds = numS > 0 ? "" : toString(ejbSelectModalityInStudies(pk));
+        if (!mds.equals(getModalitiesInStudy()))
+            setModalitiesInStudy(mds);
+        String aets = "";
+        int availability = 0;
+        if (numI > 0) {
+	        Set aetSet = ejbSelectRetrieveAETs(pk);
+	        for (Iterator it = aetSet.iterator(); it.hasNext();) {
+	            final String aet = (String) it.next();
+	            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
+	                it.remove();
+	        }
+	        aets = toString(aetSet);
+	        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
+	            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
+	            if (extAetSet.size() == 1) {
+	                final String extAet = (String) extAetSet.iterator().next();
+	                if (extAet != null && extAet.length() != 0)
+	                    aets = aets.length() == 0 ? extAet : aets + '\\' + extAet;                
+	            }
+	        }
+	        availability = ejbSelectAvailability(pk);
         }
         if (!aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
-        final String mds = toString(ejbSelectModalityInStudies(pk));
-        if (!mds.equals(getModalitiesInStudy()))
-            setModalitiesInStudy(mds);
-        final int availability = ejbSelectAvailability(pk);
         if (getAvailability() != availability)
             setAvailability(availability);
     }
 
     private static String toString(Set s) {
-        s.remove(null);
         String[] a = (String[]) s.toArray(new String[s.size()]);
         return StringUtils.toString(a, '\\');
     }
