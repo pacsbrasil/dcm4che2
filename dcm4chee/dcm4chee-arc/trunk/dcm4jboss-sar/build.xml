@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.4.0"/>
+	<property name="version" value="0.4.2"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
@@ -30,6 +30,10 @@
 	<property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
 	<property name="dcm4jboss-ejb.target" value="${dcm4jboss-ejb.home}/target"/>		
 	<property name="dcm4jboss-ejb.src" value="${dcm4jboss-ejb.home}/src"/>		
+
+    <!-- Override with your dcm4jboss-web dist location -->
+	<property name="dcm4jboss-web.home" value="../dcm4jboss-web"/>		
+	<property name="dcm4jboss-web.target" value="${dcm4jboss-web.home}/target"/>		
 
     <!-- Override with your XDoclet bundle dist location -->
 	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
@@ -200,6 +204,9 @@
    			<fileset dir="${dcm4jboss-ejb.src}/etc">
    				<include name="conf/*.xml"/>
    				<include name="conf/*.dtd"/>
+   			</fileset>
+   			<fileset dir="${dcm4jboss-web.target}">
+   				<include name="deploy/*.war"/>
    			</fileset>
   			<fileset dir="${src.etc}">
    				<include name="bin/*.sh"/>
