@@ -16,6 +16,7 @@
 			<head>
 				<title>Study Navigator</title>
 				<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
+				<script language="JavaScript">window.name="folder";</script>				
 			</head>
 			<body>
 			  <xsl:apply-templates select="model"/>
@@ -180,7 +181,12 @@
 					<xsl:value-of select="patientBirthDate"/>
         </td>
  				<td>
-				  <a href="javascript:alert('Edit Patient not yet implemented')">Edit</a>
+				  <a href="...." 
+				  onClick="window.open('patientEdit.m?pk={pk}', '_blank', 
+				  'toolbar=no, directories=no, location=no, 
+				  status=yes, menubar=no, resizable=no, scrollbars=no, 
+				  width=300, height=300,screenX=100,screenY=100;'); 
+				  return false">Edit</a> 				  
         </td>
 				<td>
 					<input type="checkbox" name="stickyPat" value="{pk}">

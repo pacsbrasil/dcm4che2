@@ -36,8 +36,8 @@ import org.infohazard.maverick.ctl.ThrowawayFormBeanUser;
  */
 public class FolderCtrl extends ThrowawayFormBeanUser {
 
-    static final String FOLDER = "folder";
-    static final String FOLDER_ATTRNAME = "folderFrom";
+    public static final String FOLDER = "folder";
+    public static final String FOLDER_ATTRNAME = "folderFrom";
 
     protected Object makeFormBean() {
         FolderForm form =
@@ -69,6 +69,8 @@ public class FolderCtrl extends ThrowawayFormBeanUser {
                     return FOLDER;
                 case FolderForm.MOVE :
                     return FOLDER;
+                case FolderForm.UPDATE :
+                	return FOLDER;
             }
             throw new RuntimeException("cmd=" + cmd);
         } catch (Exception e) {

@@ -1,0 +1,190 @@
+/* $Id$
+ * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ * This file is part of dcm4che.
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+package org.dcm4chex.archive.ejb.session;
+
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.SessionBean;
+import javax.ejb.SessionContext;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4chex.archive.ejb.interfaces.DTO2Dataset;
+import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.ejb.jdbc.CountStudiesCmd;
+import org.dcm4chex.archive.ejb.jdbc.RetrievePatientDatasetCmd;
+
+/**
+ * 
+ * @author gunter.zeilinger@tiani.com
+ * @version $Revision$ $Date$
+ * @since 14.01.2004
+ * 
+ * @ejb.bean
+ *  name="ContentEdit"
+ *  type="Stateless"
+ *  view-type="remote"
+ *  jndi-name="ejb/ContentEdit"
+ * 
+ * @ejb.transaction-type 
+ *  type="Container"
+ * 
+ * @ejb.transaction 
+ *  type="NotSupported"
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="Patient" 
+ *  view-type="local"
+ *  ref-name="ejb/Patient" 
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="Study" 
+ *  view-type="local"
+ *  ref-name="ejb/Study" 
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="Series" 
+ *  view-type="local"
+ *  ref-name="ejb/Series" 
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="Instance" 
+ *  view-type="local"
+ *  ref-name="ejb/Instance" 
+ *
+ * @ejb:resource-ref
+ *  res-name="jdbc/DefaultDS"
+ *  res-type="javax.sql.DataSource"
+ *  res-auth="Container"
+ * 
+ * @jboss:resource-ref
+ *  res-ref-name="jdbc/DefaultDS"
+ *  resource-name="java:/DefaultDS"
+ */
+public abstract class ContentEditBean implements SessionBean {
+
+    private DataSource ds;
+    private PatientLocalHome patHome;
+    private StudyLocalHome studyHome;
+    private SeriesLocalHome seriesHome;
+
+    public void setSessionContext(SessionContext arg0)
+        throws EJBException, RemoteException {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
+            patHome =
+                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+            studyHome =
+                (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
+            seriesHome =
+                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
+
+    public void unsetSessionContext() {
+        patHome = null;
+        studyHome = null;
+        seriesHome = null;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public int countStudies(StudyFilterDTO filter) {
+        try {
+            return new CountStudiesCmd(ds, filter).execute();
+        } catch (SQLException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type=" RequiresNew"
+     */
+    public void  updatePatient(PatientDTO to_update) 
+	{
+    	
+        try 
+		{
+        	PatientLocal patientLocal = patHome.findByPrimaryKey(new Integer(to_update.getPk()));
+        	if (to_update.getPatientName() != null)
+        		patientLocal.setPatientName(to_update.getPatientName());
+        	if (to_update.getPatientSex() !=null)
+        		patientLocal.setPatientSex(to_update.getPatientSex());
+        
+        	try { patientLocal.setPatientBirthDate(new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(to_update.getPatientBirthDate()));}
+        	catch (ParseException e)
+			{ if (to_update.getPatientBirthDate() ==null || to_update.getPatientBirthDate().equals(""))
+        			patientLocal.setPatientBirthDate(null);}
+			
+			//dataset retrieve &update
+			Dataset oldPat = new RetrievePatientDatasetCmd(ds,to_update.getPatientID()).execute();
+			if (oldPat != null)
+			{
+				DTO2Dataset.updtateDataset(oldPat,to_update);
+				patientLocal.setAttributes(oldPat);
+			}
+			
+        } catch (SQLException e)
+		{
+        	//e1.printStackTrace();
+        }
+        catch (FinderException e) 
+		{
+            throw new EJBException(e);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+

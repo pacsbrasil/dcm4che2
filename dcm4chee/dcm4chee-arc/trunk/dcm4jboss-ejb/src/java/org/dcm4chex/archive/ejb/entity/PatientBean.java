@@ -113,7 +113,7 @@ public abstract class PatientBean implements EntityBean {
     public abstract String getPatientName();
 
     /**
-     *
+     * @ejb.interface-method
      * @param name
      */
     public abstract void setPatientName(String name);

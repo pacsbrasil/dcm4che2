@@ -1,126 +1,273 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
+/*
+ * $Id$ Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ * 
  * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
+ * the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.dcm4chex.archive.ejb.interfaces;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
- * 
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 14.01.2004
  */
-public class PatientDTO implements Serializable {
+public class PatientDTO implements Serializable
+{
 
-    public static final String DATE_FORMAT = "yyyy/MM/dd";
-    private int pk;
-    private String patientID;
-    private String patientName;
-    private String patientSex;
-    private String patientBirthDate;
-    private List studies = new ArrayList();
-    
-    /**
-     * @return
-     */
-    public final String getPatientBirthDate() {
-        return patientBirthDate;
-    }
+	public static final String DATE_FORMAT = "yyyy/MM/dd";
+	private int pk;
+	private String patientID=null;
+	private String patientName=null;
+	private String patientSex=null;
+	private String patientBirthDate=null;
+	private List studies = new ArrayList();
 
-    /**
-     * @param patientBirthDate
-     */
-    public final void setPatientBirthDate(String patientBirthDate) {
-        this.patientBirthDate = patientBirthDate;
-    }
+	/**
+	 * @return
+	 */
+	public final String getPatientBirthDate()
+	{
+		return patientBirthDate;
+	}
 
-    /**
-     * @return
-     */
-    public final String getPatientID() {
-        return patientID;
-    }
+	/**
+	 * @param patientBirthDate
+	 */
+	public final void setPatientBirthDate(String patientBirthDate)
+	{
+		this.patientBirthDate = patientBirthDate;
+	}
 
-    /**
-     * @param patientID
-     */
-    public final void setPatientID(String patientID) {
-        this.patientID = patientID;
-    }
+	/**
+	 * @return
+	 */
+	public final String getPatientID()
+	{
+		return patientID;
+	}
 
-    /**
-     * @return
-     */
-    public final String getPatientName() {
-        return patientName;
-    }
+	/**
+	 * @param patientID
+	 */
+	public final void setPatientID(String patientID)
+	{
+		this.patientID = patientID;
+	}
 
-    /**
-     * @param patientName
-     */
-    public final void setPatientName(String patientName) {
-        this.patientName = patientName;
-    }
+	/**
+	 * @return
+	 */
+	public final String getPatientName()
+	{
+		return patientName;
+	}
 
-    /**
-     * @return
-     */
-    public final String getPatientSex() {
-        return patientSex;
-    }
+	/**
+	 * @param patientName
+	 */
+	public final void setPatientName(String patientName)
+	{
+		this.patientName = patientName;
+	}
 
-    /**
-     * @param patientSex
-     */
-    public final void setPatientSex(String patientSex) {
-        this.patientSex = patientSex;
-    }
+	/**
+	 * @return
+	 */
+	public final String getPatientSex()
+	{
+		return patientSex;
+	}
 
-    /**
-     * @return
-     */
-    public final int getPk() {
-        return pk;
-    }
+	/**
+	 * @param patientSex
+	 */
+	public final void setPatientSex(String patientSex)
+	{
+		this.patientSex = patientSex;
+	}
 
-    /**
-     * @param pk
-     */
-    public final void setPk(int pk) {
-        this.pk = pk;
-    }
+	/**
+	 * @return
+	 */
+	public final int getPk()
+	{
+		return pk;
+	}
 
-    /**
-     * @return
-     */
-    public final List getStudies() {
-        return studies;
-    }
+	/**
+	 * @param pk
+	 */
+	public final void setPk(int pk)
+	{
+		this.pk = pk;
+	}
 
-    /**
-     * @param studies
-     */
-    public final void setStudies(List studies) {
-        this.studies = studies;
-    }
+	/**
+	 * @return
+	 */
+	public final List getStudies()
+	{
+		return studies;
+	}
 
+	/**
+	 * @param studies
+	 */
+	public final void setStudies(List studies)
+	{
+		this.studies = studies;
+	}
+
+	/**
+	 * Sets the bith day of week of this patient. <br>The internal rapresentation of the birth date is modified
+	 * according to this day.
+	 * 
+	 * @param patientBirthDay
+	 *                    The patientBirthDay to set.
+	 */
+	public final void setPatientBirthDay(String patientBirthDay)
+	{
+		if (patientBirthDay == null || patientBirthDay.length()==0)
+			this.patientBirthDate = null;
+		else
+			try
+			{
+				Calendar c = Calendar.getInstance();
+				if (getPatientBirthDate() != null)
+					c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
+				c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(patientBirthDay));
+				this.patientBirthDate = new SimpleDateFormat(DATE_FORMAT).format(c.getTime());
+			}
+			catch (Throwable e)
+			{
+				// Does Nothing
+			}
+	}
+
+	/**
+	 * @param patientBirthMonth
+	 *                    The patientBirthMonth to set.
+	 */
+	public final void setPatientBirthMonth(String patientBirthMonth)
+	{
+		if (patientBirthMonth == null || patientBirthMonth.length()==0)
+			this.patientBirthDate = null;
+		else
+			try
+			{
+				if (getPatientBirthDate() != null)
+				{
+					Calendar c = Calendar.getInstance();
+					if (getPatientBirthDate() != null)
+						c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
+					c.set(Calendar.MONTH, Integer.parseInt(patientBirthMonth)-1);
+					this.patientBirthDate = new SimpleDateFormat(DATE_FORMAT).format(c.getTime());
+				}
+			}
+			catch (Throwable e)
+			{
+				// Does Nothing
+			}
+	}
+
+	/**
+	 * @param patientBirthYear
+	 *                    The patientBirthYear to set.
+	 */
+	public final void setPatientBirthYear(String patientBirthYear)
+	{
+		if (patientBirthYear == null || patientBirthYear.length()==0)
+			this.patientBirthDate = null;
+		else
+			try
+			{
+				if (getPatientBirthDate() != null)
+				{
+					Calendar c = Calendar.getInstance();
+					if (getPatientBirthDate() != null)
+						c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
+					c.set(Calendar.YEAR, Integer.parseInt(patientBirthYear));
+					this.patientBirthDate = new SimpleDateFormat(DATE_FORMAT).format(c.getTime());
+				}
+			}
+			catch (Throwable e)
+			{
+				// Does Nothing
+			}
+	}
+
+	public final String getPatientBirthDay()
+	{
+		String res = null;
+		try
+		{
+
+			Calendar c = Calendar.getInstance();
+			if (getPatientBirthDate() != null)
+			{
+				c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
+				res = String.valueOf(c.get(Calendar.DAY_OF_MONTH));
+			}
+		}
+		catch (ParseException e)
+		{
+		}
+
+		return res;
+	}
+
+	public final String getPatientBirthMonth()
+	{
+		String res = null;
+		try
+		{
+			Calendar c = Calendar.getInstance();
+			if (getPatientBirthDate() != null)
+			{
+				c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
+				res = String.valueOf(c.get(Calendar.MONTH)+1);
+			}
+		}
+		catch (ParseException e)
+		{
+		}
+		return res;
+	}
+
+	public final String getPatientBirthYear()
+	{
+		String res = null;
+		try
+		{
+
+			Calendar c = Calendar.getInstance();
+			if (getPatientBirthDate() != null)
+			{
+				c.setTime(new SimpleDateFormat(DATE_FORMAT).parse(getPatientBirthDate()));
+				res = String.valueOf(c.get(Calendar.YEAR));
+			}
+		}
+		catch (ParseException e)
+		{
+		}
+
+		return res;
+	}
 }

@@ -1,59 +1,80 @@
 <?xml version="1.0"?>
-
 <!--
-	$Id$
-	$Source$
+    $Id$
+    $Source$
 -->
+<maverick version="2.0" default-view-type="domify"
+default-transform-type="xslt">
+  <modules>
+    <view-factory type="domify" provider="org.infohazard.maverick.opt.view.DomifyViewFactory" />
+  </modules>
 
+  <views>
+    <view id="folder">
+      <transform path="folder.xsl" />
+    </view>
+  </views>
 
-<maverick version="2.0" default-view-type="domify" default-transform-type="xslt">
+  <commands>
+    <command name="folder">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.FolderCtrl" />
 
-	<modules>
-		<view-factory type="domify" provider="org.infohazard.maverick.opt.view.DomifyViewFactory"/>
-	</modules>
-	
-	<views>
-		<view id="folder">
-			<transform path="folder.xsl"/>
-		</view>
-	</views>
+      <view ref="folder" />
+    </command>
 
-	<commands>
-		<command name="folder">
-			<controller class="org.dcm4chex.archive.web.maverick.FolderCtrl"/>
-			<view ref="folder"/>
-		</command>
-		
-		<command name="expandPat">
-			<controller class="org.dcm4chex.archive.web.maverick.ExpandPatientCtrl"/>
-			<view ref="folder"/>
-		</command>
-		
-		<command name="collapsePat">
-			<controller class="org.dcm4chex.archive.web.maverick.CollapsePatientCtrl"/>
-			<view ref="folder"/>
-		</command>
-		
-		<command name="expandStudy">
-			<controller class="org.dcm4chex.archive.web.maverick.ExpandStudyCtrl"/>
-			<view ref="folder"/>
-		</command>
-		
-		<command name="collapseStudy">
-			<controller class="org.dcm4chex.archive.web.maverick.CollapseStudyCtrl"/>
-			<view ref="folder"/>
-		</command>
-		
-		<command name="expandSeries">
-			<controller class="org.dcm4chex.archive.web.maverick.ExpandSeriesCtrl"/>
-			<view ref="folder"/>
-		</command>
-		
-		<command name="collapseSeries">
-			<controller class="org.dcm4chex.archive.web.maverick.CollapseSeriesCtrl"/>
-			<view ref="folder"/>
-		</command>
-	</commands>
+    <command name="expandPat">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.ExpandPatientCtrl" />
 
+      <view ref="folder" />
+    </command>
+
+    <command name="collapsePat">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.CollapsePatientCtrl" />
+
+      <view ref="folder" />
+    </command>
+
+    <command name="expandStudy">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.ExpandStudyCtrl" />
+
+      <view ref="folder" />
+    </command>
+
+    <command name="collapseStudy">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.CollapseStudyCtrl" />
+
+      <view ref="folder" />
+    </command>
+
+    <command name="expandSeries">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.ExpandSeriesCtrl" />
+
+      <view ref="folder" />
+    </command>
+
+    <command name="collapseSeries">
+      <controller class="org.dcm4chex.archive.web.maverick.CollapseSeriesCtrl" />
+      <view ref="folder" />
+    </command>
+    
+    <command name="patientEdit">
+        <controller class="org.dcm4chex.archive.web.maverick.PatientEditCtrl" />    
+	    <view name="patient_edit">
+    	  <transform path="patient_edit.xsl" />
+	    </view>
+     </command>
+
+    <command name="patientUpdate">
+        <controller class="org.dcm4chex.archive.web.maverick.PatientUpdateCtrl" />    
+	    <view type="redirect" path="folder.m" name="patient_update"/>        
+     </command>
+     
+  </commands>
 </maverick>
 
