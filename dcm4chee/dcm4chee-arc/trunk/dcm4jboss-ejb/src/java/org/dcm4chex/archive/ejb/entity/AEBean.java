@@ -37,9 +37,6 @@ import org.apache.log4j.Logger;
  *  primkey-field="pk"
  *  local-jndi-name="ejb/AE"
  * 
- * @jboss.container-configuration
- *  name="Standard CMP 2.x EntityBean with cache invalidation"
- * 
  * @ejb.transaction 
  *  type="Required"
  * 

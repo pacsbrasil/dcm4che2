@@ -35,7 +35,7 @@ public final class AECmd extends BaseCmd
     private static final String[] ENTITY = { "AE" };
 
     private static final String[] SELECT_ATTRIBUTE =
-        { "AE.title", "AE.hostName", "AE.port", "AE.cipherSuites" };
+        { "AE.pk", "AE.title", "AE.hostName", "AE.port", "AE.cipherSuites" };
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
@@ -54,10 +54,11 @@ public final class AECmd extends BaseCmd
             execute(sqlBuilder.getSql());
             return next()
                 ? new AEData(
-                    rs.getString(1),
+                	rs.getInt(1),
                     rs.getString(2),
-                    rs.getInt(3),
-                    rs.getString(4))
+                    rs.getString(3),
+                    rs.getInt(4),
+                    rs.getString(5))
                 : null;
         } finally
         {

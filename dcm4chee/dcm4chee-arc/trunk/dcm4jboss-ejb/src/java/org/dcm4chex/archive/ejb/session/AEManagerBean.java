@@ -40,7 +40,7 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 
 /**
  * 
- * @author gunter.zeilinger@tiani.com
+ * @author <a href="mailto:umberto.cappellini@tiani.com">Umberto Cappellini</a>
  * @version $Revision$ $Date$
  * @since 14.01.2004
  * 
@@ -101,7 +101,29 @@ public abstract class AEManagerBean implements SessionBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.transaction type="NotSupported"
+	 */
+	public AEData getAe(int aePk) throws EJBException
+	{
+		try
+		{
+			AELocal ae = aeHome.findByPrimaryKey(new Integer(aePk));
+			AEData aeDTO =
+				new AEData(
+						ae.getPk().intValue(),
+						ae.getTitle(),
+						ae.getHostName(),
+						ae.getPort(),
+						ae.getCipherSuites());
+			return aeDTO;
+		} catch (FinderException e)
+		{
+			throw new EJBException(e);
+		}
+	}
+	
+	
+	/**
+	 * @ejb.interface-method
 	 */
 	public List getAes() throws EJBException
 	{
@@ -113,6 +135,7 @@ public abstract class AEManagerBean implements SessionBean
 				AELocal ae = (AELocal) i.next();
 				AEData aeDTO =
 					new AEData(
+						ae.getPk().intValue(),
 						ae.getTitle(),
 						ae.getHostName(),
 						ae.getPort(),
@@ -129,33 +152,16 @@ public abstract class AEManagerBean implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 */
-	public void updateAE(String oldAETitle, AEData newAE) throws RemoveException, FinderException, CreateException
+	public void updateAE(AEData modAE) throws FinderException
 	{
 		try
 		{
-			AELocal ae = aeHome.findByAET(oldAETitle);
-			//FinderException has not been thrown, means ae exists
-
-			if (newAE.getTitle().equals(oldAETitle))
-				//ae title hasn't been modified
-			{
-				ae.setHostName(newAE.getHostName());
-				ae.setPort(newAE.getPort());
-				ae.setCipherSuites(newAE.getCipherSuitesAsString());
-			} else //AE title has been modified.
-				{
-				aeHome.remove(oldAETitle);
-				this.newAE(newAE);
-			}
-		} catch (RemoveException e)
-		{
-			ctx.setRollbackOnly();
-			throw e;
+				AELocal ae = aeHome.findByPrimaryKey(new Integer(modAE.getPk()));
+				ae.setTitle(modAE.getTitle());
+				ae.setHostName(modAE.getHostName());
+				ae.setPort(modAE.getPort());
+				ae.setCipherSuites(modAE.getCipherSuitesAsString());
 		} catch (FinderException e)
-		{
-			ctx.setRollbackOnly();
-			throw e;
-		} catch (CreateException e)
 		{
 			ctx.setRollbackOnly();
 			throw e;
@@ -177,11 +183,11 @@ public abstract class AEManagerBean implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 */
-	public void removeAE(String aeTitle) throws Exception
+	public void removeAE(int  aePk) throws Exception
 	{
 		try
 		{
-			aeHome.remove(aeTitle);
+			aeHome.remove(new Integer(aePk));
 		} catch (RemoveException e)
 		{
 			throw new Exception(e);

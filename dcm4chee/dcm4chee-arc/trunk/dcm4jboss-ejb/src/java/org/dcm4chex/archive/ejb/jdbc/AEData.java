@@ -48,19 +48,28 @@ public class AEData implements Serializable {
     static final String[] EMPTY_STRING_ARRAY = {};
     
     // Variables -----------------------------------------------------
+    private final int pk;
     private final String title;
     private final String hostname;
     private final int port;
     private final String cipherSuites;
     
     // Constructors --------------------------------------------------
-    public AEData(String title, String hostname, int port, String cipherSuites) {
+    public AEData(int pk, String title, String hostname, int port, String cipherSuites) {
+    	this.pk =pk;
         this.title = title;
         this.hostname = hostname;
         this.port = port;
         this.cipherSuites = cipherSuites;
     }
             
+    /**
+     * @return pk
+     */
+    public final int getPk() {
+    	return pk;
+    }
+    
     /** Getter for property title.
      * @return Value of property title.
      */
