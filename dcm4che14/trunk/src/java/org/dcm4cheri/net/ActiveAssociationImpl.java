@@ -144,8 +144,9 @@ final class ActiveAssociationImpl
 
 	// LF_ThreadPool.Handler implementation --------------------------
 	public void run(LF_ThreadPool pool) {
+	    Dimse dimse = null;
 		try {
-			Dimse dimse = assoc.read();
+			dimse = assoc.read();
 
 			// if Association was released
 			if (dimse == null) {
@@ -230,12 +231,13 @@ final class ActiveAssociationImpl
 				default :
 					throw new RuntimeException("Illegal Command: " + cmd);
 			}
-			// ensure readout of data PDVs
-			dimse.closeDataStream();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			pool.shutdown();
 		} finally {
+			// ensure readout of data PDVs
+		    if (dimse != null)
+		        dimse.closeDataStream();
 			assoc.clearMDC();		    
 		}
 	}
