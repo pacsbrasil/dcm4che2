@@ -6,16 +6,16 @@
  *  This file is part of dcm4che.                                            *
  *                                                                           *
  *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
+ *  under the terms of the GNU Lesser General License as published    *
  *  by the Free Software Foundation; either version 2 of the License, or     *
  *  (at your option) any later version.                                      *
  *                                                                           *
  *  This library is distributed in the hope that it will be useful, but      *
  *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
+ *  Lesser General License for more details.                          *
  *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
+ *  You should have received a copy of the GNU Lesser General         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  *                                                                           *
@@ -39,49 +39,51 @@ import javax.imageio.stream.ImageInputStream;
  */
 public interface DcmParser {
 
-    public InputStream getInputStream();
+    InputStream getInputStream();
 
-    public ImageInputStream getImageInputStream();
+    ImageInputStream getImageInputStream();
 
-    public long getStreamPosition();
+    long getStreamPosition();
+
+    void setStreamPosition(long pos);
     
-    public void seek(long pos) throws IOException;
+    void seek(long pos) throws IOException;
 
-    public void setDcmHandler(DcmHandler handler);
+    void setDcmHandler(DcmHandler handler);
 
-    public void setSAXHandler(ContentHandler hc, TagDictionary dict);
+    void setSAXHandler(ContentHandler hc, TagDictionary dict);
     
-    public void setVRMap(VRMap vrMap);
+    void setVRMap(VRMap vrMap);
     
-    public void setDcmDecodeParam(DcmDecodeParam decodeParam);
+    void setDcmDecodeParam(DcmDecodeParam decodeParam);
     
-    public DcmDecodeParam getDcmDecodeParam();
+    DcmDecodeParam getDcmDecodeParam();
 
-    public FileFormat detectFileFormat() throws IOException;
+    FileFormat detectFileFormat() throws IOException;
 
-    public int parseHeader() throws IOException;
+    int parseHeader() throws IOException;
 
-    public long parseFileMetaInfo(boolean preamble, DcmDecodeParam param)
+    long parseFileMetaInfo(boolean preamble, DcmDecodeParam param)
             throws IOException;
 
-    public long parseFileMetaInfo() throws IOException;
+    long parseFileMetaInfo() throws IOException;
     
-    public long parseCommand() throws IOException;
+    long parseCommand() throws IOException;
     
-    public long parseDataset(DcmDecodeParam param, int stopTag)
+    long parseDataset(DcmDecodeParam param, int stopTag)
             throws IOException;
 
-    public long parseDcmFile(FileFormat format, int stopTag)
+    long parseDcmFile(FileFormat format, int stopTag)
             throws IOException;
     
-    public long parseItemDataset() throws IOException;
+    long parseItemDataset() throws IOException;
 
-    public int getReadTag();
+    int getReadTag();
         
-    public int getReadVR();
+    int getReadVR();
         
-    public int getReadLength();
+    int getReadLength();
 
-    public boolean hasSeenEOF();
+    boolean hasSeenEOF();
 }
 

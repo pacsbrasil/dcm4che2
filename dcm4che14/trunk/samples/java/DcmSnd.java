@@ -52,6 +52,7 @@ import org.dcm4che.util.SSLContextAdapter;
 import org.dcm4che.util.DcmURL;
 
 import java.io.File;
+import java.io.EOFException;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -356,6 +357,15 @@ public class DcmSnd implements PollDirSrv.Handler {
                     ds = oFact.newDataset();
                     parser.setDcmHandler(ds.getDcmHandler());
                     parser.parseDcmFile(format, Tags.PixelData);
+                    if (parser.getReadTag() == Tags.PixelData) {
+                        if (parser.getStreamPosition() + parser.getReadLength()
+                               > file.length()) {
+                            throw new EOFException("Pixel Data Length: "
+                                + parser.getReadLength() 
+                                + " exceeds file length: "
+                                + file.length());
+                        }
+                    }
                     log.info(
                         MessageFormat.format(messages.getString("readDone"),
                         new Object[]{ file }));
@@ -441,7 +451,7 @@ public class DcmSnd implements PollDirSrv.Handler {
     private static final class MyDataSource implements DataSource {
         final DcmParser parser;
         final Dataset ds;
-        final byte[] buffer;
+        final byte[] buffer;        
         MyDataSource(DcmParser parser, Dataset ds, byte[] buffer) {
             this.parser = parser;
             this.ds = ds;
@@ -450,7 +460,7 @@ public class DcmSnd implements PollDirSrv.Handler {
         public void writeTo(OutputStream out, String tsUID)
         throws IOException {
             DcmEncodeParam netParam =
-            (DcmEncodeParam)DcmDecodeParam.valueOf(tsUID);
+                (DcmEncodeParam)DcmDecodeParam.valueOf(tsUID);
             ds.writeDataset(out, netParam);
             if (parser.getReadTag() == Tags.PixelData) {
                 DcmDecodeParam fileParam = parser.getDcmDecodeParam();
@@ -465,8 +475,7 @@ public class DcmSnd implements PollDirSrv.Handler {
                             parser.getReadTag(),
                             parser.getReadVR(),
                             parser.getReadLength());
-                        copy(parser.getInputStream(), out,
-                            parser.getReadLength(), false, buffer);
+                        writeValueTo(out, false);
                     }
                     if (parser.getReadTag() != Tags.SeqDelimitationItem) {
                         throw new DcmParseException("Unexpected Tag:"
@@ -481,55 +490,65 @@ public class DcmSnd implements PollDirSrv.Handler {
                 } else {
                     boolean swap = fileParam.byteOrder != netParam.byteOrder
                         && parser.getReadVR() == VRs.OW;
-                    copy(parser.getInputStream(), out,
-                        parser.getReadLength(), swap, buffer);
+                    writeValueTo(out, swap);
                 }
                 ds.clear();
-                parser.parseDataset(fileParam, -1);
+                try {
+                    parser.parseDataset(fileParam, -1);
+                } catch (IOException e) {
+                    log.warn("Error reading post-pixeldata attributes:", e);
+                }
                 ds.writeDataset(out, netParam);
             }
         }
-    }
-    
-    private static void copy(InputStream in, OutputStream out, int len,
-    boolean swap, byte[] buffer) throws IOException {
-        if (swap && (len & 1) != 0) {
-            throw new DcmParseException("Illegal length of OW Pixel Data: "
-            + len);
-        }
-        if (buffer == null) {
-            if (swap) {
-                int tmp;
-                for (int i = 0; i < len; ++i,++i) {
-                    tmp = in.read();
-                    out.write(in.read());
-                    out.write(tmp);
+        private void writeValueTo(OutputStream out, boolean swap)
+        throws IOException {
+            InputStream in = parser.getInputStream();
+            int len = parser.getReadLength();
+            if (swap && (len & 1) != 0) {
+                throw new DcmParseException("Illegal length of OW Pixel Data: "
+                + len);
+            }
+            if (buffer == null) {
+                if (swap) {
+                    int tmp;
+                    for (int i = 0; i < len; ++i,++i) {
+                        tmp = in.read();
+                        out.write(in.read());
+                        out.write(tmp);
+                    }
+                } else {
+                    for (int i = 0; i < len; ++i) {
+                        out.write(in.read());
+                    }
                 }
             } else {
-                for (int i = 0; i < len; ++i) {
-                    out.write(in.read());
+                byte tmp;
+                int c, remain = len;
+                while (remain > 0) {
+                    c = in.read(buffer, 0, Math.min(buffer.length, remain));
+                    if (c == -1) {
+                        throw new EOFException("EOF during read of pixel data");
+                    }
+                    if (swap) {
+                        if ((c & 1) != 0) {
+                            buffer[c++] = (byte)in.read();
+                        }
+                        for (int i = 0; i < c; ++i,++i) {
+                            tmp = buffer[i];
+                            buffer[i] = buffer[i+1];
+                            buffer[i+1] = tmp;
+                        }
+                    }
+                    out.write(buffer, 0, c);
+                    remain -= c;
                 }
             }
-        } else {
-            byte tmp;
-            int c, remain = len;
-            while (remain > 0) {
-                c = in.read(buffer, 0, Math.min(buffer.length, remain));
-                if (swap) {
-                    if ((c & 1) != 0) {
-                        buffer[c++] = (byte)in.read();
-                    }
-                    for (int i = 0; i < c; ++i,++i) {
-                        tmp = buffer[i];
-                        buffer[i] = buffer[i+1];
-                        buffer[i+1] = tmp;
-                    }
-                }
-                out.write(buffer, 0, c);
-                remain -= c;
-            }
+            parser.setStreamPosition(
+                parser.getStreamPosition() + len);
         }
     }
+    
     
     private Socket newSocket(String host, int port)
     throws IOException, GeneralSecurityException {

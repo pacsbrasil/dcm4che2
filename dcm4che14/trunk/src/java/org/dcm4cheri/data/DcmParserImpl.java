@@ -57,7 +57,7 @@ import org.xml.sax.ContentHandler;
  * @version 1.0.0
  */
 final class DcmParserImpl implements org.dcm4che.data.DcmParser {
-    private static final Logger log = Logger.getLogger("dcm4che.data.DcmParser");
+    private static final Logger log = Logger.getLogger(DcmParserImpl.class);
     
     private static final int TS_ID_TAG = 0x00020010;
     private static final int ITEM_TAG = 0xFFFEE000;
@@ -121,6 +121,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         return rPos;
     }
 
+    public final void setStreamPosition(long rPos) {
+        this.rPos = rPos;
+    }
     public final void seek(long pos) throws IOException {
         if (!(in instanceof ImageInputStream)) {
             throw new UnsupportedOperationException();
