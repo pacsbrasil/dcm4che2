@@ -69,7 +69,7 @@ class RefSOPImpl implements org.dcm4che.srom.RefSOP {
     
     // Public --------------------------------------------------------
     public String toString() {
-        return uidDict.toString(refSOPClassUID) + "[" + refSOPInstanceUID + "]"; 
+        return uidDict.lookup(refSOPClassUID) + "[" + refSOPInstanceUID + "]"; 
     }
 
     public void toDataset(Dataset ds) {

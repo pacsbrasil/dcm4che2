@@ -52,12 +52,10 @@ public class UIDDictionaryImpl implements UIDDictionary, java.io.Serializable {
     }
 
     public Entry lookup(String uid) {
-        return (Entry)map.get(uid);
-    }
-    
-    public String toString(String uid) {
-        Entry entry = lookup(uid);
-        return entry != null ? entry.name : uid;
+        Entry entry = (Entry)map.get(uid);
+	return entry != null
+	    ? entry
+	    : new Entry(uid, "???");
     }
     
     public final void add(Entry entry) {

@@ -43,6 +43,9 @@ public interface UIDDictionary {
             this.uid = uid;
             this.name = name;
         }
+	public String toString() {
+	    return uid + " - " + name;
+	}
     }
     
     public int size();
@@ -55,5 +58,4 @@ public interface UIDDictionary {
     
     public void load(File xmlFile) throws IOException, SAXException;
     
-    public String toString(String uid);
 }

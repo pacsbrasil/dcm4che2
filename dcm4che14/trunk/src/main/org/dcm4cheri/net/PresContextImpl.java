@@ -24,6 +24,8 @@
 package org.dcm4cheri.net;
 
 import org.dcm4che.net.*;
+import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.UIDDictionary;
 
 import java.io.*;
 import java.util.*;
@@ -34,6 +36,9 @@ import java.util.*;
  * @version 1.0.0
  */
 final class PresContextImpl implements PresContext {
+    private static final UIDDictionary UID_DICT = 
+	DictionaryFactory.getInstance().getDefaultUIDDictionary();
+
     private final int type;
     private final int pcid;
     private final int result;
@@ -44,7 +49,10 @@ final class PresContextImpl implements PresContext {
             String[] tsuids) {
         if ((pcid | 1) == 0 || (pcid & ~0xff) != 0) {
             throw new IllegalArgumentException("pcid=" + pcid);
-        }         
+        }
+	if (tsuids.length == 0) {
+	    throw new IllegalArgumentException("Missing TransferSyntax");
+	}
         this.type = type;
         this.pcid = pcid;
         this.result = result;
@@ -161,6 +169,25 @@ final class PresContextImpl implements PresContext {
 
     public final String getTransferSyntaxUID() {
         return (String)tsuids.get(0);
+    }
+
+    public String toString() {
+	return toStringBuffer(new StringBuffer()).toString();
+    }
+
+    private StringBuffer toStringBuffer(StringBuffer sb) {
+	sb.append("PresContext[pcid=").append(pcid);
+	if (type == 0x20) {
+	    sb.append(", as=").append(UID_DICT.lookup(asuid));
+	} else {
+	    sb.append(", result=").append(resultAsString());
+	}
+	Iterator it = tsuids.iterator();
+	sb.append(", ts=").append(UID_DICT.lookup((String)it.next()));
+	while (it.hasNext()) {
+	    sb.append(", ").append(UID_DICT.lookup((String)it.next()));
+	}
+	return sb.append("]");
     }
 
     private String resultAsString() {

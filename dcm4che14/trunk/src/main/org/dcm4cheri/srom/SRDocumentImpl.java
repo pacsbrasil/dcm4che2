@@ -106,7 +106,7 @@ class SRDocumentImpl extends KeyObjectImpl
     
     // Methodes --------------------------------------------------------
     public String toString() {
-        return uidDict.toString(sopClassUID) 
+        return uidDict.lookup(sopClassUID) 
                 + "[" + getName().getCodeMeaning()
                  + "," + sopInstanceUID
                  + ",#" + instanceNumber
