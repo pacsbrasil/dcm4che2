@@ -1,6 +1,6 @@
-diff -cr ca/uhn/hl7v2/llp/MinLLPReader.java ca/uhn/hl7v2/llp/MinLLPReader.java
-*** ca/uhn/hl7v2/llp/MinLLPReader.java	Tue Apr 30 18:15:14 2002
---- ca/uhn/hl7v2/llp/MinLLPReader.java	Tue Apr  6 21:36:31 2004
+diff -rc ca/uhn/hl7v2/llp/MinLLPReader.java /tmp/hapi/ca/uhn/hl7v2/llp/MinLLPReader.java
+*** ca/uhn/hl7v2/llp/MinLLPReader.java	2002-04-30 18:15:14.000000000 +0200
+--- /tmp/hapi/ca/uhn/hl7v2/llp/MinLLPReader.java	2004-04-07 09:01:59.000000000 +0200
 ***************
 *** 9,15 ****
   The Original Code is "MinLLPReader.java".  Description: 
@@ -69,9 +69,9 @@ diff -cr ca/uhn/hl7v2/llp/MinLLPReader.java ca/uhn/hl7v2/llp/MinLLPReader.java
       }
   
       /** Calls the same method in the underlying BufferedReader. */
-diff -cr ca/uhn/hl7v2/llp/MinLLPWriter.java ca/uhn/hl7v2/llp/MinLLPWriter.java
-*** ca/uhn/hl7v2/llp/MinLLPWriter.java	Tue Jan 29 11:41:22 2002
---- ca/uhn/hl7v2/llp/MinLLPWriter.java	Tue Apr  6 21:36:31 2004
+diff -rc ca/uhn/hl7v2/llp/MinLLPWriter.java /tmp/hapi/ca/uhn/hl7v2/llp/MinLLPWriter.java
+*** ca/uhn/hl7v2/llp/MinLLPWriter.java	2002-01-29 11:41:22.000000000 +0100
+--- /tmp/hapi/ca/uhn/hl7v2/llp/MinLLPWriter.java	2004-04-07 09:01:59.000000000 +0200
 ***************
 *** 70,76 ****
        */
@@ -89,9 +89,9 @@ diff -cr ca/uhn/hl7v2/llp/MinLLPWriter.java ca/uhn/hl7v2/llp/MinLLPWriter.java
       }
   
       /** 
-diff -cr ca/uhn/hl7v2/model/primitive/CommonTN.java ca/uhn/hl7v2/model/primitive/CommonTN.java
-*** ca/uhn/hl7v2/model/primitive/CommonTN.java	Tue Feb 17 10:40:54 2004
---- ca/uhn/hl7v2/model/primitive/CommonTN.java	Tue Apr  6 21:36:31 2004
+diff -rc ca/uhn/hl7v2/model/primitive/CommonTN.java /tmp/hapi/ca/uhn/hl7v2/model/primitive/CommonTN.java
+*** ca/uhn/hl7v2/model/primitive/CommonTN.java	2004-02-17 10:40:54.000000000 +0100
+--- /tmp/hapi/ca/uhn/hl7v2/model/primitive/CommonTN.java	2004-04-07 09:57:49.000000000 +0200
 ***************
 *** 116,122 ****
                   //trim leading and trailing spaces from the input value
@@ -152,9 +152,26 @@ diff -cr ca/uhn/hl7v2/model/primitive/CommonTN.java ca/uhn/hl7v2/model/primitive
                   //We now have all of the start and end postions of the different components
                   //We can now extract these component values and validate them
                   if (countryStart != -1) {
-diff -cr ca/uhn/hl7v2/parser/Parser.java ca/uhn/hl7v2/parser/Parser.java
-*** ca/uhn/hl7v2/parser/Parser.java	Thu Feb  5 11:59:18 2004
---- ca/uhn/hl7v2/parser/Parser.java	Tue Apr  6 21:36:31 2004
+***************
+*** 305,311 ****
+                  //System.out.println("value : " + country);
+                  this.validateCountryCd(country);
+                  this.validateAreaCd(area);
+!                 this.validatePhnNumber(number);
+                  this.validateExtension(ext);
+                  this.validateBeeper(bpr);
+                  this.validateComment(cmnt);
+--- 313,319 ----
+                  //System.out.println("value : " + country);
+                  this.validateCountryCd(country);
+                  this.validateAreaCd(area);
+! //                this.validatePhnNumber(number);
+                  this.validateExtension(ext);
+                  this.validateBeeper(bpr);
+                  this.validateComment(cmnt);
+diff -rc ca/uhn/hl7v2/parser/Parser.java /tmp/hapi/ca/uhn/hl7v2/parser/Parser.java
+*** ca/uhn/hl7v2/parser/Parser.java	2004-02-05 11:59:18.000000000 +0100
+--- /tmp/hapi/ca/uhn/hl7v2/parser/Parser.java	2004-04-07 09:01:59.000000000 +0200
 ***************
 *** 412,418 ****
           Map map = new HashMap();
