@@ -80,7 +80,6 @@ public class MWLConsoleCtrl extends Dcm4JbossFormController {
 	 */
 	private void performAction(String action, HttpServletRequest request) {
 		if ( "delete".equalsIgnoreCase( action ) ) {
-			System.out.println("Delete worklist entry with sps ID:"+request.getParameter("spsid"));
 			if ( delegate.deleteMWLEntry( request.getParameter("spsid") ) ) {
 				model.filterWorkList( false );
 			} else {

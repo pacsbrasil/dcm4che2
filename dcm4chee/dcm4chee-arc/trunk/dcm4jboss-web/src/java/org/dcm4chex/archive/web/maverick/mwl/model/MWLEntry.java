@@ -36,8 +36,6 @@ public class MWLEntry {
 	
 	public MWLEntry( Dataset ds ) {
 		this.ds = ds;
-		System.out.println("ds:"+ds);
-		System.out.println("seq:"+ds.get( Tags.SPSSeq ));
 		spsItem = ds.get( Tags.SPSSeq ).getItem();//scheduled procedure step sequence item.
 	}
 	
