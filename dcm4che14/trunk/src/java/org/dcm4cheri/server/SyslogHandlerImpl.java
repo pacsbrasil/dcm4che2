@@ -51,8 +51,7 @@ public class SyslogHandlerImpl implements UDPServer.Handler
         byte[] buff = datagram.getData();
         try {
             SyslogMsg msg = new SyslogMsg(buff,datagram.getLength());
-                service.process(msg.getTimestamp(), msg.getHost(), msg.getContent());
-            //printLogMsg(msg.toString());
+            service.process(msg.getTimestamp(), msg.getHost(), msg.getContent());
         }
         catch (SyslogMsg.InvalidSyslogMsgException e) {
             e.printStackTrace();

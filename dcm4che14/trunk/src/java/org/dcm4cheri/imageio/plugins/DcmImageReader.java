@@ -50,6 +50,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Hashtable;
 import javax.imageio.IIOException;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageReader;
@@ -377,7 +378,6 @@ public class DcmImageReader extends javax.imageio.ImageReader {
       }
       return this.theImage;
    }
-   
    
    private void readByteSamples(int samples, byte[] dest) throws IOException {
       byte[] srcRow = null;

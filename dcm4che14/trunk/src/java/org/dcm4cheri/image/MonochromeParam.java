@@ -190,7 +190,7 @@ final class MonochromeParam extends BasicColorModelParam  {
    }
    
    public final float toMeasureValue(int pxValue) {
-      return mask(pxValue)*slope + intercept;
+      return toSampleValue(pxValue)*slope + intercept;
    }
    
    public final int toPixelValue(float measureValue) {

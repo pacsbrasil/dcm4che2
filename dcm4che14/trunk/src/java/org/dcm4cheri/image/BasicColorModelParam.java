@@ -41,10 +41,12 @@ abstract class BasicColorModelParam implements ColorModelParam {
     protected final int min;
     protected final int max;
     protected final int shiftmask;
+    protected final int alloc;
+    protected final int hBit;
 
     /** Creates a new instance of PaletteColorParam */
     protected BasicColorModelParam(Dataset ds) {
-        int alloc = ds.getInt(Tags.BitsAllocated,8);
+        this.alloc = ds.getInt(Tags.BitsAllocated,8);
         switch (alloc) {
             case 8:
                 this.dataType = DataBuffer.TYPE_BYTE;
@@ -61,7 +63,7 @@ abstract class BasicColorModelParam implements ColorModelParam {
             throw new UnsupportedOperationException("Bits Stored: " + bits
                     + " not supported!");
         }
-        int hBit = ds.getInt(Tags.HighBit, bits-1);
+        this.hBit = ds.getInt(Tags.HighBit, bits-1);
         if (hBit != bits-1) {
             throw new UnsupportedOperationException("High Bit: " + hBit
                     + " not supported!");
@@ -72,12 +74,14 @@ abstract class BasicColorModelParam implements ColorModelParam {
             this.max = size;
         } else {
             this.min = -(size>>1);
-            this.max = -min;
+            this.max = -min-1;
         }
         this.shiftmask = 32-bits;
     }
 
     protected BasicColorModelParam(BasicColorModelParam other) {
+        this.alloc = other.alloc;
+        this.hBit = other.hBit;
         this.dataType = other.dataType;
         this.size = other.size;
         this.bits = other.bits;
@@ -85,9 +89,16 @@ abstract class BasicColorModelParam implements ColorModelParam {
         this.max = other.max;
         this.shiftmask = other.shiftmask;
     }
-        
-    protected final int mask(int pxValue) {
+
+    public final int toSampleValue(int pxValue) {
         return min == 0 ? ((pxValue<<shiftmask)>>>shiftmask)
                         : ((pxValue<<shiftmask)>>shiftmask);
+    }
+    
+    public final int toPixelValueRaw(int sampleValue) {
+        int bsMask = (1 << bits) - 1;
+        //int baMask = (1 << alloc) - 1; // bits allocated mask
+        int packedValue = ((sampleValue & bsMask) << (hBit - bits + 1)); //mask and shift into proper position
+        return packedValue;
     }
 }

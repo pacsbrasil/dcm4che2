@@ -49,6 +49,9 @@ public interface ColorModelParam {
     public float toMeasureValue(int pxValue);
     
     public int toPixelValue(float measureValue);
+    
+    public int toSampleValue(int pxValue);
+    public int toPixelValueRaw(int sampleValue);
 
     public boolean isInverse();
     
