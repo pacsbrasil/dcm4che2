@@ -20,8 +20,6 @@
 
 package org.dcm4che.conf;
 
-import java.util.ArrayList;
-
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$
@@ -40,14 +38,5 @@ public abstract class ConfigInfo {
     }
 
     public abstract boolean isValid();
-
-    protected static String toString(ArrayList list) {
-        StringBuffer sb = new StringBuffer("[");
-        for (int i = 0, n = list.size(); i < n; ++i) {
-            sb.append("\n\t\t").append(list.get(i));
-        }
-        sb.append("]");
-        return sb.toString();
-    }
 
 }

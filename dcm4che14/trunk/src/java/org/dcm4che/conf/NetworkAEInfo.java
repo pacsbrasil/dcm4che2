@@ -83,6 +83,16 @@ public class NetworkAEInfo extends ConfigInfo {
             + "]";
     }
 
+    private static String toString(ArrayList list) {
+        StringBuffer sb = new StringBuffer("[");
+        for (int i = 0, n = list.size(); i < n; ++i) {
+            sb.append("\n\t\t").append(list.get(i));
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+
     public void setAETitle(String aeTitle) {
         if (aeTitle == null)
             throw new NullPointerException("aeTitle");

@@ -74,6 +74,15 @@ public class DeviceInfo extends ConfigInfo {
             + "]";
     }
 
+    private static String toString(ArrayList list) {
+        StringBuffer sb = new StringBuffer("[");
+        for (int i = 0, n = list.size(); i < n; ++i) {
+            sb.append("\n\t\t").append(list.get(i));
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
     public String getDeviceName() {
         return deviceName;
     }
