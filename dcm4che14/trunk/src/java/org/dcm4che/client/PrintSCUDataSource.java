@@ -89,6 +89,7 @@ class PrintSCUDataSource implements DataSource
 	private final Dataset imageBox;
 	private final File file, psFile;
     private final boolean burnInOverlays;
+    private final boolean autoScale;
 	
 	/**
 	 * @param printSCU the calling <code>PrintSCU</code>
@@ -99,12 +100,14 @@ class PrintSCUDataSource implements DataSource
      *        found within the DICOM image
 	 */
 	public PrintSCUDataSource(PrintSCU printSCU, Dataset imageBox, File file,
-                              File psFile, boolean burnInOverlays) {
+                              File psFile, boolean burnInOverlays,
+                              boolean autoScale) {
 		this.printSCU = printSCU;
 		this.imageBox = imageBox;
 		this.file = file;
         this.psFile = psFile;
         this.burnInOverlays = burnInOverlays;
+        this.autoScale = autoScale;
 	}
 
     private static final PixelDataFactory pdFact = PixelDataFactory.getInstance();
@@ -127,7 +130,9 @@ class PrintSCUDataSource implements DataSource
      * TODO Add support for multiframe images (add support in PixelDataWriter)
 	 * @see org.dcm4che.net.DataSource#writeTo(java.io.OutputStream, java.lang.String)
 	 */
-	public void writeTo(OutputStream out, String tsUID) throws IOException {
+	public void writeTo(OutputStream out, String tsUID)
+        throws IOException
+    {
 		InputStream in = new BufferedInputStream(
 			new FileInputStream(file));
 		final Dataset ds = PrintSCU.dcmFact.newDataset();
@@ -201,6 +206,10 @@ class PrintSCUDataSource implements DataSource
             if (bitsStored != toBitsStored || bitsAlloc != toBitsAllocated
                 || highBit != bitsStored - 1 || signed
                 || (!fromDesc.isByPlane() && spp > 1)) {
+                //should we auto-scale?
+                if (!autoScale)
+                    throw new IllegalArgumentException("The image's pixel format"
+                        + "is incompatable for an Image Box and auto-scale is disabled");
                 toDesc = new PixelDataDescription(fromDesc, encodeParam,
                     toBitsAllocated, toBitsStored, false, true);
                 ds.putUS(Tags.BitsStored, toBitsStored);
@@ -251,8 +260,8 @@ class PrintSCUDataSource implements DataSource
                     Overlay ovl;
                     
                     //iterate over each overlay
-                    try {
-                        for (int i = 0; i < overlays.length; i++) {
+                    for (int i = 0; i < overlays.length; i++) {
+                        try {
                             ovl = overlays[i];
                             final int colstart = Math.max(0, ovl.x);
                             final int colend = Math.min(ovl.x + ovl.cols, cols);
@@ -275,13 +284,13 @@ class PrintSCUDataSource implements DataSource
                                         mask = mask << 1;
                                 }
                                 ind = x + (y + j + 1) * ovl.cols;
-                                //ind += ovl.cols;
                             }
                         }
-                    }
-                    catch (IndexOutOfBoundsException e) {
-                        System.err.println("Bad overlay plane access, not enough data");
-                        e.printStackTrace();
+                        catch (IndexOutOfBoundsException e) {
+                            System.err.println("Bad overlay plane data (" + i
+                                + "), not enough data");
+                            //e.printStackTrace();
+                        }
                     }
                 }
                 
