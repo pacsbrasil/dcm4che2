@@ -4,7 +4,7 @@
 	--> 
 	<property file="build.properties"/>
 	
-	<property name="version" value="0.9.1"/>
+	<property name="version" value="0.9.2"/>
 	<property name="javac.debug" value="on"/>
 
 	<property name="bin.dir" value="${basedir}/bin"/>
@@ -225,8 +225,12 @@
 			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}">
 				<include name="sql/**"/>
 			</zipfileset>
+			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}" filemode="755">
+				<include name="bin/*.sh"/>
+			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
 				<include name="bin/*"/>
+				<exclude name="bin/*.sh"/>
 				<exclude name="bin/run.log"/>
 				<include name="lib/*"/>
 				<include name="client/getopt.jar"/>

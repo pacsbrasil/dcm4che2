@@ -78,6 +78,39 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isLogPatientRecord"
+      setMethod="setLogPatientRecord">
+      <description>Emit PatientRecord Audit Messages.
+      </description>
+      <name>LogPatientRecord</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogProcedureRecord"
+      setMethod="setLogProcedureRecord">
+      <description>Emit LogProcedureRecord Audit Messages.
+      </description>
+      <name>LogProcedureRecord</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogStudyDeleted"
+      setMethod="setLogStudyDeleted">
+      <description>Emit LogStudyDeleted Audit Messages.
+      </description>
+      <name>LogStudyDeleted</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isLogActorStartStop"
       setMethod="setLogActorStartStop">
       <description>Emit ActorStartStop Audit Messages.
@@ -178,4 +211,90 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Log Study Deleted</description>
+      <name>logStudyDeleted</name>
+      <parameter>
+        <description>Patient ID</description>
+        <name>patid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Patient Name</description>
+        <name>patname</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>suid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Number of Deleted Instances</description>
+        <name>numInsts</name>
+        <type>java.lang.Integer</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Log Patient Record</description>
+      <name>logPatientRecord</name>
+      <parameter>
+        <description>Object Action:  Create|Modify|Access|Delete</description>
+        <name>action</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Patient ID</description>
+        <name>patid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Patient Name</description>
+        <name>patname</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Log Procedure Record</description>
+      <name>logProcedureRecord</name>
+      <parameter>
+        <description>Object Action:  Create|Modify|Access|Delete</description>
+        <name>action</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Patient ID</description>
+        <name>patid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Patient Name</description>
+        <name>patname</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Placer Order Number</description>
+        <name>placerOrderNo</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Filler Order Number</description>
+        <name>fillerOrderNo</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>suid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Accession Number</description>
+        <name>accNo</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   
 </mbean>

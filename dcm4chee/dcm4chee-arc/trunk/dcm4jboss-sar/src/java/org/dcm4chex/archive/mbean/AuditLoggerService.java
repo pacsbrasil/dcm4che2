@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 package org.dcm4chex.archive.mbean;
 
 import java.security.Principal;
@@ -24,6 +13,9 @@ import java.security.Principal;
 import org.apache.log4j.Logger;
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.InstancesAction;
+import org.dcm4che.auditlog.Patient;
+import org.dcm4che.auditlog.User;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -55,9 +47,48 @@ public class AuditLoggerService extends ServiceMBeanSupport {
     }
 
     public void setSyslogHost(String newSyslogHost) throws Exception {
-        logActorConfig(actorName, "SyslogHost", getSyslogHost(), newSyslogHost,
+        logActorConfig(actorName,
+                "SyslogHost",
+                getSyslogHost(),
+                newSyslogHost,
                 AuditLogger.SECURITY);
         logger.setSyslogHost(newSyslogHost);
+    }
+
+    public boolean isLogPatientRecord() {
+        return logger.isLogPatientRecord();
+    }
+
+    public boolean isLogProcedureRecord() {
+        return logger.isLogProcedureRecord();
+    }
+
+    public boolean isLogStudyDeleted() {
+        return logger.isLogStudyDeleted();
+    }
+
+    public void setLogPatientRecord(boolean enable) {
+        logActorConfig(actorName,
+                "LogPatientRecord",
+                new Boolean(isLogPatientRecord()),
+                new Boolean(enable),
+                AuditLogger.SECURITY);
+        logger.setLogPatientRecord(enable);
+    }
+
+    public void setLogProcedureRecord(boolean enable) {
+        logActorConfig(actorName,
+                "LogProcedureRecord",
+                new Boolean(isLogProcedureRecord()),
+                new Boolean(enable),
+                AuditLogger.SECURITY);
+        logger.setLogProcedureRecord(enable);
+    }
+
+    public void setLogStudyDeleted(boolean enable) {
+        logActorConfig(actorName, "LogStudyDeleted", new Boolean(
+                isLogStudyDeleted()), new Boolean(enable), AuditLogger.SECURITY);
+        logger.setLogStudyDeleted(enable);
     }
 
     public String getSyslogHost() {
@@ -65,8 +96,11 @@ public class AuditLoggerService extends ServiceMBeanSupport {
     }
 
     public void setSyslogPort(int newSyslogPort) {
-        logActorConfig(actorName, "SyslogPort", new Integer(getSyslogPort()),
-                new Integer(newSyslogPort), AuditLogger.SECURITY);
+        logActorConfig(actorName,
+                "SyslogPort",
+                new Integer(getSyslogPort()),
+                new Integer(newSyslogPort),
+                AuditLogger.SECURITY);
         logger.setSyslogPort(newSyslogPort);
     }
 
@@ -81,7 +115,10 @@ public class AuditLoggerService extends ServiceMBeanSupport {
     public void setFacility(String newFacility) {
         String oldFacility = getFacility();
         logger.setFacility(newFacility);
-        logActorConfig(actorName, "Facility", oldFacility, newFacility,
+        logActorConfig(actorName,
+                "Facility",
+                oldFacility,
+                newFacility,
                 AuditLogger.SECURITY);
     }
 
@@ -128,15 +165,19 @@ public class AuditLoggerService extends ServiceMBeanSupport {
     }
 
     public void setLogActorStartStop(boolean enable) {
-        logActorConfig(actorName, "LogActorStartStop", new Boolean(
-                isLogActorStartStop()), new Boolean(enable),
+        logActorConfig(actorName,
+                "LogActorStartStop",
+                new Boolean(isLogActorStartStop()),
+                new Boolean(enable),
                 AuditLogger.SECURITY);
         logger.setLogActorStartStop(enable);
     }
 
     public void setLogBeginStoringInstances(boolean enable) {
-        logActorConfig(actorName, "LogBeginStoringInstances", new Boolean(
-                isLogBeginStoringInstances()), new Boolean(enable),
+        logActorConfig(actorName,
+                "LogBeginStoringInstances",
+                new Boolean(isLogBeginStoringInstances()),
+                new Boolean(enable),
                 AuditLogger.SECURITY);
         logger.setLogBeginStoringInstances(enable);
     }
@@ -148,42 +189,48 @@ public class AuditLoggerService extends ServiceMBeanSupport {
     }
 
     public void setLogInstancesSent(boolean enable) {
-        logActorConfig(actorName, "LogInstancesSent", new Boolean(
-                isLogInstancesSent()), new Boolean(enable),
+        logActorConfig(actorName,
+                "LogInstancesSent",
+                new Boolean(isLogInstancesSent()),
+                new Boolean(enable),
                 AuditLogger.SECURITY);
         logger.setLogInstancesSent(enable);
     }
 
     public void setLogInstancesStored(boolean enable) {
-        logActorConfig(actorName, "LogInstancesStored", new Boolean(
-                isLogInstancesStored()), new Boolean(enable),
+        logActorConfig(actorName,
+                "LogInstancesStored",
+                new Boolean(isLogInstancesStored()),
+                new Boolean(enable),
                 AuditLogger.SECURITY);
         logger.setLogInstancesStored(enable);
     }
 
     public void setLogSecurityAlert(boolean enable) {
-        logActorConfig(actorName, "LogSecurityAlert", new Boolean(
-                isLogSecurityAlert()), new Boolean(enable),
+        logActorConfig(actorName,
+                "LogSecurityAlert",
+                new Boolean(isLogSecurityAlert()),
+                new Boolean(enable),
                 AuditLogger.SECURITY);
         logger.setLogSecurityAlert(enable);
     }
 
     public void setLogUserAuthenticated(boolean enable) {
-        logActorConfig(actorName, "LogUserAuthenticated", new Boolean(
-                isLogUserAuthenticated()), new Boolean(enable),
+        logActorConfig(actorName,
+                "LogUserAuthenticated",
+                new Boolean(isLogUserAuthenticated()),
+                new Boolean(enable),
                 AuditLogger.SECURITY);
         logger.setLogUserAuthenticated(enable);
     }
 
     public void setLogExport(boolean enable) {
-        logActorConfig(actorName, "LogExport", new Boolean(isLogExport()),
-                new Boolean(enable), AuditLogger.SECURITY);
+        logActorConfig(actorName,
+                "LogExport",
+                new Boolean(isLogExport()),
+                new Boolean(enable),
+                AuditLogger.SECURITY);
         logger.setLogExport(enable);
-    }
-
-    public String getCurrentPrincipalName() {
-        Principal p = SecurityAssociation.getPrincipal();
-        return p != null ? p.getName() : System.getProperty("user.name");
     }
 
     public void logActorConfig(String actorName, String propName,
@@ -196,14 +243,54 @@ public class AuditLoggerService extends ServiceMBeanSupport {
 
     public void logActorConfig(String desc, String type) {
         if (getState() == STARTED) {
-            logger.logActorConfig(desc, alf
-                    .newLocalUser(getCurrentPrincipalName()), type);
+            logger.logActorConfig(desc, getCurrentUser(), type);
+        }
+    }
+
+    private User getCurrentUser() {
+        Principal p = SecurityAssociation.getPrincipal();
+        return alf.newLocalUser(p != null ? p.getName() : System
+                .getProperty("user.name"));
+    }
+
+    public void logStudyDeleted(String patid, String patname, String suid,
+            Integer numInsts) {
+        if (getState() == STARTED) {
+            Patient patient = alf.newPatient(patid, patname);
+            InstancesAction action = alf.newInstancesAction("Delete",
+                    suid,
+                    patient);
+            if (numInsts != null)
+                    action.setNumberOfInstances(numInsts.intValue());
+            action.setUser(getCurrentUser());
+            logger.logStudyDeleted(action);
+        }
+    }
+
+    public void logPatientRecord(String action, String patid, String patname) {
+        if (getState() == STARTED) {
+            Patient patient = alf.newPatient(patid, patname);
+            logger.logPatientRecord(action, patient, getCurrentUser());
+        }
+    }
+
+    public void logProcedureRecord(String action, String patid, String patname,
+            String placerOrderNo, String fillerOrderNo, String suid,
+            String accNo) {
+        if (getState() == STARTED) {
+            Patient patient = alf.newPatient(patid, patname);
+            logger.logProcedureRecord(action,
+                    patient,
+                    placerOrderNo,
+                    fillerOrderNo,
+                    suid,
+                    accNo,
+                    getCurrentUser());
         }
     }
 
     private void logActorStartStop(String action) {
-        logger.logActorStartStop(actorName, action, alf
-                .newLocalUser(getCurrentPrincipalName()));
+        logger.logActorStartStop(actorName, action, getCurrentUser());
     }
 
     protected void startService() throws Exception {
