@@ -119,8 +119,8 @@ public class PrinterService
    static final String ADF_FILE_EXT = ".adf";
    static final String LUT_FILE_EXT = ".lut";      
    static final String LICENSE_FILE = "conf/license.pem";
-   static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.999.777";
-   static final int SHUTDOWN_DELAY_MINUTES = 5;
+   static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1";
+   static final int SHUTDOWN_DELAY_MINUTES = 10;
    
    // Attributes ----------------------------------------------------
    /** Holds value of property license. */
