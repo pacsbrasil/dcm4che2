@@ -360,18 +360,19 @@ public abstract class InstanceBean implements EntityBean {
     	}   		
     }
     
-    private String updateRetrieveAETs(Integer pk) throws FinderException {
+    private boolean updateRetrieveAETs(Integer pk) throws FinderException {
         final Set aetSet = ejbSelectRetrieveAETs(pk);
         if (aetSet.remove(null))
             log.warn("Instance[iuid=" + getSopIuid()
                     + "] reference File(s) with unspecified Retrieve AET");
         final String aets = toString(aetSet);
-        if (aets == null ? getRetrieveAETs() != null : !aets.equals(getRetrieveAETs()))
+        boolean updated;
+		if (updated = aets == null ? getRetrieveAETs() != null : !aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
-        return aets;
+        return updated;
     }
     
-    private void updateAvailability(Integer pk, String retrieveAETs) throws FinderException {
+    private boolean updateAvailability(Integer pk, String retrieveAETs) throws FinderException {
         int availability = Availability.UNAVAILABLE;
         MediaLocal media;
         if (retrieveAETs != null)
@@ -381,20 +382,25 @@ public abstract class InstanceBean implements EntityBean {
         else if ((media = getMedia()) != null 
                 && media.getMediaStatus() == MediaDTO.COMPLETED)
             availability = Availability.OFFLINE;
-        if (availability != getAvailabilitySafe()) {
+        boolean updated;
+		if (updated = availability != getAvailabilitySafe()) {
             setAvailability(availability);
         }
+        return updated;
     }
     
     /**
      * @ejb.interface-method
      */
-    public void updateDerivedFields(boolean retrieveAETs, boolean availability) 
+    public boolean updateDerivedFields(boolean retrieveAETs, boolean availability) 
     		throws FinderException {
+    	boolean updated = false;
         final Integer pk = getPk();
-        final String aets = retrieveAETs ? updateRetrieveAETs(pk) : getRetrieveAETs();
+		if (retrieveAETs)
+			if (updateRetrieveAETs(pk)) updated = true;
         if (availability)
-        	updateAvailability(pk, aets);
+        	if (updateAvailability(pk, getRetrieveAETs())) updated = true;
+        return updated;
     }
 
     private static String toString(Set s) {

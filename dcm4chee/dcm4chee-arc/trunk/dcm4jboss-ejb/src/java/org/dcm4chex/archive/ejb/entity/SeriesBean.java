@@ -409,7 +409,8 @@ public abstract class SeriesBean implements EntityBean {
      */ 
     public abstract int ejbSelectAvailability(Integer pk) throws FinderException;
     
-    private void updateRetrieveAETs(Integer pk, int numI) throws FinderException {
+    private boolean updateRetrieveAETs(Integer pk, int numI) throws FinderException {
+    	boolean updated = false;
         String aets = null;
         if (numI > 0) {
 	        StringBuffer sb = new StringBuffer();
@@ -427,33 +428,38 @@ public abstract class SeriesBean implements EntityBean {
                 aets = sb.toString();
             }
     	}
-        if (aets == null 
+        if (updated = aets == null 
         		? getRetrieveAETs() != null 
         		: !aets.equals(getRetrieveAETs())) {
         	setRetrieveAETs(aets);
         }
+        return updated;
     }
     
-    private void updateExternalRetrieveAET(Integer pk, int numI) throws FinderException {
+    private boolean updateExternalRetrieveAET(Integer pk, int numI) throws FinderException {
+    	boolean updated = false;
     	String aet = null;
         if (numI > 0) {
 	        Set eAetSet = ejbSelectExternalRetrieveAETs(getPk());
 	        if (eAetSet.size() == 1)
 	        	aet = (String) eAetSet.iterator().next();
         }
-        if (aet == null 
+        if (updated = aet == null 
         		? getExternalRetrieveAET() != null 
         		: !aet.equals(getExternalRetrieveAET())) {
         	setExternalRetrieveAET(aet);
         }    	
+        return updated;
     }
     
-    private void updateAvailability(Integer pk, int numI) throws FinderException {
+    private boolean updateAvailability(Integer pk, int numI) throws FinderException {
         int availability = numI > 0 ? ejbSelectAvailability(getPk()) 
         		: Availability.UNAVAILABLE;
-        if (availability != getAvailabilitySafe()) {
+        boolean updated;
+		if (updated = availability != getAvailabilitySafe()) {
             setAvailability(availability);
         }
+        return updated;
     }
     
     private int updateNumberOfInstances(Integer pk) throws FinderException {
@@ -463,39 +469,52 @@ public abstract class SeriesBean implements EntityBean {
         return numI;
     }
     
-    private void updateFilesetId(Integer pk, int numI) throws FinderException {
+    private boolean updateFilesetId(Integer pk, int numI) throws FinderException {
+    	boolean updated = false;
+       	String fileSetId = null;
+       	String fileSetIuid = null;
         if (numI > 0) {
 	        if (ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
 	            Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
 	            if (c.size() == 1) {
 	                MediaLocal media = (MediaLocal) c.iterator().next();
-	                setFilesetId(media.getFilesetId());
-	                setFilesetIuid(media.getFilesetIuid());
-	                return;
+	                fileSetId = media.getFilesetId();
+	                fileSetIuid = getFilesetIuid();
 	            }
 	        }
         }
-        setFilesetId(null);
-        setFilesetIuid(null);
+        if (fileSetId == null ? getFilesetId() != null
+        		: !fileSetId.equals(getFilesetId())) {
+        	setFilesetId(fileSetId);
+        	updated = true;
+        }
+        if (fileSetIuid == null ? getFilesetIuid() != null
+        		: !fileSetIuid.equals(getFilesetIuid())) {
+        	setFilesetIuid(fileSetIuid);
+        	updated = true;
+        }
+        return updated;
     }
 
     /**
      * @ejb.interface-method
      */
-    public void updateDerivedFields(boolean numOfInstances,
+    public boolean updateDerivedFields(boolean numOfInstances,
     		boolean retrieveAETs, boolean externalRettrieveAETs,
             boolean filesetId, boolean availibility) throws FinderException {
+    	boolean updated = false;
     	final Integer pk = getPk();
 		final int numI = numOfInstances ? updateNumberOfInstances(pk) 
 				: getNumberOfSeriesRelatedInstances();
 		if (retrieveAETs)
-			updateRetrieveAETs(pk, numI);
+			if (updateRetrieveAETs(pk, numI)) updated = true;
 		if (externalRettrieveAETs)
-			updateExternalRetrieveAET(pk, numI);
+			if (updateExternalRetrieveAET(pk, numI)) updated = true;
 		if (filesetId)
-			updateFilesetId(pk, numI);
+			if (updateFilesetId(pk, numI)) updated = true;
 		if (availibility)
-			updateAvailability(pk, numI);
+			if (updateAvailability(pk, numI)) updated = true;
+		return updated;
     }
     
     private void updateMpps() {

@@ -48,10 +48,14 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.finder signature="java.util.Collection findStudiesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
  *             query="SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media = ?1"
  *             transaction-type="Supports"
- *  
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
  *              strategy="on-find"
  *              eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findStudyToCheck(java.sql.Timestamp minCreatedTime, java.sql.Timestamp maxCreatedTime, java.sql.Timestamp checkedBefore, int limit)"
+ *              query="SELECT OBJECT(s) FROM Study AS s WHERE (s.createdTime BETWEEN ?1 AND ?2) AND (s.timeOfLastConsistencyCheck IS NULL OR s.timeOfLastConsistencyCheck < ?3) LIMIT ?4"
+ *  
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Integer pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.hidden = FALSE AND s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Integer pk)"
@@ -253,9 +257,20 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="mods_in_study"
      */
     public abstract String getModalitiesInStudy();
-
+    
     public abstract void setModalitiesInStudy(String mds);
 
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="checked_time"
+     */
+    public abstract java.sql.Timestamp getTimeOfLastConsistencyCheck();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setTimeOfLastConsistencyCheck(java.sql.Timestamp time);
+    
     /**
      * @ejb.interface-method view-type="local"
      * 
@@ -393,7 +408,9 @@ public abstract class StudyBean implements EntityBean {
     public abstract int ejbSelectAvailability(Integer pk)
             throws FinderException;
 
-    private void updateRetrieveAETs(Integer pk, int numI) throws FinderException {
+    private boolean updateRetrieveAETs(Integer pk, int numI)
+    		throws FinderException {
+    	boolean updated = false;
         String aets = null;
         if (numI > 0) {
 	        StringBuffer sb = new StringBuffer();
@@ -411,35 +428,41 @@ public abstract class StudyBean implements EntityBean {
                 aets = sb.toString();
             }
     	}
-        if (aets == null 
+        if (updated = aets == null 
         		? getRetrieveAETs() != null 
         		: !aets.equals(getRetrieveAETs())) {
         	setRetrieveAETs(aets);
         }
+        return updated;
     }
     
-    private void updateExternalRetrieveAET(Integer pk, int numI) throws FinderException {
+    private boolean updateExternalRetrieveAET(Integer pk, int numI)
+    	throws FinderException {
+    	boolean updated = false;
     	String aet = null;
         if (numI > 0) {
 	        Set eAetSet = ejbSelectExternalRetrieveAETs(pk);
 	        if (eAetSet.size() == 1)
 	        	aet = (String) eAetSet.iterator().next();
         }
-        if (aet == null 
+        if (updated = aet == null 
         		? getExternalRetrieveAET() != null 
         		: !aet.equals(getExternalRetrieveAET())) {
         	setExternalRetrieveAET(aet);
-        }    	
+        }
+        return updated;
     }
     
 
-    private void updateAvailability(Integer pk, int numI) throws FinderException {
+    private boolean updateAvailability(Integer pk, int numI) throws FinderException {
+    	boolean updated = false;
         int availability = getNumberOfStudyRelatedInstances() > 0
         			? ejbSelectAvailability(getPk())
         			: Availability.UNAVAILABLE;
-        if (availability != getAvailabilitySafe()) {
+        if (updated = availability != getAvailabilitySafe()) {
             setAvailability(availability);
         }
+        return updated;
     }
     
     private int updateNumberOfInstances(Integer pk) throws FinderException {
@@ -453,23 +476,35 @@ public abstract class StudyBean implements EntityBean {
         return numI;
     }
     
-    private void updateFilesetId(Integer pk, int numI) throws FinderException {
+    private boolean updateFilesetId(Integer pk, int numI) throws FinderException {
+       	boolean updated = false;
+       	String fileSetId = null;
+       	String fileSetIuid = null;
         if (numI > 0) {
 	        if (ejbSelectNumberOfStudyRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
 	            Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
 	            if (c.size() == 1) {
 	                MediaLocal media = (MediaLocal) c.iterator().next();
-	                setFilesetId(media.getFilesetId());
-	                setFilesetIuid(media.getFilesetIuid());
-	                return;
+	                fileSetId = media.getFilesetId();
+	                fileSetIuid = getFilesetIuid();
 	            }
 	        }
         }
-        setFilesetId(null);
-        setFilesetIuid(null);
+        if (fileSetId == null ? getFilesetId() != null
+        		: !fileSetId.equals(getFilesetId())) {
+        	setFilesetId(fileSetId);
+        	updated = true;
+        }
+        if (fileSetIuid == null ? getFilesetIuid() != null
+        		: !fileSetIuid.equals(getFilesetIuid())) {
+        	setFilesetIuid(fileSetIuid);
+        	updated = true;
+        }
+        return updated;
     }
 
-    private void updateModalitiesInStudy(Integer pk, int numI) throws FinderException {
+    private boolean updateModalitiesInStudy(Integer pk, int numI) throws FinderException {
+      	boolean updated = false;
         String mds = "";
         if (numI > 0) {
             Set c = ejbSelectModalityInStudies(pk);
@@ -484,31 +519,35 @@ public abstract class StudyBean implements EntityBean {
                 mds = sb.toString();
             }
         }
-        if (!mds.equals(getModalitiesInStudy()))
+        if (!mds.equals(getModalitiesInStudy())) {
             setModalitiesInStudy(mds);
-    	
+            updated = true;
+        }
+    	return true;
     }
 
     /**
      * @ejb.interface-method
      */
-    public void updateDerivedFields(boolean numOfInstances,
+    public boolean updateDerivedFields(boolean numOfInstances,
     		boolean retrieveAETs, boolean externalRettrieveAETs, 
             boolean filesetId, boolean availibility, boolean modsInStudies)
             throws FinderException {
+    	boolean updated = false;
     	final Integer pk = getPk();
 		final int numI = numOfInstances ? updateNumberOfInstances(pk) 
 				: getNumberOfStudyRelatedInstances();
 		if (retrieveAETs)
-			updateRetrieveAETs(pk, numI);
+			if (updateRetrieveAETs(pk, numI)) updated = true;
 		if (externalRettrieveAETs)
-			updateExternalRetrieveAET(pk, numI);
+			if (updateExternalRetrieveAET(pk, numI)) updated = true;
 		if (filesetId)
-			updateFilesetId(pk, numI);
+			if (updateFilesetId(pk, numI)) updated = true;
 		if (availibility)
-			updateAvailability(pk, numI);
+			if (updateAvailability(pk, numI)) updated = true;
 		if (modsInStudies)
-			updateModalitiesInStudy(pk, numI);
+			if (updateModalitiesInStudy(pk, numI)) updated = true;
+		return updated;
     }
      
     /**

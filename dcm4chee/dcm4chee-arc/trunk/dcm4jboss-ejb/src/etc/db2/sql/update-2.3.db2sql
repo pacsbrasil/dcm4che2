@@ -1,0 +1,9 @@
+-- Update DB from dcm4jboss-2.2.x to dcm4jboss-2.3.x
+
+CONNECT TO tiani;
+SET CURRENT SCHEMA TIANI;
+
+ALTER TABLE study ADD COLUMN checked_time	TIMESTAMP;
+CREATE INDEX study_checked ON study(checked_time);
+
+TERMINATE;

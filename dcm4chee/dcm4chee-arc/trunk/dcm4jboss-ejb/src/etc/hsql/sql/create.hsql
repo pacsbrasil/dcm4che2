@@ -49,6 +49,7 @@ CREATE TABLE study (
 	fileset_iuid	VARCHAR(256),
 	fileset_id		VARCHAR(256),
 	availability	INTEGER,
+	checked_time	TIMESTAMP,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	study_attrs		VARBINARY,
@@ -60,6 +61,7 @@ CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no);
 CREATE INDEX ref_physician ON study(ref_physician);
+CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
 
 CREATE TABLE mpps (
