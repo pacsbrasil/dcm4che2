@@ -61,6 +61,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
             "resource:dicomdir-records.xml");
 
     private LabelCreator labelCreator = new LabelCreator();
+    
+    private ObjectName makeIsoImageServiceName;
 
     private final File xmlFile;
 
@@ -139,6 +141,15 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 throw new ConfigurationException("missing " + file);
     }
 
+    public final ObjectName getMakeIsoImageServiceName() {
+        return makeIsoImageServiceName;
+    }
+    
+    public final void setMakeIsoImageServiceName(
+            ObjectName makeIsoImageServiceName) {
+        this.makeIsoImageServiceName = makeIsoImageServiceName;
+    }
+    
     public final boolean isIncludeDisplayApplicationOnAllMedia() {
         return includeDisplayApplicationOnAllMedia;
     }
@@ -484,9 +495,9 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     private long sizeOf(File file) throws MediaCreationException {
-        String[] cmdarray = { "mkisofs", "-quiet", "-print-size",
-                file.getAbsolutePath()};
         try {
+            String[] cmdarray = { getMkisofsExecutable(), "-quiet", "-print-size",
+                    file.getAbsolutePath()};
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             Executer ex = new Executer(cmdarray, stdout, null);
             int exit = ex.waitFor();
@@ -498,6 +509,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
         }
+    }
+
+    private String getMkisofsExecutable() throws Exception {
+        return (String) server.getAttribute(makeIsoImageServiceName,
+                "Executable");
     }
 
     final boolean includeWeb(String value) {

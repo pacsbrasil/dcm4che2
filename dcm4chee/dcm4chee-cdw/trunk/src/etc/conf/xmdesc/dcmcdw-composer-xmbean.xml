@@ -228,6 +228,17 @@
       </descriptors>
    </attribute>      
    <attribute access="read-write"
+      getMethod="getMakeIsoImageServiceName"
+      setMethod="setMakeIsoImageServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>MakeIsoImageServiceName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="tiani.dcmcdw:service=MakeIsoImage" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getSpoolDirName"
       setMethod="setSpoolDirName">
       <description>Used internally - do NOT modify.
