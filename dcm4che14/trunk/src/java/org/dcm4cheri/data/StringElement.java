@@ -177,6 +177,7 @@ abstract class StringElement extends ValueElement {
             bb.put(DELIM);
             bb.put(bbs[i]);
         }
+        bb.rewind();
         return bb;
     }
 
@@ -217,7 +218,7 @@ abstract class StringElement extends ValueElement {
      * @return                        The string value
      * @exception  DcmValueException  Description of the Exception
      */
-    public synchronized String getString(int index, Charset cs)
+    public String getString(int index, Charset cs)
         throws DcmValueException {
         ByteBuffer bb = getByteBuffer(index);
         if (bb == null) {
@@ -250,7 +251,7 @@ abstract class StringElement extends ValueElement {
      * @return                        The strings value
      * @exception  DcmValueException  Description of the Exception
      */
-    public synchronized String[] getStrings(Charset cs)
+    public String[] getStrings(Charset cs)
         throws DcmValueException {
         String[] a = new String[vm()];
         for (int i = 0; i < a.length; ++i) {
@@ -265,11 +266,11 @@ abstract class StringElement extends ValueElement {
      * @param  index  Description of the Parameter
      * @return        The byteBuffer value
      */
-    public synchronized ByteBuffer getByteBuffer(int index) {
+    public ByteBuffer getByteBuffer(int index) {
         if (index >= vm()) {
             return null;
         }
-        return (ByteBuffer) data.rewind();
+        return data.duplicate().order(data.order());
     }
 
     private static boolean isUniversalMatch(String p) {
@@ -485,16 +486,16 @@ abstract class StringElement extends ValueElement {
             return vm;
         }
 
-        public synchronized ByteBuffer getByteBuffer(int index) {
+        public ByteBuffer getByteBuffer(int index) {
             if (index >= vm()) {
                 return null;
             }
-            return vm() == 1
-                ? (ByteBuffer) data.rewind()
-                : ByteBuffer.wrap(
-                    data.array(),
-                    delimPos[index] + 1,
-                    delimPos[index + 1] - delimPos[index] - 1);
+            ByteBuffer bb = data.duplicate().order(data.order());
+            if (vm() != 1) {
+                bb.position(delimPos[index] + 1);
+                bb.limit(delimPos[index + 1]);
+            }
+            return bb;
         }
     }
 

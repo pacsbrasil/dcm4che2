@@ -307,42 +307,50 @@ class DcmElementImpl implements DcmElement {
     static void swapWords(ByteBuffer bb) {
         if ((bb.limit() & 1) != 0)
             throw new IllegalArgumentException("illegal value length: " + bb);
-
-        final ByteOrder from = bb.order();
-        final ByteOrder to = swap(from);
-        short tmp;
+        byte b;
         for (int i = 0, n = bb.limit(); i < n; i += 2) {
-            tmp = bb.getShort(i);
-            bb.order(to).putShort(i, tmp).order(from);
+            b = bb.get(i);
+            bb.put(i, bb.get(i+1));
+            bb.put(i+1, b);
         }
-        bb.order(to);
+        bb.order(swap(bb.order()));
     }
 
     static void swapInts(ByteBuffer bb) {
         if ((bb.limit() & 3) != 0)
             throw new IllegalArgumentException("illegal value length " + bb);
 
-        final ByteOrder from = bb.order();
-        final ByteOrder to = swap(from);
-        int tmp;
+        byte b;
         for (int i = 0, n = bb.limit(); i < n; i += 4) {
-            tmp = bb.getInt(i);
-            bb.order(to).putInt(i, tmp).order(from);
+            b = bb.get(i);
+            bb.put(i, bb.get(i+3));
+            bb.put(i+3, b);
+            b = bb.get(i+1);
+            bb.put(i+1, bb.get(i+2));
+            bb.put(i+2, b);
         }
-        bb.order(to);
+        bb.order(swap(bb.order()));
     }
 
     static void swapLongs(ByteBuffer bb) {
         if ((bb.limit() & 7) != 0)
             throw new IllegalArgumentException("illegal value length " + bb);
 
-        final ByteOrder from = bb.order();
-        final ByteOrder to = swap(from);
-        long tmp;
+        byte b;
         for (int i = 0, n = bb.limit(); i < n; i += 8) {
-            tmp = bb.getLong(i);
-            bb.order(to).putLong(i, tmp).order(from);
+            b = bb.get(i);
+            bb.put(i, bb.get(i+7));
+            bb.put(i+7, b);
+            b = bb.get(i+1);
+            bb.put(i+1, bb.get(i+6));
+            bb.put(i+6, b);
+            b = bb.get(i+2);
+            bb.put(i+2, bb.get(i+5));
+            bb.put(i+5, b);
+            b = bb.get(i+3);
+            bb.put(i+3, bb.get(i+4));
+            bb.put(i+4, b);
         }
-        bb.order(to);
+        bb.order(swap(bb.order()));
     }
 }

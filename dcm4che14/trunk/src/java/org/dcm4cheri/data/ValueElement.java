@@ -46,14 +46,14 @@ abstract class ValueElement extends DcmElementImpl {
         this.data = data;
     }
 
-    public synchronized int hashCode() {
+    public int hashCode() {
         if (data == null || data.limit() == 0)
             return tag;
-        data.rewind();
+//        data.rewind();
         return tag ^ data.hashCode();
     }
 
-    public synchronized boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o)
             return true;
         if (!(o instanceof ValueElement))
@@ -65,8 +65,8 @@ abstract class ValueElement extends DcmElementImpl {
             return (ve.data == null || ve.data.limit() == 0);
         if (ve.data == null || ve.data.limit() == 0)
             return false;
-        data.rewind();
-        ve.data.rewind();
+//        data.rewind();
+//        ve.data.rewind();
         return data.equals(ve.data);
     }
     
@@ -96,8 +96,8 @@ abstract class ValueElement extends DcmElementImpl {
      *
      * @return    The byteBuffer value
      */
-    public synchronized final ByteBuffer getByteBuffer() {
-        return (ByteBuffer) data.rewind();
+    public final ByteBuffer getByteBuffer() {
+        return data.duplicate().order(data.order());
     }
 
     /**
@@ -106,11 +106,11 @@ abstract class ValueElement extends DcmElementImpl {
      * @param  byteOrder  Description of the Parameter
      * @return            The byteBuffer value
      */
-    public synchronized final ByteBuffer getByteBuffer(ByteOrder byteOrder) {
+    public final ByteBuffer getByteBuffer(ByteOrder byteOrder) {
         if (data.order() != byteOrder) {
             swapOrder();
         }
-        return (ByteBuffer) data.rewind();
+        return getByteBuffer();
     }
 
     /**
@@ -160,8 +160,7 @@ abstract class ValueElement extends DcmElementImpl {
     // SS, US -------------------------------------------------------------
     private static ByteBuffer setShort(int v) {
         return ByteBuffer.wrap(new byte[2]).order(
-            ByteOrder.LITTLE_ENDIAN).putShort(
-            (short) v);
+                ByteOrder.LITTLE_ENDIAN).putShort(0, (short)v);
     }
 
     private static ByteBuffer setShorts(int[] a) {
@@ -179,6 +178,7 @@ abstract class ValueElement extends DcmElementImpl {
         for (int i = 0; i < a.length; ++i) {
             bb.putShort((short) a[i]);
         }
+        bb.rewind();
         return bb;
     }
 
@@ -340,8 +340,7 @@ abstract class ValueElement extends DcmElementImpl {
     // SL, UL -------------------------------------------------------------
     private static ByteBuffer setInt(int v) {
         return ByteBuffer.wrap(new byte[4]).order(
-            ByteOrder.LITTLE_ENDIAN).putInt(
-            v);
+            ByteOrder.LITTLE_ENDIAN).putInt(0, v);
     }
 
     private static ByteBuffer setInts(int[] a) {
@@ -359,6 +358,7 @@ abstract class ValueElement extends DcmElementImpl {
         for (int i = 0; i < a.length; ++i) {
             bb.putInt(a[i]);
         }
+        bb.rewind();
         return bb;
     }
 
@@ -499,8 +499,8 @@ abstract class ValueElement extends DcmElementImpl {
         return ByteBuffer
             .wrap(new byte[4])
             .order(ByteOrder.LITTLE_ENDIAN)
-            .putShort((short) (v >> 8))
-            .putShort((short) v);
+            .putShort(0, (short) (v >> 8))
+            .putShort(2, (short) v);
     }
 
     private static ByteBuffer setTags(int[] a) {
@@ -518,6 +518,7 @@ abstract class ValueElement extends DcmElementImpl {
         for (int i = 0; i < a.length; ++i) {
             bb.putShort((short) (a[i] >> 16)).putShort((short) a[i]);
         }
+        bb.rewind();
         return bb;
     }
 
@@ -619,8 +620,7 @@ abstract class ValueElement extends DcmElementImpl {
     // FL -------------------------------------------------------------
     private static ByteBuffer setFloat(float v) {
         return ByteBuffer.wrap(new byte[4]).order(
-            ByteOrder.LITTLE_ENDIAN).putFloat(
-            v);
+            ByteOrder.LITTLE_ENDIAN).putFloat(0, v);
     }
 
     private static ByteBuffer setFloats(float[] a) {
@@ -638,6 +638,7 @@ abstract class ValueElement extends DcmElementImpl {
         for (int i = 0; i < a.length; ++i) {
             bb.putFloat(a[i]);
         }
+        bb.rewind();
         return bb;
     }
 
@@ -737,8 +738,7 @@ abstract class ValueElement extends DcmElementImpl {
     // FD -------------------------------------------------------------
     private static ByteBuffer setDouble(double v) {
         return ByteBuffer.wrap(new byte[8]).order(
-            ByteOrder.LITTLE_ENDIAN).putDouble(
-            v);
+            ByteOrder.LITTLE_ENDIAN).putDouble(0, v);
     }
 
     private static ByteBuffer setDoubles(double[] a) {
@@ -756,6 +756,7 @@ abstract class ValueElement extends DcmElementImpl {
         for (int i = 0; i < a.length; ++i) {
             bb.putDouble(a[i]);
         }
+        bb.rewind();
         return bb;
     }
 
@@ -916,6 +917,7 @@ abstract class ValueElement extends DcmElementImpl {
         for (int i = 0; i < v.length; ++i) {
             buf.putFloat(v[i]);
         }
+        buf.rewind();
         return new OF(tag, buf);
     }
 
@@ -994,6 +996,7 @@ abstract class ValueElement extends DcmElementImpl {
         for (int i = 0; i < v.length; ++i) {
             buf.putShort(v[i]);
         }
+        buf.rewind();
         return new OW(tag, buf);
     }
 
