@@ -5,7 +5,7 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="0.3.3"/>
+	<property name="version" value="0.8.2"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
@@ -109,6 +109,12 @@
     	/>
     	<antcall target="meta-inf-psql"/>
  
+    	<uptodate property="meta-inf-mysql.notRequired"
+    		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
+    		targetfile="${basedir}/target/meta-inf-mysql/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-mysql"/>
+ 
     	<uptodate property="meta-inf-oracle.notRequired"
     		srcfile="${basedir}/target/meta-inf-hsql/jbosscmp-jdbc.xml"
     		targetfile="${basedir}/target/meta-inf-oracle/jbosscmp-jdbc.xml"
@@ -138,6 +144,25 @@
   			<replacefilter
   				token="Hypersonic SQL"
   				value="PostgreSQL 7.2"/>
+		</replace>
+    </target>
+
+   <target name="meta-inf-mysql" unless="meta-inf-mysql.notRequired">
+    	<copy todir="${basedir}/target/meta-inf-mysql">
+    		<fileset dir="${basedir}/target/meta-inf-hsql"/>
+    	</copy>
+    	<replace file="${basedir}/target/meta-inf-mysql/jbosscmp-jdbc.xml">
+  			<replacefilter
+  				token="Hypersonic SQL"
+  				value="mySQL"/>
+  			<replacefilter
+  				token="hsqldb-fetch-key"
+  				value="mysql-get-generated-keys"/>
+		</replace>
+    	<replace file="${basedir}/target/meta-inf-mysql/ejb-jar.xml">
+  			<replacefilter
+  				token="Hypersonic SQL"
+  				value="mySQL"/>
 		</replace>
     </target>
 
@@ -225,6 +250,9 @@
     	</antcall>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="psql"/>
+    	</antcall>
+    	<antcall target="ejb-jdbc-jar">
+    		<param name="db.name" value="mysql"/>
     	</antcall>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="db2"/>

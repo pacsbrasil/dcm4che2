@@ -90,16 +90,19 @@ public abstract class QueryAuditRecordBean implements SessionBean {
     static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSZ";
 
     static final String[] DATABASE = { "Hypersonic SQL", "PostgreSQL 7.2",
-            "DB2", "Oracle9i"};
+            "mySQL", "DB2", "Oracle9i"};
 
     static final int HSQL = 0;
 
     static final int PSQL = 1;
 
-    static final int DB2 = 2;
+    static final int MYSQL = 2;
 
-    static final int ORACLE = 3;
+    static final int DB2 = 3;
 
+    static final int ORACLE = 4;
+
+    
     private AuditRecordLocalHome home;
 
     private Connection con = null;
@@ -292,10 +295,11 @@ public abstract class QueryAuditRecordBean implements SessionBean {
         if (limit > 0) {
 	        switch (database) {
 	        case PSQL:
-	            sb.append(" OFFSET ");
-	            sb.append(offset);
+	        case MYSQL:
 	            sb.append(" LIMIT ");
 	            sb.append(limit);
+	            sb.append(" OFFSET ");
+	            sb.append(offset);
 	            break;
 	        case DB2:
 	            sb.append(") AS foo WHERE rownum>");
