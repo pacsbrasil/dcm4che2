@@ -21,54 +21,42 @@
  *                                                                           *
  *****************************************************************************/
 
-import org.dcm4che.data.Command;
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.FileMetaInfo;
-import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmEncodeParam;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.FileFormat;
-import org.dcm4che.dict.DictionaryFactory;
-import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDDictionary;
-import org.dcm4che.dict.UIDs;
-import org.dcm4che.dict.VRs;
-import org.dcm4che.net.ActiveAssociation;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
-import org.dcm4che.net.AssociationFactory;
-import org.dcm4che.net.Dimse;
-import org.dcm4che.net.FutureRSP;
-import org.dcm4che.net.PDU;
-import org.dcm4che.net.PresContext;
-import org.dcm4che.server.PollDirSrv;
-import org.dcm4che.server.PollDirSrvFactory;
-import org.dcm4che.util.SSLContextAdapter;
-import org.dcm4che.util.DcmURL;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
-import java.nio.ByteOrder;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.security.GeneralSecurityException;
-
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.UIDDictionary;
+import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.AAssociateAC;
+import org.dcm4che.net.AAssociateRQ;
+import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.FutureRSP;
+import org.dcm4che.net.PDU;
+import org.dcm4che.server.PollDirSrv;
+import org.dcm4che.server.PollDirSrvFactory;
+import org.dcm4che.util.DcmURL;
+import org.dcm4che.util.SSLContextAdapter;
 
 /**
  *

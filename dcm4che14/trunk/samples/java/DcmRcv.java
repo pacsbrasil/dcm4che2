@@ -1,28 +1,3 @@
-
-import java.io.BufferedOutputStream;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.security.GeneralSecurityException;
-import java.text.MessageFormat;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
-
-import org.apache.log4j.Logger;
 /*                                                                           *
  *  Copyright (c) 2002, 2003 by TIANI MEDGRAPH AG                            *
  *                                                                           *
@@ -42,6 +17,24 @@ import org.apache.log4j.Logger;
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
+
+import java.io.BufferedOutputStream;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
+
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;

@@ -21,21 +21,19 @@
  *                                                                           *
  *****************************************************************************/
 
-import org.dcm4che.util.SyslogWriter;
-
-import org.dcm4che.server.PollDirSrv;
-import org.dcm4che.server.PollDirSrvFactory;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.InputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
+import org.dcm4che.server.PollDirSrv;
+import org.dcm4che.server.PollDirSrvFactory;
+import org.dcm4che.util.SyslogWriter;
 
 /**
  *

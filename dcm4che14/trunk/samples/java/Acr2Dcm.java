@@ -25,7 +25,6 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
-import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.UIDs;
@@ -83,16 +82,16 @@ public class Acr2Dcm {
         this.classUID = uid;
     }
 
-    public void setSkipGroupLen(boolean grlen) {
-        this.skipGroupLen = skipGroupLen;
+    public void setSkipGroupLen(boolean skipGroupLen) {
+		this.skipGroupLen = skipGroupLen;
     }
     
-    public void setUndefSeqLen(boolean sqlen) {
-        this.undefSeqLen = undefSeqLen;
+    public void setUndefSeqLen(boolean undefSeqLen) {
+		this.undefSeqLen = undefSeqLen;
     }
     
-    public void setUndefItemLen(boolean itemlen) {
-        this.undefItemLen = undefItemLen;
+    public void setUndefItemLen(boolean undefItemLen) {
+		this.undefItemLen = undefItemLen;
     }
     
     public void setFileMetaInfo(boolean fmi) {

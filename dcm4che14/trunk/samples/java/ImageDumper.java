@@ -15,12 +15,13 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import javax.imageio.IIOException;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
+
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 

@@ -45,6 +45,7 @@ import org.dcm4che.net.PresContext;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.UIDs;
 
 import org.dcm4cheri.util.StringUtils;
 
@@ -96,6 +97,12 @@ public final class AssociationFactoryImpl extends AssociationFactory {
             StringUtils.checkUIDs(tsuids));
     }
     
+	public PresContext newPresContext(int pcid, String asuid) {
+		return new PresContextImpl(0x020, pcid, 0,
+			StringUtils.checkUID(asuid),
+			new String[]{ UIDs.ImplicitVRLittleEndian });
+	}
+	
     public PresContext newPresContext(int pcid, int result, String tsuid) {
         return new PresContextImpl(0x021, pcid, result, null,
                 new String[]{ StringUtils.checkUID(tsuid) } );

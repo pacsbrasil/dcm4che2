@@ -3132,7 +3132,7 @@ abstract class DcmObjectImpl implements DcmObject
             out.write(tag >> 8);
             out.write(tag >> 0);
         }
-        if (encParam.explicitVR) {
+        if (vr != VRs.NONE && encParam.explicitVR) {
             out.write(vr >> 8);
             out.write(vr >> 0);
             if (VRs.isLengthField16Bit(vr)) {

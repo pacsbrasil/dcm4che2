@@ -21,22 +21,33 @@
  *                                                                           *
  *****************************************************************************/
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import javax.imageio.ImageReader;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelFactory;
 import org.dcm4che.image.ColorModelParam;
 import org.dcm4che.imageio.plugins.DcmMetadata;
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmParserFactory;
-import org.dcm4che.dict.Tags;
-
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.image.*;
-import java.io.*;
-import javax.imageio.*;
-import javax.swing.*;
-import javax.swing.event.*;
 
 /**
  *

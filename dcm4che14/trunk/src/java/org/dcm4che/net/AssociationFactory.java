@@ -75,6 +75,9 @@ public abstract class AssociationFactory {
    public abstract AAbort newAAbort(int source, int reason);
    
    public abstract PresContext newPresContext(
+		 int pcid, String asuid);
+		 
+   public abstract PresContext newPresContext(
          int pcid, String asuid, String[] tsuids);
    
    public abstract PresContext newPresContext(
