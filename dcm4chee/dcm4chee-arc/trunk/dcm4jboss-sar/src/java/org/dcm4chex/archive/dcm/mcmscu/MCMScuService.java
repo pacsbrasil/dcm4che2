@@ -835,24 +835,26 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	}
 	
 	
-    public String getMediaCreationStatus() throws InterruptedException, IOException {
+    public String updateMediaStatus() throws InterruptedException, IOException {
     	ActiveAssociation assoc = null;
     	try {
-//get association for media creation request and action.    		
-			AEData aeData = new AECmd( this.getMcmScpAET() ).execute();
-			assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getMediaCreationAssocReq() );
-			if ( assoc == null ) {
-				log.error("Cant get media creation status! Reason: couldnt open association!" );
-				return "Error: could not open association!";
-			}
-			Association as = assoc.getAssociation();
-			if (as.getAcceptedTransferSyntaxUID(1) == null) {
-	        	log.error( "Cant get media creation status! Reason: "+getMcmScpAET()+" doesnt support media creation managment!", null );
-				return "Error: "+getMcmScpAET()+" doesnt support media creation managment!";
-			}
 	//get all media of status PROCESSING.
 			List procList = this.lookupMediaComposer().getWithStatus( MediaDTO.PROCESSING );
+            if (procList.isEmpty())
+                return "No Media in processing status.";
 			
+//          get association for media creation request and action.          
+            AEData aeData = new AECmd( this.getMcmScpAET() ).execute();
+            assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getMediaCreationAssocReq() );
+            if ( assoc == null ) {
+                log.error("Cant get media creation status! Reason: couldnt open association!" );
+                return "Error: could not open association!";
+            }
+            Association as = assoc.getAssociation();
+            if (as.getAcceptedTransferSyntaxUID(1) == null) {
+                log.error( "Cant get media creation status! Reason: "+getMcmScpAET()+" doesnt support media creation managment!", null );
+                return "Error: "+getMcmScpAET()+" doesnt support media creation managment!";
+            }
 			String iuid = null;
 			MediaDTO mediaDTO = null;
 			int[] getAttrs = new int[]{Tags.ExecutionStatus, Tags.ExecutionStatusInfo, Tags.FailedSOPSeq};

@@ -38,7 +38,7 @@
       <name>MaxMediaUsage</name>
       <type>long</type>
       <descriptors>
-         <value value="200" />
+         <value value="600" />
       </descriptors>
    </attribute>
 
@@ -217,8 +217,8 @@
    </operation>
 
    <operation impact="ACTION">
-      <description>Update media creation status</description>
-      <name>getMediaCreationStatus</name>
+      <description>Update media status</description>
+      <name>updateMediaStatus</name>
       <return-type>java.lang.String</return-type>
    </operation>
 
