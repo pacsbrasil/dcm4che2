@@ -164,11 +164,11 @@
 		<tr bgcolor="eeeeee">
 			<td bgcolor="cccccc">
 				<font size="1">
-					Patient:</font>
+					Patient</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					??Name:</font>
+					Name:</font>
 			</td>
     	<td>
 				<font size="1" color="ff0000">
@@ -206,11 +206,11 @@
 		<tr bgcolor="eeeeee">
 			<td bgcolor="ccccff">
 				<font size="1">
-					Study:</font>
+					Study</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					??Date/Time:</font>
+					Date/Time:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -259,11 +259,11 @@
 		<tr bgcolor="eeeeee">
 			<td bgcolor="ccffcc">
 				<font size="1">
-					Serie:</font>
+					Serie</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					??Date/Time:</font>
+					Date/Time:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -368,14 +368,15 @@
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		<colgroup>
 			<col width="2%"/>
-			<col width="15%"/>
-			<col width="15%"/>
+			<col width="14%"/>
+			<col width="14%"/>
 			<col width="8%"/>
-			<col width="25%"/>
+			<col width="24%"/>
 			<col width="15%"/>
 			<col width="10%"/>
 			<col width="4%"/>
 			<col width="4%"/>
+			<col width="3%"/>
 			<col width="2%"/>
 		</colgroup>
 			<td align="right" bgcolor="ccccff" rowspan="{$rowspan}">
@@ -415,6 +416,11 @@
 			</td>
       <td title="Number of Instances">
 				<xsl:value-of select="numberOfInstances"/>
+			</td>
+			<td align="right">
+				<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
+					<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
+				</a>
 			</td>
 			<td align="right" bgcolor="ccccff">
 				<input type="checkbox" name="stickyStudy" value="{pk}">

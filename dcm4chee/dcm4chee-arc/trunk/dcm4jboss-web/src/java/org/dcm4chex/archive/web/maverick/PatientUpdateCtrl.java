@@ -16,9 +16,6 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
@@ -30,19 +27,15 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 public class PatientUpdateCtrl extends Dcm4JbossController {
     private int pk;
 
-    private String patientID = null;
+    private String patientID = "";
 
-    private String issuerOfPatientID = null;
+    private String issuerOfPatientID = "";
 
-    private String patientName = null;
+    private String patientName = "";
 
-    private String patientSex = null;
+    private String patientSex = "";
 
-    private String patientBirthDay;
-
-    private String patientBirthMonth;
-
-    private String patientBirthYear;
+    private String patientBirthDate = "";
 
     private String submit = null;
 
@@ -66,7 +59,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 	        pat.setIssuerOfPatientID(issuerOfPatientID);
 	        pat.setPatientSex(patientSex);
 	        pat.setPatientName(patientName);
-	        setPatientBirthDate(pat);
+	        pat.setPatientBirthDate(patientBirthDate);
 	        ContentEdit ce = lookupContentEdit();
 	        ce.createPatient(pat);        
         } catch (Exception e) {
@@ -88,7 +81,7 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
             to_update.setPatientSex(patientSex);
             to_update.setPatientName(patientName);
 
-            setPatientBirthDate(to_update);
+            to_update.setPatientBirthDate(patientBirthDate);
             //updating data model
             ContentEdit ce = lookupContentEdit();
             ce.updatePatient(to_update);
@@ -98,45 +91,25 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
         }
     }
 
-    private void setPatientBirthDate(PatientDTO to_update) {
-        if ((patientBirthDay == null || patientBirthDay.length() == 0)
-                && (patientBirthMonth == null || patientBirthMonth.length() == 0)
-                && (patientBirthYear == null || patientBirthYear.length() == 0)) {
-            to_update.setPatientBirthDate(null);
-        } else {
-            try {
-                Calendar c = Calendar.getInstance();
-                c.set(Calendar.DAY_OF_MONTH, Integer
-                        .parseInt(patientBirthDay));
-                c.set(Calendar.MONTH,
-                        Integer.parseInt(patientBirthMonth) - 1);
-                c.set(Calendar.YEAR, Integer.parseInt(patientBirthYear));
-                to_update.setPatientBirthDate(new SimpleDateFormat(
-                        PatientDTO.DATE_FORMAT).format(c.getTime()));
-            } catch (Throwable e1) {
-                //do nothing
-            }
-        }
+
+    public final void setIssuerOfPatientID(String issuerOfPatientID) {
+        this.issuerOfPatientID = issuerOfPatientID.trim();
     }
 
-    public final void setPatientBirthDay(String patientBirthDay) {
-        this.patientBirthDay = patientBirthDay;
-    }
-
-    public final void setPatientBirthMonth(String patientBirthMonth) {
-        this.patientBirthMonth = patientBirthMonth;
-    }
-
-    public final void setPatientBirthYear(String patientBirthYear) {
-        this.patientBirthYear = patientBirthYear;
+    public final void setPatientID(String patientID) {
+        this.patientID = patientID.trim();
     }
 
     public final void setPatientName(String patientName) {
-        this.patientName = patientName;
+        this.patientName = patientName.trim();
     }
 
     public final void setPatientSex(String patientSex) {
-        this.patientSex = patientSex;
+        this.patientSex = patientSex.trim();
+    }
+
+    public final void setPatientBirthDate(String date) {
+        this.patientBirthDate = date.trim();
     }
 
     public final void setPk(int pk) {
@@ -149,13 +122,5 @@ public class PatientUpdateCtrl extends Dcm4JbossController {
 
     public final void setCancel(String cancel) {
         this.cancel = cancel;
-    }
-
-    public final void setIssuerOfPatientID(String issuerOfPatientID) {
-        this.issuerOfPatientID = issuerOfPatientID;
-    }
-
-    public final void setPatientID(String patientID) {
-        this.patientID = patientID;
     }
 }

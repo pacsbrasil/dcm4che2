@@ -85,15 +85,22 @@ default-transform-type="xslt">
 	    <view type="redirect" path="folder.m" name="success"/>        
      </command>
 
-    <command name="patientUpdate">
-        <controller class="org.dcm4chex.archive.web.maverick.PatientUpdateCtrl" />    
-	    <view type="redirect" path="folder.m" name="success"/>        
-     </command>
-
     <command name="patientMerge">
         <controller class="org.dcm4chex.archive.web.maverick.PatientMergeCtrl" />    
 	    <view type="redirect" path="foldersubmit.m?filter=" name="success"/>        
 	    <view ref="error" />
+     </command>
+
+    <command name="studyEdit">
+        <controller class="org.dcm4chex.archive.web.maverick.StudyEditCtrl" />    
+	    <view name="success">
+    	  <transform path="study_edit.xsl" />
+	    </view>
+     </command>
+
+    <command name="studyUpdate">
+        <controller class="org.dcm4chex.archive.web.maverick.StudyUpdateCtrl" />    
+	    <view type="redirect" path="folder.m" name="success"/>
      </command>
 
 	<!-- ****** AE related commands ******-->
