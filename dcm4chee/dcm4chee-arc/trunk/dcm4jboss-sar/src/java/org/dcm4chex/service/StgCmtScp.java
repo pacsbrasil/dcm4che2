@@ -82,9 +82,13 @@ class StgCmtScp extends DcmServiceBase {
         Association a = assoc.getAssociation();
         Command cmd = rsp.getCommand();
         String key = "StgCmtCmd-" + cmd.getMessageIDToBeingRespondedTo();
-        StgCmtCmd stgCmtCmd = (StgCmtCmd) a.getProperty(key);
+        final StgCmtCmd stgCmtCmd = (StgCmtCmd) a.getProperty(key);
         if (stgCmtCmd != null) {
-            stgCmtCmd.execute();            
+        	new Thread(new Runnable() {
+
+				public void run() {
+					stgCmtCmd.execute();
+				}}).start();
         }
     }
 
