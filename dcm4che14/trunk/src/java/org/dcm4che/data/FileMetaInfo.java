@@ -26,6 +26,7 @@ package org.dcm4che.data;
 
 import org.dcm4che.dict.TagDictionary;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import javax.imageio.stream.ImageOutputStream;
@@ -59,4 +60,6 @@ public interface FileMetaInfo extends DcmObject{
     public void write(ImageOutputStream out) throws IOException;
     
     public void write(ContentHandler ch, TagDictionary dict) throws IOException;
+    
+    public void read(InputStream in) throws IOException;
 }

@@ -41,6 +41,8 @@ public abstract class DcmObjectFactory {
     
     public abstract Dataset newDataset();
 
+    public abstract FileMetaInfo newFileMetaInfo();
+
     public abstract FileMetaInfo newFileMetaInfo(String sopClassUID,
             String sopInstanceUID, String transferSyntaxUID);
 

@@ -50,6 +50,10 @@ public final class DcmObjectFactoryImpl extends DcmObjectFactory {
         return new DatasetImpl();
     }    
 
+    public FileMetaInfo newFileMetaInfo() {
+        return new FileMetaInfoImpl();
+    }    
+
     public FileMetaInfo newFileMetaInfo(String sopClassUID,
             String sopInstanceUID, String transferSyntaxUID,
             String implClassUID, String implVersName) {

@@ -33,6 +33,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.imageio.stream.ImageOutputStream;
@@ -165,5 +166,11 @@ final class FileMetaInfoImpl extends DcmObjectImpl implements FileMetaInfo {
     throws IOException {
         write(new DcmHandlerAdapter(ch, dict));
     }    
+
+    public void read(InputStream in) throws IOException {
+        DcmParserImpl parser = new DcmParserImpl(in);
+        parser.setDcmHandler(getDcmHandler());
+        parser.parseFileMetaInfo();
+    }
 }
 
