@@ -51,4 +51,6 @@ public abstract class AuditLoggerFactory {
     
     public abstract InstancesAction newInstancesAction(String action,
             String suid, Patient patient);
+
+    public abstract ArrService newArrService(boolean validating);
 }

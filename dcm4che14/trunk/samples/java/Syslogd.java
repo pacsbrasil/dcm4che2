@@ -43,13 +43,13 @@ public class Syslogd {
         syslogd.setPort(Integer.parseInt(args[0]));
         syslogd.start();
     }
-    
+
     private SyslogService service = new SyslogService() {
         public void process(Date date, String host, String content) {
-            System.out.println("date:" + date + ", host:" + host + ", content:" + content);
+            System.out.println("date:" + date + "\nhost:" + host + "\ncontent:" + content);
         }
     };
-    
+
     private UDPServer server = sf.newUDPServer(
         sf.newSyslogHandler(service));
     

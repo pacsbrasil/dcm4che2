@@ -38,22 +38,28 @@ final class SyslogMsg
     private String content = null;
     //whether this instance was instantiated with a valid syslof msg
     private boolean isValid;
-    
+
     public Date getTimestamp() {
         return hdrTimeStamp.getTime();
     }
-    
+
     public String getHost() {
         return hdrHost;
     }
-    
+
     public String getContent() {
         return content;
     }
 
+    public String getMessage() {
+    	if (tag==null)
+	    return "";
+        return tag + content;
+    }
+
     public class InvalidSyslogMsgException extends RuntimeException
     {
-	public InvalidSyslogMsgException(byte[] bMsg)
+	InvalidSyslogMsgException(byte[] bMsg)
 	{
 	    super();
 	    isValid = false;
@@ -82,6 +88,7 @@ final class SyslogMsg
     private void parse(byte[] bMsg)
 	throws InvalidSyslogMsgException
     {
+    	System.out.println(new String(bMsg));
 	int iStart, iEnd = -1;
 	for (int i=1; i<PriMaxLen+2 && i<bMsg.length; i++)
 	    if (bMsg[i]==PriEndDelim) {
@@ -119,7 +126,7 @@ final class SyslogMsg
 	    // a year
 	    hdrTimeStamp = new GregorianCalendar();
 	    hdrTimeStamp.setTime(date);
-	    hdrTimeStamp.set(Calendar.YEAR, new 
+	    hdrTimeStamp.set(Calendar.YEAR, new
 			     GregorianCalendar().get(Calendar.YEAR));
 	}
 	// host name/ip
@@ -140,7 +147,7 @@ final class SyslogMsg
 	    throw new InvalidSyslogMsgException(bMsg);
 	tag = new String(bMsg, iStart, iEnd-iStart);
 	// content
-	iEnd++;
+	//iEnd++;
 	content = new String(bMsg, iEnd, bMsg.length-iEnd);
     }
 
@@ -194,7 +201,7 @@ final class SyslogMsg
 	return priorityToString((facility << 3) | severity) +
 	    " [time=" + getDateString(hdrTimeStamp)
 	    + ", host=" + hdrHost + "] "
-	    + tag + " " + content;
+	    + "TAG=" + tag + ", CONTENT=" + content;
     }
 
     private String getDateString(Calendar date)

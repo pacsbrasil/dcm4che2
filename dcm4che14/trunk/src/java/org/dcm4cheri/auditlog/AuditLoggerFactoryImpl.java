@@ -29,6 +29,8 @@ import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.Patient;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.auditlog.User;
+import org.dcm4che.auditlog.ArrService;
+import org.dcm4che.auditlog.ArrInputException;
 import java.net.Socket;
 
 public class AuditLoggerFactoryImpl extends AuditLoggerFactory {
@@ -66,5 +68,14 @@ public class AuditLoggerFactoryImpl extends AuditLoggerFactory {
     public InstancesAction newInstancesAction(String action, String suid,
             Patient patient) {
         return new InstancesActionImpl(action, suid, patient);
+    }
+
+    public ArrService newArrService(boolean validating) {
+    	try {
+		return new ArrServiceImpl(validating);
+	}
+	catch (ArrInputException e) {
+		return null;
+	}
     }
 }
