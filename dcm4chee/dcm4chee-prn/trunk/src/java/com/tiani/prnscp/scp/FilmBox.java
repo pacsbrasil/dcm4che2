@@ -153,7 +153,7 @@ class FilmBox
 //            checkIllumination(ds, rsp);
 //            checkReflectedAmbientLight(ds, rsp);
         scp.checkAttribute(ds, Tags.RequestedResolutionID,
-            aet, "isSupportsRequestedResolutionID", rsp);
+            aet, "isSupportsResolutionID", rsp);
         checkImageBoxAttributes(ds, rsp);
     }
     

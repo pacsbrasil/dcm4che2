@@ -409,21 +409,18 @@ public class PrintScpService
 
 
     // Package protected ---------------------------------------------
-    /**
-     *  Description of the Method
-     *
-     * @param  ds Description of the Parameter
-     * @param  prompt Description of the Parameter
-     */
     void logDataset(String prompt, Dataset ds)
     {
+        if (!log.isDebugEnabled()) {
+            return;
+        }
         try {
             StringWriter w = new StringWriter();
             w.write(prompt);
             ds.dumpDataset(w, dumpParam);
-            log.info(w.toString());
+            log.debug(w.toString());
         } catch (Exception e) {
-            log.error("Failed to dump dataset", e);
+            log.warn("Failed to dump dataset", e);
         }
     }
 
