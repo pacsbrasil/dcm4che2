@@ -143,7 +143,9 @@ public class MoveScuService
         while (invoked < maxConcurrentMoves
             && (order = fetchNextOrder()) != null) {
             try {
+                log.debug("Processing " + order);
                 process(order);
+                log.debug("Processed " + order + " successfully");
             } catch (Exception e) {
                 log.error("Failed to invoke " + order, e);
                 queueFailedMoveOrder(order, INVOKE_FAILED_STATUS);
