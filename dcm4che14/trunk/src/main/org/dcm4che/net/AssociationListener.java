@@ -23,12 +23,26 @@
 
 package org.dcm4che.net;
 
+import java.io.IOException;
+import java.util.EventListener;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public interface AssociationListener extends java.util.EventListener {
-    public void stateChanged(AssociationEvent event);
+public interface AssociationListener extends EventListener {
+
+    void write(Association src, PDU pdu);
+    
+    void received(Association src, PDU pdu);
+
+    void write(Association src, Dimse dimse);
+
+    void received(Association src, Dimse dimse);
+    
+    void error(Association src, IOException ioe);
+
+    void close(Association src);
 }
 

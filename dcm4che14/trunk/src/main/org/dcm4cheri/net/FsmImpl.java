@@ -23,11 +23,29 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.*;
+import org.dcm4che.net.AAbort;
+import org.dcm4che.net.AAssociateAC;
+import org.dcm4che.net.AAssociateRJ;
+import org.dcm4che.net.AAssociateRQ;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationListener;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.PDataTF;
+import org.dcm4che.net.PDU;
+import org.dcm4che.net.PDUException;
+import org.dcm4che.net.PresContext;
+import org.dcm4che.net.AReleaseRQ;
+import org.dcm4che.net.AReleaseRP;
+import org.dcm4che.net.AsyncOpsWindow;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.*;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.net.Socket;
 
 /**
@@ -35,10 +53,8 @@ import java.net.Socket;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-final class FsmImpl {
-    private static final String CLASSNAME = "org.dcm4cheri.net.FsmImpl";
-    private static final Logger log = Logger.getLogger(CLASSNAME);
-    
+final class FsmImpl {    
+    static final Logger log = Logger.getLogger("dcm4che.Association");
     private final AssociationImpl assoc;
     private final boolean requestor;
     private final Socket s;
@@ -50,6 +66,7 @@ final class FsmImpl {
     private AAssociateAC ac = null;
     private AAssociateRJ rj = null;
     private AAbort aa = null;
+    private AssociationListener assocListener = null;
 
     /** Creates a new instance of DcmULServiceImpl */
     public FsmImpl(AssociationImpl assoc, Socket s, boolean requestor)
@@ -62,6 +79,13 @@ final class FsmImpl {
         changeState(requestor ? STA4 : STA2);
     }    
    
+   public synchronized void addAssociationListener(AssociationListener l) {
+     assocListener = Multicaster.add(assocListener, l);
+   }
+   public synchronized void removeAssociationListener(AssociationListener l) {
+     assocListener = Multicaster.remove(assocListener, l);
+   }
+
     final Socket socket() {
         return s;
     }
@@ -82,8 +106,8 @@ final class FsmImpl {
         return tcpCloseTimeout;
     }
 
-    public AssociationState getState() {
-        return state;
+    public int getState() {
+        return state.getType();
     }
     
     final int getWriteMaxLength() {
@@ -128,10 +152,30 @@ final class FsmImpl {
         return null;
     }
     
+    int getMaxOpsInvoked() {    
+        if (ac == null) {
+            throw new IllegalStateException(state.toString());
+        }
+        AsyncOpsWindow aow = ac.getAsyncOpsWindow();
+        if (aow == null)
+           return 1;
+        return requestor ? aow.getMaxOpsInvoked() : aow.getMaxOpsPerformed();
+    }
+    
+    int getMaxOpsPerformed() {    
+        if (ac == null) {
+            throw new IllegalStateException(state.toString());
+        }
+        AsyncOpsWindow aow = ac.getAsyncOpsWindow();
+        if (aow == null)
+           return 1;
+        return requestor ? aow.getMaxOpsPerformed() : aow.getMaxOpsInvoked();
+    }
+    
     private synchronized void changeState(State state) {
         if (this.state != state) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Enter " + state.toString());
+                log.fine("" + assoc + ": " + state);
             }
             State prev = this.state;
             this.state = state;
@@ -139,51 +183,139 @@ final class FsmImpl {
         }
     }
 
-    public PDU read(int timeout, byte[] buf) throws PDUException, IOException {
-        synchronized (in) {
-            s.setSoTimeout(timeout);
-            UnparsedPDUImpl raw = null;
-            try {
+    public PDU read(int timeout, byte[] buf) throws IOException {
+       try {
+          PDU retval = null;
+          synchronized (in) {
+             s.setSoTimeout(timeout);
+             UnparsedPDUImpl raw = null;
+             try {
                 raw = new UnparsedPDUImpl(in, buf);
-            } catch (IOException e) {
+             } catch (IOException e) {
                 changeState(STA1);
                 throw e;
-            }
-            return state.parse(raw);
-        }
-     }
+             }
+             retval = state.parse(raw);
+          }
+          if (log.isLoggable(Level.FINE)) {
+             log.fine("" + assoc + ">>" + retval);
+          }
+          if (assocListener != null) assocListener.received(assoc, retval);
+          return retval;
+       } catch (IOException ioe) {
+           if (assocListener != null) assocListener.error(assoc, ioe);
+           throw ioe;
+       }
+    }
   
     public void write(AAssociateRQ rq) throws IOException {
-        synchronized (out) { state.write(rq); }
-        this.rq = rq;
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + "<<" + rq);
+       }
+       if (assocListener != null) assocListener.write(assoc, rq);
+       try {
+          synchronized (out) { state.write(rq); }
+       } catch (IOException ioe) {
+           if (assocListener != null) assocListener.error(assoc, ioe);
+           throw ioe;
+       }
+       this.rq = rq;
     }
     
     public void write(AAssociateAC ac) throws IOException {
-        synchronized (out) { state.write(ac); }
-        this.ac = ac;
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + "<<" + ac);
+       }
+       if (assocListener != null) assocListener.write(assoc, ac);
+       try {
+          synchronized (out) { state.write(ac); }
+       } catch (IOException ioe) {
+           if (assocListener != null) assocListener.error(assoc, ioe);
+           throw ioe;
+       }
+       this.ac = ac;
     }
     
     public void write(AAssociateRJ rj) throws IOException {
-        synchronized (out) { state.write(rj); }
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + "<<" + rj);
+       }
+       if (assocListener != null) assocListener.write(assoc, rj);
+       try {
+          synchronized (out) { state.write(rj); }
+       } catch (IOException ioe) {
+          if (assocListener != null) assocListener.error(assoc, ioe);
+          throw ioe;
+       }
     }
     
     public void write(PDataTF data) throws IOException {
-        synchronized (out) { state.write(data); }
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + "<<" + data);
+       }
+       if (assocListener != null) assocListener.write(assoc, data);
+       try {
+          synchronized (out) { state.write(data); }
+       } catch (IOException ioe) {
+          if (assocListener != null) assocListener.error(assoc, ioe);
+          throw ioe;
+       }
     }
     
     public void write(AReleaseRQ rq) throws IOException {
-        synchronized (out) { state.write(rq); }
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + "<<" + rq);
+       }
+       if (assocListener != null) assocListener.write(assoc, rq);
+       try {
+          synchronized (out) { state.write(rq); }
+       } catch (IOException ioe) {
+          if (assocListener != null) assocListener.error(assoc, ioe);
+          throw ioe;
+       }
     }
     
     public void write(AReleaseRP rp) throws IOException {
-        synchronized (out) { state.write(rp); }
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + "<<" + rp);
+       }
+       if (assocListener != null) assocListener.write(assoc, rp);
+       try {
+          synchronized (out) { state.write(rp); }
+       } catch (IOException ioe) {
+          if (assocListener != null) assocListener.error(assoc, ioe);
+          throw ioe;
+       }
     }
     
     public void write(AAbort abort) throws IOException {
-        synchronized (out) { state.write(abort); }
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + "<<" + abort);
+       }
+       if (assocListener != null) assocListener.write(assoc, abort);
+       try {
+          synchronized (out) { state.write(abort); }
+       } catch (IOException ioe) {
+          if (assocListener != null) assocListener.error(assoc, ioe);
+          throw ioe;
+       }
     }
     
-    private abstract class State implements AssociationState {
+    void fireReceived(Dimse dimse) {
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + ">>" + dimse);
+       }
+       if (assocListener != null) assocListener.received(assoc, dimse);
+    }
+    
+    void fireWrite(Dimse dimse) {
+       if (log.isLoggable(Level.FINE)) {
+          log.fine("" + assoc + "<<" + dimse);
+       }
+       if (assocListener != null) assocListener.write(assoc, dimse);
+    }
+
+    private abstract class State {
         
         private final int type;
         
@@ -213,7 +345,8 @@ final class FsmImpl {
         PDU parse(UnparsedPDUImpl raw) throws PDUException {
             try {
                 switch (raw.type()) {
-                    case 1: case 2: case 3: case 4: case 5: case 6:
+                    case 1: case 2: case 3:
+                    case 4: case 5: case 6:
                         throw new PDUException("Unexpected " + raw,
                             new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                            AAbort.UNEXPECTED_PDU));
@@ -268,11 +401,12 @@ final class FsmImpl {
 
     }
     
-    private final State STA1 = new State(AssociationState.IDLE) {
+    private final State STA1 = new State(Association.IDLE) {
         public String toString() {
             return "Sta 1 - Idle";
         }
         void entry() {
+            if (assocListener != null) assocListener.close(assoc);
             try { in.close(); } catch (IOException ignore) {}
             try { out.close(); } catch (IOException ignore) {}
             try { s.close(); } catch (IOException ignore) {}
@@ -283,7 +417,7 @@ final class FsmImpl {
     private State state = STA1;
     
     private final State STA2 =
-            new State(AssociationState.AWAITING_READ_ASS_RQ) {
+            new State(Association.AWAITING_READ_ASS_RQ) {
         public String toString() {
             return "Sta 2 - Transport connection open"
                     + " (Awaiting A-ASSOCIATE-RQ PDU)";
@@ -317,7 +451,7 @@ final class FsmImpl {
     };
     
     private final State STA3 =
-            new State(AssociationState.AWAITING_WRITE_ASS_RP) {
+            new State(Association.AWAITING_WRITE_ASS_RP) {
         public String toString() {
             return "Sta 3 - Awaiting local A-ASSOCIATE response primitive";
         }
@@ -344,7 +478,7 @@ final class FsmImpl {
     };
     
     private final State STA4 =
-            new State(AssociationState.AWAITING_WRITE_ASS_RQ) {
+            new State(Association.AWAITING_WRITE_ASS_RQ) {
         public String toString() {
             return "Sta 4 - Awaiting transport connection opening to complete";
         }
@@ -365,7 +499,7 @@ final class FsmImpl {
     };
     
     private final State STA5 =
-            new State(AssociationState.AWAITING_READ_ASS_RP) {
+            new State(Association.AWAITING_READ_ASS_RP) {
         public String toString() {
             return "Sta 5 - Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU";
         }
@@ -405,7 +539,7 @@ final class FsmImpl {
     };
 
     private final State STA6 =
-            new State(AssociationState.ASSOCIATION_ESTABLISHED) {
+            new State(Association.ASSOCIATION_ESTABLISHED) {
         public String toString() {
             return "Sta 6 - Association established and ready for data transfer";
         }
@@ -475,7 +609,7 @@ final class FsmImpl {
     };
 
     private final State STA7 =
-            new State(AssociationState.AWAITING_READ_REL_RP) {
+            new State(Association.AWAITING_READ_REL_RP) {
         public String toString() {
             return "Sta 7 - Awaiting A-RELEASE-RP PDU";
         }
@@ -518,7 +652,7 @@ final class FsmImpl {
     };
 
     private final State STA8 =
-            new State(AssociationState.AWAITING_WRITE_REL_RP) {
+            new State(Association.AWAITING_WRITE_REL_RP) {
         public String toString() {
             return "Sta 8 - Awaiting local A-RELEASE response primitive";
         }
@@ -548,7 +682,7 @@ final class FsmImpl {
     };
 
     private final State STA9 =
-            new State(AssociationState.RCRS_AWAITING_WRITE_REL_RP) {
+            new State(Association.RCRS_AWAITING_WRITE_REL_RP) {
         public String toString() {
             return "Sta 9 - Release collision requestor side;"
                     + " awaiting A-RELEASE response";
@@ -566,7 +700,7 @@ final class FsmImpl {
     };
 
     private final State STA10 =
-            new State(AssociationState.RCAS_AWAITING_READ_REL_RP) {
+            new State(Association.RCAS_AWAITING_READ_REL_RP) {
         public String toString() {
             return "Sta 10 - Release collision acceptor side;"
                     + " awaiting A-RELEASE response";
@@ -600,7 +734,7 @@ final class FsmImpl {
     };
 
     private final State STA11 =
-            new State(AssociationState.RCRS_AWAITING_READ_REL_RP) {
+            new State(Association.RCRS_AWAITING_READ_REL_RP) {
         public String toString() {
             return "Sta 11 - Release collision requestor side;"
                     + " awaiting A-RELEASE-RP PDU";
@@ -634,7 +768,7 @@ final class FsmImpl {
      };
 
     private final State STA12 =
-            new State(AssociationState.RCAS_AWAITING_WRITE_REL_RP){
+            new State(Association.RCAS_AWAITING_WRITE_REL_RP){
         public String toString() {
             return "Sta 12 - Release collision acceptor side;"
                     + " awaiting A-RELEASE-RP PDU";
@@ -651,7 +785,7 @@ final class FsmImpl {
     };
 
     private final State STA13 =
-            new State(AssociationState.ASSOCIATION_TERMINATING) {
+            new State(Association.ASSOCIATION_TERMINATING) {
         public String toString() {
             return "Sta 13 - Awaiting Transport Connection Close Indication";
         }

@@ -24,7 +24,6 @@ package org.dcm4cheri.net;
 
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationState;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.Dimse;
@@ -71,8 +70,7 @@ implements ActiveAssociation, LF_ThreadPool.Handler
    // Constructors --------------------------------------------------
    ActiveAssociationImpl(Association assoc, DcmServiceRegistry services)
    {
-      if (assoc.getState().getType()
-            != AssociationState.ASSOCIATION_ESTABLISHED)
+      if (assoc.getState() != Association.ASSOCIATION_ESTABLISHED)
          throw new IllegalStateException("Association not esrablished - "
                + assoc.getState());      
 
@@ -112,7 +110,20 @@ implements ActiveAssociation, LF_ThreadPool.Handler
    throws IOException
    {
       checkRunning();
-      rspDispatcher.put(rq.getCommand().getMessageID(), l);
+      int msgID = rq.getCommand().getMessageID();
+      int maxOps = assoc.getMaxOpsInvoked();
+      if (maxOps == 0) {
+         rspDispatcher.put(msgID, l);
+      } else synchronized (rspDispatcher) {
+         while (rspDispatcher.size() >= maxOps) {
+            try {
+               wait();
+            } catch (InterruptedException ie) {
+               ie.printStackTrace();
+            }
+         }
+         rspDispatcher.put(msgID, l);
+      }
       assoc.write(rq);
    }
       
@@ -212,9 +223,13 @@ implements ActiveAssociation, LF_ThreadPool.Handler
       Command cmd = dimse.getCommand();
       Dataset ds = dimse.getDataset(); // read out dataset, if any
       int msgID = cmd.getMessageIDToBeingRespondedTo();
-      DimseListener l = (DimseListener)(cmd.isPending()
-            ? rspDispatcher.get(msgID)
-            : rspDispatcher.remove(msgID));
+      DimseListener l = null;
+      if (cmd.isPending()) {
+          l = (DimseListener)rspDispatcher.get(msgID);
+      } else synchronized(rspDispatcher) {
+          l = (DimseListener)rspDispatcher.remove(msgID);
+          notify();
+      }
 
       if (l != null)
          l.dimseReceived(assoc, dimse);

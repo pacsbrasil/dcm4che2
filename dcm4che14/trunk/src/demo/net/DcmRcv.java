@@ -22,6 +22,7 @@
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.Factory;
@@ -37,6 +38,9 @@ import org.dcm4che.server.ServerFactory;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -163,6 +167,8 @@ public class DcmRcv extends DcmServiceBase {
    private DcmHandler handler = srvFact.newDcmHandler(policy, services);
    private Server server = srvFact.newServer(handler);
    private int port = 104;
+   private int bufferSize = 2048;
+   private byte[] buffer = null;
    private File dir = null;
    
    
@@ -170,6 +176,7 @@ public class DcmRcv extends DcmServiceBase {
    public static void main(String args[]) throws Exception {
       LongOpt[] longopts = new LongOpt[] {
          new LongOpt("policy", LongOpt.REQUIRED_ARGUMENT, null, 'P'),
+         new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 'b'),
          new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 'L'),
          new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
          new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
@@ -194,6 +201,10 @@ public class DcmRcv extends DcmServiceBase {
             case 'L':
               dcmrcv.policy.setReceivedPDUMaxLength(
                   Integer.parseInt(g.getOptarg()));
+              break;
+            case 'b':
+              dcmrcv.bufferSize =
+                      Integer.parseInt(g.getOptarg()) & 0xfffffffe;
               break;
             case 'v':
                exit(messages.getString("version"));
@@ -221,6 +232,9 @@ public class DcmRcv extends DcmServiceBase {
 
    public void start() throws IOException
    {
+      if (bufferSize > 0) {
+         buffer = new byte[bufferSize];
+      }
       System.out.println(MessageFormat.format(messages.getString("start"),
          new Object[]{ new Date(), "" + port }));
       server.start(port);
@@ -233,13 +247,29 @@ public class DcmRcv extends DcmServiceBase {
       InputStream in = rq.getDataAsStream();
       try {
          if (dir != null) {
+            Command rqCmd = rq.getCommand();
+            FileMetaInfo fmi = objFact.newFileMetaInfo(
+                  rqCmd.getAffectedSOPClassUID(),
+                  rqCmd.getAffectedSOPInstanceUID(),
+                  rq.getTransferSyntaxUID());
+            OutputStream out = new BufferedOutputStream(
+                  new FileOutputStream(
+                     new File(dir, rqCmd.getAffectedSOPInstanceUID())));
+            try {
+               fmi.write(out);
+               copy(in, out);
+           } catch (IOException ioe) {
+              ioe.printStackTrace();
+           } finally {
+               try { out.close(); } catch (IOException ignore) {}
+            }
          }
       } finally {
          in.close();
       }
       rspCmd.setUS(Tags.Status, SUCCESS);
    }
-   
+         
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -250,5 +280,20 @@ public class DcmRcv extends DcmServiceBase {
         System.exit(1);
     }
    
-   // Inner classes -------------------------------------------------
+    private void copy(InputStream in, OutputStream out)
+    throws IOException {
+       if (buffer == null) {
+          int ch;
+          while ((ch = in.read()) != -1) {
+             out.write(ch);
+          }
+       } else {
+          int c;
+          while ((c = in.read(buffer)) != -1) {
+             out.write(buffer, 0, c);
+          }
+       }
+    }
+    
+    // Inner classes -------------------------------------------------
 }

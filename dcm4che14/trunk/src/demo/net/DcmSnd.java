@@ -464,7 +464,6 @@ public class DcmSnd {
         Getopt g = new Getopt("dcmsnd.jar", args, "L:b:P:r:R:", longopts, true);
         
         DcmSnd dcmsnd = new DcmSnd();
-        int buflen = 2048;
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {                

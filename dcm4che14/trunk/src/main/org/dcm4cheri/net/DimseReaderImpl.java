@@ -44,6 +44,7 @@ final class DimseReaderImpl {
     
     private PDataTF pDataTF = null;
     private PDataTF.PDV pdv = null;
+    private Command cmd = null;
     private byte[] buf = null;
     private LF_ThreadPool pool = null;
 
@@ -70,12 +71,10 @@ final class DimseReaderImpl {
             abort("No Presentation Context negotiated with pcid:" + pcid);
         }
         InputStream in = new PDataTFInputStream(pdv.getInputStream());
-        Command cmd = dcmObjFact.newCommand();
-        boolean rq = false;
+        cmd = dcmObjFact.newCommand();
         boolean ds = false;
         try {
             cmd.read(in);
-            rq = cmd.isRequest();
             ds = cmd.hasDataset();
         } catch (IllegalArgumentException e) { // very lousy Exception Handling 
             abort(e.getMessage());
@@ -99,19 +98,38 @@ final class DimseReaderImpl {
             }
             in = new PDataTFInputStream(pdv.getInputStream());
         } else { // no Dataset
-           if (pool != null) {
-              // trigger read of next Dimse by Follower Thread
-              pool.promoteNewLeader();
-           }
+           // if no Data Fragment
+            forkNextReadNext();
         }
-        return new DimseImpl(pcid, tsUID, cmd, in);
+        DimseImpl retval = new DimseImpl(pcid, tsUID, cmd, in);
+        fsm.fireReceived(retval);
+        return retval;
     }
-    
+
+    private void forkNextReadNext() {
+       if (pool == null)
+          return;
+       if (cmd.isRequest()) {
+          switch (cmd.getCommandField()) {
+             case Command.C_GET_RQ:
+             case Command.C_FIND_RQ:
+             case Command.C_MOVE_RQ:
+             case Command.C_CANCEL_RQ:
+                break;
+             default:
+                // no need for extra thread in syncron mode
+                if (fsm.getMaxOpsPerformed() == 1)
+                   return;
+          }
+       }
+       pool.promoteNewLeader();
+    }
+
     private InputStream nextStream() throws IOException {
         if (pdv != null && pdv.last()) {
-           if (!pdv.cmd() && pool != null) {
-              // trigger read of next Dimse by Follower Thread
-              pool.promoteNewLeader();
+           // if last Data Fragment
+           if (!pdv.cmd()) {
+              forkNextReadNext();
            }
            return null;
         }

@@ -25,7 +25,7 @@ package org.dcm4cheri.net;
 
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationState;
+import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AAssociateRJ;
@@ -60,13 +60,33 @@ final class AssociationImpl implements Association {
       this.reader = new DimseReaderImpl(fsm);
       this.writer = new DimseWriterImpl(fsm);
    }
+
+   public String toString() {
+      return fsm.toString();
+   }
    
-   public final AssociationState getState() {
+   public void addAssociationListener(AssociationListener l) {
+      fsm.addAssociationListener(l);
+   }
+   
+   public void removeAssociationListener(AssociationListener l) {
+      fsm.removeAssociationListener(l);
+   }
+
+   public final int getState() {
       return fsm.getState();
    }
    
    public final int nextMsgID() {
       return ++msgID;
+   }
+   
+   public int getMaxOpsInvoked() {    
+      return fsm.getMaxOpsInvoked();
+   }
+    
+   public int getMaxOpsPerformed() {
+      return fsm.getMaxOpsPerformed();
    }
    
    public void setThreadPool(LF_ThreadPool pool) {
@@ -132,4 +152,4 @@ final class AssociationImpl implements Association {
    public final PresContext getAcceptedPresContext(String asuid, String tsuid) {
       return fsm.getAcceptedPresContext(asuid, tsuid);
    }
-}
+ }

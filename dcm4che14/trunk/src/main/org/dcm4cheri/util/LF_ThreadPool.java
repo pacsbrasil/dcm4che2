@@ -53,7 +53,7 @@ public class LF_ThreadPool
    private Object mutex = new Object();
    private int waiting = 0;
    private int running = 0;
-   private int maxRunning = 10;
+   private int maxRunning = 0;
    
    // Static --------------------------------------------------------
    
@@ -88,7 +88,7 @@ public class LF_ThreadPool
    
    public void setMaxRunning(int maxRunning)
    {
-      if (maxRunning <= 0)
+      if (maxRunning < 0)
          throw new IllegalArgumentException("maxRunning: " + maxRunning);
             
       this.maxRunning = maxRunning;
@@ -106,7 +106,7 @@ public class LF_ThreadPool
    public void join()
    {
       shutdown = false;
-      while (!shutdown && waiting + running < maxRunning)
+      while (!shutdown && (maxRunning == 0 || waiting + running < maxRunning))
       {
          synchronized (mutex)
          {
@@ -163,7 +163,7 @@ public class LF_ThreadPool
             
       // if there is no waiting thread,
       // and the maximum number of running threads is not yet reached,
-      if (running >= maxRunning) {
+      if (maxRunning != 0 && running >= maxRunning) {
          if (log.isLoggable(Level.FINER))
             log.finer("" + this + " - Max number of threads reached"); 
          return false;

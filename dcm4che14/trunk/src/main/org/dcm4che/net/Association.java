@@ -33,12 +33,36 @@ import java.util.List;
  */
 public interface Association {
    
-   int nextMsgID();
+   public static int IDLE = 1;
+   
+   public static int AWAITING_READ_ASS_RQ = 2;
+   public static int AWAITING_WRITE_ASS_RP = 3;
+   public static int AWAITING_WRITE_ASS_RQ = 4;
+   public static int AWAITING_READ_ASS_RP = 5;
+   
+   public static int ASSOCIATION_ESTABLISHED = 6;
+   
+   public static int AWAITING_READ_REL_RP = 7;
+   public static int AWAITING_WRITE_REL_RP = 8;
+   public static int RCRS_AWAITING_WRITE_REL_RP = 9;
+   public static int RCAS_AWAITING_READ_REL_RP = 10;
+   public static int RCRS_AWAITING_READ_REL_RP = 11;
+   public static int RCAS_AWAITING_WRITE_REL_RP = 12;
+   
+   public static int ASSOCIATION_TERMINATING = 13;
+   
+   int getState();
 
+   void addAssociationListener(AssociationListener l);
+   
+   void removeAssociationListener(AssociationListener l);
+   
+   int nextMsgID();
+   
    PDU connect(AAssociateRQ rq, int timeout) throws IOException;
    
    PDU accept(AcceptorPolicy policy, int timeout) throws IOException;
-
+   
    Dimse read(int timeout) throws IOException;
    
    void write(Dimse dimse) throws IOException;
@@ -46,15 +70,16 @@ public interface Association {
    PDU release(int timeout) throws IOException;
    
    void abort(AAbort aa) throws IOException;
-
-   AssociationState getState();
-   
+      
    void setTCPCloseTimeout(int tcpCloseTimeout);
    
    int getTCPCloseTimeout();
+   
+   int getMaxOpsInvoked();
+   
+   int getMaxOpsPerformed();
    
    String getAcceptedTransferSyntaxUID(int pcid);
    
    PresContext getAcceptedPresContext(String asuid, String tsuid);
 }
-

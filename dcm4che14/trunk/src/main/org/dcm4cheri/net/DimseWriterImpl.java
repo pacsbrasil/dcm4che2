@@ -48,6 +48,7 @@ final class DimseWriterImpl {
     }
     
     public synchronized void write(Dimse dimse) throws IOException {
+        fsm.fireWrite(dimse);
         pcid = dimse.pcid();
         String tsUID = fsm.getAcceptedTransferSyntaxUID(pcid);
         if (tsUID == null) {
