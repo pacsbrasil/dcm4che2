@@ -38,6 +38,7 @@ public class MCMModel {
     public static final String NO_ERROR ="OK";
     /** Errorcode: unsupported action */
 	public static final String ERROR_UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION";
+	public static String ERROR_MEDIA_DELETE = "MEDIA_DELETE_FAILED";
 
 	/** holds current error code. */
 	private String errorCode = NO_ERROR;
@@ -152,7 +153,7 @@ public class MCMModel {
 	/**
 	 * Performa a media search with current filter settings.
 	 * <p>
-	 * If <code>newSearch is true</code> the <code>offset</code> is set to <code>true</code> (get first result page).
+	 * If <code>newSearch is true</code> the <code>offset</code> is set to <code>0</code> (get first result page).
 	 * <p>
 	 * The result of the search is stored in <code>mediaList</code> and <code>total</code> is updated
 	 * with the total number of results for this search.
@@ -167,11 +168,7 @@ public class MCMModel {
 			Long end = null;
 			int[] stati = null;
 			if ( filter.selectedStati() != null ) { //not all
-				try {
-					stati = filter.selectedStati();//TODO search for all selected!
-				} catch ( Exception x ) {
-					filter.setSelectedStati( MCMFilter.MEDIA_TYPE_DEFAULT ); //set to default media type (COLLECTING)
-				} 
+					stati = filter.selectedStati();
 			}
 			if ( ! mcmNotAvail && ( stati == null || 
 					filter.getSelectedStatiAsString().indexOf( String.valueOf( MediaDTO.BURNING ) ) != -1 ) ) {
@@ -191,8 +188,6 @@ public class MCMModel {
 				} else if ( MCMFilter.UPDATED_FILTER.equals( filter.getCreateOrUpdateDate() ) ) {
 					total = lookupMediaComposer().findByUpdatedTime( col, start, end, stati, 
 	 						new Integer( offset ), new Integer( limit ), filter.isDescent() );
-				} else {
-					lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
 				}
 			}
 			mediaList = new MediaList( col );

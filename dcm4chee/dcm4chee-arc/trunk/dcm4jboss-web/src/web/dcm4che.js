@@ -70,6 +70,8 @@ function checkError( errCode )
     		msg = msg + 'Not allowed! You can only move series from one study to another study.'
     	else if ( errCode == 'moveError_diffInstanceParent' ) 
     		msg = msg + 'Not allowed! You can only move instances from one series to another series.'
+    	else if ( errCode == 'MEDIA_DELETE_FAILED' ) 
+    		msg = msg + 'Delete media failed!'
 		alert(msg);
 	}
 }
