@@ -282,7 +282,7 @@ final class DirRecordImpl implements DirRecord
     public boolean match(String type, Dataset keys, boolean ignorePNCase)
     {
         return (type == null || type.equals(this.type))
-                 && dataset.match(keys, ignorePNCase);
+                 && dataset.match(keys, ignorePNCase, true);
     }
 
 

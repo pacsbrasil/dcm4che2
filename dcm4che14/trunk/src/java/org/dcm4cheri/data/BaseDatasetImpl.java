@@ -528,14 +528,14 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      * @param  ignorePNCase  Description of the Parameter
      * @return               Description of the Return Value
      */
-    public boolean match(Dataset keys, boolean ignorePNCase)
+    public boolean match(Dataset keys, boolean ignorePNCase, boolean ignoreEmpty)
     {
         if (keys == null) {
             return true;
         }
         Charset keyCS = keys.getCharset();
         for (Iterator iter = keys.iterator(); iter.hasNext(); ) {
-            if (!match((DcmElementImpl) iter.next(), ignorePNCase, keyCS)) {
+            if (!match((DcmElementImpl) iter.next(), ignorePNCase, ignoreEmpty, keyCS)) {
                 return false;
             }
         }
@@ -543,10 +543,13 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     }
 
 
-    private boolean match(DcmElementImpl key, boolean ignorePNCase, Charset keyCS)
+    private boolean match(DcmElementImpl key, boolean ignorePNCase, boolean ignoreEmpty, Charset keyCS)
     {
         DcmElementImpl e = (DcmElementImpl) get(key.tag());
-        return e == null || e.match(key, ignorePNCase, keyCS, getCharset());
+        if (e == null) {
+            return ignoreEmpty || key.isEmpty();
+        }
+        return e.match(key, ignorePNCase, ignoreEmpty, keyCS, getCharset());
     }
 
 

@@ -132,7 +132,7 @@ public class Tags {
         int d6 = digit(a[7]);
         int d7 = digit(a[8]);
         int d8 = digit(a[9]);
-        if ((d1 | d2 | d3 | d4 | d5 | d6 | d7 | d8) < 0) {
+        if ((d1 | d2 | d3 | d4 | d5 | d6 | d7 | d8) &lt; 0) {
             return -1;
         }
         return (d1 &lt;&lt; 28)
@@ -146,9 +146,9 @@ public class Tags {
     }
 
     private static int digit(char c) {
-        return (c >= '0' && c <= '9') ? (c - '0')
-            : (c >= 'A' && c <= 'F') ? (c - 'A')
-            : (c >= 'a' && c <= 'f') ? (c - 'a')
+        return (c >= '0' &amp;&amp; c &lt;= '9') ? (c - '0')
+            : (c >= 'A' &amp;&amp; c &lt;= 'F') ? (c - 'A')
+            : (c >= 'a' &amp;&amp; c &lt;= 'f') ? (c - 'a')
             : -1;
     }
 

@@ -188,13 +188,13 @@ class SQElement extends DcmElementImpl
      * @param  dsCS          Description of the Parameter
      * @return               Description of the Return Value
      */
-    protected boolean matchValue(DcmElement key, boolean ignorePNCase,
+    protected boolean matchValue(DcmElement key, boolean ignorePNCase, boolean ignoreEmpty,
             Charset keyCS, Charset dsCS)
     {
         for (int i = 0, m = key.vm(); i < m; ++i) {
             Dataset keys = key.getItem(i);
             for (int j = 0, n = vm(); j < n; ++j) {
-                if (getItem(j).match(keys, ignorePNCase)) {
+                if (getItem(j).match(keys, ignorePNCase, ignoreEmpty)) {
                     return true;
                 }
             }

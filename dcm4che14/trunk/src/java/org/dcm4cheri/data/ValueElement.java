@@ -217,6 +217,7 @@ abstract class ValueElement extends DcmElementImpl {
         protected boolean matchValue(
             DcmElement key,
             boolean ignorePNCase,
+			boolean ignoreEmpty,
             Charset keyCS,
             Charset dsCS) {
             int v;
@@ -294,6 +295,7 @@ abstract class ValueElement extends DcmElementImpl {
         protected boolean matchValue(
             DcmElement key,
             boolean ignorePNCase,
+			boolean ignoreEmpty,
             Charset keyCS,
             Charset dsCS) {
             int v;
@@ -391,6 +393,7 @@ abstract class ValueElement extends DcmElementImpl {
         protected boolean matchValue(
             DcmElement key,
             boolean ignorePNCase,
+			boolean ignoreEmpty,
             Charset keyCS,
             Charset dsCS) {
             int v;
@@ -571,6 +574,7 @@ abstract class ValueElement extends DcmElementImpl {
         protected boolean matchValue(
             DcmElement key,
             boolean ignorePNCase,
+			boolean ignoreEmpty,
             Charset keyCS,
             Charset dsCS) {
             int v;
@@ -687,6 +691,7 @@ abstract class ValueElement extends DcmElementImpl {
         protected boolean matchValue(
             DcmElement key,
             boolean ignorePNCase,
+			boolean ignoreEmpty,
             Charset keyCS,
             Charset dsCS) {
             float v;
@@ -804,6 +809,7 @@ abstract class ValueElement extends DcmElementImpl {
         protected boolean matchValue(
             DcmElement key,
             boolean ignorePNCase,
+			boolean ignoreEmpty,
             Charset keyCS,
             Charset dsCS) {
             double v;
