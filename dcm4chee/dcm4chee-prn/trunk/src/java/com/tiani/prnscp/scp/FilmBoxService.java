@@ -194,7 +194,7 @@ class FilmBoxService extends DcmServiceBase
       throws IOException, DcmServiceException
    {
       try {
-         File dir = scp.getFilmBoxDir(
+         scp.createJob(
             FilmSessionService.getFilmSessionUID(as), 
             checkFilmBoxUID(as, rq));
          return null;

@@ -181,6 +181,7 @@ class ImageBoxService extends DcmServiceBase
       ds.putTM(Tags.StudyTime);
       ds.putSH(Tags.AccessionNumber);
       ds.putCS(Tags.Modality, "HC");
+      ds.putLO(Tags.Manufacturer, "TIANI MEDGRAPH AG");
       ds.putPN(Tags.PatientName);
       ds.putLO(Tags.PatientID);
       item.putLO(Tags.PatientID);

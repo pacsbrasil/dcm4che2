@@ -90,7 +90,7 @@ class FilmSessionService
    public void close(Association as) {
       String uid = (String) as.getProperty("FilmSession");
       if (uid != null) {
-         doDelete(uid);
+         scp.deleteFilmSession(uid);
       }
    }
    
@@ -120,20 +120,7 @@ class FilmSessionService
                "Only support one Basic Film Session SOP Instance on an Association.");
          }
          String uid = rq.getCommand().getAffectedSOPInstanceUID();
-         File dir = scp.getFilmSessionDir(uid);
-         if (dir.exists()) {
-            throw new DcmServiceException(Status.DuplicateSOPInstance);
-         }
-         dir.mkdir();
-         try {
-            scp.writeDataset(new File(dir, "ATTR"), ds);
-            new File(dir, "FILMS").mkdir();
-            new File(dir, "JOBS").mkdir();
-            new File(dir, "HC").mkdir();
-         } catch (DcmServiceException e) {
-            scp.rmdir(dir);
-            throw e;
-         }
+         scp.createFilmSession(uid, ds);
          Association a = as.getAssociation();
          a.putProperty("FilmSession", uid);
          a.addAssociationListener(this);
@@ -161,7 +148,7 @@ class FilmSessionService
       throws IOException, DcmServiceException
    {
       try {
-         File dir = scp.getFilmSessionDir(checkFilmSessionUID(as, rq));
+         scp.createJob(FilmSessionService.getFilmSessionUID(as)); 
          return null;
       } catch (DcmServiceException e) {
          scp.getLog().warn("Failed to print Basic Film Session SOP Instance", e);
@@ -173,7 +160,7 @@ class FilmSessionService
       throws IOException, DcmServiceException 
    {
       try {
-         doDelete(checkFilmSessionUID(as, rq));
+         scp.deleteFilmSession(checkFilmSessionUID(as, rq));
          Association a = as.getAssociation();
          a.putProperty("FilmSession", null);
          a.removeAssociationListener(this);
@@ -189,15 +176,6 @@ class FilmSessionService
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   private void doDelete(String uid) {
-      File dir = scp.getFilmSessionDir(uid);
-      if (new File(dir, "JOBS").list().length == 0) {
-         scp.rmdir(dir);
-      } else {
-         new File(dir, "ATTR").delete();
-         scp.rmdir(new File(dir, "FILMS"));
-      }
-   }
    
    // Inner classes -------------------------------------------------
 }

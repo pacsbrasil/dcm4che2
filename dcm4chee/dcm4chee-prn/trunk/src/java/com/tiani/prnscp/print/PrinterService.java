@@ -26,6 +26,7 @@ import org.jboss.system.ServiceMBeanSupport;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -33,9 +34,14 @@ import javax.jms.QueueSession;
 import javax.jms.QueueReceiver;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.TextMessage;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * <description>
@@ -67,6 +73,7 @@ public class PrinterService
    private QueueConnection conn;
    private QueueSession session;
    private String queueName;
+   private long notifCount = 0;
    
    private int status = NORMAL;
    private String statusInfo = "NORMAL";
@@ -129,7 +136,58 @@ public class PrinterService
    
    // MessageListener implementation -----------------------------------
    
-   public void onMessage(Message message) {
+   public void onMessage(Message msg) {
+      String job;
+      int numberOfCopies;
+      String mediumType;
+      String filmDestination;
+      try {
+         job = ((TextMessage) msg).getText();
+         numberOfCopies = msg.getIntProperty("NumberOfCopies"); 
+         mediumType = msg.getStringProperty("MediumType"); 
+         filmDestination = msg.getStringProperty("FilmDestination");          
+      } catch (JMSException e) {
+         log.error("Failed to read JMS messsage:", e);
+         return;
+      }
+      
+      log.info("Start processing job - " + job);
+      sendNotification(
+         new PrintJobNotification(this, ++notifCount, job,
+            PrintJobNotification.PRINTING));
+      try {
+         File jobDir = new File(job);
+         if (!jobDir.exists()) {
+            throw new RuntimeException("Missing job dir - " + job);
+         }
+         File rootDir = jobDir.getParentFile().getParentFile();
+         File hcDir = new File(rootDir, "HC");
+         if (!hcDir.exists()) {
+            throw new RuntimeException("Missing hardcopy dir - " + hcDir);
+         }
+         
+         
+         File[] spFiles = jobDir.listFiles();
+         Arrays.sort(spFiles,
+            new Comparator() {
+               public int compare(Object o1, Object o2) {
+                  return (int)(((File)o1).lastModified()
+                             - ((File)o2).lastModified());
+               }
+            });
+         // TO DO
+         Thread.sleep(10000); // simulate Print Process
+         
+         log.info("Finished processing job - " + job);
+         sendNotification(
+            new PrintJobNotification(this, ++notifCount, job,
+               PrintJobNotification.DONE));
+      } catch (Exception e) {
+         log.error("Failed processing job - " + job, e);
+         sendNotification(
+            new PrintJobNotification(this, ++notifCount, job,
+               PrintJobNotification.FAILURE));
+      }
    }
    
    // ServiceMBeanSupport overrides ------------------------------------
