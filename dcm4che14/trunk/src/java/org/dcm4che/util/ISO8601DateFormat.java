@@ -310,7 +310,8 @@ public final class ISO8601DateFormat extends DateFormat
 			throw new ParseException("missing time zone",p);
 		}
         else {  //not strict and missing timezone (assume this timezone)
-            off = Calendar.getInstance().get(Calendar.ZONE_OFFSET);
+            off = getCalendar().get(Calendar.ZONE_OFFSET);
+            off += getCalendar().getTimeZone().getDSTSavings();
         }
 		//return
 		Calendar cal = new GregorianCalendar(year,month-1,day,hour,min,sec);
