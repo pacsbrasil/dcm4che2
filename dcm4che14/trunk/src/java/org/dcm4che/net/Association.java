@@ -37,7 +37,7 @@ import java.util.List;
  *
  * <p><b>20020728 gunter:</b>
  * <ul>
- * <li> add {@link #getAcceptedPresContext(String)}
+ * <li> add {@link #listAcceptedPresContext(String)}
  * <li> add {@link #countAcceptedPresContext()}
  * </ul>
  */
