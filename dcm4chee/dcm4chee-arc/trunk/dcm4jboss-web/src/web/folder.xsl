@@ -11,18 +11,7 @@
 	encoding="ISO-8859-1"
 	/>
 	
-	<xsl:template match="/">
-			<html>
-			<head>
-				<title>Study Navigator</title>
-				<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
-				<script language="JavaScript">window.name="folder";</script>				
-			</head>
-			<body>
-			  <xsl:apply-templates select="model"/>
-		  </body>
-		</html>
-	</xsl:template>
+	<xsl:include href  = "page.xsl" />
 	
 	<xsl:template match="model">
 			<form action="foldersubmit.m" method="post">
@@ -66,7 +55,6 @@
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 								</input>
-							  <input type="submit" name="ae" value="AE"/>								
 							  <input type="submit" name="send" value="Send" disabled="disabled"/>
 							  <input type="submit" name="move" value="Move" disabled="disabled"/>
 							  <input type="submit" name="merge" value="Merge" disabled="disabled"/>

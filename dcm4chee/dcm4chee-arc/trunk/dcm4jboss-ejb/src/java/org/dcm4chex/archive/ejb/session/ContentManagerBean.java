@@ -26,8 +26,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -101,149 +103,223 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  *  res-ref-name="jdbc/DefaultDS"
  *  resource-name="java:/DefaultDS"
  */
-public abstract class ContentManagerBean implements SessionBean {
+public abstract class ContentManagerBean implements SessionBean
+{
 
-    private DataSource ds;
-    private PatientLocalHome patHome;
-    private StudyLocalHome studyHome;
-    private SeriesLocalHome seriesHome;
-    private AELocalHome aeHome;
-    
-    
-    public void setSessionContext(SessionContext arg0)
-        throws EJBException, RemoteException {
-        Context jndiCtx = null;
-        try {
-            jndiCtx = new InitialContext();
-            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
-            patHome =
-                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
-            studyHome =
-                (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
-            seriesHome =
-                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
-            aeHome =
-            	(AELocalHome) jndiCtx.lookup("java:comp/env/ejb/AE");
-        } catch (NamingException e) {
-            throw new EJBException(e);
-        } finally {
-            if (jndiCtx != null) {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
-            }
-        }
-    }
+	private DataSource ds;
+	private PatientLocalHome patHome;
+	private StudyLocalHome studyHome;
+	private SeriesLocalHome seriesHome;
+	private AELocalHome aeHome;
 
-    public void unsetSessionContext() {
-        patHome = null;
-        studyHome = null;
-        seriesHome = null;
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public int countStudies(StudyFilterDTO filter) {
-        try {
-            return new CountStudiesCmd(ds, filter).execute();
-        } catch (SQLException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public List listPatients(StudyFilterDTO filter, int offset, int limit) {
-        try {
-            return new QueryStudiesCmd(ds, filter, offset, limit).execute();
-        } catch (SQLException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     * @ejb.transaction type="Required"
-     */
-    public List listStudiesOfPatient(int patientPk) throws FinderException {
-        Collection c =
-            patHome.findByPrimaryKey(new Integer(patientPk)).getStudies();
-        List result = new ArrayList(c.size());
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            StudyLocal study = (StudyLocal) it.next();
-            result.add(
-                DTOFactory.newStudyDTO(
-                    study.getPk().intValue(),
-                    study.getAttributes(),
-                    study.getModalitiesInStudy(),
-                    study.getNumberOfStudyRelatedSeries(),
-                    study.getNumberOfStudyRelatedInstances(),
-                    study.getRetrieveAETs()));
-        }
-        return result;
-    }
-
-    /**
-     * @ejb.interface-method
-     * @ejb.transaction type="Required"
-     */
-    public List listSeriesOfStudy(int studyPk) throws FinderException {
-        Collection c =
-            studyHome.findByPrimaryKey(new Integer(studyPk)).getSeries();
-        List result = new ArrayList(c.size());
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            SeriesLocal series = (SeriesLocal) it.next();
-            result.add(
-                DTOFactory.newSeriesDTO(
-                    series.getPk().intValue(),
-                    series.getAttributes(),
-                    series.getNumberOfSeriesRelatedInstances(),
-                    series.getRetrieveAETs()));
-        }
-        return result;
-    }
-
-    /**
-     * @ejb.interface-method
-     * @ejb.transaction type="Required"
-     */
-    public List listInstancesOfSeries(int seriesPk) throws FinderException {
-        Collection c =
-            seriesHome.findByPrimaryKey(new Integer(seriesPk)).getInstances();
-        List result = new ArrayList(c.size());
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            InstanceLocal inst = (InstanceLocal) it.next();
-            result.add(
-                DTOFactory.newInstanceDTO(
-                    inst.getPk().intValue(),
-                    inst.getAttributes(),
-                    inst.getRetrieveAETs(),
-                    inst.getFiles().size()));
-        }
-        return result;
-    }
-    
-    /**
-     * @ejb.interface-method
-     */
-    public List getAes() throws EJBException
+	public void setSessionContext(SessionContext arg0)
+		throws EJBException, RemoteException
 	{
-    	try 
+		Context jndiCtx = null;
+		try
 		{
-			ArrayList ret =new ArrayList();
-			for (Iterator i=aeHome.findAll().iterator();i.hasNext();)
+			jndiCtx = new InitialContext();
+			ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
+			patHome =
+				(PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+			studyHome =
+				(StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
+			seriesHome =
+				(SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+			aeHome = (AELocalHome) jndiCtx.lookup("java:comp/env/ejb/AE");
+		} catch (NamingException e)
+		{
+			throw new EJBException(e);
+		} finally
+		{
+			if (jndiCtx != null)
 			{
-				AELocal ae = (AELocal)i.next(); 
-				AEData aeDTO = new AEData(ae.getTitle(), ae.getHostName(), ae.getPort(), ae.getCipherSuites());
+				try
+				{
+					jndiCtx.close();
+				} catch (NamingException ignore)
+				{
+				}
+			}
+		}
+	}
+
+	public void unsetSessionContext()
+	{
+		patHome = null;
+		studyHome = null;
+		seriesHome = null;
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public int countStudies(StudyFilterDTO filter)
+	{
+		try
+		{
+			return new CountStudiesCmd(ds, filter).execute();
+		} catch (SQLException e)
+		{
+			throw new EJBException(e);
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public List listPatients(StudyFilterDTO filter, int offset, int limit)
+	{
+		try
+		{
+			return new QueryStudiesCmd(ds, filter, offset, limit).execute();
+		} catch (SQLException e)
+		{
+			throw new EJBException(e);
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Required"
+	 */
+	public List listStudiesOfPatient(int patientPk) throws FinderException
+	{
+		Collection c =
+			patHome.findByPrimaryKey(new Integer(patientPk)).getStudies();
+		List result = new ArrayList(c.size());
+		for (Iterator it = c.iterator(); it.hasNext();)
+		{
+			StudyLocal study = (StudyLocal) it.next();
+			result.add(
+				DTOFactory.newStudyDTO(
+					study.getPk().intValue(),
+					study.getAttributes(),
+					study.getModalitiesInStudy(),
+					study.getNumberOfStudyRelatedSeries(),
+					study.getNumberOfStudyRelatedInstances(),
+					study.getRetrieveAETs()));
+		}
+		return result;
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Required"
+	 */
+	public List listSeriesOfStudy(int studyPk) throws FinderException
+	{
+		Collection c =
+			studyHome.findByPrimaryKey(new Integer(studyPk)).getSeries();
+		List result = new ArrayList(c.size());
+		for (Iterator it = c.iterator(); it.hasNext();)
+		{
+			SeriesLocal series = (SeriesLocal) it.next();
+			result.add(
+				DTOFactory.newSeriesDTO(
+					series.getPk().intValue(),
+					series.getAttributes(),
+					series.getNumberOfSeriesRelatedInstances(),
+					series.getRetrieveAETs()));
+		}
+		return result;
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Required"
+	 */
+	public List listInstancesOfSeries(int seriesPk) throws FinderException
+	{
+		Collection c =
+			seriesHome.findByPrimaryKey(new Integer(seriesPk)).getInstances();
+		List result = new ArrayList(c.size());
+		for (Iterator it = c.iterator(); it.hasNext();)
+		{
+			InstanceLocal inst = (InstanceLocal) it.next();
+			result.add(
+				DTOFactory.newInstanceDTO(
+					inst.getPk().intValue(),
+					inst.getAttributes(),
+					inst.getRetrieveAETs(),
+					inst.getFiles().size()));
+		}
+		return result;
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public List getAes() throws EJBException
+	{
+		try
+		{
+			ArrayList ret = new ArrayList();
+			for (Iterator i = aeHome.findAll().iterator(); i.hasNext();)
+			{
+				AELocal ae = (AELocal) i.next();
+				AEData aeDTO =
+					new AEData(
+						ae.getTitle(),
+						ae.getHostName(),
+						ae.getPort(),
+						ae.getCipherSuites());
 				ret.add(aeDTO);
-			}		
-    		return ret;
-    	} catch (FinderException e) {
-    		throw new EJBException(e);
-    	}
-    }
-    
+			}
+			return ret;
+		} catch (FinderException e)
+		{
+			throw new EJBException(e);
+		}
+	}
+	
+	/**
+	 * @ejb.interface-method
+	 */
+	public void updateAE(String oldAETitle, AEData newAE) throws Exception
+	{
+			AELocal ae = aeHome.findByPrimaryKey(oldAETitle);
+			//FinderException has not been thrown, means ae exists
+
+			if (newAE.getTitle().equals(oldAETitle)) //ae title hasn't been modified
+			{
+				ae.setHostName(newAE.getHostName());
+				ae.setPort(newAE.getPort());
+				ae.setCipherSuites(newAE.getCipherSuitesAsString());
+			}
+			else //AE title has been modified.
+			{	
+				aeHome.remove(oldAETitle);
+				this.newAE(newAE);
+			}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public void newAE(AEData newAE) throws Exception
+	{
+		aeHome.create(
+				newAE.getTitle(),
+				newAE.getHostName(),
+				newAE.getPort(),
+				newAE.getCipherSuitesAsString());
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public void removeAE(String aeTitle) throws Exception
+	{
+		try
+		{
+			aeHome.remove(aeTitle);
+		}
+		catch (RemoveException e)
+		{
+			throw new Exception(e);
+		}
+	}
+	
+	
 }

@@ -13,6 +13,9 @@ default-transform-type="xslt">
     <view id="folder" name="folder">
       <transform path="folder.xsl" />
     </view>
+    <view id="error" name="error">
+   	  <transform path="error.xsl" />
+    </view>
   </views>
 
   <commands>
@@ -24,9 +27,7 @@ default-transform-type="xslt">
     <command name="foldersubmit">
       <controller
       class="org.dcm4chex.archive.web.maverick.FolderSubmitCtrl" />
-
       <view ref="folder" />
-	  <view name="ae" type="redirect" path="AEEdit.m"/>
     </command>
 
     <command name="expandPat">
@@ -81,11 +82,28 @@ default-transform-type="xslt">
 	    <view type="redirect" path="folder.m" name="success"/>        
      </command>
 
-    <command name="AEEdit">
-        <controller class="org.dcm4chex.archive.web.maverick.AEEditCtrl" />    
+    <command name="ae">
+        <controller class="org.dcm4chex.archive.web.maverick.AEListCtrl" />    
 	    <view name="success">
+    	  <transform path="ae_list.xsl" />
+	    </view>
+     </command>
+
+    <command name="aeedit">
+        <controller class="org.dcm4chex.archive.web.maverick.AEEditCtrl" />    
+	    <view name="edit">
     	  <transform path="ae_edit.xsl" />
 	    </view>
+	    <view name="new">
+    	  <transform path="ae_new.xsl" />
+	    </view>
+      <view ref="error" />
+     </command>
+
+    <command name="aesubmit">
+        <controller class="org.dcm4chex.archive.web.maverick.AESubmitCtrl" />    
+	    <view name="success" type="redirect" path="ae.m"/>
+        <view ref="error" />
      </command>
      
   </commands>

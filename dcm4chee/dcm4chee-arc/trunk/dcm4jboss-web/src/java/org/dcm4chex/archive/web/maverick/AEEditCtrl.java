@@ -19,58 +19,101 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
-
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
-import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.infohazard.maverick.ctl.ThrowawayBean2;
 
 /**
  * @author umberto.cappellini@tiani.com
  */
-public class AEEditCtrl extends ThrowawayBean2
+public class AEEditCtrl extends ThrowawayBean2 implements Errable
 {
-	private int pk;
+	private final String CALL_PARAMETER="call";
+	private final String CALL_PARAMETER_VALUE_EDIT="edit";
+	private final String CALL_PARAMETER_VALUE_NEW="new";
 	
-	/**
-	 * @param pk The pk to set.
-	 */
-	public final void setPk(int pk)
-	{
-		this.pk = pk;
-	}
+	private String message=Errable.DEFAULT_MESSAGE;
+	private String errorType=Errable.DEFAULT_TYPE;
+	private String backURL =Errable.DEFAULT_BACK_URL;
 	
-	public List getAEs() 
+	
+	public AEData getAE()
 	{
+		int port = 0;
 		try
 		{
-			return lookupContentManager().getAes();
-		} catch (RemoteException e)
+			port = Integer.parseInt(getValue("port"));
+		} catch (Throwable e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return new ArrayList();
-		} catch (Exception e)
+			//do nothing
+		};
+		return new AEData( 
+			getValue("title"),
+			getValue("hostName"),
+			port,
+			getValue("chiperSuites")); 
+	}
+
+	private String getValue(String name)
+	{
+		return getCtx().getRequest().getParameter(name) != null
+			? getCtx().getRequest().getParameter(name)
+			: "";
+	}
+
+	protected String perform() throws Exception 
+	{
+		String call =getCtx().getRequest().getParameter(CALL_PARAMETER);
+		if (call != null)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return new ArrayList();			
+			this.errorType = "";
+			this.message = "";
+			this.backURL= "";
+			
+			if (call.equals(CALL_PARAMETER_VALUE_EDIT))
+				return "edit";
+			else if (call.equals(CALL_PARAMETER_VALUE_NEW))
+				return "new";
+			else
+			{
+				this.errorType = "Unrecognized Value of Parameter \'call\'";
+				this.message = call;
+				this.backURL= "default.jsp";
+				return ERROR_VIEW;
+			}
+		}
+		else
+		{
+			this.errorType = "Missing Parameter";
+			this.message = CALL_PARAMETER;
+			this.backURL= "default.jsp";
+			return ERROR_VIEW;
 		}
 	}
 	
-	private ContentManager lookupContentManager() throws Exception
+	/**
+	 * @return Returns the backURL.
+	 */
+	public final String getBackURL()
 	{
-		ContentManagerHome home =
-			(ContentManagerHome) EJBHomeFactory.getFactory().lookup(
-					ContentManagerHome.class,
-					ContentManagerHome.JNDI_NAME);
-		return home.create();
+		return backURL;
+	}
+
+	/**
+	 * @return Returns the errorType.
+	 */
+	public final String getErrorType()
+	{
+		return errorType;
+	}
+
+	/**
+	 * @return Returns the message.
+	 */
+	public final String getMessage()
+	{
+		return message;
 	}
 
 }
+
+

@@ -96,5 +96,12 @@ public class AEData implements Serializable {
         }
         return retval;
     }
-        
+
+    /** Getter for property cipherSuites.
+     * @return Value of property cipherSuites.
+     */
+    public java.lang.String getCipherSuitesAsString() 
+	{
+    	return cipherSuites;
+    }
 }

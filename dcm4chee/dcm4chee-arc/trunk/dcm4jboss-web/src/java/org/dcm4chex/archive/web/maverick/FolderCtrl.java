@@ -30,7 +30,6 @@ import org.infohazard.maverick.ctl.ThrowawayFormBeanUser;
 public class FolderCtrl extends ThrowawayFormBeanUser {
 
     public static final String FOLDER = "folder";
-    public static final String AE = "ae";
     
     protected Object makeFormBean() {
         return FolderForm.getFolderForm(getCtx().getRequest());

@@ -68,6 +68,10 @@ public abstract class AEBean implements EntityBean
      *  column-name="aet"
      */
     public abstract String getTitle();
+    
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setTitle(String title);
 
     /**
@@ -76,6 +80,10 @@ public abstract class AEBean implements EntityBean
      *  column-name="hostname"
      */
     public abstract String getHostName();
+    
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setHostName(String name);
 
     /**
@@ -84,6 +92,10 @@ public abstract class AEBean implements EntityBean
      *  column-name="port"
      */
     public abstract int getPort();
+    
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPort(int port);
 
     /**
@@ -92,6 +104,10 @@ public abstract class AEBean implements EntityBean
      *  column-name="cipher_suites"
      */
     public abstract String getCipherSuites();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setCipherSuites(String cipherSuites);
 
     /**

@@ -3,4 +3,5 @@
 .errLabel { color: red; font-style: italic} 
 .errMsg { color: red; font-weight: bold; text-align: center} 
 .checkboxLabel {}
-.checkboxErrLabel { color: red } 
+.checkboxErrLabel { color: red }
+.xsmallText { font-size:x-small ;font-style: italic} 
