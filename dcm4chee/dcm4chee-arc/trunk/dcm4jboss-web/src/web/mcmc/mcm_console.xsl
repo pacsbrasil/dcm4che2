@@ -185,8 +185,27 @@
 	        <td title="Media usage: {mediaUsage} Bytes" >
 				<xsl:value-of select="mediaUsageWithUnit"/>
 	        </td>
-	        <td title="Status info: {mediaStatusInfo}">
-					<xsl:value-of select="mediaStatusString"/>
+	        <td title="Status info: {mediaStatusString}">
+				<xsl:choose>
+					<xsl:when test="mediaStatus = 0">
+						<img src="images/cdrom-open.gif" alt="Media status: open" border="0" title="Status: open - info: {mediaStatusInfo}"/>		
+					</xsl:when>
+					<xsl:when test="mediaStatus = 1">
+						<img src="images/cdrom-queued.gif" alt="Media status: queued" border="0" title="Status: queued - info: {mediaStatusInfo}"/>		
+					</xsl:when>
+					<xsl:when test="mediaStatus = 2">
+						<img src="images/cdrom-creating.gif" alt="Media status: creating" border="0" title="Status: creating - info: {mediaStatusInfo}"/>		
+					</xsl:when>
+					<xsl:when test="mediaStatus = 3">
+						<img src="images/cdrom-completed.gif" alt="Media status: completed" border="0" title="Status: completed - info: {mediaStatusInfo}"/>		
+					</xsl:when>
+					<xsl:when test="mediaStatus = -1">
+						<img src="images/cdrom-failed.gif" alt="Media status: failed" border="0" title="Status: failed - info: {mediaStatusInfo}"/>		
+					</xsl:when>
+					<xsl:otherwise>
+						unknown	(<xsl:value-of select="mediaStatus"/>)											
+					</xsl:otherwise>
+				</xsl:choose>
 	        </td>
 			<xsl:if test="mediaStatus = /model/statiForQueue and /model/mcmNotAvail = 'false'">
 	        	<td title="Status info">
