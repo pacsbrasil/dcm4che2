@@ -24,9 +24,12 @@ import java.io.IOException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObject;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
@@ -41,24 +44,30 @@ import org.jboss.logging.Logger;
  * @version $Revision$ $Date$
  * @since 31.08.2003
  */
-public class MoveScp extends DcmServiceBase
-{
+public class MoveScp extends DcmServiceBase {
     private final Logger log;
     private final DataSourceFactory dsf;
+    private boolean sendPendingMoveRSP = true;
 
-    public MoveScp(Logger log, DataSourceFactory dsf)
-    {
+    public MoveScp(Logger log, DataSourceFactory dsf) {
         this.log = log;
         this.dsf = dsf;
     }
 
-    public void c_move(ActiveAssociation assoc, Dimse rq) throws IOException
-    {
+    public final boolean isSendPendingMoveRSP() {
+        return sendPendingMoveRSP;
+    }
+
+    public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
+        this.sendPendingMoveRSP = sendPendingMoveRSP;
+    }
+
+    public void c_move(ActiveAssociation assoc, Dimse rq) throws IOException {
         Command rqCmd = rq.getCommand();
-        String dest = rqCmd.getString(Tags.MoveDestination);
-        Dataset rqData = rq.getDataset();
-        try
-        {
+        try {
+            Dataset rqData = rq.getDataset();
+            checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
+            String dest = rqCmd.getString(Tags.MoveDestination);
             AEData aeData = queryAEData(dest);
             FileInfo[][] fileInfos = queryFileInfos(rqData);
             new Thread(
@@ -69,10 +78,10 @@ public class MoveScp extends DcmServiceBase
                     rqCmd,
                     fileInfos,
                     aeData,
-                    dest))
+                    dest,
+                    sendPendingMoveRSP))
                 .start();
-        } catch (DcmServiceException e)
-        {
+        } catch (DcmServiceException e) {
             Command rspCmd = objFact.newCommand();
             rspCmd.initCMoveRSP(
                 rqCmd.getMessageID(),
@@ -84,37 +93,105 @@ public class MoveScp extends DcmServiceBase
         }
     }
 
+    private void checkMoveRQ(
+        Association assoc,
+        int pcid,
+        Command rqCmd,
+        Dataset rqData)
+        throws DcmServiceException {
+
+        checkAttribute(
+            rqCmd,
+            Tags.MoveDestination,
+            Status.UnableToProcess,
+            "Missing Move Destination");
+        checkAttribute(
+            rqData,
+            Tags.QueryRetrieveLevel,
+            Status.IdentifierDoesNotMatchSOPClass,
+            "Missing Query Retrieve Level");
+
+        final String level = rqData.getString(Tags.QueryRetrieveLevel);
+        final String asid =
+            assoc.getProposedPresContext(pcid).getAbstractSyntaxUID();
+        if ("PATIENT".equals(level)) {
+            if (UIDs.StudyRootQueryRetrieveInformationModelMOVE.equals(asid)) {
+                throw new DcmServiceException(
+                    Status.IdentifierDoesNotMatchSOPClass,
+                    "Cannot use Query Retrieve Level PATIENT with Study Root IM");
+            }
+            checkAttribute(
+                rqData,
+                Tags.PatientID,
+                Status.IdentifierDoesNotMatchSOPClass,
+                "Missing Patient ID");
+        } else if ("STUDY".equals(level)) {
+            checkAttribute(
+                rqData,
+                Tags.StudyInstanceUID,
+                Status.IdentifierDoesNotMatchSOPClass,
+                "Missing Study Instance UID");
+            
+        } else if ("SERIES".equals(level)) {
+            if (UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE.equals(asid)) {
+                throw new DcmServiceException(
+                    Status.IdentifierDoesNotMatchSOPClass,
+                    "Cannot use Query Retrieve Level SERIES with Patient Study Only IM");
+            }
+            checkAttribute(
+                rqData,
+                Tags.SeriesInstanceUID,
+                Status.IdentifierDoesNotMatchSOPClass,
+                "Missing Series Instance UID");            
+        } else if ("IMAGE".equals(level)) {
+            if (UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE.equals(asid)) {
+                throw new DcmServiceException(
+                    Status.IdentifierDoesNotMatchSOPClass,
+                    "Cannot use Query Retrieve Level SERIES with Patient Study Only IM");
+            }
+            checkAttribute(
+                rqData,
+                Tags.SOPInstanceUID,
+                Status.IdentifierDoesNotMatchSOPClass,
+                "Missing SOP Instance UID");            
+        } else {
+            throw new DcmServiceException(
+                Status.IdentifierDoesNotMatchSOPClass,
+                "Invalid Retrieve Level " + level);            
+        }
+    }
+
+    private void checkAttribute(DcmObject dcm, int tag, int status, String msg)
+        throws DcmServiceException {
+        if (dcm.vm(tag) <= 0) {
+            throw new DcmServiceException(status, msg);
+        }
+    }
+
     private FileInfo[][] queryFileInfos(Dataset rqData)
-        throws DcmServiceException
-    {
+        throws DcmServiceException {
         FileInfo[][] fileInfos = null;
-        try
-        {
+        try {
             RetrieveCmd retrieveCmd =
                 RetrieveCmd.create(dsf.getDataSource(), rqData);
             fileInfos = retrieveCmd.execute();
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
         return fileInfos;
     }
 
-    private AEData queryAEData(String dest) throws DcmServiceException
-    {
+    private AEData queryAEData(String dest) throws DcmServiceException {
         AEData aeData = null;
-        try
-        {
+        try {
             AECmd aeCmd = new AECmd(dsf.getDataSource(), dest);
             aeData = aeCmd.execute();
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-        if (aeData == null)
-        {
+        if (aeData == null) {
             throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
         }
         return aeData;

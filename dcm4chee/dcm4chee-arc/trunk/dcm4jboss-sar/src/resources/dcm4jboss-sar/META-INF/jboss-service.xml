@@ -103,11 +103,15 @@
     <attribute name="EjbHostName">localhost</attribute>
     -->
 
+    <attribute name="DataSource">java:/PostgresDS</attribute>    
+
     <attribute name="RetrieveAETs">QR_SCP</attribute>
 
-    <attribute name="BaseDir">/var/local/dcm4jboss</attribute>
+    <attribute name="ForwardAETs">LOCAL</attribute>
 
-    <attribute name="CallingAETs">--ANY--</attribute>
+    <attribute name="StorageDirs">/var/local/dcm4jboss</attribute>
+
+    <attribute name="CallingAETs">__any__</attribute>
 
     <attribute name="ComputedRadiographyImageStorage">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
     <attribute name="DigitalXRayImageStorageForPresentation">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
@@ -179,7 +183,9 @@
     
     <attribute name="DataSource">java:/PostgresDS</attribute>    
 
-    <attribute name="CallingAETs">--ANY--</attribute>
+    <attribute name="CallingAETs">__any__</attribute>
+
+    <attribute name="SendPendingMoveRSP">true</attribute>    
 
     <attribute name="PatientRootFind">-</attribute>
     <attribute name="StudyRootFind">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>

@@ -1,5 +1,4 @@
-/*
- * $Id$ Copyright
+/* $Id$ Copyright
  * (c) 2002,2003 by TIANI MEDGRAPH AG
  * 
  * This file is part of dcm4che.
@@ -22,7 +21,10 @@
 package org.dcm4chex.service;
 
 import java.beans.PropertyEditor;
+import java.io.IOException;
 
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.dcm4che.dict.UIDs;
@@ -39,8 +41,7 @@ import org.dcm4chex.service.util.AETsEditor;
  */
 public class StoreScpService
     extends AbstractScpService
-    implements org.dcm4chex.service.StoreScpServiceMBean
-{
+    implements org.dcm4chex.service.StoreScpServiceMBean {
 
     private final static String[] STORAGE_AS =
         {
@@ -222,1296 +223,1165 @@ public class StoreScpService
 
     private String rtTreatmentSummaryRecordStorage;
 
-    private StoreScp scp = new StoreScp(this);
-
-    private String aet;
+    private DataSourceFactory dsf = new DataSourceFactory(log);
+    private StoreScp scp = new StoreScp(log, dsf);
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public ObjectName getDcmServerName()
-    {
+     * @jmx.managed-attribute
+     */
+    public ObjectName getDcmServerName() {
         return dcmServerName;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public void setDcmServerName(ObjectName dcmServerName)
-    {
+     * @jmx.managed-attribute
+     */
+    public void setDcmServerName(ObjectName dcmServerName) {
         this.dcmServerName = dcmServerName;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public String getEjbHostName()
+     * @jmx.managed-attribute
+     */
+    public String getDataSource()
     {
+        return dsf.getJNDIName();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setDataSource(String datasource)
+    {
+        dsf.setJNDIName(datasource);
+    }
+    
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getEjbHostName() {
         return scp.getEjbHostName();
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public void setEjbHostName(String ejbHostName)
-    {
+     * @jmx.managed-attribute
+     */
+    public void setEjbHostName(String ejbHostName) {
         scp.setEjbHostName(ejbHostName);
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public String getRetrieveAETs()
-    {
+     * @jmx.managed-attribute
+     */
+    public String[] getStorageDirs() {
+        return scp.getStorageDirs();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setStorageDirs(String[] dirs) throws IOException {
+        scp.setStorageDirs(dirs);
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public String[] getForwardAETs() {
+        return scp.getForwardAETs();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setForwardAETs(String[] aets) {
+        scp.setForwardAETs(aets);
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public int getForwardPriority() {
+        return scp.getForwardPriority();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setForwardPriority(int forwardPriority) {
+        scp.setForwardPriority(forwardPriority);
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public String[] getRetrieveAETs() {
         return scp.getRetrieveAETs();
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public void setRetrieveAETs(String aets)
-    {
+     * @jmx.managed-attribute
+     */
+    public void setRetrieveAETs(String[] aets) {
         scp.setRetrieveAETs(aets);
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public String getBaseDir()
-    {
-        return scp.getBaseDir();
-    }
-
-    /**
-	 * @jmx.managed-attribute
-	 */
-    public void setBaseDir(String basedir)
-    {
-        scp.setBaseDir(basedir);
-    }
-
-    /**
-	 * @jmx.managed-attribute
-	 */
-    public String getCallingAETs()
-    {
+     * @jmx.managed-attribute
+     */
+    public String getCallingAETs() {
         PropertyEditor pe = new AETsEditor();
         pe.setValue(callingAETs);
         return pe.getAsText();
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public void setCallingAETs(String newCallingAETs)
-    {
+     * @jmx.managed-attribute
+     */
+    public void setCallingAETs(String newCallingAETs) {
         PropertyEditor pe = new AETsEditor();
         pe.setAsText(newCallingAETs);
         callingAETs = (String[]) pe.getValue();
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getAmbulatoryECGWaveformStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getAmbulatoryECGWaveformStorage() {
         return ambulatoryECGWaveformStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setAmbulatoryECGWaveformStorage(String ambulatoryECGWaveformStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setAmbulatoryECGWaveformStorage(String ambulatoryECGWaveformStorage) {
         this.ambulatoryECGWaveformStorage = ambulatoryECGWaveformStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getBasicTextSR()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getBasicTextSR() {
         return basicTextSR;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setBasicTextSR(String basicTextSR)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setBasicTextSR(String basicTextSR) {
         this.basicTextSR = basicTextSR;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getBasicVoiceAudioWaveformStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getBasicVoiceAudioWaveformStorage() {
         return basicVoiceAudioWaveformStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setBasicVoiceAudioWaveformStorage(String basicVoiceAudioWaveformStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setBasicVoiceAudioWaveformStorage(String basicVoiceAudioWaveformStorage) {
         this.basicVoiceAudioWaveformStorage = basicVoiceAudioWaveformStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getCardiacElectrophysiologyWaveformStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getCardiacElectrophysiologyWaveformStorage() {
         return cardiacElectrophysiologyWaveformStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setCardiacElectrophysiologyWaveformStorage(String cardiacElectrophysiologyWaveformStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setCardiacElectrophysiologyWaveformStorage(String cardiacElectrophysiologyWaveformStorage) {
         this.cardiacElectrophysiologyWaveformStorage =
             cardiacElectrophysiologyWaveformStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getComprehensiveSR()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getComprehensiveSR() {
         return comprehensiveSR;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setComprehensiveSR(String comprehensiveSR)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setComprehensiveSR(String comprehensiveSR) {
         this.comprehensiveSR = comprehensiveSR;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getComputedRadiographyImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getComputedRadiographyImageStorage() {
         return computedRadiographyImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setComputedRadiographyImageStorage(String computedRadiographyImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setComputedRadiographyImageStorage(String computedRadiographyImageStorage) {
         this.computedRadiographyImageStorage = computedRadiographyImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getCtImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getCtImageStorage() {
         return ctImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setCtImageStorage(String ctImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setCtImageStorage(String ctImageStorage) {
         this.ctImageStorage = ctImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getDigitalIntraoralXRayImageStorageForPresentation()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getDigitalIntraoralXRayImageStorageForPresentation() {
         return digitalIntraoralXRayImageStorageForPresentation;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setDigitalIntraoralXRayImageStorageForPresentation(String digitalIntraoralXRayImageStorageForPresentation)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setDigitalIntraoralXRayImageStorageForPresentation(String digitalIntraoralXRayImageStorageForPresentation) {
         this.digitalIntraoralXRayImageStorageForPresentation =
             digitalIntraoralXRayImageStorageForPresentation;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getDigitalIntraoralXRayImageStorageForProcessing()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getDigitalIntraoralXRayImageStorageForProcessing() {
         return digitalIntraoralXRayImageStorageForProcessing;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setDigitalIntraoralXRayImageStorageForProcessing(String digitalIntraoralXRayImageStorageForProcessing)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setDigitalIntraoralXRayImageStorageForProcessing(String digitalIntraoralXRayImageStorageForProcessing) {
         this.digitalIntraoralXRayImageStorageForProcessing =
             digitalIntraoralXRayImageStorageForProcessing;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getDigitalMammographyXRayImageStorageForPresentation()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getDigitalMammographyXRayImageStorageForPresentation() {
         return digitalMammographyXRayImageStorageForPresentation;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setDigitalMammographyXRayImageStorageForPresentation(String digitalMammographyXRayImageStorageForPresentation)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setDigitalMammographyXRayImageStorageForPresentation(String digitalMammographyXRayImageStorageForPresentation) {
         this.digitalMammographyXRayImageStorageForPresentation =
             digitalMammographyXRayImageStorageForPresentation;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getDigitalMammographyXRayImageStorageForProcessing()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getDigitalMammographyXRayImageStorageForProcessing() {
         return digitalMammographyXRayImageStorageForProcessing;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setDigitalMammographyXRayImageStorageForProcessing(String digitalMammographyXRayImageStorageForProcessing)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setDigitalMammographyXRayImageStorageForProcessing(String digitalMammographyXRayImageStorageForProcessing) {
         this.digitalMammographyXRayImageStorageForProcessing =
             digitalMammographyXRayImageStorageForProcessing;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getDigitalXRayImageStorageForPresentation()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getDigitalXRayImageStorageForPresentation() {
         return digitalXRayImageStorageForPresentation;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setDigitalXRayImageStorageForPresentation(String digitalXRayImageStorageForPresentation)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setDigitalXRayImageStorageForPresentation(String digitalXRayImageStorageForPresentation) {
         this.digitalXRayImageStorageForPresentation =
             digitalXRayImageStorageForPresentation;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getDigitalXRayImageStorageForProcessing()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getDigitalXRayImageStorageForProcessing() {
         return digitalXRayImageStorageForProcessing;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setDigitalXRayImageStorageForProcessing(String digitalXRayImageStorageForProcessing)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setDigitalXRayImageStorageForProcessing(String digitalXRayImageStorageForProcessing) {
         this.digitalXRayImageStorageForProcessing =
             digitalXRayImageStorageForProcessing;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getEnhancedMRImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getEnhancedMRImageStorage() {
         return enhancedMRImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setEnhancedMRImageStorage(String enhancedMRImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setEnhancedMRImageStorage(String enhancedMRImageStorage) {
         this.enhancedMRImageStorage = enhancedMRImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getEnhancedSR()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getEnhancedSR() {
         return enhancedSR;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setEnhancedSR(String enhancedSR)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setEnhancedSR(String enhancedSR) {
         this.enhancedSR = enhancedSR;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getGeneralECGWaveformStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getGeneralECGWaveformStorage() {
         return generalECGWaveformStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setGeneralECGWaveformStorage(String generalECGWaveformStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setGeneralECGWaveformStorage(String generalECGWaveformStorage) {
         this.generalECGWaveformStorage = generalECGWaveformStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getGrayscaleSoftcopyPresentationStateStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getGrayscaleSoftcopyPresentationStateStorage() {
         return grayscaleSoftcopyPresentationStateStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setGrayscaleSoftcopyPresentationStateStorage(String grayscaleSoftcopyPresentationStateStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setGrayscaleSoftcopyPresentationStateStorage(String grayscaleSoftcopyPresentationStateStorage) {
         this.grayscaleSoftcopyPresentationStateStorage =
             grayscaleSoftcopyPresentationStateStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getHardcopyColorImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getHardcopyColorImageStorage() {
         return hardcopyColorImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setHardcopyColorImageStorage(String hardcopyColorImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setHardcopyColorImageStorage(String hardcopyColorImageStorage) {
         this.hardcopyColorImageStorage = hardcopyColorImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getHardcopyGrayscaleImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getHardcopyGrayscaleImageStorage() {
         return hardcopyGrayscaleImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setHardcopyGrayscaleImageStorage(String hardcopyGrayscaleImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setHardcopyGrayscaleImageStorage(String hardcopyGrayscaleImageStorage) {
         this.hardcopyGrayscaleImageStorage = hardcopyGrayscaleImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getHemodynamicWaveformStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getHemodynamicWaveformStorage() {
         return hemodynamicWaveformStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setHemodynamicWaveformStorage(String hemodynamicWaveformStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setHemodynamicWaveformStorage(String hemodynamicWaveformStorage) {
         this.hemodynamicWaveformStorage = hemodynamicWaveformStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getKeyObjectSelectionDocument()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getKeyObjectSelectionDocument() {
         return keyObjectSelectionDocument;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setKeyObjectSelectionDocument(String keyObjectSelectionDocument)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setKeyObjectSelectionDocument(String keyObjectSelectionDocument) {
         this.keyObjectSelectionDocument = keyObjectSelectionDocument;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getMammographyCADSR()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getMammographyCADSR() {
         return mammographyCADSR;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setMammographyCADSR(String mammographyCADSR)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setMammographyCADSR(String mammographyCADSR) {
         this.mammographyCADSR = mammographyCADSR;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getMrImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getMrImageStorage() {
         return mrImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setMrImageStorage(String mrImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setMrImageStorage(String mrImageStorage) {
         this.mrImageStorage = mrImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getMrSpectroscopyStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getMrSpectroscopyStorage() {
         return mrSpectroscopyStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setMrSpectroscopyStorage(String mrSpectroscopyStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setMrSpectroscopyStorage(String mrSpectroscopyStorage) {
         this.mrSpectroscopyStorage = mrSpectroscopyStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getMultiframeColorSecondaryCaptureImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getMultiframeColorSecondaryCaptureImageStorage() {
         return multiframeColorSecondaryCaptureImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setMultiframeColorSecondaryCaptureImageStorage(String multiframeColorSecondaryCaptureImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setMultiframeColorSecondaryCaptureImageStorage(String multiframeColorSecondaryCaptureImageStorage) {
         this.multiframeColorSecondaryCaptureImageStorage =
             multiframeColorSecondaryCaptureImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getMultiframeGrayscaleByteSecondaryCaptureImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getMultiframeGrayscaleByteSecondaryCaptureImageStorage() {
         return multiframeGrayscaleByteSecondaryCaptureImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setMultiframeGrayscaleByteSecondaryCaptureImageStorage(String multiframeGrayscaleByteSecondaryCaptureImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setMultiframeGrayscaleByteSecondaryCaptureImageStorage(String multiframeGrayscaleByteSecondaryCaptureImageStorage) {
         this.multiframeGrayscaleByteSecondaryCaptureImageStorage =
             multiframeGrayscaleByteSecondaryCaptureImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getMultiframeGrayscaleWordSecondaryCaptureImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getMultiframeGrayscaleWordSecondaryCaptureImageStorage() {
         return multiframeGrayscaleWordSecondaryCaptureImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setMultiframeGrayscaleWordSecondaryCaptureImageStorage(String multiframeGrayscaleWordSecondaryCaptureImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setMultiframeGrayscaleWordSecondaryCaptureImageStorage(String multiframeGrayscaleWordSecondaryCaptureImageStorage) {
         this.multiframeGrayscaleWordSecondaryCaptureImageStorage =
             multiframeGrayscaleWordSecondaryCaptureImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getMultiframeSingleBitSecondaryCaptureImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getMultiframeSingleBitSecondaryCaptureImageStorage() {
         return multiframeSingleBitSecondaryCaptureImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setMultiframeSingleBitSecondaryCaptureImageStorage(String multiframeSingleBitSecondaryCaptureImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setMultiframeSingleBitSecondaryCaptureImageStorage(String multiframeSingleBitSecondaryCaptureImageStorage) {
         this.multiframeSingleBitSecondaryCaptureImageStorage =
             multiframeSingleBitSecondaryCaptureImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getNuclearMedicineImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getNuclearMedicineImageStorage() {
         return nuclearMedicineImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setNuclearMedicineImageStorage(String nuclearMedicineImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setNuclearMedicineImageStorage(String nuclearMedicineImageStorage) {
         this.nuclearMedicineImageStorage = nuclearMedicineImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getNuclearMedicineImageStorageRetired()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getNuclearMedicineImageStorageRetired() {
         return nuclearMedicineImageStorageRetired;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setNuclearMedicineImageStorageRetired(String nuclearMedicineImageStorageRetired)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setNuclearMedicineImageStorageRetired(String nuclearMedicineImageStorageRetired) {
         this.nuclearMedicineImageStorageRetired =
             nuclearMedicineImageStorageRetired;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getPositronEmissionTomographyImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getPositronEmissionTomographyImageStorage() {
         return positronEmissionTomographyImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setPositronEmissionTomographyImageStorage(String positronEmissionTomographyImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setPositronEmissionTomographyImageStorage(String positronEmissionTomographyImageStorage) {
         this.positronEmissionTomographyImageStorage =
             positronEmissionTomographyImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getRawDataStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getRawDataStorage() {
         return rawDataStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setRawDataStorage(String rawDataStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setRawDataStorage(String rawDataStorage) {
         this.rawDataStorage = rawDataStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getRtBeamsTreatmentRecordStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getRtBeamsTreatmentRecordStorage() {
         return rtBeamsTreatmentRecordStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setRtBeamsTreatmentRecordStorage(String rtBeamsTreatmentRecordStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setRtBeamsTreatmentRecordStorage(String rtBeamsTreatmentRecordStorage) {
         this.rtBeamsTreatmentRecordStorage = rtBeamsTreatmentRecordStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getRtDoseStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getRtDoseStorage() {
         return rtDoseStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setRtDoseStorage(String rtDoseStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setRtDoseStorage(String rtDoseStorage) {
         this.rtDoseStorage = rtDoseStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getRtImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getRtImageStorage() {
         return rtImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setRtImageStorage(String rtImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setRtImageStorage(String rtImageStorage) {
         this.rtImageStorage = rtImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getRtPlanStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getRtPlanStorage() {
         return rtPlanStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setRtPlanStorage(String rtPlanStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setRtPlanStorage(String rtPlanStorage) {
         this.rtPlanStorage = rtPlanStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getRtStructureSetStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getRtStructureSetStorage() {
         return rtStructureSetStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setRtStructureSetStorage(String rtStructureSetStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setRtStructureSetStorage(String rtStructureSetStorage) {
         this.rtStructureSetStorage = rtStructureSetStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getRtTreatmentSummaryRecordStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getRtTreatmentSummaryRecordStorage() {
         return rtTreatmentSummaryRecordStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setRtTreatmentSummaryRecordStorage(String rtTreatmentSummaryRecordStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setRtTreatmentSummaryRecordStorage(String rtTreatmentSummaryRecordStorage) {
         this.rtTreatmentSummaryRecordStorage = rtTreatmentSummaryRecordStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getSecondaryCaptureImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getSecondaryCaptureImageStorage() {
         return secondaryCaptureImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setSecondaryCaptureImageStorage(String secondaryCaptureImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setSecondaryCaptureImageStorage(String secondaryCaptureImageStorage) {
         this.secondaryCaptureImageStorage = secondaryCaptureImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getStandaloneCurveStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getStandaloneCurveStorage() {
         return standaloneCurveStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setStandaloneCurveStorage(String standaloneCurveStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setStandaloneCurveStorage(String standaloneCurveStorage) {
         this.standaloneCurveStorage = standaloneCurveStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getStandaloneModalityLUTStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getStandaloneModalityLUTStorage() {
         return standaloneModalityLUTStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setStandaloneModalityLUTStorage(String standaloneModalityLUTStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setStandaloneModalityLUTStorage(String standaloneModalityLUTStorage) {
         this.standaloneModalityLUTStorage = standaloneModalityLUTStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getStandaloneOverlayStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getStandaloneOverlayStorage() {
         return standaloneOverlayStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setStandaloneOverlayStorage(String standaloneOverlayStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setStandaloneOverlayStorage(String standaloneOverlayStorage) {
         this.standaloneOverlayStorage = standaloneOverlayStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getStandalonePETCurveStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getStandalonePETCurveStorage() {
         return standalonePETCurveStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setStandalonePETCurveStorage(String standalonePETCurveStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setStandalonePETCurveStorage(String standalonePETCurveStorage) {
         this.standalonePETCurveStorage = standalonePETCurveStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getStandaloneVOILUTStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getStandaloneVOILUTStorage() {
         return standaloneVOILUTStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setStandaloneVOILUTStorage(String standaloneVOILUTStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setStandaloneVOILUTStorage(String standaloneVOILUTStorage) {
         this.standaloneVOILUTStorage = standaloneVOILUTStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getTwelveLeadECGWaveformStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getTwelveLeadECGWaveformStorage() {
         return twelveLeadECGWaveformStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setTwelveLeadECGWaveformStorage(String twelveLeadECGWaveformStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setTwelveLeadECGWaveformStorage(String twelveLeadECGWaveformStorage) {
         this.twelveLeadECGWaveformStorage = twelveLeadECGWaveformStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getUltrasoundImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getUltrasoundImageStorage() {
         return ultrasoundImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setUltrasoundImageStorage(String ultrasoundImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setUltrasoundImageStorage(String ultrasoundImageStorage) {
         this.ultrasoundImageStorage = ultrasoundImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getUltrasoundImageStorageRetired()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getUltrasoundImageStorageRetired() {
         return ultrasoundImageStorageRetired;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setUltrasoundImageStorageRetired(String ultrasoundImageStorageRetired)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setUltrasoundImageStorageRetired(String ultrasoundImageStorageRetired) {
         this.ultrasoundImageStorageRetired = ultrasoundImageStorageRetired;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getUltrasoundMultiframeImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getUltrasoundMultiframeImageStorage() {
         return ultrasoundMultiframeImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setUltrasoundMultiframeImageStorage(String ultrasoundMultiframeImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setUltrasoundMultiframeImageStorage(String ultrasoundMultiframeImageStorage) {
         this.ultrasoundMultiframeImageStorage =
             ultrasoundMultiframeImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getUltrasoundMultiframeImageStorageRetired()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getUltrasoundMultiframeImageStorageRetired() {
         return ultrasoundMultiframeImageStorageRetired;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setUltrasoundMultiframeImageStorageRetired(String ultrasoundMultiframeImageStorageRetired)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setUltrasoundMultiframeImageStorageRetired(String ultrasoundMultiframeImageStorageRetired) {
         this.ultrasoundMultiframeImageStorageRetired =
             ultrasoundMultiframeImageStorageRetired;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getVlEndoscopicImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getVlEndoscopicImageStorage() {
         return vlEndoscopicImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setVlEndoscopicImageStorage(String vlEndoscopicImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setVlEndoscopicImageStorage(String vlEndoscopicImageStorage) {
         this.vlEndoscopicImageStorage = vlEndoscopicImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getVlImageStorageRetired()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getVlImageStorageRetired() {
         return vlImageStorageRetired;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setVlImageStorageRetired(String vlImageStorageRetired)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setVlImageStorageRetired(String vlImageStorageRetired) {
         this.vlImageStorageRetired = vlImageStorageRetired;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getVlMicroscopicImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getVlMicroscopicImageStorage() {
         return vlMicroscopicImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setVlMicroscopicImageStorage(String vlMicroscopicImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setVlMicroscopicImageStorage(String vlMicroscopicImageStorage) {
         this.vlMicroscopicImageStorage = vlMicroscopicImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getVlMultiframeImageStorageRetired()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getVlMultiframeImageStorageRetired() {
         return vlMultiframeImageStorageRetired;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setVlMultiframeImageStorageRetired(String vlMultiframeImageStorageRetired)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setVlMultiframeImageStorageRetired(String vlMultiframeImageStorageRetired) {
         this.vlMultiframeImageStorageRetired = vlMultiframeImageStorageRetired;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getVlPhotographicImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getVlPhotographicImageStorage() {
         return vlPhotographicImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setVlPhotographicImageStorage(String vlPhotographicImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setVlPhotographicImageStorage(String vlPhotographicImageStorage) {
         this.vlPhotographicImageStorage = vlPhotographicImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getVlSlideCoordinatesMicroscopicImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getVlSlideCoordinatesMicroscopicImageStorage() {
         return vlSlideCoordinatesMicroscopicImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setVlSlideCoordinatesMicroscopicImageStorage(String vlSlideCoordinatesMicroscopicImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setVlSlideCoordinatesMicroscopicImageStorage(String vlSlideCoordinatesMicroscopicImageStorage) {
         this.vlSlideCoordinatesMicroscopicImageStorage =
             vlSlideCoordinatesMicroscopicImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getXRayAngiographicBiPlaneImageStorageRetired()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getXRayAngiographicBiPlaneImageStorageRetired() {
         return xRayAngiographicBiPlaneImageStorageRetired;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setXRayAngiographicBiPlaneImageStorageRetired(String rayAngiographicBiPlaneImageStorageRetired)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setXRayAngiographicBiPlaneImageStorageRetired(String rayAngiographicBiPlaneImageStorageRetired) {
         xRayAngiographicBiPlaneImageStorageRetired =
             rayAngiographicBiPlaneImageStorageRetired;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getXRayAngiographicImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getXRayAngiographicImageStorage() {
         return xRayAngiographicImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setXRayAngiographicImageStorage(String rayAngiographicImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setXRayAngiographicImageStorage(String rayAngiographicImageStorage) {
         xRayAngiographicImageStorage = rayAngiographicImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final String getXRayRadiofluoroscopicImageStorage()
-    {
+     * @jmx.managed-attribute
+     */
+    public final String getXRayRadiofluoroscopicImageStorage() {
         return xRayRadiofluoroscopicImageStorage;
     }
 
     /**
-	 * @jmx.managed-attribute
-	 */
-    public final void setXRayRadiofluoroscopicImageStorage(String rayRadiofluoroscopicImageStorage)
-    {
+     * @jmx.managed-attribute
+     */
+    public final void setXRayRadiofluoroscopicImageStorage(String rayRadiofluoroscopicImageStorage) {
         xRayRadiofluoroscopicImageStorage = rayRadiofluoroscopicImageStorage;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
 
-    protected void bindDcmServices(DcmServiceRegistry services)
+
+    protected void startService() throws Exception
     {
-        for (int i = 0; i < STORAGE_AS.length; ++i)
-        {
+        scp.checkReadyToStart();
+        super.startService();
+    }
+
+    protected ObjectName getObjectName(MBeanServer server, ObjectName name)
+        throws MalformedObjectNameException
+    {
+        super.getObjectName(server, name);
+        scp.setAET(aet);
+        return name;
+    }
+
+    
+    protected void bindDcmServices(DcmServiceRegistry services) {
+        for (int i = 0; i < STORAGE_AS.length; ++i) {
             services.bind(STORAGE_AS[i], scp);
         }
         dcmHandler.addAssociationListener(scp);
     }
 
-    protected void unbindDcmServices(DcmServiceRegistry services)
-    {
-        for (int i = 0; i < STORAGE_AS.length; ++i)
-        {
+    protected void unbindDcmServices(DcmServiceRegistry services) {
+        for (int i = 0; i < STORAGE_AS.length; ++i) {
             services.unbind(STORAGE_AS[i]);
         }
         dcmHandler.removeAssociationListener(scp);
     }
 
-    protected AcceptorPolicy getAcceptorPolicy()
-    {
+    protected AcceptorPolicy getAcceptorPolicy() {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
         policy.setCallingAETs(callingAETs);
         putPresContext(

@@ -15,8 +15,10 @@
     
     <attribute name="DataSource">java:/PostgresDS</attribute>    
 
-    <attribute name="CallingAETs">--ANY--</attribute>
+    <attribute name="CallingAETs">__any__</attribute>
 
+    <attribute name="SendPendingMoveRSP">true</attribute>
+    
     <attribute name="PatientRootFind">-</attribute>
     <attribute name="StudyRootFind">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
     <attribute name="PatientStudyOnlyFind">-</attribute>

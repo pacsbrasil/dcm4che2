@@ -29,16 +29,12 @@ import java.util.StringTokenizer;
  * @since 02.08.2003
  */
 public class AETsEditor extends PropertyEditorSupport {
-    private static String ANY = "--ANY--";
-    private static String[] EMPTY = {};
+    private static String ANY = "__any__";
 
     public String getAsText() {
         String[] a = (String[]) getValue();
-        if (a == null) {
+        if (a == null || a.length == 0) {
             return ANY;
-        }
-        if (a.length == 0) {
-            return "";
         }
         StringBuffer sb = new StringBuffer(a[0]);
         for (int i = 1; i < a.length; i++) {
@@ -48,9 +44,7 @@ public class AETsEditor extends PropertyEditorSupport {
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
-        if (text.trim().length() == 0) {
-            setValue(EMPTY);
-        } else if (ANY.equalsIgnoreCase(text)) {
+        if (ANY.equalsIgnoreCase(text)) {
             setValue(null);
         } else {
             StringTokenizer stk = new StringTokenizer(text, ", \t\n\r");

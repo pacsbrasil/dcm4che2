@@ -80,6 +80,7 @@ class MoveTask implements Runnable
     private final Logger log;
     private final byte[] buffer = new byte[defaultBufferSize];
     private final String moveDest;
+    private final boolean sendPendingMoveRSP;
     private final AEData aeData;
     private final int movePcid;
     private final Command moveRqCmd;
@@ -102,7 +103,8 @@ class MoveTask implements Runnable
         Command moveRqCmd,
         FileInfo[][] fileInfo,
         AEData aeData,
-        String moveDest)
+        String moveDest,
+        boolean sendPendingMoveRSP)
         throws DcmServiceException
     {
         this.log = log;
@@ -111,6 +113,7 @@ class MoveTask implements Runnable
         this.moveRqCmd = moveRqCmd;
         this.aeData = aeData;
         this.moveDest = moveDest;
+        this.sendPendingMoveRSP = sendPendingMoveRSP;
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.retrieveAET = moveAssoc.getAssociation().getCalledAET();
         if ((remaining = fileInfo.length) > 0)
@@ -267,7 +270,9 @@ class MoveTask implements Runnable
 
     private void notifyMovePending()
     {
-        notifyMoveSCU(Status.Pending, null);
+        if (sendPendingMoveRSP) {
+            notifyMoveSCU(Status.Pending, null);
+        }
     }
 
     private void notifyMoveFinished()

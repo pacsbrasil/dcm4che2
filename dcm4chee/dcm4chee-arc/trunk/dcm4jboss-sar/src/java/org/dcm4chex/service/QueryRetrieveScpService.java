@@ -231,6 +231,20 @@ public class QueryRetrieveScpService
         }
     }
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public final boolean isSendPendingMoveRSP() {
+        return moveScp.isSendPendingMoveRSP();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
+        moveScp.setSendPendingMoveRSP(sendPendingMoveRSP);
+    }
+
     protected ObjectName getObjectName(MBeanServer server, ObjectName name)
         throws MalformedObjectNameException
     {

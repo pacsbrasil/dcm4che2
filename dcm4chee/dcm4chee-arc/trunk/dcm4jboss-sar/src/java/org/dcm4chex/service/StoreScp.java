@@ -28,12 +28,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
+import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -43,10 +43,12 @@ import javax.rmi.PortableRemoteObject;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
@@ -58,6 +60,8 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.ejb.jdbc.AECmd;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.jboss.logging.Logger;
 
 /**
@@ -65,9 +69,9 @@ import org.jboss.logging.Logger;
  * @version $Revision$
  * @since 03.08.2003
  */
-public class StoreScp extends DcmServiceBase implements AssociationListener
-{
-    private static final String SUID_KEY = "org.dcm4chex.service.StoreScp";
+public class StoreScp extends DcmServiceBase implements AssociationListener {
+
+    private static final String STORESCP = "org.dcm4chex.service.StoreScp";
     private static final int[] TYPE1_ATTR =
         {
             Tags.StudyInstanceUID,
@@ -82,136 +86,191 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
 
     private StorageHome storageHome;
 
-    private final StoreScpService scp;
     private final Logger log;
+    private final DataSourceFactory dsf;
     private String ejbHostName;
-    private String basedir;
-    private String retrieveAETs;
+    private int forwardPriority = Command.LOW;
+    private String aet;
+    private String[] retrieveAETs;
+    private String[] forwardAETs;
+    private String[] storageDirs;
 
-    public StoreScp(StoreScpService scp)
-    {
-        this.scp = scp;
-        this.log = scp.getLog();
-     }
+    public StoreScp(Logger log, DataSourceFactory dsf) {
+        this.log = log;
+        this.dsf = dsf;
+    }
 
-    public String getEjbHostName()
-    {
+    public void setAET(String aet) {
+        this.aet = aet;
+    }
+
+    public String getEjbHostName() {
         return ejbHostName;
     }
 
-    public void setEjbHostName(String ejbHostName)
-    {
+    public void setEjbHostName(String ejbHostName) {
         this.ejbHostName = ejbHostName;
     }
 
-	public final String getRetrieveAETs()
-	{
-		return retrieveAETs;
-	}
-
-	public final void setRetrieveAETs(String retrieveAETs)
-	{
-		this.retrieveAETs = retrieveAETs;
-	}
-
-    public String getBaseDir()
-    {
-        return basedir;
+    public final String[] getRetrieveAETs() {
+        return retrieveAETs;
     }
 
-    public void setBaseDir(String basedir)
-    {
-        this.basedir = basedir;
-    }
-
-    public void prepareBaseDir() throws IOException
-    {
-        if (basedir == null)
-        {
-            throw new IllegalStateException("BaseDir not initialized");
+    public final void setRetrieveAETs(String[] aets) {
+        if (aets == null || aets.length == 0) {
+            throw new IllegalArgumentException();
         }
-        File dir = new File(basedir);
-        if (!dir.isDirectory())
-        {
-            log.warn("basedir " + dir + " does not exist - create new basedir");
-            if (!dir.mkdirs())
-            {
-                throw new IOException("Failed to create basedir");
+        this.retrieveAETs = aets;
+    }
+
+    public final String[] getForwardAETs() {
+        return forwardAETs;
+    }
+
+    public final void setForwardAETs(String[] aets) {
+        this.forwardAETs = aets;
+    }
+
+    public final int getForwardPriority() {
+        return forwardPriority;
+    }
+
+    public final void setForwardPriority(int forwardPriority) {
+        this.forwardPriority = forwardPriority;
+    }
+
+    public final String[] getStorageDirs() {
+        return storageDirs;
+    }
+
+    public final void setStorageDirs(String[] dirs) throws IOException {
+        if (dirs == null || dirs.length == 0) {
+            throw new IllegalArgumentException();
+        }
+        for (int i = 0; i < dirs.length; i++) {
+            dirs[i] = checkStorageDir(dirs[i]);
+        }
+        this.storageDirs = (String[]) dirs.clone();
+    }
+
+    private String checkStorageDir(String dir) throws IOException {
+        File f = new File(dir);
+        if (!f.exists()) {
+            log.warn("directory " + dir + " does not exist - create new one");
+            if (!f.mkdirs()) {
+                String prompt = "Failed to create directory " + dir;
+                log.error(prompt);
+                throw new IOException(prompt);
             }
         }
-        basedir = dir.getCanonicalPath();
+        if (!f.isDirectory() || !f.canWrite()) {
+            String prompt = dir + " is not a writeable directory";
+            log.error(prompt);
+            throw new IOException(prompt);
+        }
+        return f.getCanonicalPath();
+    }
+
+    void checkReadyToStart() {
+        if (storageDirs == null || storageDirs.length == 0) {
+            throw new IllegalStateException("No Storage Directory configured!");
+        }
+        if (retrieveAETs == null || retrieveAETs.length == 0) {
+            throw new IllegalStateException("No Retrieve AET configured!");
+        }
     }
 
     protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-        throws IOException, DcmServiceException
-    {
+        throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
         InputStream in = rq.getDataAsStream();
         Storage storage = null;
-        try
-        {
+        try {
             storage = storageHome().create();
-            String instUID = rqCmd.getAffectedSOPInstanceUID();
-            String classUID = rqCmd.getAffectedSOPClassUID();
             DcmDecodeParam decParam =
                 DcmDecodeParam.valueOf(rq.getTransferSyntaxUID());
             Dataset ds = objFact.newDataset();
             DcmParser parser = pf.newDcmParser(in);
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
-            checkDataset(ds, classUID, instUID);
             ds.setFileMetaInfo(
                 objFact.newFileMetaInfo(
-                    classUID,
-                    instUID,
+                    rqCmd.getAffectedSOPClassUID(),
+                    rqCmd.getAffectedSOPInstanceUID(),
                     rq.getTransferSyntaxUID()));
+            checkDataset(ds);
 
-            File file = makeFile(ds);
+            Calendar today = Calendar.getInstance();
+            final int day = today.get(Calendar.DAY_OF_MONTH);
+            String basedir = storageDirs[day % storageDirs.length];
+            String[] fileIDs =
+                {
+                    String.valueOf(today.get(Calendar.YEAR)),
+                    toDec(today.get(Calendar.MONTH) + 1),
+                    toDec(day),
+                    toHex(ds.getString(Tags.StudyInstanceUID).hashCode()),
+                    toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()),
+                    toHex(ds.getString(Tags.SOPInstanceUID).hashCode())};
+            File file = toFile(basedir, fileIDs);
+            file.getParentFile().mkdirs();
             MessageDigest md = MessageDigest.getInstance("MD5");
             storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
             storage.store(
                 ds,
                 retrieveAETs,
-                basedir,
-                toFileIds(file),
+                basedir.replace(File.separatorChar, '/'),
+                fileIDs[0]
+                    + '/'
+                    + fileIDs[1]
+                    + '/'
+                    + fileIDs[2]
+                    + '/'
+                    + fileIDs[3]
+                    + '/'
+                    + fileIDs[4]
+                    + '/'
+                    + fileIDs[5],
                 (int) file.length(),
                 md.digest());
             rspCmd.putUS(Tags.Status, Status.Success);
-            getUIDsOfStoredStudies(assoc.getAssociation(), true).add(
-                ds.getString(Tags.StudyInstanceUID));
-        } catch (DcmServiceException e)
-        {
+            updateStoredStudiesInfo(assoc.getAssociation(), ds);
+        } catch (DcmServiceException e) {
             throw e;
-        } catch (Exception e)
-        {
-            scp.getLog().error(e.getMessage(), e);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
-        } finally
-        {
-            if (storage != null)
-            {
-                try
-                {
+        } finally {
+            if (storage != null) {
+                try {
                     storage.remove();
-                } catch (Exception ignore)
-                {}
+                } catch (Exception ignore) {}
             }
             in.close();
         }
     }
 
-    private String toFileIds(File file)
-    {
-        final int off = "/".equals(basedir) ? 0 : basedir.length();
-        return file.getAbsolutePath().substring(off + 1).replace(
-            File.separatorChar,
-            '/');
+    private File toFile(String basedir, String[] fileIDs) {
+        File dir =
+            new File(
+                basedir,
+                fileIDs[0]
+                    + File.separatorChar
+                    + fileIDs[1]
+                    + File.separatorChar
+                    + fileIDs[2]
+                    + File.separatorChar
+                    + fileIDs[3]
+                    + File.separatorChar
+                    + fileIDs[4]);
+        File file;
+        while ((file = new File(dir, fileIDs[5])).exists()) {
+            fileIDs[5] = toHex(Integer.parseInt(fileIDs[5], 16) + 1);
+        }
+        return file;
     }
 
-    private StorageHome storageHome() throws NamingException
-    {
-        if (storageHome == null)
-        {
+    private StorageHome storageHome() throws NamingException {
+        if (storageHome == null) {
             Hashtable env = new Hashtable();
             env.put(
                 "java.naming.factory.initial",
@@ -219,25 +278,20 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
             env.put(
                 "java.naming.factory.url.pkgs",
                 "org.jboss.naming:org.jnp.interfaces");
-            if (ejbHostName != null && ejbHostName.length() > 0)
-            {
+            if (ejbHostName != null && ejbHostName.length() > 0) {
                 env.put("java.naming.provider", ejbHostName);
             }
             Context jndiCtx = new InitialContext(env);
-            try
-            {
+            try {
                 Object o = jndiCtx.lookup(StorageHome.JNDI_NAME);
                 storageHome =
                     (StorageHome) PortableRemoteObject.narrow(
                         o,
                         StorageHome.class);
-            } finally
-            {
-                try
-                {
+            } finally {
+                try {
                     jndiCtx.close();
-                } catch (NamingException ignore)
-                {}
+                } catch (NamingException ignore) {}
             }
         }
         return storageHome;
@@ -249,17 +303,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
         File file,
         DcmEncodeParam encParam,
         MessageDigest md)
-        throws IOException
-    {
+        throws IOException {
         log.info("M-WRITE file:" + file);
         BufferedOutputStream out =
             new BufferedOutputStream(new FileOutputStream(file));
         DigestOutputStream dos = new DigestOutputStream(out, md);
-        try
-        {
+        try {
             ds.writeFile(dos, encParam);
-            if (parser.getReadTag() == Tags.PixelData)
-            {
+            if (parser.getReadTag() == Tags.PixelData) {
                 ds.writeHeader(
                     dos,
                     encParam,
@@ -268,69 +319,44 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
                     parser.getReadLength());
                 copy(parser.getInputStream(), dos);
             }
-        } finally
-        {
-            try
-            {
+        } finally {
+            try {
                 dos.close();
-            } catch (IOException ignore)
-            {}
+            } catch (IOException ignore) {}
         }
     }
 
-    private void copy(InputStream in, OutputStream out) throws IOException
-    {
+    private void copy(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[512];
         int c;
-        while ((c = in.read(buffer, 0, buffer.length)) != -1)
-        {
+        while ((c = in.read(buffer, 0, buffer.length)) != -1) {
             out.write(buffer, 0, c);
         }
     }
 
-    private void checkDataset(Dataset ds, String classUID, String instUID)
-        throws DcmServiceException
-    {
-        for (int i = 0; i < TYPE1_ATTR.length; ++i)
-        {
-            if (ds.vm(TYPE1_ATTR[i]) <= 0)
-            {
+    private void checkDataset(Dataset ds) throws DcmServiceException {
+        for (int i = 0; i < TYPE1_ATTR.length; ++i) {
+            if (ds.vm(TYPE1_ATTR[i]) <= 0) {
                 throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
                     "Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i]));
             }
-            if (!instUID.equals(ds.getString(Tags.SOPInstanceUID)))
-            {
+            FileMetaInfo fmi = ds.getFileMetaInfo();
+            if (!fmi
+                .getMediaStorageSOPInstanceUID()
+                .equals(ds.getString(Tags.SOPInstanceUID))) {
                 throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
                     "SOP Instance UID in Dataset differs from Affected SOP Instance UID");
             }
-            if (!classUID.equals(ds.getString(Tags.SOPClassUID)))
-            {
+            if (!fmi
+                .getMediaStorageSOPClassUID()
+                .equals(ds.getString(Tags.SOPClassUID))) {
                 throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
                     "SOP Class UID in Dataset differs from Affected SOP Class UID");
             }
         }
-    }
-
-    private File makeFile(Dataset ds) throws Exception
-    {
-        File file, dir = new File(basedir);
-        String id123 = new SimpleDateFormat("yyyyMMdd").format(new Date());
-        String id4 = toHex(ds.getString(Tags.StudyInstanceUID).hashCode());
-        String id5 = toHex(ds.getString(Tags.SeriesInstanceUID).hashCode());
-        int i6 = ds.getString(Tags.SOPInstanceUID).hashCode();
-        mkdir(dir = new File(dir, id123.substring(0, 4)));
-        mkdir(dir = new File(dir, id123.substring(4, 6)));
-        mkdir(dir = new File(dir, id123.substring(6)));
-        mkdir(dir = new File(dir, id4));
-        mkdir(dir = new File(dir, id5));
-        while ((file = new File(dir, toHex(i6))).exists())
-        {
-            ++i6;
-        }
-        return file;
     }
 
     private static char[] HEX_DIGIT =
@@ -352,82 +378,150 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
             'E',
             'F' };
 
-    private String toHex(int val)
-    {
+    private String toHex(int val) {
         char[] ch8 = new char[8];
-        for (int i = 8; --i >= 0; val >>= 4)
-        {
+        for (int i = 8; --i >= 0; val >>= 4) {
             ch8[i] = HEX_DIGIT[val & 0xf];
         }
         return String.valueOf(ch8);
     }
 
-    private void mkdir(File dir)
-    {
-        if (dir.mkdir())
-        {
+    private String toDec(int val) {
+        return String.valueOf(
+            new char[] { HEX_DIGIT[val / 10], HEX_DIGIT[val % 10] });
+    }
+
+    private void mkdir(File dir) {
+        if (dir.mkdir()) {
             log.info("M-WRITE dir:" + dir);
         }
     }
 
     // Implementation of AssociationListener
-    public void write(Association src, PDU pdu)
-    {}
+    public void write(Association src, PDU pdu) {}
 
-    public void received(Association src, PDU pdu)
-    {}
+    public void received(Association src, PDU pdu) {}
 
-    public void write(Association src, Dimse dimse)
-    {}
+    public void write(Association src, Dimse dimse) {}
 
-    public void received(Association src, Dimse dimse)
-    {}
+    public void received(Association src, Dimse dimse) {}
 
-    public void error(Association src, IOException ioe)
-    {}
+    public void error(Association src, IOException ioe) {}
 
-    public void close(Association src)
-    {
-        Set suids = getUIDsOfStoredStudies(src, false);
-        if (suids == null)
-        {
+    // preload ForwardTask class to avoid NullPointerException
+    // by jboss's UnifiedClassLoader called from close() 
+    private final Class clazz = ForwardTask.class;
+
+    public void close(Association assoc) {
+        Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
+        if (storedStudiesInfo == null) {
             return;
         }
+        updateStudies(storedStudiesInfo);
+        if (forwardAETs != null && forwardAETs.length != 0) {
+            AEData retrieveAE = null;
+            try {
+                retrieveAE = getRetrieveAE();
+            } catch (Exception e) {
+                log.error("Failed to get Retrieve AE configuration from DB", e);
+            }
+            if (retrieveAE == null) {
+                log.error(
+                    "Cannot forward received objects without Retrieve AE configuration");
+            } else {
+                try {
+                    new ForwardTask(
+                        log,
+                        aet,
+                        retrieveAE,
+                        storedStudiesInfo.values(),
+                        forwardAETs,
+                        forwardPriority)
+                        .run();
+                } catch (Exception e1) {
+                    log.error("Failed to forward received objects:", e1);
+                }
+            }
+        }
+    }
+
+    private void updateStudies(Map storedStudiesInfo) {
         Storage storage;
-        try
-        {
+        try {
             storage = storageHome().create();
-        } catch (Exception e)
-        {
-            log.error("Failed to update Studies with UIDs " + suids, e);
+        } catch (Exception e) {
+            log.error("Failed to update Studies", e);
             return;
         }
-        for (Iterator it = suids.iterator(); it.hasNext();)
-        {
+        for (Iterator it = storedStudiesInfo.keySet().iterator();
+            it.hasNext();
+            ) {
             final String suid = (String) it.next();
-            try
-            {
+            try {
                 storage.updateStudy(suid);
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 log.error("Failed to update Study with UID:" + suid, e);
             }
         }
-        try
-        {
+        try {
             storage.remove();
-        } catch (Exception ignore)
-        {}
+        } catch (Exception ignore) {}
     }
 
-    private Set getUIDsOfStoredStudies(Association a, boolean insert)
-    {
-        Set suids = (Set) a.getProperty(SUID_KEY);
-        if (suids == null && insert)
-        {
-            a.putProperty(SUID_KEY, suids = new HashSet());
+    private void updateStoredStudiesInfo(Association assoc, Dataset ds) {
+        Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
+        if (storedStudiesInfo == null) {
+            assoc.putProperty(STORESCP, storedStudiesInfo = new HashMap());
         }
-        return suids;
+        Dataset refSOP =
+            getRefImageSeq(ds, getRefSeriesSeq(ds, storedStudiesInfo))
+                .addNewItem();
+        refSOP.putUI(Tags.RefSOPClassUID, ds.getString(Tags.SOPClassUID));
+        refSOP.putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
     }
-    
+
+    private DcmElement getRefSeriesSeq(Dataset ds, Map storedStudiesInfo) {
+        final String siud = ds.getString(Tags.StudyInstanceUID);
+        Dataset info = (Dataset) storedStudiesInfo.get(siud);
+        if (info != null) {
+            return info.get(Tags.RefSeriesSeq);
+        }
+        storedStudiesInfo.put(siud, info = dof.newDataset());
+        info.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
+        info.putPN(Tags.PatientName, ds.getString(Tags.PatientName));
+        info.putSH(Tags.StudyID, ds.getString(Tags.StudyID));
+        info.putUI(Tags.StudyInstanceUID, siud);
+        return info.putSQ(Tags.RefSeriesSeq);
+    }
+
+    private DcmElement getRefImageSeq(Dataset ds, DcmElement seriesSq) {
+        final String siud = ds.getString(Tags.SeriesInstanceUID);
+        Dataset info;
+        for (int i = 0, n = seriesSq.vm(); i < n; ++i) {
+            info = seriesSq.getItem(i);
+            if (siud.equals(info.getString(Tags.SeriesInstanceUID))) {
+                return info.get(Tags.RefImageSeq);
+            }
+        }
+        info = seriesSq.addNewItem();
+        info.putUI(Tags.SeriesInstanceUID, siud);
+        return info.putSQ(Tags.RefImageSeq);
+    }
+
+    private AEData getRetrieveAE() throws SQLException, NamingException {
+        AEData aeData = null;
+        for (int i = 0; aeData == null && i < retrieveAETs.length; i++) {
+            aeData = queryAEData(retrieveAETs[i]);
+            if (aeData == null) {
+                log.warn("Unkown Retrieve AET " + retrieveAETs[i]);
+            }
+        }
+        return aeData;
+    }
+
+    private AEData queryAEData(String aet)
+        throws SQLException, NamingException {
+        return new AECmd(dsf.getDataSource(), aet).execute();
+    }
+
 }
