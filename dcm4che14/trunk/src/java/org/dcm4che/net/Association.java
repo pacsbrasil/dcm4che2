@@ -73,10 +73,6 @@ public interface Association {
     
     public static int ASSOCIATION_TERMINATING = 13;
     
-    String getName();
-    
-    void setName(String name);
-    
     int getState();
     
     String getStateAsString();

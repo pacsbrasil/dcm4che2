@@ -1,24 +1,23 @@
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
- *                                                                           *
- *  This file is part of dcm4che.                                            *
- *                                                                           *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
+/* $Id$
+ * 
+ *  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ *  This file is part of dcm4che.
+ *
+ *  This library is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 package org.dcm4cheri.net;
 
@@ -52,7 +51,7 @@ import java.util.List;
  *
  * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @version $Revision$
+ * @version $Revision$ $Date$
  *
  * <p><b>Revisions:</b>
  *
@@ -64,6 +63,11 @@ import java.util.List;
  * <ul>
  * <li> Fix Permanent-reject with reason "CallingAE-not-recognized".
  *      Thanx to Jie from INPHACT for sending me the Bug Fix
+ * </ul>
+ * <p><b>20031202 gunter zeilinger:</b>
+ * <ul>
+ * <li> Use empty AET HashSet as NULL object (=>no AET check)
+ *      to avoid checks for null value.
  * </ul>
  */
 class AcceptorPolicyImpl implements AcceptorPolicy {
@@ -80,9 +84,9 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     
     private HashMap appCtxMap = new HashMap();
     
-    private HashSet calledAETs = null;
+    private HashSet calledAETs = new HashSet();
     
-    private HashSet callingAETs = null;
+    private HashSet callingAETs = new HashSet();
     
     private HashMap policyForCalledAET = new HashMap();
     
@@ -154,53 +158,48 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     
     public boolean addCalledAET(String aet) {
         StringUtils.checkAET(aet);
-        
-        if (calledAETs == null)
-            calledAETs = new HashSet();
-        
-        calledAETs.add(aet);
         return calledAETs.add(aet);
     }
     
     public boolean removeCalledAET(String aet) {
-        return calledAETs != null && calledAETs.remove(aet);
+        return calledAETs.remove(aet);
     }
     
     public void setCalledAETs(String[] aets) {
-        calledAETs = aets != null
-        ? new HashSet(Arrays.asList(StringUtils.checkAETs(aets)))
-        : null;
+        if (aets == null) {
+            calledAETs.clear();
+        } else {
+            StringUtils.checkAETs(aets); 
+            calledAETs.clear();
+            calledAETs.addAll(Arrays.asList(aets));
+        }
     }
     
     public String[] getCalledAETs() {
-        return calledAETs != null
-        ? (String[])calledAETs.toArray(new String[calledAETs.size()])
-        : null;
+        return (String[])calledAETs.toArray(new String[calledAETs.size()]);
     }
     
     public boolean addCallingAET(String aet) {
         StringUtils.checkAET(aet);
-        
-        if (callingAETs == null)
-            callingAETs = new HashSet();
-        
         return callingAETs.add(aet);
     }
     
     public boolean removeCallingAET(String aet) {
-        return callingAETs != null && callingAETs.remove(aet);
+        return callingAETs.remove(aet);
     }
     
     public void setCallingAETs(String[] aets) {
-        callingAETs = aets != null
-            ? new HashSet(Arrays.asList(StringUtils.checkAETs(aets)))
-            : null;
+        if (aets == null) {
+            callingAETs.clear();
+        } else {
+            StringUtils.checkAETs(aets); 
+            callingAETs.clear();
+            callingAETs.addAll(Arrays.asList(aets));
+        }
     }
     
     public String[] getCallingAETs() {
-        return callingAETs != null
-            ? (String[])callingAETs.toArray(new String[callingAETs.size()])
-            : null;
+        return (String[])callingAETs.toArray(new String[callingAETs.size()]);
     }
     
     public AcceptorPolicy getPolicyForCallingAET(String aet) {
@@ -278,7 +277,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
                 AAssociateRJ.PROTOCOL_VERSION_NOT_SUPPORTED);
         }
         String calledAET = rq.getCalledAET();
-        if (calledAETs != null && !calledAETs.contains(calledAET)) {
+        if (!calledAETs.isEmpty() && !calledAETs.contains(calledAET)) {
             return new AAssociateRJImpl(
                 AAssociateRJ.REJECTED_PERMANENT,
                 AAssociateRJ.SERVICE_USER,
@@ -290,7 +289,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
             policy1 = this;
         
         String callingAET = rq.getCallingAET();
-        if (policy1.callingAETs != null
+        if (!policy1.callingAETs.isEmpty()
         && !policy1.callingAETs.contains(callingAET)) {
             return new AAssociateRJImpl(
                 AAssociateRJ.REJECTED_PERMANENT,

@@ -31,7 +31,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.log4j.MDC;
 
 import org.dcm4che.net.AAbort;
 import org.dcm4che.net.AAssociateAC;
@@ -90,10 +90,15 @@ final class FsmImpl
         this.assoc = assoc;
         this.requestor = requestor;
         this.s = s;
-        this.in = s.getInputStream();
-        this.out = s.getOutputStream();
-        log.info(s.toString());
-        changeState(requestor ? STA4 : STA2);
+        initMDC();
+        try {
+            this.in = s.getInputStream();
+            this.out = s.getOutputStream();
+            log.info(s.toString());
+            changeState(requestor ? STA4 : STA2);
+        } finally {
+            clearMDC();
+        }
     }
 
 
@@ -1467,14 +1472,28 @@ final class FsmImpl
                     {
                         public void run()
                         {
-                            NDC.push(assoc.getName());
+                            initMDC();
                             changeState(STA1);
-                            NDC.pop();
+                            clearMDC();
                         }
+
                     },
                         soCloseDelay);
             }
         };
 
+    void initMDC() {
+        MDC.put("ip", s.getInetAddress().getHostAddress());
+        if (rq != null) {
+            MDC.put("calling", rq.getCallingAET());
+            MDC.put("called", rq.getCalledAET());
+        }                            
+    }
+
+    void clearMDC() {
+        MDC.remove("ip");
+        MDC.remove("calling");
+        MDC.remove("called");
+    }
 }
 

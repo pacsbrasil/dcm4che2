@@ -40,8 +40,6 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.log4j.NDC;
-
 /**
  * <description> 
  *
@@ -64,127 +62,115 @@ import org.apache.log4j.NDC;
  * </ul>
  */
 final class AssociationImpl implements Association {
-    
+
     private final FsmImpl fsm;
     private final DimseReaderImpl reader;
     private final DimseWriterImpl writer;
     private int msgID = 0;
     private final byte[] b10 = new byte[10];
-    private String name;
     private static int assocCount = 0;
     private Hashtable properties = null;
     private int rqTimeout = 5000;
     private int acTimeout = 5000;
     private int dimseTimeout = 0;
-    
+
     /** Creates a new instance of AssociationImpl */
-    public AssociationImpl(Socket s, boolean requestor)
-            throws IOException {
-        this.name = "Assoc-" + ++assocCount;
-        NDC.push(name);
-        try {
-            this.fsm = new FsmImpl(this, s, requestor);
-            this.reader = new DimseReaderImpl(fsm);
-            this.writer = new DimseWriterImpl(fsm);
-        } finally {
-            NDC.pop();
-        }
+    public AssociationImpl(Socket s, boolean requestor) throws IOException {
+        this.fsm = new FsmImpl(this, s, requestor);
+        this.reader = new DimseReaderImpl(fsm);
+        this.writer = new DimseWriterImpl(fsm);
     }
-    
+
     public Socket getSocket() {
         return fsm.socket();
     }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public final String getName() {
-        return name;
-    }
-    
+
     public final String toString() {
-        return name + "[" + getStateAsString() + "]";
+        return "Assoc[sock="
+            + fsm.socket()
+            + ", state="
+            + getStateAsString()
+            + "]";
     }
-    
+
     public void addAssociationListener(AssociationListener l) {
         fsm.addAssociationListener(l);
     }
-    
+
     public void removeAssociationListener(AssociationListener l) {
         fsm.removeAssociationListener(l);
     }
-    
+
     public final int getState() {
         return fsm.getState();
     }
-    
+
     public final String getStateAsString() {
         return fsm.getStateAsString();
     }
-    
+
     public synchronized final int nextMsgID() {
         return ++msgID;
     }
-    
+
     public int getMaxOpsInvoked() {
         return fsm.getMaxOpsInvoked();
     }
-    
+
     public int getMaxOpsPerformed() {
         return fsm.getMaxOpsPerformed();
     }
-    
+
     public AAssociateRQ getAAssociateRQ() {
         return fsm.getAAssociateRQ();
     }
-    
+
     public AAssociateAC getAAssociateAC() {
         return fsm.getAAssociateAC();
     }
-    
+
     public AAssociateRJ getAAssociateRJ() {
         return fsm.getAAssociateRJ();
     }
-    
+
     public AAbort getAAbort() {
         return fsm.getAAbort();
     }
-    
+
     public String getCallingAET() {
         return fsm.getCallingAET();
     }
-    
+
     public String getCalledAET() {
         return fsm.getCalledAET();
     }
-    
+
     public void setThreadPool(LF_ThreadPool pool) {
         fsm.setThreadPool(pool);
         reader.setThreadPool(pool);
     }
-    
+
     /** Setter for property soCloseDelay.
      * @param soCloseDelay New value of property soCloseDelay.
      */
     public final void setSoCloseDelay(int soCloseDelay) {
         fsm.setSoCloseDelay(soCloseDelay);
     }
-    
+
     /** Getter for property soCloseDelay.
      * @return Value of property soCloseDelay.
      */
     public final int getSoCloseDelay() {
         return fsm.getSoCloseDelay();
     }
-        
+
     /** Getter for property rqTimeout.
      * @return Value of property rqTimeout.
      */
     public int getRqTimeout() {
         return rqTimeout;
     }
-    
+
     /** Setter for property rqTimeout.
      * @param rqTimeout New value of property rqTimeout.
      */
@@ -194,14 +180,14 @@ final class AssociationImpl implements Association {
         }
         this.rqTimeout = timeout;
     }
-    
+
     /** Getter for property dimseTimeout.
      * @return Value of property dimseTimeout.
      */
     public int getDimseTimeout() {
         return dimseTimeout;
     }
-    
+
     /** Setter for property dimseTimeout.
      * @param dimseTimeout New value of property dimseTimeout.
      */
@@ -211,14 +197,14 @@ final class AssociationImpl implements Association {
         }
         this.dimseTimeout = timeout;
     }
-    
+
     /** Getter for property acTimeout.
      * @return Value of property acTimeout.
      */
     public int getAcTimeout() {
         return acTimeout;
     }
-    
+
     /** Setter for property acTimeout.
      * @param acTimeout New value of property acTimeout.
      */
@@ -228,37 +214,37 @@ final class AssociationImpl implements Association {
         }
         this.acTimeout = timeout;
     }
-    
+
     public final PDU connect(AAssociateRQ rq) throws IOException {
-        NDC.push(name);
+        fsm.initMDC();
         try {
             fsm.write(rq);
             return fsm.read(acTimeout, b10);
         } finally {
-            NDC.pop();
+            fsm.clearMDC();
         }
     }
-    
+
     public final PDU accept(AcceptorPolicy policy) throws IOException {
-        NDC.push(name);
+        fsm.initMDC();
         try {
             PDU rq = fsm.read(rqTimeout, b10);
             if (!(rq instanceof AAssociateRQ))
-                return (AAbort)rq;
-            
-            PDU rp = policy.negotiate((AAssociateRQ)rq);
+                return (AAbort) rq;
+
+            PDU rp = policy.negotiate((AAssociateRQ) rq);
             if (rp instanceof AAssociateAC)
-                fsm.write((AAssociateAC)rp);
+                fsm.write((AAssociateAC) rp);
             else
-                fsm.write((AAssociateRJ)rp);
+                fsm.write((AAssociateRJ) rp);
             return rp;
         } finally {
-            NDC.pop();
+            fsm.clearMDC();
         }
     }
-    
-    public final Dimse read() throws IOException  {
-        NDC.push(name);
+
+    public final Dimse read() throws IOException {
+        fsm.initMDC();
         try {
             Dimse dimse = reader.read(dimseTimeout);
             if (dimse != null) {
@@ -266,56 +252,58 @@ final class AssociationImpl implements Association {
             }
             return dimse;
         } finally {
-            NDC.pop();
+            fsm.clearMDC();
         }
     }
-    
-    public final void write(Dimse dimse) throws IOException  {
-        NDC.push(name);
+
+    public final void write(Dimse dimse) throws IOException {
+        fsm.initMDC();
         try {
             msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
             writer.write(dimse);
         } finally {
-            NDC.pop();
+            fsm.clearMDC();
         }
     }
-    
+
     public final PDU release(int timeout) throws IOException {
-        NDC.push(name);
+        fsm.initMDC();
         try {
             fsm.write(AReleaseRQImpl.getInstance());
             return fsm.read(timeout, b10);
         } finally {
-            NDC.pop();
+            fsm.clearMDC();
         }
     }
-    
+
     final void writeReleaseRQ() throws IOException {
-        NDC.push(name);
+        fsm.initMDC();
         try {
             fsm.write(AReleaseRQImpl.getInstance());
         } finally {
-            NDC.pop();
+            fsm.clearMDC();
         }
     }
-    
+
     public final void abort(AAbort aa) throws IOException {
-        NDC.push(name);
+        fsm.initMDC();
         try {
             fsm.write(aa);
         } finally {
-            NDC.pop();
+            fsm.clearMDC();
         }
     }
-    
+
     public final String getAcceptedTransferSyntaxUID(int pcid) {
         return fsm.getAcceptedTransferSyntaxUID(pcid);
     }
-    
-    public final PresContext getAcceptedPresContext(String asuid, String tsuid) {
+
+    public final PresContext getAcceptedPresContext(
+        String asuid,
+        String tsuid) {
         return fsm.getAcceptedPresContext(asuid, tsuid);
     }
-    
+
     public final List listAcceptedPresContext(String asuid) {
         return fsm.listAcceptedPresContext(asuid);
     }
@@ -323,11 +311,11 @@ final class AssociationImpl implements Association {
     public final int countAcceptedPresContext() {
         return fsm.countAcceptedPresContext();
     }
-    
+
     public Object getProperty(Object key) {
         return properties != null ? properties.get(key) : null;
     }
-    
+
     public void putProperty(Object key, Object value) {
         if (properties == null) {
             properties = new Hashtable(2);
@@ -337,20 +325,20 @@ final class AssociationImpl implements Association {
         } else {
             properties.remove(key);
         }
-    }        
-    
+    }
+
     /** Getter for property packPDVs.
      * @return Value of property packPDVs.
      */
     public boolean isPackPDVs() {
         return writer.isPackPDVs();
     }
-    
+
     /** Setter for property packPDVs.
      * @param packPDVs New value of property packPDVs.
      */
     public void setPackPDVs(boolean packPDVs) {
         writer.setPackPDVs(packPDVs);
     }
-    
+
 }
