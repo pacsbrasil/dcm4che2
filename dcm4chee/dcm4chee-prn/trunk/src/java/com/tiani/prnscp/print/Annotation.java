@@ -138,7 +138,7 @@ class Annotation {
          LineMetrics lm = font.getLineMetrics(s, frc);
          Rectangle2D bound = font.getStringBounds(s, frc);
          float dx = - (float) bound.getWidth() * getAlignmentX(i);
-         float dy = lm.getDescent() - lm.getHeight() * getAlignmentY(i);
+         float dy = lm.getHeight() * getAlignmentY(i) - lm.getDescent();
          g2.drawString(s, getX(i, pf) + dx, getY(i, pf) + dy);      
       }
    }

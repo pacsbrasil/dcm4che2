@@ -152,6 +152,32 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setFilmDestination(String filmDestination);
    
+   /** Getter for property reverseLandscap.
+    * @return Value of property reverseLandscap.
+    */
+   public boolean isReverseLandscape();
+   
+   /** Setter for property reverseLandscape.
+    * @param reverseLandscape New value of property reverseLandscape.
+    */
+   public void setReverseLandscape(boolean reverseLandscape);
+   
+   /** Getter for property defaultLandscapee.
+    * @return Value of property defaultLandscape.
+    */
+   public boolean isDefaultPortrait();
+   
+   /** Setter for property defaultLandscape.
+    * @param defaultLandscape New value of property defaultLandscape.
+    *
+    */
+   public void setDefaultPortrait(boolean defaultLandscape);
+   
+   /** Getter for property defaultFilmOrientation.
+    * @return Value of property defaultFilmOrientation.
+    */
+   public String getDefaultFilmOrientation();
+   
    /** Getter for property displayFormat.
     * @return Value of property displayFormat.
     */
@@ -161,16 +187,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
     * @param displayFormat New value of property displayFormat.
     */
    public void setDisplayFormat(String displayFormat);
-   
-   /** Getter for property filmOrientation.
-    * @return Value of property filmOrientation.
-    */
-   public String getFilmOrientation();
-   
-   /** Setter for property filmOrientation.
-    * @param filmOrientation New value of property filmOrientation.
-    */
-   public void setFilmOrientation(String filmOrientation);
    
    /** Getter for property filmSizeID.
     * @return Value of property filmSizeID.
@@ -191,17 +207,7 @@ public interface PrinterServiceMBean extends ServiceMBean {
     * @param resolutionID New value of property resolutionID.
     */
    public void setResolutionID(String resolutionID);
-   
-   /** Getter for property resolution.
-    * @return Value of property resolution.
-    */
-   public String getResolution();
-   
-   /** Setter for property resolution.
-    * @param resolution New value of property resolution.
-    */
-   public void setResolution(String resolution);
-      
+         
    /** Getter for property magnificationType.
     * @return Value of property magnificationType.
     */
@@ -423,6 +429,16 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setCalibrationDir(String scanGrayStepDir);
    
+   /** Getter for property refFileName.
+    * @return Value of property refFileName.
+    */
+   public String getRefGrayStepFileName();
+   
+   /** Setter for property refFileName.
+    * @param refFileName New value of property refFileName.
+    */
+   public void setRefGrayStepFileName(String refFileName);
+   
    /** Getter for property scanPointExtension.
     * @return Value of property scanPointExtension.
     */
@@ -453,35 +469,35 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setAnnotationDir(String annotationDir);
    
-   /** Getter for property pLUTDir.
-    * @return Value of property pLUTDir.
+   /** Getter for property lutDir.
+    * @return Value of property lutDir.
     */
-   public String getPLUTDir();
+   public String getLUTDir();
    
-   /** Setter for property pLUTDir.
-    * @param pLUTDir New value of property pLUTDir.
+   /** Setter for property lutDir.
+    * @param lutDir New value of property lutDir.
     */
-   public void setPLUTDir(String pLUTDir);
+   public void setLUTDir(String lutDir);
    
    /** Getter for property annotationDisplayFormatIDs.
     * @return Value of property annotationDisplayFormatIDs.
     */
    public String[] getAnnotationDisplayFormatIDs();
    
-   /** Getter for property pLUTs.
-    * @return Value of property pLUTs.
+   /** Getter for property LUTs.
+    * @return Value of property LUTs.
     */
-   public String[] getPLUTs();
+   public String[] getLUTs();
 
-   /** Getter for property defaultPLUT.
-    * @return Value of property defaultPLUT.
+   /** Getter for property defaultLUT.
+    * @return Value of property defaultLUT.
     */
-   public String getDefaultPLUT();
+   public String getDefaultLUT();
    
-   /** Setter for property defaultPLUT.
-    * @param defaultPLUT New value of property defaultPLUT.
+   /** Setter for property defaultLUT.
+    * @param defaultLUT New value of property defaultLUT.
     */
-   public void setDefaultPLUT(String defaultPLUT);
+   public void setDefaultLUT(String defaultLUT);
    
    /** Getter for property defaultAnnotation.
     * @return Value of property defaultAnnotation.
@@ -528,17 +544,4 @@ public interface PrinterServiceMBean extends ServiceMBean {
    public void printGrayStepsWithLinOD() throws PrintException, IOException;
    
    public void calibrate(boolean force) throws CalibrationException;            
-   
-   /** Getter for property refFileName.
-    * @return Value of property refFileName.
-    *
-    */
-   public String getRefGrayStepFileName();
-   
-   /** Setter for property refFileName.
-    * @param refFileName New value of property refFileName.
-    *
-    */
-   public void setRefGrayStepFileName(String refFileName);
-   
 }

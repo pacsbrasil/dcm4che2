@@ -234,7 +234,7 @@ class FilmBox {
    {
       scp.checkImageDisplayFormat(ds.getString(Tags.ImageDisplayFormat),
          checkFilmOrientation(
-            scp.getCSorDefConfig(ds, Tags.FilmOrientation, "FilmOrientation")));
+            scp.getCSorDefConfig(ds, Tags.FilmOrientation, "DefaultFilmOrientation")));
       scp.checkAttributeValue("isSupportsFilmSizeID",
          scp.getCSorDefConfig(ds, Tags.FilmSizeID, "DefaultFilmSizeID"));
       scp.checkAttributeValue("isSupportsMagnificationType",

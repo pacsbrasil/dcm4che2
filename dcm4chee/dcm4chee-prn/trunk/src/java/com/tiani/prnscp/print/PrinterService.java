@@ -35,7 +35,7 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 
 import java.awt.print.Pageable;
-import java.awt.print.PageFormat;
+import java.awt.print.Paper;
 import java.awt.print.PrinterException;
 import javax.print.Doc;
 import javax.print.DocFlavor;
@@ -70,6 +70,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -96,17 +97,12 @@ public class PrinterService
 {
    
    // Constants -----------------------------------------------------
+   static final double PTS_PER_MM = 72/25.4;
    private static final String[] CODE_STRING = {
       null, "NORMAL", "WARNING", "FAILURE"
    };
-   private static final String[] ORIENTATION = {
-      "LANDSCAPE", "PORTRAIT", "REVERSE_LANDSCAPE"
-   };
-   static String orientationAsString(int orientation) {
-      return ORIENTATION[orientation];
-   }
    private static final String ADF_FILE_EXT = ".adf";
-   private static final String PLUT_FILE_EXT = ".lut";      
+   private static final String LUT_FILE_EXT = ".lut";      
    
    // Attributes ----------------------------------------------------
    /** Holds value of property printerName. */
@@ -120,6 +116,9 @@ public class PrinterService
    
    /** Holds value of property supportsPresentationLUT. */
    private boolean supportsPresentationLUT;
+   
+   /** Holds value of property defaultPortrait. */
+   private boolean defaultPortrait;
    
    /** Holds value of property displayFormat. */
    private String displayFormat;
@@ -153,6 +152,9 @@ public class PrinterService
    
    /** Holds value of property pageMargin. */
    private float[] pageMargin;
+
+   /** Holds value of property reverseLandscape. */
+   private boolean reverseLandscape;
    
    /** Holds value of property borderThickness. */
    private float borderThickness;
@@ -162,9 +164,6 @@ public class PrinterService
    
    /** Holds value of property mediumType. */
    private String mediumType;
-   
-   /** Holds value of property filmOrientation. */
-   private int filmOrientation;
    
    /** Holds value of property illumination. */
    private int illumination;
@@ -201,14 +200,14 @@ public class PrinterService
    /** Holds value of property annotationDir. */
    private String annotationDir;
    
-   /** Holds value of property pLUTDir. */
-   private String pLUTDir;
+   /** Holds value of property lutDir. */
+   private String lutDir;
    
    /** Holds value of property supportsAnnotationBox. */
    private boolean supportsAnnotationBox;
    
-   /** Holds value of property defaultPLUT. */
-   private String defaultPLUT;
+   /** Holds value of property defaultLUT. */
+   private String defaultLUT;
    
    /** Holds value of property defaultAnnotation. */
    private String defaultAnnotation;
@@ -450,13 +449,34 @@ public class PrinterService
       return contains(this.filmDestination, filmDestination);
    }
    
+   /** Getter for property defaultPortrait.
+    * @return Value of property defaultPortrait.
+    */
+   public boolean isDefaultPortrait() {
+      return this.defaultPortrait;
+   }
+   
+   /** Setter for property defaultPortrait.
+    * @param defaultPortrait New value of property defaultPortrait.
+    */
+   public void setDefaultPortrait(boolean defaultPortrait) {
+      this.defaultPortrait = defaultPortrait;
+   }
+
+   /** Getter for property defaultFilmOrientation.
+    * @return Value of property defaultFilmOrientation.
+    */
+   public String getDefaultFilmOrientation() {
+      return defaultPortrait ? "PORTRAIT" : "LANDSCAPE";
+   }
+      
    /** Getter for property displayFormat.
     * @return Value of property displayFormat.
     */
    public String getDisplayFormat() {
       return this.displayFormat;
    }
-   
+
    /** Setter for property displayFormat.
     * @param displayFormat New value of property displayFormat.
     */
@@ -504,8 +524,14 @@ public class PrinterService
     */
    public String getFilmSizeID() {
       StringBuffer sb = new StringBuffer();
-      for (Iterator it = filmSizeIDMap.values().iterator(); it.hasNext();) {
-         sb.append(it.next());
+      for (Iterator it = filmSizeIDMap.entrySet().iterator(); it.hasNext();) {
+         Map.Entry item = (Map.Entry) it.next();
+         float[] wh = (float[]) item.getValue();
+         sb.append(item.getKey());
+         sb.append(':');
+         sb.append(wh[0]);
+         sb.append('x');
+         sb.append(wh[1]);
          sb.append('\\');
       }
       sb.setLength(sb.length()-1);
@@ -519,8 +545,18 @@ public class PrinterService
       LinkedHashMap tmp = new LinkedHashMap();
       StringTokenizer tk = new StringTokenizer(filmSizeID, "\\");
       while (tk.hasMoreTokens()) {
-         FilmSize item = new FilmSize(tk.nextToken());
-         tmp.put(item.getSizeID(), item);
+         String s = tk.nextToken();
+         int c1 = s.indexOf(':');
+         int xpos = s.indexOf('x', c1+1);
+         float[] wh = {
+            Float.parseFloat(s.substring(c1+1, xpos)),
+            Float.parseFloat(s.substring(xpos+1))
+         };
+         Arrays.sort(wh);
+         if (wh[0] <= 0) {
+            throw new IllegalArgumentException(s);
+         }
+         tmp.put(s.substring(0, c1), wh);
       }
       filmSizeIDMap = tmp;
    }
@@ -532,23 +568,33 @@ public class PrinterService
       if (filmSizeIDMap.isEmpty()) {
          return null;
       }
-      FilmSize fs = (FilmSize) filmSizeIDMap.values().iterator().next();
-      return fs.getSizeID();
+      return (String) filmSizeIDMap.keySet().iterator().next();
    }
    
    public boolean isSupportsFilmSizeID(String filmSizeID) {
       return filmSizeIDMap.containsKey(filmSizeID);
    }
    
-   FilmSize getFilmSize(String filmSizeID) {
-      return (FilmSize) filmSizeIDMap.get(filmSizeID);
+   Paper toPaper(float[] wh) {
+      Paper paper = new Paper();
+      paper.setSize(wh[0] * PTS_PER_MM, wh[1] * PTS_PER_MM);
+      paper.setImageableArea(
+         pageMargin[0] * PTS_PER_MM,
+         pageMargin[1] * PTS_PER_MM,
+         (wh[0] - (pageMargin[0] + pageMargin[2])) * PTS_PER_MM,
+         (wh[1] - (pageMargin[1] + pageMargin[3])) * PTS_PER_MM);
+      return paper;
+   }
+   
+   Paper getPaper(String filmSizeID) {
+      return toPaper((float[]) filmSizeIDMap.get(filmSizeID));
    }
 
-   FilmSize getDefaultFilmSize() {
+   Paper getDefaultPaper() {
       if (filmSizeIDMap.isEmpty()) {
          return null;
       }
-      return (FilmSize) filmSizeIDMap.values().iterator().next();
+      return toPaper((float[]) filmSizeIDMap.values().iterator().next());
    }
    
    /** Getter for property resolutionID.
@@ -721,16 +767,18 @@ public class PrinterService
       this.pageMargin = tmp;
    }
 
-   float[] getPageMargin(int orientation) {
-      if (orientation == PageFormat.PORTRAIT) {
-         return (float[]) pageMargin.clone();
-      }
-      return new float[] {
-         pageMargin[1],
-         pageMargin[2],
-         pageMargin[3],
-         pageMargin[0]
-      };
+   /** Getter for property reverseLandscape.
+    * @return Value of property reverseLandscape.
+    */
+   public boolean isReverseLandscape() {
+      return this.reverseLandscape;
+   }
+   
+   /** Setter for property reverseLandscape.
+    * @param reverseLandscape New value of property reverseLandscape.
+    */
+   public void setReverseLandscape(boolean reverseLandscape) {
+      this.reverseLandscape = reverseLandscape;
    }
    
    /** Getter for property borderThickness.
@@ -745,44 +793,6 @@ public class PrinterService
     */
    public void setBorderThickness(float borderThickness) {
       this.borderThickness = borderThickness;
-   }
-   
-   /** Getter for property resolution.
-    * @return Value of property resolution.
-    */
-   public String getResolution() {
-      return this.resolution;
-   }
-   
-   /** Setter for property resolution.
-    * @param resolution New value of property resolution.
-    */
-   public void setResolution(String resolution) {
-      this.resolution = resolution;
-   }
-   
-   /** Getter for property filmOrientation.
-    * @return Value of property filmOrientation.
-    */
-   public String getFilmOrientation() {
-      return orientationAsString(filmOrientation);
-   }
-   
-   int getFilmOrientationAsInt() {
-      return filmOrientation;
-   }
-   
-   /** Setter for property filmOrientation.
-    * @param filmOrientation New value of property filmOrientation.
-    */
-   public void setFilmOrientation(String filmOrientation) {
-      if ("PORTRAIT".equals(filmOrientation)) {
-         this.filmOrientation = PageFormat.PORTRAIT;
-      } else if ("LANDSCAPE".equals(filmOrientation)) {
-         this.filmOrientation = PageFormat.LANDSCAPE;
-      } else {
-         throw new IllegalArgumentException("filmOrientation: " + filmOrientation);
-      }
    }
    
    /** Getter for property illumination.
@@ -867,7 +877,7 @@ public class PrinterService
    }
    
    public int countAnnotationBoxes(String annotationID) {
-      String[] ids = getPLUTs();
+      String[] ids = getLUTs();
       if (Arrays.asList(ids).indexOf(annotationID) == -1) {
          return -1;
       }
@@ -886,42 +896,42 @@ public class PrinterService
       return new Annotation(this, props);
    }
    
-   /** Getter for property pLUTDir.
-    * @return Value of property pLUTDir.
+   /** Getter for property lutDir.
+    * @return Value of property lutDir.
     */
-   public String getPLUTDir() {
-      return this.pLUTDir;
+   public String getLUTDir() {
+      return this.lutDir;
    }
    
-   /** Setter for property pLUTDir.
-    * @param pLUTDir New value of property pLUTDir.
+   /** Setter for property lutDir.
+    * @param lutDir New value of property lutDir.
     */
-   public void setPLUTDir(String pLUTDir) {
-      this.pLUTDir = toFile(pLUTDir).getAbsolutePath();
+   public void setLUTDir(String lutDir) {
+      this.lutDir = toFile(lutDir).getAbsolutePath();
    }
    
-   private static final FilenameFilter PLUT_FILENAME_FILTER =
+   private static final FilenameFilter LUT_FILENAME_FILTER =
       new FilenameFilter() {
          public boolean accept(File dir, String name) {
-            return name.endsWith(PLUT_FILE_EXT);
+            return name.endsWith(LUT_FILE_EXT);
          }
       };
-   
-   /** Getter for property pLUTs.
-    * @return Value of property pLUTs.
+               
+   /** Getter for property LUTs.
+    * @return Value of property LUTs.
     */
-   public String[] getPLUTs() {
-      File dir = toFile(pLUTDir);
+      public String[] getLUTs() {
+      File dir = toFile(lutDir);
       if (!dir.isDirectory()) {
          return new String[]{};
       }
-      String[] fnames = dir.list(PLUT_FILENAME_FILTER);
-      skipFileExt(fnames, PLUT_FILE_EXT);
+      String[] fnames = dir.list(LUT_FILENAME_FILTER);
+      skipFileExt(fnames, LUT_FILE_EXT);
       return  fnames;
    }
    
    public boolean isSupportsConfigurationInformation(String configInfo) {
-      String[] ids = getPLUTs();
+      String[] ids = getLUTs();
       return Arrays.asList(ids).indexOf(configInfo) != -1;
    }
    
@@ -939,18 +949,18 @@ public class PrinterService
       this.supportsAnnotationBox = supportsAnnotationBox;
    }
    
-   /** Getter for property defaultPLUT.
-    * @return Value of property defaultPLUT.
+   /** Getter for property defaultLUT.
+    * @return Value of property defaultLUT.
     */
-   public String getDefaultPLUT() {
-      return this.defaultPLUT;
+   public String getDefaultLUT() {
+      return this.defaultLUT;
    }
    
-   /** Setter for property defaultPLUT.
-    * @param defaultPLUT New value of property defaultPLUT.
+   /** Setter for property defaultLUT.
+    * @param defaultLUT New value of property defaultLUT.
     */
-   public void setDefaultPLUT(String defaultPLUT) {
-      this.defaultPLUT = defaultPLUT;
+   public void setDefaultLUT(String defaultLUT) {
+      this.defaultLUT = defaultLUT;
    }
    
    /** Getter for property defaultAnnotation.
@@ -1121,18 +1131,26 @@ public class PrinterService
    }
    
    public void printGraySteps() throws PrintException, IOException {
-      print(new GrayStep(this, calibration.getIdentityPValToDDL()));
+      log.info("Printing gray steps");
+      print(new GrayStep(this, calibration.getIdentityPValToDDL(), printerName));
+      log.info("Printed gray steps");
    }
    
    public void printGrayStepsWithGSDF() throws PrintException, IOException {
+      log.info("Printing gray steps [GSDF]");
       print(new GrayStep(this, calibration.getPValToDDLwGSDF(8,
-            minDensity/100.f, maxDensity/100.f,
-            illumination, reflectedAmbientLight)));
+               minDensity/100.f, maxDensity/100.f,
+               illumination, reflectedAmbientLight),
+            printerName + "[GSDF]"));
+      log.info("Printed gray steps [GSDF]");
    }
    
    public void printGrayStepsWithLinOD() throws PrintException, IOException {
+      log.info("Printing gray steps [LIN OD]");
       print(new GrayStep(this, calibration.getPValToDDLwLinOD(8,
-            minDensity/100.f, maxDensity/100.f)));
+               minDensity/100.f, maxDensity/100.f),
+            printerName + "[LIN OD]"));
+      log.info("Printed gray steps [LIN OD]");
    }
    
    public void calibrate(boolean force) throws CalibrationException {
