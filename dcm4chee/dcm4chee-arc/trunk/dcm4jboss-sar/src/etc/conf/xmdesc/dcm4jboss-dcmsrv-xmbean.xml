@@ -151,6 +151,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMaxConcurrentCodec"
+      setMethod="setMaxConcurrentCodec">
+      <description>Maximal number of concurrent compression/decompression of images.
+      </description>
+      <name>MaxConcurrentCodec</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMaxClients"
       setMethod="setMaxClients">
       <description>Maximal number of simultaneously connected DICOM clients.
@@ -192,6 +203,11 @@
       <description>Get Audit Logger</description>
       <name>getAuditLogger</name>
       <return-type>org.dcm4che.auditlog.AuditLogger</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Get Codec Semaphore</description>
+      <name>getCodecSemaphore</name>
+      <return-type>EDU.oswego.cs.dl.util.concurrent.Semaphore</return-type>
    </operation>
 </mbean>
     

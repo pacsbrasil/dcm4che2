@@ -91,8 +91,12 @@ class FileDataSource implements DataSource {
                 service.logDataset("Dataset:\n", ds);
                 ds.writeDataset(out, enc);
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
-                cmd.execute(out);
-                if ((len&1)!=0)
+                try {
+	                cmd.decompress(enc.byteOrder, out);
+				} catch (Throwable e) {
+					throw new IOException("" + e);
+				}
+				if ((len&1)!=0)
                     out.write(0);
             } else {
                 service.logDataset("Dataset:\n", ds);

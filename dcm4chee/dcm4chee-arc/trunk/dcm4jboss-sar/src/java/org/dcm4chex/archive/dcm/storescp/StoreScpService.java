@@ -1,5 +1,5 @@
-/* $Id$ Copyright
- * (c) 2002,2003 by TIANI MEDGRAPH AG
+/* $Id$
+ * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  * 
  * This file is part of dcm4che.
  * 
@@ -20,7 +20,6 @@
 
 package org.dcm4chex.archive.dcm.storescp;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +30,9 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 
+import org.dcm4chex.archive.config.CompressionRules;
+import org.dcm4chex.archive.config.ForwardingRules;
+import org.dcm4chex.archive.config.StorageRules;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
@@ -40,7 +42,7 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  * @since 03.08.2003
  */
 public class StoreScpService extends AbstractScpService {
-    
+
     private static final String[] IMAGE_CUIDS = {
             UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
             UIDs.ComputedRadiographyImageStorage,
@@ -105,14 +107,14 @@ public class StoreScpService extends AbstractScpService {
     private int dimseTimeout = 0;
 
     private int soCloseDelay = 500;
-    
+
     private StoreScp scp = new StoreScp(this);
 
     private StgCmtScp stgCmtScp = new StgCmtScp(this);
 
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
-    }        
+    }
 
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
@@ -126,20 +128,28 @@ public class StoreScpService extends AbstractScpService {
         scp.setMaskWarningAsSuccessForCallingAETs(aets);
     }
 
-    public String[] getStorageDirs() {
-        return scp.getStorageDirs();
+    public String getStorageRules() {
+        return scp.getStorageRules().toString();
     }
 
-    public void setStorageDirs(String[] dirs) throws IOException {
-        scp.setStorageDirs(dirs);
+    public void setStorageRules(String rules) {
+        scp.setStorageRules(new StorageRules(rules));
     }
 
-    public final String getForwardAETs() {
-        return scp.getForwardAETs().toString();
+    public final String getCompressionRules() {
+        return scp.getCompressionRules().toString();
     }
 
-    public void setForwardAETs(String aets) {
-        scp.setForwardAETs(new ForwardAETs(aets));
+    public void setCompressionRules(String rules) {
+        scp.setCompressionRules(new CompressionRules(rules));
+    }
+
+    public final String getForwardingRules() {
+        return scp.getForwardingRules().toString();
+    }
+
+    public void setForwardingRules(String rules) {
+        scp.setForwardingRules(new ForwardingRules(rules));
     }
 
     public int getForwardPriority() {
@@ -199,9 +209,9 @@ public class StoreScpService extends AbstractScpService {
     }
 
     final String getRetrieveAET() {
-         return (String) retrieveAETSet.iterator().next();
+        return (String) retrieveAETSet.iterator().next();
     }
-    
+
     public boolean isAcceptStorageCommitment() {
         return acceptStorageCommitment;
     }
@@ -289,7 +299,7 @@ public class StoreScpService extends AbstractScpService {
     public final void setBufferSize(int bufferSize) {
         scp.setBufferSize(bufferSize);
     }
-    
+
     protected void startService() throws Exception {
         scp.checkReadyToStart();
         super.startService();

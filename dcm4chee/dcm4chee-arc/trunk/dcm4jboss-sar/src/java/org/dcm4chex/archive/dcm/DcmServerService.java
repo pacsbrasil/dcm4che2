@@ -42,6 +42,9 @@ import org.dcm4che.util.SSLContextAdapter;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
+import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
+import EDU.oswego.cs.dl.util.concurrent.Semaphore;
+
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$
@@ -67,7 +70,7 @@ public class DcmServerService extends ServiceMBeanSupport implements
     private DcmHandler handler = sf.newDcmHandler(policy, services);
 
     private Server dcmsrv = sf.newServer(handler);
-
+    
     private SSLContextAdapter ssl = SSLContextAdapter.getInstance();
 
     private DcmProtocol protocol = DcmProtocol.DICOM;
@@ -88,6 +91,10 @@ public class DcmServerService extends ServiceMBeanSupport implements
 
     private AuditLogger auditLogger;
 
+    private int maxConcurrentCodec = 1;
+    
+    private Semaphore codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
+    
     public DcmServerService() {
         dcmsrv.addHandshakeFailedListener(this);
         ssl.addHandshakeFailedListener(this);
@@ -128,7 +135,7 @@ public class DcmServerService extends ServiceMBeanSupport implements
     public SSLContextAdapter getSSLContextAdapter() {
         return ssl;
     }
-
+    
     public int getRqTimeout() {
         return handler.getRqTimeout();
     }
@@ -249,6 +256,19 @@ public class DcmServerService extends ServiceMBeanSupport implements
         }
     }
 
+    public final int getMaxConcurrentCodec() {
+        return maxConcurrentCodec;
+    }
+    
+    public final void setMaxConcurrentCodec(int maxConcurrentCodec) {
+        codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
+        this.maxConcurrentCodec = maxConcurrentCodec;
+    }
+    
+    public Semaphore getCodecSemaphore() {
+        return codecSemaphore;
+    }
+    
     private void initTLSConf() throws GeneralSecurityException, IOException {
         if (keyStore == null) {
             keyStore = ssl.loadKeyStore(keyStoreURL, keyStorePassword);

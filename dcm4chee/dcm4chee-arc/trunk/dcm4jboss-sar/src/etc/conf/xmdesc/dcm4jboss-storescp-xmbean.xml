@@ -71,17 +71,30 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getForwardAETs"
-      setMethod="setForwardAETs">
-      <description>List of forwarding rules. Format:
-      list-of-calling-aets:list-of-destination-aets.
-      list-of-calling-aets="OTHER" matches all calling aets.
-      list-of-destination-aets="NONE" disables forwarding for matching calling aets.
+      getMethod="getCompressionRules"
+      setMethod="setCompressionRules">
+      <description>List of image compression rules.
+      Format:=['['CONDITION[,..]']']COMPRESSION
+      CONDITION:=(calling|called|pmi|cuid)[!]=value['|'...]    
+      COMPRESSION:=(NONE|JPEGLossless|JPEGLSLossless|JPEG2000Lossless)
       </description>
-      <name>ForwardAETs</name>
+      <name>CompressionRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="SAMPLE_SCU1,SAMPLE_SCU2:SAMPLE_SCP3,SAMPLE_SCP4;OTHER:NONE" />
+         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB]JPEGLossless;NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getForwardingRules"
+      setMethod="setForwardingRules">
+      <description>List of forwarding rules.
+      Format:=['['CONDITION[,..]']'](AET[,..]|'NONE')
+      CONDITION:=(calling|called)[!]=AET['|'..]   
+      </description>
+      <name>ForwardingRules</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2]SAMPLE_SCP3,SAMPLE_SCP4;NONE" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -96,14 +109,16 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getStorageDirs"
-      setMethod="setStorageDirs">
-      <description>List of directory path(s) where received DICOM objects are stored.
+      getMethod="getStorageRules"
+      setMethod="setStorageRules">
+      <description>List of storage rules.
+      Format:=['['CONDITION[,..]']']DIRPATH
+      CONDITION:=(calling|called)[!]=AET['|'..]   
       </description>
-      <name>StorageDirs</name>
-      <type>[Ljava.lang.String;</type>
+      <name>StorageRules</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="archive" />
+         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2]archive2;archive" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

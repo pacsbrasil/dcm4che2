@@ -51,7 +51,6 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
-import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
@@ -63,6 +62,9 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
+import org.dcm4chex.archive.config.CompressionRules;
+import org.dcm4chex.archive.config.ForwardingRules;
+import org.dcm4chex.archive.config.StorageRules;
 import org.dcm4chex.archive.ejb.interfaces.DuplicateStorageException;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueue;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueueHome;
@@ -103,9 +105,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private int forwardPriority = 0;
 
-    private ForwardAETs forwardAETs = new ForwardAETs(ForwardAETs.NONE);
+    private ForwardingRules forwardingRules = new ForwardingRules("");
 
-    private File[] storageDirFiles = {};
+    private CompressionRules compressionRules = new CompressionRules("");
+
+    private StorageRules storageRules = new StorageRules("archive");
 
     private HashSet warningAsSuccessSet = new HashSet();
 
@@ -123,12 +127,20 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         warningAsSuccessSet.addAll(Arrays.asList(aets));
     }
 
-    public final ForwardAETs getForwardAETs() {
-        return forwardAETs;
+    public final CompressionRules getCompressionRules() {
+        return compressionRules;
     }
 
-    public final void setForwardAETs(ForwardAETs forwardAETs) {
-        this.forwardAETs = forwardAETs;
+    public final void setCompressionRules(CompressionRules compressionRules) {
+        this.compressionRules = compressionRules;
+    }
+
+    public final ForwardingRules getForwardingRules() {
+        return forwardingRules;
+    }
+
+    public final void setForwardingRules(ForwardingRules forwardingRules) {
+        this.forwardingRules = forwardingRules;
     }
 
     public final int getForwardPriority() {
@@ -147,44 +159,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.bufferSize = bufferSize;
     }
 
-    public final String[] getStorageDirs() {
-        String[] retval = new String[storageDirFiles.length];
-        for (int i = 0; i < retval.length; i++) {
-            retval[i] = storageDirFiles[i].getAbsolutePath();
-        }
-        return retval;
+    public final StorageRules getStorageRules() {
+        return storageRules;
     }
 
-    public final void setStorageDirs(String[] dirs) throws IOException {
-        if (dirs.length == 0)
-                throw new IllegalArgumentException("Missing Storage Dir");
-        File[] tmp = new File[dirs.length];
-        for (int i = 0; i < tmp.length; i++) {
-            tmp[i] = checkStorageDir(dirs[i]);
-        }
-        this.storageDirFiles = tmp;
-    }
-
-    private File checkStorageDir(String dir) throws IOException {
-        File f = new File(dir);
-        if (!f.isAbsolute()) {
-            f = new File(ServerConfigLocator.locate().getServerHomeDir(), dir);
-        }
-        if (!f.exists()) {
-            service.getLog().warn(
-                    "directory " + dir + " does not exist - create new one");
-            if (!f.mkdirs()) {
-                String prompt = "Failed to create directory " + dir;
-                service.getLog().error(prompt);
-                throw new IOException(prompt);
-            }
-        }
-        if (!f.isDirectory() || !f.canWrite()) {
-            String prompt = dir + " is not a writeable directory";
-            service.getLog().error(prompt);
-            throw new IOException(prompt);
-        }
-        return f;
+    public final void setStorageRules(StorageRules rules) {
+        this.storageRules = rules;
     }
 
     public final int getUpdateDatabaseMaxRetries() {
@@ -196,9 +176,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     void checkReadyToStart() {
-        if (storageDirFiles.length == 0)
-                throw new IllegalStateException(
-                        "No Storage Directory configured!");
         if (service.getRetrieveAETs().length == 0)
                 throw new IllegalStateException("No Retrieve AET configured!");
     }
@@ -217,17 +194,22 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
             service.logDataset("Dataset:\n", ds);
-            ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
-                    .getAffectedSOPClassUID(), rqCmd
-                    .getAffectedSOPInstanceUID(), rq.getTransferSyntaxUID()));
-            checkDataset(ds);
+            checkDataset(rqCmd, ds);
 
             Calendar today = Calendar.getInstance();
-            File dir = storageDirFiles[today.get(Calendar.DAY_OF_MONTH)
-                    % storageDirFiles.length];
-            file = makeFile(dir, today, ds);
+            File dir = toStorageDir(storageRules.getStorageLocationFor(assoc));
+            file = makeFile(dir, ds);
             MessageDigest md = MessageDigest.getInstance("MD5");
-            storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
+            String compressTSUID = parser.getReadTag() == Tags.PixelData
+                    && parser.getReadLength() != -1 ? compressionRules
+                    .getTransferSyntaxFor(assoc, ds) : null;
+            ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
+                    .getAffectedSOPClassUID(), rqCmd
+                    .getAffectedSOPInstanceUID(),
+                    compressTSUID != null ? compressTSUID : rq
+                            .getTransferSyntaxUID()));
+
+            storeToFile(parser, ds, file, md);
 
             final String dirPath = dir.getCanonicalPath().replace(
                     File.separatorChar, '/');
@@ -263,13 +245,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             service.getLog().warn(e.getMessage(), e);
             deleteFailedStorage(file);
             throw e;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             service.getLog().error(e.getMessage(), e);
             deleteFailedStorage(file);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         } finally {
             in.close();
         }
+    }
+
+    private File toStorageDir(String location) {
+        File dir = new File(location);
+        return dir.isAbsolute() ? dir : new File(ServerConfigLocator.locate()
+                .getServerBaseDir(), location);
     }
 
     private void deleteFailedStorage(File file) {
@@ -313,8 +301,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    private File makeFile(File basedir, Calendar today, Dataset ds)
-            throws IOException {
+    private File makeFile(File basedir, Dataset ds) throws IOException {
+        Calendar today = Calendar.getInstance();
         File dir = new File(basedir, String.valueOf(today.get(Calendar.YEAR))
                 + File.separator + toDec(today.get(Calendar.MONTH) + 1)
                 + File.separator + toDec(today.get(Calendar.DAY_OF_MONTH))
@@ -355,30 +343,45 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void storeToFile(DcmParser parser, Dataset ds, File file,
-            DcmEncodeParam encParam, MessageDigest md) throws IOException {
+            MessageDigest md) throws Exception {
         service.getLog().info("M-WRITE file:" + file);
         BufferedOutputStream os = new BufferedOutputStream(
                 new FileOutputStream(file));
         DigestOutputStream dos = new DigestOutputStream(os, md);
         try {
+            DcmDecodeParam decParam = parser.getDcmDecodeParam();
+            DcmEncodeParam encParam = DcmEncodeParam.valueOf(ds
+                    .getFileMetaInfo().getTransferSyntaxUID());
+            CompressCmd compressCmd = null;
+            if (!decParam.encapsulated && encParam.encapsulated) {
+                compressCmd = CompressCmd.createCompressCmd(service, ds);
+                compressCmd.coerceDataset(ds);
+            }
             ds.writeFile(dos, encParam);
             if (parser.getReadTag() != Tags.PixelData) return;
             int len = parser.getReadLength();
             InputStream in = parser.getInputStream();
             byte[] buffer = new byte[bufferSize];
-            ds.writeHeader(dos, encParam, parser.getReadTag(), parser
-                    .getReadVR(), len);
-            if (len == -1) {
-                parser.parseHeader();
-                while (parser.getReadTag() == Tags.Item) {
-                    len = parser.getReadLength();
-                    ds.writeHeader(dos, encParam, Tags.Item, VRs.NONE, len);
-                    copy(in, dos, len, buffer);
+            if (encParam.encapsulated) {
+                ds.writeHeader(dos, encParam, Tags.PixelData, VRs.OB, -1);
+                if (decParam.encapsulated) {
                     parser.parseHeader();
+                    while (parser.getReadTag() == Tags.Item) {
+                        len = parser.getReadLength();
+                        ds.writeHeader(dos, encParam, Tags.Item, VRs.NONE, len);
+                        copy(in, dos, len, buffer);
+                        parser.parseHeader();
+                    }
+                } else {
+                    int read = compressCmd.compress(decParam.byteOrder, parser
+                            .getInputStream(), dos);
+                    in.skip(parser.getReadLength() - read);
                 }
                 ds.writeHeader(dos, encParam, Tags.SeqDelimitationItem,
                         VRs.NONE, 0);
             } else {
+                ds.writeHeader(dos, encParam, Tags.PixelData, parser
+                        .getReadVR(), len);
                 copy(in, dos, len, buffer);
             }
             parser.parseDataset(encParam, -1);
@@ -400,18 +403,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    private void checkDataset(Dataset ds) throws DcmServiceException {
+    private void checkDataset(Command rqCmd, Dataset ds)
+            throws DcmServiceException {
         for (int i = 0; i < TYPE1_ATTR.length; ++i) {
             if (ds.vm(TYPE1_ATTR[i]) <= 0) { throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
                     "Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i])); }
         }
-        FileMetaInfo fmi = ds.getFileMetaInfo();
-        if (!fmi.getMediaStorageSOPInstanceUID().equals(
+        if (!rqCmd.getAffectedSOPInstanceUID().equals(
                 ds.getString(Tags.SOPInstanceUID))) { throw new DcmServiceException(
                 Status.DataSetDoesNotMatchSOPClassError,
                 "SOP Instance UID in Dataset differs from Affected SOP Instance UID"); }
-        if (!fmi.getMediaStorageSOPClassUID().equals(
+        if (!rqCmd.getAffectedSOPClassUID().equals(
                 ds.getString(Tags.SOPClassUID))) { throw new DcmServiceException(
                 Status.DataSetDoesNotMatchSOPClassError,
                 "SOP Class UID in Dataset differs from Affected SOP Class UID"); }
@@ -458,8 +461,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         logInstancesStored(assoc);
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
         if (storedStudiesInfo != null) {
-            forward(forwardAETs.get(assoc.getCallingAET()), storedStudiesInfo
-                    .values().iterator());
+            forward(forwardingRules.getForwardDestinationsFor(assoc),
+                    storedStudiesInfo.values().iterator());
         }
     }
 

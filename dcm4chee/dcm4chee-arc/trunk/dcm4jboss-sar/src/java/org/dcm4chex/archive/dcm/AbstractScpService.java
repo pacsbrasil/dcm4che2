@@ -48,6 +48,8 @@ import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
+import EDU.oswego.cs.dl.util.concurrent.Semaphore;
+
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$ $Date$
@@ -257,5 +259,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             return getSocketFactory(cipherSuites).createSocket(
                     aeData.getHostName(), aeData.getPort());
         }
+    }
+
+
+    public Semaphore getCodecSemaphore() throws Exception {
+        return (Semaphore) server.invoke(dcmServerName,
+                "getCodecSemaphore", null, null);
     }
 }
