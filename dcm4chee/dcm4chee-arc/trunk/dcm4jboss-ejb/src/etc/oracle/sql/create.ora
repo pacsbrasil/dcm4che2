@@ -228,7 +228,7 @@ CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (
 	pk          	NUMBER PRIMARY KEY,
 	patient_fk      INTEGER,
-	sps_id			VARCHAR2(255) NOT NULL,
+	sps_id			VARCHAR2(255),
 	start_datetime	TIMESTAMP NOT NULL,
 	station_aet     VARCHAR2(255) NOT NULL,
 	modality	    VARCHAR2(255) NOT NULL,

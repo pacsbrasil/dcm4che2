@@ -198,20 +198,18 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
+        setAttributes(ds);
         return null;
     }
 
     public void ejbPostCreate(Dataset ds, PatientLocal patient) throws CreateException {
         setPatient(patient);
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
-        if (spsItem == null) {
-            throw new IllegalArgumentException("Missing Scheduled Procedure Step Sequence (0040,0100) Item");
-        }
         if (spsItem.getString(Tags.SPSID) == null) {
             String id = spsIdPrefix + getPk();
             spsItem.putCS(Tags.SPSID, id);
+            setAttributes(ds);
         }
-        setAttributes(ds);
         log.info("Created " + prompt());
     }
 

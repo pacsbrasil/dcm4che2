@@ -215,7 +215,7 @@ CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(filesystem_fk,study_fk);
 CREATE TABLE mwl_item (
 	pk          	INTEGER AUTO_INCREMENT PRIMARY KEY,
 	patient_fk      INTEGER,
-	sps_id			VARCHAR(250) BINARY NOT NULL,
+	sps_id			VARCHAR(250) BINARY,
 	start_datetime	DATETIME NOT NULL,
 	station_aet     VARCHAR(250) BINARY NOT NULL,
 	modality	    VARCHAR(250) BINARY NOT NULL,

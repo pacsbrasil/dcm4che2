@@ -76,7 +76,7 @@ public abstract class GPSPSBean implements EntityBean {
             codeHome = (CodeLocalHome)
                     jndiCtx.lookup("java:comp/env/ejb/Code");
             rqHome = (GPSPSRequestLocalHome) 
-                    jndiCtx.lookup("java:comp/env/ejb/RefRequest");
+                    jndiCtx.lookup("java:comp/env/ejb/Request");
             performerHome = (GPSPSPerformerLocalHome)
                     jndiCtx.lookup("java:comp/env/ejb/Performer");
         } catch (NamingException e) {
@@ -129,7 +129,7 @@ public abstract class GPSPSBean implements EntityBean {
         } catch (FinderException e) {
             throw new CreateException(e.getMessage());
         }
-        log.info("Created " + toString());
+        log.info("Created " + prompt());
     }
 
     private void createScheduledHumanPerformers(DcmElement sq)
@@ -160,7 +160,7 @@ public abstract class GPSPSBean implements EntityBean {
     }
 
     public void ejbRemove() throws RemoveException {
-        log.info("Deleting " + toString());
+        log.info("Deleting " + prompt());
     }
 
     /**
@@ -357,5 +357,18 @@ public abstract class GPSPSBean implements EntityBean {
         setExpectedCompletionDateTime(toTimestamp(ds.getDate(Tags.ExpectedCompletionDateAndTime)));
         setEncodedAttributes(
                 DatasetUtils.toByteArray(ds, DcmDecodeParam.EVR_LE));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public String toString() {
+        return prompt();
+    }
+
+    private String prompt() {
+        return "GPSPS[pk=" + getPk() 
+                + ", iuid=" + getSopIuid()
+                + ", pat->" + getPatient() + "]";
     }
 }

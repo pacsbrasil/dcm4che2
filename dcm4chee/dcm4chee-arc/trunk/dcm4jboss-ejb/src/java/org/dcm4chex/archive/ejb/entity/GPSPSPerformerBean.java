@@ -85,11 +85,11 @@ public abstract class GPSPSPerformerBean implements EntityBean {
             throw new CreateException(e.getMessage());
         }
         setGpsps(gpsps);
-        log.info("Created " + toString());
+        log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException {
-        log.info("Deleting " + toString());
+        log.info("Deleting " + prompt());
     }
     
     /**
@@ -132,10 +132,7 @@ public abstract class GPSPSPerformerBean implements EntityBean {
     public abstract GPSPSLocal getGpsps();
     public abstract void setGpsps(GPSPSLocal gpsps);
 
-    /**
-     * @ejb.interface-method
-     */
-    public String toString() {
+    private String prompt() {
         return "GPSPSHumanPerformer[pk=" + getPk() 
                 + ", name=" + getHumanPerformerName()
                 + ", code->" + getHumanPerformerCode()

@@ -46,11 +46,11 @@ public abstract class GPSPSRequestBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, GPSPSLocal gpsps)
             throws CreateException {
         setGpsps(gpsps);
-        log.info("Created " + toString());
+        log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException {
-        log.info("Deleting " + toString());
+        log.info("Deleting " + prompt());
     }
     
     /**
@@ -94,12 +94,9 @@ public abstract class GPSPSRequestBean implements EntityBean {
      */
     public abstract GPSPSLocal getGpsps();
 
-    /**
-     * @ejb.interface-method
-     */
-    public String toString() {
+    private String prompt() {
         return "GPSPSRequest[pk=" + getPk() 
-                + ", rqprocid=" + getRequestedProcedureId()
+                + ", rpid=" + getRequestedProcedureId()
                 + ", accno=" + getAccessionNumber()
                 + ", gpsps->" + getGpsps() + "]";
     }

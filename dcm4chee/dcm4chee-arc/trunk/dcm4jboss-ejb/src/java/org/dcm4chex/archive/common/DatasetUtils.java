@@ -84,7 +84,7 @@ public class DatasetUtils {
     public static Dataset fromXML(InputSource is)
         throws SAXException, IOException {
         Dataset ds = dof.newDataset();
-        getSAXParser().parse(is, new XML2DatasetHandler(ds));
+        getSAXParser().parse(is, ds.getSAXHandler2(null));
         return ds;
     }
 

@@ -46,11 +46,11 @@ public abstract class SeriesRequestBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
         setSeries(series);
-        log.info("Created " + toString());
+        log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException {
-        log.info("Deleting " + toString());
+        log.info("Deleting " + prompt());
     }
     
     /**
@@ -95,12 +95,9 @@ public abstract class SeriesRequestBean implements EntityBean {
      */
     public abstract SeriesLocal getSeries();
 
-    /**
-     * @ejb.interface-method
-     */
-    public String toString() {
+    private String prompt() {
         return "SeriesRequestAttribute[pk=" + getPk() 
-                + ", rqprocid=" + getRequestedProcedureId()
+                + ", rpid=" + getRequestedProcedureId()
                 + ", spsid=" + getSpsId()
                 + ", series->" + getSeries() + "]";
     }

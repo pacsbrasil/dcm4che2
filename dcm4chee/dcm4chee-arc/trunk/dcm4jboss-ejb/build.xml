@@ -388,11 +388,11 @@
                 <include name="**/interfaces/*"/>
             </fileset>
         </jar>
-        <jar jarfile="${target.common.bin}/editmwl.jar">
+        <jar jarfile="${target.common.bin}/editgpwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditGpwl"/>
-				<attribute name="Class-Path" value="../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar "/>
-				<attribute name="Implementation-Title" value="editmwl"/>
+				<attribute name="Class-Path" value="../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar ../server/pacs/conf/ "/>
+				<attribute name="Implementation-Title" value="editgpwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
           	</manifest>	
@@ -403,11 +403,11 @@
                 <include name="**/tools/EditGpwl*"/>
             </fileset>
         </jar>
-        <jar jarfile="${target.common.bin}/editgpwl.jar">
+        <jar jarfile="${target.common.bin}/editmwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditMwl"/>
-				<attribute name="Class-Path" value="../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar "/>
-				<attribute name="Implementation-Title" value="editgpwl"/>
+				<attribute name="Class-Path" value="../lib/getopt.jar ../client/jbossall-client.jar ../server/pacs/lib/dcm4che.jar ../server/pacs/lib/dcm4jboss-ejb-client.jar ../server/pacs/conf/ "/>
+				<attribute name="Implementation-Title" value="editmwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
           	</manifest>	
