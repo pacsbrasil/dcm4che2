@@ -39,7 +39,7 @@ import javax.management.ObjectName;
 import com.tiani.prnscp.print.PrinterServiceMBean;
 import com.tiani.prnscp.print.PrinterStatus;
 import com.tiani.prnscp.print.PrinterStatusInfo;
-import com.tiani.util.license.LicenseStore;
+import com.tiani.license.LicenseStore;
 
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;

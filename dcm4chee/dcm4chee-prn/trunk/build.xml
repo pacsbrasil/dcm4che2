@@ -143,9 +143,11 @@
       <metainf dir="${build.dir}/prnscp"
                includes="jboss-service.xml"
       />
-      <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/scp/*,com/tiani/util/license/*"
-      />
+      <fileset dir="${build.classes.dir}">
+         <include name="com/tiani/prnscp/scp/*"/>
+         <include name="com/tiani/license/LicenseStore*"/>
+         <include name="com/tiani/license/MACReader*"/>          
+      </fileset>
     </jar>
   </target>   
 
@@ -162,9 +164,9 @@
       <metainf dir="${build.dir}/printer"
                includes="jboss-service.xml"
       />
-      <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/print/*,com/tiani/util/license/*"
-      />
+      <fileset dir="${build.classes.dir}">
+         <include name="com/tiani/prnscp/print/*"/>
+      </fileset>
     </jar>
   </target>   
 
@@ -173,9 +175,12 @@
   <target name="prnscp-jar" depends="compile" unless="dasho.jar">
     <mkdir dir="${build.lib.dir}"/>
     <jar jarfile="${build.lib.dir}/prnscp.jar">
-      <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/scp/*,com/tiani/prnscp/print/*,com/tiani/util/license/*"
-      />
+      <fileset dir="${build.classes.dir}">
+         <include name="com/tiani/prnscp/print/*"/>
+         <include name="com/tiani/prnscp/scp/*"/>
+         <include name="com/tiani/license/LicenseStore*"/>
+         <include name="com/tiani/license/MACReader*"/>          
+      </fileset>
     </jar>
   </target>
 
@@ -279,15 +284,15 @@
         <manifest>
             <attribute
                 name="Main-Class"
-                value="com.tiani.util.license.LicenseStore"
+                value="com.tiani.license.LicenseStore"
             />
         </manifest>
         <fileset dir="${build.classes.dir}">
-          <include name="com/tiani/util/license/LicenseStore*"/>
-          <include name="com/tiani/util/license/MACReader*"/>          
+          <include name="com/tiani/license/LicenseStore*"/>
+          <include name="com/tiani/license/MACReader*"/>          
         </fileset>
         <fileset dir="${src.res}">
-           <include name="com/tiani/util/license/ProductUIDs.properties"/>          
+           <include name="com/tiani/license/ProductUIDs.properties"/>          
         </fileset>
     </jar>
   </target>
