@@ -38,10 +38,15 @@ import org.jboss.system.ServiceMBeanSupport;
 public class ForwardService extends ServiceMBeanSupport implements
         NotificationListener {
 
+    private static final String NONE = "NONE";
+    private static final String[] EMPTY = {};
+
     private ObjectName storeScpServiceName;
     private ObjectName editContentServiceName;
+
+    private int maxSOPInstanceUIDsPerMoveRQ = 100;
     
-    private String[] editContentAETs;
+    private String[] forwardModifiedToAETs = {};
 
     private int forwardPriority = 0;
 
@@ -71,32 +76,32 @@ public class ForwardService extends ServiceMBeanSupport implements
         this.storeScpServiceName = storeScpServiceName;
     }
 
-	/**
-	 * @return Returns the editContentServiceName.
-	 */
 	public ObjectName getEditContentServiceName() {
 		return editContentServiceName;
 	}
-	/**
-	 * @param editContentServiceName The editContentServiceName to set.
-	 */
+    
 	public void setEditContentServiceName(ObjectName editContentServiceName) {
 		this.editContentServiceName = editContentServiceName;
 	}
 	
-	public String getEditContentAETs() {
-		if ( editContentAETs == null ) return " ";
-		return StringUtils.toString( editContentAETs, '\\');
+	public String getForwardModifiedToAETs() {
+		return forwardModifiedToAETs.length == 0 ? NONE
+                : StringUtils.toString( forwardModifiedToAETs, ',');
 	}
 	
-	public void setEditContentAETs( String s ) {
-		if ( s == null || s.trim().length() < 1 ) {
-			editContentAETs = null;
-		} else {
-			editContentAETs = StringUtils.split( s, '\\');
-		}
+	public void setForwardModifiedToAETs( String s ) {
+        forwardModifiedToAETs = NONE.equals(s) ? EMPTY
+                : StringUtils.split( s, ',');
 	}
-	
+
+    public final int getMaxSOPInstanceUIDsPerMoveRQ() {
+        return maxSOPInstanceUIDsPerMoveRQ;
+    }
+    
+    public final void setMaxSOPInstanceUIDsPerMoveRQ(int max) {
+        this.maxSOPInstanceUIDsPerMoveRQ = max;
+    }
+    
     protected void startService() throws Exception {
         server.addNotificationListener(storeScpServiceName,
                 this,
@@ -134,7 +139,8 @@ public class ForwardService extends ServiceMBeanSupport implements
         String[] studyIUIDs = new String[1];
         String[] seriesIUIDs = new String[1];
         ArrayList sopIUIDs = new ArrayList();
-        Dataset refSOP = null;
+        Dataset refSOP;
+        String retrAET = null;
         for (Iterator it = ians.values().iterator(); it.hasNext();) {
             Dataset ian = (Dataset) it.next();
             studyIUIDs[0] = ian.getString(Tags.StudyInstanceUID);
@@ -145,40 +151,49 @@ public class ForwardService extends ServiceMBeanSupport implements
                 DcmElement refSOPSeq = refSeries.get(Tags.RefSOPSeq);
                 for (int j = 0, m = refSOPSeq.vm(); j < m; ++j) {
                     refSOP = refSOPSeq.getItem(j);
+                    retrAET = refSOP.getString(Tags.RetrieveAET);
                     sopIUIDs.add(refSOP.getString(Tags.RefSOPInstanceUID));
-                }
-                String[] iuids = (String[]) sopIUIDs
-                        .toArray(new String[sopIUIDs.size()]);
-                sopIUIDs.clear();
-                for (int k = 0; k < destAETs.length; ++k) {
-                    MoveOrder order = new MoveOrder(refSOP
-                            .getString(Tags.RetrieveAET), ForwardingRules
-                            .toAET(destAETs[k]), forwardPriority, null,
-                            studyIUIDs, seriesIUIDs, iuids);
-                    try {
-                        final long scheduledTime = ForwardingRules
-                                .toScheduledTime(destAETs[k]);
-                        log.info("Scheduling "
-                                + order
-                                + (scheduledTime > 0L ? (" for " + new Date(
-                                        scheduledTime)) : " now"));
-                        JMSDelegate.queue(MoveOrder.QUEUE, order, JMSDelegate
-                                .toJMSPriority(forwardPriority), scheduledTime);
-                    } catch (JMSException e) {
-                        log.error("Failed to schedule " + order, e);
+                    if (sopIUIDs.size() >= maxSOPInstanceUIDsPerMoveRQ) {
+                        scheduleMoveOrders(studyIUIDs, seriesIUIDs, sopIUIDs, destAETs, retrAET);
                     }
                 }
+                scheduleMoveOrders(studyIUIDs, seriesIUIDs, sopIUIDs, destAETs, retrAET);
             }
         }
     }
-    
+
+    private void scheduleMoveOrders(String[] studyIUIDs, String[] seriesIUIDs, 
+            ArrayList sopIUIDs, String[] destAETs, String retrAET) {
+        if (sopIUIDs.isEmpty())
+            return;
+        String[] iuids = (String[]) sopIUIDs
+                .toArray(new String[sopIUIDs.size()]);
+        sopIUIDs.clear();
+        for (int k = 0; k < destAETs.length; ++k) {
+            final String destAET = ForwardingRules.toAET(destAETs[k]);
+            final long scheduledTime = ForwardingRules
+                .toScheduledTime(destAETs[k]);
+            MoveOrder order = new MoveOrder(retrAET, destAET, forwardPriority, null,
+                    studyIUIDs, seriesIUIDs, iuids);
+            log.info("Scheduling " + order
+                    + (scheduledTime > 0L ? (" for " + new Date(
+                            scheduledTime)) : " now"));
+            try {
+                JMSDelegate.queue(MoveOrder.QUEUE, order, JMSDelegate
+                        .toJMSPriority(forwardPriority), scheduledTime);
+            } catch (JMSException e) {
+                log.error("Failed to schedule " + order, e);
+            }
+        }
+    }
+
     public final NotificationListener contentEditNotificationListener = new NotificationListener() {
 
 		/**
 		 * @see javax.management.NotificationListener#handleNotification(javax.management.Notification, java.lang.Object)
 		 */
 		public void handleNotification(Notification notif, Object ctx) {
-			if ( editContentAETs == null || editContentAETs.length < 1 ) return;
+			if ( forwardModifiedToAETs == null || forwardModifiedToAETs.length < 1 ) return;
 			Object o = notif.getUserData();
 			if ( o == null ) return;
 			if ( log.isDebugEnabled() ) {
@@ -195,7 +210,7 @@ public class ForwardService extends ServiceMBeanSupport implements
 				log.error("Ignored! ContentEditNotification with wrong userObject type! "+o.getClass().getName());
 				return;
 			}
-			forward( editContentAETs, map);
+			forward( forwardModifiedToAETs, map);
 		}
     	
     };

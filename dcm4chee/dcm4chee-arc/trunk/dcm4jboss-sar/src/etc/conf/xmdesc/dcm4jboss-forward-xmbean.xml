@@ -34,6 +34,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getForwardModifiedToAETs"
+      setMethod="setForwardModifiedToAETs">
+      <description>Comma separated list of AETs, to which objects modified
+          by using the web application are (re-)forwarded. "NONE" = no forwarding
+          of modified objects.
+      </description>
+      <name>ForwardModifiedToAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getForwardPriority"
       setMethod="setForwardPriority">
       <description>Forwarding Priority. 0=medium, 1=high, 2=low.
@@ -44,6 +57,17 @@
          <value value="0" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxSOPInstanceUIDsPerMoveRQ"
+      setMethod="setMaxSOPInstanceUIDsPerMoveRQ">
+      <description>Maximal number of SOP Instance UIDs per MOVE RQ.
+      </description>
+      <name>MaxSOPInstanceUIDsPerMoveRQ</name>
+      <type>int</type>
+      <descriptors>
+         <value value="100" />
+      </descriptors>
+   </attribute>   
    <attribute access="read-write"
       getMethod="getStoreScpServiceName"
       setMethod="setStoreScpServiceName">
@@ -64,18 +88,6 @@
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="tiani.archive:service=ContentEditService" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getEditContentAETs"
-      setMethod="setEditContentAETs">
-      <description>List of AETs that will be synchronized via editContent notification.
-      Format:=AET1\AET2...
-      </description>
-      <name>EditContentAETs</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value=" " />
       </descriptors>
    </attribute>
    &defaultAttributes;
