@@ -241,7 +241,7 @@ CREATE TABLE gpsps (
 	gpsps_status    INTEGER,
 	gpsps_prior     INTEGER,
 	in_availability INTEGER,
-	item_attrs      VARBINARY,
+	item_attrs      BLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (workitemcode_fk) REFERENCES code(pk)
 );
