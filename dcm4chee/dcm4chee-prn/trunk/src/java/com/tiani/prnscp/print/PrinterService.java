@@ -711,6 +711,10 @@ public class PrinterService
       return filmSizeIDMap.containsKey(filmSizeID);
    }
    
+   public boolean isSupportsAnnotationDisplayFormatID(String annotationID) {
+      return supportsAnnotationBox && countAnnotationBoxes(annotationID) != -1;
+   }
+   
    private Paper toPaper(float[] wh) {
       Paper paper = new Paper();
       paper.setSize(wh[0] * PTS_PER_MM, wh[1] * PTS_PER_MM);
@@ -1498,9 +1502,9 @@ public class PrinterService
       if (supportsColor) {
          policy.putPresContext(UIDs.BasicColorPrintManagement, ts_uids);
       }
-      //      if (getBooleanPrinterAttribute(aet, "SupportsAnnotationBox")) {
-      //         policy.putPresContext(UIDs.BasicAnnotationBox, ts_uids);
-      //      }
+      if (supportsAnnotationBox) {
+         policy.putPresContext(UIDs.BasicAnnotationBox, ts_uids);
+      }
       return policy;
    }
    

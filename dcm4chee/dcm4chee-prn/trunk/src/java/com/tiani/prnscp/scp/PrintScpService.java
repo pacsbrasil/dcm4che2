@@ -95,6 +95,9 @@ public class PrintScpService
    private FilmSessionService filmSessionService = new FilmSessionService(this);
    private FilmBoxService filmBoxService = new FilmBoxService(this);
    private ImageBoxService imageBoxService = new ImageBoxService(this);
+   private AnnotationBoxService annotationBoxService = 
+      new AnnotationBoxService(this);
+   
 
    private ObjectName dcmServer;
    private DcmHandler dcmHandler;
@@ -262,6 +265,7 @@ public class PrintScpService
       services.bind(UIDs.BasicGrayscaleImageBox, imageBoxService);
       services.bind(UIDs.Printer, printerService);
       services.bind(UIDs.PresentationLUT, plutService);
+      services.bind(UIDs.BasicAnnotationBox, annotationBoxService);
    }
    
    private void unbindDcmServices() {
@@ -272,6 +276,7 @@ public class PrintScpService
       services.unbind(UIDs.BasicGrayscaleImageBox);
       services.unbind(UIDs.Printer);
       services.unbind(UIDs.PresentationLUT);
+      services.unbind(UIDs.BasicAnnotationBox);
    }
    
    // Package protected ---------------------------------------------
@@ -367,6 +372,22 @@ public class PrintScpService
       return b.booleanValue();
    }
 
+   int countAnnotationBoxes(String aet, String annotationID)
+      throws DcmServiceException
+   {
+      try {
+         Integer i = (Integer)
+            server.invoke(makePrinterName(aet),
+               "countAnnotationBoxes",
+               new Object[]{ annotationID }, 
+               new String[]{ String.class.getName() });
+         return i.intValue();
+      } catch (Exception e) {
+         throw new DcmServiceException(Status.ProcessingFailure,
+            "Failed to count Annotation Boxes for format ID - " + annotationID);
+      }
+   }
+   
    FilmSession getFilmSession(ActiveAssociation as) {
       return (FilmSession) as.getAssociation().getProperty("FilmSession");
    }

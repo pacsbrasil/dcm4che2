@@ -35,6 +35,7 @@ import org.dcm4che.util.UIDGenerator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.StringTokenizer;
 
 /**
  * <description>
@@ -63,6 +64,7 @@ class FilmBox {
    private final String uid;
    private final Dataset dataset;
    private final LinkedHashMap imageBoxes = new LinkedHashMap();
+   private final LinkedHashMap annotationBoxes = new LinkedHashMap();
    private final HashMap pluts = new HashMap();
    
    // Static --------------------------------------------------------
@@ -71,7 +73,7 @@ class FilmBox {
    
    // Constructors --------------------------------------------------
    public FilmBox(PrintScpService scp, String aet, String uid, Dataset dataset,
-         HashMap pluts, Dataset sessionAttr)
+         HashMap pluts, FilmSession session)
       throws DcmServiceException
    {
       this.scp = scp;
@@ -79,14 +81,69 @@ class FilmBox {
       this.uid = uid;
       this.dataset = dataset;
       checkCreateData(dataset);
+      addRefImageBox(dataset, session.getImageBoxCUID());
+      addRefAnnotationBox(dataset);
       addPLUT(dataset, pluts);
-      sessionAttr.putCS(Tags.RequestedResolutionID,
+      session.getAttributes().putCS(Tags.RequestedResolutionID,
          dataset.getString(Tags.RequestedResolutionID));
+   }
+
+   private int countImageBoxes(String imageDisplayFormat) {
+      StringTokenizer tok = new StringTokenizer(imageDisplayFormat, ",\\");
+      try {
+         String type = tok.nextToken();
+         if (type.equals("STANDARD")) {
+            int c = Integer.parseInt(tok.nextToken());
+            int r = Integer.parseInt(tok.nextToken());
+            return c * r;
+         }
+         if (type.equals("ROW") || type.equals("COL")) {
+            int sum = 0;
+            while (tok.hasMoreTokens()) {
+               sum += Integer.parseInt(tok.nextToken());
+            }
+            return sum;
+         }
+         // TO DO support of other types: SLIDE, SUPERSLIDE, CUSTOM/i
+      } catch (RuntimeException e) {
+      }
+      throw new IllegalArgumentException(imageDisplayFormat);
+   }
+   
+   
+   void addRefImageBox(Dataset data, String cuid)
+      throws DcmServiceException
+   {
+      int n = countImageBoxes(data.getString(Tags.ImageDisplayFormat));
+      DcmElement sq = data.putSQ(Tags.RefImageBoxSeq);
+      for (int i = 0; i < n; ++i) {
+         Dataset item = sq.addNewItem();
+         item.putUI(Tags.RefSOPClassUID, cuid);
+         item.putUI(Tags.RefSOPInstanceUID, uidgen.createUID());
+      }
+   }
+
+   void addRefAnnotationBox(Dataset data)
+      throws DcmServiceException
+   {
+      String annotationID = data.getString(Tags.AnnotationDisplayFormatID);
+      if (annotationID == null) {
+         return;
+      }
+      int n = scp.countAnnotationBoxes(aet, annotationID);
+      DcmElement sq = data.putSQ(Tags.RefBasicAnnotationBoxSeq);
+      for (int i = 0; i < n; ++i) {
+         Dataset item = sq.addNewItem();
+         item.putUI(Tags.RefSOPClassUID, UIDs.BasicAnnotationBox);
+         item.putUI(Tags.RefSOPInstanceUID, uidgen.createUID());
+      }
    }
    
    // Public --------------------------------------------------------
    public String toString() {
-      return "FilmBox[uid=" + uid + ", " + imageBoxes.size() + " ImageBoxes]";
+      return "FilmBox[uid=" + uid + ", "
+         + imageBoxes.size() + " ImageBoxes, "
+         + annotationBoxes.size() + " AnnotationBoxes]";
    }      
    
    public Dataset getAttributes() {
@@ -113,6 +170,13 @@ class FilmBox {
       addPLUT(imageBox, pluts);
       imageBoxes.remove(imageBoxUID);
       imageBoxes.put(imageBoxUID, imageBox);
+   }
+
+   public void setAnnotationBox(String annotationBoxUID, Dataset annotationBox)
+      throws DcmServiceException
+   {
+      annotationBoxes.remove(annotationBoxUID);
+      annotationBoxes.put(annotationBoxUID, annotationBox);
    }
    
    public Dataset createStoredPrint(FilmSession session)
@@ -155,8 +219,19 @@ class FilmBox {
       Dataset fbContent = result.putSQ(Tags.FilmBoxContentSeq).addNewItem();
       fbContent.putAll(dataset);
       fbContent.remove(Tags.RefFilmSessionSeq);
-      DcmElement refImageBoxSeq = fbContent.remove(Tags.RefImageBoxSeq);
+      copyImageBoxSeq(fbContent.remove(Tags.RefImageBoxSeq), result);
       
+      if (!pluts.isEmpty()) {
+         DcmElement plutSeq = result.putSQ(Tags.PresentationLUTContentSeq);
+         for (Iterator it = pluts.values().iterator(); it.hasNext();) {
+            plutSeq.addItem((Dataset) it.next());
+         }
+      }
+      return result;
+   }
+
+   private void copyImageBoxSeq(DcmElement refImageBoxSeq, Dataset result)
+   {      
       Dataset[] boxes = new Dataset[refImageBoxSeq.vm()];
       for (Iterator it = imageBoxes.values().iterator(); it.hasNext();) {
          Dataset box = (Dataset) it.next();
@@ -170,14 +245,27 @@ class FilmBox {
             boxSeq.addItem(boxes[i]);
          }
       }
+   }
+   
+   private void copyAnnotationBoxSeq(DcmElement refAnnotationBoxSeq,
+      Dataset result)
+   {
+      if (refAnnotationBoxSeq == null) {
+         return;
+      }
+      Dataset[] boxes = new Dataset[refAnnotationBoxSeq.vm()];
+      for (Iterator it = annotationBoxes.values().iterator(); it.hasNext();) {
+         Dataset box = (Dataset) it.next();
+         int apos = box.getInt(Tags.AnnotationPosition, -1);
+         boxes[apos-1] = box;
+      }
       
-      if (!pluts.isEmpty()) {
-         DcmElement plutSeq = result.putSQ(Tags.PresentationLUTContentSeq);
-         for (Iterator it = pluts.values().iterator(); it.hasNext();) {
-            plutSeq.addItem((Dataset) it.next());
+      DcmElement contSeq = result.putSQ(Tags.AnnotationContentSeq);
+      for (int i = 0; i < boxes.length; ++i) {
+         if (boxes[i] != null && boxes[i].vm(Tags.TextString) > 0) {
+            contSeq.addItem(boxes[i]);
          }
       }
-      return result;
    }
    
    private void addPLUT(Dataset dataset, HashMap pluts)
@@ -258,6 +346,8 @@ class FilmBox {
    {
       scp.checkImageDisplayFormat(aet, ds.getString(Tags.ImageDisplayFormat),
          checkFilmOrientation(ds.getString(Tags.FilmOrientation)));
+      scp.checkAttributeValue(aet, "isSupportsAnnotationDisplayFormatID",
+         ds, Tags.AnnotationDisplayFormatID, !TYPE1);
       scp.checkAttributeValue(aet, "isSupportsFilmSizeID",
          ds, Tags.FilmSizeID, !TYPE1);
       scp.checkAttributeValue(aet, "isSupportsMagnificationType",

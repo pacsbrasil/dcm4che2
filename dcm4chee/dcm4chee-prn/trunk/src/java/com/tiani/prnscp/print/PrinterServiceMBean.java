@@ -552,6 +552,8 @@ public interface PrinterServiceMBean extends ServiceMBean {
 
    public boolean isSupportsConfigurationInformation(String configInfo);
  
+   public boolean isSupportsAnnotationDisplayFormatID(String annotationID);
+    
    public int countAnnotationBoxes(String annotationID);
    
    /** Getter for property dateOfLastCalibration.
