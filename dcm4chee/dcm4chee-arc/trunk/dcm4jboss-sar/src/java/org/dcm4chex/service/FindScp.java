@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -23,11 +23,6 @@ package org.dcm4chex.service;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
@@ -43,26 +38,22 @@ import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$
+ * @version $Revision$ $Date$
  * @since 31.08.2003
  */
 public class FindScp extends DcmServiceBase {
-    private final FindScpService scp;
     private final Logger log;
-    private DataSource datasource;
-    private String dsJndiName;
+    private final DataSourceFactory dsf;
+    private String aet;
 
-    public String getDsJndiName() {
-        return dsJndiName;
+    public FindScp(Logger log, DataSourceFactory dsf) {
+        this.log = log;
+        this.dsf = dsf;
     }
 
-    public void setDsJndiName(String dsJndiName) {
-        this.dsJndiName = dsJndiName;
-    }
-
-    public FindScp(FindScpService scp) {
-        this.scp = scp;
-        this.log = scp.getLog();
+    public final void setAET(String aet)
+    {
+        this.aet = aet;
     }
     
     protected MultiDimseRsp doCFind(
@@ -72,27 +63,13 @@ public class FindScp extends DcmServiceBase {
         throws IOException, DcmServiceException {
         final QueryCmd queryCmd;
         try {
-            queryCmd = QueryCmd.create(datasource(), rq.getDataset());
+            queryCmd = QueryCmd.create(dsf.getDataSource(), rq.getDataset());
             queryCmd.execute();
         } catch (Exception e) {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
         return new MultiCFindRsp(queryCmd);
-    }
-
-    private DataSource datasource() throws NamingException {
-        if (datasource == null) {
-            Context jndiCtx = new InitialContext();
-            try {
-                datasource = (DataSource) jndiCtx.lookup(dsJndiName);
-            } finally {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {} 
-            }
-        }
-        return datasource;
     }
 
     private class MultiCFindRsp implements MultiDimseRsp {
@@ -124,7 +101,9 @@ public class FindScp extends DcmServiceBase {
                     return null;
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
-                return queryCmd.getDataset();
+                Dataset data = queryCmd.getDataset();
+                data.putAE(Tags.RetrieveAET, aet);
+                return data;
             } catch (SQLException e) {
                 log.error("Retrieve DB record failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);                

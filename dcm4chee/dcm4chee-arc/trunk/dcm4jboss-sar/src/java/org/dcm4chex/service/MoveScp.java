@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -38,19 +38,18 @@ import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$
+ * @version $Revision$ $Date$
  * @since 31.08.2003
  */
 public class MoveScp extends DcmServiceBase
 {
-    private final MoveScpService scp;
     private final Logger log;
-    private String providerURL;
+    private final DataSourceFactory dsf;
 
-    public MoveScp(MoveScpService scp)
+    public MoveScp(Logger log, DataSourceFactory dsf)
     {
-        this.scp = scp;
-        this.log = scp.getLog();
+        this.log = log;
+        this.dsf = dsf;
     }
 
     public void c_move(ActiveAssociation assoc, Dimse rq) throws IOException
@@ -64,7 +63,7 @@ public class MoveScp extends DcmServiceBase
             FileInfo[][] fileInfos = queryFileInfos(rqData);
             new Thread(
                 new MoveTask(
-                    scp,
+                    log,
                     assoc,
                     rq.pcid(),
                     rqCmd,
@@ -92,7 +91,7 @@ public class MoveScp extends DcmServiceBase
         try
         {
             RetrieveCmd retrieveCmd =
-                RetrieveCmd.create(scp.getDataSource(), rqData);
+                RetrieveCmd.create(dsf.getDataSource(), rqData);
             fileInfos = retrieveCmd.execute();
         } catch (Exception e)
         {
@@ -107,7 +106,7 @@ public class MoveScp extends DcmServiceBase
         AEData aeData = null;
         try
         {
-            AECmd aeCmd = new AECmd(scp.getDataSource(), dest);
+            AECmd aeCmd = new AECmd(dsf.getDataSource(), dest);
             aeData = aeCmd.execute();
         } catch (Exception e)
         {

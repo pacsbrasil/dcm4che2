@@ -99,7 +99,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener
         try
         {
             String dn = InetAddress.getLocalHost().getCanonicalHostName();
-            return dn.substring(dn.lastIndexOf('.') + 1);
+            int point = dn.indexOf('.');
+            return point != -1 ? dn.substring(0, point) : dn;
         } catch (UnknownHostException e)
         {
             throw new ConfigurationException(e);

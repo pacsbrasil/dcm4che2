@@ -77,7 +77,6 @@ class MoveTask implements Runnable
 
     private static int defaultBufferSize = 2048;
 
-    private final MoveScpService scp;
     private final Logger log;
     private final byte[] buffer = new byte[defaultBufferSize];
     private final String moveDest;
@@ -97,7 +96,7 @@ class MoveTask implements Runnable
     private final ArrayList toRetrieve = new ArrayList();
 
     public MoveTask(
-        MoveScpService scp,
+        Logger log,
         ActiveAssociation moveAssoc,
         int movePcid,
         Command moveRqCmd,
@@ -106,8 +105,7 @@ class MoveTask implements Runnable
         String moveDest)
         throws DcmServiceException
     {
-        this.scp = scp;
-        this.log = scp.getLog();
+        this.log = log;
         this.moveAssoc = moveAssoc;
         this.movePcid = movePcid;
         this.moveRqCmd = moveRqCmd;
@@ -115,7 +113,7 @@ class MoveTask implements Runnable
         this.moveDest = moveDest;
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.retrieveAET = moveAssoc.getAssociation().getCalledAET();
-        if (fileInfo.length > 0)
+        if ((remaining = fileInfo.length) > 0)
         {
             notifyMovePending();
             openAssociation(fileInfo);
@@ -263,7 +261,7 @@ class MoveTask implements Runnable
             moveRqCmd.getMessageID());
         storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         DataSource ds =
-            new FileDataSource(info, buffer, scp.getEncodingRate());
+            new FileDataSource(info, buffer);
         return af.newDimse(presCtx.pcid(), storeRqCmd, ds);
     }
 
@@ -314,12 +312,12 @@ class MoveTask implements Runnable
             moveRqCmd.getMessageID(),
             moveRqCmd.getAffectedSOPClassUID(),
             status);
-        if (status == Status.Cancel)
-        {
-            rspCmd.remove(Tags.NumberOfRemainingSubOperations);
-        } else
+        if (remaining > 0)
         {
             rspCmd.putUS(Tags.NumberOfRemainingSubOperations, remaining);
+        } else
+        {
+            rspCmd.remove(Tags.NumberOfRemainingSubOperations);
         }
         rspCmd.putUS(Tags.NumberOfCompletedSubOperations, completed);
         rspCmd.putUS(Tags.NumberOfWarningSubOperations, warnings);

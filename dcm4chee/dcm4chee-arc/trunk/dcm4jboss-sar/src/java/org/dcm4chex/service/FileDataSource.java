@@ -56,13 +56,11 @@ class FileDataSource implements DataSource
 
     private final FileInfo fileInfo;
     private final byte[] buffer;
-    private final float encodingRate;
 
-    public FileDataSource(FileInfo fileInfo, byte[] buffer, float encodingRate)
+    public FileDataSource(FileInfo fileInfo, byte[] buffer)
     {
         this.fileInfo = fileInfo;
         this.buffer = buffer;
-        this.encodingRate = encodingRate;
     }
 
     public void writeTo(OutputStream out, String tsUID) throws IOException

@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
  * @since 02.08.2003
  */
 public class AETsEditor extends PropertyEditorSupport {
-    private static String ANY = "<any>";
+    private static String ANY = "--ANY--";
     private static String[] EMPTY = {};
 
     public String getAsText() {

@@ -1,29 +1,18 @@
-<project name="dcm4jboss-sar" default="sar">
+<project name="dcm4jboss-sar" default="jar">
 	<property file="build.properties"/>
 	<property name="javac.debug" value="on"/>
 	<property name="version" value="DEV"/>
-	<property name="common.jar" value="dcm4jboss-common.jar"/>
-	<property name="ae.jar" value="dcm4jboss-ae.jar"/>
-	<property name="ae.sar" value="dcm4jboss-ae.sar"/>
-	<property name="dcmsrv.jar" value="dcm4jboss-dcmsrv.jar"/>
-	<property name="dcmsrv.sar" value="dcm4jboss-dcmsrv.sar"/>
-	<property name="storescp.jar" value="dcm4jboss-storescp.jar"/>
-	<property name="storescp.sar" value="dcm4jboss-storescp.sar"/>
-	<property name="findscp.jar" value="dcm4jboss-findscp.jar"/>
-	<property name="findscp.sar" value="dcm4jboss-findscp.sar"/>
-	<property name="movescp.jar" value="dcm4jboss-movescp.jar"/>
-	<property name="movescp.sar" value="dcm4jboss-movescp.sar"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
 	<property name="src.java" value="${src.dir}/java"/>
-	<property name="src.etc" value="${src.dir}/etc"/>
-	<property name="src.deploy" value="${src.etc}/deploy"/>
+	<property name="src.res" value="${src.dir}/resources"/>
 
 	<property name="target.dir" value="${basedir}/target"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
 	<property name="target.xdoclet" value="${target.dir}/xdoclet"/>
 	<property name="target.java" value="${target.xdoclet}/java"/>
 	<property name="target.deploy" value="${target.dir}/deploy"/>
+	<property name="target.lib" value="${target.dir}/lib"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="${user.home}/work/dcm4che14/build"/>		
@@ -85,13 +74,9 @@
     <target name="prepare" depends="init">
         <mkdir dir="${target.classes}"/>
         <mkdir dir="${target.java}"/>
+        <mkdir dir="${target.lib}"/>
         <mkdir dir="${target.deploy}"/>
-        <mkdir dir="${target.dir}/ae"/>
-        <mkdir dir="${target.dir}/dcmsrv"/>
-        <mkdir dir="${target.dir}/storescp"/>
-        <mkdir dir="${target.dir}/findscp"/>
-        <mkdir dir="${target.dir}/movescp"/>
-    </target>
+   </target>
 
     <!-- =================================================================== -->
     <!-- Invoke XDoclet's jmxdoclet                                          -->
@@ -132,113 +117,37 @@
    	</target>
 
    	<!-- =================================================================== -->
-   	<!-- build sars                                        -->
+   	<!-- build sar                                        -->
    	<!-- =================================================================== -->
    
-   	<target name="sar" depends="ae-sar,dcmsrv-sar,storescp-sar,findscp-sar,movescp-sar"/>
+   	<target name="sar" depends="compile">
+        <zip zipfile="${target.deploy}/dcm4jboss.sar">
+        	<zipfileset dir="${target.classes}"/>
+        	<zipfileset dir="${src.res}/dcm4jboss-sar">
+        		<include name="META-INF/jboss-service.xml"/>
+        	</zipfileset>        	
+        </zip>
+    </target>
 
-    <target name="ae-sar" depends="compile">
-        <copy file="${src.deploy}/dcm4jboss-ae-service.xml" 
-            tofile="${target.dir}/ae/jboss-service.xml">
-            <filterset>
-                <filter token="ARCHIVES" value="dcm4jboss-ejb-client.jar"/>
-            </filterset>
-        </copy>  
-        <zip zipfile="${target.deploy}/${ae.sar}">
-        	<zipfileset dir="${target.classes}">
-        		<include name="**/AEService*"/>
-        	</zipfileset>
-        	<zipfileset dir="${target.dir}/ae" prefix="META-INF">
-        		<include name="jboss-service.xml"/>
-        	</zipfileset>        	
-        </zip>
-    </target>   
-    
-    <target name="dcmsrv-sar" depends="compile">
-        <copy file="${src.deploy}/dcm4jboss-dcmsrv-service.xml" 
-            tofile="${target.dir}/dcmsrv/jboss-service.xml">
-            <filterset>
-                <filter token="ARCHIVES" value="dcm4che.jar"/>
-            </filterset>
-        </copy>  
-        <zip zipfile="${target.deploy}/${dcmsrv.sar}">
-        	<zipfileset dir="${target.classes}">
-        		<include name="**/DcmServerService*"/>
-        		<include name="**/util/*"/>
-        	</zipfileset>
-        	<zipfileset dir="${target.dir}/dcmsrv" prefix="META-INF">
-        		<include name="jboss-service.xml"/>
-        	</zipfileset>        	
-        </zip>
-    </target>   
-
-    <target name="storescp-sar" depends="compile">
-        <copy file="${src.deploy}/dcm4jboss-storescp-service.xml" 
-            tofile="${target.dir}/storescp/jboss-service.xml">
-            <filterset>
-                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-ejb-client.jar"/>
-            </filterset>
-        </copy>  
-        <zip zipfile="${target.deploy}/${storescp.sar}">
-        	<zipfileset dir="${target.classes}">
-        		<include name="**/StoreScp*"/>
-        		<include name="**/util/*"/>
-        	</zipfileset>
-        	<zipfileset dir="${target.dir}/storescp" prefix="META-INF">
-        		<include name="jboss-service.xml"/>
-        	</zipfileset>        	
-        </zip>
-    </target>   
-
-    <target name="findscp-sar" depends="compile">
-        <copy file="${src.deploy}/dcm4jboss-findscp-service.xml" 
-            tofile="${target.dir}/findscp/jboss-service.xml">
-            <filterset>
-                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-jdbc.jar"/>
-            </filterset>
-        </copy>  
-        <zip zipfile="${target.deploy}/${findscp.sar}">
-        	<zipfileset dir="${target.classes}">
-        		<include name="**/FindScp*"/>
-        	</zipfileset>
-        	<zipfileset dir="${target.dir}/findscp" prefix="META-INF">
-        		<include name="jboss-service.xml"/>
-        	</zipfileset>        	
-        </zip>
-    </target>   
-
-    <target name="movescp-sar" depends="compile">
-        <copy file="${src.deploy}/dcm4jboss-movescp-service.xml" 
-            tofile="${target.dir}/movescp/jboss-service.xml">
-            <filterset>
-                <filter token="ARCHIVES"
-                	value="dcm4che.jar,dcm4jboss-jdbc.jar"/>
-            </filterset>
-        </copy>  
-        <zip zipfile="${target.deploy}/${movescp.sar}">
-        	<zipfileset dir="${target.classes}">
-        		<include name="**/Move*"/>
-        		<include name="**/FileDataSource*"/>
-        		<include name="**/FileSelector*"/>
-        		<include name="**/FileSelection*"/>
-        		<include name="**/util/*"/>
-        	</zipfileset>
-        	<zipfileset dir="${target.dir}/movescp" prefix="META-INF">
-        		<include name="jboss-service.xml"/>
-        	</zipfileset>        	
-        </zip>
-    </target>   
+   	<!-- =================================================================== -->
+   	<!-- build jar                                        -->
+   	<!-- =================================================================== -->
+   
+   	<target name="jar" depends="compile">
+        <jar jarfile="${target.lib}/dcm4jboss.jar">
+        	<manifest>
+        		<attribute name="Class-Path" value="dcm4che.jar dcm4jboss-ejb-client.jar dcm4jboss-jdbc.jar"/>
+        	</manifest>
+        	<fileset dir="${target.classes}"/>
+        </jar>
+    </target>
 
    	<!-- =================================================================== -->
    	<!-- deploy sars                                                         -->
    	<!-- =================================================================== -->
    
    	<target name="deploy" depends="sar">
-    	<copy file="${target.deploy}/dcm4jboss-ae.sar" todir="${jboss.conf}/deploy"/>
-    	<copy file="${target.deploy}/dcm4jboss-dcmsrv.sar" todir="${jboss.conf}/deploy"/>
-    	<copy file="${target.deploy}/dcm4jboss-storescp.sar" todir="${jboss.conf}/deploy"/>
-    	<copy file="${target.deploy}/dcm4jboss-findscp.sar" todir="${jboss.conf}/deploy"/>
-    	<copy file="${target.deploy}/dcm4jboss-movescp.sar" todir="${jboss.conf}/deploy"/>
+    	<copy file="${target.deploy}/dcm4jboss.sar" todir="${jboss.conf}/deploy"/>
    	</target>
 
    	<!-- =================================================================== -->
@@ -246,11 +155,7 @@
    	<!-- =================================================================== -->
    
    	<target name="undeploy">
-    	<delete file="${jboss.conf}/deploy/dcm4jboss-dcmsrv.sar"/>
-    	<delete file="${jboss.conf}/deploy/dcm4jboss-storescp.sar"/>
-    	<delete file="${jboss.conf}/deploy/dcm4jboss-findscp.sar"/>
-    	<delete file="${jboss.conf}/deploy/dcm4jboss-movescp.sar"/>
-    	<delete file="${jboss.conf}/deploy/dcm4jboss-ae.sar"/>
+    	<delete file="${jboss.conf}/deploy/dcm4jboss.sar"/>
    	</target>
 
    	<!-- =================================================================== -->

@@ -10,10 +10,10 @@
 
 <server>
 
-  <classpath codebase="lib" archives="@ARCHIVES@"/>
+<classpath codebase="lib" archives="dcm4jboss.jar"/>
 
-  <mbean code="org.dcm4chex.service.DcmServerService" 
-         name="dcm4chex:service=DcmServer,name=DCMSRV">
+<mbean code="org.dcm4chex.service.DcmServerService" 
+    name="dcm4chex:service=DcmServer,name=DCMSRV">
 
     <!--
     Set maximal number of simultaneously conncected DICOM clients.
@@ -33,22 +33,6 @@
     Specifies TCP port on which the DICOM server is listening.
     -->
     <attribute name="Port">2350</attribute>
-    
-    <!--
-    Specifies Called AETs, which the DICOM server shall accept.
-    Multiple values can be specified, must be separated by 
-    '\' characters. Use the single value "any" to accept any Called AET
-    in the A-ASSOCIATE RQ.    
-    -->
-    <attribute name="CalledAETs">PACS_TIANI,PRINT_A4_TIANI,PRINT_A3_TIANI</attribute>
-    
-    <!--
-    Specifies Calling AETs, which the DICOM server shall accept.
-    Multiple values can be specified, must be separated by 
-    '\' characters. Use the single value "any" to accept any Calling AET
-    in the A-ASSOCIATE RQ.    
-    -->
-    <attribute name="CallingAETs">&lt;any&gt;</attribute>
     
     <!--
     Specifies Timeout in ms, the DICOM server will wait after accepting the
@@ -104,7 +88,8 @@
     Defines password for access to cacerts file, specified by attribute CacertsFile 
     -->
     <attribute name="CacertsPasswd">passwd</attribute>
-  </mbean>
+</mbean>
+
 
 </server>
 
