@@ -137,7 +137,7 @@
 								</xsl:if>
 							</input>
 						</td>
-						<td nowrap="" bgcolor="eeeeee">Creation date</td>
+						<td nowrap="" bgcolor="eeeeee">Initialized date</td>
 						<td bgcolor="eeeeee">To: </td>
 						<td width="100%" bgcolor="eeeeee"/>
 					</tr><tr>
@@ -148,7 +148,7 @@
 								</xsl:if>
 							</input>
 						</td>
-						<td nowrap="" bgcolor="eeeeee">Update date</td>
+						<td nowrap="" bgcolor="eeeeee">Modified date</td>
 						<td width="90" bgcolor="eeeeee">
 							<input size="10" name="endDate" type="text" value="{filter/endDate}"/>
 						</td>
