@@ -31,30 +31,33 @@
 
 	<xsl:template match="item[@type='org.dcm4chex.archive.ejb.jdbc.AEData']">
 		<tr>
-	        <td title="AE Title" >
+	        <td title="AE Title" valign="top" >
 				<xsl:value-of select="title"/>
 			</td>
-	        <td title="Hostname" >
+	        <td title="Hostname" valign="top" >
 				<xsl:value-of select="hostName"/>
 	        </td>
-	        <td title="Port">
+	        <td title="Port" valign="top" >
 					<xsl:value-of select="port"/>
 	        </td>
-	        <td title="Cipher">
-					<xsl:value-of select="cipherSuitesAsString"/>
+	        <td title="Cipher" valign="top" >
+	        	<xsl:for-each select="cipherSuites/item">
+	        		<xsl:value-of select="."/><br/>
+				</xsl:for-each>
 	        </td>
-			<td align="center">
+			<td align="center" valign="top" >
 				<a href="aeedit.m?pk={pk}">
 					<img src="images/edit.gif" alt="edit" border="0"/>		
 				</a>
 	        </td>
-			<td align="left">
+			<td align="left" valign="top" >
 					<a href="aedelete.m?pk={pk}" onclick="return confirm('Are you sure you want to delete?')">
 					<img src="images/delete.gif" alt="delete" border="0"/>							
 					</a>					
 			</td>
 		</tr>
 	</xsl:template>
-	   
+ 
 </xsl:stylesheet>
+
 

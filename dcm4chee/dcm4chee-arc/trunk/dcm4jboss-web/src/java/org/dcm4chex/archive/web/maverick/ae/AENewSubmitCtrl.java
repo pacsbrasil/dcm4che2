@@ -20,7 +20,7 @@ import org.dcm4chex.archive.web.maverick.*;
 public class AENewSubmitCtrl extends Errable
 {
 
-	private String title, hostName, cipherSuites;
+	private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
 	private int port, pk;
 	private String newPar = null;
 	private String cancelPar = null;
@@ -34,6 +34,19 @@ public class AENewSubmitCtrl extends Errable
 		this.cipherSuites = cipherSuites;
 	}
 
+	public final void setCipher1(String cipher)
+	{
+		this.cipher1 = cipher;
+	}
+	public final void setCipher2(String cipher)
+	{
+		this.cipher2 = cipher;
+	}
+	public final void setCipher3(String cipher)
+	{
+		this.cipher3 = cipher;
+	}
+	
 	/**
 	 * @param hostName The hostName to set.
 	 */
@@ -70,6 +83,12 @@ public class AENewSubmitCtrl extends Errable
 	
 	private AEData getAE()
 	{
+		if (cipherSuites == null || cipherSuites.length() < 1 ) {
+			StringBuffer sb = new StringBuffer(cipher1);
+			if ( cipher2 != null && cipher2.length() > 0 ) sb.append(",").append( cipher2 );
+			if ( cipher3 != null && cipher3.length() > 0 ) sb.append(",").append( cipher3 );
+			cipherSuites = sb.toString();
+		}
 		return new AEData(
 			0,
 			this.title,
