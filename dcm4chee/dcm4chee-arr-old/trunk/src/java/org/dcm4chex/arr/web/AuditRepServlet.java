@@ -243,11 +243,7 @@ public class AuditRepServlet extends HttpServlet
                 if (VIEW_PATH.equals(path)) {
                     int pk = Integer.parseInt(rq.getParameter("pk"));
                     xml = getQueryAuditRecord().getXmlData(pk);
-                    //check if viewing raw xml
-                    if (rq.getParameter("viewxml") != null)
-                        tpl = null;
-                    else
-                        tpl = viewTpl;
+                    tpl = viewTpl;
                 } else { // assume LIST_PATH.equals(path)
                     //check for empty or aggregated types to query
                     String[] types = rq.getParameterValues("type");
@@ -300,6 +296,8 @@ public class AuditRepServlet extends HttpServlet
                     if (logUsage)
                         getStoreAuditRecord().store(buildAuditLogUsedAuditMessage(rq));
                 }
+                if (rq.getParameter("viewxml") != null)
+                    tpl = null;                
                 showPage(rsp, xml, tpl);
             }
         } catch (Exception e) {
