@@ -193,7 +193,7 @@
    				<exclude name="**/test.war"/>
    			</fileset>
    			<fileset dir="${dcm4jboss-ejb.src}/etc">
-   				<include name="*/sql/create.*"/>
+   				<include name="*/sql/*"/>
    				<include name="*/deploy/*-ds.xml"/>
    				<include name="hsql/data/hypersonic/localDB.script"/>
    			</fileset>
@@ -214,6 +214,7 @@
    			</fileset>
   			<fileset dir="${src.etc}">
    				<include name="bin/*.sh"/>
+   				<include name="bin/*.bat"/>
    				<include name="deploy/*.xml"/>
    			</fileset>
   			<fileset dir="${basedir}">
@@ -223,14 +224,6 @@
    				<include name="lib/*"/>
    			</fileset>
    		</copy>
-    	<copy todir="${dist.dir}/common">
-      		<filterset>
-        		<filter token="SERVICE" value="${dist.name}"/>
-      		</filterset>
-  			<fileset dir="${src.etc}">
-   				<include name="bin/*.bat"/>
-   			</fileset>
-	    </copy>
    		<zip
    			destfile="${target.dir}/${dist.name}.zip"
    			basedir="${target.dir}"

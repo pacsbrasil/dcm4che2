@@ -76,7 +76,7 @@
     Relative path names will be interpretated as relative to JBoss server home
     directory (e.g.: JBOSS_HOME/server/pacs).
     At least, one directory path must be specified. Multiple values must be
-    separated by ':' characters.
+    separated by line breaks.
     If multiple directories are specified, the storage location alternates
     every day (at midnight). There may be several entries with the same
     directory path to configure an asymetric distribution of received objects
