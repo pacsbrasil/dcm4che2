@@ -9,6 +9,7 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -234,6 +235,101 @@ public abstract class ContentEditBean implements SessionBean {
         } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void moveStudies(int[] study_pks, int patient_pk)
+    		throws RemoteException {
+        try {
+            PatientLocal pat = patHome.findByPrimaryKey(new Integer(
+                    patient_pk));
+            Collection studies = pat.getStudies();
+            for (int i = 0; i < study_pks.length; i++) {
+                StudyLocal study = studyHome.findByPrimaryKey(new Integer(
+                        study_pks[i]));
+                PatientLocal oldPat = study.getPatient();
+                if (oldPat.isIdentical(pat)) continue;
+            }
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        }
+    }
+
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void moveSeries(int[] series_pks, int study_pk)
+    		throws RemoteException {
+        try {
+            StudyLocal study = studyHome.findByPrimaryKey(new Integer(
+                    study_pk));
+            Collection seriess = study.getSeries();
+            for (int i = 0; i < series_pks.length; i++) {
+                SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(
+                        series_pks[i]));
+                StudyLocal oldStudy = series.getStudy();
+                if (oldStudy.isIdentical(study)) continue;
+                seriess.add(series);                
+                oldStudy.updateRetrieveAETs();
+                oldStudy.updateAvailability();
+                oldStudy.updateModalitiesInStudy();
+                final int numI = series.getNumberOfSeriesRelatedInstances();
+                oldStudy.incNumberOfStudyRelatedInstances(-numI);
+                oldStudy.incNumberOfStudyRelatedSeries(-1);
+                study.incNumberOfStudyRelatedInstances(numI);
+                study.incNumberOfStudyRelatedSeries(1);
+            }
+            study.updateRetrieveAETs();
+            study.updateAvailability();
+            study.updateModalitiesInStudy();
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        }
+    }
+
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void moveInstances(int[] instance_pks, int series_pk)
+    		throws RemoteException {
+        try {
+            SeriesLocal series = seriesHome.findByPrimaryKey(new Integer(
+                    series_pk));
+            Collection instances = series.getInstances();
+            for (int i = 0; i < instance_pks.length; i++) {
+                InstanceLocal instance = instHome.findByPrimaryKey(new Integer(
+                        instance_pks[i]));
+                SeriesLocal oldSeries = instance.getSeries();
+                if (oldSeries.isIdentical(series)) continue;
+                instances.add(instance);                
+                if (oldSeries.updateRetrieveAETs()) {
+                    oldSeries.getStudy().updateRetrieveAETs();
+                }
+                if (oldSeries.updateAvailability()) {
+                    oldSeries.getStudy().updateAvailability();
+                }
+                oldSeries.incNumberOfSeriesRelatedInstances(-1);
+                series.incNumberOfSeriesRelatedInstances(1);
+            }
+            if (series.updateRetrieveAETs()) {
+                series.getStudy().updateRetrieveAETs();
+            }
+            if (series.updateAvailability()) {
+                series.getStudy().updateAvailability();
+            }
+        } catch (EJBException e) {
             throw new RemoteException(e.getMessage());
         } catch (FinderException e) {
             throw new RemoteException(e.getMessage());
