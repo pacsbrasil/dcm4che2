@@ -44,6 +44,17 @@ public final class UIDGeneratorImpl extends UIDGenerator {
     private static final SimpleDateFormat FORMAT = 
             new SimpleDateFormat("yyyyMMddHHmmssSSS");
 
+    private static final String IP;
+    static {
+       String tmp;
+       try {
+          tmp = InetAddress.getLocalHost().getHostAddress();
+       } catch (UnknownHostException e) {
+          tmp = "127.0.0.1";
+       }
+       IP = tmp;
+    }
+
     /** Creates a new instance of UIDGeneratorImpl */
     public UIDGeneratorImpl() {
     }
@@ -54,11 +65,6 @@ public final class UIDGeneratorImpl extends UIDGenerator {
     
     public String createUID(String root) {
         final StringBuffer sb = new StringBuffer(64).append(root).append('.');
-        String ip = "127.0.0.1";
-        try {
-            ip = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException ex) { }
-        final String finalIP = ip;
         try {
             new UID().write(new DataOutput() {
                 public void write(int b) {}
@@ -71,10 +77,10 @@ public final class UIDGeneratorImpl extends UIDGenerator {
                 }
                 public void writeChar(int v) {}
                 public void writeInt(int v)  {
-                    if ("127.0.0.1".equals(finalIP)) {
+                    if ("127.0.0.1".equals(IP)) {
                         sb.append(v & 0xffffffffL);
                     } else {
-                        sb.append(finalIP);
+                        sb.append(IP);
                     }
                 }
                 public void writeLong(long v) {

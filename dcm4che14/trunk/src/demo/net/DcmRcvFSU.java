@@ -90,7 +90,7 @@ class DcmRcvFSU implements AssociationListener, Runnable
       this.dicomdir = dicomdir;
       this.dir = dicomdir.getParentFile();
       fileIDTags = toTags(cfg.tokenize(cfg.getProperty(
-                     "fs-file-id", "StudyDate,SeriesNumber,InstanceNumber")));
+            "fs-file-id", "StudyDate,StudyID,SeriesNumber,InstanceNumber")));
       fsid = cfg.getProperty("fs-id","", "<none>", "");
       fsuid = cfg.getProperty("fs-uid","", "<auto>", "");
       autocommit = !"<yes>".equals(cfg.getProperty("fs-lazy-update", ""));

@@ -138,11 +138,11 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
          
          pool.promoteNewLeader();
          handler.handle(s);
-         if (closeSocket && s != null) {
+         if (!handler.isSockedClosedByHandler() && s != null) {
             try { s.close(); } catch (IOException ignore) {}
          }
       } catch (IOException ioe) {
-         ioe.printStackTrace();
+         log.error(ioe);
          if (s != null) {
             try { s.close(); } catch (IOException ignore) {};
          }

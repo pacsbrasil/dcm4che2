@@ -20,18 +20,16 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.server;
+package org.dcm4cheri.server;
 
-import java.io.IOException;
-import java.net.Socket;
-import javax.net.ServerSocketFactory;
+import org.dcm4che.server.PollDir;
+import org.dcm4che.server.PollDirFactory;
 
 /**
  * <description> 
  *
  * @see <related>
- * @author  <a href="mailto:{email}">{full name}</a>.
- * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
  *   
  * <p><b>Revisions:</b>
@@ -42,20 +40,11 @@ import javax.net.ServerSocketFactory;
  *            beyond the cvs commit message
  * </ul>
  */
-public interface Server
+public class PollDirFactoryImpl extends PollDirFactory
 {
-   interface Handler
-   {
-      void handle(Socket s) throws IOException;
-      
-      boolean isSockedClosedByHandler();
-   }
-
-   public void setMaxClients(int max);
-
-   public void start(int port) throws IOException;
    
-   public void start(int port, ServerSocketFactory ssf) throws IOException;
-
-   public void stop();
+   public PollDir newPollDir(PollDir.Handler handler)
+   {
+      return new PollDirImpl(handler);
+   }
 }

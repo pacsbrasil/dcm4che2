@@ -5,16 +5,16 @@
  *  This file is part of dcm4che.                                            *
  *                                                                           *
  *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
+ *  under the terms of the GNU Lesser General License as published    *
  *  by the Free Software Foundation; either version 2 of the License, or     *
  *  (at your option) any later version.                                      *
  *                                                                           *
  *  This library is distributed in the hope that it will be useful, but      *
  *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
+ *  Lesser General License for more details.                          *
  *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
+ *  You should have received a copy of the GNU Lesser General         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  *                                                                           *
@@ -22,9 +22,8 @@
 
 package org.dcm4che.server;
 
-import java.io.IOException;
-import java.net.Socket;
-import javax.net.ServerSocketFactory;
+import java.io.File;
+import java.util.Comparator;
 
 /**
  * <description> 
@@ -42,20 +41,40 @@ import javax.net.ServerSocketFactory;
  *            beyond the cvs commit message
  * </ul>
  */
-public interface Server
+public interface PollDir
 {
    interface Handler
    {
-      void handle(Socket s) throws IOException;
-      
-      boolean isSockedClosedByHandler();
+      void openSession() throws Exception;
+      void process(File file) throws Exception;
+      void closeSession();
    }
 
-   public void setMaxClients(int max);
-
-   public void start(int port) throws IOException;
+   void setSortCrit(Comparator sortCrit);
    
-   public void start(int port, ServerSocketFactory ssf) throws IOException;
+   File getDoneDir();
+   
+   void setDoneDir(File doneDir);
+   
+   long getOpenRetryPeriod();
+   
+   void setOpenRetryPeriod(long openRetryPeriod);
+   
+   long getDeltaLastModified();
+   
+   void setDeltaLastModified(long deltaLastModified);
 
-   public void stop();
+   int getDoneCount();
+   
+   int getFailCount();
+   
+   int getOpenCount();
+   
+   int getFailOpenCount();
+   
+   void resetCounter();
+
+   void start(File dir, long period);
+   
+   void stop();     
 }

@@ -20,92 +20,42 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4cheri.server;
+package org.dcm4che.server;
 
-import org.dcm4che.server.DcmHandler;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationListener;
+import org.dcm4che.Implementation;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.net.Factory;
-
-import java.io.IOException;
-import java.net.Socket;
-import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
- * <description> 
+ * <description>
  *
  * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
- *   
+ *
  * <p><b>Revisions:</b>
  *
  * <p><b>yyyymmdd author:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
+ * <li> explicit fix description (no line numbers but methods) go
  *            beyond the cvs commit message
  * </ul>
  */
-class DcmHandlerImpl implements DcmHandler
-{
-   
+public abstract class PollDirFactory {
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   private final static Factory fact = Factory.getInstance();
-   
-   private final AcceptorPolicy policy;
-   private final DcmServiceRegistry services;
-   private final LinkedList listeners = new LinkedList();
-   
-   private int requestTO = 5000;
    
    // Static --------------------------------------------------------
-   
-   // Constructors --------------------------------------------------
-   public DcmHandlerImpl(AcceptorPolicy policy, DcmServiceRegistry services)
-   {
-      if (policy == null)
-         throw new NullPointerException();
-   
-      if (services == null)
-         throw new NullPointerException();
-      
-      this.policy = policy;
-      this.services = services;
+   public static PollDirFactory getInstance() {
+      return (PollDirFactory)Implementation.findFactory(
+            "dcm4che.server.PollDirFactory");
    }
+      
+   // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
-      
-   // DcmHandler implementation -------------------------------------
-   public void handle(Socket s) throws IOException {
-      Association assoc = fact.newAcceptor(s);
-      for (Iterator it = listeners.iterator(); it.hasNext();) {
-         assoc.addAssociationListener((AssociationListener)it.next());
-      }
-      if (assoc.accept(policy, requestTO) instanceof AAssociateAC)
-         fact.newActiveAssociation(assoc, services).run();
-   }
-      
-   public void addAssociationListener(AssociationListener l) {
-      synchronized (listeners) {
-         listeners.add(l);
-      }
-   }
-   
-   public void removeAssociationListener(AssociationListener l) {
-      synchronized (listeners) {
-         listeners.remove(l);
-      }
-   }
-   
-   public boolean isSockedClosedByHandler() {
-      return true;
-   }
+   public abstract PollDir newPollDir(PollDir.Handler handler);
    
    // Package protected ---------------------------------------------
    

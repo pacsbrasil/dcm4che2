@@ -1095,7 +1095,7 @@ abstract class DcmObjectImpl implements DcmObject {
    }
    
    public void putAll(DcmObject dcmObj) {
-      for (Iterator it = iterator(); it.hasNext();) {
+      for (Iterator it = dcmObj.iterator(); it.hasNext();) {
          DcmElement el = (DcmElement)it.next();
          if (el.isEmpty()) {
             putXX(el.tag(), el.vr());
