@@ -224,7 +224,7 @@ public class DcmImageWriter extends ImageWriter
      * @param imageType an ImageTypeSpecifier indicating the layout and color 
      *                  information of the image with which the metadata will be 
      *                  associated.
-     * @pram param an ImageWriteParam that will be used to encode the image, or null.
+     * @param param an ImageWriteParam that will be used to encode the image, or null.
      * @return always null. The plug-in does not provide metadata encoding capabilities.
      */
     public IIOMetadata convertImageMetadata(IIOMetadata inData,
@@ -245,7 +245,7 @@ public class DcmImageWriter extends ImageWriter
      * understood by this writer or transcoder, they will be ignored. 
      * @param inData an IIOMetadata object representing stream metadata, used to 
      *               initialize the state of the returned object.
-     * @pram param an ImageWriteParam that will be used to encode the image, or null.
+     * @param param an ImageWriteParam that will be used to encode the image, or null.
      * @return always null. The plug-in does not provide metadata encoding capabilities.
      */
     public IIOMetadata convertStreamMetadata(IIOMetadata inData, ImageWriteParam param)
