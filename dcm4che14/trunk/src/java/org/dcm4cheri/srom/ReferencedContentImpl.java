@@ -60,7 +60,8 @@ class ReferencedContentImpl extends ContentImpl
     
     ReferencedContentImpl(KeyObject owner, int[] refContentID) {
         super(owner);
-        this.refContent = owner.getContent(this.refContentID = refContentID);
+        this.refContentID = refContentID;
+//        this.refContent = owner.getContent(this.refContentID = refContentID);
     }
 
     Content clone(KeyObject newOwner,  boolean inheritObsDateTime) {
