@@ -190,7 +190,7 @@ public abstract class FileBean implements EntityBean
     /**
      * @ejb.interface-method
      * @jboss.method-attributes
-     *   read-only=true
+     *   read-only="true"
      */
     public FileDTO getFileDTO() {
         FileSystemLocal fs = getFileSystem();
