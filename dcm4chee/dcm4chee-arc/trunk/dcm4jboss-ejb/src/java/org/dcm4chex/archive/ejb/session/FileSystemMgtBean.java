@@ -149,6 +149,33 @@ public abstract class FileSystemMgtBean implements SessionBean {
         
     }
 
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public FileDTO[] findFilesForMD5Check(String dirPath,
+            Timestamp before, int limit) throws FinderException {
+        if (log.isDebugEnabled())
+            log.debug("Querying for files to check md5 in " + dirPath);
+        Collection c = fileHome.findToCheckMd5(dirPath, before, limit);
+        if (log.isDebugEnabled())
+            log.debug("Found " + c.size()+ " files to check md5 in " + dirPath);
+        return toFileDTOs(c);
+        
+    }
+
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public void updateTimeOfLastMd5Check(int pk) throws FinderException {
+    	Timestamp ts = new Timestamp( System.currentTimeMillis() );
+        if (log.isDebugEnabled())
+            log.debug("update time of last md5 check to " + ts);
+        FileLocal fl = fileHome.findByPrimaryKey(new Integer(pk));
+        fl.setTimeOfLastMd5Check(ts);
+    }
+    
 	/**
 	 * @ejb.interface-method
 	 */
