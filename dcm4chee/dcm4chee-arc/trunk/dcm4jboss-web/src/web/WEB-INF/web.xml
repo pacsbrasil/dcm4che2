@@ -59,6 +59,16 @@
 			<param-value>dcm4chex:service=AuditLogger</param-value>
 		</init-param>
 
+		<!-- 
+			Used by dcm4jboss-web application to find MCMScuService MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-mcmscu-service.xml.
+		-->
+		<init-param>
+			<param-name>mcmScuServiceName</param-name>
+			<param-value>dcm4chex:service=MCMScu</param-value>
+		</init-param>
+
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	

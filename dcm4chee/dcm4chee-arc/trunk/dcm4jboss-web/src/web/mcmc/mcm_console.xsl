@@ -140,7 +140,6 @@
 					<td width="15%"><h2>Updated</h2></td>
 					<td width="15%"><h2>Usage</h2></td>
 					<td width="10%"><h2>Status</h2></td>	
-					<td width="15%"><h2>Status Info</h2></td>	
 					<td width="10"><h2>Action</h2></td>	
 				</tr>
 					<xsl:apply-templates select="mediaList/item">
@@ -158,29 +157,32 @@
 	        <td title="Media Fileset ID" >
 				<xsl:value-of select="filesetID"/>
 			</td>
-	        <td title="created" >
+	        <td title="Creation date" >
 				<xsl:value-of select="createdTime"/>
 	        </td>
-	        <td title="updated" >
+	        <td title="Date of last update" >
 				<xsl:value-of select="updatedTime"/>
 	        </td>
-	        <td title="Media usage" >
-				<xsl:value-of select="mediaUsage"/>
+	        <td title="Media usage: {mediaUsage} Bytes" >
+				<xsl:value-of select="mediaUsageWithUnit"/>
 	        </td>
-	        <td title="status">
+	        <td title="Status info: {mediaStatusInfo}">
 					<xsl:value-of select="mediaStatusString"/>
-	        </td>
-	        <td title="Status info">
-					<xsl:value-of select="mediaStatusInfo"/>
 	        </td>
 			<xsl:if test="mediaStatus = /model/statiForQueue">
 	        	<td title="Status info">
 					<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
-						<img src="images/send.gif" alt="Burn this media" border="0" title="Burn this media"/>		
+						<img src="images/send.gif" alt="Create media" border="0" title="Create media"/>		
 					</a>
 	        	</td>
-  				
-			</xsl:if>
+ 			</xsl:if>
+			<xsl:if test="mediaStatus &lt; 0"><!-- error stati are lower than 0! -->
+	        	<td title="Status info">
+					<a href="mcm_console.m?action=queue&amp;mediaPk={mediaPk}">
+						<img src="images/send.gif" alt="Retry" border="0" title="Retry"/>		
+					</a>
+	        	</td>
+ 			</xsl:if>
 		</tr>
 	</xsl:template>
 	   
