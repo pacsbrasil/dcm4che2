@@ -26,9 +26,9 @@ public class MCMScuDelegate {
 	    private static Logger log = Logger.getLogger( MCMScuDelegate.class.getName() );
 
 	    /** 
-	     * Iinitialize the WADO service delegator.
+	     * Iinitialize the MCM service delegator.
 	     * <p>
-	     * Set the name of the WADOService MBean with the servlet config param 'wadoServiceName'.
+	     * Set the name of the MCM MBean with the servlet config param 'mcmScuServiceName'.
 	     * 
 	     * @param config The ServletConfig object.
 	     */
@@ -50,11 +50,10 @@ public class MCMScuDelegate {
 		}
 		
 		/**
-		 * Makes the MBean call to get the WADO response object for given WADO request.
+		 * Makes the MBean call to update the media status.
 		 * 
-		 * @param reqVO	The WADO request.
 		 * 
-		 * @return The WADO response object.
+		 * @return An info string for status of media creation (nr of medias done, failed and processing).
 		 */
 		public String updateMediaStatus() {
 			String resp = null;
