@@ -500,6 +500,7 @@ public abstract class SeriesBean implements EntityBean {
             availability = Math.max(availability, instance.getAvailabilitySafe());
         }
         if (availability != getAvailabilitySafe()) {
+            setAvailability(availability);
             return true;
         }
         return false;

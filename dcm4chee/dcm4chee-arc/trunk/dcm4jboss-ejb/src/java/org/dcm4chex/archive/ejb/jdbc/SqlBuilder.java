@@ -31,6 +31,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
+ * @author Harald.Metterlein@heicare.com
  * @version $Revision$ $Date$
  * @since 26.08.2003
  */
@@ -202,11 +203,11 @@ class SqlBuilder {
             appendTo(sb, select);            
         }
         sb.append(" FROM ");
-        appendTo(sb, from);
+      	appendInnerJoinsToFrom(sb);
         appendLeftJoinToFrom(sb);
         whereOrAnd = WHERE;
+       	appendInnerJoinsToWhere(sb);
         appendLeftJoinToWhere(sb);
-        appendRelationsTo(sb);
         appendMatchesTo(sb);
         if (!orderby.isEmpty()) {
             sb.append(" ORDER BY ");
@@ -273,9 +274,29 @@ class SqlBuilder {
         sb.append(leftJoin[2]);
         sb.append("(+)");
     }
-    
-    private void appendRelationsTo(StringBuffer sb) {
-        if (relations == null) return;
+        
+	private void appendInnerJoinsToFrom(StringBuffer sb) {
+		if (from == null || from.length < 1) return;
+		if (getDatabase() == JdbcProperties.ORACLE
+		        || getDatabase() == JdbcProperties.HSQL) {
+			appendTo(sb,from);
+		} else {
+			sb.append(from[0]);
+			for (int i = 1; i < from.length; i++) {
+				sb.append(" JOIN ");
+				sb.append(from[i]);
+				sb.append(" ON (");
+				sb.append(relations[(i-1)*2]);
+				sb.append(" = ");
+				sb.append(relations[(i-1)*2+1]);
+				sb.append(")");
+			}
+		}
+	}
+	
+	private void appendInnerJoinsToWhere(StringBuffer sb) {
+		if (from == null || !(getDatabase() == JdbcProperties.ORACLE 
+		        || getDatabase() == JdbcProperties.HSQL)) return;
         for (int i = 0; i < relations.length; i++, i++) {
             sb.append(whereOrAnd);
             whereOrAnd = AND;
@@ -283,7 +304,7 @@ class SqlBuilder {
             sb.append(" = ");
             sb.append(relations[i + 1]);
         }
-    }
+	}
 
     private void appendMatchesTo(StringBuffer sb) {
         if (matches == null) return;
