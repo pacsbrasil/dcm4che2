@@ -93,6 +93,7 @@
    			</zipfileset>	
 			<zipfileset dir="${src.etc}" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="conf/**"/>
+				<include name="data/**"/>
 				<include name="deploy/**"/>
 			</zipfileset>
 			<zipfileset dir="${src.etc}" prefix="${dist.standalone}">

@@ -19,6 +19,7 @@ import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.cdw.common.ConfigurationException;
 import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.JMSDelegate;
@@ -37,21 +38,20 @@ import org.jboss.system.server.ServerConfigLocator;
 public class MediaComposerService extends ServiceMBeanSupport {
 
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
-    
-    private final File confdir;
 
-    private final File dispappDir;
+    private DirRecordFactory dirRecordFactory = new DirRecordFactory(
+            "resource:dicomdir-records.xml");
 
-    private final File aprofileDir;
-    
-    private String fileSetDescriptorFilename = "README.TXT";
+    private final File mergeDir;
+
+    private final File mergeDirViewer;
+
+    private String fileSetDescriptorFile = "README.TXT";
 
     private String charsetOfFileSetDescriptorFile = "ISO_IR 100";
 
-    private ApplicationProfiles applicationProfiles = null;
-    
     private boolean keepSpoolFiles = false;
-    
+
     private boolean makeIsoImage = true;
 
     private final MessageListener listener = new MessageListener() {
@@ -69,11 +69,28 @@ public class MediaComposerService extends ServiceMBeanSupport {
     };
 
     public MediaComposerService() {
-        confdir = new File(ServerConfigLocator.locate().getServerHomeDir(), "conf");
-        dispappDir = new File(confdir, "dispapp");
-        aprofileDir = new File(confdir, "aprofile");
+        File datadir = ServerConfigLocator.locate().getServerDataDir();
+        checkExists(mergeDir = new File(datadir, "mergedir"));
+        checkExists(mergeDirViewer = new File(datadir, "mergedir-viewer"));
     }
-    
+
+    private void checkExists(File file) {
+        if (!file.exists())
+                throw new ConfigurationException("missing " + file);
+    }
+
+    final File getMergeDir() {
+        return mergeDir;
+    }
+
+    final File getMergeDirViewer() {
+        return mergeDirViewer;
+    }
+
+    final DirRecordFactory getDirRecordFactory() {
+        return dirRecordFactory;
+    }
+
     public final boolean isKeepSpoolFiles() {
         return keepSpoolFiles;
     }
@@ -91,12 +108,14 @@ public class MediaComposerService extends ServiceMBeanSupport {
         this.charsetOfFileSetDescriptorFile = charsetOfFileSetDescriptorFile;
     }
 
-    public final String getFileSetDescriptorFilename() {
-        return fileSetDescriptorFilename;
+    public final String getFileSetDescriptorFile() {
+        return fileSetDescriptorFile;
     }
 
-    public final void setFileSetDescriptorFilename(String fname) {
-        this.fileSetDescriptorFilename = fname;
+    public final void setFileSetDescriptorFile(String fname) {
+        checkExists(new File(mergeDir, fname));
+        checkExists(new File(mergeDirViewer, fname));
+        this.fileSetDescriptorFile = fname;
     }
 
     public final boolean isMakeIsoImage() {
@@ -189,19 +208,5 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 rq.cleanFiles(log);
             }
         }
-    }
-    
-    public final String getApplicationProfiles() {
-        return applicationProfiles != null 
-        	? applicationProfiles.toString()
-        	: null;
-    }
-
-    final File getFileSetDescriptorFile() {
-        return new File(confdir, fileSetDescriptorFilename);
-    }
-
-    final File getDisplayApplicationDir() {
-        return dispappDir;
     }
 }

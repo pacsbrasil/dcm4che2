@@ -16,7 +16,6 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4che.media.DirBuilderFactory;
 import org.dcm4che.media.DirRecord;
 import org.dcm4che.media.DirWriter;
@@ -38,54 +37,6 @@ import org.jboss.logging.Logger;
  */
 class FilesetBuilder {
 
-    private static final int[] patKeys = { Tags.SpecificCharacterSet,
-            Tags.PatientName, Tags.PatientID};
-
-    private static final int[] styKeys = { Tags.SpecificCharacterSet,
-            Tags.StudyDate, Tags.StudyTime, Tags.StudyDescription,
-            Tags.AccessionNumber, Tags.StudyDate, Tags.StudyInstanceUID,
-            Tags.StudyID,};
-
-    private static final int[] serKeys = { Tags.SpecificCharacterSet,
-            Tags.Modality, Tags.SeriesInstanceUID, Tags.SeriesNumber};
-
-    private static final int[] imgKeys = { Tags.SpecificCharacterSet,
-            Tags.ImageType, Tags.RefImageSeq, Tags.InstanceNumber};
-
-    private static final int[] prKeys = { Tags.SpecificCharacterSet,
-            Tags.RefSeriesSeq, Tags.InstanceNumber, Tags.PresentationLabel,
-            Tags.PresentationLabel, Tags.PresentationDescription,
-            Tags.PresentationCreationDate, Tags.PresentationCreationTime,
-            Tags.PresentationCreatorName};
-
-    private static final int[] srKeys = { Tags.SpecificCharacterSet,
-            Tags.ContentDate, Tags.ContentTime, Tags.InstanceNumber,
-            Tags.VerificationDateTime, Tags.ConceptNameCodeSeq,
-            Tags.CompletionFlag, Tags.VerificationFlag,};
-
-    private static final int[] koKeys = { Tags.SpecificCharacterSet,
-            Tags.ContentDate, Tags.ContentTime, Tags.InstanceNumber,
-            Tags.ConceptNameCodeSeq};
-
-    private static final HashMap keysOfType = new HashMap();
-    static {
-        keysOfType.put("IMAGE", imgKeys);
-        keysOfType.put("KEY OBJECT DOC", koKeys);
-        keysOfType.put("PRESENTATION", prKeys);
-        keysOfType.put("SR DOCUMENT", srKeys);
-    }
-
-    private static String toInstanceRecordType(String cuid) {
-        if (cuid.equals(UIDs.BasicTextSR) || cuid.equals(UIDs.EnhancedSR)
-                || cuid.equals(UIDs.ComprehensiveSR)
-                || cuid.equals(UIDs.MammographyCADSR)) return "SR DOCUMENT";
-        if (cuid.equals(UIDs.GrayscaleSoftcopyPresentationStateStorage))
-                return "PRESENTATION";
-        if (cuid.equals(UIDs.KeyObjectSelectionDocument))
-                return "KEY OBJECT DOC";
-        return "IMAGE";
-    }
-
     private static final char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5',
             '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
@@ -98,6 +49,8 @@ class FilesetBuilder {
 
     private final SpoolDirDelegate spoolDir;
 
+    private final DirRecordFactory recFact;
+
     private final MediaCreationRequest rq;
 
     private final Dataset attrs;
@@ -106,7 +59,7 @@ class FilesetBuilder {
 
     private final boolean preserveInstances;
 
-    private final boolean includeDisplayApplication;
+    private final File mergeDir;
 
     private static String toHex(int val) {
         char[] ch8 = new char[8];
@@ -127,25 +80,29 @@ class FilesetBuilder {
             MediaCreationRequest rq, Dataset attrs) {
         this.service = service;
         this.spoolDir = service.getSpoolDir();
+        this.recFact = service.getDirRecordFactory();
         this.log = service.getLog();
         this.rq = rq;
         this.attrs = attrs;
         this.preserveInstances = Flag.isYes(attrs
                 .getString(Tags.PreserveCompositeInstancesAfterMediaCreation));
-        this.includeDisplayApplication = Flag.isYes(attrs
-                .getString(Tags.IncludeDisplayApplication));
+        this.mergeDir = Flag.isYes(attrs
+                .getString(Tags.IncludeDisplayApplication)) ? service
+                .getMergeDirViewer() : service.getMergeDir();
     }
 
     public void build() throws MediaCreationException {
         try {
             File rootDir = mkRootDir(spoolDir);
             rq.setFilesetDir(rootDir);
-            File readmeFile = new File(rootDir, service
-                    .getFileSetDescriptorFilename());
             File ddFile = new File(rootDir, "DICOMDIR");
             HashMap patRecs = new HashMap();
             HashMap styRecs = new HashMap();
             HashMap serRecs = new HashMap();
+            File readmeFile = null;
+            String readmeFileID = service.getFileSetDescriptorFile();
+            if (readmeFileID.indexOf('.') == -1 && readmeFileID.length() <= 8)
+                readmeFile = new File(rootDir, readmeFileID);
             DirWriter dirWriter = dbf.newDirWriter(ddFile, rootDir.getName(),
                     rq.getFilesetID(), readmeFile, service
                             .getCharsetOfFileSetDescriptorFile(), null);
@@ -159,14 +116,9 @@ class FilesetBuilder {
             } finally {
                 dirWriter.close();
             }
-            makeSymLink(service.getFileSetDescriptorFile(), readmeFile);
-            if (includeDisplayApplication) {
-                File[] files = service.getDisplayApplicationDir().listFiles();
-                if (files != null)
-                    for (int i = 0; i < files.length; ++i)
-                        makeSymLink(files[i],
-                                new File(rootDir, files[i].getName()));
-            }
+            File[] files = mergeDir.listFiles();
+            for (int i = 0; i < files.length; ++i)
+                makeSymLink(files[i], new File(rootDir, files[i].getName()));
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
@@ -192,18 +144,21 @@ class FilesetBuilder {
             if (styRec == null) {
                 DirRecord patRec = (DirRecord) patRecs.get(pid);
                 if (patRec == null) {
-                    patRec = dirWriter.add(null, "PATIENT", ds.subSet(patKeys));
+                    patRec = dirWriter.add(null, "PATIENT", recFact.makeRecord(
+                            DirRecord.PATIENT, ds));
                     patRecs.put(pid, patRec);
                 }
-                styRec = dirWriter.add(patRec, "STUDY", ds.subSet(styKeys));
+                styRec = dirWriter.add(patRec, "STUDY", recFact.makeRecord(
+                        DirRecord.STUDY, ds));
                 styRecs.put(suid, styRec);
             }
-            serRec = dirWriter.add(styRec, "SERIES", ds.subSet(serKeys));
+            serRec = dirWriter.add(styRec, "SERIES", recFact.makeRecord(
+                    DirRecord.SERIES, ds));
             serRecs.put(seruid, serRec);
         }
-        String recType = FilesetBuilder.toInstanceRecordType(cuid);
-        dirWriter.add(serRec, recType, ds.subSet((int[]) keysOfType
-                .get(recType)), fileIDs, cuid, iuid, tsuid);
+        String recType = DirBuilderFactory.getRecordType(cuid);
+        dirWriter.add(serRec, recType, recFact.makeRecord(recType, ds),
+                fileIDs, cuid, iuid, tsuid);
 
         File dest = new File(rootDir, StringUtils.toString(fileIDs,
                 File.separatorChar));

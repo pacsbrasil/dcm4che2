@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE aprofile SYSTEM "aprofile.dtd">
-<aprofile>
   <records>
 <!-- Patient Directory Record -->
     <record type="PATIENT">
@@ -71,12 +69,16 @@
       <attr tag="(0008,0022)"/>
 <!-- Content Date -->
       <attr tag="(0008,0023)"/>
+<!-- Acquisition Datetime -->
+      <attr tag="(0008,002A)"/>
 <!-- Acquisition Time -->
       <attr tag="(0008,0032)"/>
 <!-- Content Time -->
       <attr tag="(0008,0033)"/>
 <!-- Referenced Image Sequence -->
       <attr tag="(0008,1140)"/>
+<!-- Acquisition Time Synchronized -->
+      <attr tag="(0018,1800)"/>
 <!-- Instance Number -->
       <attr tag="(0020,0013)"/>
 <!-- Image Position (Patient) -->
@@ -85,6 +87,8 @@
       <attr tag="(0020,0037)"/>
 <!-- Frame of Reference UID -->
       <attr tag="(0020,0052)"/>
+<!-- Synchronization Frame of Reference UID -->
+      <attr tag="(0020,0200)"/>
 <!-- Number of Frames -->
       <attr tag="(0028,0008)"/>
 <!-- Rows -->
@@ -225,4 +229,3 @@
       <attr tag="(0040,A043)"/>
     </record>
   </records>
-</aprofile>

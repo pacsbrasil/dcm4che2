@@ -50,8 +50,8 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFileSetDescriptorFilename"
-      setMethod="setFileSetDescriptorFilename">
+      getMethod="getFileSetDescriptorFile"
+      setMethod="setFileSetDescriptorFile">
       <description>Description not yet written.
       </description>
       <name>FileSetDescriptorFilename</name>

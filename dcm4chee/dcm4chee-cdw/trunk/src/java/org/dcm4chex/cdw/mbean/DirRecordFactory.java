@@ -10,7 +10,6 @@ package org.dcm4chex.cdw.mbean;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.jar.Attributes;
 
 import javax.xml.parsers.SAXParserFactory;
 
@@ -20,6 +19,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.srom.Content;
 import org.dcm4chex.cdw.common.ConfigurationException;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -28,53 +28,61 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version $Revision$ $Date$
  * @since 05.07.2004
  */
-class ApplicationProfile {
+class DirRecordFactory {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private HashMap filterForType = new HashMap();
-    
+
     private class MyHandler extends DefaultHandler {
+
+        private static final String TYPE = "type";
+
+        private static final String RECORD = "record";
+
+        private static final String TAG = "tag";
+
+        private static final String ATTR = "attr";
+
         private String type;
+
         private ArrayList attrs = new ArrayList();
 
         public void startElement(String uri, String localName, String qName,
-                Attributes attributes)
-        throws SAXException {
-            if (qName.equals("attr")) {
-                attrs.add(attributes.getValue("tag"));
-            } else if (qName.equals("record")) {
-                type = attributes.getValue("type");
+                Attributes attributes) throws SAXException {
+            if (qName.equals(ATTR)) {
+                attrs.add(attributes.getValue(TAG));
+            } else if (qName.equals(RECORD)) {
+                type = attributes.getValue(TYPE);
             }
         }
 
         public void endElement(String uri, String localName, String qName)
-        throws SAXException {
-            if (qName.equals("record")) {
+                throws SAXException {
+            if (qName.equals(RECORD)) {
                 int[] filter = new int[attrs.size()];
                 for (int i = 0; i < filter.length; i++)
                     filter[i] = Tags.valueOf((String) attrs.get(i));
                 filterForType.put(type, filter);
-                attrs.clear();                
+                attrs.clear();
             }
         }
 
     }
 
-    public ApplicationProfile(String uri) throws ConfigurationException {
+    public DirRecordFactory(String uri) throws ConfigurationException {
         try {
             SAXParserFactory.newInstance().newSAXParser().parse(uri,
                     new MyHandler());
         } catch (Exception e) {
             throw new ConfigurationException(
-                    "Failed to load application profile from " + uri, e);
+                    "Failed to load record filter from " + uri, e);
         }
     }
 
     public Dataset makeRecord(String type, Dataset obj) {
         int[] filter = (int[]) filterForType.get(type);
-        if (filter == null)
-            throw new IllegalArgumentException("type:" + type);
+        if (filter == null) throw new IllegalArgumentException("type:" + type);
         Dataset keys = dof.newDataset();
         keys.putAll(obj.subSet(filter));
         DcmElement srcSq = obj.get(Tags.ContentSeq);
@@ -82,13 +90,12 @@ class ApplicationProfile {
             DcmElement dstSq = keys.putSQ(Tags.ContentSeq);
             for (int i = 0, n = srcSq.vm(); i < n; ++i) {
                 Dataset item = srcSq.getItem(i);
-                if (Content.RelationType.HAS_CONCEPT_MOD
-                    .equals(item.getString(Tags.RelationshipType))) {
+                if (Content.RelationType.HAS_CONCEPT_MOD.equals(item
+                        .getString(Tags.RelationshipType))) {
                     dstSq.addItem(item);
                 }
             }
-            if (dstSq.isEmpty())
-                keys.remove(Tags.ContentSeq);
+            if (dstSq.isEmpty()) keys.remove(Tags.ContentSeq);
         }
         return keys;
     }
