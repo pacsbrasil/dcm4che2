@@ -25,7 +25,7 @@ package org.dcm4chex.service.util;
  * @version $Revision$
  * @since 02.08.2003
  */
-public class ConfigurationException extends Exception
+public class ConfigurationException extends RuntimeException
 {
 
     /**

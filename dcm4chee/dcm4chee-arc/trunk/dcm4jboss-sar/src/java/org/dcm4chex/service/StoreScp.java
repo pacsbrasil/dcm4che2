@@ -96,7 +96,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private final StoreScpService service;
     private int updateDatabaseMaxRetries = 2;
     private int forwardPriority = 0;
-    private String retrieveAETs;
     private ForwardAETs forwardAETs = new ForwardAETs();
     private String storageDirs;
     private File[] storageDirFiles;
@@ -105,17 +104,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public StoreScp(StoreScpService service) {
         this.service = service;
-    }
-
-    public final String getRetrieveAETs() {
-        return retrieveAETs;
-    }
-
-    public final void setRetrieveAETs(String aets) {
-        if (aets == null || aets.length() == 0) {
-            throw new IllegalArgumentException();
-        }
-        this.retrieveAETs = aets;
     }
 
     public final String getMaskWarningAsSuccessForCallingAETs() {
@@ -177,7 +165,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             f = new File(ServerConfigLocator.locate().getServerHomeDir(), dir);
         }
         if (!f.exists()) {
-            service.getLog().warn("directory " + dir + " does not exist - create new one");
+            service.getLog().warn(
+                "directory " + dir + " does not exist - create new one");
             if (!f.mkdirs()) {
                 String prompt = "Failed to create directory " + dir;
                 service.getLog().error(prompt);
@@ -204,7 +193,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (storageDirFiles == null || storageDirFiles.length == 0) {
             throw new IllegalStateException("No Storage Directory configured!");
         }
-        if (retrieveAETs == null || retrieveAETs.trim().length() == 0) {
+        if (service.getRetrieveAETs() == null) {
             throw new IllegalStateException("No Retrieve AET configured!");
         }
     }
@@ -311,7 +300,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         assoc.getCallingAET(),
                         assoc.getCalledAET(),
                         ds,
-                        retrieveAETs,
+                        service.getRetrieveAETs(),
                         dirPath,
                         filePath,
                         fileLength,
@@ -340,7 +329,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         } finally {
             try {
                 storage.remove();
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
     }
 
@@ -429,7 +419,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         } finally {
             try {
                 dos.close();
-            } catch (IOException ignore) {}
+            } catch (IOException ignore) {
+            }
         }
     }
 
@@ -503,15 +494,20 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             service.getLog().info("M-WRITE dir:" + dir);
         }
     } // Implementation of AssociationListener
-    public void write(Association src, PDU pdu) {}
+    public void write(Association src, PDU pdu) {
+    }
 
-    public void received(Association src, PDU pdu) {}
+    public void received(Association src, PDU pdu) {
+    }
 
-    public void write(Association src, Dimse dimse) {}
+    public void write(Association src, Dimse dimse) {
+    }
 
-    public void received(Association src, Dimse dimse) {}
+    public void received(Association src, Dimse dimse) {
+    }
 
-    public void error(Association src, IOException ioe) {}
+    public void error(Association src, IOException ioe) {
+    }
 
     public void close(Association assoc) {
         Map storedStudiesInfo = (Map) assoc.getProperty(STORESCP);
@@ -581,7 +577,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         final MoveOrderValue order = new MoveOrderValue();
         order.setScheduledTime(new Date());
-        order.setRetrieveAET(firstOf(retrieveAETs, '\\'));
+        order.setRetrieveAET(firstOf(service.getRetrieveAETs(), '\\'));
         order.setPriority(forwardPriority);
         while (scns.hasNext()) {
             Dataset scn = (Dataset) scns.next();

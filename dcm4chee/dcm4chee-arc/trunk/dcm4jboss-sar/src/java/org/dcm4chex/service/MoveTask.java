@@ -25,7 +25,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 
 import org.dcm4che.data.Command;
@@ -57,16 +56,6 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
  */
 class MoveTask implements Runnable {
 
-    private static final Comparator ascFilePk = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            return ((FileInfo) o1).pk - ((FileInfo) o2).pk;
-        }
-    };
-    private static final Comparator descFilePk = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            return ((FileInfo) o2).pk - ((FileInfo) o1).pk;
-        }
-    };
     private static final String[] NATIVE_TS =
         { UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian };
     private static final String[][] PROPOSED_TS = { NATIVE_TS,
@@ -192,7 +181,9 @@ class MoveTask implements Runnable {
             FileInfo[] fileInfo = fileInfoArray[i];
             Arrays.sort(
                 fileInfo,
-                service.isRetrieveLastReceived() ? descFilePk : ascFilePk);
+                service.isRetrieveLastReceived()
+                    ? FileInfo.DESC_ORDER
+                    : FileInfo.ASC_ORDER);
             FileSelection selection = selector.select(fileInfo, retrieveAET);
             if (selection != null) {
                 toRetrieve.add(selection);

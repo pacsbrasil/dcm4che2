@@ -19,6 +19,8 @@
         dcm4chex:service=DcmServer,name=DCMSRV
     </depends>
     
+    <attribute name="DataSource">java:/DefaultDS</attribute>    
+    
     <!-- Do NOT uncomment this line if the service is deployed
     in the same jboss instance as the Storage EJB. Otherwise
     in VM calls to go over RMI!
@@ -90,6 +92,14 @@
     -->
     <attribute name="UpdateDatabaseMaxRetries">2</attribute>
 
+	<!--
+	Specifies time-out in ms for receiving the A-ASSOCIATE-AC PDU after
+	transmission of the A-ASSOCIATE-RQ to open an association
+	to the Storage Commitment SCU for sending the N-EVENT-REPORT
+	containing the Storage Commitment Result.
+	-->
+    <attribute name="AcTimeout">5000</attribute>
+
     <attribute name="CallingAETs">__any__</attribute>
 
     <attribute name="ComputedRadiographyImageStorage">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
@@ -150,7 +160,7 @@
     <attribute name="RtBeamsTreatmentRecordStorage">-</attribute>
     <attribute name="RtPlanStorage">-</attribute>
     <attribute name="RtTreatmentSummaryRecordStorage">-</attribute>
-    
+    <attribute name="StorageCommitmentPushModel">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
 </mbean>
 
 </server>

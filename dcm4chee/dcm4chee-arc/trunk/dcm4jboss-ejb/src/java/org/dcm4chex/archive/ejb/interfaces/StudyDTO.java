@@ -43,6 +43,7 @@ public class StudyDTO implements Serializable {
     private int numberOfSeries;
     private int numberOfInstances;
     private String retrieveAETs;
+    private int availability;
     private List series = new ArrayList();
 
     /**
@@ -197,5 +198,19 @@ public class StudyDTO implements Serializable {
      */
     public void setRetrieveAETs(String retrieveAETs) {
         this.retrieveAETs = retrieveAETs;
+    }
+
+    /**
+     * @return
+     */
+    public final int getAvailability() {
+        return availability;
+    }
+
+    /**
+     * @param availability
+     */
+    public final void setAvailability(int availability) {
+        this.availability = availability;
     }
 }

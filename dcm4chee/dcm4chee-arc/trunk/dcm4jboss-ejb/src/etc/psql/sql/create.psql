@@ -102,6 +102,7 @@ CREATE TABLE instance (
 	sr_verified		TEXT,
 	retrieve_aets	TEXT,
 	availability	INTEGER,
+	commitment		BOOLEAN,
 	inst_attrs		BYTEA,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk)

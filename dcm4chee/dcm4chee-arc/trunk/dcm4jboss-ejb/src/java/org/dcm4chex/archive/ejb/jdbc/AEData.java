@@ -42,55 +42,61 @@ import java.util.StringTokenizer;
  * </ul>
  */
 public class AEData implements Serializable {
-    
+
     // Constants -----------------------------------------------------
     static final long serialVersionUID = 9128665077590256461L;
-    static final String[] EMPTY_STRING_ARRAY = {};
-    
+    static final String[] EMPTY_STRING_ARRAY = {
+    };
+
     // Variables -----------------------------------------------------
     private final int pk;
     private final String title;
     private final String hostname;
     private final int port;
     private final String cipherSuites;
-    
+
     // Constructors --------------------------------------------------
-    public AEData(int pk, String title, String hostname, int port, String cipherSuites) {
-    	this.pk =pk;
+    public AEData(
+        int pk,
+        String title,
+        String hostname,
+        int port,
+        String cipherSuites) {
+        this.pk = pk;
         this.title = title;
         this.hostname = hostname;
         this.port = port;
         this.cipherSuites = cipherSuites;
     }
-            
+
     /**
      * @return pk
      */
     public final int getPk() {
-    	return pk;
+        return pk;
     }
-    
+
     /** Getter for property title.
      * @return Value of property title.
      */
     public java.lang.String getTitle() {
         return title;
     }
-    
+
     /** Getter for property host.
      * @return Value of property host.
      */
     public java.lang.String getHostName() {
         return hostname;
     }
-    
+
     /** Getter for property port.
      * @return Value of property port.
      */
     public int getPort() {
         return port;
     }
-    
+
     /** Getter for property cipherSuites.
      * @return Value of property cipherSuites.
      */
@@ -109,8 +115,20 @@ public class AEData implements Serializable {
     /** Getter for property cipherSuites.
      * @return Value of property cipherSuites.
      */
-    public java.lang.String getCipherSuitesAsString() 
-	{
-    	return cipherSuites;
+    public java.lang.String getCipherSuitesAsString() {
+        return cipherSuites;
+    }
+
+    public boolean isTLS() {
+        return cipherSuites != null || cipherSuites.length() != 0;
+    }
+
+    public String toString() {
+        return (isTLS() ? "dicom-tls://" : "dicom://")
+            + title
+            + '@'
+            + hostname
+            + ':'
+            + port;
     }
 }

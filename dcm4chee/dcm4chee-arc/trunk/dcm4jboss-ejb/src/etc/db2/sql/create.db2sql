@@ -115,6 +115,7 @@ CREATE TABLE instance (
 	sr_verified		VARCHAR(254),
 	retrieve_aets	VARCHAR(254),
 	availability	INTEGER,
+	commitment		SMALLINT,
 	inst_attrs		BLOB(64000),
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk)

@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import javax.sql.DataSource;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 
 /**
@@ -89,6 +90,12 @@ public abstract class RetrieveCmd extends BaseCmd
                 throw new IllegalArgumentException(
                     "QueryRetrieveLevel=" + qrLevel);
         }
+    }
+
+    public static RetrieveCmd create(DataSource ds, DcmElement refSOPSeq)
+        throws SQLException
+    {
+        return new FileRetrieveCmd(ds, refSOPSeq);
     }
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
@@ -204,6 +211,23 @@ public abstract class RetrieveCmd extends BaseCmd
             String[] uid = keys.getStrings(Tags.SOPInstanceUID);
             if (uid == null || uid.length == 0)
                 throw new IllegalArgumentException("Missing SOPInstanceUID");
+
+            sqlBuilder.addListOfUidMatch(
+                "Instance.sopIuid",
+                SqlBuilder.TYPE1,
+                uid);
+        }
+    }
+
+    static class FileRetrieveCmd extends RetrieveCmd
+    {
+        FileRetrieveCmd(DataSource ds, DcmElement refSOPSeq) throws SQLException
+        {
+            super(ds);
+            String[] uid = new String[refSOPSeq.vm()];
+            for (int i = 0; i < uid.length; i++) {
+                uid[i] = refSOPSeq.getItem(i).getString(Tags.RefSOPInstanceUID);
+            }
 
             sqlBuilder.addListOfUidMatch(
                 "Instance.sopIuid",

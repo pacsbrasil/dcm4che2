@@ -63,6 +63,10 @@ abstract class AbstractScpService extends ServiceMBeanSupport
         aet = name.getKeyProperty("aet");
         return name;
     }
+    
+    public final String getAET() {
+        return aet;
+    }
 
     protected void startService() throws Exception
     {

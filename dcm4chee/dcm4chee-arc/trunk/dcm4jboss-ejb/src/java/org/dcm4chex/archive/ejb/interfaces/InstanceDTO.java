@@ -38,6 +38,8 @@ public class InstanceDTO implements Serializable {
     private String contentDateTime;
     private String retrieveAETs;
     private int numberOfFiles;
+    private int availability;
+    private boolean commitment;
 
     /**
      * @return
@@ -137,4 +139,31 @@ public class InstanceDTO implements Serializable {
         this.numberOfFiles = numberOfFiles;
     }
 
+    /**
+     * @return
+     */
+    public final int getAvailability() {
+        return availability;
+    }
+
+    /**
+     * @param availability
+     */
+    public final void setAvailability(int availability) {
+        this.availability = availability;
+    }
+
+    /**
+     * @return
+     */
+    public final boolean isCommitment() {
+        return commitment;
+    }
+
+    /**
+     * @param commitment
+     */
+    public final void setCommitment(boolean commitment) {
+        this.commitment = commitment;
+    }
 }

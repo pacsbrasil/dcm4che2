@@ -52,7 +52,9 @@ public class QueryStudiesCmd extends BaseCmd {
             "Study.modalitiesInStudy",
             "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances",
-            "Study.retrieveAETs" };
+            "Study.retrieveAETs",
+            "Study.availability"};
+            
     private static final String[] ENTITY = { "Patient", "Study" };
 
     private static final String[] RELATIONS =
@@ -97,7 +99,8 @@ public class QueryStudiesCmd extends BaseCmd {
                         rs.getString(5),
                         rs.getInt(6),
                         rs.getInt(7),
-                        rs.getString(8)));
+                        rs.getString(8),
+                        rs.getInt(9)));
             }
             return result;
         } finally {

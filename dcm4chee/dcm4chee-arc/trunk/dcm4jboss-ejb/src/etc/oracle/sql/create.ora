@@ -109,6 +109,7 @@ CREATE TABLE instance (
 	sr_verified		VARCHAR2(255),
 	retrieve_aets	VARCHAR2(255),
 	availability	INTEGER,
+	commitment		NUMBER(1),
 	inst_attrs		LONG RAW,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk)

@@ -226,6 +226,20 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
+     * Storage Commitment
+     *
+     * @ejb.interface-method
+     * @ejb.persistence
+     *  column-name="commitment"
+     */
+    public abstract boolean isCommitment();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setCommitment(boolean commitment);
+
+    /**
      * @ejb.relation
      *  name="series-instance"
      *  role-name="instance-of-series"

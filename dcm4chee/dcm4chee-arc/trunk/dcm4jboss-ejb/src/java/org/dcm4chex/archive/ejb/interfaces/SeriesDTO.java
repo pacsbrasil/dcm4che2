@@ -42,6 +42,7 @@ public class SeriesDTO implements Serializable {
     private String bodyPartExamined;
     private String laterality;
     private int numberOfInstances;
+    private int availability;
     private String retrieveAETs;
     private List instances = new ArrayList();
     
@@ -197,5 +198,19 @@ public class SeriesDTO implements Serializable {
      */
     public void setRetrieveAETs(String retrieveAETs) {
         this.retrieveAETs = retrieveAETs;
+    }
+
+    /**
+     * @return
+     */
+    public final int getAvailability() {
+        return availability;
+    }
+
+    /**
+     * @param availability
+     */
+    public final void setAvailability(int availability) {
+        this.availability = availability;
     }
 }

@@ -22,13 +22,20 @@ package org.dcm4chex.service;
 
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.management.ObjectName;
+import javax.sql.DataSource;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.service.util.AETsEditor;
+import org.dcm4chex.service.util.ConfigurationException;
 
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
@@ -105,6 +112,14 @@ public class StoreScpService
             UIDs.RTPlanStorage,
             UIDs.RTBrachyTreatmentRecordStorage,
             UIDs.RTTreatmentSummaryRecordStorage };
+
+    private DataSourceFactory dsf = new DataSourceFactory(log);
+
+    private int acTimeout = 5000;
+
+    private String retrieveAETs;
+
+    private Set retrieveAETSet;
 
     private String[] callingAETs;
 
@@ -224,7 +239,11 @@ public class StoreScpService
 
     private String rtTreatmentSummaryRecordStorage;
 
+    private String storageCommitmentPushModel;
+
     private StoreScp scp = new StoreScp(this);
+    
+    private StgCmtScp stgCmtScp = new StgCmtScp(this);
 
     /**
      * @jmx.managed-attribute
@@ -238,6 +257,27 @@ public class StoreScpService
      */
     public void setDcmServerName(ObjectName dcmServerName) {
         this.dcmServerName = dcmServerName;
+    }
+
+    DataSource getDS() throws ConfigurationException
+    {
+        return dsf.getDataSource();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getDataSource()
+    {
+        return dsf.getJNDIName();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setDataSource(String jndiName)
+    {
+        dsf.setJNDIName(jndiName);
     }
 
     /**
@@ -327,15 +367,41 @@ public class StoreScpService
     /**
      * @jmx.managed-attribute
      */
-    public String getRetrieveAETs() {
-        return scp.getRetrieveAETs();
+    public final int getAcTimeout() {
+        return acTimeout;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public void setRetrieveAETs(String aets) {
-        scp.setRetrieveAETs(aets);
+    public final void setAcTimeout(int acTimeout) {
+        this.acTimeout = acTimeout;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final String getRetrieveAETs() {
+        return retrieveAETs;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setRetrieveAETs(String aets) {
+        if (aets == null) {
+            throw new NullPointerException();
+        }
+        String[] array = StringUtils.split(aets, '\\');
+        if (array.length == 0) {
+            throw new IllegalArgumentException("aets=" + aets);            
+        } 
+        this.retrieveAETSet = Collections.unmodifiableSet(new HashSet(Arrays.asList(array)));
+        this.retrieveAETs = aets;
+    }
+
+    final Set getRetrieveAETSet() {
+        return retrieveAETSet;
     }
 
     /**
@@ -1363,6 +1429,19 @@ public class StoreScpService
         }
     }
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getStorageCommitmentPushModel() {
+        return storageCommitmentPushModel;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setStorageCommitmentPushModel(String storageCommitmentPushModel) {
+        this.storageCommitmentPushModel = storageCommitmentPushModel;
+    }
 
     protected void startService() throws Exception
     {
@@ -1374,6 +1453,7 @@ public class StoreScpService
         for (int i = 0; i < STORAGE_AS.length; ++i) {
             services.bind(STORAGE_AS[i], scp);
         }
+        services.bind(UIDs.StorageCommitmentPushModel, stgCmtScp);
         dcmHandler.addAssociationListener(scp);
     }
 
@@ -1381,6 +1461,7 @@ public class StoreScpService
         for (int i = 0; i < STORAGE_AS.length; ++i) {
             services.unbind(STORAGE_AS[i]);
         }
+        services.unbind(UIDs.StorageCommitmentPushModel);
         dcmHandler.removeAssociationListener(scp);
     }
 
@@ -1592,6 +1673,12 @@ public class StoreScpService
             policy,
             UIDs.RTTreatmentSummaryRecordStorage,
             rtTreatmentSummaryRecordStorage);
+        putPresContext(
+            policy,
+            UIDs.StorageCommitmentPushModel,
+            storageCommitmentPushModel);
         return policy;
     }
+
+
 }

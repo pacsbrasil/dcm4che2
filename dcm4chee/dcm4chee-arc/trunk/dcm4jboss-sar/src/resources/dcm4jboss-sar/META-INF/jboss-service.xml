@@ -95,6 +95,8 @@
     <depends optional-attribute-name="DcmServerName">
         dcm4chex:service=DcmServer,name=DCMSRV
     </depends>
+
+    <attribute name="DataSource">java:/DefaultDS</attribute>    
     
     <!-- Do NOT uncomment this line if the service is deployed
     in the same jboss instance as the Storage EJB. Otherwise
@@ -173,6 +175,7 @@
     <attribute name="RtBeamsTreatmentRecordStorage">-</attribute>
     <attribute name="RtPlanStorage">-</attribute>
     <attribute name="RtTreatmentSummaryRecordStorage">-</attribute>
+    <attribute name="StorageCommitmentPushModel">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
     
   </mbean>
 

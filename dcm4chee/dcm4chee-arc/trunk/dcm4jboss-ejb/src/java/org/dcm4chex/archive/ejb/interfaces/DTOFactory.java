@@ -56,7 +56,8 @@ public final class DTOFactory {
         String modsInStudy,
         int numSeries,
         int numInst,
-        String retrieveAETs) {
+        String retrieveAETs,
+        int availability) {
         StudyDTO study = new StudyDTO();
         study.setPk(pk);
         study.setAccessionNumber(ds.getString(Tags.AccessionNumber, ""));
@@ -71,6 +72,7 @@ public final class DTOFactory {
         study.setNumberOfSeries(numSeries);
         study.setNumberOfInstances(numInst);
         study.setRetrieveAETs(retrieveAETs);
+        study.setAvailability(availability);
         return study;
     }
 
@@ -78,7 +80,8 @@ public final class DTOFactory {
         int pk,
         Dataset ds,
         int numInst,
-        String retrieveAETs) {
+        String retrieveAETs,
+        int availability) {
         SeriesDTO series = new SeriesDTO();
         series.setPk(pk);
         series.setModality(ds.getString(Tags.Modality, ""));
@@ -93,6 +96,7 @@ public final class DTOFactory {
         series.setSeriesDescription(ds.getString(Tags.SeriesDescription, ""));
         series.setNumberOfInstances(numInst);
         series.setRetrieveAETs(retrieveAETs);
+        series.setAvailability(availability);
         return series;
     }
 
@@ -100,18 +104,38 @@ public final class DTOFactory {
         int pk,
         Dataset ds,
         String retrieveAETs,
-        int numberOfFiles) {
+        int numberOfFiles,
+        int availability,
+        boolean commitment) {
         String cuid = ds.getString(Tags.SOPClassUID);
         if (UIDs.GrayscaleSoftcopyPresentationStateStorage.equals(cuid)) {
-            return newPresentationStateDTO(pk, ds, retrieveAETs, numberOfFiles);
+            return newPresentationStateDTO(
+                pk,
+                ds,
+                retrieveAETs,
+                numberOfFiles,
+                availability,
+                commitment);
         };
         if (UIDs.BasicTextSR.equals(cuid)
             || UIDs.EnhancedSR.equals(cuid)
             || UIDs.ComprehensiveSR.equals(cuid)
             || UIDs.KeyObjectSelectionDocument.equals(cuid)) {
-            return newStructuredReportDTO(pk, ds, retrieveAETs, numberOfFiles);
+            return newStructuredReportDTO(
+                pk,
+                ds,
+                retrieveAETs,
+                numberOfFiles,
+                availability,
+                commitment);
         }
-        return newImageDTO(pk, ds, retrieveAETs, numberOfFiles);
+        return newImageDTO(
+            pk,
+            ds,
+            retrieveAETs,
+            numberOfFiles,
+            availability,
+            commitment);
     }
 
     private static void initInstanceDTO(
@@ -119,7 +143,9 @@ public final class DTOFactory {
         int pk,
         Dataset ds,
         String retrieveAETs,
-        int numberOfFiles) {
+        int numberOfFiles,
+        int availability,
+        boolean commitment) {
         inst.setPk(pk);
         inst.setInstanceNumber(ds.getString(Tags.InstanceNumber, ""));
         inst.setSopCUID(ds.getString(Tags.SOPClassUID, ""));
@@ -130,15 +156,26 @@ public final class DTOFactory {
                 InstanceDTO.DATETIME_FORMAT));
         inst.setRetrieveAETs(retrieveAETs);
         inst.setNumberOfFiles(numberOfFiles);
+        inst.setAvailability(availability);
+        inst.setCommitment(commitment);
     }
 
     private static InstanceDTO newImageDTO(
         int pk,
         Dataset ds,
         String retrieveAETs,
-        int numberOfFiles) {
+        int numberOfFiles,
+        int availability,
+        boolean commitment) {
         ImageDTO img = new ImageDTO();
-        initInstanceDTO(img, pk, ds, retrieveAETs, numberOfFiles);
+        initInstanceDTO(
+            img,
+            pk,
+            ds,
+            retrieveAETs,
+            numberOfFiles,
+            availability,
+            commitment);
         img.setImageType(
             StringUtils.toString(ds.getStrings(Tags.ImageType), '\\'));
         img.setPhotometricInterpretation(
@@ -154,9 +191,18 @@ public final class DTOFactory {
         int pk,
         Dataset ds,
         String retrieveAETs,
-        int numberOfFiles) {
+        int numberOfFiles,
+        int availability,
+        boolean commitment) {
         StructuredReportDTO sr = new StructuredReportDTO();
-        initInstanceDTO(sr, pk, ds, retrieveAETs, numberOfFiles);
+        initInstanceDTO(
+            sr,
+            pk,
+            ds,
+            retrieveAETs,
+            numberOfFiles,
+            availability,
+            commitment);
         sr.setDocumentTitle(getConceptNameCodeMeaning(ds));
         sr.setCompletionFlag(ds.getString(Tags.CompletionFlag, ""));
         sr.setVerificationFlag(ds.getString(Tags.VerificationFlag, ""));
@@ -172,9 +218,18 @@ public final class DTOFactory {
         int pk,
         Dataset ds,
         String retrieveAETs,
-        int numberOfFiles) {
+        int numberOfFiles,
+        int availability,
+        boolean commitment) {
         PresentationStateDTO ps = new PresentationStateDTO();
-        initInstanceDTO(ps, pk, ds, retrieveAETs, numberOfFiles);
+        initInstanceDTO(
+            ps,
+            pk,
+            ds,
+            retrieveAETs,
+            numberOfFiles,
+            availability,
+            commitment);
         ps.setPresentationCreationDateTime(
             format(
                 ds.getDateTime(

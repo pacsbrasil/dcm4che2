@@ -302,6 +302,10 @@ public abstract class StorageBean implements SessionBean {
         for (Iterator it = c.iterator(); it.hasNext();) {
             PatientLocal patient = (PatientLocal) it.next();
             if (equals(patient, ds)) {
+                PatientLocal mergedWith = patient.getMergedWith();
+                if (mergedWith != null) {
+                    patient = mergedWith;
+                }
                 coercePatientIdentity(patient, ds, coercedElements);
                 return patient;
             }
@@ -411,5 +415,12 @@ public abstract class StorageBean implements SessionBean {
             }
         }
         return true;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void commit(String iuid) throws FinderException {
+        instHome.findBySopIuid(iuid).setCommitment(true);
     }
 }

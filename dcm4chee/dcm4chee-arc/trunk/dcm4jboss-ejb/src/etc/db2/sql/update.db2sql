@@ -12,6 +12,8 @@ ALTER TABLE series
 	ADD COLUMN availability INTEGER;
 ALTER TABLE instance
 	ADD COLUMN availability INTEGER;
+ALTER TABLE instance
+	ADD COLUMN commitment SMALLINT;
 
 DROP TABLE ae ;
 CREATE SEQUENCE ae_pk_seq;
