@@ -81,7 +81,18 @@
       <name>AcceptPatientRootFind</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptTianiPatientRootFind"
+      setMethod="setAcceptTianiPatientRootFind">
+      <description>Support Private Tiani Patient Root Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiPatientRootFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -92,7 +103,7 @@
       <name>AcceptPatientRootMove</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -101,6 +112,17 @@
       <description>Support Study Root Query/Retrieve Information Model - FIND SOP Class
       </description>
       <name>AcceptStudyRootFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptTianiStudyRootFind"
+      setMethod="setAcceptTianiStudyRootFind">
+      <description>Support Private Tiani Study Root Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiStudyRootFind</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
@@ -125,7 +147,18 @@
       <name>AcceptPatientStudyOnlyFind</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAcceptTianiPatientStudyOnlyFind"
+      setMethod="setAcceptTianiPatientStudyOnlyFind">
+      <description>Support Private Tiani Patient Study Only Query/Retrieve Information Model - FIND SOP Class
+      </description>
+      <name>AcceptTianiPatientStudyOnlyFind</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -136,7 +169,7 @@
       <name>AcceptPatientStudyOnlyMove</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
