@@ -168,5 +168,7 @@ public interface Command extends DcmObject {
     public void write(OutputStream out) throws IOException;
 
     public void read(InputStream in) throws IOException;
+    
+    public String cmdFieldAsString();
 }
 
