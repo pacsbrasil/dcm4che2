@@ -303,7 +303,7 @@ public class StringUtils {
         ByteBuffer bb = ByteBuffer.wrap(b, 0, b.length)
                 .order(ByteOrder.LITTLE_ENDIAN);
         for (int i = 0; i < a.length; ++i) {
-            int tag = Integer.parseInt(a[i],16);
+            int tag = (int)Long.parseLong(a[i],16);
             bb.putShort((short)(tag >>> 16));
             bb.putShort((short)tag);
         }
@@ -337,14 +337,14 @@ public class StringUtils {
     public static byte[] parseBytes(String str) {
         byte[] b = new byte[(str.length()+1)/3];
         for (int i = 0, l = 0; i < b.length; ++i, l+=3)
-            b[i++] = Byte.parseByte(str.substring(l, l+2), 16);
+            b[i++] = (byte)Short.parseShort(str.substring(l, l+2), 16);
         return b;
     }
     
     public static byte[] parseOW(String str) {
         byte[] b = new byte[(str.length()+1)/5];
         for (int i = 0, l = 0; i < b.length; l+=5) {
-            short s = Short.parseShort(str.substring(l, l+4), 16);
+            short s = (short)Integer.parseInt(str.substring(l, l+4), 16);
             b[i++] = (byte)(s);
             b[i++] = (byte)(s >>> 8);
         }
