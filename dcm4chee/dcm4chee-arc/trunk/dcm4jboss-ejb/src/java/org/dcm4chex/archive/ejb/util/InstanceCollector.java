@@ -13,8 +13,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.session.MediaComposerBean;
 
 /**
  * @author franz.willer
@@ -27,6 +29,7 @@ public class InstanceCollector {
 
 	/** Holds the studies in a list. */
 	private List studies = new ArrayList();
+	private static Logger log = Logger.getLogger( MediaComposerBean.class.getName() );
 	
 	private boolean isSorted = false;
 	
@@ -122,6 +125,8 @@ public class InstanceCollector {
 	 * @return List of InstanceContainer or null if there is no entry smaller than maxSize.
 	 */
 	public long collectInstancesForSize( List list, long maxSize ) {
+		if ( log.isDebugEnabled() ) log.debug("collect Instances for Size:"+maxSize);
+		
 		if ( studies.size() < 1 ) return 0L;
 
 		if ( ! isSorted ){
@@ -137,17 +142,21 @@ public class InstanceCollector {
 		} else { // we have found the insertion point(the index of the first element greater than the key, or list.size()) coded as negative value
 			pos = (pos * -1) - 2; // index of last element < maxSize (ret value of binarySearch:(-(insertion point) - 1) ).
 			if ( pos < 0 ) { //no element < maxSize in list!
+				if ( log.isDebugEnabled() ) log.debug("No element < maxSize in list!!! maxSize:"+maxSize);
 				return -1L;//return -1 to indicate that no studies in the list with studySize <= maxSize!
 			}
 			InstanceContainer c = (InstanceContainer) studies.get(pos);
 			fileSize = 0;
+			if ( log.isDebugEnabled() ) log.debug("fileSize:"+fileSize+" StudySize:"+c.getStudySize()+" maxSize:"+maxSize);
 			while ( (fileSize + c.getStudySize() ) <= maxSize ) { //fill list until maxSize is reached.
+				if ( log.isDebugEnabled() ) log.debug("study found to assign for media:"+c);
 				list.add( c );
 				fileSize += c.getStudySize();
 				removeStudy( pos );
 				pos--;
 				if ( pos < 0 ) break;//first (lowest size) element is added.
 				c = (InstanceContainer) studies.get(pos);
+				if ( log.isDebugEnabled() ) log.debug("fileSize:"+fileSize+" StudySize:"+c.getStudySize()+" maxSize:"+maxSize);
 			}
 		}
 		return fileSize;
@@ -353,11 +362,12 @@ public class InstanceCollector {
 			if ( arg0 instanceof InstanceContainer ) {
 				InstanceContainer ic1 = (InstanceContainer) arg0;
 				InstanceContainer ic2 = (InstanceContainer) arg1;
-				return (int) ( ic1.getStudySize() - ic2.getStudySize() );
+				return new Long( ic1.getStudySize() ).compareTo( new Long( ic2.getStudySize() ) );
+				
 			}
 			InstanceLocal il1 = (InstanceLocal) arg0;
 			InstanceLocal il2 = (InstanceLocal) arg1;
-			return (int) ( getInstanceSize(il1) - getInstanceSize(il2) );
+			return new Long ( getInstanceSize(il1) ).compareTo( new Long( getInstanceSize(il2) ) );
 		}
 		
 	}// end class
