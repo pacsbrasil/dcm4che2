@@ -85,7 +85,8 @@ class FilmBoxService extends DcmServiceBase
         throws IOException, DcmServiceException
     {
         try {
-            String aet = as.getAssociation().getCalledAET();
+            Association a = as.getAssociation();
+            String aet = a.getCalledAET();
             String uid = rspCmd.getAffectedSOPInstanceUID();
             Dataset ds = rq.getDataset();
             scp.logDataset("Create Film Box:\n", ds);
@@ -102,6 +103,9 @@ class FilmBoxService extends DcmServiceBase
                 throw new DcmServiceException(Status.DuplicateSOPInstance);
             }
             session.addFilmBox(uid, new FilmBox(scp, aet, uid, ds, pluts, session, rspCmd));
+            if (scp.isAuditCreateFilmBox()) {
+                scp.doAuditLog(a, session);
+            }
             scp.getLog().info("Created Film Box[uid=" + uid + "]");
             return ds;
         } catch (DcmServiceException e) {

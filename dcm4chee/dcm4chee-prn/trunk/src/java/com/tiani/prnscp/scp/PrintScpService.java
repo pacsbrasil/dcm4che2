@@ -27,12 +27,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,10 +43,10 @@ import com.tiani.util.license.LicenseStore;
 
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.MediaDescription;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
@@ -66,15 +63,13 @@ import org.dcm4che.server.DcmHandler;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
-import java.net.Socket;
-import org.dcm4che.auditlog.MediaDescription;
 
 /**
  *  <description>
  *
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @since  November 3, 2002
- * @version  $Revision$
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      November 3, 2002
+ * @version    $Revision$
  */
 public class PrintScpService
          extends ServiceMBeanSupport
@@ -82,11 +77,10 @@ public class PrintScpService
 {
 
     // Constants -----------------------------------------------------
-    static final String UNKNOWN = "unkown";
-    static final String LICENSE_FILE = "conf/license.pem";
-    static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1";
-    static final int SHUTDOWN_DELAY_MINUTES = 20;
-    static final Map dumpParam = new HashMap(5);
+    final static String UNKNOWN = "unkown";
+    final static String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1.2";
+    final static int SHUTDOWN_DELAY_MINUTES = 20;
+    final static Map dumpParam = new HashMap(5);
     static {
         dumpParam.put("maxlen", new Integer(128));
         dumpParam.put("vallen", new Integer(64));
@@ -97,21 +91,25 @@ public class PrintScpService
     private ObjectName auditLogName;
     private AuditLogger auditLog;
     private AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-    private String spoolDirectory;
     private File spoolDir;
+    private File licenseFile;
+    private char[] licensePasswd;
     private boolean keepSpoolFiles = false;
+    private boolean auditCreateSession = true;
+    private boolean auditCreateFilmBox = true;
+    private boolean auditPrintJob = false;
     private FilmSessionService filmSessionService = new FilmSessionService(this);
     private FilmBoxService filmBoxService = new FilmBoxService(this);
     private ImageBoxService imageBoxService = new ImageBoxService(this);
     private AnnotationBoxService annotationBoxService =
             new AnnotationBoxService(this);
 
-    private ObjectName dcmServer;
+    private ObjectName dcmServerName;
     private DcmHandler dcmHandler;
     private int numCreatedJobs = 0;
     private int numStoredPrints = 0;
 
-    /**  Holds value of property license.  */
+    /**  Holds value of property license. */
     private X509Certificate license;
 
     // Static --------------------------------------------------------
@@ -125,106 +123,108 @@ public class PrintScpService
 
     // PrintScpMBean implementation ----------------------------------
     /**
-     *  Gets the auditLogger attribute of the DcmServerService object
+     *  Gets the dcmServerName attribute of the PrintScpService object
      *
-     *@return    The auditLogger value
+     * @return    The dcmServerName value
      */
-    public ObjectName getAuditLogger()
+    public ObjectName getDcmServerName()
+    {
+        return dcmServerName;
+    }
+
+
+    /**
+     *  Sets the dcmServerName attribute of the PrintScpService object
+     *
+     * @param  dcmServerName  The new dcmServerName value
+     */
+    public void setDcmServerName(ObjectName dcmServerName)
+    {
+        this.dcmServerName = dcmServerName;
+    }
+
+
+    /**
+     *  Gets the auditLoggerName attribute of the PrintScpService object
+     *
+     * @return    The auditLoggerName value
+     */
+    public ObjectName getAuditLoggerName()
     {
         return auditLogName;
     }
 
 
     /**
-     *  Sets the auditLogger attribute of the DcmServerService object
+     *  Sets the auditLoggerName attribute of the PrintScpService object
      *
-     *@param  auditLogName  The new auditLogger value
+     * @param  auditLogName  The new auditLoggerName value
      */
-    public void setAuditLogger(ObjectName auditLogName)
+    public void setAuditLoggerName(ObjectName auditLogName)
     {
         this.auditLogName = auditLogName;
     }
-    
-    /**
-     *  Description of the Method
-     *
-     * @param  job Description of the Parameter
-     */
-    public void onJobStartPrinting(String job)
-    {
-    }
 
 
     /**
-     *  Description of the Method
+     *  Gets the spoolDirectory attribute of the PrintScpService object
      *
-     * @param  job Description of the Parameter
-     */
-    public void onJobFailed(String job)
-    {
-        deleteJob(new File(job));
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @param  job Description of the Parameter
-     */
-    public void onJobDone(String job)
-    {
-        deleteJob(new File(job));
-    }
-
-
-    /**
-     *  Getter for property dcmServer.
-     *
-     * @return  Value of property dcmServer.
-     */
-    public ObjectName getDcmServer()
-    {
-        return dcmServer;
-    }
-
-
-    /**
-     *  Setter for property dcmServer.
-     *
-     * @param  dcmServer New value of property dcmServer.
-     */
-    public void setDcmServer(ObjectName dcmServer)
-    {
-        this.dcmServer = dcmServer;
-    }
-
-
-    /**
-     *  Getter for property spoolDirPath.
-     *
-     * @return  Value of property spoolDirPath.
+     * @return    The spoolDirectory value
      */
     public String getSpoolDirectory()
     {
-        return spoolDirectory;
+        return spoolDir.getPath();
     }
 
 
     /**
-     *  Setter for property spoolDirPath.
+     *  Sets the spoolDirectory attribute of the PrintScpService object
      *
-     * @param  spoolDirectory The new spoolDirectory value
+     * @param  dname  The new spoolDirectory value
      */
-    public void setSpoolDirectory(String spoolDirectory)
+    public void setSpoolDirectory(String dname)
     {
-        this.spoolDirectory = spoolDirectory;
+        this.spoolDir = toFile(dname);
     }
 
 
     /**
-     *  Getter for property keepSpoolFiles.
+     *  Gets the licenseFile attribute of the PrintScpService object
      *
-     * @return  Value of property keepSpoolFiles.
+     * @return    The licenseFile value
+     */
+    public String getLicenseFile()
+    {
+        return licenseFile.getPath();
+    }
+
+
+    /**
+     *  Sets the licenseFile attribute of the PrintScpService object
+     *
+     * @param  fname  The new licenseFile value
+     */
+    public void setLicenseFile(String fname)
+    {
+        this.licenseFile = toFile(fname);
+    }
+
+
+    /**
+     *  Sets the licensePasswd attribute of the PrintScpService object
+     *
+     * @param  passwd  The new licensePasswd value
+     */
+    public void setLicensePasswd(String passwd)
+    {
+        this.licensePasswd = passwd.length() > 0 ? passwd.toCharArray() : null;
+    }
+
+
+    /**
+     *  Gets the keepSpoolFiles attribute of the PrintScpService object
+     *
+     * @return    The keepSpoolFiles value
      */
     public boolean isKeepSpoolFiles()
     {
@@ -233,9 +233,9 @@ public class PrintScpService
 
 
     /**
-     *  Setter for property keepSpoolFiles.
+     *  Sets the keepSpoolFiles attribute of the PrintScpService object
      *
-     * @param  keepSpoolFiles New value of property keepSpoolFiles.
+     * @param  keepSpoolFiles  The new keepSpoolFiles value
      */
     public void setKeepSpoolFiles(boolean keepSpoolFiles)
     {
@@ -244,9 +244,75 @@ public class PrintScpService
 
 
     /**
-     *  Getter for property numCreatedJobs.
+     *  Gets the auditCreateSession attribute of the PrintScpService object
      *
-     * @return  Value of property numCreatedJobs.
+     * @return    The auditCreateSession value
+     */
+    public boolean isAuditCreateSession()
+    {
+        return auditCreateSession;
+    }
+
+
+    /**
+     *  Sets the auditCreateSession attribute of the PrintScpService object
+     *
+     * @param  auditCreateSession  The new auditCreateSession value
+     */
+    public void setAuditCreateSession(boolean auditCreateSession)
+    {
+        this.auditCreateSession = auditCreateSession;
+    }
+
+
+    /**
+     *  Gets the auditCreateFilmBox attribute of the PrintScpService object
+     *
+     * @return    The auditCreateFilmBox value
+     */
+    public boolean isAuditCreateFilmBox()
+    {
+        return auditCreateFilmBox;
+    }
+
+
+    /**
+     *  Sets the auditCreateFilmBox attribute of the PrintScpService object
+     *
+     * @param  auditCreateFilmBox  The new auditCreateFilmBox value
+     */
+    public void setAuditCreateFilmBox(boolean auditCreateFilmBox)
+    {
+        this.auditCreateFilmBox = auditCreateFilmBox;
+    }
+
+
+    /**
+     *  Gets the auditPrintJob attribute of the PrintScpService object
+     *
+     * @return    The auditPrintJob value
+     */
+    public boolean isAuditPrintJob()
+    {
+        return auditPrintJob;
+    }
+
+
+    /**
+     *  Sets the auditPrintJob attribute of the PrintScpService object
+     *
+     * @param  auditPrintJob  The new auditPrintJob value
+     */
+    public void setAuditPrintJob(boolean auditPrintJob)
+    {
+        this.auditPrintJob = auditPrintJob;
+    }
+
+
+    /**
+     *  Gets the numCreatedJobs attribute of the PrintScpService object
+     *
+     * @return    The numCreatedJobs value
      */
     public int getNumCreatedJobs()
     {
@@ -255,9 +321,9 @@ public class PrintScpService
 
 
     /**
-     *  Getter for property numStoredPrints.
+     *  Gets the numStoredPrints attribute of the PrintScpService object
      *
-     * @return  Value of property numStoredPrints.
+     * @return    The numStoredPrints value
      */
     public int getNumStoredPrints()
     {
@@ -266,9 +332,9 @@ public class PrintScpService
 
 
     /**
-     *  Getter for property license.
+     *  Gets the license attribute of the PrintScpService object
      *
-     * @return  Value of property license.
+     * @return    The license value
      */
     public X509Certificate getLicense()
     {
@@ -277,9 +343,9 @@ public class PrintScpService
 
 
     /**
-     *  Setter for property license.
+     *  Sets the license attribute of the PrintScpService object
      *
-     * @param  license New value of property license.
+     * @param  license  The new license value
      */
     public void setLicense(X509Certificate license)
     {
@@ -290,8 +356,8 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  aet Description of the Parameter
-     * @param  policy Description of the Parameter
+     * @param  aet     Description of the Parameter
+     * @param  policy  Description of the Parameter
      */
     public void putAcceptorPolicy(String aet, AcceptorPolicy policy)
     {
@@ -299,23 +365,58 @@ public class PrintScpService
     }
 
 
+    /**
+     *  Description of the Method
+     *
+     * @param  job  Description of the Parameter
+     */
+    public void onJobStartPrinting(String job)
+    {
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  job  Description of the Parameter
+     */
+    public void onJobDone(String job)
+    {
+        deleteJob(new File(job));
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  job  Description of the Parameter
+     */
+    public void onJobFailed(String job)
+    {
+        deleteJob(new File(job));
+    }
+
+
+    private File toFile(String fname)
+    {
+        File f = new File(fname);
+        return f.isAbsolute()
+                 ? f
+                 : new File(ServerConfigLocator.locate().getServerHomeDir(), fname);
+    }
+
     // ServiceMBeanSupport overrides -----------------------------------
     /**
      *  Description of the Method
      *
-     * @exception  Exception Description of the Exception
+     * @exception  Exception  Description of the Exception
      */
     public void startService()
         throws Exception
     {
         auditLog = (AuditLogger) server.getAttribute(
                 auditLogName, "AuditLogger");
-        File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
-        checkLicense(new File(systemHomeDir, LICENSE_FILE));
-        spoolDir = new File(spoolDirectory);
-        if (!spoolDir.isAbsolute()) {
-            spoolDir = new File(systemHomeDir, spoolDirectory);
-        }
+        checkLicense();
         if (!spoolDir.exists()) {
             log.info("Creating spool directory - " + spoolDir.getCanonicalPath());
             spoolDir.mkdirs();
@@ -324,7 +425,7 @@ public class PrintScpService
             throw new IOException("No writeable spool directory - " + spoolDir);
         }
         cleardir(spoolDir);
-        dcmHandler = (DcmHandler) server.getAttribute(dcmServer, "DcmHandler");
+        dcmHandler = (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
         bindDcmServices();
     }
 
@@ -332,7 +433,7 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @exception  Exception Description of the Exception
+     * @exception  Exception  Description of the Exception
      */
     public void stopService()
         throws Exception
@@ -345,15 +446,10 @@ public class PrintScpService
     }
 
 
-    /**
-     *  Description of the Method
-     *
-     * @param  licenseFile Description of the Parameter
-     */
-    private void checkLicense(File licenseFile)
+    private void checkLicense()
     {
         try {
-            LicenseStore store = new LicenseStore(licenseFile);
+            LicenseStore store = new LicenseStore(licenseFile, licensePasswd);
             license = store.getLicenseFor(PRNSCP_PRODUCT_UID);
             if (license != null) {
                 license.checkValidity();
@@ -380,7 +476,7 @@ public class PrintScpService
     }
 
 
-    /**  Description of the Method  */
+    /**  Description of the Method */
     private void bindDcmServices()
     {
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
@@ -394,7 +490,7 @@ public class PrintScpService
     }
 
 
-    /**  Description of the Method  */
+    /**  Description of the Method */
     private void unbindDcmServices()
     {
         DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
@@ -428,9 +524,9 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  aet Description of the Parameter
-     * @return  Description of the Return Value
-     * @exception  MalformedObjectNameException Description of the Exception
+     * @param  aet                               Description of the Parameter
+     * @return                                   Description of the Return Value
+     * @exception  MalformedObjectNameException  Description of the Exception
      */
     private ObjectName makePrinterName(String aet)
         throws MalformedObjectNameException
@@ -442,10 +538,10 @@ public class PrintScpService
     /**
      *  Gets the printerAttribute attribute of the PrintScpService object
      *
-     * @param  aet Description of the Parameter
-     * @param  attribute Description of the Parameter
-     * @return  The printerAttribute value
-     * @exception  Exception Description of the Exception
+     * @param  aet            Description of the Parameter
+     * @param  attribute      Description of the Parameter
+     * @return                The printerAttribute value
+     * @exception  Exception  Description of the Exception
      */
     Object getPrinterAttribute(String aet, String attribute)
         throws Exception
@@ -457,10 +553,10 @@ public class PrintScpService
     /**
      *  Gets the booleanPrinterAttribute attribute of the PrintScpService object
      *
-     * @param  aet Description of the Parameter
-     * @param  attribute Description of the Parameter
-     * @return  The booleanPrinterAttribute value
-     * @exception  Exception Description of the Exception
+     * @param  aet            Description of the Parameter
+     * @param  attribute      Description of the Parameter
+     * @return                The booleanPrinterAttribute value
+     * @exception  Exception  Description of the Exception
      */
     boolean getBooleanPrinterAttribute(String aet, String attribute)
         throws Exception
@@ -473,10 +569,10 @@ public class PrintScpService
     /**
      *  Gets the intPrinterAttribute attribute of the PrintScpService object
      *
-     * @param  aet Description of the Parameter
-     * @param  attribute Description of the Parameter
-     * @return  The intPrinterAttribute value
-     * @exception  Exception Description of the Exception
+     * @param  aet            Description of the Parameter
+     * @param  attribute      Description of the Parameter
+     * @return                The intPrinterAttribute value
+     * @exception  Exception  Description of the Exception
      */
     int getIntPrinterAttribute(String aet, String attribute)
         throws Exception
@@ -489,11 +585,11 @@ public class PrintScpService
     /**
      *  Gets the printer attribute of the PrintScpService object
      *
-     * @param  aet Description of the Parameter
-     * @param  methode Description of the Parameter
-     * @param  arg Description of the Parameter
-     * @return  The printer value
-     * @exception  Exception Description of the Exception
+     * @param  aet            Description of the Parameter
+     * @param  methode        Description of the Parameter
+     * @param  arg            Description of the Parameter
+     * @return                The printer value
+     * @exception  Exception  Description of the Exception
      */
     boolean isPrinter(String aet, String methode, String arg)
         throws Exception
@@ -507,12 +603,12 @@ public class PrintScpService
     /**
      *  Gets the printer attribute of the PrintScpService object
      *
-     * @param  aet Description of the Parameter
-     * @param  methode Description of the Parameter
-     * @param  arg1 Description of the Parameter
-     * @param  arg2 Description of the Parameter
-     * @return  The printer value
-     * @exception  Exception Description of the Exception
+     * @param  aet            Description of the Parameter
+     * @param  methode        Description of the Parameter
+     * @param  arg1           Description of the Parameter
+     * @param  arg2           Description of the Parameter
+     * @return                The printer value
+     * @exception  Exception  Description of the Exception
      */
     boolean isPrinter(String aet, String methode,
             String arg1, String arg2)
@@ -527,12 +623,12 @@ public class PrintScpService
     /**
      *  Gets the printer attribute of the PrintScpService object
      *
-     * @param  aet Description of the Parameter
-     * @param  methode Description of the Parameter
-     * @param  arg Description of the Parameter
-     * @param  type Description of the Parameter
-     * @return  The printer value
-     * @exception  Exception Description of the Exception
+     * @param  aet            Description of the Parameter
+     * @param  methode        Description of the Parameter
+     * @param  arg            Description of the Parameter
+     * @param  type           Description of the Parameter
+     * @return                The printer value
+     * @exception  Exception  Description of the Exception
      */
     boolean isPrinter(String aet, String methode,
             Object[] arg, String[] type)
@@ -547,12 +643,12 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  ds Description of the Parameter
-     * @param  tag Description of the Parameter
-     * @param  aet Description of the Parameter
-     * @param  test Description of the Parameter
-     * @param  rsp Description of the Parameter
-     * @exception  Exception Description of the Exception
+     * @param  ds             Description of the Parameter
+     * @param  tag            Description of the Parameter
+     * @param  aet            Description of the Parameter
+     * @param  test           Description of the Parameter
+     * @param  rsp            Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     void checkAttribute(Dataset ds, int tag, String aet, String test, Command rsp)
         throws Exception
@@ -573,10 +669,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  ds Description of the Parameter
-     * @param  tag Description of the Parameter
-     * @param  enum Description of the Parameter
-     * @param  rsp Description of the Parameter
+     * @param  ds    Description of the Parameter
+     * @param  tag   Description of the Parameter
+     * @param  enum  Description of the Parameter
+     * @param  rsp   Description of the Parameter
      */
     void checkAttribute(Dataset ds, int tag, String[] enum, Command rsp)
     {
@@ -598,9 +694,9 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  ds Description of the Parameter
-     * @param  tag Description of the Parameter
-     * @param  rsp Description of the Parameter
+     * @param  ds   Description of the Parameter
+     * @param  tag  Description of the Parameter
+     * @param  rsp  Description of the Parameter
      */
     void ignoreAttribute(Dataset ds, int tag, Command rsp)
     {
@@ -611,10 +707,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  ds Description of the Parameter
-     * @param  tag Description of the Parameter
-     * @param  rsp Description of the Parameter
-     * @param  errcode Description of the Parameter
+     * @param  ds       Description of the Parameter
+     * @param  tag      Description of the Parameter
+     * @param  rsp      Description of the Parameter
+     * @param  errcode  Description of the Parameter
      */
     void ignoreAttribute(Dataset ds, int tag, Command rsp, int errcode)
     {
@@ -631,10 +727,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  ds Description of the Parameter
-     * @param  tag Description of the Parameter
-     * @param  maxlen Description of the Parameter
-     * @param  rsp Description of the Parameter
+     * @param  ds      Description of the Parameter
+     * @param  tag     Description of the Parameter
+     * @param  maxlen  Description of the Parameter
+     * @param  rsp     Description of the Parameter
      */
     void checkAttributeLen(Dataset ds, int tag, int maxlen, Command rsp)
     {
@@ -654,10 +750,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  ds Description of the Parameter
-     * @param  aet Description of the Parameter
-     * @param  rsp Description of the Parameter
-     * @exception  Exception Description of the Exception
+     * @param  ds             Description of the Parameter
+     * @param  aet            Description of the Parameter
+     * @param  rsp            Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     void checkNumberOfCopies(Dataset ds, String aet, Command rsp)
         throws Exception
@@ -679,10 +775,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  ds Description of the Parameter
-     * @param  aet Description of the Parameter
-     * @param  rsp Description of the Parameter
-     * @exception  Exception Description of the Exception
+     * @param  ds             Description of the Parameter
+     * @param  aet            Description of the Parameter
+     * @param  rsp            Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     void checkMinMaxDensity(Dataset ds, String aet, Command rsp)
         throws Exception
@@ -716,10 +812,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  ds Description of the Parameter
-     * @param  aet Description of the Parameter
-     * @param  rsp Description of the Parameter
-     * @exception  Exception Description of the Exception
+     * @param  ds             Description of the Parameter
+     * @param  aet            Description of the Parameter
+     * @param  rsp            Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     void checkImageDisplayFormat(Dataset ds, String aet, Command rsp)
         throws Exception
@@ -741,10 +837,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  aet Description of the Parameter
-     * @param  annotationID Description of the Parameter
-     * @return  Description of the Return Value
-     * @exception  DcmServiceException Description of the Exception
+     * @param  aet                      Description of the Parameter
+     * @param  annotationID             Description of the Parameter
+     * @return                          Description of the Return Value
+     * @exception  DcmServiceException  Description of the Exception
      */
     int countAnnotationBoxes(String aet, String annotationID)
         throws DcmServiceException
@@ -766,8 +862,8 @@ public class PrintScpService
     /**
      *  Gets the filmSession attribute of the PrintScpService object
      *
-     * @param  as Description of the Parameter
-     * @return  The filmSession value
+     * @param  as  Description of the Parameter
+     * @return     The filmSession value
      */
     FilmSession getFilmSession(ActiveAssociation as)
     {
@@ -778,8 +874,8 @@ public class PrintScpService
     /**
      *  Gets the presentationLUTs attribute of the PrintScpService object
      *
-     * @param  as Description of the Parameter
-     * @return  The presentationLUTs value
+     * @param  as  Description of the Parameter
+     * @return     The presentationLUTs value
      */
     HashMap getPresentationLUTs(ActiveAssociation as)
     {
@@ -795,9 +891,9 @@ public class PrintScpService
     /**
      *  Gets the sessionSpoolDir attribute of the PrintScpService object
      *
-     * @param  a Description of the Parameter
-     * @param  uid Description of the Parameter
-     * @return  The sessionSpoolDir value
+     * @param  a    Description of the Parameter
+     * @param  uid  Description of the Parameter
+     * @return      The sessionSpoolDir value
      */
     File getSessionSpoolDir(Association a, String uid)
     {
@@ -810,8 +906,8 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  dir Description of the Parameter
-     * @exception  DcmServiceException Description of the Exception
+     * @param  dir                      Description of the Parameter
+     * @exception  DcmServiceException  Description of the Exception
      */
     void initSessionSpoolDir(File dir)
         throws DcmServiceException
@@ -831,8 +927,8 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  dir Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  dir  Description of the Parameter
+     * @return      Description of the Return Value
      */
     private boolean lockSessionSpoolDir(File dir)
     {
@@ -848,8 +944,8 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  dir Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  dir  Description of the Parameter
+     * @return      Description of the Return Value
      */
     private int countJobsInSession(File dir)
     {
@@ -860,8 +956,8 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  dir Description of the Parameter
-     * @param  unlock Description of the Parameter
+     * @param  dir     Description of the Parameter
+     * @param  unlock  Description of the Parameter
      */
     void purgeSessionSpoolDir(File dir, boolean unlock)
     {
@@ -882,7 +978,7 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  dir Description of the Parameter
+     * @param  dir  Description of the Parameter
      */
     void cleardir(File dir)
     {
@@ -896,8 +992,8 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  dir Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  dir  Description of the Parameter
+     * @return      Description of the Return Value
      */
     boolean deltree(File dir)
     {
@@ -908,44 +1004,48 @@ public class PrintScpService
     }
 
 
-    private void doAuditLog(Association as, FilmSession session) {
+    void doAuditLog(Association as, FilmSession session)
+    {
         try {
             String aet = as.getCalledAET();
             Dataset sessionAttr = session.getAttributes();
-            Dataset proposedStudy = 
-                sessionAttr.getItem(Tags.ProposedStudySeq);
+            Dataset proposedStudy =
+                    sessionAttr.getItem(Tags.ProposedStudySeq);
             String patID = proposedStudy != null
-                ? proposedStudy.getString(Tags.PatientID, UNKNOWN)
-                : UNKNOWN;
+                     ? proposedStudy.getString(Tags.PatientID, UNKNOWN)
+                     : UNKNOWN;
             String patName = proposedStudy != null
-                ? proposedStudy.getString(Tags.PatientName, UNKNOWN)
-                : UNKNOWN;
+                     ? proposedStudy.getString(Tags.PatientName, UNKNOWN)
+                     : UNKNOWN;
             MediaDescription mediaDesc = alf.newMediaDescription(
-                alf.newPatient(patID, patName));
+                    alf.newPatient(patID, patName));
             mediaDesc.setMediaType(sessionAttr.getString(Tags.MediumType,
-                (String) getPrinterAttribute(aet, "DefaultMediumType")));
+                    (String) getPrinterAttribute(aet, "DefaultMediumType")));
             mediaDesc.setDestination(alf.newLocalPrinter(
-                (String) getPrinterAttribute(aet, "PrinterName")));
+                    (String) getPrinterAttribute(aet, "PrinterName")));
             auditLog.logExport(mediaDesc,
-                alf.newRemoteUser(alf.newRemoteNode(
+                    alf.newRemoteUser(alf.newRemoteNode(
                     as.getSocket(), as.getCallingAET())));
         } catch (Exception e) {
             log.warn("Failed to send audit log:", e);
         }
     }
-    
+
+
     /**
      *  Description of the Method
      *
-     * @param  aet Description of the Parameter
-     * @param  session Description of the Parameter
-     * @param  all Description of the Parameter
-     * @exception  DcmServiceException Description of the Exception
+     * @param  session                  Description of the Parameter
+     * @param  all                      Description of the Parameter
+     * @param  as                       Description of the Parameter
+     * @exception  DcmServiceException  Description of the Exception
      */
     void createPrintJob(Association as, FilmSession session, boolean all)
         throws DcmServiceException
     {
-        doAuditLog(as, session);
+        if (auditPrintJob) {
+            doAuditLog(as, session);
+        }
         String aet = as.getCalledAET();
         String jobID = "J-" + ++numCreatedJobs;
         File jobdir = new File(new File(session.dir(), SPOOL_JOB_DIR_SUFFIX), jobID);
@@ -990,7 +1090,7 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  job Description of the Parameter
+     * @param  job  Description of the Parameter
      */
     void deleteJob(File job)
     {
@@ -1015,10 +1115,10 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  job Description of the Parameter
-     * @param  session Description of the Parameter
-     * @param  filmBox Description of the Parameter
-     * @exception  DcmServiceException Description of the Exception
+     * @param  job                      Description of the Parameter
+     * @param  session                  Description of the Parameter
+     * @param  filmBox                  Description of the Parameter
+     * @exception  DcmServiceException  Description of the Exception
      */
     private void storePrint(File job, FilmSession session, FilmBox filmBox)
         throws DcmServiceException
@@ -1124,8 +1224,8 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @param  src Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  src  Description of the Parameter
+     * @return      Description of the Return Value
      */
     private String toLO(String src)
     {
@@ -1136,10 +1236,10 @@ public class PrintScpService
     /**
      *  Gets the printerAttributes attribute of the PrintScpService object
      *
-     * @param  aet Description of the Parameter
-     * @param  tags Description of the Parameter
-     * @return  The printerAttributes value
-     * @exception  Exception Description of the Exception
+     * @param  aet            Description of the Parameter
+     * @param  tags           Description of the Parameter
+     * @return                The printerAttributes value
+     * @exception  Exception  Description of the Exception
      */
     private Dataset getPrinterAttributes(String aet, int[] tags)
         throws Exception
@@ -1194,7 +1294,7 @@ public class PrintScpService
     /**
      *  Description of the Method
      *
-     * @return  Description of the Return Value
+     * @return    Description of the Return Value
      */
     public String showLicense()
     {

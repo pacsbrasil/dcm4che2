@@ -27,9 +27,10 @@ import org.jboss.system.ServiceMBean;
 /**
  *  <description>
  *
- *@author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- *@created    November 3, 2002
- *@version    $Revision$
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since      April 5, 2003
+ * @created    November 3, 2002
+ * @version    $Revision$
  */
 public interface PrintScpServiceMBean extends ServiceMBean
 {
@@ -42,89 +43,161 @@ public interface PrintScpServiceMBean extends ServiceMBean
 
 
     /**
-     *  Gets the auditLogger attribute of the DcmServerService object
+     *  Gets the auditLoggerName attribute of the PrintScpServiceMBean object
      *
-     *@return    The auditLogger value
+     * @return    The auditLoggerName value
      */
-    public ObjectName getAuditLogger();
+    public ObjectName getAuditLoggerName();
 
 
     /**
-     *  Sets the auditLogger attribute of the DcmServerService object
+     *  Sets the auditLoggerName attribute of the PrintScpServiceMBean object
      *
-     *@param  auditLogName  The new auditLogger value
+     * @param  auditLogName  The new auditLoggerName value
      */
-    public void setAuditLogger(ObjectName auditLogName);
+    public void setAuditLoggerName(ObjectName auditLogName);
 
 
     /**
-     *  Getter for property dcmServer.
+     *  Gets the dcmServerName attribute of the PrintScpServiceMBean object
      *
-     *@return    Value of property dcmServer.
+     * @return    The dcmServerName value
      */
-    ObjectName getDcmServer();
+    public ObjectName getDcmServerName();
 
 
     /**
-     *  Setter for property dcmServer.
+     *  Sets the dcmServerName attribute of the PrintScpServiceMBean object
      *
-     *@param  dcmServer  New value of property dcmServer.
+     * @param  dcmServerName  The new dcmServerName value
      */
-    void setDcmServer(ObjectName dcmServer);
+    public void setDcmServerName(ObjectName dcmServerName);
 
 
     /**
-     *  Getter for property spoolDirectory.
+     *  Gets the licenseFile attribute of the PrintScpServiceMBean object
      *
-     *@return    Value of property spoolDirectory.
+     * @return    The licenseFile value
      */
-    String getSpoolDirectory();
+    public String getLicenseFile();
 
 
     /**
-     *  Setter for property spoolDirectory.
+     *  Sets the licenseFile attribute of the PrintScpServiceMBean object
      *
-     *@param  spoolDirectory  The new spoolDirectory value
+     * @param  licenseFile  The new licenseFile value
      */
-    void setSpoolDirectory(String spoolDirectory);
+    public void setLicenseFile(String licenseFile);
 
 
     /**
-     *  Getter for property keepSpoolFiles.
+     *  Sets the licensePasswd attribute of the PrintScpServiceMBean object
      *
-     *@return    Value of property keepSpoolFiles.
+     * @param  passwd  The new licensePasswd value
+     */
+    public void setLicensePasswd(String passwd);
+
+
+    /**
+     *  Gets the spoolDirectory attribute of the PrintScpServiceMBean object
+     *
+     * @return    The spoolDirectory value
+     */
+    public String getSpoolDirectory();
+
+
+    /**
+     *  Sets the spoolDirectory attribute of the PrintScpServiceMBean object
+     *
+     * @param  spoolDirectory  The new spoolDirectory value
+     */
+    public void setSpoolDirectory(String spoolDirectory);
+
+
+    /**
+     *  Gets the keepSpoolFiles attribute of the PrintScpServiceMBean object
+     *
+     * @return    The keepSpoolFiles value
      */
     public boolean isKeepSpoolFiles();
 
 
     /**
-     *  Setter for property keepSpoolFiles.
+     *  Sets the keepSpoolFiles attribute of the PrintScpServiceMBean object
      *
-     *@param  keepSpoolFiles  New value of property keepSpoolFiles.
+     * @param  keepSpoolFiles  The new keepSpoolFiles value
      */
     public void setKeepSpoolFiles(boolean keepSpoolFiles);
 
 
     /**
-     *  Getter for property numCreatedJobs.
+     *  Gets the auditCreateSession attribute of the PrintScpServiceMBean object
      *
-     *@return    Value of property numCreatedJobs.
+     * @return    The auditCreateSession value
+     */
+    public boolean isAuditCreateSession();
+
+
+    /**
+     *  Sets the auditCreateSession attribute of the PrintScpServiceMBean object
+     *
+     * @param  auditCreateSession  The new auditCreateSession value
+     */
+    public void setAuditCreateSession(boolean auditCreateSession);
+
+
+    /**
+     *  Gets the auditCreateFilmBox attribute of the PrintScpServiceMBean object
+     *
+     * @return    The auditCreateFilmBox value
+     */
+    public boolean isAuditCreateFilmBox();
+
+
+    /**
+     *  Sets the auditCreateFilmBox attribute of the PrintScpServiceMBean object
+     *
+     * @param  auditCreateFilmBox  The new auditCreateFilmBox value
+     */
+    public void setAuditCreateFilmBox(boolean auditCreateFilmBox);
+
+
+    /**
+     *  Gets the auditPrintJob attribute of the PrintScpServiceMBean object
+     *
+     * @return    The auditPrintJob value
+     */
+    public boolean isAuditPrintJob();
+
+
+    /**
+     *  Sets the auditPrintJob attribute of the PrintScpServiceMBean object
+     *
+     * @param  auditPrintJob  The new auditPrintJob value
+     */
+    public void setAuditPrintJob(boolean auditPrintJob);
+
+
+    /**
+     *  Gets the numCreatedJobs attribute of the PrintScpServiceMBean object
+     *
+     * @return    The numCreatedJobs value
      */
     public int getNumCreatedJobs();
 
 
     /**
-     *  Getter for property numStoredPrints.
+     *  Gets the numStoredPrints attribute of the PrintScpServiceMBean object
      *
-     *@return    Value of property numStoredPrints.
+     * @return    The numStoredPrints value
      */
     public int getNumStoredPrints();
 
 
     /**
-     *  Getter for property license.
+     *  Gets the license attribute of the PrintScpServiceMBean object
      *
-     *@return    Value of property license.
+     * @return    The license value
      */
     public X509Certificate getLicense();
 
@@ -132,7 +205,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     *@return    Description of the Return Value
+     * @return    Description of the Return Value
      */
     public String showLicense();
 
@@ -140,8 +213,8 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     *@param  aet     Description of the Parameter
-     *@param  policy  Description of the Parameter
+     * @param  aet     Description of the Parameter
+     * @param  policy  Description of the Parameter
      */
     public void putAcceptorPolicy(String aet, AcceptorPolicy policy);
 
@@ -149,7 +222,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     *@param  job  Description of the Parameter
+     * @param  job  Description of the Parameter
      */
     public void onJobStartPrinting(String job);
 
@@ -157,7 +230,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     *@param  job  Description of the Parameter
+     * @param  job  Description of the Parameter
      */
     public void onJobFailed(String job);
 
@@ -165,7 +238,7 @@ public interface PrintScpServiceMBean extends ServiceMBean
     /**
      *  Description of the Method
      *
-     *@param  job  Description of the Parameter
+     * @param  job  Description of the Parameter
      */
     public void onJobDone(String job);
 

@@ -106,23 +106,23 @@
     Defines file containing key used in SSL handshake, when running in TLS mode.
     Relative path names are resolved using jboss server directory as base directory.
     -->
-    <attribute name="KeyFile">conf/tls/test_sys_2.p12</attribute>
+    <attribute name="KeyFile">conf/license.p12</attribute>
     
     <!--
     Defines password for access to key file, specified by attribute KeyFile 
     -->
-    <attribute name="KeyPasswd">iheihe</attribute>
+    <attribute name="KeyPasswd">passwd</attribute>
     
    <!--
     Defines file containing accepted certificates, when running in TLS mode
     Relative path names are resolved using jboss server directory as base directory.
     -->
-    <attribute name="CacertsFile">conf/tls/cacerts.jks</attribute>
+    <attribute name="CacertsFile">conf/cacerts.jks</attribute>
     
     <!--
     Defines password for access to cacerts file, specified by attribute CacertsFile 
     -->
-    <attribute name="CacertsPasswd">iheihe</attribute>
+    <attribute name="CacertsPasswd">passwd</attribute>
   </mbean>
 
 </server>

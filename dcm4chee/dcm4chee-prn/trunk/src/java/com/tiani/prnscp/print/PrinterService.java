@@ -61,6 +61,7 @@ import javax.print.event.PrintJobEvent;
 import javax.print.event.PrintJobListener;
 import javax.print.event.PrintServiceAttributeEvent;
 import javax.print.event.PrintServiceAttributeListener;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -73,8 +74,7 @@ import org.jboss.system.server.ServerConfigLocator;
  *  <description>
  *
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @since      March 30, 2003
- * @created    November 3, 2002
+ * @since      November 3, 2003
  * @version    $Revision$ <b>Revisions:</b> <p>
  */
 public class PrinterService
@@ -107,137 +107,100 @@ public class PrinterService
             };
 
     // Attributes ----------------------------------------------------
+    private ObjectName auditLogName;
     private String[] ts_uids = LITTLE_ENDIAN_TS;
     private final static AssociationFactory asf =
             AssociationFactory.getInstance();
 
     private String calledAET;
 
-    /**  Holds value of property printSCP. */
-    private ObjectName printSCP;
+    private ObjectName printSCPName;
 
-    /**  Holds value of property printerName. */
     private String printerName;
 
-    /**  Holds value of property manufacturer. */
     private String manufacturer;
 
-    /**  Holds value of property manufacturerModelName. */
     private String manufacturerModelName;
 
-    /**  Holds value of property deviceSerialNumber. */
     private String deviceSerialNumber;
 
-    /**  Holds value of property softwareVersion. */
     private String softwareVersion;
 
-    /**  Holds value of property ignorePrinterIsAcceptingJobs. */
     private boolean ignorePrinterIsAcceptingJobs;
 
-    /**  Holds value of property printToFilePath. */
     private String printToFilePath;
 
-    /**  Holds value of property supportsColor. */
     private boolean supportsColor;
 
-    /**  Holds value of property supportsGrayscale. */
     private boolean supportsGrayscale = true;
 
-    /**  Holds value of property supportsPresentationLUT. */
     private boolean supportsPresentationLUT;
 
-    /**  Holds value of property defaultPortrait. */
     private boolean defaultPortrait;
 
-    /**  Holds value of property displayFormat. */
     private String displayFormat;
 
-    /**  Holds value of property filmSizeID. */
     private LinkedHashMap filmSizeIDMap = new LinkedHashMap();
 
-    /**  Holds value of property resolutionID. */
     private LinkedHashMap resolutionIDMap = new LinkedHashMap();
 
-    /**  Holds value of property magnificationType. */
     private String magnificationType = BILINEAR;
 
-    /**  Holds value of property borderDensity. */
     private String borderDensity = WHITE;
 
     private String trim = NO;
 
-    /**  Holds value of property printGrayAsColor. */
     private boolean printGrayAsColor;
 
-    /**  Holds value of property maxQueuedJobCount. */
     private int maxQueuedJobCount = 10;
 
-    /**  Holds value of property pageMargin. */
     private float[] pageMargin;
 
-    /**  Holds value of property reverseLandscape. */
     private boolean reverseLandscape = true;
 
-    /**  Holds value of property borderThickness. */
     private float borderThickness = 1;
 
-    /**  Holds value of property resolution. */
     private String resolution;
 
     private int maxNumberOfCopies;
 
     private String sessionLabel;
 
-    /**  Holds value of property mediumType. */
     private String mediumType = PAPER;
 
-    /**  Holds value of property illumination. */
     private int illumination = 150;
 
-    /**  Holds value of property reflectedAmbientLight. */
     private int reflectedAmbientLight = 0;
 
-    /**  Holds value of property decimateCropBehavior. */
     private String decimateCropBehavior = DECIMATE;
 
-    /**  Holds value of property autoCalibration. */
     private boolean autoCalibration = false;
 
-    private boolean calibrationErr = false;
+    private boolean backupCalibration = false;
 
-    /**  Holds value of property printToFile. */
     private boolean printToFile = false;
 
-    /**  Holds value of property annotationDir. */
     private String annotationDir;
 
-    /**  Holds value of property lutDir. */
     private String lutDir;
 
     private File odFile;
 
-    /**  Holds value of property supportsAnnotationBox. */
     private boolean supportsAnnotationBox = false;
 
     private String dateFormat = "yyyy-MM-dd";
     private String timeFormat = "hh:mm:ss";
 
-    /**  Holds value of property lutForCallingAET. */
     private LinkedHashMap cfgInfoForAETMap;
 
-    /**  Holds value of property annotationForCallingAET. */
     private LinkedHashMap annotationForCallingAETMap;
 
-    /**  Holds value of property annotationForPrintImage. */
     private String annotationForPrintImage;
 
-    /**  Holds value of property chunkSize. */
     private double chunkSize = 2.;
 
-    /**  Holds value of property minimizeJobsize. */
     private boolean minimizeJobsize;
 
-    /**  Holds value of property decimateByNearestNeighbor. */
     private boolean decimateByNearestNeighbor;
 
     private final PrinterCalibration calibration = new PrinterCalibration(log);
@@ -254,11 +217,27 @@ public class PrinterService
     private PrintService printService;
 
 
-    // Static --------------------------------------------------------
-
-    // Constructors --------------------------------------------------
-
     // Public --------------------------------------------------------
+    /**
+     *  Gets the auditLoggerName attribute of the PrinterService object
+     *
+     * @return    The auditLoggerName value
+     */
+    public ObjectName getAuditLoggerName()
+    {
+        return auditLogName;
+    }
+
+
+    /**
+     *  Sets the auditLoggerName attribute of the PrinterService object
+     *
+     * @param  auditLogName  The new auditLoggerName value
+     */
+    public void setAuditLoggerName(ObjectName auditLogName)
+    {
+        this.auditLogName = auditLogName;
+    }
 
     // PrinterMBean implementation -----------------------------------
 
@@ -284,7 +263,7 @@ public class PrinterService
             if (!ignorePrinterIsAcceptingJobs && !isPrinterIsAcceptingJobs()) {
                 return PrinterStatus.FAILURE;
             }
-            if (getQueuedJobCount() > 0 || calibrationErr) {
+            if (getQueuedJobCount() > 0 || calibration.getCalibrationTime() == 0L) {
                 return PrinterStatus.WARNING;
             }
             return PrinterStatus.NORMAL;
@@ -309,7 +288,7 @@ public class PrinterService
             if (getQueuedJobCount() > 0) {
                 return PrinterStatusInfo.QUEUED;
             }
-            if (calibrationErr) {
+            if (calibration.getCalibrationTime() == 0L) {
                 return PrinterStatusInfo.CALIBRATION_ERR;
             }
             return PrinterStatusInfo.NORMAL;
@@ -320,24 +299,24 @@ public class PrinterService
 
 
     /**
-     *  Getter for property printSCP.
+     *  Getter for property printSCPName.
      *
-     * @return    Value of property printSCP.
+     * @return    Value of property printSCPName.
      */
-    public ObjectName getPrintSCP()
+    public ObjectName getPrintSCPName()
     {
-        return this.printSCP;
+        return this.printSCPName;
     }
 
 
     /**
-     *  Setter for property printSCP.
+     *  Setter for property printSCPName.
      *
-     * @param  printSCP  New value of property printSCP.
+     * @param  printSCPName  New value of property printSCPName.
      */
-    public void setPrintSCP(ObjectName printSCP)
+    public void setPrintSCPName(ObjectName printSCPName)
     {
-        this.printSCP = printSCP;
+        this.printSCPName = printSCPName;
     }
 
 
@@ -1818,25 +1797,32 @@ public class PrinterService
      */
     public String getCalibrationDir()
     {
-        return odFile.getParentFile().getAbsolutePath();
+        return scanner.getScanDir().getParentFile().getAbsolutePath();
     }
 
 
     /**
      *  Sets the calibrationDir attribute of the PrinterService object
      *
-     * @param  dir  The new calibrationDir value
+     * @param  dir              The new calibrationDir value
+     * @exception  IOException  Description of the Exception
      */
     public void setCalibrationDir(String dir)
         throws IOException
     {
-        File d = toFile(dir);
-        odFile = new File(d, calledAET + ".ods");
-        if (!odFile.isFile()) {
-            log.warn("Could not find file " + odFile
-                     + " required for basis calibration");
+        File scanDir = new File(toFile(dir), calledAET);
+        if (!scanDir.isDirectory()) {
+            if (scanDir.mkdir()) {
+                log.warn("Scan Directory " + scanDir + " did not exits. Created new one.");
+            } else {
+                throw new IOException("Failed to create new Scan Directory " + scanDir);
+            }
         }
-        scanner.setScanDir(new File(d, calledAET));
+        if (scanDir.list().length == 0) {
+            log.warn("No scans in directory " + scanDir);
+        }
+        scanner.setScanDir(scanDir);
+        calibration.setODs(scanner.readODs(scanner.getRefODsFile()));
     }
 
 
@@ -1867,7 +1853,7 @@ public class PrinterService
      *
      * @return    The scanThreshold value
      */
-    public String getScanThreshold()
+    public int getScanThreshold()
     {
         return scanner.getScanThreshold();
     }
@@ -1878,7 +1864,7 @@ public class PrinterService
      *
      * @param  scanThreshold  The new scanThreshold value
      */
-    public void setScanThreshold(String scanThreshold)
+    public void setScanThreshold(int scanThreshold)
     {
         scanner.setScanThreshold(scanThreshold);
     }
@@ -1905,6 +1891,27 @@ public class PrinterService
         this.autoCalibration = autoCalibration;
     }
 
+
+    /**
+     *  Gets the backupCalibration attribute of the PrinterServiceMBean object
+     *
+     * @return    The backupCalibration value
+     */
+    public boolean isBackupCalibration()
+    {
+        return backupCalibration;
+    }
+
+
+    /**
+     *  Sets the backupCalibration attribute of the PrinterServiceMBean object
+     *
+     * @param  backupCalibration  The new backupCalibration value
+     */
+    public void setBackupCalibration(boolean backupCalibration)
+    {
+        this.backupCalibration = backupCalibration;
+    }
 
 
     /**
@@ -1950,7 +1957,7 @@ public class PrinterService
         this.maxQueuedJobCount = maxQueuedJobCount;
     }
 
-
+    
     /**
      *  Gets the license attribute of the PrinterService object
      *
@@ -1959,7 +1966,7 @@ public class PrinterService
     public X509Certificate getLicense()
     {
         try {
-            return (X509Certificate) server.getAttribute(printSCP, "License");
+            return (X509Certificate) server.getAttribute(printSCPName, "License");
         } catch (Exception e) {
             throw new RuntimeException("JMX error", e);
         }
@@ -2012,20 +2019,55 @@ public class PrinterService
         return calibration.getPValToDDL(n, dmin, dmax, l0, la, plut);
     }
 
+    private void logActorConfig(String desc, String type) {
+        try {
+            server.invoke(auditLogName, "logActorConfig",
+            new Object[] {
+                desc,
+                type,
+            },
+            new String[] {
+                String.class.getName(),
+                String.class.getName(),
+            });
+        } catch (Exception e) {
+            log.warn("Failed to log ActorConfig:", e);
+        }
+    }
 
     /**
      *  Description of the Method
      *
      * @param  force                     Description of the Parameter
      * @exception  CalibrationException  Description of the Exception
+     * @exception  IOException           Description of the Exception
      */
     public void calibrate(boolean force)
-        throws CalibrationException
+        throws CalibrationException, IOException
     {
+        File scanFile = scanner.getMostRecentScanFile();
+        long scanFileLastModified = scanFile.lastModified();
+
+        if (!force && scanFileLastModified <= calibration.getCalibrationTime()) {
+            log.debug("Calibration uptodate");
+            return;
+        }
         log.info("Calibrating " + calledAET + "/" + printerName);
-        calibration.setODs(scanner.calculateGrayscaleODs(force));
-        calibration.setODsTS(scanner.getLastScanFileModified());
-        log.info("Calibrated " + calledAET + "/" + printerName);
+        float[] ods = scanner.calculateGrayscaleODs();
+        calibration.setODs(ods);
+        calibration.setCalibrationTime(scanFileLastModified);
+        String prompt = "Calibrated " + calledAET + "/" + printerName;
+        log.info(prompt);
+        logActorConfig(prompt, "PrinterCalibration");
+        if (backupCalibration) {
+            try {
+                File f = scanner.getBackupODsFile();
+                scanner.writeODs(f, ods);
+                f.setLastModified(scanFileLastModified);
+            } catch (IOException e) {
+                log.warn("Failed to backup calibration:" + e);
+            }
+        }
     }
 
 
@@ -2084,6 +2126,13 @@ public class PrinterService
     public void startService()
         throws Exception
     {
+        try {
+            File odFile = scanner.getBackupODsFile();
+            calibration.setODs(scanner.readODs(odFile));
+            calibration.setCalibrationTime(odFile.lastModified());
+        } catch (IOException e) {
+            log.warn("Initial Calibration failed:", e);
+        }
         scheduler = new Thread(this);
         scheduler.start();
         putAcceptorPolicy(getAcceptorPolicy());
@@ -2124,10 +2173,10 @@ public class PrinterService
     }
 
 
-    private void invokeOnPrintSCP(String methode, String arg)
+    private void invokeOnPrintSCPName(String methode, String arg)
         throws Exception
     {
-        server.invoke(printSCP, methode,
+        server.invoke(printSCPName, methode,
                 new Object[]{arg},
                 new String[]{String.class.getName()});
     }
@@ -2136,7 +2185,7 @@ public class PrinterService
     private void putAcceptorPolicy(AcceptorPolicy policy)
         throws Exception
     {
-        server.invoke(printSCP, "putAcceptorPolicy",
+        server.invoke(printSCPName, "putAcceptorPolicy",
                 new Object[]{
                 calledAET,
                 getAcceptorPolicy()
@@ -2250,7 +2299,7 @@ public class PrinterService
                     printerMonitor.wait();
                 }
             }
-            invokeOnPrintSCP("onJobStartPrinting", scheduledJob.getJob());
+            invokeOnPrintSCPName("onJobStartPrinting", scheduledJob.getJob());
             scheduledJob.initFilmBoxes(this);
             PrintService ps = getPrintService();
             PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
@@ -2275,12 +2324,12 @@ public class PrinterService
             print(scheduledJob, aset, autoCalibration);
             log.info("Finished processing job - " + scheduledJob.getJobID());
             try {
-                invokeOnPrintSCP("onJobDone", scheduledJob.getJob());
+                invokeOnPrintSCPName("onJobDone", scheduledJob.getJob());
             } catch (Exception ignore) {}
         } catch (Throwable e) {
             log.error("Failed processing job - " + scheduledJob.getJobID(), e);
             try {
-                invokeOnPrintSCP("onJobFailed", scheduledJob.getJob());
+                invokeOnPrintSCPName("onJobFailed", scheduledJob.getJob());
             } catch (Throwable ignore) {}
         }
     }
@@ -2447,15 +2496,7 @@ public class PrinterService
         if (calibrate) {
             try {
                 calibrate(false);
-                calibrationErr = false;
-            } catch (CalibrationException e) {
-                calibrationErr = true;
-                try {
-                    calibration.setODs(scanner.readODs(odFile));
-                    calibration.setODsTS(odFile.lastModified());
-                } catch (Exception e2) {
-                    throw new PrintException("Calibration fails", e2);
-                }
+            } catch (Exception e) {
                 log.warn("Calibration fails, continue printing", e);
             }
         }

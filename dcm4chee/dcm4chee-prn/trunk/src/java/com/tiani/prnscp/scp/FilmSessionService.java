@@ -182,6 +182,9 @@ class FilmSessionService
             }
             boolean color = asuid.equals(UIDs.BasicColorPrintManagement);
             FilmSession session = new FilmSession(scp, aet, color, uid, ds, dir, rspCmd);
+            if (scp.isAuditCreateSession()) {
+                scp.doAuditLog(a, session);
+            }
             scp.initSessionSpoolDir(dir);
             a.putProperty("FilmSession", session);
             a.addAssociationListener(this);

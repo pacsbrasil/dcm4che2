@@ -18,31 +18,31 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package com.tiani.prnscp.client;
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
+
 import java.io.File;
 
 import java.util.Hashtable;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
 import org.jboss.jmx.adaptor.rmi.RMIAdaptor;
 
 /**
  *  Description of the Class
  *
- *@author     gunter
- *@created    March 31, 2003
- *@since      March 31, 2003
+ * @author    <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since     March 31, 2003
  */
 public class PrintImage
 {
     private final static String USAGE =
-            "Usage: java -jar print-image.jar [OPTIONS] <file>\n\n" +
-            "Print DICOM image <file>\n\n" +
+            "Usage: java -jar print-image.jar [OPTIONS] FILE\n\n" +
+            "Print DICOM image FILE\n\n" +
             "Options:\n" +
-            " -a --aet    <aet>  printer Application Entity Title. Default: TIANI_PRINT\n" +
-            " -c --cfg    <info> print image with specified Configuration Information\n" +
-            " -h --help          show this help and exit\n";
+            " -a, --aet=AET   print on printer bound to specified AET. Default: TIANI_PRINT\n" +
+            " -c, --cfg=INFO  print image with specified Configuration Information\n" +
+            " -h, --help      show this help and exit\n";
 
     private final static String NAME_PREFIX = "dcm4chex:service=Printer,calledAET=";
 
@@ -53,7 +53,7 @@ public class PrintImage
     /**
      *  Sets the aET attribute of the PrintImage object
      *
-     *@param  aet  The new aET value
+     * @param  aet  The new aET value
      */
     public void setAET(String aet)
     {
@@ -64,7 +64,7 @@ public class PrintImage
     /**
      *  Sets the configInfo attribute of the PrintImage object
      *
-     *@param  cfg  The new configInfo value
+     * @param  cfg  The new configInfo value
      */
     public void setConfigInfo(String cfg)
     {
@@ -75,8 +75,8 @@ public class PrintImage
     /**
      *  Description of the Method
      *
-     *@param  file           Description of the Parameter
-     *@exception  Exception  Description of the Exception
+     * @param  file           Description of the Parameter
+     * @exception  Exception  Description of the Exception
      */
     public void print(File file)
         throws Exception
@@ -102,8 +102,8 @@ public class PrintImage
     /**
      *  The main program for the PrintImage class
      *
-     *@param  args           The command line arguments
-     *@exception  Exception  Description of the Exception
+     * @param  args           The command line arguments
+     * @exception  Exception  Description of the Exception
      */
     public static void main(String[] args)
         throws Exception
@@ -143,7 +143,7 @@ public class PrintImage
     /**
      *  Description of the Method
      *
-     *@param  prompt  Description of the Parameter
+     * @param  prompt  Description of the Parameter
      */
     private static void exit(String prompt)
     {

@@ -41,12 +41,11 @@ class PrinterCalibration
     // Constants -----------------------------------------------------
 
     // Attributes ----------------------------------------------------
-    private long odsTS;
+    private long calibrationTime = 0L;
 
     private float[] ods = new float[256];
 
     private final Logger log;
-
 
     // Static --------------------------------------------------------
 
@@ -291,11 +290,22 @@ class PrinterCalibration
     /**
      *  Sets the oDsTS attribute of the PrinterCalibration object
      *
-     * @param  odsTS  The new oDsTS value
+     * @param  calibrationTime  The new setCalibrationTime value
      */
-    public void setODsTS(long odsTS)
+    public void setCalibrationTime(long calibrationTime)
     {
-        this.odsTS = odsTS;
+        this.calibrationTime = calibrationTime;
+    }
+
+
+    /**
+     *  Gets the calibrationTime attribute of the PrinterCalibration object
+     *
+     * @return    The calibrationTime value
+     */
+    public long getCalibrationTime()
+    {
+        return this.calibrationTime;
     }
 
 
@@ -306,7 +316,7 @@ class PrinterCalibration
      */
     public String getDateOfLastCalibration()
     {
-        return new DAFormat().format(new Date(odsTS));
+        return new DAFormat().format(new Date(calibrationTime));
     }
 
 
@@ -317,7 +327,7 @@ class PrinterCalibration
      */
     public String getTimeOfLastCalibration()
     {
-        return new TMFormat().format(new Date(odsTS));
+        return new TMFormat().format(new Date(calibrationTime));
     }
 
 

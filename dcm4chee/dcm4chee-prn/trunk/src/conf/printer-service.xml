@@ -12,9 +12,21 @@
 
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
+    <!--
+    Name property calledAET defines the DICOM Called AET to which this
+    Print Service is bound. If multiple Print Services are configured -
+    associated with different Printers or specifing different configuration
+    settings for the same Printer - they have to be distinuished by different
+    calledAET values.
+    -->
   <mbean code="com.tiani.prnscp.print.PrinterService" 
          name="dcm4chex:service=Printer,calledAET=TIANI_PRINT">
-    <depends optional-attribute-name="PrintSCP">dcm4chex:service=PrintSCP</depends>
+    <depends optional-attribute-name="PrintSCPName">
+        dcm4chex:service=PrintSCP
+    </depends>
+    <depends optional-attribute-name="AuditLoggerName">
+        dcm4chex:service=AuditLogger,name=AUDITLOG
+    </depends>
          
     <!--
     Specifies name of the printer used by the system.
@@ -321,14 +333,18 @@
     a new scan file is found - immediately before each print.
     -->    
     <attribute name="AutoCalibration">true</attribute>
-                                
-             
+
     <!--
-    Specifies black\white threshold in device driving levels, used by
-    semi-automatic calibration from scanned gray step printout.
-    Usually, you need not change the default value 180/220.
+    Activates backup of last successful auto calibration.
     -->    
-    <attribute name="ScanThreshold">180/220</attribute>
+    <attribute name="BackupCalibration">true</attribute>
+    
+    <!--
+    Specifies threshold in device driving levels, used for Border Detection by
+    semi-automatic calibration from scanned DSI256 pattern printout.
+    Usually, you need not change the default value 200.
+    -->    
+    <attribute name="ScanThreshold">200</attribute>
     
     <!--
     Specifies extension of measurement area in % of step height,

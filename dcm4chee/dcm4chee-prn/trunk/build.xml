@@ -15,7 +15,7 @@
   <property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>
   
   <!-- Override with your JBoss/Web server bundle dist location -->
-  <property name="jboss.home" value="${user.home}/jboss-3.0.4"/>
+  <property name="jboss.home" value="${user.home}/jboss-3.0.6"/>
   <property name="jboss.bin" value="${jboss.home}/bin"/>
   <property name="jboss.lib" value="${jboss.home}/lib"/>
   <property name="jboss.client" value="${jboss.home}/client"/>
@@ -39,7 +39,7 @@
   <property name="src.dir" value="${basedir}/src"/>
   <property name="src.java" value="${src.dir}/java"/>
   <property name="src.conf" value="${src.dir}/conf"/>
-  <property name="src.res" value="${src.dir}/resources"/>
+  <property name="src.res" value="${src.dir}/res"/>
   <property name="build.dir" value="${basedir}/build"/>
 
   <property name="build.classes.dir" value="${build.dir}/classes"/>
@@ -193,7 +193,7 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, plut-viewer-jar, probescan-jar, localhost-jar"/>
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, eval-scan-jar, view-plut-jar, check-license-jar"/>
   
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
@@ -248,9 +248,9 @@
     </jar>
   </target>
   
-  <target name="plut-viewer-jar" depends="compile">
+  <target name="view-plut-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/plut-viewer.jar">
+    <jar jarfile="${build.bin.dir}/view-plut.jar">
         <manifest>
             <attribute
                 name="Main-Class"
@@ -267,7 +267,26 @@
         </fileset>
     </jar>
   </target>
-
+  <target name="eval-scan-jar" depends="compile">
+    <mkdir dir="${build.bin.dir}"/>
+    <jar jarfile="${build.bin.dir}/eval-scan.jar">
+        <manifest>
+            <attribute
+                name="Main-Class"
+                value="com.tiani.prnscp.client.ddl2odgui.ODCurveGUIFrame"
+            />
+            <attribute
+                name="Class-Path"
+                value="../server/default/lib/log4j.jar"
+            />
+        </manifest>
+        <fileset dir="${build.classes.dir}">
+            <include name="com/tiani/prnscp/client/ddl2odgui/*"/>
+            <include name="com/tiani/prnscp/print/ScannerCalibration*"/>
+        </fileset>
+    </jar>
+  </target>
+<!--
   <target name="probescan-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
     <jar jarfile="${build.bin.dir}/probescan.jar">
@@ -287,19 +306,23 @@
         </fileset>
     </jar>
   </target>
-
-  <target name="localhost-jar" depends="compile">
+  -->
+  <target name="check-license-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/localhost.jar">
+    <jar jarfile="${build.bin.dir}/check-license.jar">
         <manifest>
             <attribute
                 name="Main-Class"
-                value="com.tiani.prnscp.client.GetLocalHost"
+                value="com.tiani.util.license.LicenseStore"
             />
         </manifest>
-        <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/client/GetLocalHost*"
-        />
+        <fileset dir="${build.classes.dir}">
+          <include name="com/tiani/util/license/LicenseStore*"/>
+          <include name="com/tiani/util/license/MACReader*"/>          
+        </fileset>
+        <fileset dir="${src.res}">
+           <include name="com/tiani/util/license/ProductUIDs.properties"/>          
+        </fileset>
     </jar>
   </target>
   
@@ -362,8 +385,7 @@
         <include name="conf/annotation/*.adf"/>
         <include name="conf/calibration/DSI256.ods"/>
         <include name="conf/lut/*.lut"/>
-        <include name="conf/tls/*.p12"/>
-        <include name="conf/tls/*.jks"/>
+        <include name="conf/cacerts.jks"/>
       </fileset>
     </copy>
 
@@ -402,7 +424,7 @@
     <ant target="fail_if_no_docbook_xsl"/>
   </target>
    
-  <target name="doc" depends="init" if="fop_classpath_id">
+  <target name="doc" depends="init" if="fop.present">
     <uptodate property="cs_pdf_uptodate"
             srcfile="${doc.xml}/jprint-cs.xml"
             targetfile="${build.doc.dir}/jprint-cs.pdf"/>
@@ -418,7 +440,7 @@
         </filterset>
     </copy>
     <java classname="org.apache.fop.apps.Fop"
-        classpathref="${fop_classpath_id}"
+        classpathref="fop.path"
         fork="yes">
         <arg line="-xml ${doc.xml}/jprint-cs.xml"/>
         <arg line="-xsl ${docbook-xsl.fo.dir}/jprint-cs.xsl"/>
@@ -427,7 +449,6 @@
   </target>
   
   <target name="release" depends="build, doc">
-    <mkdir dir="${dist.dir}/server/default"/>
     <copy todir="${dist.dir}">
       <fileset dir="${jboss.home}">
         <include name="bin/run.*"/>
@@ -442,6 +463,13 @@
         <include name="lib/jboss-jmx.jar"/>
         <include name="lib/jboss-system.jar"/>
         <include name="lib/log4j-boot.jar"/>
+        <include name="server/default/conf/jndi.properties"/>
+        <include name="server/default/conf/log4j.xml"/>
+        <include name="server/default/deploy/jmx-rmi-adaptor.sar/**"/>
+        <include name="server/default/lib/jboss-management.jar"/>
+        <include name="server/default/lib/jboss.jar"/>
+        <include name="server/default/lib/jnpserver.jar"/>
+        <include name="server/default/lib/log4j.jar"/>
       </fileset>
       <fileset dir="${basedir}">
         <include name="bin/JavaService.exe"/>
@@ -452,6 +480,8 @@
         <include name="doc/*"/>
       </fileset>
     </copy>
+    <copy file="${jboss.home}/server/default/conf/jboss-minimal.xml"
+        tofile="${dist.dir}/server/default/conf/jboss-service.xml"/>
     <copy todir="${dist.dir}">
       <filterset>
         <filter token="VERSION" value="${version}"/>
@@ -463,16 +493,9 @@
     </copy>
     <copy file="${dcm4che.jar}" todir="${dist.dir}/server/default/lib"/>
     <copy todir="${dist.dir}/server/default">
-      <fileset dir="${jboss.home}/server/minimal">
-        <include name="conf/*"/>
-        <include name="lib/*"/>
-      </fileset>
-      <fileset dir="${jboss.home}/server/default">
-        <include name="lib/jbosssx.jar"/>
-      </fileset>
       <fileset dir="${src.dir}">
         <include name="conf/annotation/*.adf"/>
-        <include name="conf/calibration/README"/>
+        <include name="conf/calibration/DSI256.ods"/>
         <include name="conf/lut/*.lut"/>
         <include name="conf/tls/*.jks"/>
         <include name="conf/tls/*.p12"/>
@@ -482,7 +505,8 @@
         <include name="conf/*"/>
         <include name="deploy/*.xml"/>
       </fileset>
-    </copy> 
+    </copy>
+    <!--
     <jar jarfile="${dist.dir}/server/default/deploy/jmx-rmi-adaptor.sar">
       <metainf dir="${jboss.home}/server/default/deploy/jmx-rmi-adaptor.sar/META-INF"
                includes="jboss-service.xml"
@@ -491,6 +515,7 @@
         <exclude name="META-INF/**"/>
       </fileset>
     </jar>
+      -->
     <fixcrlf srcdir="${dist.dir}/bin" eol="crlf" includes="*.bat"/>
     <fixcrlf srcdir="${dist.dir}/bin" eol="lf" includes="*.sh"/>
     <chmod dir="${dist.dir}/bin" perm="ugo+rx" includes="*.sh"/>

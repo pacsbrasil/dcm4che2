@@ -39,19 +39,35 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property printSCP.
+     *  Gets the auditLoggerName attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property printSCP.
+     * @return    The auditLoggerName value
      */
-    public ObjectName getPrintSCP();
+    public ObjectName getAuditLoggerName();
 
 
     /**
-     *  Setter for property printSCP.
+     *  Sets the auditLoggerName attribute of the PrinterServiceMBean object
      *
-     * @param  printSCP  New value of property printSCP.
+     * @param  auditLogName  The new auditLoggerName value
      */
-    public void setPrintSCP(ObjectName printSCP);
+    public void setAuditLoggerName(ObjectName auditLogName);
+
+
+    /**
+     *  Gets the printSCPName attribute of the PrinterServiceMBean object
+     *
+     * @return    The printSCPName value
+     */
+    public ObjectName getPrintSCPName();
+
+
+    /**
+     *  Sets the printSCPName attribute of the PrinterServiceMBean object
+     *
+     * @param  printSCP  The new printSCPName value
+     */
+    public void setPrintSCPName(ObjectName printSCP);
 
 
     /**
@@ -613,74 +629,73 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property scanPointExtension.
+     *  Gets the scanPointExtension attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property scanPointExtension.
+     * @return    The scanPointExtension value
      */
     public int getScanPointExtension();
 
 
     /**
-     *  Setter for property scanPointExtension.
+     *  Sets the scanPointExtension attribute of the PrinterServiceMBean object
      *
-     * @param  extension  New value of property scanPointExtension.
+     * @param  extension  The new scanPointExtension value
      */
     public void setScanPointExtension(int extension);
 
 
     /**
-     *  Getter for property scanGradientThreshold.
+     *  Gets the scanThreshold attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property scanGradientThreshold.
+     * @return    The scanThreshold value
      */
-    public String getScanThreshold();
+    public int getScanThreshold();
 
 
     /**
-     *  Setter for property scanGradientThreshold.
+     *  Sets the scanThreshold attribute of the PrinterServiceMBean object
      *
-     * @param  scanGradientThreshold  New value of property
-     *      scanGradientThreshold.
+     * @param  threshold  The new scanThreshold value
      */
-    public void setScanThreshold(String scanGradientThreshold);
+    public void setScanThreshold(int threshold);
 
 
     /**
-     *  Getter for property annotationDir.
+     *  Gets the annotationDir attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property annotationDir.
+     * @return    The annotationDir value
      */
     public String getAnnotationDir();
 
 
     /**
-     *  Setter for property annotationDir.
+     *  Sets the annotationDir attribute of the PrinterServiceMBean object
      *
-     * @param  annotationDir  New value of property annotationDir.
+     * @param  annotationDir  The new annotationDir value
      */
     public void setAnnotationDir(String annotationDir);
 
 
     /**
-     *  Getter for property lutDir.
+     *  Gets the lUTDir attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property lutDir.
+     * @return    The lUTDir value
      */
     public String getLUTDir();
 
 
     /**
-     *  Setter for property lutDir.
+     *  Sets the lUTDir attribute of the PrinterServiceMBean object
      *
-     * @param  lutDir  New value of property lutDir.
+     * @param  lutDir  The new lUTDir value
      */
     public void setLUTDir(String lutDir);
 
 
     /**
-     *  Getter for property annotationDisplayFormatIDs.
+     *  Gets the annotationDisplayFormatIDs attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property annotationDisplayFormatIDs.
+     * @return    The annotationDisplayFormatIDs value
      */
     public String[] getAnnotationDisplayFormatIDs();
 
@@ -702,34 +717,33 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property annotationForCallingAET.
+     *  Gets the annotationForCallingAET attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property annotationForCallingAET.
+     * @return    The annotationForCallingAET value
      */
     public String getAnnotationForCallingAET();
 
 
     /**
-     *  Setter for property annotationForCallingAET.
+     *  Sets the annotationForCallingAET attribute of the PrinterServiceMBean object
      *
-     * @param  annotationForCallingAET  New value of property
-     *      annotationForCallingAET.
+     * @param  annotationForCallingAET  The new annotationForCallingAET value
      */
     public void setAnnotationForCallingAET(String annotationForCallingAET);
 
 
     /**
-     *  Getter for property annotationForPrintImage.
+     *  Gets the annotationForPrintImage attribute of the PrinterServiceMBean object
      *
-     * @return    Value of property annotationForPrintImage.
+     * @return    The annotationForPrintImage value
      */
     public String getAnnotationForPrintImage();
 
 
     /**
-     *  Setter for property annotationForPrintImage.
+     *  Sets the annotationForPrintImage attribute of the PrinterServiceMBean object
      *
-     * @param  annotationForPrintImage  New value of property annotationForPrintImage.
+     * @param  annotationForPrintImage  The new annotationForPrintImage value
      */
     public void setAnnotationForPrintImage(String annotationForPrintImage);
 
@@ -842,6 +856,22 @@ public interface PrinterServiceMBean extends ServiceMBean
      * @param  autoCalibration  New value of property autoCalibration.
      */
     public void setAutoCalibration(boolean autoCalibration);
+
+
+    /**
+     *  Gets the backupCalibration attribute of the PrinterServiceMBean object
+     *
+     * @return    The backupCalibration value
+     */
+    public boolean isBackupCalibration();
+
+
+    /**
+     *  Sets the backupCalibration attribute of the PrinterServiceMBean object
+     *
+     * @param  backupCalibration  The new backupCalibration value
+     */
+    public void setBackupCalibration(boolean backupCalibration);
 
 
     /**
@@ -963,9 +993,10 @@ public interface PrinterServiceMBean extends ServiceMBean
      *
      * @param  force                     Description of the Parameter
      * @exception  CalibrationException  Description of the Exception
+     * @exception  IOException           Description of the Exception
      */
     public void calibrate(boolean force)
-        throws CalibrationException;
+        throws CalibrationException, IOException;
 
 
     /**
