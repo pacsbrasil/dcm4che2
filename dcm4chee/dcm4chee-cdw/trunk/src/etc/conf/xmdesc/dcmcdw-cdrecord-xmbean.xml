@@ -70,11 +70,12 @@
       getMethod="getWriteSpeed"
       setMethod="setWriteSpeed">
       <description>Speed factor of the writing process.
+      -1 = use drive specific default speed.
       </description>
       <name>WriteSpeed</name>
       <type>int</type>
       <descriptors>
-         <value value="24" />
+         <value value="-1" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -319,6 +320,10 @@
    <operation impact="ACTION">
       <description>Eject Media</description>
       <name>eject</name>
+   </operation>
+   <operation impact="ACTION">
+      <description>Load Media</description>
+      <name>load</name>
    </operation>
    <operation impact="ACTION">
       <description>Mount Media</description>

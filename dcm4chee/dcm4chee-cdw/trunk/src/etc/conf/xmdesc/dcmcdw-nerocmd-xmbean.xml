@@ -64,11 +64,12 @@
       getMethod="getWriteSpeed"
       setMethod="setWriteSpeed">
       <description>Speed factor of the writing process.
+      -1 = use drive specific default speed.
       </description>
       <name>WriteSpeed</name>
       <type>int</type>
       <descriptors>
-         <value value="24" />
+         <value value="-1" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -83,14 +84,14 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isCloseSession"
-      setMethod="setCloseSession">
-      <description>Close session.
+      getMethod="isMultiSession"
+      setMethod="setMultiSession">
+      <description>Generate a TOC that allows multi session.
       </description>
-      <name>CloseSession</name>
+      <name>MultiSession</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="false" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

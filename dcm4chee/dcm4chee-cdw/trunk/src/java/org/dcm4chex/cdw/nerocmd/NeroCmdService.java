@@ -8,29 +8,15 @@
  ******************************************/
 package org.dcm4chex.cdw.nerocmd;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
-import javax.jms.JMSException;
-import javax.management.ObjectName;
-
-import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
-import org.dcm4chex.cdw.common.AbstractMediaWriterService;
 import org.dcm4chex.cdw.common.Executer;
-import org.dcm4chex.cdw.common.ExecutionStatus;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
-import org.dcm4chex.cdw.common.MD5Utils;
-import org.dcm4chex.cdw.common.JMSDelegate;
-import org.dcm4chex.cdw.common.LabelPrintDelegate;
 import org.dcm4chex.cdw.common.MediaCreationException;
-import org.dcm4chex.cdw.common.MediaCreationRequest;
-import org.jboss.system.server.ServerConfigLocator;
+import org.dcm4chex.cdw.common.MediaWriterServiceSupport;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -38,182 +24,21 @@ import org.jboss.system.server.ServerConfigLocator;
  * @since 22.06.2004
  *
  */
-public class NeroCmdService extends AbstractMediaWriterService {
-
-    private static final int MIN_RETRY_INTERVAL = 10;
-
-    private String executable = "nerocmd";
-
-    private String driveLetter;
-
-    private File driveDir;
+public class NeroCmdService extends MediaWriterServiceSupport {
 
     private boolean dvd = false;
 
-    private int writeSpeed = 24;
-
-    private boolean autoLoad = false;
-
-    private boolean appendEnabled = false;
-
-    private boolean closeSession = true;
-
-    private boolean simulate = false;
-
-    private boolean eject = true;
-
-    private int numberOfRetries = 0;
-
-    private int retryInterval = 60;
-
-    private boolean verify = false;
-    
-    private boolean logEnabled = false;
-
-    private int pauseTime = 10;
-
-    private int mountTime = 10;
-
-    private final File logFile;
-
-    private final LabelPrintDelegate labelPrint = new LabelPrintDelegate(this);
-
-    public NeroCmdService() {
-        File homedir = ServerConfigLocator.locate().getServerHomeDir();
-        logFile = new File(homedir, "log" + File.separatorChar + "nerocmd.log");
-    }
-
-    public final ObjectName getLabelPrintName() {
-        return labelPrint.getLabelPrintName();
-    }
-
-    public final void setLabelPrintName(ObjectName labelPrintName) {
-        labelPrint.setLabelPrintName(labelPrintName);
-    }
+    private String driveLetter;
 
     public final String getDriveLetter() {
         return driveLetter;
     }
 
-    public final void setDriveLetter(String drivePath) {
-        this.driveLetter = drivePath;
-        this.driveDir = new File(drivePath + ':');
-    }
-
-    public final int getNumberOfRetries() {
-        return numberOfRetries;
-    }
-
-    public final void setNumberOfRetries(int numberOfRetries) {
-        if (numberOfRetries < 0)
-                throw new IllegalArgumentException("numberOfRetries:"
-                        + numberOfRetries);
-        this.numberOfRetries = numberOfRetries;
-    }
-
-    public final int getRetryInterval() {
-        return retryInterval;
-    }
-
-    public final void setRetryInterval(int retryInterval) {
-        if (retryInterval < MIN_RETRY_INTERVAL)
-                throw new IllegalArgumentException("retryInterval:"
-                        + retryInterval);
-        this.retryInterval = retryInterval;
-    }
-
-    public final boolean isAutoLoad() {
-        return autoLoad;
-    }
-
-    public final void setAutoLoad(boolean autoLoad) {
-        this.autoLoad = autoLoad;
-    }
-
-    public final boolean isVerify() {
-        return verify;
-    }
-
-    public final void setVerify(boolean verify) {
-        this.verify = verify;
-    }
-
-    public String getKeepLabelFiles() {
-        return labelPrint.getKeepLabelFiles();
-    }
-
-    public void setKeepLabelFiles(String s) {
-        labelPrint.setKeepLabelFiles(s);
-    }
-
-    public boolean isPrintLabel() {
-        return labelPrint.isPrintLabel();
-    }
-
-    public void setPrintLabel(boolean printLabel) {
-        labelPrint.setPrintLabel(printLabel);
+    public final void setDriveLetter(String driveLetter) {
+        this.driveLetter = driveLetter;
+        super.setDriveLetterOrMountDirectory(driveLetter + ':');
     }
     
-    public final int getPauseTime() {
-        return pauseTime;
-    }
-
-    public final void setPauseTime(int pauseTime) {
-        if (pauseTime < 0)
-                throw new IllegalArgumentException("pauseTime: " + pauseTime);
-        this.pauseTime = pauseTime;
-    }
-
-    public final boolean isAppendEnabled() {
-        return appendEnabled;
-    }
-
-    public final void setAppendEnabled(boolean appendEnabled) {
-        this.appendEnabled = appendEnabled;
-    }
-
-    public final boolean isCloseSession() {
-        return closeSession;
-    }
-
-    public final void setCloseSession(boolean closeSession) {
-        this.closeSession = closeSession;
-    }
-
-    public final boolean isSimulate() {
-        return simulate;
-    }
-
-    public final void setSimulate(boolean simulate) {
-        this.simulate = simulate;
-    }
-
-    public final boolean isEject() {
-        return eject;
-    }
-
-    public final void setEject(boolean eject) {
-        this.eject = eject;
-    }
-
-    public final int getWriteSpeed() {
-        return writeSpeed;
-    }
-
-    public final void setWriteSpeed(int writeSpeed) {
-        if (writeSpeed < 0)
-                throw new IllegalArgumentException("writeSpeed:" + writeSpeed);
-        this.writeSpeed = writeSpeed;
-    }
-
-    public final String getExecutable() {
-        return executable;
-    }
-
-    public final void setExecutable(String executable) {
-        this.executable = executable;
-    }
-
     public final boolean isDvd() {
         return dvd;
     }
@@ -222,184 +47,19 @@ public class NeroCmdService extends AbstractMediaWriterService {
         this.dvd = dvd;
     }
 
-    public final int getMountTime() {
-        return mountTime;
-    }
-
-    public final void setMountTime(int mountTime) {
-        this.mountTime = mountTime;
-    }
-
-    public final boolean isLogEnabled() {
-        return logEnabled;
-    }
-
-    public final void setLogEnabled(boolean logEnabled) {
-        this.logEnabled = logEnabled;
-    }
-
-    protected boolean handle(MediaCreationRequest rq, Dataset attrs)
-            throws MediaCreationException, IOException {
-        if (!checkDrive())
-                throw new MediaCreationException(
-                        ExecutionStatusInfo.CHECK_MCD_SRV, "Drive Check failed");
-        while (rq.getRemainingCopies() > 0) {
-            if (autoLoad)
-                load();
-            if (!checkDisk()) {
-                eject();
-                retry(rq, attrs, "No or Wrong Media");
-                return false;
-            }
-            if (!appendEnabled && hasTOC()) {
-                eject();
-                retry(rq, attrs, "Media not empty");
-                return false;
-            }
-            try {
-                log.info("Start Burning " + rq);
-                burn(rq.getIsoImageFile());
-                log.info("Finished Burning " + rq);
-                if (verify) {
-                    load();
-                    if (mountTime > 0) {
-                        try {
-                            Thread.sleep(mountTime * 1000L);
-                        } catch (InterruptedException e) {
-                            log.warn("Mount Time was interrupted:", e);
-                        }
-                    }
-                    log.info("Start Verifying " + rq);
-                    verify(rq.getFilesetDir());
-                    log.info("Finsihed Verifying " + rq);
-                    if (eject) eject();
-                }
-            } catch (MediaCreationException e) {
-                eject();
-                throw e;
-            }
-            
-            labelPrint.print(rq);
-            
-            if (rq.isCanceled()) {
-                log.info("" + rq + " was canceled");
-                return true;
-            }
-            rq.copyDone(attrs, log);
-            try {
-                Thread.sleep(pauseTime * 1000L);
-            } catch (InterruptedException e) {
-                log.warn("Pause before next burn was interrupted:", e);
-            }
-        }
-        return true;
-    }
-
-    private void retry(MediaCreationRequest rq, Dataset attrs, String msg)
-            throws MediaCreationException, IOException {
-        if (rq.getRetries() >= numberOfRetries)
-                throw new MediaCreationException(
-                        ExecutionStatusInfo.OUT_OF_SUPPLIES, msg);
-        log.warn(msg + " - retry in " + retryInterval + "s.");
-        rq.setRetries(rq.getRetries() + 1);
-        attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
-        attrs.putCS(Tags.ExecutionStatusInfo,
-                ExecutionStatusInfo.OUT_OF_SUPPLIES);
-        rq.writeAttributes(attrs, log);
-        try {
-            JMSDelegate.queue(rq.getMediaWriterName(),
-                    "Schedule Writing Media for " + rq,
-                    log,
-                    rq,
-                    System.currentTimeMillis() + retryInterval * 1000L);
-        } catch (JMSException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
-        }
-
-    }
-
-    private void verify(File fsDir) throws MediaCreationException {
-        try {
-            if (!MD5Utils.verify(driveDir, fsDir, log)) { throw new MediaCreationException(
-                    ExecutionStatusInfo.PROC_FAILURE, "Verification failed!"); }
-        } catch (IOException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    "Verification failed:", e);
-        }
-    }
-
-    public void burn(File isoImageFile) throws MediaCreationException {
-        int exitCode;
-        OutputStream logout = null;
-        try {
-            ArrayList cmd = new ArrayList();
-            cmd.add(executable);
-            cmd.add("--write");
-            cmd.add("--drivename");
-            cmd.add(driveLetter);
-            if (!simulate) cmd.add("--real");
-            if (dvd) cmd.add("--dvd");
-            cmd.add("--image");
-            cmd.add(isoImageFile.getAbsolutePath());
-            cmd.add("--speed");
-            cmd.add(String.valueOf(writeSpeed));
-            if (!eject && !verify) cmd.add("--disable_eject");
-            if (closeSession) cmd.add("--close_session");
-            String[] cmdarray = (String[]) cmd.toArray(new String[cmd.size()]);
-            if (logEnabled)
-                    logout = new BufferedOutputStream(new FileOutputStream(
-                            logFile));
-            exitCode = new Executer(cmdarray, logout, null).waitFor();
-        } catch (InterruptedException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
-        } catch (IOException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
-        } finally {
-            if (logout != null) try {
-                logout.close();
-            } catch (IOException ignore) {
-            }
-        }
-        if (exitCode != 0) { throw new MediaCreationException(
-                ExecutionStatusInfo.MCD_FAILURE, "nerocmd " + isoImageFile
-                        + " returns " + exitCode); }
-    }
-
     public boolean checkDrive() throws MediaCreationException {
-        return nerocmd("--driveinfo", "Device");
+        String[] cmdarray = { executable, "-driveinfo", "--drivename", driveLetter};
+        return super.check(cmdarray, "Device");
     }
 
     public boolean checkDisk() throws MediaCreationException {
-        return nerocmd("--cdinfo", "writeable");
+        String[] cmdarray = { executable, "-cdinfo", "--drivename", driveLetter};
+        return super.check(cmdarray, "writeable");
     }
 
     public boolean hasTOC() throws MediaCreationException {
-        return nerocmd("--cdinfo", "not writeable");
-    }
-
-    public void eject() {
-        String[] cmdarray = { executable, "--eject", "--drivename", driveLetter};
-        try {
-            int exit = new Executer(cmdarray, null, null).waitFor();
-            if (exit != 0)
-                    log.warn("Failed to eject Media: exit(" + exit + ")");
-        } catch (Exception e) {
-            log.warn("Failed to eject Media:", e);
-        }
-    }
-
-    public void load() {
-        String[] cmdarray = { executable, "--load", "--drivename", driveLetter};
-        try {
-            int exit = new Executer(cmdarray, null, null).waitFor();
-            if (exit != 0)
-                    log.warn("Failed to load Media: exit(" + exit + ")");
-        } catch (Exception e) {
-            log.warn("Failed to load Media:", e);
-        }
+        String[] cmdarray = { executable, "-cdinfo", "--drivename", driveLetter};
+        return super.check(cmdarray, "not writeable");
     }
 
     private boolean nerocmd(String option, String match)
@@ -420,5 +80,34 @@ public class NeroCmdService extends AbstractMediaWriterService {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
         }
+    }
+
+    protected String[] makeBurnCmd(File isoImageFile) {
+        ArrayList cmd = new ArrayList();
+        cmd.add(executable);
+        cmd.add("--write");
+        cmd.add("--drivename");
+        cmd.add(driveLetter);
+        if (!simulate) cmd.add("--real");
+        if (dvd) cmd.add("--dvd");
+        cmd.add("--image");
+        cmd.add(isoImageFile.getAbsolutePath());
+        if (writeSpeed >= 0) {
+	        cmd.add("--speed");
+	        cmd.add(String.valueOf(writeSpeed));
+        }
+        if (!eject && !verify) cmd.add("--disable_eject");
+        if (!multiSession) cmd.add("--close_session");
+        return (String[]) cmd.toArray(new String[cmd.size()]);
+    }
+
+    protected String[] makeEjectCmd() {
+        return new String[] { executable, "--eject", "--drivename", 
+                driveLetter};
+    }
+
+    protected String[] makeLoadCmd() {
+        return new String[] { executable, "--load", "--drivename",
+                driveLetter};
     }
 }
