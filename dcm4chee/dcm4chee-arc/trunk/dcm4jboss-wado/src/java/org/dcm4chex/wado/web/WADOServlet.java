@@ -74,10 +74,16 @@ public class WADOServlet extends HttpServlet {
 		} else if ( iErr == WADORequestObject.OK ) { 
 			WADOResponseObject respObject = delegate.getWADOObject( reqObject );
 			int returnCode = respObject.getReturnCode();
-			if ( returnCode != HttpServletResponse.SC_OK ) {
-				sendError( response, returnCode, respObject.getErrorMessage() );
-			} else {
+			if ( returnCode == HttpServletResponse.SC_OK ) {
 				sendWADOFile( response, respObject );
+			} else if ( returnCode == HttpServletResponse.SC_TEMPORARY_REDIRECT ) {
+				try {
+					response.sendRedirect( respObject.getErrorMessage() ); //error message contains redirect host.
+				} catch (IOException e) {
+					sendError( response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: cant send redirect to client! Redirect to host "+respObject.getErrorMessage()+" failed!" );
+				}
+			} else {
+				sendError( response, returnCode, respObject.getErrorMessage() );
 			}
 		} else {
 			sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Error: Please check URL parameter!" );
