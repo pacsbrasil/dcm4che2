@@ -49,6 +49,8 @@ public interface Association {
     
     public String getAcceptedTransferSyntaxUID(int pcid);
     
-    public List getAcceptedPresContext(String asuid);
+    public PresContext getAcceptedPresContext(String asuid, String tsuid);
+    
+    public int nextMsgID();
 }
 

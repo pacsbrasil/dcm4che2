@@ -105,21 +105,21 @@ final class FsmImpl {
         return pc.getTransferSyntaxUID();
     }
     
-    final List getAcceptedPresContext(String asuid) {
+    final PresContext getAcceptedPresContext(String asuid, String tsuid) {
         if (ac == null) {
             throw new IllegalStateException(state.toString());
         }
-        LinkedList retval = new LinkedList();
         for (Iterator it = rq.iteratePresContext(); it.hasNext();) {
             PresContext rqpc = (PresContext)it.next();
             if (asuid.equals(rqpc.getAbstractSyntaxUID())) {
                 PresContext acpc = ac.getPresContext(rqpc.pcid());
-                if (acpc != null && acpc.result() == PresContext.ACCEPTANCE) {
-                    retval.add(acpc);
+                if (acpc != null && acpc.result() == PresContext.ACCEPTANCE
+                        && tsuid.equals(acpc.getTransferSyntaxUID())) {
+                    return acpc;
                 }
             }
         }
-        return retval;
+        return null;
     }
     
     private synchronized void changeState(State state) {

@@ -30,6 +30,7 @@ import org.dcm4che.data.DcmHandler;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.PersonName;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 
 import org.xml.sax.helpers.DefaultHandler;
@@ -727,8 +728,8 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
             case VRs.UN:
                 return setUNf(tag);
             default:
-                throw new IllegalArgumentException(StringUtils.promptTag(tag)
-                                    + " " + StringUtils.promptVR(vr));
+                throw new IllegalArgumentException(Tags.toString(tag)
+                                    + " " + VRs.toString(vr));
         }
     }
 
@@ -785,8 +786,8 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
             case VRs.UT:
                 return set(StringElement.createUT(tag, value));
             default:
-                throw new IllegalArgumentException(StringUtils.promptTag(tag)
-                                    + " " + StringUtils.promptVR(vr));
+                throw new IllegalArgumentException(Tags.toString(tag)
+                                    + " " + VRs.toString(vr));
         }
     }
     

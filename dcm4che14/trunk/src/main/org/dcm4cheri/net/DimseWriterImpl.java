@@ -33,7 +33,7 @@ import java.io.*;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-public class DimseWriterImpl {
+final class DimseWriterImpl {
 
     private final FsmImpl fsm;
     private PDataTFImpl pDataTF = null;
@@ -48,8 +48,8 @@ public class DimseWriterImpl {
     }
     
     public synchronized void write(Dimse dimse) throws IOException {
-        int pcid = dimse.pcid();
-        String tsUID = fsm.getTransferSyntaxUID(pcid);
+        pcid = dimse.pcid();
+        String tsUID = fsm.getAcceptedTransferSyntaxUID(pcid);
         if (tsUID == null) {
             throw new IllegalStateException();
         }
@@ -73,10 +73,10 @@ public class DimseWriterImpl {
                 out.close();
             }                
         }
-        flush();
+        flushPDataTF();
     }
     
-    public void flush() throws IOException {
+    public void flushPDataTF() throws IOException {
         boolean open = pDataTF.isOpenPDV();
         if (open) {
             pDataTF.closePDV(false);
@@ -84,7 +84,8 @@ public class DimseWriterImpl {
         if (!pDataTF.isEmpty()) {
             fsm.write(pDataTF);
         }
-        pDataTF = new PDataTFImpl(fsm.getMaxLength()); 
+        pDataTF.clear();
+//        pDataTF = new PDataTFImpl(fsm.getMaxLength()); 
         if (open) {
             pDataTF.openPDV(pcid, cmd);
         }
@@ -93,18 +94,18 @@ public class DimseWriterImpl {
     private void closeStream() throws IOException {
         pDataTF.closePDV(true);
         if (!cmd) {
-            flush();
+            flushPDataTF();
         }
     }
 
     private class PDataTFOutputStream extends OutputStream {
-        public synchronized void write(int b) throws IOException {
+        public final void write(int b) throws IOException {
             if (pDataTF.free() == 0) {
-                flush();
+                flushPDataTF();
             }
             pDataTF.write(b);
         }
-        public synchronized void write(byte b[], int off, int len)
+        public final void write(byte b[], int off, int len)
                 throws IOException {
             if (len == 0) {
                 return;
@@ -117,10 +118,10 @@ public class DimseWriterImpl {
                 if (n == len) {
                     return;
                 }
-                flush();
+                flushPDataTF();
             }
         }
-        public synchronized void close() throws IOException {
+        public void close() throws IOException {
             closeStream();
         }
     }

@@ -36,6 +36,8 @@ public interface PDataTF extends PDU {
 
     public int free();
     
+    public void clear();
+
     public void openPDV(int pcid, boolean cmd);
 
     public void closePDV(boolean last);

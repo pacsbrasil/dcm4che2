@@ -26,6 +26,7 @@ package org.dcm4cheri.data;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 
 import java.nio.ByteBuffer;
@@ -101,7 +102,7 @@ class DcmElementImpl implements org.dcm4che.data.DcmElement {
     }
     
     static String toString(int tag, int vr, int vm, int len) {
-        return StringUtils.promptTag(tag) + " " + StringUtils.promptVR(vr)
+        return Tags.toString(tag) + " " + VRs.toString(vr)
                 + " *" + vm + " #" + len;
     }
         

@@ -21,21 +21,13 @@
  *                                                                           *
  *****************************************************************************/
 
-import org.dcm4che.net.Association;
-import org.dcm4che.net.AAssociateRQ;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AssociationFactory;
-import org.dcm4che.net.Dimse;
-import org.dcm4che.net.PDU;
-import org.dcm4che.data.Command;
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmParserFactory;
-import org.dcm4che.data.DcmParser;
-import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.*;
+import org.dcm4che.data.*;
+import org.dcm4che.dict.*;
 import org.dcm4che.util.DcmURL;
 
 import java.io.*;
+import java.nio.ByteOrder;
 import java.net.*;
 import java.util.*;
 import gnu.getopt.*;
@@ -46,9 +38,11 @@ import gnu.getopt.*;
  */
 public class DcmSnd {
 
-    private static final AssociationFactory assocFact = 
+    private static final UIDDictionary uidDict = 
+            DictionaryFactory.getInstance().getDefaultUIDDictionary();
+    private static final AssociationFactory aFact = 
             AssociationFactory.getInstance();
-    private static final DcmObjectFactory dataFact = 
+    private static final DcmObjectFactory dFact = 
             DcmObjectFactory.getInstance();
     private static final DcmParserFactory pFact = 
             DcmParserFactory.getInstance();
@@ -135,7 +129,9 @@ public class DcmSnd {
     private int assocTO = 0;
     private int dimseTO = 0;
     private int releaseTO = 0;
-    private AAssociateRQ assocRQ = assocFact.newAAssociateRQ();
+    private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
+    private int bufferSize = 2048;
+    private byte[] buffer = null;
 
     /** Creates a new instance of DcmDir */
     public DcmSnd() {
@@ -150,11 +146,11 @@ public class DcmSnd {
     public void echo() throws IOException {
         final int pcid = 1;
         assocRQ.addPresContext(
-            assocFact.newPresContext(pcid, UIDs.Verification, DEF_TS));
+            aFact.newPresContext(pcid, UIDs.Verification, DEF_TS));
         long t1 = System.currentTimeMillis();
         int count = 0;
         for (int i = 0; i < repeatWhole; ++i) {
-            Association assoc = assocFact.newRequestor(
+            Association assoc = aFact.newRequestor(
                     new Socket(url.getHost(), url.getPort()), null);
             PDU assocAC = assoc.connect(assocRQ, assocTO);
             if (assocAC instanceof AAssociateAC) {
@@ -163,8 +159,8 @@ public class DcmSnd {
                           + " was not accepted by " + assocRQ.getCalledAET());
                 }
                 else for (int j = 0; j < repeatSingle; ++j, ++count) {
-                    assoc.write(assocFact.newDimse(pcid,
-                            dataFact.newCommand().initCEchoRQ(j)));
+                    assoc.write(aFact.newDimse(pcid,
+                            dFact.newCommand().initCEchoRQ(j)));
                     Dimse rsp = assoc.read(dimseTO);
                 }
                 PDU releaseRP = assoc.release(releaseTO);
@@ -176,23 +172,26 @@ public class DcmSnd {
     }
 
     public void send(String[] args, int offset) throws IOException {
+        if (bufferSize > 0) {
+            buffer = new byte[bufferSize];
+        }
         int pcid = 1;
         for (int i = 0; i < IMAGE_STORE_AS.length; ++i) {
-            assocRQ.addPresContext(assocFact.newPresContext(
+            assocRQ.addPresContext(aFact.newPresContext(
                     pcid, IMAGE_STORE_AS[i], NATIVE_TS));
             ++pcid;
             ++pcid;
-            assocRQ.addPresContext(assocFact.newPresContext(
+            assocRQ.addPresContext(aFact.newPresContext(
                     pcid, IMAGE_STORE_AS[i], JPEG_LL_TS));
             ++pcid;
             ++pcid;
-            assocRQ.addPresContext(assocFact.newPresContext(
+            assocRQ.addPresContext(aFact.newPresContext(
                     pcid, IMAGE_STORE_AS[i], JPEG_BL_TS));
             ++pcid;
             ++pcid;
         }
         for (int i = 0; i < NON_IMAGE_STORE_AS.length; ++i) {
-            assocRQ.addPresContext(assocFact.newPresContext(
+            assocRQ.addPresContext(aFact.newPresContext(
                     pcid, NON_IMAGE_STORE_AS[i], NATIVE_TS));
             ++pcid;
             ++pcid;
@@ -201,7 +200,7 @@ public class DcmSnd {
         long t1 = System.currentTimeMillis();
         Result res = new Result();
         for (int i = 0; i < repeatWhole; ++i) {
-            Association assoc = assocFact.newRequestor(
+            Association assoc = aFact.newRequestor(
                     new Socket(url.getHost(), url.getPort()), null);
             PDU assocAC = assoc.connect(assocRQ, assocTO);
             if (assocAC instanceof AAssociateAC) {
@@ -232,7 +231,7 @@ public class DcmSnd {
             throws IOException {
         if (!file.isDirectory()) {
             for (int i = 0; i < repeatSingle; ++i) {                
-                send(assoc, file, res);
+                sendFile(assoc, file, res);
             }
             return;
         }
@@ -243,22 +242,233 @@ public class DcmSnd {
     }
     
     private void sendFile(Association assoc, File file, Result res)
-            throws IOException {        
-    }
+            throws IOException {
+        InputStream in = null;
+        DcmParser parser = null;
+        Dataset ds = null;
+        try {
+            in = new BufferedInputStream(new FileInputStream(file));
+            parser = pFact.newDcmParser(in);
+            FileFormat format = parser.detectFileFormat();
+            if (format != null) {
+                ds = dFact.newDataset();
+                parser.setDcmHandler(ds.getDcmHandler());
+                parser.parseDcmFile(format, Tags.PixelData);
+            } else {
+                System.out.println("Unrecogniced format of " + file);
+            }            
+        } catch (IOException e) {
+            System.out.println("Could not read " + file + ": "
+                    + e.getMessage());
+            ds = null;
+        }
+        try {
+            if (ds != null) {
+                sendDataset(assoc, file, parser, ds, res);
 
+            }
+        } finally {
+            if (in != null) {
+                try { in.close(); } catch (IOException ignore) {};
+            }
+        }
+    }
+    
+    private boolean sendDataset(Association assoc, File file,
+            DcmParser parser, Dataset ds, Result res) throws IOException {
+        String sopInstUID = ds.getString(Tags.SOPInstanceUID);
+        if (sopInstUID == null) {
+            System.out.println("Missing SOP Instance UID - " + file);
+            return false;
+        }
+        String sopClassUID = ds.getString(Tags.SOPClassUID);
+        if (sopClassUID == null) {
+            System.out.println("Missing SOP Class UID - " + file);
+            return false;
+        }
+        PresContext pc = null;
+        if (parser.getDcmDecodeParam().encapsulated) {
+            String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
+            if ((pc = assoc.getAcceptedPresContext(sopClassUID, tsuid))
+                    == null) {
+                System.out.println( 
+                        "No Presentation Context negotiated to store "
+                        + uidDict.lookup(sopClassUID) + " with TS: "
+                        + uidDict.lookup(tsuid) + " - " + file);
+                return false;
+            }
+        } else if ((pc = assoc.getAcceptedPresContext(sopClassUID,
+                    UIDs.ImplicitVRLittleEndian)) == null
+                && (pc = assoc.getAcceptedPresContext(sopClassUID,
+                    UIDs.ExplicitVRLittleEndian)) == null
+                && (pc = assoc.getAcceptedPresContext(sopClassUID,
+                    UIDs.ExplicitVRBigEndian)) == null) {
+            System.out.println( 
+                    "No Presentation Context negotiated to store "
+                    + uidDict.lookup(sopClassUID) + " - " + file);
+            return false;
+                    
+        }
+        assoc.write(aFact.newDimse(pc.pcid(),
+                dFact.newCommand().initCStoreRQ(assoc.nextMsgID(),
+                    sopClassUID, sopInstUID, priority),
+                new MyDataSource(parser, ds, buffer)));
+        long t1 = System.currentTimeMillis();
+        Dimse rsp = assoc.read(dimseTO);
+        res.wait4Rsp += System.currentTimeMillis() - t1;
+        res.sentBytes += parser.getStreamPosition();
+        ++res.sentCount;
+        System.out.print('.');
+        return true;
+    }
+    
+    private static final class MyDataSource implements DataSource {
+        final DcmParser parser;
+        final Dataset ds;
+        final byte[] buffer;
+        MyDataSource(DcmParser parser, Dataset ds, byte[] buffer) {
+            this.parser = parser;
+            this.ds = ds;
+            this.buffer = buffer;
+        }
+        public void writeTo(OutputStream out, String tsUID)
+                throws IOException {
+            DcmEncodeParam netParam =
+                    (DcmEncodeParam)DcmDecodeParam.valueOf(tsUID);
+            ds.writeDataset(out, netParam);
+            if (parser.getReadTag() == Tags.PixelData) {
+                writeTag(netParam.byteOrder, out, Tags.PixelData);
+                if (netParam.explicitVR) {
+                    writeVR(out, parser.getReadVR());
+                }
+                int pxlen = parser.getReadLength();
+                DcmDecodeParam fileParam = parser.getDcmDecodeParam();
+                writeLen(netParam.byteOrder, out, pxlen);
+                if (pxlen == -1) {
+                    parser.parseHeader();
+                    while (parser.getReadTag() == Tags.Item) {
+                        writeTag(netParam.byteOrder, out, Tags.Item);
+                        int itemLen = parser.getReadLength();
+                        writeLen(netParam.byteOrder, out, itemLen);
+                        copy(parser.getInputStream(), out, itemLen, false, buffer);
+                    }
+                    if (parser.getReadTag() != Tags.SeqDelimitationItem) {
+                        throw new DcmParseException("Unexpected Tag:"
+                                + Tags.toString(parser.getReadTag()));
+                    }
+                    if (parser.getReadLength() != 0) {
+                        throw new DcmParseException("(fffe,e0dd), Length:"
+                                + parser.getReadLength());
+                    }
+                    writeTag(netParam.byteOrder, out, Tags.SeqDelimitationItem);
+                    writeLen(netParam.byteOrder, out, 0);                                
+                } else {
+                    copy(parser.getInputStream(), out, pxlen,
+                            fileParam.byteOrder != netParam.byteOrder
+                            && parser.getReadVR() == VRs.OW, buffer);
+                }
+                ds.clear();
+                parser.parseDataset(fileParam, -1);
+                ds.writeDataset(out, netParam);
+            }
+        }
+    }
+    
+    private static void writeTag(ByteOrder order, OutputStream out, int tag)
+            throws IOException {
+        if (order == ByteOrder.LITTLE_ENDIAN) {
+            out.write(tag >> 16);
+            out.write(tag >> 24);
+            out.write(tag >> 0);
+            out.write(tag >> 8);
+        } else { // order == ByteOrder.BIG_ENDIAN
+            out.write(tag >> 24);
+            out.write(tag >> 16);
+            out.write(tag >> 8);
+            out.write(tag >> 0);
+        }
+    }
+                                
+    private static void writeVR(OutputStream out, int vr) throws IOException {
+        out.write(vr >> 8);
+        out.write(vr >> 0);
+        out.write(0);
+        out.write(0);
+    }
+    
+    private static void writeLen(ByteOrder order, OutputStream out, int len)
+            throws IOException {
+        if (order == ByteOrder.LITTLE_ENDIAN) {
+            out.write(len >> 0);
+            out.write(len >> 8);
+            out.write(len >> 16);
+            out.write(len >> 24);
+        } else { // order == ByteOrder.BIG_ENDIAN
+            out.write(len >> 24);
+            out.write(len >> 16);
+            out.write(len >> 8);
+            out.write(len >> 0);
+        }
+    }
+    
+    private static void copy(InputStream in, OutputStream out, int len,
+            boolean swap, byte[] buffer) throws IOException {
+        if (swap && (len & 1) != 0) {
+            throw new DcmParseException("Illegal length of OW Pixel Data: "
+                    + len);
+        }
+        if (buffer == null) {
+            if (swap) {
+                int tmp;
+                for (int i = 0; i < len; ++i,++i) {
+                    tmp = in.read();
+                    out.write(in.read());
+                    out.write(tmp);
+                }
+            } else {
+                for (int i = 0; i < len; ++i) {
+                    out.write(in.read());
+                }
+            }
+        } else {
+            byte tmp;
+            int c, remain = len;
+            while (remain > 0) {
+                c = in.read(buffer, 0, Math.min(buffer.length, remain));
+                if (swap) {
+                    if ((c & 1) != 0) {
+                        buffer[c++] = (byte)in.read();
+                    }
+                    for (int i = 0; i < c; ++i,++i) {
+                        tmp = buffer[i];
+                        buffer[i] = buffer[i+1];
+                        buffer[i+1] = tmp;
+                    }
+                }
+                out.write(buffer, 0, c);
+                remain -= c;
+            }
+        }
+    }
+    
    /**
     * @param args the command line arguments
     */
     public static void main (String args[]) throws Exception {
         LongOpt[] longopts = new LongOpt[0];
-        Getopt g = new Getopt("dcmsnd.jar", args, "L:P:r:R:", longopts, true);
+        Getopt g = new Getopt("dcmsnd.jar", args, "L:b:P:r:R:", longopts, true);
         
         DcmSnd dcmsnd = new DcmSnd();
+        int buflen = 2048;
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {                
                 case 'L':
                     dcmsnd.assocRQ.setMaxLength(Integer.parseInt(g.getOptarg()));
+                    break;
+                case 'b':
+                    dcmsnd.bufferSize =
+                            Integer.parseInt(g.getOptarg()) & 0xfffffffe;
                     break;
                 case 'r':
                     dcmsnd.repeatSingle = Integer.parseInt(g.getOptarg());
@@ -319,6 +529,8 @@ public class DcmSnd {
 "\n" +
 "Options:\n" +
 " -L maxLength  Set maximal length of receiving PDUs [default=16352],\n" +
+" -b buffer     Set buffer size used for reading pixel data from file,\n" +
+"               [default=2048]. Use a value of 0 to disable buffering,\n" +
 " -P priority   Set priority used in storage requests:\n" +
 "                 0 - normal [=default]\n" +
 "                 1 - high\n" +

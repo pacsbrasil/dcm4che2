@@ -125,7 +125,7 @@ class SAXHandlerAdapter extends org.xml.sax.helpers.DefaultHandler {
              throws IOException {
         handler.startElement(
                         Integer.parseInt(tag,16),
-                        vr = StringUtils.parseVR(vrStr),
+                        vr = VRs.valueOf(vrStr),
                         pos != null ? Integer.parseInt(pos) : -1);
     }
     

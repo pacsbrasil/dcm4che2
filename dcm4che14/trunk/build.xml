@@ -378,7 +378,7 @@
     <jar jarfile="${build.jars}/demo/dcmsnd.jar"
          manifest="${source.demo}/net/dcmsnd.mf">
       <fileset dir="${build.classes}">
-        <include name="DcmSnd.class"/>
+        <include name="DcmSnd*.class"/>
       </fileset>
     </jar>
 

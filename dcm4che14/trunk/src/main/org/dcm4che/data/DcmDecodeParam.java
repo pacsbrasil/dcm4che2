@@ -38,35 +38,42 @@ public class DcmDecodeParam {
     
     public final boolean deflated;
     
+    public final boolean encapsulated;
+
     public DcmDecodeParam(ByteOrder byteOrder, boolean explicitVR,
-            boolean deflated) {
+            boolean deflated, boolean encapsulated) {
         if (byteOrder == null)
             throw new NullPointerException();
         this.byteOrder = byteOrder;
         this.explicitVR = explicitVR;
         this.deflated = deflated;
+        this.encapsulated = encapsulated;
     }
 
     public String toString() {
         return (explicitVR ? "explVR-" : "implVR-")
             + byteOrder.toString()
-            + (deflated ? " deflated" : "");
+            + (deflated ? " deflated" : "")
+            + (encapsulated ? " encapsulated" : "");
     }
     
     public final static DcmEncodeParam IVR_LE = new DcmEncodeParam(
-            ByteOrder.LITTLE_ENDIAN, false, false, false, false, false);
+            ByteOrder.LITTLE_ENDIAN, false, false, false, false, false, false);
 
     public final static DcmEncodeParam IVR_BE = new DcmEncodeParam(
-            ByteOrder.BIG_ENDIAN, false, false, true, true, true);
+            ByteOrder.BIG_ENDIAN, false, false, false, true, true, true);
 
     public final static DcmEncodeParam EVR_LE = new DcmEncodeParam(
-            ByteOrder.LITTLE_ENDIAN, true, false, true, true, true);
+            ByteOrder.LITTLE_ENDIAN, true, false, false, true, true, true);
 
     public final static DcmEncodeParam EVR_BE = new DcmEncodeParam(
-            ByteOrder.BIG_ENDIAN, true, false, true, true, true);
+            ByteOrder.BIG_ENDIAN, true, false, false, true, true, true);
 
     public final static DcmEncodeParam DEFL_EVR_LE = new DcmEncodeParam(
-            ByteOrder.LITTLE_ENDIAN, true, true, true, true, true);
+            ByteOrder.LITTLE_ENDIAN, true, true, false, true, true, true);
+
+    public final static DcmEncodeParam ENCAPS_EVR_LE = new DcmEncodeParam(
+            ByteOrder.LITTLE_ENDIAN, true, false, true, true, true, true);
 
     public final static DcmEncodeParam valueOf(String tsuid) {
         if ("1.2.840.10008.1.2".equals(tsuid))
@@ -77,6 +84,6 @@ public class DcmDecodeParam {
             return DEFL_EVR_LE;
         if ("1.2.840.10008.1.2.2".equals(tsuid))
             return EVR_BE;
-        return EVR_LE;
+        return ENCAPS_EVR_LE;
     }
 }

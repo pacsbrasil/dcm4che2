@@ -23,6 +23,7 @@
 
 package org.dcm4cheri.net;
 import org.dcm4che.net.*;
+import org.dcm4che.dict.Tags;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -39,6 +40,7 @@ final class AssociationImpl implements Association {
     private final DimseReaderImpl reader;
     private final DimseWriterImpl writer;
     private DimseDispatcher dispatcher;
+    private int msgID = 0;
 
     /** Creates a new instance of AssociationImpl */
     public AssociationImpl(Socket s, boolean requestor,
@@ -48,6 +50,10 @@ final class AssociationImpl implements Association {
         this.writer = new DimseWriterImpl(fsm);
     }
         
+    public final int nextMsgID() {
+        return ++msgID;
+    }
+
     public final void setTCPCloseTimeout(int tcpCloseTimeout) {
         fsm.setTCPCloseTimeout(tcpCloseTimeout);
     }
@@ -66,10 +72,17 @@ final class AssociationImpl implements Association {
     }
     
     public final Dimse read(int timeout) throws IOException  {
-        return reader.read(timeout);
+        Dimse dimse = reader.read(timeout);
+        msgID = Math.max(
+                dimse.getCommand().getInt(Tags.MessageID, msgID),
+                msgID);
+        return dimse;
     }
 
     public final void write(Dimse dimse) throws IOException  {
+         msgID = Math.max(
+                dimse.getCommand().getInt(Tags.MessageID, msgID),
+                msgID);
          writer.write(dimse);
     }
 
@@ -86,7 +99,7 @@ final class AssociationImpl implements Association {
         return fsm.getAcceptedTransferSyntaxUID(pcid);
     }
     
-    public final List getAcceptedPresContext(String asuid) {
-        return fsm.getAcceptedPresContext(asuid);
+    public final PresContext getAcceptedPresContext(String asuid, String tsuid) {
+        return fsm.getAcceptedPresContext(asuid, tsuid);
     }
 }

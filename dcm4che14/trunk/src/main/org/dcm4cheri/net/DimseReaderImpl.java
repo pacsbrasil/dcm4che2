@@ -58,7 +58,7 @@ final class DimseReaderImpl {
             abort("Command PDV expected, but received " + pdv);
         }
         int pcid = pdv.pcid();
-        String tsUID = fsm.getTransferSyntaxUID(pcid);
+        String tsUID = fsm.getAcceptedTransferSyntaxUID(pcid);
         if (tsUID == null) {
             abort("No Presentation Context negotiated with pcid:" + pcid);
         }

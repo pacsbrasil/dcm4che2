@@ -70,6 +70,29 @@ public class Tags {
     private Tags() {
     }
 
+    public static StringBuffer toHexString(StringBuffer sb, int v, int l) {
+        String hex = Integer.toHexString(v);
+        for (int i = hex.length(); i &lt; l; ++i)
+            sb.append('0');
+        sb.append(hex);
+        return sb;
+    }
+
+    public static String toHexString(int v, int l) {
+        return toHexString(new StringBuffer(l),v,l).toString();
+    }
+
+    public static StringBuffer toString(StringBuffer sb, int tag) {
+        sb.append('(');
+        toHexString(sb, tag >>> 16, 4).append(',');
+        toHexString(sb, tag &amp; 0xffff, 4).append(')');
+        return sb;        
+    }
+
+    public static String toString(int tag) {
+        return toString(new StringBuffer(11),tag).toString();
+    }    
+
 </xsl:text>
 <xsl:apply-templates select="dictionary/elements/element"/>
 <xsl:text>}</xsl:text>

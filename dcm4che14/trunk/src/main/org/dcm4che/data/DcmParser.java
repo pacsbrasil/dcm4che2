@@ -29,6 +29,8 @@ import org.dcm4che.dict.VRMap;
 import org.xml.sax.ContentHandler;
 
 import java.io.IOException;
+import java.io.InputStream;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  *
@@ -36,6 +38,10 @@ import java.io.IOException;
  * @version 1.0.0
  */
 public interface DcmParser {
+
+    public InputStream getInputStream();
+
+    public ImageInputStream getImageInputStream();
 
     public long getStreamPosition();
     

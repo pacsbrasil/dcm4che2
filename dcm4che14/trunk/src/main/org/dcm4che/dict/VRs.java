@@ -44,6 +44,22 @@ public class VRs  {
      */
     private VRs() {}
   
+    public static String toString(int vr) {
+        return (vr == NONE
+                ? "NONE"
+                : new String(new byte[]{(byte)(vr>>8), (byte)(vr)}));
+    }
+
+    public static int valueOf(String str) {
+        if ("NONE".equals(str))
+            return VRs.NONE;
+        
+        if (str.length() != 2)
+            throw new IllegalArgumentException(str);
+        
+        return ((str.charAt(0) & 0xff) << 8) | (str.charAt(1) & 0xff);
+    }
+    
     /**
      * NULL element for VRs. Use as VR value for Data Elements, 
      * Item (FFFE,E000), Item Delimitation Item (FFFE,E00D), and

@@ -23,6 +23,7 @@
 
 package org.dcm4cheri.util;
 
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 
 import java.nio.ByteBuffer;
@@ -40,53 +41,14 @@ public class StringUtils {
     /** Prevent instances of Utility class */
     private StringUtils() {
     }
-
-    public static StringBuffer promptHex(StringBuffer sb, int v, int l) {
-        String hex = Integer.toHexString(v);
-        for (int i = hex.length(); i < l; ++i)
-            sb.append('0');
-        sb.append(hex);
-        return sb;
-    }
-
-    public static String promptHex(int v, int l) {
-        return promptHex(new StringBuffer(l),v,l).toString();
-    }
-
-    public static StringBuffer promptTag(StringBuffer sb, int tag) {
-        sb.append('(');
-        promptHex(sb, tag >>> 16, 4).append(',');
-        promptHex(sb, tag & 0xffff, 4).append(')');
-        return sb;        
-    }
-
-    public static String promptTag(int tag) {
-        return promptTag(new StringBuffer(11),tag).toString();
-    }    
-
-    public static String promptVR(int vr) {
-        return (vr == VRs.NONE
-                ? "NONE"
-                : new String(new byte[]{(byte)(vr>>8), (byte)(vr)}));
-    }
-
-    public static int parseVR(String str) {
-        if ("NONE".equals(str))
-            return VRs.NONE;
-        
-        if (str.length() != 2)
-            throw new IllegalArgumentException(str);
-        
-        return ((str.charAt(0) & 0xff) << 8) | (str.charAt(1) & 0xff);
-    }
     
     public static StringBuffer promptBytes(StringBuffer sb, byte[] data,
             int start, int length) {
         if (length == 0)
             return sb;
-        promptHex(sb, data[start] & 0xff, 2);
+        Tags.toHexString(sb, data[start] & 0xff, 2);
         for (int i = start+1, remain = length; --remain > 0; ++i)
-            promptHex(sb.append('\\'), data[i] & 0xff, 2);
+            Tags.toHexString(sb.append('\\'), data[i] & 0xff, 2);
         return sb;
     }
 
@@ -127,7 +89,7 @@ public class StringUtils {
             case VRs.US:
                 return promptUS(bb);
         }
-        throw new IllegalArgumentException("VR:" + promptVR(vr));
+        throw new IllegalArgumentException("VR:" + VRs.toString(vr));
     }
 
     public static String promptAT(ByteBuffer bb) {
@@ -137,11 +99,11 @@ public class StringUtils {
 
         StringBuffer sb = new StringBuffer(l);
         bb.rewind();
-        promptHex(sb, bb.getShort() & 0xffff, 4);
-        promptHex(sb, bb.getShort() & 0xffff, 4);
+        Tags.toHexString(sb, bb.getShort() & 0xffff, 4);
+        Tags.toHexString(sb, bb.getShort() & 0xffff, 4);
         while (bb.remaining() >= 4) {
-            promptHex(sb.append('\\'), bb.getShort() & 0xffff, 4);
-            promptHex(sb, bb.getShort() & 0xffff, 4);
+            Tags.toHexString(sb.append('\\'), bb.getShort() & 0xffff, 4);
+            Tags.toHexString(sb, bb.getShort() & 0xffff, 4);
         }                
         return sb.toString();        
     }
@@ -179,9 +141,9 @@ public class StringUtils {
         
         StringBuffer sb = new StringBuffer(l);
         bb.rewind();
-        promptHex(sb, bb.getShort() & 0xffff, 4);
+        Tags.toHexString(sb, bb.getShort() & 0xffff, 4);
         while (bb.remaining() >= 2)
-            promptHex(sb.append('\\'), bb.getShort() & 0xffff, 4);
+            Tags.toHexString(sb.append('\\'), bb.getShort() & 0xffff, 4);
                 
         return sb.toString();        
     }
@@ -262,7 +224,7 @@ public class StringUtils {
             case VRs.SL: case VRs.UL:
                 return parseSL_UL(str);
         }
-        throw new IllegalArgumentException("VR:" + promptVR(vr));
+        throw new IllegalArgumentException("VR:" + VRs.toString(vr));
     }
 
     static final String[] NULL_STRINGS = {};

@@ -25,6 +25,7 @@ package org.dcm4cheri.data;
 
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmHandler;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.TagDictionary;
 
@@ -140,8 +141,8 @@ class DcmHandlerAdapter implements org.dcm4che.data.DcmHandler {
         this.vr = vr;
         try {
             AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute("","tag","tag","",StringUtils.promptHex(tag, 8));
-            attrs.addAttribute("","vr","vr","",StringUtils.promptVR(vr));
+            attrs.addAttribute("","tag","tag","",Tags.toHexString(tag, 8));
+            attrs.addAttribute("","vr","vr","",VRs.toString(vr));
             attrs.addAttribute("","pos","pos","", "" + pos);
             if (dict != null) {
                 TagDictionary.Entry entry = dict.lookup(tag);

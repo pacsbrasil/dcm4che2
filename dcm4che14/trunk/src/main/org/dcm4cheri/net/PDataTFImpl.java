@@ -86,6 +86,15 @@ final class PDataTFImpl implements PDataTF {
         this.it = null;
     }
     
+    public void clear() {
+        if (it != null) {
+            throw new IllegalStateException("P-DATA-TF read only");
+        }
+        pdulen = 0;
+        wpos = 12;
+        pdvs.clear();
+    }        
+    
     public PDV readPDV() {
         if (it == null) {
             throw new IllegalStateException("P-DATA-TF write only");

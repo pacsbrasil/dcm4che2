@@ -39,9 +39,9 @@ public class DcmEncodeParam extends DcmDecodeParam {
     public final boolean undefItemLen;
 
     public DcmEncodeParam(ByteOrder byteOrder, boolean explicitVR,
-            boolean deflated, boolean skipGroupLen, boolean undefSeqLen,
-            boolean undefItemLen) {
-         super(byteOrder, explicitVR, deflated);
+            boolean deflated, boolean encapsulated,
+            boolean skipGroupLen, boolean undefSeqLen, boolean undefItemLen) {
+         super(byteOrder, explicitVR, deflated, encapsulated);
          this.skipGroupLen = skipGroupLen;
          this.undefSeqLen = undefSeqLen;
          this.undefItemLen = undefItemLen;

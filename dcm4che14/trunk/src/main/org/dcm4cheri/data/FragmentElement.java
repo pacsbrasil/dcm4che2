@@ -24,6 +24,7 @@
 
 package org.dcm4cheri.data;
 
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.data.*;
 
@@ -121,7 +122,7 @@ abstract class FragmentElement extends DcmElementImpl {
         public void addDataFragment(ByteBuffer data) {
             if ((data.limit() & 1) != 0) {
                 log.warning("Ignore odd length fragment of "
-                    + StringUtils.promptTag(tag) + " OW #" + data.limit());
+                    + Tags.toString(tag) + " OW #" + data.limit());
                 data = null;
             }
             super.addDataFragment(data);

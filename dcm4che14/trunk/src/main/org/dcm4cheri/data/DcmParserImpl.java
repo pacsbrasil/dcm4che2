@@ -29,6 +29,7 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParseException;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.TagDictionary;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.VRMap;
 
@@ -96,7 +97,15 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         }
         this.in = in;
     }
-    
+
+    public InputStream getInputStream() {
+        return (InputStream)in;
+    }
+
+    public ImageInputStream getImageInputStream() {
+        return (ImageInputStream)in;
+    }
+
     public final int getReadTag() {
         return rTag;
     }
@@ -173,8 +182,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     private String logMsg() {
-        return "rPos:" + rPos + " " + StringUtils.promptTag(rTag) 
-                + " " + StringUtils.promptVR(rVR)
+        return "rPos:" + rPos + " " + Tags.toString(rTag) 
+                + " " + VRs.toString(rVR)
                 + " #" + rLen;
     }
     
@@ -480,7 +489,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             return -1L;
         }
         if (itemtag != ITEM_TAG) {
-            throw new DcmParseException(StringUtils.promptTag(itemtag));
+            throw new DcmParseException(Tags.toString(itemtag));
         }
         if (log.isLoggable(Level.FINEST)) {
             log.finest("rpos:" + (rPos-8) + ",(fffe,e0dd)");
@@ -504,7 +513,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     private long doParse(int stopTag, int length) throws IOException {
         if (log.isLoggable(Level.FINEST)) {
             log.finest("rpos:" + rPos
-                    + ",stopTag:" + StringUtils.promptTag(stopTag)
+                    + ",stopTag:" + Tags.toString(stopTag)
                     + ",length:" + length);
         }
         long lread = 0;        
@@ -549,7 +558,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
 
     private long parseSequence(int vr, int sqLen) throws IOException {
         if (log.isLoggable(Level.FINEST)) {
-            log.finest("rPos:" + rPos + "," + StringUtils.promptVR(vr)
+            log.finest("rPos:" + rPos + "," + VRs.toString(vr)
                     + " #" + sqLen);
         }
         if (handler != null && unBuf == null)
@@ -578,7 +587,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                         break;
                     default:
                         throw new DcmParseException(
-                                StringUtils.promptTag(itemtag));
+                                Tags.toString(itemtag));
                 }
             } while (sqLen == -1 || lread < llen);
             if (sqLen != -1 && lread > llen)
@@ -593,7 +602,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             
     private long parseItem(int id, int vr, int itemlen) throws IOException {
         if (log.isLoggable(Level.FINEST)) {
-            log.finest("rPos:" + rPos + "," + StringUtils.promptVR(vr)
+            log.finest("rPos:" + rPos + "," + VRs.toString(vr)
                     + " #" + itemlen);
         }
         switch (vr) {
