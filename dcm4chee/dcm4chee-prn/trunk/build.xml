@@ -6,7 +6,7 @@
   <property file="build.properties" />
 
   <property name="name" value="jprint"/>
-  <property name="version" value="1.1.3"/>
+  <property name="version" value="1.2.0"/>
   <property name="javac.debug" value="on"/>
   <property name="javac.optimize" value="off"/>
 
@@ -310,6 +310,8 @@
         <include name="conf/annotation/*.adf"/>
         <include name="conf/calibration/**/*.jpg"/>
         <include name="conf/lut/*.lut"/>
+        <include name="conf/tls/*.p12"/>
+        <include name="conf/tls/*.jks"/>
       </fileset>
     </copy>
 
@@ -411,6 +413,8 @@
         <include name="conf/annotation/*.adf"/>
         <include name="conf/calibration/README"/>
         <include name="conf/lut/*.lut"/>
+        <include name="conf/tls/*.jks"/>
+        <include name="conf/tls/*.p12"/>
       </fileset>
       <fileset dir="${basedir}">
         <include name="lib/dcm4che.jar"/>

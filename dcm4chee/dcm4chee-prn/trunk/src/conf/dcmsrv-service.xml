@@ -37,6 +37,15 @@
     <attribute name="MaxClients">10</attribute>
     
     <!--
+    Specifies if server running in tls mode:
+    dicom           native dicom
+    dicom-tls       dicom over TLS
+    dicom-tls.3des  dicom over TLS with triple DES EDE CBC encryption
+    dicom-tls.nodes dicom over TLS without encryption
+    -->
+    <attribute name="ProtocolName">dicom</attribute>
+    
+    <!--
     Specifies TCP port on which the DICOM server is listening.
     -->
     <attribute name="Port">6104</attribute>
@@ -82,6 +91,28 @@
     Specifies maximal PDU package length for receiving PDUs.
     -->
     <attribute name="MaxPDULength">16352</attribute>
+    
+    <!--
+    Defines file containing key used in SSL handshake, when running in TLS mode.
+    Relative path names are resolved using jboss server directory as base directory.
+    -->
+    <attribute name="KeyFile">conf/tls/test_sys_2.p12</attribute>
+    
+    <!--
+    Defines password for access to key file, specified by attribute KeyFile 
+    -->
+    <attribute name="KeyPasswd">iheihe</attribute>
+    
+   <!--
+    Defines file containing accepted certificates, when running in TLS mode
+    Relative path names are resolved using jboss server directory as base directory.
+    -->
+    <attribute name="CacertsFile">conf/tls/cacerts.jks</attribute>
+    
+    <!--
+    Defines password for access to cacerts file, specified by attribute CacertsFile 
+    -->
+    <attribute name="CacertsPasswd">iheihe</attribute>
   </mbean>
 
 </server>
