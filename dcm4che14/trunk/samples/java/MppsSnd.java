@@ -103,6 +103,7 @@ public class MppsSnd implements PollDirSrv.Handler {
     private int dimseTimeout = 0;
     private int soCloseDelay = 500;
     private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
+    private boolean packPDVs = false;
     private SSLContextAdapter tls = null;
     private String[] cipherSuites = null;
     private PollDirSrv pollDirSrv = null;
@@ -117,6 +118,7 @@ public class MppsSnd implements PollDirSrv.Handler {
         new LongOpt("so-close-delay", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
+        new LongOpt("pack-pdvs", LongOpt.NO_ARGUMENT, null, 'k'),
         new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -143,7 +145,10 @@ public class MppsSnd implements PollDirSrv.Handler {
                 case 2:
                     cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
                     break;
-                case 'v':
+                case 'k':
+                    cfg.put("pack-pdvs", "true");
+                    break;
+                 case 'v':
                     exit(messages.getString("version"), false);
                 case 'h':
                     exit(messages.getString("usage"), false);
@@ -199,6 +204,7 @@ public class MppsSnd implements PollDirSrv.Handler {
         assoc.setAcTimeout(acTimeout);
         assoc.setDimseTimeout(dimseTimeout);
         assoc.setSoCloseDelay(soCloseDelay);
+        assoc.setPackPDVs(packPDVs);
         PDU assocAC = assoc.connect(assocRQ);
         if (!(assocAC instanceof AAssociateAC)) {
             return null;
@@ -416,6 +422,8 @@ public class MppsSnd implements PollDirSrv.Handler {
             Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
         assocRQ.setAsyncOpsWindow(aFact.newAsyncOpsWindow(
             Integer.parseInt(cfg.getProperty("max-op-invoked", "0")),1));
+        packPDVs = "true".equalsIgnoreCase(
+            cfg.getProperty("pack-pdvs", "false"));
         if (echo) {
             assocRQ.addPresContext(
             aFact.newPresContext(PCID_ECHO, UIDs.Verification, DEF_TS));

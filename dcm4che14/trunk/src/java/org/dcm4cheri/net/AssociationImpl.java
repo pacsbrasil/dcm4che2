@@ -340,4 +340,18 @@ final class AssociationImpl implements Association {
         }
     }        
     
+    /** Getter for property packPDVs.
+     * @return Value of property packPDVs.
+     */
+    public boolean isPackPDVs() {
+        return writer.isPackPDVs();
+    }
+    
+    /** Setter for property packPDVs.
+     * @param packPDVs New value of property packPDVs.
+     */
+    public void setPackPDVs(boolean packPDVs) {
+        writer.setPackPDVs(packPDVs);
+    }
+    
 }

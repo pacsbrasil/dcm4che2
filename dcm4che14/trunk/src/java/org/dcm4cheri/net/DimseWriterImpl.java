@@ -39,6 +39,7 @@ final class DimseWriterImpl {
     private PDataTFImpl pDataTF = null;
     private int pcid;
     private boolean cmd;
+    private boolean packPDVs = false;
     
 //    PDataTFOutputStream pDataTFout = null;
 
@@ -67,6 +68,9 @@ final class DimseWriterImpl {
             out.close();
         }
         if (c.hasDataset()) {
+            if (!packPDVs) {
+                flushPDataTF();
+            }
             pDataTF.openPDV(pcid, cmd = false);
             out = new PDataTFOutputStream();
             try {
@@ -100,6 +104,20 @@ final class DimseWriterImpl {
         }
     }
 
+    /** Getter for property packPDVs.
+     * @return Value of property packPDVs.
+     */
+    public boolean isPackPDVs() {
+        return packPDVs;
+    }
+    
+    /** Setter for property packPDVs.
+     * @param packPDVs New value of property packPDVs.
+     */
+    public void setPackPDVs(boolean packPDVs) {
+        this.packPDVs = packPDVs;
+    }
+    
     private class PDataTFOutputStream extends OutputStream {
         public final void write(int b) throws IOException {
             if (pDataTF.free() == 0) {

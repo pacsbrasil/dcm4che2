@@ -169,4 +169,14 @@ public interface Association {
      */
     void setAcTimeout(int acTimeout);
     
+    /** Getter for property packPDVs.
+     * @return Value of property packPDVs.
+     */
+    boolean isPackPDVs();
+    
+    /** Setter for property packPDVs.
+     * @param packPDVs New value of property packPDVs.
+     */
+    void setPackPDVs(boolean packPDVs);
+    
 }

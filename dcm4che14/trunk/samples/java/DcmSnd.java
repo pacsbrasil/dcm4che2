@@ -111,6 +111,7 @@ public class DcmSnd implements PollDirSrv.Handler {
     private int dimseTimeout = 0;
     private int soCloseDelay = 500;
     private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
+    private boolean packPDVs = false;
     private int bufferSize = 2048;
     private byte[] buffer = null;
     private SSLContextAdapter tls = null;
@@ -132,6 +133,7 @@ public class DcmSnd implements PollDirSrv.Handler {
         new LongOpt("prior-low", LongOpt.NO_ARGUMENT, null, 'p'),
         new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
+        new LongOpt("pack-pdvs", LongOpt.NO_ARGUMENT, null, 'k'),
         new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("set", LongOpt.REQUIRED_ARGUMENT, null, 's'),
         new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -162,7 +164,7 @@ public class DcmSnd implements PollDirSrv.Handler {
         Getopt g = new Getopt("dcmsnd", args, "", LONG_OPTS);
         
         Configuration cfg = new Configuration(
-        DcmSnd.class.getResource("dcmsnd.cfg"));
+            DcmSnd.class.getResource("dcmsnd.cfg"));
         
         int c;
         while ((c = g.getopt()) != -1) {
@@ -175,6 +177,9 @@ public class DcmSnd implements PollDirSrv.Handler {
                     break;
                 case 'p':
                     cfg.put("prior", "2");
+                    break;
+                case 'k':
+                    cfg.put("pack-pdvs", "true");
                     break;
                 case 's':
                     set(cfg,  g.getOptarg());
@@ -207,6 +212,8 @@ public class DcmSnd implements PollDirSrv.Handler {
     DcmSnd(Configuration cfg, DcmURL url, int argc) {
         this.url = url;
         this.priority = Integer.parseInt(cfg.getProperty("prior", "0"));
+        this.packPDVs = "true".equalsIgnoreCase(
+            cfg.getProperty("pack-pdvs", "false"));
         this.bufferSize = Integer.parseInt(cfg.getProperty("buf-len", "2048"))
             & 0xfffffffe;
         this.repeatWhole = Integer.parseInt(cfg.getProperty("repeat-assoc", "1"));
@@ -241,6 +248,7 @@ public class DcmSnd implements PollDirSrv.Handler {
         assoc.setAcTimeout(acTimeout);
         assoc.setDimseTimeout(dimseTimeout);
         assoc.setSoCloseDelay(soCloseDelay);
+        assoc.setPackPDVs(packPDVs);
         
         PDU assocAC = assoc.connect(assocRQ);
         if (!(assocAC instanceof AAssociateAC)) {
