@@ -168,7 +168,8 @@
          <test name="org.dcm4che.net.AReleaseRQTest" todir="${build.reports.dir}"/>
          <test name="org.dcm4che.net.AAbortTest" todir="${build.reports.dir}"/>
          
-         <test name="org.dcm4che.srom.SRDocumentFactoryTest" todir="${build.reports.dir}"/>         
+         <test name="org.dcm4che.srom.SRDocumentFactoryTest" todir="${build.reports.dir}"/>
+         <test name="org.dcm4che.srom.ReferencedContentTest" todir="${build.reports.dir}"/>
       </junit>
       <junitreport todir="${build.reports.dir}">
          <fileset dir="${build.reports.dir}" includes="TEST-*.xml"/>

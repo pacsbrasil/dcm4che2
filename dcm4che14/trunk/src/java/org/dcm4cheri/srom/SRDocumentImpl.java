@@ -74,8 +74,8 @@ class SRDocumentImpl extends KeyObjectImpl
                 ds.getString(Tags.SOPInstanceUID),
                 ds.getInt(Tags.InstanceNumber, -1),
                 ds.getDate(Tags.ObservationDateTime),
-                new TemplateImpl(ds.getItem(Tags.ContentTemplateSeq)),
-                new CodeImpl(ds.getItem(Tags.ConceptNameCodeSeq)),
+                TemplateImpl.newTemplate(ds.getItem(Tags.ContentTemplateSeq)),
+                CodeImpl.newCode(ds.getItem(Tags.ConceptNameCodeSeq)),
                 "SEPARATE".equals(ds.getString(Tags.ContinuityOfContent)));
         sr.init(ds);
         return sr;

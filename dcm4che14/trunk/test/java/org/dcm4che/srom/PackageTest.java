@@ -45,6 +45,7 @@ public class PackageTest extends Object {
     public static Test suite() {
         TestSuite suite= new TestSuite();
         suite.addTest(SRDocumentFactoryTest.suite());
+        suite.addTest(ReferencedContentTest.suite());
         return suite;
     }
 }
