@@ -479,7 +479,7 @@ public class MppsSnd implements PollDirSrv.Handler {
             }
             tls = SSLContextAdapter.getInstance();
             char[] keypasswd = 
-                cfg.getProperty("tls-key-passwd","dcm4che").toCharArray();
+                cfg.getProperty("tls-key-passwd","passwd").toCharArray();
             tls.setKey(
                 tls.loadKeyStore(
                     MppsSnd.class.getResource(
@@ -489,7 +489,7 @@ public class MppsSnd implements PollDirSrv.Handler {
             tls.setTrust(tls.loadKeyStore(
                 MppsSnd.class.getResource(
                     cfg.getProperty("tls-cacerts", "cacerts.jks")),
-                cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
+                cfg.getProperty("tls-cacerts-passwd", "passwd").toCharArray()));
             tls.init();
         } catch (Exception ex) {
            throw new RuntimeException("Could not initalize TLS configuration: ", ex);

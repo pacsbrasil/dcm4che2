@@ -242,7 +242,7 @@ public class Hl7Snd {
             }
             tls = SSLContextAdapter.getInstance();
             char[] keypasswd = 
-                cfg.getProperty("tls-key-passwd","dcm4che").toCharArray();
+                cfg.getProperty("tls-key-passwd","passwd").toCharArray();
             tls.setKey(
                 tls.loadKeyStore(
                     Hl7Snd.class.getResource(
@@ -252,7 +252,7 @@ public class Hl7Snd {
             tls.setTrust(tls.loadKeyStore(
                 Hl7Snd.class.getResource(
                     cfg.getProperty("tls-cacerts", "cacerts.jks")),
-                cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
+                cfg.getProperty("tls-cacerts-passwd", "passwd").toCharArray()));
             tls.init();
         } catch (Exception ex) {
            throw new RuntimeException("Could not initalize TLS configuration: ", ex);

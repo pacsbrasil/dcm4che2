@@ -116,7 +116,7 @@ public class Hl7Rcv implements HL7Service
             }
 
             tls = SSLContextAdapter.getInstance();
-            char[] keypasswd = cfg.getProperty("tls-key-passwd", "dcm4che").toCharArray();
+            char[] keypasswd = cfg.getProperty("tls-key-passwd", "passwd").toCharArray();
             tls.setKey(
                     tls.loadKeyStore(
                     Hl7Rcv.class.getResource(cfg.getProperty("tls-key", "identity.p12")),
@@ -124,7 +124,7 @@ public class Hl7Rcv implements HL7Service
                     keypasswd);
             tls.setTrust(tls.loadKeyStore(
                     Hl7Rcv.class.getResource(cfg.getProperty("tls-cacerts", "cacerts.jks")),
-                    cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
+                    cfg.getProperty("tls-cacerts-passwd", "passwd").toCharArray()));
             this.server.setServerSocketFactory(
                     tls.getServerSocketFactory(protocol.getCipherSuites()));
         } catch (Exception ex) {

@@ -121,6 +121,7 @@ public class DcmRcv extends DcmServiceBase
             new LongOpt("fs-uid", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("fs-file-id", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("fs-lazy-update", LongOpt.NO_ARGUMENT, null, 3),
+            new LongOpt("pack-pdvs", LongOpt.NO_ARGUMENT, null, 3),
             new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("dicom-tls", LongOpt.NO_ARGUMENT, null, 4),
             new LongOpt("dicom-tls.nodes", LongOpt.NO_ARGUMENT, null, 4),
@@ -165,7 +166,7 @@ public class DcmRcv extends DcmServiceBase
                     cfg.put(LONG_OPTS[g.getLongind()].getName(), g.getOptarg());
                     break;
                 case 3:
-                    cfg.put(LONG_OPTS[g.getLongind()].getName(), "<yes>");
+                    cfg.put(LONG_OPTS[g.getLongind()].getName(), "true");
                     break;
                 case 4:
                     cfg.put("protocol", LONG_OPTS[g.getLongind()].getName());
@@ -441,6 +442,8 @@ public class DcmRcv extends DcmServiceBase
                 Integer.parseInt(cfg.getProperty("dimse-timeout", "0")));
         handler.setSoCloseDelay(
                 Integer.parseInt(cfg.getProperty("so-close-delay", "500")));
+        handler.setPackPDVs(
+                "true".equalsIgnoreCase(cfg.getProperty("pack-pdvs", "false")));
     }
 
 
@@ -504,7 +507,7 @@ public class DcmRcv extends DcmServiceBase
             }
 
             tls = SSLContextAdapter.getInstance();
-            char[] keypasswd = cfg.getProperty("tls-key-passwd", "dcm4che").toCharArray();
+            char[] keypasswd = cfg.getProperty("tls-key-passwd", "passwd").toCharArray();
             tls.setKey(
                     tls.loadKeyStore(
                     DcmRcv.class.getResource(cfg.getProperty("tls-key", "identity.p12")),
@@ -512,7 +515,7 @@ public class DcmRcv extends DcmServiceBase
                     keypasswd);
             tls.setTrust(tls.loadKeyStore(
                     DcmRcv.class.getResource(cfg.getProperty("tls-cacerts", "cacerts.jks")),
-                    cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
+                    cfg.getProperty("tls-cacerts-passwd", "passwd").toCharArray()));
             this.server.setServerSocketFactory(
                     tls.getServerSocketFactory(protocol.getCipherSuites()));
         } catch (Exception ex) {

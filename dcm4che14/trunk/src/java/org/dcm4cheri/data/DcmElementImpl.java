@@ -1,25 +1,21 @@
-/*$Id$*/
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
- *                                                                           *
- *  This file is part of dcm4che.                                            *
- *                                                                           *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
+/*  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ *  This file is part of dcm4che.
+ *
+ *  This library is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 package org.dcm4cheri.data;
 
@@ -42,8 +38,9 @@ import org.apache.log4j.Logger;
 
 /**
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @since March 2002
+ * @version $Revision$ $Date$
  */
 class DcmElementImpl implements DcmElement {
     static final Logger log = Logger.getLogger(DcmElementImpl.class);
@@ -91,6 +88,7 @@ class DcmElementImpl implements DcmElement {
         return streamPos;
     }
     
+    
     public int hashCode() {
         return tag;
     }
@@ -99,7 +97,7 @@ class DcmElementImpl implements DcmElement {
         return (int)((tag & 0xffffffffL)
                 - ((DcmElementImpl)o).tag & 0xffffffffL);
     }
-        
+    
     public String toString() {
         return toString(tag, vr(), vm(), length(),
             StringUtils.promptValue(vr(), getByteBuffer(), 64));
@@ -108,6 +106,17 @@ class DcmElementImpl implements DcmElement {
     static String toString(int tag, int vr, int vm, int len, String val) {
         return DICT.toString(tag) + "," + VRs.toString(vr)
                 + ",*" + vm + ",#" + len + ",[" + val + "]" ;
+    }
+    
+    boolean match(DcmElement key, boolean ignoreCase, Charset keyCS, Charset dsCS) {
+        return key == null || (key.tag() == tag && key.vr() == vr()
+                && (isEmpty() || key.isEmpty()
+                || matchValue(key, ignoreCase, keyCS, dsCS)));
+    }
+
+    protected boolean matchValue(DcmElement key, boolean ignoreCase,
+            Charset keyCS, Charset dsCS) {
+        throw new UnsupportedOperationException("" + this);
     }
         
     public ByteBuffer getByteBuffer() {

@@ -1,25 +1,25 @@
-/*                                                                           *
- *  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG                             *
- *                                                                           *
- *  This file is part of dcm4che.                                            *
- *                                                                           *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+/*  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ *  This file is part of dcm4che.
+ *
+ *  This library is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.dcm4cheri.data;
 
 import java.awt.Rectangle;
+
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -30,24 +30,23 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
-
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.ImageOutputStream;
 import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DatasetSerializer;
 import org.dcm4che.data.DcmDecodeParam;
@@ -60,17 +59,16 @@ import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.image.ColorModelFactory;
-
 import org.xml.sax.ContentHandler;
-import javax.xml.transform.Transformer;
 
 /**
  *  Implementation of <code>Dataset</code> container objects.
  *
- * @author  gunter.zeilinger@tiani.com
- * @created  March, 2002
- * @version  $Revision$
- * @see  "DICOM Part 5: Data Structures and Encoding, 7. The Data Set"
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author     <a href="mailto:joseph@tiani.com">joseph foraci</a>
+ * @since      March 2002
+ * @version    $Revision$ $Date$
+ * @see        "DICOM Part 5: Data Structures and Encoding, 7. The Data Set"
  */
 abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
 {
@@ -133,8 +131,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Sets the fileMetaInfo attribute of the BaseDatasetImpl object
      *
-     * @param  fmi The new fileMetaInfo value
-     * @return  Description of the Return Value
+     * @param  fmi  The new fileMetaInfo value
+     * @return      Description of the Return Value
      */
     public final Dataset setFileMetaInfo(FileMetaInfo fmi)
     {
@@ -146,7 +144,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Gets the fileMetaInfo attribute of the BaseDatasetImpl object
      *
-     * @return  The fileMetaInfo value
+     * @return    The fileMetaInfo value
      */
     public FileMetaInfo getFileMetaInfo()
     {
@@ -157,7 +155,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @return  Description of the Return Value
+     * @return    Description of the Return Value
      */
     public String toString()
     {
@@ -179,8 +177,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  param Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  param  Description of the Parameter
+     * @return        Description of the Return Value
      */
     public int calcLength(DcmEncodeParam param)
     {
@@ -224,7 +222,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @return  Description of the Return Value
+     * @return    Description of the Return Value
      */
     public int length()
     {
@@ -243,9 +241,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  handler Description of the Parameter
-     * @param  param Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  handler          Description of the Parameter
+     * @param  param            Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void writeDataset(DcmHandler handler, DcmEncodeParam param)
         throws IOException
@@ -321,9 +319,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  out Description of the Parameter
-     * @param  param Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  out              Description of the Parameter
+     * @param  param            Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void writeDataset(OutputStream out, DcmEncodeParam param)
         throws IOException
@@ -340,9 +338,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  out Description of the Parameter
-     * @param  param Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  out              Description of the Parameter
+     * @param  param            Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void writeFile(OutputStream out, DcmEncodeParam param)
         throws IOException
@@ -359,9 +357,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  out Description of the Parameter
-     * @param  param Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  out              Description of the Parameter
+     * @param  param            Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void writeDataset(ImageOutputStream out, DcmEncodeParam param)
         throws IOException
@@ -398,9 +396,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  out Description of the Parameter
-     * @param  param Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  out              Description of the Parameter
+     * @param  param            Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void writeFile(ImageOutputStream out, DcmEncodeParam param)
         throws IOException
@@ -417,9 +415,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  ch Description of the Parameter
-     * @param  dict Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  ch               Description of the Parameter
+     * @param  dict             Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void writeDataset(ContentHandler ch, TagDictionary dict)
         throws IOException
@@ -431,9 +429,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  out Description of the Parameter
-     * @param  param Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  out              Description of the Parameter
+     * @param  param            Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void dumpDataset(OutputStream out, Map param)
         throws IOException
@@ -445,9 +443,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  w Description of the Parameter
-     * @param  param Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  w                Description of the Parameter
+     * @param  param            Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void dumpDataset(Writer w, Map param)
         throws IOException
@@ -480,9 +478,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  ch Description of the Parameter
-     * @param  dict Description of the Parameter
-     * @exception  IOException Description of the Exception
+     * @param  ch               Description of the Parameter
+     * @param  dict             Description of the Parameter
+     * @exception  IOException  Description of the Exception
      */
     public void writeFile(ContentHandler ch, TagDictionary dict)
         throws IOException
@@ -501,9 +499,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  fromTag Description of the Parameter
-     * @param  toTag Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  fromTag  Description of the Parameter
+     * @param  toTag    Description of the Parameter
+     * @return          Description of the Return Value
      */
     public Dataset subSet(int fromTag, int toTag)
     {
@@ -514,8 +512,8 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @param  filter Description of the Parameter
-     * @return  Description of the Return Value
+     * @param  filter  Description of the Parameter
+     * @return         Description of the Return Value
      */
     public Dataset subSet(Dataset filter)
     {
@@ -526,8 +524,38 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     /**
      *  Description of the Method
      *
-     * @return  Description of the Return Value
-     * @exception  java.io.ObjectStreamException Description of the Exception
+     * @param  keys          Description of the Parameter
+     * @param  ignorePNCase  Description of the Parameter
+     * @return               Description of the Return Value
+     */
+    public boolean match(Dataset keys, boolean ignorePNCase)
+    {
+        if (keys == null) {
+            return true;
+        }
+        Charset keyCS = keys.getCharset();
+        for (Iterator iter = keys.iterator(); iter.hasNext(); ) {
+            if (!match((DcmElementImpl) iter.next(), ignorePNCase, keyCS)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    private boolean match(DcmElementImpl key, boolean ignorePNCase, Charset keyCS)
+    {
+        DcmElementImpl e = (DcmElementImpl) get(key.tag());
+        return e == null || e.match(
+                key, ignorePNCase && e.vr() == VRs.PN, keyCS, getCharset());
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @return                                    Description of the Return Value
+     * @exception  java.io.ObjectStreamException  Description of the Exception
      */
     protected Object writeReplace()
         throws java.io.ObjectStreamException
@@ -536,38 +564,52 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     }
 
     //used by toBufferedImage()
-    private static final ColorSpace sRGB =
-       ColorSpace.getInstance(ColorSpace.CS_sRGB);
+    private final static ColorSpace sRGB =
+            ColorSpace.getInstance(ColorSpace.CS_sRGB);
 
     //used by toBufferedImage()
-    private static final ImageTypeSpecifier RGB_PLANE =
-       ImageTypeSpecifier.createBanded(sRGB,
-          new int[]{0,1,2},
-          new int[]{0,0,0},
-          DataBuffer.TYPE_BYTE,
-          false,false);
+    private final static ImageTypeSpecifier RGB_PLANE =
+            ImageTypeSpecifier.createBanded(sRGB,
+            new int[]{0, 1, 2},
+            new int[]{0, 0, 0},
+            DataBuffer.TYPE_BYTE,
+            false, false);
 
     //used by toBufferedImage()
-    private static final ImageTypeSpecifier RGB_PIXEL =
-       ImageTypeSpecifier.createInterleaved(sRGB,
-          new int[]{0,1,2},
-          DataBuffer.TYPE_BYTE,
-          false,false);
+    private final static ImageTypeSpecifier RGB_PIXEL =
+            ImageTypeSpecifier.createInterleaved(sRGB,
+            new int[]{0, 1, 2},
+            DataBuffer.TYPE_BYTE,
+            false, false);
 
+
+    /**
+     *  Description of the Method
+     *
+     * @return    Description of the Return Value
+     */
     public BufferedImage toBufferedImage()
     {
         return toBufferedImage(1);
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  frame  Description of the Parameter
+     * @return        Description of the Return Value
+     */
     public BufferedImage toBufferedImage(int frame)
     {
         int width = getInt(Tags.Columns, -1);
         int height = getInt(Tags.Rows, -1);
-        
-        if (width == -1 || height == -1)
+
+        if (width == -1 || height == -1) {
             throw new IllegalStateException("Illegal width/height: width = "
-                                            + width + ", height = " + height);
-        
+                     + width + ", height = " + height);
+        }
+
         int bitsAllocd = getInt(Tags.BitsAllocated, -1);
         int bitsStored = getInt(Tags.BitsStored, -1);
         int highBit = getInt(Tags.HighBit, -1);
@@ -576,41 +618,45 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         int spp = getInt(Tags.SamplesPerPixel, -1);
         int planarConf = getInt(Tags.PlanarConfiguration, -1);
         ByteBuffer pixelData = getByteBuffer(Tags.PixelData);
-        
+
         //some error checking
         if (bitsAllocd == -1 || bitsStored == -1 || highBit == -1
-            || pixelRep == -1 || pmi == null || spp == -1
-            || (planarConf == -1 && spp > 1) || pixelData == null) {
-                throw new IllegalStateException("Missing required Image Pixel Module attributes");
+                 || pixelRep == -1 || pmi == null || spp == -1
+                 || (planarConf == -1 && spp > 1) || pixelData == null) {
+            throw new IllegalStateException("Missing required Image Pixel Module attributes");
         }
-        
+
         if (!((pmi.equals("RGB") && spp == 3)
-              || (pmi.equals("PALETTE COLOR") && spp == 1)
-              || (pmi.equals("MONOCHROME1") && spp == 1)
-              || (pmi.equals("MONOCHROME2") && spp == 1)))
+                 || (pmi.equals("PALETTE COLOR") && spp == 1)
+                 || (pmi.equals("MONOCHROME1") && spp == 1)
+                 || (pmi.equals("MONOCHROME2") && spp == 1))) {
             throw new IllegalStateException("Invalid Photometric Interpretation ("
-                                            + pmi + ") and Samples per Pixel ("
-                                            + spp + ") configuration");
-        
+                     + pmi + ") and Samples per Pixel ("
+                     + spp + ") configuration");
+        }
+
         int dataBufType;
         boolean signed = (pixelRep == 1);
-        if (planarConf == -1)
+        if (planarConf == -1) {
             planarConf = 1;
-        
-        if (bitsAllocd == 8)
+        }
+
+        if (bitsAllocd == 8) {
             dataBufType = DataBuffer.TYPE_BYTE;
-        else if (bitsAllocd == 16)
+        } else if (bitsAllocd == 16) {
             dataBufType = DataBuffer.TYPE_USHORT;
-        else
+        } else {
             throw new IllegalStateException("Bits Allocated must be 8 or 16, "
-                                            + bitsAllocd + " is not supported");
-        
-        if (highBit != bitsStored - 1)
+                     + bitsAllocd + " is not supported");
+        }
+
+        if (highBit != bitsStored - 1) {
             throw new IllegalStateException("High bit must be Bits Stored - 1 "
-                                            + highBit + " is not supported");
-        
+                     + highBit + " is not supported");
+        }
+
         BufferedImage bi = null;
-        
+
         //create BufferedImage
         if (pmi.equals("RGB")) {
             switch (planarConf) {
@@ -623,190 +669,223 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
                 default:
                     throw new IllegalStateException("Invalid Planar Configuration for RGB");
             }
-        }
-        else if (pmi.equals("MONOCHROME1") || pmi.equals("MONOCHROME2")
+        } else if (pmi.equals("MONOCHROME1") || pmi.equals("MONOCHROME2")
                  || pmi.equals("PALETTE COLOR")) {
             ColorModelFactory cmFactory = ColorModelFactory.getInstance();
             bi = new ImageTypeSpecifier(
-                cmFactory.getColorModel(cmFactory.makeParam(this)),
-                new PixelInterleavedSampleModel(dataBufType, 1, 1, 1, 1,
+                    cmFactory.getColorModel(cmFactory.makeParam(this)),
+                    new PixelInterleavedSampleModel(dataBufType, 1, 1, 1, 1,
                     new int[]{0})).createBufferedImage(width, height);
         }
-        
+
         //read pixeldata into the BufferedImage
         DataBuffer dataBuf = bi.getRaster().getDataBuffer();
         Object dest = null;
-        if (planarConf == 0) { //read single bank for PixelInterleavedModel
+        if (planarConf == 0) {//read single bank for PixelInterleavedModel
             switch (dataBufType) {
                 case DataBuffer.TYPE_BYTE:
-                    dest = ((DataBufferByte)dataBuf).getData();
+                    dest = ((DataBufferByte) dataBuf).getData();
                     break;
                 case DataBuffer.TYPE_USHORT:
-                    dest = ((DataBufferUShort)dataBuf).getData();
+                    dest = ((DataBufferUShort) dataBuf).getData();
                     break;
             }
             readPixelData(pixelData, dest, dataBufType, frame, bitsAllocd,
-                          bitsStored, highBit, signed, spp, width, height);
-        }
-        else {
-            for (int i = 0; i < spp; i++) { //read each bank of BandedSampleModel seperately
+                    bitsStored, highBit, signed, spp, width, height);
+        } else {
+            for (int i = 0; i < spp; i++) {//read each bank of BandedSampleModel seperately
                 switch (dataBufType) {
                     case DataBuffer.TYPE_BYTE:
-                        dest = ((DataBufferByte)dataBuf).getData(i);
+                        dest = ((DataBufferByte) dataBuf).getData(i);
                         break;
                     case DataBuffer.TYPE_USHORT:
-                        dest = ((DataBufferUShort)dataBuf).getData(i);
+                        dest = ((DataBufferUShort) dataBuf).getData(i);
                         break;
                 }
                 readPixelData(pixelData, dest, dataBufType, frame, bitsAllocd,
-                              bitsStored, highBit, signed, 1, width, height);
+                        bitsStored, highBit, signed, 1, width, height);
             }
         }
-        
+
         return bi;
     }
-    
+
     //only supports Bits Allocated 8 or 16. signed, hb, bs are ignored.
     private void readPixelData(ByteBuffer pixelData,
-                               Object dest, int destDataType,
-                               int frame,
-                               int ba, int bs, int hb, boolean signed,
-                               int spp, int width, int height)
+            Object dest, int destDataType,
+            int frame,
+            int ba, int bs, int hb, boolean signed,
+            int spp, int width, int height)
     {
         final int size = width * height * spp;
         final int frameSize = size * (ba / 8);
         int i = 0;
-        
+
         //seek to frame offset
-        if (frame * frameSize > pixelData.limit())
+        if (frame * frameSize > pixelData.limit()) {
             throw new IllegalArgumentException("Bad frame number: " + frame);
+        }
         frame--;
         pixelData.position(frameSize * frame);
         //fill dest
         switch (destDataType) {
             case DataBuffer.TYPE_BYTE:
-                byte[] bufByte = (byte[])dest;
+                byte[] bufByte = (byte[]) dest;
                 while (i < size) {
                     bufByte[i++] = pixelData.get();
                 }
                 break;
             case DataBuffer.TYPE_USHORT:
-                short[] bufUShort = (short[])dest;
+                short[] bufUShort = (short[]) dest;
                 while (i < size) {
                     bufUShort[i++] = pixelData.getShort();
                 }
                 break;
         }
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  bi  Description of the Parameter
+     */
     public void putBufferedImage(BufferedImage bi)
     {
         putBufferedImage(bi, null, true);
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  bi            Description of the Parameter
+     * @param  sourceRegion  Description of the Parameter
+     */
     public void putBufferedImage(BufferedImage bi, Rectangle sourceRegion)
     {
         putBufferedImage(bi, sourceRegion, true);
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  bi                          Description of the Parameter
+     * @param  sourceRegion                Description of the Parameter
+     * @param  writeIndexedAsPaletteColor  Description of the Parameter
+     */
     public void putBufferedImage(BufferedImage bi, Rectangle sourceRegion,
-                                 boolean writeIndexedAsPaletteColor)
+            boolean writeIndexedAsPaletteColor)
     {
         //choose proper photometric interpretation
         int dataType = bi.getType();
         boolean writeAsMono = (dataType == BufferedImage.TYPE_BYTE_GRAY
-                               || dataType == BufferedImage.TYPE_USHORT_GRAY);
-        
+                 || dataType == BufferedImage.TYPE_USHORT_GRAY);
+
         //place Image Pixel Module and image data
         if (writeAsMono) {
             putBufferedImageAsMonochrome(bi, sourceRegion, true);
-        }
-        else {
+        } else {
             boolean writeAsRGB = !(writeIndexedAsPaletteColor
-                                   && bi.getColorModel() instanceof IndexColorModel);
-            
+                     && bi.getColorModel() instanceof IndexColorModel);
+
             if (writeAsRGB) {
                 putBufferedImageAsRgb(bi, sourceRegion);
-            }
-            else {
+            } else {
                 putBufferedImageAsPaletteColor(bi, sourceRegion);
             }
         }
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  bi            Description of the Parameter
+     * @param  sourceRegion  Description of the Parameter
+     */
     public void putBufferedImageAsRgb(BufferedImage bi, Rectangle sourceRegion)
     {
-        Rectangle rect, sourceRect;
-        
-        rect = new Rectangle(bi.getWidth(), bi.getHeight());
-        if (sourceRegion == null) {
-          sourceRect = rect;
-        }
-        else {
-          sourceRect = rect.intersection(sourceRegion);
-        }
-        //IllegalArgumentException thrown if sourceRect is empty
-        if (sourceRect.isEmpty()) {
-          throw new IllegalArgumentException("Source region is empty." + this);
-        }
-        
-        int width = sourceRect.width;
-        int height = sourceRect.height;
-        boolean signed = false;
-        int bitsAllocd = 8;
-        int bitsStored = 8;     //forcing 8-bits per component!
-        int highBit = 7;
+        Rectangle rect;
+        Rectangle sourceRect;
 
-        // Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
-        putUS(Tags.SamplesPerPixel, 3);                     // Type 1
-        putUS(Tags.BitsAllocated, bitsAllocd);              // Type 1
-        putUS(Tags.BitsStored, bitsStored);                 // Type 1
-        putUS(Tags.HighBit, highBit);                       // Type 1
-        putCS(Tags.PhotometricInterpretation, "RGB");       // Type 1
-        putUS(Tags.Rows, height);                           // Type 1
-        putUS(Tags.Columns, width);                         // Type 1
-        putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);  // Type 1; 0x0=unsigned int, 0x1=2's complement
-        putUS(Tags.PlanarConfiguration, 0);                 // Type 1C, if SamplesPerPixel > 1, should not present otherwise 
-        putIS(Tags.PixelAspectRatio, new int[]{1,1});       // Type 1C, if vertical/horizontal != 1
-        
-        byte[] rgbOut = new byte[width * height * 3];
-        int dataType = bi.getData().getDataBuffer().getDataType();
-        ColorModel cm = bi.getColorModel();
-        int[] pixels = bi.getRGB(sourceRect.x, sourceRect.y,
-                                 width, height,
-                                 (int[])null, 0, width);
-        int ind = 0;
-        
-        for (int i = 0; i < pixels.length; i++) {
-            rgbOut[ind++] = (byte)((pixels[i] >> 16) & 0xff);
-            rgbOut[ind++] = (byte)((pixels[i] >> 8) & 0xff);
-            rgbOut[ind++] = (byte)(pixels[i] & 0xff);
-            /*rgbOut[ind++] = (byte)cm.getRed(pixels[i]);
-            rgbOut[ind++] = (byte)cm.getGreen(pixels[i]);
-            rgbOut[ind++] = (byte)cm.getBlue(pixels[i]);*/
-        }
-        
-        //set pixeldata
-        putOB(Tags.PixelData, ByteBuffer.wrap(rgbOut));     // Type 1; OB or OW
-    }
-    
-    public void putBufferedImageAsMonochrome(BufferedImage bi, Rectangle sourceRegion,
-                                             boolean writeAsMonochrome2)
-    {
-        Rectangle rect, sourceRect;
-        
         rect = new Rectangle(bi.getWidth(), bi.getHeight());
         if (sourceRegion == null) {
             sourceRect = rect;
-        }
-        else {
+        } else {
             sourceRect = rect.intersection(sourceRegion);
         }
         //IllegalArgumentException thrown if sourceRect is empty
         if (sourceRect.isEmpty()) {
             throw new IllegalArgumentException("Source region is empty." + this);
         }
-        
+
+        int width = sourceRect.width;
+        int height = sourceRect.height;
+        boolean signed = false;
+        int bitsAllocd = 8;
+        int bitsStored = 8;//forcing 8-bits per component!
+        int highBit = 7;
+
+        // Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
+        putUS(Tags.SamplesPerPixel, 3);// Type 1
+        putUS(Tags.BitsAllocated, bitsAllocd);// Type 1
+        putUS(Tags.BitsStored, bitsStored);// Type 1
+        putUS(Tags.HighBit, highBit);// Type 1
+        putCS(Tags.PhotometricInterpretation, "RGB");// Type 1
+        putUS(Tags.Rows, height);// Type 1
+        putUS(Tags.Columns, width);// Type 1
+        putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);// Type 1; 0x0=unsigned int, 0x1=2's complement
+        putUS(Tags.PlanarConfiguration, 0);// Type 1C, if SamplesPerPixel > 1, should not present otherwise
+        putIS(Tags.PixelAspectRatio, new int[]{1, 1});// Type 1C, if vertical/horizontal != 1
+
+        byte[] rgbOut = new byte[width * height * 3];
+        int dataType = bi.getData().getDataBuffer().getDataType();
+        ColorModel cm = bi.getColorModel();
+        int[] pixels = bi.getRGB(sourceRect.x, sourceRect.y,
+                width, height,
+                (int[]) null, 0, width);
+        int ind = 0;
+
+        for (int i = 0; i < pixels.length; i++) {
+            rgbOut[ind++] = (byte) ((pixels[i] >> 16) & 0xff);
+            rgbOut[ind++] = (byte) ((pixels[i] >> 8) & 0xff);
+            rgbOut[ind++] = (byte) (pixels[i] & 0xff);
+            /*rgbOut[ind++] = (byte)cm.getRed(pixels[i]);
+            rgbOut[ind++] = (byte)cm.getGreen(pixels[i]);
+            rgbOut[ind++] = (byte)cm.getBlue(pixels[i]);*/
+        }
+
+        //set pixeldata
+        putOB(Tags.PixelData, ByteBuffer.wrap(rgbOut));// Type 1; OB or OW
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  bi                  Description of the Parameter
+     * @param  sourceRegion        Description of the Parameter
+     * @param  writeAsMonochrome2  Description of the Parameter
+     */
+    public void putBufferedImageAsMonochrome(BufferedImage bi, Rectangle sourceRegion,
+            boolean writeAsMonochrome2)
+    {
+        Rectangle rect;
+        Rectangle sourceRect;
+
+        rect = new Rectangle(bi.getWidth(), bi.getHeight());
+        if (sourceRegion == null) {
+            sourceRect = rect;
+        } else {
+            sourceRect = rect.intersection(sourceRegion);
+        }
+        //IllegalArgumentException thrown if sourceRect is empty
+        if (sourceRect.isEmpty()) {
+            throw new IllegalArgumentException("Source region is empty." + this);
+        }
+
         int dataType = bi.getType();
         int width = sourceRect.width;
         int height = sourceRect.height;
@@ -814,148 +893,163 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         int bitsAllocated = (dataType == BufferedImage.TYPE_BYTE_GRAY) ? 8 : 16;
         int bitsStored = bitsAllocated;
         int highBit = bitsStored - 1;
-        
+
         // Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
-        putUS(Tags.SamplesPerPixel, 1);                             // Type 1
+        putUS(Tags.SamplesPerPixel, 1);// Type 1
         //TODO need seperate cases for encoding monochrome1/2 ??
-        if (writeAsMonochrome2)
-            putCS(Tags.PhotometricInterpretation, "MONOCHROME2");   // Type 1
-        else
-            putCS(Tags.PhotometricInterpretation, "MONOCHROME1");   // Type 1
-        putUS(Tags.Rows, height);                               // Type 1
-        putUS(Tags.Columns, width);                             // Type 1
-        putUS(Tags.BitsAllocated, bitsAllocated);               // Type 1
-        putUS(Tags.BitsStored, bitsStored);                     // Type 1
-        putUS(Tags.HighBit, highBit);                           // Type 1
-        putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);      // Type 1; 0x0=unsigned int, 0x1=2's complement
-        putIS(Tags.PixelAspectRatio, new int[]{1,1});           // Type 1C, if vertical/horizontal != 1
-        
-        int max, min, value;
+        if (writeAsMonochrome2) {
+            putCS(Tags.PhotometricInterpretation, "MONOCHROME2");
+        } // Type 1
+        else {
+            putCS(Tags.PhotometricInterpretation, "MONOCHROME1");
+        }// Type 1
+        putUS(Tags.Rows, height);// Type 1
+        putUS(Tags.Columns, width);// Type 1
+        putUS(Tags.BitsAllocated, bitsAllocated);// Type 1
+        putUS(Tags.BitsStored, bitsStored);// Type 1
+        putUS(Tags.HighBit, highBit);// Type 1
+        putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);// Type 1; 0x0=unsigned int, 0x1=2's complement
+        putIS(Tags.PixelAspectRatio, new int[]{1, 1});// Type 1C, if vertical/horizontal != 1
+
+        int max;// Type 1C, if vertical/horizontal != 1
+
+        int min;// Type 1C, if vertical/horizontal != 1
+
+        int value;
         int[] pixels = bi.getRaster().getPixels(sourceRect.x, sourceRect.y,
-                                                width, height,
-                                                (int[])null);
-        
+                width, height,
+                (int[]) null);
+
         //find min/max
         min = max = pixels[0];
         for (int i = 1; i < pixels.length; i++) {
             value = pixels[i];
-            if (value > max)
+            if (value > max) {
                 max = value;
-            else if (value < min)
+            } else if (value < min) {
                 min = value;
+            }
         }
-        
+
         //write pixels to byte buffer
         byte[] out;
         ByteBuffer byteBuf;
-        
+
         if (bitsAllocated == 8) {
             out = new byte[pixels.length];
-            for (int i = 1; i < pixels.length; i++)
-                out[i] = (byte)(pixels[(i % 2 == 0)? i+1 : i-1] & 0xff);
-        }
-        else { //bitsAllocated == 16
+            for (int i = 1; i < pixels.length; i++) {
+                out[i] = (byte) (pixels[(i % 2 == 0) ? i + 1 : i - 1] & 0xff);
+            }
+        } else {//bitsAllocated == 16
             out = new byte[pixels.length * 2];
             for (int i = 1; i < pixels.length; ) {
-                out[i++] = (byte)((pixels[i] >> 8) & 0xff);
-                out[i++] = (byte)(pixels[i] & 0xff);
+                out[i++] = (byte) ((pixels[i] >> 8) & 0xff);
+                out[i++] = (byte) (pixels[i] & 0xff);
             }
         }
         byteBuf = ByteBuffer.wrap(out);
-        
+
         //set pixeldata
         putOW(Tags.PixelData, byteBuf);
-        
+
         //set min/max pixel values
-        putSS(Tags.SmallestImagePixelValue, min);                  // Type 3
-        putSS(Tags.LargestImagePixelValue, max);                   // Type 3
-        
+        putSS(Tags.SmallestImagePixelValue, min);// Type 3
+        putSS(Tags.LargestImagePixelValue, max);// Type 3
+
         // Image IE, Modality LUT Module, PS 3.3 - C.11.1, U
         // don't overwrite if the Dataset already contains a Rescale Intercept/Slope
         float rs = getFloat(Tags.RescaleSlope, 1).floatValue();
         float ri = getFloat(Tags.RescaleIntercept, 0).floatValue();
         if (!contains(Tags.RescaleIntercept)) {
-          putDS(Tags.RescaleIntercept, ri);                       // Type 1C; ModalityLUTSequence is not present
-          putDS(Tags.RescaleSlope, rs);                           // Type 1C; ModalityLUTSequence is not present
-          putLO(Tags.RescaleType, "PIXELVALUE");                   // Type 1C; ModalityLUTSequence is not present; arbitrary text
+            putDS(Tags.RescaleIntercept, ri);// Type 1C; ModalityLUTSequence is not present
+            putDS(Tags.RescaleSlope, rs);// Type 1C; ModalityLUTSequence is not present
+            putLO(Tags.RescaleType, "PIXELVALUE");// Type 1C; ModalityLUTSequence is not present; arbitrary text
         }
-        
+
         // Image IE, VOI LUT Module, PS 3.3 - C.11.2, U
         // don't overwrite if the Dataset already contains a Window Center/Width
         if (!contains(Tags.WindowCenter)) {
-          String[] wc = { Float.toString((rs * (max + min)) / 2 + ri) };
-          putDS(Tags.WindowCenter, wc);                            // Type 3
-          String[] ww = { Float.toString((rs * (max - min)) / 2) };
-          putDS(Tags.WindowWidth, ww);                             // Type 1C; WindowCenter is present
+            String[] wc = {Float.toString((rs * (max + min)) / 2 + ri)};
+            putDS(Tags.WindowCenter, wc);// Type 3
+            String[] ww = {Float.toString((rs * (max - min)) / 2)};
+            putDS(Tags.WindowWidth, ww);// Type 1C; WindowCenter is present
         }
     }
-    
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  bi            Description of the Parameter
+     * @param  sourceRegion  Description of the Parameter
+     */
     public void putBufferedImageAsPaletteColor(BufferedImage bi, Rectangle sourceRegion)
     {
-        Rectangle rect, sourceRect;
-        
+        Rectangle rect;
+        Rectangle sourceRect;
+
         rect = new Rectangle(bi.getWidth(), bi.getHeight());
         if (sourceRegion == null) {
             sourceRect = rect;
-        }
-        else {
+        } else {
             sourceRect = rect.intersection(sourceRegion);
         }
         //IllegalArgumentException thrown if sourceRect is empty
         if (sourceRect.isEmpty()) {
-          throw new IllegalArgumentException("Source region is empty." + this);
+            throw new IllegalArgumentException("Source region is empty." + this);
         }
-        
+
         int dataType = bi.getData().getDataBuffer().getDataType();
         ColorModel cm = bi.getColorModel();
         IndexColorModel icm;
-        
+
         if (!(cm instanceof IndexColorModel)) {
             throw new IllegalArgumentException(
-                "BufferedImage's ColorModel must be an IndexColorModel to represent"
-                + " as a \"PALETTE COLOR\" DICOM image");
+                    "BufferedImage's ColorModel must be an IndexColorModel to represent"
+                     + " as a \"PALETTE COLOR\" DICOM image");
+        } else {
+            icm = (IndexColorModel) cm;
         }
-        else {
-            icm = (IndexColorModel)cm;
-        }
-        
+
         //write palette
         final int maxPaletteSize = 65536;
         final int paletteSize = icm.getMapSize();
         final int paletteIndexSize = icm.getPixelSize();
-        
+
         //System.out.println("icm.getMapSize() = " + paletteSize);
         //System.out.println("icm.getPixelSize() = " + paletteIndexSize);
-        
+
         //sanity check on palette size
-        if (paletteSize > maxPaletteSize)
+        if (paletteSize > maxPaletteSize) {
             throw new IllegalArgumentException(
-                "BufferedImage contains a palette that is too large to be"
-                + " encoded as a DICOM Color LUT (" + paletteSize + ")");
-        
+                    "BufferedImage contains a palette that is too large to be"
+                     + " encoded as a DICOM Color LUT (" + paletteSize + ")");
+        }
+
         //sanity check on pixel size (the index into palette)
-        if (paletteIndexSize == 0 || paletteIndexSize > 16)
+        if (paletteIndexSize == 0 || paletteIndexSize > 16) {
             throw new UnsupportedOperationException("BufferedImages with a pixel size of "
-                + paletteIndexSize + " bits are not supported, only 1 to 16 bits are supported");
-        
+                     + paletteIndexSize + " bits are not supported, only 1 to 16 bits are supported");
+        }
+
         int width = sourceRect.width;
         int height = sourceRect.height;
         boolean signed = false;
         int bitsAllocd = (paletteIndexSize <= 8) ? 8 : 16;
         int bitsStored = bitsAllocd;
         int highBit = bitsStored - 1;
-        
+
         // Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
-        putUS(Tags.SamplesPerPixel, 1);                                      // Type 1
-        putCS(Tags.PhotometricInterpretation, "PALETTE COLOR");              // Type 1
-        putUS(Tags.Rows, height);                                            // Type 1
-        putUS(Tags.Columns, width);                                          // Type 1
-        putUS(Tags.BitsAllocated, bitsAllocd);                               // Type 1
-        putUS(Tags.BitsStored, bitsStored);                                  // Type 1
-        putUS(Tags.HighBit, highBit);                                        // Type 1
-        putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);                   // Type 1; 0x0=unsigned int, 0x1=2's complement
-        putIS(Tags.PixelAspectRatio, new int[]{1,1});                        // Type 1C, if vertical/horizontal != 1
-        
+        putUS(Tags.SamplesPerPixel, 1);// Type 1
+        putCS(Tags.PhotometricInterpretation, "PALETTE COLOR");// Type 1
+        putUS(Tags.Rows, height);// Type 1
+        putUS(Tags.Columns, width);// Type 1
+        putUS(Tags.BitsAllocated, bitsAllocd);// Type 1
+        putUS(Tags.BitsStored, bitsStored);// Type 1
+        putUS(Tags.HighBit, highBit);// Type 1
+        putUS(Tags.PixelRepresentation, (signed) ? 1 : 0);// Type 1; 0x0=unsigned int, 0x1=2's complement
+        putIS(Tags.PixelAspectRatio, new int[]{1, 1});// Type 1C, if vertical/horizontal != 1
+
         //write palette descriptor
         ByteBuffer pDescriptor;
         byte[] rPalette;
@@ -964,60 +1058,59 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         ByteBuffer rByteBuffer;
         ByteBuffer gByteBuffer;
         ByteBuffer bByteBuffer;
-        
+
         pDescriptor = ByteBuffer.allocate(3 * 2);
-        pDescriptor.putShort((short) ((paletteSize == maxPaletteSize) ? 0 : paletteSize));  // number of entries
-        pDescriptor.putShort((short) 0);    // first stored pixel value mapped
-        pDescriptor.putShort((short) 8);    // number of bits, always 8 for IndexColorModel's internal color component tables
-        
-        putXX(Tags.RedPaletteColorLUTDescriptor, VRs.US, pDescriptor);     // Type 1C; US/US or SS/US
-        putXX(Tags.GreenPaletteColorLUTDescriptor, VRs.US, pDescriptor);   // Type 1C; US/US or SS/US
-        putXX(Tags.BluePaletteColorLUTDescriptor, VRs.US, pDescriptor);    // Type 1C; US/US or SS/US
-        
+        pDescriptor.putShort((short) ((paletteSize == maxPaletteSize) ? 0 : paletteSize));// number of entries
+        pDescriptor.putShort((short) 0);// first stored pixel value mapped
+        pDescriptor.putShort((short) 8);// number of bits, always 8 for IndexColorModel's internal color component tables
+
+        putXX(Tags.RedPaletteColorLUTDescriptor, VRs.US, pDescriptor);// Type 1C; US/US or SS/US
+        putXX(Tags.GreenPaletteColorLUTDescriptor, VRs.US, pDescriptor);// Type 1C; US/US or SS/US
+        putXX(Tags.BluePaletteColorLUTDescriptor, VRs.US, pDescriptor);// Type 1C; US/US or SS/US
+
         rPalette = new byte[paletteSize];
         gPalette = new byte[paletteSize];
         bPalette = new byte[paletteSize];
         icm.getReds(rPalette);
         icm.getGreens(gPalette);
         icm.getBlues(bPalette);
-        
+
         //default is ByteOrder.BIG_ENDIAN byte ordering
         rByteBuffer = ByteBuffer.allocate(paletteSize);
         gByteBuffer = ByteBuffer.allocate(paletteSize);
         bByteBuffer = ByteBuffer.allocate(paletteSize);
-        
+
         //grab word chunks and place words in buffer
         for (int idx = 0; idx < paletteSize; idx += 2) {
-            rByteBuffer.putShort((short) ((rPalette[idx+1] << 8) + rPalette[idx]));
-            gByteBuffer.putShort((short) ((gPalette[idx+1] << 8) + gPalette[idx]));
-            bByteBuffer.putShort((short) ((bPalette[idx+1] << 8) + bPalette[idx]));
+            rByteBuffer.putShort((short) ((rPalette[idx + 1] << 8) + rPalette[idx]));
+            gByteBuffer.putShort((short) ((gPalette[idx + 1] << 8) + gPalette[idx]));
+            bByteBuffer.putShort((short) ((bPalette[idx + 1] << 8) + bPalette[idx]));
         }
-        
-        putOW(Tags.RedPaletteColorLUTData,rByteBuffer);           // Type 1C; US or SS or OW
-        putOW(Tags.GreenPaletteColorLUTData, gByteBuffer);        // Type 1C; US or SS or OW
-        putOW(Tags.BluePaletteColorLUTData, bByteBuffer);         // Type 1C; US or SS or OW
-        
+
+        putOW(Tags.RedPaletteColorLUTData, rByteBuffer);// Type 1C; US or SS or OW
+        putOW(Tags.GreenPaletteColorLUTData, gByteBuffer);// Type 1C; US or SS or OW
+        putOW(Tags.BluePaletteColorLUTData, bByteBuffer);// Type 1C; US or SS or OW
+
         //read pixels as int's, should be one sample per each pixel (palette index)
         int[] pixels = bi.getRaster().getPixels(sourceRect.x, sourceRect.y,
-                                                width, height,
-                                                (int[])null);
+                width, height,
+                (int[]) null);
         byte[] indOut;
         int ind = 0;
         //put pixeldata (must be OW if transfer syntax is Implicit VR/Little Endian)
         if (paletteIndexSize <= 8) {
             indOut = new byte[width * height];
             for (int i = 0; i < pixels.length; i++) {
-                indOut[i] = (byte)(pixels[(i % 2 == 0)? i+1 : i-1] & 0xff);
+                indOut[i] = (byte) (pixels[(i % 2 == 0) ? i + 1 : i - 1] & 0xff);
             }
-            putOW(Tags.PixelData, ByteBuffer.wrap(indOut));              // Type 1; OW
-        }
-        else if (paletteIndexSize > 8 && paletteIndexSize <= 16) {
+            putOW(Tags.PixelData, ByteBuffer.wrap(indOut));// Type 1; OW
+        } else if (paletteIndexSize > 8 && paletteIndexSize <= 16) {
             indOut = new byte[width * height * 2];
             for (int i = 0; i < pixels.length; i++) {
-                indOut[ind++] = (byte)((pixels[i] >> 8) & 0xff);
-                indOut[ind++] = (byte)(pixels[i] & 0xff);
+                indOut[ind++] = (byte) ((pixels[i] >> 8) & 0xff);
+                indOut[ind++] = (byte) (pixels[i] & 0xff);
             }
-            putOW(Tags.PixelData, ByteBuffer.wrap(indOut));              // Type 1; OW
+            putOW(Tags.PixelData, ByteBuffer.wrap(indOut));// Type 1; OW
         }
     }
 }
