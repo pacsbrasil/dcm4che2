@@ -67,7 +67,7 @@ class DimseImpl implements Dimse {
         this.src = src;
         this.in = null;
         this.tsUID = null;
-        this.cmd.setUS(Tags.DataSetType,
+        this.cmd.putUS(Tags.DataSetType,
                 ds == null && src == null ? Command.NO_DATASET : 0);
     }
 
@@ -123,7 +123,6 @@ class DimseImpl implements Dimse {
       DictionaryFactory.getInstance().getDefaultUIDDictionary();
     
     public String toString() {
-       return cmd.toString() + ", pcid=" + pcid
-            + ", tsuid=" + DICT.lookup(tsUID);
+       return "[pc-" + pcid + "] " + cmd.toString();
     }
 }

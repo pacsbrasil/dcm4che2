@@ -23,9 +23,11 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.*;
+import org.dcm4che.net.AAssociateRQ;
+import org.dcm4che.net.PresContext;
+import org.dcm4che.net.PDUException;
 
-import java.io.*;
+import java.util.Iterator;
 
 /**
  *
@@ -52,5 +54,16 @@ final class AAssociateRQImpl extends AAssociateRQACImpl
     
     protected String typeAsString() {
        return "AAssociateRQ";
+    }
+
+    protected void append(PresContext pc, StringBuffer sb) {
+       sb.append("\n\tpc-").append(pc.pcid())
+         .append(":\tas=").append(DICT.lookup(pc.getAbstractSyntaxUID()));
+       for (Iterator it = pc.getTransferSyntaxUIDs().iterator(); it.hasNext();)
+         sb.append("\n\t\tts=").append(DICT.lookup((String)it.next()));       
+    }
+    
+    protected void appendPresCtxSummary(StringBuffer sb) {
+       sb.append("\n\tpresCtx:\toffered=").append(presCtxs.size());
     }
 }

@@ -6,16 +6,16 @@
  *  This file is part of dcm4che.                                            *
  *                                                                           *
  *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
+ *  under the terms of the GNU Lesser General License as published    *
  *  by the Free Software Foundation; either version 2 of the License, or     *
  *  (at your option) any later version.                                      *
  *                                                                           *
  *  This library is distributed in the hope that it will be useful, but      *
  *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
+ *  Lesser General License for more details.                          *
  *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
+ *  You should have received a copy of the GNU Lesser General         *
  *  License along with this library; if not, write to the Free Software      *
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  *                                                                           *
@@ -42,321 +42,340 @@ import org.xml.sax.helpers.DefaultHandler;
  * @see "DICOM Part 5: Data Structures and Encoding, 6.2 Value Representation"
  */
 public interface DcmObject {
-    
-    public Charset getCharset();
-    
-    public boolean isEmpty();
-
-    public int size();
-    
-    public int length();
-
-    public void clear();
-    
-    public DcmHandler getDcmHandler();
-
-    public DefaultHandler getSAXHandler();
-    
-    public Iterator iterator();
-
-    public boolean contains(int tag);
-
-    public DcmElement get(int tag);
-    
-    public DcmElement remove(int tag);
-
-    public ByteBuffer getByteBuffer(int tag);
-
-    public String getString(int tag) throws DcmValueException;
-
-    public String getString(int tag, String defVal) throws DcmValueException;
-
-    public String getString(int tag, int index)
-            throws DcmValueException;
-
-    public String getString(int tag, int index, String defVal)
-            throws DcmValueException;
-
-    public String[] getStrings(int tag) throws DcmValueException;
-
-    public int getInt(int tag, int defVal) throws DcmValueException;
-
-    public int getInt(int tag, int index, int defVal)
-            throws DcmValueException;
-
-    public int[] getInts(int tag) throws DcmValueException;
-
-    public float getFloat(int tag, float defVal) throws DcmValueException;
-
-    public float getFloat(int tag, int index, float defVal)
-            throws DcmValueException;
-
-    public float[] getFloats(int tag) throws DcmValueException;
-
-    public double getDouble(int tag, double defVal)
-            throws DcmValueException;
-
-    public double getDouble(int tag, int index, double defVal)
-            throws DcmValueException;
-
-    public double[] getDoubles(int tag) throws DcmValueException;
-
-    public Date getDate(int tag) throws DcmValueException;
-
-    public Date getDate(int tag, int index) throws DcmValueException;
-
-    public Date[] getDates(int tag) throws DcmValueException;
-    
-    public Date getDateTime(int dateTag, int timeTag) throws DcmValueException;
-
-    public Dataset getNestedDataset(int tag);
-
-    public Dataset getNestedDataset(int tag, int index);
-
-    public DcmElement setAE(int tag);
-    
-    public DcmElement setAE(int tag, String value);
-    
-    public DcmElement setAE(int tag, String[] values);
-    
-    public DcmElement setAS(int tag);
-
-    public DcmElement setAS(int tag, String value);
-    
-    public DcmElement setAS(int tag, String[] values);
-    
-    public DcmElement setAT(int tag);
-
-    public DcmElement setAT(int tag, int value);
-
-    public DcmElement setAT(int tag, int[] values);
-    
-    public DcmElement setCS(int tag);
-    
-    public DcmElement setCS(int tag, String value);
-    
-    public DcmElement setCS(int tag, String[] values);
-    
-    public DcmElement setDA(int tag);
-    
-    public DcmElement setDA(int tag, Date value);
-    
-    public DcmElement setDA(int tag, Date[] values);
-    
-    public DcmElement setDA(int tag, Date from, Date to);
-    
-    public DcmElement setDA(int tag, String value);
-    
-    public DcmElement setDA(int tag, String[] values);
-    
-    public DcmElement setDS(int tag);
-    
-    public DcmElement setDS(int tag, float value);
-    
-    public DcmElement setDS(int tag, float[] values);
-    
-    public DcmElement setDS(int tag, String value);
-    
-    public DcmElement setDS(int tag, String[] values);
-
-    public DcmElement setDT(int tag);
-    
-    public DcmElement setDT(int tag, Date value);
-    
-    public DcmElement setDT(int tag, Date[] values);
-    
-    public DcmElement setDT(int tag, Date from, Date to);
-    
-    public DcmElement setDT(int tag, String value);
-    
-    public DcmElement setDT(int tag, String[] values);
-
-    public DcmElement setFL(int tag);
-    
-    public DcmElement setFL(int tag, float value);
-    
-    public DcmElement setFL(int tag, float[] values);
-    
-    public DcmElement setFL(int tag, String value);
-    
-    public DcmElement setFL(int tag, String[] values);
-
-    public DcmElement setFD(int tag);
-    
-    public DcmElement setFD(int tag, double value);
-    
-    public DcmElement setFD(int tag, double[] values);
-    
-    public DcmElement setFD(int tag, String value);
-    
-    public DcmElement setFD(int tag, String[] values);
-
-    public DcmElement setIS(int tag);
-    
-    public DcmElement setIS(int tag, int value);
-    
-    public DcmElement setIS(int tag, int[] values);
-    
-    public DcmElement setIS(int tag, String value);
-    
-    public DcmElement setIS(int tag, String[] values);
-
-    public DcmElement setLO(int tag);
-    
-    public DcmElement setLO(int tag, String value);
-    
-    public DcmElement setLO(int tag, String[] values);
-    
-    public DcmElement setLT(int tag);
-    
-    public DcmElement setLT(int tag, String value);
-    
-    public DcmElement setLT(int tag, String[] values);
-    
-    public DcmElement setOB(int tag);
-
-    public DcmElement setOB(int tag, byte[] value);
-
-    public DcmElement setOB(int tag, ByteBuffer value);
-
-    public DcmElement setOBsq(int tag);
-    
-    public DcmElement setOF(int tag);
-
-    public DcmElement setOF(int tag, float[] value);
-
-    public DcmElement setOF(int tag, ByteBuffer value);
-
-    public DcmElement setOFsq(int tag);
-
-    public DcmElement setOW(int tag);
-
-    public DcmElement setOW(int tag, short[] value);
-
-    public DcmElement setOW(int tag, ByteBuffer value);
-
-    public DcmElement setOWsq(int tag);
-
-    public DcmElement setPN(int tag);
-    
-    public DcmElement setPN(int tag, PersonName value);
-    
-    public DcmElement setPN(int tag, PersonName[] values);
-
-    public DcmElement setPN(int tag, String value);
-    
-    public DcmElement setPN(int tag, String[] values);
-
-    public DcmElement setSH(int tag);
-    
-    public DcmElement setSH(int tag, String value);
-    
-    public DcmElement setSH(int tag, String[] values);
-
-    public DcmElement setSL(int tag);
-    
-    public DcmElement setSL(int tag, int value);
-    
-    public DcmElement setSL(int tag, int[] values);
-
-    public DcmElement setSL(int tag, String value);
-    
-    public DcmElement setSL(int tag, String[] values);
-
-    public DcmElement setSQ(int tag);
-    
-    public DcmElement setSS(int tag);
-    
-    public DcmElement setSS(int tag, int value);
-    
-    public DcmElement setSS(int tag, int[] values);
-
-    public DcmElement setSS(int tag, String value);
-    
-    public DcmElement setSS(int tag, String[] values);
-
-    public DcmElement setST(int tag);
-    
-    public DcmElement setST(int tag, String value);
-    
-    public DcmElement setST(int tag, String[] values);
-    
-    public DcmElement setTM(int tag);
-    
-    public DcmElement setTM(int tag, Date value);
-    
-    public DcmElement setTM(int tag, Date[] values);
-    
-    public DcmElement setTM(int tag, Date from, Date to);
-    
-    public DcmElement setTM(int tag, String value);
-    
-    public DcmElement setTM(int tag, String[] values);
-
-    public DcmElement setUI(int tag);
-    
-    public DcmElement setUI(int tag, String value);
-    
-    public DcmElement setUI(int tag, String[] values);
-    
-    public DcmElement setUL(int tag);
-    
-    public DcmElement setUL(int tag, int value);
-    
-    public DcmElement setUL(int tag, int[] values);
-    
-    public DcmElement setUL(int tag, String value);
-    
-    public DcmElement setUL(int tag, String[] values);
-
-    public DcmElement setUN(int tag);
-
-    public DcmElement setUN(int tag, byte[] value);
-
-    public DcmElement setUNsq(int tag);
-    
-    public DcmElement setUS(int tag);
-    
-    public DcmElement setUS(int tag, int value);
-    
-    public DcmElement setUS(int tag, int[] values);
-
-    public DcmElement setUS(int tag, String value);
-    
-    public DcmElement setUS(int tag, String[] values);
-
-    public DcmElement setUT(int tag);
-    
-    public DcmElement setUT(int tag, String value);
-    
-    public DcmElement setUT(int tag, String[] values);
-
-    public DcmElement setXX(int tag, int vr);
-
-    public DcmElement setXX(int tag, int vr, ByteBuffer value);
-    
-    public DcmElement setXX(int tag, int vr, String value);
-
-    public DcmElement setXX(int tag, int vr, String[] values);
-
-    public DcmElement setXXsq(int tag, int vr);
-
-    public DcmElement setXX(int tag);
-
-    public DcmElement setXX(int tag, ByteBuffer value);
-
-    public DcmElement setXX(int tag, String value);
-    
-    public DcmElement setXX(int tag, String[] values);
-
-    public DcmElement setXXsq(int tag);
-
-    public void writeHeader(OutputStream out, DcmEncodeParam encParam,
-         int tag, int vr, int len)
-    throws IOException;
-
-    public void writeHeader(ImageOutputStream iout, DcmEncodeParam encParam,
-            int tag, int vr, int len)
-    throws IOException;
+   
+   Charset getCharset();
+   
+   boolean isEmpty();
+   
+   int size();
+   
+   int length();
+   
+   void clear();
+   
+   DcmHandler getDcmHandler();
+   
+   DefaultHandler getSAXHandler();
+   
+   Iterator iterator();
+   
+   boolean contains(int tag);
+   
+   DcmElement get(int tag);
+   
+   DcmElement remove(int tag);
+   
+   ByteBuffer getByteBuffer(int tag);
+   
+   String getString(int tag) throws DcmValueException;
+   
+   String getString(int tag, String defVal) throws DcmValueException;
+   
+   String getString(int tag, int index)
+   throws DcmValueException;
+   
+   String getString(int tag, int index, String defVal)
+   throws DcmValueException;
+   
+   String[] getStrings(int tag) throws DcmValueException;
+   
+   String getBoundedString(int maxLen, int tag)
+   throws DcmValueException;
+   
+   String getBoundedString(int maxLen, int tag, String defVal)
+   throws DcmValueException;
+   
+   String getBoundedString(int maxLen, int tag, int index)
+   throws DcmValueException;
+   
+   String getBoundedString(int maxLen, int tag, int index, String defVal)
+   throws DcmValueException;
+   
+   String[] getBoundedStrings(int maxLen, int tag)
+   throws DcmValueException;
+   
+   int getInt(int tag, int defVal) throws DcmValueException;
+   
+   int getInt(int tag, int index, int defVal)
+   throws DcmValueException;
+   
+   int[] getInts(int tag) throws DcmValueException;
+   
+   float getFloat(int tag, float defVal) throws DcmValueException;
+   
+   float getFloat(int tag, int index, float defVal)
+   throws DcmValueException;
+   
+   float[] getFloats(int tag) throws DcmValueException;
+   
+   double getDouble(int tag, double defVal)
+   throws DcmValueException;
+   
+   double getDouble(int tag, int index, double defVal)
+   throws DcmValueException;
+   
+   double[] getDoubles(int tag) throws DcmValueException;
+   
+   Date getDate(int tag) throws DcmValueException;
+   
+   Date getDate(int tag, int index) throws DcmValueException;
+   
+   Date[] getDates(int tag) throws DcmValueException;
+   
+   Date getDateTime(int dateTag, int timeTag) throws DcmValueException;
+   
+   Dataset getItem(int tag);
+   
+   Dataset getItem(int tag, int index);
+   
+   DcmElement putAE(int tag);
+   
+   DcmElement putAE(int tag, String value);
+   
+   DcmElement putAE(int tag, String[] values);
+   
+   DcmElement putAS(int tag);
+   
+   DcmElement putAS(int tag, String value);
+   
+   DcmElement putAS(int tag, String[] values);
+   
+   DcmElement putAT(int tag);
+   
+   DcmElement putAT(int tag, int value);
+   
+   DcmElement putAT(int tag, int[] values);
+   
+   DcmElement putAT(int tag, String value);
+   
+   DcmElement putAT(int tag, String[] values);
+   
+   DcmElement putCS(int tag);
+   
+   DcmElement putCS(int tag, String value);
+   
+   DcmElement putCS(int tag, String[] values);
+   
+   DcmElement putDA(int tag);
+   
+   DcmElement putDA(int tag, Date value);
+   
+   DcmElement putDA(int tag, Date[] values);
+   
+   DcmElement putDA(int tag, Date from, Date to);
+   
+   DcmElement putDA(int tag, String value);
+   
+   DcmElement putDA(int tag, String[] values);
+   
+   DcmElement putDS(int tag);
+   
+   DcmElement putDS(int tag, float value);
+   
+   DcmElement putDS(int tag, float[] values);
+   
+   DcmElement putDS(int tag, String value);
+   
+   DcmElement putDS(int tag, String[] values);
+   
+   DcmElement putDT(int tag);
+   
+   DcmElement putDT(int tag, Date value);
+   
+   DcmElement putDT(int tag, Date[] values);
+   
+   DcmElement putDT(int tag, Date from, Date to);
+   
+   DcmElement putDT(int tag, String value);
+   
+   DcmElement putDT(int tag, String[] values);
+   
+   DcmElement putFL(int tag);
+   
+   DcmElement putFL(int tag, float value);
+   
+   DcmElement putFL(int tag, float[] values);
+   
+   DcmElement putFL(int tag, String value);
+   
+   DcmElement putFL(int tag, String[] values);
+   
+   DcmElement putFD(int tag);
+   
+   DcmElement putFD(int tag, double value);
+   
+   DcmElement putFD(int tag, double[] values);
+   
+   DcmElement putFD(int tag, String value);
+   
+   DcmElement putFD(int tag, String[] values);
+   
+   DcmElement putIS(int tag);
+   
+   DcmElement putIS(int tag, int value);
+   
+   DcmElement putIS(int tag, int[] values);
+   
+   DcmElement putIS(int tag, String value);
+   
+   DcmElement putIS(int tag, String[] values);
+   
+   DcmElement putLO(int tag);
+   
+   DcmElement putLO(int tag, String value);
+   
+   DcmElement putLO(int tag, String[] values);
+   
+   DcmElement putLT(int tag);
+   
+   DcmElement putLT(int tag, String value);
+   
+   DcmElement putLT(int tag, String[] values);
+   
+   DcmElement putOB(int tag);
+   
+   DcmElement putOB(int tag, byte[] value);
+   
+   DcmElement putOB(int tag, ByteBuffer value);
+   
+   DcmElement putOBsq(int tag);
+   
+   DcmElement putOF(int tag);
+   
+   DcmElement putOF(int tag, float[] value);
+   
+   DcmElement putOF(int tag, ByteBuffer value);
+   
+   DcmElement putOFsq(int tag);
+   
+   DcmElement putOW(int tag);
+   
+   DcmElement putOW(int tag, short[] value);
+   
+   DcmElement putOW(int tag, ByteBuffer value);
+   
+   DcmElement putOWsq(int tag);
+   
+   DcmElement putPN(int tag);
+   
+   DcmElement putPN(int tag, PersonName value);
+   
+   DcmElement putPN(int tag, PersonName[] values);
+   
+   DcmElement putPN(int tag, String value);
+   
+   DcmElement putPN(int tag, String[] values);
+   
+   DcmElement putSH(int tag);
+   
+   DcmElement putSH(int tag, String value);
+   
+   DcmElement putSH(int tag, String[] values);
+   
+   DcmElement putSL(int tag);
+   
+   DcmElement putSL(int tag, int value);
+   
+   DcmElement putSL(int tag, int[] values);
+   
+   DcmElement putSL(int tag, String value);
+   
+   DcmElement putSL(int tag, String[] values);
+   
+   DcmElement putSQ(int tag);
+   
+   DcmElement putSS(int tag);
+   
+   DcmElement putSS(int tag, int value);
+   
+   DcmElement putSS(int tag, int[] values);
+   
+   DcmElement putSS(int tag, String value);
+   
+   DcmElement putSS(int tag, String[] values);
+   
+   DcmElement putST(int tag);
+   
+   DcmElement putST(int tag, String value);
+   
+   DcmElement putST(int tag, String[] values);
+   
+   DcmElement putTM(int tag);
+   
+   DcmElement putTM(int tag, Date value);
+   
+   DcmElement putTM(int tag, Date[] values);
+   
+   DcmElement putTM(int tag, Date from, Date to);
+   
+   DcmElement putTM(int tag, String value);
+   
+   DcmElement putTM(int tag, String[] values);
+   
+   DcmElement putUI(int tag);
+   
+   DcmElement putUI(int tag, String value);
+   
+   DcmElement putUI(int tag, String[] values);
+   
+   DcmElement putUL(int tag);
+   
+   DcmElement putUL(int tag, int value);
+   
+   DcmElement putUL(int tag, int[] values);
+   
+   DcmElement putUL(int tag, String value);
+   
+   DcmElement putUL(int tag, String[] values);
+   
+   DcmElement putUN(int tag);
+   
+   DcmElement putUN(int tag, byte[] value);
+   
+   DcmElement putUNsq(int tag);
+   
+   DcmElement putUS(int tag);
+   
+   DcmElement putUS(int tag, int value);
+   
+   DcmElement putUS(int tag, int[] values);
+   
+   DcmElement putUS(int tag, String value);
+   
+   DcmElement putUS(int tag, String[] values);
+   
+   DcmElement putUT(int tag);
+   
+   DcmElement putUT(int tag, String value);
+   
+   DcmElement putUT(int tag, String[] values);
+   
+   DcmElement putXX(int tag, int vr);
+   
+   DcmElement putXX(int tag, int vr, ByteBuffer value);
+   
+   DcmElement putXX(int tag, int vr, String value);
+   
+   DcmElement putXX(int tag, int vr, String[] values);
+   
+   DcmElement putXXsq(int tag, int vr);
+   
+   DcmElement putXX(int tag);
+   
+   DcmElement putXX(int tag, ByteBuffer value);
+   
+   DcmElement putXX(int tag, String value);
+   
+   DcmElement putXX(int tag, String[] values);
+   
+   DcmElement putXXsq(int tag);
+   
+   void putAll(DcmObject dcmObj);
+   
+   void writeHeader(OutputStream out, DcmEncodeParam encParam, int tag, int vr, int len)
+   throws IOException;
+   
+   void writeHeader(ImageOutputStream iout, DcmEncodeParam encParam, int tag, int vr, int len)
+   throws IOException;
 }
 

@@ -108,7 +108,7 @@ class DcmElementImpl implements DcmElement {
     
     static String toString(int tag, int vr, int vm, int len, String val) {
         return DICT.toString(tag) + "," + VRs.toString(vr)
-                + "," + vm + ",#" + len + ",[\n" + val + "\n]" ;
+                + ",*" + vm + ",#" + len + ",[" + val + "]" ;
     }
         
     public ByteBuffer getByteBuffer() {
@@ -119,6 +119,10 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
 
+    public boolean hasDataFragments() {
+       return false;
+    }
+    
     public ByteBuffer getDataFragment(int index) {
         throw new UnsupportedOperationException("" + this);
     }
@@ -141,6 +145,21 @@ class DcmElementImpl implements DcmElement {
  
     public String[] getStrings(Charset cs) throws DcmValueException {
         throw new UnsupportedOperationException("" + this);
+    }
+ 
+    public final String getBoundedString(int maxLen, Charset cs) 
+    throws DcmValueException {
+        return getBoundedString(maxLen, 0, cs);
+    }
+    
+    public String getBoundedString(int maxLen, int index, Charset cs)
+    throws DcmValueException {
+        return getString(index, cs);
+    }
+ 
+    public String[] getBoundedStrings(int maxLen, Charset cs)
+    throws DcmValueException {
+        return getStrings(cs);
     }
  
     public final int getInt() throws DcmValueException {
@@ -214,15 +233,23 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
     
-    public Dataset addNewDataset() {
+    public boolean hasItems() {
+       return false;
+    }
+
+    public Dataset addNewItem() {
         throw new UnsupportedOperationException("" + this);
     }
 
-    public Dataset getDataset() {
-        return getDataset(0);
+    public void addItem(Dataset item) {
+        throw new UnsupportedOperationException("" + this);
+    }
+
+    public Dataset getItem() {
+        return getItem(0);
     }
     
-    public Dataset getDataset(int index) {
+    public Dataset getItem(int index) {
         throw new UnsupportedOperationException("" + this);
     }
 

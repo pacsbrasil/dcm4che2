@@ -39,8 +39,6 @@ import java.util.zip.InflaterInputStream;
 
 import javax.imageio.stream.ImageInputStream;
 
-import java.util.logging.*;
-
 /** Implementation of <code>Dataset</code> container objects.
  *
  * @author  gunter.zeilinger@tiani.com
@@ -84,11 +82,11 @@ final class DatasetImpl extends BaseDatasetImpl
         return elm1pos == -1L ? -1L : elm1pos - 8L;
     }
 
-    public DcmElement setSQ(int tag) {
-        return set(new SQElement(tag, this));
+    public DcmElement putSQ(int tag) {
+        return put(new SQElement(tag, this));
     }
 
-    protected DcmElement set(DcmElement newElem) {
+    protected DcmElement put(DcmElement newElem) {
         if ((newElem.tag() >>> 16) < 4)
             throw new IllegalArgumentException(newElem.toString());
 
@@ -101,7 +99,7 @@ final class DatasetImpl extends BaseDatasetImpl
             }
         }
 
-        return super.set(newElem);
+        return super.put(newElem);
     }
     
     public DcmElement remove(int tag) {

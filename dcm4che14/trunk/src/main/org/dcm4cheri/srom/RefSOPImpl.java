@@ -73,8 +73,8 @@ class RefSOPImpl implements org.dcm4che.srom.RefSOP {
     }
 
     public void toDataset(Dataset ds) {
-        ds.setUI(Tags.RefSOPInstanceUID, refSOPClassUID);
-        ds.setUI(Tags.RefSOPClassUID, refSOPInstanceUID);
+        ds.putUI(Tags.RefSOPInstanceUID, refSOPClassUID);
+        ds.putUI(Tags.RefSOPClassUID, refSOPInstanceUID);
     }    
     
     public final String getRefSOPClassUID() {

@@ -110,8 +110,7 @@ public class StringUtils {
             case VRs.FL:
                 return promptFL(bb, maxlen);
             case VRs.OB: case VRs.UN:
-                return promptBytes(
-                     bb.array(), bb.arrayOffset(), bb.limit(), maxlen);
+                return promptOB(bb, maxlen);
             case VRs.OF:
                 return promptOF(bb, maxlen);
             case VRs.OW:
@@ -170,6 +169,10 @@ public class StringUtils {
         return truncate(sb.toString(), maxlen);        
     }
 
+    public static String promptOB(ByteBuffer bb, int maxlen) {
+        return promptBytes(bb.array(), bb.arrayOffset(), bb.limit(), maxlen);
+    }
+    
     public static String promptOF(ByteBuffer bb, int maxlen) {
         return promptFL(bb, maxlen);
     }

@@ -168,27 +168,27 @@ public class DatasetTest extends TestCase {
     private static final String[] TEXT_VALUE = { "Text Value" };
          
     private void setStrings() {
-        ds.setAE(Tags.ScheduledStationAET, SCHEDULED_STATION_AET);
-        ds.setAS(Tags.PatientAge, PATIENT_AGE);
-        ds.setCS(Tags.ImageType, IMAGE_TYPE);
-        ds.setDA(Tags.StudyDate, STUDY_DATE);
-        ds.setDS(Tags.ImagePosition, IMAGE_POSITION);
-        ds.setDT(Tags.AcquisitionDatetime, ACQUISITION_DATETIME);
-        ds.setFL(Tags.AnchorPoint, ANCHOR_POINT);
-        ds.setFD(Tags.TableOfYBreakPoints, TABLE_OF_Y_BREAK_POINTS);
-        ds.setIS(Tags.RefFrameNumber, REF_FRAME_NUMBER);
-        ds.setLO(Tags.OtherPatientIDs, OTHER_PATIENT_IDS);
-        ds.setLT(Tags.AdditionalPatientHistory, ADDITIONAL_PATIENT_HISTORY);
-        ds.setPN(Tags.OtherPatientNames, OTHER_PATIENT_NAMES);
-        ds.setSH(Tags.AccessionNumber, ACCESSION_NUMBER);
-        ds.setSL(Tags.DisplayedAreaBottomRightHandCorner, DISPLAYED_AREA_BRHC);
-        ds.setSS(Tags.OverlayOrigin, OVERLAY_ORIGIN);
-        ds.setST(Tags.DerivationDescription, DERIVATION_DESCRIPTION);
-        ds.setTM(Tags.StudyTime, STUDY_TIME);
-        ds.setUI(Tags.SOPClassesSupported, SOP_CLASSES_SUPPORTED);
-        ds.setUL(Tags.RefSamplePositions, REF_SAMPLE_POSITIONS);
-        ds.setUS(Tags.RefFrameNumbers, REF_FRAME_NUMBER);
-        ds.setUT(Tags.TextValue, TEXT_VALUE);
+        ds.putAE(Tags.ScheduledStationAET, SCHEDULED_STATION_AET);
+        ds.putAS(Tags.PatientAge, PATIENT_AGE);
+        ds.putCS(Tags.ImageType, IMAGE_TYPE);
+        ds.putDA(Tags.StudyDate, STUDY_DATE);
+        ds.putDS(Tags.ImagePosition, IMAGE_POSITION);
+        ds.putDT(Tags.AcquisitionDatetime, ACQUISITION_DATETIME);
+        ds.putFL(Tags.AnchorPoint, ANCHOR_POINT);
+        ds.putFD(Tags.TableOfYBreakPoints, TABLE_OF_Y_BREAK_POINTS);
+        ds.putIS(Tags.RefFrameNumber, REF_FRAME_NUMBER);
+        ds.putLO(Tags.OtherPatientIDs, OTHER_PATIENT_IDS);
+        ds.putLT(Tags.AdditionalPatientHistory, ADDITIONAL_PATIENT_HISTORY);
+        ds.putPN(Tags.OtherPatientNames, OTHER_PATIENT_NAMES);
+        ds.putSH(Tags.AccessionNumber, ACCESSION_NUMBER);
+        ds.putSL(Tags.DisplayedAreaBottomRightHandCorner, DISPLAYED_AREA_BRHC);
+        ds.putSS(Tags.OverlayOrigin, OVERLAY_ORIGIN);
+        ds.putST(Tags.DerivationDescription, DERIVATION_DESCRIPTION);
+        ds.putTM(Tags.StudyTime, STUDY_TIME);
+        ds.putUI(Tags.SOPClassesSupported, SOP_CLASSES_SUPPORTED);
+        ds.putUL(Tags.RefSamplePositions, REF_SAMPLE_POSITIONS);
+        ds.putUS(Tags.RefFrameNumbers, REF_FRAME_NUMBER);
+        ds.putUT(Tags.TextValue, TEXT_VALUE);
     }
     
     public void testGetString() throws Exception {

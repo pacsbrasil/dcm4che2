@@ -54,20 +54,28 @@ class SQElement extends DcmElementImpl {
         return list.size();
     }
     
-    public Dataset getDataset(int index) {
+    public final boolean hasItems() {
+       return true;
+    }
+
+    public Dataset getItem(int index) {
         return (Dataset)list.get(index);
     }
     
-    public Dataset addNewDataset() {
-        Dataset ds = new DatasetImpl(parent);
-        list.add(ds);
-        return ds;
+    public void addtem(Dataset item) {
+        list.add(item);
+    }
+
+    public Dataset addNewItem() {
+        Dataset item = new DatasetImpl(parent);
+        list.add(item);
+        return item;
     }
 
     public int calcLength(DcmEncodeParam param) {
         totlen = param.undefSeqLen ? 8 : 0;
         for (int i = 0, n = vm(); i < n; ++i)
-            totlen += getDataset(i).calcLength(param) +
+            totlen += getItem(i).calcLength(param) +
                     (param.undefItemLen ? 16 : 8);
         return totlen;
     }
@@ -78,11 +86,12 @@ class SQElement extends DcmElementImpl {
 
     public String toString() {
        StringBuffer sb = new StringBuffer(DICT.toString(tag));
-       sb.append(",SQ,[");
-       for (int i = 0, n = vm(); i < n; ++i) {
-           sb.append("\n  Item-").append(i+1).append(getDataset(i));
+       sb.append(",SQ");
+       if (!isEmpty()) {
+          for (int i = 0, n = vm(); i < n; ++i) {
+              sb.append("\n\tItem-").append(i+1).append(getItem(i));
+          }
        }
-       sb.append("\n]");
        return sb.toString();
     }
 }

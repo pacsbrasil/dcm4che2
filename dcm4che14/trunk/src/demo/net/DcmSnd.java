@@ -365,7 +365,7 @@ public class DcmSnd {
    private void doOverwrite(Dataset ds) {
       for (Iterator it = overwrite.iterator(); it.hasNext();) {
          DcmElement el = (DcmElement)it.next();
-         ds.setXX(el.tag(), el.vr(), el.getByteBuffer());
+         ds.putXX(el.tag(), el.vr(), el.getByteBuffer());
       }
    }
             
@@ -520,7 +520,7 @@ public class DcmSnd {
          String key = (String)it.nextElement();
          if (key.startsWith("set.")) {
             try {
-               overwrite.setXX(Tags.forName(key.substring(4)),
+               overwrite.putXX(Tags.forName(key.substring(4)),
                   cfg.getProperty(key));
             } catch (Exception e) {
                throw new IllegalArgumentException(

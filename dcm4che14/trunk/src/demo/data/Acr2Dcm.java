@@ -131,7 +131,7 @@ public class Acr2Dcm {
             int pxlen = p.getReadLength();
             if (hasPixelData) {
                 if (inflate) {
-                    ds.setUS(Tags.BitsAllocated, 16);
+                    ds.putUS(Tags.BitsAllocated, 16);
                     pxlen = pxlen * 4 / 3;
                 }
                 if (pxlen != (ds.getInt(Tags.BitsAllocated, 0) >>> 3)
@@ -143,15 +143,15 @@ public class Acr2Dcm {
                      return;
                 }
             }
-            ds.setUI(Tags.StudyInstanceUID, uid(studyUID));
-            ds.setUI(Tags.SeriesInstanceUID, uid(seriesUID));
-            ds.setUI(Tags.SOPInstanceUID, uid(instUID));
-            ds.setUI(Tags.SOPClassUID, classUID);
+            ds.putUI(Tags.StudyInstanceUID, uid(studyUID));
+            ds.putUI(Tags.SeriesInstanceUID, uid(seriesUID));
+            ds.putUI(Tags.SOPInstanceUID, uid(instUID));
+            ds.putUI(Tags.SOPClassUID, classUID);
             if (!ds.contains(Tags.NumberOfSamples)) {
-                ds.setUS(Tags.NumberOfSamples,1);
+                ds.putUS(Tags.NumberOfSamples,1);
             }
             if (!ds.contains(Tags.PhotometricInterpretation)) {
-                ds.setCS(Tags.PhotometricInterpretation,"MONOCHROME2");
+                ds.putCS(Tags.PhotometricInterpretation,"MONOCHROME2");
             }
             
             if (fmi) {

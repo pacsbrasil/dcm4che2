@@ -134,16 +134,16 @@ final class EquipmentImpl implements Equipment {
     }
 
     public void toDataset(Dataset ds) {
-        ds.setLO(Tags.Manufacturer, manufacturer);
+        ds.putLO(Tags.Manufacturer, manufacturer);
         if (institutionName != null)
-            ds.setLO(Tags.InstitutionName, institutionName);
+            ds.putLO(Tags.InstitutionName, institutionName);
         if (institutionAddress != null)
-            ds.setST(Tags.InstitutionAddress, institutionAddress);
+            ds.putST(Tags.InstitutionAddress, institutionAddress);
         if (stationName != null)
-            ds.setSH(Tags.StationName, stationName);
+            ds.putSH(Tags.StationName, stationName);
         if (departmentName != null)
-            ds.setLO(Tags.InstitutionalDepartmentName, departmentName);
+            ds.putLO(Tags.InstitutionalDepartmentName, departmentName);
         if (modelName != null)
-            ds.setLO(Tags.ManufacturerModelName, modelName);
+            ds.putLO(Tags.ManufacturerModelName, modelName);
     }
 }

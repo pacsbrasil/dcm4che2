@@ -308,7 +308,7 @@ public class DcmDir {
          throw new IllegalArgumentException("Unkown tag name in dcmdir.cfg - "
                + key.substring(pos2+1));
       }
-      ds.setXX(tag, VRMap.DEFAULT.lookup(tag));
+      ds.putXX(tag, VRMap.DEFAULT.lookup(tag));
    }
       
       

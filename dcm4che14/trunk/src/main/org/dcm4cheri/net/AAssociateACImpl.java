@@ -23,9 +23,11 @@
 
 package org.dcm4cheri.net;
 
-import org.dcm4che.net.*;
+import org.dcm4che.net.AAssociateAC;
+import org.dcm4che.net.PresContext;
+import org.dcm4che.net.PDUException;
 
-import java.io.*;
+import java.util.Iterator;
 
 /**
  *
@@ -52,5 +54,22 @@ final class AAssociateACImpl extends AAssociateRQACImpl
 
     protected String typeAsString() {
        return "AAssociateAC";
+    }
+
+    protected void append(PresContext pc, StringBuffer sb) {
+       sb.append("\n\tpc-").append(pc.pcid())
+         .append(":\t").append(pc.resultAsString())
+         .append("\n\t\tts=").append(DICT.lookup(pc.getTransferSyntaxUID()));       
+    }
+
+    protected void appendPresCtxSummary(StringBuffer sb) {
+       int accepted = 0;
+       for (Iterator it = presCtxs.values().iterator(); it.hasNext();) {
+          if(((PresContext)it.next()).result() == 0)
+             ++accepted;
+       }
+       
+       sb.append("\n\tpresCtx:\taccepted=").append(accepted)
+         .append(", rejected=").append(presCtxs.size() - accepted);
     }
 }

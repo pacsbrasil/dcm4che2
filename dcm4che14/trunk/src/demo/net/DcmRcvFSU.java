@@ -140,7 +140,7 @@ class DcmRcvFSU implements AssociationListener, Runnable
          throw new IllegalArgumentException("Unkown tag name in dcmrcv.cfg - "
                + key.substring(pos2+1));
       }
-      ds.setXX(tag);
+      ds.putXX(tag);
    }
       
    // Public --------------------------------------------------------

@@ -44,7 +44,7 @@ public interface UIDDictionary {
             this.name = name;
         }
 	public String toString() {
-	    return name + "{" + uid + "}";
+	    return uid + " " + name;
 	}
     }
     

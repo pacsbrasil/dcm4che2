@@ -193,8 +193,6 @@ public class DcmRcv extends DcmServiceBase {
       if (bufferSize > 0) {
          buffer = new byte[bufferSize];
       }
-      log.info(MessageFormat.format(messages.getString("start"),
-            new Object[]{ new Date(), "" + port }));
       if (tls != null) {
          server.start(port, tls.getServerSocketFactory());
       } else {
@@ -231,7 +229,7 @@ public class DcmRcv extends DcmServiceBase {
             ie.printStackTrace();
          }
       }
-      rspCmd.setUS(Tags.Status, SUCCESS);
+      rspCmd.putUS(Tags.Status, SUCCESS);
    }
    
    private OutputStream openOutputStream(File file)
@@ -290,7 +288,7 @@ public class DcmRcv extends DcmServiceBase {
    private void doOverwrite(Dataset ds) {
       for (Iterator it = overwrite.iterator(); it.hasNext();) {
          DcmElement el = (DcmElement)it.next();
-         ds.setXX(el.tag(), el.vr(), el.getByteBuffer());
+         ds.putXX(el.tag(), el.vr(), el.getByteBuffer());
       }
    }
          
@@ -315,13 +313,16 @@ public class DcmRcv extends DcmServiceBase {
    }
       
    private static void listConfig(Configuration cfg) {
+      StringBuffer msg = new StringBuffer();
+      msg.append(messages.getString("cfg"));
       for (int i = 0, n = LONG_OPTS.length - 2; i < n; ++i) {
          String opt = LONG_OPTS[i].getName();
          String val = cfg.getProperty(opt);
          if (val != null) {
-            log.info(opt + "=" + val);
+            msg.append("\n\t").append(opt).append("=").append(val);
          }
       }
+      log.info(msg.toString());
    }
 
    private static void exit(String prompt, boolean error) {
@@ -397,7 +398,7 @@ public class DcmRcv extends DcmServiceBase {
          String key = (String)it.nextElement();
          if (key.startsWith("set.")) {
             try {
-               overwrite.setXX(Tags.forName(key.substring(4)),
+               overwrite.putXX(Tags.forName(key.substring(4)),
                   cfg.getProperty(key));
             } catch (Exception e) {
                throw new IllegalArgumentException(

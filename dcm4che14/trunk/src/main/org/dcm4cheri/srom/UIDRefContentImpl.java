@@ -77,6 +77,6 @@ class UIDRefContentImpl extends NamedContentImpl implements UIDRefContent {
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setUI(Tags.UID, uid);
+        ds.putUI(Tags.UID, uid);
     }
 }

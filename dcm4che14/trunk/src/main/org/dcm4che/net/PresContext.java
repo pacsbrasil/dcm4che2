@@ -47,5 +47,8 @@ public interface PresContext {
     public String getTransferSyntaxUID();
 
     public List getTransferSyntaxUIDs();
+    
+    public String resultAsString();
+    
 }
 

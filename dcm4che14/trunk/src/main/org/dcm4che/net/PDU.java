@@ -42,5 +42,7 @@ public interface PDU {
     public static final int A_ABORT        = 7;
 
     public void writeTo(OutputStream out) throws IOException;
+
+    public String toString(boolean verbose);
 }
 

@@ -66,52 +66,52 @@ public class DirBuilderTest extends TestCase {
     
     private Dataset getPatientFilter() {
         Dataset retval = objFact.newDataset();
-        retval.setCS(Tags.SpecificCharacterSet);
-        retval.setPN(Tags.PatientName);
-        retval.setLO(Tags.PatientID);
-        retval.setDA(Tags.PatientBirthDate);
-        retval.setCS(Tags.PatientSex);
+        retval.putCS(Tags.SpecificCharacterSet);
+        retval.putPN(Tags.PatientName);
+        retval.putLO(Tags.PatientID);
+        retval.putDA(Tags.PatientBirthDate);
+        retval.putCS(Tags.PatientSex);
         return retval;
     }
     
     private Dataset getStudyFilter() {
         Dataset retval = objFact.newDataset();
-        retval.setCS(Tags.SpecificCharacterSet);
-        retval.setDA(Tags.StudyDate);
-        retval.setTM(Tags.StudyTime);
-        retval.setSH(Tags.AccessionNumber);
-        retval.setPN(Tags.ReferringPhysicianName);
-        retval.setLO(Tags.StudyDescription);
-        retval.setSQ(Tags.ProcedureCodeSeq);
-        retval.setUI(Tags.StudyInstanceUID);
-        retval.setSH(Tags.StudyID);
+        retval.putCS(Tags.SpecificCharacterSet);
+        retval.putDA(Tags.StudyDate);
+        retval.putTM(Tags.StudyTime);
+        retval.putSH(Tags.AccessionNumber);
+        retval.putPN(Tags.ReferringPhysicianName);
+        retval.putLO(Tags.StudyDescription);
+        retval.putSQ(Tags.ProcedureCodeSeq);
+        retval.putUI(Tags.StudyInstanceUID);
+        retval.putSH(Tags.StudyID);
         return retval;
     }
 
     private Dataset getSeriesFilter() {
         Dataset retval = objFact.newDataset();
-        retval.setCS(Tags.SpecificCharacterSet);
-        retval.setDA(Tags.SeriesDate);
-        retval.setTM(Tags.SeriesTime);
-        retval.setCS(Tags.Modality);
-        retval.setLO(Tags.Manufacturer);
-        retval.setLO(Tags.SeriesDescription);
-        retval.setCS(Tags.BodyPartExamined);
-        retval.setUI(Tags.SeriesInstanceUID);
-        retval.setIS(Tags.SeriesNumber);
-        retval.setCS(Tags.Laterality);
+        retval.putCS(Tags.SpecificCharacterSet);
+        retval.putDA(Tags.SeriesDate);
+        retval.putTM(Tags.SeriesTime);
+        retval.putCS(Tags.Modality);
+        retval.putLO(Tags.Manufacturer);
+        retval.putLO(Tags.SeriesDescription);
+        retval.putCS(Tags.BodyPartExamined);
+        retval.putUI(Tags.SeriesInstanceUID);
+        retval.putIS(Tags.SeriesNumber);
+        retval.putCS(Tags.Laterality);
         return retval;
     }
     
     private Dataset getImageFilter() {
         Dataset retval = objFact.newDataset();
-        retval.setCS(Tags.SpecificCharacterSet);
-        retval.setDA(Tags.ContentDate);
-        retval.setTM(Tags.ContentTime);
-        retval.setSQ(Tags.RefImageSeq);
-        retval.setLO(Tags.ContrastBolusAgent);
-        retval.setIS(Tags.InstanceNumber);
-        retval.setIS(Tags.NumberOfFrames);
+        retval.putCS(Tags.SpecificCharacterSet);
+        retval.putDA(Tags.ContentDate);
+        retval.putTM(Tags.ContentTime);
+        retval.putSQ(Tags.RefImageSeq);
+        retval.putLO(Tags.ContrastBolusAgent);
+        retval.putIS(Tags.InstanceNumber);
+        retval.putIS(Tags.NumberOfFrames);
         return retval;
     }
     

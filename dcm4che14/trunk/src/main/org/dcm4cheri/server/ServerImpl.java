@@ -57,13 +57,14 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   static final Logger log = Logger.getLogger("dcm4che.net");
+   static final Logger log = Logger.getLogger("dcm4che.server.Server");
 
    private final Handler handler;
    private final LF_ThreadPool threadPool = new LF_ThreadPool(this);
    private ServerSocket ss;
    private int port = 104;
    private boolean startHandshake = true;
+   private boolean closeSocket = false;
       
    // Static --------------------------------------------------------
    
@@ -129,7 +130,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
       try {
          s = ss.accept();
          if (log.isInfoEnabled()) {
-            log.info("Accept connection " + s);
+            log.info("handle - " + s);
          }
          if (s instanceof SSLSocket) {
             prepare((SSLSocket)s);
@@ -137,11 +138,17 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
          
          pool.promoteNewLeader();
          handler.handle(s);
+         if (closeSocket && s != null) {
+            try { s.close(); } catch (IOException ignore) {}
+         }
       } catch (IOException ioe) {
          ioe.printStackTrace();
-      } finally {
-         if (s != null)
-            try { s.close(); } catch (IOException ignore) {}
+         if (s != null) {
+            try { s.close(); } catch (IOException ignore) {};
+         }
+      }
+      if (log.isInfoEnabled()) {
+         log.info("finished - " + s);
       }
    }
       

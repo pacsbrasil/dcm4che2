@@ -135,21 +135,21 @@ class StudyImpl implements org.dcm4che.srom.Study {
     }
 
     public void toDataset(Dataset ds) {
-        ds.setUI(Tags.StudyInstanceUID, studyInstanceUID);
-        ds.setSH(Tags.StudyID, studyID);
+        ds.putUI(Tags.StudyInstanceUID, studyInstanceUID);
+        ds.putSH(Tags.StudyID, studyID);
         Date date = getStudyDateTime();
-        ds.setDA(Tags.StudyDate, date);
-        ds.setTM(Tags.StudyTime, date);
-        ds.setPN(Tags.ReferringPhysicianName, referringPhysicianName);
-        ds.setLO(Tags.AccessionNumber, accessionNumber);
+        ds.putDA(Tags.StudyDate, date);
+        ds.putTM(Tags.StudyTime, date);
+        ds.putPN(Tags.ReferringPhysicianName, referringPhysicianName);
+        ds.putLO(Tags.AccessionNumber, accessionNumber);
                 
         if (studyDescription != null)
-            ds.setLO(Tags.StudyDescription, studyDescription);
+            ds.putLO(Tags.StudyDescription, studyDescription);
         
         if (procedureCodes.length != 0) {
-            DcmElement sq = ds.setSQ(Tags.ProcedureCodeSeq);
+            DcmElement sq = ds.putSQ(Tags.ProcedureCodeSeq);
             for (int i = 0; i < procedureCodes.length; ++i) {
-                procedureCodes[i].toDataset(sq.addNewDataset());
+                procedureCodes[i].toDataset(sq.addNewItem());
             }
         }
     }

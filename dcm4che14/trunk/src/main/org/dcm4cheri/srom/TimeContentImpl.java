@@ -80,6 +80,6 @@ class TimeContentImpl extends NamedContentImpl implements TimeContent {
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setTM(Tags.Time, getTime());
+        ds.putTM(Tags.Time, getTime());
     }
 }

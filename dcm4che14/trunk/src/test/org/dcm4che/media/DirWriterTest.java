@@ -113,9 +113,9 @@ public class DirWriterTest extends TestCase {
     private final DcmObjectFactory dsfact = DcmObjectFactory.getInstance();
     private Dataset newPatient(String id, String name) throws Exception {
         Dataset pat = dsfact.newDataset();
-        pat.setCS(Tags.SpecificCharacterSet, CHARSET);
-        pat.setLO(Tags.PatientID, id);
-        pat.setPN(Tags.PatientName, name);
+        pat.putCS(Tags.SpecificCharacterSet, CHARSET);
+        pat.putLO(Tags.PatientID, id);
+        pat.putPN(Tags.PatientName, name);
         return pat;
     }        
     
@@ -129,13 +129,13 @@ public class DirWriterTest extends TestCase {
     private Dataset newStudy(String id, String uid, Date date, String desc,
             String accNo) throws Exception {
         Dataset study = dsfact.newDataset();
-        study.setCS(Tags.SpecificCharacterSet, CHARSET);
-        study.setSH(Tags.StudyID, id);
-        study.setUI(Tags.StudyInstanceUID, uid);
-        study.setLO(Tags.StudyDescription, desc);
-        study.setSH(Tags.AccessionNumber, accNo);
-        study.setDA(Tags.StudyDate, date);
-        study.setTM(Tags.StudyTime, date);
+        study.putCS(Tags.SpecificCharacterSet, CHARSET);
+        study.putSH(Tags.StudyID, id);
+        study.putUI(Tags.StudyInstanceUID, uid);
+        study.putLO(Tags.StudyDescription, desc);
+        study.putSH(Tags.AccessionNumber, accNo);
+        study.putDA(Tags.StudyDate, date);
+        study.putTM(Tags.StudyTime, date);
         return study;
     }        
 
@@ -151,9 +151,9 @@ public class DirWriterTest extends TestCase {
     private Dataset newSeries(String md, int no, String uid)
             throws Exception {
         Dataset series = dsfact.newDataset();
-        series.setCS(Tags.Modality, md);
-        series.setIS(Tags.SeriesNumber, no);
-        series.setUI(Tags.SeriesInstanceUID, uid);
+        series.putCS(Tags.Modality, md);
+        series.putIS(Tags.SeriesNumber, no);
+        series.putUI(Tags.SeriesInstanceUID, uid);
         return series;
     }
     
@@ -167,7 +167,7 @@ public class DirWriterTest extends TestCase {
     private Dataset newImage(int no)
             throws Exception {
         Dataset img = dsfact.newDataset();
-        img.setIS(Tags.InstanceNumber, no);
+        img.putIS(Tags.InstanceNumber, no);
         return img;
     }
     

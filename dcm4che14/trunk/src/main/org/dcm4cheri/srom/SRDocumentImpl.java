@@ -74,8 +74,8 @@ class SRDocumentImpl extends KeyObjectImpl
                 ds.getString(Tags.SOPInstanceUID),
                 ds.getInt(Tags.InstanceNumber, -1),
                 ds.getDate(Tags.ObservationDateTime),
-                new TemplateImpl(ds.getNestedDataset(Tags.ContentTemplateSeq)),
-                new CodeImpl(ds.getNestedDataset(Tags.ConceptNameCodeSeq)),
+                new TemplateImpl(ds.getItem(Tags.ContentTemplateSeq)),
+                new CodeImpl(ds.getItem(Tags.ConceptNameCodeSeq)),
                 "SEPARATE".equals(ds.getString(Tags.ContinuityOfContent)));
         sr.init(ds);
         return sr;
@@ -100,7 +100,7 @@ class SRDocumentImpl extends KeyObjectImpl
             return;
         
         for (int i = 0, n = sq.vm(); i < n; ++i) {
-            addVerification(new VerificationImpl(sq.getDataset(i)));
+            addVerification(new VerificationImpl(sq.getItem(i)));
         }
     }
     
@@ -243,28 +243,28 @@ class SRDocumentImpl extends KeyObjectImpl
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setCS(Tags.CompletionFlag, complete ? "COMPLETE" : "PARTIAL");
-        ds.setLO(Tags.CompletionFlagDescription, completionFlagDescription);
-        ds.setCS(Tags.VerificationFlag, verified ? "VERIFIED" : "UNVERIFIED");
+        ds.putCS(Tags.CompletionFlag, complete ? "COMPLETE" : "PARTIAL");
+        ds.putLO(Tags.CompletionFlagDescription, completionFlagDescription);
+        ds.putCS(Tags.VerificationFlag, verified ? "VERIFIED" : "UNVERIFIED");
         if (!verifications.isEmpty()) {
-            DcmElement sq = ds.setSQ(Tags.VerifyingObserverSeq);
+            DcmElement sq = ds.putSQ(Tags.VerifyingObserverSeq);
             for (Iterator it =verifications.iterator(); it.hasNext();) {
-                ((Verification)it.next()).toDataset(sq.addNewDataset());
+                ((Verification)it.next()).toDataset(sq.addNewItem());
             }
         }        
         if (!predecessorDocuments.isEmpty()) {
             sopInstanceRefListToSQ(predecessorDocuments,
-                    ds.setSQ(Tags.PredecessorDocumentsSeq));
+                    ds.putSQ(Tags.PredecessorDocumentsSeq));
         }
         if (!procedureCodes.isEmpty()) {
-            DcmElement sq = ds.setSQ(Tags.PerformedProcedureCodeSeq);
+            DcmElement sq = ds.putSQ(Tags.PerformedProcedureCodeSeq);
             for (Iterator it = procedureCodes.iterator(); it.hasNext();) {
-                ((Code)it.next()).toDataset(sq.addNewDataset());
+                ((Code)it.next()).toDataset(sq.addNewItem());
             }
         }        
         if (!otherEvidence.isEmpty()) {
             sopInstanceRefListToSQ(otherEvidence,
-                    ds.setSQ(Tags.PertinentOtherEvidenceSeq));
+                    ds.putSQ(Tags.PertinentOtherEvidenceSeq));
         }
     }
 }

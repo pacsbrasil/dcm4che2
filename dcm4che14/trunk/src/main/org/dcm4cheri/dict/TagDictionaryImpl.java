@@ -68,7 +68,7 @@ public class TagDictionaryImpl implements org.dcm4che.dict.TagDictionary,
     public String toString(int tag) {
        Entry e = lookup(tag);
        return e != null
-            ? Tags.toString(new StringBuffer(e.name), tag).toString()
+            ? (Tags.toString(tag) + " " + e.name)
             : Tags.toString(tag);
     }    
     

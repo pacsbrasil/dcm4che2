@@ -190,7 +190,7 @@ final class PresContextImpl implements PresContext {
 	return sb.append("]");
     }
 
-    private String resultAsString() {
+    public String resultAsString() {
         switch (result()) {
             case ACCEPTANCE:
                 return "0 - acceptance";

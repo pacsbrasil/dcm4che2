@@ -81,6 +81,6 @@ class DateTimeContentImpl extends NamedContentImpl implements DateTimeContent {
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setDT(Tags.DateTime, getDateTime());
+        ds.putDT(Tags.DateTime, getDateTime());
     }
 }

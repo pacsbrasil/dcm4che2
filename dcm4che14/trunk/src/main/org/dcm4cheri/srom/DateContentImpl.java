@@ -81,6 +81,6 @@ class DateContentImpl extends NamedContentImpl implements DateContent {
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setDA(Tags.Date, getDate());
+        ds.putDA(Tags.Date, getDate());
     }
 }

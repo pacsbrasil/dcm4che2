@@ -78,6 +78,6 @@ class PNameContentImpl extends NamedContentImpl implements PNameContent {
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setPN(Tags.PersonName, pname);
+        ds.putPN(Tags.PersonName, pname);
     }
 }

@@ -75,6 +75,6 @@ class CodeContentImpl extends NamedContentImpl implements CodeContent {
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        code.toDataset(ds.setSQ(Tags.ConceptCodeSeq).addNewDataset());
+        code.toDataset(ds.putSQ(Tags.ConceptCodeSeq).addNewItem());
     }
 }

@@ -85,8 +85,8 @@ class NumContentImpl extends NamedContentImpl implements NumContent {
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        Dataset mv = ds.setSQ(Tags.MeasuredValueSeq).addNewDataset();
-        mv.setDS(Tags.NumericValue, value);
-        unit.toDataset(mv.setSQ(Tags.MeasurementUnitsCodeSeq).addNewDataset());
+        Dataset mv = ds.putSQ(Tags.MeasuredValueSeq).addNewItem();
+        mv.putDS(Tags.NumericValue, value);
+        unit.toDataset(mv.putSQ(Tags.MeasurementUnitsCodeSeq).addNewItem());
     }
 }

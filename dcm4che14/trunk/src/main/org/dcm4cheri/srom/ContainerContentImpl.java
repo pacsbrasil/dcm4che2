@@ -71,7 +71,7 @@ class ContainerContentImpl extends NamedContentImpl
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setCS(Tags.ContinuityOfContent,
+        ds.putCS(Tags.ContinuityOfContent,
                 separate ? "SEPARATE" : "CONTINUOUS");
     }
 

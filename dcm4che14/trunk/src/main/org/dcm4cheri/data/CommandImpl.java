@@ -27,8 +27,6 @@ import org.dcm4che.data.*;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.dict.UIDDictionary;
-import org.dcm4che.dict.DictionaryFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,8 +42,6 @@ import java.util.Iterator;
  */
 final class CommandImpl extends DcmObjectImpl implements Command {
    
-   private static UIDDictionary DICT =
-      DictionaryFactory.getInstance().getDefaultUIDDictionary();
    private int cmdField = -1;
    private int dataSetType = -1;
    private int status = -1;
@@ -147,21 +143,21 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       if (sopClassUID.length() == 0) {
          throw new IllegalArgumentException();
       }
-      setUI(Tags.AffectedSOPClassUID, sopClassUID);
-      setUS(Tags.CommandField, cmd);
-      setUS(Tags.MessageID, msgID);
-      setUS(Tags.Priority, priority);
+      putUI(Tags.AffectedSOPClassUID, sopClassUID);
+      putUS(Tags.CommandField, cmd);
+      putUS(Tags.MessageID, msgID);
+      putUS(Tags.Priority, priority);
       return this;
    }
    
    private Command initCxxxxRSP(int cmd, int msgID, String sopClassUID,
    int status) {
       if (sopClassUID != null) {
-         setUI(Tags.AffectedSOPClassUID, sopClassUID);
+         putUI(Tags.AffectedSOPClassUID, sopClassUID);
       }
-      setUS(Tags.CommandField, cmd);
-      setUS(Tags.MessageIDToBeingRespondedTo, msgID);
-      setUS(Tags.Status, status);
+      putUS(Tags.CommandField, cmd);
+      putUS(Tags.MessageIDToBeingRespondedTo, msgID);
+      putUS(Tags.Status, status);
       return this;
    }
    
@@ -171,7 +167,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
          throw new IllegalArgumentException();
       }
       initCxxxxRQ(C_STORE_RQ, msgID, sopClassUID, priority);
-      setUI(Tags.AffectedSOPInstanceUID, sopInstUID);
+      putUI(Tags.AffectedSOPInstanceUID, sopInstUID);
       return this;
    }
    
@@ -179,8 +175,8 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       if (aet.length() == 0) {
          throw new IllegalArgumentException();
       }
-      setAE(Tags.MoveOriginatorAET, aet);
-      setUS(Tags.MoveOriginatorMessageID, msgID);
+      putAE(Tags.MoveOriginatorAET, aet);
+      putUS(Tags.MoveOriginatorMessageID, msgID);
       return this;
    }
    
@@ -199,8 +195,8 @@ final class CommandImpl extends DcmObjectImpl implements Command {
    }
    
    public Command initCCancelRQ(int msgID) {
-      setUS(Tags.CommandField, C_CANCEL_RQ);
-      setUS(Tags.MessageIDToBeingRespondedTo, msgID);
+      putUS(Tags.CommandField, C_CANCEL_RQ);
+      putUS(Tags.MessageIDToBeingRespondedTo, msgID);
       return this;
    }
    
@@ -218,7 +214,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
          throw new IllegalArgumentException();
       }
       initCxxxxRQ(C_MOVE_RQ, msgID, sopClassUID, priority);
-      setAE(Tags.MoveDestination, moveDest);
+      putAE(Tags.MoveDestination, moveDest);
       return this;
    }
    
@@ -230,9 +226,9 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       if (sopClassUID.length() == 0) {
          throw new IllegalArgumentException();
       }
-      setUI(Tags.AffectedSOPClassUID, sopClassUID);
-      setUS(Tags.CommandField, C_ECHO_RQ);
-      setUS(Tags.MessageID, msgID);
+      putUI(Tags.AffectedSOPClassUID, sopClassUID);
+      putUS(Tags.CommandField, C_ECHO_RQ);
+      putUS(Tags.MessageID, msgID);
       return this;
    }
    
@@ -256,23 +252,23 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       if (sopInstanceUID.length() == 0) {
          throw new IllegalArgumentException();
       }
-      setUI(Tags.RequestedSOPClassUID, sopClassUID);
-      setUS(Tags.CommandField, cmd);
-      setUS(Tags.MessageID, msgID);
-      setUI(Tags.RequestedSOPInstanceUID, sopInstanceUID);
+      putUI(Tags.RequestedSOPClassUID, sopClassUID);
+      putUS(Tags.CommandField, cmd);
+      putUS(Tags.MessageID, msgID);
+      putUI(Tags.RequestedSOPInstanceUID, sopInstanceUID);
       return this;
    }
    
    private Command initNxxxxRSP(int cmd, int msgID, String sopClassUID,
          String sopInstanceUID, int status) {
       if (sopClassUID != null) {
-         setUI(Tags.AffectedSOPClassUID, sopClassUID);
+         putUI(Tags.AffectedSOPClassUID, sopClassUID);
       }
-      setUS(Tags.CommandField, cmd);
-      setUS(Tags.MessageIDToBeingRespondedTo, msgID);
-      setUS(Tags.Status, status);
+      putUS(Tags.CommandField, cmd);
+      putUS(Tags.MessageIDToBeingRespondedTo, msgID);
+      putUS(Tags.Status, status);
       if (sopInstanceUID != null) {
-         setUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
+         putUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
       }
       return this;
    }
@@ -285,11 +281,11 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       if (sopInstanceUID.length() == 0) {
          throw new IllegalArgumentException();
       }
-      setUI(Tags.AffectedSOPClassUID, sopClassUID);
-      setUS(Tags.CommandField, N_EVENT_REPORT_RQ);
-      setUS(Tags.MessageID, msgID);
-      setUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
-      setUS(Tags.EventTypeID, eventTypeID);
+      putUI(Tags.AffectedSOPClassUID, sopClassUID);
+      putUS(Tags.CommandField, N_EVENT_REPORT_RQ);
+      putUS(Tags.MessageID, msgID);
+      putUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
+      putUS(Tags.EventTypeID, eventTypeID);
       return this;
    }
    
@@ -303,7 +299,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
          String sopInstUID, int[] attrIDs) {
       initNxxxxRQ(N_GET_RQ, msgID, sopClassUID, sopInstUID);
       if (attrIDs != null) {
-         setAT(Tags.AttributeIdentifierList, attrIDs);
+         putAT(Tags.AttributeIdentifierList, attrIDs);
       }
       return this;
    }
@@ -326,7 +322,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
    public Command initNActionRQ(int msgID, String sopClassUID,
          String sopInstUID, int actionTypeID) {
       initNxxxxRQ(N_ACTION_RQ, msgID, sopClassUID, sopInstUID);
-      setUS(Tags.ActionTypeID, actionTypeID);
+      putUS(Tags.ActionTypeID, actionTypeID);
       return this;
    }
    
@@ -341,11 +337,11 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       if (sopClassUID.length() == 0) {
          throw new IllegalArgumentException();
       }
-      setUI(Tags.AffectedSOPClassUID, sopClassUID);
-      setUS(Tags.CommandField, N_CREATE_RQ);
-      setUS(Tags.MessageID, msgID);
+      putUI(Tags.AffectedSOPClassUID, sopClassUID);
+      putUS(Tags.CommandField, N_CREATE_RQ);
+      putUS(Tags.MessageID, msgID);
       if (sopInstanceUID != null) {
-         setUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
+         putUI(Tags.AffectedSOPInstanceUID, sopInstanceUID);
       }
       return this;
    }
@@ -367,7 +363,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       status);
    }
    
-   protected DcmElement set(DcmElement newElem) {
+   protected DcmElement put(DcmElement newElem) {
       int tag = newElem.tag();
       if ((tag & 0xFFFF0000) != 0x00000000)
          throw new IllegalArgumentException(newElem.toString());
@@ -403,7 +399,7 @@ final class CommandImpl extends DcmObjectImpl implements Command {
       } catch (DcmValueException ex) {
          throw new IllegalArgumentException(newElem.toString());
       }
-      return super.set(newElem);
+      return super.put(newElem);
    }
    
    public int length() {
@@ -438,15 +434,16 @@ final class CommandImpl extends DcmObjectImpl implements Command {
     }
     
     private StringBuffer toStringBuffer(StringBuffer sb) {
-       sb.append(cmdFieldAsString()).append("[id=").append(msgID);
+       sb.append(msgID).append(':').append(cmdFieldAsString());
+       if (dataSetType != NO_DATASET)
+          sb.append(" with Dataset");
        if (sopClassUID != null)
-          sb.append(",class=").append(DICT.lookup(sopClassUID));
+          sb.append("\n\tclass:\t").append(DICT.lookup(sopClassUID));
        if (sopInstUID != null)
-          sb.append(",inst=").append(DICT.lookup(sopInstUID));
-       sb.append(",dataset=").append(Integer.toHexString(dataSetType));
+          sb.append("\n\tinst:\t").append(DICT.lookup(sopInstUID));
        if (status != -1)
-          sb.append(",status=").append(Integer.toHexString(status));
-       return sb.append("]");
+          sb.append("\n\tstatus:\t").append(Integer.toHexString(status));
+       return sb;
     }
 
     private String cmdFieldAsString() {

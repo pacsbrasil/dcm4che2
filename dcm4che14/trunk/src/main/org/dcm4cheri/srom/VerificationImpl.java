@@ -61,7 +61,7 @@ class VerificationImpl implements Verification {
         this(ds.getDate(Tags.VerificationDateTime),
                 ds.getString(Tags.VerifyingObserverName),
                 ds.getString(Tags.VerifyingOrganization),
-                CodeImpl.newCode(ds.getNestedDataset(
+                CodeImpl.newCode(ds.getItem(
                         Tags.VerifyingObserverIdentificationCodeSeq)));
     }
     
@@ -83,12 +83,12 @@ class VerificationImpl implements Verification {
     }
         
     public void toDataset(Dataset ds) {
-        ds.setDT(Tags.VerificationDateTime, new Date(time));
-        ds.setPN(Tags.VerifyingObserverName, observerName);
-        ds.setLO(Tags.VerifyingOrganization, observerOrg);
+        ds.putDT(Tags.VerificationDateTime, new Date(time));
+        ds.putPN(Tags.VerifyingObserverName, observerName);
+        ds.putLO(Tags.VerifyingOrganization, observerOrg);
         observerCode.toDataset(
-            ds.setSQ(Tags.VerifyingObserverIdentificationCodeSeq)
-                    .addNewDataset());
+            ds.putSQ(Tags.VerifyingObserverIdentificationCodeSeq)
+                    .addNewItem());
     }
     
 }

@@ -104,10 +104,10 @@ final class PatientImpl implements org.dcm4che.srom.Patient {
     }
 
     public void toDataset(Dataset ds) {
-        ds.setLO(Tags.PatientID, patientID);
-        ds.setPN(Tags.PatientName, patientName);
-        ds.setCS(Tags.PatientSex, 
+        ds.putLO(Tags.PatientID, patientID);
+        ds.putPN(Tags.PatientName, patientName);
+        ds.putCS(Tags.PatientSex, 
                 patientSex != null ? patientSex.toString() : null);
-        ds.setDA(Tags.PatientBirthDate, getPatientBirthDate());
+        ds.putDA(Tags.PatientBirthDate, getPatientBirthDate());
     }
 }

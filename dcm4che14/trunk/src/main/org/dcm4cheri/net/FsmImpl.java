@@ -49,6 +49,7 @@ import java.util.TimerTask;
 import java.net.Socket;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
 
 /**
  *
@@ -56,8 +57,7 @@ import org.apache.log4j.Logger;
  * @version 1.0.0
  */
 final class FsmImpl {
-   static final Logger log = Logger.getLogger("dcm4che.Association");
-   
+   static final Logger log = Logger.getLogger("dcm4che.net.Association");   
    private final AssociationImpl assoc;
    private final boolean requestor;
    private final Socket s;
@@ -71,8 +71,6 @@ final class FsmImpl {
    private AAbort aa = null;
    private AssociationListener assocListener = null;
    private LF_ThreadPool pool = null;
-   private final int assocNo = ++assocCount;
-   private static int assocCount = 0;
    
    /** Creates a new instance of DcmULServiceImpl */
    public FsmImpl(AssociationImpl assoc, Socket s, boolean requestor)
@@ -82,11 +80,8 @@ final class FsmImpl {
       this.s = s;
       this.in = s.getInputStream();
       this.out = s.getOutputStream();
+      log.info(s.toString());
       changeState(requestor ? STA4 : STA2);
-   }
-   
-   public String toString() {
-      return "Assoc-" + assocNo + "[" + s.getInetAddress() + "]";
    }
    
    public synchronized void addAssociationListener(AssociationListener l) {
@@ -125,6 +120,10 @@ final class FsmImpl {
       return state.getType();
    }
    
+   public String getStateAsString() {
+      return state.toString();
+   }
+
    final int getWriteMaxLength() {
       if (ac == null || rq == null) {
          throw new IllegalStateException(state.toString());
@@ -193,7 +192,7 @@ final class FsmImpl {
          this.state = state;
          state.entry();
          if (log.isInfoEnabled()) {
-            log.info("" + this + ": " + state);
+            log.info(state.toString());
          }
       }
    }
@@ -291,14 +290,14 @@ final class FsmImpl {
    
    void fireReceived(Dimse dimse) {
       if (log.isInfoEnabled()) {
-         log.info("" + this + " >> " + dimse);
+         log.info("received " + dimse);
       }
       if (assocListener != null) assocListener.received(assoc, dimse);
    }
    
    void fireWrite(Dimse dimse) {
       if (log.isInfoEnabled()) {
-         log.info("" + this + " << " + dimse);
+         log.info("sending " + dimse);
       }
       if (assocListener != null) assocListener.write(assoc, dimse);
    }
@@ -306,11 +305,11 @@ final class FsmImpl {
    private void fireWrite(PDU pdu) {
       if (pdu instanceof PDataTF) {
          if (log.isDebugEnabled()) {
-            log.debug("" + this + " << " + pdu);
+            log.debug("sending " + pdu);
          }
       } else {
          if (log.isInfoEnabled()) {
-            log.info("" + this + " << " + pdu);
+            log.info("sending " + pdu.toString(log.isDebugEnabled()));
          }
       }
       if (assocListener != null) assocListener.write(assoc, pdu);
@@ -319,11 +318,11 @@ final class FsmImpl {
    private PDU fireReceived(PDU pdu) {
       if (pdu instanceof PDataTF) {
          if (log.isDebugEnabled()) {
-            log.debug("" + this + " >> " + pdu);
+            log.debug("received " + pdu);
          }
       } else {
          if (log.isInfoEnabled()) {
-            log.info("" + this + " >> " + pdu);
+            log.info("received " + pdu.toString(log.isDebugEnabled()));
          }
       }
       if (assocListener != null) assocListener.received(assoc, pdu);
@@ -422,8 +421,9 @@ final class FsmImpl {
       void entry() {
          if (pool != null) pool.shutdown(); // stop reading
          if (assocListener != null) assocListener.close(assoc);
-         if (log.isInfoEnabled())
-            log.info("" + this + ": Closing connection");
+         if (log.isInfoEnabled()) {
+            log.info("closing connection - " + s);
+         }
          try { in.close(); } catch (IOException ignore) {}
          try { out.close(); } catch (IOException ignore) {}
          try { s.close(); } catch (IOException ignore) {}
@@ -436,8 +436,7 @@ final class FsmImpl {
    private final State STA2 =
          new State(Association.AWAITING_READ_ASS_RQ) {
       public String toString() {
-         return "Sta 2 - Transport connection open"
-               + " (Awaiting A-ASSOCIATE-RQ PDU)";
+         return "Sta 2 - Transport connection open (Awaiting A-ASSOCIATE-RQ PDU)";
       }
       
       PDU parse(UnparsedPDUImpl raw) throws PDUException {
@@ -812,7 +811,9 @@ final class FsmImpl {
          timer.schedule(
          new TimerTask() {
             public void run() {
+               NDC.push(assoc.getName());            
                changeState(STA1);
+               NDC.pop();
             }
          },
          tcpCloseTimeout);

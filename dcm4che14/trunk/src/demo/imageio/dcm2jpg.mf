@@ -1,2 +1,2 @@
 Main-Class: Dcm2Jpg
-Class-Path: ../lib/dcm4che.jar
+Class-Path: ./ ../lib/dcm4che.jar

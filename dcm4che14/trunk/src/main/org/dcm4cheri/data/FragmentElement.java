@@ -31,6 +31,7 @@ import org.dcm4cheri.util.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 
@@ -54,6 +55,10 @@ abstract class FragmentElement extends DcmElementImpl {
         return list.size();
     }
     
+    public final boolean hasDataFragments() {
+       return true;
+    }
+    
     public final ByteBuffer getDataFragment(int index) {
         return (ByteBuffer)list.get(index);
     }
@@ -69,6 +74,27 @@ abstract class FragmentElement extends DcmElementImpl {
     public final int getDataFragmentLength(int index) {
         ByteBuffer data = (ByteBuffer)list.get(index);
         return (data.limit()+1)&(~1);
+    }
+
+    public String getString(int index, Charset cs) {
+       return getBoundedString(Integer.MAX_VALUE, index, cs);
+    }
+    
+    public String getBoundedString(int maxLen, int index, Charset cs) {
+        if (index >= vm())
+            return index == 0 ? "" : null;
+        return StringUtils.promptValue(vr(), getDataFragment(index), maxLen);
+    }
+
+    public String[] getStrings(Charset cs) {
+       return getBoundedStrings(Integer.MAX_VALUE, cs);
+    }
+    
+    public String[] getBoundedStrings(int maxLen, Charset cs) {
+        String[] a = new String[vm()];
+        for (int i = 0; i < a.length; ++i)
+            a[i] = StringUtils.promptValue(vr(), getDataFragment(i), maxLen);
+        return a;
     }
     
     int calcLength() {
@@ -167,13 +193,14 @@ abstract class FragmentElement extends DcmElementImpl {
     public String toString() {
        StringBuffer sb = new StringBuffer(DICT.toString(tag));
        sb.append(",").append(VRs.toString(vr()));
-       for (int i = 0, n = vm(); i < n; ++i) {
-           sb.append("\n  Frag-").append(i+1)
-             .append(",#").append(getDataFragmentLength(i)).append("[")
-             .append(StringUtils.promptValue(vr(), getDataFragment(i), 64))
-             .append("]");
+       if (!isEmpty()) {
+          for (int i = 0, n = vm(); i < n; ++i) {
+              sb.append("\n\tFrag-").append(i+1)
+                .append(",#").append(getDataFragmentLength(i)).append("[")
+                .append(StringUtils.promptValue(vr(), getDataFragment(i), 64))
+                .append("]");
+          }
        }
-       sb.append("\n]");
        return sb.toString();
     }
 }

@@ -44,8 +44,6 @@ import java.io.EOFException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-//import java.util.logging.Logger;
-//import java.util.logging.Level;
 import java.util.zip.InflaterInputStream;
 import javax.imageio.stream.ImageInputStream;
 
@@ -59,8 +57,7 @@ import org.xml.sax.ContentHandler;
  * @version 1.0.0
  */
 final class DcmParserImpl implements org.dcm4che.data.DcmParser {
-    private static final String CLASSNAME = "org.dcm4cheri.data.DcmParserImpl";
-    private static final Logger log = Logger.getLogger(CLASSNAME);
+    private static final Logger log = Logger.getLogger("dcm4che.data.DcmParser");
     
     private static final int TS_ID_TAG = 0x00020010;
     private static final int ITEM_TAG = 0xFFFEE000;

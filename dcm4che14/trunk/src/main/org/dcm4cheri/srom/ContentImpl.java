@@ -64,9 +64,9 @@ abstract class ContentImpl implements org.dcm4che.srom.Content {
         ContentImpl retval = newContent(owner, ds,
                 ds.getDate(Tags.ObservationDateTime),
                 TemplateImpl.newTemplate(
-                        ds.getNestedDataset(Tags.ContentTemplateSeq)),
+                        ds.getItem(Tags.ContentTemplateSeq)),
                 CodeImpl.newCode(
-                        ds.getNestedDataset(Tags.ConceptNameCodeSeq)),
+                        ds.getItem(Tags.ConceptNameCodeSeq)),
                 ds.getString(Tags.ValueType));
         retval.initChilds(owner, ds);
         return retval;
@@ -84,15 +84,15 @@ abstract class ContentImpl implements org.dcm4che.srom.Content {
                     ds.getString(Tags.TextValue));
         }
         if ("NUM".equals(type)) {
-            Dataset mv = ds.getNestedDataset(Tags.MeasuredValueSeq);
+            Dataset mv = ds.getItem(Tags.MeasuredValueSeq);
             return new NumContentImpl(owner, obsDateTime, template, name,
                     mv.getFloat(Tags.NumericValue,0f), 
                     CodeImpl.newCode(
-                            mv.getNestedDataset(Tags.MeasurementUnitsCodeSeq)));
+                            mv.getItem(Tags.MeasurementUnitsCodeSeq)));
         }
         if ("CODE".equals(type)) {
             return new CodeContentImpl(owner, obsDateTime, template, name,
-                    CodeImpl.newCode(ds.getNestedDataset(Tags.ConceptCodeSeq)));
+                    CodeImpl.newCode(ds.getItem(Tags.ConceptCodeSeq)));
         }
         if ("DATETIME".equals(type)) {
             return new DateTimeContentImpl(owner, obsDateTime, template, name,
@@ -116,18 +116,18 @@ abstract class ContentImpl implements org.dcm4che.srom.Content {
         }
         if ("COMPOSITE".equals(type)) {
             return new CompositeContentImpl(owner, obsDateTime, template, name,
-                    RefSOPImpl.newRefSOP(ds.getNestedDataset(Tags.RefSOPSeq)));
+                    RefSOPImpl.newRefSOP(ds.getItem(Tags.RefSOPSeq)));
         }
         if ("IMAGE".equals(type)) {
-            Dataset sop = ds.getNestedDataset(Tags.RefSOPSeq);
-            Dataset pr = sop.getNestedDataset(Tags.RefSOPSeq);
+            Dataset sop = ds.getItem(Tags.RefSOPSeq);
+            Dataset pr = sop.getItem(Tags.RefSOPSeq);
             return new ImageContentImpl(owner, obsDateTime, template, name,
                     RefSOPImpl.newRefSOP(sop),
                     sop.getInts(Tags.RefFrameNumber),
                     RefSOPImpl.newRefSOP(pr));
         }
         if ("WAVEFORM".equals(type)) {
-            Dataset sop = ds.getNestedDataset(Tags.RefSOPSeq);
+            Dataset sop = ds.getItem(Tags.RefSOPSeq);
             return new WaveformContentImpl(owner, obsDateTime, template, name,
                     RefSOPImpl.newRefSOP(sop),
                     sop.getInts(Tags.RefWaveformChannels));
@@ -387,30 +387,30 @@ abstract class ContentImpl implements org.dcm4che.srom.Content {
 
     public void toDataset(Dataset ds) {
         if (relation != null) { // root content has no relation!
-            ds.setCS(Tags.RelationshipType, relation.toString());
+            ds.putCS(Tags.RelationshipType, relation.toString());
         }
-        ds.setCS(Tags.ValueType, getValueType().toString());
-        DcmElement cnSq = ds.setSQ(Tags.ConceptNameCodeSeq);
+        ds.putCS(Tags.ValueType, getValueType().toString());
+        DcmElement cnSq = ds.putSQ(Tags.ConceptNameCodeSeq);
         Code name = getName();
         if (name != null) {
-            name.toDataset(cnSq.addNewDataset());
+            name.toDataset(cnSq.addNewItem());
         }
         
         Template tpl = getTemplate();
         if (tpl != null) {
-            tpl.toDataset(ds.setSQ(Tags.ContentTemplateSeq).addNewDataset());
+            tpl.toDataset(ds.putSQ(Tags.ContentTemplateSeq).addNewItem());
         }
             
         Date obsDateTime = getObservationDateTime(false);
         if (obsDateTime != null) {
-            ds.setDT(Tags.ObservationDateTime, obsDateTime);
+            ds.putDT(Tags.ObservationDateTime, obsDateTime);
         }
         
         if (firstChild != null) {
-            DcmElement sq = ds.setSQ(Tags.ContentSeq);
+            DcmElement sq = ds.putSQ(Tags.ContentSeq);
             for (Content child = firstChild; child != null;
                     child = child.getNextSibling()) {
-                child.toDataset(sq.addNewDataset());
+                child.toDataset(sq.addNewItem());
             }
         }
     }
@@ -422,7 +422,7 @@ abstract class ContentImpl implements org.dcm4che.srom.Content {
             return;
         }
         for (int i = 0, n = sq.vm(); i < n; ++i) {
-            Dataset child = sq.getDataset(i);
+            Dataset child = sq.getItem(i);
             appendChild(Content.RelationType.valueOf(
                     child.getString((Tags.RelationshipType))),
                     newContent(owner, child));

@@ -54,14 +54,14 @@ class FilterSQElement extends DcmElementImpl {
         return sqElem.vm();
     }
     
-    public Dataset getDataset(int index) {
-        return new FilterDataset.Selection(sqElem.getDataset(index), filter);
+    public Dataset getItem(int index) {
+        return new FilterDataset.Selection(sqElem.getItem(index), filter);
     }
     
     public int calcLength(DcmEncodeParam param) {
         totlen = param.undefSeqLen ? 8 : 0;
         for (int i = 0, n = vm(); i < n; ++i)
-            totlen += getDataset(i).calcLength(param) +
+            totlen += getItem(i).calcLength(param) +
                     (param.undefItemLen ? 16 : 8);
         return totlen;
     }

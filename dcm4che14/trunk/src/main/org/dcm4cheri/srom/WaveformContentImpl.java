@@ -86,8 +86,8 @@ class WaveformContentImpl extends CompositeContentImpl
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
         if (channelNumbers.length != 0) {
-            ds.get(Tags.RefSOPSeq).getDataset()
-                    .setUS(Tags.RefWaveformChannels, channelNumbers);
+            ds.get(Tags.RefSOPSeq).getItem()
+                    .putUS(Tags.RefWaveformChannels, channelNumbers);
         }
    }
 }

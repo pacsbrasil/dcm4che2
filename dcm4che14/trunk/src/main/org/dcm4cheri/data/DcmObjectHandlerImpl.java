@@ -127,8 +127,8 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
     }
 
     public void startSequence(int length) throws IOException {
-        seqStack.add(vr == VRs.SQ ? curDcmObject.setSQ(tag)
-                                      : curDcmObject.setXXsq(tag, vr));
+        seqStack.add(vr == VRs.SQ ? curDcmObject.putSQ(tag)
+                                      : curDcmObject.putXXsq(tag, vr));
     }
 
     public void endSequence(int length) throws IOException {
@@ -136,7 +136,7 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
     }
     
     public void value(byte[] data, int start, int length) throws IOException {
-        curDcmObject.setXX(tag, vr,
+        curDcmObject.putXX(tag, vr,
                 ByteBuffer.wrap(data, start, length).order(byteOrder))
                 .setStreamPosition(pos);
     }
@@ -148,7 +148,7 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
     }
     
     public void startItem(int id, long pos, int length) throws IOException {
-        curDcmObject = ((DcmElement)seqStack.getLast()).addNewDataset()
+        curDcmObject = ((DcmElement)seqStack.getLast()).addNewItem()
                 .setItemOffset(pos);
     }
     

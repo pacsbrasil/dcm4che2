@@ -78,8 +78,8 @@ class ReferencedContentImpl extends ContentImpl
     }
     
     public void toDataset(Dataset ds) {
-        ds.setCS(Tags.RelationshipType, relation.toString());
-        ds.setUL(Tags.RefContentItemIdentifier, getRefContent().getID());
+        ds.putCS(Tags.RelationshipType, relation.toString());
+        ds.putUL(Tags.RefContentItemIdentifier, getRefContent().getID());
     }    
     
     public Content getRefContent() {

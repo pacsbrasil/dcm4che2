@@ -84,6 +84,6 @@ class TextContentImpl extends NamedContentImpl
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setUT(Tags.TextValue, text);
+        ds.putUT(Tags.TextValue, text);
     }
 }

@@ -114,16 +114,16 @@ class TemplateImpl implements Template {
     }
 
     public void toDataset(Dataset ds) {
-        ds.setCS(Tags.TemplateIdentifier, templateIdentifier);
-        ds.setCS(Tags.MappingResource, mappingResource);
+        ds.putCS(Tags.TemplateIdentifier, templateIdentifier);
+        ds.putCS(Tags.MappingResource, mappingResource);
         if (templateVersion != null) {
-            ds.setDT(Tags.TemplateVersion,
+            ds.putDT(Tags.TemplateVersion,
                     new Date(templateVersion.longValue()));
         }
         if (templateLocalVersion != null) {
-            ds.setDT(Tags.TemplateLocalVersion,
+            ds.putDT(Tags.TemplateLocalVersion,
                     new Date(templateLocalVersion.longValue()));
-            ds.setCS(Tags.TemplateExtensionFlag, "Y");
+            ds.putCS(Tags.TemplateExtensionFlag, "Y");
         }
     }
 }

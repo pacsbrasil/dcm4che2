@@ -57,7 +57,7 @@ public class DcmServiceBase implements DcmService
       protected void doCEcho(ActiveAssociation assoc, Dimse rq, Command rspCmd)
       throws IOException
       {
-         rspCmd.setUS(Tags.Status, SUCCESS);
+         rspCmd.putUS(Tags.Status, SUCCESS);
       }
    };
    public static final DcmService NO_SUCH_SOP_CLASS_SCP =

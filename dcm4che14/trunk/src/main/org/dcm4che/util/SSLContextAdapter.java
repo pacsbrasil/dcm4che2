@@ -76,7 +76,7 @@ public abstract class SSLContextAdapter
    
    public abstract void setNeedClientAuth(boolean needClientAuth);
    
-   public abstract void setStartHandshake(boolean startHandshake);
+//   public abstract void setStartHandshake(boolean startHandshake);
 
    public abstract void seedRandom(long seed)
    throws GeneralSecurityException;

@@ -96,14 +96,14 @@ class ImageContentImpl extends CompositeContentImpl implements ImageContent {
             return;
         }
 
-        Dataset sop = ds.get(Tags.RefSOPSeq).getDataset();
+        Dataset sop = ds.get(Tags.RefSOPSeq).getItem();
         if (frameNumbers.length != 0) {
-            sop.setIS(Tags.RefFrameNumber, frameNumbers);
+            sop.putIS(Tags.RefFrameNumber, frameNumbers);
         }
 
         if (refPresentationSOP != null) {
             refPresentationSOP.toDataset(
-                    sop.setSQ(Tags.RefSOPSeq).addNewDataset());
+                    sop.putSQ(Tags.RefSOPSeq).addNewItem());
         }
     }
 }

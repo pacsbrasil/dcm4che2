@@ -33,33 +33,37 @@ import java.io.*;
  * @version 1.0.0
  */
 final class AReleaseRQImpl implements AReleaseRQ {
+   
+   private AReleaseRQImpl() {
+   }
+   
+   private static final AReleaseRQImpl instance = new AReleaseRQImpl();
+   
+   public static AReleaseRQImpl getInstance() {
+      return instance;
+   }
+   
+   public static AReleaseRQImpl parse(UnparsedPDUImpl raw)
+   throws PDUException {
+      if (raw.length() != 4) {
+         throw new PDUException("Illegal A-RELEASE-RP " + raw,
+         new AAbortImpl(AAbort.SERVICE_PROVIDER,
+         AAbort.INVALID_PDU_PARAMETER_VALUE));
+      }
+      return instance;
+   }
+   
+   private static final byte[] BYTES = { 5, 0, 0, 0, 0, 4, 0, 0, 0, 0 };
+   public void writeTo(OutputStream out) throws IOException {
+      out.write(BYTES);
+      out.flush();
+   }
+   
+   public String toString(boolean verbose) {
+      return toString();
+   }
 
-    private AReleaseRQImpl() {
-    }
-    
-    private static final AReleaseRQImpl instance = new AReleaseRQImpl();
-    
-    public static AReleaseRQImpl getInstance() {
-        return instance;
-    }
-    
-    public static AReleaseRQImpl parse(UnparsedPDUImpl raw)
-            throws PDUException {
-        if (raw.length() != 4) {
-            throw new PDUException("Illegal A-RELEASE-RP " + raw,
-                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                                   AAbort.INVALID_PDU_PARAMETER_VALUE));
-        }
-        return instance;
-    }
-
-    private static final byte[] BYTES = { 5, 0, 0, 0, 0, 4, 0, 0, 0, 0 };
-    public void writeTo(OutputStream out) throws IOException {
-        out.write(BYTES);
-        out.flush();
-    }    
-
-    public String toString() {
-        return "A-RELEASE-RQ";
-    }
+   public String toString() {
+      return "A-RELEASE-RQ";
+   }
 }

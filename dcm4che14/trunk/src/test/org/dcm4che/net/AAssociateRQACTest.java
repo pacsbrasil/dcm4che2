@@ -66,7 +66,7 @@ class AAssociateRQACTest extends ExtTestCase {
         assertEquals(CALLED_AET, rqac.getCalledAET());
         assertEquals(UIDs.DICOMApplicationContextName,
                 rqac.getApplicationContext());
-        assertEquals(MAX_LENGTH, rqac.getMaxLength());
+        assertEquals(MAX_LENGTH, rqac.getMaxPDULength());
         AsyncOpsWindow aow = rqac.getAsyncOpsWindow();
         assertNotNull(aow);
         assertEquals(MAX_OPS_INVOKED, aow.getMaxOpsInvoked());
@@ -98,7 +98,7 @@ class AAssociateRQACTest extends ExtTestCase {
     protected void set(AAssociateRQAC rqac) {
         rqac.setCallingAET(CALLING_AET);
         rqac.setCalledAET(CALLED_AET);
-        rqac.setMaxLength(MAX_LENGTH);
+        rqac.setMaxPDULength(MAX_LENGTH);
         rqac.setAsyncOpsWindow(fact.newAsyncOpsWindow(
                 MAX_OPS_INVOKED, MAX_OPS_PERFORMED));
         rqac.addRoleSelection(fact.newRoleSelection(AS_UID1, true, true));

@@ -59,6 +59,10 @@ final class AReleaseRPImpl implements AReleaseRP {
         out.flush();
     }
     
+    public String toString(boolean verbose) {
+       return toString();
+    }
+    
     public String toString() {
         return "A-RELEASE-RP";
     }

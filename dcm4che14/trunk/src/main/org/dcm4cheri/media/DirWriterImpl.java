@@ -138,20 +138,20 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         parser.setDcmDecodeParam(DcmDecodeParam.EVR_LE);
         fsi = factory.newDataset();
         fsi.setFileMetaInfo(fmi);
-        fsi.setCS(Tags.FileSetID, filesetID);
+        fsi.putCS(Tags.FileSetID, filesetID);
         if (descriptorFile != null) {
-            fsi.setCS(Tags.FileSetDescriptorFileID,
+            fsi.putCS(Tags.FileSetDescriptorFileID,
                     toFileIDs(descriptorFile.getAbsoluteFile()));
             if (specCharset != null) {
-               fsi.setCS(Tags.SpecificCharacterSetOfFileSetDescriptorFile,
+               fsi.putCS(Tags.SpecificCharacterSetOfFileSetDescriptorFile,
                     specCharset);
             }
         }
-        fsi.setUL(Tags.OffsetOfFirstRootDirectoryRecord,
+        fsi.putUL(Tags.OffsetOfFirstRootDirectoryRecord,
                 this.offFirstRootRec = 0);
-        fsi.setUL(Tags.OffsetOfLastRootDirectoryRecord, this.offLastRootRec = 0);
-        fsi.setUS(Tags.FileSetConsistencyFlag, 0);
-        fsi.setSQ(Tags.DirectoryRecordSeq);
+        fsi.putUL(Tags.OffsetOfLastRootDirectoryRecord, this.offLastRootRec = 0);
+        fsi.putUS(Tags.FileSetConsistencyFlag, 0);
+        fsi.putSQ(Tags.DirectoryRecordSeq);
         fsi.writeFile(out, encParam);
         fsi.remove(Tags.DirectoryRecordSeq);
         if (encParam.undefSeqLen) {
@@ -287,11 +287,11 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
             throw new IllegalArgumentException("type:" + type);
         }
         Dataset ds0004 = factory.newDataset();
-        ds0004.setUL(Tags.OffsetOfNextDirectoryRecord, 0);
-        ds0004.setUS(Tags.RecordInUseFlag, DirRecord.IN_USE);
-        ds0004.setUL(Tags.OffsetOfLowerLevelDirectoryEntity,
+        ds0004.putUL(Tags.OffsetOfNextDirectoryRecord, 0);
+        ds0004.putUS(Tags.RecordInUseFlag, DirRecord.IN_USE);
+        ds0004.putUL(Tags.OffsetOfLowerLevelDirectoryEntity,
                 replace ? ((DirRecordImpl)parentOrOld).lower : 0);
-        ds0004.setCS(Tags.DirectoryRecordType, type);
+        ds0004.putCS(Tags.DirectoryRecordType, type);
         if (fileIDs != null) {
             if (classUID == null) {
                 throw new NullPointerException();
@@ -302,10 +302,10 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
             if (tsUID == null) {
                 throw new NullPointerException();
             }
-            ds0004.setCS(Tags.RefFileID, fileIDs);
-            ds0004.setUI(Tags.RefSOPClassUIDInFile, classUID);
-            ds0004.setUI(Tags.RefSOPInstanceUIDInFile, instUID);
-            ds0004.setUI(Tags.RefSOPTransferSyntaxUIDInFile, tsUID);
+            ds0004.putCS(Tags.RefFileID, fileIDs);
+            ds0004.putUI(Tags.RefSOPClassUIDInFile, classUID);
+            ds0004.putUI(Tags.RefSOPInstanceUIDInFile, instUID);
+            ds0004.putUI(Tags.RefSOPTransferSyntaxUIDInFile, tsUID);
         }
         out.seek(newRecPos);
         out.write(ITEM, 0, 8);

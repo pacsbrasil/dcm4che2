@@ -72,7 +72,7 @@ class RequestImpl implements Request {
                 ds.getString(Tags.RequestedProcedureID),
                 ds.getString(Tags.RequestedProcedureDescription),
                 CodeImpl.newCode(
-                        ds.getNestedDataset(Tags.RequestedProcedureCodeSeq)));
+                        ds.getItem(Tags.RequestedProcedureCodeSeq)));
     }
     // Methodes ------------------------------------------------------
     
@@ -128,15 +128,15 @@ class RequestImpl implements Request {
     }    
 
     public void toDataset(Dataset ds) {
-        ds.setUI(Tags.StudyInstanceUID, studyInstanceUID);
-        ds.setLO(Tags.AccessionNumber, accessionNumber);
-        ds.setLO(Tags.FillerOrderNumber, fillerOrderNumber);
-        ds.setLO(Tags.PlacerOrderNumber, placerOrderNumber);
-        ds.setSH(Tags.RequestedProcedureID, procedureID);
-        ds.setLO(Tags.RequestedProcedureDescription, procedureDescription);
+        ds.putUI(Tags.StudyInstanceUID, studyInstanceUID);
+        ds.putLO(Tags.AccessionNumber, accessionNumber);
+        ds.putLO(Tags.FillerOrderNumber, fillerOrderNumber);
+        ds.putLO(Tags.PlacerOrderNumber, placerOrderNumber);
+        ds.putSH(Tags.RequestedProcedureID, procedureID);
+        ds.putLO(Tags.RequestedProcedureDescription, procedureDescription);
         if (procedureCode != null) {
             procedureCode.toDataset(
-                ds.setSQ(Tags.RequestedProcedureCodeSeq).addNewDataset());
+                ds.putSQ(Tags.RequestedProcedureCodeSeq).addNewItem());
         }
     }
 }

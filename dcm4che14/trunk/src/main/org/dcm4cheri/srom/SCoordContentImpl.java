@@ -184,7 +184,7 @@ abstract class SCoordContentImpl extends NamedContentImpl
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setCS(Tags.GraphicType, getGraphicType());
-        ds.setFL(Tags.GraphicData, graphicData);
+        ds.putCS(Tags.GraphicType, getGraphicType());
+        ds.putFL(Tags.GraphicData, graphicData);
     }
 }//end class SCoordContentImpl

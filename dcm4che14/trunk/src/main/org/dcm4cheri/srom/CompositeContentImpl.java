@@ -75,6 +75,6 @@ class CompositeContentImpl extends NamedContentImpl
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        refSOP.toDataset(ds.setSQ(Tags.RefSOPSeq).addNewDataset());
+        refSOP.toDataset(ds.putSQ(Tags.RefSOPSeq).addNewItem());
     }
 }

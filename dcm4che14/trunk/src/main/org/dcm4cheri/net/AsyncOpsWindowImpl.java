@@ -74,8 +74,8 @@ final class AsyncOpsWindowImpl implements AsyncOpsWindow {
     }
     
     public String toString() {
-       return "AsyncOpsWindow[invoked=" + maxOpsInvoked
-                          + ",performed=" + maxOpsPerformed
+       return "AsyncOpsWindow[maxOpsInvoked=" + maxOpsInvoked
+                          + ",maxOpsPerformed=" + maxOpsPerformed
                           + "]";
     }
 

@@ -74,15 +74,18 @@ final class AAssociateRJImpl implements AAssociateRJ {
         out.flush();
     }
 
+    public String toString(boolean verbose) {
+       return toString();
+    }
+
     public String toString() {
         return toStringBuffer(new StringBuffer()).toString();
     }
     
     final StringBuffer toStringBuffer(StringBuffer sb) {
-        return sb.append("A-ASSOCIATE-RJ[result=").append(resultAsString())
-                .append(", source=").append(sourceAsString())
-                .append(", reason=").append(reasonAsString())
-                .append("]");
+        return sb.append("A-ASSOCIATE-RJ\n\tresult=").append(resultAsString())
+                .append("\n\tsource=").append(sourceAsString())
+                .append("\n\treason=").append(reasonAsString());
     }    
     
     private String resultAsString() {

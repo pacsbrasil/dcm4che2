@@ -99,7 +99,7 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
             throw new IllegalArgumentException(sopClassUID);
 
         Template template = new TemplateImpl(
-                ds.getNestedDataset(Tags.ContentTemplateSeq));
+                ds.getItem(Tags.ContentTemplateSeq));
         if (!TemplateImpl.TID_2010.equals(template))
             throw new IllegalArgumentException(template.toString());
         
@@ -111,7 +111,7 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
                 ds.getString(Tags.SOPInstanceUID),
                 ds.getInt(Tags.InstanceNumber, -1),
                 ds.getDate(Tags.ObservationDateTime),
-                new CodeImpl(ds.getNestedDataset(Tags.ConceptNameCodeSeq)),
+                new CodeImpl(ds.getItem(Tags.ConceptNameCodeSeq)),
                 "SEPARATE".equals(ds.getString(Tags.ContinuityOfContent)));
         ko.init(ds);
         return ko;
@@ -135,7 +135,7 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
             return;
         
         for (int i = 0, n = sq.vm(); i < n; ++i) {
-            requests.add(new RequestImpl(sq.getDataset(i)));
+            requests.add(new RequestImpl(sq.getItem(i)));
         }
     }
     
@@ -145,15 +145,15 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
             return;
         
         for (int i = 0, n = sq.vm(); i < n; ++i) {
-            Dataset ds = sq.getDataset(i);
+            Dataset ds = sq.getItem(i);
             String studyInstanceUID = ds.getString(Tags.StudyInstanceUID);
             DcmElement sq2 = ds.get(Tags.RefSeriesSeq);
             for (int i2 = 0, n2 = sq2.vm(); i2 < n2; ++i2) {
-                Dataset ds2 = sq2.getDataset(i2);
+                Dataset ds2 = sq2.getItem(i2);
                 String seriesInstanceUID = ds2.getString(Tags.SeriesInstanceUID);
                 DcmElement sq3 = ds2.get(Tags.RefSOPSeq);
                 for (int i3 = 0, n3 = sq3.vm(); i3 < n3; ++i3) {
-                    Dataset ds3 = sq3.getDataset(i3);
+                    Dataset ds3 = sq3.getItem(i3);
                     list.add(new SOPInstanceRefImpl(
                             ds3.getString(Tags.RefSOPClassUID),
                             ds3.getString(Tags.RefSOPInstanceUID),
@@ -571,19 +571,19 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
         }
         for (Iterator it = studyMap.entrySet().iterator(); it.hasNext();) {
             Map.Entry entry = (Map.Entry)it.next();
-            Dataset study = sq.addNewDataset();
-            study.setUI(Tags.StudyInstanceUID, (String)entry.getKey());
-            DcmElement refSeriesSeq = study.setSQ(Tags.RefSeriesSeq);
+            Dataset study = sq.addNewItem();
+            study.putUI(Tags.StudyInstanceUID, (String)entry.getKey());
+            DcmElement refSeriesSeq = study.putSQ(Tags.RefSeriesSeq);
             for (Iterator it2 = ((Map)entry.getValue()).entrySet().iterator();
                     it2.hasNext();) {
                 Map.Entry entry2 = (Map.Entry)it2.next();
-                Dataset series = refSeriesSeq.addNewDataset();
-                series.setUI(Tags.SeriesInstanceUID, (String)entry2.getKey());
-                DcmElement refSOPSeq = series.setSQ(Tags.RefSOPSeq);
+                Dataset series = refSeriesSeq.addNewItem();
+                series.putUI(Tags.SeriesInstanceUID, (String)entry2.getKey());
+                DcmElement refSOPSeq = series.putSQ(Tags.RefSOPSeq);
                 for (Iterator it3 = ((List)entry.getValue()).iterator();
                         it3.hasNext();) {
                     ((SOPInstanceRef)it3.next()).toDataset(
-                            refSOPSeq.addNewDataset());
+                            refSOPSeq.addNewItem());
                 }
             }
         }
@@ -591,19 +591,19 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
     
     public void toDataset(Dataset ds) {
         if (specificCharacterSet != null) {
-            ds.setCS(Tags.SpecificCharacterSet, specificCharacterSet);
+            ds.putCS(Tags.SpecificCharacterSet, specificCharacterSet);
         }
-        ds.setUI(Tags.SOPClassUID, sopClassUID);
-        ds.setUI(Tags.SOPInstanceUID, sopInstanceUID);
-        ds.setIS(Tags.InstanceNumber, instanceNumber);
+        ds.putUI(Tags.SOPClassUID, sopClassUID);
+        ds.putUI(Tags.SOPInstanceUID, sopInstanceUID);
+        ds.putIS(Tags.InstanceNumber, instanceNumber);
         if (instanceCreationDateTime != null) {
             Date dt = new Date(instanceCreationDateTime.longValue());
-            ds.setDA(Tags.InstanceCreationDate, dt);
-            ds.setTM(Tags.InstanceCreationTime, dt);
+            ds.putDA(Tags.InstanceCreationDate, dt);
+            ds.putTM(Tags.InstanceCreationTime, dt);
         }
         Date dt = getContentDateTime();
-        ds.setDA(Tags.ContentDate, dt);
-        ds.setTM(Tags.ContentTime, dt);        
+        ds.putDA(Tags.ContentDate, dt);
+        ds.putTM(Tags.ContentTime, dt);        
         
         patient.toDataset(ds);
         study.toDataset(ds);
@@ -611,18 +611,18 @@ class KeyObjectImpl extends ContainerContentImpl implements KeyObject {
         equipment.toDataset(ds);
 
         if (!requests.isEmpty()) {
-            DcmElement sq = ds.setSQ(Tags.RefRequestSeq);
+            DcmElement sq = ds.putSQ(Tags.RefRequestSeq);
             for (Iterator it =requests.iterator(); it.hasNext();) {
-                ((Request)it.next()).toDataset(sq.addNewDataset());
+                ((Request)it.next()).toDataset(sq.addNewItem());
             }
         }        
         if (!currentEvidence.isEmpty()) {
             sopInstanceRefListToSQ(currentEvidence,
-                    ds.setSQ(Tags.CurrentRequestedProcedureEvidenceSeq));
+                    ds.putSQ(Tags.CurrentRequestedProcedureEvidenceSeq));
         }
         if (!identicalDocuments.isEmpty()) {
             sopInstanceRefListToSQ(currentEvidence,
-                    ds.setSQ(Tags.IdenticalDocumentsSeq));
+                    ds.putSQ(Tags.IdenticalDocumentsSeq));
         }
         super.toDataset(ds);
     }

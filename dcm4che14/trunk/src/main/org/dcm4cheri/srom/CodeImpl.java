@@ -77,7 +77,7 @@ class CodeImpl implements Code {
             return EMPTY_ARRAY;
         Code[] a = new Code[sq.vm()];
         for (int i = 0; i < a.length; ++i) {
-            a[i] = new CodeImpl(sq.getDataset(i));
+            a[i] = new CodeImpl(sq.getItem(i));
         }
         return a;
     }
@@ -122,11 +122,11 @@ class CodeImpl implements Code {
     }
 
     public void toDataset(Dataset ds) {
-        ds.setSH(Tags.CodeValue, codeValue);
-        ds.setSH(Tags.CodingSchemeDesignator, codingSchemeDesignator);
+        ds.putSH(Tags.CodeValue, codeValue);
+        ds.putSH(Tags.CodingSchemeDesignator, codingSchemeDesignator);
         if (codingSchemeVersion != null) {
-            ds.setSH(Tags.CodingSchemeVersion, codingSchemeVersion);
+            ds.putSH(Tags.CodingSchemeVersion, codingSchemeVersion);
         }
-        ds.setLO(Tags.CodeMeaning, codeMeaning);
+        ds.putLO(Tags.CodeMeaning, codeMeaning);
      }    
 }

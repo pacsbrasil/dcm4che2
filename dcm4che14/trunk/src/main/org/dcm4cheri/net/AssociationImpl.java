@@ -42,6 +42,7 @@ import java.net.Socket;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
 
 /**
  *
@@ -55,17 +56,33 @@ final class AssociationImpl implements Association {
    private final DimseWriterImpl writer;
    private int msgID = 0;
    private final byte[] b10 = new byte[10];
+   private String name;
+   private static int assocCount = 0;
    
    /** Creates a new instance of AssociationImpl */
    public AssociationImpl(Socket s, boolean requestor) throws IOException {
-      this.fsm = new FsmImpl(this, s, requestor);
-      this.reader = new DimseReaderImpl(fsm);
-      this.writer = new DimseWriterImpl(fsm);
+      this.name = "Assoc-" + ++assocCount;
+      NDC.push(name);
+      try {
+         this.fsm = new FsmImpl(this, s, requestor);
+         this.reader = new DimseReaderImpl(fsm);
+         this.writer = new DimseWriterImpl(fsm);
+      } finally {
+         NDC.pop();
+      }
    }
 
-   public String toString() {
-      return fsm.toString();
+   public void setName(String name) {
+      this.name = name;
    }
+   
+   public final String getName() {
+      return name;
+   }
+
+   public final String toString() {
+      return name + "[" + getStateAsString() + "]";
+   }      
    
    public void addAssociationListener(AssociationListener l) {
       fsm.addAssociationListener(l);
@@ -79,6 +96,10 @@ final class AssociationImpl implements Association {
       return fsm.getState();
    }
    
+   public final String getStateAsString() {
+      return fsm.getStateAsString();
+   }
+
    public synchronized final int nextMsgID() {
       return ++msgID;
    }
@@ -105,47 +126,82 @@ final class AssociationImpl implements Association {
    }
       
    public final PDU connect(AAssociateRQ rq, int timeout) throws IOException {
-      fsm.write(rq);
-      return fsm.read(timeout, b10);
+      NDC.push(name);
+      try {
+         fsm.write(rq);
+         return fsm.read(timeout, b10);
+      } finally {
+         NDC.pop();
+      }
    }
    
    public final PDU accept(AcceptorPolicy policy, int timeout) throws IOException {
-      PDU rq = fsm.read(timeout, b10);
-      if (!(rq instanceof AAssociateRQ))
-         return (AAbort)rq;
+      NDC.push(name);
+      try {
+         PDU rq = fsm.read(timeout, b10);
+         if (!(rq instanceof AAssociateRQ))
+            return (AAbort)rq;
 
-      PDU rp = policy.negotiate((AAssociateRQ)rq);
-      if (rp instanceof AAssociateAC)
-         fsm.write((AAssociateAC)rp);
-      else
-         fsm.write((AAssociateRJ)rp);
-      return rp;
+         PDU rp = policy.negotiate((AAssociateRQ)rq);
+         if (rp instanceof AAssociateAC)
+            fsm.write((AAssociateAC)rp);
+         else
+            fsm.write((AAssociateRJ)rp);
+         return rp;
+      } finally {
+         NDC.pop();
+      }
    }
 
    public final Dimse read(int timeout) throws IOException  {
-      Dimse dimse = reader.read(timeout);
-      if (dimse != null) {
-         msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
+      NDC.push(name);
+      try {
+         Dimse dimse = reader.read(timeout);
+         if (dimse != null) {
+            msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
+         }
+         return dimse;
+      } finally {
+         NDC.pop();
       }
-      return dimse;
    }
    
    public final void write(Dimse dimse) throws IOException  {
-      msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
-      writer.write(dimse);
+      NDC.push(name);
+      try {
+         msgID = Math.max(dimse.getCommand().getMessageID(), msgID);
+         writer.write(dimse);
+      } finally {
+         NDC.pop();
+      }
    }
    
    public final PDU release(int timeout) throws IOException {
-      fsm.write(AReleaseRQImpl.getInstance());
-      return fsm.read(timeout, b10);
+      NDC.push(name);
+      try {
+         fsm.write(AReleaseRQImpl.getInstance());
+         return fsm.read(timeout, b10);
+      } finally {
+         NDC.pop();
+      }
    }
    
    final void writeReleaseRQ() throws IOException {
-      fsm.write(AReleaseRQImpl.getInstance());
+      NDC.push(name);
+      try {
+         fsm.write(AReleaseRQImpl.getInstance());
+      } finally {
+         NDC.pop();
+      }
    }
    
    public final void abort(AAbort aa) throws IOException {
-      fsm.write(aa);
+      NDC.push(name);
+      try {
+         fsm.write(aa);
+      } finally {
+         NDC.pop();
+      }
    }
    
    public final String getAcceptedTransferSyntaxUID(int pcid) {

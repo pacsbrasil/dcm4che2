@@ -189,7 +189,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             if (filterEl.isEmpty()) {
                 return el;
             }
-            return new FilterSQElement((SQElement)el, filterEl.getDataset());
+            return new FilterSQElement((SQElement)el, filterEl.getItem());
         }
     }
  

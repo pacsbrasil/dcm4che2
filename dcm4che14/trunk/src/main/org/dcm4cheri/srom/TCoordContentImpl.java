@@ -199,7 +199,7 @@ abstract class TCoordContentImpl extends NamedContentImpl
         }
         
         public void toDataset(Dataset ds) {
-            ds.setUL(Tags.RefSamplePositions, indexes);
+            ds.putUL(Tags.RefSamplePositions, indexes);
         }
     }//end inner class SamplePositions
 
@@ -223,7 +223,7 @@ abstract class TCoordContentImpl extends NamedContentImpl
         }
         
         public void toDataset(Dataset ds) {
-            ds.setDS(Tags.RefTimeOffsets, offsets);
+            ds.putDS(Tags.RefTimeOffsets, offsets);
         }
     }//end inner class RelativePositions
 
@@ -254,7 +254,7 @@ abstract class TCoordContentImpl extends NamedContentImpl
         }
         
         public void toDataset(Dataset ds) {
-            ds.setDT(Tags.RefDatetime, getDateTimes());
+            ds.putDT(Tags.RefDatetime, getDateTimes());
         }
     }//end inner class AbsolutePositions
 
@@ -285,7 +285,7 @@ abstract class TCoordContentImpl extends NamedContentImpl
 
     public void toDataset(Dataset ds) {
         super.toDataset(ds);
-        ds.setCS(Tags.TemporalRangeType, getRangeType());
+        ds.putCS(Tags.TemporalRangeType, getRangeType());
         positions.toDataset(ds);
     }
 }//end abstract class TCoordContentImpl
