@@ -2099,4 +2099,21 @@
   <status code="B000" name="Sub-operations Complete - One or more Failures" type="Warning" key="SubOpsOneOrMoreFailures"/>
 </statuses>
 
+<statuses service="PrintManagement">
+  <status code="B000" name="Memory allocation not supported" type="Warning" key="MemoryAllocationNotSupported"/>
+  <status code="B601" name="Film session printing (collation) is not supported" type="Warning" key="FilmSessionPrintingNotSupported"/>
+  <status code="B602" name="Film session SOP instance hierarchy does not contain image box SOP instances (empty page)" type="Warning" key="FilmSessionEmptyPage"/>
+  <status code="B603" name="Film box SOP instance hierarchy does not contain image box SOP instances (empty page)" type="Warning" key="FilmBoxEmptyPage"/>
+  <status code="B604" name="Image size is larger than image box size, the image has been demagnified" type="Warning" key="ImageDemagnified"/>
+  <status code="B605" name="Requested min density or max density outside of printer's operating range" type="Warning" key="MinMaxDensityOutOfRange"/>
+  <status code="B609" name="Image size is larger than the image box size, the Image has been cropped to fit" type="Warning" key="ImageCropped"/>
+  <status code="B60A" name="Image size or combined print image size is larger than the image box size, image or combined print image has been decimated to fit" type="Warning" key="ImageDecimated"/>
+  <status code="C600" name="Film session SOP instance hierarchy does not contain film box SOP instances" type="Failure" key="FilmSessionEmpty"/>
+  <status code="C601" name="Unable to create Print Job SOP Instance; print queue is full" type="Failure" key="PrintQueueFull"/>
+  <status code="C603" name="Image size is larger than image box size" type="Failure" key="ImageLargerThanImageBox"/>
+  <status code="C605" name="Insufficient memory in printer to store the image" type="Failure" key="InsufficientMemoryInPrinter"/>
+  <status code="C613" name="Combined Print Image size is larger than the Image Box size" type="Failure" key="CombinedImageLargerThanImageBox"/>
+  <status code="C616" name="There is an existing film box that has not been printed and N-ACTION at the Film Session level is not supported." type="Failure" key="ExistingFilmBoxNotPrinted"/>
+</statuses>
+
 </dictionary>

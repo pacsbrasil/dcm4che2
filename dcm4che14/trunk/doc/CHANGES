@@ -9,6 +9,7 @@ BUG FIXES:
 ENHANCEMENTS:
 + class org.dcm4che.data.DcmParser: add method
   long parseDataset(String tsUID, int stopTag) throws IOException
++ add Status Code Definitions for Print Management Service Class
 
 CHANGES:
 + change schema of Implementation Version Name in META-INF/MANIFEST.MF and
