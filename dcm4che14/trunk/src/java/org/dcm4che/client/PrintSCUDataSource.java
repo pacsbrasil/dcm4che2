@@ -50,11 +50,38 @@ import org.dcm4che.net.DataSource;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author jforaci
  * @since Jun 22, 2003
  * @version $Revision$ $Date$
  *
  */
-class PrintSCUDataSource implements DataSource {
+class PrintSCUDataSource implements DataSource
+{
+    /**
+     * Simple overlay representation
+     * @author jforaci
+     */
+    private static final class Overlay
+    {
+        public int cols, rows;
+        public int x, y;
+        public byte[] data;
+        public Overlay (int group, Dataset ds)
+        {
+            final int OvRows = 0x10, OvCols = 0x11;
+            final int OvOrigin = 0x50, OvData = 0x3000;
+            data = ds.getByteBuffer(group | OvData).array();
+            if (data == null)
+                throw new IllegalArgumentException("no overlay data");
+            int[] origin = ds.getInts(group | OvOrigin);
+            x = origin[0] - 1;
+            y = origin[1] - 1;
+            cols = ds.getInt(group | OvCols, 0);
+            rows = ds.getInt(group | OvRows, 0);
+            if (cols == 0 || rows == 0)
+                throw new IllegalArgumentException("bad/no cols/rows in overlay");
+        }
+    };
 
 	private static final DcmParserFactory parserFact =
 		DcmParserFactory.getInstance();
@@ -111,7 +138,7 @@ class PrintSCUDataSource implements DataSource {
 			DcmParser parser = parserFact.newDcmParser(in);
 			parser.setDcmHandler(ds.getDcmHandler());
 			parser.parseDcmFile(null, Tags.PixelData);
-            if (ps != null) {
+            if (psFile != null) {
                 DcmParser psParser = parserFact.newDcmParser(new BufferedInputStream(
                     new FileInputStream(psFile)));
                 psParser.setDcmHandler(ps.getDcmHandler());
@@ -136,24 +163,33 @@ class PrintSCUDataSource implements DataSource {
             final int rows = ds.getInt(Tags.Rows, 0);
             final int spp = ds.getInt(Tags.SamplesPerPixel, 1);
             final boolean signed = (ds.getInt(Tags.PixelRepresentation, 0) == 1);
-            final float rs = ds.getFloat(Tags.RescaleSlope, 1F);
-            final float ri = ds.getFloat(Tags.RescaleIntercept, 0F);
             final String pmi = ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
             //err check on bit depth
             if (bitsStored == 32 && !signed) {
                 throw new IOException("conversion from " + bitsStored
                     + " bits stored, unsigned is not currently supported");
             }
-            //err check PMI
+            //err check Photometric Interpretation
 			if (printSCU.isColorPrint()) {
-				if (!"RGB".equals(pmi) && !"MONOCHROME1".equals(pmi)) {
+				if (!"RGB".equals(pmi)) { //&& !"MONOCHROME1".equals(pmi)
 					throw new IOException("Conversion from " + pmi + " to RGB not currently supported");
 				}
 			}
             else if (!"MONOCHROME2".equals(pmi) && !"MONOCHROME1".equals(pmi)) {
                 throw new IOException("Conversion from " + pmi + " to MONOCHROME not currently supported");
 			}
-            //
+            //calculate whether we need 8/8 or 12/16 and generate a new
+            // PixelDataDescription for writing to convert the sample values to
+            // format supported in the Image Box Pixel Representation Module:
+            // - the original Bits Stored or Bits Allocated is != needed value
+            // - the original Pixel Data is signed
+            // - the original pixel samples hava a High Bit larger than the
+            //   (new Bits Stored value - 1)
+            // - the Planar Configuration is by-pixel instead of by-plane
+            // Note: the pixel data may need to be read (in one big chunk) by a
+            // pixel data reader, anyway, if the pixel data must still be scaled
+            // because of the presence of a window, M-LUT, VOI-LUT, P-LUT, overlay
+            // plane data, etc!
             if (bitsStored > 8) {
                 toBitsStored = 12;
                 toBitsAllocated = 16;
@@ -175,8 +211,10 @@ class PrintSCUDataSource implements DataSource {
             }
             else
                 toDesc = fromDesc;
+            
             System.out.println("readlen=" + parser.getReadLength() + " calclen="
                 + toDesc.calcPixelDataLength());
+            
             //write image box
 			imageBox.writeDataset(out, encodeParam);
 			ds.writeHeader(out, encodeParam,
@@ -188,29 +226,6 @@ class PrintSCUDataSource implements DataSource {
                 
 			int[][] buff = null;
 			PixelDataReader pd = null;
-			
-            //overlays
-            final class Overlay
-            {
-                public int cols, rows;
-                public int x, y;
-                public byte[] data;
-                public Overlay (int group, Dataset ds)
-                {
-                    final int OvRows = 0x10, OvCols = 0x11;
-                    final int OvOrigin = 0x50, OvData = 0x3000;
-                    data = ds.getByteBuffer(group | OvData).array();
-                    if (data == null)
-                        throw new IllegalArgumentException("no overlay data");
-                    int[] origin = ds.getInts(group | OvOrigin);
-                    x = origin[0] - 1;
-                    y = origin[1] - 1;
-                    cols = ds.getInt(group | OvCols, 0);
-                    rows = ds.getInt(group | OvRows, 0);
-                    if (cols == 0 || rows == 0)
-                        throw new IllegalArgumentException("bad/no cols/rows in overlay");
-                }
-            };
             
             //check if any overlays exist and if they are to be burned into the image
             if (burnInOverlays) {
@@ -236,30 +251,37 @@ class PrintSCUDataSource implements DataSource {
                     Overlay ovl;
                     
                     //iterate over each overlay
-                    for (int i = 0; i < overlays.length; i++) {
-                        ovl = overlays[i];
-                        final int colstart = Math.max(0, ovl.x);
-                        final int colend = Math.min(ovl.x + ovl.cols, cols);
-                        final int rowstart = Math.max(0, ovl.y);
-                        final int rowend = Math.min(ovl.y + ovl.rows, rows);
-                        final int x = (ovl.x >= 0) ? 0 : -ovl.x;
-                        final int y = (ovl.y >= 0) ? 0 : -ovl.y;
-                        int mask = 1;
-                        int ind = x + y * ovl.cols;
-                        for (int j = rowstart; j < rowend; j++) {
-                            for (int k = colstart; k < colend; k++) {
-                                if ((ovl.data[ind >> 3] & mask) > 0) {
-                                    for (int s = 0; s < spp; s++)
-                                    	buff[s][(j * cols) + k] = burnValue;
+                    try {
+                        for (int i = 0; i < overlays.length; i++) {
+                            ovl = overlays[i];
+                            final int colstart = Math.max(0, ovl.x);
+                            final int colend = Math.min(ovl.x + ovl.cols, cols);
+                            final int rowstart = Math.max(0, ovl.y);
+                            final int rowend = Math.min(ovl.y + ovl.rows, rows);
+                            final int x = (ovl.x >= 0) ? 0 : -ovl.x;
+                            final int y = (ovl.y >= 0) ? 0 : -ovl.y;
+                            int mask = 1;
+                            int ind = x + y * ovl.cols;
+                            for (int j = rowstart; j < rowend; j++) {
+                                for (int k = colstart; k < colend; k++) {
+                                    if ((ovl.data[ind >> 3] & mask) > 0) {
+                                        for (int s = 0; s < spp; s++)
+                                        	buff[s][(j * cols) + k] = burnValue;
+                                    }
+                                    ind++;
+                                    if (mask == 0x80)
+                                        mask = 1;
+                                    else
+                                        mask = mask << 1;
                                 }
-                                ind++;
-                                if (mask == 0x80)
-                                    mask = 1;
-                                else
-                                    mask = mask << 1;
+                                ind = x + (y + j + 1) * ovl.cols;
+                                //ind += ovl.cols;
                             }
-                            ind += ovl.cols;
                         }
+                    }
+                    catch (IndexOutOfBoundsException e) {
+                        System.err.println("Bad overlay plane access, not enough data");
+                        e.printStackTrace();
                     }
                 }
                 
@@ -277,6 +299,8 @@ class PrintSCUDataSource implements DataSource {
             }
             
             //if a window exists, scale pixel data to window range
+            final float rs = ps.getFloat(Tags.RescaleSlope, 1F);
+            final float ri = ps.getFloat(Tags.RescaleIntercept, 0F);
             int winTop = 0, winBot = 0;
             Dataset voi = getVoiDataset(ds, ps);
             final boolean windowPresent = voi.contains(Tags.WindowCenter) && voi.contains(Tags.WindowWidth);
@@ -309,33 +333,38 @@ class PrintSCUDataSource implements DataSource {
                     lut = mlut;
                 else if (vlut != null)
                     lut = vlut;
-                if ((item = ps.getItem(Tags.PresentationLUTSeq)) != null)
+                if ((item = ps.getItem(Tags.PresentationLUTSeq)) != null) {
                     plut = new LutBuffer(item.getByteBuffer(Tags.LUTData),
                         item.getInts(Tags.LUTDescriptor),
                         VRs.US); //always US
-                else if ("INVERSE".equals(ps.getString(Tags.PresentationLUTShape)))
+                    ds.putCS(Tags.PhotometricInterpretation,"MONOCHROME2");
+                }
+                else if ("INVERSE".equals(ps.getString(Tags.PresentationLUTShape))) {
                     ds.putCS(Tags.PhotometricInterpretation,
                         ("MONOCHROME2".equals(pmi)) ? "MONOCHROME1" : "MONOCHROME2");
-                //if (plut!=null) ds.putCS(Tags.PhotometricInterpretation,"MONOCHROME2");
+                }
             }
             
-            //write image box pixel representation attributes (only header for PixelData)
+            //write image box pixel representation attributes
             ds.subSet(IMAGE_MODULE).writeDataset(out, encodeParam);
+            //write Pixel Data element header with the proper length
             ds.writeHeader(out, encodeParam,
                 parser.getReadTag(), //"Pixel Data"
                 toDesc.getPixelDataVr(),
                 (int)toDesc.calcPixelDataLength());
             
-            //scale pixel samples
+            //apply any Rescale Slope/Intercept or LUTs (M-LUT and/or VOI-LUT),
+            //P-LUT, and scale pixel samples to proper new range for the Hard
+            //Copy
             if (lut != null) {
                 if (buff == null)
                     buff = (pd = readPixelData(fromDesc, in)).getPixelDataArray(0);
                 if (plut != null)
-                    scaleToRangeWithLUT(buff, fromDesc, toBitsStored, false, rs, ri,
-                        lut, winBot, winTop);
-                else
                     scaleToRangeWithLUTAndPLut(buff, fromDesc, toBitsStored, false,
                         rs, ri, lut, plut, winBot, winTop);
+                else
+                    scaleToRangeWithLUT(buff, fromDesc, toBitsStored, false, rs, ri,
+                        lut, winBot, winTop);
             }
             else if (plut != null) {
                 if (buff == null)
@@ -349,6 +378,8 @@ class PrintSCUDataSource implements DataSource {
                 scaleToRange(buff, fromDesc, toBitsStored, false, winBot, winTop);
             }
             
+            //check if we needed to read entire chunk of pxiel data and write the
+            //modified samples to the output stream
             if (pd != null) {
                 //for the writing we're going on the assumption that the print server
                 // will ignore the overlay bits in pixel cell (in the case of bs=12)
@@ -391,10 +422,15 @@ class PrintSCUDataSource implements DataSource {
         for (int i = 0; i < n; i++) {
             item = scVoiLutSeq.getItem(i);
             ris = item.get(Tags.RefImageSeq);
-            for (int j = 0; ris != null && j < ris.vm(); j++)
-                if (ris.getItem(j).getString(Tags.RefSOPInstanceUID, "")
-                    .equals(iuid))
-                    return item;
+            if (ris != null) {
+                for (int j = 0; j < ris.vm(); j++)
+                    if (ris.getItem(j).getString(Tags.RefSOPInstanceUID, "")
+                        .equals(iuid))
+                        return item;
+            }
+            else {
+                return item;
+            }
         }
         
 		return ds;
@@ -407,60 +443,6 @@ class PrintSCUDataSource implements DataSource {
         PixelDataReader reader = pdFact.newReader(desc, ImageIO.createImageInputStream(in));
         reader.readPixelData(true);
         return reader;
-    }
-
-    private static final class LutBuffer
-    {
-        public static final int TYPE_BYTE = 0;
-        public static final int TYPE_SHORT = 1;
-        private final ByteBuffer buff;
-        private final int dataType;
-        private final int lutSize, firstValueMapped, depth;
-        private final int vr;
-        public LutBuffer(ByteBuffer backend, int[] descriptor, int vr)
-        {
-            this.buff = backend;
-            this.dataType = (descriptor[2] <= 8) ? TYPE_BYTE
-                                                 : TYPE_SHORT;
-            lutSize = (descriptor[0] == 0) ? (1 << 16) : descriptor[0] & 0xFFFF; //always US
-            firstValueMapped = (vr == VRs.US)
-                ? descriptor[1]
-                : (descriptor[1] << 16) >> 16;
-            depth = descriptor[2] & 0xFFFF; //always US
-            this.vr = vr;
-        }
-        public int getVr()
-        {
-            return vr;
-        }
-        public int[] getDescriptor()
-        {
-            return new int[] {lutSize, firstValueMapped, depth};
-        }
-        public int getEntry(int index)
-        {
-            return (dataType == TYPE_BYTE)
-                ? (int)(buff.get(index) & 0xFF)
-                : (int)(buff.getShort(index * 2) & 0xFFFF);
-        }
-        public int getEntryFromInput(int value)
-        {
-            if (value <= firstValueMapped)
-                return getEntry(0);
-            else if (value - firstValueMapped >= lutSize)
-                return getEntry(lutSize - 1);
-            else
-                return getEntry(value - firstValueMapped);
-        }
-		public int getDepth() {
-			return depth;
-		}
-		public int getFirstValueMapped() {
-			return firstValueMapped;
-		}
-		public int getLutSize() {
-			return lutSize;
-		}
     }
 
     private LutBuffer combineLuts(LutBuffer lut0, LutBuffer lut1)
@@ -484,10 +466,8 @@ class PrintSCUDataSource implements DataSource {
         }
         ByteBuffer wrapped = ByteBuffer.wrap(olut);
         wrapped.order(ByteOrder.LITTLE_ENDIAN);
-        return new LutBuffer(wrapped,
-            new int[]{n, luts[0].getFirstValueMapped(),
-                luts[luts.length - 1].getDepth()},
-            luts[luts.length - 1].getVr());
+        return new LutBuffer(wrapped, n, luts[0].getFirstValueMapped(),
+            luts[luts.length - 1].getDepth(), LutBuffer.TYPE_WORD);
     }
 
     private void scaleToRangeWithPLut(int[][] pixelData,
@@ -496,14 +476,11 @@ class PrintSCUDataSource implements DataSource {
         LutBuffer plut,
         int start, int end)
     {
-        //lut != null
-        //from describes the output range of pixel data
-        //range [start..end] of lut[pixelData*rs+ri] scaled to toBitDepth
         final int fromBitDepth = from.getBitsStored();
         final int min = (from.isSigned()) ? -(1 << (fromBitDepth - 1)) : 0;
         final int max = (from.isSigned()) ? (1 << (fromBitDepth - 1)) - 1
                                  : (1 << fromBitDepth) - 1;
-        if (start >= end) {
+        if (start == end) {
             start = min;
             end = max;
         }
@@ -518,6 +495,8 @@ class PrintSCUDataSource implements DataSource {
         final float f2 = (float)rngNew / plutRng;
         final int leftShift = 32 - from.getHighBit() - 1;
         final int rightShift = 32 - from.getBitsStored();
+        final int plutMinMappedValue = (int)(plut.getEntry(0) * f2 + 0.5F) - newMin;
+        final int plutMaxMappedValue = (int)(plut.getEntry(plutInputUB) * f2 + 0.5F) - newMin;
         double tmp;
 
         if (from.isSigned()) {
@@ -525,9 +504,9 @@ class PrintSCUDataSource implements DataSource {
                 for (int i = 0; i < pixelData[s].length; i++) {
                     tmp = (((pixelData[s][i] << leftShift) >> rightShift) - start) * f1;
                     if (tmp < 0)
-                        pixelData[s][i] = newMin;
+                        pixelData[s][i] = plutMinMappedValue;
                     else if (tmp > plutInputUB)
-                        pixelData[s][i] = newMax;
+                        pixelData[s][i] = plutMaxMappedValue;
                     else
                         pixelData[s][i] = (int)(plut.getEntry((int)(tmp + 0.5F)) * f2 + 0.5F) - newMin;
                 }
@@ -537,9 +516,9 @@ class PrintSCUDataSource implements DataSource {
                 for (int i = 0; i < pixelData[s].length; i++) {
                     tmp = (((pixelData[s][i] << leftShift) >>> rightShift) - start) * f1;
                     if (tmp < 0)
-                        pixelData[s][i] = newMin;
+                        pixelData[s][i] = plutMinMappedValue;
                     else if (tmp > plutInputUB)
-                        pixelData[s][i] = newMax;
+                        pixelData[s][i] = plutMaxMappedValue;
                     else
                         pixelData[s][i] = (int)(plut.getEntry((int)(tmp + 0.5F)) * f2 + 0.5F) - newMin;
                 }
@@ -553,14 +532,11 @@ class PrintSCUDataSource implements DataSource {
         LutBuffer lut, LutBuffer plut,
         int start, int end)
     {
-        //lut != null
-        //from describes the output range of pixel data
-        //range [start..end] of lut[pixelData*rs+ri] scaled to toBitDepth
         final int fromBitDepth = lut.getDepth();
         final int min = (false) ? -(1 << (fromBitDepth - 1)) : 0;
         final int max = (false) ? (1 << (fromBitDepth - 1)) - 1
                                  : (1 << fromBitDepth) - 1;
-        if (start >= end) {
+        if (start == end) {
             start = min;
             end = max;
         }
@@ -575,6 +551,8 @@ class PrintSCUDataSource implements DataSource {
         final float f2 = (float)rngNew / plutRng;
         final int leftShift = 32 - from.getHighBit() - 1;
         final int rightShift = 32 - from.getBitsStored();
+        final int plutMinMappedValue = (int)(plut.getEntry(0) * f2 + 0.5F) - newMin;
+        final int plutMaxMappedValue = (int)(plut.getEntry(plutInputUB) * f2 + 0.5F) - newMin;
         double tmp;
 
         if (from.isSigned()) {
@@ -584,9 +562,9 @@ class PrintSCUDataSource implements DataSource {
                     tmp = lut.getEntryFromInput((int)(tmp + 0.5F));
                     tmp = (tmp - start) * f1;
                     if (tmp < 0)
-                        pixelData[s][i] = newMin;
+                        pixelData[s][i] = plutMinMappedValue;
                     else if (tmp > plutInputUB)
-                        pixelData[s][i] = newMax;
+                        pixelData[s][i] = plutMaxMappedValue;
                     else
                         pixelData[s][i] = (int)(plut.getEntry((int)(tmp + 0.5F)) * f2 + 0.5F) - newMin;
                 }
@@ -598,9 +576,9 @@ class PrintSCUDataSource implements DataSource {
                     tmp = lut.getEntryFromInput((int)(tmp + 0.5F));
                     tmp = (tmp - start) * f1;
                     if (tmp < 0)
-                        pixelData[s][i] = newMin;
+                        pixelData[s][i] = plutMinMappedValue;
                     else if (tmp > plutInputUB)
-                        pixelData[s][i] = newMax;
+                        pixelData[s][i] = plutMaxMappedValue;
                     else
                         pixelData[s][i] = (int)(plut.getEntry((int)(tmp + 0.5F)) * f2 + 0.5F) - newMin;
                 }
@@ -614,14 +592,11 @@ class PrintSCUDataSource implements DataSource {
         LutBuffer lut,
         int start, int end)
     {
-        //lut != null
-        //from describes the output range of pixel data
-        //range [start..end] of lut[pixelData*rs+ri] scaled to toBitDepth
         final int fromBitDepth = lut.getDepth();
         final int min = (false) ? -(1 << (fromBitDepth - 1)) : 0;
         final int max = (false) ? (1 << (fromBitDepth - 1)) - 1
                                  : (1 << fromBitDepth) - 1;
-        if (start >= end) {
+        if (start == end) {
             start = min;
             end = max;
         }
@@ -678,7 +653,7 @@ class PrintSCUDataSource implements DataSource {
         final int min = (from.isSigned()) ? -(1 << (fromBitDepth - 1)) : 0;
         final int max = (from.isSigned()) ? (1 << (fromBitDepth - 1)) - 1
                                  : (1 << fromBitDepth) - 1;
-        if (start >= end) {
+        if (start == end) {
             start = min;
             end = max;
         }
