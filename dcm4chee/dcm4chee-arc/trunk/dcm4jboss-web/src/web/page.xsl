@@ -12,6 +12,7 @@
     	<td width="50" align="left"><img src="images/logo.jpg" alt="TIANI Medgraph AG" border="0"/></td>
     	<td width="100" align="center"><a href="default.jsp">Folder</a></td>
       <td width="120" align="center"><a href="ae.m">AE Management</a></td>
+      <td width="120" align="center"><a href="mcm_console.m">Media Creation Managment Console</a></td>
       <td width="120" align="center"><a href="../dcm4jboss-arr">Audit Repository</a></td>
 			<td width="40%"></td>
 			  <xsl:apply-templates select="model"/>
