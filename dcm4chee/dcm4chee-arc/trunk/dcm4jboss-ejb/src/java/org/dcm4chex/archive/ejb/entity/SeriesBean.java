@@ -77,6 +77,10 @@ public abstract class SeriesBean implements EntityBean {
     private static final Logger log = Logger.getLogger(SeriesBean.class);
     private Set retrieveAETSet;
 
+    public void unsetEntityContext() {
+        retrieveAETSet = null;
+    }
+    
     /**
      * Auto-generated Primary Key
      *
