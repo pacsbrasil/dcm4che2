@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.Writer;
+import java.util.Map;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
@@ -112,9 +113,10 @@ public interface Dataset extends DcmObject, Serializable
      *  Description of the Method
      *
      * @param  out Description of the Parameter
+     * @param  map Description of the Parameter
      * @exception  IOException Description of the Exception
      */
-    public void dumpDataset(OutputStream out)
+    public void dumpDataset(OutputStream out, Map map)
         throws IOException;
 
 
@@ -122,9 +124,10 @@ public interface Dataset extends DcmObject, Serializable
      *  Description of the Method
      *
      * @param  w Description of the Parameter
+     * @param  map Description of the Parameter
      * @exception  IOException Description of the Exception
      */
-    public void dumpDataset(Writer w)
+    public void dumpDataset(Writer w, Map map)
         throws IOException;
 }
 

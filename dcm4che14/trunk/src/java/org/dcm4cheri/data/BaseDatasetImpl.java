@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
 
 import javax.imageio.stream.ImageOutputStream;
@@ -49,6 +50,7 @@ import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.VRs;
 
 import org.xml.sax.ContentHandler;
+import javax.xml.transform.Transformer;
 
 /**
  *  Implementation of <code>Dataset</code> container objects.
@@ -68,7 +70,6 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
     private int grCount = 0;
     /**  Description of the Field */
     protected int totLen = 0;
-
 
     private static SAXTransformerFactory tfFactory;
     private static Templates templates;
@@ -115,6 +116,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
         }
         return tagDictionary;
     }
+
 
     /**
      *  Sets the fileMetaInfo attribute of the BaseDatasetImpl object
@@ -418,12 +420,13 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      *  Description of the Method
      *
      * @param  out Description of the Parameter
+     * @param  param Description of the Parameter
      * @exception  IOException Description of the Exception
      */
-    public void dumpDataset(OutputStream out)
+    public void dumpDataset(OutputStream out, Map param)
         throws IOException
     {
-        dumpDataset(new StreamResult(out));
+        dumpDataset(new StreamResult(out), param);
     }
 
 
@@ -431,21 +434,29 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset
      *  Description of the Method
      *
      * @param  w Description of the Parameter
+     * @param  param Description of the Parameter
      * @exception  IOException Description of the Exception
      */
-    public void dumpDataset(Writer w)
+    public void dumpDataset(Writer w, Map param)
         throws IOException
     {
-        dumpDataset(new StreamResult(w));
+        dumpDataset(new StreamResult(w), param);
     }
 
 
-    private void dumpDataset(Result result)
+    private void dumpDataset(Result result, Map param)
         throws IOException
     {
         TransformerHandler th;
         try {
             th = getTransformerFactory().newTransformerHandler(getTemplates());
+            if (param != null) {
+                Transformer t = th.getTransformer();
+                for (Iterator it = param.entrySet().iterator(); it.hasNext(); ) {
+                    Map.Entry e = (Map.Entry) it.next();
+                    t.setParameter((String) e.getKey(), e.getValue());
+                }
+            }
         } catch (Exception e) {
             throw new ConfigurationError("Failed to initialize XSLT", e);
         }

@@ -28,23 +28,21 @@
 
 <xsl:param name="maxlen" select="79"/>
 <xsl:param name="vallen" select="64"/>
+<xsl:param name="prefix" select="''"/>
 
 <xsl:template match="/">
     <xsl:apply-templates select="dataset"/>
 </xsl:template>
 
 <xsl:template match="dataset">
-<xsl:text>=== Dataset ===
-</xsl:text>
 <xsl:apply-templates select="elm">
-    <xsl:with-param name="level" select="''"/>
+    <xsl:with-param name="level" select="$prefix"/>
 </xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="elm">
         <xsl:param name='level'/>
     <xsl:variable name="prefix">
-        <xsl:value-of select="format-number(@pos,'0000 ')"/>
         <xsl:value-of select="$level"/>
         <xsl:text>(</xsl:text>
         <xsl:value-of select="substring(@tag,1,4)"/>
@@ -129,7 +127,7 @@
     <xsl:if test="@len = -1">
         <xsl:call-template name="promptLine">
             <xsl:with-param name="line" 
-                          select="concat('     ',$level,'(fffe,e0dd)    #0')"/>
+                          select="concat($level,'(fffe,e0dd)    #0')"/>
             <xsl:with-param name="name" select="'Sequence Delimitation Item'"/>
         </xsl:call-template>
     </xsl:if>
@@ -139,7 +137,6 @@
         <xsl:param name='level'/>
     <xsl:call-template name="promptLine">
         <xsl:with-param name="line">
-            <xsl:value-of select="format-number(@pos,'0000 ')"/>
             <xsl:value-of select="$level"/>
             <xsl:text>(fffe,e000) #</xsl:text>
             <xsl:value-of select="@len"/>
@@ -152,7 +149,7 @@
     <xsl:if test="@len = -1">
         <xsl:call-template name="promptLine">
             <xsl:with-param name="line" 
-                          select="concat('     ',$level,'(fffe,e00d)    #0')"/>
+                          select="concat($level,'(fffe,e00d)    #0')"/>
             <xsl:with-param name="name" select="'Item Delimitation Item'"/>
         </xsl:call-template>
     </xsl:if>
@@ -162,7 +159,6 @@
         <xsl:param name='level'/>
     <xsl:call-template name="promptLine">
         <xsl:with-param name="line">
-            <xsl:value-of select="format-number(@pos,'0000 ')"/>
             <xsl:value-of select="$level"/>
             <xsl:text>(fffe,e000)    #</xsl:text>
             <xsl:value-of select="@len"/>
