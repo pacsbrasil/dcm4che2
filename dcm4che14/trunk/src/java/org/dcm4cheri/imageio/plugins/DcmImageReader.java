@@ -84,13 +84,14 @@ public class DcmImageReader extends ImageReader
         }, 0, false, false);
     }
     
+    private final PixelDataFactory pixelDataFact;
     private ImageInputStream stream;
     private BufferedImage theImage;
     private WritableRaster theTile;
     private DcmParser theParser;
     private DcmMetadataImpl theMetadata;
     private Dataset theDataset;
-    //private long frameStartPos[];
+    private PixelData pixelData;
     private int width;
     private int height;
     private int planes;
@@ -112,11 +113,11 @@ public class DcmImageReader extends ImageReader
     private int totDestWidth;
     private int totDestHeight;
     private int numberOfFrames;
-    private long imageStartPos; //byte position in 'stream' where reading starts
 
     public DcmImageReader(ImageReaderSpi originatingProvider)
     {
         super(originatingProvider);
+        pixelDataFact = PixelDataFactory.newInstance();
         stream = null;
         theImage = null;
         theTile = null;
@@ -127,7 +128,6 @@ public class DcmImageReader extends ImageReader
         height = -1;
         planes = -1;
         samplesPerPixel = -1;
-        imageStartPos = -1;
         pmi = null;
         dataType = 0;
         aspectRatio = 0.0F;
@@ -148,6 +148,7 @@ public class DcmImageReader extends ImageReader
         pmi = null;
         theImage = null;
         theTile = null;
+        pixelData = null;
     }
 
     public void setInput(Object input, boolean seekForwardOnly, boolean ignoreMetadata)
@@ -234,6 +235,8 @@ public class DcmImageReader extends ImageReader
         theParser.setDcmHandler(theDataset.getDcmHandler());
         theParser.parseDcmFile(fileFormat, Tags.PixelData);
         theMetadata = new DcmMetadataImpl(theDataset);
+        pixelData = pixelDataFact.newPixelData(theDataset, stream,
+            theParser.getDcmDecodeParam().byteOrder, theParser.getReadVR());
         if(theParser.getReadTag() == Tags.PixelData)
             initParams();
     }
@@ -243,9 +246,9 @@ public class DcmImageReader extends ImageReader
     {
         int alloc = theDataset.getInt(Tags.BitsAllocated, 8);
         if(alloc <= 8)
-            dataType = 0;
+            dataType = DataBuffer.TYPE_BYTE;
         else if(alloc <= 16)
-            dataType = 1;
+            dataType = DataBuffer.TYPE_USHORT;
         else if(alloc <= 32) //dataType = DataBuffer.TYPE_INT
             throw new IOException(alloc + " Bits Allocated not supported for Java BufferedImages");
         else
@@ -254,7 +257,6 @@ public class DcmImageReader extends ImageReader
         final int rLen = theParser.getReadLength();
         if(rLen == -1)
             throw new IOException("Encapsulate Pixel Data not supported by this version!");
-        imageStartPos = stream.getStreamPosition();
         width = theDataset.getInt(Tags.Columns, 0);
         height = theDataset.getInt(Tags.Rows, 0);
         pmi = theDataset.getString(Tags.PhotometricInterpretation, null);
@@ -325,7 +327,7 @@ public class DcmImageReader extends ImageReader
     {
         readMetadata();
         checkIndex(imageIndex);
-        stream.seek(imageStartPos);
+        pixelData.resetStream();
         if(param == null)
             param = getDefaultReadParam();
         Iterator imageTypes = getImageTypes(imageIndex, (DcmImageReadParam)param);
@@ -361,33 +363,30 @@ public class DcmImageReader extends ImageReader
             destYOffset = 0;
         }
         java.awt.image.DataBuffer db = theTile.getDataBuffer();
-        PixelDataFactory pdf = PixelDataFactory.newInstance();
-        PixelData pd = pdf.newPixelData(theDataset, stream,
-            theParser.getDcmDecodeParam().byteOrder, theParser.getReadVR());
         //seek to proper frame (imageIndex parameter)
         for (int i = 0; i < imageIndex; i++)
-            pd.skipToNextFrame();
+            pixelData.skipToNextFrame();
         //read samples
         if (dataType == DataBuffer.TYPE_BYTE)
         {
             byte tilebuff[][] = ((DataBufferByte)db).getBankData();
             if(planes == 0) {
-                readSamples(pd, samplesPerPixel, tilebuff[0]);
+                readSamples(pixelData, samplesPerPixel, tilebuff[0]);
             }
             else {
                 for(int s = 0; s < samplesPerPixel; s++)
-                    readSamples(pd, 1, tilebuff[s]);
+                    readSamples(pixelData, 1, tilebuff[s]);
             }
         }
         else if (dataType == DataBuffer.TYPE_USHORT)
         {
             short tilebuff[][] = ((DataBufferUShort)db).getBankData();
             if(planes == 0) {
-                readSamples(pd, samplesPerPixel, tilebuff[0]);
+                readSamples(pixelData, samplesPerPixel, tilebuff[0]);
             }
             else {
                 for(int s = 0; s < samplesPerPixel; s++)
-                    readSamples(pd, 1, tilebuff[s]);
+                    readSamples(pixelData, 1, tilebuff[s]);
             }
         }
         return theImage;
