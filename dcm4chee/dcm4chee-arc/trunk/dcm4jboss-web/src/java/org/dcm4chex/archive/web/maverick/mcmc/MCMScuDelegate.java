@@ -91,5 +91,19 @@ public class MCMScuDelegate {
 			return "OK".equals( resp );
 			
 		}
+		
+		public boolean deleteMedia( int pk ) {
+			try {
+		        Object o = server.invoke(mcmScuServiceName,
+		                "deleteMedia",
+		                new Object[]{ new Integer( pk ) },
+		                new String[]{ Integer.class.getName() } );
+		        return true;
+			} catch ( Exception x ) {
+				log.error( "Exception occured in deleteMedia("+pk+"): "+x.getMessage(), x );
+				return false;
+			}
+			
+		}
 
 }

@@ -16,6 +16,7 @@ import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -1010,6 +1011,10 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     	}
     	
     	return ret;
+    }
+    
+    public void deleteMedia( Integer mediaPk ) throws RemoteException, RemoveException, FinderException, HomeFactoryException, CreateException {
+    	lookupMediaComposer().deleteMedia( mediaPk );
     }
 	
     

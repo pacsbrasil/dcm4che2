@@ -20,6 +20,7 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -561,5 +562,34 @@ public abstract class MediaComposerBean implements SessionBean {
     	while ( iter.hasNext() ){
     		( (StudyLocal) iter.next()).updateDerivedFields();
     	}
+    }
+    
+    /**
+     * Deletes a media.
+     * <p>
+     * Update derived fields from series and studies after media is successfully deleted.
+     * 
+     * @param mediaPk Primary key of the media.
+     * 
+     * @ejb.interface-method
+     */
+    public void deleteMedia( Integer mediaPk ) throws EJBException, RemoveException, FinderException {
+    	MediaLocal media = mediaHome.findByPrimaryKey( mediaPk );
+    	Collection series = seriesHome.findSeriesOnMedia( media );
+      	Collection studies = studyHome.findStudiesOnMedia( media );
+        String filesetId = media.getFilesetId();
+        mediaHome.remove( mediaPk );
+    	log.info("Media "+filesetId+" removed!");
+      	Iterator iter = series.iterator();
+    	while ( iter.hasNext() ) {
+    		( (SeriesLocal) iter.next() ).updateDerivedFields();
+    	}
+    	if ( log.isDebugEnabled() ) log.debug( "Series updated after media "+filesetId+" was deleted!");
+    	iter = studies.iterator();
+    	while ( iter.hasNext() ){
+    		( (StudyLocal) iter.next()).updateDerivedFields();
+    	}
+    	if ( log.isDebugEnabled() ) log.debug( "Studies updated after media "+filesetId+" was deleted!");
+   	
     }
 }
