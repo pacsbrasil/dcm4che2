@@ -26,18 +26,9 @@ import java.util.Calendar;
 /**
  * <description>
  *
- * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
  * @since September 21, 2002
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
  */
 public class DTFormat extends SimpleDateFormat {
     
@@ -99,9 +90,8 @@ public class DTFormat extends SimpleDateFormat {
         if (zpos >= 0) {
             char ch = source.charAt(zpos);
             if (ch == '+' || ch == '-') {
-                calendar.set(Calendar.ZONE_OFFSET,
-                    Integer.parseInt(
-                        source.substring(ch == '-' ? zpos : (zpos+1))));
+                int off = Integer.parseInt(source.substring(zpos+1));                
+                calendar.set(Calendar.ZONE_OFFSET, ch == '-' ? -off : off);
                 calendar.set(Calendar.DST_OFFSET, 0);
                 return source.substring(0, zpos);
             }
