@@ -22,6 +22,10 @@
 
 package com.tiani.prnscp.print;
 
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -69,6 +73,7 @@ class Annotation {
    private static final String TOP = "top";
    private static final String BOTTOM = "bottom";
    private static final String CENTER = "center";
+   private static final Pattern SESSION_LABEL = Pattern.compile("\\$SESSION_LABEL\\$");
    private static final Pattern DATE = Pattern.compile("\\$DATE\\$");
    private static final Pattern PAGE = Pattern.compile("\\$PAGE\\$");
    private static final Pattern PAGES = Pattern.compile("\\$PAGES\\$");
@@ -84,15 +89,18 @@ class Annotation {
    private final float insetTop;
    private final float insetBottom;
    private final SimpleDateFormat dateFormat;
-   private String numPagesStr = "?";
+   private final String numPagesStr;
+   private String sessionLabel = "";
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   public Annotation(PrinterService service, File file) throws IOException
+   public Annotation(PrinterService service, String adfID, int numPages)
+      throws IOException
    {
       this.service = service;
-      this.file = file;
+      this.file = new File(service.getAnnotationDir(),
+            adfID + PrinterService.ADF_FILE_EXT);
       InputStream in = new BufferedInputStream(new FileInputStream(file));
       try {
          props.load(in);
@@ -109,14 +117,10 @@ class Annotation {
          Float.parseFloat(props.getProperty("inset.bottom", "0"));
       this.dateFormat = new SimpleDateFormat(
          props.getProperty("dateFormat", "yyyy-MM-dd"));
-      
+      this.numPagesStr = "" + numPages;      
    }
    
    // Public --------------------------------------------------------
-   public void setNumberOfPages(int numPages) {
-      numPagesStr = "" + numPages;
-   }
-
    public float getInsetLeft() {
       return insetLeft;
    }
@@ -161,12 +165,29 @@ class Annotation {
       props.setProperty(key, text);
    }
    
+   public void setSession(Dataset session) {
+      sessionLabel = session.getString(Tags.FilmSessionLabel, "");
+   }
+   
+   public void setAnnotationContentSeq(DcmElement seq) {
+      if (seq == null) {
+         return;
+      }
+      for (int j = 0, n = seq.vm(); j < n; ++j) {
+         Dataset item = seq.getItem(j);
+         setText(
+            item.getInt(Tags.AnnotationPosition, 1),
+            item.getString(Tags.TextString));
+      }
+    }   
+   
    public void print(Graphics g, PageFormat pf, int pageIndex) {
       Graphics2D g2 = (Graphics2D) g;
       String pageNoStr = "" + (pageIndex+1); 
       String dateStr = dateFormat.format(new Date());
       String s;
       for (int i = 1; (s = getText(i)) != null; ++i) {
+         s = SESSION_LABEL.matcher(s).replaceAll(sessionLabel);
          s = DATE.matcher(s).replaceAll(dateStr);
          s = PAGE.matcher(s).replaceAll(pageNoStr);
          s = PAGES.matcher(s).replaceAll(numPagesStr);
