@@ -34,123 +34,109 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
  * @version $Revision$ $Date$
  * @since 10.12.2003
  * 
- * @ejb.bean
- *  name="MWLManager"
- *  type="Stateless"
- *  view-type="remote"
- *  jndi-name="ejb/MWLManager"
- * 
- * @ejb.transaction-type 
- *  type="Container"
- * 
- * @ejb.transaction 
- *  type="Required"
- * 
- * @ejb.ejb-ref
- *  ejb-name="Patient"
- *  view-type="local"
- *  ref-name="ejb/Patient"
- * 
- * @ejb.ejb-ref
- *  ejb-name="MWLItem" 
- *  view-type="local"
- *  ref-name="ejb/MWLItem" 
+ * @ejb.bean name="MWLManager" type="Stateless" view-type="remote"
+ *           jndi-name="ejb/MWLManager"
+ * @ejb.transaction-type type="Container"
+ * @ejb.transaction type="Required"
+ * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
+ * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  * 
  */
 public abstract class MWLManagerBean implements SessionBean {
-    private static final int[] PATIENT_ATTRS_EXC = {
-            Tags.PatientName,
-            Tags.PatientID,
-            Tags.PatientBirthDate,
-            Tags.PatientSex,
-            Tags.RefPatientSeq,         
-    };
-    private static final int[] PATIENT_ATTRS_INC = {
-            Tags.PatientName,
-            Tags.PatientID,
-            Tags.PatientBirthDate,
-            Tags.PatientSex,
-    };
-    private static Logger log = Logger.getLogger(MWLManagerBean.class);
-    private PatientLocalHome patHome;
-    private MWLItemLocalHome mwlItemHome;
+	private static final int[] PATIENT_ATTRS = { Tags.PatientName,
+			Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
 
-    public void setSessionContext(SessionContext ctx) {
-        Context jndiCtx = null;
-        try {
-            jndiCtx = new InitialContext();
-            patHome =
-                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
-            mwlItemHome =
-                (MWLItemLocalHome) jndiCtx.lookup(
-                    "java:comp/env/ejb/MWLItem");
-        } catch (NamingException e) {
-            throw new EJBException(e);
-        } finally {
-            if (jndiCtx != null) {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
-            }
-        }
-    }
+	private static Logger log = Logger.getLogger(MWLManagerBean.class);
 
-    public void unsetSessionContext() {
-        mwlItemHome = null;
-        patHome = null;
-    }
+	private PatientLocalHome patHome;
 
-    /**
-     * @ejb.interface-method
-     */
-    public Dataset removeWorklistItem(String id) {
-        try {
-            MWLItemLocal mwlItem = mwlItemHome.findBySpsId(id);
-            Dataset ds = mwlItem.getAttributes();
-            mwlItem.remove();
-            return ds;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-    }
+	private MWLItemLocalHome mwlItemHome;
 
-    private PatientLocal getPatient(Dataset ds) throws FinderException,
-            CreateException {
-            final String id = ds.getString(Tags.PatientID);
-            Collection c = patHome.findByPatientId(id);
-            for (Iterator it = c.iterator(); it.hasNext();) {
-                PatientLocal patient = (PatientLocal) it.next();
-                if (equals(patient, ds)) {
-                    PatientLocal mergedWith = patient.getMergedWith();
-                    if (mergedWith != null) {
-                        patient = mergedWith;
-                    }
-                    return patient;
-                }
-            }
-            PatientLocal patient =
-                patHome.create(ds.subSet(PATIENT_ATTRS_INC));
-            return patient;
-    }
+	public void setSessionContext(SessionContext ctx) {
+		Context jndiCtx = null;
+		try {
+			jndiCtx = new InitialContext();
+			patHome = (PatientLocalHome) jndiCtx
+					.lookup("java:comp/env/ejb/Patient");
+			mwlItemHome = (MWLItemLocalHome) jndiCtx
+					.lookup("java:comp/env/ejb/MWLItem");
+		} catch (NamingException e) {
+			throw new EJBException(e);
+		} finally {
+			if (jndiCtx != null) {
+				try {
+					jndiCtx.close();
+				} catch (NamingException ignore) {
+				}
+			}
+		}
+	}
 
-    private boolean equals(PatientLocal patient, Dataset ds) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-    
-    /**
-     * @ejb.interface-method
-     */
-    public String addWorklistItem(Dataset ds) {
-        try {
-            MWLItemLocal mwlItem = mwlItemHome.create(
-                    ds.subSet(PATIENT_ATTRS_EXC, true, true),
-                    getPatient(ds));
-            return mwlItem.getSpsId();
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-    }
+	public void unsetSessionContext() {
+		mwlItemHome = null;
+		patHome = null;
+	}
 
+	/**
+	 * @ejb.interface-method
+	 */
+	public Dataset removeWorklistItem(String id) {
+		try {
+			MWLItemLocal mwlItem = mwlItemHome.findBySpsId(id);
+			Dataset ds = mwlItem.getAttributes();
+			mwlItem.remove();
+			return ds;
+		} catch (Exception e) {
+			throw new EJBException(e);
+		}
+	}
+
+	private PatientLocal getPatient(Dataset ds) throws FinderException,
+			CreateException {
+		final String id = ds.getString(Tags.PatientID);
+		Collection c = patHome.findByPatientId(id);
+		for (Iterator it = c.iterator(); it.hasNext();) {
+			PatientLocal patient = (PatientLocal) it.next();
+			if (equals(patient, ds)) {
+				PatientLocal mergedWith = patient.getMergedWith();
+				if (mergedWith != null) {
+					patient = mergedWith;
+				}
+				return patient;
+			}
+		}
+		PatientLocal patient = patHome.create(ds.subSet(PATIENT_ATTRS));
+		return patient;
+	}
+
+	private boolean equals(PatientLocal patient, Dataset ds) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public String addWorklistItem(Dataset ds) {
+		try {
+			MWLItemLocal mwlItem = mwlItemHome.create(ds.subSet(
+					PATIENT_ATTRS, true, true), getPatient(ds));
+			return mwlItem.getSpsId();
+		} catch (Exception e) {
+			throw new EJBException(e);
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public void updateWorklistItem(Dataset ds) {
+		try {
+			Dataset sps = ds.getItem(Tags.SPSSeq);
+			MWLItemLocal mwlItem = mwlItemHome.findBySpsId(sps.getString(Tags.SPSID));
+			mwlItem.setAttributes(ds.subSet(PATIENT_ATTRS, true, true));
+		} catch (Exception e) {
+			throw new EJBException(e);
+		}
+	}
 }

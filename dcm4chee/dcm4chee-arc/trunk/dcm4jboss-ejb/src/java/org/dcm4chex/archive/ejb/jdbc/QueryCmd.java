@@ -208,14 +208,14 @@ public abstract class QueryCmd extends BaseCmd {
             final int vr = key.vr();
             DcmElement el = ds.get(tag);
             if (el == null) {
-                ds.putXX(tag, vr);
-                continue;
+                el = ds.putXX(tag, vr);
             }
             if (vr == VRs.SQ) {
                 Dataset keyItem = key.getItem();
                 if (keyItem != null) {
+                	if (el.isEmpty()) el.addNewItem();
                     for (int i = 0, n = el.vm(); i < n; ++i) {
-                        adjustDataset(el.addNewItem(), keyItem);
+                        adjustDataset(el.getItem(i), keyItem);
                     }
                 }
             }
