@@ -22,55 +22,19 @@
 
 package org.dcm4che.server;
 
-import org.dcm4che.Implementation;
-import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.DcmServiceRegistry;
+import java.util.Date;
 
 /**
- * <description>
+ * <description> 
  *
  * @see <related>
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
+ *   
  */
-public abstract class ServerFactory {
-   // Constants -----------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
-   
-   // Static --------------------------------------------------------
-   public static ServerFactory getInstance() {
-      return (ServerFactory)Implementation.findFactory(
-            "dcm4che.server.ServerFactory");
-   }
-      
-   // Constructors --------------------------------------------------
-   
-   // Public --------------------------------------------------------
-   public abstract Server newServer(Server.Handler handler);
-   
-   public abstract DcmHandler newDcmHandler(AcceptorPolicy policy,
-         DcmServiceRegistry services);
+public interface SyslogService
+{
+   void process(Date date, String host, String content);
 
-   public abstract HL7Handler newHL7Handler();
-
-   public abstract UDPServer newUDPServer(UDPServer.Handler handler);
-
-   public abstract UDPServer.Handler newSyslogHandler(SyslogService service);
-
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
 }

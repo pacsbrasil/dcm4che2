@@ -70,7 +70,7 @@ public class Syslog implements PollDirSrv.Handler {
    }
 
    public static void main(String args[]) throws Exception {
-      Getopt g = new Getopt("syslog", args, "czHp:t:d:u:f:P:T:D:M:", LONG_OPTS);
+      Getopt g = new Getopt("syslog", args, "czHp:s:t:d:u:f:P:T:D:M:", LONG_OPTS);
       
       Syslog syslog = new Syslog();
       File file = null;
@@ -91,11 +91,14 @@ public class Syslog implements PollDirSrv.Handler {
             case 'T':
                pollPeriod = Integer.parseInt(g.getOptarg()) * 1000L;
                break;
+            case 'p':
+               syslog.syslog.setSyslogPort(Integer.parseInt(g.getOptarg()));
+               break;
             case 'M':
                syslog.pollDirSrv.setDeltaLastModified(
                      Integer.parseInt(g.getOptarg()) * 1000L);
                break;
-            case 'p':
+            case 's':
                syslog.setFacility(g.getOptarg());
                syslog.setLevel(g.getOptarg());               
                break;

@@ -20,57 +20,43 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.server;
+package org.dcm4cheri.server;
 
-import org.dcm4che.Implementation;
-import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.DcmServiceRegistry;
+import java.lang.*;
+import java.util.*;
+import java.io.*;
+import java.net.DatagramPacket;
+import org.dcm4che.server.SyslogService;
+import org.dcm4che.server.UDPServer;
 
 /**
- * <description>
+ * <description> 
  *
  * @see <related>
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
+ *   
  */
-public abstract class ServerFactory {
-   // Constants -----------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
-   
-   // Static --------------------------------------------------------
-   public static ServerFactory getInstance() {
-      return (ServerFactory)Implementation.findFactory(
-            "dcm4che.server.ServerFactory");
-   }
-      
-   // Constructors --------------------------------------------------
-   
-   // Public --------------------------------------------------------
-   public abstract Server newServer(Server.Handler handler);
-   
-   public abstract DcmHandler newDcmHandler(AcceptorPolicy policy,
-         DcmServiceRegistry services);
+public class SyslogHandlerImpl implements UDPServer.Handler
+{
+    private final SyslogService service;
+    
+    public SyslogHandlerImpl(SyslogService service) {
+        this.service = service;
+    }
+    
+    public final void handle(DatagramPacket datagram)
+    {
+	byte[] buff = datagram.getData();
+	try {
+	    SyslogMsg msg = new SyslogMsg(buff,datagram.getLength());
+            service.process(msg.getTimestamp(), msg.getHost(), msg.getContent());
+	    //printLogMsg(msg.toString());
+	}
+	catch (SyslogMsg.InvalidSyslogMsgException e) {
+	    e.printStackTrace();
+	}
+    }
 
-   public abstract HL7Handler newHL7Handler();
-
-   public abstract UDPServer newUDPServer(UDPServer.Handler handler);
-
-   public abstract UDPServer.Handler newSyslogHandler(SyslogService service);
-
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
 }

@@ -22,55 +22,47 @@
 
 package org.dcm4che.server;
 
-import org.dcm4che.Implementation;
-import org.dcm4che.net.AcceptorPolicy;
-import org.dcm4che.net.DcmServiceRegistry;
+import java.io.IOException;
+import java.net.DatagramPacket;
 
 /**
  * <description>
  *
  * @see <related>
- * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @author  <a href="mailto:{email}">{full name}</a>.
+ * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
- *
- * <p><b>Revisions:</b>
- *
- * <p><b>yyyymmdd author:</b>
- * <ul>
- * <li> explicit fix description (no line numbers but methods) go
- *            beyond the cvs commit message
- * </ul>
  */
-public abstract class ServerFactory {
-   // Constants -----------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
-   
-   // Static --------------------------------------------------------
-   public static ServerFactory getInstance() {
-      return (ServerFactory)Implementation.findFactory(
-            "dcm4che.server.ServerFactory");
-   }
-      
-   // Constructors --------------------------------------------------
-   
-   // Public --------------------------------------------------------
-   public abstract Server newServer(Server.Handler handler);
-   
-   public abstract DcmHandler newDcmHandler(AcceptorPolicy policy,
-         DcmServiceRegistry services);
-
-   public abstract HL7Handler newHL7Handler();
-
-   public abstract UDPServer newUDPServer(UDPServer.Handler handler);
-
-   public abstract UDPServer.Handler newSyslogHandler(SyslogService service);
-
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
+public interface UDPServer {
+    public interface Handler
+    {
+        void handle(DatagramPacket datagram) throws IOException;
+    }
+    
+    void setMaxClients(int max);
+    
+    int getMaxClients();
+    
+    int getNumClients();
+    
+    /**
+     * @deprecated use {@link #setPort}, {@link #start()} 
+     */    
+    void start(int port) throws IOException;
+    
+    void start() throws Exception;
+    
+    void stop();
+    
+    /** Getter for property port.
+     * @return Value of property port.
+     *
+     */
+    public int getPort();
+    
+    /** Setter for property port.
+     * @param port New value of property port.
+     *
+     */
+    public void setPort(int port);
 }

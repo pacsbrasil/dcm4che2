@@ -262,6 +262,10 @@
            manifest="${build.res.dir}/META-INF/imgread.mf">
            <fileset dir="${build.classes.dir}" includes="ImageReadParamDemo*,ReadThread*,ReadParamPanel*,ImagePanel*"/>
       </jar>
+      <jar jarfile="${build.samples.dir}/syslogd.jar"
+           manifest="${build.res.dir}/META-INF/syslogd.mf">
+           <fileset dir="${build.classes.dir}" includes="Syslogd*"/>
+      </jar>
    </target>
    
    <target name="check-javadoc" depends="xslt-generate">

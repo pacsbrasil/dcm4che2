@@ -23,6 +23,8 @@
 package org.dcm4cheri.server;
 
 import org.dcm4che.server.Server;
+import org.dcm4che.server.UDPServer;
+import org.dcm4che.server.SyslogService;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.server.HL7Handler;
 import org.dcm4che.server.ServerFactory;
@@ -60,6 +62,14 @@ public class ServerFactoryImpl extends ServerFactory
    
    public HL7Handler newHL7Handler() {
       return new HL7HandlerImpl();
+   }
+   
+   public UDPServer.Handler newSyslogHandler(SyslogService service) {
+       return new SyslogHandlerImpl(service);
+   }
+   
+   public UDPServer newUDPServer(UDPServer.Handler handler) {
+       return new UDPServerImpl(handler);
    }
    
    // Constants -----------------------------------------------------
