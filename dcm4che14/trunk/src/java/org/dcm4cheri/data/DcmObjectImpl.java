@@ -303,6 +303,36 @@ abstract class DcmObjectImpl implements DcmObject {
       }
    }
    
+   public int getTag(int tag, int defVal) {
+      return getTag(tag, 0, defVal);
+   }
+   
+   public int getTag(int tag, int index, int defVal) {
+      DcmElement el = get(tag);
+      if (el == null || el.vm() <= index) {
+         return defVal;
+      }
+      
+      try {      
+         return el.getTag(index);
+      } catch (DcmValueException e) {
+         return defVal;
+      }
+   }
+   
+   public int[] getTags(int tag) {
+      DcmElement el = get(tag);
+      if (el == null) {
+         return null;
+      }
+      
+      try {      
+         return el.getTags();
+      } catch (DcmValueException e) {
+         return null;
+      }
+   }
+   
    public Float getFloat(int tag) {
       return getFloat(tag, 0);
    }

@@ -111,6 +111,12 @@ public interface DcmObject {
    
    int[] getInts(int tag);
    
+   int getTag(int tag, int defVal);
+   
+   int getTag(int tag, int index, int defVal);
+   
+   int[] getTags(int tag);
+   
    Float getFloat(int tag);
    
    Float getFloat(int tag, int index);
