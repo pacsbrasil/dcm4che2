@@ -96,8 +96,6 @@ class MoveTask implements Runnable {
 
     private final Dataset moveRqData;
 
-    //	private boolean forwardOrigMoveRQ = false;
-
     private final String moveOriginatorAET;
 
     private final String moveCalledAET;
@@ -306,11 +304,12 @@ class MoveTask implements Runnable {
         final boolean[] receivedFinalRsp = { false };
         try {
             final AssociationFactory asf = AssociationFactory.getInstance();
-            Association a = asf.newRequestor(service.createSocket(service
-                    .queryAEData(retrieveAET)));
+            final AEData retrieveAEData = service
+                    .queryAEData(retrieveAET);
+			Association a = asf.newRequestor(service.createSocket(retrieveAEData));
             a.setAcTimeout(service.getAcTimeout());
             AAssociateRQ rq = asf.newAAssociateRQ();
-            rq.setCalledAET(aeData.getTitle());
+            rq.setCalledAET(retrieveAEData.getTitle());
             rq.setCallingAET(callingAET);
             String asuid = moveRqCmd.getAffectedSOPClassUID();
             rq.addPresContext(asf.newPresContext(PCID,
@@ -320,7 +319,7 @@ class MoveTask implements Runnable {
                     RELATIONAL_RETRIEVE));
             PDU pdu = a.connect(rq);
             if (!(pdu instanceof AAssociateAC)) {
-                throw new IOException("Association not accepted by " + aeData
+                throw new IOException("Association not accepted by " + retrieveAEData
                         + ":\n" + pdu);
             }
             AAssociateAC ac = (AAssociateAC) pdu;
@@ -330,12 +329,12 @@ class MoveTask implements Runnable {
                 if (a.getAcceptedTransferSyntaxUID(PCID) == null)
                     throw new IOException(
                             "StudyRootQueryRetrieveInformationModelMOVE not supported by "
-                                    + aeData);
+                                    + retrieveAEData);
                 ExtNegotiation extNeg = ac
                         .getExtNegotiation(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
                 if (extNeg == null
                         || !Arrays.equals(extNeg.info(), RELATIONAL_RETRIEVE)) {
-                    log.warn("Relational Retrieve not supported by " + aeData);
+                    log.warn("Relational Retrieve not supported by " + retrieveAEData);
                 }
                 Dimse cmoverq = asf.newDimse(PCID, moveRqCmd, moveRqData);
                 DimseListener moveRspListener = new DimseListener() {
