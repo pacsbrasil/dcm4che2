@@ -1,24 +1,47 @@
-README.TXT file located in the root directory, that shall contain:
+Institution:
 
-o Contact information regarding the Institution that created the media.
+    This disk was created by:
 
-o Information regarding the Application that created the media.
-  - Name of the product application and software version
-  - Contact information of the vendor of the application that created the media
-  
-o General information about the overall organization of the interchange media.
-  This is not intended to be specific to the content stored on this instance of
-  interchange media, which if necessary should be placed in the INDEX.HTM file.
-  
-o Information regarding the Media Viewer application (if a Media Viewer is
-  contained)
-  - Operating system(s) supported
-  - Name of the product application and software version
-  - Contact information of vendor that provided the Media Viewer application
-  - Disclaimer statement about the intended usage of the application
-  - List of minimum requirements
-  - Additional information regarding the usage of the application
-  
-Note that generally the README.TXT file is independent of the clinical content
-of the media, i.e. the same README.TXT may be included on all media created by
-that application at that institution.
+    Tiani Medgraph AG
+    Diefenbachgasse 35
+    A - 1150 Vienna
+    Austria/Europe 
+
+
+Media Creator Application:
+
+    This disk was created using:
+ 
+    dcm4che/cdw v0.9 Media Creation Manager 
+
+
+Contact Information:
+
+    If you have any questions about how this disk or the data on
+    it were generated, please contact:
+ 
+    Gunter Zeilinger
+    Tiani Medgraph AG
+    Diefenbachgasse 35
+    A - 1150 Vienna
+    Austria/Europe 
+    email: gunter.zeilinger@tiani.com
+
+
+Media Organization:
+
+    DICOM composite objects are located in the folder DICOM.
+ 
+    PDI Web Option data is located in the folder IHE_PDI.
+
+    This disk conforms to the IHE Portable Data for Imaging (PDI)
+    Integration Profile.  For details on this specification, please
+    refer to Volume 1, Chapter 15 & Volume 3, Section 47 of the
+    IHE Radiology Technical Framework, available at:
+    http://www.rsna.org/IHE
+
+    This disk also conforms to the DICOM General Purpose CD-R 
+    Interchange Profile.  For details on this specification, please
+    refer to Part 10 & Part 11, Annex D of the DICOM Standard,
+    available at:
+    http://medical.nema.org/

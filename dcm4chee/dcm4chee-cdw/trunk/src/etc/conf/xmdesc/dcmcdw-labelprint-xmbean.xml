@@ -46,7 +46,7 @@
       <name>PrintUtilityCommandLine</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="acroread.bat %s" />
+         <value value="..\server\dcmcdw\bin\acroread.bat %s" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
