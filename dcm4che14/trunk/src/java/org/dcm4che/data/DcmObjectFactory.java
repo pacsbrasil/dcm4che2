@@ -1,25 +1,11 @@
-/*$Id$*/
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
- *                                                                           *
- *  This file is part of dcm4che.                                            *
- *                                                                           *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 package org.dcm4che.data;
 
@@ -28,17 +14,19 @@ import org.dcm4che.Implementation;
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @version Revision $Date$
  */
 public abstract class DcmObjectFactory {
 
-   public static DcmObjectFactory getInstance() {
-      return (DcmObjectFactory)Implementation.findFactory(
-            "dcm4che.data.DcmObjectFactory");
-   }
+    private static DcmObjectFactory instance = (DcmObjectFactory)
+            Implementation.findFactory("dcm4che.data.DcmObjectFactory");
+
+    public static DcmObjectFactory getInstance() {
+        return instance;
+    }
 
     public abstract Command newCommand();
-    
+
     public abstract Dataset newDataset();
 
     public abstract FileMetaInfo newFileMetaInfo();
@@ -50,5 +38,5 @@ public abstract class DcmObjectFactory {
             String transferSyntaxUID) throws DcmValueException;
 
     public abstract PersonName newPersonName(String s);
-    
+
 }
