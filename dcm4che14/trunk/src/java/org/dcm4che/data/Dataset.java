@@ -95,7 +95,7 @@ public interface Dataset extends DcmObject, Serializable {
 
     Dataset subSet(int[] tags);
 
-    Dataset subSet(int[] tags, boolean exclude);
+    Dataset subSet(int[] tags, boolean exclude, boolean excludePrivate);
     
     Dataset exclude(int[] tags);
 

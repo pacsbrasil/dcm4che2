@@ -9,7 +9,6 @@
 package org.dcm4cheri.data;
 
 import java.awt.Rectangle;
-
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -30,6 +29,7 @@ import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
+
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.ImageOutputStream;
 import javax.xml.transform.Result;
@@ -40,6 +40,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DatasetSerializer;
 import org.dcm4che.data.DcmDecodeParam;
@@ -53,8 +54,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.image.ColorModelFactory;
 import org.xml.sax.ContentHandler;
-
-import com.sun.rsasign.i;
 
 /**
  *  Implementation of <code>Dataset</code> container objects.
@@ -493,16 +492,16 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
         return new FilterDataset.Selection(this, filter);
     }
 
-    public Dataset subSet(int[] tags, boolean exclude) {
-        return new FilterDataset.TagFilter(this, tags, exclude);
+    public Dataset subSet(int[] tags, boolean exclude, boolean excludePrivate) {
+        return new FilterDataset.TagFilter(this, tags, exclude, excludePrivate);
     }
     
     public Dataset subSet(int[] tags) {
-        return new FilterDataset.TagFilter(this, tags, false);
+        return new FilterDataset.TagFilter(this, tags, false, false);
     }
 
     public Dataset exclude(int[] tags) {
-        return new FilterDataset.TagFilter(this, tags, true);
+        return new FilterDataset.TagFilter(this, tags, true, false);
     }
     
     public Dataset excludePrivate() {
