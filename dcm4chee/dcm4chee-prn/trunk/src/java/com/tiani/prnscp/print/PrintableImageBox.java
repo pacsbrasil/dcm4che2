@@ -62,7 +62,6 @@ class PrintableImageBox
 {
 
     // Constants -----------------------------------------------------
-    private final static String YES = "YES";
     private final static String REVERSE = "REVERSE";
 
     private final static int MEGA_BYTE = 1024 * 1024;
@@ -89,8 +88,8 @@ class PrintableImageBox
     private final File hcFile;
     private final String callingAET;
     private final Color borderDensityColor;
+    private final Color trimColor;
     private final int pos;
-    private final boolean trim;
     private final boolean crop;
     private final int magnificationType;
     private final double reqImageSize;
@@ -142,8 +141,6 @@ class PrintableImageBox
         this.callingAET = callingAET;
 
         this.pos = imageBox.getInt(Tags.ImagePositionOnFilm, 1);
-        this.trim = YES.equals(
-                imageBox.getString(Tags.Trim, filmbox.getString(Tags.Trim)));
         this.crop = PrinterService.CROP.equals(
                 imageBox.getString(Tags.RequestedDecimateCropBehavior,
                 service.getDecimateCropBehavior()));
@@ -153,17 +150,26 @@ class PrintableImageBox
                 service.getDefaultMagnificationType())));
         this.reqImageSize = imageBox.getFloat(Tags.RequestedImageSize, 0.f)
                  * PrinterService.PTS_PER_MM;
-        this.borderDensityColor = service.toColor(
-                filmbox.getString(Tags.BorderDensity, service.getBorderDensity()));
+        this.borderDensityColor = PrinterService.BLACK.equals(
+                filmbox.getString(Tags.BorderDensity,
+                service.getBorderDensity()))
+                ? Color.BLACK
+                : Color.WHITE;
+        this.trimColor = PrinterService.YES.equals(
+                imageBox.getString(Tags.Trim,
+                filmbox.getString(Tags.Trim,
+                service.getTrim())))
+                ? (borderDensityColor == Color.BLACK ? Color.WHITE : Color.BLACK)
+                : null;
 
         if (debug) {
             log.debug("ImageBox #" + pos
                      + ": Init\n\thcFile: " + hcFile
-                     + "\n\ttrim: " + trim
                      + "\n\tcrop: " + crop
                      + "\n\tmagnificationType: " + MAGNIFICATION_TYPES[magnificationType]
                      + "\n\treqImageSize: " + reqImageSize
-                     + "\n\tborderDensityColor: " + borderDensityColor);
+                     + "\n\tborderDensityColor: " + borderDensityColor
+                     + "\n\ttrimColor: " + trimColor);
         }
 
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
@@ -338,8 +344,8 @@ class PrintableImageBox
                 g2.scale(scaleX, scaleY);
                 drawImage(g2, srcRect);
                 g2.setTransform(tx);
-                if (trim) {
-                    g2.setColor(service.toColor(service.getTrimBoxDensity()));
+                if (trimColor != null) {
+                    g2.setColor(trimColor);
                     g2.draw(destRect);
                 }
             } finally {

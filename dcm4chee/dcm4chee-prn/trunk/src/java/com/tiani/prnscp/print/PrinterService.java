@@ -89,6 +89,8 @@ public class PrinterService
 {
 
     // Constants -----------------------------------------------------
+    final static String NO = "NO";
+    final static String YES = "YES";
     final static String WHITE = "WHITE";
     final static String BLACK = "BLACK";
     final static String NONE = "NONE";
@@ -165,17 +167,10 @@ public class PrinterService
     /**  Holds value of property magnificationType. */
     private String magnificationType = BILINEAR;
 
-    /**  Holds value of property smoothingType. */
-    private String smoothingType;
-
     /**  Holds value of property borderDensity. */
     private String borderDensity = WHITE;
 
-    /**  Holds value of property emptyImageDensity. */
-    private String emptyImageDensity = WHITE;
-
-    /**  Holds value of property trimBoxDensity. */
-    private String trimBoxDensity = BLACK;
+    private String trim = NO;
 
     /**  Holds value of property printGrayAsColor. */
     private boolean printGrayAsColor;
@@ -1260,51 +1255,6 @@ public class PrinterService
 
 
     /**
-     *  Getter for property smoothingType.
-     *
-     * @return  Value of property smoothingType.
-     */
-    public String getSmoothingType()
-    {
-        return this.smoothingType;
-    }
-
-
-    /**
-     *  Setter for property smoothingType.
-     *
-     * @param  smoothingType New value of property smoothingType.
-     */
-    public void setSmoothingType(String smoothingType)
-    {
-        this.smoothingType = smoothingType;
-    }
-
-
-    /**
-     *  Gets the supportsSmoothingType attribute of the PrinterService object
-     *
-     * @param  smoothingType Description of the Parameter
-     * @return  The supportsSmoothingType value
-     */
-    public boolean isSupportsSmoothingType(String smoothingType)
-    {
-        return contains(this.smoothingType, smoothingType);
-    }
-
-
-    /**
-     *  Getter for property defaultSmoothingType.
-     *
-     * @return  Value of property defaultSmoothingType.
-     */
-    public String getDefaultSmoothingType()
-    {
-        return firstOf(smoothingType);
-    }
-
-
-    /**
      *  Getter for property decimateCropBehavior.
      *
      * @return  Value of property decimateCropBehavior.
@@ -1349,46 +1299,24 @@ public class PrinterService
 
 
     /**
-     *  Getter for property emptyImageDensity.
+     *  Gets the trim attribute of the PrinterService object
      *
-     * @return  Value of property emptyImageDensity.
+     * @return  The trim value
      */
-    public String getEmptyImageDensity()
+    public String getTrim()
     {
-        return this.emptyImageDensity;
+        return trim;
     }
 
 
     /**
-     *  Setter for property emptyImageDensity.
+     *  Sets the trim attribute of the PrinterService object
      *
-     * @param  emptyImageDensity New value of property emptyImageDensity.
+     * @param  trim The new trim value
      */
-    public void setEmptyImageDensity(String emptyImageDensity)
+    public void setTrim(String trim)
     {
-        this.emptyImageDensity = emptyImageDensity;
-    }
-
-
-    /**
-     *  Getter for property trimBoxDensity.
-     *
-     * @return  Value of property trimBoxDensity.
-     */
-    public String getTrimBoxDensity()
-    {
-        return this.trimBoxDensity;
-    }
-
-
-    /**
-     *  Setter for property trimBoxDensity.
-     *
-     * @param  trimBoxDensity New value of property trimBoxDensity.
-     */
-    public void setTrimBoxDensity(String trimBoxDensity)
-    {
-        this.trimBoxDensity = trimBoxDensity;
+        this.trim = trim;
     }
 
 
@@ -1412,7 +1340,7 @@ public class PrinterService
     public int getMaxDensity()
     {
         float[] od = getGrayscaleODs();
-        return (int) (od[od.length-1] * 100);
+        return (int) (od[od.length - 1] * 100);
     }
 
 
@@ -2258,7 +2186,7 @@ public class PrinterService
         log.info("Printing grayscale [GSDF]");
         float[] od = getGrayscaleODs();
         print(new Grayscale(this, calibration.getPValToDDLwGSDF(8,
-                od[0], od[od.length-1],
+                od[0], od[od.length - 1],
                 illumination, reflectedAmbientLight),
                 printerName + "[GSDF]"), null, false);
         log.info("Printed grayscale [GSDF]");
@@ -2277,7 +2205,7 @@ public class PrinterService
         log.info("Printing grayscale [LIN OD]");
         float[] od = getGrayscaleODs();
         print(new Grayscale(this, calibration.getPValToDDLwLinOD(8,
-                od[0], od[od.length-1]),
+                od[0], od[od.length - 1]),
                 printerName + "[LIN OD]"), null, false);
         log.info("Printed grayscale [LIN OD]");
     }
@@ -2807,20 +2735,6 @@ public class PrinterService
             return new Date();
         }
         return license.getNotAfter();
-    }
-
-
-    Color toColor(String density)
-    {
-        if (WHITE.equals(density)) {
-            return Color.WHITE;
-        }
-        if (BLACK.equals(density)) {
-            return Color.BLACK;
-        }
-        int val = Integer.parseInt(density);
-        int ddl = calibration.toDDL(val / 100);
-        return new Color(ddl, ddl, ddl);
     }
 
     // Inner classes -------------------------------------------------

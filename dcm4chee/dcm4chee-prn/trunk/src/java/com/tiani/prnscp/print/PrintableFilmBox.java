@@ -63,7 +63,6 @@ class PrintableFilmBox implements Printable
     private final File hcDir;
     private final String callingAET;
     private final PrintableImageBox[] imageBoxes;
-    private final Color emptyImageBoxDensityColor;
     private final int rows;
     private final int columns;
 
@@ -107,10 +106,6 @@ class PrintableFilmBox implements Printable
         int pos = displayFormat.lastIndexOf(',');
         this.rows = Integer.parseInt(displayFormat.substring(pos + 1));
         this.columns = Integer.parseInt(displayFormat.substring(9, pos));
-
-        this.emptyImageBoxDensityColor = service.toColor(
-                filmbox.getString(Tags.EmptyImageDensity,
-                service.getEmptyImageDensity()));
 
         DcmElement imageBoxContentSeq = storedPrint.get(Tags.ImageBoxContentSeq);
         this.imageBoxes = new PrintableImageBox[imageBoxContentSeq.vm()];
@@ -199,12 +194,10 @@ class PrintableFilmBox implements Printable
         annotation.print(g2, pf, pageIndex);
 
         g2.translate(annotation.getImageableX(pf), annotation.getImageableY(pf));
-        g2.setColor(emptyImageBoxDensityColor);
 
         double w = annotation.getImageableWidth(pf);
         double h = annotation.getImageableHeight(pf);
         Rectangle2D filmboxRect = new Rectangle2D.Double(0, 0, w, h);
-        g2.fill(filmboxRect);
         for (int i = 0; i < imageBoxes.length; ++i) {
             imageBoxes[i].print(g2, getImageBoxRect(
                     imageBoxes[i].getImagePosition(), filmboxRect));

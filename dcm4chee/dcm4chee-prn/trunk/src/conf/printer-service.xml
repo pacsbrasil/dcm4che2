@@ -153,15 +153,6 @@
     the default.
     -->
     <attribute name="MagnificationType">BILINEAR\REPLICATE\NONE</attribute>
-
-    <!-- 
-    Smoothing Type identifiers supported by the printer for the Basic Film 
-    Box or Image Box. Multiple values can be specified, must be separated by 
-    '\' characters.  The first specified value is used as the default. If no
-    value is specified, the Print SCP does not support the attribute and
-    rejects N-CREATE or N-SET requests containing the attribute.
-    -->
-    <attribute name="SmoothingType"></attribute>
     
     <!--
     Defines the default Decimate/Crop Behavior that is used when the
@@ -174,19 +165,13 @@
     Print SCU does not specify Border Density.
     -->
     <attribute name="BorderDensity">WHITE</attribute>
-      
+
     <!--
-    Defines the default Empty Image Density identifier that is used when the
-    Print SCU does not specify Empty Image Density.
+    Defines the default Trim behavior that is used when the
+    Print SCU does not specify Trim.
     -->
-    <attribute name="EmptyImageDensity">WHITE</attribute>
-    
-    <!--
-    Defines density of trim box. Same format than for BorderDensity and 
-    EmptyImageDensity attribute defined by DICOM.
-    -->
-    <attribute name="TrimBoxDensity">BLACK</attribute>
-    
+    <attribute name="Trim">NO</attribute>
+          
     <!--
     Defines the default illumination that is used when the Print SCU does not 
     specify an illumination value for applying the presentation LUT.

@@ -427,22 +427,6 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property smoothingType.
-     *
-     * @return  Value of property smoothingType.
-     */
-    public String getSmoothingType();
-
-
-    /**
-     *  Setter for property smoothingType.
-     *
-     * @param  smoothingType New value of property smoothingType.
-     */
-    public void setSmoothingType(String smoothingType);
-
-
-    /**
      *  Getter for property decimateCropBehavior.
      *
      * @return  Value of property decimateCropBehavior.
@@ -475,35 +459,19 @@ public interface PrinterServiceMBean extends ServiceMBean
 
 
     /**
-     *  Getter for property emptyImageDensity.
+     *  Gets the trim attribute of the PrinterService object
      *
-     * @return  Value of property emptyImageDensity.
+     * @return  The trim value
      */
-    public String getEmptyImageDensity();
+    public String getTrim();
 
 
     /**
-     *  Setter for property emptyImageDensity.
+     *  Sets the trim attribute of the PrinterService object
      *
-     * @param  emptyImageDensity New value of property emptyImageDensity.
+     * @param  trim The new trim value
      */
-    public void setEmptyImageDensity(String emptyImageDensity);
-
-
-    /**
-     *  Getter for property trimBoxDensity.
-     *
-     * @return  Value of property trimBoxDensity.
-     */
-    public String getTrimBoxDensity();
-
-
-    /**
-     *  Setter for property trimBoxDensity.
-     *
-     * @param  trimBoxDensity New value of property trimBoxDensity.
-     */
-    public void setTrimBoxDensity(String trimBoxDensity);
+    public void setTrim(String trim);
 
 
     /**
@@ -601,14 +569,6 @@ public interface PrinterServiceMBean extends ServiceMBean
      * @return  Value of property defaultMagnificationType.
      */
     public String getDefaultMagnificationType();
-
-
-    /**
-     *  Getter for property defaultSmoothingType.
-     *
-     * @return  Value of property defaultSmoothingType.
-     */
-    public String getDefaultSmoothingType();
 
 
     /**
@@ -915,16 +875,6 @@ public interface PrinterServiceMBean extends ServiceMBean
      * @return  The supportsMediumType value
      */
     public boolean isSupportsMediumType(String mediumType);
-
-
-    /**
-     *  Gets the supportsSmoothingType attribute of the PrinterServiceMBean
-     *  object
-     *
-     * @param  smoothingType Description of the Parameter
-     * @return  The supportsSmoothingType value
-     */
-    public boolean isSupportsSmoothingType(String smoothingType);
 
 
     /**
