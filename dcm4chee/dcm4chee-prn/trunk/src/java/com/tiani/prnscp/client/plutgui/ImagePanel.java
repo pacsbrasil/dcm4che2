@@ -188,30 +188,33 @@ public class ImagePanel extends JPanel
 				//generate color model params that would be the same
 				// as those used in the actual image
 				ColorModelFactory cmFactory = ColorModelFactory.getInstance();
-			    try {
+			    if (bi.getColorModel() instanceof IndexColorModel
+                    && !ds.getString(Tags.PhotometricInterpretation).equals("PALETTE COLOR")) {
                     cmParam = cmFactory.makeParam(ds, plut);
                     applyingPLutToRGB = false;
+                    //set window min/max
+                    // these only need to be set when an image is loaded sine a
+                    // change in the P-LUT will not affect the ColorModels returned
+                    // windowing parameters
+                    if (cmParam.getNumberOfWindows() > 0) {
+                        float wCenter, wWidth;
+                        wCenter = cmParam.getWindowCenter(0);
+                        wWidth = cmParam.getWindowWidth(0);
+                        windowMin = cmParam.toSampleValue(
+                                        cmParam.toPixelValue(wCenter - wWidth / 2));
+                        windowMax = cmParam.toSampleValue(
+                                        cmParam.toPixelValue(wCenter + wWidth / 2));
+                    }
+                    else {
+                        windowMin = windowMax = 0;
+                    }
 			    }
-                catch (UnsupportedOperationException uoe) {
+                else {
                     //on failure, apply the P-LUT directly to gray RGB values
                     // in the BufferedImage raster
                     bi = applyPLutToRGB(oldBI = bi, plut);
                     applyingPLutToRGB = true;
-                }
-                //set window min/max
-                // these only need to be set when an image is loaded sine a
-                // change in the P-LUT will not affect the ColorModels returned
-                // windowing parameters
-                if (!applyingPLutToRGB && cmParam.getNumberOfWindows() > 0) {
-                    float wCenter, wWidth;
-                    wCenter = cmParam.getWindowCenter(0);
-                    wWidth = cmParam.getWindowWidth(0);
-                    windowMin = cmParam.toSampleValue(
-                                    cmParam.toPixelValue(wCenter - wWidth / 2));
-                    windowMax = cmParam.toSampleValue(
-                                    cmParam.toPixelValue(wCenter + wWidth / 2));
-                }
-                else {
+                    //ignore window for these types of images
                     windowMin = windowMax = 0;
                 }
             }
