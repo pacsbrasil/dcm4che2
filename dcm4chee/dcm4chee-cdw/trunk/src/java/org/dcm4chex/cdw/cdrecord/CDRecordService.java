@@ -23,7 +23,6 @@ import org.dcm4chex.cdw.common.MediaWriterServiceSupport;
  */
 public class CDRecordService extends MediaWriterServiceSupport {
 
-    private static final String DEFAULT = "default";
 	private static final int MIN_GRACE_TIME = 2;
 
     private static final String TAO = "tao";
@@ -96,17 +95,13 @@ public class CDRecordService extends MediaWriterServiceSupport {
     }
 
     public final String getWriteMode() {
-        return writeMode != null ? writeMode.toString() : DEFAULT;
+        return writeMode;
     }
 
     public final void setWriteMode(String writeMode) {
-    	if (DEFAULT.equalsIgnoreCase(writeMode)) {
-    		this.writeMode = null;
-    	} else {    		
-	        if (Arrays.asList(WRITE_MODES).indexOf(writeMode) == -1)
-	                throw new IllegalArgumentException("writeMode:" + writeMode);
-	        this.writeMode = writeMode;
-    	}
+        if (Arrays.asList(WRITE_MODES).indexOf(writeMode) == -1)
+                throw new IllegalArgumentException("writeMode:" + writeMode);
+        this.writeMode = writeMode;
     }
 
     public final String getDevice() {
