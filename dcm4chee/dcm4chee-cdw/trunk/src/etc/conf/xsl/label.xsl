@@ -7,9 +7,10 @@
 	<xsl:output method="xml" indent="yes" media-type="text/xml-fo"/>
     <xsl:param name="maxPatCount" select="4"/>
     <xsl:param name="maxStudyCount" select="5"/>
+    <xsl:param name="writer" select="'CDRECORD'";
+    <xsl:param name="fsid" select="'12345678'"/>
     <xsl:param name="seqno" select="2"/>
     <xsl:param name="size" select="3"/>
-    <xsl:param name="fsid" select="'12345678'"/>
 
 	<!-- the stylesheet processing entry point -->
 	<xsl:template match="/">

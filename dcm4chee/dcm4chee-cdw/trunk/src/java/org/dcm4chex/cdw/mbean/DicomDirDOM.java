@@ -58,10 +58,6 @@ import org.xml.sax.ContentHandler;
  */
 class DicomDirDOM {
 
-    private static final String _PDF = ".pdf";
-
-    private static final String _PS = ".ps";
-    
     private static final String ROOT_ELM = "dicomdir";
 
     private static final String DICOMDIR = "DICOMDIR";
@@ -361,6 +357,7 @@ class DicomDirDOM {
             throws MediaCreationException {
         try {
             Transformer t = tpl.newTransformer();
+            t.setParameter("writer", rq.getMediaWriterName());
             t.setParameter("fsid", rq.getFilesetID());
             t.setParameter("seqno", String.valueOf(rq.getVolsetSeqno()));
             t.setParameter("size", String.valueOf(rq.getVolsetSize()));
