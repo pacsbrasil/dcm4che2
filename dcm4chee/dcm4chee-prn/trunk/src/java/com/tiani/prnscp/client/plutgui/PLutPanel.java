@@ -74,7 +74,7 @@ public class PLutPanel extends JPanel
     private final static int CHANGING_SLOPE = 2;
     private final static int CHANGING_GAMMA = 4;
     private int changingParam;
-    private boolean logHisto = false;
+    private boolean logHisto = true;
 
 
     PLutPanel(ImagePanel imgPanel)
