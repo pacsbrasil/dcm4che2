@@ -22,6 +22,7 @@
 
 package org.dcm4cheri.hl7;
 
+import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Message;
 import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.hl7.MSHSegment;
@@ -32,84 +33,84 @@ import java.util.List;
 import java.util.Iterator;
 
 /**
- * <description> 
+ * <description>
  *
  * @see <related>
  * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
- *   
+ *
  * <p><b>Revisions:</b>
  *
  * <p><b>yyyymmdd author:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
+ * <li> explicit fix description (no line numbers but methods) go
  *            beyond the cvs commit message
  * </ul>
  */
-public class HL7MessageImpl implements HL7Message
-{
-   // Constants -----------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
-   private final MSHSegmentImpl msh;
-   private final ArrayList segs = new ArrayList(4);
-   
-   // Static --------------------------------------------------------
-   private static int indexOfNextCRorLF(byte[] data, int start) {
-      for (int i = start;  i < data.length; ++i) {
-         if (data[i] == (byte)'\r' || data[i] == (byte)'\n') {
-            return i;
-         }
-         if (data[i] == (byte)'\\') {
-            ++i;
-         }
-      }
-      return data.length;
-   }
-   
-   // Constructors --------------------------------------------------
-   HL7MessageImpl(byte[] data) {
-      int pos = indexOfNextCRorLF(data, 0);
-      msh = new MSHSegmentImpl(data, 0, pos);
-      while (++pos < data.length) {
-         int nextPos = indexOfNextCRorLF(data, pos);
-         int len = nextPos - pos;
-         if (len > 0) {
-            segs.add(new HL7SegmentImpl(data, pos, len));
-         }
-         pos = nextPos;
-      }
-   }
-         
-   // Public --------------------------------------------------------
-   public MSHSegment header() {
-      return msh;
-   }
-   
-   public List segments() {
-      return Collections.unmodifiableList(segs);
-   }
-   
-   public String toString() {
-      return segs.toString();
-   }
-
-   StringBuffer toVerboseStringBuffer(StringBuffer sb) {      
-      sb.append(msh.getMessageType()).append('^').append(msh.getTriggerEvent())
+public class HL7MessageImpl implements HL7Message {
+    // Constants -----------------------------------------------------
+    
+    // Attributes ----------------------------------------------------
+    private final MSHSegmentImpl msh;
+    private final ArrayList segs = new ArrayList(4);
+    
+    // Static --------------------------------------------------------
+    static int indexOfNextCRorLF(byte[] data, int start) {
+        for (int i = start;  i < data.length; ++i) {
+            if (data[i] == (byte)'\r' || data[i] == (byte)'\n') {
+                return i;
+            }
+            if (data[i] == (byte)'\\') {
+                ++i;
+            }
+        }
+        return data.length;
+    }
+    
+    // Constructors --------------------------------------------------
+    HL7MessageImpl(byte[] data)
+    throws HL7Exception {
+        int pos = indexOfNextCRorLF(data, 0);
+        msh = new MSHSegmentImpl(data, 0, pos);
+        while (++pos < data.length) {
+            int nextPos = indexOfNextCRorLF(data, pos);
+            int len = nextPos - pos;
+            if (len > 0) {
+                segs.add(new HL7SegmentImpl(data, pos, len));
+            }
+            pos = nextPos;
+        }
+    }
+    
+    // Public --------------------------------------------------------
+    public MSHSegment header() {
+        return msh;
+    }
+    
+    public List segments() {
+        return Collections.unmodifiableList(segs);
+    }
+    
+    public String toString() {
+        return segs.toString();
+    }
+    
+    StringBuffer toVerboseStringBuffer(StringBuffer sb) {
+        sb.append(msh.getMessageType()).append('^').append(msh.getTriggerEvent())
         .append(" message\t// ")
         .append(HL7SegmentImpl.getName(msh.getMessageType(), "????"))
         .append(" - ")
         .append(HL7SegmentImpl.getName(msh.getTriggerEvent(), "????"));
-      sb.append("\n\t");
-      msh.toVerboseStringBuffer(sb);
-      for (Iterator it =  segs.iterator(); it.hasNext();) {
-         sb.append("\n\t");
-         ((HL7SegmentImpl)it.next()).toVerboseStringBuffer(sb);
-      }
-      return sb;
-   }
-
-   public String toVerboseString() {
-      return toVerboseStringBuffer(new StringBuffer()).toString();
-   }
+        sb.append("\n\t");
+        msh.toVerboseStringBuffer(sb);
+        for (Iterator it =  segs.iterator(); it.hasNext();) {
+            sb.append("\n\t");
+            ((HL7SegmentImpl)it.next()).toVerboseStringBuffer(sb);
+        }
+        return sb;
+    }
+    
+    public String toVerboseString() {
+        return toVerboseStringBuffer(new StringBuffer()).toString();
+    }
 }

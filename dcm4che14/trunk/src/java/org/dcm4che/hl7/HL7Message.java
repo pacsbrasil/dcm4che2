@@ -25,28 +25,28 @@ package org.dcm4che.hl7;
 import java.util.List;
 
 /**
- * <description> 
+ * <description>
  *
  * @see <related>
  * @author  <a href="mailto:{email}">{full name}</a>.
  * @author  <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
- *   
+ *
  * <p><b>Revisions:</b>
  *
  * <p><b>yyyymmdd author:</b>
  * <ul>
- * <li> explicit fix description (no line numbers but methods) go 
+ * <li> explicit fix description (no line numbers but methods) go
  *            beyond the cvs commit message
  * </ul>
  */
-public interface HL7Message
-{
-   MSHSegment header();
-   
-   List segments();
-   
-   String toString();
-   
-   String toVerboseString();
+public interface HL7Message {
+    
+    MSHSegment header();
+    
+    List segments();
+    
+    String toString();
+    
+    String toVerboseString();
 }

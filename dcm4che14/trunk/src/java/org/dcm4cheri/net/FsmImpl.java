@@ -70,7 +70,7 @@ import org.apache.log4j.NDC;
  * </ul>
  */
 final class FsmImpl {
-    static final Logger log = Logger.getLogger("dcm4che.net.Association");
+    static final Logger log = Logger.getLogger(FsmImpl.class);
     private final AssociationImpl assoc;
     private final boolean requestor;
     private final Socket s;

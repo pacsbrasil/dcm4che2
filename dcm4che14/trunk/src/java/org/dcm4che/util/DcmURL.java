@@ -130,7 +130,7 @@ public final class DcmURL extends Object {
                 return i > 0 ? (String[])CIPHERSUITES[i].clone() : null;
             }            
         }
-        throw new IllegalArgumentException("Unregonized protocol: " + protocol);
+        throw new IllegalArgumentException("Unrecognized protocol: " + protocol);
     }
     // Private -------------------------------------------------------
     

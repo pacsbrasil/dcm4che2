@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -20,25 +20,46 @@
  *                                                                           *
  *****************************************************************************/
 
-package org.dcm4che.hl7;
+package org.dcm4che.util;
 
-import org.dcm4che.Implementation;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
+ * <description>
  *
- * @author  gunter.zeilinger@tiani.com
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
+ * @since August 11, 2002
+ *
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go
+ *            beyond the cvs commit message
+ * </ul>
  */
-public abstract class HL7Factory {
-
-   public static HL7Factory getInstance() {
-      return (HL7Factory)Implementation.findFactory(
-            "dcm4che.hl7.HL7Factory");
-   }
+public class MLLPOutputStream extends FilterOutputStream {
     
-   public abstract MSHSegment parseMSH(byte[] data)
-   throws HL7Exception;
-   
-   public abstract HL7Message parse(byte[] data)
-   throws HL7Exception;
+    // Constants -----------------------------------------------------
+    private static final int START_BYTE = 0x0b;
+    private static final int END_BYTE   = 0x1c;
+    
+    // Variables -----------------------------------------------------
+    
+    // Constructors --------------------------------------------------
+    public MLLPOutputStream(OutputStream out) {
+        super(out);
+    }
+    
+    // Methods -------------------------------------------------------
+    public void writeMessage(byte[] msg) throws IOException {
+        out.write(START_BYTE);
+        out.write(msg);
+        out.write(END_BYTE);
+        out.write('\r');
+    }
 }

@@ -47,4 +47,8 @@ public interface MSHSegment extends HL7Segment
    String getMessageType();   
    String getTriggerEvent();
    String getMessageControlID();
+
+   byte[] makeACK_AA();    
+   byte[] makeACK_AR(String errText, String errCode, String errComment);    
+   byte[] makeACK_AE(String errText, String errCode, String errComment);
 }

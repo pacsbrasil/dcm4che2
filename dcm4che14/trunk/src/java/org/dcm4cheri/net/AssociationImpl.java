@@ -41,7 +41,6 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 
 /**

@@ -24,6 +24,7 @@ package org.dcm4cheri.server;
 
 import org.dcm4che.server.Server;
 import org.dcm4che.server.DcmHandler;
+import org.dcm4che.server.HL7Handler;
 import org.dcm4che.server.ServerFactory;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -55,6 +56,10 @@ public class ServerFactoryImpl extends ServerFactory
          DcmServiceRegistry services)
    {
       return new DcmHandlerImpl(policy, services);
+   }
+   
+   public HL7Handler newHL7Handler() {
+      return new HL7HandlerImpl();
    }
    
    // Constants -----------------------------------------------------

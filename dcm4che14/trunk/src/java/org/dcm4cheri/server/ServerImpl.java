@@ -91,7 +91,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server
    }
    
    public int getNumClients() {
-      return threadPool.running();
+      return threadPool.running()-1;
    }
 
    public void start(int port) throws IOException {

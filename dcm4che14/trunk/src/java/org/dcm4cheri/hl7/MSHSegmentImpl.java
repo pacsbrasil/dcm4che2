@@ -22,6 +22,7 @@
 
 package org.dcm4cheri.hl7;
 
+import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.MSHSegment;
 
 import java.io.ByteArrayOutputStream;
@@ -58,7 +59,16 @@ public class MSHSegmentImpl extends HL7SegmentImpl implements MSHSegment
    private static final byte[] ERR = {
       (byte)'\r', (byte)'E', (byte)'R', (byte)'R', (byte)'|'
    };
-   
+   private static final byte[] AA = { 
+       (byte)'A', (byte)'A' 
+   };
+   private static final byte[] AE = {
+       (byte)'A', (byte)'E' 
+   };
+   private static final byte[] AR = {
+       (byte)'A', (byte)'R' 
+   };
+      
    // Attributes ----------------------------------------------------
    public final String sendingApplication;
    public final String sendingFacility;
@@ -71,7 +81,13 @@ public class MSHSegmentImpl extends HL7SegmentImpl implements MSHSegment
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   MSHSegmentImpl(byte[] data, int off, int len) {
+   MSHSegmentImpl(byte[] data)
+   throws HL7Exception {
+       this(data, 0, HL7MessageImpl.indexOfNextCRorLF(data, 0));
+   }
+   
+   MSHSegmentImpl(byte[] data, int off, int len)
+   throws HL7Exception {
       super(data, off, len);
       for (int i = 0; i < START_WITH.length; ++i) {
          if (data[off + i] != START_WITH[i]) {
@@ -161,6 +177,18 @@ public class MSHSegmentImpl extends HL7SegmentImpl implements MSHSegment
 
    private void writeTo(byte[] b, ByteArrayOutputStream out) {
       out.write(b, 0, b.length);
+   }
+   
+   public byte[] makeACK_AA() {
+      return ack(AA, null, null, null);
+   }
+    
+   public byte[] makeACK_AR(String errText, String errCode, String errComment) {
+      return ack(AR, errText, errCode, errComment);
+   }
+    
+   public byte[] makeACK_AE(String errText, String errCode, String errComment) {
+      return ack(AE, errText, errCode, errComment);
    }
    
    byte[] ack(byte[] ackCode, String errText, String errCode, String errComment) {

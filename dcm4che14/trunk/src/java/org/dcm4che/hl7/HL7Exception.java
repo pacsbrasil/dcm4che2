@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -22,23 +22,66 @@
 
 package org.dcm4che.hl7;
 
-import org.dcm4che.Implementation;
-
 /**
+ * <description>
  *
- * @author  gunter.zeilinger@tiani.com
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
+ * @since August 11, 2002
+ *
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go
+ *            beyond the cvs commit message
+ * </ul>
  */
-public abstract class HL7Factory {
-
-   public static HL7Factory getInstance() {
-      return (HL7Factory)Implementation.findFactory(
-            "dcm4che.hl7.HL7Factory");
-   }
+public abstract class HL7Exception extends java.lang.Exception {
     
-   public abstract MSHSegment parseMSH(byte[] data)
-   throws HL7Exception;
-   
-   public abstract HL7Message parse(byte[] data)
-   throws HL7Exception;
+    /**
+     * Creates a new instance of <code>HL7Exception</code> without detail message.
+     */
+    public HL7Exception() {
+    }
+    
+    
+    /**
+     * Constructs an instance of <code>HL7Exception</code> with the specified detail message.
+     * @param msg the detail message.
+     */
+    public HL7Exception(String msg) {
+        super(msg);
+    }
+    
+    public abstract byte[] makeACK(MSHSegment msh);
+    
+    public static class AE extends HL7Exception {
+        public AE() {
+        }
+        
+        public AE(String msg) {
+            super(msg);
+        }
+    
+        public byte[] makeACK(MSHSegment msh) {
+            return msh.makeACK_AE(getMessage(),null,null);
+        }
+        
+    }
+
+    public static class AR extends HL7Exception {
+        public AR() {
+        }
+        
+        public AR(String msg) {
+            super(msg);
+        }
+    
+        public byte[] makeACK(MSHSegment msh) {
+            return msh.makeACK_AE(getMessage(),null,null);
+        }
+        
+    }
 }

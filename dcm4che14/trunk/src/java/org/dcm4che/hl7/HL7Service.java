@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -22,23 +22,27 @@
 
 package org.dcm4che.hl7;
 
-import org.dcm4che.Implementation;
-
 /**
+ * <description>
  *
- * @author  gunter.zeilinger@tiani.com
+ * @see <related>
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @version $Revision$ $Date$
+ * @since August 11, 2002
+ *
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>yyyymmdd author:</b>
+ * <ul>
+ * <li> explicit fix description (no line numbers but methods) go
+ *            beyond the cvs commit message
+ * </ul>
  */
-public abstract class HL7Factory {
-
-   public static HL7Factory getInstance() {
-      return (HL7Factory)Implementation.findFactory(
-            "dcm4che.hl7.HL7Factory");
-   }
+public interface HL7Service {
     
-   public abstract MSHSegment parseMSH(byte[] data)
-   throws HL7Exception;
-   
-   public abstract HL7Message parse(byte[] data)
-   throws HL7Exception;
+    // Constants -----------------------------------------------------
+    
+    // Methods -------------------------------------------------------
+    byte[] execute(byte[] msg)
+    throws HL7Exception;
 }

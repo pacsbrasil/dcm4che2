@@ -25,7 +25,8 @@ package org.dcm4cheri.hl7;
 
 import org.dcm4che.hl7.HL7Factory;
 import org.dcm4che.hl7.HL7Message;
-
+import org.dcm4che.hl7.MSHSegment;
+import org.dcm4che.hl7.HL7Exception;
 
 /**
  *
@@ -34,31 +35,13 @@ import org.dcm4che.hl7.HL7Message;
  */
 public class HL7FactoryImpl extends HL7Factory {
   
-   private static final byte[] AA = { (byte)'A', (byte)'A' };
-   private static final byte[] AE = { (byte)'A', (byte)'E' };
-   private static final byte[] AR = { (byte)'A', (byte)'R' };
-   
-   public HL7Message toHL7Message(byte[] data) {
+   public MSHSegment parseMSH(byte[] data)
+   throws HL7Exception { 
+      return new MSHSegmentImpl(data);
+   }
+
+   public HL7Message parse(byte[] data)
+   throws HL7Exception {   
       return new HL7MessageImpl(data);
-   }
-   
-   public byte[] accept(HL7Message msg) {
-      return ack(msg, AA, null, null, null);
-   }
-    
-   public byte[] reject(HL7Message msg,
-         String errText, String errCode, String errComment) {
-      return ack(msg, AR, errText, errCode, errComment);
-   }
-    
-   public byte[] error(HL7Message msg,
-         String errText, String errCode, String errComment) {
-      return ack(msg, AE, errText, errCode, errComment);
-   }
-   
-   private byte[] ack(HL7Message msg, byte[] ackCode,
-         String errText, String errCode, String errComment) {
-      return ((MSHSegmentImpl)msg.header()).ack(ackCode,
-                                             errText, errCode, errComment);
    }
 }
