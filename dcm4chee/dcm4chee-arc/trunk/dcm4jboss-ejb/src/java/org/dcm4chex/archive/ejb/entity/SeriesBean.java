@@ -444,7 +444,7 @@ public abstract class SeriesBean implements EntityBean {
 	            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
 	                it.remove();
 	        }
-	        aets = toString(aetSet);
+	        aets = toString(aetSet, "] contains Instance(s) with unspecified Retrieve AET");
 	        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
 	            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
 	            if (extAetSet.size() == 1) {
@@ -461,7 +461,9 @@ public abstract class SeriesBean implements EntityBean {
             setAvailability(availability);
     }
 
-    private static String toString(Set s) {
+    private String toString(Set s, String warning) {
+        if (s.remove(null))
+            log.warn("Series[iuid=" + getSeriesIuid() + warning); 
         String[] a = (String[]) s.toArray(new String[s.size()]);
         return StringUtils.toString(a, '\\');
     }

@@ -121,6 +121,21 @@ public abstract class ContentEditBean implements SessionBean {
     }
 
     /**
+     * @ejb.interface-method
+     */
+    public void mergePatients(int patPk, int[] mergedPks) {
+    	try {
+	        PatientLocal dominant = patHome.findByPrimaryKey(new Integer(patPk));
+	        for (int i = 0; i < mergedPks.length; i++) {
+                patHome.findByPrimaryKey(new Integer(mergedPks[i]))
+                        .setMergedWith(dominant);
+            }
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }        
+    }
+
+    /**
      * @throws CreateException
      * @ejb.interface-method
      */

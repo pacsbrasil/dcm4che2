@@ -383,7 +383,8 @@ public abstract class StudyBean implements EntityBean {
         final int numI = numS > 0 ? ejbSelectNumberOfStudyRelatedInstances(pk) : 0;
         if (getNumberOfStudyRelatedInstances() != numI)
             setNumberOfStudyRelatedInstances(numI);
-        final String mds = numS > 0 ? toString(ejbSelectModalityInStudies(pk)) : "";
+        final String mds = numS > 0 ? toString(ejbSelectModalityInStudies(pk), 
+                "] contains Series with unspecified Modality") : "";
         if (!mds.equals(getModalitiesInStudy()))
             setModalitiesInStudy(mds);
         String aets = "";
@@ -395,7 +396,7 @@ public abstract class StudyBean implements EntityBean {
 	            if (ejbSelectInstancesWithRetrieveAET(pk, aet).size() < numI)
 	                it.remove();
 	        }
-	        aets = toString(aetSet);
+	        aets = toString(aetSet, "] contains Instance(s) with unspecified Retrieve AET");
 	        if (ejbSelectNumberOfInstancesWithoutExternalRetrieveAET(pk) == 0) {
 	            Set extAetSet = ejbSelectExternalRetrieveAETs(pk);
 	            if (extAetSet.size() == 1) {
@@ -412,7 +413,9 @@ public abstract class StudyBean implements EntityBean {
             setAvailability(availability);
     }
 
-    private static String toString(Set s) {
+    private String toString(Set s, String warning) {
+        if (s.remove(null))
+            log.warn("Study[iuid=" + getStudyIuid() + warning); 
         String[] a = (String[]) s.toArray(new String[s.size()]);
         return StringUtils.toString(a, '\\');
     }
