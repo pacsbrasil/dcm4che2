@@ -122,7 +122,7 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
                     study.getFillerOrderNumber(),
                     study.getStudyIUID(),
                     study.getAccessionNumber(),
-                    null);
+                    "new study:"+study.getStudyIUID() );
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
