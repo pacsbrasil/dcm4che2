@@ -26,6 +26,10 @@
 	<property name="dcm4che.home" value="${user.home}/work/dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
+    <!-- Override with your dcm4chx-config dist location -->
+	<property name="dcm4chex-config.home" value="${user.home}/work/dcm4chex-config/target"/>		
+	<property name="dcmcfg.jar" value="${dcm4chex-config.home}/lib/dcmcfg.jar"/>		
+
     <!-- Override with your dcm4jboss-ejb dist location -->
 	<property name="dcm4jboss-ejb.home" value="${user.home}/work/dcm4jboss-ejb/target"/>		
 
@@ -36,6 +40,7 @@
 
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
+		<pathelement location="${dcmcfg.jar}"/>
 		<fileset dir="${jboss.home}/lib">
 			<include name="*.jar"/>
 		</fileset>
