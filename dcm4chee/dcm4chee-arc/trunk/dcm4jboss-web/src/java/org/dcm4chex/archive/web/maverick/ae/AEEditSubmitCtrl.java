@@ -19,7 +19,6 @@
  */
 package org.dcm4chex.archive.web.maverick.ae;
 
-
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.web.maverick.*;
 
@@ -28,13 +27,11 @@ import org.dcm4chex.archive.web.maverick.*;
  */
 public class AEEditSubmitCtrl extends Errable
 {
-	private final String NEW_PARAMETER = "new";
-	private final String DELETE_PARAMETER = "delete";
-	private final String UPDATE_PARAMETER = "update";
-	private final String CANCEL_PARAMETER = "cancel";
-
 	private String title, hostName, chiperSuites;
 	private int port, pk;
+
+	private String update = null;
+	private String cancel = null;
 
 	/**
 	 * @param chiperSuites The chiperSuites to set.
@@ -76,6 +73,16 @@ public class AEEditSubmitCtrl extends Errable
 		this.pk = pk;
 	}
 
+	public final void setUpdate(String update)
+	{
+		this.update = update;
+	}
+
+	public final void setCancel(String cancel)
+	{
+		this.cancel = cancel;
+	}
+
 	private AEData getAE()
 	{
 		return new AEData(
@@ -88,6 +95,8 @@ public class AEEditSubmitCtrl extends Errable
 
 	protected String perform() throws Exception
 	{
+		if (update != null)
+		{
 			AEData modAE = getAE();
 			try
 			{
@@ -97,9 +106,11 @@ public class AEEditSubmitCtrl extends Errable
 			{
 				this.errorType = e.getClass().getName();
 				this.message = e.getMessage();
-				this.backURL =	"aeedit.m?pk="+ modAE.getPk();
+				this.backURL = "aeedit.m?pk=" + modAE.getPk();
 				return ERROR_VIEW;
 			}
+		} else
+			return "success";
 	}
 
 }
