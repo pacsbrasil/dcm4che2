@@ -61,12 +61,18 @@ public abstract class MPPSManagerBean implements SessionBean {
     private static final String NO_LONGER_BE_UPDATED_ERR_MSG =
         "Performed Procedure Step Object may no longer be updated";
     private static final int NO_LONGER_BE_UPDATED_ERR_ID = 0xA710;
-    private static final int[] PATIENT_ATTRS = {
+    private static final int[] PATIENT_ATTRS_EXC = {
             Tags.PatientName,
             Tags.PatientID,
             Tags.PatientBirthDate,
             Tags.PatientSex,
             Tags.RefPatientSeq,         
+    };
+    private static final int[] PATIENT_ATTRS_INC = {
+            Tags.PatientName,
+            Tags.PatientID,
+            Tags.PatientBirthDate,
+            Tags.PatientSex,
     };
     private PatientLocalHome patHome;
     private MPPSLocalHome mppsHome;
@@ -103,7 +109,7 @@ public abstract class MPPSManagerBean implements SessionBean {
     public void createMPPS(String iuid, Dataset ds)
         throws DcmServiceException {
         try {
-            mppsHome.create(iuid, ds.subSet(PATIENT_ATTRS, true), getPatient(ds));
+            mppsHome.create(iuid, ds.subSet(PATIENT_ATTRS_EXC, true), getPatient(ds));
         } catch (CreateException ce) {
             try {
                 mppsHome.findBySopIuid(iuid);
@@ -131,7 +137,7 @@ public abstract class MPPSManagerBean implements SessionBean {
                 }
             }
             PatientLocal patient =
-                patHome.create(ds.subSet(PATIENT_ATTRS, false));
+                patHome.create(ds.subSet(PATIENT_ATTRS_INC, false));
             return patient;
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
