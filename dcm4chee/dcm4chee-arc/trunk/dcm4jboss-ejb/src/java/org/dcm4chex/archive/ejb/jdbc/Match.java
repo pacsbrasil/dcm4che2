@@ -1,22 +1,11 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
- * This file is part of dcm4che.
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+/******************************************
+ *                                        *
+ *  dcm4che: A OpenSource DICOM Toolkit   *
+ *                                        *
+ *  Distributable under LGPL license.     *
+ *  See terms of license at gnu.org.      *
+ *                                        *
+ ******************************************/
 
 package org.dcm4chex.archive.ejb.jdbc;
 
@@ -123,14 +112,15 @@ abstract class Match
 
         protected void appendBodyTo(StringBuffer sb)
         {
-            for (int i = 0; i < uids.length; i++)
-            {
-                if (i > 0)
-                    sb.append(" OR ");
-                sb.append(column);
-                sb.append(" = \'");
-                sb.append(uids[i]);
-                sb.append('\'');
+            sb.append(column);
+            if (uids.length == 1) {
+                sb.append(" = \'").append(uids[0]).append('\'');
+            } else {
+                sb.append(" IN ('").append(uids[0]);
+                for (int i = 1; i < uids.length; i++) {
+                    sb.append("\', \'").append(uids[i]);
+                }
+                sb.append("\')");
             }
         }
     }
