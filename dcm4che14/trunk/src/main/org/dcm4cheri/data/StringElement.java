@@ -25,6 +25,7 @@
 package org.dcm4cheri.data;
 
 import org.dcm4che.data.*;
+import org.dcm4cheri.util.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -523,6 +524,15 @@ abstract class StringElement extends ValueElement {
     }
     
     // DS ------------------------------------------------------------------
+    static final Check DS_CHECK = new Check() {
+        public String check(String s) {
+            if (s.length() > 16)
+                throw new IllegalArgumentException(s);
+            Float.parseFloat(s);
+            return s;
+        }        
+    };
+
     private static final class DS extends AsciiMultiStringElement {
         DS(int tag, ByteBuffer data) {
             super(tag, data, TOT_TRIM);
@@ -564,7 +574,24 @@ abstract class StringElement extends ValueElement {
         return new DS(tag, toByteBuffer(tmp, NO_TRIM, NO_CHECK, null));
     }
     
+    static DcmElement createDS(int tag, String v) {
+        return new DS(tag, toByteBuffer(v, TOT_TRIM, DS_CHECK, null));
+    }
+
+    static DcmElement createDS(int tag, String[] a) {
+        return new DS(tag, toByteBuffer(a, TOT_TRIM, DS_CHECK, null));
+    }
+    
     // IS ------------------------------------------------------------------
+    static final Check IS_CHECK = new Check() {
+        public String check(String s) {
+            if (s.length() > 12)
+                throw new IllegalArgumentException(s);
+            Integer.parseInt(s);
+            return s;
+        }        
+    };
+
     private static final class IS extends AsciiMultiStringElement {
         IS(int tag, ByteBuffer data) {
             super(tag, data, TOT_TRIM);
@@ -612,8 +639,16 @@ abstract class StringElement extends ValueElement {
         return new IS(tag, toByteBuffer(tmp, NO_TRIM, NO_CHECK, null));
     }
        
+    static DcmElement createIS(int tag, String v) {
+        return new IS(tag, toByteBuffer(v, TOT_TRIM, IS_CHECK, null));
+    }
+
+    static DcmElement createIS(int tag, String[] a) {
+        return new IS(tag, toByteBuffer(a, TOT_TRIM, IS_CHECK, null));
+    }
+    
     // UI ------------------------------------------------------------------
-   private static final class UI extends AsciiMultiStringElement {
+    private static final class UI extends AsciiMultiStringElement {
         UI(int tag, ByteBuffer data) {
             super(tag, data, TRAIL_TRIM); 
         }
@@ -744,6 +779,22 @@ abstract class StringElement extends ValueElement {
                 NO_CHECK, null));
     }
 
+    static DcmElement createDA(int tag, String value) {
+        if (value.indexOf('-') != -1) {
+            DTF.parseDateRange(value);
+        } else {
+            DTF.parseDate(value);
+        }
+        return new DA(tag, toByteBuffer(value, NO_TRIM, NO_CHECK, null));
+    }
+
+    static DcmElement createDA(int tag, String[] values) {
+        for (int i = 0; i < values.length; ++i) {
+            DTF.parseDate(values[i]);
+        }
+        return new DA(tag, toByteBuffer(values, NO_TRIM, NO_CHECK, null));
+    }
+
     private static final class DT extends DateString {
         DT(int tag, ByteBuffer data) {
             super(tag, data, TRAIL_TRIM);
@@ -793,6 +844,22 @@ abstract class StringElement extends ValueElement {
     static DcmElement createDT(int tag, Date from, Date to) {
         return new DT(tag, toByteBuffer(
                 DTF.formatDateTimeRange(from, to), NO_TRIM, NO_CHECK, null));
+    }
+
+    static DcmElement createDT(int tag, String value) {
+        if (value.indexOf('-') != -1) {
+            DTF.parseDateTimeRange(value);
+        } else {
+            DTF.parseDateTime(value);
+        }
+        return new DT(tag, toByteBuffer(value, NO_TRIM, NO_CHECK, null));
+    }
+
+    static DcmElement createDT(int tag, String[] values) {
+        for (int i = 0; i < values.length; ++i) {
+            DTF.parseDateTime(values[i]);
+        }
+        return new DT(tag, toByteBuffer(values, NO_TRIM, NO_CHECK, null));
     }
 
     private static final class TM extends DateString {
@@ -845,4 +912,21 @@ abstract class StringElement extends ValueElement {
         return new TM(tag, toByteBuffer(
                 DTF.formatTimeRange(from, to), NO_TRIM, NO_CHECK, null));
     }
+
+    static DcmElement createTM(int tag, String value) {
+        if (value.indexOf('-') != -1) {
+            DTF.parseTimeRange(value);
+        } else {
+            DTF.parseTime(value);
+        }
+        return new TM(tag, toByteBuffer(value, NO_TRIM, NO_CHECK, null));
+    }
+
+    static DcmElement createTM(int tag, String[] values) {
+        for (int i = 0; i < values.length; ++i) {
+            DTF.parseTime(values[i]);
+        }
+        return new TM(tag, toByteBuffer(values, NO_TRIM, NO_CHECK, null));
+    }
+
 }

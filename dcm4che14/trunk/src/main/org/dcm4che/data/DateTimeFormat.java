@@ -29,7 +29,7 @@ import java.util.Date;
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 0.9.9
+ * @version 1.0
  */
 public interface DateTimeFormat {
     // Constants -----------------------------------------------------
@@ -47,23 +47,21 @@ public interface DateTimeFormat {
     
     public String formatDateTimeRange(Date from, Date to);
     
-    public Date parseDate(String s) throws DcmValueException;
+    public Date parseDate(String s);
     
-    public Date parseTime(String s) throws DcmValueException;
+    public Date parseTime(String s);
     
-    public Date parseDateTime(String s) throws DcmValueException;
+    public Date parseDateTime(String s);
     
-    public Date parseDateTime(String date, String time)
-            throws DcmValueException;
+    public Date parseDateTime(String date, String time);
 
-    public boolean isDateRange(String s) throws DcmValueException;
+    public boolean isDateRange(String s);
 
-    public Date[] parseDateRange(String date) throws DcmValueException;
+    public Date[] parseDateRange(String date);
     
-    public Date[] parseTimeRange(String time) throws DcmValueException;
+    public Date[] parseTimeRange(String time);
     
-    public Date[] parseDateTimeRange(String datetime) throws DcmValueException;
+    public Date[] parseDateTimeRange(String datetime);
 
-    public Date[] parseDateTimeRange(String date, String time)
-            throws DcmValueException;
+    public Date[] parseDateTimeRange(String date, String time);
 }

@@ -193,7 +193,7 @@ public class Dcm2Xml {
 " -x                 Include pixel data into the XML output. At default, only\n" +
 "                    elements before the pixel data element will be included.\n" +             
 " --TXT              Apply default XSLT to produce text output:\n" +
-"                     -Dmaxlen=<maximal line length> default=80\n" +
+"                     -Dmaxlen=<maximal line length> default=79\n" +
 "                     -Dvallen=<displayed value length> default=64\n" +
 " --XSL <xsl_file>   Apply XSLT with specified XSL stylesheet <xsl_file>.\n" +
 " -I                 Enable incremental XSLT (only usable with XALAN)\n" +

@@ -47,6 +47,12 @@ public class DcmDecodeParam {
         this.deflated = deflated;
     }
 
+    public String toString() {
+        return (explicitVR ? "explVR-" : "implVR-")
+            + byteOrder.toString()
+            + (deflated ? " deflated" : "");
+    }
+    
     public final static DcmEncodeParam IVR_LE = new DcmEncodeParam(
             ByteOrder.LITTLE_ENDIAN, false, false, false, false, false);
 

@@ -55,6 +55,7 @@ final class DirRecordImpl implements DirRecord {
     final String refSOPInstanceUID;
     final String refTransferSyntaxUID;    
     
+    final long inUsePos;
     final long nextValPos;
     final long lowerValPos;
 
@@ -81,6 +82,15 @@ final class DirRecordImpl implements DirRecord {
         }
         this.next = nextElem.getInt();
         this.nextValPos = nextElem.getStreamPosition() + 8;
+
+        DcmElement inUseElem = dataset.get(Tags.RecordInUseFlag);
+        if (inUseElem == null || inUseElem.isEmpty()) {
+            throw new DcmValueException(
+                "Missing Record In-use Flag");
+        }
+        this.inUse = inUseElem.getInt();
+        this.inUsePos = inUseElem.getStreamPosition() + 8;
+
         DcmElement lowerElem = dataset.get(Tags.OffsetOfLowerLevelDirectoryEntity);
         if (lowerElem == null || lowerElem.isEmpty()) {
             throw new DcmValueException(
@@ -89,11 +99,6 @@ final class DirRecordImpl implements DirRecord {
         this.lower = lowerElem.getInt();
         this.lowerValPos = lowerElem.getStreamPosition() + 8;
         
-        this.inUse = dataset.getInt(Tags.RecordInUseFlag, -1);
-        if (inUse == -1) {
-            throw new DcmValueException("Missing Record In-use Flag");
-        }
-
         this.refFileIDs = dataset.getStrings(Tags.RefFileID);
         this.refSOPClassUID =
                 dataset.getString(Tags.RefSOPClassUIDInFile, null);
@@ -131,12 +136,31 @@ final class DirRecordImpl implements DirRecord {
         return refTransferSyntaxUID;
     }
     
-    public DirRecord getNextSibling() throws IOException {
-        return next != 0 ? new DirRecordImpl(parser, next) : null;
+    public String toString() {
+        return "DirRecord[inUse:" + inUse + ",type:" + type
+            + ",next: " + next + ",lower: " + lower + "]";
     }
     
-    public DirRecord getFirstChild() throws IOException {
-        return lower != 0 ? new DirRecordImpl(parser, lower) : null;
+    public DirRecord getNextSibling(boolean onlyInUse) throws IOException {
+        if (next == 0) {
+            return null;
+        }
+        DirRecord retval = new DirRecordImpl(parser, next);
+        if (onlyInUse && retval.getInUseFlag() == DirRecord.INACTIVE) {
+            return retval.getNextSibling(onlyInUse);
+        }
+        return retval;
+    }
+    
+    public DirRecord getFirstChild(boolean onlyInUse) throws IOException {
+        if (lower == 0) {
+            return null;
+        }
+        DirRecord retval = new DirRecordImpl(parser, lower);
+        if (onlyInUse && retval.getInUseFlag() == DirRecord.INACTIVE) {
+            return retval.getNextSibling(onlyInUse);
+        }
+        return retval;
     }
     
 }

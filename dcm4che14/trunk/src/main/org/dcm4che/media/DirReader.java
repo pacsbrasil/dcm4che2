@@ -52,9 +52,9 @@ public interface DirReader {
 
     public File getDescriptorFile() throws DcmValueException;
 
-    public boolean isEmpty();
+    public boolean isEmpty(boolean onlyInUse) throws IOException;
 
-    public DirRecord getFirstRecord() throws IOException;
+    public DirRecord getFirstRecord(boolean onlyInUse) throws IOException;
 
     public void close() throws IOException;
     

@@ -67,14 +67,14 @@ public class DirReaderTest extends TestCase {
             assertEquals(CLASS_UID,
                     fmi.getString(Tags.MediaStorageSOPClassUID));
             assertEquals("NEMA97CD", fsi.getString(Tags.FileSetID));
-            DirRecord rec = r.getFirstRecord();
+            DirRecord rec = r.getFirstRecord(false);
             assertNotNull(rec);
             assertEquals("PATIENT",rec.getType());
             assertEquals(DirRecord.IN_USE,rec.getInUseFlag());
             assertEquals("TXSP-H-035",
                     rec.getDataset().getString(Tags.PatientID,null));
             int count = 1;
-            while ((rec = rec.getNextSibling()) != null) {
+            while ((rec = rec.getNextSibling(false)) != null) {
                 assertEquals("PATIENT",rec.getType());
                 assertEquals(DirRecord.IN_USE,rec.getInUseFlag());
                 ++count;
@@ -90,23 +90,23 @@ public class DirReaderTest extends TestCase {
                 newDirReader(new File(DICOMDIR_ID));
         try {
             int count = 0;
-            for (DirRecord pat = r.getFirstRecord(); pat != null;
-                    pat = pat.getNextSibling()) {
+            for (DirRecord pat = r.getFirstRecord(false); pat != null;
+                    pat = pat.getNextSibling(false)) {
                 ++count;
                 assertEquals("PATIENT",pat.getType());
                 assertEquals(DirRecord.IN_USE,pat.getInUseFlag());
-                for (DirRecord study = pat.getFirstChild(); study != null;
-                        study = study.getNextSibling()) {
+                for (DirRecord study = pat.getFirstChild(false); study != null;
+                        study = study.getNextSibling(false)) {
                     ++count;
                     assertEquals("STUDY",study.getType());
                     assertEquals(DirRecord.IN_USE,study.getInUseFlag());
-                    for (DirRecord series = study.getFirstChild();
-                            series != null; series = series.getNextSibling()) {
+                    for (DirRecord series = study.getFirstChild(false);
+                            series != null; series = series.getNextSibling(false)) {
                         ++count;
                         assertEquals("SERIES",series.getType());
                         assertEquals(DirRecord.IN_USE,series.getInUseFlag());
-                        for (DirRecord image = series.getFirstChild();
-                                image != null; image = image.getNextSibling()) {
+                        for (DirRecord image = series.getFirstChild(false);
+                                image != null; image = image.getNextSibling(false)) {
                             ++count;
                             assertEquals("IMAGE",image.getType());
                             assertEquals(DirRecord.IN_USE,image.getInUseFlag());

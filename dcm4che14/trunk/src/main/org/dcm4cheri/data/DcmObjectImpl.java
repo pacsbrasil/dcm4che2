@@ -314,6 +314,16 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(StringElement.createDA(tag, from, to));
     }
     
+    public DcmElement setDA(int tag, String value) {
+        return set(value != null
+                ? StringElement.createDA(tag, value)
+                : StringElement.createDA(tag));
+    }
+    
+    public DcmElement setDA(int tag, String[] values) {
+        return set(StringElement.createDA(tag, values));
+    }
+
     public DcmElement setDS(int tag) {
         return set(StringElement.createDS(tag));
     }
@@ -326,6 +336,16 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(StringElement.createDS(tag, values));
     }
     
+    public DcmElement setDS(int tag, String value) {
+        return set(value != null
+                ? StringElement.createDS(tag, value)
+                : StringElement.createDS(tag));
+    }
+    
+    public DcmElement setDS(int tag, String[] values) {
+        return set(StringElement.createDS(tag, values));
+    }
+
     public DcmElement setDT(int tag) {
         return set(StringElement.createDT(tag));
     }
@@ -344,6 +364,16 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(StringElement.createDT(tag, from, to));
     }
     
+    public DcmElement setDT(int tag, String value) {
+        return set(value != null
+                ? StringElement.createDT(tag, value)
+                : StringElement.createDT(tag));
+    }
+    
+    public DcmElement setDT(int tag, String[] values) {
+        return set(StringElement.createDT(tag, values));
+    }
+
     public DcmElement setFL(int tag) {
         return set(ValueElement.createFL(tag));
     }
@@ -356,7 +386,17 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(ValueElement.createFL(tag, values));
     }
     
-    public DcmElement setFD(int tag) {
+    public DcmElement setFL(int tag, String value) {
+        return set(value != null
+                ? StringElement.createFL(tag, Float.parseFloat(value))
+                : StringElement.createFL(tag));
+    }
+    
+    public DcmElement setFL(int tag, String[] values) {
+        return set(StringElement.createFL(tag, StringUtils.parseFloats(values)));
+    }
+
+     public DcmElement setFD(int tag) {
         return set(ValueElement.createFD(tag));
     }
     
@@ -368,6 +408,17 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(ValueElement.createFD(tag, values));
     }
     
+    public DcmElement setFD(int tag, String value) {
+        return set(value != null
+                ? StringElement.createFD(tag, Double.parseDouble(value))
+                : StringElement.createFD(tag));
+    }
+    
+    public DcmElement setFD(int tag, String[] values) {
+        return set(StringElement.createFD(tag,
+                StringUtils.parseDoubles(values)));
+    }
+
     public DcmElement setIS(int tag) {
         return set(StringElement.createIS(tag));
     }
@@ -380,6 +431,16 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(StringElement.createIS(tag, values));
     }
     
+    public DcmElement setIS(int tag, String value) {
+        return set(value != null
+                ? StringElement.createIS(tag, value)
+                : StringElement.createIS(tag));
+    }
+    
+    public DcmElement setIS(int tag, String[] values) {
+        return set(StringElement.createIS(tag, values));
+    }
+
     public DcmElement setLO(int tag) {
         return set(StringElement.createLO(tag));
     }
@@ -487,6 +548,18 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(ValueElement.createSL(tag, values));
     }
 
+    public DcmElement setSL(int tag, String value) {
+        return set(value != null
+                ? StringElement.createSL(tag, StringUtils.parseInt(value,
+                        Integer.MIN_VALUE,  Integer.MAX_VALUE))
+                : StringElement.createSL(tag));
+    }
+    
+    public DcmElement setSL(int tag, String[] values) {
+        return set(StringElement.createSL(tag, StringUtils.parseInts(values,
+                        Integer.MIN_VALUE,  Integer.MAX_VALUE)));
+    }
+
     public DcmElement setSQ(int tag) {
         throw new UnsupportedOperationException();
     }
@@ -501,6 +574,18 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
     
     public DcmElement setSS(int tag, int[] values) {
         return set(ValueElement.createSS(tag, values));
+    }
+
+    public DcmElement setSS(int tag, String value) {
+        return set(value != null
+                ? StringElement.createSS(tag, StringUtils.parseInt(value,
+                        Short.MIN_VALUE,  Short.MAX_VALUE))
+                : StringElement.createSS(tag));
+    }
+    
+    public DcmElement setSS(int tag, String[] values) {
+        return set(StringElement.createSS(tag, StringUtils.parseInts(values,
+                        Short.MIN_VALUE,  Short.MAX_VALUE)));
     }
 
     public DcmElement setST(int tag) {
@@ -535,6 +620,16 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(StringElement.createTM(tag, from, to));
     }
     
+    public DcmElement setTM(int tag, String value) {
+        return set(value != null
+                ? StringElement.createTM(tag, value)
+                : StringElement.createTM(tag));
+    }
+    
+    public DcmElement setTM(int tag, String[] values) {
+        return set(StringElement.createTM(tag, values));
+    }
+
     public DcmElement setUI(int tag) {
         return set(StringElement.createUI(tag));
     }
@@ -561,6 +656,18 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
         return set(ValueElement.createUL(tag, values));
     }
     
+    public DcmElement setUL(int tag, String value) {
+        return set(value != null
+                ? StringElement.createUL(tag, StringUtils.parseInt(value,
+                        0L,  0xFFFFFFFFL))
+                : StringElement.createUL(tag));
+    }
+    
+    public DcmElement setUL(int tag, String[] values) {
+        return set(StringElement.createUL(tag, StringUtils.parseInts(values,
+                        0L,  0xFFFFFFFFL)));
+    }
+
     public DcmElement setUN(int tag, byte[] value) {
         return set(ValueElement.createUN(tag, value));
     }
@@ -583,6 +690,18 @@ abstract class DcmObjectImpl implements org.dcm4che.data.DcmObject {
     
     public DcmElement setUS(int tag, int[] values) {
         return set(ValueElement.createUS(tag, values));
+    }
+
+    public DcmElement setUS(int tag, String value) {
+        return set(value != null
+                ? StringElement.createUS(tag, StringUtils.parseInt(value,
+                        0L,  0xFFFFL))
+                : StringElement.createUL(tag));
+    }
+    
+    public DcmElement setUS(int tag, String[] values) {
+        return set(StringElement.createUS(tag, StringUtils.parseInts(values,
+                        0L,  0xFFFFL)));
     }
 
     public DcmElement setUT(int tag) {

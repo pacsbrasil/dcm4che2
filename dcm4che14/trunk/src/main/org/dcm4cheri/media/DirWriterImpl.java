@@ -39,6 +39,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.*;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
@@ -48,7 +50,9 @@ import javax.imageio.stream.ImageOutputStream;
  */
 final class DirWriterImpl extends DirReaderImpl implements DirWriter {
     
-   private static final String[] TYPE_CODE = {
+    private static final Short INACTIVE = new Short((short)0);
+    private static final Integer INTEGER0 = new Integer(0);
+    private static final String[] TYPE_CODE = {
         "PATIENT",
         "STUDY",
         "SERIES",
@@ -199,19 +203,30 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
     }
     
     public void commit() throws IOException {
-        if (newRecPos == rollbackPos) { // nothing to commit
+        if (dirtyOffsets.isEmpty()) { // nothing to commit
+            if (newRecPos != rollbackPos) {
+                throw new RuntimeException("newRecPos:" + newRecPos
+                        + ", rollbackPos:" + rollbackPos);
+            }
             return;
         }
-        writeTrailer();
-        if (seqLength != -1) {
-            dirtyOffsets.put(new Long(seqValuePos - 4),
-                    new Integer(seqLength += (int)(newRecPos - rollbackPos)));
+        if (newRecPos != rollbackPos) {
+            writeTrailer();
+            if (seqLength != -1) {
+                dirtyOffsets.put(new Long(seqValuePos - 4),
+                        new Integer(seqLength += (int)(newRecPos - rollbackPos)));
+            }
         }
         for (Iterator iter = dirtyOffsets.entrySet().iterator();
                 iter.hasNext();) {
             Map.Entry entry = (Map.Entry)iter.next();
             out.seek(((Long)entry.getKey()).longValue());
-            out.writeInt(((Integer)entry.getValue()).intValue());
+            Number num = (Number)entry.getValue();
+            if (num instanceof Integer) {
+                out.writeInt(num.intValue());
+            } else {
+                out.writeShort(num.intValue());
+            }
         }
         
         dirtyOffsets.clear();
@@ -250,21 +265,29 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         }
     }
         
-    public DirRecord addRecord(DirRecord parent, String type, Dataset ds)
+    public DirRecord add(DirRecord parent, String type, Dataset ds)
             throws IOException {
-        return addRecord(parent, type, ds, null, null, null, null);
+        return add(parent, type, ds, null, null, null, null);
     }
     
-    public DirRecord addRecord(DirRecord parent, String type, Dataset ds,
+    public DirRecord add(DirRecord parent, String type, Dataset ds,
             String[] fileIDs, String classUID, String instUID, String tsUID)
             throws IOException {
+        return add(parent, type, ds, fileIDs, classUID, instUID, tsUID,
+                false);
+    }
+    
+    private DirRecord add(DirRecord parentOrOld, String type, Dataset ds,
+            String[] fileIDs, String classUID, String instUID, String tsUID,
+            boolean replace) throws IOException {
         if (TYPE_CODE_LIST.indexOf(type) == -1) {
             throw new IllegalArgumentException("type:" + type);
         }
         Dataset ds0004 = factory.newDataset();
         ds0004.setUL(Tags.OffsetOfNextDirectoryRecord, 0);
         ds0004.setUS(Tags.RecordInUseFlag, DirRecord.IN_USE);
-        ds0004.setUL(Tags.OffsetOfLowerLevelDirectoryEntity, 0);
+        ds0004.setUL(Tags.OffsetOfLowerLevelDirectoryEntity,
+                replace ? ((DirRecordImpl)parentOrOld).lower : 0);
         ds0004.setCS(Tags.DirectoryRecordType, type);
         if (fileIDs != null) {
             if (classUID == null) {
@@ -284,7 +307,7 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         out.seek(newRecPos);
         out.write(ITEM, 0, 8);
         ds0004.writeDataset(out, encParam);
-        ds.newView(8,-1,null).writeDataset(out, encParam);
+        ds.newView(0x00080000,-1,null).writeDataset(out, encParam);
         long nextNewRecPos = out.getStreamPosition();
         if (encParam.undefItemLen) {
             out.write(ITEM_DELIMITER, 0, 8);
@@ -295,7 +318,7 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         }
         DirRecordImpl retval = new DirRecordImpl(parser, (int)newRecPos);
         Integer newOff = new Integer((int)newRecPos);
-        if (parent == null) {
+        if (parentOrOld == null) {
             dirtyOffsets.put(
                     setLastRootRecNextValPos(retval.nextValPos), newOff);
             dirtyOffsets.put(new Long(offLastRootRecValPos), newOff);
@@ -303,9 +326,17 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
             if (offFirstRootRec == 0) {
                 offFirstRootRec = (int)newRecPos;
             }
+        } else if (replace) {
+            DirRecordImpl rec = (DirRecordImpl)parentOrOld;
+            dirtyOffsets.put(new Long(((DirRecordImpl)rec).inUsePos), INACTIVE);        
+            dirtyOffsets.put(new Long(((DirRecordImpl)rec).lowerValPos), INTEGER0);        
+            while (rec.next != 0) {
+                rec = new DirRecordImpl(parser, rec.next);
+            }
+            dirtyOffsets.put(new Long(rec.nextValPos), newOff);
         } else {
             dirtyOffsets.put(
-                    setLastRecNextValPos(parent, retval.nextValPos),
+                    setLastRecNextValPos(parentOrOld, retval.nextValPos),
                     newOff);
         }
         newRecPos = nextNewRecPos;
@@ -337,7 +368,7 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         if (retval != null) {
             return retval;
         }
-        DirRecordImpl child = (DirRecordImpl)parent.getFirstChild();
+        DirRecordImpl child = (DirRecordImpl)parent.getFirstChild(true);
         if (child == null) {
             return new Long(((DirRecordImpl)parent).lowerValPos);
         }
@@ -346,4 +377,106 @@ final class DirWriterImpl extends DirReaderImpl implements DirWriter {
         }
         return new Long(child.nextValPos);
     }    
+
+    public int remove(DirRecord rec) throws IOException {
+        if (rec.getInUseFlag() == DirRecord.INACTIVE) {
+            return 0;
+        }
+        int retval = doRemove(rec);
+        if (autoCommit) {
+            commit();
+        }
+        return retval;
+    }
+
+    private int doRemove(DirRecord rec) throws IOException {
+        dirtyOffsets.put(new Long(((DirRecordImpl)rec).inUsePos), INACTIVE);        
+        int retval = 1;
+        for (DirRecord child = rec.getFirstChild(true); child != null;
+                child = child.getNextSibling(true)) {
+            retval += doRemove(child);
+        } 
+        return retval;
+    }
+
+    public DirRecord replace(DirRecord old, String type, Dataset ds)
+            throws IOException {
+        return replace(old, type, ds, null, null, null, null);
+    }    
+
+    public DirRecord replace(DirRecord old, String type, Dataset ds,
+            String[] fileIDs, String classUID, String instUID, String tsUID)
+            throws IOException {
+        if (old.getInUseFlag() == DirRecord.INACTIVE) {
+            throw new IllegalArgumentException("" + old);
+        }
+        return add(old, type, ds, fileIDs, classUID, instUID, tsUID, true);
+    }
+        
+    private File backup() throws IOException {
+        close();
+        File dir = file.getParentFile();
+        String fname = file.getName();
+        File bakFile = null;
+        do {
+           bakFile = new File(dir, fname += '~');
+        } while (bakFile.exists());
+        file.renameTo(bakFile);
+        return bakFile;
+    }
+
+    public DirWriter compact() throws IOException {
+        File bakFile = backup();
+        DirWriterImpl writer = null;
+        try {
+            DirReaderImpl reader = new DirReaderImpl(bakFile,
+                        new FileImageInputStream(bakFile)).initReader();
+            try {
+                Dataset fsi = reader.getFileSetInfo();
+                writer = new DirWriterImpl(file,
+                        new FileImageOutputStream(file), encParam);
+                writer.initWriter(
+                        fsi.getFileMetaInfo(), 
+                        fsi.getString(Tags.FileSetID),
+                        reader.getDescriptorFile(),
+                        fsi.getString(Tags.SpecificCharacterSetOfFileSetDescriptorFile));
+                copy(reader, writer);
+                writer.commit();
+                writer.setAutoCommit(autoCommit);
+            } finally {
+                try { reader.close(); } catch (IOException ignore) {}
+            }
+        } catch (IOException e) {
+            if (writer != null) {
+                try { writer.close(); } catch (Exception ignore) {}
+            }
+            file.delete();
+            bakFile.renameTo(file);
+            throw e;
+        }
+        bakFile.delete();
+        return writer;
+    }
+    
+    private void copy(DirReaderImpl src, DirWriterImpl dst) throws IOException {
+        for (DirRecord srcRec = src.getFirstRecord(true); srcRec != null;
+                srcRec = srcRec.getNextSibling(true)) {
+            copyInto(srcRec, dst, null);
+        }   
+    }
+
+    private void copyInto(DirRecord srcRec, DirWriterImpl dst, DirRecord parent)
+            throws IOException {
+        DirRecord dstRec = dst.add(parent,
+                srcRec.getType(),
+                srcRec.getDataset(),
+                srcRec.getRefFileIDs(),
+                srcRec.getRefSOPClassUID(),
+                srcRec.getRefSOPInstanceUID(),
+                srcRec.getRefSOPTransferSyntaxUID());
+        for (DirRecord childRec = srcRec.getFirstChild(true); childRec != null;
+                childRec = childRec.getNextSibling(true)) {
+            copyInto(childRec, dst, dstRec);
+        }   
+    }
 }

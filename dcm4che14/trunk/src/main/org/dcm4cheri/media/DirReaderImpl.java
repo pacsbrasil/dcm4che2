@@ -131,13 +131,19 @@ class DirReaderImpl implements DirReader {
         return getDescriptorFile(file.getParentFile());
     }
 
-    public boolean isEmpty() {
-        return offFirstRootRec == 0;
+    public boolean isEmpty(boolean onlyInUse) throws IOException {
+        return getFirstRecord(onlyInUse) == null;
     }
 
-    public DirRecord getFirstRecord() throws IOException {
-        return offFirstRootRec != 0 
-                ? new DirRecordImpl(parser, offFirstRootRec) : null;
+    public DirRecord getFirstRecord(boolean onlyInUse) throws IOException {
+        if (offFirstRootRec == 0) {
+            return null;
+        }
+        DirRecord retval = new DirRecordImpl(parser, offFirstRootRec);
+        if (onlyInUse && retval.getInUseFlag() == DirRecord.INACTIVE) {
+            return retval.getNextSibling(onlyInUse);
+        }
+        return retval;
     }
 
     public void close() throws IOException {

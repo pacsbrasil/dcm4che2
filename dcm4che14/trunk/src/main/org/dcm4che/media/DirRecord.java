@@ -51,7 +51,7 @@ public interface DirRecord {
 
     public Dataset getDataset();
         
-    public DirRecord getFirstChild() throws IOException;
+    public DirRecord getFirstChild(boolean onlyInUse) throws IOException;
 
-    public DirRecord getNextSibling() throws IOException;
+    public DirRecord getNextSibling(boolean onlyInUse) throws IOException;
 }

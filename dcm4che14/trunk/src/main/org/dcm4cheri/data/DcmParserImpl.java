@@ -86,32 +86,17 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     private ByteArrayOutputStream unBuf = null;
     
     public DcmParserImpl(InputStream in) {
-        if (in == null) {
-            throw new NullPointerException();
-        }
         this.in = in instanceof DataInput ? (DataInput)in
                                           : new DataInputStream(in);
     }
 
     public DcmParserImpl(ImageInputStream in) {        
+        if (in == null) {
+            throw new NullPointerException();
+        }
         this.in = in;
     }
-/*    
-    public final void reset() {
-        bb12.order(ByteOrder.LITTLE_ENDIAN);
-        decodeParam = DcmDecodeParam.IVR_LE;
-        maxAlloc = 0x4000000;
-        in = null;
-        handler = null;
-        vrMap = VRMap.DEFAULT;
-        rTag = -1;
-        rVR = -1;
-        rLen = -1;
-        rPos = 0L;
-        eof = false;
-        tsUID = null;
-    }
-*/    
+    
     public final int getReadTag() {
         return rTag;
     }
@@ -168,6 +153,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }    
 
     public final void setDcmDecodeParam(DcmDecodeParam param) {
+        if (log.isLoggable(Level.FINEST))
+            log.finest(param.toString());
         if (param.deflated != decodeParam.deflated) {
             if (!param.deflated)
                 throw new UnsupportedOperationException(
@@ -186,23 +173,22 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     private String logMsg() {
-        return StringUtils.promptTag(rTag) 
+        return "rPos:" + rPos + " " + StringUtils.promptTag(rTag) 
                 + " " + StringUtils.promptVR(rVR)
-                + " #" + rLen
-                + " @" + rPos;
+                + " #" + rLen;
     }
     
-    public FileFormat detectFileFormat() throws IOException {
-        if (in == null)
-            throw new NullPointerException("Missing Input");
-        
+    public FileFormat detectFileFormat() throws IOException { 
+        FileFormat retval = null;
         if (in instanceof InputStream)
-            return detectFileFormat((InputStream)in);
-        
-        if (in instanceof ImageInputStream)
-            return detectFileFormat((ImageInputStream)in);
-        
-        throw new UnsupportedOperationException("" + in);        
+            retval = detectFileFormat((InputStream)in);        
+        else if (in instanceof ImageInputStream)
+            retval = detectFileFormat((ImageInputStream)in);
+        else
+            throw new UnsupportedOperationException("" + in);
+        if (log.isLoggable(Level.FINEST))
+            log.finest("detect " + retval);
+        return retval;
     }
     
     private int testEVRFormat(DcmDecodeParam decodeParam) throws IOException {
@@ -328,9 +314,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     public int parseHeader() throws IOException {
-        if (in == null)
-            throw new NullPointerException("Missing Input");
-
         eof = false;
         try {
             b12[0] = in.readByte();
@@ -374,8 +357,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     private byte[] parsePreamble() throws IOException {
-        if (in == null)
-            throw new NullPointerException("Missing Input");
+        log.finest("rPos:" + rPos);
 
         byte[] b128 = new byte[128];        
         in.readFully(b128,0,128);
@@ -420,6 +402,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     private long parseGroup(int groupTag) throws IOException {
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("parse group " + groupTag);
+        }
         if (handler != null)
             handler.setDcmDecodeParam(decodeParam);
 
@@ -498,6 +483,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         if (itemtag != ITEM_TAG) {
             throw new DcmParseException(StringUtils.promptTag(itemtag));
         }
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("rpos:" + (rPos-8) + ",(fffe,e0dd)");
+        }
         if (handler != null) {
             handler.startDataset();
         }
@@ -515,6 +503,11 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
     
     private long doParse(int stopTag, int length) throws IOException {
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("rpos:" + rPos
+                    + ",stopTag:" + StringUtils.promptTag(stopTag)
+                    + ",length:" + length);
+        }
         long lread = 0;        
         if (length != 0) {
             long llen = length & 0xffffffffL;
@@ -556,6 +549,10 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
 
     private long parseSequence(int vr, int sqLen) throws IOException {
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("rPos:" + rPos + "," + StringUtils.promptVR(vr)
+                    + " #" + sqLen);
+        }
         if (handler != null && unBuf == null)
             handler.startSequence(sqLen);
         long lread = 0;        
@@ -596,6 +593,10 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
             
     private long parseItem(int id, int vr, int itemlen) throws IOException {
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("rPos:" + rPos + "," + StringUtils.promptVR(vr)
+                    + " #" + itemlen);
+        }
         switch (vr) {
             case VRs.SQ:
                 return parseSQItem(id, itemlen);
@@ -688,7 +689,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         if (len == 0)
             return b0;
         if (len < 0 || len > maxAlloc)
-            throw new DcmParseException(logMsg() + ", MaxAlloc: " + maxAlloc);
+            throw new DcmParseException(logMsg() + ", MaxAlloc:" + maxAlloc);
         byte[] retval = new byte[len];
         in.readFully(retval, 0, len);
         rPos += len;

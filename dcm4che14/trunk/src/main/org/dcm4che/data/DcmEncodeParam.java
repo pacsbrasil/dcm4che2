@@ -46,4 +46,11 @@ public class DcmEncodeParam extends DcmDecodeParam {
          this.undefSeqLen = undefSeqLen;
          this.undefItemLen = undefItemLen;
     }
+    
+    public String toString() {
+        return super.toString()
+            + ",grLen" + (skipGroupLen ?  '-' : '+')
+            + ",sqLen:" + (undefSeqLen ? "-1" : "##")
+            + ",itemLen:" + (undefItemLen ? "-1" : "##");
+    }
 }

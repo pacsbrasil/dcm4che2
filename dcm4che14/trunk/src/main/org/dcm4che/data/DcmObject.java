@@ -140,12 +140,20 @@ public interface DcmObject {
     
     public DcmElement setDA(int tag, Date from, Date to);
     
+    public DcmElement setDA(int tag, String value);
+    
+    public DcmElement setDA(int tag, String[] values);
+    
     public DcmElement setDS(int tag);
     
     public DcmElement setDS(int tag, float value);
     
     public DcmElement setDS(int tag, float[] values);
     
+    public DcmElement setDS(int tag, String value);
+    
+    public DcmElement setDS(int tag, String[] values);
+
     public DcmElement setDT(int tag);
     
     public DcmElement setDT(int tag, Date value);
@@ -154,24 +162,40 @@ public interface DcmObject {
     
     public DcmElement setDT(int tag, Date from, Date to);
     
+    public DcmElement setDT(int tag, String value);
+    
+    public DcmElement setDT(int tag, String[] values);
+
     public DcmElement setFL(int tag);
     
     public DcmElement setFL(int tag, float value);
     
     public DcmElement setFL(int tag, float[] values);
     
+    public DcmElement setFL(int tag, String value);
+    
+    public DcmElement setFL(int tag, String[] values);
+
     public DcmElement setFD(int tag);
     
     public DcmElement setFD(int tag, double value);
     
     public DcmElement setFD(int tag, double[] values);
     
+    public DcmElement setFD(int tag, String value);
+    
+    public DcmElement setFD(int tag, String[] values);
+
     public DcmElement setIS(int tag);
     
     public DcmElement setIS(int tag, int value);
     
     public DcmElement setIS(int tag, int[] values);
     
+    public DcmElement setIS(int tag, String value);
+    
+    public DcmElement setIS(int tag, String[] values);
+
     public DcmElement setLO(int tag);
     
     public DcmElement setLO(int tag, String value);
@@ -214,6 +238,10 @@ public interface DcmObject {
     
     public DcmElement setSL(int tag, int[] values);
 
+    public DcmElement setSL(int tag, String value);
+    
+    public DcmElement setSL(int tag, String[] values);
+
     public DcmElement setSQ(int tag);
     
     public DcmElement setSS(int tag);
@@ -221,6 +249,10 @@ public interface DcmObject {
     public DcmElement setSS(int tag, int value);
     
     public DcmElement setSS(int tag, int[] values);
+
+    public DcmElement setSS(int tag, String value);
+    
+    public DcmElement setSS(int tag, String[] values);
 
     public DcmElement setST(int tag);
     
@@ -236,6 +268,10 @@ public interface DcmObject {
     
     public DcmElement setTM(int tag, Date from, Date to);
     
+    public DcmElement setTM(int tag, String value);
+    
+    public DcmElement setTM(int tag, String[] values);
+
     public DcmElement setUI(int tag);
     
     public DcmElement setUI(int tag, String value);
@@ -248,6 +284,10 @@ public interface DcmObject {
     
     public DcmElement setUL(int tag, int[] values);
     
+    public DcmElement setUL(int tag, String value);
+    
+    public DcmElement setUL(int tag, String[] values);
+
     public DcmElement setUN(int tag, byte[] value);
 
     public DcmElement setUNf(int tag);
@@ -257,6 +297,10 @@ public interface DcmObject {
     public DcmElement setUS(int tag, int value);
     
     public DcmElement setUS(int tag, int[] values);
+
+    public DcmElement setUS(int tag, String value);
+    
+    public DcmElement setUS(int tag, String[] values);
 
     public DcmElement setUT(int tag);
     

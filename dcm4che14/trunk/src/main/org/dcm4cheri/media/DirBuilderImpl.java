@@ -120,7 +120,7 @@ final class DirBuilderImpl implements DirBuilder {
         if (!seriesUID.equals(curSeriesUID)) {
             count += addSeriesRec(ds, seriesUID);
         }
-        writer.addRecord(curSeriesRec, type,
+        writer.add(curSeriesRec, type,
                 ds.newView(pref.getTagsForRecordType(type)),
                 fileIDs, classUID, instUID, tsUID);
         ++count;
@@ -133,17 +133,15 @@ final class DirBuilderImpl implements DirBuilder {
         this.curStudyUID = null;
         this.curStudyRec = null;
         this.curPatID = patID;
-        for (DirRecord dr = writer.getFirstRecord(); dr != null;
-                dr = dr.getNextSibling()) {
-            if (dr.getInUseFlag() == DirRecord.IN_USE
-                    && "PATIENT".equals(dr.getType())
-                    && patID.equals(
+        for (DirRecord dr = writer.getFirstRecord(true); dr != null;
+                dr = dr.getNextSibling(true)) {
+            if ("PATIENT".equals(dr.getType()) && patID.equals(
                             dr.getDataset().getString(Tags.PatientID))) {
                 curPatRec = dr;
                 return 0;
             }
         }
-        curPatRec = writer.addRecord(null, "PATIENT",
+        curPatRec = writer.add(null, "PATIENT",
                 ds.newView(pref.getTagsForRecordType("PATIENT")));
         return 1;
     }
@@ -152,34 +150,30 @@ final class DirBuilderImpl implements DirBuilder {
         this.curSeriesUID = null;
         this.curSeriesRec = null;
         this.curStudyUID = studyUID;
-        for (DirRecord dr = curPatRec.getFirstChild(); dr != null;
-                dr = dr.getNextSibling()) {
-            if (dr.getInUseFlag() == DirRecord.IN_USE
-                    && "STUDY".equals(dr.getType())
-                    && studyUID.equals(
+        for (DirRecord dr = curPatRec.getFirstChild(true); dr != null;
+                dr = dr.getNextSibling(true)) {
+            if ("STUDY".equals(dr.getType()) && studyUID.equals(
                             dr.getDataset().getString(Tags.StudyInstanceUID))) {
                 curStudyRec = dr;
                 return 0;
             }
         }
-        curStudyRec = writer.addRecord(curPatRec, "STUDY",
+        curStudyRec = writer.add(curPatRec, "STUDY",
                 ds.newView(pref.getTagsForRecordType("STUDY")));
         return 1;
     }
     
     private int addSeriesRec(Dataset ds, String seriesUID) throws IOException {
         this.curSeriesUID = seriesUID;
-        for (DirRecord dr = curStudyRec.getFirstChild(); dr != null;
-                dr = dr.getNextSibling()) {
-            if (dr.getInUseFlag() == DirRecord.IN_USE
-                    && "SERIES".equals(dr.getType())
-                    && seriesUID.equals(
+        for (DirRecord dr = curStudyRec.getFirstChild(true); dr != null;
+                dr = dr.getNextSibling(true)) {
+            if ("SERIES".equals(dr.getType()) && seriesUID.equals(
                             dr.getDataset().getString(Tags.SeriesInstanceUID))) {
                 curSeriesRec = dr;
                 return 0;
             }
         }
-        curSeriesRec = writer.addRecord(curStudyRec, "SERIES",
+        curSeriesRec = writer.add(curStudyRec, "SERIES",
                 ds.newView(pref.getTagsForRecordType("SERIES")));
         return 1;
     }

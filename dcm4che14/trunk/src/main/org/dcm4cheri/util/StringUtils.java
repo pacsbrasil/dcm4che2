@@ -358,4 +358,37 @@ public class StringUtils {
             bb.putInt((int)Long.parseLong(a[i]));
         return b;
     }
+    
+    public static float[] parseFloats(String[] values) {
+        float[] retval = new float[values.length];
+        for (int i = 0; i < retval.length; ++i) {
+            retval[i] = Float.parseFloat(values[i]);
+        }
+        return retval;
+    }
+    
+    public static double[] parseDoubles(String[] values) {
+        double[] retval = new double[values.length];
+        for (int i = 0; i < retval.length; ++i) {
+            retval[i] = Double.parseDouble(values[i]);
+        }
+        return retval;
+    }
+
+    public static int parseInt(String value, long min, long max) {
+        long retval = Long.parseLong(value);
+        if (retval < min || retval > max) {
+            throw new NumberFormatException("value: " + value
+                    + ", min:" + min + ", max:" + max);
+        }
+        return (int)retval;
+    }
+    
+    public static int[] parseInts(String[] values, long min, long max) {
+        int[] retval = new int[values.length];
+        for (int i = 0; i < retval.length; ++i) {
+            retval[i] = parseInt(values[i], min, max);
+        }
+        return retval;
+    }
 }

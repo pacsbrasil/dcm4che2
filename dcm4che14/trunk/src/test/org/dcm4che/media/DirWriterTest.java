@@ -176,104 +176,104 @@ public class DirWriterTest extends TestCase {
         assertEquals(no, img.getInt(Tags.InstanceNumber, -1));
     }
 
-    public void testAddRecord000() throws Exception {
-        doTestAddRecord(false, false, false);
+    public void testAdd000() throws Exception {
+        doTestAdd(false, false, false);
     }
 
-    public void testAddRecord001() throws Exception {
-        doTestAddRecord(false, false, true);
+    public void testAdd001() throws Exception {
+        doTestAdd(false, false, true);
     }
 
-    public void testAddRecord010() throws Exception {
-        doTestAddRecord(false, true, false);
+    public void testAdd010() throws Exception {
+        doTestAdd(false, true, false);
     }
 
-    public void testAddRecord011() throws Exception {
-        doTestAddRecord(false, true, true);
+    public void testAdd011() throws Exception {
+        doTestAdd(false, true, true);
     }
 
-    public void testAddRecord100() throws Exception {
-        doTestAddRecord(true, false, false);
+    public void testAdd100() throws Exception {
+        doTestAdd(true, false, false);
     }
 
-    public void testAddRecord101() throws Exception {
-        doTestAddRecord(true, false, true);
+    public void testAdd101() throws Exception {
+        doTestAdd(true, false, true);
     }
 
-    public void testAddRecord110() throws Exception {
-        doTestAddRecord(true, true, false);
+    public void testAdd110() throws Exception {
+        doTestAdd(true, true, false);
     }
 
-    public void testAddRecord111() throws Exception {
-        doTestAddRecord(true, true, true);
+    public void testAdd111() throws Exception {
+        doTestAdd(true, true, true);
     }
 
 
-    private void doTestAddRecord(boolean skipGroupLen, boolean undefSeqLen,
+    private void doTestAdd(boolean skipGroupLen, boolean undefSeqLen,
             boolean undefItemLen) throws Exception {
         DcmEncodeParam encParam = new DcmEncodeParam(ByteOrder.LITTLE_ENDIAN,
                 true, false, skipGroupLen, undefSeqLen, undefItemLen);
         DirWriter w1 = wfact.newDirWriter(theFile, INST_UID,  FILE_SET_ID,
                 null, null, encParam);
         try {
-            DirRecord patRec1 = w1.addRecord(null, "PATIENT",
+            DirRecord patRec1 = w1.add(null, "PATIENT",
                     newPatient(PAT1_ID, PAT1_NAME));
-            DirRecord studyRec1 = w1.addRecord(patRec1, "STUDY",
+            DirRecord studyRec1 = w1.add(patRec1, "STUDY",
                     newStudy(STUDY1_ID, STUDY1_UID, new Date(), STUDY1_DESC,
                             ACC_NO));
-            DirRecord seriesRec1 = w1.addRecord(studyRec1, "SERIES",
+            DirRecord seriesRec1 = w1.add(studyRec1, "SERIES",
                     newSeries("CT", SERIES1_NO, SERIES1_UID));
-            DirRecord imgRec1 = w1.addRecord(seriesRec1, "IMAGE",
+            DirRecord imgRec1 = w1.add(seriesRec1, "IMAGE",
                     newImage(IMG1_NO),  w1.toFileIDs(IMG1_FILE), CT_UID,
                     IMG1_UID, TS_UID);
-            DirRecord seriesRec2 = w1.addRecord(studyRec1, "SERIES",
+            DirRecord seriesRec2 = w1.add(studyRec1, "SERIES",
                     newSeries("CT", SERIES2_NO, SERIES2_UID));
-            DirRecord imgRec2 = w1.addRecord(seriesRec2, "IMAGE",
+            DirRecord imgRec2 = w1.add(seriesRec2, "IMAGE",
                     newImage(IMG2_NO), w1.toFileIDs(IMG2_FILE), CT_UID,
                     IMG2_UID,  TS_UID);
-            DirRecord patRec2 = w1.addRecord(null, "PATIENT",
+            DirRecord patRec2 = w1.add(null, "PATIENT",
                     newPatient(PAT2_ID, PAT2_NAME));
         } finally {
             w1.close();
         }
         DirWriter w2 = wfact.newDirWriter(theFile, encParam);
         try {
-            DirRecord patRec1 = w2.getFirstRecord();
-            DirRecord patRec2 = patRec1.getNextSibling();
-            DirRecord studyRec1 = patRec1.getFirstChild();
+            DirRecord patRec1 = w2.getFirstRecord(false);
+            DirRecord patRec2 = patRec1.getNextSibling(false);
+            DirRecord studyRec1 = patRec1.getFirstChild(false);
             Dataset study2 =
                     newStudy(STUDY2_ID, STUDY2_UID, new Date(), STUDY2_DESC,
                             ACC_NO);
             Dataset series3 = newSeries("MR", SERIES3_NO, SERIES3_UID);
-            w2.addRecord(null, "PATIENT", newPatient(PAT3_ID, PAT3_NAME));
-            w2.addRecord(patRec2, "STUDY", study2);
-            w2.addRecord(studyRec1, "SERIES", series3);
+            w2.add(null, "PATIENT", newPatient(PAT3_ID, PAT3_NAME));
+            w2.add(patRec2, "STUDY", study2);
+            w2.add(studyRec1, "SERIES", series3);
             w2.rollback();
-            DirRecord studyRec2 = w2.addRecord(patRec1, "STUDY", study2);
-            w2.addRecord(studyRec2, "SERIES", series3);
+            DirRecord studyRec2 = w2.add(patRec1, "STUDY", study2);
+            w2.add(studyRec2, "SERIES", series3);
        } finally {
             w2.close();
         }
         DirWriter w3 = wfact.newDirWriter(theFile, null);
         try {
             checkFilesetIDs(w3);
-            DirRecord patRec1 = w3.getFirstRecord();
+            DirRecord patRec1 = w3.getFirstRecord(false);
             assertNotNull(patRec1);
             assertEquals("PATIENT",patRec1.getType());
             assertEquals(DirRecord.IN_USE,patRec1.getInUseFlag());
             checkPatient(patRec1.getDataset(), PAT1_ID, PAT1_NAME);
-            DirRecord studyRec1 = patRec1.getFirstChild();
+            DirRecord studyRec1 = patRec1.getFirstChild(false);
             assertNotNull(studyRec1);
             assertEquals("STUDY",studyRec1.getType());
             assertEquals(DirRecord.IN_USE,studyRec1.getInUseFlag());
             checkStudy(studyRec1.getDataset(), STUDY1_ID, STUDY1_UID,
                     STUDY1_DESC, ACC_NO);
-            DirRecord seriesRec1 = studyRec1.getFirstChild();
+            DirRecord seriesRec1 = studyRec1.getFirstChild(false);
             assertNotNull(seriesRec1);
             assertEquals("SERIES",seriesRec1.getType());
             assertEquals(DirRecord.IN_USE,seriesRec1.getInUseFlag());
             checkSeries(seriesRec1.getDataset(), "CT", SERIES1_NO, SERIES1_UID);
-            DirRecord imageRec1 = seriesRec1.getFirstChild();
+            DirRecord imageRec1 = seriesRec1.getFirstChild(false);
             assertNotNull(imageRec1);
             assertEquals("IMAGE",imageRec1.getType());
             assertEquals(DirRecord.IN_USE,imageRec1.getInUseFlag());
@@ -282,13 +282,13 @@ public class DirWriterTest extends TestCase {
             assertEquals(IMG1_UID,imageRec1.getRefSOPInstanceUID());
             assertEquals(TS_UID,imageRec1.getRefSOPTransferSyntaxUID());
             checkImage(imageRec1.getDataset(), IMG1_NO);
-            assertNull(imageRec1.getNextSibling());
-            DirRecord seriesRec2 = seriesRec1.getNextSibling();
+            assertNull(imageRec1.getNextSibling(false));
+            DirRecord seriesRec2 = seriesRec1.getNextSibling(false);
             assertNotNull(seriesRec2);
             assertEquals("SERIES",seriesRec2.getType());
             assertEquals(DirRecord.IN_USE,seriesRec2.getInUseFlag());
             checkSeries(seriesRec2.getDataset(), "CT", SERIES2_NO, SERIES2_UID);
-            DirRecord imageRec2 = seriesRec2.getFirstChild();
+            DirRecord imageRec2 = seriesRec2.getFirstChild(false);
             assertNotNull(imageRec2);
             assertEquals("IMAGE",imageRec2.getType());
             assertEquals(DirRecord.IN_USE,imageRec2.getInUseFlag());
@@ -297,33 +297,342 @@ public class DirWriterTest extends TestCase {
             assertEquals(IMG2_UID,imageRec2.getRefSOPInstanceUID());
             assertEquals(TS_UID,imageRec2.getRefSOPTransferSyntaxUID());
             checkImage(imageRec2.getDataset(), IMG2_NO);
-            assertNull(imageRec2.getNextSibling());
-            assertNull(seriesRec2.getNextSibling());
-            DirRecord studyRec2 = studyRec1.getNextSibling();
+            assertNull(imageRec2.getNextSibling(false));
+            assertNull(seriesRec2.getNextSibling(false));
+            DirRecord studyRec2 = studyRec1.getNextSibling(false);
             assertNotNull(studyRec2);
             assertEquals("STUDY",studyRec2.getType());
             assertEquals(DirRecord.IN_USE,studyRec2.getInUseFlag());
             checkStudy(studyRec2.getDataset(), STUDY2_ID, STUDY2_UID,
                     STUDY2_DESC, ACC_NO);
-            DirRecord seriesRec3 = studyRec2.getFirstChild();
+            DirRecord seriesRec3 = studyRec2.getFirstChild(false);
             assertNotNull(seriesRec3);
             assertEquals("SERIES",seriesRec3.getType());
             assertEquals(DirRecord.IN_USE,seriesRec3.getInUseFlag());
             checkSeries(seriesRec3.getDataset(), "MR", SERIES3_NO, SERIES3_UID);
-            assertNull(seriesRec3.getFirstChild());
-            assertNull(seriesRec3.getNextSibling());
-            assertNull(studyRec2.getNextSibling());
-            DirRecord patRec2 = patRec1.getNextSibling();
+            assertNull(seriesRec3.getFirstChild(false));
+            assertNull(seriesRec3.getNextSibling(false));
+            assertNull(studyRec2.getNextSibling(false));
+            DirRecord patRec2 = patRec1.getNextSibling(false);
             assertNotNull(patRec2);
             assertEquals("PATIENT",patRec2.getType());
             assertEquals(DirRecord.IN_USE,patRec2.getInUseFlag());
             checkPatient(patRec2.getDataset(), PAT2_ID, PAT2_NAME);
-            assertNull(patRec2.getFirstChild());
-            assertNull(patRec2.getNextSibling());
+            assertNull(patRec2.getFirstChild(false));
+            assertNull(patRec2.getNextSibling(false));
         } finally {
             w3.close();
         }
     }
     
+    public void testRemove000() throws Exception {
+        doTestRemove(false, false, false);
+    }
+
+    public void testRemove001() throws Exception {
+        doTestRemove(false, false, true);
+    }
+
+    public void testRemove010() throws Exception {
+        doTestRemove(false, true, false);
+    }
+
+    public void testRemove011() throws Exception {
+        doTestRemove(false, true, true);
+    }
+
+    public void testRemove100() throws Exception {
+        doTestRemove(true, false, false);
+    }
+
+    public void testRemove101() throws Exception {
+        doTestRemove(true, false, true);
+    }
+
+    public void testRemove110() throws Exception {
+        doTestRemove(true, true, false);
+    }
+
+    public void testRemove111() throws Exception {
+        doTestRemove(true, true, true);
+    }
+
+    private void doTestRemove(boolean skipGroupLen, boolean undefSeqLen,
+            boolean undefItemLen) throws Exception {
+        DcmEncodeParam encParam = new DcmEncodeParam(ByteOrder.LITTLE_ENDIAN,
+                true, false, skipGroupLen, undefSeqLen, undefItemLen);
+        DirWriter w1 = wfact.newDirWriter(theFile, INST_UID,  FILE_SET_ID,
+                null, null, encParam);
+        try {
+            DirRecord patRec1 = w1.add(null, "PATIENT",
+                    newPatient(PAT1_ID, PAT1_NAME));
+            DirRecord studyRec1 = w1.add(patRec1, "STUDY",
+                    newStudy(STUDY1_ID, STUDY1_UID, new Date(), STUDY1_DESC,
+                            ACC_NO));
+            DirRecord seriesRec1 = w1.add(studyRec1, "SERIES",
+                    newSeries("CT", SERIES1_NO, SERIES1_UID));
+            DirRecord imgRec1 = w1.add(seriesRec1, "IMAGE",
+                    newImage(IMG1_NO),  w1.toFileIDs(IMG1_FILE), CT_UID,
+                    IMG1_UID, TS_UID);
+            DirRecord seriesRec2 = w1.add(studyRec1, "SERIES",
+                    newSeries("CT", SERIES2_NO, SERIES2_UID));
+            DirRecord imgRec2 = w1.add(seriesRec2, "IMAGE",
+                    newImage(IMG2_NO), w1.toFileIDs(IMG2_FILE), CT_UID,
+                    IMG2_UID,  TS_UID);
+            DirRecord patRec2 = w1.add(null, "PATIENT",
+                    newPatient(PAT2_ID, PAT2_NAME));
+        } finally {
+            w1.close();
+        }
+        DirWriter w2 = wfact.newDirWriter(theFile, encParam);
+        try {
+            DirRecord patRec1 = w2.getFirstRecord(false);
+            DirRecord studyRec1 = patRec1.getFirstChild(false);
+            DirRecord seriesRec1 = studyRec1.getFirstChild(false);
+            assertEquals(2, w2.remove(seriesRec1));
+       } finally {
+            w2.close();
+        }
+        DirWriter w4, w3 = wfact.newDirWriter(theFile, encParam);
+        try {
+            checkFilesetIDs(w3);
+            DirRecord patRec1 = w3.getFirstRecord(false);
+            assertNotNull(patRec1);
+            assertEquals("PATIENT",patRec1.getType());
+            assertEquals(DirRecord.IN_USE,patRec1.getInUseFlag());
+            DirRecord studyRec1 = patRec1.getFirstChild(false);
+            assertNotNull(studyRec1);
+            assertEquals("STUDY",studyRec1.getType());
+            assertEquals(DirRecord.IN_USE,studyRec1.getInUseFlag());
+            DirRecord seriesRec1 = studyRec1.getFirstChild(false);
+            assertNotNull(seriesRec1);
+            assertEquals("SERIES",seriesRec1.getType());
+            assertEquals(DirRecord.INACTIVE,seriesRec1.getInUseFlag());
+            DirRecord imageRec1 = seriesRec1.getFirstChild(false);
+            assertNotNull(imageRec1);
+            assertEquals("IMAGE",imageRec1.getType());
+            assertEquals(DirRecord.INACTIVE,imageRec1.getInUseFlag());
+            DirRecord seriesRec2 = studyRec1.getFirstChild(true);
+            assertNotNull(seriesRec2);
+            assertEquals("SERIES",seriesRec2.getType());
+            assertEquals(DirRecord.IN_USE,seriesRec2.getInUseFlag());
+            checkSeries(seriesRec2.getDataset(), "CT", SERIES2_NO, SERIES2_UID);
+            DirRecord patRec2 = patRec1.getNextSibling(false);
+            assertNotNull(patRec2);
+            assertEquals("PATIENT",patRec2.getType());
+            assertEquals(DirRecord.IN_USE,patRec2.getInUseFlag());
+            checkPatient(patRec2.getDataset(), PAT2_ID, PAT2_NAME);
+            assertNull(patRec2.getFirstChild(false));
+            assertNull(patRec2.getNextSibling(false));
+            w4 = w3.compact();
+            w3 = null;
+        } finally {
+            if (w3 != null) {
+                try { w3.close(); } catch (IOException ignore) {}
+            }
+        }
+        try {
+            checkFilesetIDs(w4);
+            DirRecord patRec1 = w4.getFirstRecord(false);
+            assertNotNull(patRec1);
+            assertEquals("PATIENT",patRec1.getType());
+            assertEquals(DirRecord.IN_USE,patRec1.getInUseFlag());
+            DirRecord studyRec1 = patRec1.getFirstChild(false);
+            assertNotNull(studyRec1);
+            assertEquals("STUDY",studyRec1.getType());
+            assertEquals(DirRecord.IN_USE,studyRec1.getInUseFlag());
+            DirRecord seriesRec2 = studyRec1.getFirstChild(false);
+            assertNotNull(seriesRec2);
+            assertEquals("SERIES",seriesRec2.getType());
+            assertEquals(DirRecord.IN_USE,seriesRec2.getInUseFlag());
+            checkSeries(seriesRec2.getDataset(), "CT", SERIES2_NO, SERIES2_UID);
+            DirRecord imageRec2 = seriesRec2.getFirstChild(false);
+            assertNotNull(imageRec2);
+            assertEquals("IMAGE",imageRec2.getType());
+            assertEquals(DirRecord.IN_USE,imageRec2.getInUseFlag());
+            assertEquals(IMG2_UID,imageRec2.getRefSOPInstanceUID());
+            assertNull(imageRec2.getNextSibling(false));
+            assertNull(seriesRec2.getNextSibling(false));
+            DirRecord patRec2 = patRec1.getNextSibling(false);
+            assertNotNull(patRec2);
+            assertEquals("PATIENT",patRec2.getType());
+            assertEquals(DirRecord.IN_USE,patRec2.getInUseFlag());
+            checkPatient(patRec2.getDataset(), PAT2_ID, PAT2_NAME);
+            assertNull(patRec2.getFirstChild(false));
+            assertNull(patRec2.getNextSibling(false));
+        } finally {
+            w4.close();
+        }
+    }
     
+    public void testReplace000() throws Exception {
+        doTestReplace(false, false, false);
+    }
+
+    public void testReplace001() throws Exception {
+        doTestReplace(false, false, true);
+    }
+
+    public void testReplace010() throws Exception {
+        doTestReplace(false, true, false);
+    }
+
+    public void testReplace011() throws Exception {
+        doTestReplace(false, true, true);
+    }
+
+    public void testReplace100() throws Exception {
+        doTestReplace(true, false, false);
+    }
+
+    public void testReplace101() throws Exception {
+        doTestReplace(true, false, true);
+    }
+
+    public void testReplace110() throws Exception {
+        doTestReplace(true, true, false);
+    }
+
+    public void testReplace111() throws Exception {
+        doTestReplace(true, true, true);
+    }
+
+    private void doTestReplace(boolean skipGroupLen, boolean undefSeqLen,
+            boolean undefItemLen) throws Exception {
+        DcmEncodeParam encParam = new DcmEncodeParam(ByteOrder.LITTLE_ENDIAN,
+                true, false, skipGroupLen, undefSeqLen, undefItemLen);
+        DirWriter w1 = wfact.newDirWriter(theFile, INST_UID,  FILE_SET_ID,
+                null, null, encParam);
+        try {
+            DirRecord patRec1 = w1.add(null, "PATIENT",
+                    newPatient(PAT1_ID, PAT1_NAME));
+            DirRecord studyRec1 = w1.add(patRec1, "STUDY",
+                    newStudy(STUDY1_ID, STUDY1_UID, new Date(), STUDY1_DESC,
+                            ACC_NO));
+            DirRecord seriesRec1 = w1.add(studyRec1, "SERIES",
+                    newSeries("CT", SERIES1_NO, SERIES1_UID));
+            DirRecord imgRec1 = w1.add(seriesRec1, "IMAGE",
+                    newImage(IMG1_NO),  w1.toFileIDs(IMG1_FILE), CT_UID,
+                    IMG1_UID, TS_UID);
+            DirRecord seriesRec2 = w1.add(studyRec1, "SERIES",
+                    newSeries("CT", SERIES2_NO, SERIES2_UID));
+            DirRecord imgRec2 = w1.add(seriesRec2, "IMAGE",
+                    newImage(IMG2_NO), w1.toFileIDs(IMG2_FILE), CT_UID,
+                    IMG2_UID,  TS_UID);
+            DirRecord patRec2 = w1.add(null, "PATIENT",
+                    newPatient(PAT2_ID, PAT2_NAME));
+        } finally {
+            w1.close();
+        }
+        DirWriter w2 = wfact.newDirWriter(theFile, encParam);
+        try {
+            DirRecord patRec1 = w2.getFirstRecord(false);
+            DirRecord studyRec1 = patRec1.getFirstChild(false);
+            DirRecord seriesRec1 = studyRec1.getFirstChild(false);
+            DirRecord seriesRec3 = w2.replace(seriesRec1, "SERIES",
+                    newSeries("MR", SERIES3_NO, SERIES3_UID));
+            DirRecord imageRec1 = seriesRec3.getFirstChild(false);
+            assertNotNull(imageRec1);
+            assertEquals("IMAGE",imageRec1.getType());
+            assertEquals(DirRecord.IN_USE,imageRec1.getInUseFlag());
+            assertEquals(IMG1_FILE,w2.getRefFile(imageRec1.getRefFileIDs()));
+            assertEquals(CT_UID,imageRec1.getRefSOPClassUID());
+            assertEquals(IMG1_UID,imageRec1.getRefSOPInstanceUID());
+            assertEquals(TS_UID,imageRec1.getRefSOPTransferSyntaxUID());
+            checkImage(imageRec1.getDataset(), IMG1_NO);
+            assertNull(imageRec1.getNextSibling(false));
+            DirRecord patRec2 = patRec1.getNextSibling(false);
+            assertNotNull(patRec2);
+            assertEquals("PATIENT",patRec2.getType());
+            assertEquals(DirRecord.IN_USE,patRec2.getInUseFlag());
+            checkPatient(patRec2.getDataset(), PAT2_ID, PAT2_NAME);
+            assertNull(patRec2.getFirstChild(false));
+            assertNull(patRec2.getNextSibling(false));
+       } finally {
+            w2.close();
+        }
+        DirWriter w4, w3 = wfact.newDirWriter(theFile, encParam);
+        try {
+            checkFilesetIDs(w3);
+            DirRecord patRec1 = w3.getFirstRecord(false);
+            assertNotNull(patRec1);
+            assertEquals("PATIENT",patRec1.getType());
+            assertEquals(DirRecord.IN_USE,patRec1.getInUseFlag());
+            DirRecord studyRec1 = patRec1.getFirstChild(false);
+            assertNotNull(studyRec1);
+            assertEquals("STUDY",studyRec1.getType());
+            assertEquals(DirRecord.IN_USE,studyRec1.getInUseFlag());
+            DirRecord seriesRec1 = studyRec1.getFirstChild(false);
+            assertNotNull(seriesRec1);
+            assertEquals("SERIES",seriesRec1.getType());
+            assertEquals(DirRecord.INACTIVE,seriesRec1.getInUseFlag());
+            DirRecord seriesRec2 = seriesRec1.getNextSibling(false);
+            assertNotNull(seriesRec2);
+            assertEquals("SERIES",seriesRec2.getType());
+            assertEquals(DirRecord.IN_USE,seriesRec2.getInUseFlag());
+            checkSeries(seriesRec2.getDataset(), "CT", SERIES2_NO, SERIES2_UID);
+            DirRecord seriesRec3 = seriesRec2.getNextSibling(false);
+            assertNotNull(seriesRec3);
+            assertEquals("SERIES",seriesRec3.getType());
+            assertEquals(DirRecord.IN_USE,seriesRec3.getInUseFlag());
+            checkSeries(seriesRec3.getDataset(), "MR", SERIES3_NO, SERIES3_UID);
+            assertNull(seriesRec3.getNextSibling(false));
+            DirRecord patRec2 = patRec1.getNextSibling(false);
+            assertNotNull(patRec2);
+            assertEquals("PATIENT",patRec2.getType());
+            assertEquals(DirRecord.IN_USE,patRec2.getInUseFlag());
+            checkPatient(patRec2.getDataset(), PAT2_ID, PAT2_NAME);
+            assertNull(patRec2.getFirstChild(false));
+            assertNull(patRec2.getNextSibling(false));
+            w4 = w3.compact();
+            w3 = null;
+        } finally {
+            if (w3 != null) {
+                try { w3.close(); } catch (IOException ignore) {}
+            }
+        }
+        try {
+            checkFilesetIDs(w4);
+            DirRecord patRec1 = w4.getFirstRecord(false);
+            assertNotNull(patRec1);
+            assertEquals("PATIENT",patRec1.getType());
+            assertEquals(DirRecord.IN_USE,patRec1.getInUseFlag());
+            DirRecord studyRec1 = patRec1.getFirstChild(false);
+            assertNotNull(studyRec1);
+            assertEquals("STUDY",studyRec1.getType());
+            assertEquals(DirRecord.IN_USE,studyRec1.getInUseFlag());
+            DirRecord seriesRec2 = studyRec1.getFirstChild(false);
+            assertNotNull(seriesRec2);
+            assertEquals("SERIES",seriesRec2.getType());
+            assertEquals(DirRecord.IN_USE,seriesRec2.getInUseFlag());
+            checkSeries(seriesRec2.getDataset(), "CT", SERIES2_NO, SERIES2_UID);
+            DirRecord imageRec2 = seriesRec2.getFirstChild(false);
+            assertNotNull(imageRec2);
+            assertEquals("IMAGE",imageRec2.getType());
+            assertEquals(DirRecord.IN_USE,imageRec2.getInUseFlag());
+            assertEquals(IMG2_UID,imageRec2.getRefSOPInstanceUID());
+            assertNull(imageRec2.getNextSibling(false));
+            DirRecord seriesRec3 = seriesRec2.getNextSibling(false);
+            assertNotNull(seriesRec3);
+            assertEquals("SERIES",seriesRec3.getType());
+            assertEquals(DirRecord.IN_USE,seriesRec3.getInUseFlag());
+            checkSeries(seriesRec3.getDataset(), "MR", SERIES3_NO, SERIES3_UID);
+            assertNull(seriesRec3.getNextSibling(false));
+            DirRecord imageRec1 = seriesRec3.getFirstChild(false);
+            assertNotNull(imageRec1);
+            assertEquals("IMAGE",imageRec1.getType());
+            assertEquals(DirRecord.IN_USE,imageRec1.getInUseFlag());
+            assertEquals(IMG1_UID,imageRec1.getRefSOPInstanceUID());
+            assertNull(imageRec1.getNextSibling(false));
+            DirRecord patRec2 = patRec1.getNextSibling(false);
+            assertNotNull(patRec2);
+            assertEquals("PATIENT",patRec2.getType());
+            assertEquals(DirRecord.IN_USE,patRec2.getInUseFlag());
+            checkPatient(patRec2.getDataset(), PAT2_ID, PAT2_NAME);
+            assertNull(patRec2.getFirstChild(false));
+            assertNull(patRec2.getNextSibling(false));
+        } finally {
+            w4.close();
+        }
+    }
 }//end class DirReaderTest

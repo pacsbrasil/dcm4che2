@@ -1,6 +1,7 @@
+/* $Id$ */
 /*****************************************************************************
  *                                                                           *
- *  Copyright (c) 2001 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *  Copyright (c) 2001,2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>*
  *                                                                           *
  *  This file is part of dcm4che.                                            *
  *                                                                           *
@@ -20,12 +21,9 @@
  *                                                                           *
  *****************************************************************************/
 
-/* $Id$ */
-
 package org.dcm4cheri.data;
 
 import org.dcm4che.data.DateTimeFormat;
-import org.dcm4che.data.DcmValueException;
 import java.util.Date;
 import java.util.Calendar;
 
@@ -80,7 +78,7 @@ public final class DateTimeFormatImpl
         return formatDateTime(from) + '-' + formatDateTime(to);
     }
     
-    public Date parseDate(String s) throws DcmValueException {
+    public Date parseDate(String s) {
         if (s == null || s.length() == 0)
             return null;
         
@@ -90,42 +88,34 @@ public final class DateTimeFormatImpl
         return c.getTime();
     }
 
-    private void parseDate(Calendar c, String s) throws DcmValueException {
+    private void parseDate(Calendar c, String s) {
         switch (s.length()) {
             case 8:
                 parseNewDate(c,s);
                 break;
             case 10:
                 if (s.charAt(4) != '.' || s.charAt(7) != '.')
-                    throw new DcmValueException(s);
+                    throw new IllegalArgumentException(s);
                 parseOldDate(c,s);
                 break;
             default:
-                throw new DcmValueException(s);
+                throw new IllegalArgumentException(s);
         }
     }
     
-    private void parseNewDate(Calendar c, String s) throws DcmValueException {
-        try {
-            c.set(Integer.parseInt(s.substring(0,4)),
-                  Integer.parseInt(s.substring(4,6))-1,
-                  Integer.parseInt(s.substring(6,8)));
-        } catch (NumberFormatException ex) {
-            throw new DcmValueException(s, ex);
-        }
+    private void parseNewDate(Calendar c, String s) {
+        c.set(Integer.parseInt(s.substring(0,4)),
+              Integer.parseInt(s.substring(4,6))-1,
+              Integer.parseInt(s.substring(6,8)));
     }
     
-    private void parseOldDate(Calendar c, String s) throws DcmValueException {
-        try {
-            c.set(Integer.parseInt(s.substring(0,4)),
-                  Integer.parseInt(s.substring(5,7))-1,
-                  Integer.parseInt(s.substring(8,10)));
-        } catch (NumberFormatException ex) {
-            throw new DcmValueException(s, ex);
-        }
+    private void parseOldDate(Calendar c, String s) {
+        c.set(Integer.parseInt(s.substring(0,4)),
+              Integer.parseInt(s.substring(5,7))-1,
+              Integer.parseInt(s.substring(8,10)));
     }
 
-    public Date parseTime(String s) throws DcmValueException {
+    public Date parseTime(String s) {
         if (s == null || s.length() == 0)
             return null;
         
@@ -135,7 +125,7 @@ public final class DateTimeFormatImpl
         return c.getTime();
     }
     
-    private void parseTime(Calendar c, String s) throws DcmValueException {
+    private void parseTime(Calendar c, String s) {
         switch (s.indexOf(':')) {
             case -1:
                 parseNewTime(c,s);
@@ -144,72 +134,59 @@ public final class DateTimeFormatImpl
                 parseOldTime(c,s);
                 break;
             default:
-                throw new DcmValueException(s);
+                throw new IllegalArgumentException(s);
         }
     }
 
-    private void parseNewTime(Calendar c, String s) throws DcmValueException {
+    private void parseNewTime(Calendar c, String s) {
         final int l = s.length();
-        try {
-            c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(s.substring(0,2)));
-        } catch (NumberFormatException ex) {
-            throw new DcmValueException(s, ex);
-        }
+        c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(s.substring(0,2)));
         if (l > 2) {
-            try {
-                c.set(Calendar.MINUTE, Integer.parseInt(s.substring(2,4)));
-            } catch (NumberFormatException ex) {
-                throw new DcmValueException(s, ex);
-            }
+            c.set(Calendar.MINUTE, Integer.parseInt(s.substring(2,4)));
             if (l > 4)
                 parseSec(c, s.substring(4));
         }
     }
 
-    private void parseOldTime(Calendar c, String s) throws DcmValueException {
+    private void parseOldTime(Calendar c, String s) {
         final int l = s.length();
-        try {
-            c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(s.substring(0,2)));
-        } catch (NumberFormatException ex) {
-            throw new DcmValueException(s, ex);
-        }
+        c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(s.substring(0,2)));
         if (l > 3) {
-            try {
-                c.set(Calendar.MINUTE, Integer.parseInt(s.substring(3,5)));
-            } catch (NumberFormatException ex) {
-                throw new DcmValueException(s, ex);
-            }
+            c.set(Calendar.MINUTE, Integer.parseInt(s.substring(3,5)));
             if (l > 5) {
                 if (s.charAt(5) != ':')
-                    throw new DcmValueException(s);
+                    throw new IllegalArgumentException(s);
                 if (l > 6)
                     parseSec(c, s.substring(6));
             }
         }
     }
 
-    private void parseSec(Calendar c, String s) throws DcmValueException {
+    private void parseSec(Calendar c, String s) {
         int l = s.length();
-        try {
-            c.set(Calendar.SECOND, Integer.parseInt(s.substring(0,2)));
-        } catch (NumberFormatException ex) {
-            throw new DcmValueException(s, ex);
-        }
+        c.set(Calendar.SECOND, Integer.parseInt(s.substring(0,2)));
         if (l > 2) {       
             if (s.charAt(2) != '.')
-                throw new DcmValueException(s);
+                throw new IllegalArgumentException(s);
             if (l > 3) {
-                try {
-                    float frac = Float.parseFloat(s.substring(2,l));
-                    c.set(Calendar.MILLISECOND, (int)(frac*1000));
-                } catch (NumberFormatException ex) {
-                    throw new DcmValueException(s, ex);
+                float frac = Float.parseFloat(s.substring(2,Math.min(l,9)));
+                c.set(Calendar.MILLISECOND, (int)(frac*1000));
+                if (l > 9) {
+                    switch (s.charAt(9)) {
+                        case '+':
+                        case '-':
+                            c.set(Calendar.ZONE_OFFSET,
+                                    Integer.parseInt(s.substring(9,l)));
+                            break;
+                        default:
+                            throw new IllegalArgumentException(s);
+                    }
                 }
             }
         }
     }
     
-    public Date parseDateTime(String s) throws DcmValueException {
+    public Date parseDateTime(String s) {
         if (s == null || s.length() == 0)
             return null;
         
@@ -221,8 +198,7 @@ public final class DateTimeFormatImpl
         return c.getTime();
     }
         
-    public Date parseDateTime(String date, String time)
-            throws DcmValueException {
+    public Date parseDateTime(String date, String time) {
         if (date == null || date.length() == 0)
             return null;
         
@@ -238,7 +214,7 @@ public final class DateTimeFormatImpl
         return s != null && s.indexOf('-') != -1;
     }
 
-    public Date[] parseDateRange(String date) throws DcmValueException {
+    public Date[] parseDateRange(String date) {
         if (date == null || date.length() == 0)
             return null;
         
@@ -253,7 +229,7 @@ public final class DateTimeFormatImpl
         return range;
     }
     
-    public Date[] parseTimeRange(String time) throws DcmValueException {
+    public Date[] parseTimeRange(String time) {
         if (time == null || time.length() == 0)
             return null;
         
@@ -268,7 +244,7 @@ public final class DateTimeFormatImpl
         return range;
     }
     
-    public Date[] parseDateTimeRange(String datetime) throws DcmValueException {
+    public Date[] parseDateTimeRange(String datetime) {
         if (datetime == null || datetime.length() == 0)
             return null;
         
@@ -285,8 +261,7 @@ public final class DateTimeFormatImpl
 
     private static final int MS_PER_DAY = 86400000;    
     
-    public Date[] parseDateTimeRange(String date, String time)
-            throws DcmValueException {
+    public Date[] parseDateTimeRange(String date, String time) {
         if (date == null || date.length() == 0)
             return null;
         

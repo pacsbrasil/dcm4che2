@@ -28,6 +28,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.Dataset;
 
 import org.dcm4che.dict.TagDictionary;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.DictionaryFactory;
 
 import javax.xml.parsers.SAXParser;
@@ -39,6 +40,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import java.io.*;
+import java.util.*;
 import junit.framework.*;
 
 /**
@@ -72,7 +74,7 @@ public class DatasetTest extends TestCase {
         dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
         ds = DcmObjectFactory.getInstance().newDataset();
     }
-    
+   
     public void testEVR_LE() throws Exception {
         DataInputStream in = new DataInputStream(
                 new BufferedInputStream(new FileInputStream(EVR_LE)));
@@ -134,4 +136,135 @@ public class DatasetTest extends TestCase {
         SAXParser p = f.newSAXParser();
         p.parse(new File(DICOMDIR_XML), ds.getSAXHandler());
     }
+
+    private static final String[] SCHEDULED_STATION_AET = { "AET1", "AET2" };
+    private static final String[] PATIENT_AGE = { "040Y" };
+    private static final String[] IMAGE_TYPE = { "ORIGINAL", "PRIMARY" };
+    private static final String[] STUDY_DATE = { "19700101" };
+    private static final String[] STUDY_TIME = { "010140" };
+    private static final String[] ACQUISITION_DATETIME = { "19700101010140" };
+    private static final String[] IMAGE_POSITION = { "1.23E+02", "-456", "78.9" };
+    private static final String[] ANCHOR_POINT = {
+                String.valueOf(123.4f), String.valueOf(-56.78f) };
+    private static final String[] TABLE_OF_Y_BREAK_POINTS = {
+                String.valueOf(1.2345), String.valueOf(-6.78901) };
+    private static final String[] REF_FRAME_NUMBER = { "3", "7", "13" };
+    private static final String[] OTHER_PATIENT_IDS = { "PAT_ID1", "PAT_ID2"};
+    private static final String[] ADDITIONAL_PATIENT_HISTORY = { 
+                "ADDITIONAL PATIENT HISTORY" };
+    private static final String[] OTHER_PATIENT_NAMES = {
+                "PAT1^NAME", "PAT2^NAME"};
+    private static final String[] ACCESSION_NUMBER = { "A-23456" };
+    private static final String[] DISPLAYED_AREA_BRHC = {
+                String.valueOf(123000), String.valueOf(-456000) };
+    private static final String[] OVERLAY_ORIGIN = {
+                String.valueOf(123), String.valueOf(-456) };
+    private static final String[] DERIVATION_DESCRIPTION = {
+                "Derivation Description" };
+    private static final String[] SOP_CLASSES_SUPPORTED = {
+                "1.2.840.10008.5.1.1.14", "1.2.840.10008.5.1.1.16" };
+    private static final String[] REF_SAMPLE_POSITIONS = {
+                String.valueOf(123000), String.valueOf(456000) };
+    private static final String[] TEXT_VALUE = { "Text Value" };
+         
+    private void setStrings() {
+        ds.setAE(Tags.ScheduledStationAET, SCHEDULED_STATION_AET);
+        ds.setAS(Tags.PatientAge, PATIENT_AGE);
+        ds.setCS(Tags.ImageType, IMAGE_TYPE);
+        ds.setDA(Tags.StudyDate, STUDY_DATE);
+        ds.setDS(Tags.ImagePosition, IMAGE_POSITION);
+        ds.setDT(Tags.AcquisitionDatetime, ACQUISITION_DATETIME);
+        ds.setFL(Tags.AnchorPoint, ANCHOR_POINT);
+        ds.setFD(Tags.TableOfYBreakPoints, TABLE_OF_Y_BREAK_POINTS);
+        ds.setIS(Tags.RefFrameNumber, REF_FRAME_NUMBER);
+        ds.setLO(Tags.OtherPatientIDs, OTHER_PATIENT_IDS);
+        ds.setLT(Tags.AdditionalPatientHistory, ADDITIONAL_PATIENT_HISTORY);
+        ds.setPN(Tags.OtherPatientNames, OTHER_PATIENT_NAMES);
+        ds.setSH(Tags.AccessionNumber, ACCESSION_NUMBER);
+        ds.setSL(Tags.DisplayedAreaBottomRightHandCorner, DISPLAYED_AREA_BRHC);
+        ds.setSS(Tags.OverlayOrigin, OVERLAY_ORIGIN);
+        ds.setST(Tags.DerivationDescription, DERIVATION_DESCRIPTION);
+        ds.setTM(Tags.StudyTime, STUDY_TIME);
+        ds.setUI(Tags.SOPClassesSupported, SOP_CLASSES_SUPPORTED);
+        ds.setUL(Tags.RefSamplePositions, REF_SAMPLE_POSITIONS);
+        ds.setUS(Tags.RefFrameNumbers, REF_FRAME_NUMBER);
+        ds.setUT(Tags.TextValue, TEXT_VALUE);
+    }
+    
+    public void testGetString() throws Exception {
+        setStrings();
+        assertEquals(SCHEDULED_STATION_AET[0],
+                ds.getString(Tags.ScheduledStationAET));
+        assertEquals(PATIENT_AGE[0], ds.getString(Tags.PatientAge));
+        assertEquals(IMAGE_TYPE[0], ds.getString(Tags.ImageType));
+        assertEquals(STUDY_DATE[0], ds.getString(Tags.StudyDate));
+        assertEquals(STUDY_TIME[0], ds.getString(Tags.StudyTime).substring(0,6));
+        assertEquals(ACQUISITION_DATETIME[0],
+                ds.getString(Tags.AcquisitionDatetime));
+        assertEquals(IMAGE_POSITION[0], ds.getString(Tags.ImagePosition));
+        assertEquals(ANCHOR_POINT[0], ds.getString(Tags.AnchorPoint));
+        assertEquals(TABLE_OF_Y_BREAK_POINTS[0],
+                ds.getString(Tags.TableOfYBreakPoints));
+        assertEquals(REF_FRAME_NUMBER[0], ds.getString(Tags.RefFrameNumber));
+        assertEquals(OTHER_PATIENT_IDS[0], ds.getString(Tags.OtherPatientIDs));
+        assertEquals(ADDITIONAL_PATIENT_HISTORY[0],
+                ds.getString(Tags.AdditionalPatientHistory));
+        assertEquals(OTHER_PATIENT_NAMES[0],
+                ds.getString(Tags.OtherPatientNames));
+        assertEquals(ACCESSION_NUMBER[0], ds.getString(Tags.AccessionNumber));
+        assertEquals(DISPLAYED_AREA_BRHC[0],
+                ds.getString(Tags.DisplayedAreaBottomRightHandCorner));
+        assertEquals(OVERLAY_ORIGIN[0], ds.getString(Tags.OverlayOrigin));
+        assertEquals(DERIVATION_DESCRIPTION[0],
+                ds.getString(Tags.DerivationDescription));
+        assertEquals(SOP_CLASSES_SUPPORTED[0],
+                ds.getString(Tags.SOPClassesSupported));
+        assertEquals(REF_SAMPLE_POSITIONS[0],
+                ds.getString(Tags.RefSamplePositions));
+        assertEquals(REF_FRAME_NUMBER[0], ds.getString(Tags.RefFrameNumbers));
+        assertEquals(TEXT_VALUE[0], ds.getString(Tags.TextValue));
+    }
+    
+    public void testGetStrings() throws Exception {
+        setStrings();
+        assertEquals(SCHEDULED_STATION_AET,
+                ds.getStrings(Tags.ScheduledStationAET));
+        assertEquals(PATIENT_AGE, ds.getStrings(Tags.PatientAge));
+        assertEquals(IMAGE_TYPE, ds.getStrings(Tags.ImageType));
+        assertEquals(STUDY_DATE, ds.getStrings(Tags.StudyDate));
+        assertEquals(STUDY_TIME.length, ds.getStrings(Tags.StudyTime).length);
+        assertEquals(ACQUISITION_DATETIME,
+                ds.getStrings(Tags.AcquisitionDatetime));
+        assertEquals(IMAGE_POSITION, ds.getStrings(Tags.ImagePosition));
+        assertEquals(ANCHOR_POINT, ds.getStrings(Tags.AnchorPoint));
+        assertEquals(TABLE_OF_Y_BREAK_POINTS,
+                ds.getStrings(Tags.TableOfYBreakPoints));
+        assertEquals(REF_FRAME_NUMBER, ds.getStrings(Tags.RefFrameNumber));
+        assertEquals(OTHER_PATIENT_IDS, ds.getStrings(Tags.OtherPatientIDs));
+        assertEquals(ADDITIONAL_PATIENT_HISTORY,
+                ds.getStrings(Tags.AdditionalPatientHistory));
+        assertEquals(OTHER_PATIENT_NAMES,
+                ds.getStrings(Tags.OtherPatientNames));
+        assertEquals(ACCESSION_NUMBER, ds.getStrings(Tags.AccessionNumber));
+        assertEquals(DISPLAYED_AREA_BRHC,
+                ds.getStrings(Tags.DisplayedAreaBottomRightHandCorner));
+        assertEquals(OVERLAY_ORIGIN, ds.getStrings(Tags.OverlayOrigin));
+        assertEquals(DERIVATION_DESCRIPTION,
+                ds.getStrings(Tags.DerivationDescription));
+        assertEquals(SOP_CLASSES_SUPPORTED,
+                ds.getStrings(Tags.SOPClassesSupported));
+        assertEquals(REF_SAMPLE_POSITIONS,
+                ds.getStrings(Tags.RefSamplePositions));
+        assertEquals(REF_FRAME_NUMBER, ds.getStrings(Tags.RefFrameNumbers));
+        assertEquals(TEXT_VALUE, ds.getStrings(Tags.TextValue));
+    }
+    
+    private void assertEquals(String[] expected, String[] value) {
+        assertNotNull(value);
+        assertEquals(expected.length, value.length);
+        for (int i = 0; i < expected.length; ++i) {
+            assertEquals(expected[i], value[i]);
+        }
+    }
+
 }

@@ -38,10 +38,21 @@ public class FileFormat {
     
     private FileFormat(boolean hasPreamble, boolean hasFileMetaInfo,
             DcmDecodeParam decodeParam) {
-
+        if (hasPreamble && !hasFileMetaInfo) {
+            throw new IllegalArgumentException("Preamble without FMI");
+        }
         this.hasPreamble = hasPreamble;
         this.hasFileMetaInfo = hasFileMetaInfo;
         this.decodeParam = decodeParam;
+    }
+    
+    public String toString() {
+        return "FileFormat["
+            + (hasFileMetaInfo ? 
+                        (hasPreamble ? "Part 10,"
+                                     : "FMI without preamble,")
+                               : "Stream, ")
+            + decodeParam.toString() + "]";
     }
     
     public static final FileFormat DICOM_FILE =

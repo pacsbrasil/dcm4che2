@@ -28,6 +28,7 @@ import org.dcm4che.data.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 
 import org.dcm4cheri.util.StringUtils;
 
@@ -62,6 +63,19 @@ abstract class ValueElement extends DcmElementImpl {
         return data.limit() == 0 ? 0 : 1;
     }
         
+    public String getString(int index, Charset cs) throws DcmValueException {
+        if (index >= vm())
+            return index == 0 ? "" : null;
+        return String.valueOf(getInt(index));
+    }
+
+    public String[] getStrings(Charset cs) throws DcmValueException {
+        String[] a = new String[vm()];
+        for (int i = 0; i < a.length; ++i)
+            a[i] = String.valueOf(getInt(i));
+        return a;
+    }
+
     protected void swapOrder() {
         data.order(swap(data.order()));
     }
@@ -247,7 +261,21 @@ abstract class ValueElement extends DcmElementImpl {
         public final int vr() {
             return 0x554C;
         }
+
+        public String getString(int index, Charset cs) {
+            if (index >= vm())
+                return index == 0 ? "" : null;
+            return String.valueOf(getInt(index) & 0xFFFFFFFFL);
+        }
+
+        public String[] getStrings(Charset cs) throws DcmValueException {
+            String[] a = new String[vm()];
+            for (int i = 0; i < a.length; ++i)
+                a[i] = String.valueOf(getInt(i) & 0xFFFFFFFFL);
+            return a;
+        }
     }
+    
     static DcmElement createUL(int tag, ByteBuffer data) {
         if ((data.limit() & 3) != 0) {
             log.warning("Ignore illegal value of " + StringUtils.promptTag(tag)
@@ -377,6 +405,20 @@ abstract class ValueElement extends DcmElementImpl {
                 a[i] = getFloat(i);
             return a;
         }
+
+        public String getString(int index, Charset cs) {
+            if (index >= vm())
+                return index == 0 ? "" : null;
+            return String.valueOf(getFloat(index));
+        }
+
+        public String[] getStrings(Charset cs) throws DcmValueException {
+            String[] a = new String[vm()];
+            for (int i = 0; i < a.length; ++i)
+                a[i] = String.valueOf(getFloat(i));
+            return a;
+        }
+
         protected void swapOrder() {
             swapInts(data);
         }
@@ -445,6 +487,19 @@ abstract class ValueElement extends DcmElementImpl {
             return a;
         }
         
+        public String getString(int index, Charset cs) {
+            if (index >= vm())
+                return index == 0 ? "" : null;
+            return String.valueOf(getDouble(index));
+        }
+
+        public String[] getStrings(Charset cs) throws DcmValueException {
+            String[] a = new String[vm()];
+            for (int i = 0; i < a.length; ++i)
+                a[i] = String.valueOf(getDouble(i));
+            return a;
+        }
+
         protected void swapOrder() {
             swapLongs(data);
         }

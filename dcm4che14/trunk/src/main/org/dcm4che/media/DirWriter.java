@@ -35,21 +35,32 @@ import java.io.File;
  */
 public interface DirWriter extends DirReader {
     
-    public boolean isAutoCommit();
+    public DirRecord add(DirRecord parent, String type, Dataset ds,
+            String[] fileIDs, String classUID, String instUID, String tsUID)
+            throws IOException;
     
-    public void setAutoCommit(boolean autoCommit) throws IOException;
+    public DirRecord add(DirRecord parent, String type, Dataset ds)
+            throws IOException;
+    
+    public int remove(DirRecord rec) throws IOException;
+
+    public DirRecord replace(DirRecord old, String type, Dataset ds,
+            String[] fileIDs, String classUID, String instUID, String tsUID)
+            throws IOException;
+    
+    public DirRecord replace(DirRecord old, String type, Dataset ds)
+            throws IOException;    
+
+    public DirWriter compact() throws IOException;
     
     public void commit() throws IOException;
     
     public void rollback() throws IOException;
-    
-    public DirRecord addRecord(DirRecord parent, String type, Dataset ds,
-            String[] fileIDs, String classUID, String instUID, String tsUID)
-            throws IOException;
-    
-    public DirRecord addRecord(DirRecord parent, String type, Dataset ds)
-            throws IOException;
-    
+
     public String[] toFileIDs(File file) throws IOException;
+
+    public boolean isAutoCommit();
+    
+    public void setAutoCommit(boolean autoCommit) throws IOException;        
 }
 
