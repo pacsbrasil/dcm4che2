@@ -516,10 +516,11 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
      */
     private void process(MediaDTO mediaDTO) throws RemoteException, FinderException, HomeFactoryException, CreateException {
     	this.lookupMediaComposer().setMediaCreationRequestIuid( mediaDTO.getPk(), null );
-    	this.lookupMediaComposer().setMediaStatus( mediaDTO.getPk(), MediaDTO.PROCESSING, "" );
+    	this.lookupMediaComposer().setMediaStatus( mediaDTO.getPk(), MediaDTO.TRANSFERING, "" );
         if ( processMove( mediaDTO ) ) {
         	log.info("Move instances of "+mediaDTO.getFilesetId()+" done!");
-        	if ( processMediaCreation( mediaDTO ) ) {
+        	this.lookupMediaComposer().setMediaStatus( mediaDTO.getPk(), MediaDTO.BURNING, "" );
+                	if ( processMediaCreation( mediaDTO ) ) {
             	log.info("Sending media creation request of "+mediaDTO.getFilesetId()+" done!");
             	return;
         	}
@@ -841,12 +842,16 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
     	ActiveAssociation assoc = null;
     	try {
 	//get all media of status PROCESSING.
-			List procList = this.lookupMediaComposer().getWithStatus( MediaDTO.PROCESSING );
+			List procList = this.lookupMediaComposer().getWithStatus( MediaDTO.BURNING );
             if (procList.isEmpty())
                 return "No Media in processing status.";
 			
 //          get association for media creation request and action.          
             AEData aeData = new AECmd( this.getMcmScpAET() ).execute();
+            if ( aeData == null ) {
+                log.error("Cant get media creation status! Reason: Unknown AET:"+getMcmScpAET());
+                return "Error: Unknown AET:"+getMcmScpAET();
+            }
             assoc = openAssoc( aeData.getHostName(), aeData.getPort(), getMediaCreationAssocReq() );
             if ( assoc == null ) {
                 log.error("Cant get media creation status! Reason: couldnt open association!" );
