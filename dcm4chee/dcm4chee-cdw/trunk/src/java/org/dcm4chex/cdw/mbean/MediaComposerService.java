@@ -37,13 +37,19 @@ import org.jboss.system.server.ServerConfigLocator;
 public class MediaComposerService extends ServiceMBeanSupport {
 
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
+    
+    private final File confdir;
 
-    private String fileSetDescriptorFile = "README.TXT";
+    private final File dispappDir;
+
+    private final File aprofileDir;
+    
+    private String fileSetDescriptorFilename = "README.TXT";
 
     private String charsetOfFileSetDescriptorFile = "ISO_IR 100";
 
-    private String displayApplicationDir = "VIEWER";
-
+    private ApplicationProfiles applicationProfiles = null;
+    
     private boolean keepSpoolFiles = false;
     
     private boolean makeIsoImage = true;
@@ -62,6 +68,12 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     };
 
+    public MediaComposerService() {
+        confdir = new File(ServerConfigLocator.locate().getServerHomeDir(), "conf");
+        dispappDir = new File(confdir, "dispapp");
+        aprofileDir = new File(confdir, "aprofile");
+    }
+    
     public final boolean isKeepSpoolFiles() {
         return keepSpoolFiles;
     }
@@ -79,34 +91,12 @@ public class MediaComposerService extends ServiceMBeanSupport {
         this.charsetOfFileSetDescriptorFile = charsetOfFileSetDescriptorFile;
     }
 
-    public final String getFileSetDescriptorFile() {
-        return fileSetDescriptorFile;
+    public final String getFileSetDescriptorFilename() {
+        return fileSetDescriptorFilename;
     }
 
-    File getFileSetDescriptorSrcFile() {
-        return toSrc(fileSetDescriptorFile);
-    }
-
-    public final void setFileSetDescriptorFile(String fileSetDescriptorFile) {
-        this.fileSetDescriptorFile = fileSetDescriptorFile;
-    }
-
-    public final String getDisplayApplicationDir() {
-        return displayApplicationDir;
-    }
-
-    File getDisplayApplicationSrcDir() {
-        return toSrc(displayApplicationDir);
-    }
-
-    private File toSrc(String fname) {
-        File homedir = ServerConfigLocator.locate().getServerHomeDir();
-        return new File(homedir, "conf" + File.separatorChar + "content"
-                + File.separatorChar + fname);
-    }
-
-    public final void setDisplayApplicationDir(String displayApplicationDir) {
-        this.displayApplicationDir = displayApplicationDir;
+    public final void setFileSetDescriptorFilename(String fname) {
+        this.fileSetDescriptorFilename = fname;
     }
 
     public final boolean isMakeIsoImage() {
@@ -199,5 +189,19 @@ public class MediaComposerService extends ServiceMBeanSupport {
                 rq.cleanFiles(log);
             }
         }
+    }
+    
+    public final String getApplicationProfiles() {
+        return applicationProfiles != null 
+        	? applicationProfiles.toString()
+        	: null;
+    }
+
+    final File getFileSetDescriptorFile() {
+        return new File(confdir, fileSetDescriptorFilename);
+    }
+
+    final File getDisplayApplicationDir() {
+        return dispappDir;
     }
 }

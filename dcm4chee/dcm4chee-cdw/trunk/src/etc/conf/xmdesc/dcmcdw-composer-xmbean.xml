@@ -50,11 +50,11 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFileSetDescriptorFile"
-      setMethod="setFileSetDescriptorFile">
+      getMethod="getFileSetDescriptorFilename"
+      setMethod="setFileSetDescriptorFilename">
       <description>Description not yet written.
       </description>
-      <name>FileSetDescriptorFile</name>
+      <name>FileSetDescriptorFilename</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="README.TXT" />
@@ -69,17 +69,6 @@
       <type>java.lang.String</type>      
       <descriptors>
          <value value="ISO_IR 100" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getDisplayApplicationDir"
-      setMethod="setDisplayApplicationDir">
-      <description>Description not yet written.
-      </description>
-      <name>DisplayApplicationDir</name>
-      <type>java.lang.String</type>      
-      <descriptors>
-         <value value="VIEWER" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

@@ -141,7 +141,7 @@ class FilesetBuilder {
             File rootDir = mkRootDir(spoolDir);
             rq.setFilesetDir(rootDir);
             File readmeFile = new File(rootDir, service
-                    .getFileSetDescriptorFile());
+                    .getFileSetDescriptorFilename());
             File ddFile = new File(rootDir, "DICOMDIR");
             HashMap patRecs = new HashMap();
             HashMap styRecs = new HashMap();
@@ -159,11 +159,14 @@ class FilesetBuilder {
             } finally {
                 dirWriter.close();
             }
-            makeSymLink(service.getFileSetDescriptorSrcFile(), readmeFile);
-            if (includeDisplayApplication)
-                    makeSymLink(service.getDisplayApplicationSrcDir(),
-                            new File(rootDir, service
-                                    .getDisplayApplicationDir()));
+            makeSymLink(service.getFileSetDescriptorFile(), readmeFile);
+            if (includeDisplayApplication) {
+                File[] files = service.getDisplayApplicationDir().listFiles();
+                if (files != null)
+                    for (int i = 0; i < files.length; ++i)
+                        makeSymLink(files[i],
+                                new File(rootDir, files[i].getName()));
+            }
         } catch (IOException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
