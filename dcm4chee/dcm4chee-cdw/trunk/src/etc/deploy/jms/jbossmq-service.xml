@@ -29,7 +29,7 @@
         <role name="guest" read="true" write="true" create="true"/>
       </security>
     </attribute>
-    <attribute name="SecurityDomain">jbossmq</attribute>
+    <attribute name="SecurityDomain">java:/jaas/jbossmq</attribute>
     <depends optional-attribute-name="NextInterceptor">jboss.mq:service=DestinationManager</depends>
   </mbean>
   -->
