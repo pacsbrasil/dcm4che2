@@ -386,14 +386,52 @@ public class ScannerCalibration
     public float[] interpolate(float[] invPx)
         throws CalibrationException, IOException
     {
-        if (invRefPx == null) {
-            invRefPx = analyse(getRefDSI256File());
-            Arrays.sort(invRefPx);
+        final class ReferenceSample {
+            float pxVal;
+            float refOd;
+            ReferenceSample(float pixelVal, float referenceOd)
+            {
+                pxVal = pixelVal; refOd = referenceOd;
+            }
         }
-        if (refODs == null) {
+        
+        /*if (refODs == null) {
             refODs = readODs(getRefODsFile());
             Arrays.sort(refODs);
+        }*/
+        
+        if (refODs == null || invRefPx == null) {
+            refODs = readODs(getRefODsFile());
+            invRefPx = analyse(getRefDSI256File());
+            
+            if (invRefPx.length != refODs.length)
+                throw new CalibrationException("Number of reference ODs (" + refODs.length
+                                               + ") does not match samples from reference image ("
+                                               + invRefPx.length + ")");
+            
+            ReferenceSample[] invRefPxTagged = new ReferenceSample[invRefPx.length];
+            for (int i = 0; i < invRefPx.length; i++)
+                invRefPxTagged[i] = new ReferenceSample(invRefPx[i], refODs[i]);
+            //sort based on reference pixel value
+            Arrays.sort(invRefPxTagged, new Comparator()
+                {
+                    public int compare(Object a, Object b)
+                    {
+                        final float p1 = ((ReferenceSample)a).pxVal;
+                        final float p2 = ((ReferenceSample)b).pxVal;
+                        return (int)( (p1 == p2) ? 0 : ((p1 - p2) > 0 ? 1 : -1) );
+                    }
+                });
+            //put sorted reference pixel values and corresponding (unsorted)
+            // ODs into their original arrays
+            for (int i = 0; i < invRefPx.length; i++) {
+                invRefPx[i] = invRefPxTagged[i].pxVal;
+                refODs[i] = invRefPxTagged[i].refOd;
+            }
+            //clean up
+            invRefPxTagged = null;
         }
+        
         log.debug("interpolating ODs");
         float[] result = new float[invPx.length];
         for (int i = 0; i < invPx.length; ++i) {
