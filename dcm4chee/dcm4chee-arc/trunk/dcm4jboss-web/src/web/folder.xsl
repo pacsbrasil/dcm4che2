@@ -353,7 +353,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
       </td>
 			<td align="right" bgcolor="ccccff">
 				<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
-					<img src="images/add.gif" alt="Add Study" border="0" title="Add a new Study"/>		
+					<img src="images/add.gif" alt="Add Study" border="0" title="Add new Study"/>		
 				</a>
 			</td>
 			<td align="right" bgcolor="cccccc">
@@ -430,6 +430,11 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
       <td title="Number of Instances">
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
+			<td align="right" bgcolor="ccffcc">
+			<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
+				<img src="images/add.gif" alt="Add Series" border="0" title="Add new series"/>		
+			</a>
+			</td>
 			<td align="right" bgcolor="ccccff">
 				<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
 					<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
@@ -500,7 +505,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td align="right" bgcolor="ccffcc">
 				<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
-					<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Series Attributes"/>		
+					<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		
 				</a>
 			</td>
 			<td align="right" bgcolor="ccffcc">
