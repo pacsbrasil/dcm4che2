@@ -74,7 +74,7 @@
       </descriptors>
    </attribute>
    <attribute access="read-only"
-      getMethod="getNumIdleThread">
+      getMethod="getNumIdleThreads">
       <description>Current number of idle threads.
       </description>
       <name>NumIdleThread</name>
