@@ -23,6 +23,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
@@ -151,38 +152,24 @@ public abstract class ContentEditBean implements SessionBean
 			PatientLocal patientLocal =
 				patHome.findByPrimaryKey(new Integer(to_update.getPk()));
 
-			if (to_update.getPatientName() == null
-				&& patientLocal.getPatientName() != null)
-				patientLocal.setPatientName(null);
-			else if (
-				!to_update.getPatientName().equals(
-					patientLocal.getPatientName()))
-				patientLocal.setPatientName(to_update.getPatientName());
+			if (!equals(to_update.getPatientName(),patientLocal.getPatientName()))
+					patientLocal.setPatientName(to_update.getPatientName());
 
-			if (to_update.getPatientSex() == null
-				&& patientLocal.getPatientSex() != null)
-				patientLocal.setPatientSex(null);
-			else if (
-				!to_update.getPatientSex().equals(
-					patientLocal.getPatientSex()))
-				patientLocal.setPatientSex(to_update.getPatientName());
+			if (!equals(to_update.getPatientSex(),patientLocal.getPatientSex()))
+					patientLocal.setPatientSex(to_update.getPatientSex());
 
-			if (to_update.getPatientBirthDate() == null
-				&& patientLocal.getPatientBirthDate() != null)
-				patientLocal.setPatientBirthDate(null);
-			else if (
-				!to_update.getPatientBirthDate().equals(
-					patientLocal.getPatientBirthDate()))
+			Date date_to_update =null; 
+			if (to_update.getPatientBirthDate() != null)
 			{
 				try
 				{
-					patientLocal.setPatientBirthDate(
-						new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
-							to_update.getPatientBirthDate()));
+					date_to_update =
+							new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
+									to_update.getPatientBirthDate());
+					if (!equals(date_to_update,patientLocal.getPatientBirthDate()))
+							patientLocal.setPatientBirthDate(date_to_update);
 				}
-				catch (ParseException e)
-				{
-				}
+				catch (ParseException e) { }//do nothing
 			}
 
 			//dataset retrieve &update
@@ -204,5 +191,10 @@ public abstract class ContentEditBean implements SessionBean
 		{
 			throw new EJBException(e);
 		}
+	}
+	
+	private boolean equals(Object a, Object b)
+	{
+		return a == null ? b == null : a.equals(b); 
 	}
 }
