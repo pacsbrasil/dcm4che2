@@ -217,7 +217,7 @@ class SqlBuilder {
                 case JdbcProperties.ORACLE :
                     sb.append(" ) WHERE ROWNUM <= ");
                     sb.append(offset + limit);
-                    sb.append(" ) WHERE ROWNUM r1 > ");
+                    sb.append(" ) WHERE r1 > ");
                     sb.append(offset);
                     break;
             }
