@@ -10,6 +10,7 @@ org.dcm4cheri.data
 + Fix value of Command#C_CANCEL_RQ
 org.dcm4cheri.srom
 + Fix KeyObjectImpl#sopInstanceRefListToSQ (ClassCastException srom->Dataset)
++ Fix RefSOPImpl#toDataset (SOPInstanceUID <-> SOPClassUID)
 samples:
 + Fix build.xml to include missing .class into imgread.jar & imgdisp.jar
 + DcmRcv: Fix write to file - wasn't MT safe
