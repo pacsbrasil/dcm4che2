@@ -6,6 +6,7 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:internal="urn:my-internal-data">
 
+	<xsl:output method="html"/>
    <xsl:variable name="page_title">AE List</xsl:variable>
    <xsl:include href  = "page.xsl" />
 
