@@ -175,10 +175,5 @@
       <name>getDcmHandler</name>
       <return-type>org.dcm4che.server.DcmHandler</return-type>
    </operation>
-   <operation impact="INFO">
-      <description>Get Codec Semaphore</description>
-      <name>getCodecSemaphore</name>
-      <return-type>EDU.oswego.cs.dl.util.concurrent.Semaphore</return-type>
-   </operation>
 </mbean>
     

@@ -25,6 +25,7 @@ import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DataSource;
+import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.util.FileUtils;
 
@@ -70,7 +71,7 @@ class FileDataSource implements DataSource {
             }
             int len = parser.getReadLength();
             if (len == -1 && !enc.encapsulated) {
-                DecompressCmd cmd = new DecompressCmd(service, ds, parser);
+                DecompressCmd cmd = new DecompressCmd(ds, parser);
                 len = cmd.getPixelDataLength();
                 service.logDataset("Dataset:\n", ds);
                 ds.writeDataset(out, enc);

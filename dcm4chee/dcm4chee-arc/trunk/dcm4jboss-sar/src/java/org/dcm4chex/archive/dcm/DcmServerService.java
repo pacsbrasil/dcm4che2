@@ -17,11 +17,9 @@ import org.dcm4che.server.DcmHandler;
 import org.dcm4che.server.Server;
 import org.dcm4che.server.ServerFactory;
 import org.dcm4che.util.DcmProtocol;
+import org.dcm4chex.archive.codec.CodecCmd;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.jboss.system.ServiceMBeanSupport;
-
-import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
-import EDU.oswego.cs.dl.util.concurrent.Semaphore;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -49,10 +47,6 @@ public class DcmServerService extends ServiceMBeanSupport {
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
-    private int maxConcurrentCodec = 1;
-    
-    private Semaphore codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
-    
     public ObjectName getAuditLoggerName() {
         return auditLogName;
     }
@@ -170,16 +164,11 @@ public class DcmServerService extends ServiceMBeanSupport {
     }
 
     public final int getMaxConcurrentCodec() {
-        return maxConcurrentCodec;
+        return CodecCmd.getMaxConcurrentCodec();
     }
     
     public final void setMaxConcurrentCodec(int maxConcurrentCodec) {
-        codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
-        this.maxConcurrentCodec = maxConcurrentCodec;
-    }
-    
-    public Semaphore getCodecSemaphore() {
-        return codecSemaphore;
+        CodecCmd.setMaxConcurrentCodec(maxConcurrentCodec);
     }
     
     protected void startService() throws Exception {

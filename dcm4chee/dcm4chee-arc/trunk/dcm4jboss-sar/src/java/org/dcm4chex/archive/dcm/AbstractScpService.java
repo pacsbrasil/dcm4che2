@@ -200,11 +200,5 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         } catch (Exception e) {
             log.warn("Failed to dump dataset", e);
         }
-    }
-
-    public Semaphore getCodecSemaphore() throws Exception {
-        return (Semaphore) server.invoke(dcmServerName,
-                "getCodecSemaphore", null, null);
-    }
-    
+    }    
 }

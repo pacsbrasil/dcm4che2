@@ -6,7 +6,7 @@
  *  See terms of license at gnu.org.      *
  *                                        *
  ******************************************/
-package org.dcm4chex.archive.dcm.storescp;
+package org.dcm4chex.archive.codec;
 
 import java.awt.color.ColorSpace;
 import java.awt.image.BandedSampleModel;
@@ -21,28 +21,36 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
-import java.util.Iterator;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
 
 import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.FileFormat;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
-import org.jboss.logging.Logger;
-
-import EDU.oswego.cs.dl.util.concurrent.Semaphore;
+import org.dcm4che.dict.VRs;
 
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 
@@ -52,21 +60,7 @@ import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
  * @since 11.06.2004
  *
  */
-abstract class CompressCmd {
-
-    private static final String YBR_RCT = "YBR_RCT";
-
-    private static final String JPEG = "jpeg";
-
-    private static final String JPEG2000 = "jpeg2000";
-
-    private static final String JPEG_LOSSLESS = "JPEG-LOSSLESS";
-
-    private static final String JPEG_LS = "JPEG-LS";
-
-    private static final String CLIB_JPEG_IMAGE_WRITER = "com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter";
-
-    private static final String J2K_IMAGE_WRITER_CODEC_LIB = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageWriterCodecLib";
+public abstract class CompressCmd extends CodecCmd {
 
     private static final byte[] ITEM_TAG = { (byte) 0xfe, (byte) 0xff,
             (byte) 0x00, (byte) 0xe0};
@@ -75,22 +69,11 @@ abstract class CompressCmd {
 
     private static final int[] RGB_BAND_OFFSETS = { 0, 1, 2};
 
-    private static ImageWriter getWriter(String formatName, String className) {
-        for (Iterator it = ImageIO.getImageWritersByFormatName(formatName); it
-                .hasNext();) {
-            ImageWriter r = (ImageWriter) it.next();
-            if (className == null || className.equals(r.getClass().getName()))
-                    return r;
-        }
-
-        throw new ConfigurationException("No Image Writer for format:"
-                + formatName);
-    }
 
     private static class Jpeg2000 extends CompressCmd {
 
-        public Jpeg2000(StoreScpService service, Dataset ds) {
-            super(service, ds, true);
+        public Jpeg2000(Dataset ds) {
+            super(ds, true);
         }
 
         public void coerceDataset(Dataset ds) {
@@ -101,7 +84,7 @@ abstract class CompressCmd {
         }
 
         protected ImageWriter getWriter() {
-            return CompressCmd.getWriter(JPEG2000, J2K_IMAGE_WRITER_CODEC_LIB);
+            return CodecCmd.getImageWriter(JPEG2000, J2K_IMAGE_WRITER_CODEC_LIB);
         }
 
         protected void initWriteParam(ImageWriteParam param) {
@@ -112,8 +95,8 @@ abstract class CompressCmd {
 
     private static class JpegLossless extends CompressCmd {
 
-        public JpegLossless(StoreScpService service, Dataset ds) {
-            super(service, ds, false);
+        public JpegLossless(Dataset ds) {
+            super(ds, false);
         }
 
         public void coerceDataset(Dataset ds) {
@@ -123,7 +106,7 @@ abstract class CompressCmd {
         }
 
         protected ImageWriter getWriter() {
-            return CompressCmd.getWriter(JPEG, CLIB_JPEG_IMAGE_WRITER);
+            return CompressCmd.getImageWriter(JPEG, CLIB_JPEG_IMAGE_WRITER);
         }
 
         protected void initWriteParam(ImageWriteParam param) {
@@ -133,8 +116,8 @@ abstract class CompressCmd {
 
     private static class JpegLS extends CompressCmd {
 
-        public JpegLS(StoreScpService service, Dataset ds) {
-            super(service, ds, false);
+        public JpegLS(Dataset ds) {
+            super(ds, false);
         }
 
         public void coerceDataset(Dataset ds) {
@@ -145,83 +128,84 @@ abstract class CompressCmd {
         }
 
         protected ImageWriter getWriter() {
-            return CompressCmd.getWriter(JPEG, CLIB_JPEG_IMAGE_WRITER);
+            return CompressCmd.getImageWriter(JPEG, CLIB_JPEG_IMAGE_WRITER);
         }
 
         protected void initWriteParam(ImageWriteParam param) {
             param.setCompressionType(JPEG_LS);
         }
     };
+    
+    public static byte[] compressFile(File inFile, File outFile, String tsuid)
+    		throws Exception {
+    	InputStream in = new BufferedInputStream(new FileInputStream(inFile));
+    	try {
+    		DcmParser p = DcmParserFactory.getInstance().newDcmParser(in);
+    		final DcmObjectFactory of = DcmObjectFactory.getInstance();
+			Dataset ds = of.newDataset();
+    		p.setDcmHandler(ds.getDcmHandler());
+    		p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+    		FileMetaInfo fmi = of.newFileMetaInfo(ds, tsuid);
+    		ds.setFileMetaInfo(fmi);
+            log.info("M-WRITE file:" + outFile);
+            BufferedOutputStream os = new BufferedOutputStream(
+                    new FileOutputStream(outFile));
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            DigestOutputStream dos = new DigestOutputStream(os, md);
+            try {
+                DcmDecodeParam decParam = p.getDcmDecodeParam();
+    			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
+                CompressCmd compressCmd = CompressCmd.createCompressCmd(ds);
+                compressCmd.coerceDataset(ds);
+                ds.writeFile(dos, encParam);
+                ds.writeHeader(dos, encParam, Tags.PixelData, VRs.OB, -1);
+                int read = compressCmd.compress(decParam.byteOrder, in, dos);
+                ds.writeHeader(dos, encParam, Tags.SeqDelimitationItem,
+                        VRs.NONE, 0);
+                in.skip(p.getReadLength() - read);
+                p.parseDataset(decParam, -1);
+                ds.subSet(Tags.PixelData, -1).writeDataset(dos, encParam);
+                return md.digest();
+            } finally {
+                dos.close();
+            }
+    	} finally {
+    		in.close();
+    	}
+    }
 
-    public static CompressCmd createCompressCmd(StoreScpService service,
-            Dataset ds) {
-        String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
-        if (UIDs.JPEG2000Lossless.equals(tsuid))
-                return new Jpeg2000(service, ds);
-        if (UIDs.JPEGLSLossless.equals(tsuid)) return new JpegLS(service, ds);
+    public static CompressCmd createCompressCmd(Dataset ds) {
+    	String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
+    	if (UIDs.JPEG2000Lossless.equals(tsuid))
+                return new Jpeg2000(ds);
+        if (UIDs.JPEGLSLossless.equals(tsuid)) return new JpegLS(ds);
         if (UIDs.JPEGLossless.equals(tsuid)
                 || UIDs.JPEGLossless14.equals(tsuid))
-                return new JpegLossless(service, ds);
+                return new JpegLossless(ds);
         throw new IllegalArgumentException("tsuid:" + tsuid);
     }
 
-    private final StoreScpService service;
-
-    private final Logger log;
-
-    private final boolean debug;
-
     private final DcmEncodeParam encParam;
-
-    protected final int samples;
-
-    protected final int frames;
-
-    protected final int rows;
-
-    protected final int columns;
-
-    protected final int planarConfiguration;
-
-    protected final int bitsAllocated;
-
-    protected final int bitsStored;
-
-    protected final int pixelRepresentation;
 
     protected final int dataType;
 
-    protected final int frameLength;
-
-    protected CompressCmd(StoreScpService service, Dataset ds,
-            boolean supportSigned) {
-        this.service = service;
-        this.log = service.getLog();
-        this.debug = log.isDebugEnabled();
+    protected CompressCmd(Dataset ds, boolean supportSigned) {
+    	super(ds);
         this.encParam = DcmEncodeParam.valueOf(ds.getFileMetaInfo()
                 .getTransferSyntaxUID());
-        this.samples = ds.getInt(Tags.SamplesPerPixel, 1);
-        this.frames = ds.getInt(Tags.NumberOfFrames, 1);
-        this.rows = ds.getInt(Tags.Rows, 1);
-        this.columns = ds.getInt(Tags.Columns, 1);
-        this.pixelRepresentation = ds.getInt(Tags.PixelRepresentation, 0);
-        this.planarConfiguration = ds.getInt(Tags.PlanarConfiguration, 0);
 
-        switch (bitsAllocated = ds.getInt(Tags.BitsAllocated, 8)) {
+        switch (bitsAllocated) {
         case 8:
             this.dataType = DataBuffer.TYPE_BYTE;
-            this.frameLength = rows * columns * samples;
             break;
         case 16:
             this.dataType = pixelRepresentation == 0 || !supportSigned ? DataBuffer.TYPE_USHORT
                     : DataBuffer.TYPE_SHORT;
-            this.frameLength = rows * columns * samples * 2;
             break;
         default:
             throw new IllegalArgumentException("bits allocated:"
                     + bitsAllocated);
         }
-        this.bitsStored = ds.getInt(Tags.BitsStored, bitsAllocated);
     }
 
     public abstract void coerceDataset(Dataset ds);
@@ -234,7 +218,6 @@ abstract class CompressCmd {
             throws Exception {
         long t1;
         ImageWriter w = null;
-        Semaphore codecSemaphore = service.getCodecSemaphore();
         boolean codecSemaphoreAquired = false;
         long end = 0;
         try {
@@ -257,7 +240,7 @@ abstract class CompressCmd {
             ios.write(ITEM_TAG);
             ios.writeInt(0);
             for (int i = 0; i < frames; ++i) {
-                if (debug) log.debug("start compression of frame #" + (i + 1));
+                log.debug("start compression of frame #" + (i + 1));
                 ios.write(ITEM_TAG);
                 long mark = ios.getStreamPosition();
                 ios.writeInt(0);

@@ -46,6 +46,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.codec.CompressCmd;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -210,7 +211,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 throw new DcmServiceException(Status.OutOfResources);
             File baseDir = fsInfo.getDirectory();
             file = makeFile(baseDir, ds);
-            MessageDigest md = MessageDigest.getInstance("MD5");
             String compressTSUID = parser.getReadTag() == Tags.PixelData
                     && parser.getReadLength() != -1 ? compressionRules
                     .getTransferSyntaxFor(assoc, ds) : null;
@@ -220,9 +220,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     compressTSUID != null ? compressTSUID : rq
                             .getTransferSyntaxUID()));
 
-            storeToFile(parser, ds, file, md);
-
-            byte[] md5sum = md.digest();
+            byte[] md5sum = storeToFile(parser, ds, file);
             if (ignoreDuplicate(duplicates, md5sum)) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
@@ -386,24 +384,25 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
     }
 
-    private void storeToFile(DcmParser parser, Dataset ds, File file,
-            MessageDigest md) throws Exception {
+    private byte[] storeToFile(DcmParser parser, Dataset ds, File file)
+    		throws Exception {
         log.info("M-WRITE file:" + file);
+        MessageDigest md = MessageDigest.getInstance("MD5");
         BufferedOutputStream os = new BufferedOutputStream(
                 new FileOutputStream(file));
         DigestOutputStream dos = new DigestOutputStream(os, md);
         try {
             DcmDecodeParam decParam = parser.getDcmDecodeParam();
-            DcmEncodeParam encParam = DcmEncodeParam.valueOf(ds
-                    .getFileMetaInfo().getTransferSyntaxUID());
+            String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
+			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
             CompressCmd compressCmd = null;
             if (!decParam.encapsulated && encParam.encapsulated) {
-                compressCmd = CompressCmd.createCompressCmd(service, ds);
+                compressCmd = CompressCmd.createCompressCmd(ds);
                 compressCmd.coerceDataset(ds);
             }
             ds.writeFile(dos, encParam);
             if (parser.getReadTag() != Tags.PixelData)
-                return;
+                return md.digest();
             int len = parser.getReadLength();
             InputStream in = parser.getInputStream();
             byte[] buffer = new byte[bufferSize];
@@ -437,6 +436,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             } catch (IOException ignore) {
             }
         }
+        return md.digest();
     }
 
     private void copy(InputStream in, OutputStream out, int totLen,
@@ -476,6 +476,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+	private static final int[] SCN_TAGS = { Tags.SpecificCharacterSet,
+		Tags.PatientID, Tags.PatientName, Tags.StudyID, Tags.StudyInstanceUID };
 
     private String toHex(int val) {
         char[] ch8 = new char[8];
@@ -536,7 +539,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             for (Iterator it = ians.values().iterator(); it.hasNext();) {
                 Dataset ian = (Dataset) it.next();
                 DcmElement seq = ian.get(Tags.RefSeriesSeq);
-                for (int i = 0, n = seq.vm(); i < n; ++i) {
+                for (int i = 0, n = seq != null ? seq.vm() : 0; i < n; ++i) {
                     Dataset ser = seq.getItem(i);
                     final String seriuid = ser
                             .getString(Tags.SeriesInstanceUID);
@@ -633,12 +636,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             return ian.get(Tags.RefSeriesSeq);
         }
         ians.put(siud, ian = StoreScpService.dof.newDataset());
-        // provide SCN Type 2 attributes
-        ian.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
-        ian.putPN(Tags.PatientName, ds.getString(Tags.PatientName));
-        ian.putSH(Tags.StudyID, ds.getString(Tags.StudyID));
-
-        ian.putUI(Tags.StudyInstanceUID, siud);
+        ian.putAll(ds.subSet(SCN_TAGS));
         DcmElement ppsSeq = ian.putSQ(Tags.RefPPSSeq);
         Dataset pps = ds.getItem(Tags.RefPPSSeq);
         if (pps != null) {
