@@ -89,7 +89,9 @@ public interface PrintScpServiceMBean extends ServiceMBean {
     * @return Value of property numStoredPrints.
     */
    public int getNumStoredPrints();
-   
+
+   public String showLicense();
+      
    public void putAcceptorPolicy(String aet, AcceptorPolicy policy);
    
    public void onJobStartPrinting(String job);

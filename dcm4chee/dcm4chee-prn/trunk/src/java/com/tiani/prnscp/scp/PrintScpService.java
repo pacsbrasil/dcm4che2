@@ -23,6 +23,7 @@
 package com.tiani.prnscp.scp;
 
 import com.tiani.prnscp.print.PrinterServiceMBean;
+import com.tiani.util.license.LicenseStore;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -53,12 +54,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * <description>
@@ -81,7 +84,10 @@ public class PrintScpService
    implements PrintScpServiceMBean {
    
    // Constants -----------------------------------------------------   
-   
+   static final String LICENSE_FILE = "conf/license.pem";
+   static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1";
+   static final int SHUTDOWN_DELAY_MINUTES = 10;
+      
    // Attributes ----------------------------------------------------
    private String spoolDirectory;
    private File spoolDir;
@@ -94,6 +100,9 @@ public class PrintScpService
    private DcmHandler dcmHandler;
    private int numCreatedJobs = 0;
    private int numStoredPrints = 0;
+
+   /** Holds value of property license. */
+   private X509Certificate license;      
             
    // Static --------------------------------------------------------
    static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
@@ -171,6 +180,20 @@ public class PrintScpService
       return numStoredPrints;
    }
       
+   /** Getter for property license.
+    * @return Value of property license.
+    */
+   public X509Certificate getLicense() {
+      return this.license;
+   }
+   
+   /** Setter for property license.
+    * @param license New value of property license.
+    */
+   public void setLicense(X509Certificate license) {
+      this.license = license;
+   }
+   
    public void putAcceptorPolicy(String aet, AcceptorPolicy policy)
    {
       dcmHandler.getAcceptorPolicy().putPolicyForCalledAET(aet, policy);
@@ -180,9 +203,10 @@ public class PrintScpService
    public void startService()
    throws Exception
    {
+      File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+      checkLicense(new File(systemHomeDir, LICENSE_FILE));
       spoolDir = new File(spoolDirectory);
       if (!spoolDir.isAbsolute()) {
-         File systemHomeDir = ServerConfigLocator.locate().getServerHomeDir();
          spoolDir = new File(systemHomeDir, spoolDirectory);
       }
       if (!spoolDir.exists()) {
@@ -207,6 +231,29 @@ public class PrintScpService
       }
    }
       
+   private void checkLicense(File licenseFile) {
+      try {
+         LicenseStore store = new LicenseStore(licenseFile);
+         license = store.getLicenseFor(PRNSCP_PRODUCT_UID);
+         if (license != null) {
+            license.checkValidity();
+            if (LicenseStore.countSubjectIDs(license) == 0
+               || LicenseStore.countMatchingSubjectIDs(license) > 0) {
+               return; // OK
+            }
+         }
+      } catch (Exception e) {
+         log.debug(e, e);
+      }
+      log.warn("No valid License detected - shutdown server in " 
+         + SHUTDOWN_DELAY_MINUTES + " minutes!");
+      new Timer().schedule(
+         new TimerTask(){
+            public void run() { org.jboss.Main.systemExit(null); }
+         },
+         SHUTDOWN_DELAY_MINUTES * 60000L);
+   }
+   
    private void bindDcmServices() {
       DcmServiceRegistry services = dcmHandler.getDcmServiceRegistry();
       services.bind(UIDs.BasicFilmSession, filmSessionService);
@@ -529,4 +576,9 @@ public class PrintScpService
          return result;
       }      
    };
+   
+   public String showLicense() {
+      return "" + license;
+   }
+
 }

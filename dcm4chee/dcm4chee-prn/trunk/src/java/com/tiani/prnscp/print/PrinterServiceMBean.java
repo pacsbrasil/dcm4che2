@@ -736,8 +736,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setMaxQueuedJobCount(int maxQueuedJobCount);
    
-   public String showLicense();
-   
    /** Getter for property supportsMonochrome.
     * @return Value of property supportsMonochrome.
     *

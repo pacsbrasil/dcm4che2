@@ -22,8 +22,6 @@
 
 package com.tiani.prnscp.print;
 
-import com.tiani.util.license.LicenseStore;
-
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -85,8 +83,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * <description>
@@ -121,10 +117,6 @@ public class PrinterService
    };
    static final String ADF_FILE_EXT = ".adf";
    static final String LUT_FILE_EXT = ".lut";      
-   static final String LICENSE_FILE = "conf/license.pem";
-   static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.2.1.1";
-   static final int SHUTDOWN_DELAY_MINUTES = 10;
-   
    private static final String[] LITTLE_ENDIAN_TS = {
         UIDs.ExplicitVRLittleEndian,
         UIDs.ImplicitVRLittleEndian
@@ -142,9 +134,6 @@ public class PrinterService
    /** Holds value of property printSCP. */
    private ObjectName printSCP;
 
-   /** Holds value of property license. */
-   private X509Certificate license;
-   
    /** Holds value of property printerName. */
    private String printerName;
    
@@ -1402,7 +1391,6 @@ public class PrinterService
    
    public void startService()
    throws Exception {
-      checkLicense();
       scheduler = new Thread(this);
       scheduler.start();
       if (scanner.getScanDir(printerName).mkdirs()) {
@@ -1431,29 +1419,6 @@ public class PrinterService
 //         policy.putPresContext(UIDs.BasicAnnotationBox, ts_uids);
 //      }
       return policy;
-   }
-   
-   private void checkLicense() {
-      try {
-         LicenseStore store = new LicenseStore(toFile(LICENSE_FILE));
-         license = store.getLicenseFor(PRNSCP_PRODUCT_UID);
-         if (license != null) {
-            license.checkValidity();
-            if (LicenseStore.countSubjectIDs(license) == 0
-               || LicenseStore.countMatchingSubjectIDs(license) > 0) {
-               return; // OK
-            }
-         }
-      } catch (Exception e) {
-         log.debug(e, e);
-      }
-      log.warn("No valid License detected - shutdown server in " 
-         + SHUTDOWN_DELAY_MINUTES + " minutes!");
-      new Timer().schedule(
-         new TimerTask(){
-            public void run() { org.jboss.Main.systemExit(null); }
-         },
-         SHUTDOWN_DELAY_MINUTES * 60000L);
    }
    
    public void stopService()
@@ -1877,10 +1842,15 @@ public class PrinterService
     * @return Value of property license.
     */
    public X509Certificate getLicense() {
-      return this.license;
+      try {
+         return (X509Certificate) server.getAttribute(printSCP, "License");
+      } catch (Exception e) {
+         throw new RuntimeException("JMX error", e);
+      }
    }
    
    public String getLicenseCN() {
+      X509Certificate license = getLicense();
       if (license == null) {
          return "nobody";
       }
@@ -1891,15 +1861,12 @@ public class PrinterService
    }
    
    public Date getLicenseEndDate() {
+      X509Certificate license = getLicense();
       if (license == null) {
          return new Date();
       }
       return license.getNotAfter();
    }
    
-   public String showLicense() {
-      return "" + license;
-   }
-
    // Inner classes -------------------------------------------------
 }
