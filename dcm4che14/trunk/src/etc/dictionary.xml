@@ -2210,6 +2210,9 @@
   <uid value="1.2.840.10008.5.1.4.37.1" name="General Relevant Patient Information Query General Relevant" key="PatientInformationQuery" />
   <uid value="1.2.840.10008.5.1.4.37.2" name="Breast Imaging Relevant Patient Information Query" key="BreastImagingRelevantPatientInformationQuery" />
   <uid value="1.2.840.10008.5.1.4.37.3" name="Cardiac Relevant Patient Information Query" key="CardiacRelevantPatientInformationQuery" />
+  <uid value="1.2.40.0.13.1.5.1.4.1.2.1.1" name="Tiani Patient Root Query/Retrieve Information Model - FIND" key="TianiPatientRootQueryRetrieveInformationModelFIND" />
+  <uid value="1.2.40.0.13.1.5.1.4.1.2.2.1" name="Tiani Study Root Query/Retrieve Information Model - FIND" key="TianiStudyRootQueryRetrieveInformationModelFIND" />
+  <uid value="1.2.40.0.13.1.5.1.4.1.2.3.1" name="Tiani Patient/Study Only Query/Retrieve Information Model - FIND" key="TianiPatientStudyOnlyQueryRetrieveInformationModelFIND" />
 </uids>
 
 <uids type="MetaSOPClass">
