@@ -275,7 +275,7 @@ public class MoveStudy
         String patID = findRspDs.getString(Tags.PatientID);
         String studyDate = findRspDs.getString(Tags.StudyDate);
         String prompt = "Study[" + suid + "] from " + studyDate
-                 + " for Patient[" + patID + "]": " + patName;
+                 + " for Patient[" + patID + "]: " + patName;
         log.info("Moving " + prompt);
         Command rqCmd = dof.newCommand();
         rqCmd.initCMoveRQ(assoc.nextMsgID(),
