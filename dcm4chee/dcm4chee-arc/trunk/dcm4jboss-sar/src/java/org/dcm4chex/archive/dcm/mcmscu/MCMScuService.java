@@ -558,17 +558,20 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 				return false;
 			}
 			Command cmd = oFact.newCommand();
-            cmd.initCMoveRQ(1, UIDs.StudyRootQueryRetrieveInformationModelMOVE, 
-            				getPriority() , this.getMoveDestinationAET() );
+            String[] studyUIDs = getStudyUids( mediaDTO );
             Dataset ds = oFact.newDataset();
 
-            ds.putUI(Tags.StudyInstanceUID, getStudyUids( mediaDTO ));
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
-            Dimse moveRQ = aFact.newDimse(1, cmd, ds);
-            FutureRSP rsp = assoc.invoke(moveRQ);
-            Dimse dimse = rsp.get();
-            if ( ! checkResponse( dimse, mediaDTO ) ) {
-            	return false;
+            for ( int i = 0, len = studyUIDs.length ; i < len ; i++ ) {
+                cmd.initCMoveRQ(as.nextMsgID(), UIDs.StudyRootQueryRetrieveInformationModelMOVE, 
+        				getPriority() , this.getMoveDestinationAET() );
+                ds.putUI(Tags.StudyInstanceUID, studyUIDs[i] );
+	            Dimse moveRQ = aFact.newDimse(1, cmd, ds);
+	            FutureRSP rsp = assoc.invoke(moveRQ);
+	            Dimse dimse = rsp.get();
+	            if ( ! checkResponse( dimse, mediaDTO, "for study:"+studyUIDs[i] ) ) {
+	            	return false;
+	            }
             }
 		} catch (Exception e) {
 			handleError( mediaDTO, "processMove failed for "+mediaDTO.getFilesetId()+"! Reason: unexpected error", e);
@@ -617,7 +620,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
             Dimse mcRQ = aFact.newDimse(1, cmd, ds);
             FutureRSP rsp = assoc.invoke(mcRQ);
             Dimse dimse = rsp.get();
-            if ( ! checkResponse( dimse, mediaDTO ) ) {
+            if ( ! checkResponse( dimse, mediaDTO, "" ) ) {
             	return false;
             }
             iuid = dimse.getCommand().getAffectedSOPInstanceUID();
@@ -629,7 +632,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 							getMediaCreationActionDS() ) );
             dimse = futureRsp.get();
             this.lookupMediaComposer().setMediaCreationRequestIuid( mediaDTO.getPk(), iuid );
-            if ( ! checkResponse( dimse, mediaDTO ) ) {
+            if ( ! checkResponse( dimse, mediaDTO, "" ) ) {
             	return false;
             }
             
@@ -716,7 +719,7 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
 	 * 
 	 * @return true if status is OK, false if message indicates a failure.
 	 */
-	private boolean checkResponse(Dimse rsp, MediaDTO mediaDTO) {
+	private boolean checkResponse(Dimse rsp, MediaDTO mediaDTO, String msg) {
         Command cmdRsp = rsp.getCommand();
         Dataset dataRsp = null;
 		try {
@@ -732,9 +735,9 @@ public class MCMScuService extends ServiceMBeanSupport implements MessageListene
         	case Status.Success:
         		return true;
         }
-        log.error("Failure Status " + Integer.toHexString(status) + ": "
+        log.error("Media creation failed! "+" ["+msg+"]"+"Failure Status " + Integer.toHexString(status) + ": "
                 + cmdRsp.getString(Tags.ErrorComment, "") + dataRsp);
-        handleError( mediaDTO, "Media creation failed! return status:"+Integer.toHexString(status)+" Reason:"+cmdRsp.getString(Tags.ErrorComment, ""), null );
+        handleError( mediaDTO, "Media creation failed! return status:"+Integer.toHexString(status)+" Reason:"+cmdRsp.getString(Tags.ErrorComment, "")+" ["+msg+"]", null );
         return false;
 	}
 	
