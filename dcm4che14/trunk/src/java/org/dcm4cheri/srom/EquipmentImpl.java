@@ -49,9 +49,6 @@ final class EquipmentImpl implements Equipment {
     // Constructor --------------------------------------------------------
     public EquipmentImpl(String manufacturer, String modelName,
             String stationName) {
-        if (manufacturer == null)
-            throw new NullPointerException();
-        
         this.manufacturer = manufacturer;
         this.modelName = modelName;
         this.stationName = stationName;

@@ -31,13 +31,15 @@ import org.dcm4che.dict.Tags;
 
 import org.dcm4che.srom.RefSOP;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0
  */
 class RefSOPImpl implements org.dcm4che.srom.RefSOP {
-    
+    static Logger log = Logger.getLogger(RefSOPImpl.class);
     // Constants -----------------------------------------------------
     private static UIDDictionary uidDict =
             DictionaryFactory.getInstance().getDefaultUIDDictionary( );   
@@ -63,8 +65,25 @@ class RefSOPImpl implements org.dcm4che.srom.RefSOP {
             ds.getString(Tags.RefSOPInstanceUID));
     }
     
+    private static boolean hasValue(String s) {
+        return s != null && s.length() > 0;
+    }
+    
     public static RefSOP newRefSOP(Dataset ds) throws DcmValueException {
-        return ds != null && !ds.isEmpty() ? new RefSOPImpl(ds) : null;
+        if (ds == null) {
+            return null;
+        }
+        String cuid;
+        String iuid;
+        if (!hasValue(cuid = ds.getString(Tags.RefSOPClassUID))) {
+            log.warn("Missing Ref SOP Class UID - ignore reference");
+            return null;
+        }
+        if (!hasValue(iuid = ds.getString(Tags.RefSOPInstanceUID))) {
+            log.warn("Missing Ref SOP Instance UID - ignore reference");
+            return null;
+        }
+        return new RefSOPImpl(cuid, iuid);
     }
     
     // Public --------------------------------------------------------

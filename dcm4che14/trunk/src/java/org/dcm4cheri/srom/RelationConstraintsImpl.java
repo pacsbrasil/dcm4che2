@@ -27,35 +27,52 @@ import org.dcm4che.srom.*;
 import org.dcm4che.dict.UIDs;
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0
  */
 abstract class RelationConstraintsImpl implements RelationConstraints {
+    static Logger log = Logger.getLogger(RelationConstraintsImpl.class);
     // Constants -----------------------------------------------------     
     public static final RelationConstraints KEY_OBJECT =
             new RelationConstraints() {
         public void check(Content source, Content.RelationType relation,
                 Content target) {
             if (!(source instanceof ContainerContent))
-                throw new IllegalArgumentException("" + source);
+                log.warn(
+                    "Violation of Rel Constraints for Key Objects - source:"
+                    + source);
               
             if (relation == Content.RelationType.CONTAINS) {
                 if (!(target instanceof TextContent ||
                         target instanceof CompositeContent))
-                    throw new IllegalArgumentException("" + target);
+                    log.warn(
+                        "Violation of Rel Constraints for Key Objects - target:"
+                        + target);
+//                    throw new IllegalArgumentException("" + target);
             } else if (relation == Content.RelationType.HAS_OBS_CONTEXT) {
                 if (!(target instanceof TextContent ||
                         target instanceof CodeContent ||
                         target instanceof UIDRefContent ||
                         target instanceof PNameContent))
-                    throw new IllegalArgumentException("" + target);
+                    log.warn(
+                        "Violation of Rel Constraints for Key Objects - target:"
+                        + target);
+//                    throw new IllegalArgumentException("" + target);
             } else if (relation == Content.RelationType.HAS_CONCEPT_MOD) {
                 if (!(target instanceof CodeContent))
-                    throw new IllegalArgumentException("" + target);
+                    log.warn(
+                        "Violation of Rel Constraints for Key Objects - target:"
+                        + target);
+//                    throw new IllegalArgumentException("" + target);
             } else
-                throw new IllegalArgumentException("" + relation);
+                log.warn(
+                    "Violation of Rel Constraints for Key Objects - rel:"
+                    + relation);
+//                throw new IllegalArgumentException("" + relation);
         }
     };
     
@@ -66,11 +83,17 @@ abstract class RelationConstraintsImpl implements RelationConstraints {
                     target instanceof NumContent ||
                     target instanceof SCoordContent ||
                     target instanceof TCoordContent)
-                throw new IllegalArgumentException("" + target);
+                log.warn(
+                    "Violation of Rel Constraints for Basic Text SR - target:"
+                    + target);
+//                throw new IllegalArgumentException("" + target);
         }
         void checkSelectedFrom(Content source, Content target) {
-            throw new IllegalArgumentException(
-                    "" + Content.RelationType.SELECTED_FROM);
+            log.warn(
+                "Violation of Rel Constraints for Basic Text SR - rel:"
+                + Content.RelationType.SELECTED_FROM);
+//            throw new IllegalArgumentException(
+//                    "" + Content.RelationType.SELECTED_FROM);
         }
                 
     };
@@ -79,7 +102,10 @@ abstract class RelationConstraintsImpl implements RelationConstraints {
             new RelationConstraintsImpl() {
         void checkTarget(Content target) {
             if (target instanceof ReferencedContent) {
-                throw new IllegalArgumentException("" + target);
+                log.warn(
+                    "Violation of Rel Constraints for Enhanced SR - target:"
+                    + target);
+//                throw new IllegalArgumentException("" + target);
             }
         }
     };
@@ -109,37 +135,61 @@ abstract class RelationConstraintsImpl implements RelationConstraints {
     
     void checkContains(Content source, Content target) {
         if (!(source instanceof ContainerContent))
-            throw new IllegalArgumentException("" + source);
+            log.warn(
+                "Violation of CONTAINS Rel Constraints - source:"
+                + source);
+//            throw new IllegalArgumentException("" + source);
     }
 
     void checkHasObsContext(Content source, Content target) {
         if (!(source instanceof ContainerContent))
-            throw new IllegalArgumentException("" + source);
+            log.warn(
+                "Violation of HAS OBS CONTEXT Rel Constraints - source:"
+                + source);
+//            throw new IllegalArgumentException("" + source);
         if (isContainerOrComposite(target))
-            throw new IllegalArgumentException("" + target);
+            log.warn(
+                "Violation of HAS OBS CONTEXT Rel Constraints - target:"
+                + target);
+//            throw new IllegalArgumentException("" + target);
     }
 
     void checkHasAcqContext(Content source, Content target) {
         if (!isContainerOrComposite(source))
-            throw new IllegalArgumentException("" + source);
+            log.warn(
+                "Violation of HAS ACQ CONTEXT Rel Constraints - source:"
+                + source);
+//            throw new IllegalArgumentException("" + source);
         if (isContainerOrComposite(target))
-            throw new IllegalArgumentException("" + target);
+            log.warn(
+                "Violation of HAS ACQ CONTEXT Rel Constraints - source:"
+                + target);
+//            throw new IllegalArgumentException("" + target);
     }
 
     void checkHasConceptMod(Content source, Content target) {
         if (!(target instanceof TextContent ||
                 target instanceof CodeContent))
-            throw new IllegalArgumentException("" + target);
+            log.warn(
+                "Violation of HAS CONCEPT MOD Rel Constraints - target:"
+                + target);
+//            throw new IllegalArgumentException("" + target);
     }
 
     void checkHasProperties(Content source, Content target) {
         if (!(source instanceof TextContent ||
                 source instanceof CodeContent ||
                 source instanceof NumContent)) {
-            throw new IllegalArgumentException("" + source);
+            log.warn(
+                "Violation of HAS PROPERTIES Rel Constraints - source:"
+                + source);
+//            throw new IllegalArgumentException("" + source);
         }
         if (target instanceof ContainerContent) {
-            throw new IllegalArgumentException("" + target);
+            log.warn(
+                "Violation of HAS PROPERTIES Rel Constraints - target:"
+                + target);
+//            throw new IllegalArgumentException("" + target);
         }
     }
 
@@ -150,14 +200,23 @@ abstract class RelationConstraintsImpl implements RelationConstraints {
     void checkSelectedFrom(Content source, Content target) {
         if (source instanceof SCoordContent) {
             if (!(target instanceof ImageContent))
-                throw new IllegalArgumentException("" + target);
+                log.warn(
+                    "Violation of SELECT FROM Rel Constraints - target:"
+                + target);
+//                throw new IllegalArgumentException("" + target);
         } else if (source instanceof TCoordContent) {
             if (!(target instanceof SCoordContent ||
                     target instanceof ImageContent ||
                     target instanceof WaveformContent))
-                throw new IllegalArgumentException("" + target);
+                log.warn(
+                    "Violation of SELECT FROM Rel Constraints - target:"
+                + target);
+//                throw new IllegalArgumentException("" + target);
         } else
-            throw new IllegalArgumentException("" + source);
+            log.warn(
+                "Violation of SELECT FROM Rel Constraints - source:"
+            + source);
+//            throw new IllegalArgumentException("" + source);
     }
 
     public void check(Content source, Content.RelationType relation,
