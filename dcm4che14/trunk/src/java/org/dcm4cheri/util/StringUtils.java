@@ -27,7 +27,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 
 /**
  *
@@ -278,18 +277,19 @@ public class StringUtils {
         if (s.length() == 0) {
             return EMPTY_STRING_ARRAY;
         }
-        int end = s.indexOf(delim);
-        if (end == -1) {
+        final int r0 = s.indexOf(delim);
+        if (r0 == -1)
             return new String[]{s};
-        }
-        ArrayList list = new ArrayList();
-        int start = 0;
-        do {
-            list.add(s.substring(start, end));
-            start = end + 1;
-        } while ((end = s.indexOf(delim, start)) != -1);
-        list.add(s.substring(start));
-        return (String[]) list.toArray(new String[list.size()]);
+        int i = 2;
+        int l, r = r0;
+        for (; (r = s.indexOf(delim, l = r + 1)) != -1; ++i);
+        String[] retval = new String[i];
+        i = l = 0;
+        r = r0;
+        do retval[i++] = s.substring(l, r);
+        while ((r = s.indexOf(delim, l = r + 1)) != -1);
+        retval[i] = s.substring(l);
+        return retval;
     }
     
     public static String toString(String[] a, char delim) {
