@@ -62,7 +62,7 @@ abstract class BasicColorModelParam
         size = 1 << bits;
         if(ds.getInt(Tags.PixelRepresentation, 0) == 0) {
             min = 0;
-            max = size - 1;
+            max = size;
         }
         else {
             min = -(size >> 1);
