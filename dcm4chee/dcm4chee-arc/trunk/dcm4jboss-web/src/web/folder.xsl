@@ -66,7 +66,7 @@
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 								</input>
-							  <input type="ae" name="ae" value="AE"/>								
+							  <input type="submit" name="ae" value="AE"/>								
 							  <input type="submit" name="send" value="Send" disabled="disabled"/>
 							  <input type="submit" name="move" value="Move" disabled="disabled"/>
 							  <input type="submit" name="merge" value="Merge" disabled="disabled"/>
