@@ -56,7 +56,7 @@ final class AReleaseRQImpl implements AReleaseRQ {
    private static final byte[] BYTES = { 5, 0, 0, 0, 0, 4, 0, 0, 0, 0 };
    public void writeTo(OutputStream out) throws IOException {
       out.write(BYTES);
-      out.flush();
+//      out.flush();
    }
    
    public String toString(boolean verbose) {

@@ -104,6 +104,7 @@ public class MppsSnd implements PollDirSrv.Handler {
     private int releaseTO = 0;
     private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
     private SSLContextAdapter tls = null;
+    private String[] cipherSuites = null;
     private PollDirSrv pollDirSrv = null;
     private File pollDir = null;
     private long pollPeriod = 5000L;
@@ -113,7 +114,6 @@ public class MppsSnd implements PollDirSrv.Handler {
     private static final LongOpt[] LONG_OPTS = new LongOpt[] {
         new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
-        new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -385,8 +385,8 @@ public class MppsSnd implements PollDirSrv.Handler {
     
     private Socket newSocket(String host, int port)
     throws IOException, GeneralSecurityException {
-        if (tls != null) {
-            return tls.getSocketFactory().createSocket(host, port);
+        if (cipherSuites != null) {
+            return tls.getSocketFactory(cipherSuites).createSocket(host, port);
         } else {
             return new Socket(host, port);
         }
@@ -447,13 +447,11 @@ public class MppsSnd implements PollDirSrv.Handler {
     
     private void initTLS(Configuration cfg) {
         try {
-            String[] chiperSuites = cfg.tokenize(
-            cfg.getProperty("tls", "", "<none>", ""));
-            if (chiperSuites.length == 0)
+            cipherSuites = url.getCipherSuites();
+            if (cipherSuites == null) {
                 return;
-            
+            }
             tls = SSLContextAdapter.getInstance();
-            tls.setEnabledCipherSuites(chiperSuites);
             char[] keypasswd = 
                 cfg.getProperty("key-passwd","dcm4che").toCharArray();
             tls.setKey(

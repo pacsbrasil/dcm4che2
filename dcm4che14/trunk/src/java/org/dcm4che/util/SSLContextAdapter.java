@@ -73,9 +73,9 @@ public abstract class SSLContextAdapter {
     
     public abstract void setEnabledProtocols(String[] protocols);
     
-    public abstract void setEnabledCipherSuites(String[] cipherSuites);
+//    public abstract void setEnabledCipherSuites(String[] cipherSuites);
     
-    public abstract String[] getEnabledCipherSuites();
+//    public abstract String[] getEnabledCipherSuites();
     
     public abstract String[] getEnabledProtocols();
         
@@ -111,11 +111,11 @@ public abstract class SSLContextAdapter {
     public abstract void init()
     throws GeneralSecurityException;
     
-    public abstract SocketFactory getSocketFactory();
+//    public abstract SocketFactory getSocketFactory();
     
     public abstract SocketFactory getSocketFactory(String[] cipherSuites);
     
-    public abstract ServerSocketFactory getServerSocketFactory();
+//    public abstract ServerSocketFactory getServerSocketFactory();
 
     public abstract ServerSocketFactory getServerSocketFactory(String[] cipherSuites);
     

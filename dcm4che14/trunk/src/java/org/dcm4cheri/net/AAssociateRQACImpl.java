@@ -458,7 +458,13 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
         .append("\n\tcalledAET:\t").append(calledAET)
         .append("\n\tcallingAET:\t").append(callingAET)
         .append("\n\tmaxPDULen:\t").append(maxLength)
-        .append("\n\t").append(asyncOpsWindow);
+        .append("\n\tasyncOpsWindow:\t");
+      if (asyncOpsWindow != null) {
+          sb.append("maxOpsInvoked=")
+            .append(asyncOpsWindow.getMaxOpsInvoked())
+            .append(", maxOpsPerformed=")
+            .append(asyncOpsWindow.getMaxOpsPerformed());
+      }
       if (verbose) {
          for (Iterator it = presCtxs.values().iterator(); it.hasNext();) {
             append((PresContext)it.next(), sb);

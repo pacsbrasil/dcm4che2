@@ -56,7 +56,7 @@ final class AReleaseRPImpl implements AReleaseRP {
     private static final byte[] BYTES = { 6, 0, 0, 0, 0, 4, 0, 0, 0, 0 }; 
     public void writeTo(OutputStream out) throws IOException {
         out.write(BYTES);
-        out.flush();
+//        out.flush();
     }
     
     public String toString(boolean verbose) {

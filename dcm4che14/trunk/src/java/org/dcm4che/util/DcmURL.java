@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
 /**
  *
  * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @version 1.0.3
  */
 public final class DcmURL extends Object {
     // Constants -----------------------------------------------------    
@@ -42,11 +42,35 @@ public final class DcmURL extends Object {
     private static final int PORT = 3;
     private static final int END = 4;
     
+    private static final String[] PROTOCOLS = {
+        "dicom",
+        "dicom-tls",
+        "dicom-tls.nodes",
+        "dicom-tls.3des"
+    };
+
+    private static final String[][] CIPHERSUITES = {
+        null,
+        new String[] {
+            "SSL_RSA_WITH_NULL_SHA", 
+            "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
+        },
+        new String[] {
+            "SSL_RSA_WITH_NULL_SHA", 
+        },
+        new String[] {
+            "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
+        }
+    };
+    
     // Attributes ----------------------------------------------------
+    private String protocol;
+    private String[] cipherSuites;
     private String calledAET;
     private String callingAET = ANONYMOUS;
     private String host;
     private int port = DICOM_PORT;
+    private boolean tls;
 
     // Constructors --------------------------------------------------
     public DcmURL(String spec) {
@@ -59,7 +83,10 @@ public final class DcmURL extends Object {
         }
     }
 
-    public DcmURL(String calledAET, String callingAET, String host, int port) {
+    public DcmURL(String protocol, String calledAET, String callingAET,
+            String host, int port) {
+        this.protocol = protocol.toLowerCase();
+        this.cipherSuites = toCipherSuites(protocol);
         this.calledAET = calledAET;
         this.callingAET = callingAET;
         this.host = host;
@@ -67,6 +94,14 @@ public final class DcmURL extends Object {
     }
     
     // Public --------------------------------------------------------
+    public final String getProtocol() {
+        return protocol;
+    }
+    
+    public final String[] getCipherSuites() {
+        return cipherSuites;
+    }
+    
     public final String getCallingAET() {
         return callingAET;
     }
@@ -84,17 +119,30 @@ public final class DcmURL extends Object {
     }
     
     public String toString() {
-        return "dicom://" + calledAET + ':' + callingAET
+        return protocol + "://" + calledAET + ':' + callingAET
                 + '@' + host + ':' + port;
     }
 
-    // Private -------------------------------------------------------
-    private void parse(String s) {
-        if (!s.startsWith("dicom://")) {
-            throw new IllegalArgumentException(
-                    "DICOM URL must starts with \"dicom://\"");
+    public static String[] toCipherSuites(String protocol) {
+        String tmp = protocol.toLowerCase();
+        for (int i = 0; i < PROTOCOLS.length; ++i) {
+            if (tmp.equals(PROTOCOLS[i])) {
+                return i > 0 ? (String[])CIPHERSUITES[i].clone() : null;
+            }            
         }
-        StringTokenizer stk = new StringTokenizer(s.substring(8),":@/", true);
+        throw new IllegalArgumentException("Unregonized protocol: " + protocol);
+    }
+    // Private -------------------------------------------------------
+    
+    private void parse(String s) {
+        int delimPos = s.indexOf("://");
+        if (delimPos == -1) {
+            throw new IllegalArgumentException(s);
+        }
+        protocol = s.substring(0, delimPos).toLowerCase();
+        cipherSuites = toCipherSuites(protocol);
+        StringTokenizer stk = new StringTokenizer(
+            s.substring(delimPos+3),":@/", true);
         String tk;
         int state = CALLED_AET;
         boolean tcpPart = false;

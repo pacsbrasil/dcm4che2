@@ -66,7 +66,7 @@ final class AAbortImpl implements AAbort {
     
     public void writeTo(OutputStream out) throws IOException {
         out.write(buf);
-        out.flush();
+//        out.flush();
     }
 
     public String toString(boolean verbose) {

@@ -45,6 +45,7 @@ dcm4che API:
 + add org.dcm4che.data.FileMetaInfo#getImplementationVersionName
 + add org.dcm4che.dict.Status
 + add org.dcm4che.srom.IconImage
++ extends org.dcm4che.util.DcmURL for dicom-tls
 
 
 CHANGES:
@@ -65,6 +66,8 @@ dcm4che API:
    make enabledCipherSuites param of SocketFactory instead of Adapter,
    add support of pkcs12 keystore
 + org.dcm4che.srom.*: add IconImage param to factory methodes for ImageContent
+samples:
++ dcmsnd, dcmrcv, mppssnd: change TLS related command line syntax
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1

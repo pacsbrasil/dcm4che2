@@ -71,7 +71,7 @@ final class AAssociateRJImpl implements AAssociateRJ {
     
     public void writeTo(OutputStream out) throws IOException {
         out.write(buf);
-        out.flush();
+//        out.flush();
     }
 
     public String toString(boolean verbose) {

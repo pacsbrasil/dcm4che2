@@ -253,7 +253,7 @@ final class FsmImpl {
         return requestor ? aow.getMaxOpsPerformed() : aow.getMaxOpsInvoked();
     }
     
-    private synchronized void changeState(State state) {
+    private void changeState(State state) {
         if (this.state != state) {
             State prev = this.state;
             this.state = state;

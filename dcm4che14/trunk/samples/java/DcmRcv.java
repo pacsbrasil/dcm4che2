@@ -40,6 +40,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.server.Server;
 import org.dcm4che.server.ServerFactory;
+import org.dcm4che.util.DcmURL;
 import org.dcm4che.util.SSLContextAdapter;
 
 import java.io.File;
@@ -98,6 +99,8 @@ public class DcmRcv extends DcmServiceBase {
         DcmObjectFactory.getInstance();
     
     private SSLContextAdapter tls = null;
+    private String[] cipherSuites = null;
+    
     private Dataset overwrite = oFact.newDataset();
     private AcceptorPolicy policy = fact.newAcceptorPolicy();
     private DcmServiceRegistry services = fact.newDcmServiceRegistry();
@@ -123,7 +126,9 @@ public class DcmRcv extends DcmServiceBase {
         new LongOpt("fs-file-id", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("fs-lazy-update", LongOpt.NO_ARGUMENT, null, 3),
         new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
-        new LongOpt("tls", LongOpt.REQUIRED_ARGUMENT, null, 2),
+        new LongOpt("dicom-tls", LongOpt.NO_ARGUMENT, null, 4),
+        new LongOpt("dicom-tls.nodes", LongOpt.NO_ARGUMENT, null, 4),
+        new LongOpt("dicom-tls.3des", LongOpt.NO_ARGUMENT, null, 4),
         new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("tls-key-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("tls-cacerts", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -154,6 +159,9 @@ public class DcmRcv extends DcmServiceBase {
                     break;
                 case 3:
                     cfg.put(LONG_OPTS[g.getLongind()].getName(), "<yes>");
+                    break;
+                case 4:
+                    cfg.put("protocol", LONG_OPTS[g.getLongind()].getName());
                     break;
                 case 's':
                     set(cfg,  g.getOptarg());
@@ -202,8 +210,8 @@ public class DcmRcv extends DcmServiceBase {
         if (fsu != null) {
             new Thread(fsu).start();
         }
-        if (tls != null) {
-            server.start(port, tls.getServerSocketFactory());
+        if (cipherSuites != null) {
+            server.start(port, tls.getServerSocketFactory(cipherSuites));
         } else {
             server.start(port);
         }
@@ -325,6 +333,7 @@ public class DcmRcv extends DcmServiceBase {
     private static void listConfig(Configuration cfg) {
         StringBuffer msg = new StringBuffer();
         msg.append(messages.getString("cfg"));
+        msg.append("\n\tprotocol=").append(cfg.getProperty("protocol"));
         for (int i = 0, n = LONG_OPTS.length - 2; i < n; ++i) {
             String opt = LONG_OPTS[i].getName();
             String val = cfg.getProperty(opt);
@@ -416,13 +425,12 @@ public class DcmRcv extends DcmServiceBase {
     
     private void initTLS(Configuration cfg) {
         try {
-            String[] chiperSuites = cfg.tokenize(
-            cfg.getProperty("tls", "", "<none>", ""));
-            if (chiperSuites.length == 0)
+            this.cipherSuites = DcmURL.toCipherSuites(
+                cfg.getProperty("protocol", "dicom"));
+            if (cipherSuites == null)
                 return;
             
             tls = SSLContextAdapter.getInstance();
-            tls.setEnabledCipherSuites(chiperSuites);
             char[] keypasswd = cfg.getProperty("key-passwd","dcm4che").toCharArray();
             tls.setKey(
                 tls.loadKeyStore(

@@ -81,12 +81,12 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
         //    "SSLv3",
         //    "SSLv2Hello"
     };
-
+/*
     private String[] cipherSuites = {
-        // "SSL_RSA_WITH_3DES_EDE_CBC_SHA",
+        "SSL_RSA_WITH_3DES_EDE_CBC_SHA",
         "SSL_RSA_WITH_NULL_SHA"
     };
-    
+  */  
     private final SSLContext ctx;
     private final KeyManagerFactory kmf;
     private final TrustManagerFactory tmf;
@@ -179,7 +179,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
     public String[] getEnabledProtocols() {
         return (String[])protocols.clone();
     }
-    
+/*    
     public void setEnabledCipherSuites(String[] cipherSuites) {
         this.cipherSuites = (String[])cipherSuites.clone();
     }
@@ -187,7 +187,7 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
     public String[] getEnabledCipherSuites() {
         return (String[])cipherSuites.clone();
     }
-    
+  */  
     private SSLServerSocket getUnboundSSLServerSocket() {
         if (unboundSSLServerSocket != null) {
             return unboundSSLServerSocket;
@@ -209,19 +209,19 @@ public class SSLContextAdapterImpl extends SSLContextAdapter {
     public String[] getSupportedProtocols() {
         return getUnboundSSLServerSocket().getSupportedProtocols();
     }
-    
+/*    
     public ServerSocketFactory getServerSocketFactory() {
         return new SSLServerSocketFactoryAdapter(cipherSuites);
     }
-
+*/
     public ServerSocketFactory getServerSocketFactory(String[] cipherSuites) {
         return new SSLServerSocketFactoryAdapter(cipherSuites);
     }
-    
+/*    
     public SocketFactory getSocketFactory() {
         return new SSLSocketFactoryAdapter(cipherSuites);
     }
-    
+*/    
     public SocketFactory getSocketFactory(String[] cipherSuites) {
         return new SSLSocketFactoryAdapter(cipherSuites);
     }
