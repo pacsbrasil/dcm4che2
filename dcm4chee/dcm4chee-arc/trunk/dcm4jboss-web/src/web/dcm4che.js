@@ -37,3 +37,39 @@ function checkNotEmpty( field,field_type ) //checks if a field value is not null
 	}
 	return true;
 }
+
+function checkError( errCode )
+{
+	if ( errCode != 'OK' && errCode != '' ) {
+		var msg = 'Error: ';
+    	if ( errCode == 'moveError' ) 
+    		msg = msg + 'Unexpected error during move operation!'
+    	else if ( errCode == 'moveError_noSelection' ) 
+    		msg = msg + ' Nothing selected! Please select a destination and one or more sources.'
+    	else if ( errCode == 'moveError_toManyDest' ) 
+    		msg = msg + 'Please select only one destination!'
+    	else if ( errCode == 'moveError_noSource' ) 
+    		msg = msg + 'Please select at least one source!'
+    	else if ( errCode == 'moveError_unselectSeries' ) 
+    		msg = msg + 'Please check that all series and instances are unselected.'
+    	else if ( errCode == 'moveError_unselectInstances' ) 
+    		msg = msg + 'Please check that all instances are unselected.'
+    	else if ( errCode == 'moveError_samePatient' ) 
+    		msg = msg + 'Move studies to the same patient is not usefull.'
+    	else if ( errCode == 'moveError_sameStudy' ) 
+    		msg = msg + 'Move series to the same study is not usefull.'
+    	else if ( errCode == 'moveError_sameSeries' ) 
+    		msg = msg + 'Move instances to the same series is not usefull.'
+    	else if ( errCode == 'moveError_diffPatient' ) 
+    		msg = msg + 'Not allowed! move series is only allowed between studies of the same patient.'
+    	else if ( errCode == 'moveError_diffStudy' ) 
+    		msg = msg + 'Not allowed! move instances is only allowed between series of the same study.'
+    	else if ( errCode == 'moveError_diffStudyParent' ) 
+    		msg = msg + 'Not allowed! You can only move studies from one patient to another patient.'
+    	else if ( errCode == 'moveError_diffSeriesParent' ) 
+    		msg = msg + 'Not allowed! You can only move series from one study to another study.'
+    	else if ( errCode == 'moveError_diffInstanceParent' ) 
+    		msg = msg + 'Not allowed! You can only move instances from one series to another series.'
+		alert(msg);
+	}
+}
