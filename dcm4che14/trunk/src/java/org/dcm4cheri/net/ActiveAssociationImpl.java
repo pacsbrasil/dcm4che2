@@ -230,6 +230,8 @@ final class ActiveAssociationImpl
 				default :
 					throw new RuntimeException("Illegal Command: " + cmd);
 			}
+			// ensure readout of data PDVs
+			dimse.closeDataStream();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			pool.shutdown();

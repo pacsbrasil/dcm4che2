@@ -45,5 +45,7 @@ public interface Dimse extends DataSource {
     public Dataset getDataset() throws IOException;
 
     public InputStream getDataAsStream();
+
+    public void closeDataStream();
 }
 

@@ -125,4 +125,12 @@ class DimseImpl implements Dimse {
     public String toString() {
        return "[pc-" + pcid + "] " + cmd.toString();
     }
+    
+    public void closeDataStream() {
+       if (in != null)
+           try {
+               in.close();
+           } catch (IOException ignore) {               
+           }           
+    }
 }
