@@ -10,11 +10,8 @@
    <description>Spool Directory</description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate"
-         persistPeriod="10"
-         persistLocation="${jboss.server.data.dir}"
-         persistName="SpoolDirService.ser"/>
-      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
    <class>org.dcm4chex.cdw.mbean.SpoolDirService</class>
@@ -57,6 +54,9 @@
       </description>
       <name>ArchiveDiskUsage</name>
       <type>java.lang.String</type>      
+      <descriptors>
+         <descriptor name="persistPolicy" value="Never"/>
+      </descriptors>           
    </attribute>
    <attribute access="read-write"
       getMethod="getArchiveHighWaterMark"
@@ -131,6 +131,9 @@
       </description>
       <name>FilesetDiskUsage</name>
       <type>java.lang.String</type>      
+      <descriptors>
+         <descriptor name="persistPolicy" value="Never"/>
+      </descriptors>           
    </attribute>
    <attribute access="read-write"
       getMethod="getFilesetHighWaterMark"

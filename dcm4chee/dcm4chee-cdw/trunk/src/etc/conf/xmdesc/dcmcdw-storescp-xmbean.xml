@@ -10,11 +10,8 @@
    <description>DICOM Storage SCP</description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate"
-         persistPeriod="10"
-         persistLocation="${jboss.server.data.dir}"
-         persistName="StoreScpService.ser"/>
-      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
    <class>org.dcm4chex.cdw.mbean.StoreScpService</class>

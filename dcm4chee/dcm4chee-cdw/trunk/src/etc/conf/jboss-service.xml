@@ -16,6 +16,24 @@
    -->
   <classpath codebase="lib" archives="*"/>
 
+   <!-- ==================================================================== -->
+   <!-- XMBean Persistence                                                   -->
+   <!-- ==================================================================== -->   
+   <mbean code="org.jboss.system.pm.AttributePersistenceService"
+      name="jboss:service=AttributePersistenceService"
+      xmbean-dd="resource:xmdesc/AttributePersistenceService-xmbean.xml">
+      <!-- the AttributePersistenceService is persistent, itself -->
+           
+      <!--
+      <attribute name="AttributePersistenceManagerClass">org.jboss.system.pm.XMLAttributePersistenceManager</attribute>
+      <attribute name="AttributePersistenceManagerConfig">
+         <data-directory>data/xmbean-attrs</data-directory>
+      </attribute>      
+      <attribute name="ApmDestroyOnServiceStop">false</attribute>
+      <attribute name="VersionTag"></attribute>
+      -->
+   </mbean>
+
   <!-- ==================================================================== -->
   <!-- Log4j Initialization                                                 -->
   <!-- ==================================================================== -->

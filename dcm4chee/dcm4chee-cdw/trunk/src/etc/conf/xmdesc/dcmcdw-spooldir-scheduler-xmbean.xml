@@ -7,11 +7,8 @@
    <description>Scheduler for Clean of Spool Directory</description>
 
    <descriptors>
-      <persistence persistPolicy="OnUpdate"
-         persistPeriod="10"
-         persistLocation="${jboss.server.data.dir}"
-         persistName="SpoolDirScheduler.ser"/>
-      <persistence-manager value="org.jboss.mx.persistence.ObjectStreamPersistenceManager" />
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
    <class>org.jboss.varia.scheduler.Scheduler</class>
