@@ -44,6 +44,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getReceiveResultInSameAssocTimeout"
+      setMethod="setReceiveResultInSameAssocTimeout">
+      <description>Time in ms, the StgCmt SCU waits for receiving the
+      the StgCmt Result in the same Association as the StgCmt was requested,
+      before releasing the association.
+      </description>
+      <name>ReceiveResultInSameAssocTimeout</name>
+      <type>long</type>
+      <descriptors>
+         <value value="5000" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getScuRetryIntervalls"
       setMethod="setScuRetryIntervalls">
       <description>Number and intervalls of retries of SCU to invoke a
@@ -81,6 +94,17 @@
       <type>boolean</type>
       <descriptors>
          <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
+      <description>Maximal PDU package length for receiving PDUs.
+      </description>
+      <name>MaxPDULength</name>
+      <type>int</type>
+      <descriptors>
+         <value value="16352" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

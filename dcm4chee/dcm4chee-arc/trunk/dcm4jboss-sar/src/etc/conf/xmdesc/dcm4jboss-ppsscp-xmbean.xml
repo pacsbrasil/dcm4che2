@@ -55,6 +55,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
+      <description>Maximal PDU package length for receiving PDUs.
+      </description>
+      <name>MaxPDULength</name>
+      <type>int</type>
+      <descriptors>
+         <value value="16352" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
       <description>Used internally - do NOT modify.

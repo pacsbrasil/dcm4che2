@@ -23,6 +23,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.PDataTF;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4cheri.util.StringUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -69,6 +70,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String[] callingAETs;
     
     protected boolean acceptExplicitVRLE = true;
+    
+    protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH;
         
     public final ObjectName getDcmServerName() {
         return dcmServerName;
@@ -96,6 +99,15 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         enableService();
     }
 
+	public final int getMaxPDULength() {
+		return maxPDULength;
+	}
+	
+	public final void setMaxPDULength(int maxPDULength) {
+		this.maxPDULength = maxPDULength;
+		enableService();
+	}
+	
     protected void enableService() {
         if (dcmHandler == null) return;
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
@@ -103,7 +115,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
             if (policy1 == null) {
                 policy1 = asf.newAcceptorPolicy();
-                policy1.setMaxPDULength(policy.getMaxPDULength());
                 policy1.setCallingAETs(callingAETs);
                 policy.putPolicyForCalledAET(calledAETs[i], policy1);                
             } else {
@@ -117,6 +128,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                     }
                 }
             }
+            policy1.setMaxPDULength(maxPDULength);
             updatePresContexts(policy1, true);
         }
     }
@@ -194,4 +206,5 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return (Semaphore) server.invoke(dcmServerName,
                 "getCodecSemaphore", null, null);
     }
+    
 }

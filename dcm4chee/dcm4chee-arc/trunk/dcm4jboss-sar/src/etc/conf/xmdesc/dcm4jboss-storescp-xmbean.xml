@@ -250,6 +250,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
+      <description>Maximal PDU package length for receiving PDUs.
+      </description>
+      <name>MaxPDULength</name>
+      <type>int</type>
+      <descriptors>
+         <value value="16352" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
       <description>Size of buffer used to copy data from TCP channel to file.

@@ -94,6 +94,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private StgCmtScuScp stgCmtScuScp = new StgCmtScuScp(this);
 
+	private long receiveResultInSameAssocTimeout;
+
     public final String getScuRetryIntervalls() {
         return scuRetryIntervalls.toString();
     }
@@ -166,6 +168,16 @@ public class StgCmtScuScpService extends AbstractScpService implements
         this.soCloseDelay = soCloseDelay;
     }
 
+	public final long getReceiveResultInSameAssocTimeout() {
+		return receiveResultInSameAssocTimeout;
+	}
+	
+	public final void setReceiveResultInSameAssocTimeout(long timeout) {
+		if (timeout < 0)
+			throw new IllegalArgumentException("timeout: " + timeout);
+		this.receiveResultInSameAssocTimeout = timeout;
+	}
+	
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.StorageCommitmentPushModel, stgCmtScuScp);
     }
@@ -270,6 +282,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
                     log.warn("" + calledAET
                             + " returns N-ACTION-RQ with error status: "
                             + rspCmd);
+                } else {
+                	Thread.sleep(receiveResultInSameAssocTimeout);                	
                 }
                 return status;
             } finally {
@@ -440,7 +454,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         if (!(pdu instanceof AAssociateAC)) {
             throw new IOException("Association not accepted by " + calledAET);
         }
-        ActiveAssociation aa = asf.newActiveAssociation(a, null);
+        ActiveAssociation aa = asf.newActiveAssociation(a, super.dcmHandler.getDcmServiceRegistry());
         aa.start();
         AAssociateAC ac = (AAssociateAC) pdu;
         if (ac.getPresContext(1).result() == PresContext.ACCEPTANCE) {
