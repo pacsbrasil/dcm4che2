@@ -326,23 +326,27 @@ class Annotation
     private void drawText(Graphics2D g2,
             float x0, float y0, float alignX, float alignY, String s)
     {
-        StringTokenizer stk = new StringTokenizer(s, "\r\n");
-        int n = stk.countTokens();
-        if (n == 0) {
-            return;
-        }
-
-        Font font = g2.getFont();
-        FontRenderContext frc = g2.getFontRenderContext();
-        TextLayout line = new TextLayout(stk.nextToken(), font, frc);
-        float dY = line.getAscent() + line.getDescent() + line.getLeading();
-        float h = n * dY - line.getLeading();
-        float y = y0 - (n - 1) * dY + alignY * h - line.getDescent();
-        line.draw(g2, x0 - alignX * line.getAdvance(), y);
-        for (int i = 1; i < n; ++i) {
-            line = new TextLayout(stk.nextToken(), font, frc);
-            line.draw(g2, x0 - alignX * line.getAdvance(), y + i * dY);
-        }
+    	try {
+	        StringTokenizer stk = new StringTokenizer(s, "\r\n");
+	        int n = stk.countTokens();
+	        if (n == 0) {
+	            return;
+	        }
+	
+	        Font font = g2.getFont();
+	        FontRenderContext frc = g2.getFontRenderContext();
+	        TextLayout line = new TextLayout(stk.nextToken(), font, frc);
+	        float dY = line.getAscent() + line.getDescent() + line.getLeading();
+	        float h = n * dY - line.getLeading();
+	        float y = y0 - (n - 1) * dY + alignY * h - line.getDescent();
+	        line.draw(g2, x0 - alignX * line.getAdvance(), y);
+	        for (int i = 1; i < n; ++i) {
+	            line = new TextLayout(stk.nextToken(), font, frc);
+	            line.draw(g2, x0 - alignX * line.getAdvance(), y + i * dY);
+	        }
+    	} catch (Exception e) {
+    		log.warn("Failed to render annotation text:\r\n" + s, e);
+    	}
     }
 
 
