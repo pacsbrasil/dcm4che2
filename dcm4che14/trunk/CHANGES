@@ -24,5 +24,12 @@ new Image I/O compatible DICOM ImageWriter (contributed by Dr. Hacklaender)
 + org.dcm4cheri.imageio.plugins.DcmImageWriteParamImpl
 + org.dcm4cheri.imageio.plugins.DcmImageWriter
 + org.dcm4cheri.imageio.plugins.DcmImageWriterSpi
+new simple HL7 Parser:
++ org.dcm4che.hl7.*
++ org.dcm4cheri.hl7.*
+dcm4che API:
++ org.dcm4cheri.data.DicomObject#getInteger
+
 Bug Fixes:
 + org.dcm4cheri.data.DicomObjectImpl#putAll - did not insert any element
++ org.dcm4cheri.data.DicomObjectImpl#getDateTime

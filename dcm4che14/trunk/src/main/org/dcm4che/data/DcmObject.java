@@ -94,6 +94,10 @@ public interface DcmObject {
    String[] getBoundedStrings(int maxLen, int tag)
    throws DcmValueException;
    
+   Integer getInteger(int tag) throws DcmValueException;
+
+   Integer getInteger(int tag, int index) throws DcmValueException;
+   
    int getInt(int tag, int defVal) throws DcmValueException;
    
    int getInt(int tag, int index, int defVal)

@@ -169,6 +169,18 @@ abstract class DcmObjectImpl implements DcmObject {
       return e.getBoundedStrings(maxLen, getCharset());
    }
 
+   public Integer getInteger(int tag) throws DcmValueException {
+      return getInteger(tag, 0);
+   }
+   
+   public Integer getInteger(int tag, int index) throws DcmValueException {
+      DcmElement e = get(tag);
+      if (e == null || e.vm() <= index)
+         return null;
+      
+      return new Integer(e.getInt(index));
+   }
+   
    public int getInt(int tag, int defVal) throws DcmValueException {
       return getInt(tag, 0, defVal);
    }
@@ -258,7 +270,7 @@ abstract class DcmObjectImpl implements DcmObject {
       if (date == null || date.isEmpty())
          return null;
       
-      DcmElement time = get(dateTag);
+      DcmElement time = get(timeTag);
       if (time == null || time.isEmpty())
          return date.getDate();
       
