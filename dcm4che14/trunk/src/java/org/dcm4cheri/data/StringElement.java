@@ -185,6 +185,15 @@ abstract class StringElement extends ValueElement
             return (cs != null ? cs : Charsets.ASCII).newEncoder().encode(
                     CharBuffer.wrap(check.check(trim.trim(value))));
         } catch (CharacterCodingException ex) {
+			if (cs == null) {
+				log.warn("Non ASCII chars in " + value
+						 + " - try to encode as ISO_8859_1");
+				try
+                {
+                    return Charsets.ISO_8859_1.newEncoder().encode(
+                            CharBuffer.wrap(check.check(trim.trim(value))));
+                } catch (CharacterCodingException e){}
+			}
             throw new IllegalArgumentException(value);
         }
     }
