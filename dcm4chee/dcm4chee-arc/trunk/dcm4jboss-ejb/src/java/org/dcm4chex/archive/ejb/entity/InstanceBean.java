@@ -110,7 +110,6 @@ public abstract class InstanceBean implements EntityBean {
 
     public void unsetEntityContext() {
         codeHome = null;
-        retrieveAETSet = null;
     }
 
     /**
@@ -271,6 +270,10 @@ public abstract class InstanceBean implements EntityBean {
      */
     public abstract CodeLocal getSrCode();
 
+    public void ejbLoad() {
+        retrieveAETSet = null;
+    }
+
     /**
      * Create Instance.
      *
@@ -278,6 +281,7 @@ public abstract class InstanceBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, SeriesLocal series)
         throws CreateException {
+        retrieveAETSet = null;
         setAttributes(ds);
         return null;
     }

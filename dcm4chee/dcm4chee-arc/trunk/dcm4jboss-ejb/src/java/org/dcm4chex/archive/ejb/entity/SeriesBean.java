@@ -77,10 +77,6 @@ public abstract class SeriesBean implements EntityBean {
     private static final Logger log = Logger.getLogger(SeriesBean.class);
     private Set retrieveAETSet;
 
-    public void unsetEntityContext() {
-        retrieveAETSet = null;
-    }
-    
     /**
      * Auto-generated Primary Key
      *
@@ -212,6 +208,10 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract java.util.Collection getInstances();
 
+    public void ejbLoad() {
+        retrieveAETSet = null;
+    }
+    
     /**
      * Create series.
      *
@@ -219,6 +219,7 @@ public abstract class SeriesBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, StudyLocal study)
         throws CreateException {
+        retrieveAETSet = null;
         setAttributes(ds);
         return null;
     }
@@ -293,6 +294,12 @@ public abstract class SeriesBean implements EntityBean {
                 + " with "
                 + aet);
         if (getRetrieveAETSet().contains(aet)) {
+            log.debug(
+                    "series[pk="
+                    + getPk()
+                    + "]: no update of retrieveAETs " 
+                    + getRetrieveAETSet()
+                    + " necessary");
             return false;
         }
         if (!areAllInstancesRetrieveableFrom(aet)) {

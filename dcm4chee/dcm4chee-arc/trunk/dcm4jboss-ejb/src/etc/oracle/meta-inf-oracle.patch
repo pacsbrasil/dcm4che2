@@ -121,7 +121,7 @@
           </cmp-field>
   
 ! 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-! 	     <attribute name="sequence">file_pk_seq</attribute>
+! 	     <attribute name="sequence">files_pk_seq</attribute>
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->

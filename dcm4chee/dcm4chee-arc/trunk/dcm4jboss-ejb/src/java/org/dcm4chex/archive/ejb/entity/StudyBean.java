@@ -76,11 +76,6 @@ public abstract class StudyBean implements EntityBean {
     private Set retrieveAETSet;
     private Set modalitySet;
 
-    public void unsetEntityContext() {
-        retrieveAETSet = null;
-        modalitySet = null;
-    }
-
     /**
      * Auto-generated Primary Key
      *
@@ -235,6 +230,11 @@ public abstract class StudyBean implements EntityBean {
      */
     public abstract java.util.Collection getSeries();
 
+    public void ejbLoad() {
+        retrieveAETSet = null;
+        modalitySet = null;
+    }
+
     /**
      * Create study.
      *
@@ -242,6 +242,8 @@ public abstract class StudyBean implements EntityBean {
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient)
         throws CreateException {
+        retrieveAETSet = null;
+        modalitySet = null;
         setAttributes(ds);
         return null;
     }
@@ -317,6 +319,12 @@ public abstract class StudyBean implements EntityBean {
                 + " with "
                 + aet);
         if (getRetrieveAETSet().contains(aet)) {
+            log.debug(
+                    "study[pk="
+                    + getPk()
+                    + "]: no update of retrieveAETs " 
+                    + getRetrieveAETSet()
+                    + " necessary");
             return false;
         }
         if (!areAllSeriesRetrieveableFrom(aet)) {
