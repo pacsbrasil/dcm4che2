@@ -227,7 +227,30 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             return new FilterSQElement((SQElement)el, item);
         }
     }
- 
+
+    static final class ExcludePrivate extends FilterDataset {
+        ExcludePrivate(Dataset backend) {
+            super(backend);
+        }
+
+        protected  boolean filter(int tag) {
+            return !Tags.isPrivate(tag);
+        }
+
+        public boolean contains(int tag) {
+            return filter(tag) && backend.contains(tag);
+        }
+
+        public DcmElement get(int tag) {
+            if (Tags.isPrivate(tag)) return null;
+            DcmElement el = backend.get(tag);
+            if (!(el instanceof SQElement)) {
+                return el;
+            }
+            return new ExcludePrivateSQElement((SQElement)el);
+        }
+    }
+    
     static final class Segment extends FilterDataset {
         private long fromTag;
         private long toTag;
@@ -265,17 +288,15 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     static final class TagFilter extends FilterDataset {
         private final int[] tags;
 		private final boolean exclude;
-		private final boolean excludePrivate;
-        TagFilter(Dataset backend, int[] tags, boolean exclude, boolean excludePrivate) {
+        TagFilter(Dataset backend, int[] tags, boolean exclude) {
             super(backend);
             this.tags = tags == null ? EMPTY_INT : (int[]) tags.clone();
             this.exclude = exclude;
-            this.excludePrivate = excludePrivate;
             Arrays.sort(this.tags);
         }
         
         protected boolean filter(int tag) {
-            return !(excludePrivate && Tags.isPrivate(tag)) && Arrays.binarySearch(tags, tag) < 0 ? exclude : !exclude;
+            return Arrays.binarySearch(tags, tag) < 0 ? exclude : !exclude;
         }
         
     } 

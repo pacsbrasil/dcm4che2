@@ -492,15 +492,19 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
     }
 
     public Dataset subSet(int[] tags, boolean exclude) {
-        return new FilterDataset.TagFilter(this, tags, exclude, false);
+        return new FilterDataset.TagFilter(this, tags, exclude);
     }
     
     public Dataset subSet(int[] tags) {
-        return new FilterDataset.TagFilter(this, tags, false, false);
+        return new FilterDataset.TagFilter(this, tags, false);
     }
 
-    public Dataset exclude(int[] tags, boolean excludePrivate) {
-        return new FilterDataset.TagFilter(this, tags, true, excludePrivate);
+    public Dataset exclude(int[] tags) {
+        return new FilterDataset.TagFilter(this, tags, true);
+    }
+    
+    public Dataset excludePrivate() {
+        return new FilterDataset.ExcludePrivate(this);
     }
     
     /**

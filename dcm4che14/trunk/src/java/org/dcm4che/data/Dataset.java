@@ -97,8 +97,10 @@ public interface Dataset extends DcmObject, Serializable {
 
     Dataset subSet(int[] tags, boolean exclude);
     
-    Dataset exclude(int[] tags, boolean privateTags);
+    Dataset exclude(int[] tags);
 
+    Dataset excludePrivate();
+    
     boolean match(Dataset keys, boolean ignorePNCase, boolean ignoreEmpty);
 
     public void dumpDataset(OutputStream out, Map map, int[] excludeTags) throws IOException;

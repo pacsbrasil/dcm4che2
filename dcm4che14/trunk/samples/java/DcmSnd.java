@@ -548,7 +548,7 @@ public class DcmSnd implements PollDirSrv.Handler {
             DcmEncodeParam netParam =
                 (DcmEncodeParam) DcmDecodeParam.valueOf(tsUID);
             if (excludePrivate)
-                ds.exclude(null, true).writeDataset(out, netParam);
+                ds.excludePrivate().writeDataset(out, netParam);
             else
                 ds.writeDataset(out, netParam);
             if (parser.getReadTag() == Tags.PixelData) {
@@ -603,7 +603,7 @@ public class DcmSnd implements PollDirSrv.Handler {
                     log.warn("Error reading post-pixeldata attributes:", e);
                 }
                 if (excludePrivate)
-                    ds.exclude(null, true).writeDataset(out, netParam);
+                    ds.excludePrivate().writeDataset(out, netParam);
                 else
                     ds.writeDataset(out, netParam);
             }
