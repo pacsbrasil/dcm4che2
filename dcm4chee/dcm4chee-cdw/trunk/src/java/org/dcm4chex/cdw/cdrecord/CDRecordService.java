@@ -137,7 +137,7 @@ public class CDRecordService extends AbstractMediaWriterService {
 
     public final void setDriveLetterOrMountDirectory(String drivePath) {
         boolean mount = drivePath.charAt(0) == '/';
-        if (!mount && drivePath.charAt(1) == ':')
+        if (!mount && drivePath.charAt(1) != ':')
                 throw new IllegalArgumentException("drivePath: " + drivePath);
         this.drivePath = drivePath;
         this.driveDir = new File(drivePath);
