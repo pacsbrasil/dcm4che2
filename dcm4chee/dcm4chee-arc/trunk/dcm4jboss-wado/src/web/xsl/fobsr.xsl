@@ -94,7 +94,9 @@
 						</xsl:when>
 						<xsl:otherwise> <!-- image -->
 		            		<fo:block font-size="10pt" text-align="center">
-		                		Image instance:<xsl:value-of select="attr[@tag='00080018']"/>
+                    	        <fo:external-graphic >
+                    	            <xsl:attribute name="src">url(http://127.0.0.1:8080/dcm4jboss-wado/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="attr[@tag='00080018']"/>)</xsl:attribute>
+                    	        </fo:external-graphic >
 		            		</fo:block>
 						
 						</xsl:otherwise>
