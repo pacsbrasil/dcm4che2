@@ -22,7 +22,9 @@
 
 package org.dcm4che.server;
 
+import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationListener;
+import org.dcm4che.net.DcmServiceRegistry;
 
 /**
  * <description> 
@@ -44,6 +46,14 @@ public interface DcmHandler extends Server.Handler
    void addAssociationListener(AssociationListener l);
    
    void removeAssociationListener(AssociationListener l);
+
+   void setAcceptorPolicy(AcceptorPolicy policy);
+   
+   AcceptorPolicy getAcceptorPolicy();
+
+   void setDcmServiceRegistry(DcmServiceRegistry services);
+   
+   DcmServiceRegistry getDcmServiceRegistry();
    
    /** Getter for property rqTimeout.
     * @return Value of property rqTimeout.

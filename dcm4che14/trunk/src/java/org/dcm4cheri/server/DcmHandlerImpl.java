@@ -58,9 +58,9 @@ class DcmHandlerImpl implements DcmHandler {
     private final static AssociationFactory fact =
         AssociationFactory.getInstance();
     
-    private final AcceptorPolicy policy;
-    private final DcmServiceRegistry services;
     private final LinkedList listeners = new LinkedList();
+    private AcceptorPolicy policy;
+    private DcmServiceRegistry services;
     
     private int rqTimeout = 5000;
     private int dimseTimeout = 0;
@@ -70,17 +70,33 @@ class DcmHandlerImpl implements DcmHandler {
     
     // Constructors --------------------------------------------------
     public DcmHandlerImpl(AcceptorPolicy policy, DcmServiceRegistry services) {
-        if (policy == null)
-            throw new NullPointerException();
-        
-        if (services == null)
-            throw new NullPointerException();
-        
-        this.policy = policy;
-        this.services = services;
+        setAcceptorPolicy(policy);
+        setDcmServiceRegistry(services);
     }
     
     // Public --------------------------------------------------------
+    public final void setAcceptorPolicy(AcceptorPolicy policy) {
+        if (policy == null) {
+            throw new NullPointerException();
+        }
+        this.policy = policy;
+    }
+
+    public final AcceptorPolicy getAcceptorPolicy() {
+        return policy;
+    }
+    
+    public final void setDcmServiceRegistry(DcmServiceRegistry services) {
+        if (services == null) {
+            throw new NullPointerException();
+        }
+        this.services = services;
+    }
+
+    public final DcmServiceRegistry getDcmServiceRegistry() {
+        return services;
+    }
+    
     public void setRqTimeout(int timeout) {
         if (timeout < 0) {
             throw new IllegalArgumentException("timeout: " + timeout);

@@ -21,7 +21,11 @@ DcmSnd, MppsSnd:
 + add options --ac-timeout, --dimse-timeout, --so-close-delay
 DcmRcv:
 + add options --max-clients, --rq-timeout, --dimse-timeout, --so-close-delay
-org.dcm4che.auditlog: new package for support of IHE 4 compliant audit logging
+Hl7Snd, Hl7Rcv:
++ new utilities to send and receive HL7 Messages - using Minimal-Lower-Level
+  Protocol.
+org.dcm4che.auditlog:
++ new package for support of IHE 4 compliant audit logging
 
 CHANGES:
 org.dcm4che.data.Dataset:

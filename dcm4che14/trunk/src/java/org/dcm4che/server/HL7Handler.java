@@ -80,6 +80,6 @@ public interface HL7Handler extends Server.Handler {
     
     boolean removeReceivingApp(String receivingApp);
     
-    HL7Service putService(String msgType, String trEvent, HL7Service service);
+    HL7Service putService(String msgTypeEvent, HL7Service service);
     
 }

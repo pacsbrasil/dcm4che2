@@ -143,6 +143,7 @@ public class Hl7Snd {
         MLLPOutputStream out = null;
         try {
             s = newSocket(url.getHost(), url.getPort());
+            s.setSoTimeout(ackTimeout);
             in = new MLLPInputStream(
                 new BufferedInputStream(s.getInputStream()));
             out = new MLLPOutputStream(
@@ -244,12 +245,12 @@ public class Hl7Snd {
                 cfg.getProperty("key-passwd","dcm4che").toCharArray();
             tls.setKey(
                 tls.loadKeyStore(
-                    MppsSnd.class.getResource(
-                        cfg.getProperty("tls-key","mppssnd.key")),
+                    Hl7Snd.class.getResource(
+                        cfg.getProperty("tls-key","hl7snd.key")),
                     keypasswd),
                 keypasswd);
             tls.setTrust(tls.loadKeyStore(
-                MppsSnd.class.getResource(
+                Hl7Snd.class.getResource(
                     cfg.getProperty("tls-cacerts", "cacerts")),
                 cfg.getProperty("tls-cacerts-passwd", "dcm4che").toCharArray()));
             tls.init();

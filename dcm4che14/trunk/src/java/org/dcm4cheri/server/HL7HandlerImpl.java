@@ -131,14 +131,12 @@ public class HL7HandlerImpl implements HL7Handler {
             : null;
     }
     
-    public HL7Service putService(String msgType, String trEvent,
+    public HL7Service putService(String msgTypeEvent,
             HL7Service service) {
         if (service != null) {
-            return (HL7Service) hl7Services.put(
-                toKey(msgType, trEvent), service);
+            return (HL7Service) hl7Services.put(msgTypeEvent, service);
         } else {
-            return (HL7Service) hl7Services.remove(
-                toKey(msgType, trEvent));
+            return (HL7Service) hl7Services.remove(msgTypeEvent);
         }
     }
 
@@ -189,8 +187,11 @@ public class HL7HandlerImpl implements HL7Handler {
                     "Unrecognized Sending Application: "
                     + msh.getSendingApplication());   
             }
-            HL7Service service = (HL7Service)  hl7Services.get(
+            HL7Service service = (HL7Service) hl7Services.get(
                 toKey(msh.getMessageType(), msh.getTriggerEvent()));
+            if (service == null) {
+                service = (HL7Service) hl7Services.get(msh.getMessageType());
+            }
             if (service == null) {
                 throw new HL7Exception.AR(
                     "Unrecognized Message Type^TriggerEvent "
