@@ -42,12 +42,12 @@ import org.apache.log4j.Logger;
  *  eager-load-group="*"
  *
  * @ejb.finder
- *  signature="org.dcm4chex.archive.ejb.interface.MediaLocal findByFilesetIuid()"
+ *  signature="org.dcm4chex.archive.ejb.interface.MediaLocal findByFilesetIuid(java.lang.String uid)"
  *  query="SELECT OBJECT(m) FROM Media AS m WHERE m.filesetIuid = ?1"
  *  transaction-type="Supports"
  *
  * @jboss.query
- *  signature="org.dcm4chex.archive.ejb.interface.MediaLocal findByFilesetIuid()"
+ *  signature="org.dcm4chex.archive.ejb.interface.MediaLocal findByFilesetIuid(java.lang.String uid)"
  *  strategy="on-find"
  *  eager-load-group="*"
  *
