@@ -80,7 +80,7 @@
 										<tr>										
 											<td nowrap="" valign="middle" align="center" bgcolor="ee8888"><font color="000000">&#160;Media Creation Managment service not available!&#160;</font>
 												<a href="mcm_console.m?action=check_mcm_avail">
-													<img src="images/search.gif" alt="Retry" border="0" title="Retry"/>		
+													<img src="images/checkmcm.gif" alt="Retry" border="0" title="Retry"/>		
 												</a>
 											</td>
 										</tr>
