@@ -86,6 +86,8 @@ public abstract class MWLManagerBean implements SessionBean {
 			Dataset ds = mwlItem.getAttributes();
 			mwlItem.remove();
 			return ds;
+		} catch (FinderException e) {
+			return null;
 		} catch (Exception e) {
 			throw new EJBException(e);
 		}
