@@ -384,16 +384,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (ds.vm(TYPE1_ATTR[i]) <= 0) { throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
                     "Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i])); }
-            FileMetaInfo fmi = ds.getFileMetaInfo();
-            if (!fmi.getMediaStorageSOPInstanceUID().equals(
-                    ds.getString(Tags.SOPInstanceUID))) { throw new DcmServiceException(
-                    Status.DataSetDoesNotMatchSOPClassError,
-                    "SOP Instance UID in Dataset differs from Affected SOP Instance UID"); }
-            if (!fmi.getMediaStorageSOPClassUID().equals(
-                    ds.getString(Tags.SOPClassUID))) { throw new DcmServiceException(
-                    Status.DataSetDoesNotMatchSOPClassError,
-                    "SOP Class UID in Dataset differs from Affected SOP Class UID"); }
         }
+        FileMetaInfo fmi = ds.getFileMetaInfo();
+        if (!fmi.getMediaStorageSOPInstanceUID().equals(
+                ds.getString(Tags.SOPInstanceUID))) { throw new DcmServiceException(
+                Status.DataSetDoesNotMatchSOPClassError,
+                "SOP Instance UID in Dataset differs from Affected SOP Instance UID"); }
+        if (!fmi.getMediaStorageSOPClassUID().equals(
+                ds.getString(Tags.SOPClassUID))) { throw new DcmServiceException(
+                Status.DataSetDoesNotMatchSOPClassError,
+                "SOP Class UID in Dataset differs from Affected SOP Class UID"); }
     }
 
     private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
