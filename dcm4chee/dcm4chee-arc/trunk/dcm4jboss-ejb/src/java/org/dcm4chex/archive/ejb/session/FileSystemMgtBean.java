@@ -8,9 +8,13 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.session;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -30,7 +34,11 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
 
 /**
@@ -58,7 +66,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
 
 	private StudyOnFileSystemLocalHome sofHome;
 
-	private FileLocalHome fileHome;
+	private FileLocalHome fileHome; 
 
 	private FileSystemLocalHome fileSystemHome;
 
@@ -196,5 +204,108 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		dto.setFileSize(file.getFileSize());
 		return dto;
 	}
+	
+	/**
+	 * @param tsBefore
+	 * @ejb.interface-method
+	 */
+	public Collection getStudiesOnFilesystems( Set dirPaths, Timestamp tsBefore ) throws FinderException {
+		return sofHome.listOnFileSystems( dirPaths, tsBefore );
+	}
 
+    /**
+     * Release studies that fullfill freeDiskSpacePolicy to free disk space.
+     * <p>
+     * Remove old files until the <code>maxSizeToDel</code> is reached.<p>
+     * The real deletion is done in the purge process! This method removes only the reference to the file system.  
+     * <DL>
+     * <DD>1) Get a list of studies for all filesystems.</DD>
+     * <DD>2) Dereference files of studies that fullfill the freeDiskSpacePolicy.</DD>
+     * </DL>
+     * 
+     * @param fsPathSet 	Set with path of filesystems.
+     * @param maxSizeToDel	Size that should be released.
+     * @param checkNothing	Flag of freeDiskSpacePolicy: Dont check study.
+     * @param checkOnMedia	Flag of freeDiskSpacePolicy: Check if study is stored on media (offline storage).
+     * @param checkExternal	Flag of freeDiskSpacePolicy: Check if study is on an external AET.
+     * @param accessedBefore date in ms a study have to be accessed.
+     *  
+     * @return Total size of released studies.
+     *  
+     * @throws IOException
+     * @throws FinderException
+     * @throws RemoveException
+     * @throws EJBException
+	 * 
+	 * @ejb.interface-method
+     */
+    public long releaseStudies( Set fsPathSet, long maxSizeToDel, 
+    			boolean checkNothing, boolean checkOnMedia, boolean checkExternal, Long accessedBefore ) throws IOException, FinderException, EJBException, RemoveException {
+    	Timestamp tsBefore = null;
+    	if ( accessedBefore != null ) {
+    		tsBefore = new Timestamp( accessedBefore.longValue() );
+    	}
+        Collection c = getStudiesOnFilesystems( fsPathSet, tsBefore );
+        log.info("\n*****************************\nCollection of studies:"+c);
+        StudyOnFileSystemLocal studyOnFs;
+        StudyLocal studyLocal;
+        log.info("maxSizeToDel:"+maxSizeToDel);
+        long sizeToDelete = 0L;
+        for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
+        	studyOnFs = (StudyOnFileSystemLocal) iter.next();
+        	studyLocal = studyOnFs.getStudy();
+			if ( checkNothing ) {
+				Collection files = studyOnFs.getFiles();
+				for ( Iterator it = files.iterator() ; it.hasNext() ; ) sizeToDelete += ( (FileLocal) it.next() ).getFileSize();
+				studyHome.remove( studyLocal.getPrimaryKey() );
+			} else if ( ( checkOnMedia && studyLocal.isStudyAvailableOnMedia() ) ||
+				 ( checkExternal && studyLocal.isStudyAvailableOnExternalRetrieveAET() ) ) {
+				sizeToDelete += releaseStudy( studyOnFs );
+			}
+	        log.info("sizeToDelete:"+sizeToDelete);
+			if ( sizeToDelete >= maxSizeToDel ) break;
+        }
+    	return sizeToDelete;
+    }
+    
+  
+   /**
+	 * @param studyOnFs
+	 * @return
+	 * @throws FinderException
+	 * @throws RemoveException
+	 * @throws EJBException
+	 * 
+	 * @ejb.transaction type="RequiresNew"
+	 * 
+	 * @ejb.interface-method
+	 */
+	public long releaseStudy(StudyOnFileSystemLocal studyOnFs) throws FinderException, EJBException, RemoveException {
+		Collection c = studyOnFs.getFiles();
+		long size = 0L;
+		FileLocal fileLocal;
+		InstanceLocal il;
+		Set series = new HashSet();
+		for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
+			fileLocal = (FileLocal) iter.next();
+			log.info("delete file:"+fileLocal);
+			size += fileLocal.getFileSize();
+			il = fileLocal.getInstance();
+			series.add( il.getSeries() );
+			log.info("delete reference to instance");
+			fileLocal.setInstance( null );
+			log.info("update instance");
+			il.updateDerivedFields();
+		}
+		for ( Iterator iter = series.iterator() ; iter.hasNext() ; ) {
+			log.info("update series");
+			( (SeriesLocal) iter.next() ).updateDerivedFields();
+		}
+		log.info("update study");
+		studyOnFs.getStudy().updateDerivedFields();
+		log.info("remove studyOnFS");
+		this.sofHome.remove( studyOnFs.getPk() );
+		return size;
+	}
+	
 }
