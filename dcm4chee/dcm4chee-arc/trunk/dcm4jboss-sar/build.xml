@@ -36,6 +36,9 @@
 	<property name="dcm4jboss-web.home" value="../dcm4jboss-web"/>		
 	<property name="dcm4jboss-web.target" value="${dcm4jboss-web.home}/target"/>		
 
+    <!-- Override with your dcm4jboss-arr dist location -->
+	<property name="dcm4jboss-arr.home" value="../dcm4jboss-arr"/>		
+
     <!-- Override with your XDoclet bundle dist location -->
 	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
@@ -197,6 +200,13 @@
    				<include name="*/deploy/*-ds.xml"/>
    				<include name="hsql/data/hypersonic/localDB.script"/>
    			</fileset>
+   			<fileset dir="${dcm4jboss-arr.home}/target">
+   				<include name="common/**"/>
+   				<include name="hsql/**"/>
+   				<include name="psql/**"/>
+   				<include name="oracle/**"/>
+   				<include name="db2/**"/>
+   			</fileset>
    		</copy>
    		<copy todir="${dist.dir}/common">
    			<fileset dir="${dcm4che.home}">
@@ -218,6 +228,9 @@
    				<include name="bin/*.bat"/>
    				<include name="conf/cacerts.jks"/>
    				<include name="conf/identity.p12"/>
+   				<include name="deploy/*.xml"/>
+   			</fileset>
+  			<fileset dir="${dcm4jboss-arr.home}/src/etc">
    				<include name="deploy/*.xml"/>
    			</fileset>
   			<fileset dir="${basedir}">
