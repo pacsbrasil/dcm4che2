@@ -95,7 +95,7 @@
 
             <tr>
                <td>
-                  <input size="25" name="patientID" type="text" value="{patientID}"  readonly="readonly"/>
+                  <input size="25" name="patientID" type="text" value="{patientID}"  disabled="disabled"/>
                </td>
             </tr>
 
