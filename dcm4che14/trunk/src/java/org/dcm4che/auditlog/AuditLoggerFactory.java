@@ -21,7 +21,7 @@ package org.dcm4che.auditlog;
 
 import java.net.Socket;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.dcm4che.Implementation;
 
 /**
@@ -62,7 +62,7 @@ public abstract class AuditLoggerFactory
      * @param  log  Description of the Parameter
      * @return      Description of the Return Value
      */
-    public abstract AuditLogger newAuditLogger(Category log);
+    public abstract AuditLogger newAuditLogger(Logger log);
 
 
     /**

@@ -22,7 +22,7 @@ package org.dcm4cheri.auditlog;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.InstancesAction;
@@ -42,7 +42,7 @@ class AuditLoggerImpl implements AuditLogger
 {
 
     // Constants -----------------------------------------------------
-    private final Category log;
+    private final Logger log;
 
     // Variables -----------------------------------------------------
     private final SyslogWriter writer = new SyslogWriter();
@@ -58,7 +58,7 @@ class AuditLoggerImpl implements AuditLogger
     private boolean logExport = true;
 
     // Constructors --------------------------------------------------
-    AuditLoggerImpl(Category log)
+    AuditLoggerImpl(Logger log)
     {
         this.log = log;
     }
