@@ -3,7 +3,7 @@
 
 <!-- ====================================================================== -->
 <!--                                                                        -->
-<!--  Copyright (c) 2001 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>  -->
+<!--  Copyright (c) 2001-4 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>-->
 <!--                                                                        -->
 <!--  This file is part of dcm4che; a DICOM implementation in Java.         -->
 <!--                                                                        -->
@@ -1034,9 +1034,10 @@
   <element tag="(0040,1007)" name="Filler Order Number / Procedure (Retired)" vr="SH" vm="1" key="FillerOrderNumberProcedureRetired" retired="true" />
   <element tag="(0040,1008)" name="Confidentiality Code" vr="LO" vm="1" key="ConfidentialityCode" />
   <element tag="(0040,1009)" name="Reporting Priority" vr="SH" vm="1" key="ReportingPriority" />
+  <element tag="(0040,100A)" name="Reason for Requested Procedure Code Sequence" vr="SQ" vm="1" key="ReasonforRequestedProcedureCodeSeq" />
   <element tag="(0040,1010)" name="Names of Intended Recipients of Results" vr="PN" vm="1-n" key="NamesOfIntendedRecipientsOfResults" />
   <element tag="(0040,1400)" name="Requested Procedure Comments" vr="LT" vm="1" key="RequestedProcedureComments" />
-  <element tag="(0040,2001)" name="Reason for the Imaging Service Request" vr="LO" vm="1" key="ReasonForTheImagingServiceRequest" />
+  <element tag="(0040,2001)" name="Reason for the Imaging Service Request" vr="LO" vm="1" key="ReasonForTheImagingServiceRequest" retired="true"/>
   <element tag="(0040,2004)" name="Issue Date of Imaging Service Request" vr="DA" vm="1" key="IssueDateOfImagingServiceRequest" />
   <element tag="(0040,2005)" name="Issue Time of Imaging Service Request" vr="TM" vm="1" key="IssueTimeOfImagingServiceRequest" />
   <element tag="(0040,2006)" name="Placer Order Number / Image Service Request (Retired)" vr="SH" vm="1" key="PlacerOrderNumberImagingServiceRequestRetired" retired="true" />
@@ -1360,6 +1361,23 @@
   <element tag="(2130,0080)" name="Presentation LUT Content Sequence" vr="SQ" vm="1" key="PresentationLUTContentSeq" />
   <element tag="(2130,00A0)" name="Proposed Study Sequence" vr="SQ" vm="1" key="ProposedStudySeq" />
   <element tag="(2130,00C0)" name="Original Image Sequence" vr="SQ" vm="1" key="OriginalImageSeq" />
+
+  <element tag="(2200,0001)" name="Label Using Information Extracted From Instances" vr="CS" vm="1" key="LabelUsingInformationExtractedFromInstances" />
+  <element tag="(2200,0002)" name="Label Text" vr="UT" vm="1" key="LabelText" />
+  <element tag="(2200,0003)" name="Label Style Selection" vr="CS" vm="1" key="LabelStyleSelection" />
+  <element tag="(2200,0004)" name="Media Disposition" vr="LT" vm="1" key="MediaDisposition" />
+  <element tag="(2200,0005)" name="Barcode Value" vr="LT" vm="1" key="BarcodeValue" />
+  <element tag="(2200,0006)" name="Barcode Symbology" vr="CS" vm="1" key="BarcodeSymbology" />
+  <element tag="(2200,0007)" name="Allow Media Splitting" vr="CS" vm="1" key="AllowMediaSplitting" />
+  <element tag="(2200,0008)" name="Include Non-DICOM Objects" vr="CS" vm="1" key="IncludeNonDICOMObjects" />
+  <element tag="(2200,0009)" name="Include Display Application" vr="CS" vm="1" key="IncludeDisplayApplication" />
+  <element tag="(2200,000A)" name="Preserve Composite Instances After Media Creation" vr="CS" vm="1" key="PreserveCompositeInstancesAfterMediaCreation" />
+  <element tag="(2200,000B)" name="Total Number of Pieces of Media Created" vr="US" vm="1" key="TotalNumberOfPiecesOfMediaCreated" />
+  <element tag="(2200,000C)" name="Requested Media Application Profile" vr="LO" vm="1" key="RequestedMediaApplicationProfile" />
+  <element tag="(2200,000D)" name="Referenced Storage Media Sequence" vr="SQ" vm="1" key="RefStorageMediaSeq" />
+  <element tag="(2200,000E)" name="Failure Attributes" vr="AT" vm="1-n" key="FailureAttributes" />
+  <element tag="(2200,000F)" name="Allow Lossy Compression" vr="CS" vm="1" key="AllowLossyCompression" />
+  <element tag="(2200,0020)" name="Request Priority" vr="CS" vm="1" key="RequestPriority" />
 
   <element tag="(3002,0002)" name="RT Image Label" vr="SH" vm="1" key="RTImageLabel" />
   <element tag="(3002,0003)" name="RT Image Name" vr="LO" vm="1" key="RTImageName" />
@@ -1962,6 +1980,7 @@
   <uid value="1.2.840.10008.5.1.1.29" name="Hardcopy Grayscale Image Storage SOP Class" key="HardcopyGrayscaleImageStorage" />
   <uid value="1.2.840.10008.5.1.1.30" name="Hardcopy Color Image Storage SOP Class" key="HardcopyColorImageStorage " />
   <uid value="1.2.840.10008.5.1.1.31" name="Pull Print Request SOP Class" key="PullPrintRequest" />
+  <uid value="1.2.840.10008.5.1.1.33" name="Media Creation Management SOP Class" key="MediaCreationManagementSOPClass" />
   <uid value="1.2.840.10008.5.1.4.1.1.1" name="Computed Radiography Image Storage" key="ComputedRadiographyImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.1.1" name="Digital X-Ray Image Storage - For Presentation" key="DigitalXRayImageStorageForPresentation" />
   <uid value="1.2.840.10008.5.1.4.1.1.1.1.1" name="Digital X-Ray Image Storage - For Processing" key="DigitalXRayImageStorageForProcessing" />
@@ -2035,6 +2054,7 @@
   <uid value="1.2.840.10008.5.1.4.32.1" name="General Purpose Worklist Information Model - FIND" key="GeneralPurposeWorklistInformationModelFIND" />
   <uid value="1.2.840.10008.5.1.4.32.2" name="General Purpose Scheduled Procedure Step SOP Class" key="GeneralPurposeScheduledProcedureStepSOPClass" />
   <uid value="1.2.840.10008.5.1.4.32.3" name="General Purpose Performed Procedure Step SOP Class" key="GeneralPurposePerformedProcedureStepSOPClass" />
+  <uid value="1.2.840.10008.5.1.4.33" name="Instance Availability Notification SOP Class" key="InstanceAvailabilityNotificationSOPClass" />
 </uids>
 
 <uids type="MetaSOPClass">
@@ -2122,6 +2142,13 @@
   <status code="C605" name="Insufficient memory in printer to store the image" type="Failure" key="InsufficientMemoryInPrinter"/>
   <status code="C613" name="Combined Print Image size is larger than the Image Box size" type="Failure" key="CombinedImageLargerThanImageBox"/>
   <status code="C616" name="There is an existing film box that has not been printed and N-ACTION at the Film Session level is not supported." type="Failure" key="ExistingFilmBoxNotPrinted"/>
+</statuses>
+
+<statuses service="MediaCreationManagement">
+  <status code="A510" name="Refused because an Initiate Media Creation action has already been received for this SOP Instance" type="Failure" key="DuplicateInitiateMediaCreation" />
+  <status code="C201" name="Media creation request already completed" type="Failure" key="MediaCreationRequestAlreadyCompleted" />
+  <status code="C202" name="Media creation request already in progress and cannot be interrupted" type="Failure" key="MediaCreationRequestAlreadyInProgress" />
+  <status code="C203" name="Cancellation denied for unspecified reason" type="Failure" key="CancellationDeniedForUnspecifiedReason" />
 </statuses>
 
 </dictionary>

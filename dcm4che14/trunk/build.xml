@@ -3,7 +3,7 @@
 <project name="dcm4che" basedir="." default="release">
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.0.19"/>
+   <property name="version" value="1.0.20"/>
    <property name="javac.debug" value="on"/>
    
    <target name="init">
@@ -341,6 +341,14 @@
 				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}" includes="Syslogd*"/>
+      </jar>
+      <jar jarfile="${build.samples.dir}/mcmscu.jar">
+        	<manifest>
+				<attribute name="Main-Class" value="MediaCreationMgtScu"/>
+				<attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
+	    	</manifest>
+           <fileset dir="${build.classes.dir}" includes="MediaCreationMgtScu*,Configuration*"/>
+           <fileset dir="${build.res.dir}" includes="MediaCreationMgtScu*"/>
       </jar>
       <jar jarfile="${build.samples.dir}/printscu.jar">
         	<manifest>
