@@ -39,6 +39,7 @@
 
   <path id="build.path">
     <pathelement location="${lib.dir}/dcm4che.jar"/>
+    <pathelement location="${jboss.lib}/getopt.jar"/>
     <pathelement location="${jboss.lib}/jboss-common.jar"/>
     <pathelement location="${jboss.lib}/jboss-system.jar"/>
     <pathelement location="${jboss.lib}/jboss-jmx.jar"/>
@@ -124,7 +125,7 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar, list-printers-jar, erflut-jar"/>
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-grayscale-jar, list-printers-jar, plut-jar"/>
   
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
@@ -164,12 +165,12 @@
     </jar>
   </target>
   
-  <target name="erflut-jar" depends="compile">
+  <target name="plut-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/erflut.jar"
-         manifest="${src.res}/META-INF/erflut.mf">
+    <jar jarfile="${build.bin.dir}/plut.jar"
+         manifest="${src.res}/META-INF/plut.mf">
       <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/client/ErfLut*"
+               includes="com/tiani/prnscp/client/PLut*"
       />
     </jar>
   </target>
