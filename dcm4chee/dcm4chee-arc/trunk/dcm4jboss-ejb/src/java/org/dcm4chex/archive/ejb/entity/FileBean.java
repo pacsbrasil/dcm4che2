@@ -25,6 +25,7 @@ import javax.ejb.EntityBean;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 
 /**
@@ -52,8 +53,17 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
  * 
  * @ejb.finder
  * 	signature="java.util.Collection findAll()"
- * 	query="SELECT OBJECT(a) FROM File AS a" transaction-type="Supports"
+ * 	query="SELECT OBJECT(a) FROM File AS a"
+ *  transaction-type="Supports"
  * 
+ * @ejb.finder
+ *  signature="java.util.Collection findDereferenced()"
+ *  query="SELECT OBJECT(a) FROM File AS a WHERE a.instance IS NULL"
+ *  transaction-type="Supports"
+ * @jboss.query
+ *  signature="java.util.Collection findDereferenced()"
+ *  strategy="on-find"
+ *  eager-load-group="*"
  */
 public abstract class FileBean implements EntityBean
 {
@@ -180,10 +190,10 @@ public abstract class FileBean implements EntityBean
      *
      * @ejb.interface-method
      * @ejb.persistence
-     *  column-name="timestamp"
+     *  column-name="file_timestamp"
      */
-    public abstract long getTimestamp();
-    public abstract void setTimestamp(long time);
+    public abstract long getFileTimestamp();
+    public abstract void setFileTimestamp(long time);
 
     /**
 	 * @ejb.relation
@@ -202,9 +212,26 @@ public abstract class FileBean implements EntityBean
     /**
 	 * @ejb.interface-method
 	 * 	view-type="local"
-	 *  
 	 */
     public abstract InstanceLocal getInstance();
+
+    /**
+     * @ejb.interface-method
+     * @jboss.method-attributes
+     *   read-only=true
+     */
+    public FileDTO getFileDTO() {
+        FileDTO retval = new FileDTO();
+        retval.setPk(getPk().intValue());
+        retval.setRetrieveAETs(getRetrieveAETs());      
+        retval.setDirectoryPath(getDirectoryPath());      
+        retval.setFilePath(getFilePath());
+        retval.setFileTsuid(getFileTsuid());
+        retval.setFileSize(getFileSize());
+        retval.setFileMd5(getFileMd5());
+        retval.setFileTimestamp(getFileTimestamp());
+        return retval;
+    }
 
     /**
 	 * 
@@ -254,7 +281,7 @@ public abstract class FileBean implements EntityBean
         setFileTsuid(tsuid);
         setFileSize(size);
         setFileMd5(md5);
-        setTimestamp(timestamp);
+        setFileTimestamp(timestamp);
         return null;
     }
 

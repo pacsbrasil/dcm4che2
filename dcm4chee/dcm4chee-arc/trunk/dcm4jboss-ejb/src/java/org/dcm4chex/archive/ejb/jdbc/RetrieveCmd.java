@@ -57,7 +57,7 @@ public abstract class RetrieveCmd extends BaseCmd
             "File.fileTsuid",
             "File.fileMd5Field",
             "File.fileSize",
-            "File.fileTime" };
+            "File.fileTimestamp" };
 
     private static final String[] RELATIONS =
         {
@@ -124,7 +124,7 @@ public abstract class RetrieveCmd extends BaseCmd
                         rs.getString(10),
                         rs.getString(11),
                         rs.getInt(12),
-                        rs.getTimestamp(13));
+                        rs.getLong(13));
                 list = (ArrayList) map.get(info.sopIUID);
                 if (list == null)
                 {

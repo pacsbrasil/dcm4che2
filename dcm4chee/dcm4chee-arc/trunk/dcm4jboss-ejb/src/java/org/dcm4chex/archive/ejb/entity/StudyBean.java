@@ -21,6 +21,7 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -300,6 +301,10 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public Set getRetrieveAETSet() {
+        return Collections.unmodifiableSet(retrieveAETSet());
+    }
+
+    private Set retrieveAETSet() {
         if (retrieveAETSet == null) {
             retrieveAETSet = new HashSet();
             String aets = getRetrieveAETs();
@@ -322,12 +327,12 @@ public abstract class StudyBean implements EntityBean {
                 + getRetrieveAETs()
                 + " with "
                 + aet);
-        if (getRetrieveAETSet().contains(aet)) {
+        if (retrieveAETSet().contains(aet)) {
             log.debug(
                 "study[pk="
                     + getPk()
                     + "]: no update of retrieveAETs "
-                    + getRetrieveAETSet()
+                    + retrieveAETSet()
                     + " necessary");
             return false;
         }
@@ -339,7 +344,7 @@ public abstract class StudyBean implements EntityBean {
                     + aet);
             return false;
         }
-        retrieveAETSet.add(aet);
+        retrieveAETSet().add(aet);
         String prev = getRetrieveAETs();
         if (prev == null || prev.length() == 0) {
             setRetrieveAETs(aet);

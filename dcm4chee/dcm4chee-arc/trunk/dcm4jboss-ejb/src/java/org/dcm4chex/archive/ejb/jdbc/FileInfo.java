@@ -20,7 +20,8 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.File;
-import java.util.Date;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -44,7 +45,7 @@ public class FileInfo
     public final String tsUID;
     public final String md5;
     public final int size;
-    public final Date fileTime;
+    public final long timestamp;
 
     public FileInfo(
         byte[] patAttrs,
@@ -59,7 +60,7 @@ public class FileInfo
         String tsUID,
         String md5,
         int size,
-        Date fileTime)
+        long timestamp)
     {
         this.patAttrs = patAttrs;
         this.studyAttrs = studyAttrs;
@@ -73,7 +74,7 @@ public class FileInfo
         this.tsUID = tsUID;
         this.md5 = md5;
         this.size = size;
-        this.fileTime = fileTime;
+        this.timestamp = timestamp;
     }
 
     public String toString()
@@ -94,8 +95,12 @@ public class FileInfo
 
     public File toFile()
     {
-        String fpath = basedir + '/' + fileID;
-        return new File(fpath.replace('/', File.separatorChar));
+        String uri = "file:" + basedir + '/' + fileID;
+        try {
+            return new File(new URI(uri));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(uri, e);            
+        }
     }
 
     public Dataset getPatientAttrs()

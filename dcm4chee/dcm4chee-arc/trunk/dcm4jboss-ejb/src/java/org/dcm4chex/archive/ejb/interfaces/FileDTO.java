@@ -19,7 +19,10 @@
  */
 package org.dcm4chex.archive.ejb.interfaces;
 
+import java.io.File;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -30,13 +33,13 @@ public final class FileDTO implements Serializable {
 
     private int pk;
     private String aets;
-    private String baseDir;
+    private String basedir;
     private String path;
     private String tsuid;
     private int size;
     private byte[] md5;
     private long timestamp;
-    
+
     /**
      * @return Returns the pk.
      */
@@ -68,15 +71,15 @@ public final class FileDTO implements Serializable {
     /**
      * @return Returns the baseDir.
      */
-    public final String getDirectoryDir() {
-        return baseDir;
+    public final String getDirectoryPath() {
+        return basedir;
     }
 
     /**
      * @param baseDir The baseDir to set.
      */
-    public final void setDirectoryDir(String baseDir) {
-        this.baseDir = baseDir;
+    public final void setDirectoryPath(String baseDir) {
+        this.basedir = baseDir;
     }
 
     /**
@@ -124,14 +127,14 @@ public final class FileDTO implements Serializable {
     /**
      * @return Returns the timestamp.
      */
-    public final long getTimestamp() {
+    public final long getFileTimestamp() {
         return timestamp;
     }
 
     /**
      * @param timestamp The timestamp to set.
      */
-    public final void setTimestamp(long timestamp) {
+    public final void setFileTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -149,4 +152,12 @@ public final class FileDTO implements Serializable {
         this.tsuid = tsuid;
     }
 
+    public File toFile() {
+        String uri = "file:" + basedir + '/' + path;
+        try {
+            return new File(new URI(uri));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(uri, e);            
+        }
+    }
 }

@@ -116,7 +116,7 @@ CREATE TABLE files (
 	file_tsuid      VARCHAR(256) NOT NULL,
 	file_md5        VARCHAR(256),
 	file_size       INTEGER,
-	file_time		TIMESTAMP,
+	file_timestamp	BIGINT,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 );
 CREATE INDEX instance_fk ON files(instance_fk);

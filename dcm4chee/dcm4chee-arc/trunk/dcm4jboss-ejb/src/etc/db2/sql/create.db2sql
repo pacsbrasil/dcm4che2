@@ -131,7 +131,7 @@ CREATE TABLE files (
 	file_size       INTEGER,
 	dirpath			VARCHAR(254) NOT NULL,
 	retrieve_aets	VARCHAR(254) NOT NULL,
-	file_time		TIMESTAMP,	
+	file_timestamp	BIGINT,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 
 );

@@ -35,7 +35,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.dcm4chex.archive.ejb.entity.AEBean;
 import org.dcm4chex.archive.ejb.interfaces.AELocal;
 import org.dcm4chex.archive.ejb.interfaces.AELocalHome;
 import org.dcm4chex.archive.ejb.interfaces.DTOFactory;

@@ -1,5 +1,5 @@
-*** target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	Thu Feb 19 23:46:26 2004
---- target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	Thu Feb 19 23:46:28 2004
+*** target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	Sat Feb 21 00:28:26 2004
+--- target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	Sat Feb 21 00:33:03 2004
 ***************
 *** 4,10 ****
   <jbosscmp-jdbc>
@@ -126,17 +126,17 @@
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 459,465 ****
-  
-          </cmp-field>
+*** 472,478 ****
+  			</read-ahead>
+  	     </query>
   
 ! 	<entity-command name="hsqldb-fetch-key">
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 465,472 ----
-  
-          </cmp-field>
+--- 478,485 ----
+  			</read-ahead>
+  	     </query>
   
 ! 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
 ! 	     <attribute name="sequence">files_pk_seq</attribute>
@@ -144,7 +144,7 @@
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 496,502 ****
+*** 509,515 ****
   
           </cmp-field>
   
@@ -152,7 +152,7 @@
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 503,510 ----
+--- 516,523 ----
   
           </cmp-field>
   
