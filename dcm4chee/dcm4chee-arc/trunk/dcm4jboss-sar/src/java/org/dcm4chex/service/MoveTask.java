@@ -55,7 +55,6 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.service.util.LocalHost;
 import org.jboss.logging.Logger;
 
 /**
@@ -83,6 +82,7 @@ class MoveTask implements Runnable {
     private final int movePcid;
     private final Command moveRqCmd;
     private final String moveOriginatorAET;
+	private final String retrieveAET;
     private ActiveAssociation moveAssoc;
     private final LinkedHashMap fileInfoMap = new LinkedHashMap();
     private final HashMap pcInfo = new HashMap();
@@ -108,7 +108,8 @@ class MoveTask implements Runnable {
         this.moveRqCmd = moveRqCmd;
         this.deviceInfo = deviceInfo;
         this.moveDest = moveDest;
-        this.moveOriginatorAET = moveAssoc.getAssociation().getCalledAET();
+        this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
+		this.retrieveAET = moveAssoc.getAssociation().getCalledAET();
         this.aeInfo = deviceInfo.getNetworkAE(moveDest);
         if (aeInfo == null) {
             throw new DcmServiceException(Status.ProcessingFailure);
@@ -349,7 +350,7 @@ class MoveTask implements Runnable {
                     assoc.getAcceptedPresContext(info.sopCUID, compatibleTs[i]);
                 if (pc != null) {
                     //TODO implement forward MoveRQ to AE at other host
-                    if (LocalHost.getHostName().equalsIgnoreCase(info.host)) {
+                    if (retrieveAET.equalsIgnoreCase(info.retrieveAET)) {
                         return new Object[] { info, pc };
                     }
                 }

@@ -26,17 +26,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
-import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
 
-import javax.ejb.CreateException;
-import javax.ejb.RemoveException;
+import javax.ejb.ObjectNotFoundException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -58,11 +56,9 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
-
-import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
-import org.dcm4chex.service.util.LocalHost;
-
+import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.service.util.ConfigurationException;
 import org.jboss.logging.Logger;
 
 /**
@@ -83,14 +79,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
 	private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
-	private static final String YYYYMMDD = "yyyyMMdd";
-
 	private StorageHome storageHome;
 
 	private final StoreScpService scp;
 	private final Logger log;
-	private String mnt;
-	private File archiveDir;
 	private String providerURL;
 
 	public StoreScp(StoreScpService scp) {
@@ -106,33 +98,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		this.providerURL = providerURL;
 	}
 
-	public String getMountPoint() {
-		return mnt;
-	}
-
-	public void setMountPoint(String mnt) {
-		try {
-			File tmp = new File(new URI("file:" + mnt));
-			if (!tmp.isDirectory() || !tmp.canWrite()) {
-				throw new IllegalArgumentException(
-					"mnt:" + mnt + " not a writeable directory");
-			}
-			this.archiveDir = tmp;
-			this.mnt = tmp.getCanonicalPath();
-		} catch (Exception e) {
-			throw new IllegalArgumentException("mnt:" + mnt);
-		}
-	}
-
-	public File getArchiveDir() {
-		return archiveDir;
-	}
-
 	protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
 		throws IOException, DcmServiceException {
 		Command rqCmd = rq.getCommand();
 		InputStream in = rq.getDataAsStream();
+		Storage storage = null;
 		try {
+			storage = storageHome().create();
 			String instUID = rqCmd.getAffectedSOPInstanceUID();
 			String classUID = rqCmd.getAffectedSOPClassUID();
 			DcmDecodeParam decParam =
@@ -147,10 +119,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 					classUID,
 					instUID,
 					rq.getTransferSyntaxUID()));
-			File file = makeFile(ds);
+
+			String aet = assoc.getAssociation().getCalledAET();
+			URI uri = getNodeURI(storage, aet);
+			File file = makeFile(uri, ds);
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			storeToFile(parser, ds, file, (DcmEncodeParam) decParam, md);
-			storeToDB(ds, file, md.digest());
+			storage.store(
+				ds,
+				aet,
+				toRelPath(uri, file),
+				file.length(),
+				md.digest());
 			rspCmd.putUS(Tags.Status, Status.Success);
 		} catch (DcmServiceException e) {
 			throw e;
@@ -158,35 +138,43 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 			scp.getLog().error(e.getMessage(), e);
 			throw new DcmServiceException(Status.ProcessingFailure, e);
 		} finally {
+			if (storage != null) {
+				try {
+					storage.remove();
+				} catch (Exception ignore) {
+				}
+			}
 			in.close();
 		}
 	}
 
-	private void storeToDB(Dataset ds, File file, byte[] md5)
-		throws
-			NamingException,
-			CreateException,
-			RemoveException, RemoteException, UnknownHostException, DcmServiceException {
-		File seriesDir = file.getParentFile();
-		File studyDir = seriesDir.getParentFile();
-		File dateDir = studyDir.getParentFile();
-		String path =
-			dateDir.getName()
-				+ "/"
-				+ studyDir.getName()
-				+ "/"
-				+ seriesDir.getName()
-				+ "/"
-				+ file.getName();
-		Storage storage = storageHome().create();
-		storage.store(
-			ds,
-			LocalHost.getHostName(),
-			mnt,
-			path,
-			file.length(),
-			md5);
-		storage.remove();
+	private URI getNodeURI(Storage storage, String aet) throws Exception {
+		URI uri = null;
+		try {
+			uri = new URI(storage.getNodeURI(aet));
+		} catch (ObjectNotFoundException e) {
+			throw new ConfigurationException(
+				"Missing Node Configuration for Storage AET:" + aet);
+		}
+		if (!uri.getScheme().equalsIgnoreCase("file")) {
+			throw new ConfigurationException(
+				"No support of URI scheme:" + uri.getScheme() + " by " + aet);
+		}
+		String myHost = InetAddress.getLocalHost().getHostName();
+		if (!uri.getHost().equalsIgnoreCase(myHost)) {
+			throw new ConfigurationException(
+				"Mismatch of node host:" + uri.getHost()
+				+ " with local host:"
+				+ myHost
+				+ " of "
+				+ aet);
+		}
+		return uri;
+	}
+
+	private String toRelPath(URI uri, File file) {
+		String fpath = file.toURI().getPath();
+		return fpath.substring(uri.getPath().length());
 	}
 
 	private StorageHome storageHome() throws NamingException {
@@ -277,17 +265,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		}
 	}
 
-	private File makeFile(Dataset ds) throws DcmServiceException {
-		File file, dir = archiveDir;
-		String id1 = new SimpleDateFormat(YYYYMMDD).format(new Date());
-		String id2 = toHex(ds.getString(Tags.StudyInstanceUID).hashCode());
-		String id3 = toHex(ds.getString(Tags.SeriesInstanceUID).hashCode());
-		int i4 = ds.getString(Tags.SOPInstanceUID).hashCode();
-		mkdir(dir = new File(dir, id1));
-		mkdir(dir = new File(dir, id2));
-		mkdir(dir = new File(dir, id3));
-		while ((file = new File(dir, toHex(i4))).exists()) {
-			++i4;
+	private File makeFile(URI uri, Dataset ds) throws Exception {
+		File file, dir = new File(new URI("file:" + uri.getPath()));
+		String id123 = new SimpleDateFormat("yyyyMMdd").format(new Date());
+		String id4 = toHex(ds.getString(Tags.StudyInstanceUID).hashCode());
+		String id5 = toHex(ds.getString(Tags.SeriesInstanceUID).hashCode());
+		int i6 = ds.getString(Tags.SOPInstanceUID).hashCode();
+		mkdir(dir = new File(dir, id123.substring(0,4)));
+		mkdir(dir = new File(dir, id123.substring(4,6)));
+		mkdir(dir = new File(dir, id123.substring(6)));
+		mkdir(dir = new File(dir, id4));
+		mkdir(dir = new File(dir, id5));
+		while ((file = new File(dir, toHex(i6))).exists()) {
+			++i6;
 		}
 		return file;
 	}

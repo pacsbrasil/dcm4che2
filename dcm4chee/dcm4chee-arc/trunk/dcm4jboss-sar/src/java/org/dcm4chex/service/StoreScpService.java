@@ -144,27 +144,7 @@ public class StoreScpService
     }
 
 
-    /**
-     * @jmx.managed-attribute
-     */
-    public String getMountPoint()
-    {
-        return scp.getMountPoint();
-    }
-
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setMountPoint(String mnt)
-    {
-        scp.setMountPoint(mnt);
-    }
-            
     protected void startService() throws Exception {
-        if (scp.getMountPoint() == null) {
-            throw new IllegalStateException("MountPoint not configured");
-        }
         dcmHandler =
                 (DcmHandler) server.getAttribute(dcmServerName, "DcmHandler");
         bindDcmServices();
