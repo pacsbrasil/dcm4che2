@@ -81,7 +81,12 @@ public class StoreScpService extends AbstractScpService {
             UIDs.KeyObjectSelectionDocument, UIDs.RTDoseStorage,
             UIDs.RTStructureSetStorage, UIDs.RTBeamsTreatmentRecordStorage,
             UIDs.RTPlanStorage, UIDs.RTBrachyTreatmentRecordStorage,
-            UIDs.RTTreatmentSummaryRecordStorage, UIDs.RawDataStorage};
+            UIDs.RTTreatmentSummaryRecordStorage, UIDs.RawDataStorage,
+            UIDs.AmbulatoryECGWaveformStorage,
+            UIDs.BasicVoiceAudioWaveformStorage,
+            UIDs.CardiacElectrophysiologyWaveformStorage,
+            UIDs.GeneralECGWaveformStorage, UIDs.HemodynamicWaveformStorage,
+            UIDs.TwelveLeadECGWaveformStorage};
 
     private ObjectName fileSystemMgtName;
 
