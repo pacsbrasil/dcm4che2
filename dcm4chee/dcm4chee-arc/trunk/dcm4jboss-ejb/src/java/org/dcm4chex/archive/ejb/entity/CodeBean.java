@@ -67,7 +67,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class CodeBean implements EntityBean
 {
-    private Logger log = Logger.getLogger(CodeBean.class);
+    private static final Logger log = Logger.getLogger(CodeBean.class);
     /**
      * Auto-generated Primary Key
      *

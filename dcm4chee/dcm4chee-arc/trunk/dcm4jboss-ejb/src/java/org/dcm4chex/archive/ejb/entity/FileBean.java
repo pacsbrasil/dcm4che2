@@ -70,7 +70,7 @@ import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 public abstract class FileBean implements EntityBean
 {
 
-    private Logger log = Logger.getLogger(FileBean.class);
+    private static final Logger log = Logger.getLogger(FileBean.class);
 
     /**
      * Auto-generated Primary Key

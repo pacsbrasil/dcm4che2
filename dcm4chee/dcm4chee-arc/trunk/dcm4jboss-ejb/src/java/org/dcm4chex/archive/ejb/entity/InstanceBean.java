@@ -65,7 +65,7 @@ import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
  *  class="org.jboss.ejb.plugins.cmp.jdbc.postgres.JDBCPostgresCreateCommand"
  * 
  * @ejb.finder
- *  signature="Collection findAll()"
+ *  signature="java.util.Collection findAll()"
  *  query="SELECT OBJECT(a) FROM Instance AS a"
  *  transaction-type="NotSupported"
  *
@@ -85,7 +85,7 @@ import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
 public abstract class InstanceBean implements EntityBean
 {
     private static final String ATTRS_CFG = "instance-attrs.cfg";
-    private Logger log = Logger.getLogger(InstanceBean.class);
+    private static final Logger log = Logger.getLogger(InstanceBean.class);
     private CodeLocalHome codeHome;
 
     public void setEntityContext(EntityContext ctx) 
@@ -261,12 +261,7 @@ public abstract class InstanceBean implements EntityBean
     public Integer ejbCreate(Dataset ds, SeriesLocal series)
         throws CreateException
     {
-        setSopIuid(ds.getString(Tags.SOPInstanceUID));
-        setSopCuid(ds.getString(Tags.SOPClassUID));
-        setInstanceNumber(ds.getString(Tags.InstanceNumber));
-        setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
-        setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        setAttributes(ds);
         return null;
     }
 
@@ -290,6 +285,20 @@ public abstract class InstanceBean implements EntityBean
     public Dataset getAttributes()
     {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
+    }
+
+    /**
+     * 
+     * @ejb.interface-method
+     */
+    public void setAttributes(Dataset ds)
+    {
+        setSopIuid(ds.getString(Tags.SOPInstanceUID));
+        setSopCuid(ds.getString(Tags.SOPClassUID));
+        setInstanceNumber(ds.getString(Tags.InstanceNumber));
+        setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
+        setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
+        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
     }
 
     /**

@@ -34,8 +34,8 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.util.DatasetUtil;
 
 /**
  * @ejb:bean
@@ -68,11 +68,12 @@ import org.dcm4che.dict.Tags;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public abstract class PatientBean implements EntityBean {
+public abstract class PatientBean implements EntityBean
+{
 
-    private Logger log = Logger.getLogger(PatientBean.class);
+    private static final Logger log = Logger.getLogger(PatientBean.class);
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    private static final String ATTRS_CFG = "patient-attrs.cfg";
 
     /**
      * Auto-generated Primary Key
@@ -98,9 +99,6 @@ public abstract class PatientBean implements EntityBean {
      */
     public abstract String getPatientId();
 
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setPatientId(String pid);
 
     /**
@@ -112,9 +110,6 @@ public abstract class PatientBean implements EntityBean {
      */
     public abstract String getIssuerOfPatientId();
 
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setIssuerOfPatientId(String issuer);
 
     /**
@@ -127,7 +122,6 @@ public abstract class PatientBean implements EntityBean {
     public abstract String getPatientName();
 
     /**
-     * @ejb.interface-method
      *
      * @param name
      */
@@ -146,7 +140,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setPatientBirthDate(java.util.Date date);
-    
+
     /**
      * Patient Sex
      *
@@ -163,15 +157,15 @@ public abstract class PatientBean implements EntityBean {
     public abstract void setPatientSex(String sex);
 
     /**
-     * Specific Character Set
+     * Patient DICOM Attributes
      *
-     * @ejb.interface-method
      * @ejb.persistence
-     *  column-name="spec_charset"
+     *  column-name="pat_attrs"
+     * 
      */
-    public abstract String getSpecificCharacterSet();
-    
-    public abstract void setSpecificCharacterSet(String string);
+    public abstract byte[] getEncodedAttributes();
+
+    public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
      * @ejb:interface-method view-type="local"
@@ -189,57 +183,51 @@ public abstract class PatientBean implements EntityBean {
      * @return all studies of this patient
      */
     public abstract java.util.Collection getStudies();
-    
+
     /**
      * Create patient.
      *
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds) throws CreateException {
-        setSpecificCharacterSet(ds.getString(Tags.SpecificCharacterSet));
-        setPatientId(ds.getString(Tags.PatientID));
-        setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
-        setPatientName(ds.getString(Tags.PatientName));
-        setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
-        setPatientSex(ds.getString(Tags.PatientSex));
+    public Integer ejbCreate(Dataset ds) throws CreateException
+    {
+        setAttributes(ds);
         return null;
     }
 
-    public void ejbPostCreate(Dataset ds) throws CreateException {
+    public void ejbPostCreate(Dataset ds) throws CreateException
+    {
         log.info("Created " + prompt());
     }
 
-    public void ejbRemove() throws RemoveException {
+    public void ejbRemove() throws RemoveException
+    {
         log.info("Deleting " + prompt());
-    }        
+    }
 
     /**
      * @ejb:interface-method
      */
     public Dataset getAttributes()
     {
-        Dataset ds = dof.newDataset();
-        if (getSpecificCharacterSet() != null) {
-            ds.putCS(Tags.SpecificCharacterSet, getSpecificCharacterSet());
-        }
-        if (getPatientId() != null) {
-            ds.putLO(Tags.PatientID, getPatientId());
-        }
-        if (getIssuerOfPatientId() != null) {
-            ds.putLO(Tags.IssuerOfPatientID, getIssuerOfPatientId());
-        }
-        if (getPatientName() != null) {
-            ds.putPN(Tags.PatientName, getPatientName());
-        }
-        if (getPatientBirthDate() != null) {
-            ds.putDA(Tags.PatientBirthDate, getPatientBirthDate());
-        }
-        if (getPatientSex() != null) {
-            ds.putCS(Tags.PatientSex, getPatientSex());
-        }
-        return ds;
+        return DatasetUtil.fromByteArray(getEncodedAttributes());
     }
     
+    /**
+     * @ejb:interface-method
+     */
+    public void setAttributes(Dataset ds)
+    {
+        setPatientId(ds.getString(Tags.PatientID));
+        setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
+        setPatientName(ds.getString(Tags.PatientName));
+        setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
+        setPatientSex(ds.getString(Tags.PatientSex));
+        setEncodedAttributes(
+            DatasetUtil.toByteArray(
+                ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+    }
+
     /**
      * 
      * @ejb.interface-method
@@ -249,7 +237,8 @@ public abstract class PatientBean implements EntityBean {
         return prompt();
     }
 
-    private String prompt() {
+    private String prompt()
+    {
         return "Patient[pk="
             + getPk()
             + ", pid="

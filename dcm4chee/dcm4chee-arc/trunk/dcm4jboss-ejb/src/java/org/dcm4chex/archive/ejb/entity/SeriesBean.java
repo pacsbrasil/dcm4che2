@@ -75,7 +75,8 @@ public abstract class SeriesBean implements EntityBean {
 
     private static final String ATTRS_CFG = "series-attrs.cfg";
 
-    private Logger log = Logger.getLogger(SeriesBean.class);
+    private static final Logger log = Logger.getLogger(SeriesBean.class);
+    
     /**
      * Auto-generated Primary Key
      *
@@ -190,11 +191,7 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, StudyLocal study) throws CreateException {
-        setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
-        setSeriesNumber(ds.getString(Tags.SeriesNumber));
-        setModality(ds.getString(Tags.Modality));
-        setPpsStartDateTime(ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        setAttributes(ds);
         return null;
     }
 
@@ -213,6 +210,19 @@ public abstract class SeriesBean implements EntityBean {
     public Dataset getAttributes()
     {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
+    }
+
+    /**
+     * 
+     * @ejb.interface-method
+     */
+    public void setAttributes(Dataset ds)
+    {
+        setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
+        setSeriesNumber(ds.getString(Tags.SeriesNumber));
+        setModality(ds.getString(Tags.Modality));
+        setPpsStartDateTime(ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
+        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));        
     }
 
     /**

@@ -72,7 +72,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class MediaBean implements EntityBean
 {
-    private Logger log = Logger.getLogger(MediaBean.class);
+    private static final Logger log = Logger.getLogger(MediaBean.class);
     /**
      * Auto-generated Primary Key
      *

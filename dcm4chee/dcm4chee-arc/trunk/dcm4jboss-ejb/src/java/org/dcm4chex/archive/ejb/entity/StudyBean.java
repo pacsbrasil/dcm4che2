@@ -28,8 +28,12 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Set;
+
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -75,7 +79,8 @@ public abstract class StudyBean implements EntityBean {
 
     private static final String ATTRS_CFG = "study-attrs.cfg";
 
-    private Logger log = Logger.getLogger(StudyBean.class);
+    private static final Logger log = Logger.getLogger(StudyBean.class);
+    
     /**
      * Auto-generated Primary Key
      *
@@ -147,17 +152,6 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setReferringPhysicianName(String physician);
 
     /**
-     * Modalities In Study
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="modalities"
-     */
-    public abstract String getModalitiesInStudy();
-
-    public abstract void setModalitiesInStudy(String mds);
-
-    /**
      * Study DICOM Attributes
      *
      * @ejb.persistence
@@ -212,12 +206,7 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
-        setStudyIuid(ds.getString(Tags.StudyInstanceUID));
-        setStudyId(ds.getString(Tags.StudyID));
-        setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
-        setAccessionNumber(ds.getString(Tags.AccessionNumber));
-        setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+        setAttributes(ds);
         return null;
     }
 
@@ -237,6 +226,42 @@ public abstract class StudyBean implements EntityBean {
     {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
     }
+
+    /**
+     * @ejb:interface-method
+     */
+    public void setAttributes(Dataset ds)
+    {
+        setStudyIuid(ds.getString(Tags.StudyInstanceUID));
+        setStudyId(ds.getString(Tags.StudyID));
+        setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
+        setAccessionNumber(ds.getString(Tags.AccessionNumber));
+        setReferringPhysicianName(ds.getString(Tags.ReferringPhysicianName));
+        setEncodedAttributes(DatasetUtil.toByteArray(ds.subSet(DatasetUtil.getFilter(ATTRS_CFG))));
+    }
+    
+    /**
+     * @ejb.select
+     *  query="SELECT s.modality FROM Study AS a, IN(a.series) s"
+     */
+    public abstract Set ejbSelectModalitiesInStudy() throws FinderException; 
+
+    /**
+     * Modalities In Study
+     *
+     * @ejb.interface-method
+     */
+    public Set getModalitiesInStudy() {
+        try
+        {
+            return ejbSelectModalitiesInStudy();
+        }
+        catch (FinderException e)
+        {
+            throw new EJBException(e);
+        }
+    }
+
 
     /**
      * 

@@ -14,7 +14,7 @@ CREATE TABLE patient (
 	pat_name    	TEXT,
 	pat_birthdate  	DATE,
 	pat_sex		  	TEXT,
-	spec_charset	TEXT
+	pat_attrs		BYTEA
 );
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 CREATE INDEX pat_name ON patient(pat_name);
@@ -29,7 +29,6 @@ CREATE TABLE study (
 	study_datetime	TIMESTAMP,
 	accession_no	TEXT,
 	ref_physician   TEXT,
-	modalities	    TEXT,
 	study_attrs		BYTEA,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
@@ -93,6 +92,33 @@ CREATE TABLE file (
 	file_size       BIGINT,
 	file_status		INTEGER,
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
-FOREIGN KEY (media_fk)  REFERENCES media(pk)
+FOREIGN KEY (media_fk)  	REFERENCES media(pk)
 );
 CREATE INDEX retrieve_aet ON file(retrieve_aet);
+
+CREATE TABLE principal (
+	pk          	SERIAL PRIMARY KEY,
+	name         	TEXT
+);
+CREATE UNIQUE INDEX principal_name ON principal(name);
+
+CREATE TABLE link_principal_patient (
+	principal_pk	INTEGER NOT NULL,
+	patient_pk		INTEGER NOT NULL,
+FOREIGN KEY (principal_pk)	REFERENCES principal(pk),
+FOREIGN KEY (patient_pk)	REFERENCES patient(pk)
+);
+
+CREATE TABLE link_principal_study (
+	principal_pk	INTEGER NOT NULL,
+	study_pk		INTEGER NOT NULL,
+FOREIGN KEY (principal_pk)	REFERENCES principal(pk),
+FOREIGN KEY (study_pk) 		REFERENCES study(pk)
+);
+
+CREATE TABLE link_principal_series (
+	principal_pk	INTEGER NOT NULL,
+	series_pk		INTEGER NOT NULL,
+FOREIGN KEY (principal_pk)	REFERENCES principal(pk),
+FOREIGN KEY (series_pk)  	REFERENCES series(pk)
+);

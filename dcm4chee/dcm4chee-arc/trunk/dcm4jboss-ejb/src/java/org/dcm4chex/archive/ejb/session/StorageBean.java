@@ -69,7 +69,6 @@ import org.dcm4chex.archive.ejb.util.EJBLocalHomeFactory;
  *  name="Storage"
  *  type="Stateless"
  *  view-type="remote"
- *  primkey-field="pk"
  *  jndi-name="ejb/Storage"
  * 
  * @ejb:transaction-type 
