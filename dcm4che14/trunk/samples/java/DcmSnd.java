@@ -1,25 +1,23 @@
-/*$Id$*/
-/*****************************************************************************
- *                                                                           *
- *  Copyright (c) 2002 by TIANI MEDGRAPH AG                                  *
- *                                                                           *
- *  This file is part of dcm4che.                                            *
- *                                                                           *
- *  This library is free software; you can redistribute it and/or modify it  *
- *  under the terms of the GNU Lesser General Public License as published    *
- *  by the Free Software Foundation; either version 2 of the License, or     *
- *  (at your option) any later version.                                      *
- *                                                                           *
- *  This library is distributed in the hope that it will be useful, but      *
- *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
- *  Lesser General Public License for more details.                          *
- *                                                                           *
- *  You should have received a copy of the GNU Lesser General Public         *
- *  License along with this library; if not, write to the Free Software      *
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
- *                                                                           *
- *****************************************************************************/
+/*$Id$
+ *
+ *  Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
+ *
+ *  This file is part of dcm4che.
+ *
+ *  This library is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
@@ -108,6 +106,7 @@ public class DcmSnd implements PollDirSrv.Handler {
     private int soCloseDelay = 500;
     private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
     private boolean packPDVs = false;
+    private boolean truncPostPixelData = false;
     private int bufferSize = 2048;
     private byte[] buffer = null;
     private SSLContextAdapter tls = null;
@@ -130,6 +129,7 @@ public class DcmSnd implements PollDirSrv.Handler {
         new LongOpt("max-pdu-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("max-op-invoked", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("pack-pdvs", LongOpt.NO_ARGUMENT, null, 'k'),
+        new LongOpt("trunc-post-pixeldata", LongOpt.NO_ARGUMENT, null, 't'),
         new LongOpt("buf-len", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("set", LongOpt.REQUIRED_ARGUMENT, null, 's'),
         new LongOpt("tls-key", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -177,6 +177,9 @@ public class DcmSnd implements PollDirSrv.Handler {
                 case 'k':
                     cfg.put("pack-pdvs", "true");
                     break;
+                case 't':
+                    cfg.put("trunc-post-pixeldata", "true");
+                    break;
                 case 's':
                     set(cfg,  g.getOptarg());
                     break;
@@ -210,6 +213,8 @@ public class DcmSnd implements PollDirSrv.Handler {
         this.priority = Integer.parseInt(cfg.getProperty("prior", "0"));
         this.packPDVs = "true".equalsIgnoreCase(
             cfg.getProperty("pack-pdvs", "false"));
+        this.truncPostPixelData = "true".equalsIgnoreCase(
+            cfg.getProperty("trunc-post-pixeldata", "false"));
         this.bufferSize = Integer.parseInt(cfg.getProperty("buf-len", "2048"))
             & 0xfffffffe;
         this.repeatWhole = Integer.parseInt(cfg.getProperty("repeat-assoc", "1"));
@@ -452,7 +457,7 @@ public class DcmSnd implements PollDirSrv.Handler {
         }
     }
     
-    private static final class MyDataSource implements DataSource {
+    private final class MyDataSource implements DataSource {
         final DcmParser parser;
         final Dataset ds;
         final byte[] buffer;        
@@ -497,6 +502,10 @@ public class DcmSnd implements PollDirSrv.Handler {
                         && parser.getReadVR() == VRs.OW;
                     writeValueTo(out, swap);
                 }
+                if (truncPostPixelData) {
+                    return;
+                }
+                
                 ds.clear();
                 try {
                     parser.parseDataset(fileParam, -1);
@@ -506,6 +515,7 @@ public class DcmSnd implements PollDirSrv.Handler {
                 ds.writeDataset(out, netParam);
             }
         }
+        
         private void writeValueTo(OutputStream out, boolean swap)
         throws IOException {
             InputStream in = parser.getInputStream();

@@ -62,8 +62,8 @@ public class MSHSegmentImpl extends HL7SegmentImpl implements MSHSegment
             };
     private final static HashMap csMap = new HashMap();
     static {
-        csMap.put("", "");
-        csMap.put("ASCII", "");
+        csMap.put("", "ISO_IR 100");
+        csMap.put("ASCII", "ISO_IR 100");
         csMap.put("8859/1", "ISO_IR 100");
         csMap.put("8859/2", "ISO_IR 101");
         csMap.put("8859/3", "ISO_IR 109");
