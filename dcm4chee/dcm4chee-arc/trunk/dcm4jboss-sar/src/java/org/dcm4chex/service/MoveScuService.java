@@ -1,21 +1,22 @@
-/* $Id$
- * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
- *
+/*
+ * $Id$ Copyright
+ * (c) 2002,2003 by TIANI MEDGRAPH AG
+ * 
  * This file is part of dcm4che.
- *
+ * 
  * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.dcm4chex.service;
 
@@ -48,13 +49,11 @@ import org.dcm4chex.service.util.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
- * 
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 17.12.2003
  * 
- * @jmx.mbean
- *  extends="org.jboss.system.ServiceMBean"
+ * @jmx.mbean extends="org.jboss.system.ServiceMBean"
  */
 public class MoveScuService
     extends ServiceMBeanSupport
@@ -70,42 +69,41 @@ public class MoveScuService
     private static final int INVOKE_FAILED_STATUS = -1;
 
     private DataSourceFactory dsf = new DataSourceFactory(log);
-    private long[] retryIntervalls = {
-    };
+    private long[] retryIntervalls = {};
     private MoveOrderQueue queue;
     private boolean running = false;
 
     /**
-     * @jmx.managed-attribute
-     */
+	 * @jmx.managed-attribute
+	 */
     public String getDataSource() {
         return dsf.getJNDIName();
     }
 
     /**
-     * @jmx.managed-attribute
-     */
+	 * @jmx.managed-attribute
+	 */
     public void setDataSource(String datasource) {
         dsf.setJNDIName(datasource);
     }
 
     /**
-     * @jmx.managed-attribute
-     */
+	 * @jmx.managed-attribute
+	 */
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
 
     /**
-     * @jmx.managed-attribute
-     */
+	 * @jmx.managed-attribute
+	 */
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
     /**
-     * @jmx.managed-attribute
-     */
+	 * @jmx.managed-attribute
+	 */
     public String getRetryIntervalls() {
         MillisecondArrayEditor e = new MillisecondArrayEditor();
         e.setValue(retryIntervalls);
@@ -113,8 +111,8 @@ public class MoveScuService
     }
 
     /**
-     * @jmx.managed-attribute
-     */
+	 * @jmx.managed-attribute
+	 */
     public void setRetryIntervalls(String text) {
         MillisecondArrayEditor e = new MillisecondArrayEditor();
         e.setAsText(text);
@@ -127,25 +125,25 @@ public class MoveScuService
     }
 
     /**
-     * @jmx.managed-operation
-     */
+	 * @jmx.managed-operation
+	 */
     public void run() {
-        synchronized(this) {
-	        if (running) {
-	            return;
-	        }
-	        running = true;
+        synchronized (this) {
+            if (running) {
+                return;
+            }
+            running = true;
         }
         try {
-	        MoveOrderValue order;
-	        while ((order = fetchNextOrder()) != null) {
-	            try {
-	                process(order);
-	            } catch (Exception e) {
-	                log.error("Failed to invoke " + order);
-	                queueFailedMoveOrder(order, INVOKE_FAILED_STATUS);
-	            }
-	        }
+            MoveOrderValue order;
+            while ((order = fetchNextOrder()) != null) {
+                try {
+                    process(order);
+                } catch (Exception e) {
+                    log.error("Failed to invoke " + order);
+                    queueFailedMoveOrder(order, INVOKE_FAILED_STATUS);
+                }
+            }
         } finally {
             running = false;
         }
@@ -157,44 +155,52 @@ public class MoveScuService
             ConfigurationException,
             InterruptedException,
             IOException {
-        ActiveAssociation moveAssoc =
+        final ActiveAssociation moveAssoc =
             openAssociation(queryAEData(order.getRetrieveAET()));
-        Command cmd = dof.newCommand();
-        cmd.initCMoveRQ(
-            moveAssoc.getAssociation().nextMsgID(),
-            UIDs.StudyRootQueryRetrieveInformationModelMOVE,
-            order.getPriority(),
-            order.getMoveDestination());
-        Dataset ds = dof.newDataset();
-        ds.putCS(Tags.QueryRetrieveLevel, order.getQueryRetrieveLevel());
-        putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
-        putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
-        putUI(ds, Tags.SeriesInstanceUID, order.getSeriesIuids());
-        putUI(ds, Tags.SOPInstanceUID, order.getSopIuids());
-        moveAssoc.invoke(af.newDimse(PCID, cmd, ds), new DimseListener() {
+            Command cmd = dof.newCommand();
+            cmd.initCMoveRQ(
+                moveAssoc.getAssociation().nextMsgID(),
+                UIDs.StudyRootQueryRetrieveInformationModelMOVE,
+                order.getPriority(),
+                order.getMoveDestination());
+            Dataset ds = dof.newDataset();
+            ds.putCS(Tags.QueryRetrieveLevel, order.getQueryRetrieveLevel());
+            putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
+            putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
+            putUI(ds, Tags.SeriesInstanceUID, order.getSeriesIuids());
+            putUI(ds, Tags.SOPInstanceUID, order.getSopIuids());
+            moveAssoc.invoke(af.newDimse(PCID, cmd, ds), new DimseListener() {
 
-            public void dimseReceived(Association assoc, Dimse dimse) {
-                Command cmd = dimse.getCommand();
-                final int status = cmd.getStatus();
-                if (status == Status.Success || status == Status.Pending) {
-                    return;
+                public void dimseReceived(Association assoc, Dimse dimse) {
+                    Command cmd = dimse.getCommand();
+                    final int status = cmd.getStatus();
+                    if (status == Status.Pending) {
+                        return;
+                    }
+                    if (status != Status.Success) {
+	                    Dataset ds = null;
+	                    try {
+	                        ds = dimse.getDataset();
+	                    } catch (IOException e) {
+	                        log.warn("Failed to read Move Response Identifier:", e);
+	                    }
+	                    String[] failedUIDs =
+	                        ds != null
+	                            ? ds.getStrings(Tags.FailedSOPInstanceUIDList)
+	                            : null;
+	                    if (failedUIDs != null) {
+	                        order.setSopIuids(
+	                            StringUtils.toString(failedUIDs, '\\'));
+	                    }
+	                    queueFailedMoveOrder(order, status);
+                    }
+					try {
+						moveAssoc.release(false);
+					} catch (Exception e) {
+						log.warn("Failed to release " + moveAssoc.getAssociation());
+					}
                 }
-                Dataset ds = null;
-                try {
-                    ds = dimse.getDataset();
-                } catch (IOException e) {
-                    log.warn("Failed to read Move Response Identifier:", e);
-                }
-                String[] failedUIDs =
-                    ds != null
-                        ? ds.getStrings(Tags.FailedSOPInstanceUIDList)
-                        : null;
-                if (failedUIDs != null) {
-                    order.setSopIuids(StringUtils.toString(failedUIDs, '\\'));
-                }
-                queueFailedMoveOrder(order, status);
-            }
-        });
+            });
     }
 
     private static void putUI(Dataset ds, int tag, String uids) {
