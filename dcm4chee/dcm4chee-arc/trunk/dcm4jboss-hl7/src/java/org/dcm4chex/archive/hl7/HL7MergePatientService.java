@@ -24,6 +24,12 @@ import ca.uhn.hl7v2.app.ApplicationException;
 import ca.uhn.hl7v2.app.DefaultApplication;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.Segment;
+import ca.uhn.hl7v2.model.v231.datatype.CX;
+import ca.uhn.hl7v2.model.v231.datatype.XPN;
+import ca.uhn.hl7v2.model.v231.group.ADT_A40_PIDPD1MRGPV1;
+import ca.uhn.hl7v2.model.v231.message.ADT_A40;
+import ca.uhn.hl7v2.model.v231.segment.MRG;
+import ca.uhn.hl7v2.model.v231.segment.PID;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -40,6 +46,17 @@ public class HL7MergePatientService
         public Message processMessage(Message in) throws ApplicationException {
             Message out = null;
             try {
+                ADT_A40 a40 = (ADT_A40)in;
+                ADT_A40_PIDPD1MRGPV1 pid_mrg = a40.getADT_A40_PIDPD1MRGPV1();
+                PID pid = pid_mrg.getPID();
+                CX pid0 = pid.getPatientIdentifierList(0);
+                TS pid.getDateTimeOfBirth()
+                XPN pn0 = pid.getPatientName(0);
+                MRG mrg = pid_mrg.getMRG();
+                CX pid1 = mrg.getPriorPatientIdentifierList(0);
+                XPN pn2 = mrg.getPriorPatientName(0);
+                
+                
                 //get default ACK
                 out = makeACK((Segment) in.get("MSH"));
             } catch (Exception e) {
@@ -49,7 +66,7 @@ public class HL7MergePatientService
             return out;
         }
     };
-
+    
     protected Application getApplication() {
         return handler;
     }

@@ -34,6 +34,7 @@ public class PatientDTO implements Serializable
 	public static final String DATE_FORMAT = "yyyy/MM/dd";
 	private int pk;
 	private String patientID=null;
+	private String issuerOfPatientID=null;
 	private String patientName=null;
 	private String patientSex=null;
 	private String patientBirthDate=null;
@@ -191,4 +192,19 @@ public class PatientDTO implements Serializable
 
 		return res;
 	}
+	
+    /**
+     * @return Returns the issuerOfPatientID.
+     */
+    public final String getIssuerOfPatientID() {
+        return issuerOfPatientID;
+    }
+
+    /**
+     * @param issuerOfPatientID The issuerOfPatientID to set.
+     */
+    public final void setIssuerOfPatientID(String issuerOfPatientID) {
+        this.issuerOfPatientID = issuerOfPatientID;
+    }
+
 }

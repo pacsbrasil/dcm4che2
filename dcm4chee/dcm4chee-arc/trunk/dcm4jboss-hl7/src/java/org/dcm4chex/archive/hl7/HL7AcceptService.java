@@ -23,6 +23,8 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.dcm4chex.archive.util.EJBHomeFactory;
+
 import org.jboss.system.ServiceMBeanSupport;
 
 import ca.uhn.hl7v2.app.AcceptApplication;
@@ -47,6 +49,20 @@ public class HL7AcceptService
     protected String messageType;
     protected String triggerEvent;
 
+    /**
+     * @jmx.managed-attribute
+     */
+    public String getEjbProviderURL() {
+        return EJBHomeFactory.getEjbProviderURL();
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public void setEjbProviderURL(String ejbProviderURL) {
+        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
+    }
+    
     /**
      * @jmx.managed-attribute
      */

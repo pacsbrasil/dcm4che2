@@ -206,6 +206,8 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setAvailability(int availability);
     
     /**
+     * @ejb.interface-method view-type="local"
+     * 
      * @ejb.relation
      *  name="patient-study"
      *  role-name="study-of-patient"

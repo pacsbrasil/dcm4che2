@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 
 /**
@@ -21,16 +22,22 @@ import org.dcm4che.dict.Tags;
 public class DTO2Dataset
 {
 
-	/**
-	 * 
-	 */
-	public DTO2Dataset()
+    private static DcmObjectFactory dofFactory = DcmObjectFactory.getInstance();
+    
+	private DTO2Dataset()
 	{
-		super();
-		// TODO Auto-generated constructor stub
 	}
 
-	public static void updtateDataset(
+	public static Dataset toDataset(PatientDTO patient)
+	{
+	    Dataset ds = dofFactory.newDataset();
+	    ds.putLO(Tags.PatientID, patient.getPatientID());
+	    ds.putLO(Tags.IssuerOfPatientID, patient.getIssuerOfPatientID());
+	    updateDataset(ds, patient);
+	    return ds;
+	}
+	
+    public static void updateDataset(
 		Dataset toUpdate,
 		PatientDTO patient) //works by reference
 	{

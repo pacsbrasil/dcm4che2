@@ -60,6 +60,11 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *  query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1"
  *  transaction-type="Supports"
  *
+ * @ejb.finder
+ *  signature="java.util.Collection findByPatientIdWithIssuer(java.lang.String pid, java.lang.String issuer)"
+ *  query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND (a.issuerOfPatientId IS NULL OR a.issuerOfPatientId = ?1)"
+ *  transaction-type="Supports"
+ * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
@@ -102,6 +107,9 @@ public abstract class PatientBean implements EntityBean {
      */
     public abstract String getIssuerOfPatientId();
 
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setIssuerOfPatientId(String issuer);
 
     /**

@@ -161,7 +161,7 @@ public abstract class ContentEditBean implements SessionBean {
 
             if (modified = true) {
                 Dataset oldPat = patientLocal.getAttributes();
-                DTO2Dataset.updtateDataset(oldPat, to_update);
+                DTO2Dataset.updateDataset(oldPat, to_update);
                 patientLocal.setAttributes(oldPat);
             }
         } catch (FinderException e) {

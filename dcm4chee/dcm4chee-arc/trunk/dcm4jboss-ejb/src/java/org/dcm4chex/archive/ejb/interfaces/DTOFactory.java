@@ -43,6 +43,7 @@ public final class DTOFactory {
         PatientDTO pat = new PatientDTO();
         pat.setPk(pk);
         pat.setPatientID(ds.getString(Tags.PatientID, ""));
+        pat.setIssuerOfPatientID(ds.getString(Tags.IssuerOfPatientID, ""));
         pat.setPatientName(ds.getString(Tags.PatientName, ""));
         pat.setPatientBirthDate(
             format(ds.getDate(Tags.PatientBirthDate), PatientDTO.DATE_FORMAT));
