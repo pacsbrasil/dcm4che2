@@ -57,6 +57,10 @@ import org.apache.log4j.Logger;
  *  page-size="20"
  *  eager-load-group="*"
  *
+ * @jboss.query 
+ * 	signature="int ejbSelectGenericReturnInt(java.lang.String jbossQl, java.lang.Object[] args)"
+ *  dynamic="true"
+ *
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 26.11.2004
@@ -201,6 +205,22 @@ public abstract class MediaBean implements EntityBean {
                 desc);
     }
 
+    /**    
+     * @ejb.home-method
+     */
+    public int ejbHomeListByCreatedTimeCount(Integer status,
+            Timestamp after, Timestamp before) throws FinderException {
+        return countFindBy("m.createdTime", status, after, before);
+    }
+
+    /**    
+     * @ejb.home-method
+     */
+    public int ejbHomeListByUpdatedTimeCount(Integer status,
+            Timestamp after, Timestamp before) throws FinderException {
+        return countFindBy("m.updatedTime", status, after, before);
+    }
+    
     private Collection findBy(String attrName, Integer status, Timestamp after,
             Timestamp before, Integer offset, Integer limit,
             boolean desc) throws FinderException {
@@ -258,10 +278,56 @@ public abstract class MediaBean implements EntityBean {
         return ejbSelectGeneric(jbossQl.toString(), args);
     }
 
+    private int countFindBy(String attrName, Integer status, Timestamp after,
+            Timestamp before) throws FinderException {
+        // generate JBossQL query
+        StringBuffer jbossQl = new StringBuffer();
+        int argsCount = 0;
+        if (status != null)
+            ++argsCount;
+        if (after != null)
+            ++argsCount;
+        if (before != null)
+            ++argsCount;
+        jbossQl.append("SELECT COUNT(m) FROM Media m");
+        Object[] args = new Object[argsCount];
+        int i = 0;
+        if (status != null) {
+            args[i++] = status;
+            jbossQl.append(" WHERE m.mediaStatus = ?").append(i);
+        }
+        if (after != null || before != null) {
+            jbossQl.append(i == 0 ? " WHERE " : " AND ");
+            jbossQl.append(attrName);
+            if (after != null) {
+                args[i++] = after;
+                if (before == null) {
+                    jbossQl.append(" > ?").append(i);
+                } else {
+                    jbossQl.append(" BETWEEN ?").append(i);
+                    args[i++] = before;
+                    jbossQl.append(" AND ?").append(i);
+                }
+            } else if (before != null) {
+                args[i++] = before;
+                jbossQl.append(" < ?").append(i);
+            }
+        }
+        // call dynamic-ql query
+        return ejbSelectGenericReturnInt(jbossQl.toString(), args);
+    }
+    
     /**
      * @ejb.select query=""
      *  transaction-type="Supports"
      */ 
     public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
+    		throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     *  transaction-type="Supports"
+     */ 
+    public abstract int ejbSelectGenericReturnInt(String jbossQl, Object[] args)
     		throws FinderException;
 }
