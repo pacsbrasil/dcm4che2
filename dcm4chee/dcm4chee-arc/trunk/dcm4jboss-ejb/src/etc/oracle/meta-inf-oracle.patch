@@ -1,5 +1,5 @@
-*** target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	Fri Jan 23 00:04:39 2004
---- target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	Fri Jan 23 00:10:43 2004
+*** target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	Tue Feb 10 14:26:58 2004
+--- target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	Tue Feb 10 16:08:16 2004
 ***************
 *** 4,10 ****
   <jbosscmp-jdbc>
@@ -18,7 +18,7 @@
      </defaults>
   
 ***************
-*** 62,68 ****
+*** 77,83 ****
   
           </cmp-field>
   
@@ -26,12 +26,12 @@
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 62,69 ----
+--- 77,84 ----
   
           </cmp-field>
   
 ! 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-! 	     <attribute name="sequence">instance_pk_seq</attribute>
+! 	     <attribute name="sequence">mwl_item_pk_seq</attribute>
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
@@ -49,12 +49,12 @@
           </cmp-field>
   
 ! 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-! 	     <attribute name="sequence">study_pk_seq</attribute>
+! 	     <attribute name="sequence">instance_pk_seq</attribute>
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 176,182 ****
+*** 205,211 ****
   
           </cmp-field>
   
@@ -62,7 +62,7 @@
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 178,185 ----
+--- 207,214 ----
   
           </cmp-field>
   
@@ -72,25 +72,7 @@
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 259,265 ****
-  			</read-ahead>
-  	     </query>
-  
-! 	<entity-command name="hsqldb-fetch-key">
-  	</entity-command>
-  <!-- jboss 3.2 features -->
-  <!-- optimistic locking does not express the exclusions needed -->
---- 262,269 ----
-  			</read-ahead>
-  	     </query>
-  
-! 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
-! 	     <attribute name="sequence">move_pk_seq</attribute>
-  	</entity-command>
-  <!-- jboss 3.2 features -->
-  <!-- optimistic locking does not express the exclusions needed -->
-***************
-*** 340,346 ****
+*** 272,278 ****
   
           </cmp-field>
   
@@ -98,7 +80,25 @@
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 344,351 ----
+--- 275,282 ----
+  
+          </cmp-field>
+  
+! 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+! 	     <attribute name="sequence">study_pk_seq</attribute>
+  	</entity-command>
+  <!-- jboss 3.2 features -->
+  <!-- optimistic locking does not express the exclusions needed -->
+***************
+*** 324,330 ****
+  
+          </cmp-field>
+  
+! 	<entity-command name="hsqldb-fetch-key">
+  	</entity-command>
+  <!-- jboss 3.2 features -->
+  <!-- optimistic locking does not express the exclusions needed -->
+--- 328,335 ----
   
           </cmp-field>
   
@@ -108,7 +108,25 @@
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 387,393 ****
+*** 407,413 ****
+  			</read-ahead>
+  	     </query>
+  
+! 	<entity-command name="hsqldb-fetch-key">
+  	</entity-command>
+  <!-- jboss 3.2 features -->
+  <!-- optimistic locking does not express the exclusions needed -->
+--- 412,419 ----
+  			</read-ahead>
+  	     </query>
+  
+! 	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
+! 	     <attribute name="sequence">move_pk_seq</attribute>
+  	</entity-command>
+  <!-- jboss 3.2 features -->
+  <!-- optimistic locking does not express the exclusions needed -->
+***************
+*** 454,460 ****
   
           </cmp-field>
   
@@ -116,7 +134,7 @@
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 392,399 ----
+--- 460,467 ----
   
           </cmp-field>
   
@@ -126,7 +144,7 @@
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
 ***************
-*** 424,430 ****
+*** 491,497 ****
   
           </cmp-field>
   
@@ -134,7 +152,7 @@
   	</entity-command>
   <!-- jboss 3.2 features -->
   <!-- optimistic locking does not express the exclusions needed -->
---- 430,437 ----
+--- 498,505 ----
   
           </cmp-field>
   
