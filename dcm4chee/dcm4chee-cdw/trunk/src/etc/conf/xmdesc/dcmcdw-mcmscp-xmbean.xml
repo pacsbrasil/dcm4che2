@@ -144,17 +144,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isMediaSplittingSupported"
-      setMethod="setMediaSplittingSupported">
-      <description>Description not yet written.
-      </description>
-      <name>MediaSplittingSupported</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isDefaultAllowLossyCompression"
       setMethod="setDefaultAllowLossyCompression">
       <description>Description not yet written.

@@ -73,8 +73,6 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
     private boolean defaultAllowMediaSplitting = false;
 
-    private boolean mediaSplittingSupported = true;
-
     private boolean defaultAllowLossyCompression = false;
 
     private String defaultIncludeNonDICOMObjects = "NO";
@@ -268,14 +266,6 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         this.readRequestRetryInterval = interval;
     }
 
-    public final boolean isMediaSplittingSupported() {
-        return mediaSplittingSupported;
-    }
-
-    public final void setMediaSplittingSupported(boolean mediaSplittingSupported) {
-        this.mediaSplittingSupported = mediaSplittingSupported;
-    }
-
     protected void bindDcmServices() {
         bindDcmServices(CUIDS, service);
     }
@@ -341,9 +331,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 Tags.LabelUsingInformationExtractedFromInstances,
                 defaultLabelUsingInformationExtractedFromInstances,
                 rspCmd);
-        checkFlag(ds, Tags.AllowMediaSplitting, mediaSplittingSupported
-                && defaultAllowMediaSplitting, rspCmd);
-        if (!mediaSplittingSupported) disableMediaSplitting(ds, rspCmd);
+        checkFlag(ds, Tags.AllowMediaSplitting, defaultAllowMediaSplitting, rspCmd);
         checkFlag(ds,
                 Tags.AllowLossyCompression,
                 defaultAllowLossyCompression,
@@ -389,15 +377,6 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             s = null;
         }
         if (s == null) ds.putCS(tag, Flag.valueOf(defval));
-    }
-
-    private void disableMediaSplitting(Dataset ds, Command rspCmd) {
-        if (Flag.isYES(ds.getString(Tags.AllowMediaSplitting))) {
-            rspCmd.putUS(Tags.Status, Status.AttributeValueOutOfRange);
-            rspCmd.putLO(Tags.ErrorComment, ""
-                    + ds.get(Tags.AllowMediaSplitting));
-            ds.putCS(Tags.AllowMediaSplitting, Flag.NO);
-        }
     }
 
     private void checkRequest(Dataset attrs) throws MediaCreationException {
