@@ -102,7 +102,7 @@ $Revision$
           </login-module>
           <login-module code="org.dcm4chex.archive.security.AuditLoginModule"
              flag = "optional" >
-             <module-option name = "auditLoggerName">dcm4chex:service=AuditLogger</module-option>
+             <module-option name = "auditLoggerName">tiani.archive:service=AuditLogger</module-option>
           </login-module>
        </authentication>
     </application-policy>
@@ -117,7 +117,7 @@ $Revision$
           </login-module>
           <login-module code="org.dcm4chex.archive.security.AuditLoginModule"
              flag = "optional" >
-             <module-option name = "auditLoggerName">dcm4chex:service=AuditLogger</module-option>
+             <module-option name = "auditLoggerName">tiani.archive:service=AuditLogger</module-option>
           </login-module>
        </authentication>
     </application-policy>
