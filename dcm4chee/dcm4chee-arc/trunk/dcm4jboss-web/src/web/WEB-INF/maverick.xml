@@ -177,6 +177,15 @@ default-transform-type="xslt">
     	  <transform path="mwlc/mwl_console.xsl" />
 	    </view>
      </command>
+
+	<!-- ****** Modality Performed Procedure Step Console (MPPSConsole) related commands ******-->
+
+    <command name="mpps_console">
+        <controller class="org.dcm4chex.archive.web.maverick.mpps.MPPSConsoleCtrl" />    
+	    <view name="success">
+    	  <transform path="mppsc/mpps_console.xsl" />
+	    </view>
+     </command>
      
   </commands>
 </maverick>
