@@ -123,7 +123,7 @@ final class AAssociateRJImpl implements AAssociateRJ {
                     case CALLING_AE_TITLE_NOT_RECOGNIZED:
                         return "3 - calling-AE-title-not-recognized";
                     case CALLED_AE_TITLE_NOT_RECOGNIZED:
-                        return "7 - called-AE-title-not-recognizedr";
+                        return "7 - called-AE-title-not-recognized";
                 }
             case SERVICE_PROVIDER_ACSE:
                 switch (reason()) {
