@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server>
+<!-- $Id$ -->
+
+<!-- ===================================================================== -->
+<!--                                                                       -->
+<!--  Application Entity Service Configuration                                   -->
+<!--                                                                       -->
+<!-- ===================================================================== -->
+
+<server>
+
+<classpath codebase="lib" archives="dcm4jboss.jar"/>
+
+<mbean code="org.dcm4chex.service.AEService" 
+	name="dcm4chex:service=AE">
+</mbean>
+
+</server>
+
