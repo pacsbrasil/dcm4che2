@@ -133,6 +133,22 @@ class Annotation {
       return insetBottom;
    }
    
+   public double getImageableX(PageFormat pf) {
+      return pf.getImageableX() + insetLeft;
+   }
+   
+   public double getImageableY(PageFormat pf) {
+      return pf.getImageableY() + insetTop;
+   }
+
+   public double getImageableWidth(PageFormat pf) {
+      return pf.getImageableWidth() - (insetLeft + insetRight);
+   }
+   
+   public double getImageableHeight(PageFormat pf) {
+      return pf.getImageableHeight() - (insetTop + insetBottom);
+   }
+   
    private String getText(int index) {
       return props.getProperty("" + index);
    }
