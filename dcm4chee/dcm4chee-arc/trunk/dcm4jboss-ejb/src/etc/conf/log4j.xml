@@ -152,6 +152,17 @@
    <!-- Limit categories -->
    <!-- ================ -->
 
+   <!-- Limit the org.infohazard.domify category to INFO -->
+   <category name="org.infohazard.domify">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Uncomment to limit the org.dcm4jboss.ejb category to FATAL
+   <category name="org.dcm4jboss.ejb">
+      <priority value="FATAL"/>
+   </category>
+   -->
+
    <!-- Limit the org.dcm4cheri category to INFO -->
    <category name="org.dcm4cheri">
       <priority value="INFO"/>
@@ -162,10 +173,11 @@
       <priority value="INFO"/>
    </category>
 
-   <!-- Limit JBoss categories to INFO -->
+   <!-- Uncomment to limit JBoss categories to FATAL
    <category name="org.jboss">
-     <priority value="INFO"/>
+     <priority value="FATAL"/>
    </category>
+   -->
 
    <!-- Decrease the priority threshold for the org.jboss.varia category
    <category name="org.jboss.varia">

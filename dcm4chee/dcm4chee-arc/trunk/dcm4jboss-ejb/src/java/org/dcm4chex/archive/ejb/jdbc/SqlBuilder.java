@@ -35,17 +35,12 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
  * @since 26.08.2003
  */
 class SqlBuilder {
-    
+
     public static final boolean TYPE1 = false;
     public static final boolean TYPE2 = true;
     public static final String DESC = " DESC";
     public static final String ASC = " ASC";
     public static final String[] SELECT_COUNT = { "count(*)" };
-    private static final String HSQL="Hypersonic SQL";
-	private static final String PSQL="PostgreSQL 7.2";
-	private static final String DB2="DB2";
-	private static final String ORACLE="Oracle9i";
-	private static final String DS_MAPPING="datasource-mapping";
     private String[] select;
     private String[] from;
     private String[] leftJoin;
@@ -55,10 +50,10 @@ class SqlBuilder {
     private int limit = 0;
     private int offset = 0;
 
-    private static boolean isDatabase(String mapping) {
-        return mapping.equals(JdbcProperties.getInstance().getProperty(DS_MAPPING));
+    private static int getDatabase() {
+        return JdbcProperties.getInstance().getDatabase();
     }
-    
+
     public void setSelect(String[] fields) {
         select = JdbcProperties.getInstance().getProperties(fields);
     }
@@ -146,14 +141,29 @@ class SqlBuilder {
             throw new IllegalStateException("from not initalized");
 
         StringBuffer sb = new StringBuffer("SELECT ");
-		if (limit > 0 || offset > 0) {
-			if (isDatabase(HSQL)) {            
-				sb.append(" LIMIT ");
-				sb.append(offset);
-				sb.append(" ");
-				sb.append(limit);
-			}
-		}
+        if (limit > 0 || offset > 0) {
+            switch (getDatabase()) {
+                case JdbcProperties.HSQL :
+                    sb.append("LIMIT ");
+                    sb.append(offset);
+                    sb.append(" ");
+                    sb.append(limit);
+                    sb.append(" ");
+                    break;
+                case JdbcProperties.DB2 :
+                    sb.append("* FROM ( SELECT ROW_NUMBER() OVER (ORDER BY ");
+                    appendTo(
+                        sb,
+                        (String[]) orderby.toArray(new String[orderby.size()]));
+                    sb.append(") AS rownum, ");
+                    break;
+                case JdbcProperties.ORACLE :
+                    sb.append("* FROM ( SELECT ROWNUM as r1, ");
+                    appendTo(sb, select);
+                    sb.append(" FROM ( SELECT ");
+                    break;
+            }
+        }
         appendTo(sb, select);
         sb.append(" FROM ");
         appendTo(sb, from);
@@ -176,11 +186,25 @@ class SqlBuilder {
                 (String[]) orderby.toArray(new String[orderby.size()]));
         }
         if (limit > 0 || offset > 0) {
-            if (isDatabase(PSQL)) {            
-				sb.append(" OFFSET ");
-				sb.append(offset);
-	            sb.append(" LIMIT ");
-	            sb.append(limit);
+            switch (getDatabase()) {
+                case JdbcProperties.PSQL :
+                    sb.append(" OFFSET ");
+                    sb.append(offset);
+                    sb.append(" LIMIT ");
+                    sb.append(limit);
+                    break;
+                case JdbcProperties.DB2 :
+                    sb.append(" ) AS foo WHERE rownum > ");
+                    sb.append(offset);
+                    sb.append(" AND rownum <= ");
+                    sb.append(offset + limit);
+                    break;
+                case JdbcProperties.ORACLE :
+                    sb.append(" ) WHERE ROWNUM <= ");
+                    sb.append(offset + limit);
+                    sb.append(" ) WHERE ROWNUM r1 > ");
+                    sb.append(offset);
+                    break;
             }
         }
         return sb.toString();
@@ -303,5 +327,4 @@ class SqlBuilder {
         cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(stk.nextToken()));
         return Calendar.DAY_OF_MONTH;
     }
-
 }

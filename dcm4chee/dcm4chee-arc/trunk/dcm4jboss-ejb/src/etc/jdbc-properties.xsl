@@ -9,7 +9,35 @@
 <xsl:value-of select="jbosscmp-jdbc/defaults/datasource-mapping"/>
 <xsl:text>
 </xsl:text>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Study']" mode="fk">
+<xsl:with-param name="fk" select="'patient_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Series']" mode="fk">
+<xsl:with-param name="fk" select="'study_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Instance']" mode="fk">
+<xsl:with-param name="fk" select="'series_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Instance']" mode="fk">
+<xsl:with-param name="fk" select="'srcode_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'File']" mode="fk">
+<xsl:with-param name="fk" select="'instance_fk'"/>
+</xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity"/>
+</xsl:template>
+
+<xsl:template match="entity" mode="fk">
+<xsl:param name="fk"/>
+<xsl:value-of select="ejb-name"/>
+<xsl:text>.</xsl:text>
+<xsl:value-of select="$fk"/>
+<xsl:text>=</xsl:text>
+<xsl:value-of select="table-name"/>
+<xsl:text>.</xsl:text>
+<xsl:value-of select="$fk"/>
+<xsl:text>
+</xsl:text>
 </xsl:template>
 
 <xsl:template match="entity">

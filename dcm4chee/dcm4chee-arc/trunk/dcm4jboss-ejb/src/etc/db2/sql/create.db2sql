@@ -148,7 +148,7 @@ CREATE TABLE mwl_item (
 	pat_id         	VARCHAR(254) NOT NULL,
 	pat_name    	VARCHAR(254),
 	pat_name_up    	GENERATED ALWAYS AS (UPPER(pat_name)),
-	item_attrs		VARBINARY
+	item_attrs		BLOB(64000)
 );
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id);
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);

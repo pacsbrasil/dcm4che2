@@ -30,20 +30,19 @@ import java.util.Properties;
  */
 public class JdbcProperties extends Properties {
 
-    private static final String[] FK_FIELDS =
-        {
-            "Study",
-            "patient_fk",
-            "Series",
-            "study_fk",
-            "Instance",
-            "series_fk",
-            "Instance",
-            "srcode_fk",
-            "File",
-            "instance_fk",
-            };
+    public static final int HSQL = 0;
+    public static final int PSQL = 1;
+    public static final int DB2 = 2;
+    public static final int ORACLE = 3;
+
+    private static final String HSQL_VAL = "Hypersonic SQL";
+    private static final String PSQL_VAL = "PostgreSQL 7.2";
+    private static final String DB2_VAL = "DB2";
+    private static final String ORACLE_VAL = "Oracle9i";
+    private static final String DS_MAPPING_KEY = "datasource-mapping";
     private static final JdbcProperties instance = new JdbcProperties();
+
+    private final int database;
 
     public static JdbcProperties getInstance() {
         return instance;
@@ -63,19 +62,36 @@ public class JdbcProperties extends Properties {
         return value;
     }
 
+    public int getDatabase() {
+        return database;
+    }
+
     private JdbcProperties() {
         try {
             InputStream in =
                 JdbcProperties.class.getResourceAsStream("Jdbc.properties");
             load(in);
             in.close();
-            for (int i = 0; i < FK_FIELDS.length; ++i, ++i)
-                put(
-                    FK_FIELDS[i] + '.' + FK_FIELDS[i + 1],
-                    getProperty(FK_FIELDS[i]) + '.' + FK_FIELDS[i + 1]);
+            database = toDatabase(super.getProperty(DS_MAPPING_KEY));
         } catch (Exception e) {
             throw new RuntimeException("Failed to load jdbc properties", e);
         }
     }
 
+    private static int toDatabase(String mapping) {
+        if (HSQL_VAL.equals(mapping)) {
+            return HSQL;
+        }
+        if (PSQL_VAL.equals(mapping)) {
+            return PSQL;
+        }
+        if (DB2_VAL.equals(mapping)) {
+            return DB2;
+        }
+        if (ORACLE_VAL.equals(mapping)) {
+            return ORACLE;
+        }
+        throw new IllegalArgumentException(
+            DS_MAPPING_KEY + "=" + mapping);
+    }
 }
