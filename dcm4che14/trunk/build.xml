@@ -284,6 +284,10 @@
            manifest="${build.res.dir}/META-INF/syslogd.mf">
            <fileset dir="${build.classes.dir}" includes="Syslogd*"/>
       </jar>
+      <jar jarfile="${build.samples.dir}/printscu.jar"
+           manifest="${build.res.dir}/META-INF/printscu.mf">
+           <fileset dir="${build.classes.dir}" includes="org/dcm4che/client/printscu/*"/>
+      </jar>
    </target>
    
    <target name="check-javadoc" depends="xslt-generate">
