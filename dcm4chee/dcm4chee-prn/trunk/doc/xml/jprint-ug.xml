@@ -3,29 +3,31 @@
 "http://www.oasis-open.org/docbook/xml/simple/1.0/sdocbook.dtd">
 <article>
   <articleinfo>
-    <title>jPrint 1.2 User&#39;s Guide</title>
+    <title>jPrint 1.2 User's Guide</title>
 
-    <corpauthor>Tiani Medgraph AG, <ulink url="http://www.tiani.com">http://www.tiani.com</ulink></corpauthor>
+    <corpauthor>Tiani Medgraph AG, <ulink
+    url="http://www.tiani.com">http://www.tiani.com</ulink></corpauthor>
 
-    <pubdate>10 June 2003</pubdate>
+    <pubdate>27 April 2004</pubdate>
   </articleinfo>
 
   <section>
     <title>Introduction</title>
 
     <para>This document describes how to install, configure and calibrate
-    TIANI&#39;s DICOM Print Server jPrint 1.2 for proper mode of operation.</para>
+    TIANI's DICOM Print Server jPrint 1.2 for proper mode of operation.</para>
 
     <para>jPrint 1.2 is delivered pre-configured, to enable to run with
     minimal adjustments of the default configuration according to your
     printing environment.</para>
 
     <para>To achieve hard copy presentation quality and consistency compliant
-    to the <emphasis>DICOM Part 14: Grayscale Standard Display Function</emphasis>,
-    jPrint 1.2 has to quantify the characteristic curve of connected printers.
-    This procedure is called <link linkend="printer-calibration">Printer
-    Calibration</link>, and shall be repeated at regular intervals, but
-    particularly after any printer adjustment (e.g. toner refill).</para>
+    to the <emphasis>DICOM Part 14: Grayscale Standard Display
+    Function</emphasis>, jPrint 1.2 has to quantify the characteristic curve
+    of connected printers. This procedure is called <link
+    linkend="printer-calibration">Printer Calibration</link>, and shall be
+    repeated at regular intervals, but particularly after any printer
+    adjustment (e.g. toner refill).</para>
 
     <para>jPrint 1.2 also supports the configuration of modality-specific
     Presentation LUTs, for the common case, that the Print Composer
@@ -46,8 +48,8 @@
         <listitem>
           <para><ulink url="http://java.sun.com/j2se/">Sun Java[tm] </ulink>2
           runtime 1.4.0_01 or above. J2SE SDK recommended: required for use of
-          &#34;server&#34; VM and for running jPrint with embedded Audit
-          Record Repository (jAudit 0.1).</para>
+          "server" VM and for running jPrint with embedded Audit Record
+          Repository (jAudit 0.1).</para>
         </listitem>
 
         <listitem>
@@ -58,8 +60,8 @@
           <para>100Mb free disk space - mainly for spooled print jobs (jPrint
           1.2 program files require less than 10Mb of disk space); if the
           performance of the connected printer is not sufficient to forward
-          incoming print jobs immediately, much more (&#62;1 Gb) disk space
-          may be required, to enable jPrint to buffer print jobs as long the
+          incoming print jobs immediately, much more (&gt;1 Gb) disk space may
+          be required, to enable jPrint to buffer print jobs as long the
           connected printer is not ready to accept them.</para>
         </listitem>
 
@@ -71,7 +73,8 @@
           <para>Reference sheet with test pattern required for Printer
           Calibration using scanned print outs. - You will receive a reference
           sheet via postal service when you order the (evaluation) license of
-          jPrint at <ulink url="http://www.tiani.com/products/jprint/">http://www.tiani.com/products/jprint/</ulink>.</para>
+          jPrint at <ulink
+          url="http://www.tiani.com/products/jprint/">http://www.tiani.com/products/jprint/</ulink>.</para>
         </listitem>
 
         <listitem>
@@ -102,7 +105,7 @@
           and that you are using version 1.4:</para>
 
           <programlisting>$ java -version
-java version &#34;1.4.1_01&#34;
+java version "1.4.1_01"
 Java(TM) 2 Runtime Environment, Standard Edition (build 1.4.1_01-b01)
 Java HotSpot(TM) Client VM (build 1.4.1_01-b01, mixed mode)</programlisting>
 
@@ -132,8 +135,9 @@ C:\j2sdk1.4.1_01</programlisting>
               <listitem>
                 <para>Contains jPrint DICOM print server + utilities, bundled
                 with a stripped-down JBoss application server distribution (s.
-                <ulink url="http://www.jboss.org">http://www.jboss.org</ulink>)
-                , to run out of the box.</para>
+                <ulink
+                url="http://www.jboss.org">http://www.jboss.org</ulink>) , to
+                run out of the box.</para>
               </listitem>
             </varlistentry>
 
@@ -164,7 +168,8 @@ C:\j2sdk1.4.1_01</programlisting>
 
           <note>
             <para>You may order a free evaluation license for jPrint 1.2 using
-            the form at <ulink url="http://www.tiani.com/products/jprint/">http://www.tiani.com/products/jprint/</ulink>
+            the form at <ulink
+            url="http://www.tiani.com/products/jprint/">http://www.tiani.com/products/jprint/</ulink>
             .</para>
           </note>
         </listitem>
@@ -178,7 +183,8 @@ C:\j2sdk1.4.1_01</programlisting>
 
         <listitem>
           <para>Check if your license is valid for running jPrint 1.2 on this
-          host by utility <link linkend="check-license.jar"><command>check-license.jar</command></link>:</para>
+          host by utility <link
+          linkend="check-license.jar"><command>check-license.jar</command></link>:</para>
 
           <programlisting>$ java -jar check-license.jar ../server/default/conf/license.jks
 
@@ -200,7 +206,8 @@ Product(s):
 
         <listitem>
           <para>Determine printer names of installed system and network
-          printers by utility <link linkend="list-printers.jar"><command>list-printers.jar</command></link>:</para>
+          printers by utility <link
+          linkend="list-printers.jar"><command>list-printers.jar</command></link>:</para>
 
           <programlisting>$ java -jar list-printers.jar
 Available Printers:
@@ -210,17 +217,18 @@ psc750hpijs</programlisting>
         </listitem>
 
         <listitem>
-          <para>Open the configuration file <filename>server/default/deploy/printer-service.xml</filename>
-          with any text editor, which treats ASCII files with a single
-          linefeed as line delimiter (UNIX style) properly.
-          <command>NotePad</command> on Microsoft Windows fails to do that,
-          but you may use <command>WordPad,</command> which displays UNIX line
-          formated text files correctly. Replace <literal>myprinter.</literal></para>
+          <para>Open the configuration file
+          <filename>server/default/deploy/printer-service.xml</filename> with
+          any text editor, which treats ASCII files with a single linefeed as
+          line delimiter (UNIX style) properly. <command>NotePad</command> on
+          Microsoft Windows fails to do that, but you may use
+          <command>WordPad,</command> which displays UNIX line formated text
+          files correctly. Replace <literal>myprinter.</literal></para>
 
-          <programlisting>  &#60;!--
+          <programlisting>  &lt;!--
   Specifies name of the printer used by the system.
-  --&#62;
-  &#60;attribute name=&#34;PrinterName&#34;&#62;<emphasis role="bold"><replaceable>myprinter</replaceable></emphasis>&#60;/attribute&#62;</programlisting>
+  --&gt;
+  &lt;attribute name="PrinterName"&gt;<emphasis role="bold"><replaceable>myprinter</replaceable></emphasis>&lt;/attribute&gt;</programlisting>
 
           <para>by the actual name of the connected printer to use. This must
           be one of <literal>Available Printers</literal> listed above.</para>
@@ -232,20 +240,21 @@ psc750hpijs</programlisting>
           replace <literal>TIANI_PRINT</literal> in the same configuration
           file some lines above.</para>
 
-          <programlisting>  &#60;mbean code=&#34;com.tiani.prnscp.print.PrinterService&#34; 
-           name=&#34;dcm4chex:service=Printer,calledAET=<emphasis role="bold"><replaceable>TIANI_PRINT</replaceable></emphasis>&#34;&#62;</programlisting>
+          <programlisting>  &lt;mbean code="com.tiani.prnscp.print.PrinterService" 
+           name="dcm4chex:service=Printer,calledAET=<emphasis role="bold"><replaceable>TIANI_PRINT</replaceable></emphasis>"&gt;</programlisting>
         </listitem>
 
         <listitem>
           <para>[optional] If you want to change the default port (6104),
           where the DICOM server shall be listening for incoming association
           requests from Print Clients, you have also to replace 6104 in the
-          server configuration file <filename>server/default/deploy/printer-service.xml</filename>:</para>
+          server configuration file
+          <filename>server/default/deploy/printer-service.xml</filename>:</para>
 
-          <programlisting>  &#60;!--
+          <programlisting>  &lt;!--
   Specifies TCP port on which the DICOM server is listening.
-  --&#62;
-  &#60;attribute name=&#34;Port&#34;&#62;<replaceable>6104</replaceable>&#60;/attribute&#62;</programlisting>
+  --&gt;
+  &lt;attribute name="Port"&gt;<replaceable>6104</replaceable>&lt;/attribute&gt;</programlisting>
 
           <para>by the TCP port number to use.</para>
         </listitem>
@@ -296,8 +305,9 @@ psc750hpijs</programlisting>
 
           <programlisting>15:32:41,427 WARN  [PrinterService] Failed to calibrate Printer ...</programlisting>
 
-          <para>because no preparation for <link linkend="printer-calibration">Printer
-          Calibration</link> was done yet.</para>
+          <para>because no preparation for <link
+          linkend="printer-calibration">Printer Calibration</link> was done
+          yet.</para>
         </listitem>
 
         <listitem>
@@ -328,29 +338,31 @@ psc750hpijs</programlisting>
           <itemizedlist>
             <listitem>
               <para>store the scanned reference sheet as a JPEG file named
-              <filename>DSI256.jpg</filename> into the <filename>server/default/conf/calibration</filename>
+              <filename>DSI256.jpg</filename> into the
+              <filename>server/default/conf/calibration</filename>
               directory,</para>
             </listitem>
 
             <listitem>
               <para>store the scanned DSI256 pattern print-out in monochrome
-              mode (no -c option) into the <filename>TIANI_PRINT.monochrome</filename>
-              sub-directory. Make sure the chosen file name ends with
-              &#34;.jpg&#34; (<emphasis role="bold">not</emphasis>
-              &#34;.jpeg&#34;),</para>
+              mode (no -c option) into the
+              <filename>TIANI_PRINT.monochrome</filename> sub-directory. Make
+              sure the chosen file name ends with ".jpg" (<emphasis
+              role="bold">not</emphasis> ".jpeg"),</para>
             </listitem>
 
             <listitem>
               <para>store the scanned DSI256 pattern print-out in color mode
               (with -c option) into the <filename>TIANI_PRINT.color</filename>
               sub-directory, again using a file name which ends with
-              &#34;.jpg&#34;.</para>
+              ".jpg".</para>
             </listitem>
           </itemizedlist>
         </listitem>
 
         <listitem>
-          <para>Initiate the calibrated print-out of the WEDGE8 pattern by:</para>
+          <para>Initiate the calibrated print-out of the WEDGE8 pattern
+          by:</para>
 
           <programlisting>$ java -jar print-image.jar -i shape=IDENTITY ../images/WEDGE8.dcm</programlisting>
 
@@ -402,14 +414,16 @@ psc750hpijs</programlisting>
           <orderedlist>
             <listitem>
               <para>Open <filename>bin/jprint_init_debian.sh</filename> in any
-              ASCII editor and adjust the values of run-time parameters:</para>
+              ASCII editor and adjust the values of run-time
+              parameters:</para>
 
               <variablelist>
                 <varlistentry>
                   <term><literal>JAVA_HOME</literal></term>
 
                   <listitem>
-                    <para>Location of JAVA 2 SDK installation directory.</para>
+                    <para>Location of JAVA 2 SDK installation
+                    directory.</para>
                   </listitem>
                 </varlistentry>
 
@@ -427,15 +441,17 @@ psc750hpijs</programlisting>
                   <listitem>
                     <para>specify the user under which jPrint will run on the
                     system. (Must have write permission to jPrint installation
-                    subdirectory <filename>server/default/tmp</filename>).</para>
+                    subdirectory
+                    <filename>server/default/tmp</filename>).</para>
                   </listitem>
                 </varlistentry>
               </variablelist>
             </listitem>
 
             <listitem>
-              <para>Save the modified script to <filename>/etc/init.d/jprint</filename>
-              and make it executable by the super-user:</para>
+              <para>Save the modified script to
+              <filename>/etc/init.d/jprint</filename> and make it executable
+              by the super-user:</para>
 
               <programlisting>$ chmod a+x /etc/init.d/jprint</programlisting>
             </listitem>
@@ -447,7 +463,8 @@ psc750hpijs</programlisting>
               <programlisting>$ /etc/init.d/jprint start</programlisting>
 
               <para>and evaluate successful startup by inspection of server
-              log file <filename>server/default/log/server.log</filename>.</para>
+              log file
+              <filename>server/default/log/server.log</filename>.</para>
 
               <para>Stop the server by</para>
 
@@ -456,18 +473,20 @@ psc750hpijs</programlisting>
 
             <listitem>
               <para>Create symbolic links <filename>S90jprint</filename> to
-              <filename>/etc/init.d/jprint</filename> in <filename>/etc/rc.2</filename>,
-              <filename>/etc/rc.2</filename>, <filename>/etc/rc.3</filename>
-              to start jPrint when changing to the multi-user run-level:</para>
+              <filename>/etc/init.d/jprint</filename> in
+              <filename>/etc/rc.2</filename>, <filename>/etc/rc.2</filename>,
+              <filename>/etc/rc.3</filename> to start jPrint when changing to
+              the multi-user run-level:</para>
 
               <programlisting>$ ln -s /etc/init.d/jprint /etc/init.d/rc.2/S90jprint
 $ ln -s /etc/init.d/jprint /etc/init.d/rc.3/S90jprint
 $ ln -s /etc/init.d/jprint /etc/init.d/rc.4/S90jprint</programlisting>
 
               <para>Create symbolic links <filename>K10jprint</filename> to
-              <filename>/etc/init.d/jprint</filename> in <filename>/etc/rc.0</filename>,
-              <filename>/etc/rc.1</filename>, <filename>/etc/rc.6</filename>
-              to stop jPrint when leaving the multi-user run-level:</para>
+              <filename>/etc/init.d/jprint</filename> in
+              <filename>/etc/rc.0</filename>, <filename>/etc/rc.1</filename>,
+              <filename>/etc/rc.6</filename> to stop jPrint when leaving the
+              multi-user run-level:</para>
 
               <programlisting>$ ln -s /etc/init.d/jprint /etc/init.d/rc.0/K10jprint
 $ ln -s /etc/init.d/jprint /etc/init.d/rc.1/K10jprint
@@ -506,15 +525,17 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
             <para>Using the server option is recommended (s.a. <ulink
             url="http://java.sun.com/j2se/1.4.1/docs/guide/vm/index.html">http://java.sun.com/j2se/1.4.1/docs/guide/vm/index.html</ulink>).
             But if only the Java 2 Runtime is installed you have to use the
-            client option, because the Java HotSpot <emphasis>Server</emphasis>
-            VM is only included in the Java 2 SDK distribution.</para>
+            client option, because the Java HotSpot
+            <emphasis>Server</emphasis> VM is only included in the Java 2 SDK
+            distribution.</para>
           </listitem>
 
           <listitem>
             <para>[optional] Open the Windows Service Manager and verify, that
-            the service was registered with the name <literal>jprint-1.2.x</literal>.
-            It will be started automatically with the next system reboot. You
-            may start it immediately by using the Windows Service Manager.</para>
+            the service was registered with the name
+            <literal>jprint-1.2.x</literal>. It will be started automatically
+            with the next system reboot. You may start it immediately by using
+            the Windows Service Manager.</para>
           </listitem>
         </orderedlist>
 
@@ -561,9 +582,10 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
     + <filename>tmp/</filename></programlisting>
 
       <para>The subdirectories <filename>log/</filename> and
-      <filename>tmp/</filename> of directory <filename>jprint-1.2.x/server/default/</filename>
-      are not part of the jPrint distribution package, but are created at
-      first server startup.</para>
+      <filename>tmp/</filename> of directory
+      <filename>jprint-1.2.x/server/default/</filename> are not part of the
+      jPrint distribution package, but are created at first server
+      startup.</para>
 
       <para>jprint-with-jaudit-1.2.x.zip contains additional subdirectories
       which are described at <xref linkend="jprint-with-jaudit" />.</para>
@@ -577,9 +599,10 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>bin/check-license.jar</filename></term>
 
           <listitem>
-            <para>Executable jar of the <link linkend="check-license.jar">check-license.jar</link>
-            utility, used to check if your license is valid for running jPrint
-            1.2 on this host.</para>
+            <para>Executable jar of the <link
+            linkend="check-license.jar">check-license.jar</link> utility, used
+            to check if your license is valid for running jPrint 1.2 on this
+            host.</para>
           </listitem>
         </varlistentry>
 
@@ -587,9 +610,10 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>bin/list-printers.jar</filename></term>
 
           <listitem>
-            <para>Executable jar of the <link linkend="list-printers.jar">list-printers.jar</link>
-            utility, used to determine printer names of any installed system
-            and network printers.</para>
+            <para>Executable jar of the <link
+            linkend="list-printers.jar">list-printers.jar</link> utility, used
+            to determine printer names of any installed system and network
+            printers.</para>
           </listitem>
         </varlistentry>
 
@@ -597,10 +621,11 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>bin/print-image.jar</filename></term>
 
           <listitem>
-            <para>Executable jar of the <link linkend="print-image.jar">print-image.jar</link>
-            utility, used to print a DICOM image - particularly one of the
-            test patterns in the <filename>images/</filename> subdirectory
-            used for <link linkend="printer-calibration">Printer Calibration</link>.</para>
+            <para>Executable jar of the <link
+            linkend="print-image.jar">print-image.jar</link> utility, used to
+            print a DICOM image - particularly one of the test patterns in the
+            <filename>images/</filename> subdirectory used for <link
+            linkend="printer-calibration">Printer Calibration</link>.</para>
           </listitem>
         </varlistentry>
 
@@ -608,9 +633,10 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>bin/view-plut.jar</filename></term>
 
           <listitem>
-            <para>Executable jar of the <link linkend="view-plut.jar">view-plut.jar</link>
-            utility, used to visualize the effect of applying various
-            Presentation LUTs on a particular DICOM image.</para>
+            <para>Executable jar of the <link
+            linkend="view-plut.jar">view-plut.jar</link> utility, used to
+            visualize the effect of applying various Presentation LUTs on a
+            particular DICOM image.</para>
           </listitem>
         </varlistentry>
 
@@ -637,7 +663,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>bin/run.sh</filename></term>
 
           <listitem>
-            <para>Bash shell script to start the server on UNIX platforms.</para>
+            <para>Bash shell script to start the server on UNIX
+            platforms.</para>
           </listitem>
         </varlistentry>
 
@@ -645,7 +672,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>bin/run.bat</filename></term>
 
           <listitem>
-            <para>Windows batch file to start the server on WIndows platforms.</para>
+            <para>Windows batch file to start the server on WIndows
+            platforms.</para>
           </listitem>
         </varlistentry>
 
@@ -671,7 +699,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>bin/jprint_init_debian.sh</filename></term>
 
           <listitem>
-            <para>Server startup/shutdown script for Debian GNU/Linux systems.</para>
+            <para>Server startup/shutdown script for Debian GNU/Linux
+            systems.</para>
           </listitem>
         </varlistentry>
 
@@ -679,14 +708,16 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>bin/jprint_init_redhat.sh</filename></term>
 
           <listitem>
-            <para>Server startup/shutdown script for RedHat Linux systems.</para>
+            <para>Server startup/shutdown script for RedHat Linux
+            systems.</para>
           </listitem>
         </varlistentry>
       </variablelist>
 
       <para>The <filename>client/</filename> subdirectory contains the jars
-      required for jPrint utilities (i.e.: <filename>bin/print-image.jar</filename>),
-      to access JBoss services via the JMX/RMI adapter.</para>
+      required for jPrint utilities (i.e.:
+      <filename>bin/print-image.jar</filename>), to access JBoss services via
+      the JMX/RMI adapter.</para>
 
       <para>The <filename>doc/</filename> subdirectory contains jPrint
       documentation files:</para>
@@ -723,7 +754,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>doc/gsdf_od.sxc</filename></term>
 
           <listitem>
-            <para>Open Office Version of <filename>doc/gsdf_od.xls</filename>.</para>
+            <para>Open Office Version of
+            <filename>doc/gsdf_od.xls</filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -732,14 +764,15 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
           <listitem>
             <para><citetitle>Consistency of Softcopy and Hardcopy: Preliminary
-            Experiences with the new DICOM Extensions for Image Display</citetitle>
-            by Marco Eichelberg et al., which describes the DICOM concepts of
-            a <literal>Grayscale Standard Display Function</literal>,
-            <literal>Grayscale Softcopy Presentation State</literal> and
-            <literal>Presentation Look Up Table</literal>, and why it&#39;s
-            implementation by workstations, print composers and print servers
-            improves the consistency between displayed and printed images.
-            [downloaded from IHE Year 3 Display Consistency page: <ulink
+            Experiences with the new DICOM Extensions for Image
+            Display</citetitle> by Marco Eichelberg et al., which describes
+            the DICOM concepts of a <literal>Grayscale Standard Display
+            Function</literal>, <literal>Grayscale Softcopy Presentation
+            State</literal> and <literal>Presentation Look Up Table</literal>,
+            and why it's implementation by workstations, print composers and
+            print servers improves the consistency between displayed and
+            printed images. [downloaded from IHE Year 3 Display Consistency
+            page: <ulink
             url="http://wuerlim.wustl.edu/mesa/software/consistency/index.html">http://wuerlim.wustl.edu/mesa/software/consistency/index.html</ulink>].</para>
           </listitem>
         </varlistentry>
@@ -799,8 +832,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
       by JBoss.</para>
 
       <para>Subdirectory <filename>server/default/lib/</filename> contains
-      additional jars required by JBoss&#39; internal services and deployed
-      jPrint services.</para>
+      additional jars required by JBoss' internal services and deployed jPrint
+      services.</para>
 
       <para>Subdirectory <filename>server/default/deploy/</filename> contains
       configuration files for any deployed jPrint services (as well as some
@@ -853,8 +886,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>server/default/conf/jboss-service.xml</filename></term>
 
           <listitem>
-            <para>Defines JBoss&#39; core service configuration. You should
-            not need to alter this configuration.</para>
+            <para>Defines JBoss' core service configuration. You should not
+            need to alter this configuration.</para>
           </listitem>
         </varlistentry>
 
@@ -871,10 +904,11 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>server/default/conf/log4j.xml</filename></term>
 
           <listitem>
-            <para>Configures the <ulink url="http://jakarta.apache.org/log4j">Apache
-            log4j</ulink> framework category priorities and appenders used by
-            JBoss and deployed the jPrint Service. <link linkend="log4j">Edit
-            this file</link>, if you want to change the default logging
+            <para>Configures the <ulink
+            url="http://jakarta.apache.org/log4j">Apache log4j</ulink>
+            framework category priorities and appenders used by JBoss and
+            deployed the jPrint Service. <link linkend="log4j">Edit this
+            file</link>, if you want to change the default logging
             behavior.</para>
           </listitem>
         </varlistentry>
@@ -885,9 +919,10 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <listitem>
             <para>Your license to run jPrint-1.2. It is not included in
             <filename>jprint-1.2.x.zip</filename>! You receive it separately
-            by e-mail and have to copy it into <filename>server/default/conf/</filename>
-            yourself. <filename>license.jks</filename> is also usable as
-            server certificate, if operating the server in <link linkend="tls">secure
+            by e-mail and have to copy it into
+            <filename>server/default/conf/</filename> yourself.
+            <filename>license.jks</filename> is also usable as server
+            certificate, if operating the server in <link linkend="tls">secure
             mode (DICOM-TLS)</link>.</para>
           </listitem>
         </varlistentry>
@@ -897,24 +932,27 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
           <listitem>
             <para>Contains certificates of trusted certification authorities.
-            Only used in <link linkend="tls">secure mode (DICOM-TLS)</link>.</para>
+            Only used in <link linkend="tls">secure mode
+            (DICOM-TLS)</link>.</para>
           </listitem>
         </varlistentry>
       </variablelist>
 
-      <para>The subdirectory <filename>server/default/conf/annotation</filename>
-      contains configuration files specifying <link linkend="adf">Annotation
-      Display Formats</link> provided by jPrint:</para>
+      <para>The subdirectory
+      <filename>server/default/conf/annotation</filename> contains
+      configuration files specifying <link linkend="adf">Annotation Display
+      Formats</link> provided by jPrint:</para>
 
       <variablelist>
         <varlistentry>
           <term><filename>server/default/conf/annotation/TITLE.5.adf</filename></term>
 
           <listitem>
-            <para>Specifies Annotation Display Format <literal>TITLE</literal>:
-            5 Annotation Boxes located on the four edges and one - with larger
-            font size - centered at the top of the page. This is used for all
-            DICOM prints with default
+            <para>Specifies Annotation Display Format
+            <literal>TITLE</literal>: 5 Annotation Boxes located on the four
+            edges and one - with larger font size - centered at the top and a
+            TIANI logo centered at the bottom of the page. This is used for
+            all DICOM prints with default
             server/default/deploy/printer-service.xml. Usually you will at
             least edit the specified <literal>Default Title</literal>.</para>
           </listitem>
@@ -924,17 +962,27 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
           <term><filename>server/default/conf/annotation/NO_TITLE.4.adf</filename></term>
 
           <listitem>
-            <para>Specifies Annotation Display Format <literal>NO_TITLE</literal>:
-            Like Annotation Display Format <literal>TITLE</literal>, but
-            without a centered Annotation Box at the top of the page. This is
-            used for print-outs initiated with utility <command>print-image.jar</command>
-            in the default configuration.</para>
+            <para>Specifies Annotation Display Format
+            <literal>NO_TITLE</literal>: Like Annotation Display Format
+            <literal>TITLE</literal>, but without a centered Annotation Box at
+            the top of the page. This is used for print-outs initiated with
+            utility <command>print-image.jar</command> in the default
+            configuration.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><filename><filename>server/default/conf/annotation/tiani_weiss_s.jpg</filename></filename></term>
+
+          <listitem>
+            <para>TIANI logo, used by Annotation Display Format TITLE.</para>
           </listitem>
         </varlistentry>
       </variablelist>
 
-      <para>The subdirectory <filename>server/default/conf/calibration</filename>
-      contains configuration files related to <link
+      <para>The subdirectory
+      <filename>server/default/conf/calibration</filename> contains
+      configuration files related to <link
       linkend="printer-calibration">Printer Calibration</link>:</para>
 
       <variablelist>
@@ -969,20 +1017,21 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
     <para>Configuration of jPrint is based on simple (ASCII) text files, which
     can be modified by any text editor that treats ASCII files with a single
-    linefeed as line delimiter (UNIX style) properly. <command>NotePad</command>
-    on Microsoft Windows fails to do that, but you may use <command>WordPad,</command>
-    which displays UNIX line formated text files correctly.</para>
+    linefeed as line delimiter (UNIX style) properly.
+    <command>NotePad</command> on Microsoft Windows fails to do that, but you
+    may use <command>WordPad,</command> which displays UNIX line formated text
+    files correctly.</para>
 
     <section>
       <title>Deployed jPrint Services</title>
 
-      <para>Configuration files in the <filename>server/default/deploy/</filename>
-      subdirectory are one-to-one, related to instances of jPrint Services,
-      which are deployed in the JBoss Application Server as so-called
-      <literal>MBeans</literal> (managed beans), which provides, in
-      cooperation with each other, the functionality needed to receive DICOM
-      print requests and process them to print jobs forwarded to connected
-      printer(s):</para>
+      <para>Configuration files in the
+      <filename>server/default/deploy/</filename> subdirectory are one-to-one,
+      related to instances of jPrint Services, which are deployed in the JBoss
+      Application Server as so-called <literal>MBeans</literal> (managed
+      beans), which provides, in cooperation with each other, the
+      functionality needed to receive DICOM print requests and process them to
+      print jobs forwarded to connected printer(s):</para>
 
       <variablelist>
         <varlistentry>
@@ -1014,9 +1063,10 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
             <para>Configures the <link linkend="print-scp-service">Print SCP
             Service</link>, which spools received DICOM Print Requests to disk
             and schedules their processing by the Printer Service. Edit this
-            file to change the default spool directory [<filename>server/deafult/tmp/spool</filename>],
-            to keep spooled Print Requests for debugging or for adjusting
-            local Presentation LUTs to particular Print Requests.</para>
+            file to change the default spool directory
+            [<filename>server/deafult/tmp/spool</filename>], to keep spooled
+            Print Requests for debugging or for adjusting local Presentation
+            LUTs to particular Print Requests.</para>
           </listitem>
         </varlistentry>
 
@@ -1028,9 +1078,9 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
             Service</link>, which transforms spooled DICOM Print Requests to
             Print Jobs for a connected (system or network) printer. You have
             to edit this file to specify a valid (=existing) printer name on
-            your system. Also the Called AET (default is <literal>TIANI_PRINT</literal>),
-            with which this printer must be addressed by a Print Composer, is
-            specified here.</para>
+            your system. Also the Called AET (default is
+            <literal>TIANI_PRINT</literal>), with which this printer must be
+            addressed by a Print Composer, is specified here.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -1041,8 +1091,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
         <para>The Audit Logger Service controls the transmission of Audit
         Records generated by jPrint.</para>
 
-        <para>The following attributes are defined by it&#39;s configuration
-        file (<filename>server/default/deploy/auditlog-service.xml</filename>):</para>
+        <para>The following attributes are defined by it's configuration file
+        (<filename>server/default/deploy/auditlog-service.xml</filename>):</para>
 
         <table>
           <title>Audit Logger Service Configuration Parameters</title>
@@ -1069,7 +1119,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
                 <entry><literal>localhost</literal></entry>
 
                 <entry>Specifies host name or IP address of the Audit Record
-                Repository to which Audit Records shall be transmitted.</entry>
+                Repository to which Audit Records shall be
+                transmitted.</entry>
               </row>
 
               <row>
@@ -1090,7 +1141,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
                 Syslog header of transmitted Audit Records. Possible values
                 are: <literal>user</literal>, <literal>auth</literal>,
                 <literal>authpriv</literal>, <literal>local0</literal>,
-                <literal>local1</literal>, ... , <literal>local7</literal></entry>
+                <literal>local1</literal>, ... ,
+                <literal>local7</literal></entry>
               </row>
 
               <row>
@@ -1118,7 +1170,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
                 <entry><literal>true</literal></entry>
 
                 <entry>Set to <literal>false,</literal> to deactivate
-                transmission of <literal>ActorConfig</literal> Audit messages.</entry>
+                transmission of <literal>ActorConfig</literal> Audit
+                messages.</entry>
               </row>
 
               <row>
@@ -1127,7 +1180,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
                 <entry><literal>true</literal></entry>
 
                 <entry>Set to <literal>false,</literal> to deactivate
-                transmission of <literal>Export</literal> Audit messages.</entry>
+                transmission of <literal>Export</literal> Audit
+                messages.</entry>
               </row>
             </tbody>
           </tgroup>
@@ -1142,8 +1196,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
         forwarded for transmission to the Audit Logger Service in the case of
         a connection attempt by an unauthorized client.</para>
 
-        <para>The following attributes are defined by it&#39;s configuration
-        file <filename>(server/default/deploy/dcmsrv-service.xml</filename>):</para>
+        <para>The following attributes are defined by it's configuration file
+        <filename>(server/default/deploy/dcmsrv-service.xml</filename>):</para>
 
         <table>
           <title>DICOM Server Configuration Parameters</title>
@@ -1178,12 +1232,42 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry>dicom</entry>
 
-                <entry>Specifies whether the server runs in TLS mode:<variablelist><varlistentry><term>dicom</term><listitem><para>native
-                DICOM (without TLS).</para></listitem></varlistentry><varlistentry><term>dicom-tls</term><listitem><para>DICOM
-                over TLS; triple DES EDE CBC encryption is provided, but not
-                forced by the server.</para></listitem></varlistentry><varlistentry><term>dicom-tls.3des</term><listitem><para>DICOM
-                over TLS with triple DES EDE CBC encryption</para></listitem></varlistentry><varlistentry><term>dicom-tls.nodes</term><listitem><para>DICOM
-                over TLS without encryption</para></listitem></varlistentry></variablelist></entry>
+                <entry>Specifies whether the server runs in TLS
+                mode:<variablelist>
+                    <varlistentry>
+                      <term>dicom</term>
+
+                      <listitem>
+                        <para>native DICOM (without TLS).</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term>dicom-tls</term>
+
+                      <listitem>
+                        <para>DICOM over TLS; triple DES EDE CBC encryption is
+                        provided, but not forced by the server.</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term>dicom-tls.3des</term>
+
+                      <listitem>
+                        <para>DICOM over TLS with triple DES EDE CBC
+                        encryption</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term>dicom-tls.nodes</term>
+
+                      <listitem>
+                        <para>DICOM over TLS without encryption</para>
+                      </listitem>
+                    </varlistentry>
+                  </variablelist></entry>
               </row>
 
               <row>
@@ -1202,12 +1286,13 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry><para>Specifies Called AETs, which the DICOM server
                 shall accept. Multiple values can be specified, separated by
-                &#39;\&#39; characters. Use the single value &#34;<literal>any&#34;</literal>
-                to accept any Called AET in the A-ASSOCIATE RQ.</para><para>Whether
-                DICOM Print Services are actually provided depends, if there
-                is a Printer Service associated to the Called AET in the
-                A-ASSOCIATE RQ configured. If not, only the DICOM Verification
-                Service will be provided by the server.</para></entry>
+                '\' characters. Use the single value "<literal>any"</literal>
+                to accept any Called AET in the A-ASSOCIATE
+                RQ.</para><para>Whether DICOM Print Services are actually
+                provided depends, if there is a Printer Service associated to
+                the Called AET in the A-ASSOCIATE RQ configured. If not, only
+                the DICOM Verification Service will be provided by the
+                server.</para></entry>
               </row>
 
               <row>
@@ -1216,9 +1301,9 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
                 <entry>any</entry>
 
                 <entry>Specifies Calling AETs, which the DICOM server shall
-                accept. Multiple values can be specified, separated by
-                &#39;\&#39; characters. Use the single value &#34;<literal>any&#34;</literal>
-                to accept any Called AET in the A-ASSOCIATE RQ.</entry>
+                accept. Multiple values can be specified, separated by '\'
+                characters. Use the single value "<literal>any"</literal> to
+                accept any Called AET in the A-ASSOCIATE RQ.</entry>
               </row>
 
               <row>
@@ -1227,10 +1312,9 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
                 <entry>5000</entry>
 
                 <entry>Specifies Timeout in ms, the DICOM server will wait
-                after accepting the TCP connect for the A-ASSOCIATE RQ.
-                &#34;0&#34; means, there is no Timeout, so the server would
-                wait as long the TCP connection is open by the peer
-                application.</entry>
+                after accepting the TCP connect for the A-ASSOCIATE RQ. "0"
+                means, there is no Timeout, so the server would wait as long
+                the TCP connection is open by the peer application.</entry>
               </row>
 
               <row>
@@ -1240,7 +1324,7 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry>Specifies Timeout in ms, the DICOM server will wait
                 after the receive of DIMSE message on an established
-                association. &#34;0&#34; means, there is no Timeout.</entry>
+                association. "0" means, there is no Timeout.</entry>
               </row>
 
               <row>
@@ -1250,8 +1334,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry>Specifies Timeout in ms, the DICOM server will wait
                 after sending a A-RELEASE RSP or an A-ABORT RQ for DIMSE
-                message on an established association. &#34;0&#34; means,
-                there is no Timeout.</entry>
+                message on an established association. "0" means, there is no
+                Timeout.</entry>
               </row>
 
               <row>
@@ -1327,8 +1411,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
         forwards them to the Audit Logger Service for transmission to the
         Audit Record Repository.</para>
 
-        <para>The following attributes are defined by it&#39;s configuration
-        file (<filename>server/default/deploy/prnscp-service.xml</filename>):</para>
+        <para>The following attributes are defined by it's configuration file
+        (<filename>server/default/deploy/prnscp-service.xml</filename>):</para>
 
         <table>
           <title>Print SCP Service Configuration Parameters</title>
@@ -1421,7 +1505,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry>false</entry>
 
-                <entry>Set to true to keep spooled files for debugging.</entry>
+                <entry>Set to true to keep spooled files for
+                debugging.</entry>
               </row>
 
               <row>
@@ -1455,29 +1540,30 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
         <literal>TIANI_PRINT</literal> is configured by the file
         <filename>server/default/deploy/printer-service.xml</filename>:</para>
 
-        <programlisting>&#60;!-- ===================================================================== --&#62;
-&#60;!--                                                                       --&#62;
-&#60;!--  Printer Service Configuration                                        --&#62;
-&#60;!--                                                                       --&#62;
-&#60;!-- ===================================================================== --&#62;
+        <programlisting>&lt;!-- ===================================================================== --&gt;
+&lt;!--                                                                       --&gt;
+&lt;!--  Printer Service Configuration                                        --&gt;
+&lt;!--                                                                       --&gt;
+&lt;!-- ===================================================================== --&gt;
 
-&#60;server&#62;
+&lt;server&gt;
 
-  &#60;classpath codebase=&#34;lib&#34; archives=&#34;dcm4che.jar,prnscp.jar&#34;/&#62;
+  &lt;classpath codebase="lib" archives="dcm4che.jar,prnscp.jar"/&gt;
 
-    &#60;!--
+    &lt;!--
     Name property calledAET defines the DICOM Called AET to which this
     Print Service is bound. If multiple Print Services are configured -
     associated with different Printers or specifying different configuration
     settings for the same Printer - they have to be distinguished by different
     calledAET values.
-    --&#62;
-  &#60;mbean code=&#34;com.tiani.prnscp.print.PrinterService&#34; 
-         name=&#34;dcm4chex:service=Printer,calledAET=TIANI_PRINT&#34;&#62;
+    --&gt;
+  &lt;mbean code="com.tiani.prnscp.print.PrinterService" 
+         name="dcm4chex:service=Printer,calledAET=TIANI_PRINT"&gt;
 ...</programlisting>
 
-        <para>The following additional attributes are defined by it&#39;s
-        configuration file <filename>(server/default/deploy/printer-service.xml):</filename></para>
+        <para>The following additional attributes are defined by it's
+        configuration file
+        <filename>(server/default/deploy/printer-service.xml):</filename></para>
 
         <table id="tPrinterCfg">
           <title>Printer Service Configuration Parameters</title>
@@ -1505,7 +1591,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry>Specifies name of the printer used by the system. Must
                 be one of the print names listed by the <link
-                linkend="list-printers.jar">list-printers.jar</link> utility.</entry>
+                linkend="list-printers.jar">list-printers.jar</link>
+                utility.</entry>
               </row>
 
               <row>
@@ -1524,7 +1611,7 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry></entry>
 
-                <entry>Specifies the manufacturer&#39;s model number of the
+                <entry>Specifies the manufacturer's model number of the
                 printer, returned in the Manufacturer Model Name attribute
                 (0008,1090) of the Printer Information Object by the N-GET
                 Service of the DICOM Printer SOP Class.</entry>
@@ -1535,7 +1622,7 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry></entry>
 
-                <entry>Specifies the manufacturer&#39;s serial number of the
+                <entry>Specifies the manufacturer's serial number of the
                 printer, returned in the Device Serial Number attribute
                 (0018,1000) of the Printer Information Object by the N-GET
                 Service of the DICOM Printer SOP Class.</entry>
@@ -1546,10 +1633,11 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry></entry>
 
-                <entry>Specifies the manufacturer&#39;s designation of the
+                <entry>Specifies the manufacturer's designation of the
                 software version of the printer, returned in the Software
                 Versions attribute (0018,1020) of the Printer Information
-                Object by the N-GET Service of the DICOM Printer SOP Class.</entry>
+                Object by the N-GET Service of the DICOM Printer SOP
+                Class.</entry>
               </row>
 
               <row>
@@ -1652,12 +1740,33 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
                 <entry>10</entry>
 
                 <entry>Specifies whether PLUTs shall be also applied on RGB
-                values of color images:<variablelist><varlistentry><term>&#60;
-                0</term><listitem><para>no P-LUT will be applied</para></listitem></varlistentry><varlistentry><term>=
-                0</term><listitem><para>P-LUT will be only applied to pure
-                gray values (R=G=B)</para></listitem></varlistentry><varlistentry><term>&#62;
-                0</term><listitem><para>P-LUT will be applied for pixels with
-                max(|R-G|,|G-B|,|B-R|) &#60;= ApplyPLUTonRGB</para></listitem></varlistentry></variablelist></entry>
+                values of color images:<variablelist>
+                    <varlistentry>
+                      <term>&lt; 0</term>
+
+                      <listitem>
+                        <para>no P-LUT will be applied</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term>= 0</term>
+
+                      <listitem>
+                        <para>P-LUT will be only applied to pure gray values
+                        (R=G=B)</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term>&gt; 0</term>
+
+                      <listitem>
+                        <para>P-LUT will be applied for pixels with
+                        max(|R-G|,|G-B|,|B-R|) &lt;= ApplyPLUTonRGB</para>
+                      </listitem>
+                    </varlistentry>
+                  </variablelist></entry>
               </row>
 
               <row>
@@ -1669,7 +1778,7 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
                 Clients shall be ignored, assuming Min Density = 0 instead.
                 This is a workaround for Print Clients, which cannot be
                 configured, to send a zero - or no value at all - for Min
-                Density. Using Min Density &#62; 0 for paper print is rarely
+                Density. Using Min Density &gt; 0 for paper print is rarely
                 reasonable, but only a waste of the dynamic range of the
                 print-out, which is already quite limited in the case of paper
                 printers, compared to film printers.</entry>
@@ -1691,8 +1800,8 @@ $ ln -s /etc/init.d/jprint /etc/init.d/rc.6/K10jprint</programlisting>
 
                 <entry>Medium Type identifiers supported by the printer for
                 the Basic Film Session. Multiple values can be specified,
-                separated by &#39;\&#39; characters. The first specified value
-                is used as the default.</entry>
+                separated by '\' characters. The first specified value is used
+                as the default.</entry>
               </row>
 
               <row>
@@ -1735,15 +1844,15 @@ A3:297x420
 
                 <entry><para>Film Size ID identifiers supported by the printer
                 for the Basic Film Box. Multiple values can be specified,
-                separated by &#39;\&#39; characters or line breaks. Format:
+                separated by '\' characters or line breaks. Format:
                 id:WidthxHeight, with width and height in mm. The first
-                specified value is used as the default Film Size.</para><para>If
-                a Print Composer cannot be configured to send the proper Film
-                Size ID for the Page Format, supported by the Printer (e.g.
-                &#34;A3&#34;), the ID which is provided by the Print SCU (e.g.
-                &#34;14INx17IN) can be mapped to the dimension of the paper
-                size available at the Printer (e.g.
-                &#34;14INx17IN:297x420&#34;).</para></entry>
+                specified value is used as the default Film
+                Size.</para><para>If a Print Composer cannot be configured to
+                send the proper Film Size ID for the Page Format, supported by
+                the Printer (e.g. "A3"), the ID which is provided by the Print
+                SCU (e.g. "14INx17IN) can be mapped to the dimension of the
+                paper size available at the Printer (e.g.
+                "14INx17IN:297x420").</para></entry>
               </row>
 
               <row>
@@ -1754,7 +1863,7 @@ A3:297x420
                 <entry>Defines the page margin for portrait orientation.
                 Format: left,right,top,bottom margin in mm. Page margins for
                 landscape orientation are automatically derived from this
-                attribute&#39;s value (s. attribute ReverseLandscape)</entry>
+                attribute's value (s. attribute ReverseLandscape)</entry>
               </row>
 
               <row>
@@ -1796,8 +1905,8 @@ NONE</literallayout></entry>
 
                 <entry>Magnification Type identifiers supported by the printer
                 for the Basic Film Box or Basic Grayscale Image Box. Multiple
-                values can be specified, separated by &#39;\&#39; characters.
-                The first specified value is used as the default.</entry>
+                values can be specified, separated by '\' characters. The
+                first specified value is used as the default.</entry>
               </row>
 
               <row>
@@ -1848,7 +1957,8 @@ NONE</literallayout></entry>
                 <entry>WHITE</entry>
 
                 <entry>Defines the default Border Density identifier that is
-                used when the Print SCU does not specify Border Density.</entry>
+                used when the Print SCU does not specify Border
+                Density.</entry>
               </row>
 
               <row>
@@ -1868,8 +1978,8 @@ HIGH:1200x1200</literallayout></entry>
 
                 <entry>Requested Resolution ID identifiers supported by the
                 printer for the Basic Film Box. Multiple values can be
-                specified, separated by &#39;\&#39; characters. The first
-                specified value is used as the default.</entry>
+                specified, separated by '\' characters. The first specified
+                value is used as the default.</entry>
               </row>
 
               <row>
@@ -1902,11 +2012,12 @@ HIGH:1200x1200</literallayout></entry>
                 <entry><para>Defines the default directory, which contains
                 Presentation LUTs as DICOM files, which can be selected by a
                 Print SCU via the value of the Film Box attribute (2010,0150)
-                Configuration Information: shape=&#60;LUT-name&#62;. </para><para>Only
-                effective, if the Print SCU does not provide a P-LUT itself
-                using the P-LUT SOP class.</para><para>Relative path names are
-                resolved using the JBoss server directory as a base directory.</para><para>Usually,
-                you do not need to change the default value: conf/lut.</para></entry>
+                Configuration Information: shape=&lt;LUT-name&gt;.
+                </para><para>Only effective, if the Print SCU does not provide
+                a P-LUT itself using the P-LUT SOP class.</para><para>Relative
+                path names are resolved using the JBoss server directory as a
+                base directory.</para><para>Usually, you do not need to change
+                the default value: conf/lut.</para></entry>
               </row>
 
               <row>
@@ -1920,18 +2031,31 @@ ForCallingAET</literallayout></entry>
                 Information values. Only effective, if the calling Print SCU
                 provides neither a P-LUT using the P-LUT SOP class, nor a
                 value for the Film Box attribute (2010,0150) Configuration
-                Information. (see <xref linkend="local-luts" />)</para><para>Multiple
-                entires must be separated by &#39;\&#39; characters or line
+                Information. (see <xref
+                linkend="local-luts" />)</para><para>Multiple entires must be
+                separated by '\' characters or line
                 breaks.</para><para>Format:
-                &#60;calling-aet&#62;[.grayscale|.color]:&#60;Configuration
-                Information Value&#62; (see. <xref linkend="local-luts" />)</para><para>The
-                optional [.grayscale|.color] suffix allows to associate
-                different Configuration Information values for Grayscale and
-                Color Print to a Calling AET.</para><para>If no entries match
-                the calling AET, the Configuration Information specified by</para><itemizedlist><listitem><para><literal>.grayscale:</literal><replaceable>&#60;Default
-                Configuration Information Value for Grayscale Print&#62;</replaceable></para></listitem><listitem><para><literal>.color:</literal><replaceable>&#60;Default
-                Configuration Information Value for Color Print&#62;</replaceable></para></listitem></itemizedlist><para>will
-                be used. These two entries must be configured!</para></entry>
+                &lt;calling-aet&gt;[.grayscale|.color]:&lt;Configuration
+                Information Value&gt; (see. <xref
+                linkend="local-luts" />)</para><para>The optional
+                [.grayscale|.color] suffix allows to associate different
+                Configuration Information values for Grayscale and Color Print
+                to a Calling AET.</para><para>If no entries match the calling
+                AET, the Configuration Information specified
+                by</para><itemizedlist>
+                    <listitem>
+                      <para><literal>.grayscale:</literal><replaceable>&lt;Default
+                      Configuration Information Value for Grayscale
+                      Print&gt;</replaceable></para>
+                    </listitem>
+
+                    <listitem>
+                      <para><literal>.color:</literal><replaceable>&lt;Default
+                      Configuration Information Value for Color
+                      Print&gt;</replaceable></para>
+                    </listitem>
+                  </itemizedlist><para>will be used. These two entries must be
+                configured!</para></entry>
               </row>
 
               <row>
@@ -1943,11 +2067,13 @@ ForCallingAET</literallayout></entry>
                 configuration files for supported annotation display formats.
                 Relative path names are resolved using the JBoss server
                 directory as a base directory.</para><para>Usually, you do not
-                need to change the default value: conf/annotation.</para></entry>
+                need to change the default value:
+                conf/annotation.</para></entry>
               </row>
 
               <row>
-                <entry id="AnnotationForCallingAET">AnnotationForCallingAET</entry>
+                <entry
+                id="AnnotationForCallingAET">AnnotationForCallingAET</entry>
 
                 <entry>AET:TITLE</entry>
 
@@ -1956,11 +2082,11 @@ ForCallingAET</literallayout></entry>
                 AnnotationDir.</para><para>This configuration parameter is
                 only effective if the calling Print SCU does not specify an
                 annotation display format.</para><para>Multiple entires must
-                be separated by &#39;\&#39; characters or line breaks. If no
-                entries match the calling AET, the Presentation LUT specified
-                in the first entry will be used. At least one entry must be
+                be separated by '\' characters or line breaks. If no entries
+                match the calling AET, the Presentation LUT specified in the
+                first entry will be used. At least one entry must be
                 configured!</para><para>Format:
-                &#60;calling-aet&#62;:&#60;annotation ID&#62;</para></entry>
+                &lt;calling-aet&gt;:&lt;annotation ID&gt;</para></entry>
               </row>
 
               <row>
@@ -1995,20 +2121,66 @@ ForCallingAET</literallayout></entry>
                 <entry>conf/calibration</entry>
 
                 <entry><para>Specifies directory, containing calibration
-                related configuration files:</para><variablelist><varlistentry><term><filename>DSI256.ods</filename></term><listitem><para>measured
-                (256) OD values of reference DSI256 pattern</para></listitem></varlistentry><varlistentry><term><filename>&#60;calledAET&#62;.monochrome.ods</filename></term><listitem><para>OD
-                values in monochrome mode. Measured from monochrome print-out
-                of DSI16 or DSI256 pattern or calculated from most recent
-                &#60;calledAET&#62;.monochrome/*.jpg</para></listitem></varlistentry><varlistentry><term><filename>&#60;calledAET&#62;.color.ods</filename></term><listitem><para>OD
-                values in color mode. Measured from color print-out of DSI16
-                or DSI256 pattern or calculated from most recent
-                &#60;calledAET&#62;.color/*.jpg</para></listitem></varlistentry><varlistentry><term><filename>DSI256.jpg</filename></term><listitem><para>scanned
-                reference DSI256 pattern</para></listitem></varlistentry><varlistentry><term><filename>&#60;calledAET&#62;.monochrome/*.jpg</filename></term><listitem><para>scanned
-                DSI256 pattern printed in monochrome mode</para></listitem></varlistentry><varlistentry><term><filename>&#60;calledAET&#62;.color/*.jpg</filename></term><listitem><para>scanned
-                DSI256 pattern printed in color mode</para></listitem></varlistentry></variablelist><para>Relative
-                path names are resolved using the JBoss server directory as a
-                base directory.</para><para>Usually, you do not need to change
-                the default value: conf/calibration.</para><para>See <xref
+                related configuration files:</para><variablelist>
+                    <varlistentry>
+                      <term><filename>DSI256.ods</filename></term>
+
+                      <listitem>
+                        <para>measured (256) OD values of reference DSI256
+                        pattern</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term><filename>&lt;calledAET&gt;.monochrome.ods</filename></term>
+
+                      <listitem>
+                        <para>OD values in monochrome mode. Measured from
+                        monochrome print-out of DSI16 or DSI256 pattern or
+                        calculated from most recent
+                        &lt;calledAET&gt;.monochrome/*.jpg</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term><filename>&lt;calledAET&gt;.color.ods</filename></term>
+
+                      <listitem>
+                        <para>OD values in color mode. Measured from color
+                        print-out of DSI16 or DSI256 pattern or calculated
+                        from most recent &lt;calledAET&gt;.color/*.jpg</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term><filename>DSI256.jpg</filename></term>
+
+                      <listitem>
+                        <para>scanned reference DSI256 pattern</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term><filename>&lt;calledAET&gt;.monochrome/*.jpg</filename></term>
+
+                      <listitem>
+                        <para>scanned DSI256 pattern printed in monochrome
+                        mode</para>
+                      </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                      <term><filename>&lt;calledAET&gt;.color/*.jpg</filename></term>
+
+                      <listitem>
+                        <para>scanned DSI256 pattern printed in color
+                        mode</para>
+                      </listitem>
+                    </varlistentry>
+                  </variablelist><para>Relative path names are resolved using
+                the JBoss server directory as a base
+                directory.</para><para>Usually, you do not need to change the
+                default value: conf/calibration.</para><para>See <xref
                 linkend="printer-calibration" />.</para></entry>
               </row>
 
@@ -2033,7 +2205,8 @@ ForCallingAET</literallayout></entry>
                 percentage of the box dimension, used by printer OD
                 calculation from scanned DSI256 pattern print-out in the
                 automatic Printer Calibration procedure.</para><para>Usually,
-                you do not need to change the default value: 50.</para></entry>
+                you do not need to change the default value:
+                50.</para></entry>
               </row>
 
               <row>
@@ -2078,8 +2251,9 @@ ForCallingAET</literallayout></entry>
                 <entry>false</entry>
 
                 <entry><para>Activates redirection of all printing into a
-                postscript file, specified by the PrintToFilePath attribute.</para><para>This
-                is only used for debugging.</para></entry>
+                postscript file, specified by the PrintToFilePath
+                attribute.</para><para>This is only used for
+                debugging.</para></entry>
               </row>
 
               <row>
@@ -2105,10 +2279,10 @@ ForCallingAET</literallayout></entry>
         of jPrint Service (e.g. The Printer Service) have to be configured. In
         that case, a modified copy of the configuration file for the primary
         service instance (e.g. <filename>printer-service.xml</filename>) has
-        to be stored into the same directory as <replaceable>&#60;any
-        name&#62;</replaceable><literal>-service.xml</literal>. In general,
-        the actual name of a service configuration file does not matter, as
-        long it ends with <literal>-service.xml</literal>.</para>
+        to be stored into the same directory as <replaceable>&lt;any
+        name&gt;</replaceable><literal>-service.xml</literal>. In general, the
+        actual name of a service configuration file does not matter, as long
+        it ends with <literal>-service.xml</literal>.</para>
 
         <para><xref linkend="fig-jprint-service" />Shows the dependencies
         between the types of jPrint Services.</para>
@@ -2131,59 +2305,64 @@ ForCallingAET</literallayout></entry>
 
         <para>If several DICOM server instances are running, for example, one
         in secure (DICOM-TLS) mode and another without TLS, not only does the
-        configuration file for the DICOM server, <filename>dcmsrv-service.xml,</filename>
-        need to be cloned and modified for each additional DICOM server that
-        will be running, but new instances of the Print SCP and the Printer
-        Service have to be configured by additional copies of
-        <filename>prnscp-service.xml</filename> and <filename>printer-service.xml</filename>
-        as well. This is because one Print SCP service cannot be registered to
-        more than one DICOM server, just as one Printer Service cannot be
-        connected to several different Print SCP services!</para>
+        configuration file for the DICOM server,
+        <filename>dcmsrv-service.xml,</filename> need to be cloned and
+        modified for each additional DICOM server that will be running, but
+        new instances of the Print SCP and the Printer Service have to be
+        configured by additional copies of
+        <filename>prnscp-service.xml</filename> and
+        <filename>printer-service.xml</filename> as well. This is because one
+        Print SCP service cannot be registered to more than one DICOM server,
+        just as one Printer Service cannot be connected to several different
+        Print SCP services!</para>
 
         <para>The relationship between different service instances is defined
-        by <literal>&#60;depends&#62;</literal> elements in the configuration
+        by <literal>&lt;depends&gt;</literal> elements in the configuration
         files. E.g. in <filename>printer-service.xml</filename>:</para>
 
-        <programlisting>  &#60;mbean code=&#34;com.tiani.prnscp.print.PrinterService&#34; 
-         name=&#34;dcm4chex:service=Printer,calledAET=TIANI_PRINT&#34;&#62;
-    &#60;depends optional-attribute-name=&#34;PrintSCPName&#34;&#62;
+        <programlisting>  &lt;mbean code="com.tiani.prnscp.print.PrinterService" 
+         name="dcm4chex:service=Printer,calledAET=TIANI_PRINT"&gt;
+    &lt;depends optional-attribute-name="PrintSCPName"&gt;
         dcm4chex:service=PrintSCP
-    &#60;/depends&#62;
-    &#60;depends optional-attribute-name=&#34;AuditLoggerName&#34;&#62;
+    &lt;/depends&gt;
+    &lt;depends optional-attribute-name="AuditLoggerName"&gt;
         dcm4chex:service=AuditLogger,name=AUDITLOG
-    &#60;/depends&#62;</programlisting>
+    &lt;/depends&gt;</programlisting>
 
-        <para>The first <literal>&#60;depends&#62;</literal> element registers
+        <para>The first <literal>&lt;depends&gt;</literal> element registers
         this Printer Service to the Print SCP service with the
-        <literal>MBean</literal> named <literal>dcm4chex:service=PrintSCP</literal>,
-        and the second element names the Audit Logger Service
+        <literal>MBean</literal> named
+        <literal>dcm4chex:service=PrintSCP</literal>, and the second element
+        names the Audit Logger Service
         <literal>dcm4chex:service=AuditLogger,name=AUDITLOG</literal> which
         will be used.</para>
 
         <para>And in <filename>printscp-service.xml</filename>:</para>
 
-        <programlisting>  &#60;mbean code=&#34;com.tiani.prnscp.scp.PrintScpService&#34; 
-         name=&#34;dcm4chex:service=PrintSCP&#34;&#62;    
-    &#60;depends optional-attribute-name=&#34;DcmServerName&#34;&#62;
+        <programlisting>  &lt;mbean code="com.tiani.prnscp.scp.PrintScpService" 
+         name="dcm4chex:service=PrintSCP"&gt;    
+    &lt;depends optional-attribute-name="DcmServerName"&gt;
         dcm4chex:service=DcmServer,name=DCMSRV
-    &#60;/depends&#62;
-    &#60;depends optional-attribute-name=&#34;AuditLoggerName&#34;&#62;
+    &lt;/depends&gt;
+    &lt;depends optional-attribute-name="AuditLoggerName"&gt;
         dcm4chex:service=AuditLogger,name=AUDITLOG
-    &#60;/depends&#62;</programlisting>
+    &lt;/depends&gt;</programlisting>
 
-        <para>The first <literal>&#60;depends&#62;</literal> element registers
+        <para>The first <literal>&lt;depends&gt;</literal> element registers
         this Print SCP Service to the DICOM server with the
-        <literal>MBean</literal> named <literal>dcm4chex:service=DcmServer,name=DCMSRV</literal>,
-        the second element defines the dependency to the used Audit Logger
-        Service as in <filename>printer-service.xml</filename>.</para>
+        <literal>MBean</literal> named
+        <literal>dcm4chex:service=DcmServer,name=DCMSRV</literal>, the second
+        element defines the dependency to the used Audit Logger Service as in
+        <filename>printer-service.xml</filename>.</para>
 
         <para>Every service has to have a different MBean name. Hence, when
         several instances of the same service type are configured, the MBean
         name specified in its configuration file must be different. E.g., if
         you are running two DICOM servers, you have to change the MBean name
         of the second instance in its configuration file from the default
-        value of <literal>dcm4chex:service=DcmServer,name=DCMSRV</literal> to<literal>
-        dcm4chex:service=DcmServer,name=DCMSRV2</literal>, for example.</para>
+        value of <literal>dcm4chex:service=DcmServer,name=DCMSRV</literal>
+        to<literal> dcm4chex:service=DcmServer,name=DCMSRV2</literal>, for
+        example.</para>
       </section>
     </section>
 
@@ -2234,27 +2413,41 @@ ForCallingAET</literallayout></entry>
             </row>
 
             <row>
-              <entry>shape=&#60;LUT-name&#62;</entry>
+              <entry>shape=&lt;LUT-name&gt;</entry>
 
-              <entry>P-LUT Information Object in file &#60;LUT-name&#62;.lut
-              in directory <literal>server/default/conf/lut</literal>.</entry>
+              <entry>P-LUT Information Object in file &lt;LUT-name&gt;.lut in
+              directory <literal>server/default/conf/lut</literal>.</entry>
             </row>
 
             <row>
-              <entry><literallayout>gamma=&#60;g&#62;
-{with &#60;g&#62; in interval [0.1,10]}</literallayout></entry>
+              <entry><literallayout>gamma=&lt;g&gt;
+{with &lt;g&gt; in interval [0.1,10]}</literallayout></entry>
 
-              <entry>Applies a LUT based on f(x) ~ x^(1/g):<variablelist><varlistentry><term>g
-              &#62; 1</term><listitem><para>will increase the contrast in the
-              dark and lighten the image as a whole,</para></listitem></varlistentry><varlistentry><term>g
-              &#60; 1</term><listitem><para>will increase the contrast of
-              brighten parts and darken then image as a whole.</para></listitem></varlistentry></variablelist></entry>
+              <entry>Applies a LUT based on f(x) ~ x^(1/g):<variablelist>
+                  <varlistentry>
+                    <term>g &gt; 1</term>
+
+                    <listitem>
+                      <para>will increase the contrast in the dark and lighten
+                      the image as a whole,</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>g &lt; 1</term>
+
+                    <listitem>
+                      <para>will increase the contrast of brighten parts and
+                      darken then image as a whole.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist></entry>
             </row>
 
             <row>
-              <entry><literallayout>center=&#60;c&#62;,slope=&#60;s&#62;
-{with &#60;c&#62; in interval [0,1],
-and &#60;s&#62; in interval [0,10]} </literallayout></entry>
+              <entry><literallayout>center=&lt;c&gt;,slope=&lt;s&gt;
+{with &lt;c&gt; in interval [0,1],
+and &lt;s&gt; in interval [0,10]} </literallayout></entry>
 
               <entry>Applies a S-shaped P-LUT which enhances the contrast
               around a defined center (c = 0.5 specifies middle of pixel value
@@ -2263,11 +2456,11 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
             </row>
 
             <row>
-              <entry><literallayout>center=&#60;c&#62;,slope=&#60;s&#62;,gamma=&#60;g&#62;</literallayout></entry>
+              <entry><literallayout>center=&lt;c&gt;,slope=&lt;s&gt;,gamma=&lt;g&gt;</literallayout></entry>
 
               <entry>Applies a P-LUT generated as combination of the S-shaped
-              function defined by center=&#60;c&#62;,slope=&#60;s&#62; and the
-              power function defined by gamma=&#60;g&#62;.</entry>
+              function defined by center=&lt;c&gt;,slope=&lt;s&gt; and the
+              power function defined by gamma=&lt;g&gt;.</entry>
             </row>
           </tbody>
         </tgroup>
@@ -2276,13 +2469,15 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
       <para>These values can also be used in the Printer Service configuration
       <filename>server/default/deploy/printer-service.xml</filename>, to
       associate a LUT to the Calling AET of a Print SCU (s. Printer Service
-      attribute <link linkend="ConfInfoForCallingAET">ConfigurationInformationForCallingAET</link>),
+      attribute <link
+      linkend="ConfInfoForCallingAET">ConfigurationInformationForCallingAET</link>),
       in the (common) case that the Print SCU cannot be configured to provide
       a Configuration Information value as described above.</para>
 
       <para>The <link linkend="view-plut.jar">view-plut.jar</link> utility can
-      be used to display the shape of P-LUTs specified by <literal>center=</literal><replaceable>&#60;c&#62;</replaceable><literal>,slope=</literal><replaceable>&#60;s&#62;</replaceable><literal>,gamma=</literal><replaceable>&#60;g&#62;</replaceable>.
-      It also supports applying such P-LUTs on a DICOM image, showing it&#39;s
+      be used to display the shape of P-LUTs specified by
+      <literal>center=</literal><replaceable>&lt;c&gt;</replaceable><literal>,slope=</literal><replaceable>&lt;s&gt;</replaceable><literal>,gamma=</literal><replaceable>&lt;g&gt;</replaceable>.
+      It also supports applying such P-LUTs on a DICOM image, showing it's
       effect on the image.</para>
 
       <para>The <link linkend="print-image.jar">print-image.jar</link> utility
@@ -2298,25 +2493,29 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
       Class, which allows a Print SCU to select from a set of preconfigured
       Annotation Display Formats based on the value of the Attribute
       Annotation Display Format ID (2010,0030) of the Basic Film Box and to
-      set the values of it&#39;s editable text fields (=Annotation Boxes).</para>
+      set the values of it's editable text fields (=Annotation Boxes).</para>
 
       <para>If a Print Composer does not support the Basic Annotation Box SOP
       Class, the selection of the Annotation Display Format can be configured
-      based on it&#39;s Calling AET (s. Printer Service configuration
-      attribute <link linkend="AnnotationForCallingAET">AnnotationForCallingAET</link>).</para>
+      based on it's Calling AET (s. Printer Service configuration attribute
+      <link
+      linkend="AnnotationForCallingAET">AnnotationForCallingAET</link>).</para>
 
       <section>
         <title>ADF Configuration Files</title>
 
-        <para>Annotation Display Formats are specified by text files located
-        in directory <filename>server/default/conf/annotations</filename>. The
-        file names are constrained to the format:</para>
+        <para>Annotation Display Formats are specified by text files and icon
+        files located in directory
+        <filename>server/default/conf/annotations</filename>. The text file
+        names are constrained to the format:</para>
 
-        <para><replaceable>&#60;Annotation Display Format ID&#62;</replaceable><literal>.</literal><replaceable>&#60;N&#62;</replaceable><literal>.adf</literal></para>
+        <para><replaceable>&lt;Annotation Display Format
+        ID&gt;</replaceable><literal>.</literal><replaceable>&lt;N&gt;</replaceable><literal>.adf</literal></para>
 
         <variablelist>
           <varlistentry>
-            <term><replaceable>&#60;Annotation Display Format ID&#62;</replaceable></term>
+            <term><replaceable>&lt;Annotation Display Format
+            ID&gt;</replaceable></term>
 
             <listitem>
               <para>ID used as the value of Attribute Annotation Display
@@ -2327,7 +2526,7 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
           </varlistentry>
 
           <varlistentry>
-            <term><replaceable>&#60;N&#62;</replaceable></term>
+            <term><replaceable>&lt;N&gt;</replaceable></term>
 
             <listitem>
               <para>Number of text fields (=Annotation Boxes) defined by this
@@ -2335,6 +2534,9 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
             </listitem>
           </varlistentry>
         </variablelist>
+
+        <para>The icon file extension shall match the image file format. JPEG,
+        GIF and PNG is supported.</para>
 
         <para>The text files contains a list properties (key and element
         pairs). Every property occupies one line. Each line is terminated by a
@@ -2351,8 +2553,8 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
         character. All remaining characters on the line become part of the
         associated value string. Within the value string, the ASCII escape
         sequences <literal>\t</literal>, <literal>\n</literal>,
-        <literal>\r</literal>, <literal>\\</literal>, <literal>\&#34;</literal>,
-        <literal>\&#39;</literal> and <literal>\ </literal>(a backslash and a
+        <literal>\r</literal>, <literal>\\</literal>, <literal>\"</literal>,
+        <literal>\'</literal> and <literal>\ </literal>(a backslash and a
         space) are recognized and converted to single characters.</para>
 
         <para>The default configuration contains the definition for two
@@ -2363,12 +2565,14 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
             <term><filename>server/default/conf/annotation/TITLE.5.adf</filename></term>
 
             <listitem>
-              <para>Specifies Annotation Display Format <literal>TITLE</literal>:
-              5 Annotation Boxes located on the four edges and one, with a
-              larger font size, centered at the top of the page. Used for all
+              <para>Specifies Annotation Display Format
+              <literal>TITLE</literal>: 5 Annotation Boxes located on the four
+              edges and one, with a larger font size, centered at the top and
+              a TIANI logo centered at the bottom of the page. Used for all
               DICOM prints with default
               server/default/deploy/printer-service.xml. Usually you will at
-              least edit the specified <literal>Default Title</literal>.</para>
+              least edit the specified <literal>Default
+              Title</literal>.</para>
             </listitem>
           </varlistentry>
 
@@ -2376,14 +2580,18 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
             <term><filename>server/default/conf/annotation/NO_TITLE.4.adf</filename></term>
 
             <listitem>
-              <para>Specifies Annotation Display Format <literal>NO_TITLE</literal>:
-              Like Annotation Display Format <literal>TITLE</literal>, but
-              without a centered Annotation Box at the top of the page. Used
-              for print-outs made with <command>the print-image.jar</command>
-              utility in the default configuration.</para>
+              <para>Specifies Annotation Display Format
+              <literal>NO_TITLE</literal>: Like Annotation Display Format
+              <literal>TITLE</literal>, but without a centered Annotation Box
+              at the top of the page. Used for print-outs made with the
+              <command>print-image.jar</command> utility in the default
+              configuration.</para>
             </listitem>
           </varlistentry>
         </variablelist>
+
+        <para>server/default/conf/annotation/tiani_weis_s.jpg contains the
+        TIANI logo, referenced by Annotation Display Format TITLE.</para>
       </section>
 
       <section>
@@ -2445,7 +2653,8 @@ and &#60;s&#62; in interval [0,10]} </literallayout></entry>
           </tgroup>
         </table>
 
-        <para>E.g. <filename>server/default/conf/annotation/TITLE.5.adf:</filename></para>
+        <para>E.g.
+        <filename>server/default/conf/annotation/TITLE.5.adf:</filename></para>
 
         <programlisting>inset.left=0
 inset.right=0
@@ -2464,7 +2673,8 @@ inset.bottom=20</programlisting>
         <para><xref linkend="fig-adf-inset" />shows the rectangle area for the
         printed image with a border for locating annotations on the page with
         portrait orientation defined by the Print Service Attribute <link
-        linkend="PageMargin">PageMargin</link> and the <literal>inset.</literal><replaceable>*</replaceable>
+        linkend="PageMargin">PageMargin</link> and the
+        <literal>inset.</literal><replaceable>*</replaceable>
         properties.</para>
 
         <figure id="fig-adf-inset">
@@ -2479,19 +2689,19 @@ inset.bottom=20</programlisting>
 
         <para>Annotations can be located around the four edge points of the
         rectangle and around the four center points of the rectangle sides.
-        Although possible, it&#39;s not quite useful to locate an annotation
-        in the center of the rectangle, because there it overlaps with the
+        Although possible, it's not quite useful to locate an annotation in
+        the center of the rectangle, because there it overlaps with the
         printed image(s).</para>
 
         <para>Annotation Boxes defined by an Annotation Display Format are
-        serially numbered, starting with &#34;1&#34;. Properties specific to
-        an annotation box, as its <literal>x</literal> and <literal>y</literal>
+        serially numbered, starting with "1". Properties specific to an
+        annotation box, as its <literal>x</literal> and <literal>y</literal>
         properties defining its location, are prefixed with the number (#) of
         the box. The location of the annotation text also depends on the
         specified horizontal and vertical alignment for that box.</para>
 
         <table>
-          <title>Annotation Location and Alignment Properties</title>
+          <title>Annotation Box Location and Alignment Properties</title>
 
           <tgroup cols="2">
             <colspec colwidth="80" />
@@ -2525,42 +2735,152 @@ inset.bottom=20</programlisting>
                 <literal>center</literal> or <literal>bottom</literal>. An
                 offset can be specified by appending the code value with
                 <literal>+</literal> (=shift down) or <literal>-</literal>
-                (=shift up) and its magnitude in points (1 point = 1/72 inch).</entry>
+                (=shift up) and its magnitude in points (1 point = 1/72
+                inch).</entry>
               </row>
 
               <row>
                 <entry>#.align</entry>
 
                 <entry><para>Specifies the horizontal alignment of the content
-                of annotation box #. Possible values are <literal>left</literal>,
-                <literal>center</literal> or <literal>right</literal>:</para>
-                <inlinemediaobject><imageobject><imagedata
-                fileref="../img/jPrint-ug4.gif" /></imageobject></inlinemediaobject></entry>
+                of annotation box #. Possible values are
+                <literal>left</literal>, <literal>center</literal> or
+                <literal>right</literal>:</para> <inlinemediaobject>
+                    <imageobject>
+                      <imagedata fileref="../img/jPrint-ug4.gif" />
+                    </imageobject>
+                  </inlinemediaobject></entry>
               </row>
 
               <row>
                 <entry>#.valign</entry>
 
                 <entry><para>Specifies the vertical alignment of the content
-                of annotation box #.. Possible values are <literal>top</literal>,
-                <literal>center</literal> or <literal>bottom</literal>.</para><inlinemediaobject><imageobject><imagedata
-                fileref="../img/jPrint-ug3.gif" /></imageobject></inlinemediaobject></entry>
+                of annotation box #. Possible values are
+                <literal>top</literal>, <literal>center</literal> or
+                <literal>bottom</literal>.</para><inlinemediaobject>
+                    <imageobject>
+                      <imagedata fileref="../img/jPrint-ug3.gif" />
+                    </imageobject>
+                  </inlinemediaobject></entry>
               </row>
             </tbody>
           </tgroup>
         </table>
 
-        <para>Typically, annotations are positioned outside of the rectangle
-        area for the printed image(s). That constrains the configurable
-        horizontal and vertical alignment and the direction (=sign) of an
-        optional location shift (=offset) to be dependent on the configured
-        location:</para>
+        <para>References to Icons in Annotation Display Format specifications
+        are serially numbered, starting with "1". Properties specific to an
+        icon, as its <literal>x</literal>, <literal>y, align, valign, width
+        and height</literal> properties defining its location and size, are
+        prefixed with "icon." and the number (#) of the box.</para>
 
         <table>
-          <title>Alignment and Offset Constrains for Annotation Box Positions</title>
+          <title>Icon Location, Size and Alignment Properties</title>
 
           <tgroup cols="2">
-            <colspec colwidth="100" />
+            <colspec colwidth="80" />
+
+            <thead>
+              <row>
+                <entry align="center">Property</entry>
+
+                <entry align="center">Description</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>icon.#</entry>
+
+                <entry>Refers the image file in directory
+                <filename>server/default/conf/annotation/</filename> ,
+                containing the icon. Supported image file formats: JPEG, GIF,
+                PNG </entry>
+              </row>
+
+              <row>
+                <entry>icon.#.x</entry>
+
+                <entry>Specifies the x position of icon # on the page.
+                Possible values are <literal>left</literal>, <literal>center
+                </literal> or <literal>right</literal>. An offset can be
+                specified by appending the code value with
+                <literal>+</literal> (=shift to right) or <literal>-</literal>
+                (=shift to left) and its magnitude in points (1 point = 1/72
+                inch).</entry>
+              </row>
+
+              <row>
+                <entry>icon.#.y</entry>
+
+                <entry>Specifies the y position of icon # on the page.
+                Possible values are <literal>top</literal>,
+                <literal>center</literal> or <literal>bottom</literal>. An
+                offset can be specified by appending the code value with
+                <literal>+</literal> (=shift down) or <literal>-</literal>
+                (=shift up) and its magnitude in points (1 point = 1/72
+                inch).</entry>
+              </row>
+
+              <row>
+                <entry>icon.#.align</entry>
+
+                <entry><para>Specifies the horizontal alignment of icon #.
+                Possible values are <literal>left</literal>,
+                <literal>center</literal> or
+                <literal>right.</literal></para></entry>
+              </row>
+
+              <row>
+                <entry>icon.#.valign</entry>
+
+                <entry><para>Specifies the vertical alignment of icon #.
+                Possible values are <literal>top</literal>,
+                <literal>center</literal> or
+                <literal>bottom</literal>.</para></entry>
+              </row>
+
+              <row>
+                <entry>icon.#.width</entry>
+
+                <entry>Specifies the horizontal extension of the icon on the
+                page in points (1 point = 1/72 inch) or in % (=marked by %
+                suffix) of the width of the rectangle area for the printed
+                image(s). If this property is not specified, the icon width is
+                calculated from the value of icon.#.height and preserving the
+                image's aspect ratio. If there is also no value for
+                icon.#.height specified, a resolution of 72dpi of the icon
+                pixel matrix is assumed.</entry>
+              </row>
+
+              <row>
+                <entry>icon.#.height</entry>
+
+                <entry>Specifies the vertical extension of the icon on the
+                page in points (1 point = 1/72 inch) or in % (=marked by %
+                suffix) of height of the rectangle area for the printed
+                image(s). If this property is not specified, the icon height
+                is calculated from the value of icon.#.width and preserving
+                the image's aspect ratio. If there is also no value for
+                icon.#.width specified, a resolution of 72dpi of the icon
+                pixel matrix is assumed.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Typically, annotation boxes and icons are positioned outside of
+        the rectangle area for the printed image(s). That constrains the
+        configurable horizontal and vertical alignment and the direction
+        (=sign) of an optional location shift (=offset) to be dependent on the
+        configured location:</para>
+
+        <table>
+          <title>Alignment and Offset Constrains for Annotation Box and Icon
+          Positions</title>
+
+          <tgroup cols="2">
+            <colspec colwidth="120" />
 
             <colspec colwidth="100" />
 
@@ -2641,7 +2961,8 @@ or
         </table>
 
         <para>Further ADF properties specifies the default content of the
-        annotation box and the font name, size and color to render the text.</para>
+        annotation box and the font name, size and color to render the
+        text.</para>
 
         <table>
           <title>Further Annotation Properties</title>
@@ -2682,7 +3003,8 @@ or
 
                 <entry>Specifies Font point size used for text rendering.
                 Possible values are dependent on the printer, but font sizes
-                between 8 and 24 should be supported by any printer (driver).</entry>
+                between 8 and 24 should be supported by any printer
+                (driver).</entry>
               </row>
 
               <row>
@@ -2690,7 +3012,8 @@ or
 
                 <entry>Specifies font style used for text rendering. Possible
                 values: <literal>plain</literal>, <literal>italic</literal>,
-                <literal>bold</literal>, <literal>italic+bold</literal></entry>
+                <literal>bold</literal>,
+                <literal>italic+bold</literal></entry>
               </row>
 
               <row>
@@ -2714,7 +3037,8 @@ or
         individually-specified value overwrites a possibly globally-specified
         value for the same attribute.</para>
 
-        <para>E.g. <filename>server/default/conf/annotation/TITLE.5.adf</filename></para>
+        <para>E.g.
+        <filename>server/default/conf/annotation/TITLE.5.adf</filename></para>
 
         <programlisting>font.name=Serif
 font.size=8
@@ -2730,10 +3054,13 @@ font.color=black
 
         <para>This defines an 8-point Serif, plain style, black font as the
         default font. The size of the font used for the first annotation box
-        is overwritten to be 16 points, so the <literal>Default Title</literal>,
-        specified as default content, will be printed in Serif 16 plain style,
-        black, horizontally-centered with the bottom line of the text 2 points
-        above the top of the area reserved for the printed image(s).</para>
+        is overwritten to be 16 points, so the <literal>Default
+        Title</literal>, specified as default content, will be printed in
+        Serif 16 plain style, black, horizontally-centered with the bottom
+        line of the text 2 points above the top of the area reserved for the
+        printed image(s).</para>
+
+        <para>An Annotation Display Format may also specifies </para>
       </section>
 
       <section id="keyword-substitution">
@@ -2779,7 +3106,8 @@ font.color=black
 
             <listitem>
               <para>The current date in the format defined by the Print
-              Service Configuration Attribute <link linkend="DateFormat">DateFormat</link>.</para>
+              Service Configuration Attribute <link
+              linkend="DateFormat">DateFormat</link>.</para>
             </listitem>
           </varlistentry>
 
@@ -2788,7 +3116,8 @@ font.color=black
 
             <listitem>
               <para>The current time in the format defined by the Print
-              Service Configuration Attribute <link linkend="TimeFormat">TimeFormat</link>.</para>
+              Service Configuration Attribute <link
+              linkend="TimeFormat">TimeFormat</link>.</para>
             </listitem>
           </varlistentry>
 
@@ -2801,7 +3130,7 @@ font.color=black
               (=pages). However, usually, Print Composers initiate a Print Job
               for every Film Box individually. Then the page number is not
               available to jPrint and <literal>$PAGE$</literal> will always be
-              replaced by <literal>&#34;1</literal>&#34;!</para>
+              replaced by <literal>"1</literal>"!</para>
             </listitem>
           </varlistentry>
 
@@ -2814,7 +3143,7 @@ font.color=black
               Film Boxes. However, usually, Print Composers initiate a Print
               Job for every Film Box individually. Then the total number of
               pages is not available to jPrint and <literal>$PAGE$</literal>
-              will always be replaced by &#34;<literal>1</literal>&#34;!</para>
+              will always be replaced by "<literal>1</literal>"!</para>
             </listitem>
           </varlistentry>
 
@@ -2825,7 +3154,8 @@ font.color=black
               <para>The name of the license owner, encoded in the license file
               <filename>server/default/conf/license.jks</filename>. If no
               license file was found by jPrint at start up,
-              <literal>$LICENSE_CN$</literal> will be replaced by nobody.</para>
+              <literal>$LICENSE_CN$</literal> will be replaced by
+              nobody.</para>
             </listitem>
           </varlistentry>
 
@@ -2833,16 +3163,19 @@ font.color=black
             <term><literal>$LICENSE_ENDDATE$</literal></term>
 
             <listitem>
-              <para>The expire date of the license <filename>server/default/conf/license.jks</filename>
-              in the format defined by Print Service Configuration Attribute
-              <link linkend="DateFormat">DateFormat</link>. If no license file
-              was found by jPrint at start up, <literal>$LICENSE_ENDDATE$</literal>
-              will be replaced by the current date.</para>
+              <para>The expire date of the license
+              <filename>server/default/conf/license.jks</filename> in the
+              format defined by Print Service Configuration Attribute <link
+              linkend="DateFormat">DateFormat</link>. If no license file was
+              found by jPrint at start up,
+              <literal>$LICENSE_ENDDATE$</literal> will be replaced by the
+              current date.</para>
             </listitem>
           </varlistentry>
         </variablelist>
 
-        <para>So, for example, <filename>server/default/conf/annotation/TITLE.5.adf:</filename></para>
+        <para>So, for example,
+        <filename>server/default/conf/annotation/TITLE.5.adf:</filename></para>
 
         <programlisting>3=printed by $CALLED_AET$\nat $DATE$ $TIME$
 3.x=right
@@ -2851,10 +3184,10 @@ font.color=black
 3.valign=bottom</programlisting>
 
         <para>This defines the (default) content of the third Annotation Box
-        at the upper right corner of the page as having two lines -
-        &#34;\n&#34; causes the line break, with the first line including the
-        Called AET associated with the Printer Service used, and the second
-        line including the current date and time.</para>
+        at the upper right corner of the page as having two lines - "\n"
+        causes the line break, with the first line including the Called AET
+        associated with the Printer Service used, and the second line
+        including the current date and time.</para>
       </section>
     </section>
 
@@ -2886,7 +3219,8 @@ font.color=black
 
       <para>The jPrint distribution package contains several test patterns
       (stored as DICOM images) which are used to determine the printer
-      characteristics and to evaluate the print quality after the calibration:</para>
+      characteristics and to evaluate the print quality after the
+      calibration:</para>
 
       <informaltable frame="none">
         <tgroup cols="2">
@@ -2894,19 +3228,25 @@ font.color=black
 
           <tbody>
             <row>
-              <entry><mediaobject><imageobject><imagedata
-              fileref="../img/DSI16.gif" format="GIF" /></imageobject></mediaobject></entry>
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="../img/DSI16.gif" format="GIF" />
+                  </imageobject>
+                </mediaobject></entry>
 
-              <entry><filename>images/DSI16.dcm</filename>: Philips
-              &#34;dsitest&#34; image with 16 equidistant boxes filled with
-              shades of gray from black to white. Used for manual measurement
-              of printer characteristics and for quantitative verification of
-              proper Printer Calibration.</entry>
+              <entry><filename>images/DSI16.dcm</filename>: Philips "dsitest"
+              image with 16 equidistant boxes filled with shades of gray from
+              black to white. Used for manual measurement of printer
+              characteristics and for quantitative verification of proper
+              Printer Calibration.</entry>
             </row>
 
             <row>
-              <entry><mediaobject><imageobject><imagedata
-              fileref="../img/DSI256.gif" format="GIF" /></imageobject></mediaobject></entry>
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="../img/DSI256.gif" format="GIF" />
+                  </imageobject>
+                </mediaobject></entry>
 
               <entry><filename>images/DSI256.dcm</filename>: Derived from the
               DSI16 pattern, by splitting each of the 16 boxes again into 16
@@ -2918,8 +3258,11 @@ font.color=black
             </row>
 
             <row>
-              <entry><mediaobject><imageobject><imagedata
-              fileref="../img/WEDGE8.gif" format="GIF" /></imageobject></mediaobject></entry>
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="../img/WEDGE8.gif" format="GIF" />
+                  </imageobject>
+                </mediaobject></entry>
 
               <entry><filename>images/WEDGE8.dcm</filename>: 8-bit Wedge
               pattern featuring a transition from black to white in 45 degree
@@ -2928,18 +3271,25 @@ font.color=black
             </row>
 
             <row>
-              <entry><mediaobject><imageobject><imagedata
-              fileref="../img/WEDGE12.gif" format="GIF" /></imageobject></mediaobject></entry>
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="../img/WEDGE12.gif" format="GIF" />
+                  </imageobject>
+                </mediaobject></entry>
 
               <entry><filename>images/WETestDGE12.dcm</filename>: 12-bit Wedge
               pattern contains four stripes with a transition from black to
               white in 45 degree angled lines with 4096 different shades of
-              gray. Used for qualitative verification of the print quality.</entry>
+              gray. Used for qualitative verification of the print
+              quality.</entry>
             </row>
 
             <row>
-              <entry><mediaobject><imageobject><imagedata
-              fileref="../img/ASPECT.gif" format="GIF" /></imageobject></mediaobject></entry>
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="../img/ASPECT.gif" format="GIF" />
+                  </imageobject>
+                </mediaobject></entry>
 
               <entry><filename>images/ASPECT.dcm</filename>: The Pixel Aspect
               Ratio pattern shows a transition from black to white. The source
@@ -2964,8 +3314,9 @@ font.color=black
         <listitem>
           <para>Manually measuring the optical density (OD) values
           corresponding to the different device driving levels (DDLs) on the
-          print-out of the <literal>DSI256</literal> or <literal>DSI16</literal>
-          pattern using an optical densitometer. Or,</para>
+          print-out of the <literal>DSI256</literal> or
+          <literal>DSI16</literal> pattern using an optical densitometer.
+          Or,</para>
         </listitem>
 
         <listitem>
@@ -2973,8 +3324,9 @@ font.color=black
           and a reference sheet with the same pattern by a digital scanner and
           store the scans as JPEG files into the JPrint calibration
           subdirectories, so jPrint can calculate the OD values on the scanned
-          print-out by comparing it with the scan of the <emphasis>reference</emphasis>
-          pattern which has known OD values.</para>
+          print-out by comparing it with the scan of the
+          <emphasis>reference</emphasis> pattern which has known OD
+          values.</para>
         </listitem>
       </itemizedlist>
 
@@ -2990,17 +3342,19 @@ font.color=black
         measure the OD values of all 256 different DDLs manually.</para>
 
         <para>Depending on your decision, you have to print out the
-        <filename>images/DSI16.dcm</filename> or the <filename>images/DSI256.dcm</filename>
-        pattern, using the <link linkend="print-image.jar"><command>print-image.jar</command></link>
+        <filename>images/DSI16.dcm</filename> or the
+        <filename>images/DSI256.dcm</filename> pattern, using the <link
+        linkend="print-image.jar"><command>print-image.jar</command></link>
         utility:</para>
 
         <programlisting>$ cd jprint-1.2.1/bin
-$ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> ../images/DSI16.dcm
+$ java -jar print-image.jar -a <replaceable>&lt;AET&gt;</replaceable> ../images/DSI16.dcm
 <emphasis>or</emphasis>
-$ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> ../images/DSI256.dcm</programlisting>
+$ java -jar print-image.jar -a <replaceable>&lt;AET&gt;</replaceable> ../images/DSI256.dcm</programlisting>
 
-        <para>With <replaceable>&#60;AET&#62;</replaceable> as the configured
-        AET associated with this printer (default: <literal>TIANI_PRINT</literal>).</para>
+        <para>With <replaceable>&lt;AET&gt;</replaceable> as the configured
+        AET associated with this printer (default:
+        <literal>TIANI_PRINT</literal>).</para>
 
         <para>Start the measurement with the white box at the bottom-left
         corner and set the zero point of the densitometer to this measurement.
@@ -3026,19 +3380,20 @@ $ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> ../image
         main pattern.</para>
 
         <para>Enter the measurements in a text file - one OD value per line -
-        and store it as <filename><replaceable>&#60;AET&#62;</replaceable>.monochrome.ods</filename>
+        and store it as
+        <filename><replaceable>&lt;AET&gt;</replaceable>.monochrome.ods</filename>
         in the <filename>server/default/conf/calibration</filename>/
         subdirectory of the jPrint installation.</para>
 
         <para>For color printers, you have also to print the test pattern in
         color mode:</para>
 
-        <programlisting>$ java -jar print-image.jar -c -a <replaceable>&#60;AET&#62;</replaceable> ../images/DSI16.dcm
+        <programlisting>$ java -jar print-image.jar -c -a <replaceable>&lt;AET&gt;</replaceable> ../images/DSI16.dcm
 <emphasis>or</emphasis>
-$ java -jar print-image.jar -c -a <replaceable>&#60;AET&#62;</replaceable> ../images/DSI256.dcm</programlisting>
+$ java -jar print-image.jar -c -a <replaceable>&lt;AET&gt;</replaceable> ../images/DSI256.dcm</programlisting>
 
         <para>Storing the measurements of this print-out as text file called
-        <filename><replaceable>&#60;AET&#62;</replaceable>.color.ods</filename>
+        <filename><replaceable>&lt;AET&gt;</replaceable>.color.ods</filename>
         in the <filename>server/default/conf/calibration</filename>/
         subdirectory of the jPrint installation.</para>
 
@@ -3050,8 +3405,9 @@ $ java -jar print-image.jar -c -a <replaceable>&#60;AET&#62;</replaceable> ../im
         <title>OD Calculation from Scans</title>
 
         <para>jPrint supports the use of a common A4 flatbed scanner to
-        determine the ODs of the print-out of <filename>images/DSI256.dcm</filename>
-        (<emphasis>not</emphasis> images/DSI16.dcm) pattern with defined DDLs.</para>
+        determine the ODs of the print-out of
+        <filename>images/DSI256.dcm</filename> (<emphasis>not</emphasis>
+        images/DSI16.dcm) pattern with defined DDLs.</para>
 
         <para>To determine the characteristic curve of the scanner, you need a
         reference paper sheet with the <filename>images/DSI256.dcm</filename>
@@ -3068,9 +3424,10 @@ $ java -jar print-image.jar -c -a <replaceable>&#60;AET&#62;</replaceable> ../im
         </figure>
 
         <para>You will receive a reference page corresponding to these OD
-        values defined in <filename>server/default/conf/calibration/DSI256.ods</filename>
-        of the default configuration by post after ordering a (evaluation)
-        license of jPrint at <ulink
+        values defined in
+        <filename>server/default/conf/calibration/DSI256.ods</filename> of the
+        default configuration by post after ordering a (evaluation) license of
+        jPrint at <ulink
         url="http://www.tiani.com/products/jprint/">http://www.tiani.com/products/jprint/</ulink>.</para>
 
         <para>If a densitometer is available, you may also create your own
@@ -3089,24 +3446,24 @@ $ java -jar print-image.jar -c -a <replaceable>&#60;AET&#62;</replaceable> ../im
         utility:</para>
 
         <programlisting>$ cd jprint-1.2.1/bin
-$ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> ../images/DSI256.dcm</programlisting>
+$ java -jar print-image.jar -a <replaceable>&lt;AET&gt;</replaceable> ../images/DSI256.dcm</programlisting>
 
-        <para>With <replaceable>&#60;AET&#62;</replaceable> as the configured
+        <para>With <replaceable>&lt;AET&gt;</replaceable> as the configured
         Application Entity Title associated with this printer (default:
         <literal>TIANI_PRINT</literal>).</para>
 
         <para>Scan the <filename>images/DSI256.dcm</filename> print-out -
         <emphasis>with the same scanner parameters</emphasis> you used when
         scanning the reference sheet before - and store it as JPEG file:
-        <filename>server/default/conf/calibration/<replaceable>&#60;AET&#62;</replaceable>.monochrome/<replaceable>&#60;anyFilename&#62;</replaceable>.jpg</filename>.</para>
+        <filename>server/default/conf/calibration/<replaceable>&lt;AET&gt;</replaceable>.monochrome/<replaceable>&lt;anyFilename&gt;</replaceable>.jpg</filename>.</para>
 
-        <para>For color printers, you have also to print <filename>images/DSI256.dcm</filename>
-        in color mode:</para>
+        <para>For color printers, you have also to print
+        <filename>images/DSI256.dcm</filename> in color mode:</para>
 
-        <programlisting>$ java -jar print-image.jar -c -a <replaceable>&#60;AET&#62;</replaceable> ../images/DSI256.dcm</programlisting>
+        <programlisting>$ java -jar print-image.jar -c -a <replaceable>&lt;AET&gt;</replaceable> ../images/DSI256.dcm</programlisting>
 
         <para>Scan that print-out and store it as JPEG file
-        <filename>server/default/conf/calibration/<replaceable>&#60;AET&#62;</replaceable>.color/<replaceable>&#60;anyFilename&#62;</replaceable>.jpg</filename>.</para>
+        <filename>server/default/conf/calibration/<replaceable>&lt;AET&gt;</replaceable>.color/<replaceable>&lt;anyFilename&gt;</replaceable>.jpg</filename>.</para>
 
         <para>jPrint will calculate the characteristic curve from the scans
         when it performs the next print job. The analysis of the scans can
@@ -3118,25 +3475,26 @@ $ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> ../image
 21:28:30,745 INFO  [PrinterService] Calibrated Printer TIANI_PRINT, chromaticity=monochrome</programlisting>
 
         <para>jPrint stores the calculated characteristic curve in
-        <filename>server/default/conf/calibration/<replaceable>&#60;AET&#62;</replaceable>.monochrome.ods</filename>
-        or, for color mode print, in <filename>server/default/conf/calibration/<replaceable>&#60;AET&#62;</replaceable>.color.ods</filename>,
+        <filename>server/default/conf/calibration/<replaceable>&lt;AET&gt;</replaceable>.monochrome.ods</filename>
+        or, for color mode print, in
+        <filename>server/default/conf/calibration/<replaceable>&lt;AET&gt;</replaceable>.color.ods</filename>,
         so the calculation has only be performed one time.</para>
 
         <para>This calculation can be triggered by using the print-image.jar
         utility:</para>
 
-        <programlisting>$ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> -i shape=IDENTITY ../images/WEDGE8.dcm</programlisting>
+        <programlisting>$ java -jar print-image.jar -a <replaceable>&lt;AET&gt;</replaceable> -i shape=IDENTITY ../images/WEDGE8.dcm</programlisting>
 
-        <para>to print a test pattern. The option <literal>-i shape=IDENTITY</literal>
-        forces jPrint to print the image calibrated according to the Grayscale
-        Standard Display Function (GSDF). Without that, the pixel values are
-        directly used as DDL, so jPrint would not need to know the printer
-        characteristics to perform the print and no calculation of the
-        characteristic curve would be triggered.</para>
+        <para>to print a test pattern. The option <literal>-i
+        shape=IDENTITY</literal> forces jPrint to print the image calibrated
+        according to the Grayscale Standard Display Function (GSDF). Without
+        that, the pixel values are directly used as DDL, so jPrint would not
+        need to know the printer characteristics to perform the print and no
+        calculation of the characteristic curve would be triggered.</para>
 
         <para>jPrint always uses the most recent scan file in directory
-        <filename>server/default/conf/calibration/&#60;AET&#62;.monochrome/</filename>
-        (<filename>server/default/conf/calibration/&#60;AET&#62;.color/</filename>
+        <filename>server/default/conf/calibration/&lt;AET&gt;.monochrome/</filename>
+        (<filename>server/default/conf/calibration/&lt;AET&gt;.color/</filename>
         for prints in color mode) to calculate the printer characteristics. So
         you only need to drop scans of current print-outs of
         <filename>images/DSI256.dcm</filename> into these directories to keep
@@ -3144,11 +3502,12 @@ $ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> ../image
         printer characteristics.</para>
 
         <para>You may evaluate the printer characteristics from the stored
-        scans by using the <link linkend="view-printerODs.jar">view-printerODs.jar</link>
-        utility. This tool is particularly useful if you are experimenting
-        with different printer configurations and need to evaluate the effect
-        of the characteristic curve(s), or to evaluate the drift of the a
-        single printer&#39;s characteristics over time.</para>
+        scans by using the <link
+        linkend="view-printerODs.jar">view-printerODs.jar</link> utility. This
+        tool is particularly useful if you are experimenting with different
+        printer configurations and need to evaluate the effect of the
+        characteristic curve(s), or to evaluate the drift of the a single
+        printer's characteristics over time.</para>
       </section>
     </section>
 
@@ -3158,58 +3517,66 @@ $ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> ../image
       <section>
         <title>Testing the Visual Image Quality</title>
 
-        <para>Initiate the calibrated print-out of the WEDGE8 pattern by:</para>
+        <para>Initiate the calibrated print-out of the WEDGE8 pattern
+        by:</para>
 
         <programlisting>$ cd jprint-1.2.1/bin
-$ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> -i shape=IDENTITY ../images/WEDGE8.dcm</programlisting>
+$ java -jar print-image.jar -a <replaceable>&lt;AET&gt;</replaceable> -i shape=IDENTITY ../images/WEDGE8.dcm</programlisting>
 
-        <para>With <replaceable>&#60;AET&#62;</replaceable> as the configured
+        <para>With <replaceable>&lt;AET&gt;</replaceable> as the configured
         Application Entity Title associated with this printer (default:
-        <literal>TIANI_PRINT</literal>). The option <literal>-i shape=IDENTITY</literal>
-        causes jPrint to print the image calibrated according to the DICOM
-        Grayscale Standard Display Function (GSDF).</para>
+        <literal>TIANI_PRINT</literal>). The option <literal>-i
+        shape=IDENTITY</literal> causes jPrint to print the image calibrated
+        according to the DICOM Grayscale Standard Display Function
+        (GSDF).</para>
 
         <para>The hardcopy should not contain visible contours - the
-        transition from dark to bright within the wedge should be smooth.</para>
+        transition from dark to bright within the wedge should be
+        smooth.</para>
 
         <para>You may also compare the result against the print-out of the
         same pattern without calibration by:</para>
 
-        <programlisting>$ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> ../images/WEDGE8.dcm</programlisting>
+        <programlisting>$ java -jar print-image.jar -a <replaceable>&lt;AET&gt;</replaceable> ../images/WEDGE8.dcm</programlisting>
 
         <para>For color printers, repeat the check for a calibrated print-out
         of the WEDGE8 pattern in color mode:</para>
 
-        <programlisting>$ java -jar print-image.jar -c -a <replaceable>&#60;AET&#62;</replaceable> -i shape=IDENTITY ../images/WEDGE8.dcm</programlisting>
+        <programlisting>$ java -jar print-image.jar -c -a <replaceable>&lt;AET&gt;</replaceable> -i shape=IDENTITY ../images/WEDGE8.dcm</programlisting>
       </section>
 
       <section>
-        <title>Quantitative Verification of the Printer Calibration to GSDF</title>
+        <title>Quantitative Verification of the Printer Calibration to
+        GSDF</title>
 
         <para>If a densitometer is available, you can determine the derivation
         of the Printer Calibration to the DICOM Grayscale Standard Display
         Function (GSDF), using a Microsoft Excel or OpenOffice.org spreadsheet
         included in the jPrint distribution:</para>
 
-        <para>Initiate the calibrated print-out of the DSI16 pattern by:</para>
+        <para>Initiate the calibrated print-out of the DSI16 pattern
+        by:</para>
 
         <programlisting>$ cd jprint-1.2.1/bin
-$ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> -i shape=IDENTITY ../images/DSI16.dcm</programlisting>
+$ java -jar print-image.jar -a <replaceable>&lt;AET&gt;</replaceable> -i shape=IDENTITY ../images/DSI16.dcm</programlisting>
 
-        <para>With <replaceable>&#60;AET&#62;</replaceable> as the configured
+        <para>With <replaceable>&lt;AET&gt;</replaceable> as the configured
         Application Entity Title associated with this printer (default:
-        <literal>TIANI_PRINT</literal>). The option <literal>-i shape=IDENTITY</literal>
-        causes jPrint to print the image calibrated according to the DICOM
-        Grayscale Standard Display Function (GSDF).</para>
+        <literal>TIANI_PRINT</literal>). The option <literal>-i
+        shape=IDENTITY</literal> causes jPrint to print the image calibrated
+        according to the DICOM Grayscale Standard Display Function
+        (GSDF).</para>
 
-        <para>Open the Hardcopy Calibration Form <filename>doc/gsdf_od.xls</filename>
-        (Microsoft Excel) or <filename>doc/gsdf_od.sxc</filename>
-        (OpenOffice.org Spreadsheet). It contains two tables: the first table
-        is used to enter the measured optical density (OD) values and some
-        administrative data, the second one is automatically filled.</para>
+        <para>Open the Hardcopy Calibration Form
+        <filename>doc/gsdf_od.xls</filename> (Microsoft Excel) or
+        <filename>doc/gsdf_od.sxc</filename> (OpenOffice.org Spreadsheet). It
+        contains two tables: the first table is used to enter the measured
+        optical density (OD) values and some administrative data, the second
+        one is automatically filled.</para>
 
         <para>Enter the same value <literal>for Illumination</literal> as
-        configured in <link linkend="printer-service"><filename>server/default/deploy/printer-service.xml</filename></link>
+        configured in <link
+        linkend="printer-service"><filename>server/default/deploy/printer-service.xml</filename></link>
         (default: 150). For reflective media, and so for a paper printer, the
         value for <literal>Reflected Light</literal> must be set to 0.</para>
 
@@ -3228,8 +3595,8 @@ $ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> -i shape
           </mediaobject>
         </figure>
 
-        <para>And enter the values in the spreadsheet fields
-        <literal>measured Box #1</literal> - <literal>measured Box #16</literal>.</para>
+        <para>And enter the values in the spreadsheet fields <literal>measured
+        Box #1</literal> - <literal>measured Box #16</literal>.</para>
 
         <figure>
           <title>Spreadsheet gsdf_od - Table: Input</title>
@@ -3241,8 +3608,8 @@ $ java -jar print-image.jar -a <replaceable>&#60;AET&#62;</replaceable> -i shape
           </mediaobject>
         </figure>
 
-        <para>Change to the &#34;Output&#34; table and evaluate the result.
-        The maximal relative derivation of any measurement from the calculated
+        <para>Change to the "Output" table and evaluate the result. The
+        maximal relative derivation of any measurement from the calculated
         GSDF value should not be more than 10%.</para>
 
         <figure>
@@ -3285,9 +3652,9 @@ Usage: java -jar check-license.jar FILE [passwd]</programlisting>
 
       <para>The list-printers utility lists any available printer names that
       may be referenced by the <literal>PrinterName</literal> attribute in the
-      printer&#39;s XML service description file (the default printer&#39;s
-      service file is called <filename>printer-service.xml</filename>). It is
-      used as follows:</para>
+      printer's XML service description file (the default printer's service
+      file is called <filename>printer-service.xml</filename>). It is used as
+      follows:</para>
 
       <programlisting>$ java -jar list-printers.jar
 Available Printers:
@@ -3320,20 +3687,20 @@ Options:
       <title id="view-plut.jar">view-plut.jar</title>
 
       <para>The view-plut utility can be started by entering the command:
-      <command>java -jar view-plut.jar</command> in the <filename>bin/</filename>
-      directory of your jPrint distribution.</para>
+      <command>java -jar view-plut.jar</command> in the
+      <filename>bin/</filename> directory of your jPrint distribution.</para>
 
       <para>This utility is meant to be used a simple way to manipulate a
-      P-LUT and immediately see it&#39;s effect on a DICOM image. It can apply
-      a P-LUT on monochrome images (with or without window levels) and on
-      color images.</para>
+      P-LUT and immediately see it's effect on a DICOM image. It can apply a
+      P-LUT on monochrome images (with or without window levels) and on color
+      images.</para>
 
-      <para>To open an image choose <command>File &#62; Open</command> from
-      the menu and select the DICOM image to open. In the right panel, the
-      P-LUT Panel, you will see the (identity) P-LUT function and a histogram
-      (for monochrome images only). If a window exists in the image the P-LUT
-      will be defined over the window range only. The window itself is shown
-      as a shaded gray region and may extend outside of the panel if it is
+      <para>To open an image choose <command>File &gt; Open</command> from the
+      menu and select the DICOM image to open. In the right panel, the P-LUT
+      Panel, you will see the (identity) P-LUT function and a histogram (for
+      monochrome images only). If a window exists in the image the P-LUT will
+      be defined over the window range only. The window itself is shown as a
+      shaded gray region and may extend outside of the panel if it is
       large.</para>
 
       <para>The P-LUT curve may be adjusted by manipulating three parameters:
@@ -3356,29 +3723,30 @@ Options:
 
         <listitem>
           <para><emphasis role="bold">Center:</emphasis> Left-click on the red
-          center-line and drag up and down to adjust the center parameter.</para>
+          center-line and drag up and down to adjust the center
+          parameter.</para>
         </listitem>
 
         <listitem>
-          <para><emphasis role="bold"><emphasis>Reset curve</emphasis>:</emphasis>
-          Right-click to reset to a linear P-LUT.</para>
+          <para><emphasis role="bold"><emphasis>Reset
+          curve</emphasis>:</emphasis> Right-click to reset to a linear
+          P-LUT.</para>
         </listitem>
       </itemizedlist>
 
       <para>Alternatively, to have a P-LUT chosen according to the histogram
       characteristic (only monochrome images may have a histogram), choose
-      <command>Process &#62; Equalize Histogram</command> from the menu.</para>
+      <command>Process &gt; Equalize Histogram</command> from the menu.</para>
 
       <para>The view-plut utility can also export or import P-LUTs using a
       P-LUT stored in DICOM format in a file or a plain text file containing
       one P-LUT entry per line in the range [0..255], inclusive.</para>
 
       <para>To print the current to a local jPrint Print Server, you can
-      choose <command>File &#62; Print</command> from the menu. The AET that
-      will be called is set using the command-line option &#34;--aet
-      &#60;AET&#62;&#34; (or &#34;-a &#60;AET&#62;&#34;) when starting the
-      view-plut utility. See below for more on the view-plut command-line
-      options.</para>
+      choose <command>File &gt; Print</command> from the menu. The AET that
+      will be called is set using the command-line option "--aet &lt;AET&gt;"
+      (or "-a &lt;AET&gt;") when starting the view-plut utility. See below for
+      more on the view-plut command-line options.</para>
 
       <programlisting>$ java -jar view-plut.jar --help
 Usage: java -jar view-plut.jar [OPTIONS]
@@ -3399,23 +3767,24 @@ Options:
       command: <command>java -jar view-printerODs.jar</command> in the
       <filename>bin/</filename> directory of your jPrint distribution.</para>
 
-      <para>You should now choose <command>Curve &#62; Load...</command> from
-      the menu and select the JPEG file of your scanned <filename>DSI256.dcm</filename>
-      print-out located in the calibrated printer directory. The utility will
-      automatically locate the <filename>DSI256.ods</filename> file (one
-      directory up, in <filename>server/default/conf/calibration/</filename>)
-      which contains the known OD values for the reference DSI256 pattern. The
-      utility will then analyze the scan file you selected (which will take
-      some time, depending upon the resolution of the file and the speed of
-      your computer). After the calculation, you will be shown the DICOM
-      Grayscale Standard Display Function (GSDF) along with the calculated OD
-      values for your scan file plotted against the Device Driving Level
-      (DDL).</para>
+      <para>You should now choose <command>Curve &gt; Load...</command> from
+      the menu and select the JPEG file of your scanned
+      <filename>DSI256.dcm</filename> print-out located in the calibrated
+      printer directory. The utility will automatically locate the
+      <filename>DSI256.ods</filename> file (one directory up, in
+      <filename>server/default/conf/calibration/</filename>) which contains
+      the known OD values for the reference DSI256 pattern. The utility will
+      then analyze the scan file you selected (which will take some time,
+      depending upon the resolution of the file and the speed of your
+      computer). After the calculation, you will be shown the DICOM Grayscale
+      Standard Display Function (GSDF) along with the calculated OD values for
+      your scan file plotted against the Device Driving Level (DDL).</para>
 
       <para>You may load any number of curves for a printer by simply
-      selecting the scan file that lies in the <filename>&#60;AET&#62;.monochrome</filename>
-      or <filename>&#60;AET&#62;.color</filename> directories where
-      <emphasis>&#60;AET&#62;</emphasis> corresponds to the Application Entity
+      selecting the scan file that lies in the
+      <filename>&lt;AET&gt;.monochrome</filename> or
+      <filename>&lt;AET&gt;.color</filename> directories where
+      <emphasis>&lt;AET&gt;</emphasis> corresponds to the Application Entity
       Title assigned to that printer configuration. <emphasis>Note: Trying to
       load a scan file from elsewhere will result in the reference OD file not
       to be found, thereby generating an error dialog.</emphasis></para>
@@ -3426,10 +3795,10 @@ Options:
       (in black). The difference will be shown by a light blue curve on the
       graph.</para>
 
-      <para>Right-clicking on a curve&#39;s button will display a menu from
-      which you can remove a curve or export the curve data to a plain text
-      file. The latter option is useful to record the actual values so that
-      they may be further analyzed in a spreadsheet application, for example.</para>
+      <para>Right-clicking on a curve's button will display a menu from which
+      you can remove a curve or export the curve data to a plain text file.
+      The latter option is useful to record the actual values so that they may
+      be further analyzed in a spreadsheet application, for example.</para>
     </section>
   </section>
 
