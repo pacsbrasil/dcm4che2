@@ -53,7 +53,8 @@ ALTER TABLE files
 
 CREATE INDEX filesystem_fk ON files(filesystem_fk);
 	
-UPDATE files, filesystem SET files.filesystem_fk=filesystem.pk
+UPDATE files SET filesystem_fk=filesystem.pk
+	FROM filesystem
 	WHERE files.dirpath=filesystem.dirpath;
 
 ALTER TABLE files DROP COLUMN dirpath;
