@@ -52,6 +52,7 @@ public class AttributeCoercions {
     private class MyHandler extends DefaultHandler {
         private CoercionCondition cc = new CoercionCondition();
         private AttributeCoercion ac;
+		private CoercionLUT lut;
         private Hashtable table = new Hashtable() ;
         private int tag;
         private String name;
@@ -68,9 +69,6 @@ public class AttributeCoercions {
             if (qName.equals("attr")) {
                 tag = Tags.valueOf(attributes.getValue("tag"));
                 takeCharacters = true;
-			} else if (qName.equals("item")) {
-				name = attributes.getValue("key");
-				takeCharacters = true;
 			} else if (qName.equals("param")) {
 				name = attributes.getValue("name");
 				takeCharacters = true;
@@ -89,7 +87,13 @@ public class AttributeCoercions {
                         : (AttributeCoercion) newInstance(clazz);
 				table = ac.params;
             } else if (qName.equals("lut")) {
-                luts.put(attributes.getValue("name"), table = new Hashtable());
+				String clazz = attributes.getValue("class");
+				lut =
+					(clazz == null)
+						? new CoercionLUT()
+						: (CoercionLUT) newInstance(clazz);
+				table = lut.params;
+                luts.put(attributes.getValue("name"), lut);
             }
         }
 
@@ -109,7 +113,7 @@ public class AttributeCoercions {
                 } else {
                     ac.add(tag, val, luts);
                 }
-            } else if (qName.equals("param") || qName.equals("item")) {
+            } else if (qName.equals("param")) {
                 table.put(name, sb.toString());
             } else if (qName.equals("then")) {
                 list.add(new Entry(cc, ac));

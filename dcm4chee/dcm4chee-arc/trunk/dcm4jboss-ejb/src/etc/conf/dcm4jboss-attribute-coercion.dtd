@@ -35,14 +35,14 @@ Performed Procedure Step Start Date (0040,0244).
 
 Sample #3:
   <lut name="PatientPosition">
-    <item key="HFP">Head First-Prone</item>
-    <item key="HFS">Head First-Supine</item>
-    <item key="HFDR">Head First-Decubitus Right</item>
-    <item key="HFDL">Head First-Decubitus Left</item>
-    <item key="FFDR">Feet First-Decubitus Right</item>
-    <item key="FFDL">Feet First-Decubitus Left</item>
-    <item key="FFP">Feet First-Prone</item>
-    <item key="FFS">Feet First-Supine</item>
+    <param name="HFP">Head First-Prone</param>
+    <param name="HFS">Head First-Supine</param>
+    <param name="HFDR">Head First-Decubitus Right</param>
+    <param name="HFDL">Head First-Decubitus Left</param>
+    <param name="FFDR">Feet First-Decubitus Right</param>
+    <param name="FFDL">Feet First-Decubitus Left</param>
+    <param name="FFP">Feet First-Prone</param>
+    <param name="FFS">Feet First-Supine</param>
   </lut>
   <if>
     <param name="called-aet">STORE_SCP</param>
@@ -61,16 +61,17 @@ of Contrast/Bolus Agent (0018,0010) and of Contrast/Bolus Route (0018,1040).
 -->
 
 <!ELEMENT dcm4jboss-attribute-coercion ((lut*, if, then)*)>
-<!ELEMENT lut (item)*>
-<!ELEMENT item (#PCDATA)>
+<!ELEMENT lut (param)*>
 <!ELEMENT if (param*, attr*)>
 <!ELEMENT then (param*, attr*)>
 <!ELEMENT param (#PCDATA)>
 <!ELEMENT attr (#PCDATA)>
 
-<!ATTLIST lut name CDATA #REQUIRED>
+<!ATTLIST lut 
+	name CDATA #REQUIRED
+	class CDATA #IMPLIED
+>
 <!ATTLIST if class CDATA #IMPLIED>
 <!ATTLIST then class CDATA #IMPLIED>
-<!ATTLIST item key CDATA #REQUIRED>
 <!ATTLIST param name CDATA #REQUIRED>
 <!ATTLIST attr tag CDATA #REQUIRED>

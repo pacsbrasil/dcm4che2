@@ -87,7 +87,7 @@ public class AttributeCoercion {
         final String[] literals;
         final int[] srcTags;
         final int[] srcIndex;
-        final Hashtable[] luts;
+        final CoercionLUT[] luts;
         GeneralCoerce(int tag, String value, Hashtable lutsByName) {
             super(tag);
             ArrayList tokens = new ArrayList();
@@ -103,7 +103,7 @@ public class AttributeCoercion {
             literals = new String[tokens.size()];
             srcTags = new int[literals.length - 1];
             srcIndex = new int[literals.length - 1];
-            luts = new Hashtable[literals.length - 1];
+            luts = new CoercionLUT[literals.length - 1];
             literals[0] = (String) tokens.get(0);
             for (int i = 0; i < srcTags.length; i++) {
                 String tk = (String) tokens.get(i + 1);
@@ -127,7 +127,7 @@ public class AttributeCoercion {
                     int last = tk.indexOf('}', startLiteral + 2);
                     if (last != -1) {
                         luts[i] =
-                            (Hashtable) lutsByName.get(
+                            (CoercionLUT) lutsByName.get(
                                 tk.substring(startLiteral + 1, last));
                         startLiteral = last + 1;
                     }
@@ -147,7 +147,7 @@ public class AttributeCoercion {
                         : (el.vm() == VRs.UN)
                         ? el.getByteBuffer().asCharBuffer().toString()
                         : ds.getString(srcTags[i], srcIndex[i]);
-                sb.append(luts[i] != null ? (String) luts[i].get(val) : val);
+                sb.append(luts[i] != null ? luts[i].lookup(val) : val);
             }
             sb.append(literals[srcTags.length]);
             return StringUtils.split(sb.toString(), '\\');
