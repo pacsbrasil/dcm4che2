@@ -238,13 +238,14 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         }
         return tmpSortFile;
     }
+    
 
     protected void startService() throws Exception {
-        JMSDelegate.getInstance().setMakeIsoImageListener(listener);
+        JMSDelegate.getInstance("MakeIsoImage").setMessageListener(listener);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.getInstance().setMakeIsoImageListener(null);
+        JMSDelegate.getInstance("MakeIsoImage").setMessageListener(null);
     }
 
     protected void process(MediaCreationRequest rq) {
@@ -311,7 +312,7 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
                         return;
                     }
                 }
-                JMSDelegate.getInstance().queueForMediaWriter(log, rq);
+                JMSDelegate.getInstance(rq.getMediaWriterName()).queue(log, rq);
                 cleanup = false;
             } catch (Exception e) {
                 if (rq.isCanceled()) {

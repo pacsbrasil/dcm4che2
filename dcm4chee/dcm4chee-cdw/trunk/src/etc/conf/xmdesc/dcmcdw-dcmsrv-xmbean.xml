@@ -35,14 +35,15 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getCalledAETs"
-      setMethod="setCalledAETs">
-      <description>Accepted Called AETs.
+      getMethod="getAETofMediaWriter"
+      setMethod="setAETofMediaWriter">
+      <description>Associate accepted Called AETs to Media Writer Names.
       </description>
-      <name>CalledAETs</name>
-      <type>[Ljava.lang.String;</type>
+      <name>AETofMediaWriter</name>
+      <type>java.lang.String</type>
+      <!-- use &#10; to separate multiple entries -->
       <descriptors>
-         <value value="CDW_SCP" />
+         <value value="CDRECORD=CDRecord" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -122,8 +123,18 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="INFO">
-      <description>Get DICOM Handler</description>
+      <description>Used internally</description>
       <name>getDcmHandler</name>
       <return-type>org.dcm4che.server.DcmHandler</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Used internally</description>
+      <name>lookupMediaWriterName</name>
+      <parameter>
+         <description>Called AET</description>
+         <name>aet</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
    </operation>
 </mbean>

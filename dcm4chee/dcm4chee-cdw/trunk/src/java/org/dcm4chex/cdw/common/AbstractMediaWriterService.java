@@ -50,13 +50,17 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
     public final void setKeepSpoolFiles(boolean keepSpoolFiles) {
         this.keepSpoolFiles = keepSpoolFiles;
     }
+    
+    private JMSDelegate getJMS() {
+        return JMSDelegate.getInstance(serviceName.getKeyProperty("name"));
+    }
 
     protected void startService() throws Exception {
-        JMSDelegate.getInstance().setMediaWriterListener(listener);
+        getJMS().setMessageListener(listener);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.getInstance().setMediaWriterListener(null);
+        getJMS().setMessageListener(null);
     }
 
     protected void process(MediaCreationRequest rq) {

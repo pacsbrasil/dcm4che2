@@ -26,6 +26,8 @@ public class MediaCreationRequest implements Serializable {
 
     private final File requestFile;
 
+    private String mediaWriterName;
+
     private String priority = Priority.LOW;
 
     private int numberOfCopies = 1;
@@ -33,7 +35,7 @@ public class MediaCreationRequest implements Serializable {
     private File filesetDir;
 
     private File isoImageFile;
-    
+
     private String medium;
 
     private String filesetID;
@@ -48,6 +50,14 @@ public class MediaCreationRequest implements Serializable {
         this.requestFile = requestFile;
     }
 
+    public final String getMediaWriterName() {
+        return mediaWriterName;
+    }
+
+    public final void setMediaWriterName(String mediaWriterName) {
+        this.mediaWriterName = mediaWriterName;
+    }
+
     public final int getNumberOfCopies() {
         return numberOfCopies;
     }
@@ -56,7 +66,6 @@ public class MediaCreationRequest implements Serializable {
         this.numberOfCopies = copies;
     }
 
-
     public final String getMedium() {
         return medium;
     }
@@ -64,7 +73,7 @@ public class MediaCreationRequest implements Serializable {
     public final void setMedium(String medium) {
         this.medium = medium;
     }
-    
+
     public final String getPriority() {
         return priority;
     }
@@ -130,9 +139,10 @@ public class MediaCreationRequest implements Serializable {
     }
 
     public String toString() {
-        return "MediaCreationRequest[rquid=" + requestFile.getName()
-                + ", fsuid=" + (filesetDir == null ? "" : filesetDir.getName())
-                + ", fsid=" + (filesetID == null ? "" : filesetID) + ", seqNo="
+        return "MediaCreationRequest[mediaWriter=" + mediaWriterName + "rquid="
+                + requestFile.getName() + ", fsuid="
+                + (filesetDir == null ? "" : filesetDir.getName()) + ", fsid="
+                + (filesetID == null ? "" : filesetID) + ", seqNo="
                 + volsetSeqno + ", tot=" + volsetSize + "]";
     }
 

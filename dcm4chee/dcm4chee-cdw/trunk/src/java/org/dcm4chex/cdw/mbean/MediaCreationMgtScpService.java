@@ -44,6 +44,8 @@ import org.dcm4chex.cdw.common.Priority;
  */
 public class MediaCreationMgtScpService extends AbstractScpService {
 
+    private static final String LOOKUP_MEDIA_WRITER_NAME = "lookupMediaWriterName";
+
     private static final int INITIATE = 1;
 
     private static final int CANCEL = 2;
@@ -371,8 +373,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             File f = spoolDir.getInstanceFile(iuid);
             if (!f.exists())
                     throw new MediaCreationException(
-                            ExecutionStatusInfo.NO_INSTANCE,
-                            "No Instance: " + iuid);
+                            ExecutionStatusInfo.NO_INSTANCE, "No Instance: "
+                                    + iuid);
         }
     }
 
@@ -421,6 +423,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             }
             try {
                 checkRequest(attrs);
+                mcrq.setMediaWriterName(lookupMediaWriterName(assoc
+                        .getAssociation().getCalledAET()));
                 mcrq.setPriority(priority);
                 mcrq.setNumberOfCopies(numberOfCopies);
                 mcrq.setFilesetID(attrs.getString(Tags.StorageMediaFileSetID));
@@ -435,7 +439,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
                 try {
-                    JMSDelegate.getInstance().queueForMediaComposer(log, mcrq);
+                    JMSDelegate.getInstance("MediaComposer").queue(log, mcrq);
                 } catch (JMSException e) {
                     throw new MediaCreationException(
                             ExecutionStatusInfo.PROC_FAILURE, e);
@@ -472,6 +476,16 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     + actionID);
         }
         return null;
+    }
+
+    private String lookupMediaWriterName(String aet) throws DcmServiceException {
+        try {
+            return (String) server.invoke(dcmServerName,
+                    LOOKUP_MEDIA_WRITER_NAME, new Object[] { aet},
+                    new String[] { String.class.getName()});
+        } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
     }
 
     private Dataset doNGet(ActiveAssociation assoc, Dimse rq, Command rspCmd)

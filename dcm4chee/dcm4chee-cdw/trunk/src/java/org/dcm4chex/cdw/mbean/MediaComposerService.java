@@ -273,11 +273,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     protected void startService() throws Exception {
         log.info("initialize " + WebBuilder.class.getName());
-        JMSDelegate.getInstance().setMediaComposerListener(listener);
+        JMSDelegate.getInstance("MediaComposer").setMessageListener(listener);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.getInstance().setMediaComposerListener(null);
+        JMSDelegate.getInstance("MediaComposer").setMessageListener(null);
     }
 
     protected void process(MediaCreationRequest rq) {
@@ -326,10 +326,9 @@ public class MediaComposerService extends ServiceMBeanSupport {
                     rq.writeAttributes(attrs, log);
                 }
                 try {
-                    if (makeIsoImage)
-                        JMSDelegate.getInstance().queueForMakeIsoImage(log, rq);
-                    else
-                        JMSDelegate.getInstance().queueForMediaWriter(log, rq);
+                    JMSDelegate.getInstance(
+                            makeIsoImage ? "MakeIsoImage" : "MediaWriter")
+                            .queue(log, rq);
                     cleanup = false;
                 } catch (JMSException e) {
                     throw new MediaCreationException(

@@ -8,8 +8,14 @@
  ******************************************/
 package org.dcm4chex.cdw.mbean;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
+import org.dcm4che.net.AETFilter;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -29,6 +35,8 @@ public class DcmServerService extends ServiceMBeanSupport {
 
     private static final String ANY = "ANY";
     
+    private Properties aetMap = new Properties();
+    
     private ServerFactory sf = ServerFactory.getInstance();
 
     private AssociationFactory af = AssociationFactory.getInstance();
@@ -40,32 +48,61 @@ public class DcmServerService extends ServiceMBeanSupport {
     private DcmHandler handler = sf.newDcmHandler(policy, services);
 
     private Server dcmsrv = sf.newServer(handler);
+    
+    private final AETFilter aetFilter = new AETFilter() {
 
-    private String[] nullToAny(String[] aets) {
+        public boolean accept(String aet) {
+            return aetMap.containsKey(aet);
+        }
+        
+    };
+
+    private static String[] nullToAny(String[] aets) {
         return aets == null || aets.length == 0 ? new String[]{ ANY } : aets;
     }
-
-    public String[] getCalledAETs() {
-        return nullToAny(policy.getCalledAETs());
+    
+    public String lookupMediaWriterName(String aet) {
+        return aetMap.getProperty(aet);
+    }
+    
+    public void setCallingAETs(String[] callingAETs) {
+        policy.setCallingAETs(anyToNull(callingAETs));
     }
 
     public String[] getCallingAETs() {
         return nullToAny(policy.getCallingAETs());
     }
-
+    
     private String[] anyToNull(String[] aets) {
         return Arrays.asList(aets).indexOf(ANY) == -1 ? aets : null;
     }
 
-    public void setCalledAETs(String[] aets) {
-        policy.setCalledAETs(anyToNull(aets));
+    public void setAETofMediaWriter(String aetMediaWriterMap) {
+        String s = aetMediaWriterMap.replace(';','\n');
+        Properties p = new Properties();
+        try {
+            p.load(new ByteArrayInputStream(s.getBytes()));
+        } catch (IOException e) {
+            throw new IllegalArgumentException(aetMediaWriterMap);
+        }
+        aetMap = p;
     }
 
-    public void setCallingAETs(String[] aets) {
-        policy.setCallingAETs(anyToNull(aets));
+    public String getAETofMediaWriter() {
+        StringBuffer sb = new StringBuffer();
+        Iterator it = aetMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry) it.next();
+            sb.append(entry.getKey());
+            sb.append('=');
+            sb.append(entry.getValue());
+            sb.append('\n');
+        }
+        return sb.toString();
     }
     
     protected void startService() throws Exception {
+        policy.setCalledAETFilter(aetFilter);    
         dcmsrv.start();
     }
 
@@ -89,8 +126,14 @@ public class DcmServerService extends ServiceMBeanSupport {
         dcmsrv.setMaxClients(max);
     }
 
-    public void setPort(int port) {
+    public void setPort(int port) throws Exception {
+        if (getPort() == port) return;
         dcmsrv.setPort(port);
+        if (getState() == STARTED) {
+            stop();
+            Thread.sleep(5000L);
+            start();
+        }
     }
 
     public int getDimseTimeout() {
@@ -136,4 +179,5 @@ public class DcmServerService extends ServiceMBeanSupport {
     public void setMaxPDULength(int maxLength) {
         policy.setMaxPDULength(maxLength);
     }
+    
 }

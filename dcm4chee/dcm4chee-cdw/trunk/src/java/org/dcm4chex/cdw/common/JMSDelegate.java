@@ -8,6 +8,8 @@
  ******************************************/
 package org.dcm4chex.cdw.common;
 
+import java.util.HashMap;
+
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
@@ -33,59 +35,44 @@ public class JMSDelegate {
 
     static final String CONNECTION_FACTORY = "java:ConnectionFactory";
 
-    static final String COMPOSER_QUEUE = "queue/MediaComposer";
-
-    static final String MKISOFS_QUEUE = "queue/MakeIsoImage";
-
-    static final String WRITER_QUEUE = "queue/MediaWriter";
-
     static int toJMSPriority(String dcmPriority) {
         if (dcmPriority.equals(Priority.LOW)) return 3;
         if (dcmPriority.equals(Priority.HIGH)) return 5;
         return 4;
     }
 
-    private static JMSDelegate instance;
+    private static HashMap map = new HashMap();
 
-    public synchronized static JMSDelegate getInstance() {
-        if (instance == null) instance = new JMSDelegate();
+    public synchronized static JMSDelegate getInstance(String name) {
+        JMSDelegate instance = (JMSDelegate) map.get(name);
+        if (instance == null)
+            map.put(name, instance = new JMSDelegate(name));
         return instance;
     }
 
-    private QueueConnection conn;
+    private static QueueConnection conn;
 
-    private Queue composerQueue;
+    private final String name;
 
-    private Queue mkisofsQueue;
+    private final Queue queue;
 
-    private Queue writerQueue;
+    private final QueueReceiver receiver;
 
-    private QueueReceiver composerReceiver;
-
-    private QueueReceiver mkisofsReceiver;
-
-    private QueueReceiver writerReceiver;
-
-    private JMSDelegate() {
+    private JMSDelegate(String name) {
+        this.name = name;
         InitialContext iniCtx = null;
         try {
             iniCtx = new InitialContext();
-            Object tmp = iniCtx.lookup(CONNECTION_FACTORY);
-            QueueConnectionFactory qcf = (QueueConnectionFactory) tmp;
-            conn = qcf.createQueueConnection();
-            composerQueue = (Queue) iniCtx.lookup(COMPOSER_QUEUE);
-            mkisofsQueue = (Queue) iniCtx.lookup(MKISOFS_QUEUE);
-            writerQueue = (Queue) iniCtx.lookup(WRITER_QUEUE);
-            QueueSession composerSession = conn.createQueueSession(false,
+            if (conn == null) {
+	            Object tmp = iniCtx.lookup(CONNECTION_FACTORY);
+	            QueueConnectionFactory qcf = (QueueConnectionFactory) tmp;
+	            conn = qcf.createQueueConnection();
+	            conn.start();
+            }
+            queue = (Queue) iniCtx.lookup("queue/" + name);
+            QueueSession session = conn.createQueueSession(false,
                     QueueSession.AUTO_ACKNOWLEDGE);
-            QueueSession mkisofsSession = conn.createQueueSession(false,
-                    QueueSession.AUTO_ACKNOWLEDGE);
-            QueueSession writerSession = conn.createQueueSession(false,
-                    QueueSession.AUTO_ACKNOWLEDGE);
-            composerReceiver = composerSession.createReceiver(composerQueue);
-            mkisofsReceiver = mkisofsSession.createReceiver(mkisofsQueue);
-            writerReceiver = writerSession.createReceiver(writerQueue);
-            conn.start();
+            receiver = session.createReceiver(queue);
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         } catch (JMSException e) {
@@ -100,50 +87,20 @@ public class JMSDelegate {
         }
     }
 
-    public void setMediaWriterListener(MessageListener listener) {
+    public void setMessageListener(MessageListener listener) {
         try {
-            writerReceiver.setMessageListener(listener);
+            receiver.setMessageListener(listener);
         } catch (JMSException e) {
             throw new ConfigurationException(e);
         }
     }
 
-    public void setMediaComposerListener(MessageListener listener) {
-        try {
-            composerReceiver.setMessageListener(listener);
-        } catch (JMSException e) {
-            throw new ConfigurationException(e);
-        }
-    }
 
-    public void setMakeIsoImageListener(MessageListener listener) {
-        try {
-            mkisofsReceiver.setMessageListener(listener);
-        } catch (JMSException e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
-    public void queueForMediaComposer(Logger log, MediaCreationRequest rq)
-            throws JMSException {
-        queueFor(log, rq, composerQueue, " to Media Composer");
-    }
-
-    public void queueForMediaWriter(Logger log, MediaCreationRequest rq)
-            throws JMSException {
-        queueFor(log, rq, writerQueue, " to Media Writer");
-    }
-
-    public void queueForMakeIsoImage(Logger log, MediaCreationRequest rq)
-            throws JMSException {
-        queueFor(log, rq, mkisofsQueue, " to Make ISO Image");
-    }
-
-    private void queueFor(Logger log, MediaCreationRequest rq, Queue queue, String toDest)
+    public void queue(Logger log, MediaCreationRequest rq)
             throws JMSException {
         QueueSession session = null;
         QueueSender send = null;
-        log.info("Forwarding " + rq + toDest);
+        log.info("Queue " + rq + " for " + name);
         try {
             session = conn.createQueueSession(false,
                     QueueSession.AUTO_ACKNOWLEDGE);
@@ -152,7 +109,7 @@ public class JMSDelegate {
             send.send(msg, DeliveryMode.PERSISTENT, toJMSPriority(rq
                     .getPriority()), 0);
         } catch (JMSException e) {
-            log.error("Failed to forward " + rq + toDest, e);
+            log.error("Failed to queue " + rq + " for " + name, e);
             throw e;
         } finally {
             if (send != null) {
