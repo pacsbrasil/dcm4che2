@@ -201,6 +201,10 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             retval = detectFileFormat((ImageInputStream)in);
         else
             throw new UnsupportedOperationException("" + in);
+        if (retval == null) {
+            log.info("Failed to detect format - try decode as ACR/NEMA Stream");
+            return FileFormat.ACRNEMA_STREAM;
+        }
         if (log.isDebugEnabled())
             log.debug("detect " + retval);
         return retval;
@@ -254,7 +258,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             }
             in.reset();
             if (in.skip(128) != 128 || in.read() != 'D' || in.read() != 'I'
-                                    || in.read() != 'C' || in.read() != 'M') 
+                                    || in.read() != 'C' || in.read() != 'M')
                 return null;
             if (testEVRFormat(DcmDecodeParam.EVR_LE) == 0)
                 return FileFormat.DICOM_FILE;
@@ -276,7 +280,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         } finally {
             in.reset();
         }
-       throw new DcmParseException("Unknown Format");
+        return null;
     }
 
     private FileFormat detectFileFormat(ImageInputStream in)
@@ -565,8 +569,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                     handler.endElement();
             } while (length == -1 || lread < llen);
             if (length != -1 && lread > llen)
-                throw new DcmParseException(logMsg() + ", Read: " + lread
-                        + ", Length: " + llen);
+                log.info(logMsg()
+                        + ", value length extend specified read length " + llen
+                        + " for " + (lread-llen) + " Bytes!");
         }
         return lread;
     }
