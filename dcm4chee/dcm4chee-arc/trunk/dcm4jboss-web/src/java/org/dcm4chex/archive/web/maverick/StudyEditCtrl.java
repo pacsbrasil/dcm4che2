@@ -44,8 +44,13 @@ public class StudyEditCtrl extends Dcm4JbossController {
     }
 
     public StudyModel getStudy() {
-        return FolderForm.getFolderForm(getCtx().getRequest()).getStudyByPk(
-                patPk, studyPk);
+		return studyPk == -1 ? newStudy() : FolderForm.getFolderForm(getCtx().getRequest()).getStudyByPk(patPk, studyPk);
+    }
+    
+    private StudyModel newStudy() {
+    	StudyModel studyModel = new StudyModel();
+    	studyModel.setSpecificCharacterSet("ISO_IR 100");
+    	return studyModel;
     }
 
 }

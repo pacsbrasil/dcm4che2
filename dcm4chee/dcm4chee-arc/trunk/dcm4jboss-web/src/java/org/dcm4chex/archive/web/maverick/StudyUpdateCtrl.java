@@ -13,6 +13,7 @@ import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.dcm4che.util.UIDGenerator;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -81,7 +82,11 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
     }
 
     protected String perform() throws Exception {
-        if (submit != null) executeUpdate();
+        if (submit != null)
+            if (studyPk == -1)
+                executeCreate();
+            else
+                executeUpdate();
         return SUCCESS;
     }
 
@@ -91,6 +96,38 @@ public class StudyUpdateCtrl extends Dcm4JbossController {
         return home.create();
     }
 
+    private void executeCreate() {
+        try {
+	        StudyModel study = new StudyModel();
+	        study.setPk( -1 );
+            study.setStudyIUID( UIDGenerator.getInstance().createUID() );
+	        study.setSpecificCharacterSet( "ISO_IR 100" );        
+            study.setPlacerOrderNumber(placerOrderNumber);
+            study.setFillerOrderNumber(fillerOrderNumber);
+            study.setAccessionNumber(accessionNumber);
+            study.setReferringPhysician(referringPhysician);
+            study.setStudyDateTime(studyDateTime);
+            study.setStudyDescription(studyDescription);
+            study.setStudyID(studyID);
+            ContentEdit ce = lookupContentEdit();
+            ce.createStudy( study.toDataset(), patPk );
+            FolderForm form = FolderForm.getFolderForm(getCtx().getRequest());
+            PatientModel pat = form.getPatientByPk(patPk);
+            
+            AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                    AuditLoggerDelegate.MODIFY,
+                    pat.getPatientID(),
+                    pat.getPatientName(),
+                    study.getPlacerOrderNumber(),
+                    study.getFillerOrderNumber(),
+                    study.getStudyIUID(),
+                    study.getAccessionNumber());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+ 
     private void executeUpdate() {
         try {
             StudyModel study = FolderForm.getFolderForm(getCtx().getRequest())
