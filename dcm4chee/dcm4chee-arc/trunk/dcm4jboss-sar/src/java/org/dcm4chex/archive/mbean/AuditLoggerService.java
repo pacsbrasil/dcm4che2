@@ -122,6 +122,16 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
                 AuditLogger.SECURITY);
     }
 
+    public boolean isStrictIHEYr4() {
+        return logger.isStrictIHEYr4();
+    }
+    
+    public void setStrictIHEYr4(boolean enable) {
+        logActorConfig(actorName, "StrictIHEYr4", new Boolean(
+                isStrictIHEYr4()), new Boolean(enable), AuditLogger.SECURITY);
+        logger.setStrictIHEYr4(enable);
+    }
+        
     public boolean isLogActorConfig() {
         return logger.isLogActorConfig();
     }
@@ -254,7 +264,7 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
     }
 
     public void logStudyDeleted(String patid, String patname, String suid,
-            Integer numInsts) {
+            Integer numInsts, String desc) {
         if (getState() == STARTED) {
             Patient patient = alf.newPatient(patid, patname);
             InstancesAction action = alf.newInstancesAction("Delete",
@@ -263,7 +273,7 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
             if (numInsts != null)
                     action.setNumberOfInstances(numInsts.intValue());
             action.setUser(getCurrentUser());
-            logger.logStudyDeleted(action);
+            logger.logStudyDeleted(action, desc);
         }
     }
 

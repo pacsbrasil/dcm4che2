@@ -64,6 +64,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isStrictIHEYr4"
+      setMethod="setStrictIHEYr4">
+      <description>Limit message format to IHEYr4 XML schema.
+          Skip proprietary extensions. 
+      </description>
+      <name>StrictIHEYr4</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isLogActorConfig"
       setMethod="setLogActorConfig">
       <description>Emit ActorConfig Audit Messages.
@@ -230,6 +242,11 @@
         <description>Number of Deleted Instances</description>
         <name>numInsts</name>
         <type>java.lang.Integer</type>
+      </parameter>
+      <parameter>
+        <description>Description</description>
+        <name>description</name>
+        <type>java.lang.String</type>
       </parameter>
       <return-type>void</return-type>
    </operation>
