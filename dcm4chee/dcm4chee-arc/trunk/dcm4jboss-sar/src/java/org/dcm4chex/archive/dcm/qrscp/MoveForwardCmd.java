@@ -83,7 +83,10 @@ class MoveForwardCmd {
         this.iuids = iuids;
         this.priority = priority;
     }
+    
+    private final byte[] RELATIONAL_RETRIEVE = { 1 };
 
+    
     public void execute(DimseListener moveRspListener)
             throws InterruptedException, IOException {
         Association a = af.newRequestor(service.createSocket(aeData));
@@ -93,14 +96,18 @@ class MoveForwardCmd {
         rq.setCallingAET(callingAET);
         rq.addPresContext(af.newPresContext(PCID,
                 UIDs.StudyRootQueryRetrieveInformationModelMOVE, NATIVE_TS));
-        PDU ac = a.connect(rq);
-        if (!(ac instanceof AAssociateAC)) { throw new IOException(
-                "Association not accepted by " + aeData + ":\n" + ac); }
+        rq.addExtNegotiation(af.newExtNegotiation(
+                UIDs.StudyRootQueryRetrieveInformationModelMOVE, RELATIONAL_RETRIEVE));
+        PDU pdu = a.connect(rq);
+        if (!(pdu instanceof AAssociateAC)) { throw new IOException(
+                "Association not accepted by " + aeData + ":\n" + pdu); }
+        AAssociateAC ac = (AAssociateAC) pdu;
         ActiveAssociation aa = af.newActiveAssociation(a, null);
         aa.start();
         try {
-            if (a.getAcceptedTransferSyntaxUID(PCID) == null) { throw new IOException(
-                    "Study Root IM MOVE Service not supported by " + aeData); }
+            if (a.getAcceptedTransferSyntaxUID(PCID) == null)
+                throw new IOException(
+                    "Study Root IM MOVE Service not supported by " + aeData);
             Command cmd = of.newCommand();
             cmd.initCMoveRQ(MSGID,
                     UIDs.StudyRootQueryRetrieveInformationModelMOVE, priority,

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.ExtNegotiator;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
@@ -231,8 +232,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         if (studyRootFind)
                 asuids.add(UIDs.StudyRootQueryRetrieveInformationModelFIND);
         if (patientStudyOnlyFind)
-                asuids
-                        .add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
+                asuids.add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
         if (patientRootMove)
                 asuids.add(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
         if (studyRootMove)
@@ -242,10 +242,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         .add(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
         return (String[]) asuids.toArray(new String[asuids.size()]);
     }
+    
+    private static final ExtNegotiator ECHO_EXT_NEG = new ExtNegotiator() {
+        public byte[] negotiate(byte[] offered) {
+            return offered;
+        }
+    };
 
     protected void initPresContexts(AcceptorPolicy policy) {
-        addPresContexts(policy, getAbstractSyntaxUIDs(),
-                getTransferSyntaxUIDs());
+        String[] asuids = getAbstractSyntaxUIDs();
+        addPresContexts(policy, asuids, getTransferSyntaxUIDs());
+        for (int i = 0; i < asuids.length; i++)
+            policy.putExtNegPolicy(asuids[i], ECHO_EXT_NEG);
     }
 
     public AEData queryAEData(String aet) throws SQLException,
