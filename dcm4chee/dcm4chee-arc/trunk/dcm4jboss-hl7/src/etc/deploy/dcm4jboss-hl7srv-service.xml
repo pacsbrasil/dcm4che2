@@ -18,7 +18,7 @@
     <!--
     Specifies TCP port on which the DICOM server is listening.
     -->
-    <attribute name="Port">2350</attribute>
+    <attribute name="Port">2300</attribute>
     
 </mbean>
 

@@ -19,52 +19,39 @@
  */
 package org.dcm4chex.archive.hl7;
 
-import org.jboss.system.ServiceMBeanSupport;
-
 import ca.uhn.hl7v2.app.Application;
+import ca.uhn.hl7v2.app.ApplicationException;
+import ca.uhn.hl7v2.app.DefaultApplication;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.Segment;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
- * @since 24.02.2004
+ * @since 08.03.2004
  * 
- * @jmx.mbean extends="org.jboss.system.ServiceMBean"
+ * @jmx.mbean extends="org.dcm4chex.archive.hl7.HL7AcceptServiceMBean"
  */
-public class HL7ServerService
-    extends ServiceMBeanSupport
-    implements org.dcm4chex.archive.hl7.HL7ServerServiceMBean {
+public class HL7MergePatientService
+    extends HL7AcceptService
+    implements org.dcm4chex.archive.hl7.HL7MergePatientServiceMBean {
 
-    private HL7Server server = new HL7Server(log);
+    private final Application handler = new DefaultApplication() {
+        public Message processMessage(Message in) throws ApplicationException {
+            Message out = null;
+            try {
+                //get default ACK
+                out = makeACK((Segment) in.get("MSH"));
+            } catch (Exception e) {
+                throw new ApplicationException(
+                    "Couldn't create response message: " + e.getMessage());
+            }
+            return out;
+        }
+    };
 
-    protected void startService() throws Exception {
-        server.start();
+    protected Application getApplication() {
+        return handler;
     }
 
-    protected void stopService() throws Exception {
-        server.stop();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public int getPort() {
-        return server.getPort();
-    }
-
-    /**
-     * @jmx.managed-attribute
-     */
-    public void setPort(int port) {
-        server.setPort(port);
-    }
-    
-    /**
-     * @jmx.managed-operation
-     */
-    public void registerApplication(
-        String messageType,
-        String triggerEvent,
-        Application handler) {
-        server.registerApplication(messageType, triggerEvent, handler);
-    }
 }
