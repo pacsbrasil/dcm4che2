@@ -41,11 +41,10 @@ import ca.uhn.hl7v2.app.Application;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 24.02.2004
- * 
- * @jmx.mbean extends="org.jboss.system.ServiceMBean"
  */
-public class HL7ServerService extends ServiceMBeanSupport implements
-        org.dcm4chex.archive.hl7.HL7ServerServiceMBean {
+public class HL7ServerService extends ServiceMBeanSupport {
+
+    private static final String GET_AUDIT_LOGGER = "getAuditLogger";
 
     private final static AuditLoggerFactory alf = AuditLoggerFactory
             .getInstance();
@@ -68,93 +67,54 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     private AuditLogger auditLogger;
 
-    /**
-     * @jmx.managed-attribute
-     */
     public ObjectName getAuditLoggerName() {
         return auditLogName;
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public void setAuditLoggerName(ObjectName auditLogName) {
         this.auditLogName = auditLogName;
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public int getPort() {
         return hl7srv.getPort();
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public void setPort(int port) {
         hl7srv.setPort(port);
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public String getProtocolName() {
         return protocol.toString();
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public void setProtocolName(String protocolName) {
         this.protocol = MLLP_Protocol.valueOf(protocolName);
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public final void setKeyStorePassword(String keyStorePassword) {
         this.keyStorePassword = keyStorePassword.toCharArray();
     }
 
-    /**
-     * @return Returns the keyStoreURL.
-     */
     public final String getKeyStoreURL() {
         return keyStoreURL;
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public final void setKeyStoreURL(String keyStoreURL) {
         this.keyStoreURL = keyStoreURL;
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public final void setTrustStorePassword(String trustStorePassword) {
         this.trustStorePassword = trustStorePassword.toCharArray();
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public final String getTrustStoreURL() {
         return trustStoreURL;
     }
 
-    /**
-     * @jmx.managed-attribute
-     */
     public final void setTrustStoreURL(String trustStoreURL) {
         this.trustStoreURL = trustStoreURL;
     }
 
-    /**
-     * @jmx.managed-operation
-     */
     public void registerApplication(String messageType, String triggerEvent,
             Application handler) {
         hl7srv.registerApplication(messageType, triggerEvent, handler);
@@ -162,8 +122,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     protected void startService() throws Exception {
         if (auditLogName != null) {
-            auditLogger = (AuditLogger) server.getAttribute(auditLogName,
-                    "AuditLogger");
+            auditLogger = (AuditLogger) server.invoke(auditLogName,
+                    GET_AUDIT_LOGGER, null, null);
         }
         hl7srv.setServerSocketFactory(getServerSocketFactory(protocol
                 .getCipherSuites()));
@@ -184,9 +144,6 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         hl7srv.stop();
     }
 
-    /**
-     * @param newSocket
-     */
     public void handshake(SSLSocket s) {
         try {
             s.startHandshake();

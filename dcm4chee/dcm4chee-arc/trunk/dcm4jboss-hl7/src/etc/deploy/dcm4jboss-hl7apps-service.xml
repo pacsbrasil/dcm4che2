@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE server>
 <!-- $Id$ -->
 
 <server>
@@ -10,7 +9,7 @@
 	name="dcm4chex:service=HL7Accept,type=ADT,event=A02">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
@@ -19,7 +18,7 @@
 	name="dcm4chex:service=HL7Accept,type=ADT,event=A03">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
@@ -28,7 +27,7 @@
 	name="dcm4chex:service=HL7Accept,type=ADT,event=A06">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
@@ -37,7 +36,7 @@
 	name="dcm4chex:service=HL7Accept,type=ADT,event=A07">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
@@ -46,7 +45,7 @@
 	name="dcm4chex:service=HL7UpdatePatientInfo,type=ADT,event=A08">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
@@ -55,7 +54,7 @@
 	name="dcm4chex:service=HL7Accept,type=ADT,event=A12">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
@@ -64,7 +63,7 @@
 	name="dcm4chex:service=HL7Accept,type=ADT,event=A13">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
@@ -73,7 +72,7 @@
 	name="dcm4chex:service=HL7MergePatient,type=ADT,event=A40">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
@@ -82,7 +81,7 @@
 	name="dcm4chex:service=HL7Accept,type=ORM,event=O01">
 
     <depends optional-attribute-name="HL7ServerName">
-    	dcm4chex:service=HL7Server,name=HL7SRV
+    	dcm4chex:service=HL7Server
     </depends>
     
 </mbean>
