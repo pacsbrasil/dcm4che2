@@ -289,7 +289,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         if (policy1 == null)
             policy1 = this;
         
-        String calledAET = rq.getCalledAET();
+        String callingAET = rq.getCallingAET();
         if (policy1.callingAETs != null
         && !policy1.callingAETs.contains(callingAET)) {
             return new AAssociateRJImpl(
