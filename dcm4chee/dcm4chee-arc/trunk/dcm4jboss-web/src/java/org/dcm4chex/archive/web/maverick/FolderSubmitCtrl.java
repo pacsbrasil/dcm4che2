@@ -394,7 +394,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		FolderForm folderForm = (FolderForm) getForm();
     	if ( moveType != MOVE_ERROR) {
     		folderForm.setErrorCode( FolderForm.NO_ERROR );
-			System.out.println("*********************************");
     		int[] iaSrc;
     		int iDest;
     		ContentManager cm = null;
@@ -407,19 +406,16 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		        cm = home.create();
     			
 	    		if ( moveType == MOVE_STUDIES ) {
-	    			System.out.println("move_STUDIES");
 	    			_move_studies( ce, cm );
 	    		} else if ( moveType == MOVE_SERIES ) {
-	    			System.out.println("move_SERIES");
 	    			_move_series( ce, cm );
 	    		} else if ( moveType == MOVE_INSTANCES ) {
-	    			System.out.println("move_INSTANCES");
 	    			_move_instances( ce, cm );
 	    		}
 	    		ret = FOLDER;
     		} catch ( Exception x ) {
-    			System.out.println("Exception:"+x);
-    			x.printStackTrace(System.out);
+    			System.err.println("Exception:"+x);
+    			x.printStackTrace(System.err);
     			
     			//ret is ERROR
     		}	finally {
