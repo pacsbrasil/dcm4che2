@@ -151,8 +151,6 @@
         <attr tag="00281052"/> <!-- Rescale Intercept -->
         <attr tag="00281053"/> <!-- Rescale Slope -->
         <attr tag="00282110"/> <!-- Lossy Image Compression -->
-        <attr tag="00283000"/> <!-- Modality LUT sequence -->
-        <attr tag="00283010"/> <!-- VOI LUT sequence -->
         <attr tag="00400302"/> <!-- Entrance Dose -->
         <attr tag="00400316"/> <!-- Organ Dose -->
         <attr tag="0040A032"/> <!-- Observation DateTime -->
@@ -183,7 +181,6 @@
         <attr tag="00700082"/> <!-- Presentation Creation Date -->
         <attr tag="00700083"/> <!-- Presentation Creation Time -->
         <attr tag="00700084"/> <!-- Content Creator s Name -->
-        <attr tag="20500010"/> <!-- Presentation LUT sequence -->
         <attr tag="20500020"/> <!-- Presentation LUT shape -->
         <attr tag="3004000A"/> <!-- Dose Summation Type -->
         <attr tag="30040006"/> <!-- Dose Comment -->

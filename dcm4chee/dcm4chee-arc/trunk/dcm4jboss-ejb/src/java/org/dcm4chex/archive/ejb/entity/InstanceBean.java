@@ -53,10 +53,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.sopIuid = ?1"
  *             transaction-type="Supports"
  * 
- * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
- *              strategy="on-find"
- *              eager-load-group="*"
- * 
  * @ejb.finder signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.media IS NULL AND i.series.hidden = false AND i.series.study.createdTime < ?1"
  *             transaction-type="Supports"
