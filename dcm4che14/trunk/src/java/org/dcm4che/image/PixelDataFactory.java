@@ -25,6 +25,8 @@ package org.dcm4che.image;
 import java.nio.ByteOrder;
 
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4cheri.image.PixelDataFactoryImpl;
 
@@ -42,17 +44,28 @@ public abstract class PixelDataFactory
     {
     }
 
-    public static PixelDataFactory newInstance()
+    public static PixelDataFactory getInstance()
     {
         return new PixelDataFactoryImpl();
     }
 
     /**
-     * Creates a new <code>PixelData</code> instance, initialized by the
+     * Creates a new <code>PixelDataReader</code> instance, initialized by the
      * <code>Dataset</code> and backed by the <code>ImageInputStream</code>.
      * Any changes to the <code>ImageInputStream</code> will be seen by the
-     * <code>PixelData</code> instance and will have undefined effects upon
+     * <code>PixelDataReader</code> instance and will have undefined effects upon
      * the next read.
      */
-    public abstract PixelData newPixelData(Dataset dataset, ImageInputStream iis, ByteOrder byteOrder, int pixelDataVr);
+    public abstract PixelDataReader newReader(PixelDataDescription desc, ImageInputStream iis);
+    public abstract PixelDataReader newReader(Dataset dataset, ImageInputStream iis, ByteOrder byteOrder, int pixelDataVr);
+
+    /**
+     * Creates a new <code>PixelDataWriter</code> instance, initialized by the
+     * <code>Dataset</code> and backed by the <code>ImageOutputStream</code>.
+     * Any changes to the <code>ImageOutputStream</code> will be seen by the
+     * <code>PixelDataWriter</code> instance and will have undefined effects upon
+     * the next read.
+     */
+    public abstract PixelDataWriter newWriter(int[][][] data, boolean containsOverlayData, PixelDataDescription desc, ImageOutputStream ios);
+    public abstract PixelDataWriter newWriter(int[][][] data, boolean containsOverlayData, Dataset dataset, ImageOutputStream ios, ByteOrder byteOrder, int pixelDataVr);
 }
