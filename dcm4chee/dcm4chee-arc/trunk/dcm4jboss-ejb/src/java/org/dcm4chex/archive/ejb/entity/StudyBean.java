@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -39,8 +38,6 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.util.DatasetUtil;
-
-/**
 
 /**
  * @ejb.bean
@@ -75,6 +72,11 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
 public abstract class StudyBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(StudyBean.class);
+    private Set retrieveAETSet;
+
+    public void unsetEntityContext() {
+        retrieveAETSet = null;
+    }
 
     /**
      * Auto-generated Primary Key
@@ -188,9 +190,6 @@ public abstract class StudyBean implements EntityBean {
      */
     public abstract String getRetrieveAETs();
 
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setRetrieveAETs(String aets);
 
     /**
@@ -272,6 +271,66 @@ public abstract class StudyBean implements EntityBean {
     }
 
     /**
+     * @ejb.interface-method
+     */
+    public void incNumberOfStudyRelatedSeries(int inc) {
+        setNumberOfStudyRelatedSeries(getNumberOfStudyRelatedSeries() + inc);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void incNumberOfStudyRelatedInstances(int inc) {
+        setNumberOfStudyRelatedInstances(
+            getNumberOfStudyRelatedInstances() + inc);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Set getRetrieveAETSet() {
+        if (retrieveAETSet == null) {
+            retrieveAETSet = new HashSet();
+            String aets = getRetrieveAETs();
+            if (aets != null) {
+                retrieveAETSet.addAll(
+                    Arrays.asList(StringUtils.split(aets, '\\')));
+            }
+        }
+        return retrieveAETSet;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean addRetrieveAET(String aet) {
+        if (getRetrieveAETSet().contains(aet)) {
+            return false;
+        }
+        if (!areAllSeriesRetrieveableFrom(aet)) {
+            return false;
+        }
+        retrieveAETSet.add(aet);
+        String prev = getRetrieveAETs();
+        if (prev == null || prev.length() == 0) {
+            setRetrieveAETs(aet);
+        } else {
+            setRetrieveAETs(prev + '\\' + aet);
+        }
+        return true;
+    }
+
+    private boolean areAllSeriesRetrieveableFrom(String aet) {
+        Collection c = getSeries();
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            if (!((SeriesLocal) it.next()).getRetrieveAETSet().contains(aet)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * @ejb.select
      *  query="SELECT s.modality FROM Study AS a, IN(a.series) s"
      */
@@ -308,9 +367,7 @@ public abstract class StudyBean implements EntityBean {
             + "]";
     }
 
-    /**
-     * @ejb.interface-method
-     */
+    /*
     public void update() {
         Collection c = getSeries();
         setNumberOfStudyRelatedSeries(c.size());
@@ -339,4 +396,5 @@ public abstract class StudyBean implements EntityBean {
                         new String[resultAetSet.size()]),
                     '\\'));
     }
+     */
 }

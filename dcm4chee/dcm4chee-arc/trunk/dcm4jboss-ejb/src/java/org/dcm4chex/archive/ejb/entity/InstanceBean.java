@@ -85,6 +85,7 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
 public abstract class InstanceBean implements EntityBean {
     private static final Logger log = Logger.getLogger(InstanceBean.class);
     private CodeLocalHome codeHome;
+    private Set retrieveAETSet;
 
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
@@ -105,6 +106,7 @@ public abstract class InstanceBean implements EntityBean {
 
     public void unsetEntityContext() {
         codeHome = null;
+        retrieveAETSet = null;
     }
 
     /**
@@ -207,9 +209,6 @@ public abstract class InstanceBean implements EntityBean {
      */
     public abstract String getRetrieveAETs();
 
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setRetrieveAETs(String aets);
 
     /**
@@ -284,12 +283,13 @@ public abstract class InstanceBean implements EntityBean {
         setSrCode(
             DatasetUtil.toCode(ds.getItem(Tags.ConceptNameCodeSeq), codeHome));
         setSeries(series);
+        series.incNumberOfSeriesRelatedInstances(1);
         log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
-
+        getSeries().incNumberOfSeriesRelatedInstances(-1);
     }
 
     /**
@@ -310,6 +310,38 @@ public abstract class InstanceBean implements EntityBean {
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
         setEncodedAttributes(DatasetUtil.toByteArray(ds));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Set getRetrieveAETSet() {
+        if (retrieveAETSet == null) {
+            retrieveAETSet = new HashSet();
+            String aets = getRetrieveAETs();
+            if (aets != null) {
+                retrieveAETSet.addAll(
+                    Arrays.asList(StringUtils.split(aets, '\\')));
+            }
+        }
+        return retrieveAETSet;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean addRetrieveAET(String aet) {
+        if (getRetrieveAETSet().contains(aet)) {
+            return false;
+        }
+        retrieveAETSet.add(aet);
+        String prev = getRetrieveAETs();
+        if (prev == null || prev.length() == 0) {
+            setRetrieveAETs(aet);
+        } else {
+            setRetrieveAETs(prev + '\\' + aet);
+        }
+        return true;
     }
 
     /**

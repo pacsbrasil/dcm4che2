@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -73,7 +72,8 @@ import org.dcm4chex.archive.ejb.util.DatasetUtil;
 public abstract class SeriesBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(SeriesBean.class);
-    
+    private Set retrieveAETSet;
+
     /**
      * Auto-generated Primary Key
      *
@@ -110,7 +110,7 @@ public abstract class SeriesBean implements EntityBean {
     public abstract String getSeriesNumber();
 
     public abstract void setSeriesNumber(String no);
-    
+
     /**
      * Modality
      *
@@ -121,7 +121,7 @@ public abstract class SeriesBean implements EntityBean {
     public abstract String getModality();
 
     public abstract void setModality(String md);
-    
+
     /**
      * PPS Start Datetime
      *
@@ -144,7 +144,7 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setNumberOfSeriesRelatedInstances(int num);
 
     public abstract void setPpsStartDateTime(java.util.Date datetime);
-    
+
     /**
      * Encoded Series Dataset
      *
@@ -165,9 +165,6 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract String getRetrieveAETs();
 
-    /**
-     * @ejb.interface-method
-     */ 
     public abstract void setRetrieveAETs(String aets);
 
     /**
@@ -183,14 +180,14 @@ public abstract class SeriesBean implements EntityBean {
      * @param study study of this series
      */
     public abstract void setStudy(StudyLocal study);
-    
+
     /**
      * @ejb.interface-method view-type="local"
      * 
      * @return study of this series
      */
     public abstract StudyLocal getStudy();
-    
+
     /**
      * @ejb.interface-method view-type="local"
      *
@@ -213,47 +210,105 @@ public abstract class SeriesBean implements EntityBean {
      *
      * @ejb.create-method
      */
-    public Integer ejbCreate(Dataset ds, StudyLocal study) throws CreateException {
+    public Integer ejbCreate(Dataset ds, StudyLocal study)
+        throws CreateException {
         setAttributes(ds);
         return null;
     }
 
-    public void ejbPostCreate(Dataset ds, StudyLocal study) throws CreateException {
+    public void ejbPostCreate(Dataset ds, StudyLocal study)
+        throws CreateException {
         setStudy(study);
+        study.incNumberOfStudyRelatedSeries(1);
         log.info("Created " + prompt());
     }
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
+        getStudy().incNumberOfStudyRelatedSeries(-1);
     }
-    
+
     /**
      * 
      * @ejb.interface-method
      */
-    public void setAttributes(Dataset ds)
-    {
+    public void setAttributes(Dataset ds) {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
-        setPpsStartDateTime(ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
-        setEncodedAttributes(DatasetUtil.toByteArray(ds));        
+        setPpsStartDateTime(
+            ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
+        setEncodedAttributes(DatasetUtil.toByteArray(ds));
     }
 
     /**
      * @ejb.interface-method
      */
-    public Dataset getAttributes()
-    {
+    public Dataset getAttributes() {
         return DatasetUtil.fromByteArray(getEncodedAttributes());
     }
-        
+
+    /**
+     * @ejb.interface-method
+     */
+    public void incNumberOfSeriesRelatedInstances(int inc) {
+        setNumberOfSeriesRelatedInstances(
+            getNumberOfSeriesRelatedInstances() + inc);
+        getStudy().incNumberOfStudyRelatedInstances(inc);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Set getRetrieveAETSet() {
+        if (retrieveAETSet == null) {
+            retrieveAETSet = new HashSet();
+            String aets = getRetrieveAETs();
+            if (aets != null) {
+                retrieveAETSet.addAll(
+                    Arrays.asList(StringUtils.split(aets, '\\')));
+            }
+        }
+        return retrieveAETSet;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean addRetrieveAET(String aet) {
+        if (getRetrieveAETSet().contains(aet)) {
+            return false;
+        }
+        if (!areAllInstancesRetrieveableFrom(aet)) {
+            return false;
+        }
+        retrieveAETSet.add(aet);
+        String prev = getRetrieveAETs();
+        if (prev == null || prev.length() == 0) {
+            setRetrieveAETs(aet);
+        } else {
+            setRetrieveAETs(prev + '\\' + aet);
+        }
+        return true;
+    }
+
+    private boolean areAllInstancesRetrieveableFrom(String aet) {
+        Collection c = getInstances();
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            if (!((InstanceLocal) it.next())
+                .getRetrieveAETSet()
+                .contains(aet)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * 
      * @ejb.interface-method
      */
-    public String asString()
-    {
+    public String asString() {
         return prompt();
     }
 
@@ -267,11 +322,8 @@ public abstract class SeriesBean implements EntityBean {
             + "]";
     }
 
-    /**
-     * @ejb.interface-method
-     */
-    public void update()
-    {
+    /*
+    public void update() {
         Collection c = getInstances();
         setNumberOfSeriesRelatedInstances(c.size());
         Set resultAetSet = null;
@@ -295,5 +347,5 @@ public abstract class SeriesBean implements EntityBean {
                     (String[]) resultAetSet.toArray(
                         new String[resultAetSet.size()]),
                     '\\'));
-    }
+    }*/
 }
