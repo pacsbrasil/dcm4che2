@@ -1,0 +1,69 @@
+/*****************************************************************************
+ *                                                                           *
+ *  Copyright (c) 2001 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *                                                                           *
+ *  This file is part of dcm4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU Lesser General Public License as published    *
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  Lesser General Public License for more details.                          *
+ *                                                                           *
+ *  You should have received a copy of the GNU Lesser General Public         *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
+
+/* $Id$ */
+
+package org.dcm4che.data;
+
+import java.util.Date;
+
+/**
+ *
+ * @author  gunter.zeilinger@tiani.com
+ * @version 0.9.9
+ */
+public interface DateTimeFormat {
+    // Constants -----------------------------------------------------
+    
+    // Methodes ------------------------------------------------------
+    public String formatDate(Date date);
+    
+    public String formatTime(Date time);
+    
+    public String formatDateTime(Date dateTime);
+
+    public String formatDateRange(Date from, Date to);
+    
+    public String formatTimeRange(Date from, Date to);
+    
+    public String formatDateTimeRange(Date from, Date to);
+    
+    public Date parseDate(String s) throws DcmValueException;
+    
+    public Date parseTime(String s) throws DcmValueException;
+    
+    public Date parseDateTime(String s) throws DcmValueException;
+    
+    public Date parseDateTime(String date, String time)
+            throws DcmValueException;
+
+    public boolean isDateRange(String s) throws DcmValueException;
+
+    public Date[] parseDateRange(String date) throws DcmValueException;
+    
+    public Date[] parseTimeRange(String time) throws DcmValueException;
+    
+    public Date[] parseDateTimeRange(String datetime) throws DcmValueException;
+
+    public Date[] parseDateTimeRange(String date, String time)
+            throws DcmValueException;
+}

@@ -1,0 +1,112 @@
+/*$Id$*/
+/*****************************************************************************
+ *                                                                           *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *                                                                           *
+ *  This file is part of dcm4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU Lesser General Public License as published    *
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  Lesser General Public License for more details.                          *
+ *                                                                           *
+ *  You should have received a copy of the GNU Lesser General Public         *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
+
+package org.dcm4che.data;
+
+import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.Dataset;
+
+import java.io.*;
+import junit.framework.*;
+
+/**
+ *
+ * @author gunter.zeilinger@tiani.com
+ */                                
+public class DatasetSerializerTest extends TestCase {
+    
+    public DatasetSerializerTest(java.lang.String testName) {
+        super(testName);
+    }        
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new TestSuite(DatasetSerializerTest.class);
+        return suite;
+    }
+
+    private static final String EVR_LE = "../testdata/sr/examplef9.dcm";
+    private static final String EVR_LE_SER = "../testdata/sr/examplef9.ser";
+    private static final String PART10_EVR_LE = "../testdata/img/6AF8_10";
+    private static final String PART10_EVR_LE_SER = 
+            "../testdata/img/6AF8_10.ser";
+    private Dataset ds;
+    
+    protected void setUp() throws Exception {
+        ds = DcmObjectFactory.getInstance().newDataset();
+    }
+    
+    public void testEVR_LE() throws Exception {
+        DataInputStream in = new DataInputStream(
+                new BufferedInputStream(new FileInputStream(EVR_LE)));
+        try {
+            ds.read(in, null, -1);
+        } finally {
+            try { in.close(); } catch (Exception ignore) {}
+        }
+        ObjectOutputStream oo = new ObjectOutputStream(
+                new BufferedOutputStream(new FileOutputStream(EVR_LE_SER)));
+        try {
+            oo.writeObject(ds);
+        } finally {
+            try { oo.close(); } catch (Exception ignore) {}
+        }
+        ObjectInputStream oin = new ObjectInputStream(
+                new BufferedInputStream(new FileInputStream(EVR_LE_SER)));
+        try {
+            Dataset ds2 = (Dataset)oin.readObject();
+            assertEquals(ds.size(), ds2.size());
+        } finally {
+            try { oin.close(); } catch (Exception ignore) {}
+        }
+    }
+    
+    public void testPART10_EVR_LE() throws Exception {
+        DataInputStream in = new DataInputStream(
+                new BufferedInputStream(new FileInputStream(PART10_EVR_LE)));
+        try {
+            ds.read(in, null, -1);
+        } finally {
+            try { in.close(); } catch (Exception ignore) {}
+        }
+        ObjectOutputStream oo = new ObjectOutputStream(
+                new BufferedOutputStream(new FileOutputStream(PART10_EVR_LE_SER)));
+        try {
+            oo.writeObject(ds);
+        } finally {
+            try { oo.close(); } catch (Exception ignore) {}
+        }
+        ObjectInputStream oin = new ObjectInputStream(
+                new BufferedInputStream(new FileInputStream(PART10_EVR_LE_SER)));
+        try {
+            Dataset ds2 = (Dataset)oin.readObject();
+            assertEquals(ds.size(), ds2.size());
+        } finally {
+            try { oin.close(); } catch (Exception ignore) {}
+        }
+    }
+}

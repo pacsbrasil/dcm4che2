@@ -1,0 +1,91 @@
+/*$Id$*/
+/*****************************************************************************
+ *                                                                           *
+ *  Copyright (c) 2002 by TIANI MEDGRAPH AG <gunter.zeilinger@tiani.com>     *
+ *                                                                           *
+ *  This file is part of dcm4che.                                            *
+ *                                                                           *
+ *  This library is free software; you can redistribute it and/or modify it  *
+ *  under the terms of the GNU Lesser General Public License as published    *
+ *  by the Free Software Foundation; either version 2 of the License, or     *
+ *  (at your option) any later version.                                      *
+ *                                                                           *
+ *  This library is distributed in the hope that it will be useful, but      *
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU        *
+ *  Lesser General Public License for more details.                          *
+ *                                                                           *
+ *  You should have received a copy of the GNU Lesser General Public         *
+ *  License along with this library; if not, write to the Free Software      *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
+ *                                                                           *
+ *****************************************************************************/
+
+package org.dcm4che.media;
+
+import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.FileMetaInfo;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.imageio.stream.ImageInputStream;
+
+/**
+ *
+ * @author  gunter.zeilinger@tiani.com
+ * @version 1.0.0
+ */
+public abstract class DirBuilderFactory {
+
+    public static DirBuilderFactory getInstance() {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        String name = System.getProperty("dcm4che.media.DirBuilderFactory",
+                "tiani.dcm4che.media.DirBuilderFactoryImpl");
+        try {
+            return (DirBuilderFactory)loader.loadClass(name).newInstance();
+        } catch (ClassNotFoundException ex) {
+            throw new ConfigurationError("class not found: " + name, ex); 
+        } catch (InstantiationException ex) {
+            throw new ConfigurationError("could not instantiate: " + name, ex); 
+        } catch (IllegalAccessException ex) {
+            throw new ConfigurationError("could not instantiate: " + name, ex); 
+        }
+    }
+    
+    protected DirBuilderFactory() {
+    }
+    
+    public abstract DirReader newDirReader(File file) throws IOException;
+
+    public abstract DirReader newDirReader(ImageInputStream in)
+            throws IOException;
+
+    public abstract DirWriter newDirWriter(File file, DcmEncodeParam encParam)
+            throws IOException;
+
+    public abstract DirWriter newDirWriter(File file, String uid,
+            String filesetID, File descriptorFile, String specCharSet,
+            DcmEncodeParam encParam) throws IOException;
+
+    public abstract DirWriter newDirWriter(File file, FileMetaInfo fmi,
+            String filesetID, File descriptorFile, String specCharSet,
+            DcmEncodeParam encParam) throws IOException;
+
+    public abstract DirBuilderPref newDirBuilderPref();
+
+    public abstract DirBuilderPref loadDirBuilderPref(InputStream in)
+            throws IOException;
+    
+    public abstract DirBuilderPref loadDirBuilderPref(File file)
+            throws IOException;
+    
+    public abstract DirBuilder newDirBuilder(DirWriter writer,
+            DirBuilderPref pref) throws IOException;
+    
+    static class ConfigurationError extends Error {
+        ConfigurationError(String msg, Exception x) {
+            super(msg,x);
+        }
+    }
+}

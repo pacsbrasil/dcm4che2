@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+
+Name: tiani/dcm4che
+Implementation-Vendor: TIANI MEDGRAPH AG (gunter.zeilinger@tiani.com)
+Implementation-Version: 1.0 [build: DEV]
+Implementation-Title: tiani.dcm4che
+

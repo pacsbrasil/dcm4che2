@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<project name="xmlt" basedir="." default="all">
+
+    <target name="Tags">
+        <style processor="trax"
+            style="Tags.xsl"
+            in="dictionary.xml"
+            out="Tags.java"
+        />
+    </target>
+
+    <target name="VRMap">
+        <style processor="trax"
+            style="VRMap.xsl"
+            in="dictionary.xml"
+            out="VRMap.java"
+        />
+    </target>
+
+    <target name="UIDs">
+        <style processor="trax"
+            style="UIDs.xsl"
+            in="dictionary.xml"
+            out="UIDs.java"
+        />
+    </target>
+
+    <target name="all" depends="Tags,VRMap,UIDs"/>
+
+</project>

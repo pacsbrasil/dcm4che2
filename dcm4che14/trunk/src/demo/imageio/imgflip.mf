@@ -1,0 +1,3 @@
+Main-Class: ImageFlipper
+Class-Path: ../lib/dcm4che.jar
+
