@@ -66,19 +66,45 @@ package org.dcm4che.dict;
  */
 public class UIDs {
 
-  /** Private constructor */
-  private UIDs() {
-  }
+	/** Private constructor */
+	private UIDs() {
+	}
 
-  public static final String forName(String name) {
-    try {
-      return (String)UIDs.class.getField(name).get(null);
-    } catch (IllegalAccessException e) {
-      throw new Error(e);
-    } catch (NoSuchFieldException e) {
-      throw new IllegalArgumentException("Unkown UID Name: " + name);
+	public static String forName(String name) {
+	    try {
+	        return (String)UIDs.class.getField(name).get(null);
+	    } catch (IllegalAccessException e) {
+	        throw new Error(e);
+	    } catch (NoSuchFieldException e) {
+	        throw new IllegalArgumentException("Unkown UID Name: " + name);
+	    }
+	}
+  
+  	public static boolean isValid(String uid) {
+  		char[] a = uid.toCharArray();
+    	if (a.length == 0 || a.length &gt; 64)
+      		return false;
+      		
+	    int state = 0;
+    	for (int i = 0; state != -1 &amp;&amp; i &lt; a.length; ++i) {
+      		switch (state) {
+        		case 0: // expect digit after point
+                    state = a[i] == '0' ? 2 : isDigit(a[i]) ? 1 : -1;
+                    break;
+        		case 1: // expect digit or point
+		            state = a[i] == '.' ? 0 : isDigit(a[i]) ? 1 : -1;
+		            break;
+                case 2: // expect point
+                    state = a[i] == '.' ? 0 : -1;
+                    break;
+            }
+        }        
+        return state == 1 || state == 2;
     }
-  }
+
+    private static boolean isDigit(char c) {
+        return c &gt;= '0' &amp;&amp; c &lt;= '9';
+    }
   
 </xsl:text>
 <xsl:apply-templates select="dictionary/uids/uid"/>
@@ -86,9 +112,9 @@ public class UIDs {
 </xsl:template>
 
 <xsl:template match="uid">
-<xsl:text>  /** </xsl:text><xsl:value-of select="../@type"/>
+<xsl:text>    /** </xsl:text><xsl:value-of select="../@type"/>
 <xsl:text>: </xsl:text><xsl:value-of select="@name"/><xsl:text> */
-  public static final String </xsl:text><xsl:value-of select="@key"/>
+	public static final String </xsl:text><xsl:value-of select="@key"/>
 <xsl:text> = "</xsl:text><xsl:value-of select="@value"/>
 <xsl:text>";
 

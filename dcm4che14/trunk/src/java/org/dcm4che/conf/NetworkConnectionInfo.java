@@ -105,6 +105,12 @@ public class NetworkConnectionInfo {
         return installed;
     }
 
+    public boolean isInstalled(DeviceInfo device) {
+        return installed != null
+            ? installed.booleanValue()
+            : device.isInstalled();
+    }
+
     public boolean isValid() {
         return hostname != null;
     }

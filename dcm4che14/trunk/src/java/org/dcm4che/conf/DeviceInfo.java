@@ -22,6 +22,7 @@ package org.dcm4che.conf;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Represents a Device.
@@ -330,9 +331,20 @@ public class DeviceInfo {
         return conList.remove(connInfo);
     }
 
-    public NetworkAEInfo[] getNetworkAE() {
+    public NetworkAEInfo[] getNetworkAEs() {
         return (NetworkAEInfo[]) aeList.toArray(
             new NetworkAEInfo[aeList.size()]);
+    }
+
+    public NetworkAEInfo getNetworkAE(String aet) {
+        NetworkAEInfo info;
+        for (Iterator it = aeList.iterator(); it.hasNext();) {
+            info = (NetworkAEInfo) it.next();
+            if (aet.equals(info.getAETitle())) {
+                return info;
+            }
+        }
+        return null;
     }
 
     public void addNetworkAE(NetworkAEInfo aeInfo) {
@@ -351,7 +363,7 @@ public class DeviceInfo {
             && !conList.isEmpty()
             && !aeList.isEmpty()
             && isValid(getNetworkConnection())
-            && isValid(getNetworkAE());
+            && isValid(getNetworkAEs());
     }
 
     private boolean isValid(NetworkConnectionInfo[] nc) {

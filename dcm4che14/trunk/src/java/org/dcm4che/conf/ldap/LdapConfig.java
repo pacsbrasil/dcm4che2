@@ -560,7 +560,7 @@ public class LdapConfig {
             NetworkConnectionInfo info = nc[i];
             ncDNs.put(info, storeNetworkConnection(makeRDN(info) + "," + dn, info));
         }
-        NetworkAEInfo[] ae = device.getNetworkAE();
+        NetworkAEInfo[] ae = device.getNetworkAEs();
         for (int i = 0; i < ae.length; i++) {
             NetworkAEInfo info = ae[i];
             storeNetworkAE(makeRDN(info) + "," + dn, info, ncDNs);

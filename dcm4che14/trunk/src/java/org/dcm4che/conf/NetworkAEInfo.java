@@ -92,7 +92,6 @@ public class NetworkAEInfo {
         return sb.toString();
     }
 
-
     public void setAETitle(String aeTitle) {
         if (aeTitle == null)
             throw new NullPointerException("aeTitle");
@@ -225,12 +224,21 @@ public class NetworkAEInfo {
         return installed;
     }
 
+    public boolean isInstalled(DeviceInfo device) {
+        return installed != null
+            ? installed.booleanValue()
+            : device.isInstalled();
+    }
+
     public void setInstalled(Boolean installed) {
         this.installed = installed;
     }
 
     public boolean isValid() {
-        return aeTitle != null && !ncList.isEmpty() && !tcList.isEmpty() && isValid(getTransferCapability());
+        return aeTitle != null
+            && !ncList.isEmpty()
+            && !tcList.isEmpty()
+            && isValid(getTransferCapability());
     }
 
     private boolean isValid(TransferCapabilityInfo[] tc) {
