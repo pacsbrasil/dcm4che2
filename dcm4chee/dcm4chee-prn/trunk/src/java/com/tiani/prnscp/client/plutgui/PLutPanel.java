@@ -22,9 +22,9 @@ public class PLutPanel extends JPanel
     private ImagePanel imgPanel;
     //histo stuff
     private final int NumBins = 2048;
-    private final int BinMin = 1; //raw min
-    private final int BinMax = 1024; //raw max
-    private final int BinRng = BinMax - BinMin; //raw range of histo
+    private  int BinMin = 1; //raw min
+    private  int BinMax = 1024; //raw max
+    private  int BinRng = BinMax - BinMin; //raw range of histo
     private int[] histo;
     private int histoMax = 0;
     
@@ -188,6 +188,16 @@ public class PLutPanel extends JPanel
         float x;
         
         samples = getSamples(); //guaranteed not to be null since this is called by imgPanel
+        if (samples.length == 0)
+            return;
+        BinMin = BinMax = samples[0];
+        for (int i=1; i<samples.length; i++) {
+            if (BinMin > samples[i])
+                BinMin = samples[i];
+            else if (BinMax < samples[i])
+                BinMax = samples[i];
+        }
+        BinRng = BinMax - BinMin;
         histo = new int[NumBins];
         for (int i=0; i<samples.length; i++) {
             if (samples[i] >= BinMin && samples[i] <= BinMax) {
@@ -233,7 +243,7 @@ public class PLutPanel extends JPanel
             //g.drawString(String.valueOf(histo[i]), 0, (int)binH*i);
         }
         g.setColor(Color.RED);
-        g.drawString("histo: N=" + NumBins + "[" + BinMin + "-" + BinMax + "]", 0, (int)(binH*(NumBins-1)));
+        g.drawString("histo: N=" + NumBins + " [" + BinMin + "-" + BinMax + "]", 0, (int)(binH*(NumBins-1)));
     }
     
     private void drawPLut(Graphics2D g)
