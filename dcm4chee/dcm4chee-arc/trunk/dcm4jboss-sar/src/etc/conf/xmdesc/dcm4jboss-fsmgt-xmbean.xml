@@ -156,6 +156,16 @@
       <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
    </operation>
    <operation impact="ACTION">
+      <description>(Re-)Calculate Disk Usage by accumulating length of files</description>
+      <name>updateDiskUsage</name>
+      <parameter>
+        <description>Directory Path (use / as delimiter)</description>
+        <name>DirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
+   </operation>
+   <operation impact="ACTION">
       <description>Update High Water Mark of File System Configuration</description>
       <name>updateHighWaterMark</name>
       <parameter>

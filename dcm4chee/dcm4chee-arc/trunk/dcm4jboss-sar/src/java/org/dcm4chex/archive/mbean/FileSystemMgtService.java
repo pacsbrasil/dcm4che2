@@ -265,6 +265,19 @@ public class FileSystemMgtService extends ServiceMBeanSupport {
             }
         }
     }
+
+    public FileSystemDTO updateDiskUsage(String dirPath)
+            throws RemoteException, FinderException {
+        FileSystemMgt fsMgt = newFileSystemMgt();
+        try {
+            return fsMgt.updateDiskUsage(dirPath);
+        } finally {
+            try {
+                fsMgt.remove();
+            } catch (Exception ignore) {
+            }
+        }
+    }
     
     public void removeFileSystem(String dirPath) throws RemoteException,
             FinderException, RemoveException {
