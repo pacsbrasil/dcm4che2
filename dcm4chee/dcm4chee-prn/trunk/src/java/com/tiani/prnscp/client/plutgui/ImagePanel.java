@@ -119,8 +119,8 @@ public class ImagePanel extends JPanel
     void setPLut(byte[] plut)
         throws Exception
     {
-        final int maxWidth = 256;
-        final int maxHeight = 256;
+        final int maxWidth = 1024;
+        final int maxHeight = 1024;
         
         lastPLut = plut;
         readParam = (DcmImageReadParam)reader.getDefaultReadParam();

@@ -74,6 +74,7 @@ public class PLutPanel extends JPanel
     private final static int CHANGING_SLOPE = 2;
     private final static int CHANGING_GAMMA = 4;
     private int changingParam;
+    private boolean logHisto = true;
 
 
     PLutPanel(ImagePanel imgPanel)
@@ -383,28 +384,21 @@ public class PLutPanel extends JPanel
         ColorModel cm = bi.getColorModel();
         ColorModelParam cmParam = imgPanel.getColorModelParam();
         final float f = (float) binRange / (NUM_BINS - 1);
-        
+        final double logHistMax = Math.log(histoMax+1);
         for (int i = 0; i < NUM_BINS; i++) {
             int index,packed=0;
+            int dx = (int) ((getWidth() - 1) * 
+                (logHisto
+                ? (Math.log(histo[i]+1) / logHistMax)
+                : ((double) histo[i] / histoMax)));
             curveColor = cm.getRGB(
                 packed = cmParam.toPixelValueRaw(
                     index = ((int) (i * f + 0.5) + binMin)));
             g.setColor(Color.BLACK);
-            g.drawLine((int) ((getWidth() - 1) * histo[i] / (float) histoMax),
-                       (int) (binH * i),
-                       (int) ((getWidth() - 1) * histo[i] / (float) histoMax),
-                       (int) (binH * (i + 1)) - 1);
-            /*g.drawRect(
-                    0,
-                    (int) (binH * i),
-                    (int) ((getWidth() - 1) * histo[i] / (float) histoMax),
-                    (int) binH);*/
+            g.drawLine(dx, (int) (binH * i), dx, (int) (binH * (i + 1)) - 1);
+            // g.drawRect( 0, (int) (binH * i), dx, (int) binH);
             g.setColor(new Color(curveColor));
-            g.fillRect(
-                    0,
-                    (int) (binH * i) + 1,
-                    (int) ((getWidth() - 1) * histo[i] / (float) histoMax) - 1,
-                    (int) binH - 1);
+            g.fillRect(0, (int) (binH * i) + 1, dx - 1, (int) binH - 1);
         }
         g.setColor(Color.RED);
     }
