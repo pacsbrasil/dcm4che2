@@ -40,11 +40,33 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getViewerDirOnMedia"
-      setMethod="setViewerDirOnMedia">
+      getMethod="getFileSetDescriptorFile"
+      setMethod="setFileSetDescriptorFile">
       <description>Description not yet written.
       </description>
-      <name>ViewerDirOnMedia</name>
+      <name>FileSetDescriptorFile</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="README.TXT" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCharsetOfFileSetDescriptorFile"
+      setMethod="setCharsetOfFileSetDescriptorFile">
+      <description>Description not yet written.
+      </description>
+      <name>CharsetOfFileSetDescriptorFile</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="ISO_IR 100" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDisplayApplicationDir"
+      setMethod="setDisplayApplicationDir">
+      <description>Description not yet written.
+      </description>
+      <name>DisplayApplicationDir</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="VIEWER" />

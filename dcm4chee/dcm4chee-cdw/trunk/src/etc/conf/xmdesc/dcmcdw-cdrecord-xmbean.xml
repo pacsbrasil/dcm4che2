@@ -29,6 +29,17 @@
    </constructor>
 
    <!-- Attributes -->
+   <attribute access="read-write"
+      getMethod="isCleanFilesDisabled"
+      setMethod="setCleanFilesDisabled">
+      <description>Keep Fileset and ISO image after writing on media.
+      </description>
+      <name>CleanFilesDisabled</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
    &defattr;
    
    <!-- Operations -->

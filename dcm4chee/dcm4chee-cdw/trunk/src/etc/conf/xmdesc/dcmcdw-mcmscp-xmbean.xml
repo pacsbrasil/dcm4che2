@@ -61,6 +61,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDefaultMediaApplicationProfile"
+      setMethod="setDefaultMediaApplicationProfile">
+      <description>Description not yet written.
+      </description>
+      <name>DefaultMediaApplicationProfile</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="STD-GEN-CD" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDefaultRequestPriority"
       setMethod="setDefaultRequestPriority">
       <description>Description not yet written.
