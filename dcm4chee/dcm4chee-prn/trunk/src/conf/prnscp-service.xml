@@ -193,7 +193,7 @@
     <!--
     Defines the horizontal space between Img Boxes in mm.
     -->
-    <attribute name="SpaceBetweenVisW">4.0</attribute>
+    <attribute name="SpaceBetweenVisW">2.0</attribute>
     
     <!--
     Defines the Color for ImageableArea -Annotation
