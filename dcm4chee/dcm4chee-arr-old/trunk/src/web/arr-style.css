@@ -131,8 +131,9 @@ table.dcmds tr.row1
 .num
 {
 	color: gray;
-	font-family: "courier';
+	font-family: "courier";
 }
+
 .ip
 {
 	color: #70950F;
@@ -150,4 +151,126 @@ div.level
 	margin-top: 2px;
 	margin-bottom: 2px;
 }
+
+
+
+
+
+
+STRONG {
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+	font-weight : bold;
+}
+
+H0 {
+	font : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 15px;
+	font-weight : bold;
+	letter-spacing : 4px;
+	align: top;
+	vertical-align: top;
+}	
+H1 {
+	font : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 12px;
+	font-weight : bold;
+	letter-spacing : 3px;
+	align: top;
+}
+H2 {
+	font : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+	font-weight : bold;
+	letter-spacing : 2px;
+	text-decoration : none;
+}
+
+H3 {
+	font : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+	font-weight : normal;
+	letter-spacing : 2px;
+	color : Red;
+	font-position: center center;
+}
+
+H4 {
+	font : normal 9px Verdana, Geneva, Arial, Helvetica, sans-serif;
+	color : 666666;
+	vertical-align: middle;
+
+}
+
+P {
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 9px;
+	vertical-align: middle;
+}
+
+TABLE {
+	background : transparent;
+	font : normal 11px Verdana, Geneva, Arial, Helvetica, sans-serif;
+	text-decoration : none;
+} 
+
+BODY {
+	color : #666666;
+}
+
+
+P {
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+}
+
+A       {text-decoration: none; font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+		font-size : 11px;}
+		
+A:hover {text-decoration: underline; color: #FF0000}
+
+UL, LI {
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+	list-style : disc;
+	list-style-position : inside;
+}
+
+B {
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+	font : bold;
+}
+
+HR {
+	color : Silver;
+	font : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+}
+
+BLOCKQUOTE {
+	color : Red;
+	font : BankGothic Md BT;
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+	font-style : normal;
+	font-variant : small-caps;
+	font-weight : bold;
+	letter-spacing : 2px;
+	text-transform : none;
+}
+
+
+
+
+.background {
+	background-attachment: fixed;
+	background-image: url(logo.gif);
+	background-repeat: no-repeat;
+	background-position: center?????A?º??u center;
+	background-color: #CCCCCC;
+	font-style: italic;
+
+}
+
 

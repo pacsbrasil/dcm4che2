@@ -1,21 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:output method="xml"
-		doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
-		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-        indent="yes"
-        encoding="ISO-8859-1"/>
+<xsl:output method="html"
+ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
+	doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+ indent = "yes" encoding="ISO-8859-1"/>
+<xsl:variable name="page_title">Audit Repository Log</xsl:variable>
+<xsl:include href="page.xsl"/>
 	
 	<xsl:template match="/">
 		<html>
 			<head>
 				<title>Audit Record Detail View</title>
-				<link rel="stylesheet" type="text/css" href="arr-style.css"/>
+				<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
 			</head>
-			<body>
-				<h1>Audit Record Detail View: <!--<i><xsl:value-of select="AuditMessage/Type"/></i>--></h1><hr/>
-				<table class="c1">
-					<tr class="head"><td>Host</td><td>Time</td><td>Parameters</td></tr>
+			<body background="images/bg.jpg" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
+				<table width="100%" cellpadding="0" cellspacing="0" border="0">
+					<tr bgcolor="#eeeeee">
+					<td colspan="5">
+						<h2>Audit Record Detail View:</h2><!--<i><xsl:value-of select="AuditMessage/Type"/></i>-->
+					</td>	
+					</tr>
+					<tr bgcolor="#eeeeee">
+						<td>Host</td><td width="10"></td>
+						<td>Time</td><td width="10"></td>
+						<td>Parameters</td>
+					</tr>
+					<tr><td height="15"></td></tr>
 					<xsl:apply-templates select="IHEYr4"/>
 				</table>
 			</body>
@@ -23,9 +33,12 @@
 	</xsl:template>
 	
 	<xsl:template match="IHEYr4">
-		<tr class="row0">
-			<td><xsl:apply-templates select="Host"/></td>
-			<td><xsl:apply-templates select="TimeStamp"/></td>
+		<tr>
+<tr><td></td></tr>
+			<td valign="top"><xsl:apply-templates select="Host"/></td>
+<td width="10"></td>
+			<td valign="top"><xsl:apply-templates select="TimeStamp"/></td>
+<td width="10"></td>
 			<td>
 				<div class="level">
 					<xsl:apply-templates select="Import|InstancesStored|ProcedureRecord|ActorStartStop|ActorConfig|Export|DICOMInstancesDeleted|PatientRecord|OrderRecord|BeginStoringInstances|InstancesSent|DICOMInstancesUsed|StudyDeleted|DicomQuery|SecurityAlert|UserAuthenticated|AuditLogUsed|NetworkEntry"/>

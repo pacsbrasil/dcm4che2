@@ -3,8 +3,7 @@
 	<xsl:output method="html"
 		doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-        indent="yes"
-        encoding="ISO-8859-1"/>
+		encoding="ISO-8859-1"/>
 	
 	<xsl:template match="/">
 		<html>
@@ -12,7 +11,8 @@
 				<title>DICOM dataset</title>
 				<link rel="stylesheet" type="text/css" href="arr-style.css"/>
 			</head>
-			<body>
+			<body background="images/bg.jpg" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
+
 				<table class="dcmds">
 					<xsl:apply-templates select="dataset"/>
 				</table>
@@ -21,7 +21,7 @@
 	</xsl:template>
 	
 	<xsl:template match="dataset">
-        <table class="dcmds">
+<table class="dcmds">
             <tr class="head"><td>Group</td><td>Element</td><td>Name</td><td>VR</td>
                 <td>Length</td><td>VM</td><td>Value</td></tr>
                 <xsl:apply-templates select="elm"/>
