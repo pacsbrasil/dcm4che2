@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.jms.JMSException;
@@ -83,7 +85,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
     private boolean allowCancelAlreadyCreating = true;
 
-    private boolean allowDuplicateRefSOPInstances = false;
+    private boolean tolerateDuplicateRefSOPInstances = false;
 
     private final DcmService service = new DcmServiceBase() {
 
@@ -108,13 +110,13 @@ public class MediaCreationMgtScpService extends AbstractScpService {
         return keepSpoolFiles;
     }
 
-    public final boolean isAllowDuplicateRefSOPInstances() {
-        return allowDuplicateRefSOPInstances;
+    public final boolean isTolerateDuplicateRefSOPInstances() {
+        return tolerateDuplicateRefSOPInstances;
     }
 
-    public final void setAllowDuplicateRefSOPInstances(
+    public final void setTolerateDuplicateRefSOPInstances(
             boolean allowDuplicateRefSOPInstances) {
-        this.allowDuplicateRefSOPInstances = allowDuplicateRefSOPInstances;
+        this.tolerateDuplicateRefSOPInstances = allowDuplicateRefSOPInstances;
     }
 
     public final void setKeepSpoolFiles(boolean keepSpoolFiles) {
@@ -375,21 +377,16 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     }
 
     private void checkRequest(Dataset attrs) throws MediaCreationException {
-        String error = null;
-        ArrayList failedSOPs = null;
+        ArrayList missingSOPs = new ArrayList();
         HashSet profiles = new HashSet();
-        HashSet checkForDuplicate = new HashSet();
+        LinkedHashMap checkForDuplicate = new LinkedHashMap();
         DcmElement refSOPs = attrs.get(Tags.RefSOPSeq);
         for (int i = 0, n = refSOPs.vm(); i < n; ++i) {
             Dataset item = refSOPs.getItem(i);
             String cuid = item.getString(Tags.RefSOPClassUID);
             String iuid = item.getString(Tags.RefSOPInstanceUID);
-            if (!checkForDuplicate.add(iuid)) {
+            if (checkForDuplicate.put(iuid, item) != null) {
                 log.warn("Duplicate referenced SOP Instance: " + iuid);
-                if (!allowDuplicateRefSOPInstances) {
-                    if (error == null)
-                            error = ExecutionStatusInfo.DUPL_REF_INST;
-                }
             }
             String profile = item
                     .getString(Tags.RequestedMediaApplicationProfile);
@@ -401,17 +398,24 @@ public class MediaCreationMgtScpService extends AbstractScpService {
             File f = spoolDir.getInstanceFile(iuid);
             if (!f.exists()) {
                 log.warn("No Instance: " + iuid);
-                error = ExecutionStatusInfo.NO_INSTANCE;
                 Dataset sop = dof.newDataset();
                 sop.putUI(Tags.RefSOPClassUID, cuid);
                 sop.putUI(Tags.RefSOPInstanceUID, iuid);
                 sop.putUS(Tags.FailureReason,
                         FailureReason.NoSuchObjectInstance);
-                if (failedSOPs == null) failedSOPs = new ArrayList();
-                failedSOPs.add(sop);
+                missingSOPs.add(sop);
             }
         }
-        if (error != null) throw new MediaCreationException(error, failedSOPs);
+        if (!missingSOPs.isEmpty())
+            throw new MediaCreationException(ExecutionStatusInfo.NO_INSTANCE, missingSOPs);
+        if (checkForDuplicate.size() < refSOPs.vm()) {
+            if (!tolerateDuplicateRefSOPInstances)
+                throw new MediaCreationException(ExecutionStatusInfo.DUPL_REF_INST);
+            // correct Media Creation Request
+            DcmElement corrRefSOPs = attrs.putSQ(Tags.RefSOPSeq);
+            for (Iterator it = checkForDuplicate.values().iterator(); it.hasNext();)
+                corrRefSOPs.addItem((Dataset) it.next());
+        }
     }
 
     private Dataset doNAction(ActiveAssociation assoc, Dimse rq, Command rspCmd)

@@ -214,14 +214,12 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAllowDuplicateRefSOPInstances"
-      setMethod="setAllowDuplicateRefSOPInstances">
-      <description>Accepts incorrect Media Creation Request with duplicated
-      referenced SOP Instances. Attention: Such Requests may signal
-      inconsistencies in the system requesting the media creation,
-      which may lead to export incomplete studies on media!
+      getMethod="isTolerateDuplicateRefSOPInstances"
+      setMethod="setTolerateDuplicateRefSOPInstances">
+      <description>Tolerate incorrect Media Creation Request with duplicated
+      referenced SOP Instances.
       </description>
-      <name>AllowDuplicateRefSOPInstances</name>
+      <name>TolerateDuplicateRefSOPInstances</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
