@@ -588,7 +588,7 @@
       <filterset>
         <filter token="ARCHIVES" value="dcm4che.jar,auditlog.jar"/>
         <filter token="DEPENDS"
-            value="--> &lt;depends>dcm4chex:service=AuditRepServer&lt;/depends> &lt;!--"/>
+            value="--> &lt;depends>dcm4chex:service=AuditRepServer,name=ARR&lt;/depends> &lt;!--"/>
       </filterset>
     </copy>
     <fixcrlf srcdir="${dist-with-jaudit.dir}/bin" eol="crlf" includes="*.bat"/>
