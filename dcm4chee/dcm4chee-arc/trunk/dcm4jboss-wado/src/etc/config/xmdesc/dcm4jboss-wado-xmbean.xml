@@ -33,26 +33,41 @@
     <attribute access="read-write"
       getMethod="getMinFreeSpace"
       setMethod="setMinFreeSpace">
-      <description>Min space that must be available on cache drive in MByte (1.000.000 Bytes).
+      <description>Min space that must be available on cache drive (MB = 1000000 Bytes, GB = 1000MB).
       </description>
       <name>MinFreeSpace</name>
-      <type>int</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="5" />
+         <value value="5MB" />
       </descriptors>
    </attribute>
 
     <attribute access="read-write"
       getMethod="getPreferredFreeSpace"
       setMethod="setPreferredFreeSpace">
-      <description>Preferred free disk space in MByte (1.000.000 Bytes).
+      <description>Preferred free disk space (MB = 1000000 Bytes, GB = 1000MB).
       </description>
       <name>PreferredFreeSpace</name>
-      <type>int</type>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="10" />
+         <value value="10MB" />
       </descriptors>
     </attribute>
+
+   <attribute access="read-write"
+      getMethod="getFreeDiskSpaceInterval"
+      setMethod="setFreeDiskSpaceInterval">
+      <description>Interval in which the available disk space is checked and, if necessary,
+      	  the cache is cleaned.
+          Format: ##m (in minutes), ##h (in hours), ##d (in days).
+          NEVER (= disable media scheduling).          
+      </description>
+      <name>FreeDiskSpaceInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1m" />
+      </descriptors>
+   </attribute>
 
     <attribute access="read-write"
       getMethod="isClientRedirect"
@@ -102,13 +117,15 @@
    <operation impact="ACTION">
       <description>Clear Cache</description>
       <name>clearCache</name>
-      <return-type>void</return-type>
+      <return-type>java.lang.String</return-type>
    </operation>
    
    <operation impact="ACTION">
-      <description>Clean Cache</description>
-      <name>cleanCache</name>
-      <return-type>void</return-type>
+      <description>Free Disk Space.
+      Delete old files from cache to free disk space.
+      </description>
+      <name>freeDiskSpace</name>
+      <return-type>java.lang.String</return-type>
    </operation>
    
    <operation impact="ACTION">
