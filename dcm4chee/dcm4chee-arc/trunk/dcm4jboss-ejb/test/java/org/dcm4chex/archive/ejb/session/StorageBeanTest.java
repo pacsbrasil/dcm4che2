@@ -33,10 +33,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
+import java.net.URI;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -46,6 +47,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.util.HostNameUtils;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 
@@ -57,9 +59,9 @@ public class StorageBeanTest extends TestCase
 {
 
     public static final String DIR = "storage";
+    public static final String AET = "StorageBeanTest";
 
     private Storage storage;
-    private String host;
 
     public static void main(String[] args)
     {
@@ -75,8 +77,14 @@ public class StorageBeanTest extends TestCase
         StorageHome home = (StorageHome) ctx.lookup(StorageHome.JNDI_NAME);
         ctx.close();
         storage = home.create();
-        String tmp = InetAddress.getLocalHost().getHostName();
-        host = tmp.substring(tmp.lastIndexOf(".")+1);
+        try {
+            storage.getNodeURI(AET);
+        } catch (ObjectNotFoundException e) {
+            String host = HostNameUtils.getLocalHostName();
+            URI tmp = new File(AET).toURI();
+            String uri = "file://" + host + tmp.getPath();
+            storage.createNode(uri, AET, AET);
+        }
     }
 
     /*
@@ -114,7 +122,7 @@ public class StorageBeanTest extends TestCase
         }
         MessageDigest md = MessageDigest.getInstance("MD5");
         Dataset ds = loadDataset(file, md);
-        storage.store(ds, host, "/", path.substring(1), file.length(), md.digest());
+        storage.store(ds, AET, path.substring(1), file.length(), md.digest());
     }
 
     private Dataset loadDataset(File file, MessageDigest md) throws IOException

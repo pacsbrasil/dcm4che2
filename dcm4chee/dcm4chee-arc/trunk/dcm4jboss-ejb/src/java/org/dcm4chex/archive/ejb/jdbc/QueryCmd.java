@@ -52,34 +52,29 @@ public abstract class QueryCmd extends BaseCmd {
     private static final String[] QRLEVEL =
         { "PATIENT", "STUDY", "SERIES", "IMAGE" };
 
-    private static final String[] ENTITY =
-        { "Patient", "Study", "Series", "Instance" };
-
-    private static final String[] SELECT_ATTRIBUTE =
-        {
-            "Patient.encodedAttributes",
-            "Study.encodedAttributes",
-            "Series.encodedAttributes",
-            "Instance.encodedAttributes" };
-
-    private static final String[] FK =
-        { "Study.patient_fk", "Series.study_fk", "Instance.series_fk" };
-
-    public static QueryCmd create(DataSource ds, Dataset keys) throws SQLException {
+    public static QueryCmd create(DataSource ds, Dataset keys)
+        throws SQLException {
+        QueryCmd cmd;
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         switch (Arrays.asList(QRLEVEL).indexOf(qrLevel)) {
             case 0 :
-                return new PatientQueryCmd(ds, keys);
+                cmd = new PatientQueryCmd(ds, keys);
+                break;
             case 1 :
-                return new StudyQueryCmd(ds, keys);
+                cmd = new StudyQueryCmd(ds, keys);
+                break;
             case 2 :
-                return new SeriesQueryCmd(ds, keys);
+                cmd = new SeriesQueryCmd(ds, keys);
+                break;
             case 3 :
-                return new ImageQueryCmd(ds, keys);
+                cmd = new ImageQueryCmd(ds, keys);
+                break;
             default :
                 throw new IllegalArgumentException(
                     "QueryRetrieveLevel=" + qrLevel);
         }
+        cmd.init();
+        return cmd;
     }
 
     protected final Dataset keys;
@@ -88,10 +83,26 @@ public abstract class QueryCmd extends BaseCmd {
     protected QueryCmd(DataSource ds, Dataset keys) throws SQLException {
         super(ds);
         this.keys = keys;
-        // ensure keys contains (8,0005) for use as result filter  
+        // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
         }
+    }
+
+    protected void init() {
+        sqlBuilder.setSelect(getSelectAttributes());
+        sqlBuilder.setFrom(getTables());
+        sqlBuilder.setLeftJoin(getLeftJoin());
+        sqlBuilder.setRelations(getRelations());
+    }
+
+    protected abstract String[] getSelectAttributes();
+    protected abstract String[] getTables();
+    protected String[] getLeftJoin() {
+        return null;
+    }
+    protected String[] getRelations() {
+        return null;
     }
 
     public void execute() throws SQLException {
@@ -225,10 +236,10 @@ public abstract class QueryCmd extends BaseCmd {
     private void adjustDataset(Dataset ds, Dataset keys) {
         for (Iterator it = keys.iterator(); it.hasNext();) {
             DcmElement key = (DcmElement) it.next();
-            final int tag = key.tag();            
+            final int tag = key.tag();
             if (tag == Tags.SpecificCharacterSet)
                 continue;
-            
+
             final int vr = key.vr();
             DcmElement el = ds.get(tag);
             if (el == null) {
@@ -246,74 +257,148 @@ public abstract class QueryCmd extends BaseCmd {
         }
     }
 
-    protected abstract void fillDataset(Dataset ds) throws SQLException, IOException;
+    protected abstract void fillDataset(Dataset ds)
+        throws SQLException, IOException;
 
     static class PatientQueryCmd extends QueryCmd {
         PatientQueryCmd(DataSource ds, Dataset keys) throws SQLException {
             super(ds, keys);
-            sqlBuilder.setSelect(SELECT_ATTRIBUTE, 1);
-            sqlBuilder.setFrom(ENTITY, 1);
+        }
+
+        protected void init() {
+            super.init();
             addPatientMatch();
         }
 
-        protected void fillDataset(Dataset ds) throws IOException, SQLException {
+        protected void fillDataset(Dataset ds)
+            throws IOException, SQLException {
             ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
             ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
         }
-    }
 
+        protected String[] getSelectAttributes() {
+            return new String[] { "Patient.encodedAttributes" };
+        }
+
+        protected String[] getTables() {
+            return new String[] { "Patient" };
+        }
+
+    }
     static class StudyQueryCmd extends QueryCmd {
         StudyQueryCmd(DataSource ds, Dataset keys) throws SQLException {
             super(ds, keys);
-            sqlBuilder.setSelect(SELECT_ATTRIBUTE, 2);
-            sqlBuilder.setFrom(ENTITY, 2);
-            sqlBuilder.setFk(FK, 1);
+        }
+
+        protected void init() {
+            super.init();
             addPatientMatch();
             addStudyMatch();
         }
 
-        protected void fillDataset(Dataset ds) throws IOException, SQLException {
+        protected String[] getSelectAttributes() {
+            return new String[] {
+                "Patient.encodedAttributes",
+                "Study.encodedAttributes" };
+        }
+
+        protected String[] getTables() {
+            return new String[] { "Patient", "Study" };
+        }
+
+        protected String[] getRelations() {
+            return new String[] { "Patient.pk", "Study.patient_fk" };
+        }
+
+        protected void fillDataset(Dataset ds)
+            throws IOException, SQLException {
             ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
     }
-
     static class SeriesQueryCmd extends QueryCmd {
         SeriesQueryCmd(DataSource ds, Dataset keys) throws SQLException {
             super(ds, keys);
-            sqlBuilder.setSelect(SELECT_ATTRIBUTE, 3);
-            sqlBuilder.setFrom(ENTITY, 3);
-            sqlBuilder.setFk(FK, 2);
+        }
+
+        protected void init() {
+            super.init();
             addPatientMatch();
             addStudyMatch();
             addSeriesMatch();
         }
 
-        protected void fillDataset(Dataset ds) throws IOException, SQLException {
+        protected String[] getSelectAttributes() {
+            return new String[] {
+                "Patient.encodedAttributes",
+                "Study.encodedAttributes",
+                "Series.encodedAttributes" };
+        }
+
+        protected String[] getTables() {
+            return new String[] { "Patient", "Study", "Series" };
+        }
+
+        protected String[] getRelations() {
+            return new String[] {
+                "Patient.pk",
+                "Study.patient_fk",
+                "Study.pk",
+                "Series.study_fk" };
+        }
+
+        protected void fillDataset(Dataset ds)
+            throws IOException, SQLException {
             ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
-
     static class ImageQueryCmd extends QueryCmd {
         ImageQueryCmd(DataSource ds, Dataset keys) throws SQLException {
             super(ds, keys);
-            sqlBuilder.setSelect(SELECT_ATTRIBUTE, 4);
-            sqlBuilder.setFrom(ENTITY, 4);
-            if (isMatchSrCode()) {
-                sqlBuilder.setLeftJoin("Code", "Instance.srcode_fk");
-            }
-            sqlBuilder.setFk(FK, 3);
+        }
+
+        protected void init() {
+            super.init();
             addPatientMatch();
             addStudyMatch();
             addSeriesMatch();
             addInstanceMatch();
         }
 
-        protected void fillDataset(Dataset ds) throws IOException, SQLException {
+        protected String[] getSelectAttributes() {
+            return new String[] {
+                "Patient.encodedAttributes",
+                "Study.encodedAttributes",
+                "Series.encodedAttributes",
+                "Instance.encodedAttributes" };
+        }
+
+        protected String[] getTables() {
+            return new String[] { "Patient", "Study", "Series", "Instance" };
+        }
+
+        protected String[] getLeftJoin() {
+            return isMatchSrCode()
+                ? new String[] { "Code", "Code.pk", "Instance.srcode_fk" }
+            : null;
+        }
+
+        protected String[] getRelations() {
+            return new String[] {
+                "Patient.pk",
+                "Study.patient_fk",
+                "Study.pk",
+                "Series.study_fk",
+                "Series.pk",
+                "Instance.series_fk" };
+        }
+
+        protected void fillDataset(Dataset ds)
+            throws IOException, SQLException {
             ds.putAll(toDataset(rs.getBytes(1)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(2)).subSet(keys));
             ds.putAll(toDataset(rs.getBytes(3)).subSet(keys));

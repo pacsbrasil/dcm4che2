@@ -37,6 +37,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -56,6 +57,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.NodeLocal;
+import org.dcm4chex.archive.ejb.interfaces.NodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -102,12 +105,16 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  ejb-name="File" 
  *  view-type="local"
  *  ref-name="ejb/File" 
+ * 
+ * @ejb.ejb-ref
+ *  ejb-name="Node" 
+ *  view-type="local"
+ *  ref-name="ejb/Node" 
  *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
-public abstract class StorageBean implements SessionBean
-{
+public abstract class StorageBean implements SessionBean {
     private Logger log = Logger.getLogger(StorageBean.class);
 
     private PatientLocalHome patHome;
@@ -115,17 +122,23 @@ public abstract class StorageBean implements SessionBean
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instHome;
     private FileLocalHome fileHome;
+    private NodeLocalHome nodeHome;
 
-    public void setSessionContext(SessionContext ctx)
-    {
+    public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            patHome = (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
-            studyHome = (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
-            seriesHome = (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
-            instHome = (InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
+            patHome =
+                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+            studyHome =
+                (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
+            seriesHome =
+                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+            instHome =
+                (InstanceLocalHome) jndiCtx.lookup(
+                    "java:comp/env/ejb/Instance");
             fileHome = (FileLocalHome) jndiCtx.lookup("java:comp/env/ejb/File");
+            nodeHome = (NodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Node");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -137,13 +150,41 @@ public abstract class StorageBean implements SessionBean
         }
     }
 
-    public void unsetSessionContext()
-    {
+    public void unsetSessionContext() {
         patHome = null;
         studyHome = null;
         seriesHome = null;
         instHome = null;
         fileHome = null;
+        nodeHome = null;
+    }
+
+    /**
+     * @ejb:interface-method
+     */
+    public String getNodeURI(String aet) throws FinderException {
+        return nodeHome.findByStorageAET(aet).getURI();
+    }
+
+    /**
+     * @ejb:interface-method
+     */
+    public void createNode(String uri, String storageAET, String retrieveAET)
+        throws CreateException {
+        nodeHome.create(uri, storageAET, retrieveAET);
+    }
+
+    /**
+     * @ejb:interface-method
+     */
+    public boolean removeNode(String aet) throws RemoveException, FinderException {
+        try {
+            nodeHome.findByStorageAET(aet).remove();
+            return true;
+        } catch (ObjectNotFoundException e) {
+            return false;
+        }
+        
     }
 
     /**
@@ -151,38 +192,32 @@ public abstract class StorageBean implements SessionBean
      */
     public int store(
         Dataset ds,
-        String host,
-        String mnt,
+        String aet,
         String path,
         long size,
         byte[] md5)
-        throws DcmServiceException
-    {
-        try
-        {
+        throws DcmServiceException {
+        try {
+            NodeLocal node = nodeHome.findByStorageAET(aet);
             ArrayList modified = new ArrayList();
             FileMetaInfo fmi = ds.getFileMetaInfo();
             final String iuid = fmi.getMediaStorageSOPInstanceUID();
             final String cuid = fmi.getMediaStorageSOPClassUID();
             final String tsuid = fmi.getTransferSyntaxUID();
             InstanceLocal instance = null;
-            try
-            {
+            try {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, modified);
-            }
-            catch (ObjectNotFoundException onfe)
-            {
+            } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds, getSeries(ds, modified));
             }
             FileLocal file =
-                fileHome.create(host, mnt, path, tsuid, size, md5, instance);
+                fileHome.create(node, path, tsuid, size, md5, instance);
             return modified.isEmpty()
                 ? Status.Success
                 : Status.CoercionOfDataElements;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
+            log.error("store failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure);
         }
     }
@@ -192,17 +227,13 @@ public abstract class StorageBean implements SessionBean
      * @return
      */
     private SeriesLocal getSeries(Dataset ds, ArrayList modified)
-        throws FinderException, CreateException
-    {
+        throws FinderException, CreateException {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
-        try
-        {
+        try {
             series = seriesHome.findBySeriesIuid(uid);
             coerceSeriesIdentity(series, ds, modified);
-        }
-        catch (ObjectNotFoundException onfe)
-        {
+        } catch (ObjectNotFoundException onfe) {
             series = seriesHome.create(ds, getStudy(ds, modified));
         }
 
@@ -214,17 +245,13 @@ public abstract class StorageBean implements SessionBean
      * @return
      */
     private StudyLocal getStudy(Dataset ds, ArrayList modified)
-        throws CreateException, FinderException
-    {
+        throws CreateException, FinderException {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
-        try
-        {
+        try {
             study = studyHome.findByStudyIuid(uid);
             coerceStudyIdentity(study, ds, modified);
-        }
-        catch (ObjectNotFoundException onfe)
-        {
+        } catch (ObjectNotFoundException onfe) {
             study = studyHome.create(ds, getPatient(ds, modified));
         }
 
@@ -236,15 +263,12 @@ public abstract class StorageBean implements SessionBean
      * @return
      */
     private PatientLocal getPatient(Dataset ds, ArrayList modified)
-        throws CreateException, FinderException
-    {
+        throws CreateException, FinderException {
         final String id = ds.getString(Tags.PatientID);
         Collection c = patHome.findByPatientId(id);
-        for (Iterator it = c.iterator(); it.hasNext();)
-        {
+        for (Iterator it = c.iterator(); it.hasNext();) {
             PatientLocal patient = (PatientLocal) it.next();
-            if (equals(patient, ds))
-            {
+            if (equals(patient, ds)) {
                 coercePatientIdentity(patient, ds, modified);
                 return patient;
             }
@@ -253,8 +277,7 @@ public abstract class StorageBean implements SessionBean
         return patient;
     }
 
-    private boolean equals(PatientLocal patient, Dataset ds)
-    {
+    private boolean equals(PatientLocal patient, Dataset ds) {
         // TODO Auto-generated method stub
         return true;
     }
@@ -262,16 +285,14 @@ public abstract class StorageBean implements SessionBean
     private void coercePatientIdentity(
         PatientLocal patient,
         Dataset ds,
-        ArrayList modified)
-    {
+        ArrayList modified) {
         coerceIdentity(patient.getAttributes(), ds, modified);
     }
 
     private void coerceStudyIdentity(
         StudyLocal study,
         Dataset ds,
-        ArrayList modified)
-    {
+        ArrayList modified) {
         coercePatientIdentity(study.getPatient(), ds, modified);
         coerceIdentity(study.getAttributes(), ds, modified);
     }
@@ -279,8 +300,7 @@ public abstract class StorageBean implements SessionBean
     private void coerceSeriesIdentity(
         SeriesLocal series,
         Dataset ds,
-        ArrayList modified)
-    {
+        ArrayList modified) {
         coerceStudyIdentity(series.getStudy(), ds, modified);
         coerceIdentity(series.getAttributes(), ds, modified);
     }
@@ -288,20 +308,20 @@ public abstract class StorageBean implements SessionBean
     private void coerceInstanceIdentity(
         InstanceLocal instance,
         Dataset ds,
-        ArrayList modified)
-    {
+        ArrayList modified) {
         coerceSeriesIdentity(instance.getSeries(), ds, modified);
         coerceIdentity(instance.getAttributes(), ds, modified);
     }
 
-    private void coerceIdentity(Dataset ref, Dataset ds, ArrayList modified)
-    {
-        for (Iterator it = ref.iterator(); it.hasNext();)
-        {
+    private void coerceIdentity(Dataset ref, Dataset ds, ArrayList modified) {
+        for (Iterator it = ref.iterator(); it.hasNext();) {
             DcmElement refEl = (DcmElement) it.next();
             DcmElement el = ds.get(refEl.tag());
-            if (!equals(el, ds.getCharset(), refEl, ref.getCharset(), modified))
-            {
+            if (!equals(el,
+                ds.getCharset(),
+                refEl,
+                ref.getCharset(),
+                modified)) {
                 log.warn("Coerce " + el + " to " + refEl);
                 modified.add(new Integer(refEl.tag()));
             }
@@ -313,39 +333,30 @@ public abstract class StorageBean implements SessionBean
         Charset cs,
         DcmElement refEl,
         Charset refCS,
-        ArrayList modified)
-    {
+        ArrayList modified) {
         final int vm = refEl.vm();
-        if (el == null || el.vm() != vm)
-        {
+        if (el == null || el.vm() != vm) {
             return false;
         }
         final int vr = refEl.vr();
-        if (vr == VRs.OW || vr == VRs.OB || vr == VRs.UN)
-        {
+        if (vr == VRs.OW || vr == VRs.OB || vr == VRs.UN) {
             // no check implemented!
             return true;
         }
-        for (int i = 0; i < vm; ++i)
-        {
-            if (vr == VRs.SQ)
-            {
+        for (int i = 0; i < vm; ++i) {
+            if (vr == VRs.SQ) {
                 coerceIdentity(refEl.getItem(i), el.getItem(i), modified);
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     if (!(vr == VRs.PN
-                        ? refEl.getPersonName(i, refCS).equals(el.getPersonName(i, cs))
-                        : refEl.getString(i, refCS).equals(el.getString(i, cs))))
-                    {
+                        ? refEl.getPersonName(i, refCS).equals(
+                            el.getPersonName(i, cs))
+                        : refEl.getString(i, refCS).equals(
+                            el.getString(i, cs)))) {
                         return false;
                     }
-                }
-                catch (DcmValueException e)
-                {
-                    log.warn(e,e);
+                } catch (DcmValueException e) {
+                    log.warn(e, e);
                 }
             }
         }

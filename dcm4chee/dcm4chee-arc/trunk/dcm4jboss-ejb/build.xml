@@ -260,7 +260,7 @@
     <target name="test-war" depends="compile">
     	<copy file="${test.web-inf}/web.xml" todir="${target.test.web-inf}">
     		<filterset>
-                <filter token="EJB_JAR" value="${dist}.jar"/>
+                <filter token="EJB_JAR" value="dcm4jboss-ejb.jar"/>
             </filterset>
 		</copy>    		
         <war

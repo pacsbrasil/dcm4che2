@@ -21,6 +21,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -35,36 +36,34 @@ class SqlBuilder {
     private String[] select;
     private String[] from;
     private String[] leftJoin;
-    private String[] pk;
-    private String[] fk = {};
+    private String[] relations = {};
     private ArrayList matches = new ArrayList();
 
-    public void setSelect(String[] fields, int length) {
-        select = JdbcProperties.getInstance().getProperties(fields, length);
+    public void setSelect(String[] fields) {
+        select = JdbcProperties.getInstance().getProperties(fields);
     }
 
-    public void setFrom(String[] entities, int length) {
+    public void setFrom(String[] entities) {
         JdbcProperties jp = JdbcProperties.getInstance();
-        from = jp.getProperties(entities, length);
-        pk = jp.getPk(entities);
+        from = jp.getProperties(entities);
     }
 
-    public void setLeftJoin(String entity, String fk) {
-        JdbcProperties jp = JdbcProperties.getInstance();
-        leftJoin =
-            new String[] {
-                jp.getProperty(entity),
-                jp.getProperty(entity + ".pk"),
-                jp.getProperty(fk)};
+    public void setLeftJoin(String[] leftJoin) {
+        if (leftJoin == null) {
+            this.leftJoin = null;
+            return;
+        }
+        if (leftJoin.length != 3) {
+            throw new IllegalArgumentException("" + Arrays.asList(leftJoin));
+        }
+        leftJoin = JdbcProperties.getInstance().getProperties(leftJoin);
     }
 
-    public void setFk(String[] fk, int length) {
-        if (from == null)
-            throw new IllegalStateException("from not initalized");
-        if (length != from.length - 1)
-            throw new IllegalArgumentException(
-                "length:" + length + ", from.length:" + from.length);
-        this.fk = JdbcProperties.getInstance().getProperties(fk, length);
+    public void setRelations(String[] relations) {
+        if ((relations.length & 1) != 0) {
+            throw new IllegalArgumentException("relations[" + relations.length + "]");
+        }
+        this.relations = JdbcProperties.getInstance().getProperties(relations);
     }
 
     private void addMatch(Match match) {
@@ -104,10 +103,10 @@ class SqlBuilder {
         appendTo(sb, from);
         if (leftJoin != null)
             appendLeftJoinTo(sb);
-        if (fk.length != 0 || !matches.isEmpty()) {
+        if (relations.length != 0 || !matches.isEmpty()) {
             sb.append(" WHERE ");
-            if (fk.length != 0) {
-                appendFkTo(sb);
+            if (relations.length != 0) {
+                appendRelationsTo(sb);
                 if (!matches.isEmpty())
                     sb.append(" AND ");
             }
@@ -134,13 +133,13 @@ class SqlBuilder {
         sb.append(")");
     }
 
-    private void appendFkTo(StringBuffer sb) {
-        for (int i = 0; i < fk.length; i++) {
+    private void appendRelationsTo(StringBuffer sb) {
+        for (int i = 0; i < relations.length; i++,i++) {
             if (i > 0)
                 sb.append(" AND ");
-            sb.append(fk[i]);
+            sb.append(relations[i]);
             sb.append(" = ");
-            sb.append(pk[i]);
+            sb.append(relations[i+1]);
         }
     }
 

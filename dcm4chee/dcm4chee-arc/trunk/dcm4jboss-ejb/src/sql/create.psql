@@ -81,18 +81,26 @@ CREATE TABLE media (
 CREATE UNIQUE INDEX media_uid ON media(fs_iuid);
 CREATE INDEX media_status ON media(media_status);
 
+CREATE TABLE node (
+	pk              SERIAL PRIMARY KEY,
+	uri				TEXT NOT NULL,
+	storage_aet		TEXT NOT NULL,
+	retrieve_aet	TEXT NOT NULL
+);
+CREATE UNIQUE INDEX storage_aet ON node(storage_aet);
+
+
 CREATE TABLE file (
 	pk              SERIAL PRIMARY KEY,
+	node_fk			INTEGER,
 	instance_fk     INTEGER,
 	media_fk        INTEGER,
-	host_name		TEXT NOT NULL,
-	mnt				TEXT NOT NULL,
 	file_path		TEXT NOT NULL,
 	file_tsuid      TEXT NOT NULL,
 	file_md5        TEXT,
 	file_size       BIGINT,
 	file_status		INTEGER,
+FOREIGN KEY (node_fk)		REFERENCES node(pk),
 FOREIGN KEY (instance_fk)	REFERENCES instance(pk),
 FOREIGN KEY (media_fk)  	REFERENCES media(pk)
 );
-CREATE INDEX host_name ON file(host_name);

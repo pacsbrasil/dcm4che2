@@ -35,6 +35,7 @@ import javax.ejb.RemoveException;
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
+import org.dcm4chex.archive.ejb.interfaces.NodeLocal;
 
 /**
  * @ejb:bean
@@ -59,11 +60,6 @@ import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
  *  query="SELECT OBJECT(a) FROM File AS a"
  *  transaction-type="Supports"
  *
- * @ejb.finder
- *  signature="java.util.Collection findByHostName(java.lang.String aet)"
- *  query="SELECT OBJECT(a) FROM File AS a WHERE a.hostName = ?1"
- *  transaction-type="Supports"
- * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
@@ -85,26 +81,6 @@ public abstract class FileBean implements EntityBean {
     public abstract Integer getPk();
 
     public abstract void setPk(Integer pk);
-
-    /**
-     * Host name
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="host_name"
-     */
-    public abstract String getHostName();
-    public abstract void setHostName(String host);
-
-    /**
-     * Mount Point
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="mnt"
-     */
-    public abstract String getMountPoint();
-    public abstract void setMountPoint(String mount);
 
     /**
      * File Path relative to mount point
@@ -190,6 +166,29 @@ public abstract class FileBean implements EntityBean {
 
     /**
      * @ejb:relation
+     *  name="file-node"
+     *  role-name="file-at-node"
+     *  target-ejb="Node"
+     *  target-role-name="node-of-file"
+     *  target-role-multiple="true"
+     *
+     * @jboss:relation
+     *  fk-column="node_fk"
+     *  related-pk-field="pk"
+     * 
+     * @param node node where file is located
+     */
+    public abstract void setNode(NodeLocal node);
+
+    /**
+     * @ejb:interface-method view-type="local"
+     * 
+     * @return node where file is located
+     */
+    public abstract NodeLocal getNode();
+
+    /**
+     * @ejb:relation
      *  name="instance-file"
      *  role-name="file-of-instance"
      *
@@ -235,13 +234,10 @@ public abstract class FileBean implements EntityBean {
     }
 
     private String prompt() {
-        InstanceLocal inst = getInstance();
         return "File[pk="
             + getPk()
-            + ", host="
-            + getHostName()
-            + ", mnt="
-            + getMountPoint()
+            + ", node->"
+            + getNode()
             + ", path="
             + getFilePath()
             + ", status="
@@ -261,16 +257,16 @@ public abstract class FileBean implements EntityBean {
      * @ejb.create-method
      */
     public Integer ejbCreate(
-        String host,
-        String mnt,
+        NodeLocal node,
         String path,
         String tsuid,
         long size,
         byte[] md5,
         InstanceLocal instance)
         throws CreateException {
-        setHostName(host);
-        setMountPoint(mnt);
+        if (node == null) {
+            throw new NullPointerException("node");
+        }
         setFilePath(path);
         setFileTsuid(tsuid);
         setFileSize(size);
@@ -279,14 +275,14 @@ public abstract class FileBean implements EntityBean {
     }
 
     public void ejbPostCreate(
-        String host,
-        String mnt,
+        NodeLocal node,
         String path,
         String tsuid,
         long size,
         byte[] md5,
         InstanceLocal instance)
         throws CreateException {
+        setNode(node);
         setInstance(instance);
         log.info("Created " + prompt());
     }

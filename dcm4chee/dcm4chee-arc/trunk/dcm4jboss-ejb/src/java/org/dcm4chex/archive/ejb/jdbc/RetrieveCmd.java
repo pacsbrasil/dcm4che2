@@ -51,15 +51,15 @@ public abstract class RetrieveCmd extends BaseCmd {
         { "PATIENT", "STUDY", "SERIES", "IMAGE" };
 
     private static final String[] ENTITY =
-        { "Patient", "Study", "Series", "Instance", "File" };
+        { "Patient", "Study", "Series", "Instance", "File", "Node" };
 
     private static final String[] SELECT_ATTRIBUTE =
         {
             "Patient.encodedAttributes",
             "Instance.sopIuid",
             "Instance.sopCuid",
-            "File.hostName",
-            "File.mountPoint",
+            "Node.retrieveAET",
+            "Node.uri",
             "File.filePath",
             "File.fileTsuid",
             "File.fileMd5Field",
@@ -67,12 +67,18 @@ public abstract class RetrieveCmd extends BaseCmd {
             "File.fileStatus",
             "Media.filesetIuid" };
 
-    private static final String[] FK =
+    private static final String[] RELATIONS =
         {
+            "Patient.pk",
             "Study.patient_fk",
+            "Study.pk",
             "Series.study_fk",
+            "Series.pk",
             "Instance.series_fk",
-            "File.instance_fk" };
+            "Instance.pk",
+            "File.instance_fk",
+            "Node.pk",
+            "File.node_fk" };
 
     public static RetrieveCmd create(DataSource ds, Dataset keys)
         throws SQLException {
@@ -96,10 +102,10 @@ public abstract class RetrieveCmd extends BaseCmd {
 
     private RetrieveCmd(DataSource ds) throws SQLException {
         super(ds);
-        sqlBuilder.setSelect(SELECT_ATTRIBUTE, SELECT_ATTRIBUTE.length);
-        sqlBuilder.setFrom(ENTITY, ENTITY.length);
-        sqlBuilder.setLeftJoin("Media", "File.media_fk");
-        sqlBuilder.setFk(FK, FK.length);
+        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
+        sqlBuilder.setFrom(ENTITY);
+        sqlBuilder.setLeftJoin(new String[]{ "Media", "Media.pk", "File.media_fk" });
+        sqlBuilder.setRelations(RELATIONS);
     }
 
     public FileInfo[] execute() throws SQLException {

@@ -125,6 +125,8 @@ public class JdbcProperties extends Properties {
             "instance_fk",
             "File",
             "media_fk",
+            "File",
+            "node_fk",
             };
     private static final JdbcProperties instance = new JdbcProperties();
     private static final String JBOSSCMP_JDBC_XML =
@@ -134,17 +136,10 @@ public class JdbcProperties extends Properties {
         return instance;
     }
 
-    public String[] getProperties(String[] keys, int length) {
-        String[] values = new String[length];
-        for (int i = 0; i < length; i++)
+    public String[] getProperties(String[] keys) {
+        String[] values = new String[keys.length];
+        for (int i = 0; i < keys.length; i++)
             values[i] = getProperty(keys[i]);
-        return values;
-    }
-
-    public String[] getPk(String[] entity) {
-        String[] values = new String[entity.length];
-        for (int i = 0; i < values.length; i++)
-            values[i] = getProperty(entity[i] + ".pk");
         return values;
     }
 

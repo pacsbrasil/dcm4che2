@@ -30,6 +30,9 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.dcm4che.util.HostNameUtils;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -39,8 +42,8 @@ public class FileInfo {
     public final byte[] patAttrs;
     public final String sopIUID;
     public final String sopCUID;
-    public final String host;
-    public final String mnt;
+    public final String aet;
+    public final String uri;
     public final String fpath;
     public final String tsUID;
     public final String md5;
@@ -52,8 +55,8 @@ public class FileInfo {
         byte[] patAttrs,
         String sopIUID,
         String sopCUID,
-        String host,
-        String mnt,
+        String aet,
+        String uri,
         String fpath,
         String tsUID,
         String md5,
@@ -63,8 +66,8 @@ public class FileInfo {
         this.patAttrs = patAttrs;
         this.sopIUID = sopIUID;
         this.sopCUID = sopCUID;
-        this.host = host;
-        this.mnt = mnt;
+        this.aet = aet;
+        this.uri = uri;
         this.fpath = fpath;
         this.tsUID = tsUID;
         this.md5 = md5;
@@ -75,11 +78,18 @@ public class FileInfo {
 
     public File toFile() {
         try {
-            return new File(new URI("file:" + mnt + "/" + fpath));
-        } catch (Exception e) {
+            URI tmp = new URI(uri);
+            String localhost = HostNameUtils.getLocalHostName();
+            if (!"file".equalsIgnoreCase(tmp.getScheme())
+                || !localhost.equalsIgnoreCase(tmp.getHost())) {
+                throw new IllegalStateException("" + this);
+            }
+            return new File(new URI("file:" + tmp.getPath() + fpath));
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("" + this);
+        } catch (IllegalArgumentException e) {
             throw new IllegalStateException("" + this);
         }
-
     }
 
 }

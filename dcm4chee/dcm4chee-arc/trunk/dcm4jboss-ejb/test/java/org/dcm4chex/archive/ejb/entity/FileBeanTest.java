@@ -28,14 +28,14 @@
  */
 package org.dcm4chex.archive.ejb.entity;
 
-import java.util.Collection;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.apache.cactus.ServletTestCase;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.NodeLocal;
+import org.dcm4chex.archive.ejb.interfaces.NodeLocalHome;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -43,16 +43,18 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
  */
 public class FileBeanTest extends ServletTestCase
 {
-    public static final String HOST_NAME = "hostname";
-    public static final String MNT = "/var/local/archive";
-    public static final String PATH_ = "2003/07/11/12345678/9ABCDEF0/";
+    public static final String STORAGE_AET = "STORE_AET";
+    public static final String RETRIEVE_AET = "RETRIEVE_AET";
+    public static final String URI = "file://hostname/var/local/archive/";
+    public static final String PATH = "2003/07/11/12345678/9ABCDEF0";
     public static final String TSUID = "1.2.40.0.13.1.1.9999.3";
     public static final long SIZE = 567890L;
     public static final byte[] MD5 =
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
+    private NodeLocalHome nodeHome;
     private FileLocalHome fileHome;
-    private Object[] filePks;
+    private NodeLocal node;
 
     public static void main(String[] args)
     {
@@ -65,14 +67,10 @@ public class FileBeanTest extends ServletTestCase
     protected void setUp() throws Exception
     {
         Context ctx = new InitialContext();
+        nodeHome = (NodeLocalHome) ctx.lookup("java:comp/env/ejb/Node");
         fileHome = (FileLocalHome) ctx.lookup("java:comp/env/ejb/File");
         ctx.close();
-        filePks = new Object[5];
-        for (int i = 0; i < filePks.length; ++i)
-        {
-            FileLocal file = fileHome.create(HOST_NAME, MNT, PATH_ + i, TSUID, SIZE, MD5, null);
-            filePks[i] = file.getPrimaryKey();
-        }
+        node = nodeHome.create(URI, STORAGE_AET, RETRIEVE_AET);
     }
 
     /*
@@ -80,10 +78,7 @@ public class FileBeanTest extends ServletTestCase
      */
     protected void tearDown() throws Exception
     {
-        for (int i = 0; i < filePks.length; ++i)
-        {
-            fileHome.remove(filePks[i]);
-        }
+        node.remove();
     }
 
     /**
@@ -95,9 +90,9 @@ public class FileBeanTest extends ServletTestCase
         super(arg0);
     }
 
-    public void testFindByHostName() throws Exception
+    public void testCreate() throws Exception
     {
-        Collection c = fileHome.findByHostName(HOST_NAME);
-        assertEquals(filePks.length, c.size());
+        FileLocal file = fileHome.create(node, PATH, TSUID, SIZE, MD5, null);
+        file.remove();
     }
 }
