@@ -19,8 +19,10 @@ CREATE INDEX mpps_accession_no ON mpps (accession_no);
 
 ALTER TABLE files ADD COLUMN md5_check_time	TIMESTAMP;
 ALTER TABLE files ADD COLUMN created_time	TIMESTAMP;
+ALTER TABLE files ADD COLUMN file_status	INTEGER DEFAULT 0;
 CREATE INDEX file_tsuid ON files(file_tsuid);
 CREATE INDEX md5_check_time ON files(md5_check_time);
 CREATE INDEX file_created ON files(created_time);
+CREATE INDEX file_status ON files(file_status);
 
 TERMINATE;
