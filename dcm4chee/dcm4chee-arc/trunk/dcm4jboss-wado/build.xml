@@ -140,7 +140,7 @@
          	<pathelement location="${target.classes}"/>
           </classpath>
          <formatter type="xml" />
-         <test name="org.dcm4chex.wado.mbean.cache.IconCacheImplTest"
+         <test name="org.dcm4chex.wado.mbean.cache.WADOCacheImplTest"
          	todir="${test.reports}"/>
          <test name="org.dcm4chex.wado.mbean.cache.FileToDelContainerTest"
          	todir="${test.reports}"/>
