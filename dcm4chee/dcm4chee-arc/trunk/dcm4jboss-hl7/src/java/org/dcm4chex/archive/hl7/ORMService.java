@@ -145,7 +145,7 @@ public class ORMService extends AbstractHL7Service {
 
 	private void log(String op, Dataset ds) {
 		Dataset sps = ds.getItem(Tags.SPSSeq);
-        log.info(op + " Procedure Step[id:" + sps.getString(Tags.SPSID)
+        log.info(op + " Procedure Step[id:" + ( sps==null ? "<unknown>(SPSSeq missing)":sps.getString(Tags.SPSID) )
         		+ "] of Study[uid:" + ds.getString(Tags.StudyInstanceUID)
         		+ "] of Order[accNo:" + ds.getString(Tags.AccessionNumber)
         		+ "] for Patient [name:" + ds.getString(Tags.PatientName)
