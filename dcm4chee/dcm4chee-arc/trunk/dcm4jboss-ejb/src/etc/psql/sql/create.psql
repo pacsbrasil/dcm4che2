@@ -7,21 +7,6 @@ CREATE TABLE ae (
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
-CREATE TABLE move_order (
-	pk          	SERIAL PRIMARY KEY,
-	scheduled_time	TIMESTAMP,
-	priority		INTEGER NOT NULL,
-	retrieve_aet    TEXT NOT NULL,
-	move_dest	    TEXT NOT NULL,
-	pat_id         	TEXT,
-	study_iuids		TEXT,
-	series_iuids	TEXT,
-	sop_iuids		TEXT,
-	failure_count	INTEGER,
-	failure_status	INTEGER
-);
-CREATE INDEX move_sched_time ON move_order(scheduled_time);
-
 CREATE TABLE code (
 	pk          	SERIAL PRIMARY KEY,
 	code_value     	TEXT NOT NULL,

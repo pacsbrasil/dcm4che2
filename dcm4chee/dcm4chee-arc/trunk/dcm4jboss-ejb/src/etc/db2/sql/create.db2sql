@@ -13,22 +13,6 @@ CREATE TABLE ae (
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
-CREATE SEQUENCE move_order_pk_seq;
-CREATE TABLE move_order (
-	pk          	INTEGER PRIMARY KEY NOT NULL,
-	scheduled_time	TIMESTAMP,
-	priority		INTEGER NOT NULL,
-	retrieve_aet    VARCHAR(254) NOT NULL,
-	move_dest	    VARCHAR(254) NOT NULL,
-	pat_id         	VARCHAR(254),
-	study_iuids		VARCHAR(254),
-	series_iuids	VARCHAR(254),
-	sop_iuids		CLOB(64000),
-	failure_count	INTEGER,
-	failure_status	INTEGER
-);
-CREATE INDEX move_sched_time ON move_order(scheduled_time);
-
 CREATE SEQUENCE code_pk_seq;
 CREATE TABLE code (
 	pk          	INTEGER PRIMARY KEY NOT NULL,
