@@ -41,10 +41,12 @@ $Revision$
     <!-- Security domain for JBossMQ -->
     <application-policy name = "jbossmq">
        <authentication>
-          <login-module code = "org.jboss.mq.sm.file.DynamicLoginModule"
+          <login-module code = "org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required">
              <module-option name = "unauthenticatedIdentity">guest</module-option>
-             <module-option name = "sm.objectname">jboss.mq:service=StateManager</module-option>
+             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "principalsQuery">SELECT PASSWD FROM JMS_USERS WHERE USERID=?</module-option>
+             <module-option name = "rolesQuery">SELECT ROLEID, 'Roles' FROM JMS_ROLES WHERE USERID=?</module-option>
           </login-module>
        </authentication>
     </application-policy>
@@ -94,7 +96,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
-             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "dsJndiName">java:/DB2DS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
           </login-module>
@@ -109,7 +111,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
-             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "dsJndiName">java:/DB2DS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
           </login-module>
@@ -124,7 +126,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
-             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "dsJndiName">java:/DB2DS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
           </login-module>

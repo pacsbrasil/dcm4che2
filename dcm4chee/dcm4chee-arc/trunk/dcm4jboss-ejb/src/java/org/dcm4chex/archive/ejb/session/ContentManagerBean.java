@@ -73,13 +73,14 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  *  ref-name="ejb/Instance" 
  *
  * @ejb:resource-ref
- *  res-name="jdbc/DefaultDS"
+ *  res-name="jdbc/DS"
  *  res-type="javax.sql.DataSource"
  *  res-auth="Container"
  * 
  * @jboss:resource-ref
- *  res-ref-name="jdbc/DefaultDS"
- *  resource-name="java:/DefaultDS"
+ *  res-ref-name="jdbc/DS"
+ *  res-type="javax.sql.DataSource"
+ *  jndi-name="java:/DefaultDS"
  */
 public abstract class ContentManagerBean implements SessionBean {
 
@@ -94,7 +95,7 @@ public abstract class ContentManagerBean implements SessionBean {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
+            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DS");
             patHome =
                 (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
             studyHome =

@@ -21,7 +21,7 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your XDoclet bundle dist location -->
-	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2"/>
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.1"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 
     <!-- Override with your Cactus bundle dist location -->
@@ -282,6 +282,9 @@
     	<copy todir="${target.meta-inf-psql}">
     		<fileset dir="${target.meta-inf-hsql}"/>
     	</copy>
+    	<replace dir="${target.meta-inf-psql}"
+  				token="DefaultDS"
+  				value="PostgresDS"/>
     	<replace file="${target.meta-inf-psql}/jbosscmp-jdbc.xml">
   			<replacefilter
   				token="Hypersonic SQL"
@@ -296,6 +299,9 @@
     	<copy todir="${target.meta-inf-mysql}">
     		<fileset dir="${target.meta-inf-hsql}"/>
     	</copy>
+    	<replace dir="${target.meta-inf-mysql}"
+  				token="DefaultDS"
+  				value="MySqlDS"/>
     	<replace file="${target.meta-inf-mysql}/jbosscmp-jdbc.xml">
   			<replacefilter
   				token="Hypersonic SQL"
@@ -310,10 +316,13 @@
     	<copy todir="${target.meta-inf-oracle}">
     		<fileset dir="${target.meta-inf-hsql}"/>
     	</copy>
-    	<patch
+     	<patch
     		patchfile="${etc.oracle}/meta-inf-oracle.patch"
     		originalfile="${target.meta-inf-oracle}/jbosscmp-jdbc.xml"
     	/>
+    	<replace dir="${target.meta-inf-oracle}"
+  				token="DefaultDS"
+  				value="OracleDS"/>
     </target>
 
     <target name="meta-inf-db2" unless="meta-inf-db2.notRequired">
@@ -324,6 +333,9 @@
     		patchfile="${etc.db2}/meta-inf-db2.patch"
     		originalfile="${target.meta-inf-db2}/jbosscmp-jdbc.xml"
     	/>
+    	<replace dir="${target.meta-inf-db2}"
+  				token="DefaultDS"
+  				value="DB2DS"/>
     </target>
 
 

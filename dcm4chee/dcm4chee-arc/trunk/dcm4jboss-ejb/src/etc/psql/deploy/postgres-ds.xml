@@ -14,7 +14,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>DefaultDS</jndi-name>
+    <jndi-name>PostgresDS</jndi-name>
     <connection-url>jdbc:postgresql://localhost/pacsdb</connection-url>
     <driver-class>org.postgresql.Driver</driver-class>
     <user-name>postgres</user-name>

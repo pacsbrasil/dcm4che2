@@ -11,7 +11,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>DefaultDS</jndi-name>
+    <jndi-name>DB2DS</jndi-name>
     <connection-url>jdbc:db2://localhost:50000/tiani</connection-url>
     <driver-class>com.ibm.db2.jcc.DB2Driver</driver-class>
     <!--driver-class>COM.ibm.db2.jdbc.app.DB2Driver</driver-class -->
