@@ -122,6 +122,16 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setSupportsPresentationLUT(boolean supportsPresentationLUT);
    
+   /** Getter for property supportsAnnotationBox.
+    * @return Value of property supportsAnnotationBox.
+    */
+   public boolean isSupportsAnnotationBox();
+   
+   /** Setter for property supportsAnnotationBox.
+    * @param supportsAnnotationBox New value of property supportsAnnotationBox.
+    */
+   public void setSupportsAnnotationBox(boolean supportsAnnotationBox);
+   
    /** Getter for property mediaType.
     * @return Value of property mediaType.
     */
@@ -338,20 +348,6 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public String getDefaultResolutionID();
    
-   public boolean isSupportsFilmDestination(String filmDestination);
-   
-   public boolean isSupportsFilmSizeID(String filmSizeID);
-
-   public boolean isSupportsDisplayFormat(String displayFormat, String filmOrientation);
-   
-   public boolean isSupportsMagnificationType(String magnificationType);
-   
-   public boolean isSupportsMediumType(String mediumType);
-   
-   public boolean isSupportsSmoothingType(String smoothingType);
-
-   public boolean isSupportsResolutionID(String resolutionID);   
-   
    /** Getter for property status.
     * @return Value of property status.
     */
@@ -457,6 +453,54 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setScanThreshold(String scanGradientThreshold);
    
+   /** Getter for property annotationDir.
+    * @return Value of property annotationDir.
+    */
+   public String getAnnotationDir();
+   
+   /** Setter for property annotationDir.
+    * @param annotationDir New value of property annotationDir.
+    */
+   public void setAnnotationDir(String annotationDir);
+   
+   /** Getter for property pLUTDir.
+    * @return Value of property pLUTDir.
+    */
+   public String getPLUTDir();
+   
+   /** Setter for property pLUTDir.
+    * @param pLUTDir New value of property pLUTDir.
+    */
+   public void setPLUTDir(String pLUTDir);
+   
+   /** Getter for property annotationDisplayFormatIDs.
+    * @return Value of property annotationDisplayFormatIDs.
+    */
+   public String[] getAnnotationDisplayFormatIDs();
+   
+   /** Getter for property pLUTs.
+    * @return Value of property pLUTs.
+    */
+   public String[] getPLUTs();
+
+   public boolean isSupportsFilmDestination(String filmDestination);
+   
+   public boolean isSupportsFilmSizeID(String filmSizeID);
+
+   public boolean isSupportsDisplayFormat(String displayFormat, String filmOrientation);
+   
+   public boolean isSupportsMagnificationType(String magnificationType);
+   
+   public boolean isSupportsMediumType(String mediumType);
+   
+   public boolean isSupportsSmoothingType(String smoothingType);
+
+   public boolean isSupportsResolutionID(String resolutionID);   
+
+   public boolean isSupportsAnnotationDisplayFormatID(String annotationID);
+   
+   public boolean isSupportsConfigurationInformation(String configInfo);
+   
    public void printGraySteps() throws PrintException;
    
    public void printGrayStepsWithGSDF() throws PrintException;
@@ -464,5 +508,29 @@ public interface PrinterServiceMBean extends ServiceMBean {
    public void printGrayStepsWithLinOD() throws PrintException;
    
    public void calibrate(boolean force) throws CalibrationException;
+         
+   /** Getter for property defaultPLUT.
+    * @return Value of property defaultPLUT.
+    *
+    */
+   public String getDefaultPLUT();
+   
+   /** Setter for property defaultPLUT.
+    * @param defaultPLUT New value of property defaultPLUT.
+    *
+    */
+   public void setDefaultPLUT(String defaultPLUT);
+   
+   /** Getter for property defaultAnnotation.
+    * @return Value of property defaultAnnotation.
+    *
+    */
+   public String getDefaultAnnotation();
+   
+   /** Setter for property defaultAnnotation.
+    * @param defaultAnnotation New value of property defaultAnnotation.
+    *
+    */
+   public void setDefaultAnnotation(String defaultAnnotation);
    
 }

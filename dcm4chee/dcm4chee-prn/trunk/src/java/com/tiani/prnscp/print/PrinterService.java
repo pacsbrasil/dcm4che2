@@ -194,6 +194,21 @@ public class PrinterService
    /** Holds value of property printToFile. */
    private boolean printToFile;
    
+   /** Holds value of property annotationDir. */
+   private String annotationDir;
+   
+   /** Holds value of property pLUTDir. */
+   private String pLUTDir;
+   
+   /** Holds value of property supportsAnnotationBox. */
+   private boolean supportsAnnotationBox;
+   
+   /** Holds value of property defaultPLUT. */
+   private String defaultPLUT;
+   
+   /** Holds value of property defaultAnnotation. */
+   private String defaultAnnotation;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -201,6 +216,27 @@ public class PrinterService
    // Public --------------------------------------------------------
    
    // PrinterMBean implementation -----------------------------------
+   
+   /** Getter for property status.
+    * @return Value of property status.
+    */
+   public int getStatusID() {
+      return status;
+   }
+   
+   /** Getter for property statusInfo.
+    * @return Value of property statusInfo.
+    */
+   public String getStatusInfo() {
+      return statusInfo;
+   }
+   
+   /** Getter for string value for property status.
+    * @return String value of property status.
+    */
+   public String getStatus() {
+      return CODE_STRING[status];
+   }
    
    /** Getter for property printerName.
     * @return Value of property printerName.
@@ -770,25 +806,100 @@ public class PrinterService
       this.reflectedAmbientLight = reflectedAmbientLight;
    }
    
-   /** Getter for property status.
-    * @return Value of property status.
+   /** Getter for property annotationDir.
+    * @return Value of property annotationDir.
     */
-   public int getStatusID() {
-      return status;
+   public String getAnnotationDir() {
+      return this.annotationDir;
    }
    
-   /** Getter for property statusInfo.
-    * @return Value of property statusInfo.
+   /** Setter for property annotationDir.
+    * @param annotationDir New value of property annotationDir.
     */
-   public String getStatusInfo() {
-      return statusInfo;
+   public void setAnnotationDir(String annotationDir) {
+      this.annotationDir = toFile(annotationDir).getAbsolutePath();
    }
    
-   /** Getter for string value for property status.
-    * @return String value of property status.
+   /** Getter for property annotationDisplayFormatIDs.
+    * @return Value of property annotationDisplayFormatIDs.
     */
-   public String getStatus() {
-      return CODE_STRING[status];
+   public String[] getAnnotationDisplayFormatIDs() {
+      File dir = toFile(annotationDir);
+      return  dir.isDirectory() ? dir.list() : new String[]{};
+   }
+   
+   public boolean isSupportsAnnotationDisplayFormatID(String annotationID) {
+      String[] ids = getAnnotationDisplayFormatIDs();
+      return Arrays.asList(ids).indexOf(annotationID) != -1;
+   }
+   
+   /** Getter for property pLUTDir.
+    * @return Value of property pLUTDir.
+    */
+   public String getPLUTDir() {
+      return this.pLUTDir;
+   }
+   
+   /** Setter for property pLUTDir.
+    * @param pLUTDir New value of property pLUTDir.
+    */
+   public void setPLUTDir(String pLUTDir) {
+      this.pLUTDir = toFile(pLUTDir).getAbsolutePath();
+   }
+      
+   /** Getter for property pLUTs.
+    * @return Value of property pLUTs.
+    */
+   public String[] getPLUTs() {
+      File dir = toFile(pLUTDir);
+      return  dir.isDirectory() ? dir.list() : new String[]{};
+   }
+   
+   public boolean isSupportsConfigurationInformation(String configInfo) {
+      String[] ids = getPLUTs();
+      return Arrays.asList(ids).indexOf(configInfo) != -1;
+   }
+   
+   /** Getter for property supportsAnnotationBox.
+    * @return Value of property supportsAnnotationBox.
+    */
+   public boolean isSupportsAnnotationBox() {
+      return this.supportsAnnotationBox;
+   }
+   
+   /** Setter for property supportsAnnotationBox.
+    * @param supportsAnnotationBox New value of property supportsAnnotationBox.
+    */
+   public void setSupportsAnnotationBox(boolean supportsAnnotationBox) {
+      this.supportsAnnotationBox = supportsAnnotationBox;
+   }
+   
+   /** Getter for property defaultPLUT.
+    * @return Value of property defaultPLUT.
+    */
+   public String getDefaultPLUT() {
+      return this.defaultPLUT;
+   }
+   
+   /** Setter for property defaultPLUT.
+    * @param defaultPLUT New value of property defaultPLUT.
+    */
+   public void setDefaultPLUT(String defaultPLUT) {
+      this.defaultPLUT = defaultPLUT;
+   }
+   
+   /** Getter for property defaultAnnotation.
+    * @return Value of property defaultAnnotation.
+    */
+   public String getDefaultAnnotation() {
+      return this.defaultAnnotation;
+   }
+   
+   /** Setter for property defaultAnnotation.
+    * @param defaultAnnotation New value of property defaultAnnotation.
+    */
+   public void setDefaultAnnotation(String defaultAnnotation) {
+      this.defaultAnnotation = defaultAnnotation;
    }
    
    /** Getter for property grayStepODs.
@@ -1216,6 +1327,6 @@ public class PrinterService
          pj.removePrintJobListener(this);
       }
    }
-            
+               
    // Inner classes -------------------------------------------------
 }
