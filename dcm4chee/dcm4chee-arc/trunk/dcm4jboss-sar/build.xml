@@ -205,6 +205,7 @@
    			<fileset dir="${dcm4jboss-ejb.src}/etc">
    				<include name="conf/*.xml"/>
    				<include name="conf/*.dtd"/>
+   				<include name="deploy/**/*.xml"/>
    			</fileset>
    			<fileset dir="${dcm4jboss-ejb.home}">
    				<include name="test/data/mwlitem.xml"/>
@@ -270,9 +271,11 @@
 			<zipfileset dir="${jboss.server.home}" prefix="${dist.standalone}/server/pacs">
 				<include name="conf/**"/>
 				<exclude name="conf/log4j.xml"/>
+				<exclude name="conf/login-config.xml"/>
 				<exclude name="conf/standardjbosscmp-jdbc.xml"/>
 				<include name="deploy/jbossweb-tomcat41.sar/**"/>
 				<include name="deploy/jmx-console.war/**"/>
+				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
 				<include name="deploy/jmx-invoker-adaptor-server.sar/**"/>
 				<include name="deploy/jboss-jca.sar"/>
 				<include name="deploy/jboss-local-jdbc.rar"/>

@@ -142,3 +142,17 @@ CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id);
 CREATE INDEX mwl_accession_no ON mwl_item(accession_no);
 CREATE INDEX mwl_pat_id ON mwl_item(pat_id);
 CREATE INDEX mwl_pat_name ON mwl_item(pat_name);
+
+CREATE TABLE users(
+	user_id		VARCHAR(256) PRIMARY KEY,
+	passwd 		VARCHAR(256)
+);
+CREATE TABLE roles(
+	user_id		VARCHAR(256),
+	roles	 	VARCHAR(256),
+FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+CREATE INDEX user_id ON roles(user_id);
+INSERT INTO users VALUES('admin','admin');
+INSERT INTO roles VALUES('admin','JBossAdmin');
+INSERT INTO roles VALUES('admin','WebAdmin');
