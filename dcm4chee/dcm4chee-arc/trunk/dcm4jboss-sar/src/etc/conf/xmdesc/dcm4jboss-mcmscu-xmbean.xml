@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>MCM_SCU</description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.archive.dcm.mcmscu.MCMScuService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>MCMScuService</name>
+   </constructor>
+
+   <attribute access="read-write"
+      getMethod="getFileSetIdPrefix"
+      setMethod="setFileSetIdPrefix">
+      <description>Prefix for FileSet ID.
+      </description>
+      <name>FileSetIdPrefix</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="MCM_" />
+      </descriptors>
+   </attribute>
+ 
+    <attribute access="read-write"
+      getMethod="getMaxMediaUsage"
+      setMethod="setMaxMediaUsage">
+      <description>Max media usage for collecting studies in MB (=1.000.000 Bytes).
+      </description>
+      <name>MaxMediaUsage</name>
+      <type>long</type>
+      <descriptors>
+         <value value="200" />
+      </descriptors>
+   </attribute>
+
+    <attribute access="read-write"
+      getMethod="getDaysBefore"
+      setMethod="setDaysBefore">
+      <description>This value is used to calculate the search date from current date: Instances must be older than search date.
+      </description>
+      <name>DaysBefore</name>
+      <type>int</type>
+      <descriptors>
+         <value value="2" />
+      </descriptors>
+   </attribute>
+
+   <!-- Operations -->
+   &defaultOperations;
+   <operation impact="ACTION">
+      <description>Collect studies to medias</description>
+      <name>collectStudies</name>
+      <return-type>int</return-type>
+   </operation>
+   
+</mbean>
