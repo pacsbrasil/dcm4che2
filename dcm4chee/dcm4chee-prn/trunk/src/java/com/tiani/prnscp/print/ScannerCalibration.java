@@ -22,6 +22,9 @@
 
 package com.tiani.prnscp.print;
 
+import org.dcm4che.util.DAFormat;
+import org.dcm4che.util.TMFormat;
+
 import org.jboss.logging.Logger;
 
 import java.awt.image.BufferedImage;
@@ -30,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import javax.imageio.ImageIO;
 
 /**
@@ -64,8 +68,8 @@ class ScannerCalibration {
    /** Holds value of property calibrationDir. */
    private File calibrationDir;
    
-   /** Holds value of property refGrayStepODs. */
-   private float[] refGrayStepODs;
+   /** Holds value of property refGrayscaleODs. */
+   private float[] refGrayscaleODs;
    
    /** Holds value of property scanArea. */
    private int[] scanPointExtension = { 50, 50 };
@@ -90,7 +94,7 @@ class ScannerCalibration {
 
    private float[] cachedODs;
    
-   /** Holds value of property refGrayStepFileName. */
+   /** Holds value of property refGrayscaleFileName. */
    private String refFileName;
    
    // Static --------------------------------------------------------
@@ -102,15 +106,15 @@ class ScannerCalibration {
    
    // Public --------------------------------------------------------
       
-   /** Getter for property scanGrayStepDir.
-    * @return Value of property scanGrayStepDir.
+   /** Getter for property scanGrayscaleDir.
+    * @return Value of property scanGrayscaleDir.
     */
    public File getCalibrationDir() {
       return this.calibrationDir;
    }
    
-   /** Setter for property scanGrayStepDir.
-    * @param scanGrayStepDir New value of property scanGrayStepDir.
+   /** Setter for property scanGrayscaleDir.
+    * @param scanGrayscaleDir New value of property scanGrayscaleDir.
     */
    public void setCalibrationDir(File calibrationDir) {
       this.calibrationDir = calibrationDir;
@@ -119,35 +123,35 @@ class ScannerCalibration {
    /** Getter for property refFileName.
     * @return Value of property refFileName.
     */
-   public String getRefGrayStepFileName() {
+   public String getRefGrayscaleFileName() {
       return this.refFileName;
    }
    
    /** Setter for property refFileName.
     * @param refFileName New value of property refFileName.
     */
-   public void setRefGrayStepFileName(String refFileName) {
+   public void setRefGrayscaleFileName(String refFileName) {
       this.refFileName = refFileName;
    }
    
-   /** Getter for property refGrayStepODs.
-    * @return Value of property refGrayStepODs.
+   /** Getter for property refGrayscaleODs.
+    * @return Value of property refGrayscaleODs.
     */
-   public float[] getRefGrayStepODs() {
-      return this.refGrayStepODs;
+   public float[] getRefGrayscaleODs() {
+      return this.refGrayscaleODs;
    }
    
-   /** Setter for property refGrayStepODs.
-    * @param refGrayStepODs New value of property refGrayStepODs.
+   /** Setter for property refGrayscaleODs.
+    * @param refGrayscaleODs New value of property refGrayscaleODs.
     */
-   public void setRefGrayStepODs(float[] refGrayStepODs) {
-      float[] tmp = (float[]) refGrayStepODs.clone();
+   public void setRefGrayscaleODs(float[] refGrayscaleODs) {
+      float[] tmp = (float[]) refGrayscaleODs.clone();
       Arrays.sort(tmp);
-      if (!Arrays.equals(tmp, refGrayStepODs)) {
+      if (!Arrays.equals(tmp, refGrayscaleODs)) {
          throw new IllegalArgumentException(
-            "refGrayStepODs[" + tmp.length + "] not monotonic increasing");
+            "refGrayscaleODs[" + tmp.length + "] not monotonic increasing");
       }
-      this.refGrayStepODs = tmp;
+      this.refGrayscaleODs = tmp;
    }
       
    /** Getter for property scanArea.
@@ -202,11 +206,25 @@ class ScannerCalibration {
       return "" + blackThreshold + "\\" + whiteThreshold;
    }
    
-   public float[] calculateGrayStepODs(String printer, boolean force)
+   /** Getter for property dateOfLastCalibration.
+    * @return Value of property dateOfLastCalibration.
+    */
+   public String getDateOfLastCalibration() {
+      return new DAFormat().format(new Date(lastScanFileModified));
+   }
+   
+   /** Getter for property timeOfLastCalibration.
+    * @return Value of property timeOfLastCalibration.
+    */
+   public String getTimeOfLastCalibration() {
+      return new TMFormat().format(new Date(lastScanFileModified));
+   }
+   
+   public float[] calculateGrayscaleODs(String printer, boolean force)
       throws CalibrationException
    {
-      if (refGrayStepODs == null) {
-         throw new IllegalStateException("refGrayStepODs not initalized!");
+      if (refGrayscaleODs == null) {
+         throw new IllegalStateException("refGrayscaleODs not initalized!");
       }
       if (calibrationDir == null) {
          throw new IllegalStateException("calibrationDir not initalized!");
@@ -280,25 +298,25 @@ class ScannerCalibration {
          }
          return cachedODs;
       } catch (IOException e) {
-         throw new CalibrationException("calculateGrayStepODs failed: ", e);
+         throw new CalibrationException("calculateGrayscaleODs failed: ", e);
       }
    }
    
-   float[] calculateGrayStepODs(BufferedImage refGrayStepImage,
-                                BufferedImage grayStepImage)
+   float[] calculateGrayscaleODs(BufferedImage refGrayscaleImage,
+                                BufferedImage grayscaleImage)
       throws CalibrationException
    {
-      return interpolate(analyse(refGrayStepImage), analyse(grayStepImage));
+      return interpolate(analyse(refGrayscaleImage), analyse(grayscaleImage));
    }
    
    private float[] interpolate(float[] invRefPx, float[] invPx)
       throws CalibrationException
    {
-      if (invRefPx.length != refGrayStepODs.length) {
+      if (invRefPx.length != refGrayscaleODs.length) {
          throw new CalibrationException("Mismatch of detected gray steps["
             + invRefPx.length + "] in "
             + (lastRefFile == null ? "?" : lastRefFile.getName())
-            + " with refGrayStepODs float[" + refGrayStepODs.length + "]");
+            + " with refGrayscaleODs float[" + refGrayscaleODs.length + "]");
       }
       ensureMonotonic(invRefPx, lastRefFile);
       ensureMonotonic(invPx, lastScanFile);
@@ -306,7 +324,7 @@ class ScannerCalibration {
       for (int i = 0; i < invPx.length; ++i) {
          int index = Arrays.binarySearch(invRefPx, invPx[i]);
          if (index >= 0) { // exact match
-            result[i] = refGrayStepODs[index];
+            result[i] = refGrayscaleODs[index];
          } else {
             index = (-index) - 1;
             if (index == 0) { // = extrapolation
@@ -314,14 +332,14 @@ class ScannerCalibration {
             } else if (index == invPx.length) { // = extrapolation
                index = invPx.length - 1;
             }
-            result[i] = refGrayStepODs[index-1]
-               + (refGrayStepODs[index] - refGrayStepODs[index-1])
+            result[i] = refGrayscaleODs[index-1]
+               + (refGrayscaleODs[index] - refGrayscaleODs[index-1])
                   * (invPx[i] - invRefPx[index-1])
                   / (invRefPx[index] - invRefPx[index-1]);
          }
       }
       if (log != null && log.isDebugEnabled()) {
-         StringBuffer sb = new StringBuffer("calculated GrayStepODs:");
+         StringBuffer sb = new StringBuffer("calculated GrayscaleODs:");
          for (int i = 0; i < invPx.length; ++i) { 
             sb.append("\r\n\t");
             sb.append(result[i]);
@@ -345,7 +363,7 @@ class ScannerCalibration {
       if (!isMonotonic(a)) {
          Arrays.sort(a);
          if (log != null) {
-            log.warn("Graystep " + (src == null ? "" : src.getName())
+            log.warn("Grayscale " + (src == null ? "" : src.getName())
                + " not monotonic increasing! Calibrate with sorted steps!");
          }
       }
@@ -405,7 +423,7 @@ class ScannerCalibration {
          }
       }
       if (log != null && log.isDebugEnabled()) {
-         StringBuffer sb = new StringBuffer("detected GrayStep 255-pxval:");
+         StringBuffer sb = new StringBuffer("detected Grayscale 255-pxval:");
          for (int i = 0; i < px.length; ++i) { 
             sb.append("\r\n\t");
             sb.append(px[i]);

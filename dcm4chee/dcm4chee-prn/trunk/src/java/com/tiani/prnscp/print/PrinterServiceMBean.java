@@ -258,6 +258,16 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setEmptyImageDensity(String emptyImageDensity);
    
+   /** Getter for property trimBoxDensity.
+    * @return Value of property trimBoxDensity.
+    */
+   public String getTrimBoxDensity();
+   
+   /** Setter for property trimBoxDensity.
+    * @param trimBoxDensity New value of property trimBoxDensity.
+    */
+   public void setTrimBoxDensity(String trimBoxDensity);
+   
    /** Getter for property minDensity.
     * @return Value of property minDensity.
     */
@@ -372,72 +382,72 @@ public interface PrinterServiceMBean extends ServiceMBean {
    /** Getter for property measuredODs.
     * @return Value of property measuredODs.
     */
-   public float[] getGrayStepODs();
+   public float[] getGrayscaleODs();
    
    /** Setter for property measuredODs.
     * @param measuredODs New value of property measuredODs.
     */
-   public void setGrayStepODs(float[] measuredODs);
+   public void setGrayscaleODs(float[] measuredODs);
    
    /** Setter for property measuredODsAsText.
     * @param measuredODsAsText New value of property measuredODsAsText.
     */
-   public void setGrayStepODsAsText(String measuredODsAsText);
+   public void setGrayscaleODsAsText(String measuredODsAsText);
    
-   /** Getter for property graySteps.
-    * @return Value of property graySteps.
+   /** Getter for property grayscales.
+    * @return Value of property grayscales.
     */
-   public int getGraySteps();
+   public int getGrayscales();
    
-   /** Setter for property graySteps.
-    * @param graySteps New value of property graySteps.
+   /** Setter for property grayscales.
+    * @param grayscales New value of property grayscales.
     */
-   public void setGraySteps(int graySteps);
+   public void setGrayscales(int grayscales);
    
-   /** Getter for property grayStepGap.
-    * @return Value of property grayStepGap.
+   /** Getter for property grayscaleGap.
+    * @return Value of property grayscaleGap.
     */
-   public float getGrayStepGap();
+   public float getGrayscaleGap();
    
-   /** Setter for property grayStepGap.
-    * @param grayStepGap New value of property grayStepGap.
+   /** Setter for property grayscaleGap.
+    * @param grayscaleGap New value of property grayscaleGap.
     */
-   public void setGrayStepGap(float grayStepGap);
+   public void setGrayscaleGap(float grayscaleGap);
    
-   /** Getter for property refGrayStepODs.
-    * @return Value of property refGrayStepODs.
+   /** Getter for property refGrayscaleODs.
+    * @return Value of property refGrayscaleODs.
     */
-   public float[] getRefGrayStepODs();
+   public float[] getRefGrayscaleODs();
    
-   /** Setter for property refGrayStepODs.
-    * @param refGrayStepODs New value of property refGrayStepODs.
+   /** Setter for property refGrayscaleODs.
+    * @param refGrayscaleODs New value of property refGrayscaleODs.
     */
-   public void setRefGrayStepODs(float[] refGrayStepODs);
+   public void setRefGrayscaleODs(float[] refGrayscaleODs);
    
-   /** Setter for property refGrayStepODsAsText.
-    * @param refGrayStepODsAsText New value of property refGrayStepODsAsText.
+   /** Setter for property refGrayscaleODsAsText.
+    * @param refGrayscaleODsAsText New value of property refGrayscaleODsAsText.
     */
-   public void setRefGrayStepODsAsText(String refGrayStepODsAsText);
+   public void setRefGrayscaleODsAsText(String refGrayscaleODsAsText);
    
-   /** Getter for property scanGrayStepDir.
-    * @return Value of property scanGrayStepDir.
+   /** Getter for property scanGrayscaleDir.
+    * @return Value of property scanGrayscaleDir.
     */
    public String getCalibrationDir();
    
-   /** Setter for property scanGrayStepDir.
-    * @param scanGrayStepDir New value of property scanGrayStepDir.
+   /** Setter for property scanGrayscaleDir.
+    * @param scanGrayscaleDir New value of property scanGrayscaleDir.
     */
-   public void setCalibrationDir(String scanGrayStepDir);
+   public void setCalibrationDir(String scanGrayscaleDir);
    
    /** Getter for property refFileName.
     * @return Value of property refFileName.
     */
-   public String getRefGrayStepFileName();
+   public String getRefGrayscaleFileName();
    
    /** Setter for property refFileName.
     * @param refFileName New value of property refFileName.
     */
-   public void setRefGrayStepFileName(String refFileName);
+   public void setRefGrayscaleFileName(String refFileName);
    
    /** Getter for property scanPointExtension.
     * @return Value of property scanPointExtension.
@@ -509,15 +519,15 @@ public interface PrinterServiceMBean extends ServiceMBean {
     */
    public void setDefaultAnnotation(String defaultAnnotation);
    
-   /** Getter for property grayStepAnnotation.
-    * @return Value of property grayStepAnnotation.
+   /** Getter for property grayscaleAnnotation.
+    * @return Value of property grayscaleAnnotation.
     */
-   public String getGrayStepAnnotation();
+   public String getGrayscaleAnnotation();
    
-   /** Setter for property grayStepAnnotation.
-    * @param grayStepAnnotation New value of property grayStepAnnotation.
+   /** Setter for property grayscaleAnnotation.
+    * @param grayscaleAnnotation New value of property grayscaleAnnotation.
     */
-   public void setGrayStepAnnotation(String grayStepAnnotation);
+   public void setGrayscaleAnnotation(String grayscaleAnnotation);
    
    public boolean isSupportsFilmDestination(String filmDestination);
    
@@ -537,11 +547,56 @@ public interface PrinterServiceMBean extends ServiceMBean {
  
    public int countAnnotationBoxes(String annotationID);
    
-   public void printGraySteps() throws PrintException, IOException;
+   public void printGrayscaleWithLinDDL() throws PrintException, IOException;
    
-   public void printGrayStepsWithGSDF() throws PrintException, IOException;
+   public void printGrayscaleWithGSDF() throws PrintException, IOException;
    
-   public void printGrayStepsWithLinOD() throws PrintException, IOException;
+   public void printGrayscaleWithLinOD() throws PrintException, IOException;
    
    public void calibrate(boolean force) throws CalibrationException;            
+   
+   /** Getter for property dateOfLastCalibration.
+    * @return Value of property dateOfLastCalibration.
+    *
+    */
+   public String getDateOfLastCalibration();
+   
+   /** Setter for property dateOfLastCalibration.
+    * @param dateOfLastCalibration New value of property dateOfLastCalibration.
+    *
+    */
+   public void setDateOfLastCalibration(String dateOfLastCalibration);
+   
+   /** Getter for property timeOfLastCalibration.
+    * @return Value of property timeOfLastCalibration.
+    *
+    */
+   public String getTimeOfLastCalibration();
+   
+   /** Setter for property timeOfLastCalibration.
+    * @param timeOfLastCalibration New value of property timeOfLastCalibration.
+    *
+    */
+   public void setTimeOfLastCalibration(String timeOfLastCalibration);
+   
+   /** Getter for property autoCalibration.
+    * @return Value of property autoCalibration.
+    */
+   public boolean isAutoCalibration();
+   
+   /** Setter for property autoCalibration.
+    * @param autoCalibration New value of property autoCalibration.
+    */
+   public void setAutoCalibration(boolean autoCalibration);
+   
+   /** Getter for property printGrayscaleAtStartup.
+    * @return Value of property printGrayscaleAtStartup.
+    */
+   public boolean isPrintGrayscaleAtStartup();
+   
+   /** Setter for property printGrayscaleAtStartup.
+    * @param printGrayscaleAtStartup New value of property printGrayscaleAtStartup.
+    */
+   public void setPrintGrayscaleAtStartup(boolean printGrayscaleAtStartup);
+   
 }

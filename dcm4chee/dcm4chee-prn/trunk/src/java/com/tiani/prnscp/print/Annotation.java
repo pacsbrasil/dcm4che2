@@ -24,12 +24,18 @@ package com.tiani.prnscp.print;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.print.PageFormat;
 import java.awt.geom.Rectangle2D;
 import java.text.SimpleDateFormat;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -67,19 +73,29 @@ class Annotation {
    private static final Pattern PAGES = Pattern.compile("\\$PAGES\\$");
    
    // Attributes ----------------------------------------------------
-   private final Properties props;
+   private final PrinterService service;
+   private final File file;
+   private final Properties props = new Properties();
    private final float insetLeft;
    private final float insetRight;
    private final float insetTop;
    private final float insetBottom;
    private final SimpleDateFormat dateFormat;
+   private String numPagesStr = "?";
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
-   public Annotation(PrinterService service, Properties props)
+   public Annotation(PrinterService service, File file) throws IOException
    {
-      this.props = props;
+      this.service = service;
+      this.file = file;
+      InputStream in = new BufferedInputStream(new FileInputStream(file));
+      try {
+         props.load(in);
+      } finally {
+         try { in.close(); } catch (Exception ignore) {}
+      }
       this.insetLeft =
          Float.parseFloat(props.getProperty("inset.left", "0"));
       this.insetRight =
@@ -94,6 +110,10 @@ class Annotation {
    }
    
    // Public --------------------------------------------------------
+   public void setNumberOfPages(int numPages) {
+      numPagesStr = "" + numPages;
+   }
+
    public float getInsetLeft() {
       return insetLeft;
    }
@@ -122,10 +142,10 @@ class Annotation {
       props.setProperty(key, text);
    }
    
-   public void print(Graphics2D g2, PageFormat pf, int pageIndex, int numPages) {
+   public void print(Graphics g, PageFormat pf, int pageIndex) {
+      Graphics2D g2 = (Graphics2D) g;
       FontRenderContext frc = g2.getFontRenderContext();
       String pageNoStr = "" + (pageIndex+1); 
-      String numPagesStr = "" + numPages;
       String dateStr = dateFormat.format(new Date());
       String s;
       for (int i = 1; (s = getText(i)) != null; ++i) {
@@ -146,12 +166,15 @@ class Annotation {
    // Private -------------------------------------------------------
 
    private Color getColor(int index) {
-      String s = props.getProperty("" + index + ".color",
-               props.getProperty("color"));
+      String s = props.getProperty("" + index + ".font.color",
+               props.getProperty("font.color"));
       if (s != null) {
          try {
-            return new Color(Integer.parseInt(s) & 0xffffff);
-         } catch (NumberFormatException ignore) {}
+            return new Color(Integer.parseInt(s,16) & 0xffffff);
+         } catch (NumberFormatException e) {
+            service.getLog().warn("Illegal font.color value: " + s 
+               + " in annotation file:" + file.getName());
+         }
       }
       return DEF_COLOR;
    }

@@ -114,7 +114,7 @@ class FilmSessionService
             throw new DcmServiceException(Status.ProcessingFailure,
                "Only support one Basic Film Session SOP Instance on an Association.");
          }
-         File dir = scp.getSessionSpoolDir(a.getCallingAET(), uid);
+         File dir = scp.getSessionSpoolDir(a, uid);
          if (dir.exists()) {
             throw new DcmServiceException(Status.DuplicateSOPInstance);
          }         

@@ -48,7 +48,15 @@ class PrinterCalibration
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   /** Holds value of property dateOfLastCalibration. */
+   private String dateOfLastCalibration = "19700101";
+   
+   /** Holds value of property timeOfLastCalibration. */
+   private String timeOfLastCalibration = "000000";
+   
+   /** Holds value of property grayscaleODs. */
    private float[] stepODs;
+   
    private float[] ddl2od = new float[256];
    
    // Static --------------------------------------------------------
@@ -154,14 +162,46 @@ class PrinterCalibration
    }
    
    
-   public float[] getGrayStepODs() {
+   /** Getter for property dateOfLastCalibration.
+    * @return Value of property dateOfLastCalibration.
+    */
+   public String getDateOfLastCalibration() {
+      return this.dateOfLastCalibration;
+   }
+   
+   /** Setter for property dateOfLastCalibration.
+    * @param dateOfLastCalibration New value of property dateOfLastCalibration.
+    */
+   public void setDateOfLastCalibration(String dateOfLastCalibration) {
+      this.dateOfLastCalibration = dateOfLastCalibration;
+   }
+   
+   /** Getter for property timeOfLastCalibration.
+    * @return Value of property timeOfLastCalibration.
+    */
+   public String getTimeOfLastCalibration() {
+      return this.timeOfLastCalibration;
+   }
+   
+   /** Setter for property timeOfLastCalibration.
+    * @param timeOfLastCalibration New value of property timeOfLastCalibration.
+    */
+   public void setTimeOfLastCalibration(String timeOfLastCalibration) {
+      this.timeOfLastCalibration = timeOfLastCalibration;
+   }
+   
+   
+   /** Getter for property GrayscaleODs.
+    * @return Value of property GrayscaleODs.
+    */
+   public float[] getGrayscaleODs() {
       return stepODs == null ? null : (float[]) stepODs.clone();
    }
    
-   /** Setter for property stepODs.
-    * @param stepODs New value of property stepODs.
+   /** Setter for property GrayscaleODs.
+    * @param GrayscaleODs New value of property GrayscaleODs.
     */
-   public void setGrayStepODs(float[] stepODs) {
+   public void setGrayscaleODs(float[] stepODs) {
       if (stepODs.length < 4 || stepODs.length > 64) {
          throw new IllegalArgumentException("steps: " + stepODs.length);
       }
@@ -178,6 +218,7 @@ class PrinterCalibration
       this.stepODs = tmp;
       initDLL2OD();
    }
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -186,7 +227,7 @@ class PrinterCalibration
    
    private void check(int n, float dmin, float dmax) {
       if (stepODs == null) {
-         throw new IllegalStateException("grayStepODs not yet set");
+         throw new IllegalStateException("grayscaleODs not yet set");
       }
       if (n < 8 || n > 16) {
          throw new IllegalArgumentException("n: " + n);
@@ -276,6 +317,5 @@ class PrinterCalibration
       return C0 + C1*log10L + C2*log10L2 + C3*log10L3 + C4*log10L4
          + C5*log10L5 + C6*log10L6 + C7*log10L7 + C8*log10L8;
    }
-   
    // Inner classes -------------------------------------------------
 }

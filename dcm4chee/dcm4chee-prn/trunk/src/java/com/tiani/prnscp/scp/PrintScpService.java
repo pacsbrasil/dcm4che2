@@ -393,8 +393,10 @@ public class PrintScpService
       return result;
    }
    
-   File getSessionSpoolDir(String aet, String uid) {
-      return new File(new File(spoolDir, aet), uid);
+   File getSessionSpoolDir(Association a, String uid) {
+      File dir = new File(spoolDir, a.getCalledAET());
+      dir = new File(dir, a.getCallingAET());
+      return new File(dir, uid); 
    }
    
    void initSessionSpoolDir(File dir) throws DcmServiceException {
@@ -573,6 +575,10 @@ public class PrintScpService
                (String)server.getAttribute(printer, "Status"));
             result.putCS(Tags.PrinterStatusInfo,
                (String)server.getAttribute(printer, "StatusInfo"));
+            result.putDA(Tags.DateOfLastCalibration,
+               (String)server.getAttribute(printer, "DateOfLastCalibration"));
+            result.putTM(Tags.TimeOfLastCalibration,
+               (String)server.getAttribute(printer, "TimeOfLastCalibration"));
          } catch (Exception e) {
             log.error("Failed to access printer status", e);
             throw new DcmServiceException(Status.ProcessingFailure, 

@@ -27,6 +27,8 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.util.DAFormat;
+import org.dcm4che.util.TMFormat;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -55,16 +57,13 @@ import javax.print.event.PrintJobEvent;
 import javax.print.event.PrintServiceAttributeEvent;
 import javax.print.event.PrintServiceAttributeListener;
 import javax.print.attribute.standard.Destination;
-import javax.print.attribute.standard.MediaSize;
-import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.OrientationRequested;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.FileInputStream;
 import java.io.IOException;
-
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -101,8 +100,8 @@ public class PrinterService
    private static final String[] CODE_STRING = {
       null, "NORMAL", "WARNING", "FAILURE"
    };
-   private static final String ADF_FILE_EXT = ".adf";
-   private static final String LUT_FILE_EXT = ".lut";      
+   static final String ADF_FILE_EXT = ".adf";
+   static final String LUT_FILE_EXT = ".lut";      
    
    // Attributes ----------------------------------------------------
    /** Holds value of property printerName. */
@@ -140,6 +139,9 @@ public class PrinterService
    
    /** Holds value of property emptyImageDensity. */
    private String emptyImageDensity;
+
+   /** Holds value of property trimBoxDensity. */
+   private String trimBoxDensity;
    
    /** Holds value of property minDensity. */
    private int minDensity;
@@ -174,11 +176,17 @@ public class PrinterService
    /** Holds value of property decimateCropBehavior. */
    private String decimateCropBehavior;
       
-   /** Holds value of property graySteps. */
-   private int graySteps;
+   /** Holds value of property grayscales. */
+   private int grayscales;
 
-   /** Holds value of property grayStepGap. */
-   private float grayStepGap;
+   /** Holds value of property grayscaleGap. */
+   private float grayscaleGap;
+
+   /** Holds value of property autoCalibration. */
+   private boolean autoCalibration;
+
+   /** Holds value of property printGrayscaleAtStartup. */
+   private boolean printGrayscaleAtStartup;
    
    private int status = NORMAL;
    private String statusInfo = "NORMAL";
@@ -212,8 +220,8 @@ public class PrinterService
    /** Holds value of property defaultAnnotation. */
    private String defaultAnnotation;
    
-   /** Holds value of property grayStepAnnotation. */
-   private String grayStepAnnotation;
+   /** Holds value of property grayscaleAnnotation. */
+   private String grayscaleAnnotation;
    
    // Static --------------------------------------------------------
    
@@ -355,12 +363,9 @@ public class PrinterService
          PrintService ps = getPrintService();
          Class[] c = ps.getSupportedAttributeCategories();
          String[] result = new String[c.length];
-         AttributeSet aset = new HashPrintRequestAttributeSet();
-//         aset.add(toOrientationRequested(getFilmOrientation()));
-//         aset.add(toMediaSizeName(getDefaultFilmSizeID()));
          for (int i = 0; i < c.length; ++i) {
             Object value = ps.getSupportedAttributeValues(c[i],
-               DocFlavor.SERVICE_FORMATTED.PAGEABLE, aset);            
+               DocFlavor.SERVICE_FORMATTED.PAGEABLE, null);            
             result[i] = org.jboss.util.Classes.stripPackageName(c[i]) + "="
                + (value instanceof Object[]
                   ? Arrays.asList((Object[]) value) : value);
@@ -575,7 +580,7 @@ public class PrinterService
       return filmSizeIDMap.containsKey(filmSizeID);
    }
    
-   Paper toPaper(float[] wh) {
+   private Paper toPaper(float[] wh) {
       Paper paper = new Paper();
       paper.setSize(wh[0] * PTS_PER_MM, wh[1] * PTS_PER_MM);
       paper.setImageableArea(
@@ -712,6 +717,20 @@ public class PrinterService
     */
    public void setEmptyImageDensity(String emptyImageDensity) {
       this.emptyImageDensity = emptyImageDensity;
+   }
+      
+   /** Getter for property trimBoxDensity.
+    * @return Value of property trimBoxDensity.
+    */
+   public String getTrimBoxDensity() {
+      return this.trimBoxDensity;
+   }
+   
+   /** Setter for property trimBoxDensity.
+    * @param trimBoxDensity New value of property trimBoxDensity.
+    */
+   public void setTrimBoxDensity(String trimBoxDensity) {
+      this.trimBoxDensity = trimBoxDensity;
    }
    
    /** Getter for property minDensity.
@@ -884,18 +903,6 @@ public class PrinterService
       return parseAnnotationBoxCount(annotationID);
    }
    
-   Annotation getAnnotation(String id) throws IOException {
-      File f = new File(annotationDir, id + PrinterService.ADF_FILE_EXT);
-      Properties props = new Properties();
-      FileInputStream in = new FileInputStream(f);
-      try {
-         props.load(in);
-      } finally {
-         try { in.close(); } catch (Exception ignore) {}
-      }
-      return new Annotation(this, props);
-   }
-   
    /** Getter for property lutDir.
     * @return Value of property lutDir.
     */
@@ -916,7 +923,7 @@ public class PrinterService
             return name.endsWith(LUT_FILE_EXT);
          }
       };
-               
+                           
    /** Getter for property LUTs.
     * @return Value of property LUTs.
     */
@@ -977,41 +984,79 @@ public class PrinterService
       this.defaultAnnotation = defaultAnnotation;
    }
    
-   /** Getter for property grayStepAnnotation.
-    * @return Value of property grayStepAnnotation.
+   /** Getter for property grayscaleAnnotation.
+    * @return Value of property grayscaleAnnotation.
     */
-   public String getGrayStepAnnotation() {
-      return this.grayStepAnnotation;
+   public String getGrayscaleAnnotation() {
+      return this.grayscaleAnnotation;
    }
    
-   /** Setter for property grayStepAnnotation.
-    * @param grayStepAnnotation New value of property grayStepAnnotation.
+   /** Setter for property grayscaleAnnotation.
+    * @param grayscaleAnnotation New value of property grayscaleAnnotation.
     */
-   public void setGrayStepAnnotation(String grayStepAnnotation) {
-      this.grayStepAnnotation = grayStepAnnotation;
+   public void setGrayscaleAnnotation(String grayscaleAnnotation) {
+      this.grayscaleAnnotation = grayscaleAnnotation;
    }
    
-   /** Getter for property grayStepODs.
-    * @return Value of property grayStepODs.
+   /** Getter for property grayscaleODs.
+    * @return Value of property grayscaleODs.
     */
-   public float[] getGrayStepODs() {
-      return calibration.getGrayStepODs();
+   public float[] getGrayscaleODs() {
+      return calibration.getGrayscaleODs();
    }
    
-   /** Setter for property grayStepODs.
-    * @param grayStepODs New value of property grayStepODs.
+   /** Setter for property grayscaleODs.
+    * @param grayscaleODs New value of property grayscaleODs.
     */
-   public void setGrayStepODs(float[] grayStepODs) {
-      calibration.setGrayStepODs(grayStepODs);
+   public void setGrayscaleODs(float[] grayscaleODs) {
+      calibration.setGrayscaleODs(grayscaleODs);
    }
    
 
-   /** Setter for property grayStepODsAsText.
-    * @param grayStepODsAsText New value of property grayStepODsAsText.
+   /** Setter for property grayscaleODsAsText.
+    * @param grayscaleODsAsText New value of property grayscaleODsAsText.
     */
-   public void setGrayStepODsAsText(String grayStepODsAsText) {
-      calibration.setGrayStepODs(toFloatArray(grayStepODsAsText));
+   public void setGrayscaleODsAsText(String grayscaleODsAsText) {
+      calibration.setGrayscaleODs(toFloatArray(grayscaleODsAsText));
    }
+   
+   /** Getter for property dateOfLastCalibration.
+    * @return Value of property dateOfLastCalibration.
+    */
+   public String getDateOfLastCalibration() {
+      return calibration.getDateOfLastCalibration();
+   }
+   
+   /** Setter for property dateOfLastCalibration.
+    * @param dateOfLastCalibration New value of property dateOfLastCalibration.
+    */
+   public void setDateOfLastCalibration(String dateOfLastCalibration) {
+      try {
+         new DAFormat().parse(dateOfLastCalibration);
+      } catch (ParseException e) {
+         throw new IllegalArgumentException();
+      }
+      calibration.setDateOfLastCalibration(dateOfLastCalibration);
+   }
+   
+   /** Getter for property timeOfLastCalibration.
+    * @return Value of property timeOfLastCalibration.
+    */
+   public String getTimeOfLastCalibration() {
+      return calibration.getTimeOfLastCalibration();
+   }
+   
+   /** Setter for property timeOfLastCalibration.
+    * @param timeOfLastCalibration New value of property timeOfLastCalibration.
+    */
+   public void setTimeOfLastCalibration(String timeOfLastCalibration) {
+      try {
+         new TMFormat().parse(timeOfLastCalibration);
+      } catch (ParseException e) {
+         throw new IllegalArgumentException();
+      }
+      calibration.setTimeOfLastCalibration(timeOfLastCalibration);
+   }      
    
    private static float[] toFloatArray(String text) {
       StringTokenizer stk = new StringTokenizer(text, ",; \t\r\n");
@@ -1022,84 +1067,84 @@ public class PrinterService
       return a;
    }
 
-   /** Getter for property graySteps.
-    * @return Value of property graySteps.
+   /** Getter for property grayscales.
+    * @return Value of property grayscales.
     */
-   public int getGraySteps() {
-      return graySteps;
+   public int getGrayscales() {
+      return grayscales;
    }
    
-   /** Setter for property graySteps.
-    * @param graySteps New value of property graySteps.
+   /** Setter for property grayscales.
+    * @param grayscales New value of property grayscales.
     */
-   public void setGraySteps(int graySteps) {
-      if (graySteps < 4 || graySteps > 64) {
-         throw new IllegalArgumentException("steps: " + graySteps);
+   public void setGrayscales(int grayscales) {
+      if (grayscales < 4 || grayscales > 64) {
+         throw new IllegalArgumentException("grayscales: " + grayscales);
       }
-      this.graySteps = graySteps;
+      this.grayscales = grayscales;
    }
    
-   /** Getter for property grayStepGap.
-    * @return Value of property grayStepGap.
+   /** Getter for property grayscaleGap.
+    * @return Value of property grayscaleGap.
     */
-   public float getGrayStepGap() {
-      return grayStepGap;
+   public float getGrayscaleGap() {
+      return grayscaleGap;
    }
    
-   /** Setter for property grayStepGap.
-    * @param grayStepGap New value of property grayStepGap.
+   /** Setter for property grayscaleGap.
+    * @param grayscaleGap New value of property grayscaleGap.
     */
-   public void setGrayStepGap(float grayStepGap) {
-      this.grayStepGap = grayStepGap;
+   public void setGrayscaleGap(float grayscaleGap) {
+      this.grayscaleGap = grayscaleGap;
    }
    
-   /** Getter for property refGrayStepODs.
-    * @return Value of property refGrayStepODs.
+   /** Getter for property refGrayscaleODs.
+    * @return Value of property refGrayscaleODs.
     */
-   public float[] getRefGrayStepODs() {
-      return scanner.getRefGrayStepODs();
+   public float[] getRefGrayscaleODs() {
+      return scanner.getRefGrayscaleODs();
    }
    
-   /** Setter for property refGrayStepODs.
-    * @param refGrayStepODs New value of property refGrayStepODs.
+   /** Setter for property refGrayscaleODs.
+    * @param refGrayscaleODs New value of property refGrayscaleODs.
     */
-   public void setRefGrayStepODs(float[] refGrayStepODs) {
-      scanner.setRefGrayStepODs(refGrayStepODs);
+   public void setRefGrayscaleODs(float[] refGrayscaleODs) {
+      scanner.setRefGrayscaleODs(refGrayscaleODs);
    }
    
-   /** Setter for property refGrayStepODsAsText.
-    * @param refGrayStepODsAsText New value of property refGrayStepODsAsText.
+   /** Setter for property refGrayscaleODsAsText.
+    * @param refGrayscaleODsAsText New value of property refGrayscaleODsAsText.
     */
-   public void setRefGrayStepODsAsText(String refGrayStepODsAsText) {
-      setRefGrayStepODs(toFloatArray(refGrayStepODsAsText));
+   public void setRefGrayscaleODsAsText(String refGrayscaleODsAsText) {
+      setRefGrayscaleODs(toFloatArray(refGrayscaleODsAsText));
    }
    
-   /** Getter for property scanGrayStepDir.
-    * @return Value of property scanGrayStepDir.
+   /** Getter for property scanGrayscaleDir.
+    * @return Value of property scanGrayscaleDir.
     */
    public String getCalibrationDir() {
       return scanner.getCalibrationDir().getAbsolutePath();
    }
    
-   /** Setter for property scanGrayStepDir.
-    * @param scanGrayStepDir New value of property scanGrayStepDir.
+   /** Setter for property scanGrayscaleDir.
+    * @param scanGrayscaleDir New value of property scanGrayscaleDir.
     */
-   public void setCalibrationDir(String scanGrayStepDir) {
-      scanner.setCalibrationDir(toFile(scanGrayStepDir));
+   public void setCalibrationDir(String scanGrayscaleDir) {
+      scanner.setCalibrationDir(toFile(scanGrayscaleDir));
    }
    
-   /** Getter for property refGrayStepFileName.
-    * @return Value of property refGrayStepFileName.
+   /** Getter for property refGrayscaleFileName.
+    * @return Value of property refGrayscaleFileName.
     */
-   public String getRefGrayStepFileName() {
-      return scanner.getRefGrayStepFileName();
+   public String getRefGrayscaleFileName() {
+      return scanner.getRefGrayscaleFileName();
    }
    
-   /** Setter for property refGrayStepFileName.
-    * @param refGrayStepFileName New value of property refGrayStepFileName.
+   /** Setter for property refGrayscaleFileName.
+    * @param refGrayscaleFileName New value of property refGrayscaleFileName.
     */
-   public void setRefGrayStepFileName(String refGrayStepFileName) {
-      scanner.setRefGrayStepFileName(refGrayStepFileName);
+   public void setRefGrayscaleFileName(String refGrayscaleFileName) {
+      scanner.setRefGrayscaleFileName(refGrayscaleFileName);
    }
    
    /** Getter for property scanArea.
@@ -1130,32 +1175,64 @@ public class PrinterService
       scanner.setScanThreshold(scanThreshold);
    }
    
-   public void printGraySteps() throws PrintException, IOException {
-      log.info("Printing gray steps");
-      print(new GrayStep(this, calibration.getIdentityPValToDDL(), printerName));
-      log.info("Printed gray steps");
+               
+   /** Getter for property autoCalibration.
+    * @return Value of property autoCalibration.
+    */
+   public boolean isAutoCalibration() {
+      return this.autoCalibration;
    }
    
-   public void printGrayStepsWithGSDF() throws PrintException, IOException {
-      log.info("Printing gray steps [GSDF]");
-      print(new GrayStep(this, calibration.getPValToDDLwGSDF(8,
+   /** Setter for property autoCalibration.
+    * @param autoCalibration New value of property autoCalibration.
+    */
+   public void setAutoCalibration(boolean autoCalibration) {
+      this.autoCalibration = autoCalibration;
+   }
+   
+   /** Getter for property printGrayscaleAtStartup.
+    * @return Value of property printGrayscaleAtStartup.
+    */
+   public boolean isPrintGrayscaleAtStartup() {
+      return this.printGrayscaleAtStartup;
+   }
+   
+   /** Setter for property printGrayscaleAtStartup.
+    * @param printGrayscaleAtStartup New value of property printGrayscaleAtStartup.
+    */
+   public void setPrintGrayscaleAtStartup(boolean printGrayscaleAtStartup) {
+      this.printGrayscaleAtStartup = printGrayscaleAtStartup;
+   }
+   
+   public void printGrayscaleWithLinDDL() throws PrintException, IOException {
+      log.info("Printing grayscale [LIN DDL]");
+      print(new Grayscale(this, calibration.getIdentityPValToDDL(),
+         printerName + "[LIN DDL]"));
+      log.info("Printed grayscale [LIN DDL]");
+   }
+   
+   public void printGrayscaleWithGSDF() throws PrintException, IOException {
+      log.info("Printing grayscale [GSDF]");
+      print(new Grayscale(this, calibration.getPValToDDLwGSDF(8,
                minDensity/100.f, maxDensity/100.f,
                illumination, reflectedAmbientLight),
             printerName + "[GSDF]"));
-      log.info("Printed gray steps [GSDF]");
+      log.info("Printed grayscale [GSDF]");
    }
    
-   public void printGrayStepsWithLinOD() throws PrintException, IOException {
-      log.info("Printing gray steps [LIN OD]");
-      print(new GrayStep(this, calibration.getPValToDDLwLinOD(8,
+   public void printGrayscaleWithLinOD() throws PrintException, IOException {
+      log.info("Printing grayscale [LIN OD]");
+      print(new Grayscale(this, calibration.getPValToDDLwLinOD(8,
                minDensity/100.f, maxDensity/100.f),
             printerName + "[LIN OD]"));
-      log.info("Printed gray steps [LIN OD]");
+      log.info("Printed grayscale [LIN OD]");
    }
    
    public void calibrate(boolean force) throws CalibrationException {
       log.info("Calibrating " + printerName);
-      setGrayStepODs(scanner.calculateGrayStepODs(printerName, force));
+      setGrayscaleODs(scanner.calculateGrayscaleODs(printerName, force));
+      setDateOfLastCalibration(scanner.getDateOfLastCalibration());
+      setTimeOfLastCalibration(scanner.getTimeOfLastCalibration());
       log.info("Calibrated " + printerName);
    }
    
@@ -1164,6 +1241,9 @@ public class PrinterService
    throws Exception {
       scheduler = new Thread(this);
       scheduler.start();
+      if (printGrayscaleAtStartup) {
+         printGrayscaleWithLinDDL();
+      }
    }
    
    public void stopService()
@@ -1230,7 +1310,7 @@ public class PrinterService
          new Notification(NOTIF_PRINTING, this, ++notifCount, job));
       Dataset sessionAttr = (Dataset)notif.getUserData();
       try {
-         doPrint(jobDir, (Dataset)notif.getUserData());
+         print(new Films(this, jobDir, (Dataset)notif.getUserData()));
          log.info("Finished processing job - " + jobID);
          sendNotification(
             new Notification(NOTIF_DONE, this, ++notifCount, job));
@@ -1292,32 +1372,6 @@ public class PrinterService
          log.debug(toMsg("printJobRequiresAttention: ", pje));
    }
       
-   private void doPrint(File jobDir, Dataset sessionAttr)
-      throws Exception
-   {
-      if (!jobDir.exists()) {
-         throw new RuntimeException("Missing job dir - " + jobDir);
-      }
-      File rootDir = jobDir.getParentFile().getParentFile();
-      File hcDir = new File(rootDir, "HC");
-      if (!hcDir.exists()) {
-         throw new RuntimeException("Missing hardcopy dir - " + hcDir);
-      }
-
-      File[] spFiles = jobDir.listFiles();
-      Arrays.sort(spFiles,
-         new Comparator() {
-            public int compare(Object o1, Object o2) {
-               return (int)(((File)o1).lastModified()
-                          - ((File)o2).lastModified());
-            }
-         });
-      // simulate Print Process
-      try {
-         Thread.sleep(10000);
-      } catch (InterruptedException ignore) {}
-   }
-   
    // Package protected ---------------------------------------------
    static File toFile(String path) {
       if (path == null || path.trim().length() == 0) {
@@ -1338,6 +1392,13 @@ public class PrinterService
    private void print(Pageable printData)
       throws PrintException
    {
+      if (autoCalibration) {
+         try {
+            calibrate(false);
+         } catch (CalibrationException e) {
+            log.warn("Calibration fails, continue printing", e);
+         }
+      }
       PrintService ps = getPrintService();
       PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
       if (printToFile) {
@@ -1356,6 +1417,6 @@ public class PrinterService
          pj.removePrintJobListener(this);
       }
    }
-               
+   
    // Inner classes -------------------------------------------------
 }
