@@ -1,4 +1,5 @@
 CONNECT TO tiani;
+SET CURRENT SCHEMA TIANI;
 
 ALTER TABLE patient
 	ADD COLUMN merge_fk INTEGER;
@@ -36,14 +37,16 @@ CREATE TABLE roles(
 FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 CREATE INDEX user_id ON roles(user_id);
+
+GRANT ALL PRIVILEGES ON TABLE ae TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE users TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE roles TO USER tiani;
+
+GRANT USAGE ON SEQUENCE ae_pk_seq TO USER tiani;
+
 INSERT INTO users VALUES('admin','admin');
 INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebAdmin');
-
-GRANT ALL PRIVILEGES ON TABLE ae TO USER tiani;
-GRANT USAGE ON SEQUENCE tiani.ae_pk_seq TO USER tiani;
-GRANT ALL PRIVILEGES ON TABLE users TO USER tiani;
-GRANT ALL PRIVILEGES ON TABLE roles TO USER tiani;
 
 
 TERMINATE;
