@@ -23,7 +23,7 @@ font.color=0
 2.align=left
 2.valign=bottom
 
-3=printed at $DATE$ $TIME$
+3=printed by $CALLED_AET$\nat $DATE$ $TIME$
 3.x=right
 3.y=top-2
 3.align=right

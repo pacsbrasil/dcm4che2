@@ -109,7 +109,7 @@
     specify a Session Label. $CALLING_AET$ $DATE$ $TIME$ will be replaced by
     current values.
     -->
-    <attribute name="SessionLabel">print job for $CALLING_AET$ created $DATE$ $TIME$</attribute>
+    <attribute name="SessionLabel">print job for $CALLING_AET$&#xA;created $DATE$ $TIME$</attribute>
     
     <!--
     Specifies all STANDARD\C,R image display formats accepted by the Print SCP
@@ -207,9 +207,14 @@
     <attribute name="LUTForCallingAET">
       IDENTITY:IDENTITY
       LINOD:LINOD
-      MIDTONE:MIDTONE
-      LIGHTEN:LIGHTEN
-      DARKEN:DARKEN
+      MIDTONE2:MIDTONE2
+      LIGHTEN1:LIGHTEN1
+      LIGHTEN2:LIGHTEN2
+      LIGHTEN3:LIGHTEN3
+      LIGHTEN4:LIGHTEN4
+      LIGHTEN5:LIGHTEN5
+      DARKEN9:DARKEN9
+      DARKEN8:DARKEN8
     </attribute>
 
     <!--

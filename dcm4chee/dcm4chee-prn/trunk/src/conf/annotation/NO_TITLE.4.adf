@@ -16,7 +16,7 @@ font.color=0
 1.align=left
 1.valign=bottom
 
-2=printed at $DATE$ $TIME$
+2=printed by $CALLED_AET$\nat $DATE$ $TIME$
 2.x=right
 2.y=top-2
 2.align=right

@@ -1040,7 +1040,7 @@
                     type="vert"><member>YES</member><member>NO</member></simplelist></entry><entry>NO
                     (Configurable)</entry><entry>Warning (0116H)</entry></row><row><entry>Configuration
                     Information</entry><entry>(2010,0150)</entry><entry><simplelist
-                    type="vert"><member>IDENTITY</member><member>LINOD</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist>(Configurable)</entry><entry>IDENTITY
+                    type="vert"><member>IDENTITY</member><member>LINOD</member><member>MIDTONE2</member><member>LIGHTEN1</member><member>LIGHTEN2</member><member>LIGHTEN3</member><member>LIGHTEN4</member><member>LIGHTEN5</member><member>DARKEN9</member><member>DARKEN8</member></simplelist>(Configurable)</entry><entry>IDENTITY
                     (Different configurable for different Calling AETs)</entry><entry>Warning
                     (0116H)</entry></row><row><entry>Illumination</entry><entry>(2010,015E)</entry><entry>Any
                     valid value in the unit of cd/m^2</entry><entry>150
@@ -1076,13 +1076,13 @@
                     text strings in smaller fonts at the corners of the page.</entry><entry>1:
                     Top Center</entry><entry>Default Title</entry></row><row><entry>2:
                     Top Left</entry><entry>$SESSION_LABEL$</entry></row><row><entry>3:
-                    Top Right</entry><entry>printed at $DATE$ $TIME$</entry></row><row><entry>4:
-                    Bottom Left</entry><entry>$LICENSE_CN$\nvalid until
-                    $LICENSE_ENDDATE$</entry></row><row><entry>5: Bottom Right</entry><entry>$PAGE$
-                    of $PAGES$</entry></row><row><entry morerows="3">NO_TITLE</entry><entry
-                    morerows="3">Prints only the four text strings in smaller
-                    fonts at the corners of the page.</entry><entry>1: Top
-                    Left</entry><entry>$SESSION_LABEL$</entry></row><row><entry>2:
+                    Top Right</entry><entry>printed by $CALLED_AET$ at $DATE$
+                    $TIME$</entry></row><row><entry>4: Bottom Left</entry><entry>$LICENSE_CN$\nvalid
+                    until $LICENSE_ENDDATE$</entry></row><row><entry>5: Bottom
+                    Right</entry><entry>$PAGE$ of $PAGES$</entry></row><row><entry
+                    morerows="3">NO_TITLE</entry><entry morerows="3">Prints
+                    only the four text strings in smaller fonts at the corners
+                    of the page.</entry><entry>1: Top Left</entry><entry>$SESSION_LABEL$</entry></row><row><entry>2:
                     Top Right</entry><entry>printed at $DATE$ $TIME$</entry></row><row><entry>3:
                     Bottom Left</entry><entry>$LICENSE_CN$\nvalid until
                     $LICENSE_ENDDATE$</entry></row><row><entry>4: Bottom Right</entry><entry>$PAGE$
@@ -1137,26 +1137,48 @@
                           </row>
 
                           <row>
-                            <entry>MIDTONE</entry>
+                            <entry>MIDTONE2</entry>
 
                             <entry>Applies a S-shaped P-LUT, which increases
                             the contrast in the middle range of gray shades.</entry>
                           </row>
 
                           <row>
-                            <entry>LIGHTEN</entry>
+                            <entry>LIGHTEN1</entry>
 
-                            <entry>Applies a gamma-shaped P-LUT with gamma
-                            &#62; 1, which increases the contrast for dark
-                            gray shades and lightens the image as a whole.</entry>
+                            <entry morerows="4">Applies a gamma-shaped P-LUT
+                            with gamma &#62; 1 (LIGHTENx: gamma=1.x), which
+                            increases the contrast for dark gray shades and
+                            lightens the image as a whole.</entry>
                           </row>
 
                           <row>
-                            <entry>DARKEN</entry>
+                            <entry>LIGHTEN2</entry>
+                          </row>
 
-                            <entry>Applies a gamma-shaped P-LUT with gamma
-                            &#60; 1, which increases the contrast for light
-                            gray shades and darkens the image as a whole.</entry>
+                          <row>
+                            <entry>LIGHTEN3</entry>
+                          </row>
+
+                          <row>
+                            <entry>LIGHTEN4</entry>
+                          </row>
+
+                          <row>
+                            <entry>LIGHTEN5</entry>
+                          </row>
+
+                          <row>
+                            <entry>DARKEN9</entry>
+
+                            <entry morerows="1">Applies a gamma-shaped P-LUT
+                            with gamma &#60; 1 (DARKENx: gamma=0.x), which
+                            increases the contrast for light gray shades and
+                            darkens the image as a whole.</entry>
+                          </row>
+
+                          <row>
+                            <entry>DARKEN8</entry>
                           </row>
                         </tbody>
                       </tgroup>
@@ -1331,7 +1353,7 @@
 
                             <entry>(2010,0150)</entry>
 
-                            <entry><simplelist type="vert"><member>IDENTITY</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist>(Configurable)</entry>
+                            <entry><simplelist type="vert"><member>IDENTITY</member><member>MIDTONE2</member><member>LIGHTEN1</member><member>LIGHTEN2</member><member>LIGHTEN3</member><member>LIGHTEN4</member><member>LIGHTEN5</member><member>DARKEN9</member><member>DARKEN8</member></simplelist>(Configurable)</entry>
 
                             <entry>IDENTITY (Configurable)</entry>
 
@@ -1730,7 +1752,7 @@
 
                           <entry>(2010,0150)</entry>
 
-                          <entry><simplelist type="vert"><member>IDENTITY</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist>(Configurable)</entry>
+                          <entry><simplelist type="vert"><member>IDENTITY</member><member>MIDTONE2</member><member>LIGHTEN1</member><member>LIGHTEN2</member><member>LIGHTEN3</member><member>LIGHTEN4</member><member>LIGHTEN5</member><member>DARKEN9</member><member>DARKEN8</member></simplelist>(Configurable)</entry>
 
                           <entry>IDENTITY (Configurable)</entry>
 
@@ -3285,7 +3307,7 @@
         Information (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called
         AET&#62; or IDENTITY</entry></row><row><entry>Supported Configuration
         Information (= IDs of local P-LUTs)</entry><entry>Yes</entry><entry><simplelist
-        type="vert"><member>IDENTITY</member><member>LINOD</member><member>MIDTONE</member><member>LIGHTEN</member><member>DARKEN</member></simplelist></entry></row><row><entry>Annotation
+        type="vert"><member>IDENTITY</member><member>MIDTONE2</member><member>LIGHTEN1</member><member>LIGHTEN2</member><member>LIGHTEN3</member><member>LIGHTEN4</member><member>LIGHTEN5</member><member>DARKEN9</member><member>DARKEN8</member></simplelist></entry></row><row><entry>Annotation
         Display Format (if not specified by Print SCU)</entry><entry>Yes</entry><entry>&#60;Called
         AET&#62; or TITLE</entry></row><row><entry>Supported Annotation
         Display Format IDs</entry><entry>Yes</entry><entry><simplelist

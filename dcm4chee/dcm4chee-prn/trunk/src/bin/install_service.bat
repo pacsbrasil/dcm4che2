@@ -14,9 +14,9 @@ if "%1" == "server" goto install
 if "%1" == "client" goto install
 echo "Usage: %0 server|client|uninstall"
 echo Options:
-echo   client    install prnscp-@VERSION@ service, using client hotspot vm
-echo   server    install prnscp-@VERSION@ service, using server hotspot vm
-echo   uninstall uninstall prnscp-@VERSION@ service
+echo   client    install jprint-@VERSION@ service, using client hotspot vm
+echo   server    install jprint-@VERSION@ service, using server hotspot vm
+echo   uninstall uninstall jprint-@VERSION@ service
 goto eof
 
 :install
