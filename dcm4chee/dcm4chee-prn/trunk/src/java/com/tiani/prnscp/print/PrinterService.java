@@ -40,6 +40,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.MBeanServer;
 import org.jboss.logging.Logger;
 
+import java.awt.Color;
 import java.awt.print.Pageable;
 import java.awt.print.Paper;
 import java.awt.print.PrinterException;
@@ -1346,6 +1347,11 @@ public class PrinterService
    
    protected PrinterCalibration getPrinterCalibration(){return calibration;}
    
+   public byte[] getPValToDDL(int n, float dmin, float dmax,
+         float l0, float la, Dataset plut) {
+      return calibration.getPValToDDL(n, dmin, dmax, l0, la, plut);
+   }
+   
    public void printGrayscaleWithLinDDL() throws PrintException, IOException {
       log.info("Printing grayscale [LIN DDL]");
       print(new Grayscale(this, calibration.getIdentityPValToDDL(),
@@ -1849,7 +1855,7 @@ public class PrinterService
       }
    }
    
-   public String getLicenseCN() {
+   String getLicenseCN() {
       X509Certificate license = getLicense();
       if (license == null) {
          return "nobody";
@@ -1860,7 +1866,7 @@ public class PrinterService
       return dn.substring(start + 3, end);
    }
    
-   public Date getLicenseEndDate() {
+   Date getLicenseEndDate() {
       X509Certificate license = getLicense();
       if (license == null) {
          return new Date();
@@ -1868,5 +1874,16 @@ public class PrinterService
       return license.getNotAfter();
    }
    
+   Color toColor(String density) {
+      if ("WHITE".equals(density)) {
+         return Color.WHITE;
+      }
+      if ("BLACK".equals(density)) {
+         return Color.BLACK;
+      }
+      int val = Integer.parseInt(density);
+      int ddl = calibration.toDDL(val/100);
+      return new Color(ddl, ddl, ddl);
+   }   
    // Inner classes -------------------------------------------------
 }

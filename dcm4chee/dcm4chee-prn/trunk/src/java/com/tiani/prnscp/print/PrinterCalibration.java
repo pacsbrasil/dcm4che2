@@ -215,7 +215,7 @@ class PrinterCalibration
             "stepODs[" + tmp.length + "] not monotonic increasing");
       }
       this.stepODs = tmp;
-      initDLL2OD();
+      initDDL2OD();
    }
    
    // Package protected ---------------------------------------------
@@ -246,7 +246,7 @@ class PrinterCalibration
        */
    }
    
-   private void initDLL2OD() {
+   private void initDDL2OD() {
       int x[] = new int[stepODs.length];
       for (int i = 0; i < x.length; ++i) {
          x[i] = Math.round(255.f * i / (x.length - 1));

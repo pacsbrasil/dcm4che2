@@ -28,8 +28,10 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.print.Printable;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
@@ -66,11 +68,15 @@ class PrintableFilmBox implements Printable {
    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
    private final PrinterService service;
    private final Logger log;
-   private final Dataset ds;
+   private final Dataset storedPrint;
    private final Dataset filmbox;
    private final Annotation annotation;
    private final int totPages;
    private final File hcDir;
+   private final PrintableImageBox[] imageBoxes;
+   private final Color emptyImageBoxDensityColor;
+   private final int rows;
+   private final int columns;
    
    // Static --------------------------------------------------------
    
@@ -82,20 +88,41 @@ class PrintableFilmBox implements Printable {
       this.log = service.getLog();
       this.hcDir = hcDir;
       this.totPages = totPages;
-      this.ds = dof.newDataset();
+      this.storedPrint = dof.newDataset();
       InputStream in = new BufferedInputStream(new FileInputStream(spFile));
       try {
-         ds.readFile(in, FileFormat.DICOM_FILE, -1);
+         storedPrint.readFile(in, FileFormat.DICOM_FILE, -1);
       } finally {
          try { in.close(); } catch (IOException ignore) {}
       }
-      this.filmbox = ds.getItem(Tags.FilmBoxContentSeq);
+      this.filmbox = storedPrint.getItem(Tags.FilmBoxContentSeq);
+      
+      // parse ImageDisplayFormat
+      String displayFormat = filmbox.getString(Tags.ImageDisplayFormat);
+      int pos = displayFormat.lastIndexOf(',');
+      this.rows = Integer.parseInt(displayFormat.substring(pos+1));
+      this.columns = Integer.parseInt(displayFormat.substring(9,pos));
+      
+      this.emptyImageBoxDensityColor = service.toColor(
+         filmbox.getString(Tags.EmptyImageDensity, 
+            service.getEmptyImageDensity()));
+
+      DcmElement imageBoxContentSeq = storedPrint.get(Tags.ImageBoxContentSeq);
+      this.imageBoxes = new PrintableImageBox[imageBoxContentSeq.vm()];
+      for (int i = 0; i < imageBoxes.length; ++i) {
+         imageBoxes[i] = new PrintableImageBox(service,
+            filmbox,
+            imageBoxContentSeq.getItem(i),
+            storedPrint.get(Tags.PresentationLUTContentSeq),
+            hcDir);
+      }      
       
       String adfID = filmbox.getString(Tags.AnnotationDisplayFormatID,
          service.getDefaultAnnotation());
       annotation = new Annotation(service, adfID, totPages);
       annotation.setSession(session);
-      annotation.setAnnotationContentSeq(ds.get(Tags.AnnotationContentSeq));
+      annotation.setAnnotationContentSeq(storedPrint.get(Tags.AnnotationContentSeq));
+      
    }
       
    // Public --------------------------------------------------------
@@ -113,6 +140,10 @@ class PrintableFilmBox implements Printable {
                ? PageFormat.REVERSE_LANDSCAPE
                : PageFormat.LANDSCAPE);
       return pf;
+   }
+
+   private Color getBorderDensityColor() {
+      return null;
    }
    
    // Printable implementation ----------------------------------------------
@@ -136,13 +167,34 @@ class PrintableFilmBox implements Printable {
       }
       annotation.print(g2, pf, pageIndex);
       
-      g2.translate(annotation.getImageableX(pf), annotation.getImageableY(pf));      
-      new Page(annotation.getImageableWidth(pf), annotation.getImageableHeight(pf),
-         g2, log, ds, hcDir, service);
+      g2.translate(annotation.getImageableX(pf), annotation.getImageableY(pf));
+      g2.setColor(emptyImageBoxDensityColor);
+      
+      double w = annotation.getImageableWidth(pf);
+      double h = annotation.getImageableHeight(pf);
+      Rectangle2D filmboxRect = new Rectangle2D.Double(0, 0, w, h);
+      g2.fill(filmboxRect);
+      for (int i = 0; i < imageBoxes.length; ++i) {
+         imageBoxes[i].print(g2, getImageBoxRect(
+            imageBoxes[i].getImagePosition(), filmboxRect));
+      }
+//      new Page(annotation.getImageableWidth(pf), annotation.getImageableHeight(pf),
+//         g2, log, storedPrint, hcDir, service);
       log.debug("Exit print");
       return Printable.PAGE_EXISTS;
    }
    
+   private Rectangle2D getImageBoxRect(int imagePos, Rectangle2D filmboxRect) {
+      double border = service.getBorderThickness() * PrinterService.PTS_PER_MM;
+      double w = filmboxRect.getWidth() / columns - border * (columns - 1);
+      double h = filmboxRect.getHeight() / rows - border * (rows - 1);
+      int xPos = (imagePos - 1) % columns;
+      int yPos = (imagePos - 1) / columns;
+      double x = w * xPos + border * xPos;
+      double y = h * yPos + border * yPos;
+      return new Rectangle2D.Double(x, y, w, h);
+   }
+      
    // Y overrides ---------------------------------------------------
    
    // Package protected ---------------------------------------------

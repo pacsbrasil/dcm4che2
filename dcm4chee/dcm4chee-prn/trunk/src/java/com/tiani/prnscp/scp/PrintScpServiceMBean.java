@@ -25,6 +25,7 @@ package com.tiani.prnscp.scp;
 import org.dcm4che.net.AcceptorPolicy;
 import org.jboss.system.ServiceMBean;
 import javax.management.ObjectName;
+import java.security.cert.X509Certificate;
 
 /**
  * <description>
@@ -88,8 +89,13 @@ public interface PrintScpServiceMBean extends ServiceMBean {
    /** Getter for property numStoredPrints.
     * @return Value of property numStoredPrints.
     */
-   public int getNumStoredPrints();
+   public int getNumStoredPrints();   
 
+   /** Getter for property license.
+    * @return Value of property license.
+    */
+   public X509Certificate getLicense();
+   
    public String showLicense();
       
    public void putAcceptorPolicy(String aet, AcceptorPolicy policy);
@@ -99,4 +105,5 @@ public interface PrintScpServiceMBean extends ServiceMBean {
    public void onJobFailed(String job);
 
    public void onJobDone(String job);
+   
 }
