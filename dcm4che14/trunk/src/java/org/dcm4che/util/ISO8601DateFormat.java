@@ -105,7 +105,7 @@ public final class ISO8601DateFormat extends DateFormat
             setFieldPosition(pos, fieldStart, fieldEnd);
         //timezone
         fieldStart = fieldEnd;
-        int zoneOffsetMinutes = cal.get(Calendar.ZONE_OFFSET) / (1000 * 60);
+        int zoneOffsetMinutes = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET))/ (1000 * 60);
         if (zoneOffsetMinutes == 0) {
             fieldEnd = fieldStart + 1;
             fmtsb.append("Z");
