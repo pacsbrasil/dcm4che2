@@ -371,10 +371,13 @@ public class MediaCreationMgtScpService extends AbstractScpService {
              ExecutionStatusInfo.NOT_SUPPORTED);
              */
             File f = spoolDir.getInstanceFile(iuid);
-            if (!f.exists())
+            if (!f.exists()) {
+            	log.warn("No Instance: "
+                        + iuid + ", missing file: " + f);
                     throw new MediaCreationException(
                             ExecutionStatusInfo.NO_INSTANCE, "No Instance: "
                                     + iuid);
+            }
         }
     }
 
