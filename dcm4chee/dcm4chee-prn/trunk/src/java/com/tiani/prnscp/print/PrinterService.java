@@ -120,7 +120,7 @@ public class PrinterService
    static final String LUT_FILE_EXT = ".lut";      
    static final String LICENSE_FILE = "conf/license.pem";
    static final String PRNSCP_PRODUCT_UID = "1.2.40.0.13.999.777";
-   static final int SHUTDOWN_DELAY_MIN = 5;
+   static final int SHUTDOWN_DELAY_MINUTES = 5;
    
    // Attributes ----------------------------------------------------
    /** Holds value of property license. */
@@ -1364,7 +1364,8 @@ public class PrinterService
          license = store.getLicenseFor(PRNSCP_PRODUCT_UID);
          if (license != null) {
             license.checkValidity();
-            if (LicenseStore.equalsSubjectIDs(license) > 0) {
+            if (LicenseStore.countSubjectIDs(license) == 0
+               || LicenseStore.countMatchingSubjectIDs(license) > 0) {
                return; // OK
             }
          }
@@ -1372,12 +1373,12 @@ public class PrinterService
          log.debug(e, e);
       }
       log.warn("No valid License detected - shutdown server in " 
-         + SHUTDOWN_DELAY_MIN + " minutes!");
+         + SHUTDOWN_DELAY_MINUTES + " minutes!");
       new Timer().schedule(
          new TimerTask(){
             public void run() { org.jboss.Main.systemExit(null); }
          },
-         SHUTDOWN_DELAY_MIN * 60000L);
+         SHUTDOWN_DELAY_MINUTES * 60000L);
    }
    
    public void stopService()
