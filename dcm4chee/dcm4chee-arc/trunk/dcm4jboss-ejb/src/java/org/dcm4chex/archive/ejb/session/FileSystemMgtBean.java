@@ -11,7 +11,6 @@ package org.dcm4chex.archive.ejb.session;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -28,7 +27,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -136,22 +134,20 @@ public abstract class FileSystemMgtBean implements SessionBean {
 		return dto;
 	}
 
-	/**
-	 * @ejb.interface-method
-	 */
-	public FileDTO[] findToCompress(String[] srcaet, String[] dirPaths, 
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public FileDTO[] findFilesToCompress(String dirPath, String cuid,
             Timestamp before, int limit) throws FinderException {
         if (log.isDebugEnabled())
-		    log.debug("Querying for files to compress in "
-                    + Arrays.asList(dirPaths));
-		Collection c = fileHome.queryFilesToCompress(
-                srcaet, dirPaths, before, limit);
+            log.debug("Querying for files to compress in " + dirPath);
+        Collection c = fileHome.findFilesToCompress(dirPath, cuid, before, limit);
         if (log.isDebugEnabled())
-            log.debug("Found " + c.size()+ " files to compress in "
-                + Arrays.asList(dirPaths));
-		return toFileDTOs(c);
-	}
-
+            log.debug("Found " + c.size()+ " files to compress in " + dirPath);
+        return toFileDTOs(c);
+        
+    }
 
 	/**
 	 * @ejb.interface-method

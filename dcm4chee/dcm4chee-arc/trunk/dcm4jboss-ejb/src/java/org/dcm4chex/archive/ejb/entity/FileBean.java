@@ -8,16 +8,11 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.entity;
 
-import java.sql.Timestamp;
-import java.util.Collection;
-
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -39,55 +34,20 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath)"
  *              strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findFilesToCompress(java.lang.String dirPath, java.lang.String cuid, java.sql.Timestamp before, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findFilesToCompress(java.lang.String dirPath, java.lang.String cuid, java.sql.Timestamp before, int limit)"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND f.fileTsuid IN ('1.2.840.10008.1.2','1.2.840.10008.1.2.1','1.2.840.10008.1.2.2') AND f.fileSystem.directoryPath = ?1 AND f.instance.sopCuid = ?2 AND (f.createdTime IS NULL OR f.createdTime < ?3) LIMIT ?4"
+ *             strategy="on-find" eager-load-group="*"
  * @ejb.finder signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findToCheckMd5(java.lang.String dirPath, java.sql.Timestamp before, int limit)"
  *              query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND (f.timeOfLastMd5Check IS NULL OR f.timeOfLastMd5Check < ?2) LIMIT ?3"
  *              strategy="on-find" eager-load-group="*"
- *              
- * @jboss.query 
- * 	signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
- *  dynamic="true"
- *  strategy="on-load"
- *  page-size="20"
- *  eager-load-group="*"
- *              
  */
 public abstract class FileBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(FileBean.class);
-
-    private static final String[] COMPRESSABLE_TRANSFER_SYNTAX = new String[] {
-            UIDs.ImplicitVRLittleEndian, UIDs.ExplicitVRLittleEndian };
-
-    private static final String[] IMAGE_CUIDS = {
-            UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
-            UIDs.ComputedRadiographyImageStorage,
-            UIDs.DigitalXRayImageStorageForPresentation,
-            UIDs.DigitalXRayImageStorageForProcessing,
-            UIDs.DigitalMammographyXRayImageStorageForPresentation,
-            UIDs.DigitalMammographyXRayImageStorageForProcessing,
-            UIDs.DigitalIntraoralXRayImageStorageForPresentation,
-            UIDs.DigitalIntraoralXRayImageStorageForProcessing,
-            UIDs.CTImageStorage, UIDs.UltrasoundMultiframeImageStorageRetired,
-            UIDs.UltrasoundMultiframeImageStorage, UIDs.MRImageStorage,
-            UIDs.EnhancedMRImageStorage,
-            UIDs.NuclearMedicineImageStorageRetired,
-            UIDs.UltrasoundImageStorageRetired, UIDs.UltrasoundImageStorage,
-            UIDs.SecondaryCaptureImageStorage,
-            UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
-            UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
-            UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
-            UIDs.MultiframeColorSecondaryCaptureImageStorage,
-            UIDs.XRayAngiographicImageStorage,
-            UIDs.XRayRadiofluoroscopicImageStorage,
-            UIDs.XRayAngiographicBiPlaneImageStorageRetired,
-            UIDs.NuclearMedicineImageStorage, UIDs.VLImageStorageRetired,
-            UIDs.VLMultiframeImageStorageRetired,
-            UIDs.VLEndoscopicImageStorage, UIDs.VLMicroscopicImageStorage,
-            UIDs.VLSlideCoordinatesMicroscopicImageStorage,
-            UIDs.VLPhotographicImageStorage,
-            UIDs.PositronEmissionTomographyImageStorage, UIDs.RTImageStorage, };
 
     /**
      * Auto-generated Primary Key
@@ -253,60 +213,6 @@ public abstract class FileBean implements EntityBean {
                 + ", tsuid=" + getFileTsuid() + ", filesystem->"
                 + getFileSystem() + ", inst->" + getInstance() + "]";
     }
-
-    /**
-     * @ejb.home-method
-     */
-    public java.util.Collection ejbHomeQueryFilesToCompress(String[] srcaet,
-            String[] dirPaths, Timestamp before, int limit)
-            throws FinderException {
-        // generate JBossQL query
-        int i = 0;
-        int argsCount = before != null ? 2 : 1;
-        Object[] args = new Object[argsCount];
-        StringBuffer jbossQl = new StringBuffer(
-                "SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND ");
-        addIN(jbossQl, "f.fileTsuid", COMPRESSABLE_TRANSFER_SYNTAX);
-        addIN(jbossQl, "f.instance.sopCuid", IMAGE_CUIDS);
-        addIN(jbossQl, "f.instance.series.sourceAET", srcaet);
-        addIN(jbossQl, "f.fileSystem.directoryPath", dirPaths);
-        if (before != null) {
-            args[i++] = before;
-            jbossQl.append("(f.createdTime IS NULL OR f.createdTime < ?" + i
-                    + ")");
-        }
-        args[i++] = new Integer(limit);
-        jbossQl.append(" LIMIT ?").append(i);
-        if (log.isDebugEnabled())
-            log.debug("Execute JBossQL: " + jbossQl);
-        // call dynamic-ql query
-        return ejbSelectGeneric(jbossQl.toString(), args);
-    }
-
-    /*
-     SELECT OBJECT(f) FROM File AS f WHERE f.fileTsuid IN ('1.2.840.10008.1.2.2', '1.2.840.10008.1.2.1', '1.2.840.10008.1.2') AND f.instance.sopCuid IN ('1.2.840.10008.5.1.4.1.1.2', '1.2.840.10008.5.1.4.1.1.2.1', '1.2.840.10008.5.1.4.1.1.4.1', '1.2.840.10008.5.1.4.1.1.4', '1.2.840.10008.5.1.4.1.1.4.2', '1.2.840.10008.5.1.4.1.1.7.4', '1.2.840.10008.5.1.4.1.1.77.1') AND f.instance.series.sourceAET = 'DB2_PACS_TIANI' AND f.fileSystem.directoryPath = ?1 AND (f.createdTime IS NULL OR f.createdTime < ?2) AND  LIMIT ?3
-     */
-    private void addIN(StringBuffer jbossQl, String col, Object[] values) {
-        if (values != null) {
-            jbossQl.append(col);
-            if (values.length == 1) {
-                jbossQl.append(" = '").append(values[0]).append("' AND ");
-            } else {
-                jbossQl.append(" IN ('").append(values[0]);
-                for (int i = 1; i < values.length; i++) {
-                    jbossQl.append("', '").append(values[i]);
-                }
-                jbossQl.append("') AND ");
-            }
-        }
-    }
-
-    /**
-     * @ejb.select query=""
-     *  transaction-type="Supports"
-     */
-    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
-            throws FinderException;
 
     /**
      * Create file.
