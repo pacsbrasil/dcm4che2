@@ -45,9 +45,13 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
 
 /**
@@ -61,7 +65,7 @@ class MoveTask implements Runnable {
             .getInstance();
 
     private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian};
+            UIDs.ImplicitVRLittleEndian };
 
     static boolean isNativeLittleEndianTS(String uid) {
         return UIDs.ExplicitVRLittleEndian.equals(uid)
@@ -77,7 +81,7 @@ class MoveTask implements Runnable {
             .getInstance().getDefaultUIDDictionary();
 
     private final QueryRetrieveScpService service;
-    
+
     private final Logger log;
 
     private final String moveDest;
@@ -210,14 +214,12 @@ class MoveTask implements Runnable {
             if (tsuids == null) {
                 tsuids = new HashSet();
                 cuidMap.put(fileInfo.sopCUID, tsuids);
-                rq.addPresContext(af.newPresContext(rq.nextPCID(),
-                        cuid,
+                rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
                         NATIVE_LE_TS));
             }
             if (!isNativeLittleEndianTS(tsuid) && tsuids.add(tsuid))
-                    rq.addPresContext(af.newPresContext(rq.nextPCID(),
-                            cuid,
-                            new String[] { tsuid}));
+                rq.addPresContext(af.newPresContext(rq.nextPCID(), cuid,
+                        new String[] { tsuid }));
         }
         return rq;
     }
@@ -249,20 +251,20 @@ class MoveTask implements Runnable {
                     final int status = fwdMoveRspCmd.getStatus();
                     switch (status) {
                     case Status.Pending:
-                        if (fwdMoveRspCmd
-                                .getInt(Tags.NumberOfRemainingSubOperations, 0) < size) {
+                        if (fwdMoveRspCmd.getInt(
+                                Tags.NumberOfRemainingSubOperations, 0) < size) {
                             notifyMovePending(fwdMoveRspCmd);
                         }
                         break;
                     case Status.Cancel:
-                        remaining += fwdMoveRspCmd
-                                .getInt(Tags.NumberOfRemainingSubOperations, 0);
+                        remaining += fwdMoveRspCmd.getInt(
+                                Tags.NumberOfRemainingSubOperations, 0);
                     case Status.Success:
                     case Status.SubOpsOneOrMoreFailures:
-                        completed += fwdMoveRspCmd
-                                .getInt(Tags.NumberOfCompletedSubOperations, 0);
-                        warnings += fwdMoveRspCmd
-                                .getInt(Tags.NumberOfWarningSubOperations, 0);
+                        completed += fwdMoveRspCmd.getInt(
+                                Tags.NumberOfCompletedSubOperations, 0);
+                        warnings += fwdMoveRspCmd.getInt(
+                                Tags.NumberOfWarningSubOperations, 0);
                         if (ds != null) {
                             failedIUIDs
                                     .addAll(Arrays
@@ -272,13 +274,12 @@ class MoveTask implements Runnable {
                         break;
                     default:
                         // General error
-                        log.error("Forwarded MOVE RQ to "
-                                + retrieveAET + " failed: " + fwdMoveRspCmd);
+                        log.error("Forwarded MOVE RQ to " + retrieveAET
+                                + " failed: " + fwdMoveRspCmd);
                         failedIUIDs.addAll(iuids);
                     }
                 } catch (IOException e) {
-                    log
-                            .error("Failure during receive of C-MOVE_RSP:", e);
+                    log.error("Failure during receive of C-MOVE_RSP:", e);
                 }
             }
         };
@@ -286,25 +287,25 @@ class MoveTask implements Runnable {
             moveForwardCmd = new MoveForwardCmd(service, moveRqCmd
                     .getMessageID(),
                     service.isForwardAsMoveOriginator() ? moveOriginatorAET
-                            : moveCalledAET, retrieveAET, moveRqCmd
-                            .getInt(Tags.Priority, 0), moveDest,
-                    (String[]) iuids.toArray(new String[size]));
+                            : moveCalledAET, retrieveAET, moveRqCmd.getInt(
+                            Tags.Priority, 0), moveDest, (String[]) iuids
+                            .toArray(new String[size]));
             moveForwardCmd.execute(fwdmoveRspListener);
         } catch (Exception e) {
-            log.error("Failed to forward MOVE RQ to "
-                    + retrieveAET,
-                    e);
+            log.error("Failed to forward MOVE RQ to " + retrieveAET, e);
             failedIUIDs.addAll(iuids);
         }
     }
 
     private void retrieveLocal() {
-        byte[] buffer = withoutPixeldata ? null
-                : new byte[service.getBufferSize()];
+        HashSet studyInfos = new HashSet();
+        byte[] buffer = withoutPixeldata ? null : new byte[service
+                .getBufferSize()];
         Association a = storeAssoc.getAssociation();
         final int n = toRetrieve.size();
         final int remainingAfter = remaining - n;
-        for (int i = 0; a.getState() == Association.ASSOCIATION_ESTABLISHED && !canceled && i < n; ++i) {
+        for (int i = 0; a.getState() == Association.ASSOCIATION_ESTABLISHED
+                && !canceled && i < n; ++i) {
             final FileInfo fileInfo = (FileInfo) toRetrieve.get(i);
             final String iuid = fileInfo.sopIUID;
             DimseListener storeScpListener = new DimseListener() {
@@ -336,31 +337,68 @@ class MoveTask implements Runnable {
             } catch (Exception e) {
                 log.error("Exception during move of " + iuid, e);
             }
+            studyInfos.add(fileInfo.studyIUID + '@' + fileInfo.basedir);
         }
         if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
-	        try {
-	            storeAssoc.release(true);
-	            // workaround to ensure that last STORE-RSP is processed before
-	            // finally MOVE-RSP is sent
-	            Thread.sleep(10);
-	        } catch (Exception e) {
-	            log.error("Exception during release:", e);
-	        }
+            try {
+                storeAssoc.release(true);
+                // workaround to ensure that last STORE-RSP is processed before
+                // finally MOVE-RSP is sent
+                Thread.sleep(10);
+            } catch (Exception e) {
+                log.error("Exception during release:", e);
+            }
         } else {
             try {
-                a.abort(af.newAAbort(AAbort.SERVICE_PROVIDER, AAbort.REASON_NOT_SPECIFIED));
+                a.abort(af.newAAbort(AAbort.SERVICE_PROVIDER,
+                        AAbort.REASON_NOT_SPECIFIED));
             } catch (IOException ignore) {
             }
         }
         if (!canceled) {
-	        for (int i = n - (remaining - remainingAfter); i < n; ++i) {
-	            final FileInfo fileInfo = (FileInfo) toRetrieve.get(i);
-	            final String iuid = fileInfo.sopIUID;
-	            failedIUIDs.add(iuid);
-	            --remaining;
-	        }
+            for (int i = n - (remaining - remainingAfter); i < n; ++i) {
+                final FileInfo fileInfo = (FileInfo) toRetrieve.get(i);
+                final String iuid = fileInfo.sopIUID;
+                failedIUIDs.add(iuid);
+                --remaining;
+            }
         }
         service.logInstancesSent(remoteNode, instancesAction);
+        updateStudyAccessTime(studyInfos);
+    }
+
+    private FileSystemMgtHome getFileSystemMgtHome()
+            throws HomeFactoryException {
+        return (FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
+    }
+
+    private void updateStudyAccessTime(HashSet studyInfos) {
+        FileSystemMgt fsMgt;
+        try {
+            fsMgt = getFileSystemMgtHome().create();
+        } catch (Exception e) {
+            log.fatal("Failed to access FileSystemMgt EJB");
+            return;
+        }
+        try {
+            for (Iterator it = studyInfos.iterator(); it.hasNext();) {
+                String studyInfo = (String) it.next();
+                int delim = studyInfo.indexOf('@');
+                try {
+                    fsMgt.touchStudyOnFileSystem(studyInfo.substring(0, delim),
+                            studyInfo.substring(delim + 1));
+                } catch (Exception e) {
+                    log.warn("Failed to update access time for study "
+                            + studyInfo, e);
+                }
+            }
+        } finally {
+            try {
+                fsMgt.remove();
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     private void updateInstancesAction(final FileInfo fileInfo) {
@@ -381,16 +419,13 @@ class MoveTask implements Runnable {
                 presCtx = assoc.getAcceptedPresContext(info.sopCUID,
                         UIDs.ImplicitVRLittleEndian);
                 if (presCtx == null)
-                        throw new NoPresContextException(
-                                "No Presentation Context for "
-                                        + uidDict.toString() + " accepted by "
-                                        + moveDest);
+                    throw new NoPresContextException(
+                            "No Presentation Context for " + uidDict.toString()
+                                    + " accepted by " + moveDest);
             }
         }
         Command storeRqCmd = of.newCommand();
-        storeRqCmd.initCStoreRQ(assoc.nextMsgID(),
-                info.sopCUID,
-                info.sopIUID,
+        storeRqCmd.initCStoreRQ(assoc.nextMsgID(), info.sopCUID, info.sopIUID,
                 moveRqCmd.getInt(Tags.Priority, Command.MEDIUM));
         storeRqCmd
                 .putUS(Tags.MoveOriginatorMessageID, moveRqCmd.getMessageID());

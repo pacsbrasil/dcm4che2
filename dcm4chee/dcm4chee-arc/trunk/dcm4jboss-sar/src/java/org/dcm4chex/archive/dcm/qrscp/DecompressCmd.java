@@ -29,6 +29,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4cheri.image.ItemParser;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.logging.Logger;
 
@@ -89,7 +90,7 @@ class DecompressCmd {
         this.debug = log.isDebugEnabled();
         this.parser = parser;
         this.iis = parser.getImageInputStream();
-        this.itemParser = new ItemParser(parser, log);
+        this.itemParser = new ItemParser(parser);
         tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
         samples = ds.getInt(Tags.SamplesPerPixel, 1);
         frames = ds.getInt(Tags.NumberOfFrames, 1);

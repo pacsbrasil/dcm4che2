@@ -52,6 +52,7 @@ import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
@@ -69,6 +70,7 @@ import org.jboss.logging.Logger;
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final long MEGA = 1000000L;
+
     private static final AuditLoggerFactory alf = AuditLoggerFactory
             .getInstance();
 
@@ -83,7 +85,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
     private final StoreScpService service;
-    
+
     private final Logger log;
 
     private int bufferSize = 512;
@@ -95,7 +97,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private boolean storeDuplicateIfDiffMD5 = true;
 
     private boolean storeDuplicateIfDiffHost = true;
-    
+
     private CompressionRules compressionRules = new CompressionRules("");
 
     private HashSet coerceWarnCallingAETs = new HashSet();
@@ -103,7 +105,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private long updateDatabaseRetryInterval = 0L;
 
     private long outOfResourcesThreshold = 30000000L;
-    
+
     public StoreScp(StoreScpService service) {
         this.service = service;
         this.log = service.getLog();
@@ -131,19 +133,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public final boolean isStoreDuplicateIfDiffHost() {
         return storeDuplicateIfDiffHost;
     }
-    
+
     public final void setStoreDuplicateIfDiffHost(boolean storeDuplicate) {
         this.storeDuplicateIfDiffHost = storeDuplicate;
     }
-    
+
     public final boolean isStoreDuplicateIfDiffMD5() {
         return storeDuplicateIfDiffMD5;
     }
-    
+
     public final void setStoreDuplicateIfDiffMD5(boolean storeDuplicate) {
         this.storeDuplicateIfDiffMD5 = storeDuplicate;
     }
-    
+
     public final CompressionRules getCompressionRules() {
         return compressionRules;
     }
@@ -191,7 +193,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public final void setOutOfResourcesThreshold(int outOfResourcesThreshold) {
         this.outOfResourcesThreshold = outOfResourcesThreshold * MEGA;
     }
-    
+
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
@@ -202,9 +204,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         File file = null;
         try {
             List duplicates = new QueryFilesCmd(iuid).execute();
-            if (!(duplicates.isEmpty() 
-                    || storeDuplicateIfDiffMD5
-                    || storeDuplicateIfDiffHost && !containsLocal(duplicates))) {
+            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
+                    && !containsLocal(duplicates))) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 return;
@@ -218,8 +219,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             parser.parseDataset(decParam, Tags.PixelData);
             service.logDataset("Dataset:\n", ds);
             checkDataset(rqCmd, ds);
-            
-            
+
             FileSystemInfo fsInfo = service.selectStorageFileSystem();
             if (fsInfo.getAvailable() < outOfResourcesThreshold)
                 throw new DcmServiceException(Status.OutOfResources);
@@ -236,7 +236,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             .getTransferSyntaxUID()));
 
             storeToFile(parser, ds, file, md);
-            
+
             byte[] md5sum = md.digest();
             if (ignoreDuplicate(duplicates, md5sum)) {
                 log.info("Received Instance[uid=" + iuid
@@ -244,15 +244,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 deleteFailedStorage(file);
                 return;
             }
-            
+
             final int baseDirPathLength = baseDir.getPath().length();
             final String filePath = file.getPath().substring(
                     baseDirPathLength + 1).replace(File.separatorChar, '/');
             Dataset coercedElements = updateDB(assoc, ds, fsInfo, filePath,
                     file, md5sum);
             if (coercedElements.isEmpty()
-                    || !coerceWarnCallingAETs.contains(assoc
-                            .getCallingAET())) {
+                    || !coerceWarnCallingAETs.contains(assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
             } else {
                 int[] coercedTags = new int[coercedElements.size()];
@@ -266,6 +265,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
             updateInstancesStored(assoc, ds);
+            updateStudyInfos(assoc, ds, fsInfo.getPath());
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             deleteFailedStorage(file);
@@ -317,40 +317,43 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             IOException {
         Storage storage = getStorageHome().create();
         try {
-	        int retry = 0;
-	        for (;;) {
-	            try {
-	                synchronized(this) {
-		                return storage.store(assoc.getCallingAET(),
-		                        assoc.getCalledAET(), ds,
-		                        fsInfo.getRetrieveAET(), fsInfo.getPath(),
-		                        filePath, (int) file.length(), md5);
-	                }
-	            } catch (Exception e) {
-	                ++retry;
-	                if (retry > updateDatabaseMaxRetries) {
-	                    service.getLog().error(
-	                            "failed to update DB with entries for received "
-	                                    + file, e);
-	                    throw new DcmServiceException(Status.ProcessingFailure, e);
-	                }
-	                maxCountUpdateDatabaseRetries = Math.max(retry,
-	                        maxCountUpdateDatabaseRetries);
-	                service.getLog().warn(
-	                        "failed to update DB with entries for received " + file
-	                                + " - retry", e);
-	                try {
+            int retry = 0;
+            for (;;) {
+                try {
+                    synchronized (this) {
+                        return storage.store(assoc.getCallingAET(), assoc
+                                .getCalledAET(), ds, fsInfo.getRetrieveAET(),
+                                fsInfo.getPath(), filePath,
+                                (int) file.length(), md5);
+                    }
+                } catch (Exception e) {
+                    ++retry;
+                    if (retry > updateDatabaseMaxRetries) {
+                        service.getLog().error(
+                                "failed to update DB with entries for received "
+                                        + file, e);
+                        throw new DcmServiceException(Status.ProcessingFailure,
+                                e);
+                    }
+                    maxCountUpdateDatabaseRetries = Math.max(retry,
+                            maxCountUpdateDatabaseRetries);
+                    service.getLog().warn(
+                            "failed to update DB with entries for received "
+                                    + file + " - retry", e);
+                    try {
                         Thread.sleep(updateDatabaseRetryInterval);
                     } catch (InterruptedException e1) {
-                        log.warn("update Database Retry Interval interrupted:", e1);
+                        log.warn("update Database Retry Interval interrupted:",
+                                e1);
                     }
-	            }
-	        }
+                }
+            }
         } finally {
             try {
                 storage.remove();
-            } catch (Exception ignore) {}
-         }
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     private File makeFile(File basedir, Dataset ds) throws IOException {
@@ -527,12 +530,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public void closed(Association assoc) {
         final Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
         if (ians != null) {
-            updateDBStudiesAndSeries(ians);                    
+            updateDBStudiesAndSeries(ians);
+            updateStudyAccessTime((HashSet) assoc.getProperty("StudyInfos"));
         }
         logInstancesStored(assoc);
         service.sendReleaseNotification(assoc);
     }
-
 
     private void updateDBStudiesAndSeries(Map ians) {
         Storage store;
@@ -548,7 +551,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 DcmElement seq = ian.get(Tags.RefSeriesSeq);
                 for (int i = 0, n = seq.vm(); i < n; ++i) {
                     Dataset ser = seq.getItem(i);
-                    final String seriuid = ser.getString(Tags.SeriesInstanceUID);
+                    final String seriuid = ser
+                            .getString(Tags.SeriesInstanceUID);
                     updateDBSeries(store, seriuid);
                 }
                 final String suid = ian.getString(Tags.StudyInstanceUID);
@@ -566,7 +570,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         int retry = 0;
         for (;;) {
             try {
-                synchronized(this) {
+                synchronized (this) {
                     store.updateStudy(suid);
                 }
                 return;
@@ -574,13 +578,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ++retry;
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
-                            "give up update DB Study Record [iuid=" + suid + "]:" , e);
+                            "give up update DB Study Record [iuid=" + suid
+                                    + "]:", e);
                     ;
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
-                        "failed to update DB Study Record [iuid=" + suid + "] - retry:" , e);
+                        "failed to update DB Study Record [iuid=" + suid
+                                + "] - retry:", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
@@ -591,35 +597,36 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void updateDBSeries(Storage store, final String seriuid) {
-	        int retry = 0;
-	        for (;;) {
-	            try {
-	                synchronized(this) {
-	                    store.updateSeries(seriuid);
-	                }
-	                return;
-	            } catch (Exception e) {
-	                ++retry;
-	                if (retry > updateDatabaseMaxRetries) {
-	                    service.getLog().error(
-	                            "give up update DB Series Record [iuid=" + seriuid + "]:" , e);
-	                    ;
-	                }
-	                maxCountUpdateDatabaseRetries = Math.max(retry,
-	                        maxCountUpdateDatabaseRetries);
-	                service.getLog().warn(
-	                        "failed to update DB Series Record [iuid=" + seriuid + "] - retry" , e);
-	                try {
-                        Thread.sleep(updateDatabaseRetryInterval);
-                    } catch (InterruptedException e1) {
-                        log.warn("update Database Retry Interval interrupted:", e1);
-                    }
-	            }
-	        }
+        int retry = 0;
+        for (;;) {
+            try {
+                synchronized (this) {
+                    store.updateSeries(seriuid);
+                }
+                return;
+            } catch (Exception e) {
+                ++retry;
+                if (retry > updateDatabaseMaxRetries) {
+                    service.getLog().error(
+                            "give up update DB Series Record [iuid=" + seriuid
+                                    + "]:", e);
+                    ;
+                }
+                maxCountUpdateDatabaseRetries = Math.max(retry,
+                        maxCountUpdateDatabaseRetries);
+                service.getLog().warn(
+                        "failed to update DB Series Record [iuid=" + seriuid
+                                + "] - retry", e);
+                try {
+                    Thread.sleep(updateDatabaseRetryInterval);
+                } catch (InterruptedException e1) {
+                    log.warn("update Database Retry Interval interrupted:", e1);
+                }
+            }
+        }
     }
 
-    private void updateIANInfo(Association assoc, Dataset ds,
-            String retrieveAET) {
+    private void updateIANInfo(Association assoc, Dataset ds, String retrieveAET) {
         Map ians = (Map) assoc.getProperty(StoreScpService.IANS_KEY);
         if (ians == null) {
             assoc.putProperty(StoreScpService.IANS_KEY, ians = new HashMap());
@@ -670,11 +677,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return info.putSQ(Tags.RefSOPSeq);
     }
 
-    private static String firstOf(String s, char delim) {
-        int delimPos = s.indexOf(delim);
-        return delimPos == -1 ? s : s.substring(0, delimPos);
-    }
-
     void updateInstancesStored(Association assoc, Dataset ds) {
         try {
             InstancesAction stored = (InstancesAction) assoc
@@ -703,10 +705,49 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         InstancesAction stored = (InstancesAction) assoc
                 .getProperty("InstancesStored");
         if (stored != null) {
-            service.logInstancesStored(
-                            alf.newRemoteNode(assoc.getSocket(), assoc
-                                    .getCallingAET()), stored);
+            service.logInstancesStored(alf.newRemoteNode(assoc.getSocket(),
+                    assoc.getCallingAET()), stored);
         }
         assoc.putProperty("InstancesStored", null);
+    }
+
+    private void updateStudyInfos(Association assoc, Dataset ds, String basedir) {
+        HashSet studyInfos = (HashSet) assoc.getProperty("StudyInfos");
+        if (studyInfos == null) {
+            studyInfos = new HashSet();
+            assoc.putProperty("StudyInfos", studyInfos);
+        }
+        String suid = ds.getString(Tags.StudyInstanceUID);
+        studyInfos.add(suid + '@' + basedir);
+    }
+
+    private void updateStudyAccessTime(HashSet studyInfos) {
+        if (studyInfos == null)
+            return;
+        FileSystemMgt fsMgt;
+        try {
+            fsMgt = getFileSystemMgtHome().create();
+        } catch (Exception e) {
+            log.fatal("Failed to access FileSystemMgt EJB");
+            return;
+        }
+        try {
+            for (Iterator it = studyInfos.iterator(); it.hasNext();) {
+                String studyInfo = (String) it.next();
+                int delim = studyInfo.indexOf('@');
+                try {
+                    fsMgt.touchStudyOnFileSystem(studyInfo.substring(0, delim),
+                            studyInfo.substring(delim + 1));
+                } catch (Exception e) {
+                    log.warn("Failed to update access time for study "
+                            + studyInfo, e);
+                }
+            }
+        } finally {
+            try {
+                fsMgt.remove();
+            } catch (Exception ignore) {
+            }
+        }
     }
 }

@@ -35,6 +35,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -112,6 +113,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private MoveScp moveScp = new MoveScp(this);
 
+    public String getEjbProviderURL() {
+        return EJBHomeFactory.getEjbProviderURL();
+    }
+    
+    public void setEjbProviderURL(String ejbProviderURL) {
+        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
+    }
+    
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
