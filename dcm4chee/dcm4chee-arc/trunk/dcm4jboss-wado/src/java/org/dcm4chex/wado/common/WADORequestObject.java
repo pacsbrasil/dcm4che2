@@ -103,4 +103,13 @@ public interface WADORequestObject {
 	 */
 	Map getRequestParams();
 	
+	/**
+	 * Returns a Map of all request header fields of the http request.
+	 * 
+	 * @see org.dcm4chex.wado.common.WADORequestObject#getRequestHeaders()
+	 * 
+	 * @return All request header fields in a map.
+	 */
+	Map getRequestHeaders();
+	
 }

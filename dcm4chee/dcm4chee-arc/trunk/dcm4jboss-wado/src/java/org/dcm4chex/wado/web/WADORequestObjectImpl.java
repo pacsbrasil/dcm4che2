@@ -7,13 +7,18 @@
 package org.dcm4chex.wado.web;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.dcm4chex.wado.common.WADORequestObject;
+import org.dcm4chex.wado.mbean.WADOService;
 
 /**
  * @author franz.willer
@@ -22,6 +27,8 @@ import org.dcm4chex.wado.common.WADORequestObject;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class WADORequestObjectImpl implements WADORequestObject {
+
+	private static Logger log = Logger.getLogger( WADOService.class.getName() );
 
 	private String reqType;
 	private String studyUID;
@@ -33,6 +40,7 @@ public class WADORequestObjectImpl implements WADORequestObject {
 	
 	private List contentTypes = null;
 	private Map paramMap;
+	private Map headerMap;
 
 	/**
 	 * Creates a WADORequestObjectImpl instance configured with http request.
@@ -51,6 +59,15 @@ public class WADORequestObjectImpl implements WADORequestObject {
 		frameNumber = request.getParameter("frameNumber");
 		paramMap = request.getParameterMap();
 		contentTypes = _string2List( contentType, "," );
+		
+		headerMap = new HashMap();
+		Enumeration enum1 = request.getHeaderNames();
+		String key;
+		while ( enum1.hasMoreElements() ) {
+			key = (String) enum1.nextElement();
+			if ( log.isDebugEnabled() ) log.debug("header: "+key+"="+request.getHeader(key) );
+			headerMap.put( key, request.getHeader(key) );
+		}
 	}
 	
 	/**
@@ -208,6 +225,17 @@ public class WADORequestObjectImpl implements WADORequestObject {
 	public Map getRequestParams() {
 		return paramMap;
 	}
+
+	/**
+	 * Returns a Map of all request header fields of the http request.
+	 * 
+	 * @see org.dcm4chex.wado.common.WADORequestObject#getRequestHeaders()
+	 * 
+	 * @return All request header fields in a map.
+	 */
+	public Map getRequestHeaders() {
+		return headerMap;
+	}
 	
 	/**
 	 * Seperate the given String with delim character and return a List of the items.
@@ -224,6 +252,24 @@ public class WADORequestObjectImpl implements WADORequestObject {
 			l.add( st.nextToken().trim() );
 		}
 		return l;
+	}
+	
+	/**
+	 * Returns a short description of this request.
+	 * <p>
+	 * @return String representation of this request.
+	 */
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append( "WADO request:");
+		Map mapParam = this.getRequestParams();
+		Iterator iter = mapParam.keySet().iterator();
+		Object key;
+		while ( iter.hasNext() ) {
+			key = iter.next();
+			sb.append("&").append(key).append("=").append( ( (String[]) mapParam.get(key))[0] );
+		}
+		return sb.toString();
 	}
 
 }
