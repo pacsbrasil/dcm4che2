@@ -296,10 +296,19 @@ public class HL7 {
 
     public static String toDcmPN(HL7Segment seg, int seq, int cmp1) {
         return seg.get(seq).length() == 0 ? "" :
+            trimPN(
                 seg.get(seq,1,cmp1) + '^'
               + seg.get(seq,1,cmp1+1) + '^'
               + seg.get(seq,1,cmp1+2) + '^' 
               + seg.get(seq,1,cmp1+4) + '^'
-              + seg.get(seq,1,cmp1+3);
+              + seg.get(seq,1,cmp1+3));
+    }
+
+    private static String trimPN(String pn) {
+        int end = pn.length() - 1;
+        while (end > 0 && pn.charAt(end) == '^')
+            --end;
+            
+        return pn.substring(0, end+1);
     }
 }
