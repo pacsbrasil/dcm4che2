@@ -23,11 +23,19 @@ package org.dcm4cheri.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -35,23 +43,59 @@ import org.dcm4che.data.DcmObjectFactory;
  * @since 05.11.2003
  */
 public class DatasetUtils {
-    
+
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    public static Dataset fromByteArray(byte[] data, DcmDecodeParam decodeParam) throws IOException
-    {
+    public static Dataset fromByteArray(
+        byte[] data,
+        DcmDecodeParam decodeParam) {
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         Dataset ds = dof.newDataset();
-        ds.readDataset(bin, decodeParam, -1);
+        try {
+            ds.readDataset(bin, decodeParam, -1);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("" + e);
+        }
         return ds;
     }
 
-    public static byte[] toByteArray(Dataset ds, DcmEncodeParam encodeParam) throws IOException
-    {
+    public static byte[] toByteArray(Dataset ds, DcmEncodeParam encodeParam) {
         ByteArrayOutputStream bos =
             new ByteArrayOutputStream(ds.calcLength(encodeParam));
-        ds.writeDataset(bos, encodeParam);
+        try {
+            ds.writeDataset(bos, encodeParam);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("" + e);
+        }
         return bos.toByteArray();
+    }
+
+    private static SAXParser getSAXParser() {
+        try {
+            return SAXParserFactory.newInstance().newSAXParser();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Dataset fromXML(InputSource is)
+        throws SAXException, IOException {
+        Dataset ds = dof.newDataset();
+        getSAXParser().parse(is, new XML2DatasetHandler(ds));
+        return ds;
+    }
+
+    public static Dataset fromXML(InputStream is)
+        throws SAXException, IOException {
+        return fromXML(new InputSource(is));
+    }
+
+    public static Dataset fromXML(Reader r) throws SAXException, IOException {
+        return fromXML(new InputSource(r));
+    }
+
+    public static Dataset fromXML(String s) throws SAXException, IOException {
+        return fromXML(new StringReader(s));
     }
 
     private DatasetUtils() {} // no instance
