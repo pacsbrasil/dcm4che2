@@ -435,12 +435,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putAE(int tag, String value) {
         return put(value != null
-        ? StringElement.createAE(tag, value)
-        : StringElement.createAE(tag));
+            ? StringElement.createAE(tag, value)
+            : StringElement.createAE(tag));
     }
     
     public DcmElement putAE(int tag, String[] values) {
-        return put(StringElement.createAE(tag, values));
+        return put(values != null
+            ? StringElement.createAE(tag, values)
+            : StringElement.createAE(tag));
     }
     
     public DcmElement putAS(int tag) {
@@ -449,12 +451,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putAS(int tag, String value) {
         return put(value != null
-        ? StringElement.createAS(tag, value)
-        : StringElement.createAS(tag));
+            ? StringElement.createAS(tag, value)
+            : StringElement.createAS(tag));
     }
     
     public DcmElement putAS(int tag, String[] values) {
-        return put(StringElement.createAS(tag, values));
+        return put(values != null
+            ? StringElement.createAS(tag, values)
+            : StringElement.createAS(tag));
     }
     
     public DcmElement putAT(int tag) {
@@ -466,14 +470,21 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putAT(int tag, int[] values) {
-        return put(ValueElement.createAT(tag,values));
+        return put(values != null
+            ? ValueElement.createAT(tag,values)
+            : StringElement.createAT(tag));
     }
     
     public DcmElement putAT(int tag, String value) {
-        return putAT(tag, Integer.parseInt(value,16));
+        return value != null
+            ? putAT(tag, Integer.parseInt(value,16))
+            : putAT(tag);
     }
     
     public DcmElement putAT(int tag, String[] values) {
+        if (values == null) {
+            return putAT(tag);
+        }
         int[] a = new int[values.length];
         for (int i = 0; i < values.length; ++i) {
             a[i] = Integer.parseInt(values[i],16);
@@ -487,12 +498,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putCS(int tag, String value) {
         return put(value != null
-        ? StringElement.createCS(tag, value)
-        : StringElement.createCS(tag));
+            ? StringElement.createCS(tag, value)
+            : StringElement.createCS(tag));
     }
     
     public DcmElement putCS(int tag, String[] values) {
-        return put(StringElement.createCS(tag, values));
+        return put(values != null
+            ? StringElement.createCS(tag, values)
+            : StringElement.createCS(tag));
     }
     
     public DcmElement putDA(int tag) {
@@ -501,26 +514,32 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putDA(int tag, Date value) {
         return put(value != null
-        ? StringElement.createDA(tag, value)
-        : StringElement.createDA(tag));
+            ? StringElement.createDA(tag, value)
+            : StringElement.createDA(tag));
     }
     
     public DcmElement putDA(int tag, Date[] values) {
-        return put(StringElement.createDA(tag, values));
+        return put(values != null
+            ? StringElement.createDA(tag, values)
+            : StringElement.createDA(tag));
     }
     
     public DcmElement putDA(int tag, Date from, Date to) {
-        return put(StringElement.createDA(tag, from, to));
-    }
+        return put(from != null || to != null
+            ? StringElement.createDA(tag, from, to)
+            : StringElement.createDA(tag));
+   }
     
     public DcmElement putDA(int tag, String value) {
         return put(value != null
-        ? StringElement.createDA(tag, value)
-        : StringElement.createDA(tag));
+            ? StringElement.createDA(tag, value)
+            : StringElement.createDA(tag));
     }
     
     public DcmElement putDA(int tag, String[] values) {
-        return put(StringElement.createDA(tag, values));
+        return put(values != null
+            ? StringElement.createDA(tag, values)
+            : StringElement.createDA(tag));
     }
     
     public DcmElement putDS(int tag) {
@@ -532,17 +551,21 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putDS(int tag, float[] values) {
-        return put(StringElement.createDS(tag, values));
+        return put(values != null
+            ? StringElement.createDS(tag, values)
+            : StringElement.createDS(tag));
     }
     
     public DcmElement putDS(int tag, String value) {
         return put(value != null
-        ? StringElement.createDS(tag, value)
-        : StringElement.createDS(tag));
+            ? StringElement.createDS(tag, value)
+            : StringElement.createDS(tag));
     }
     
     public DcmElement putDS(int tag, String[] values) {
-        return put(StringElement.createDS(tag, values));
+        return put(values != null
+            ? StringElement.createDS(tag, values)
+            : StringElement.createDS(tag));
     }
     
     public DcmElement putDT(int tag) {
@@ -551,26 +574,32 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putDT(int tag, Date value) {
         return put(value != null
-        ? StringElement.createDT(tag, value)
-        : StringElement.createDT(tag));
+            ? StringElement.createDT(tag, value)
+            : StringElement.createDT(tag));
     }
     
     public DcmElement putDT(int tag, Date[] values) {
-        return put(StringElement.createDT(tag, values));
+        return put(values != null
+            ? StringElement.createDT(tag, values)
+            : StringElement.createDT(tag));
     }
     
     public DcmElement putDT(int tag, Date from, Date to) {
-        return put(StringElement.createDT(tag, from, to));
+        return put(from != null || to != null
+            ? StringElement.createDT(tag, from, to)
+            : StringElement.createDT(tag));
     }
     
     public DcmElement putDT(int tag, String value) {
         return put(value != null
-        ? StringElement.createDT(tag, value)
-        : StringElement.createDT(tag));
+            ? StringElement.createDT(tag, value)
+            : StringElement.createDT(tag));
     }
     
     public DcmElement putDT(int tag, String[] values) {
-        return put(StringElement.createDT(tag, values));
+        return put(values != null
+            ? StringElement.createDT(tag, values)
+            : StringElement.createDT(tag));
     }
     
     public DcmElement putFL(int tag) {
@@ -582,17 +611,21 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putFL(int tag, float[] values) {
-        return put(ValueElement.createFL(tag, values));
+        return put(values != null
+            ? ValueElement.createFL(tag, values)
+            : ValueElement.createFL(tag));
     }
     
     public DcmElement putFL(int tag, String value) {
         return put(value != null
-        ? ValueElement.createFL(tag, Float.parseFloat(value))
-        : ValueElement.createFL(tag));
+            ? ValueElement.createFL(tag, Float.parseFloat(value))
+            : ValueElement.createFL(tag));
     }
     
     public DcmElement putFL(int tag, String[] values) {
-        return put(ValueElement.createFL(tag, StringUtils.parseFloats(values)));
+        return put(values != null
+            ? ValueElement.createFL(tag, StringUtils.parseFloats(values))
+            : ValueElement.createFL(tag));
     }
     
     public DcmElement putFD(int tag) {
@@ -604,17 +637,21 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putFD(int tag, double[] values) {
-        return put(ValueElement.createFD(tag, values));
+        return put(values != null
+            ? ValueElement.createFD(tag, values)
+            : ValueElement.createFD(tag));
     }
     
     public DcmElement putFD(int tag, String value) {
         return put(value != null
-        ? ValueElement.createFD(tag, Double.parseDouble(value))
-        : ValueElement.createFD(tag));
+            ? ValueElement.createFD(tag, Double.parseDouble(value))
+            : ValueElement.createFD(tag));
     }
     
     public DcmElement putFD(int tag, String[] values) {
-        return put(ValueElement.createFD(tag, StringUtils.parseDoubles(values)));
+        return put(values != null
+            ? ValueElement.createFD(tag, StringUtils.parseDoubles(values))
+            : ValueElement.createFD(tag));
     }
     
     public DcmElement putIS(int tag) {
@@ -626,17 +663,21 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putIS(int tag, int[] values) {
-        return put(StringElement.createIS(tag, values));
+        return put(values != null
+            ? StringElement.createIS(tag, values)
+            : StringElement.createIS(tag));
     }
     
     public DcmElement putIS(int tag, String value) {
         return put(value != null
-        ? StringElement.createIS(tag, value)
-        : StringElement.createIS(tag));
+            ? StringElement.createIS(tag, value)
+            : StringElement.createIS(tag));
     }
     
     public DcmElement putIS(int tag, String[] values) {
-        return put(StringElement.createIS(tag, values));
+        return put(values != null
+            ? StringElement.createIS(tag, values)
+            : StringElement.createIS(tag));
     }
     
     public DcmElement putLO(int tag) {
@@ -645,12 +686,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putLO(int tag, String value) {
         return put(value != null
-        ? StringElement.createLO(tag, value, getCharset())
-        : StringElement.createLO(tag));
+            ? StringElement.createLO(tag, value, getCharset())
+            : StringElement.createLO(tag));
     }
     
     public DcmElement putLO(int tag, String[] values) {
-        return put(StringElement.createLO(tag, values, getCharset()));
+        return put(values != null
+            ? StringElement.createLO(tag, values, getCharset())
+            : StringElement.createLO(tag));
     }
     
     public DcmElement putLT(int tag) {
@@ -659,12 +702,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putLT(int tag, String value) {
         return put(value != null
-        ? StringElement.createLT(tag, value, getCharset())
-        : StringElement.createLT(tag));
+            ? StringElement.createLT(tag, value, getCharset())
+            : StringElement.createLT(tag));
     }
     
     public DcmElement putLT(int tag, String[] values) {
-        return put(StringElement.createLT(tag, values, getCharset()));
+        return put(values != null
+            ? StringElement.createLT(tag, values, getCharset())
+            : StringElement.createLT(tag));
     }
     
     public DcmElement putOB(int tag) {
@@ -672,11 +717,15 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putOB(int tag, byte[] value) {
-        return put(ValueElement.createOB(tag, value));
+        return put(value != null
+            ? ValueElement.createOB(tag, value)
+            : ValueElement.createOB(tag));
     }
     
     public DcmElement putOB(int tag, ByteBuffer value) {
-        return put(ValueElement.createOB(tag, value));
+        return put(value != null
+            ? ValueElement.createOB(tag, value)
+            : ValueElement.createOB(tag));
     }
     
     public DcmElement putOBsq(int tag) {
@@ -688,11 +737,15 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putOF(int tag, float[] value) {
-        return put(ValueElement.createOF(tag, value));
+        return put(value != null
+            ? ValueElement.createOF(tag, value)
+            : ValueElement.createOF(tag));
     }
     
     public DcmElement putOF(int tag, ByteBuffer value) {
-        return put(ValueElement.createOF(tag, value));
+        return put(value != null
+            ? ValueElement.createOF(tag, value)
+            : ValueElement.createOF(tag));
     }
     
     public DcmElement putOFsq(int tag) {
@@ -704,11 +757,15 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putOW(int tag, short[] value) {
-        return put(ValueElement.createOW(tag, value));
+        return put(value != null
+            ? ValueElement.createOW(tag, value)
+            : ValueElement.createOW(tag));
     }
     
     public DcmElement putOW(int tag, ByteBuffer value) {
-        return put(ValueElement.createOW(tag, value));
+        return put(value != null
+            ? ValueElement.createOW(tag, value)
+            : ValueElement.createOW(tag));
     }
     
     public DcmElement putOWsq(int tag) {
@@ -721,21 +778,26 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putPN(int tag, PersonName value) {
         return put(value != null
-        ? StringElement.createPN(tag, value, getCharset())
-        : StringElement.createPN(tag));
+            ? StringElement.createPN(tag, value, getCharset())
+            : StringElement.createPN(tag));
     }
     
     public DcmElement putPN(int tag, PersonName[] values) {
-        return put(StringElement.createPN(tag, values, getCharset()));
+        return put(values != null
+            ? StringElement.createPN(tag, values, getCharset())
+            : StringElement.createPN(tag));
     }
     
     public DcmElement putPN(int tag, String value) {
         return put(value != null
-        ? StringElement.createPN(tag, new PersonNameImpl(value), getCharset())
-        : StringElement.createPN(tag));
+            ? StringElement.createPN(tag, new PersonNameImpl(value), getCharset())
+            : StringElement.createPN(tag));
     }
     
     public DcmElement putPN(int tag, String[] values) {
+        if (values == null) {
+            return StringElement.createPN(tag);
+        }
         PersonName[] a = new PersonName[values.length];
         for (int i = 0; i < a.length; ++i) {
             a[i] = new PersonNameImpl(values[i]);
@@ -749,12 +811,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putSH(int tag, String value) {
         return put(value != null
-        ? StringElement.createSH(tag, value, getCharset())
-        : StringElement.createSH(tag));
+            ? StringElement.createSH(tag, value, getCharset())
+            : StringElement.createSH(tag));
     }
     
     public DcmElement putSH(int tag, String[] values) {
-        return put(StringElement.createSH(tag, values, getCharset()));
+        return put(values != null
+            ? StringElement.createSH(tag, values, getCharset())
+            : StringElement.createSH(tag));
     }
     
     public DcmElement putSL(int tag) {
@@ -766,19 +830,21 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putSL(int tag, int[] values) {
-        return put(ValueElement.createSL(tag, values));
+        return put(values != null
+            ? ValueElement.createSL(tag, values)
+            : ValueElement.createSL(tag));
     }
     
     public DcmElement putSL(int tag, String value) {
         return put(value != null
-        ? ValueElement.createSL(tag, StringUtils.parseInt(value,
-        Integer.MIN_VALUE,  Integer.MAX_VALUE))
-        : ValueElement.createSL(tag));
+            ? ValueElement.createSL(tag, StringUtils.parseInt(value,
+                Integer.MIN_VALUE,  Integer.MAX_VALUE))
+            : ValueElement.createSL(tag));
     }
     
     public DcmElement putSL(int tag, String[] values) {
         return put(ValueElement.createSL(tag, StringUtils.parseInts(values,
-        Integer.MIN_VALUE,  Integer.MAX_VALUE)));
+            Integer.MIN_VALUE,  Integer.MAX_VALUE)));
     }
     
     public DcmElement putSQ(int tag) {
@@ -794,19 +860,23 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putSS(int tag, int[] values) {
-        return put(ValueElement.createSS(tag, values));
+        return put(values != null
+            ? ValueElement.createSS(tag, values)
+            : ValueElement.createSS(tag));
     }
     
     public DcmElement putSS(int tag, String value) {
         return put(value != null
-        ? ValueElement.createSS(tag, StringUtils.parseInt(value,
-        Short.MIN_VALUE,  Short.MAX_VALUE))
-        : ValueElement.createSS(tag));
+            ? ValueElement.createSS(tag, StringUtils.parseInt(value,
+                Short.MIN_VALUE,  Short.MAX_VALUE))
+            : ValueElement.createSS(tag));
     }
     
     public DcmElement putSS(int tag, String[] values) {
-        return put(ValueElement.createSS(tag, StringUtils.parseInts(values,
-        Short.MIN_VALUE,  Short.MAX_VALUE)));
+        return put(values != null
+            ? ValueElement.createSS(tag, StringUtils.parseInts(values,
+                Short.MIN_VALUE,  Short.MAX_VALUE))
+            : ValueElement.createSS(tag));
     }
     
     public DcmElement putST(int tag) {
@@ -815,12 +885,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putST(int tag, String value) {
         return put(value != null
-        ? StringElement.createST(tag, value, getCharset())
-        : StringElement.createST(tag));
+            ? StringElement.createST(tag, value, getCharset())
+            : StringElement.createST(tag));
     }
     
     public DcmElement putST(int tag, String[] values) {
-        return put(StringElement.createST(tag, values, getCharset()));
+        return put(values != null
+            ? StringElement.createST(tag, values, getCharset())
+            : StringElement.createST(tag));
     }
     
     public DcmElement putTM(int tag) {
@@ -829,27 +901,33 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putTM(int tag, Date value) {
         return put(value != null
-        ? StringElement.createTM(tag, value)
-        : StringElement.createTM(tag));
+            ? StringElement.createTM(tag, value)
+            : StringElement.createTM(tag));
     }
     
     public DcmElement putTM(int tag, Date[] values) {
-        return put(StringElement.createTM(tag, values));
+        return put(values != null
+            ? StringElement.createTM(tag, values)
+            : StringElement.createTM(tag));
     }
     
     public DcmElement putTM(int tag, Date from, Date to) {
-        return put(StringElement.createTM(tag, from, to));
+        return put(from != null || to != null
+            ? StringElement.createTM(tag, from, to)
+            : StringElement.createTM(tag));
     }
     
     public DcmElement putTM(int tag, String value) {
         return put(value != null
-        ? StringElement.createTM(tag, value)
-        : StringElement.createTM(tag));
+            ? StringElement.createTM(tag, value)
+            : StringElement.createTM(tag));
     }
     
     public DcmElement putTM(int tag, String[] values) {
-        return put(StringElement.createTM(tag, values));
-    }
+        return put(values != null
+            ? StringElement.createTM(tag, values)
+            : StringElement.createTM(tag));
+     }
     
     public DcmElement putUI(int tag) {
         return put(StringElement.createUI(tag));
@@ -857,12 +935,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putUI(int tag, String value) {
         return put(value != null
-        ? StringElement.createUI(tag, value)
-        : StringElement.createUI(tag));
+            ? StringElement.createUI(tag, value)
+            : StringElement.createUI(tag));
     }
     
     public DcmElement putUI(int tag, String[] values) {
-        return put(StringElement.createUI(tag, values));
+        return put(values != null
+            ? StringElement.createUI(tag, values)
+            : StringElement.createUI(tag));
     }
     
     public DcmElement putUL(int tag) {
@@ -874,19 +954,23 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putUL(int tag, int[] values) {
-        return put(ValueElement.createUL(tag, values));
+        return put(values != null
+            ? ValueElement.createUL(tag, values)
+            : StringElement.createUI(tag));
     }
     
     public DcmElement putUL(int tag, String value) {
         return put(value != null
-        ? ValueElement.createUL(tag, StringUtils.parseInt(value,
-        0L,  0xFFFFFFFFL))
-        : ValueElement.createUL(tag));
+            ? ValueElement.createUL(tag, StringUtils.parseInt(value,
+                0L,  0xFFFFFFFFL))
+            : ValueElement.createUL(tag));
     }
     
     public DcmElement putUL(int tag, String[] values) {
-        return put(ValueElement.createUL(tag, StringUtils.parseInts(values,
-        0L,  0xFFFFFFFFL)));
+        return put(values != null
+            ? ValueElement.createUL(tag, StringUtils.parseInts(values,
+                0L,  0xFFFFFFFFL))
+            : ValueElement.createUL(tag));
     }
     
     public DcmElement putUN(int tag) {
@@ -894,11 +978,15 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putUN(int tag, byte[] value) {
-        return put(ValueElement.createUN(tag, value));
+        return put(value != null
+            ? ValueElement.createUN(tag, value)
+            : ValueElement.createUN(tag));
     }
     
     public DcmElement putUN(int tag, ByteBuffer value) {
-        return put(ValueElement.createUN(tag, value));
+        return put(value != null
+            ? ValueElement.createUN(tag, value)
+            : ValueElement.createUN(tag));
     }
     
     public DcmElement putUNsq(int tag) {
@@ -914,19 +1002,23 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putUS(int tag, int[] values) {
-        return put(ValueElement.createUS(tag, values));
+        return put(values != null
+            ? ValueElement.createUS(tag, values)
+            : ValueElement.createUS(tag));
     }
     
     public DcmElement putUS(int tag, String value) {
         return put(value != null
-        ? ValueElement.createUS(tag, StringUtils.parseInt(value,
-        0L,  0xFFFFL))
-        : ValueElement.createUS(tag));
+            ? ValueElement.createUS(tag, StringUtils.parseInt(value,
+                0L,  0xFFFFL))
+            : ValueElement.createUS(tag));
     }
     
     public DcmElement putUS(int tag, String[] values) {
-        return put(ValueElement.createUS(tag, StringUtils.parseInts(values,
-        0L,  0xFFFFL)));
+        return put(values != null
+            ? ValueElement.createUS(tag, StringUtils.parseInts(values,
+                0L,  0xFFFFL))
+            : ValueElement.createUS(tag));
     }
     
     public DcmElement putUT(int tag) {
@@ -935,12 +1027,14 @@ abstract class DcmObjectImpl implements DcmObject {
     
     public DcmElement putUT(int tag, String value) {
         return put(value != null
-        ? StringElement.createUT(tag, value, getCharset())
-        : StringElement.createUT(tag));
+            ? StringElement.createUT(tag, value, getCharset())
+            : StringElement.createUT(tag));
     }
     
     public DcmElement putUT(int tag, String[] values) {
-        return put(StringElement.createUT(tag, values, getCharset()));
+        return put(values != null
+            ? StringElement.createUT(tag, values, getCharset())
+            : StringElement.createUT(tag));
     }
     
     public DcmElement putXX(int tag) {
@@ -1042,6 +1136,9 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putXX(int tag, int vr, ByteBuffer value) {
+        if (value == null) {
+            return putXX(tag, vr);
+        }
         switch (vr) {
             case VRs.AE:
                 return put(StringElement.createAE(tag, value));
@@ -1102,6 +1199,9 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putXX(int tag, int vr, String value) {
+        if (value == null) {
+            return putXX(tag, vr);
+        }
         switch (vr) {
             case VRs.AE:
                 return putAE(tag, value);
@@ -1162,6 +1262,9 @@ abstract class DcmObjectImpl implements DcmObject {
     }
     
     public DcmElement putXX(int tag, int vr, String[] values) {
+        if (values == null) {
+            return putXX(tag, vr);
+        }
         switch (vr) {
             case VRs.AE:
                 return putAE(tag, values);
