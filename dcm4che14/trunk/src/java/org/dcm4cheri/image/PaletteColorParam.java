@@ -24,7 +24,6 @@
 package org.dcm4cheri.image;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
 import java.awt.image.ColorModel;
@@ -114,13 +113,19 @@ final class PaletteColorParam extends BasicColorModelParam {
                         throwLengthMismatch(data.limit(), len);
                     }
                     data.rewind();
-                    data.get(out, off, len);
+                    short tmp;
+                    for (int i = off; data.hasRemaining(); ) {
+                        tmp = data.getShort();
+                        out[i++] = (byte)(tmp & 0xff);
+                        out[i++] = (byte)((tmp >> 8) & 0xff);
+                    }
                     break;
                 }
             default:
                 throw new IllegalArgumentException (
                     "Illegal LUT Descriptor: bits=" + desc[2]);
         }
+        Arrays.fill(out, 0, off, out[off]);
         Arrays.fill(out, off + len, size, out[off + len - 1]);
         return out;
     }
