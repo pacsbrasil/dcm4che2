@@ -142,12 +142,12 @@ public class SeriesModel extends AbstractModel {
     /**
      * Returns the list of Instances.
      * <p>
-     * Use the <code>getChilds</code> from <code>AbstractModel</code> method now.
+     * Use the <code>childs</code> from <code>AbstractModel</code> method now.
      * 
      * @return Instances as List.
      */
     public final List getInstances() {
-        return getChilds();
+        return listOfChilds();
     }
 
     /**

@@ -144,12 +144,12 @@ public class StudyModel extends AbstractModel {
     /**
      * Returns the list of Series.
      * <p>
-     * Use the <code>getChilds</code> from <code>AbstractModel</code> method now.
+     * Use the <code>childs</code> from <code>AbstractModel</code> method now.
      * 
      * @return Series as List.
      */
     public final List getSeries() {
-        return getChilds();
+        return listOfChilds();
     }
 
     /**

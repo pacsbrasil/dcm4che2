@@ -97,12 +97,12 @@ public class PatientModel extends AbstractModel {
     /**
      * Returns the list of studies.
      * <p>
-     * Use the <code>getChilds</code> from <code>AbstractModel</code> method now.
+     * Use the <code>childs</code> from <code>AbstractModel</code> method now.
      * 
      * @return studies as List.
      */
     public final List getStudies() {
-        return getChilds();
+        return listOfChilds();
     }
 
     /**

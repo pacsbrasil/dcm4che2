@@ -191,7 +191,7 @@ public abstract class AbstractModel {
      * 
      * @return List of childs.
      */
-    public List getChilds() {
+    public List listOfChilds() {
     	return childs;
     }
     
@@ -245,7 +245,7 @@ public abstract class AbstractModel {
     public List childPKs(){
     	if ( childsPK != null ) return childsPK;
     	childsPK = new ArrayList();
-    	Iterator iter = getChilds().iterator();
+    	Iterator iter = listOfChilds().iterator();
     	while ( iter.hasNext() ) {
     		childsPK.add( new Integer( ((AbstractModel) iter.next() ).getPk() ) );
     	}

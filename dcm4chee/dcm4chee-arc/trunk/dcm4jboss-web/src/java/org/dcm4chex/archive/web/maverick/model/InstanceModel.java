@@ -31,6 +31,13 @@ public class InstanceModel extends AbstractModel {
                 || UIDs.ComprehensiveSR.equals(cuid)
                 || UIDs.KeyObjectSelectionDocument.equals(cuid))
                 return new StructuredReportModel(ds);
+        if ( UIDs.TwelveLeadECGWaveformStorage.equals(cuid)
+        	|| UIDs.GeneralECGWaveformStorage.equals(cuid)
+        	|| UIDs.AmbulatoryECGWaveformStorage.equals(cuid)
+        	|| UIDs.HemodynamicWaveformStorage.equals(cuid)
+        	|| UIDs.CardiacElectrophysiologyWaveformStorage.equals(cuid)
+        	|| UIDs.BasicVoiceAudioWaveformStorage.equals(cuid))
+        	return new WaveformModel(ds);
         return new ImageModel(ds);
     }
 
