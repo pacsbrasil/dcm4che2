@@ -6,31 +6,29 @@ This is the XML DTD for the dcm4jboss attribute filter descriptor.
 Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
   <dcm4jboss-attribute-filter>
     <filter level="PATIENT">
-      <attr tag="(0008,0005)"/>
-      <attr tag="(0010,0010)"/>
-      <attr tag="(0010,0020)"/>
+      <attr tag="00080005"/>
+      <attr tag="00100010"/>
+      <attr tag="00100020"/>
     </filter>
 
     <filter level="STUDY">
-      <attr tag="(0008,0005)"/>
-      <attr tag="(0008,0020)"/>
-      <attr tag="(0008,0030)"/>
-      <attr tag="(0008,0050)"/>
-      <attr tag="(0020,000D)"/>
-      <attr tag="(0020,0010)"/>
+      <attr tag="00080005"/>
+      <attr tag="00080020"/>
+      <attr tag="00080030"/>
+      <attr tag="00080050"/>
+      <attr tag="0020000D"/>
+      <attr tag="00200010"/>
     </filter>
 
     <filter level="SERIES">
-      <attr tag="(0008,0005)"/>
-      <attr tag="(0008,0060)"/>
-      <attr tag="(0020,000E)"/>
-      <attr tag="(0020,0011)"/>
+      <attr tag="00080060"/>
+      <attr tag="0020000E"/>
+      <attr tag="00200011"/>
     </filter>
 
     <filter level="IMAGE">
-      <attr tag="(0008,0005)"/>
-      <attr tag="(0008,0018)"/>
-      <attr tag="(0020,0013)"/>
+      <attr tag="00080018"/>
+      <attr tag="00200013"/>
     </filter>
   </dcm4jboss-attribute-filter>
 -->
