@@ -246,8 +246,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 }
                 rspCmd.putAT(Tags.OffendingElement, coercedTags);
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
-                ds.putAll(coercedElements);
             }
+            ds.putAll(coercedElements);
             updateIANInfo(assoc, ds, fsInfo.getRetrieveAET());
             updateInstancesStored(assoc, ds);
             updateStudyInfos(assoc, ds, fsInfo.getPath());
