@@ -20,8 +20,6 @@
  *                                                                           *
  *****************************************************************************/
 
-/*$Id$*/
-
 package org.dcm4che.data;
 
 import java.io.InputStream;
@@ -30,9 +28,16 @@ import java.io.IOException;
 
 /** Defines behavior of <code>CommandSet</code> container objects.
  *
- * @author  gunter.zeilinger@tiani.com
- * @version 1.0.0
  * @see "DICOM Part 7: Message Exchange, 6.3.1 Command Set Structure"
+ * @author  <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+ * @version $Revision$ $Date$
+ *   
+ * <p><b>Revisions:</b>
+ *
+ * <p><b>20020726 gunter:</b>
+ * <ul>
+ * <li> Fix C_CANCEL_RQ value 
+ * </ul>
  */
 public interface Command extends DcmObject {
     
@@ -59,7 +64,7 @@ public interface Command extends DcmObject {
     public static final int N_CREATE_RSP       = 0x8140;
     public static final int N_DELETE_RQ        = 0x0150;
     public static final int N_DELETE_RSP       = 0x8150;
-    public static final int C_CANCEL_RQ        = 0xFFFF;
+    public static final int C_CANCEL_RQ        = 0x0FFF;
 
     public static final int MEDIUM             = 0x0000;
     public static final int HIGH               = 0x0001;

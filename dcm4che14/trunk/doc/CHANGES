@@ -7,6 +7,7 @@ dcm4che 1.0.3 -  - Changes since dcm4che 1.0.2
 BUG FIXES:
 org.dcm4cheri.data
 + Fix DcmStreamHandlerImpl#fragment (=> error writing encapsed pixel data)
++ Fix value of Command#C_CANCEL_RQ
 samples:
 + Fix build.xml to include missing .class into imgread.jar & imgdisp.jar
 
@@ -21,6 +22,7 @@ dcm4che API:
 + add org.dcm4che.data.DcmElement#getDateRange
 + add org.dcm4che.media.DirBuilder#getDirWriter
 + add org.dcm4che.net.FutureRSP#listPending
++ add org.dcm4che.net.DcmServiceBase.MultiDimseRsp#release
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1
