@@ -142,6 +142,8 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
     
     private String printUtilityCommandLine = "acroread /t/h/p %s";
 
+    private int labelFileAvailabilityTime = 10;
+        
     public final String getPrintUtilityCommandLine() {
         return printUtilityCommandLine;
     }
@@ -158,6 +160,15 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
         this.useExternalPrintUtility = useExternalCommand;
     }
     
+    
+    public final int getLabelFileAvailabilityTime() {
+        return labelFileAvailabilityTime;
+    }
+    
+    public final void setLabelFileAvailabilityTime(int time) {
+        this.labelFileAvailabilityTime = time;
+    }
+
     public final String getChromaticity() {
         return toString(chromaticity);
     }
@@ -216,11 +227,17 @@ public class LabelPrintService extends org.jboss.system.ServiceMBeanSupport {
             Executer exe = new Executer(cmd);
             try {
                 int exit = exe.waitFor();
-                if (exit == 0) return;
-                throw new PrintException(cmd + " exit with " + exit);
+                if (exit != 0)
+                    throw new PrintException(cmd + " exit with " + exit);
             } catch (InterruptedException e1) {
                 throw new PrintException(cmd + " throws " + e1);
             }
+            if (labelFileAvailabilityTime > 0)
+                try {
+                    Thread.sleep(labelFileAvailabilityTime * 1000L);
+                } catch (InterruptedException e2) {
+                    log.warn("Wait after Invoke of Print Utility was interrupted:", e2);
+                }
         }
         DocFlavor flavor = fpath.endsWith(".ps") ? DocFlavor.INPUT_STREAM.POSTSCRIPT
                 : fpath.endsWith(".pdf") ? DocFlavor.INPUT_STREAM.PDF : null;

@@ -168,24 +168,24 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPurgePreservedInstancesAfter"
-      setMethod="setPurgePreservedInstancesAfter">
-      <description>Persistence duration for preserved Instances
+      getMethod="getPurgeArchiveDirAfter"
+      setMethod="setPurgeArchiveDirAfter">
+      <description>Persistence duration for preserved Instances in Archive Spool Directory
       in days (##d), hours (##h) or minutes (##m). 0 = Infinite Persistenz.
       </description>
-      <name>PurgePreservedInstancesAfter</name>
+      <name>PurgeArchiveDirAfter</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="1d" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPurgeTemporaryFilesAfter"
-      setMethod="setPurgeTemporaryFilesAfter">
-      <description>Persistence duration of residual temporary Files
+      getMethod="getPurgeFilesetDirAfter"
+      setMethod="setPurgeFilesetDirAfter">
+      <description>Persistence duration of residual temporary Files in Fileset Spool Directory
       in days (##d), hours (##h) or minutes (##m). 0 = Infinite Persistenz.
       </description>
-      <name>PurgeTemporaryFilesAfter</name>
+      <name>PurgeFilesetDirAfter</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="1h" />
@@ -288,7 +288,8 @@
          <type>[B</type>
       </parameter>
       <return-type>boolean</return-type>
-   </operation>   <operation impact="ACTION">
+   </operation>
+   <operation impact="ACTION">
       <description>Refresh estimated Archive Disk Usage</description>
       <name>refreshArchiveDiskUsage</name>
    </operation>
@@ -306,11 +307,11 @@
       <name>purgeExpiredMediaCreationRequests</name>
    </operation>
    <operation impact="ACTION">
-      <description>Purge Expired Preserved Instances</description>
+      <description>Purge Expired Preserved Instances in Archive Spool Directory</description>
       <name>purgeExpiredPreservedInstances</name>
    </operation>
    <operation impact="ACTION">
-      <description>Purge Residual Temporary Files</description>
+      <description>Purge Residual Temporary Files in Fileset Spool Directory</description>
       <name>purgeResidualTemporaryFiles</name>
    </operation>
 

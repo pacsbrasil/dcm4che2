@@ -96,6 +96,18 @@
          <value value="acroread /t/h/p %s" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getLabelFileAvailabilityTime"
+      setMethod="setLabelFileAvailabilityTime">
+      <description>Time in seconds to keep Label File available
+      after Exit of External Print Utility.
+      </description>
+      <name>LabelFileAvailabilityTime</name>
+      <type>int</type>
+      <descriptors>
+         <value value="10" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
    
    <!-- Operations -->

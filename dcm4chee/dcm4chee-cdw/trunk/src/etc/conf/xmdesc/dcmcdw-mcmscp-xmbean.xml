@@ -225,7 +225,29 @@
          <value value="false" />
       </descriptors>
    </attribute>
-   
+   <attribute access="read-write"
+      getMethod="getMaxReadRequestRetries"
+      setMethod="setMaxReadRequestRetries">
+      <description>Maximal Number of Retries to read a Request File to serve
+      a N-GET RQ, before returning an error response.
+      </description>
+      <name>MaxReadRequestRetries</name>
+      <type>int</type>
+      <descriptors>
+         <value value="2" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getReadRequestRetryInterval"
+      setMethod="setReadRequestRetryInterval">
+      <description>Interval in ms between two Retries to read a Request File.
+      </description>
+      <name>ReadRequestRetryInterval</name>
+      <type>long</type>
+      <descriptors>
+         <value value="500" />
+      </descriptors>
+   </attribute>   
    &defaultAttributes;
    
    <!-- Operations -->

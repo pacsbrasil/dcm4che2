@@ -63,9 +63,9 @@ public class SpoolDirService extends ServiceMBeanSupport {
 
     private long purgeMediaCreationRequestsAfter = MS_PER_DAY;
 
-    private long purgePreservedInstancesAfter = MS_PER_DAY;
+    private long purgeArchiveDirAfter = MS_PER_DAY;
 
-    private long purgeTemporaryFilesAfter = MS_PER_HOUR;
+    private long purgeFilesetDirAfter = MS_PER_HOUR;
 
     private int numberOfArchiveBuckets = 37;
 
@@ -207,12 +207,12 @@ public class SpoolDirService extends ServiceMBeanSupport {
         this.fsduRefreshInterval = timeFromString(refreshInterval);
     }
 
-    public final String getPurgePreservedInstancesAfter() {
-        return timeAsString(purgePreservedInstancesAfter);
+    public final String getPurgeArchiveDirAfter() {
+        return timeAsString(purgeArchiveDirAfter);
     }
 
-    public final void setPurgePreservedInstancesAfter(String s) {
-        this.purgePreservedInstancesAfter = timeFromString(s);
+    public final void setPurgeArchiveDirAfter(String s) {
+        this.purgeArchiveDirAfter = timeFromString(s);
     }
 
     public final String getPurgeMediaCreationRequestsAfter() {
@@ -223,12 +223,12 @@ public class SpoolDirService extends ServiceMBeanSupport {
         this.purgeMediaCreationRequestsAfter = timeFromString(s);
     }
 
-    public final String getPurgeTemporaryFilesAfter() {
-        return timeAsString(purgeTemporaryFilesAfter);
+    public final String getPurgeFilesetDirAfter() {
+        return timeAsString(purgeFilesetDirAfter);
     }
 
-    public final void setPurgeTemporaryFilesAfter(String s) {
-        this.purgeTemporaryFilesAfter = timeFromString(s);
+    public final void setPurgeFilesetDirAfter(String s) {
+        this.purgeFilesetDirAfter = timeFromString(s);
     }
 
     public File getInstanceFile(String iuid) {
@@ -258,17 +258,17 @@ public class SpoolDirService extends ServiceMBeanSupport {
     }
 
     public void purgeExpiredMediaCreationRequests() {
-        if (purgePreservedInstancesAfter == 0) return;
+        if (purgeArchiveDirAfter == 0) return;
         deleteFilesModifiedBefore(requestDir, System.currentTimeMillis()
                 - purgeMediaCreationRequestsAfter);
     }
 
     public void purgeExpiredPreservedInstances() {
-        if (purgePreservedInstancesAfter == 0) return;
+        if (purgeArchiveDirAfter == 0) return;
         String[] ss = archiveDir.list();
         if (ss == null) return;
         final long modifiedBefore = System.currentTimeMillis()
-                - purgePreservedInstancesAfter;
+                - purgeArchiveDirAfter;
         for (int i = 0; i < ss.length; i++) {
             deleteFilesModifiedBefore(new File(archiveDir, ss[i]),
                     modifiedBefore);
@@ -276,9 +276,9 @@ public class SpoolDirService extends ServiceMBeanSupport {
     }
 
     public void purgeResidualTemporaryFiles() {
-        if (purgePreservedInstancesAfter == 0) return;
+        if (purgeArchiveDirAfter == 0) return;
         deleteFilesModifiedBefore(filesetDir, System.currentTimeMillis()
-                - purgeTemporaryFilesAfter);
+                - purgeFilesetDirAfter);
     }
 
     private void deleteFilesModifiedBefore(File subdir, long modifiedBefore) {
