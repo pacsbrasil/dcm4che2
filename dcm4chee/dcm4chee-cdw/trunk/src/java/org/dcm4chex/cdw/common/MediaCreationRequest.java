@@ -269,7 +269,7 @@ public class MediaCreationRequest implements Serializable {
     public int copyDone(Dataset attrs, Logger log) throws IOException {
 	    attrs.putUS(Tags.TotalNumberOfPiecesOfMediaCreated,
 	            attrs.getInt(Tags.TotalNumberOfPiecesOfMediaCreated, 0) + 1);
-	    if (--remainingCopies > 0) {
+	    if (--remainingCopies <= 0) {
 	        DcmElement sq = attrs.get(Tags.RefStorageMediaSeq);
 	        if (sq == null) sq = attrs.putSQ(Tags.RefStorageMediaSeq);
 	        Dataset item = sq.addNewItem();
