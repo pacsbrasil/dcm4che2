@@ -180,6 +180,8 @@ class DcmStreamHandlerImpl implements org.dcm4che.data.DcmHandler {
     public void fragment(int id, long pos, byte[] data, int start, int length)
             throws IOException {
         writeHeader(ITEM_TAG, VRs.NONE, (length+1)&(~1));
-        value(data, start, length);
+        out.write(data, start, length);
+        if ((length & 1) != 0)
+            out.write(0);
     }        
 }

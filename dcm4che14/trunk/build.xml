@@ -2,7 +2,7 @@
 
 <project name="dcm4che" basedir="." default="main">
    <!-- set global properties for this build -->
-   <property name="version.number" value="1.0.2"/>
+   <property name="version.number" value="1.0.3"/>
    <property name="src" value="src"/>
    <property name="src.java" value="${src}/java"/>
    <property name="src.etc" value="${src}/etc"/>

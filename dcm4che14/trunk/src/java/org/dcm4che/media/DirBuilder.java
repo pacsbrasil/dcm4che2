@@ -98,5 +98,10 @@ public interface DirBuilder {
    /** Close the DICOM Dictionary (= DICOMDIR file).
     * @throws IOException  If an I/O error occurs */   
    void close() throws IOException;
+   
+   /** Get underlying {@link DirWriter} object
+    * @return underlying {@link DirWriter} object.
+    */   
+   DirWriter getDirWriter();       
 }
 

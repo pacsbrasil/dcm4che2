@@ -52,6 +52,7 @@ public class DatasetSerializerTest extends TestCase {
    private static final File OUT_FILE = new File("data/TMP_TEST");
    private static final String EVR_LE = "data/examplef9.dcm";
    private static final String PART10_EVR_LE = "data/6AF8_10";
+   private static final String JPEG_70 = "data/CT-MONO2-16-chest";
    private Dataset ds;
    
    protected void setUp() throws Exception {
@@ -92,6 +93,31 @@ public class DatasetSerializerTest extends TestCase {
    public void testPART10_EVR_LE() throws Exception {
       DataInputStream in = new DataInputStream(
       new BufferedInputStream(new FileInputStream(PART10_EVR_LE)));
+      try {
+         ds.readFile(in, null, -1);
+      } finally {
+         try { in.close(); } catch (Exception ignore) {}
+      }
+      ObjectOutputStream oo = new ObjectOutputStream(
+      new BufferedOutputStream(new FileOutputStream(OUT_FILE)));
+      try {
+         oo.writeObject(ds);
+      } finally {
+         try { oo.close(); } catch (Exception ignore) {}
+      }
+      ObjectInputStream oin = new ObjectInputStream(
+      new BufferedInputStream(new FileInputStream(OUT_FILE)));
+      try {
+         Dataset ds2 = (Dataset)oin.readObject();
+         assertEquals(ds.size(), ds2.size());
+      } finally {
+         try { oin.close(); } catch (Exception ignore) {}
+      }
+   }
+   
+   public void testJPEG_70() throws Exception {
+      DataInputStream in = new DataInputStream(
+      new BufferedInputStream(new FileInputStream(JPEG_70)));
       try {
          ds.readFile(in, null, -1);
       } finally {

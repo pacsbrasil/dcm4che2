@@ -63,6 +63,11 @@ final class DirBuilderImpl implements DirBuilder {
       this.pref = pref;
    }
    
+   
+   public DirWriter getDirWriter() {
+       return writer;
+   }
+   
    public int addFileRef(File file) throws IOException {
       InputStream in = new BufferedInputStream(new FileInputStream(file));
       Dataset ds = DirReaderImpl.factory.newDataset();

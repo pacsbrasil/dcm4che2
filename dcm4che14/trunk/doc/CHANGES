@@ -2,6 +2,17 @@ Revision History
 =================
 
 -------------------------------------------------------------------------------
+dcm4che 1.0.3 -  - Changes since dcm4che 1.0.2
+-------------------------------------------------------------------------------
+BUG FIXES:
+org.dcm4cheri.data
++ Fix DcmStreamHandlerImpl#fragment (=> error writing encapsed pixel data)
+
+ENHANCEMENTS:
+dcm4che API:
++ add org.dcm4che.media.DirBuilder#getDirWriter()
+
+-------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1
 -------------------------------------------------------------------------------
 DISTRIBUTION:
@@ -23,7 +34,7 @@ samples/dcmdir:
 
 ENHANCEMENTS:
 dcm4che API:
-+ add org.dcm4cheri.data.DicomObject#vm(int)
++ add org.dcm4che.data.DicomObject#vm(int)
 dcmdir sample:
 + command -c create root directory, if no such directory exists
 + add command -P dir-file: purge records from existing DICOMDIR file,
