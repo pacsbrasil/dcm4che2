@@ -27,6 +27,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -34,6 +38,10 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.util.InstanceCollector;
 import org.dcm4chex.archive.ejb.util.InstanceCollector.InstanceContainer;
 
@@ -59,6 +67,16 @@ import org.dcm4chex.archive.ejb.util.InstanceCollector.InstanceContainer;
  *  ejb-name="Instance" 
  *  view-type="local"
  *  ref-name="ejb/Instance" 
+ *  
+ * @ejb.ejb-ref
+ *  ejb-name="Study" 
+ *  view-type="local"
+ *  ref-name="ejb/Study" 
+ *
+ * @ejb.ejb-ref
+ *  ejb-name="Series" 
+ *  view-type="local"
+ *  ref-name="ejb/Series" 
  * 
  * @author gunter.zeilinger@tiani.com
  * @version Revision $Date$
@@ -72,7 +90,18 @@ public abstract class MediaComposerBean implements SessionBean {
     private MediaLocalHome mediaHome;
 
     private InstanceLocalHome instHome;
+    
+    private StudyLocalHome studyHome;
 
+    private SeriesLocalHome seriesHome;
+
+    /**
+     * Initialize this class.
+     * <p>
+     * Set the home interfaces for MediaLocal and InstanceLocal.
+     * 
+     * @param	arg0 The session context. 
+     */
     public void setSessionContext(SessionContext arg0) throws EJBException,
             RemoteException {
         Context jndiCtx = null;
@@ -82,6 +111,8 @@ public abstract class MediaComposerBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Media");
             instHome = (InstanceLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Instance");
+            studyHome = (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
+            seriesHome = (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -94,6 +125,10 @@ public abstract class MediaComposerBean implements SessionBean {
         }
     }
 
+    /**
+     * Set the home interfaces to null.
+     *
+     */
     public void unsetSessionContext() {
         mediaHome = null;
         instHome = null;
@@ -236,8 +271,13 @@ public abstract class MediaComposerBean implements SessionBean {
     }
 
     /**
-	 * @param prefix
-	 * @return
+     * Creates a new media.
+     * <p>
+     * Set the fileset id with given prefix and the pk of the new media.
+     * 
+	 * @param prefix A prefix for fileset id.
+	 * 
+	 * @return The new created MediaLocal bean.
      * @throws CreateException
 	 */
 	private MediaLocal createMedia(String prefix) throws CreateException {
@@ -313,6 +353,14 @@ public abstract class MediaComposerBean implements SessionBean {
     }
     
     /**
+     * Returns a list of all media with the given media status.
+     * <p>
+     * The list contains a MediaDTO object for each media with the given status.
+     * 
+     * @param status The media status
+     * 
+     * @return A list of MediaDTO objects.
+     * 
      * @ejb.interface-method
      */
     public List getWithStatus(int status) throws FinderException {
@@ -325,6 +373,15 @@ public abstract class MediaComposerBean implements SessionBean {
      * Add all founded media to the given collection.<br>
      * This allows to fill a collection with sequential calls without clearing the collection.<br>
      * 
+     * @param col		The collection to store the result.
+     * @param after		'created after' Timestamp in milliseconds
+     * @param before	'created before' Timestamp in milliseconds
+     * @param stati		Media status (<code>null</code> to get all media for given time range)
+     * @param offset	Offset of the find result. (used for paging.
+     * @param limit		Max. number of results to return. (used for paging)
+     * @param desc		Sort order. if true descending, false ascending order.
+     * 
+     * @return	The total number of search results.
      * 
      * @ejb.interface-method
      */
@@ -346,6 +403,15 @@ public abstract class MediaComposerBean implements SessionBean {
      * Add all founded media to the given collection.<br>
      * This allows to fill a collection with sequential calls without clearing the collection.<br>
      * 
+     * @param col		The collection to store the result.
+     * @param after		'updated after' Timestamp in milliseconds
+     * @param before	'updated before' Timestamp in milliseconds
+     * @param stati		Media status (<code>null</code> to get all media for given time range)
+     * @param offset	Offset of the find result. (used for paging.
+     * @param limit		Max. number of results to return. (used for paging)
+     * @param desc		Sort order. if true descending, false ascending order.
+     * 
+     * @return	The total number of search results.
      * 
      * @ejb.interface-method
      */
@@ -361,6 +427,13 @@ public abstract class MediaComposerBean implements SessionBean {
     	return mediaHome.countByUpdatedTime( stati, tsAfter, tsBefore );
     }
     
+    /**
+     * Converts a collection of MediaLocal objects to a list of MediaDTO objects.
+     * 
+     * @param c Collection with MediaLocal objects.
+     * 
+     * @return List of MediaDTO objects.
+     */
     private List toMediaDTOs(Collection c) {
         ArrayList list = new ArrayList();
         for (Iterator it = c.iterator(); it.hasNext();) {
@@ -369,6 +442,13 @@ public abstract class MediaComposerBean implements SessionBean {
         return list;
     }
 
+    /**
+     * Creates a MediaDTO object for given given MediaLocal object.
+     * 
+     * @param media A MediaLocal object.
+     * 
+     * @return The MediaDTO object for given MediaLocal.
+     */
     private MediaDTO toMediaDTO(MediaLocal media) {
         MediaDTO dto = new MediaDTO();
         dto.setPk(media.getPk().intValue());
@@ -384,6 +464,11 @@ public abstract class MediaComposerBean implements SessionBean {
     }    
 
     /**
+     * Set the media creation request IUID.
+     * 
+     * @param pk 	Primary key of media.
+     * @param iuid	Media creation request IUID to set.
+     * 
      * @ejb.interface-method
      */
     public void setMediaCreationRequestIuid(int pk, String iuid)
@@ -393,6 +478,12 @@ public abstract class MediaComposerBean implements SessionBean {
     }
 
     /**
+     * Set media staus and status info.
+     * 
+     * @param pk		Primary key of media.
+     * @param status	Status to set.
+     * @param info		Status info to set.
+     * 
      * @ejb.interface-method
      */
     public void setMediaStatus(int pk, int status, String info)
@@ -400,5 +491,74 @@ public abstract class MediaComposerBean implements SessionBean {
         MediaLocal media = mediaHome.findByPrimaryKey(new Integer(pk));
         media.setMediaStatus(status);
         media.setMediaStatusInfo(info);
+        if ( status == MediaDTO.COMPLETED )
+        	updateSeriesAndStudies( media );
+    }
+    
+    /**
+     * Returns a collection of study IUIDs of a given media.
+     * 
+     * @param pk Primary key of the media.
+     * 
+     * @return Collection with study IUIDs.
+     * 
+     * @ejb.interface-method
+     */
+    public Collection getStudyUIDSForMedia( int pk ) throws FinderException {
+    	Collection c = new ArrayList();
+    	MediaLocal media = mediaHome.findByPrimaryKey( new Integer(pk) );
+    	Collection studies = studyHome.findStudiesOnMedia( media );
+    	for ( Iterator iter = studies.iterator(); iter.hasNext() ; ) {
+    		c.add( ((StudyLocal) iter.next()).getStudyIuid() );
+    	}
+    	return c;
+    }
+    
+    /**
+     * Returns a dataset for media creation request for given media.
+     * <p>
+     * <DL>
+     * <DT>Set following Tags in dataset.</DT>
+     * <DD>SpecificCharacterSet</DD>
+     * <DD>StorageMediaFileSetID</DD>
+     * <DD>StorageMediaFileSetUID</DD>
+     * <DD>RefSOPSeq with instances of the media.</DD>
+     * </DL>
+     * 
+     * @param pk Primary key of the media.
+     * 
+     * @return Prepared Dataset for media creation request.
+     * 
+     * @ejb.interface-method
+     */
+    public Dataset prepareMediaCreationRequest( int pk ) throws FinderException {
+    	MediaLocal media = mediaHome.findByPrimaryKey( new Integer(pk) );
+		Dataset ds = DcmObjectFactory.getInstance().newDataset();
+		ds.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");
+		ds.putSH(Tags.StorageMediaFileSetID, media.getFilesetId() );
+		ds.putUI(Tags.StorageMediaFileSetUID, media.getFilesetIuid() );
+    	Collection c = media.getInstances();
+    	InstanceLocal il;
+        DcmElement refSOPSeq = ds.putSQ(Tags.RefSOPSeq);
+    	for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
+    		il = (InstanceLocal) iter.next();
+        	Dataset item = refSOPSeq.addNewItem();
+            item.putUI(Tags.RefSOPInstanceUID, il.getSopIuid());
+            item.putUI(Tags.RefSOPClassUID, il.getSopCuid());
+    	}
+    	return ds;
+    }
+    
+    private void updateSeriesAndStudies( MediaLocal media ) throws FinderException {
+    	Collection series = seriesHome.findSeriesOnMedia( media );
+    	Iterator iter = series.iterator();
+    	while ( iter.hasNext() ) {
+    		( (SeriesLocal) iter.next() ).updateDerivedFields();
+    	}
+    	Collection studies = studyHome.findStudiesOnMedia( media );
+    	iter = studies.iterator();
+    	while ( iter.hasNext() ){
+    		( (StudyLocal) iter.next()).updateDerivedFields();
+    	}
     }
 }
