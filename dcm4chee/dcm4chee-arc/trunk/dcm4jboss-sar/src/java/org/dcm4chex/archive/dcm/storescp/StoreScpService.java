@@ -218,6 +218,7 @@ public class StoreScpService extends AbstractScpService {
 
     public void setAcceptStorageCommitment(boolean storageCommitmentPushModel) {
         this.acceptStorageCommitment = storageCommitmentPushModel;
+        updatePolicy();
     }
 
     public final boolean isAcceptJPEG2000Lossless() {
@@ -226,6 +227,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEG2000Lossless(boolean acceptJPEG2000Lossless) {
         this.acceptJPEG2000Lossless = acceptJPEG2000Lossless;
+        updatePolicy();
     }
 
     public final boolean isAcceptJPEG2000Lossy() {
@@ -234,6 +236,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEG2000Lossy(boolean acceptJPEG2000Lossy) {
         this.acceptJPEG2000Lossy = acceptJPEG2000Lossy;
+        updatePolicy();
     }
 
     public final boolean isAcceptJPEGBaseline() {
@@ -242,6 +245,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGBaseline(boolean acceptJPEGBaseline) {
         this.acceptJPEGBaseline = acceptJPEGBaseline;
+        updatePolicy();
     }
 
     public final boolean isAcceptJPEGExtended() {
@@ -250,6 +254,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGExtended(boolean acceptJPEGExtended) {
         this.acceptJPEGExtended = acceptJPEGExtended;
+        updatePolicy();
     }
 
     public final boolean isAcceptJPEGLossless() {
@@ -258,6 +263,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLossless(boolean acceptJPEGLossless) {
         this.acceptJPEGLossless = acceptJPEGLossless;
+        updatePolicy();
     }
 
     public final boolean isAcceptJPEGLossless14() {
@@ -266,6 +272,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLossless14(boolean acceptJPEGLossless14) {
         this.acceptJPEGLossless14 = acceptJPEGLossless14;
+        updatePolicy();
     }
 
     public final boolean isAcceptJPEGLSLossless() {
@@ -274,6 +281,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLSLossless(boolean acceptJPEGLSLossless) {
         this.acceptJPEGLSLossless = acceptJPEGLSLossless;
+        updatePolicy();
     }
 
     public final boolean isAcceptJPEGLSLossy() {
@@ -282,6 +290,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptJPEGLSLossy(boolean acceptJPEGLSLossy) {
         this.acceptJPEGLSLossy = acceptJPEGLSLossy;
+        updatePolicy();
     }
 
     public final boolean isAcceptRLELossless() {
@@ -290,6 +299,7 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setAcceptRLELossless(boolean acceptRLELossless) {
         this.acceptRLELossless = acceptRLELossless;
+        updatePolicy();
     }
 
     public final int getBufferSize() {

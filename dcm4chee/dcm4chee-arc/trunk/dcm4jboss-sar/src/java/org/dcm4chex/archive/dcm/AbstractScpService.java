@@ -137,6 +137,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         if (getState() == STARTED)
             updatePolicy(null);
         this.calledAETs = calledAETs;
+        updatePolicy();
+    }
+
+    protected void updatePolicy() {
         if (getState() == STARTED)
             updatePolicy(makeAcceptorPolicy());
     }
@@ -147,8 +151,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public final void setCallingAETs(String[] callingAETs) {
         this.callingAETs = callingAETs;
-        if (getState() == STARTED)
-            updatePolicy(makeAcceptorPolicy());
+        updatePolicy();
     }
     
     public final boolean isAcceptExplicitVRLE() {
@@ -157,8 +160,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public final void setAcceptExplicitVRLE(boolean acceptExplicitVRLE) {
         this.acceptExplicitVRLE = acceptExplicitVRLE;
-        if (getState() == STARTED)
-            updatePolicy(makeAcceptorPolicy());
+        updatePolicy();
     }
     
     protected void startService() throws Exception {
