@@ -60,10 +60,16 @@ abstract class FragmentElement extends DcmElementImpl {
     }
     
     public final ByteBuffer getDataFragment(int index) {
+        if (index >= vm()) {
+            return null;
+        }
         return (ByteBuffer)list.get(index);
     }
     
     public final ByteBuffer getDataFragment(int index, ByteOrder byteOrder) {
+        if (index >= vm()) {
+            return null;
+        }
         ByteBuffer data = (ByteBuffer)list.get(index);
         if (data.order() != byteOrder) {
             swapOrder(data);
@@ -72,6 +78,9 @@ abstract class FragmentElement extends DcmElementImpl {
     }
     
     public final int getDataFragmentLength(int index) {
+        if (index >= vm()) {
+            return 0;
+        }
         ByteBuffer data = (ByteBuffer)list.get(index);
         return (data.limit()+1)&(~1);
     }
@@ -81,8 +90,9 @@ abstract class FragmentElement extends DcmElementImpl {
     }
     
     public String getBoundedString(int maxLen, int index, Charset cs) {
-        if (index >= vm())
-            return index == 0 ? "" : null;
+        if (index >= vm()) {
+            return null;
+        }
         return StringUtils.promptValue(vr(), getDataFragment(index), maxLen);
     }
 

@@ -46,6 +46,8 @@ dcm4che API:
 + rename org.dcm4che.net.Factory to org.dcm4che.net.AssociationFactory
 + relax VR value check for most VR types to log warning insteed
   throw IllegalValueException
++ org.dcm4che.data.DcmObject#get??(tag, index)
+  return null/0, if index >= vm(), instead throw RuntimeException
 
 -------------------------------------------------------------------------------
 dcm4che 1.0.2 -  - Changes since dcm4che 1.0.1

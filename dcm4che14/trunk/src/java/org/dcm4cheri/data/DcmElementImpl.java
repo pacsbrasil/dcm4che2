@@ -229,13 +229,6 @@ class DcmElementImpl implements DcmElement {
         throw new UnsupportedOperationException("" + this);
     }
 
-    protected int checkIndex(int index) {
-        if (index < 0 || index >= vm()) 
-            throw new IndexOutOfBoundsException(
-                    "Index: "+index+", VM: "+ vm());
-        return index;
-    }
- 
     public void addDataFragment(ByteBuffer byteBuffer) {
         throw new UnsupportedOperationException("" + this);
     }

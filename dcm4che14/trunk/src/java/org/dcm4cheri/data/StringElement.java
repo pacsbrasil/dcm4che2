@@ -162,8 +162,9 @@ abstract class StringElement extends ValueElement {
 
     public String getString(int index, Charset cs)
             throws DcmValueException {
-        if (index >= vm())
-            return index == 0 ? "" : null;
+        if (index >= vm()) {
+            return null;
+        }
         try {
             return trim.trim((cs != null ? cs : Charsets.ASCII).newDecoder()
                     .decode(getByteBuffer(index)).toString());
@@ -180,7 +181,9 @@ abstract class StringElement extends ValueElement {
     }
     
     public ByteBuffer getByteBuffer(int index) {
-        checkIndex(index);
+        if (index >= vm()) {
+            return null;
+        }
         return (ByteBuffer)data.rewind();
     }
 
@@ -304,7 +307,9 @@ abstract class StringElement extends ValueElement {
         }
         
         public ByteBuffer getByteBuffer(int index) {
-            checkIndex(index);           
+            if (index >= vm()) {
+                return null;
+            }
             return vm() == 1 ? (ByteBuffer)data.rewind() : ByteBuffer.wrap(
                     data.array(), delimPos[index]+1,
                     delimPos[index+1]-delimPos[index]-1);

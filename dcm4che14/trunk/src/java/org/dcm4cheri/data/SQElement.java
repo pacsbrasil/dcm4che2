@@ -59,6 +59,9 @@ class SQElement extends DcmElementImpl {
     }
 
     public Dataset getItem(int index) {
+        if (index >= vm()) {
+            return null;
+        }
         return (Dataset)list.get(index);
     }
     
