@@ -11,6 +11,7 @@ package org.dcm4chex.archive.ejb.entity;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -117,16 +118,22 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
     /**    
      * @ejb.home-method
      */
-    public java.util.Collection ejbHomeListOnFileSystems(Set dirPaths)
+    public java.util.Collection ejbHomeListOnFileSystems(Set dirPaths, Timestamp tsBefore )
             throws FinderException {
         if (dirPaths.isEmpty())
             return Collections.EMPTY_LIST;
-        Object[] args = dirPaths.toArray();
+        Object[] args = new Object[]{tsBefore};
         StringBuffer jbossQl = new StringBuffer(
-                "SELECT OBJECT(s) FROM StudyOnFileSystem s WHERE s.fileSystem.directoryPath IN (?1");
-        for (int i = 2; i <= args.length; ++i)
-            jbossQl.append(", ?").append(i);
-        jbossQl.append(") ORDER BY accessTime ASC");
+                "SELECT OBJECT(s) FROM StudyOnFileSystem s WHERE s.fileSystem.directoryPath IN ('"+args[0]);
+        for ( Iterator iter = dirPaths.iterator(); iter.hasNext(); )
+            jbossQl.append("', '").append( iter.next() );
+        jbossQl.append("')");
+        if ( tsBefore != null ) {
+        	jbossQl.append(" AND s.accessTime < ?1");
+        } else {
+        	args[0] = "dummy";//null not allowed in args!
+        }
+        jbossQl.append(" ORDER BY s.accessTime ASC");
         if (log.isDebugEnabled())
             log.debug("Execute JBossQL: " + jbossQl);
         // call dynamic-ql query
