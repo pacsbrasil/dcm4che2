@@ -27,7 +27,7 @@ public class ImagePanel extends JPanel
     private byte[] lastPLut;
     //only used for saving the originally loaded BufferedImage when we have to
     // apply (and reapply) the P-LUT to an RGB image's Raster (thereby changing it)
-    private BufferedImage oldBI;
+    private BufferedImage origBI;
     private boolean applyingPLutToRGB;
     
     ImagePanel(File image)
@@ -112,7 +112,7 @@ public class ImagePanel extends JPanel
         throws IOException
     {
         if (applyingPLutToRGB) {
-            return applyPLutToRGB(bi, param.getPValToDDL());
+            return applyPLutToRGB(param.getPValToDDL());
         }
         else {
             ColorModelFactory cmFactory = ColorModelFactory.getInstance();
@@ -212,7 +212,8 @@ public class ImagePanel extends JPanel
                 else {
                     //on failure, apply the P-LUT directly to gray RGB values
                     // in the BufferedImage raster
-                    bi = applyPLutToRGB(oldBI = bi, plut);
+                    origBI = bi;
+                    bi = applyPLutToRGB(plut);
                     applyingPLutToRGB = true;
                     //ignore window for these types of images
                     windowMin = windowMax = 0;
@@ -233,16 +234,14 @@ public class ImagePanel extends JPanel
                 Math.max(Math.max(r, g), b) - Math.min(Math.min(r, g), b);
     }
     
-    private BufferedImage applyPLutToRGB(BufferedImage bi, byte[] pValToDDL)
+    private BufferedImage applyPLutToRGB(byte[] pValToDDL)
     {
-        bi = oldBI;  //restore original RGB image
-        
-        final int w = bi.getWidth();
-        final int h = bi.getHeight();
-        final int[] data = bi.getRGB(0, 0, w, h, null, 0, w);
-
+        final int w = origBI.getWidth();
+        final int h = origBI.getHeight();
+        final int[] data = origBI.getRGB(0, 0, w, h, null, 0, w);
         int count = 0;
         int shift = pValToDDL.length == 4096 ? 4 : 0;
+        
         for (int rgb, i = 0; i < data.length; ++i) {
             rgb = data[i];
             if (isGray(rgb)) {
