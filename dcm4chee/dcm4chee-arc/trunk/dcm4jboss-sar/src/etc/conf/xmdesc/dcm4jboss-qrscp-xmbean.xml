@@ -194,7 +194,7 @@
       <description>Transaction Isolation Level for Query 
           (DEFAULT|READ_UNCOMMITTED|READ_COMMITTED|REPEATABLE_READ|SERIALIZABLE)
       </description>
-      <name>RetrieveTransactionIsolationLevel</name>
+      <name>QueryTransactionIsolationLevel</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="DEFAULT" />
