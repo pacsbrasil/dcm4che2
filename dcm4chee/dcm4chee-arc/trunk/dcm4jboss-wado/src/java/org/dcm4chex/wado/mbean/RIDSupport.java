@@ -12,9 +12,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -40,9 +45,12 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.srom.SRDocumentFactory;
+import org.dcm4che.util.ISO8601DateFormat;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.RIDResponseObject;
@@ -73,6 +81,8 @@ public class RIDSupport {
 	private static List conceptNameCodes;
 	private boolean useXSLInstruction;
 	private static ObjectName fileSystemMgtName;
+	
+	private Dataset patientDS = null;
 
 	public RIDSupport( MBeanServer mbServer ) {
 		if ( server != null ) {
@@ -179,12 +189,20 @@ public class RIDSupport {
 	 * @throws TransformerConfigurationException
 	 */
 	public RIDResponseObject getRIDSummary(RIDRequestObject reqObj) throws SQLException, IOException, TransformerConfigurationException, SAXException {
+		String contentType = checkContentType( reqObj, new String[]{"text/xml","text/html","text/xhtml" } );
+		if ( contentType == null ) {
+			return new RIDStreamResponseObjectImpl( null, "text/html", HttpServletResponse.SC_NOT_ACCEPTABLE, "Client doesnt support text/xml, text/html or text/xhtml !");
+		}
 		Dataset queryDS;
 		if (log.isDebugEnabled() ) log.debug(" Summary request type:"+reqObj.getRequestType());
 		if ( "SUMMARY-CARDIOLOGY-ECG".equals( reqObj.getRequestType() ) ) {
 			return getECGSummary( reqObj );
 		} else {
 			queryDS = getRadiologyQueryDS( reqObj );
+			if ( queryDS == null )
+				return new RIDStreamResponseObjectImpl( null, "text/html", HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
+			
+
 		}
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
@@ -194,11 +212,54 @@ public class RIDSupport {
         	cnSq.addItem( (Dataset) iter.next() );
         	fillDocList( docList, queryDS );
 		}
-		queryDS.get( Tags.ConceptNameCodeSeq ).getItem().putCS( Tags.CodeMeaning );//we want code meaning in result (filtering)
+		if ( docList.size() < 1 ) {
+			log.info("No documents found: patientDS:"+patientDS);
+			if ( patientDS != null ) {
+				log.info("patientDS last:"+patientDS.getString( Tags.PatientName));
+	        	PersonName pn = patientDS.getPersonName(Tags.PatientName );
+	        	if ( pn != null ) {
+		        	log.info("family:"+ pn.get( PersonName.FAMILY ));
+		        	log.info("givenName:"+ pn.get( PersonName.GIVEN ));
+	        	}
+				
+				docList.setQueryDS( patientDS );
+			}
+		}
+		if ( ! contentType.equals("text/xml") ) { //client doesn't support xml, -> transform to (x)html
+			docList.setXslt( new URL( ridSummaryXsl ) );
+		}
 		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
 		return new RIDTransformResponseObjectImpl(docList, "text/xml", HttpServletResponse.SC_OK, null);
 	}
 	
+	/**
+	 * Checks if one of the given content types are allowed.
+	 * <p>
+	 * 
+	 * 
+	 * @param reqObj	The RID request object.
+	 * @param types		Array of content types that can be used.
+	 * 
+	 * @return The content type that is allowed by the request or null.
+	 */
+	private String checkContentType(RIDRequestObject reqObj, String[] types) {
+		List allowed = reqObj.getAllowedContentTypes();
+		String s;
+		log.info(" check against:"+allowed);
+		for ( int i = 0, len = types.length ; i < len ; i++ ) {
+			s = types[i];
+			log.info(" check "+s+":"+allowed.contains( s )+" ,"+s.substring( 0, s.indexOf( "/") )+"/*: "+allowed.contains( s.substring( 0, s.indexOf( "/") )+"/*" ) );
+			if ( allowed.contains( s ) || allowed.contains( s.substring( 0, s.indexOf( "/") )+"/*" ) ) {
+				return s;
+			}
+		}
+		log.info(" check */*:"+allowed.contains("*/*") );
+		if ( allowed.contains("*/*") ) {
+			return types[0];
+		}
+		return null;
+	}
+
 	private RIDResponseObject getECGSummary( RIDRequestObject reqObj ) throws SQLException {
 		Dataset queryDS = getECGQueryDS( reqObj );
 	    IHEDocumentList docList= new IHEDocumentList();
@@ -228,7 +289,20 @@ public class RIDSupport {
 			docList.setDocDisplayName( "List of cardiology reports");
 		else if ("SUMMARY-CARDIOLOGY-ECG".equals( docCode ) )
 			docList.setDocDisplayName( "List of ECG's");
-		
+		String mrr = reqObj.getParam("mostRecentResults");
+		docList.setMostRecentResults( Integer.parseInt(mrr));
+		String ldt = reqObj.getParam("lowerDateTime");
+		if ( ldt != null ) {
+			try {
+				docList.setLowerDateTime( new ISO8601DateFormat().parse( ldt ) );
+			} catch (ParseException e) {} //Is checked in request object!
+		}
+		String udt = reqObj.getParam("upperDateTime");
+		if ( udt != null ) {
+			try {
+				docList.setUpperDateTime( new ISO8601DateFormat().parse( udt ) );
+			} catch (ParseException e) {} //Is checked in request object!
+		}
 	}
 	
 	private void fillDocList( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
@@ -238,8 +312,11 @@ public class RIDSupport {
 		    Dataset ds = factory.newDataset();
 			while ( qCmd.next() ) {
 				ds = qCmd.getDataset();
-				if ( log.isDebugEnabled() ) log.debug("ds:"+ds);
-				docList.add( ds );
+				Date date = ds.getDateTime( Tags.ContentDate, Tags.ContentTime );
+				if ( checkDate( docList, date ) ) {
+					if ( log.isDebugEnabled() ) log.debug("Add to docList! ds:"+ds);
+					docList.add( ds );
+				}
 			}
 		} catch ( SQLException x ) {
 			qCmd.close();
@@ -248,18 +325,100 @@ public class RIDSupport {
 		qCmd.close();
 	}
 
+
+	/**
+	 * @param docList
+	 * @param date
+	 * @return
+	 */
+	private boolean checkDate(IHEDocumentList docList, Date date) {
+		Date ldt = docList.getLowerDateTime();
+		Date udt = docList.getUpperDateTime();
+		if ( ldt == null && udt == null ) return true;
+		if ( ldt != null ) {
+			if ( udt != null ) {
+				return ( ldt.compareTo( date ) <= 0 ) && ( udt.compareTo( date ) >= 0 );
+			} else {
+				return ( ldt.compareTo( date ) <= 0 );
+			}
+		} else {
+			return ( udt.compareTo( date ) >= 0 );
+		}
+	}
+
 	/**
 	 * @param reqObj
 	 * @return
 	 */
 	private Dataset getRadiologyQueryDS(RIDRequestObject reqObj) {
 		String patID = reqObj.getParam( "patientID" );
+		String[] pat = splitPatID( patID );
+		pat = checkPatient( pat );
+		log.info("getRadiologyQueryDS: pat:"+pat);
+		if ( pat == null ) return null;
 		Dataset ds = factory.newDataset();
         ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-		ds.putLO(Tags.PatientID, patID);
+		ds.putLO(Tags.PatientID, pat[0]);
+		if ( pat[1] != null ) { // Issuer of patientID is known. 
+			ds.putLO(Tags.IssuerOfPatientID, pat[1]);
+		}
 		ds.putCS( Tags.Modality, "SR" );
 		//Concept name sequence will be used as search criteria. -> within a loop over all radiology specific concept names.
 		return ds;
+	}
+
+
+	/**
+	 * @param pat
+	 * @return
+	 */
+	private String[] checkPatient(String[] pat) {
+		log.info("checkPatient:"+pat[0]+","+pat[1]);
+		Dataset ds = factory.newDataset();
+        ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
+		ds.putLO(Tags.PatientID, pat[0]);
+		Dataset ds1;
+		QueryCmd qCmd = null;
+		String issuer = null;
+		boolean foundWithoutIssuer = false;
+		try {
+			qCmd = QueryCmd.create( ds, false );
+			qCmd.execute();
+			while ( qCmd.next() ) {
+				ds1 = qCmd.getDataset();
+				if ( pat[1] != null ) {
+					issuer = ds1.getString( Tags.IssuerOfPatientID );
+					if ( log.isDebugEnabled() ) log.debug("checkPatient: issuer:"+issuer);
+					if ( pat[1].equals( issuer ) ) {
+						patientDS = ds1;
+						break;
+					} else if ( issuer == null ) {
+						patientDS = ds1;
+						foundWithoutIssuer = true;
+					}
+				} else {
+					if ( foundWithoutIssuer ) { //OK one more record -> result is not ambigous
+						log.info("Request issuer unknown; More than one patient found with given ID!");
+						qCmd.close();
+						patientDS = null;
+						return null;//Throw Exception instead?
+					}
+					foundWithoutIssuer = true; //to indicate one record is found
+					patientDS = ds1;
+				}
+			}
+			qCmd.close();
+		} catch ( SQLException x ) {
+			log.error( "Unexpected Error in isQueryDSMatching:"+x.getMessage(), x);
+		}
+		if ( qCmd != null ) qCmd.close();
+		if ( log.isDebugEnabled() ) log.debug("checkPatient: result: issuer:"+issuer+" vs:"+pat[1]+" foundWithoutIssuer:"+foundWithoutIssuer);
+		if ( pat[1] != null && pat[1].equals( issuer ) ) return pat; //OK fully match.
+		if ( foundWithoutIssuer ) {
+			pat[1] = null;
+			return pat;
+		}
+		return null;
 	}
 
 
@@ -284,8 +443,21 @@ public class RIDSupport {
 		String docUID = reqObj.getParam("documentUID");
 		if ( log.isDebugEnabled() ) log.debug(" Document UID:"+docUID);
 		String contentType = reqObj.getParam("preferredContentType");
-		if ( contentType == null || ( reqObj.getAllowedContentTypes() != null && ! reqObj.getAllowedContentTypes().contains( contentType))){
+		if ( contentType == null ) {
 			contentType = "application/pdf";
+		} else {
+			if ( contentType.equals( "image/jpeg" )) {
+				if ( this.checkContentType( reqObj, new String[]{ "image/jpeg" } ) == null ) {
+					return new RIDStreamResponseObjectImpl( null, "text/html", HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+				}
+				return handleJPEG( reqObj );
+			}
+			if ( ! contentType.equals( "application/pdf") ) {
+				return new RIDStreamResponseObjectImpl( null, "text/html", HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' is supported !");
+			}
+		}
+		if ( this.checkContentType( reqObj, new String[]{ "application/pdf" } ) == null ) {
+			return new RIDStreamResponseObjectImpl( null, "text/html", HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
 		}
 		WADOCache cache = WADOCacheImpl.getRIDCache();
 		File outFile = cache.getFileObject(null, null, reqObj.getParam("documentUID"), contentType );
@@ -303,6 +475,31 @@ public class RIDSupport {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	/**
+	 * @param reqObj
+	 * @return
+	 */
+	private RIDResponseObject handleJPEG(RIDRequestObject reqObj) {
+		// TODO Auto-generated method stub
+		URL url = null;
+		try {
+			url = new URL("http://localhost:8080/dcm4jboss-wado/wado?requestType=WADO&studyUID=1&seriesUID=1&objectUID="+reqObj.getParam("documentUID") );
+			if (log.isDebugEnabled() ) log.debug("Image request redirected to WADO url:"+url );
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.connect();
+			if ( conn.getResponseCode() != HttpServletResponse.SC_OK ) {
+				if (log.isInfoEnabled() ) log.info("WADO server responses with:"+conn.getResponseMessage() );
+				return new RIDStreamResponseObjectImpl( null, conn.getContentType(), conn.getResponseCode(), conn.getResponseMessage() );
+			}
+			InputStream is = conn.getInputStream();
+			return new RIDStreamResponseObjectImpl( is, conn.getContentType(), HttpServletResponse.SC_OK, null);
+		} catch (Exception e) {
+			log.error("Can't connect to WADO service:"+url, e);
+			return new RIDStreamResponseObjectImpl( null, "image/jpeg", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant connect to WADO service!");
+		}
+		
 	}
 
 	/**
@@ -334,7 +531,7 @@ public class RIDSupport {
         Transformer t = template.newTransformer();
         t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
         out.close();
-        tmpFile.delete();
+        //TODO tmpFile.delete();
         if ( ! outFile.exists() ) return null;
         return outFile;
 	}
@@ -369,5 +566,16 @@ public class RIDSupport {
 	    }
 		return null;
 	}
+	
+	/**
+	 * @param patientID patient id in form patientID^^^issuerOfPatientID
+	 * @return String[] 0..patientID 1.. issuerOfPatientID
+	 */
+	private String[] splitPatID(String patientID) {
+		String[] pat = new String[]{null,null};
+		String[] sa = StringUtils.split(patientID, '^');
+		return new String[]{ sa[0], sa.length > 3 ? sa[3] : null };
+	}
+
 	
 }
