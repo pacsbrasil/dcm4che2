@@ -101,7 +101,7 @@ public class AEService
         while (stk.hasMoreTokens()) {
             DcmURL url = new DcmURL(stk.nextToken());
             try {
-                getHome().findByPrimaryKey(url.getCalledAET()).remove();
+                getHome().findByAET(url.getCalledAET()).remove();
             } catch (FinderException ignore) {
             } catch (RemoveException ignore) {
             }
