@@ -94,8 +94,9 @@ class DcmElementImpl implements DcmElement {
     }
     
     public final int compareTo(Object o) {
-        return (int)((tag & 0xffffffffL)
-                - ((DcmElementImpl)o).tag & 0xffffffffL);
+		long tmp = (tag & 0xffffffffL)
+				- (((DcmElementImpl)o).tag & 0xffffffffL);
+   		return tmp > 0L ? 1 : tmp < 0L ? -1 : 0;
     }
     
     public String toString() {
