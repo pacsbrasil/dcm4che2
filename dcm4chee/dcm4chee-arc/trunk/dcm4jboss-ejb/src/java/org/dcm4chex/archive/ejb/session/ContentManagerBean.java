@@ -35,6 +35,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.dcm4chex.archive.ejb.interfaces.AELocalHome;
 import org.dcm4chex.archive.ejb.interfaces.DTOFactory;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
@@ -84,6 +85,11 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  *  view-type="local"
  *  ref-name="ejb/Instance" 
  *
+ * @ejb.ejb-ref
+ *  ejb-name="AE" 
+ *  view-type="local"
+ *  ref-name="ejb/AE" 
+ *
  * @ejb:resource-ref
  *  res-name="jdbc/DefaultDS"
  *  res-type="javax.sql.DataSource"
@@ -99,7 +105,9 @@ public abstract class ContentManagerBean implements SessionBean {
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
     private SeriesLocalHome seriesHome;
-
+    private AELocalHome aeHome;
+    
+    
     public void setSessionContext(SessionContext arg0)
         throws EJBException, RemoteException {
         Context jndiCtx = null;
@@ -112,6 +120,8 @@ public abstract class ContentManagerBean implements SessionBean {
                 (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
             seriesHome =
                 (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+            aeHome =
+            	(AELocalHome) jndiCtx.lookup("java:comp/env/ejb/AE");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -213,4 +223,20 @@ public abstract class ContentManagerBean implements SessionBean {
         }
         return result;
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public List getAes() throws EJBException
+	{
+    	try 
+		{
+			ArrayList ret =new ArrayList();
+			ret.addAll(aeHome.findAll());
+    		return ret;
+    	} catch (FinderException e) {
+    		throw new EJBException(e);
+    	}
+    }
+    
 }

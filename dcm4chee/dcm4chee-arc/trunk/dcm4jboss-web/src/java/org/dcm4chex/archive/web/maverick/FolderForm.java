@@ -36,17 +36,18 @@ import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
  */
 public class FolderForm
 {
-    static final String FOLDER_ATTRNAME = "folderFrom";
-    static FolderForm getFolderForm(HttpServletRequest request) {
-        FolderForm form =
-            (FolderForm) request.getSession().getAttribute(
-                FOLDER_ATTRNAME);
-        if (form == null) {
-            form = new FolderForm();
-            request.getSession().setAttribute(FOLDER_ATTRNAME, form);
-        }
-        return form;
-    }
+	static final String FOLDER_ATTRNAME = "folderFrom";
+	static FolderForm getFolderForm(HttpServletRequest request)
+	{
+		FolderForm form =
+			(FolderForm) request.getSession().getAttribute(FOLDER_ATTRNAME);
+		if (form == null)
+		{
+			form = new FolderForm();
+			request.getSession().setAttribute(FOLDER_ATTRNAME, form);
+		}
+		return form;
+	}
 
 	public static final int LIMIT = 10;
 
@@ -166,24 +167,24 @@ public class FolderForm
 		return patients;
 	}
 
-    public final void setFilter(String filter)
-    {
-        offset = 0;
-        total = -1;
-        studyFilter = null;
-    }
+	public final void setFilter(String filter)
+	{
+		offset = 0;
+		total = -1;
+		studyFilter = null;
+	}
 
-    public final void setNext(String next)
-    {
-        offset += LIMIT;
-    }
+	public final void setNext(String next)
+	{
+		offset += LIMIT;
+	}
 
-    public final void setPrev(String prev)
-    {
-        offset = Math.max(0, offset - LIMIT);
-    }
+	public final void setPrev(String prev)
+	{
+		offset = Math.max(0, offset - LIMIT);
+	}
 
-    public final StudyFilterDTO getStudyFilter()
+	public final StudyFilterDTO getStudyFilter()
 	{
 		if (studyFilter == null)
 		{
@@ -230,7 +231,9 @@ public class FolderForm
 				List stickyStudies = stickyPat.getStudies();
 				for (int j = stickyStudies.size(); --j >= 0;)
 				{
-					mergeSticky((StudyDTO) stickyStudies.get(j), pat.getStudies());
+					mergeSticky(
+						(StudyDTO) stickyStudies.get(j),
+						pat.getStudies());
 				}
 				return;
 			}
@@ -248,7 +251,9 @@ public class FolderForm
 				List stickySeries = stickyStudy.getSeries();
 				for (int j = stickySeries.size(); --j >= 0;)
 				{
-					mergeSticky((SeriesDTO) stickySeries.get(j), study.getSeries());
+					mergeSticky(
+						(SeriesDTO) stickySeries.get(j),
+						study.getSeries());
 				}
 				return;
 			}
@@ -266,7 +271,9 @@ public class FolderForm
 				List stickyInstances = stickySerie.getInstances();
 				for (int j = stickyInstances.size(); --j >= 0;)
 				{
-					mergeSticky((InstanceDTO) stickyInstances.get(j), serie.getInstances());
+					mergeSticky(
+						(InstanceDTO) stickyInstances.get(j),
+						serie.getInstances());
 				}
 				return;
 			}
@@ -295,8 +302,7 @@ public class FolderForm
 			if (isSticky((StudyDTO) it.next()))
 			{
 				sticky = true;
-			}
-			else
+			} else
 			{
 				it.remove();
 			}
@@ -312,8 +318,7 @@ public class FolderForm
 			if (isSticky((SeriesDTO) it.next()))
 			{
 				sticky = true;
-			}
-			else
+			} else
 			{
 				it.remove();
 			}
@@ -329,8 +334,7 @@ public class FolderForm
 			if (isSticky((InstanceDTO) it.next()))
 			{
 				sticky = true;
-			}
-			else
+			} else
 			{
 				it.remove();
 			}
@@ -401,5 +405,56 @@ public class FolderForm
 		}
 		return null;
 	}
-}
 
+	public void removeStickies()
+	{
+		PatientDTO patient;
+		StudyDTO study;
+		SeriesDTO series;
+		InstanceDTO instance;
+		for (Iterator patient_iter = patients.iterator();patient_iter.hasNext();)
+		{
+			patient = (PatientDTO) patient_iter.next();
+			if (stickyPatients.contains(String.valueOf(patient.getPk())))
+			{
+				patient_iter.remove();
+				stickyPatients.remove(String.valueOf(patient.getPk()));
+			} else
+				for (Iterator study_iter = patient.getStudies().iterator();
+					study_iter.hasNext();
+					)
+				{
+					study = (StudyDTO) study_iter.next();
+					if (stickyStudies.contains(String.valueOf(study.getPk())))
+					{
+						study_iter.remove();
+						stickyStudies.remove(String.valueOf(study.getPk()));
+					} else
+						for (Iterator series_iter =
+							study.getSeries().iterator();
+							series_iter.hasNext();
+							)
+						{
+							series = (SeriesDTO) series_iter.next();
+							if (stickySeries.contains(String.valueOf(series.getPk())))
+							{
+								series_iter.remove();
+								stickySeries.remove(String.valueOf(series.getPk()));
+							} else
+								for (Iterator instance_iter =
+									series.getInstances().iterator();
+									instance_iter.hasNext();
+									)
+								{
+									instance = (InstanceDTO) instance_iter.next();
+									if (isSticky(instance))
+									{
+										instance_iter.remove();
+										stickyInstances.remove(String.valueOf(instance.getPk()));
+									}
+								}
+						}
+				}
+		}
+	}
+}

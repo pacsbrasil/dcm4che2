@@ -66,10 +66,15 @@
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 								</input>
+							  <input type="ae" name="ae" value="AE"/>								
 							  <input type="submit" name="send" value="Send" disabled="disabled"/>
 							  <input type="submit" name="move" value="Move" disabled="disabled"/>
 							  <input type="submit" name="merge" value="Merge" disabled="disabled"/>
-							  <input type="submit" name="del" value="Del" disabled="disabled"/>
+							  <input type="submit" name="del" value="Del" onclick="return confirm('Are you sure you want to delete?')">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+								</input>							  
 								</td>
 							</tr>
 						</table>

@@ -26,6 +26,7 @@ import java.util.Date;
 
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -35,10 +36,14 @@ import javax.sql.DataSource;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.DTO2Dataset;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientDTO;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.SeriesDTO;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 
 /**
@@ -88,93 +93,201 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *  res-ref-name="jdbc/DefaultDS"
  *  resource-name="java:/DefaultDS"
  */
-public abstract class ContentEditBean implements SessionBean {
+public abstract class ContentEditBean implements SessionBean
+{
 
-    private DataSource ds;
-    private PatientLocalHome patHome;
-    private StudyLocalHome studyHome;
-    private SeriesLocalHome seriesHome;
+	private DataSource ds;
+	private PatientLocalHome patHome;
+	private StudyLocalHome studyHome;
+	private SeriesLocalHome seriesHome;
+	private InstanceLocalHome instHome;
+	
+	public void setSessionContext(SessionContext arg0)
+		throws EJBException, RemoteException
+	{
+		Context jndiCtx = null;
+		try
+		{
+			jndiCtx = new InitialContext();
+			ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
+			patHome =
+				(PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
+			studyHome =
+				(StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
+			seriesHome =
+				(SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+			instHome =
+				(InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
+			
+		}
+		catch (NamingException e)
+		{
+			throw new EJBException(e);
+		}
+		finally
+		{
+			if (jndiCtx != null)
+			{
+				try
+				{
+					jndiCtx.close();
+				}
+				catch (NamingException ignore)
+				{
+				}
+			}
+		}
+	}
 
-    public void setSessionContext(SessionContext arg0)
-        throws EJBException, RemoteException {
-        Context jndiCtx = null;
-        try {
-            jndiCtx = new InitialContext();
-            ds = (DataSource) jndiCtx.lookup("java:comp/env/jdbc/DefaultDS");
-            patHome =
-                (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
-            studyHome =
-                (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
-            seriesHome =
-                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
-        } catch (NamingException e) {
-            throw new EJBException(e);
-        } finally {
-            if (jndiCtx != null) {
-                try {
-                    jndiCtx.close();
-                } catch (NamingException ignore) {
-                }
-            }
-        }
-    }
+	public void unsetSessionContext()
+	{
+		patHome = null;
+		studyHome = null;
+		seriesHome = null;
+	}
 
-    public void unsetSessionContext() {
-        patHome = null;
-        studyHome = null;
-        seriesHome = null;
-    }
+	/**
+	 * @ejb.interface-method
+	 */
+	public void updatePatient(PatientDTO to_update)
+	{
 
-    /**
-     * @ejb.interface-method
-     */
-    public void updatePatient(PatientDTO to_update) {
+		try
+		{
+			boolean modified = false;
+			PatientLocal patientLocal =
+				patHome.findByPrimaryKey(new Integer(to_update.getPk()));
 
-        try {
-            boolean modified = false;
-            PatientLocal patientLocal =
-                patHome.findByPrimaryKey(new Integer(to_update.getPk()));
+			if (!equals(to_update.getPatientName(),
+				patientLocal.getPatientName()))
+			{
+				patientLocal.setPatientName(to_update.getPatientName());
+				modified = true;
+			}
 
-            if (!equals(to_update.getPatientName(),
-                patientLocal.getPatientName())) {
-                patientLocal.setPatientName(to_update.getPatientName());
-                modified = true;
-            }
+			if (!equals(to_update.getPatientSex(),
+				patientLocal.getPatientSex()))
+			{
+				patientLocal.setPatientSex(to_update.getPatientSex());
+				modified = true;
+			}
+			Date date_to_update = null;
+			if (to_update.getPatientBirthDate() != null)
+			{
+				try
+				{
+					date_to_update =
+						new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
+							to_update.getPatientBirthDate());
+					if (!equals(date_to_update,
+						patientLocal.getPatientBirthDate()))
+					{
+						patientLocal.setPatientBirthDate(date_to_update);
+						modified = true;
+					}
+				}
+				catch (ParseException e)
+				{
+				} //do nothing
+			}
+			else if (patientLocal.getPatientBirthDate() != null)
+			{
+				patientLocal.setPatientBirthDate(null);
+				modified = true;
+			}
 
-            if (!equals(to_update.getPatientSex(),
-                patientLocal.getPatientSex())) {
-                patientLocal.setPatientSex(to_update.getPatientSex());
-                modified = true;
-            }
-            Date date_to_update = null;
-            if (to_update.getPatientBirthDate() != null) {
-                try {
-                    date_to_update =
-                        new SimpleDateFormat(PatientDTO.DATE_FORMAT).parse(
-                            to_update.getPatientBirthDate());
-                    if (!equals(date_to_update,
-                        patientLocal.getPatientBirthDate())) {
-                        patientLocal.setPatientBirthDate(date_to_update);
-                        modified = true;
-                    }
-                } catch (ParseException e) {
-                } //do nothing
-            } else if (patientLocal.getPatientBirthDate() != null) {
-                patientLocal.setPatientBirthDate(null);
-                modified = true;
-            }
+			if (modified = true)
+			{
+				Dataset oldPat = patientLocal.getAttributes();
+				DTO2Dataset.updtateDataset(oldPat, to_update);
+				patientLocal.setAttributes(oldPat);
+			}
+		}
+		catch (FinderException e)
+		{
+			throw new EJBException(e);
+		}
+	}
 
-            if (modified = true) {
-                Dataset oldPat = patientLocal.getAttributes();
-                DTO2Dataset.updtateDataset(oldPat, to_update);
-                patientLocal.setAttributes(oldPat);
-            }
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        }
-    }
+	private boolean equals(Object a, Object b)
+	{
+		return a == null ? b == null : a.equals(b);
+	}
 
-    private boolean equals(Object a, Object b) {
-        return a == null ? b == null : a.equals(b);
-    }
+	/**
+	 * @ejb.interface-method
+	 */
+	public void deleteSeries(int series_pk) throws RemoteException
+	{
+		try
+		{
+				seriesHome.remove(new Integer(series_pk));
+		}
+		catch (EJBException e)
+		{
+			throw new RemoteException(e.getMessage());
+		}
+		catch (RemoveException e)
+		{
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public void deleteStudy(int study_pk) throws RemoteException
+	{
+		try
+		{
+			studyHome.remove(new Integer(study_pk));
+		}
+		catch (EJBException e)
+		{
+			throw new RemoteException(e.getMessage());
+		}
+		catch (RemoveException e)
+		{
+			throw new RemoteException(e.getMessage());
+		}
+	}
+	
+	/**
+	 * @ejb.interface-method
+	 */
+	public void deletePatient(int patient_pk) throws RemoteException
+	{
+		try
+		{
+			patHome.remove(new Integer(patient_pk));
+		}
+		catch (EJBException e) 
+		{
+			throw new RemoteException(e.getMessage());
+		}
+		catch (RemoveException e)
+		{
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public void deleteInstance(int instance_pk) throws RemoteException
+	{
+		try
+		{
+			instHome.remove(new Integer(instance_pk));
+		}
+		catch (EJBException e) 
+		{
+			throw new RemoteException(e.getMessage());
+		}
+		catch (RemoveException e)
+		{
+			throw new RemoteException(e.getMessage());
+		}
+	}
+	
 }

@@ -19,11 +19,15 @@
  */
 package org.dcm4chex.archive.web.maverick;
 
+import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
+import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyFilterDTO;
@@ -52,9 +56,11 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 || rq.getParameter("next") != null) {
                 return query(false);
             }
-            if (rq.getParameter("delete") != null) {
-                /* TODO */
-                return FOLDER;                
+            if (rq.getParameter("ae") != null) {
+            	return delete();                
+            }
+            if (rq.getParameter("del") != null) {
+                return delete();                
             }
             if (rq.getParameter("merge") != null) {
                 /* TODO */
@@ -71,12 +77,12 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
     }
 
+    // private methods 
+    
     private String query(boolean newQuery) throws Exception {
-        ContentManagerHome home =
-            (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
-                ContentManagerHome.class,
-                ContentManagerHome.JNDI_NAME);
-        ContentManager cm = home.create();
+
+        ContentManager cm = lookupContentManager();
+
         try {
             FolderForm folderForm = (FolderForm) getForm();
             StudyFilterDTO filter = folderForm.getStudyFilter();
@@ -97,6 +103,92 @@ public class FolderSubmitCtrl extends FolderCtrl {
         return FOLDER;
     }
 
+    private String delete() throws Exception
+	{
+    	ContentEdit edit = lookupContentEdit();
+    	FolderForm folderForm = (FolderForm) getForm();
+    	
+    	//deleting Patients
+    	for (Iterator i = folderForm.getStickyPatients().iterator(); i.hasNext();)
+    	{	
+    		try
+			{
+				edit.deletePatient(Integer.parseInt((String)i.next()));
+			}
+			catch (NumberFormatException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			catch (RemoteException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+
+    	//deleting Studies
+    	for (Iterator i = folderForm.getStickyStudies().iterator(); i.hasNext();)
+    	{	
+    		try
+			{
+    			edit.deleteStudy(Integer.parseInt((String)i.next()));
+    		}
+    		catch (NumberFormatException e)
+			{
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    		catch (RemoteException e)
+			{
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    	}
+
+    	//deleting Series
+    	for (Iterator i = folderForm.getStickySeries().iterator(); i.hasNext();)
+    	{	
+    		try
+			{
+    			edit.deleteSeries(Integer.parseInt((String)i.next()));
+    		}
+    		catch (NumberFormatException e)
+			{
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    		catch (RemoteException e)
+			{
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    	}
+    	
+    	//deleting Instances
+    	for (Iterator i = folderForm.getStickyInstances().iterator(); i.hasNext();)
+    	{	
+    		try
+			{
+    			edit.deleteInstance(Integer.parseInt((String)i.next()));
+    		}
+    		catch (NumberFormatException e)
+			{
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    		catch (RemoteException e)
+			{
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    	}
+    	
+    	folderForm.removeStickies();
+    	
+    	return FOLDER;
+    }
+    
     private void setSticky(Set stickySet, String attr) {
         stickySet.clear();
         String[] newValue = getCtx().getRequest().getParameterValues(attr);
@@ -104,4 +196,24 @@ public class FolderSubmitCtrl extends FolderCtrl {
             stickySet.addAll(Arrays.asList(newValue));
         }
     }
+    
+    private ContentEdit lookupContentEdit() throws Exception
+	{
+    	ContentEditHome home =
+    		(ContentEditHome) EJBHomeFactory.getFactory().lookup(
+    				ContentEditHome.class,
+					ContentEditHome.JNDI_NAME);
+    	return home.create();
+    }
+
+    private ContentManager lookupContentManager() throws Exception
+	{
+    	ContentManagerHome home =
+    		(ContentManagerHome) EJBHomeFactory.getFactory().lookup(
+    				ContentManagerHome.class,
+    				ContentManagerHome.JNDI_NAME);
+    	return home.create();
+    }
+    
+    
 }
