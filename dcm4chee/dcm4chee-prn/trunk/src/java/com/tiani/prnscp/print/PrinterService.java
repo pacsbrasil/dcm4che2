@@ -218,8 +218,6 @@ public class PrinterService
     /**  Holds value of property printGrayscaleAtStartup. */
     private boolean printGrayscaleAtStartup = false;
 
-    private boolean printGrayscaleAsImage = false;
-
     /**  Holds value of property printToFile. */
     private boolean printToFile = false;
 
@@ -2114,28 +2112,6 @@ public class PrinterService
     public boolean isPrintGrayscaleAtStartup()
     {
         return this.printGrayscaleAtStartup;
-    }
-
-
-    /**
-     *  Gets the printGrayscaleAsImage attribute of the PrinterService object
-     *
-     * @return    The printGrayscaleAsImage value
-     */
-    public boolean isPrintGrayscaleAsImage()
-    {
-        return printGrayscaleAsImage;
-    }
-
-
-    /**
-     *  Sets the printGrayscaleAsImage attribute of the PrinterService object
-     *
-     * @param  printGrayscaleAsImage  The new printGrayscaleAsImage value
-     */
-    public void setPrintGrayscaleAsImage(boolean printGrayscaleAsImage)
-    {
-        this.printGrayscaleAsImage = printGrayscaleAsImage;
     }
 
 
