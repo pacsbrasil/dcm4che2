@@ -1,3 +1,8 @@
+CREATE DB tiani;
+CONNECT TO tiani;
+
+SET CURRENT SCHEMA TIANI;
+
 CREATE TABLE ae (
 	aet          	VARCHAR(254) PRIMARY KEY NOT NULL,
 	hostname     	VARCHAR(254) NOT NULL,
@@ -111,8 +116,6 @@ CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 
 
-
-
 CREATE SEQUENCE file_pk_seq;
 CREATE TABLE file (
 	pk              INTEGER PRIMARY KEY  NOT NULL,
@@ -128,3 +131,20 @@ FOREIGN KEY (instance_fk)	REFERENCES instance(pk)
 
 );
 CREATE INDEX instance_fk ON file(instance_fk);
+
+GRANT ALL PRIVILEGES ON TABLE ae TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE code TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE patient TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE study TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE series TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE instance TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE file TO USER tiani;
+
+GRANT USAGE ON SEQUENCE tiani.code_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE tiani.patient_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE tiani.study_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE tiani.series_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE tiani.instance_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE tiani.file_pk_seq TO USER tiani;
+
+TERMINATE;
