@@ -16,7 +16,7 @@
 							<td>AE Title</td>
 							<td>Hostname</td>
 							<td>Port</td>														
-							<td>Cipher Suites</td>
+							<!--td>Cipher Suites</td-->
 							<td>&nbsp;</td>
 					</tr>
 					<xsl:apply-templates select="AEs/item"/>
@@ -40,9 +40,9 @@
 	        <td title="Port">
 					<xsl:value-of select="port"/>
 	        </td>
-	        <td title="Cipher Suites">
+	        <!--td title="Cipher Suites">
 					<xsl:value-of select="cipherSuites"/>
-	        </td>
+	        </td-->
 			<td>
 					<a href="aeedit.m?pk={pk}">Edit</a>
 	        </td>

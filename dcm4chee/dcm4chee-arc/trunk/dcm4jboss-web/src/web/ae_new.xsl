@@ -31,12 +31,13 @@
 			                <input size="25" name="port" type="text" value=""/>
 				        </td>
 					</tr>
-					<tr>
+				                <input name="cipherSuites" type="hidden" value=""/>
+					<!--tr>
 						<td bgcolor="#eeeeee">Cipher Suites</td>
 				        <td title="Cipher Suites">
 				                <input size="35" name="cipherSuites" type="text" value=""/>
 				        </td>
-					</tr>
+					</tr-->
 					<tr>
 						<td>
 							  <input type="submit" name="new" value="Create"/>

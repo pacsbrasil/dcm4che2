@@ -32,12 +32,13 @@
 			                <input size="25" name="port" type="text" value="{port}"/>
 				        </td>
 					</tr>
-					<tr>
+				                <input name="cipherSuites" type="hidden" value="{cipherSuites}"/>
+					<!--tr>
 						<td bgcolor="#eeeeee">Cipher Suites</td>
 				        <td title="Cipher Suites">
 				                <input size="35" name="cipherSuites" type="text" value="{cipherSuites}"/>
 				        </td>
-					</tr>
+					</tr-->
 					<tr>
 						<td>
 							  <input type="submit" name="update" value="Apply Changes"/>

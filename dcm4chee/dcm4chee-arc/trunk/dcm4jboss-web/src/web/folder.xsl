@@ -56,14 +56,14 @@
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 								</input>
-							  <input type="submit" name="send" value="Send" disabled="disabled"/>
-							  <input type="submit" name="move" value="Move" disabled="disabled"/>
+							  <!--input type="submit" name="send" value="Send" disabled="disabled"/-->
+							  <!--input type="submit" name="move" value="Move" disabled="disabled"/-->
 							  
-							  <input type="submit" name="merge" value="Merge"  onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
+							  <!--input type="submit" name="merge" value="Merge"  onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
 								<xsl:if test="total &lt;= 0">
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
-								</input>							  
+								</input-->							  
 								
 							  	<input type="submit" name="del" value="Del" onclick="return confirm('Are you sure you want to delete?')">
 								<xsl:if test="total &lt;= 0">
@@ -233,7 +233,8 @@
         <xsl:value-of select="retrieveAETs"/>
       </td>
 				<td width="1%">
-				  <a href="javascript:alert('Edit Study not yet implemented')">Edit</a>
+				&nbsp;
+				  <!--a href="javascript:alert('Edit Study not yet implemented')">Edit</a-->
       </td>
 				<td width="1%">
 					<input type="checkbox" name="stickyStudy" value="{pk}">
@@ -287,7 +288,8 @@
         <xsl:value-of select="retrieveAETs"/>
       </td>
 			<td width="1%">
-				  <a href="javascript:alert('Edit Series not yet implemented')">Edit</a>
+							&nbsp;			
+				  <!--a href="javascript:alert('Edit Series not yet implemented')">Edit</a-->
       </td>
 				<td width="1%">
 					<input type="checkbox" name="stickySeries" value="{pk}">
@@ -327,7 +329,8 @@
         <xsl:value-of select="retrieveAETs"/>
       </td>
 			<td width="1%">
-				  <a href="javascript:alert('Edit Image not implemented')">Edit</a>
+				&nbsp;
+				  <!--a href="javascript:alert('Edit Image not implemented')">Edit</a-->
       </td>
 				<td width="1%">
 					<input type="checkbox" name="stickyInst" value="{pk}">
@@ -363,7 +366,8 @@
         <xsl:value-of select="retrieveAETs"/>
       </td>
 			<td width="1%">
-				  <a href="javascript:alert('Edit Presentation State not implemented')">Edit</a>
+				&nbsp;
+				  <!--a href="javascript:alert('Edit Presentation State not implemented')">Edit</a-->
        </td>
 				<td width="1%">
 					<input type="checkbox" name="stickyInst" value="{pk}">
@@ -396,7 +400,8 @@
         <xsl:value-of select="retrieveAETs"/>
       </td>
 			<td width="1%">
-				  <a href="javascript:alert('Edit Structured Report not implemented')">Edit</a>
+				&nbsp;
+				  <!--a href="javascript:alert('Edit Structured Report not implemented')">Edit</a-->
       </td>
 				<td width="1%">
 					<input type="checkbox" name="stickyInst" value="{pk}">
