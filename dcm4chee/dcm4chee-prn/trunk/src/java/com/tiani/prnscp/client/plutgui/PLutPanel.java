@@ -45,6 +45,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.image.ColorModelParam;
 
 /**
  *  Description of the Class
@@ -134,33 +135,33 @@ public class PLutPanel extends JPanel
                         changingParam |= CHANGING_SLOPE;
                         if (dx < -DELTA) {
                             builder.setSlope(
-                                    Math.max(0.f,
-                                    builder.getSlope() - SLOPE_STEP));
+                                Math.max(0.f,
+                                builder.getSlope() - SLOPE_STEP));
                             updatePLut();
                         } else if (dx > DELTA) {
                             builder.setSlope(
-                                    Math.min(10.f,
-                                    builder.getSlope() + SLOPE_STEP));
+                                Math.min(10.f,
+                                builder.getSlope() + SLOPE_STEP));
                             updatePLut();
                         }
                     }
                     if ((e.getModifiersEx() & CHANGE_CENTER_MASK) != 0) {//center
                         changingParam |= CHANGING_CENTER;
                         builder.setCenter(
-                                Math.max(0.f,
+                            Math.max(0.f,
                                 Math.min(1.f,
-                                (float) e.getY() / getHeight())));
+                                    (float) e.getY() / getHeight())));
                         updatePLut();
                     } else if ((e.getModifiersEx() & CHANGE_SLOPE_MASK) == 0) {//gamma
                         changingParam |= CHANGING_GAMMA;
                         if (dx < -DELTA) {
                             builder.setGamma(
-                                    Math.max(0.1f,
+                                Math.max(0.1f,
                                     builder.getGamma() / GAMMA_FACT));
                             updatePLut();
                         } else if (dx > DELTA) {
                             builder.setGamma(
-                                    Math.min(10.f,
+                                Math.min(10.f,
                                     builder.getGamma() * GAMMA_FACT));
                             updatePLut();
                         }
@@ -215,7 +216,7 @@ public class PLutPanel extends JPanel
     /**
      *  Description of the Method
      *
-     * @param  g  Description of the Parameter
+     * @param  g  The graphics context
      */
     public void paintComponent(Graphics g)
     {
@@ -225,50 +226,55 @@ public class PLutPanel extends JPanel
         Rectangle2D rect = new Rectangle2D.Float(0, 0, getWidth(), getHeight());
         g2.fill(rect);
         if (imgPanel.getBI() != null) {
+            //draw the window range, which is the P-LUTs range
+            drawPLut(g2, true);
+            //draw histogram
             drawHisto(g2);
-            drawPLut(g2);
+            //draw P-LUT curve
+            drawPLut(g2, false);
+            //draw curve parameters overlay
             g2.setColor(Color.WHITE);
             g2.fillRect(10, 10, 100, 34);
             g2.setColor(Color.BLACK);
             g2.drawRect(10, 10, 100, 34);
             g2.setClip(10, 10, 100, 34);
-            g2.setColor(
-                    (changingParam & CHANGING_CENTER) != 0
-                     ? Color.RED
-                     : Color.BLACK);
-            g2.drawString(
-                    "Center = " + numFormat.format(builder.getCenter()),
-                    12, 22);
-            g2.setColor(
-                    (changingParam & CHANGING_SLOPE) != 0
-                     ? Color.RED
-                     : Color.BLACK);
-            g2.drawString(
-                    "Slope = " + numFormat.format(builder.getSlope()),
-                    12, 32);
-            g2.setColor(
-                    (changingParam & CHANGING_GAMMA) != 0
-                     ? Color.RED
-                     : Color.BLACK);
-            g2.drawString(
-                    "Gamma = " + numFormat.format(builder.getGamma()),
-                    12, 42);
+            g2.setColor((changingParam & CHANGING_CENTER) != 0
+                        ? Color.RED
+                        : Color.BLACK);
+            g2.drawString("Center = " + numFormat.format(builder.getCenter()),
+                          12, 22);
+            g2.setColor((changingParam & CHANGING_SLOPE) != 0
+                        ? Color.RED
+                        : Color.BLACK);
+            g2.drawString("Slope = " + numFormat.format(builder.getSlope()),
+                          12, 32);
+            g2.setColor((changingParam & CHANGING_GAMMA) != 0
+                        ? Color.RED
+                        : Color.BLACK);
+            g2.drawString("Gamma = " + numFormat.format(builder.getGamma()),
+                          12, 42);
+            g2.setClip(0, 0, getWidth(), getHeight());
+            //draw window/histogram information overlay
+            g2.setColor(Color.WHITE);
+            g2.fillRect(10, getHeight() - 32, 200, 24);
+            g2.setColor(Color.BLACK);
+            g2.drawRect(10, getHeight() - 32, 200, 24);
+            g2.setClip(10, getHeight() - 32, 200, 24);
+            int winMin = imgPanel.getWindowMin();
+            int winMax = imgPanel.getWindowMax();
+            final boolean winDefined = (winMin < winMax);
+            if (!winDefined)
+                g.drawString("No window", 11, getHeight() - 21);
+            else
+                g.drawString("Window [" + winMin + "-" + winMax + "]",
+                             11, getHeight() - 21);
+            g.drawString("Histo: N=" + NUM_BINS
+                         + " [" + binMin + "-" + binMax + "]", 11, getHeight() - 11);
             g2.setClip(0, 0, getWidth(), getHeight());
         }
     }
 
-
-    private int[] getSamples()
-    {
-        BufferedImage bi = imgPanel.getBI();
-        int[] samples = new int[bi.getWidth() * bi.getHeight()];
-
-        bi.getRaster().getPixels(0, 0, bi.getWidth(), bi.getHeight(), samples);
-        //bi.getRaster().getSamples(0,0,bi.getWidth(),bi.getHeight(),0,samples);
-        return samples;
-    }
-
-    void clearHisto()
+    private void clearHisto()
     {
         histoMax = 0;
         for (int i = 0; i < histo.length; i++)
@@ -278,17 +284,17 @@ public class PLutPanel extends JPanel
     void buildHisto()
     {
         //build histogram
-        int[] samples = null;
+        int[] samples;
         int val;
         float x;
 
         //get image samples. these are guaranteed not to be null since this
-        // is called by imgPanel
-        samples = getSamples();
+        // is called by the PLutGUIPanel
+        samples = imgPanel.getSamples();
         if (samples.length == 0) {
             return;
         }
-        //find min/max of samples for histogram min/max range
+        //find min/max/range of samples for histogram min/max/range range
         binMin = binMax = samples[0];
         for (int i = 1; i < samples.length; i++) {
             if (binMin > samples[i]) {
@@ -315,21 +321,50 @@ public class PLutPanel extends JPanel
 
     void equalize()
     {
+        //check if an image is loaded
+        if (imgPanel.getBI() == null)
+            return;
+        
+        //get window min/max in pixel units
+        int winMin = imgPanel.getWindowMin();
+        int winMax = imgPanel.getWindowMax();
+        final boolean winDefined = (winMin < winMax);
+        int startInd, endInd;
+        
+        if (!winDefined) {
+            winMin = binMin;
+            winMax = binMax;
+            startInd = 0;
+            endInd = NUM_BINS - 1;
+        }
+        else {
+            startInd = (int)((float)((winMin - binMin) * (NUM_BINS - 1)) / binRange + 0.5);
+            endInd = (int)((float)((winMax - binMin) * (NUM_BINS - 1)) / binRange + 0.5);
+            if (startInd == endInd) {
+                return; // do nothing
+            }
+            if (startInd < 0)
+                startInd = 0;
+            if (endInd >= NUM_BINS)
+                endInd = NUM_BINS - 1;
+        }
+        
         final int PLutMax = 255;
         int sum = 0;
-        int n;
-        int v;
-        int lastind = 0;
-
-        for (int i = 0; i < NUM_BINS; i++) {
+        
+        for (int i = startInd; i <= endInd; i++) {
             sum += histo[i];
         }
+        
         final int TotSum = sum;
         final float f = (float) PLutMax / TotSum;
+        int n, v;
+        int lastind = startInd;
+        
         sum = 0;
-        for (int i = 0; i < NUM_BINS; i++) {
+        for (int i = startInd; i <= endInd; i++) {
             sum += histo[i];
-            n = (int) ((float) i * (plut.length - 1) / (NUM_BINS - 1));
+            n = (int) ((float) (i - startInd) * (plut.length - 1) / (endInd - startInd));
             v = (int) (f * sum + 0.5);
             for (int j = lastind + 1; j <= n; j++) {
                 plut[j] = v;
@@ -344,64 +379,85 @@ public class PLutPanel extends JPanel
     {
         final float binH = (float) getHeight() / NUM_BINS;
         int curveColor;
-        ColorModel cm = imgPanel.getBI().getColorModel();
-
-        float f = (float) binRange / (NUM_BINS - 1);
+        BufferedImage bi = imgPanel.getBI();
+        ColorModel cm = bi.getColorModel();
+        ColorModelParam cmParam = imgPanel.getColorModelParam();
+        final float f = (float) binRange / (NUM_BINS - 1);
+        
         for (int i = 0; i < NUM_BINS; i++) {
-            int index;
-            curveColor = cm.getRGB((int) (i * f + 0.5) + binMin);
-            //System.out.println("ind="+index);
+            int index,packed=0;
+            curveColor = cm.getRGB(
+                packed = cmParam.toPixelValueRaw(
+                    index = ((int) (i * f + 0.5) + binMin)));
             g.setColor(Color.BLACK);
-            g.drawRect(
+            g.drawLine((int) ((getWidth() - 1) * histo[i] / (float) histoMax),
+                       (int) (binH * i),
+                       (int) ((getWidth() - 1) * histo[i] / (float) histoMax),
+                       (int) (binH * (i + 1)) - 1);
+            /*g.drawRect(
                     0,
                     (int) (binH * i),
                     (int) ((getWidth() - 1) * histo[i] / (float) histoMax),
-                    (int) binH);
+                    (int) binH);*/
             g.setColor(new Color(curveColor));
             g.fillRect(
-                    1,
+                    0,
                     (int) (binH * i) + 1,
                     (int) ((getWidth() - 1) * histo[i] / (float) histoMax) - 1,
                     (int) binH - 1);
-            //g.drawString(String.valueOf(histo[i]), 0, (int)binH*i);
         }
         g.setColor(Color.RED);
-        g.drawString("histo: N=" + NUM_BINS + " [" + binMin + "-" + binMax + "]", 0, (int) (binH * (NUM_BINS - 1)));
     }
 
 
-    private void drawPLut(Graphics2D g)
+    private void drawPLut(Graphics2D g, boolean onlyDrawWindowRange)
     {
         //get window min/max in pixel units
-        final int winMin = imgPanel.getWindowMin();
-        final int winMax = imgPanel.getWindowMax();
-        final float fx = (float) (getWidth() - 1) / 255f;
-        final float y0 = (float)((getHeight() - 1) * (winMin - binMin))
-                         / (binMax - binMin);
-        //final float fy = (float) (getHeight() - 1) / (float) (plut.length - 1);
-        final float fy = (float)((getHeight() - 1) * (winMax - winMin))
-                         / (binMax - binMin);
-        int lastx = 0;
-        int lasty = 0;
+        int winMin = imgPanel.getWindowMin();
+        int winMax = imgPanel.getWindowMax();
+        final boolean winDefined = (winMin < winMax);
+        final float fx = (float)(getWidth() - 1) / 255f;
+        final float y0;
+        final float fy;
+
+        if (!winDefined) {
+            winMin = binMin;
+            winMax = binMax;
+            y0 = 0;
+            fy = (float)(getHeight() - 1) / (plut.length - 1);
+        }
+        else {
+            y0 = (float)((getHeight() - 1) * (winMin - binMin))
+                         / binRange;
+            fy = (float)((getHeight() - 1) * (winMax - winMin))
+                         / (binRange * (plut.length - 1));
+            //draw window range
+            if (onlyDrawWindowRange) {
+                g.setColor(Color.LIGHT_GRAY);
+                g.fillRect(0, (int)y0, getWidth(), (int)((plut.length-1) * fy + 0.5));
+                g.setColor(Color.DARK_GRAY);
+                g.drawRect(0, (int)y0, getWidth(), (int)((plut.length-1) * fy + 0.5));
+                return;
+            }
+        }
+
+        //draw P-LUT curve
+        int lastx = (int) ((plut[0] < 0 ? plut[0] + 256 : plut[0]) * fx);
+        int lasty = (int) (y0 + 0.5f);
         int x, y;
 
-        //g.setStroke(new BasicStroke(2,BasicStroke.CAP_BUTT,BasicStroke.JOIN_BEVEL,0));
+        g.setColor(Color.BLACK);
         for (int i = 0; i < plut.length; i++) {
             x = (int) ((plut[i] < 0 ? plut[i] + 256 : plut[i]) * fx);
             y = (int) (i * fy + y0 + 0.5f);
-            g.setColor(Color.BLACK);
-            //g.drawLine(lastx, lasty-2, x, y-2);
-            g.drawLine(lastx, lasty - 1, x, y - 1);
             g.drawLine(lastx, lasty, x, y);
-            g.drawLine(lastx, lasty + 1, x, y + 1);
-            //g.setColor(Color.BLACK);
-            //g.drawLine(lastx, lasty+2, x, y+2);
             lastx = x;
             lasty = y;
         }
+
         //draw center
         g.setColor(Color.RED);
-        y = (int) (builder.getCenter() * (getHeight() - 1));
+        y = (int) (builder.getCenter() * (plut.length - 1) * fy + y0 + 0.5);
         g.drawLine(0, y, getWidth(), y);
     }
 
@@ -441,9 +497,6 @@ public class PLutPanel extends JPanel
         int[] lutDesc = item.getInts(Tags.LUTDescriptor);
         int bits = lutDesc[2];
         plut = item.getInts(Tags.LUTData);
-        /*item.putLO(Tags.LUTExplanation,
-                explanation != null ? explanation : createExplanation());
-        item.putUS(Tags.LUTData, plut);*/
         updatePLut(false);
     }
 }

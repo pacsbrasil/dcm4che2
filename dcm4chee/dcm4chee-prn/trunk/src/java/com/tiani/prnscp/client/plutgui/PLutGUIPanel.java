@@ -2,6 +2,10 @@ package com.tiani.prnscp.client.plutgui;
 
 import java.awt.*;
 import javax.swing.*;
+
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+
 import java.io.*;
 
 public class PLutGUIPanel extends JPanel
@@ -58,8 +62,31 @@ public class PLutGUIPanel extends JPanel
         catch (Exception e) {
             //bi = null;
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "There is a problem!");
+            JOptionPane.showMessageDialog(this, "Image could not be read or loaded:\n"
+                                          + "- May not be a DICOM image file, or\n"
+                                          + "- The color model may not be applicable to a P-LUT transformation.");
+            repaint();
         }
+    }
+    
+    public void displayImageInfo()
+    {
+        Dataset ds = imgPanel.getDS();
+        if (ds == null) {
+            JOptionPane.showMessageDialog(this, "No image has been loaded.");
+            return;
+        }
+        int width = ds.getInt(Tags.Columns, 0);
+        int height = ds.getInt(Tags.Rows, 0);
+        int bitsStored = ds.getInt(Tags.BitsStored, 0);
+        boolean signed = (ds.getInt(Tags.PixelRepresentation, 0) == 1);
+        String pmi = ds.getString(Tags.PhotometricInterpretation);
+        JOptionPane.showMessageDialog(this, "Width: " + width + "\n"
+                                      + "Height: " + height + "\n"
+                                      + "Bits: " + bitsStored + " ("
+                                      + ((signed)?"signed":"unsigned") + ")\n"
+                                      + "Color model: " + pmi + "\n"
+                                      + "");
     }
     
     public void paintComponent(Graphics g)
@@ -67,4 +94,3 @@ public class PLutGUIPanel extends JPanel
         super.paintComponent(g);
     }
 }
-

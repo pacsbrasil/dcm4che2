@@ -44,21 +44,50 @@ public class ImagePanel extends JPanel
         }
     }
     
-    public BufferedImage getBI()
+    BufferedImage getBI()
     {
         return bi;
     }
     
-    public int getWindowMin()
+    Dataset getDS()
+    {
+        return ds;
+    }
+    
+    ColorModelParam getColorModelParam()
+    {
+        return cmParam;
+    }
+    
+    int getWindowMin()
     {
         return windowMin;
     }
-    public int getWindowMax()
+    
+    int getWindowMax()
     {
         return windowMax;
     }
     
-    public BufferedImage updateImageParams(BufferedImage bi, DcmImageReadParam param)
+    int[] getSamples()
+    {
+        int[] samples = new int[bi.getWidth() * bi.getHeight()];
+        
+        bi.getRaster().getPixels(0, 0, bi.getWidth(), bi.getHeight(), samples);
+        //bi.getRaster().getSamples(0,0,bi.getWidth(),bi.getHeight(),0,samples);
+        
+        boolean signed = (ds.getInt(Tags.PixelRepresentation, 0) == 1);
+        int bs = ds.getInt(Tags.BitsStored, 16);
+        
+        //transform raw pixel values to sample values
+        for (int i = 0; i < samples.length; i++) {
+            samples[i] = cmParam.toSampleValue(samples[i]);
+        }
+        
+        return samples;
+    }
+    
+    private BufferedImage updateImageParams(BufferedImage bi, DcmImageReadParam param)
         throws IOException
     {
         ColorModelFactory cmFactory = ColorModelFactory.getInstance();
@@ -87,7 +116,7 @@ public class ImagePanel extends JPanel
         setPLut(lastPLut);
     }
     
-    public void setPLut(byte[] plut)
+    void setPLut(byte[] plut)
         throws Exception
     {
         final int maxWidth = 512;
@@ -98,13 +127,6 @@ public class ImagePanel extends JPanel
         readParam.setPValToDDL(plut);
         if (fis != null) { //check if reader input stream has been set
             if (bi == null) { //first time?
-                //get the actual dataset
-                DcmMetadata dsMetaData = (DcmMetadata)((DcmImageReader)reader).getImageMetadata(0);
-                ds = dsMetaData.getDataset();
-                //generate color model params that would be the same
-                // as those used in the actual image
-                ColorModelFactory cmFactory = ColorModelFactory.getInstance();
-                cmParam = cmFactory.makeParam(ds, plut);
                 //see if it is necessary to subsample pixel data
                 int width, height;
                 int subx = 1, suby = 1;
@@ -117,14 +139,29 @@ public class ImagePanel extends JPanel
                 //read pixel data
                 readParam.setSourceSubsampling(subx, suby, 0, 0);
                 bi = reader.read(0, readParam);
+				//get the actual dataset
+				DcmMetadata dsMetaData = (DcmMetadata) ((DcmImageReader)reader).getStreamMetadata();
+				ds = dsMetaData.getDataset();
+				//generate color model params that would be the same
+				// as those used in the actual image
+				ColorModelFactory cmFactory = ColorModelFactory.getInstance();
+				cmParam = cmFactory.makeParam(ds, plut);
                 //set window min/max
                 // these only need to be set when an image is loaded sine a
                 // change in the P-LUT will not affect the ColorModels returned
                 // windowing parameters
-                float wCenter = cmParam.getWindowCenter(0);
-                float wWidth = cmParam.getWindowWidth(0);
-                windowMin = cmParam.toPixelValue(wCenter - wWidth / 2);
-                windowMax = cmParam.toPixelValue(wCenter + wWidth / 2);
+                if (cmParam.getNumberOfWindows() > 0) {
+                    float wCenter, wWidth;
+                    wCenter = cmParam.getWindowCenter(0);
+                    wWidth = cmParam.getWindowWidth(0);
+                    windowMin = cmParam.toSampleValue(
+                                    cmParam.toPixelValue(wCenter - wWidth / 2));
+                    windowMax = cmParam.toSampleValue(
+                                    cmParam.toPixelValue(wCenter + wWidth / 2));
+                }
+                else {
+                    windowMin = windowMax = 0;
+                }
             }
             else
                 bi = updateImageParams(bi, readParam);
@@ -138,16 +175,16 @@ public class ImagePanel extends JPanel
         if (bi != null) {
             final int panWidth = getWidth();
             final int panHeight = getHeight();
-            final float biAspect = (float)bi.getWidth()/bi.getHeight();
-            final float panAspect = (float)panWidth/panHeight;
+            final float biAspect = (float) bi.getWidth() / bi.getHeight();
+            final float panAspect = (float) panWidth / panHeight;
             int newdim;
             if (biAspect > panAspect) {
-                newdim = (int)(getWidth()/biAspect);
-                g2.drawImage(bi,0,(panHeight-newdim)/2,panWidth,newdim,null);
+                newdim = (int)(getWidth() / biAspect);
+                g2.drawImage(bi, 0, (panHeight - newdim) / 2, panWidth, newdim, null);
             }
             else {
-                newdim = (int)(getHeight()*biAspect);
-                g2.drawImage(bi,(panWidth-newdim)/2,0,newdim,panHeight,null);
+                newdim = (int)(getHeight() * biAspect);
+                g2.drawImage(bi, (panWidth - newdim) / 2, 0, newdim, panHeight, null);
             }
         }
     }

@@ -77,12 +77,22 @@ public class PLutGUIFrame extends JFrame
                 }
             };
         actImportDcmPres.putValue(Action.NAME,"Import DICOM Presentation...");
+        Action actDisplayImageInfo = new AbstractAction()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    guiPanel.displayImageInfo();
+                }
+            };
+        actDisplayImageInfo.putValue(Action.NAME,"Image Info...");
         JMenuItem mnuOpenImg = new JMenuItem(actOpenImg);
         mnuFile.add(mnuOpenImg);
         JMenuItem mnuImportDcmPres = new JMenuItem(actImportDcmPres);
         mnuFile.add(mnuImportDcmPres);
         JMenuItem mnuExportDcmPres = new JMenuItem(actExportDcmPres);
         mnuFile.add(mnuExportDcmPres);
+        JMenuItem mnuDisplayImageInfo = new JMenuItem(actDisplayImageInfo);
+        mnuFile.add(mnuDisplayImageInfo);
         JMenuItem mnuExit = new JMenuItem(actExit);
         mnuFile.add(mnuExit);
         Action actHistoEq = new AbstractAction()
