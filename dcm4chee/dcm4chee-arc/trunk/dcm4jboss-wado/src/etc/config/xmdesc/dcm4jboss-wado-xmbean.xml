@@ -98,16 +98,19 @@
       <name>getFreeSpace</name>
       <return-type>java.lang.String</return-type>
    </operation>
+   
    <operation impact="ACTION">
       <description>Clear Cache</description>
       <name>clearCache</name>
       <return-type>void</return-type>
    </operation>
+   
    <operation impact="ACTION">
       <description>Clean Cache</description>
       <name>cleanCache</name>
       <return-type>void</return-type>
    </operation>
+   
    <operation impact="ACTION">
       <description>Get WADO response object</description>
       <name>getWADOObject</name>
