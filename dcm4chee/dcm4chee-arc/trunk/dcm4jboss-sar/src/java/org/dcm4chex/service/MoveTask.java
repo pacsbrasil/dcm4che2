@@ -57,17 +57,15 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
  */
 class MoveTask implements Runnable {
 
-    private static final Comparator ascTimestamp = new Comparator() {
+    private static final Comparator ascFilePk = new Comparator() {
         public int compare(Object o1, Object o2) {
-            final long diff = ((FileInfo)o1).timestamp - ((FileInfo)o2).timestamp;
-            return diff < 0 ? -1 : diff > 0 ? 1 : 0;
-        }        
+            return ((FileInfo) o1).pk - ((FileInfo) o2).pk;
+        }
     };
-    private static final Comparator descTimestamp = new Comparator() {
+    private static final Comparator descFilePk = new Comparator() {
         public int compare(Object o1, Object o2) {
-            final long diff = ((FileInfo)o2).timestamp - ((FileInfo)o1).timestamp;
-            return diff < 0 ? -1 : diff > 0 ? 1 : 0;
-        }        
+            return ((FileInfo) o2).pk - ((FileInfo) o1).pk;
+        }
     };
     private static final String[] NATIVE_TS =
         { UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian };
@@ -192,7 +190,9 @@ class MoveTask implements Runnable {
         FileSelector selector = new FileSelector(storeAssoc.getAssociation());
         for (int i = 0; i < fileInfoArray.length; i++) {
             FileInfo[] fileInfo = fileInfoArray[i];
-            Arrays.sort(fileInfo, service.isRetrieveLastReceived() ? descTimestamp : ascTimestamp);
+            Arrays.sort(
+                fileInfo,
+                service.isRetrieveLastReceived() ? descFilePk : ascFilePk);
             FileSelection selection = selector.select(fileInfo, retrieveAET);
             if (selection != null) {
                 toRetrieve.add(selection);
@@ -291,7 +291,9 @@ class MoveTask implements Runnable {
                 moveAssoc.getAssociation().write(
                     af.newDimse(movePcid, makeMoveRsp(status), ds));
             } catch (Exception e) {
-                service.getLog().info("Failed to send Move RSP to Move Originator:", e);
+                service.getLog().info(
+                    "Failed to send Move RSP to Move Originator:",
+                    e);
                 moveAssoc = null;
             }
         }
