@@ -56,6 +56,8 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 abstract class DcmObjectImpl implements DcmObject
 {
+    private static long MS_PER_DAY = 24 * 3600000L;
+
     static UIDDictionary DICT =
             DictionaryFactory.getInstance().getDefaultUIDDictionary();
 
@@ -913,13 +915,16 @@ abstract class DcmObjectImpl implements DcmObject
             Date[] dateRange = date.getDateRange();
             DcmElement time = get(timeTag);
             if (time == null || time.isEmpty()) {
+                dateRange[1] = new Date(dateRange[1].getTime()
+                    + MS_PER_DAY-1);
                 return dateRange;
             }
 
             Date[] timeRange = time.getDateRange();
+            long toff = timeRange[0].getTimezoneOffset() * 60000L;
             return new Date[]{
-                    new Date(dateRange[0].getTime() + timeRange[0].getTime()),
-                    new Date(dateRange[1].getTime() + timeRange[1].getTime())
+                    new Date(dateRange[0].getTime() + timeRange[0].getTime() - toff),
+                    new Date(dateRange[1].getTime() + timeRange[1].getTime() - toff)
                     };
         } catch (DcmValueException e) {
             return null;
