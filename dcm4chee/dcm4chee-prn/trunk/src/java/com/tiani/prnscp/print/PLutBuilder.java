@@ -39,8 +39,9 @@ import org.dcm4che.util.UIDGenerator;
 /**
  *  Description of the Class
  *
- * @author    gunter
+ * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @since     April 1, 2003
+ * @version    $Revision$
  */
 public class PLutBuilder
 {
@@ -446,7 +447,7 @@ public class PLutBuilder
      *
      * @return    Description of the Return Value
      */
-    public FileMetaInfo makeFileInfo()
+    public FileMetaInfo makeFileMetaInfo()
     {
         return dof.newFileMetaInfo(UIDs.PresentationLUT,
                 uid != null ? uid : UIDGenerator.getInstance().createUID(),

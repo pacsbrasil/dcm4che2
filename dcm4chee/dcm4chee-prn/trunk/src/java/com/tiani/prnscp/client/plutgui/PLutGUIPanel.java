@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.io.*;
 
-public class PLutGUIPanel extends JPanel
+class PLutGUIPanel extends JPanel
 {
     ImagePanel imgPanel;
     PLutPanel plutPanel;

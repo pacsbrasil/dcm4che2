@@ -20,7 +20,7 @@ import org.dcm4cheri.imageio.plugins.DcmImageReader;
 import org.dcm4che.image.ColorModelFactory;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 
-public class ImagePanel extends JPanel
+class ImagePanel extends JPanel
 {
     private ImageReader reader;
     private DcmImageReadParam readParam;
@@ -38,7 +38,9 @@ public class ImagePanel extends JPanel
             try {
                 setImage(image);
             }
-            catch (Exception e) {}
+            catch (Exception e) {
+                e.printStackTrace();
+            }
             repaint();
         }
     }
@@ -70,6 +72,7 @@ public class ImagePanel extends JPanel
             fis = new FileImageInputStream(newImg);
         }
         catch(Exception e) {
+            e.printStackTrace();
             return;
         }
         bi = null;

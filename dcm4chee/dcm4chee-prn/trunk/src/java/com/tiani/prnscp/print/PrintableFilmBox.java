@@ -45,8 +45,7 @@ import org.jboss.logging.Logger;
  *  <description>
  *
  * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
- * @since      March 30, 2003
- * @created    January 28, 2003
+ * @since      January 28, 2003
  * @version    $Revision$
  */
 class PrintableFilmBox implements Printable

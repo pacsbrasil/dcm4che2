@@ -193,7 +193,7 @@
     </jar>
   </target>   
 
-  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, plut-jar, probescan-jar, localhost-jar"/>
+  <target name="jar" depends="dcmsrv-jar, prnscp-jar, dasho-prnscp-jar, print-image-jar, list-printers-jar, plut-viewer-jar, probescan-jar, localhost-jar"/>
   
   <target name="dcmsrv-jar" depends="compile">
     <mkdir dir="${build.lib.dir}"/>
@@ -248,22 +248,23 @@
     </jar>
   </target>
   
-  <target name="plut-jar" depends="compile">
+  <target name="plut-viewer-jar" depends="compile">
     <mkdir dir="${build.bin.dir}"/>
-    <jar jarfile="${build.bin.dir}/plut.jar">
+    <jar jarfile="${build.bin.dir}/plut-viewer.jar">
         <manifest>
             <attribute
                 name="Main-Class"
-                value="com.tiani.prnscp.client.PLut"
+                value="com.tiani.prnscp.client.plutgui.PLutGUIFrame"
             />
             <attribute
                 name="Class-Path"
-                value="../lib/getopt.jar ../server/default/lib/dcm4che.jar ../server/default/lib/log4j.jar"
+                value="../server/default/lib/dcm4che.jar ../server/default/lib/log4j.jar"
             />
         </manifest>
-        <fileset dir="${build.classes.dir}"
-               includes="com/tiani/prnscp/client/PLut*"
-        />
+        <fileset dir="${build.classes.dir}">
+            <include name="com/tiani/prnscp/client/plutgui/*"/>
+            <include name="com/tiani/prnscp/print/PLutBuilder*"/>
+        </fileset>
     </jar>
   </target>
 
