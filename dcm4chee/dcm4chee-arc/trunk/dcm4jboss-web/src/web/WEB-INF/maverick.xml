@@ -10,7 +10,7 @@ default-transform-type="xslt">
   </modules>
 
   <views>
-    <view id="folder" name=folder">
+    <view id="folder" name="folder">
       <transform path="folder.xsl" />
     </view>
   </views>
