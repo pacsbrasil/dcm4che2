@@ -127,8 +127,11 @@ public abstract class ContentEditBean implements SessionBean {
     	try {
 	        PatientLocal dominant = patHome.findByPrimaryKey(new Integer(patPk));
 	        for (int i = 0; i < mergedPks.length; i++) {
-                patHome.findByPrimaryKey(new Integer(mergedPks[i]))
-                        .setMergedWith(dominant);
+	            PatientLocal priorPat = patHome.findByPrimaryKey(new Integer(mergedPks[i]));
+	            dominant.getStudies().addAll(priorPat.getStudies());
+	            dominant.getMpps().addAll(priorPat.getMpps());
+	            dominant.getMwlItems().addAll(priorPat.getMwlItems());                
+	            priorPat.setMergedWith(dominant);
             }
         } catch (FinderException e) {
             throw new EJBException(e);
