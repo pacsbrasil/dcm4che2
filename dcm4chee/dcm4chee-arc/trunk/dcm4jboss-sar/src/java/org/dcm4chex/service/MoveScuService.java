@@ -84,8 +84,8 @@ public class MoveScuService
     /**
      * @jmx.managed-attribute
      */
-    public void setDataSource(String datasource) {
-        dsf.setJNDIName(datasource);
+    public void setDataSource(String name) {
+        dsf.setJNDIName(name);
     }
 
     /**

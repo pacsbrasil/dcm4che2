@@ -20,12 +20,16 @@
 
 package org.dcm4chex.service;
 
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
@@ -40,6 +44,12 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 abstract class AbstractScpService extends ServiceMBeanSupport
 {
+    private final static Map dumpParam = new HashMap(5);
+    static {
+        dumpParam.put("maxlen", new Integer(128));
+        dumpParam.put("vallen", new Integer(64));
+        dumpParam.put("prefix", "\t");
+    }
     final static AssociationFactory asf =
         AssociationFactory.getInstance();
 
@@ -99,6 +109,21 @@ abstract class AbstractScpService extends ServiceMBeanSupport
                 tsuids[i] = UIDs.forName(stk.nextToken());
             }
             policy.putPresContext(asuid, tsuids);
+        }
+    }
+
+    void logDataset(String prompt, Dataset ds)
+    {
+        if (!log.isDebugEnabled()) {
+            return;
+        }
+        try {
+            StringWriter w = new StringWriter();
+            w.write(prompt);
+            ds.dumpDataset(w, dumpParam);
+            log.debug(w.toString());
+        } catch (Exception e) {
+            log.warn("Failed to dump dataset", e);
         }
     }
 }

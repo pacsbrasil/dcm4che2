@@ -66,7 +66,6 @@ import org.dcm4chex.archive.ejb.interfaces.MoveOrderQueueHome;
 import org.dcm4chex.archive.ejb.interfaces.MoveOrderValue;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.jboss.logging.Logger;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -92,7 +91,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final DcmParserFactory pf = DcmParserFactory.getInstance();
 
-    private final Logger log;
+    private final StoreScpService service;
     private int updateDatabaseMaxRetries = 2;
     private int forwardPriority = 0;
     private String retrieveAETs;
@@ -102,8 +101,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private String maskWarningAsSuccessForCallingAETs = "";
     private HashSet warningAsSuccessSet = new HashSet();
 
-    public StoreScp(Logger log) {
-        this.log = log;
+    public StoreScp(StoreScpService service) {
+        this.service = service;
     }
 
     public final String getRetrieveAETs() {
@@ -177,16 +176,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ? new File(path)
                 : new File(ServerConfigLocator.locate().getServerHomeDir(), path);
         if (!f.exists()) {
-            log.warn("directory " + dir + " does not exist - create new one");
+            service.getLog().warn("directory " + dir + " does not exist - create new one");
             if (!f.mkdirs()) {
                 String prompt = "Failed to create directory " + dir;
-                log.error(prompt);
+                service.getLog().error(prompt);
                 throw new IOException(prompt);
             }
         }
         if (!f.isDirectory() || !f.canWrite()) {
             String prompt = dir + " is not a writeable directory";
-            log.error(prompt);
+            service.getLog().error(prompt);
             throw new IOException(prompt);
         }
         return f;
@@ -225,6 +224,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmParser parser = pf.newDcmParser(in);
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDataset(decParam, Tags.PixelData);
+            service.logDataset("Dataset", ds);
             ds.setFileMetaInfo(
                 objFact.newFileMetaInfo(
                     rqCmd.getAffectedSOPClassUID(),
@@ -270,11 +270,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             updateStoredStudiesInfo(assoc, ds);
         } catch (DcmServiceException e) {
-            log.warn(e.getMessage(), e);
+            service.getLog().warn(e.getMessage(), e);
             deleteFailedStorage(file);
             throw e;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            service.getLog().error(e.getMessage(), e);
             deleteFailedStorage(file);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         } finally {
@@ -285,7 +285,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private void deleteFailedStorage(File file) {
         if (file == null)
             return;
-        log.info("M-DELETE file:" + file);
+        service.getLog().info("M-DELETE file:" + file);
         file.delete();
     }
 
@@ -317,7 +317,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         md5);
                 } catch (Exception e) {
                     if (retry++ >= updateDatabaseMaxRetries) {
-                        log.error(
+                        service.getLog().error(
                             "failed to update DB with entries for received "
                                 + dirPath
                                 + "/"
@@ -327,7 +327,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             Status.ProcessingFailure,
                             e);
                     }
-                    log.warn(
+                    service.getLog().warn(
                         "failed to update DB with entries for received "
                             + dirPath
                             + "/"
@@ -410,7 +410,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         DcmEncodeParam encParam,
         MessageDigest md)
         throws IOException {
-        log.info("M-WRITE file:" + file);
+        service.getLog().info("M-WRITE file:" + file);
         BufferedOutputStream out =
             new BufferedOutputStream(new FileOutputStream(file));
         DigestOutputStream dos = new DigestOutputStream(out, md);
@@ -499,7 +499,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private void mkdir(File dir) {
         if (dir.mkdir()) {
-            log.info("M-WRITE dir:" + dir);
+            service.getLog().info("M-WRITE dir:" + dir);
         }
     } // Implementation of AssociationListener
     public void write(Association src, PDU pdu) {}
@@ -575,7 +575,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         try {
             orderQueue = getMoveOrderQueueHome().create();
         } catch (Exception e) {
-            log.error("Failed to access Move Order Queue", e);
+            service.getLog().error("Failed to access Move Order Queue", e);
             return;
         }
         final MoveOrderValue order = new MoveOrderValue();
@@ -606,7 +606,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     try {
                         orderQueue.queue(order);
                     } catch (RemoteException e) {
-                        log.error("Failed to queue " + order, e);
+                        service.getLog().error("Failed to queue " + order, e);
                     }
                 }
             }

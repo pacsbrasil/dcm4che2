@@ -23,11 +23,13 @@ package org.dcm4chex.service;
 import java.beans.PropertyEditor;
 
 import javax.management.ObjectName;
+import javax.sql.DataSource;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.service.util.AETsEditor;
+import org.dcm4chex.service.util.ConfigurationException;
 
 /**
  * @jmx.mbean
@@ -43,8 +45,8 @@ public class QueryRetrieveScpService
 {
 
     private DataSourceFactory dsf = new DataSourceFactory(log);
-    private FindScp findScp = new FindScp(log, dsf);
-    private MoveScp moveScp = new MoveScp(log, dsf);
+    private FindScp findScp = new FindScp(this);
+    private MoveScp moveScp = new MoveScp(this);
     private String[] callingAETs;
     private String patientRootFind;
     private String studyRootFind;
@@ -69,6 +71,11 @@ public class QueryRetrieveScpService
         this.dcmServerName = dcmServerName;
     }
 
+    DataSource getDS() throws ConfigurationException
+    {
+        return dsf.getDataSource();
+    }
+
     /**
      * @jmx.managed-attribute
      */
@@ -80,11 +87,11 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public void setDataSource(String datasource)
+    public void setDataSource(String jndiName)
     {
-        dsf.setJNDIName(datasource);
+        dsf.setJNDIName(jndiName);
     }
-
+    
     /**
      * @jmx.managed-attribute
      */

@@ -183,7 +183,7 @@
     	dcm4chex:service=DcmServer,name=DCMSRV
     </depends>
     
-    <attribute name="DataSource">java:/PostgresDS</attribute>    
+    <attribute name="DataSource">java:/DefaultDS</attribute>    
 
     <attribute name="CallingAETs">__any__</attribute>
 
@@ -212,7 +212,7 @@
     Name after "java:/" must match with <jndi-name> attribute of 
     JDBC Datasource configuration deployment file (*-ds.xml) 
 	-->
-    <attribute name="DataSource">java:/PostgresDS</attribute>    
+    <attribute name="DataSource">java:/DefaultDS</attribute>    
 
     <!-- 
     Specifies number and intervalls of retries of failed Move Requests
@@ -262,5 +262,19 @@
     <attribute name="InitialStartDate">NOW</attribute>
     <attribute name="InitialRepetitions">-1</attribute>
   </mbean>
+
+	<mbean code="org.dcm4chex.service.MWLFindScpService" 
+		name="dcm4chex:service=MWLFindScp,aet=MWL_SCP">
+	
+	    <depends optional-attribute-name="DcmServerName">
+	    	dcm4chex:service=DcmServer,name=DCMSRV
+	    </depends>
+	    
+	    <attribute name="DataSource">java:/DefaultDS</attribute>    
+	    
+	    <attribute name="CallingAETs">__any__</attribute>
+	
+	    <attribute name="TransferSyntaxes">ExplicitVRLittleEndian,ImplicitVRLittleEndian</attribute>
+	</mbean>
 </server>
 

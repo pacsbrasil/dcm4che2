@@ -33,17 +33,16 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
-import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$ $Date$
- * @since 31.08.2003
  */
-public class FindScp extends DcmServiceBase {
-    private final QueryRetrieveScpService service;
+public class MWLFindScp extends DcmServiceBase {
+    private final MWLFindScpService service;
 
-    public FindScp(QueryRetrieveScpService service) {
+    public MWLFindScp(MWLFindScpService service) {
         this.service = service;
     }
 
@@ -52,11 +51,11 @@ public class FindScp extends DcmServiceBase {
         Dimse rq,
         Command rspCmd)
         throws IOException, DcmServiceException {
-        final QueryCmd queryCmd;
+        final MWLQueryCmd queryCmd;
         try {
             Dataset rqData = rq.getDataset();
-            service.logDataset("Identifier", rqData);
-            queryCmd = QueryCmd.create(service.getDS(), rqData);
+            service.logDataset("Identifier:", rqData);
+            queryCmd = new MWLQueryCmd(service.getDS(), rqData);
             queryCmd.execute();
         } catch (Exception e) {
             service.getLog().error("Query DB failed:", e);
@@ -66,10 +65,10 @@ public class FindScp extends DcmServiceBase {
     }
 
     private class MultiCFindRsp implements MultiDimseRsp {
-        private final QueryCmd queryCmd;
+        private final MWLQueryCmd queryCmd;
         private boolean canceled = false;
 
-        public MultiCFindRsp(QueryCmd queryCmd) {
+        public MultiCFindRsp(MWLQueryCmd queryCmd) {
             this.queryCmd = queryCmd;
         }
 
@@ -94,8 +93,9 @@ public class FindScp extends DcmServiceBase {
                     return null;
                 }
                 rspCmd.putUS(Tags.Status, Status.Pending);
-                Dataset data = queryCmd.getDataset();
-                return data;
+                Dataset rspData = queryCmd.getDataset();
+                service.logDataset("Identifier:",rspData);
+                return rspData;
             } catch (SQLException e) {
                 service.getLog().error("Retrieve DB record failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);                

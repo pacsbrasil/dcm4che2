@@ -37,7 +37,6 @@ import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -45,14 +44,12 @@ import org.jboss.logging.Logger;
  * @since 31.08.2003
  */
 public class MoveScp extends DcmServiceBase {
-    private final Logger log;
-    private final DataSourceFactory dsf;
+    private final QueryRetrieveScpService service;
     private boolean sendPendingMoveRSP = true;
     private int acTimeout = 5000;
 
-    public MoveScp(Logger log, DataSourceFactory dsf) {
-        this.log = log;
-        this.dsf = dsf;
+    public MoveScp(QueryRetrieveScpService service) {
+        this.service = service;
     }
 
     public final int getAcTimeout() {
@@ -75,13 +72,14 @@ public class MoveScp extends DcmServiceBase {
         Command rqCmd = rq.getCommand();
         try {
             Dataset rqData = rq.getDataset();
+            service.logDataset("Identifier", rqData);
             checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
             String dest = rqCmd.getString(Tags.MoveDestination);
             AEData aeData = queryAEData(dest);
             FileInfo[][] fileInfos = queryFileInfos(rqData);
             new Thread(
                 new MoveTask(
-                    log,
+                    service.getLog(),
                     assoc,
                     rq.pcid(),
                     rqCmd,
@@ -183,10 +181,10 @@ public class MoveScp extends DcmServiceBase {
         FileInfo[][] fileInfos = null;
         try {
             RetrieveCmd retrieveCmd =
-                RetrieveCmd.create(dsf.getDataSource(), rqData);
+                RetrieveCmd.create(service.getDS(), rqData);
             fileInfos = retrieveCmd.execute();
         } catch (Exception e) {
-            log.error("Query DB failed:", e);
+            service.getLog().error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
         return fileInfos;
@@ -195,10 +193,10 @@ public class MoveScp extends DcmServiceBase {
     private AEData queryAEData(String dest) throws DcmServiceException {
         AEData aeData = null;
         try {
-            AECmd aeCmd = new AECmd(dsf.getDataSource(), dest);
+            AECmd aeCmd = new AECmd(service.getDS(), dest);
             aeData = aeCmd.execute();
         } catch (Exception e) {
-            log.error("Query DB failed:", e);
+            service.getLog().error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
         if (aeData == null) {

@@ -222,7 +222,7 @@ public class StoreScpService
 
     private String rtTreatmentSummaryRecordStorage;
 
-    private StoreScp scp = new StoreScp(log);
+    private StoreScp scp = new StoreScp(this);
 
     /**
      * @jmx.managed-attribute
