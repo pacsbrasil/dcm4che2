@@ -33,6 +33,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.VRs;
 import org.dcm4che.image.PixelData;
 
 /**
@@ -92,7 +93,7 @@ public class PixelDataImpl
     }
     private final Stack markStack = new Stack();
 
-    PixelDataImpl(Dataset ds, ImageInputStream in)
+    PixelDataImpl(Dataset ds, ImageInputStream in, ByteOrder byteOrder, int pixelDataVr)
     {
         data = ovlData = null;
         if((pmi = ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2")) == null)
@@ -133,8 +134,10 @@ public class PixelDataImpl
         hOvlMaskRS = bs;
         lOvlMask = (1 << (hb + 1) - bs) - 1;
         //set byte-order
-        in.setByteOrder(ByteOrder.LITTLE_ENDIAN);
-        return;
+        if (pixelDataVr == VRs.OW)
+            in.setByteOrder(byteOrder);
+        else
+            in.setByteOrder(ByteOrder.LITTLE_ENDIAN);
     }
 
     public int getBitsAllocated()
