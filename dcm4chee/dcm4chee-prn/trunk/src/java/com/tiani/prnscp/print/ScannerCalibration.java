@@ -325,7 +325,7 @@ public class ScannerCalibration
     public File getRefDSI256File()
     {
         checkScanDir();
-        return new File(scanDir, DSI256_JPG);
+        return new File(scanDir.getParent(), DSI256_JPG);
     }
 
 
@@ -410,6 +410,9 @@ public class ScannerCalibration
         // TODO eliminate some of the 27(!) temporary variables used in this method [GZ]
         ImageReader r = findReader(f);
         ImageInputStream in = ImageIO.createImageInputStream(f);
+        if (in == null) {
+            throw new FileNotFoundException("" + f);
+        }
         try {
             BufferedImage bi;
             ImageReadParam rParam = r.getDefaultReadParam();
