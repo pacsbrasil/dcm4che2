@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Vector;
 
@@ -278,6 +279,11 @@ class PrintSCUDataSource implements DataSource {
                     - ds.getFloat(Tags.WindowWidth, 0F) / 2) - ri) / rs);
             }
             
+            //if a Modality LUT and/or VOI LUT exists combine the LUTs into one
+            LutBuffer mlut = null, vlut = null, lut = null;
+            //combineLuts(new LutBuffer[2] {mlut, vlut}, new int[2] {});
+            //TODO check HERE for modality/VOI LUT and adjust fromDesc accordingly for the last LUT's output range!
+            
             //scale
             if (toDesc != fromDesc || windowPresent) {
                 if (buff == null)
@@ -313,10 +319,115 @@ class PrintSCUDataSource implements DataSource {
 
     private PixelDataReader readPixelData(PixelDataDescription desc,
         InputStream in)
-        throws IOException {
+        throws IOException
+    {
         PixelDataReader reader = pdFact.newReader(desc, ImageIO.createImageInputStream(in));
         reader.readPixelData(true);
         return reader;
+    }
+
+    private static final class LutBuffer
+    {
+        public static final int TYPE_BYTE = 0;
+        public static final int TYPE_SHORT = 1;
+        private final ByteBuffer buff;
+        private final int dataType;
+        private final int lutSize, firstValueMapped, depth;
+        public LutBuffer(ByteBuffer backend, int[] descriptor)
+        {
+            this.buff = backend;
+            this.dataType = (descriptor[2] <= 8) ? TYPE_BYTE
+                                                 : TYPE_SHORT;
+            lutSize = (descriptor[0] == 0) ? (1 << 16) : descriptor[0];
+            firstValueMapped = descriptor[1];
+            depth = descriptor[2];
+        }
+        public int getEntry(int index)
+        {
+            return (dataType == TYPE_BYTE)
+                ? (int)(buff.get(index) & 0xFF)
+                : (int)(buff.getShort(index * 2) & 0xFFFF);
+        }
+        public int getEntryFromInput(int value)
+        {
+            if (value <= firstValueMapped)
+                return getEntry(0);
+            else if (value - firstValueMapped >= lutSize)
+                return getEntry(lutSize - 1);
+            else
+                return getEntry(value - firstValueMapped);
+        }
+    }
+
+    private Object combineLuts(LutBuffer[] luts, int[][] desc)
+    {
+        int[] olut = new int[desc[0][0]];
+        int curVal;
+        for (int i = 0, j; i < desc[0][0]; i++) {
+            curVal = luts[0].getEntry(i);
+            for (j = 1; j < luts.length; j++) {
+                curVal = luts[j].getEntryFromInput(curVal);
+            }
+            olut[i] = curVal;
+        }
+        return olut;
+    }
+
+    private void scaleToRangeWithLUT(int[][] pixelData, PixelDataDescription from,
+        int toBitDepth, boolean toSigned,
+        final float rescaleSlope, final float rescaleInt,
+        LutBuffer lut, int[] lutDesc,
+        int start, int end)
+    {
+        //lut != null
+        //from describes the output range of lut
+        //range [start..end] of lut[pixelData*rs+ri] scaled to toBitDepth
+        final int fromBitDepth = from.getBitsStored();
+        final int min = (from.isSigned()) ? -(1 << (fromBitDepth - 1)) : 0;
+        final int max = (from.isSigned()) ? (1 << (fromBitDepth - 1)) - 1
+                                 : (1 << fromBitDepth) - 1;
+        if (start >= end) {
+            start = min;
+            end = max;
+        }
+        final int rngOrig = end - start;
+        final int newMin = (toSigned) ? -(1 << (toBitDepth - 1)) : 0;
+        final int newMax = (toSigned) ? (1 << (toBitDepth - 1)) - 1
+                                      : (1 << toBitDepth) - 1;
+        final int rngNew = newMax - newMin;
+        final float f = rngNew / rngOrig;
+        final int leftShift = 32 - from.getHighBit() - 1;
+        final int rightShift = 32 - fromBitDepth;
+        float tmp;
+
+        if (from.isSigned()) {
+            for (int s = 0; s < pixelData.length; s++)
+                for (int i = 0; i < pixelData[s].length; i++) {
+                    tmp = ((pixelData[s][i] << leftShift) >> rightShift) * rescaleSlope + rescaleInt;
+                    tmp = lut.getEntryFromInput((int)(tmp + 0.5F));
+                    tmp = (tmp - start) * f;
+                    if (tmp < 0)
+                        pixelData[s][i] = newMin;
+                    else if (tmp > rngNew)
+                        pixelData[s][i] = newMax;
+                    else
+                        pixelData[s][i] = (int)(tmp + 0.5F) - newMin;
+                }
+        }
+        else {
+            for (int s = 0; s < pixelData.length; s++)
+                for (int i = 0; i < pixelData[s].length; i++) {
+                    tmp = ((pixelData[s][i] << leftShift) >> rightShift) * rescaleSlope + rescaleInt;
+                    tmp = lut.getEntryFromInput((int)(tmp + 0.5F));
+                    tmp = (tmp - start) * f;
+                    if (tmp < 0)
+                        pixelData[s][i] = newMin;
+                    else if (tmp > rngNew)
+                        pixelData[s][i] = newMax;
+                    else
+                        pixelData[s][i] = (int)(tmp + 0.5F) - newMin;
+                }
+        }
     }
 
     /**
@@ -326,7 +437,8 @@ class PrintSCUDataSource implements DataSource {
      * loses any overlay bits that may be present.
      */
     private void scaleToRange(int[][] pixelData, PixelDataDescription from,
-        int toBitDepth, boolean toSigned, int start, int end) {
+        int toBitDepth, boolean toSigned, int start, int end)
+    {
         final int fromBitDepth = from.getBitsStored();
         final int min = (from.isSigned()) ? -(1 << (fromBitDepth - 1)) : 0;
         final int max = (from.isSigned()) ? (1 << (fromBitDepth - 1)) - 1
