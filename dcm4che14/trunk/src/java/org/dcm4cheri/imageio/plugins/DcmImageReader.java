@@ -362,7 +362,8 @@ public class DcmImageReader extends ImageReader
         }
         java.awt.image.DataBuffer db = theTile.getDataBuffer();
         PixelDataFactory pdf = PixelDataFactory.newInstance();
-        PixelData pd = pdf.newPixelData(theDataset, stream);
+        PixelData pd = pdf.newPixelData(theDataset, stream,
+            theParser.getDcmDecodeParam().byteOrder, theParser.getReadVR());
         //seek to proper frame (imageIndex parameter)
         for (int i = 0; i < imageIndex; i++)
             pd.skipToNextFrame();
@@ -395,25 +396,24 @@ public class DcmImageReader extends ImageReader
     private void readSamples(PixelData pd, final int samples, byte dest[])
         throws IOException
     {
-        byte srcRow[] = (byte[])null;
-        int rowLen = width * samples;
-        int srcRowLen = sourceWidth * samples;
-        int srcXOffsetLen = sourceXOffset * samples;
-        int destXOffsetLen = destXOffset * samples;
+        final int maxPosMax = totDestHeight * totDestWidth;
+        final int srcXOffsetLen = sourceXOffset * samples;
+        final int destXOffsetLen = destXOffset * samples;
+        final int rowLen = width * samples;
+        final int srcRowLen = sourceWidth * samples;
+        final int totDestRowLen = totDestWidth * samples;
+        final int[] tmp = new int[srcRowLen];
+        final int mask = (1 << theDataset.getInt(Tags.BitsStored, 0)) - 1;
+        
+        byte srcRow[] = null;
         if(sourceXSubsampling != 1)
             srcRow = new byte[srcRowLen];
-        int maxPosMax = totDestHeight * totDestWidth;
-        int totDestRowLen = totDestWidth * samples;
-        pd.skipSamples(rowLen * sourceYOffset);
         int destY = destYOffset;
         int pos = 0;
         int posMax = 0;
-        int x = 0;
-        int y = 0;
+        int x = 0, y = 0;
         
-        int[] tmp;
-        final int mask = (1 << theDataset.getInt(0x280101, 0)) - 1;
-        
+        pd.skipSamples(rowLen * sourceYOffset);
         try
         {
             for(y = 0; y < sourceHeight; y++)
@@ -426,14 +426,14 @@ public class DcmImageReader extends ImageReader
                 pd.skipSamples(srcXOffsetLen);
                 if(sourceXSubsampling == 1)
                 {
-                    tmp = pd.readFully(srcRowLen);
+                    pd.readFully(tmp, 0, srcRowLen);
                     final int off = destY * totDestRowLen + destXOffsetLen;
                     for (int i = 0; i < srcRowLen; i++)
                         dest[i + off] = (byte)(tmp[i] & mask);
                 }
                 else
                 {
-                    tmp = pd.readFully(srcRowLen);
+                    pd.readFully(tmp, 0, srcRowLen);
                     pos = destY * totDestWidth + destXOffset;
                     posMax = Math.min(pos + destWidth, maxPosMax);
                     x = 0;
@@ -465,32 +465,31 @@ public class DcmImageReader extends ImageReader
         catch(Exception ex)
         {
             ex.printStackTrace();
-            throw new IIOException("Exception in readByteSamples", ex);
+            throw new IIOException("Exception in readSamples", ex);
         }
     }
 
     private void readSamples(PixelData pd, final int samples, short dest[])
         throws IOException
     {
-        byte srcRow[] = (byte[])null;
-        int rowLen = width * samples;
-        int srcRowLen = sourceWidth * samples;
-        int srcXOffsetLen = sourceXOffset * samples;
-        int destXOffsetLen = destXOffset * samples;
+        final int maxPosMax = totDestHeight * totDestWidth;
+        final int srcXOffsetLen = sourceXOffset * samples;
+        final int destXOffsetLen = destXOffset * samples;
+        final int rowLen = width * samples;
+        final int srcRowLen = sourceWidth * samples;
+        final int totDestRowLen = totDestWidth * samples;
+        final int[] tmp = new int[srcRowLen];
+        final int mask = (1 << theDataset.getInt(Tags.BitsStored, 0)) - 1;
+        
+        byte srcRow[] = null;
         if(sourceXSubsampling != 1)
             srcRow = new byte[srcRowLen];
-        int maxPosMax = totDestHeight * totDestWidth;
-        int totDestRowLen = totDestWidth * samples;
-        pd.skipSamples(rowLen * sourceYOffset);
         int destY = destYOffset;
         int pos = 0;
         int posMax = 0;
-        int x = 0;
-        int y = 0;
+        int x = 0, y = 0;
         
-        int[] tmp;
-        final int mask = (1 << theDataset.getInt(0x280101, 0)) - 1;
-        
+        pd.skipSamples(rowLen * sourceYOffset);
         try
         {
             for(y = 0; y < sourceHeight; y++)
@@ -503,14 +502,14 @@ public class DcmImageReader extends ImageReader
                 pd.skipSamples(srcXOffsetLen);
                 if(sourceXSubsampling == 1)
                 {
-                    tmp = pd.readFully(srcRowLen);
+                    pd.readFully(tmp, 0, srcRowLen);
                     final int off = destY * totDestRowLen + destXOffsetLen;
                     for (int i = 0; i < srcRowLen; i++)
                         dest[i + off] = (short)(tmp[i] & mask);
                 }
                 else
                 {
-                    tmp = pd.readFully(srcRowLen);
+                    pd.readFully(tmp, 0, srcRowLen);
                     pos = destY * totDestWidth + destXOffset;
                     posMax = Math.min(pos + destWidth, maxPosMax);
                     x = 0;
@@ -542,7 +541,7 @@ public class DcmImageReader extends ImageReader
         catch(Exception ex)
         {
             ex.printStackTrace();
-            throw new IIOException("Exception in readByteSamples", ex);
+            throw new IIOException("Exception in readSamples", ex);
         }
     }
 
