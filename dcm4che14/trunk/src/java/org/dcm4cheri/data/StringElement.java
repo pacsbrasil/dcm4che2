@@ -75,6 +75,21 @@ abstract class StringElement extends ValueElement
             }
         };
 
+	private final static Trim PN_TRIM =
+		new Trim()
+		{
+			public String trim(String s)
+			{
+				char ch;
+				for (int r = s.length(); r > 0; --r) {
+					if ((ch = s.charAt(r - 1)) != '^' && ch != ' ') {
+						return s.substring(0, r);
+					}
+				}
+				return "";
+			}
+		};
+		
     private final static Trim TOT_TRIM =
         new Trim()
         {
@@ -607,7 +622,7 @@ abstract class StringElement extends ValueElement
     {
         PN(int tag, ByteBuffer data)
         {
-            super(tag, data, TRAIL_TRIM);
+            super(tag, data, PN_TRIM);
         }
 
 
