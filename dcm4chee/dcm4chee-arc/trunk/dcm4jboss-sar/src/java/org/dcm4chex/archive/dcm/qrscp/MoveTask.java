@@ -340,7 +340,7 @@ class MoveTask implements Runnable {
 	            // finally MOVE-RSP is sent
 	            Thread.sleep(10);
 	        } catch (Exception e) {
-	            log.error("Execption during release:", e);
+	            log.error("Exception during release:", e);
 	        }
         } else {
             try {
@@ -474,19 +474,18 @@ class MoveTask implements Runnable {
                 toRetrieve.add(instFiles[i]);
                 return null;
             }
-            aets.addAll(getRemoteRetrieveAETs(instFiles[i]));
+            aets.add(getRemoteRetrieveAET(instFiles[i]));
         }
         return aets;
     }
 
-    private List getRemoteRetrieveAETs(FileInfo info) {
+    private String getRemoteRetrieveAET(FileInfo info) {
         if (info.fileRetrieveAET != null)
-                return toList(info.fileRetrieveAET);
+            return info.fileRetrieveAET;
         // fall back to (external) retrieve AE
-        List aets = toList(info.instRetrieveAETs);
         // mark aets as external
-        externalAETs.addAll(aets);
-        return aets;
+        externalAETs.add(info.extRetrieveAET);
+        return info.extRetrieveAET;
     }
 
     private List toList(String aets) {
