@@ -322,10 +322,14 @@ public abstract class CompressCmd extends CodecCmd {
     }
 
     private void read(InputStream in, byte[][] data) throws IOException {
+    	int read;
         for (int i = 0; i < data.length; i++) {
             byte[] bank = data[i];
-            for (int toread = bank.length; toread > 0;)
-                toread -= in.read(bank, bank.length - toread, toread);
+            for (int toread = bank.length; toread > 0;) {
+                read = in.read(bank, bank.length - toread, toread);
+                if ( read == -1 ) throw new EOFException("Length of pixel matrix is too short!");
+                toread -= read;
+            }
         }
     }
 
