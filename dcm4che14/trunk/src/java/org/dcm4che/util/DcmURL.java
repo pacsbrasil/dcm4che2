@@ -145,13 +145,15 @@ public final class DcmURL extends Object {
             s.substring(delimPos+3),":@/", true);
         String tk;
         int state = CALLED_AET;
+        boolean tcpPart = false;
         while (stk.hasMoreTokens()) {
             tk = stk.nextToken();
             switch (tk.charAt(0)) {
                 case ':':
-                    state = state == HOST ? PORT : CALLING_AET;
+                    state = tcpPart ? PORT : CALLING_AET;
                     break;
                 case '@':
+                    tcpPart = true;
                     state = HOST;
                     break;
                 case '/':
