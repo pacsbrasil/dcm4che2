@@ -39,7 +39,7 @@ public class FolderForm {
             form = new FolderForm();
             try {
 				URL wadoURL = new URL( "http", request.getServerName(), 
-						request.getServerPort(), "/dcm4jboss-wado/wado");
+						request.getServerPort(), "/dcm4jboss-wado/");
 				form.setWadoBaseURL( wadoURL.toString() );
 			} catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
