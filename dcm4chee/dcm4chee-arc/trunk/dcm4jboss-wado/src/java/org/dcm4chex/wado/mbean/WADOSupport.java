@@ -141,55 +141,59 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 	String rows = req.getRows();
 	String columns = req.getColumns();
 	String frameNumber = req.getFrameNumber();
-	int frame = 0;
 	try {
-		if ( frameNumber != null ) {
-			frame = Integer.parseInt( frameNumber );
-		}
-		WADOCache cache = WADOCacheImpl.getWADOCache();
-		File file;
-		BufferedImage bi = null;
-		if ( rows == null ) {
-			file = cache.getImageFile( studyUID, seriesUID, instanceUID );
-		} else {
-			file = cache.getImageFile( studyUID, seriesUID, instanceUID, rows, columns );
-		}
-		if ( file == null ) {
-			File dicomFile = null;
-			try {
-				dicomFile = getDICOMFile( studyUID, seriesUID, instanceUID );
-			} catch ( NeedRedirectionException nre ) {
-				if ( ! cache.isClientRedirect() )  {
-					return getRemoteDICOMFile( nre.getHostname(), req);
-				} else {
-					return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
-				}
-			}
-			if ( dicomFile != null ) {
-				bi = getImage( dicomFile, frame, rows, columns );
-			} else {
-				return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
-			}
-			if ( bi != null ) {
-				if ( rows == null ) {
-					file = cache.putImage( bi, studyUID, seriesUID, instanceUID );
-				} else {
-					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns );
-				}
-			} else {
-				return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get jpeg from requested object");
-			}
-		}
+		File file = getJpg( studyUID, seriesUID, instanceUID, rows, columns, frameNumber );
 		if ( file != null ) {
 			return new WADOResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
-			
+		} else {
+			return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "DICOM object not found!");
 		}
-		
+	} catch ( NeedRedirectionException nre ) {
+		if ( ! WADOCacheImpl.getWADOCache().isClientRedirect() )  {
+			return getRemoteDICOMFile( nre.getHostname(), req);
+		} else {
+			return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_TEMPORARY_REDIRECT, getRedirectURL( nre.getHostname(), req ).toString() ); //error message is set to redirect host!
+		}
+	} catch ( NoImageException x1 ) {
+		return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get jpeg from requested object");		
 	} catch ( Exception x ) {
 		log.error("Exception in handleJpg: "+x.getMessage(), x);
 		return new WADOResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get jpeg");
 	}
-	return null;
+}
+public File getJpg( String studyUID, String seriesUID, String instanceUID,
+								String rows, String columns, String frameNumber	) throws IOException, NeedRedirectionException, NoImageException {
+	int frame = 0;
+	if ( frameNumber != null ) {
+		frame = Integer.parseInt( frameNumber );
+	}
+	WADOCache cache = WADOCacheImpl.getWADOCache();
+	File file;
+	BufferedImage bi = null;
+	if ( rows == null ) {
+		file = cache.getImageFile( studyUID, seriesUID, instanceUID );
+	} else {
+		file = cache.getImageFile( studyUID, seriesUID, instanceUID, rows, columns );
+	}
+	if ( file == null ) {
+		File dicomFile = getDICOMFile( studyUID, seriesUID, instanceUID );
+		if ( dicomFile != null ) {
+			bi = getImage( dicomFile, frame, rows, columns );
+		} else {
+			return null;
+		}
+		if ( bi != null ) {
+			if ( rows == null ) {
+				file = cache.putImage( bi, studyUID, seriesUID, instanceUID );
+			} else {
+				file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns );
+			}
+		} else {
+			throw new NoImageException();
+		}
+	}
+		
+	return file;
 }
 /*_*/
 
@@ -206,7 +210,7 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
  * 
  * @throws IOException
  */
-private File getDICOMFile( String studyUID, String seriesUID, String instanceUID ) throws IOException, NeedRedirectionException {
+public File getDICOMFile( String studyUID, String seriesUID, String instanceUID ) throws IOException, NeedRedirectionException {
     File file;
     Object dicomObject = null;
 	try {
@@ -419,4 +423,22 @@ class NeedRedirectionException extends Exception {
 	}
 }
 
+
+
+/**
+ * Inner exception class to handle error if DCM object is not a image.
+ *  
+ * @author franz.willer
+ *
+ */
+class NoImageException extends Exception {
+
+	/**
+	 * Comment for <code>serialVersionUID</code>
+	 */
+	private static final long serialVersionUID = 1L;
+
 }
+
+}
+

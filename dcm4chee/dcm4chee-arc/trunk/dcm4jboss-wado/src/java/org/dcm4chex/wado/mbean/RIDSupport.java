@@ -18,10 +18,8 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.management.MBeanServer;
@@ -54,8 +52,8 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.RIDResponseObject;
-import org.dcm4chex.wado.common.WADORequestObject;
-import org.dcm4chex.wado.common.WADOResponseObject;
+import org.dcm4chex.wado.mbean.WADOSupport.NeedRedirectionException;
+import org.dcm4chex.wado.mbean.WADOSupport.NoImageException;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.dcm4chex.wado.mbean.xml.IHEDocumentList;
@@ -70,10 +68,11 @@ import org.xml.sax.SAXException;
  */
 public class RIDSupport {
 
-	private static final String CONTENT_TYPE_XML = "text/xml";
-	private static final String CONTENT_TYPE_HTML = "text/html";
-	private static final String CONTENT_TYPE_JPEG = "image/jpeg";
-	private static final String CONTENT_TYPE_PDF = "application/pdf";
+	public static final String CONTENT_TYPE_XML = "text/xml";
+	public static final String CONTENT_TYPE_HTML = "text/html";
+	public static final String CONTENT_TYPE_JPEG = "image/jpeg";
+	public static final String CONTENT_TYPE_PDF = "application/pdf";
+	
 	private static Logger log = Logger.getLogger( RIDService.class.getName() );
     private static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
     private static final SRDocumentFactory srFact = SRDocumentFactory.getInstance();
@@ -84,11 +83,16 @@ public class RIDSupport {
     private static MBeanServer server;
 	private Set ecgSopCuids;
 	private String ridSummaryXsl;
-	private static List conceptNameCodes;
+	private static List allConceptNameCodes;
+	private static List cardiologyConceptNameCodes;
+	private static List radiologyConceptNameCodes;
 	private boolean useXSLInstruction;
 	private static ObjectName fileSystemMgtName;
 	
+	private ECGSupport ecgSupport = null;
+	
 	private Dataset patientDS = null;
+	private WADOSupport wadoSupport;
 
 	public RIDSupport( MBeanServer mbServer ) {
 		if ( server != null ) {
@@ -96,6 +100,19 @@ public class RIDSupport {
 		} else {
 			server = MBeanServerLocator.locate();
 		}
+	}
+	
+	protected WADOSupport getWADOSupport() {
+		if ( wadoSupport == null ) {
+			wadoSupport = new WADOSupport(RIDSupport.server);
+		}
+		return wadoSupport;
+	}
+	
+	private ECGSupport getECGSupport() {
+		if ( ecgSupport == null )
+			ecgSupport = new ECGSupport( this );
+		return ecgSupport;
 	}
 
 	/**
@@ -111,26 +128,45 @@ public class RIDSupport {
 		this.ecgSopCuids = sopCuids;
 	}
 	
-	private static List getConceptNameCodes() {
-		if ( conceptNameCodes == null ) {
-			conceptNameCodes = new ArrayList();
-			conceptNameCodes.add( createCodeDS( "18745-0" ) );//Cardiac Catheteization Report
-			conceptNameCodes.add( createCodeDS( "11540-2" ) );
-			conceptNameCodes.add( createCodeDS( "11538-6" ) );
-			conceptNameCodes.add( createCodeDS( "11539-4" ) );
-			conceptNameCodes.add( createCodeDS( "18747-6" ) );//CT Report
-			conceptNameCodes.add( createCodeDS( "18748-4" ) );
-			conceptNameCodes.add( createCodeDS( "11522-0" ) );
-			conceptNameCodes.add( createCodeDS( "18760-9" ) );
-			conceptNameCodes.add( createCodeDS( "11541-0" ) );
-			conceptNameCodes.add( createCodeDS( "18755-9" ) );
-			conceptNameCodes.add( createCodeDS( "18756-7" ) );
-			conceptNameCodes.add( createCodeDS( "18757-5" ) );
-			conceptNameCodes.add( createCodeDS( "11525-3" ) );
-			conceptNameCodes.add( createCodeDS( "18758-3" ) );
-			conceptNameCodes.add( createCodeDS( "11528-7" ) );
+	private static List getCardiologyConceptNameCodes() {
+		if ( cardiologyConceptNameCodes == null ) {
+			cardiologyConceptNameCodes = new ArrayList();
+			cardiologyConceptNameCodes.add( createCodeDS( "18745-0" ) );//Cardiac Catheteization Report
+			cardiologyConceptNameCodes.add( createCodeDS( "11540-2" ) );
+			cardiologyConceptNameCodes.add( createCodeDS( "11538-6" ) );
+			cardiologyConceptNameCodes.add( createCodeDS( "11539-4" ) );
 		}
-		return conceptNameCodes;
+		return cardiologyConceptNameCodes;
+	}
+	private static List getRadiologyConceptNameCodes() {
+		if ( radiologyConceptNameCodes == null ) {
+			radiologyConceptNameCodes = new ArrayList();
+			radiologyConceptNameCodes.add( createCodeDS( "18745-0" ) );//Cardiac Catheteization Report
+			radiologyConceptNameCodes.add( createCodeDS( "11540-2" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "11538-6" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "11539-4" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "18747-6" ) );//CT Report
+			radiologyConceptNameCodes.add( createCodeDS( "18748-4" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "11522-0" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "18760-9" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "11541-0" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "18755-9" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "18756-7" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "18757-5" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "11525-3" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "18758-3" ) );
+			radiologyConceptNameCodes.add( createCodeDS( "11528-7" ) );
+		}
+		return radiologyConceptNameCodes;
+	}
+	
+	private static List getAllConceptNameCodes() {
+		if ( allConceptNameCodes == null ) {
+			allConceptNameCodes = new ArrayList();
+			allConceptNameCodes.addAll( getRadiologyConceptNameCodes() );
+			allConceptNameCodes.addAll( getCardiologyConceptNameCodes() );
+		}
+		return allConceptNameCodes;
 	}
 	
 	private static Dataset createCodeDS( String value ) {
@@ -200,8 +236,9 @@ public class RIDSupport {
 			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Client doesnt support text/xml, text/html or text/xhtml !");
 		}
 		Dataset queryDS;
+		String reqType = reqObj.getRequestType();
 		if (log.isDebugEnabled() ) log.debug(" Summary request type:"+reqObj.getRequestType());
-		if ( "SUMMARY-CARDIOLOGY-ECG".equals( reqObj.getRequestType() ) ) {
+		if ( "SUMMARY-CARDIOLOGY-ECG".equals( reqType ) ) {
 			return getECGSummary( reqObj );
 		} else {
 			queryDS = getRadiologyQueryDS( reqObj );
@@ -212,7 +249,15 @@ public class RIDSupport {
 		}
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
-		for ( Iterator iter = getConceptNameCodes().iterator() ; iter.hasNext() ; ) {
+	    List conceptNames = null;
+	    if ( reqType.equals( "SUMMARY" ) ) {
+	    	conceptNames = getAllConceptNameCodes();
+	    } else if ( reqType.equals( "SUMMARY_CARDIOLOGY") ) {
+	    	conceptNames = getCardiologyConceptNameCodes();
+	    } else {
+	    	conceptNames = getRadiologyConceptNameCodes();
+	    }
+		for ( Iterator iter = conceptNames.iterator() ; iter.hasNext() ; ) {
         	queryDS.remove( Tags.ConceptNameCodeSeq );//remove for next search.
         	DcmElement cnSq = queryDS.putSQ(Tags.ConceptNameCodeSeq);
         	cnSq.addItem( (Dataset) iter.next() );
@@ -445,7 +490,31 @@ public class RIDSupport {
 	 * @return
 	 */
 	public RIDResponseObject getRIDDocument(RIDRequestObject reqObj) {
-		Dataset queryDS;
+		String uid = reqObj.getParam("documentUID");
+		Dataset queryDS = factory.newDataset();
+		queryDS.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+		queryDS.putUI(Tags.SOPInstanceUID, uid );
+		try {
+			QueryCmd cmd = QueryCmd.create( queryDS, false );
+			cmd.execute();
+			if ( cmd.next() ) {
+				Dataset ds = cmd.getDataset();
+				String cuid = ds.getString( Tags.SOPClassUID );
+				if ( getECGSopCuids().contains( cuid ) ) {
+					return getECGSupport().getECGDocument( ds );
+				} else {
+					return getDocument( reqObj );
+				}
+			} else {
+				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ "not found!");
+			}
+		} catch (SQLException x) {
+			log.error("Cant get RIDDocument:", x);
+			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
+		}
+	}
+	
+	private RIDResponseObject getDocument( RIDRequestObject reqObj ) {
 		String docUID = reqObj.getParam("documentUID");
 		if ( log.isDebugEnabled() ) log.debug(" Document UID:"+docUID);
 		String contentType = reqObj.getParam("preferredContentType");
@@ -457,8 +526,8 @@ public class RIDSupport {
 					return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
 				}
 				RIDResponseObject resp = handleJPEG( reqObj );
-				if ( resp != null ) return resp; //cant be rendered as image (SR) make PDF instead.
-				contentType = CONTENT_TYPE_PDF;
+				if ( resp != null ) return resp; 
+				contentType = CONTENT_TYPE_PDF; //cant be rendered as image (SR) make PDF instead.
 			} else if ( ! contentType.equals( CONTENT_TYPE_PDF) ) {
 				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/jpeg' are supported !");
 			}
@@ -489,48 +558,21 @@ public class RIDSupport {
 	 * @return
 	 */
 	private RIDResponseObject handleJPEG(final RIDRequestObject reqObj) {
-		WADOSupport ws = new WADOSupport(RIDSupport.server);
-		WADOResponseObject resp = ws.handleJpg( new WADORequestObject() {
-			public String getStudyUID() { return "1"; }
-			public String getSeriesUID() { return "1";}
-			public String getObjectUID() { return reqObj.getParam("documentUID"); }
-			public String getRows() {return null;}
-			public String getColumns() {return null;}
-			public String getFrameNumber() {return null;}
-			public List getContentTypes() {return new ArrayList();}
-			public String getRequestType() {return null;}
-			public List getAllowedContentTypes() {return new ArrayList();}
-			public int checkRequest() {return 0;}
-			public Map getRequestParams() {
-				Map map = new HashMap();
-				map.put("studyUID", "1"); map.put("seriesUID", "1"); map.put("objectUID", getObjectUID() );
-				return map;
-			}
-			public Map getRequestHeaders() {return new HashMap();}
-			public String getRequestURL() {return null;}
-		});
-		if ( resp.getReturnCode() == HttpServletResponse.SC_INTERNAL_SERVER_ERROR ) {
-			return null;
-		}
-		return new RIDStreamResponseObjectImpl( resp.getStream(), resp.getContentType(), resp.getReturnCode(), null );
-/*		
-		URL url = null;
+		File file;
 		try {
-			url = new URL("http://localhost:8080/dcm4jboss-wado/wado?requestType=WADO&studyUID=1&seriesUID=1&objectUID="+reqObj.getParam("documentUID") );
-			if (log.isDebugEnabled() ) log.debug("Image request redirected to WADO url:"+url );
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.connect();
-			if ( conn.getResponseCode() != HttpServletResponse.SC_OK ) {
-				if (log.isInfoEnabled() ) log.info("WADO server responses with:"+conn.getResponseMessage() );
-				return new RIDStreamResponseObjectImpl( null, conn.getContentType(), conn.getResponseCode(), conn.getResponseMessage() );
+			file = getWADOSupport().getJpg( "rid", "rid", reqObj.getParam("documentUID"), null, null, null );
+			if ( file != null ) {
+				return new RIDStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null );
+			} else {
+				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document not found! documentID:"+reqObj.getParam("documentUID") );
 			}
-			InputStream is = conn.getInputStream();
-			return new RIDStreamResponseObjectImpl( is, conn.getContentType(), HttpServletResponse.SC_OK, null);
+		} catch (NeedRedirectionException e) {
+			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document is not on this Server! Try to get document from:"+e.getHostname() );
+		} catch (NoImageException e) {
+			return null;
 		} catch (Exception e) {
-			log.error("Can't connect to WADO service:"+url, e);
-			return new RIDStreamResponseObjectImpl( null, "image/jpeg", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant connect to WADO service!");
+			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
 		}
-/*_*/
 	}
 
 	/**
