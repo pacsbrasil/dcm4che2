@@ -153,7 +153,7 @@ public abstract class CodeToDeviceMappingBean implements SessionBean {
 	 * @throws CreateException
 	 * @ejb.interface-method
      */
-    public Dataset addDeviceInfo( Dataset ds ) throws FinderException {
+    public Dataset addScheduledStationInfo( Dataset ds ) throws FinderException {
     	DcmElement spsSeq = ds.get( Tags.SPSSeq );
     	DcmElement codeSeq;
     	int len = spsSeq.vm();
