@@ -192,7 +192,7 @@
     <!--
     Defines the Color for ImageableArea -Annotation
     -->
-    <attribute name="CcolorAllOfPage">255,255,255</attribute>
+    <attribute name="ColorAllOfPage">255,255,255</attribute>
     
     <!--
     Defines the Color for TrimBox
@@ -200,7 +200,7 @@
     <attribute name="ColorTrimBox">0,255,0</attribute>
     
     <!--
-    Defines the Color for ImgBox background if EmptyImgDens not is set and border Dens not is set
+    Defines the Color for ImgBox background if EmptyImgDens is not set and border Dens is not set
     -->
     <attribute name="ColorVis">0,0,0</attribute>
 
