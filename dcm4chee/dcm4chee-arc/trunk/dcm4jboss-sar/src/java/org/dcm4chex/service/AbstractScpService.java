@@ -20,7 +20,9 @@
 
 package org.dcm4chex.service;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -41,6 +43,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.server.DcmHandler;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.service.util.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -179,4 +182,16 @@ abstract class AbstractScpService extends ServiceMBeanSupport
             throw new ConfigurationException(e);
         }
     }
+
+    public Socket createSocket(AEData aeData) throws IOException {
+        String[] cipherSuites = aeData.getCipherSuites();
+        if (cipherSuites == null || cipherSuites.length == 0) {
+            return new Socket(aeData.getHostName(), aeData.getPort());
+        } else {
+            return getSocketFactory(cipherSuites).createSocket(
+                    aeData.getHostName(),
+                    aeData.getPort());
+        }
+    }
+
 }

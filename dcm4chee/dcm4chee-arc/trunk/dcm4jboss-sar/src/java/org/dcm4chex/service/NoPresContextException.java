@@ -1,4 +1,4 @@
-/*
+/* $Id$
  * Copyright (c) 2002,2003 by TIANI MEDGRAPH AG
  *
  * This file is part of dcm4che.
@@ -17,23 +17,46 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 package org.dcm4chex.service;
 
-import org.dcm4che.net.PresContext;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-
 /**
- * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$
- * @since 21.11.2003
+ * @author gunter.zeilinger@tiani.com
+ * @version $Revision$ $Date$
+ * @since 20.04.2004
  */
-final class FileSelection
-{
-    public final FileInfo fileInfo;
-    public final PresContext presContext;
-    public FileSelection(FileInfo fileInfo, PresContext presContext) {
-        this.fileInfo = fileInfo;
-        this.presContext = presContext;        
+public class NoPresContextException extends Exception {
+
+    /**
+     * 
+     */
+    public NoPresContextException() {
+        super();
+        // TODO Auto-generated constructor stub
     }
+
+    /**
+     * @param message
+     */
+    public NoPresContextException(String message) {
+        super(message);
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @param cause
+     */
+    public NoPresContextException(Throwable cause) {
+        super(cause);
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @param message
+     * @param cause
+     */
+    public NoPresContextException(String message, Throwable cause) {
+        super(message, cause);
+        // TODO Auto-generated constructor stub
+    }
+
 }

@@ -21,6 +21,7 @@
 package org.dcm4chex.service;
 
 import java.beans.PropertyEditor;
+import java.sql.SQLException;
 
 import javax.management.ObjectName;
 import javax.sql.DataSource;
@@ -28,6 +29,8 @@ import javax.sql.DataSource;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4chex.archive.ejb.jdbc.AECmd;
+import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.service.util.AETsEditor;
 import org.dcm4chex.service.util.ConfigurationException;
 
@@ -41,14 +44,14 @@ import org.dcm4chex.service.util.ConfigurationException;
  */
 public class QueryRetrieveScpService
     extends AbstractScpService
-    implements org.dcm4chex.service.QueryRetrieveScpServiceMBean
-{
+    implements org.dcm4chex.service.QueryRetrieveScpServiceMBean {
     private DataSourceFactory dsf = new DataSourceFactory(log);
     private FindScp findScp = new FindScp(this);
     private MoveScp moveScp = new MoveScp(this);
     private String[] callingAETs;
     private boolean sendPendingMoveRSP = true;
     private boolean retrieveLastReceived = true;
+    private boolean forwardAsMoveOriginator = true;
     private int acTimeout = 5000;
     private String patientRootFind;
     private String studyRootFind;
@@ -56,49 +59,43 @@ public class QueryRetrieveScpService
     private String patientRootMove;
     private String studyRootMove;
     private String patientStudyOnlyMove;
-    
+
     /**
       * @jmx.managed-attribute
       */
-    public ObjectName getDcmServerName()
-    {
+    public ObjectName getDcmServerName() {
         return dcmServerName;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public void setDcmServerName(ObjectName dcmServerName)
-    {
+    public void setDcmServerName(ObjectName dcmServerName) {
         this.dcmServerName = dcmServerName;
     }
 
-    DataSource getDS() throws ConfigurationException
-    {
+    DataSource getDS() throws ConfigurationException {
         return dsf.getDataSource();
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public String getDataSource()
-    {
+    public String getDataSource() {
         return dsf.getJNDIName();
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public void setDataSource(String jndiName)
-    {
+    public void setDataSource(String jndiName) {
         dsf.setJNDIName(jndiName);
     }
-    
+
     /**
      * @jmx.managed-attribute
      */
-    public String getCallingAETs()
-    {
+    public String getCallingAETs() {
         PropertyEditor pe = new AETsEditor();
         pe.setValue(callingAETs);
         return pe.getAsText();
@@ -107,13 +104,11 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public void setCallingAETs(String newCallingAETs)
-    {
+    public void setCallingAETs(String newCallingAETs) {
         PropertyEditor pe = new AETsEditor();
         pe.setAsText(newCallingAETs);
         callingAETs = (String[]) pe.getValue();
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
@@ -121,19 +116,16 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public final String getPatientRootFind()
-    {
+    public final String getPatientRootFind() {
         return patientRootFind;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public final void setPatientRootFind(String patientRootFind)
-    {
+    public final void setPatientRootFind(String patientRootFind) {
         this.patientRootFind = patientRootFind;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
@@ -141,19 +133,16 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public final String getPatientRootMove()
-    {
+    public final String getPatientRootMove() {
         return patientRootMove;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public final void setPatientRootMove(String patientRootMove)
-    {
+    public final void setPatientRootMove(String patientRootMove) {
         this.patientRootMove = patientRootMove;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
@@ -161,19 +150,16 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public final String getPatientStudyOnlyFind()
-    {
+    public final String getPatientStudyOnlyFind() {
         return patientStudyOnlyFind;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public final void setPatientStudyOnlyFind(String patientStudyOnlyFind)
-    {
+    public final void setPatientStudyOnlyFind(String patientStudyOnlyFind) {
         this.patientStudyOnlyFind = patientStudyOnlyFind;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
@@ -181,19 +167,16 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public final String getPatientStudyOnlyMove()
-    {
+    public final String getPatientStudyOnlyMove() {
         return patientStudyOnlyMove;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public final void setPatientStudyOnlyMove(String patientStudyOnlyMove)
-    {
+    public final void setPatientStudyOnlyMove(String patientStudyOnlyMove) {
         this.patientStudyOnlyMove = patientStudyOnlyMove;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
@@ -201,19 +184,16 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public final String getStudyRootFind()
-    {
+    public final String getStudyRootFind() {
         return studyRootFind;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public final void setStudyRootFind(String studyRootFind)
-    {
+    public final void setStudyRootFind(String studyRootFind) {
         this.studyRootFind = studyRootFind;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
@@ -221,19 +201,16 @@ public class QueryRetrieveScpService
     /**
      * @jmx.managed-attribute
      */
-    public final String getStudyRootMove()
-    {
+    public final String getStudyRootMove() {
         return studyRootMove;
     }
 
     /**
      * @jmx.managed-attribute
      */
-    public final void setStudyRootMove(String studyRootMove)
-    {
+    public final void setStudyRootMove(String studyRootMove) {
         this.studyRootMove = studyRootMove;
-        if (getState() == STARTED)
-        {
+        if (getState() == STARTED) {
             updatePolicy();
         }
     }
@@ -281,8 +258,21 @@ public class QueryRetrieveScpService
     }
 
 
-    protected void bindDcmServices(DcmServiceRegistry services)
-    {
+    /**
+     * @jmx.managed-attribute
+     */
+    public final boolean isForwardAsMoveOriginator() {
+        return forwardAsMoveOriginator;
+    }
+
+    /**
+     * @jmx.managed-attribute
+     */
+    public final void setForwardAsMoveOriginator(boolean forwardAsMoveOriginator) {
+        this.forwardAsMoveOriginator = forwardAsMoveOriginator;
+    }
+    
+    protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(
             UIDs.PatientRootQueryRetrieveInformationModelFIND,
             findScp);
@@ -300,8 +290,7 @@ public class QueryRetrieveScpService
             moveScp);
     }
 
-    protected void unbindDcmServices(DcmServiceRegistry services)
-    {
+    protected void unbindDcmServices(DcmServiceRegistry services) {
         services.unbind(UIDs.PatientRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
@@ -311,8 +300,7 @@ public class QueryRetrieveScpService
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
     }
 
-    protected AcceptorPolicy getAcceptorPolicy()
-    {
+    protected AcceptorPolicy getAcceptorPolicy() {
         AcceptorPolicy policy = asf.newAcceptorPolicy();
         policy.setCallingAETs(callingAETs);
         putPresContext(
@@ -340,5 +328,13 @@ public class QueryRetrieveScpService
             UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE,
             patientStudyOnlyMove);
         return policy;
+    }
+
+    public AEData queryAEData(String aet) throws SQLException, UnkownAETException {
+        AEData aeData = new AECmd(getDS(), aet).execute();
+        if (aeData == null) {
+            throw new UnkownAETException(aet);
+        }
+        return aeData;
     }
 }

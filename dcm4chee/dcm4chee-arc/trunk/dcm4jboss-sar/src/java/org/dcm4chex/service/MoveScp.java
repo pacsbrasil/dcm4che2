@@ -21,6 +21,7 @@
 package org.dcm4chex.service;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -33,7 +34,6 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
@@ -57,8 +57,17 @@ public class MoveScp extends DcmServiceBase {
             service.logDataset("Identifier:\n", rqData);
             checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
             String dest = rqCmd.getString(Tags.MoveDestination);
-            AEData aeData = queryAEData(dest);
-            FileInfo[][] fileInfos = queryFileInfos(rqData);
+            AEData aeData = null;
+            FileInfo[][] fileInfos = null;
+            try {
+                aeData = service.queryAEData(dest);
+                fileInfos = RetrieveCmd.create(service.getDS(), rqData).execute();
+            } catch (SQLException e) {
+                service.getLog().error("Query DB failed:", e);
+                throw new DcmServiceException(Status.ProcessingFailure, e);
+            } catch (UnkownAETException e) {
+                throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
+            }
             new Thread(
                 new MoveTask(
                     service,
@@ -154,34 +163,5 @@ public class MoveScp extends DcmServiceBase {
         if (dcm.vm(tag) <= 0) {
             throw new DcmServiceException(status, msg);
         }
-    }
-
-    private FileInfo[][] queryFileInfos(Dataset rqData)
-        throws DcmServiceException {
-        FileInfo[][] fileInfos = null;
-        try {
-            RetrieveCmd retrieveCmd =
-                RetrieveCmd.create(service.getDS(), rqData);
-            fileInfos = retrieveCmd.execute();
-        } catch (Exception e) {
-            service.getLog().error("Query DB failed:", e);
-            throw new DcmServiceException(Status.ProcessingFailure, e);
-        }
-        return fileInfos;
-    }
-
-    private AEData queryAEData(String dest) throws DcmServiceException {
-        AEData aeData = null;
-        try {
-            AECmd aeCmd = new AECmd(service.getDS(), dest);
-            aeData = aeCmd.execute();
-        } catch (Exception e) {
-            service.getLog().error("Query DB failed:", e);
-            throw new DcmServiceException(Status.ProcessingFailure, e);
-        }
-        if (aeData == null) {
-            throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
-        }
-        return aeData;
     }
 }
