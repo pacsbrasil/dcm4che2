@@ -10,7 +10,7 @@
 
 <server>
 
-  <classpath codebase="lib" archives="@ARCHIVES@"/>
+  <classpath codebase="lib" archives="dcm4che.jar,prnscp.jar"/>
 
   <mbean code="com.tiani.prnscp.print.PrinterService" 
          name="dcm4chex:service=Printer,aet=TIANI_PRINT">
@@ -121,13 +121,13 @@
     Defines the default Border Density identifier that is used when the
     Print SCU does not specify Border Density.
     -->
-    <attribute name="BorderDensity">BLACK</attribute>
+    <attribute name="BorderDensity">WHITE</attribute>
       
     <!--
     Defines the default Empty Image Density identifier that is used when the
     Print SCU does not specify Empty Image Density.
     -->
-    <attribute name="EmptyImageDensity">BLACK</attribute>
+    <attribute name="EmptyImageDensity">WHITE</attribute>
     
     <!--
     Defines density of trim box. Same format than for BorderDensity and 
@@ -221,7 +221,7 @@
     <!--
     Defines the Color for TrimBox
     -->
-    <attribute name="ColorTrimBox">0,255,0</attribute>
+    <attribute name="ColorTrimBox">255,255,255</attribute>
     
     <!--
     Defines the Color for ImgBox background if EmptyImgDens is not set and border Dens is not set
@@ -252,7 +252,7 @@
     Basic Film Box. Multiple values can be specified, must be separated by 
     '\' characters. The first specified value is used as the default.
     -->
-    <attribute name="ResolutionID">STANDARD:300x300\HIGH:600x600</attribute>
+    <attribute name="ResolutionID">STANDARD:600x600\HIGH:600x600</attribute>
     
     <!--
     Specifies directory with contains configuration files for supported
@@ -295,38 +295,38 @@
     is used. 
     -->    
     <attribute name="GrayscaleODsAsText">
-        0.01
-        0.01
-        0.02
-        0.05
-        0.08
-        0.10
-        0.15
-        0.17
-        0.20
-        0.26
-        0.30
-        0.33
-        0.36
-        0.42
-        0.49
-        0.57
-        0.64
-        0.75
-        0.80
-        0.85
-        0.91
-        0.99
-        1.02
-        1.12
-        1.24
-        1.41
-        1.50
-        1.54
-        1.55
-        1.60
-        1.60
-        1.60
+        0.00
+	0.07
+	0.10
+	0.13
+	0.15
+	0.16
+	0.20
+	0.21
+	0.24
+	0.27
+	0.33
+	0.38
+	0.42
+	0.49
+	0.54
+	0.57
+	0.65
+	0.67
+	0.69
+	0.73
+	0.79
+	0.89
+	0.94
+	1.06
+	1.20
+	1.27
+	1.33
+	1.37
+	1.46
+	1.62
+	1.64
+	1.66
     </attribute>
     
     <!--
@@ -366,7 +366,7 @@
     (s. attribute "CalibrationDir") - and performing a new calibration, if
     a new scan file is found - immediately before each film/paper print.
     -->    
-    <attribute name="AutoCalibration">false</attribute>
+    <attribute name="AutoCalibration">true</attribute>
                             
     <!--
     Specifies (measured) density values of scanned reference gray step
@@ -377,70 +377,38 @@
     specified by attribute RefGrayscaleFileName.
     -->    
     <attribute name="RefGrayscaleODsAsText">
-        0
-        0
-        0
-        0
-        0.02
-        0.04
-        0.05
-        0.06
-        0.07
-        0.08
-        0.09
-        0.13
-        0.14
-        0.15
-        0.16
-        0.17
-        0.2
-        0.21
-        0.24
-        0.26
-        0.28
-        0.29
-        0.3
-        0.32
-        0.33
-        0.35
-        0.38
-        0.4
-        0.43
-        0.47
-        0.5
-        0.53
-        0.59
-        0.65
-        0.68
-        0.72
-        0.76
-        0.79
-        0.82
-        0.84
-        0.86
-        0.89
-        0.94
-        0.98
-        1
-        1.03
-        1.08
-        1.15
-        1.22
-        1.27
-        1.33
-        1.4
-        1.43
-        1.47
-        1.48
-        1.49
-        1.52
-        1.52
-        1.55
-        1.57
-        1.59
-        1.59
-        1.59
-        1.6
+        0.00
+	0.07
+	0.10
+	0.13
+	0.15
+	0.16
+	0.20
+	0.21
+	0.24
+	0.27
+	0.33
+	0.38
+	0.42
+	0.49
+	0.54
+	0.57
+	0.65
+	0.67
+	0.69
+	0.73
+	0.79
+	0.89
+	0.94
+	1.06
+	1.20
+	1.27
+	1.33
+	1.37
+	1.46
+	1.62
+	1.64
+	1.66
     </attribute>
     
              

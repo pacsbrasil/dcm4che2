@@ -10,7 +10,7 @@
 
 <server>
 
-  <classpath codebase="lib" archives="@ARCHIVES@"/>
+  <classpath codebase="lib" archives="dcm4che.jar,dcmsrv.jar"/>
 
   <!--
      | Add custom MBeans here.  MBeans should be registered under the
