@@ -40,6 +40,11 @@ import java.util.List;
  * <li> add {@link #listAcceptedPresContext(String)}
  * <li> add {@link #countAcceptedPresContext()}
  * </ul>
+ * <p><b>20020802 gunter:</b>
+ * <ul>
+ * <li> add {@link #getProperty}
+ * <li> add {@link #putProperty}
+ * </ul>
  */
 public interface Association {
     
@@ -113,5 +118,9 @@ public interface Association {
     
     String getCallingAET();
 
-    String getCalledAET();    
+    String getCalledAET();
+    
+    Object getProperty(Object key);
+    
+    void putProperty(Object key, Object value);
 }

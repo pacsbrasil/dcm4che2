@@ -27,6 +27,7 @@ dcm4che API:
 + add org.dcm4che.media.DirBuilder#getDirWriter
 + add org.dcm4che.net.FutureRSP#listPending
 + add org.dcm4che.net.DcmServiceBase.MultiDimseRsp#release
++ add org.dcm4che.net.DcmServiceBase#doAfterRsp
 + add org.dcm4che.net.Association#getAAssociateRQ
 + add org.dcm4che.net.Association#getAAssociateAC
 + add org.dcm4che.net.Association#getAAssociateRJ
@@ -35,6 +36,8 @@ dcm4che API:
 + add org.dcm4che.net.AAssociateAC#countAcceptedPresContext
 + add org.dcm4che.net.AAssociation#countAcceptedPresContext
 + add org.dcm4che.net.AAssociation#listAcceptedPresContext
++ add org.dcm4che.net.AAssociation#putProperty
++ add org.dcm4che.net.AAssociation#getProperty
 + make org.dcm4cheri.data.DcmParserImpl tolerant for redundant
   Sequence Delimiter Items of Sequences with explicit length encoding
 + add org.dcm4che.data.FileMetaInfo#getImplementationClassUID

@@ -38,6 +38,7 @@ import org.dcm4cheri.util.LF_ThreadPool;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -58,6 +59,11 @@ import org.apache.log4j.NDC;
  * <li> add {@link #listAcceptedPresContext(String)}
  * <li> add {@link #countAcceptedPresContext()}
  * </ul>
+ * <p><b>20020802 gunter:</b>
+ * <ul>
+ * <li> add {@link #getProperty}
+ * <li> add {@link #putProperty}
+ * </ul>
  */
 final class AssociationImpl implements Association {
     
@@ -68,6 +74,7 @@ final class AssociationImpl implements Association {
     private final byte[] b10 = new byte[10];
     private String name;
     private static int assocCount = 0;
+    private Hashtable properties = null;
     
     /** Creates a new instance of AssociationImpl */
     public AssociationImpl(Socket s, boolean requestor) throws IOException {
@@ -252,6 +259,21 @@ final class AssociationImpl implements Association {
 
     public final int countAcceptedPresContext() {
         return fsm.countAcceptedPresContext();
+    }
+    
+    public Object getProperty(Object key) {
+        return properties != null ? properties.get(key) : null;
+    }
+    
+    public void putProperty(Object key, Object value) {
+        if (properties == null) {
+            properties = new Hashtable(2);
+        }
+        if (value != null) {
+            properties.put(key, value);
+        } else {
+            properties.remove(key);
+        }
     }
     
 }
