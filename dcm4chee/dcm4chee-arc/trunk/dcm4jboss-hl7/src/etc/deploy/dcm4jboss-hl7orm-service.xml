@@ -8,5 +8,8 @@
     <depends>
       tiani.archive:service=HL7Server
     </depends>
+    <depends>
+      tiani.archive:service=DeviceService
+    </depends>
   </mbean>
 </server>

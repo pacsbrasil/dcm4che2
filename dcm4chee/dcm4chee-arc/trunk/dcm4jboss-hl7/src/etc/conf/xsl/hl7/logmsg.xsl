@@ -27,11 +27,17 @@
         </xsl:choose>
         <xsl:text>:</xsl:text>
         <xsl:value-of select="$val"/>
+        <xsl:apply-templates select="subcomponent"/>
         <xsl:apply-templates select="component"/>
             </xsl:if>
     </xsl:template>
     <xsl:template match="component">
         <xsl:text>^</xsl:text>
+        <xsl:value-of select="text()"/>
+        <xsl:apply-templates select="subcomponent"/>
+    </xsl:template>
+    <xsl:template match="subcomponent">
+        <xsl:text>&amp;</xsl:text>
         <xsl:value-of select="text()"/>
     </xsl:template>
 </xsl:stylesheet>

@@ -56,4 +56,12 @@ public class MSH {
     private static String toString(Object el) {
         return el != null ? ((Element) el).getText() : "";
     }
+    
+    public String toString() {
+    	return messageType + "^" + triggerEvent + "["
+    		+  sendingApplication + '@' + sendingFacility
+    		+ "->" + receivingApplication + '@' + receivingFacility
+    		+ ", pid=" +  processingID + ", vers=" +  versionID
+    		+ ", charset=" +  characterSet + "]";
+    }
 }

@@ -228,9 +228,10 @@ public class HL7ServerService extends ServiceMBeanSupport
                     HL7Service service = getService(msh);
                     if (service == null || service.process(msh, msg, hl7out)) ack(msg, hl7out, null);
                 } catch (SAXException e) {
-                    throw new HL7Exception.AE("Failed to parse message", e);
+                    throw new HL7Exception.AE("Failed to parse message ", e);
                 }
             } catch (HL7Exception e) {
+            	log.warn("Processing HL7 failed:", e);
                 mllpDriver.discardPendingOutput();
                 ack(hl7in.getDocument(), hl7out, e);
             }

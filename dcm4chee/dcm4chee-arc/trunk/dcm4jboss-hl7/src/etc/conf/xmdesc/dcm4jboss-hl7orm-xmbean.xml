@@ -68,6 +68,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDeviceServiceName"
+      setMethod="setDeviceServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>DeviceServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=DeviceService" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getHL7ServerName"
       setMethod="setHL7ServerName">
       <description>Used internally - do NOT modify.

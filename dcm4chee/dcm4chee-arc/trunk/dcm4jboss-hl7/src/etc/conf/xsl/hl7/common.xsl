@@ -1,46 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-    <xsl:template name="patID">
-        <xsl:param name="cx"/>
-        <attr tag="00100020" vr="LO">
-            <xsl:value-of select="$cx/text()"/>
-        </attr>
-        <attr tag="00100021" vr="LO">
-            <xsl:value-of select="$cx/component[3]"/>
-        </attr>
-    </xsl:template>
-    <xsl:template name="patName">
-        <xsl:param name="xpn"/>
-        <xsl:if test="$xpn/text()">
-            <attr tag="00100010" vr="PN">
-                <xsl:if test="$xpn != '&quot;&quot;'">
-                    <xsl:call-template name="xpn2pn">
-                        <xsl:with-param name="xpn" select="$xpn"/>
-                    </xsl:call-template>
-                </xsl:if>
-            </attr>
-        </xsl:if>
-    </xsl:template>
-    <xsl:template name="patBirthDate">
-        <xsl:param name="ts"/>
-        <xsl:if test="$ts/text()">
-            <attr tag="00100030" vr="DA">
-                <xsl:if test="$ts != '&quot;&quot;'">
-                    <xsl:value-of select="substring($ts,1,8)"/>
-                </xsl:if>
-            </attr>
-        </xsl:if>
-    </xsl:template>
-    <xsl:template name="patSex">
-        <xsl:param name="is"/>
-        <xsl:if test="$is/text()">
-            <attr tag="00100040" vr="CS">
-                <xsl:if test="$is != '&quot;&quot;'">
-                    <xsl:value-of select="$is"/>
-                </xsl:if>
-            </attr>
-        </xsl:if>
-    </xsl:template>
     <xsl:template name="cx2attrs">
         <xsl:param name="idtag"/>
         <xsl:param name="istag"/>
@@ -104,72 +63,61 @@
     <xsl:template name="xpn2pnAttr">
         <xsl:param name="tag"/>
         <xsl:param name="xpn"/>
-        <xsl:if test="$xpn/text()">
-            <attr tag="{$tag}" vr="PN">
-                <xsl:if test="$xpn != '&quot;&quot;'">
-                    <xsl:value-of select="$xpn/text()"/>
-                    <xsl:variable name="compCount" select="count($xpn/component)"/>
-                    <xsl:if test="$compCount &gt; 0">
-                        <xsl:text>^</xsl:text>
-                        <xsl:value-of select="$xpn/component[1]"/>
-                        <xsl:if test="$compCount &gt; 1">
-                            <xsl:text>^</xsl:text>
-                            <xsl:value-of select="$xpn/component[2]"/>
-                            <xsl:if test="$compCount &gt; 2">
-                                <xsl:text>^</xsl:text>
-                                <xsl:value-of select="$xpn/component[4]"/>
-                                <xsl:text>^</xsl:text>
-                                <xsl:value-of select="$xpn/component[3]"/>
-                            </xsl:if>
-                        </xsl:if>
-                    </xsl:if>
-                </xsl:if>
-            </attr>
-        </xsl:if>
+        <xsl:param name="xpn25" select="$xpn/component"/>
+        <xsl:call-template name="pnAttr">
+            <xsl:with-param name="tag" select="$tag"/>
+            <xsl:with-param name="val" select="$xpn/text()"/>
+            <xsl:with-param name="fn" select="$xpn/text()"/>
+            <xsl:with-param name="gn" select="$xpn25[1]/text()"/>
+            <xsl:with-param name="mn" select="$xpn25[2]/text()"/>
+            <xsl:with-param name="ns" select="$xpn25[3]/text()"/>
+            <xsl:with-param name="np" select="$xpn25[4]/text()"/>
+        </xsl:call-template>
     </xsl:template>
-    <xsl:template name="xcn2pnAttr">
+    <xsl:template name="cn2pnAttr">
         <xsl:param name="tag"/>
-        <xsl:param name="xcn"/>
-        <xsl:if test="$xcn/text()">
+        <xsl:param name="cn"/>
+        <xsl:param name="cn26" select="$cn/component"/>
+        <xsl:call-template name="pnAttr">
+            <xsl:with-param name="tag" select="$tag"/>
+            <xsl:with-param name="val" select="$cn/text()"/>
+            <xsl:with-param name="fn" select="$cn26[1]/text()"/>
+            <xsl:with-param name="gn" select="$cn26[2]/text()"/>
+            <xsl:with-param name="mn" select="$cn26[3]/text()"/>
+            <xsl:with-param name="ns" select="$cn26[4]/text()"/>
+            <xsl:with-param name="np" select="$cn26[5]/text()"/>
+        </xsl:call-template>
+    </xsl:template>
+    <xsl:template name="pnAttr">
+        <xsl:param name="tag"/>
+        <xsl:param name="val"/>
+        <xsl:param name="fn"/>
+        <xsl:param name="gn"/>
+        <xsl:param name="mn"/>
+        <xsl:param name="np"/>
+        <xsl:param name="ns"/>
+        <xsl:if test="$val">
             <attr tag="{$tag}" vr="PN">
-                <xsl:if test="$xcn != '&quot;&quot;'">
-                    <xsl:value-of select="$xcn/component[1]"/>
-                    <xsl:variable name="compCount" select="count($xcn/component)"/>
-                    <xsl:if test="$compCount &gt; 0">
+                <xsl:if test="$val != '&quot;&quot;'">
+                    <xsl:value-of select="$fn"/>
+                    <xsl:if test="$gn or $mn or $np or $ns">
                         <xsl:text>^</xsl:text>
-                        <xsl:value-of select="$xcn/component[2]"/>
-                        <xsl:if test="$compCount &gt; 1">
+                        <xsl:value-of select="$gn"/>
+                        <xsl:if test="$mn or $np or $ns">
                             <xsl:text>^</xsl:text>
-                            <xsl:value-of select="$xcn/component[3]"/>
-                            <xsl:if test="$compCount &gt; 2">
+                            <xsl:value-of select="$mn"/>
+                            <xsl:if test="$np or $ns">
                                 <xsl:text>^</xsl:text>
-                                <xsl:value-of select="$xcn/component[5]"/>
-                                <xsl:text>^</xsl:text>
-                                <xsl:value-of select="$xcn/component[4]"/>
+                                <xsl:value-of select="$np"/>
+                                <xsl:if test="$ns">
+                                    <xsl:text>^</xsl:text>
+                                    <xsl:value-of select="$ns"/>
+                                </xsl:if>
                             </xsl:if>
                         </xsl:if>
                     </xsl:if>
                 </xsl:if>
             </attr>
-        </xsl:if>
-    </xsl:template>
-    <xsl:template name="xpn2pn">
-        <xsl:param name="xpn"/>
-        <xsl:value-of select="$xpn/text()"/>
-        <xsl:variable name="compCount" select="count($xpn/component)"/>
-        <xsl:if test="$compCount &gt; 0">
-            <xsl:text>^</xsl:text>
-            <xsl:value-of select="$xpn/component[1]"/>
-            <xsl:if test="$compCount &gt; 1">
-                <xsl:text>^</xsl:text>
-                <xsl:value-of select="$xpn/component[2]"/>
-                <xsl:if test="$compCount &gt; 2">
-                    <xsl:text>^</xsl:text>
-                    <xsl:value-of select="$xpn/component[4]"/>
-                    <xsl:text>^</xsl:text>
-                    <xsl:value-of select="$xpn/component[3]"/>
-                </xsl:if>
-            </xsl:if>
         </xsl:if>
     </xsl:template>
     <xsl:template name="codeItem">
@@ -199,5 +147,29 @@
                 </xsl:call-template>
             </item>
         </attr>
+    </xsl:template>
+    <xsl:template match="PID">
+        <!-- Patient Name -->
+        <xsl:call-template name="xpn2pnAttr">
+            <xsl:with-param name="tag" select="'00100010'"/>
+            <xsl:with-param name="xpn" select="field[5]"/>
+        </xsl:call-template>
+        <!-- Patient ID -->
+        <xsl:call-template name="cx2attrs">
+            <xsl:with-param name="idtag" select="'00100020'"/>
+            <xsl:with-param name="istag" select="'00100021'"/>
+            <xsl:with-param name="cx" select="field[3]"/>
+        </xsl:call-template>
+        <!-- Patient Birth Date -->
+        <xsl:call-template name="dcmAttrDA">
+            <xsl:with-param name="tag" select="'00100030'"/>
+            <xsl:with-param name="val" select="field[7]/text()"/>
+        </xsl:call-template>
+        <!-- Patient Sex -->
+        <xsl:call-template name="dcmAttr">
+            <xsl:with-param name="tag" select="'00100040'"/>
+            <xsl:with-param name="vr" select="'CS'"/>
+            <xsl:with-param name="val" select="field[8]/text()"/>
+        </xsl:call-template>
     </xsl:template>
 </xsl:stylesheet>

@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.management.ObjectName;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
 
@@ -49,6 +50,8 @@ public class ORMService extends AbstractHL7Service {
 	private static final int CA = 2;
 
 	private static final int DC = 3;
+	
+    private ObjectName deviceServiceName;
 
 	private String defaultStationAET = "UNKOWN";
 
@@ -56,6 +59,14 @@ public class ORMService extends AbstractHL7Service {
 
 	private String defaultModality = "OT";
 
+	public final ObjectName getDeviceServiceName() {
+		return deviceServiceName;
+	}
+	
+	public final void setDeviceServiceName(ObjectName deviceServiceName) {
+		this.deviceServiceName = deviceServiceName;
+	}
+	
 	public final String getDefaultModality() {
 		return defaultModality;
 	}
@@ -91,7 +102,6 @@ public class ORMService extends AbstractHL7Service {
 			mergeProtocolCodes(ds);
 			if (msgType == NW || msgType == XA) {
 				ds = addScheduledStationInfo(ds);
-				addMissingAttributes(ds);
 			}
 			MWLManager mwlManager = getMWLManagerHome().create();
 			try {
@@ -101,20 +111,23 @@ public class ORMService extends AbstractHL7Service {
 					sps = spsSq.getItem(i);
 					switch (msgType) {
 					case NW:
-						log("Schedule", ds, sps);
 						ds.putSQ(Tags.SPSSeq).addItem(sps);
+						adjustAttributes(ds);
+						addMissingAttributes(ds);
+						log("Schedule", ds);
 						logDataset("Insert MWL Item:", ds);
 						mwlManager.addWorklistItem(ds);
 						break;
 					case XA:
-						log("Update", ds, sps);
 						ds.putSQ(Tags.SPSSeq).addItem(sps);
+						adjustAttributes(ds);
+						log("Update", ds);
 						logDataset("Update MWL Item:", ds);
 						mwlManager.updateWorklistItem(ds);
 						break;
 					case CA:
 					case DC:
-						log("Cancel", ds, sps);
+						log("Cancel", ds);
 						mwlManager.removeWorklistItem(sps.getString(Tags.SPSID));
 						break;
 					default:
@@ -130,7 +143,8 @@ public class ORMService extends AbstractHL7Service {
 		return true;
 	}
 
-	private void log(String op, Dataset ds, Dataset sps) {
+	private void log(String op, Dataset ds) {
+		Dataset sps = ds.getItem(Tags.SPSSeq);
         log.info(op + " Procedure Step[id:" + sps.getString(Tags.SPSID)
         		+ "] of Study[uid:" + ds.getString(Tags.StudyInstanceUID)
         		+ "] of Order[accNo:" + ds.getString(Tags.AccessionNumber)
@@ -153,28 +167,63 @@ public class ORMService extends AbstractHL7Service {
 		return msgType;
 	}
 	
-	private Dataset addScheduledStationInfo(Dataset orm) {
-		// TODO
-		return orm;
+	private Dataset addScheduledStationInfo(Dataset spsItems) throws Exception {
+        return (Dataset) server.invoke(deviceServiceName,
+        		"addScheduledStationInfo", new Object[] { spsItems },
+        		new String[] { Dataset.class.getName() });
 	}
 	
-	private void addMissingAttributes(Dataset orm) {
-		DcmElement spsSq = orm.get(Tags.SPSSeq);
-		Dataset sps;
-		for (int i = 0, n = spsSq.vm(); i < n; ++i) {
-			sps = spsSq.getItem(i);
-			if (sps.vm(Tags.ScheduledStationAET) < 1)
-				sps.putAE(Tags.ScheduledStationAET, defaultStationAET);
-			if (sps.vm(Tags.ScheduledStationName) < 1)			
-				sps.putSH(Tags.ScheduledStationName, defaultStationName);
-			if (sps.vm(Tags.Modality) < 1)			
-				sps.putCS(Tags.Modality, defaultModality);
-			if (sps.vm(Tags.SPSStartDate) < 1) {
-				Date now = new Date();
-				sps.putDA(Tags.SPSStartDate, now);
-				sps.putTM(Tags.SPSStartTime, now);
-			}
+	private void addMissingAttributes(Dataset ds) {
+		Dataset sps = ds.getItem(Tags.SPSSeq);
+		if (sps.vm(Tags.ScheduledStationAET) < 1) {
+			log.info("No Scheduled Station AET - use default: " + defaultStationAET);
+			sps.putAE(Tags.ScheduledStationAET, defaultStationAET);
 		}
+		if (sps.vm(Tags.ScheduledStationName) < 1) {			
+			log.info("No Scheduled Station Name - use default: " + defaultStationName);
+			sps.putSH(Tags.ScheduledStationName, defaultStationName);
+		}
+		if (sps.vm(Tags.Modality) < 1) {			
+			log.info("No Modality - use default: " + defaultModality);
+			sps.putCS(Tags.Modality, defaultModality);
+		}
+		if (sps.vm(Tags.SPSStartDate) < 1) {
+			log.info("No SPS Start Date - use current date/time");
+			Date now = new Date();
+			sps.putDA(Tags.SPSStartDate, now);
+			sps.putTM(Tags.SPSStartTime, now);
+		}
+	}
+	
+	private void adjustAttributes(Dataset ds) {
+		Dataset sps = ds.getItem(Tags.SPSSeq);
+		String val;
+		Dataset code;
+		if ((val = sps.getString(Tags.StudyInstanceUID)) != null) {
+			log.info("Detect Study Instance UID on SPS Level");
+			ds.putUI(Tags.StudyInstanceUID, val);
+			sps.remove(Tags.StudyInstanceUID);
+		}
+		if ((val = sps.getString(Tags.RequestedProcedurePriority)) != null) {
+			log.info("Detect Requested Procedure Priority on SPS Level");
+			ds.putCS(Tags.RequestedProcedurePriority, val);
+			sps.remove(Tags.RequestedProcedurePriority);
+		}
+		if ((val = sps.getString(Tags.RequestedProcedureID)) != null) {
+			log.info("Detect Requested Procedure ID on SPS Level");
+			ds.putSH(Tags.RequestedProcedureID, val);
+			sps.remove(Tags.RequestedProcedureID);
+		}
+		if ((val = sps.getString(Tags.RequestedProcedureDescription)) != null) {
+			log.info("Detect Requested Procedure Description on SPS Level");
+			ds.putLO(Tags.RequestedProcedureDescription, val);
+			sps.remove(Tags.RequestedProcedureDescription);
+		}
+		if ((code = sps.getItem(Tags.RequestedProcedureCodeSeq)) != null) {
+			log.info("Detect Requested Procedure Code on SPS Level");
+			ds.putSQ(Tags.RequestedProcedureCodeSeq).addItem(code);
+			sps.remove(Tags.RequestedProcedureCodeSeq);
+		}				
 	}
 
 	private void mergeProtocolCodes(Dataset orm) {
