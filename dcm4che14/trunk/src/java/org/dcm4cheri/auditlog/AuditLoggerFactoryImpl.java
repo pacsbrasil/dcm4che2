@@ -18,12 +18,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package org.dcm4cheri.auditlog;
+
 import java.net.Socket;
+
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
-import org.dcm4che.auditlog.ArrInputException;
-import org.dcm4che.auditlog.ArrService;
-
 import org.dcm4che.auditlog.AuditLogger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.Destination;
@@ -179,21 +178,4 @@ public class AuditLoggerFactoryImpl extends AuditLoggerFactory
     {
         return new MediaDescriptionImpl(patient);
     }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @param  validating  Description of the Parameter
-     * @return             Description of the Return Value
-     */
-    public ArrService newArrService(boolean validating)
-    {
-        try {
-            return new ArrServiceImpl(validating);
-        } catch (ArrInputException e) {
-            return null;
-        }
-    }
 }
-

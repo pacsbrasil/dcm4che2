@@ -18,9 +18,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA  *
  */
 package org.dcm4che.auditlog;
-import java.net.Socket;
-import org.apache.log4j.Category;
 
+import java.net.Socket;
+
+import org.apache.log4j.Category;
 import org.dcm4che.Implementation;
 
 /**
@@ -151,14 +152,4 @@ public abstract class AuditLoggerFactory
      * @return          Description of the Return Value
      */
     public abstract MediaDescription newMediaDescription(Patient patient);
-
-
-    /**
-     *  Description of the Method
-     *
-     * @param  validating  Description of the Parameter
-     * @return             Description of the Return Value
-     */
-    public abstract ArrService newArrService(boolean validating);
 }
-
