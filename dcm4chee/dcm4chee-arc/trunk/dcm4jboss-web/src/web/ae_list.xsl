@@ -9,25 +9,27 @@
 <xsl:output method="html">
 </xsl:output>
 <xsl:variable name="page_title">AE List</xsl:variable>
-<xsl:include href  = "page.xsl" />
+<xsl:include href="page.xsl"/>
 <xsl:template match="model">
-<html><body background="images/bg.jpg">
-						<center><table width="70%" border="0" bordercolor="#ffffff" cellspacing="5" cellpadding="0"><tr><td>
+
+		<table width="70%" border="0" bordercolor="#ffffff" cellspacing="5" cellpadding="0">
+		<tr>	<center>
+			<td>
 				<tr>
 					<td width="25%"><h2>AE Title</h2></td>
 					<td width="20%"><h2>Hostname</h2></td>
 					<td width="15%"><h2>Port</h2></td>	
 					<td colspan="2" width="10%" align="center"><a href="aenew.m"><img src="images/add_aet.gif" alt="add new AET" border="0"/></a></td>
 				</tr>
-				<xsl:apply-templates select="AEs/item">
-					<xsl:sort data-type="text" order="ascending" select="title"/>
-				</xsl:apply-templates>
-				</td></tr>
-		  </table>
-</center>
+					<xsl:apply-templates select="AEs/item">
+						<xsl:sort data-type="text" order="ascending" select="title"/>
+					</xsl:apply-templates>
+			</td>	</center>
+		</tr>
+		</table>
 
-</body></html>
-   </xsl:template>
+
+</xsl:template>
 
 	<xsl:template match="item[@type='org.dcm4chex.archive.ejb.jdbc.AEData']">
 		<tr>
