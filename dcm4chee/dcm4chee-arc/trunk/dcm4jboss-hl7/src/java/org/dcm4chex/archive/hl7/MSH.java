@@ -50,7 +50,7 @@ public class MSH {
                 .element(HL7XMLLiterate.TAG_COMPONENT) : null);
         this.processingID = toString(fields.get(8));
         this.versionID = toString(fields.get(9));
-        this.characterSet = toString(fields.get(15));
+        this.characterSet = fields.size() > 15 ? toString(fields.get(15)) : null;
     }
 
     private static String toString(Object el) {
