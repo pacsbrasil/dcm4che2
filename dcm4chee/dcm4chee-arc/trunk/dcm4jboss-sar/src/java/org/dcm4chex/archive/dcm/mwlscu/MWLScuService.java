@@ -10,19 +10,14 @@ package org.dcm4chex.archive.dcm.mwlscu;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
@@ -34,7 +29,6 @@ import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -222,7 +216,7 @@ public class MWLScuService extends ServiceMBeanSupport {
     /**
      * Get a list of work list entries.
 	 */
-	public List getMWLList() {
+	public List getMWLList( Dataset searchDS ) {
     	ActiveAssociation assoc = null;
     	String iuid = null;
     	List list = new ArrayList();
@@ -242,8 +236,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 //send media creation request.			
 			Command cmd = oFact.newCommand();
             cmd.initCFindRQ(1, UIDs.ModalityWorklistInformationModelFIND, getPriority() );
-            Dataset ds = getMWLReqDS();
-            Dimse mcRQ = aFact.newDimse(1, cmd, ds);
+            Dimse mcRQ = aFact.newDimse(1, cmd, searchDS);
             if ( log.isDebugEnabled() ) log.debug("make CFIND req:"+mcRQ);
             FutureRSP rsp = assoc.invoke(mcRQ);
             Dimse dimse = rsp.get();
@@ -257,37 +250,19 @@ public class MWLScuService extends ServiceMBeanSupport {
             list.add( dimse.getDataset() );
             
 		} catch (Exception e) {
-			log.error( "Cant get list working list! Reason: unexpected error", e);
+			log.error( "Cant get working list! Reason: unexpected error", e);
 			return list;
 		} finally {
 			if ( assoc != null )
 				try {
 					assoc.release( true );
 				} catch (Exception e1) {
-					log.error( "Cant release association for media creation request"+assoc.getAssociation(),e1);
+					log.error( "Cant release association for CFIND modality working list"+assoc.getAssociation(),e1);
 				}
 		}
     	return list;
 	}
 
-	/**
-	 * Get the initialized media creation request dataset.
-	 * 
-	 * @return The Dataset for media creation request.
-	 * 
-	 * @throws CreateException
-	 * @throws HomeFactoryException
-	 * @throws FinderException
-	 * @throws RemoteException
-	 */
-	private Dataset getMWLReqDS( ) throws RemoteException, FinderException, HomeFactoryException, CreateException {
-		Dataset ds = oFact.newDataset();
-		ds.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");
-
-		return ds;
-	}
-
-	
 	/**
 	 * Open a DICOM association for given host, port and assocition request.
 	 * 
