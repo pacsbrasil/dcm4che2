@@ -1,5 +1,5 @@
-INSTALL INSTRUCTIONS FOR dcm4che/cdw:
-====================================
+Install Instructions for DICOM CD Writer dcmcdw:
+===============================================
 
 System Requirements:
 
@@ -14,7 +14,7 @@ System Requirements:
 Prerequisites:
 
   + JDK 1.4.2+ (JRE is not sufficient!), free available at
-    http://java.sun.com/j2se/1.4.2/. (dcm4che/cdw should also run with JDK 1.5,
+    http://java.sun.com/j2se/1.4.2/. (dcmcdw should also run with JDK 1.5,
     but it was mainly tested with JDK 1.4.2_06).
     It is recommended to define an environment variable JAVA_HOME pointing
     to the JDK directory and to append $JAVA_HOME/bin - or %JAVA_HOME%\bin -
@@ -25,17 +25,17 @@ Prerequisites:
   + Joerg Schilling's cdrtools including mkisofs and cdrecord
     [http://freshmeat.net/projects/cdrecord]. Precompiled binaries for Windows,
     including the necessary cygwin.dll are (e.g) available at
-    http://www.geoshock.com/cdrtools/files/cdrtools-2.01a37-win32-bin.zip.
+    http://www.geoshock.com/cdrtools.
     If cdrecord fails to detect the CD drive on Windows, try Nero ASPI Library
     (wnaspi32.dll) by Ahead Software AG (free download from nero.com) instead
     your system default ASPI driver.
     On Unix/Linux, you have to take care, that the user as which JBoss is
     running has the permission to execute cdrecord.
-    It is also recommended to put the directory containing mkisofs[.exe] and
-    cdrecord[.exe] on your PATH.
+    It is also recommended to add the directory containing mkisofs[.exe] and
+    cdrecord[.exe] to your PATH.
     
   + For Label printing on Windows Printer without Postscript support
-    dcm4che/cdw needs (e.g.) Acrobat Reader (free download from adobe.com).
+    dcmcdw needs (e.g.) Acrobat Reader (free download from adobe.com).
     
 
 Installation:
@@ -67,7 +67,7 @@ Installation:
     
  5. Open the JBoss Administration Console http://localhost:8080/jmx-console with
     any Web Browser. Scroll down to section "tiani.dcmcdw" and follow the link
-    of the section title to only show entires for dcm4che/cdw specific services:
+    of the section title to only show entires for dcmcdw specific services:
  
     * name=CDRecord,service=MediaWriter
     * name=CDRecord,service=Queue
@@ -128,7 +128,7 @@ Installation:
      
 
     
-Test dcm4che/cdw using dcmsnd.jar and mcmscu.jar command line utilities:
+Test dcmcdw using dcmsnd.jar and mcmscu.jar command line utilities:
 
  1. Open a (second) console and change the working directory to dcmcdw/bin of
     the extracted file set.
@@ -174,7 +174,7 @@ Test dcm4che/cdw using dcmsnd.jar and mcmscu.jar command line utilities:
 
 How to modify the layout of generated INDEX.HTM, Web Content and/or Media Label?    
  
-    dcm4che/cdw creates INDEX.HTM, HTML pages and Media Label by applying
+    dcmcdw creates INDEX.HTM, HTML pages and Media Label by applying
     XSL stylesheets, located at dcmcdw/conf/xsl/, to a XMLized version
     of the DICOM directory (DICOMDIR) content. So you can change the layout
     by modifying the XSL stylesheets.
@@ -183,27 +183,28 @@ How to modify the layout of generated INDEX.HTM, Web Content and/or Media Label?
     
     LogXml=true
     
-    causes dcm4che/cdw to dump the DICOMDIR xml version into
+    causes dcmcdw to dump the DICOMDIR xml version into
         
     dcmcdw/log/dicomdir.xml .
     
-    Then the XSLT transformation can be applied manually,
-    for INDEX.HTM in the disk root directory (assuming 
-    dcmcdw/bin as working directory):
+    Then the XSLT transformation can be applied manually:
+    
+    To generate INDEX.HTM in the disk root directory (assuming 
+    dcmcdw/bin as working directory) run:
     
     [Windows]    xalan -IN ..\log\dicomdir.xml -XSL ..\conf\xsl\index.xsl 
                     -OUT INDEX.HTM
     [Unix/Linux] ./xalan.sh -IN ../log/dicomdir.xml -XSL ../conf/xsl/index.xsl 
                     -OUT INDEX.HTM
     
-    for the Web Presentation:
+    To generate the the Web Presentation run:
     
     [Windows]    xalan -IN ..\log\dicomdir.xml -XSL ..\conf\xsl\web.xsl 
                     -OUT INDEX.HTM
     [Unix/Linux] ./xalan.sh -IN ../log/dicomdir.xml -XSL ../conf/xsl/web.xsl 
                     -OUT INDEX.HTM
                     
-    and for the Disk Label, using Apaches FOP:
+    To generate the Disk Label, using Apaches FOP:
     
     [Windows]    fop -xml ../log/dicomdir.xml -xsl ../conf/xsl/label.xsl
                     -pdf label.pdf
@@ -211,10 +212,11 @@ How to modify the layout of generated INDEX.HTM, Web Content and/or Media Label?
                     -pdf label.pdf
 
 
-Hopefully, these very briefly instructions are sufficent to start your usage of
-dcm4che/dcmcdw.
+Hopefully, these briefly instructions are sufficent to start exploring
+the abilities of dcm4che/dcmcdw yourself. - Contributions to the
+documention of dcmcdw are highly appreciated.
 
 Have Fun,
 
-gunter zeilinger   mailto:gunter.zeilinger@tiani.com
-TIANI MEDGRAPH AG  http://www.tiani.com
+gunter zeilinger    gunter.zeilinger@tiani.com
+Tiani Medgraph AG   http://www.tiani.com

@@ -6,6 +6,7 @@
     <property name="version" value="1.0"/>
     <property name="dist.jboss.conf" value="dcmcdw"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
+    <property name="dist.src" value="dcmcdw-src-${version}"/>
     <property name="dist.standalone" value="dcmcdw-standalone-${version}"/>
 
     <!-- Override with your JBoss server bundle dist location -->
@@ -226,5 +227,7 @@
 				<include name="lib/scheduler-plugin.jar"/>				
 			</zipfileset>
    		</zip>
+   		<zip destfile="${build.dir}/${dist.src}.zip"
+   			basedir="${basedir}" excludes="target/**,**/.*"/>
     </target>
 </project>
