@@ -20,6 +20,7 @@
 
 import java.io.BufferedOutputStream;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -47,6 +48,7 @@ import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.dict.VRs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
@@ -292,7 +294,7 @@ public class DcmRcv extends DcmServiceBase
                 new File(dir, fmi.getMediaStorageSOPInstanceUID()));
         try {
             fmi.write(out);
-            copy(in, out);
+            copy(in, out, -1);
         } finally {
             try {
                 out.close();
@@ -309,6 +311,7 @@ public class DcmRcv extends DcmServiceBase
         parser.setDcmHandler(ds.getDcmHandler());
         DcmDecodeParam decParam =
                 DcmDecodeParam.valueOf(fmi.getTransferSyntaxUID());
+        DcmEncodeParam encParam = (DcmEncodeParam) decParam;
         parser.parseDataset(decParam, Tags.PixelData);
         doOverwrite(ds);
         File file = fsu.toFile(ds);
@@ -319,11 +322,31 @@ public class DcmRcv extends DcmServiceBase
             if (parser.getReadTag() != Tags.PixelData) {
                 return;
             }
-            ds.writeHeader(out, (DcmEncodeParam) decParam,
+            int len = parser.getReadLength();
+            ds.writeHeader(out, encParam,
                     parser.getReadTag(),
                     parser.getReadVR(),
-                    parser.getReadLength());
-            copy(in, out);
+                    len);
+            if (len == -1) {
+                parser.parseHeader();
+                while (parser.getReadTag() == Tags.Item) {
+                    len = parser.getReadLength();
+                    ds.writeHeader(out, encParam, Tags.Item, VRs.NONE, len);
+                    copy(in, out, len);
+                    parser.parseHeader();
+                }
+                ds.writeHeader(
+                        out,
+                        encParam,
+                        Tags.SeqDelimitationItem,
+                        VRs.NONE,
+                        0);                
+            } else {
+                copy(in, out, len);
+            }
+            ds.clear();
+            parser.parseDataset(decParam, -1);
+            ds.writeDataset(out, encParam);
         } finally {
             try {
                 out.close();
@@ -331,7 +354,6 @@ public class DcmRcv extends DcmServiceBase
         }
         fsu.schedule(file, ds);
     }
-
 
     private void doOverwrite(Dataset ds)
     {
@@ -346,18 +368,31 @@ public class DcmRcv extends DcmServiceBase
     // Protected -----------------------------------------------------
 
     // Private -------------------------------------------------------
-    private void copy(InputStream in, OutputStream out)
+    private void copy(InputStream in, OutputStream out, int totLen)
         throws IOException
     {
+        int toRead = totLen == -1 ? Integer.MAX_VALUE : totLen;
         if (bufferSize > 0) {
             byte[] buffer = new byte[bufferSize];
-            int c;
-            while ((c = in.read(buffer)) != -1) {
-                out.write(buffer, 0, c);
+            for (int len; toRead > 0; toRead -= len) {
+                len = in.read(buffer, 0, Math.min(toRead, buffer.length));
+                if (len == -1) {
+                    if (totLen == -1) {
+                        return;
+                    }
+                    throw new EOFException();
+                }
+                out.write(buffer, 0, len);
             }
         } else {
-            int ch;
-            while ((ch = in.read()) != -1) {
+            for (int ch; toRead > 0; --toRead) {
+                ch = in.read();
+                if (ch == -1) {
+                    if (totLen == -1) {
+                        return;
+                    }
+                    throw new EOFException();
+                }
                 out.write(ch);
             }
         }
