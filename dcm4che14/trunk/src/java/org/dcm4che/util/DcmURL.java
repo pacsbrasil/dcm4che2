@@ -29,8 +29,6 @@ public final class DcmURL extends Object
 {
     // Constants -----------------------------------------------------
     /**  Description of the Field */
-    public final static String ANONYMOUS = "ANONYMOUS";
-    /**  Description of the Field */
     public final static int DICOM_PORT = 104;
 
     private final static int DELIMITER = -1;
@@ -43,7 +41,7 @@ public final class DcmURL extends Object
     // Attributes ----------------------------------------------------
     private DcmProtocol protocol;
     private String calledAET;
-    private String callingAET = ANONYMOUS;
+    private String callingAET;
     private String host;
     private int port = DICOM_PORT;
 
@@ -165,8 +163,13 @@ public final class DcmURL extends Object
      */
     public String toString()
     {
-        return protocol.toString() + "://" + calledAET + ':' + callingAET
-                 + '@' + host + ':' + port;
+        StringBuffer sb = new StringBuffer(64);
+        sb.append(protocol).append("://").append(calledAET);
+        if (callingAET != null) {
+            sb.append(':').append(callingAET);
+        }
+        sb.append('@').append(host).append(':').append(port);
+        return sb.toString();
     }
 
 

@@ -575,12 +575,16 @@ public class DcmSnd implements PollDirSrv.Handler {
         System.exit(1);
     }
     
+    private static String maskNull(String aet) {
+        return aet != null ? aet : "DCMSND";
+    }
+    
     private final void initAssocParam(Configuration cfg, DcmURL url, boolean echo) {
         acTimeout = Integer.parseInt(cfg.getProperty("ac-timeout", "5000"));
         dimseTimeout = Integer.parseInt(cfg.getProperty("dimse-timeout", "0"));
         soCloseDelay = Integer.parseInt(cfg.getProperty("so-close-delay", "500"));
         assocRQ.setCalledAET(url.getCalledAET());
-        assocRQ.setCallingAET(url.getCallingAET());
+        assocRQ.setCallingAET(maskNull(url.getCallingAET()));
         assocRQ.setMaxPDULength(
         Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
         assocRQ.setAsyncOpsWindow(aFact.newAsyncOpsWindow(

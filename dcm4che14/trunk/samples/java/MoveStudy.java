@@ -115,13 +115,16 @@ public class MoveStudy
         dest = cfg.getProperty("dest");
     }
 
+    private static String maskNull(String aet) {
+        return aet != null ? aet : "MOVESTUDY";
+    }
 
     private final void initAssocParam(Configuration cfg, DcmURL url)
     {
         acTimeout = Integer.parseInt(cfg.getProperty("ac-timeout", "5000"));
         dimseTimeout = Integer.parseInt(cfg.getProperty("dimse-timeout", "0"));
         soCloseDelay = Integer.parseInt(cfg.getProperty("so-close-delay", "500"));
-        assocRQ.setCalledAET(url.getCalledAET());
+        assocRQ.setCalledAET(maskNull(url.getCalledAET()));
         assocRQ.setCallingAET(url.getCallingAET());
         assocRQ.setMaxPDULength(
                 Integer.parseInt(cfg.getProperty("max-pdu-len", "16352")));
