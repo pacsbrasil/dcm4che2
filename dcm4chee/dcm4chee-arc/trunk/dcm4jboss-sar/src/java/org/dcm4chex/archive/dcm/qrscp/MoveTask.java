@@ -32,6 +32,7 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDDictionary;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.net.AAbort;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
@@ -321,8 +322,19 @@ class MoveTask implements Runnable {
                 storeAssoc.invoke(makeCStoreRQ(fileInfo, buffer),
                         storeScpListener);
             } catch (Exception e) {
-                service.getLog().error("Failed to move " + iuid, e);
-                failedIUIDs.add(iuid);
+                service.getLog().error("Exception during move of " + iuid, e);
+                for (; i < n; ++i, --remaining)
+                    failedIUIDs.add(((FileInfo) toRetrieve.get(i)).sopIUID);
+                if (remaining > 0)
+                    notifyMovePending(null); 
+                try {
+                    storeAssoc.getAssociation().abort(
+                            af.newAAbort(AAbort.SERVICE_PROVIDER, AAbort.REASON_NOT_SPECIFIED));
+                } catch (IOException e1) {
+                    service.getLog().error("Failed to send A-ABORT", e1);
+                }
+                logInstancesSent();
+                return;
             }
         }
         try {
@@ -330,7 +342,8 @@ class MoveTask implements Runnable {
             // workaround to ensure that last STORE-RSP is processed before
             // finally MOVE-RSP is sent
             Thread.sleep(10);
-        } catch (Exception ignore) {
+        } catch (Exception e) {
+            service.getLog().error("Execption during release:", e);
         }
         logInstancesSent();
     }
