@@ -8,6 +8,8 @@
 	<property name="storescp.sar" value="dcm4jboss-storescp.sar"/>
 	<property name="findscp.jar" value="dcm4jboss-findscp.jar"/>
 	<property name="findscp.sar" value="dcm4jboss-findscp.sar"/>
+	<property name="movescp.jar" value="dcm4jboss-movescp.jar"/>
+	<property name="movescp.sar" value="dcm4jboss-movescp.sar"/>
 
 	<property name="src.dir" value="${basedir}/src"/>
 	<property name="src.java" value="${src.dir}/java"/>
@@ -83,6 +85,8 @@
         <mkdir dir="${target.deploy}"/>
         <mkdir dir="${target.dir}/dcmsrv"/>
         <mkdir dir="${target.dir}/storescp"/>
+        <mkdir dir="${target.dir}/findscp"/>
+        <mkdir dir="${target.dir}/movescp"/>
     </target>
 
     <!-- =================================================================== -->
@@ -127,7 +131,7 @@
    	<!-- build sars                                        -->
    	<!-- =================================================================== -->
    
-   	<target name="sar" depends="dcmsrv-sar,storescp-sar,findscp-sar"/>
+   	<target name="sar" depends="dcmsrv-sar,storescp-sar,findscp-sar,movescp-sar"/>
 
     <target name="dcmsrv-sar" depends="compile">
         <copy file="${src.deploy}/dcm4jboss-dcmsrv-service.xml" 
@@ -157,7 +161,7 @@
         <zip zipfile="${target.deploy}/${storescp.sar}">
         	<zipfileset dir="${target.classes}">
         		<include name="**/StoreScp*"/>
-        		<include name="**/util/*"/>
+        		<include name="**/util/LocalHost.class"/>
         	</zipfileset>
         	<zipfileset dir="${target.dir}/storescp" prefix="META-INF">
         		<include name="jboss-service.xml"/>
@@ -181,6 +185,25 @@
         	</zipfileset>        	
         </zip>
     </target>   
+
+    <target name="movescp-sar" depends="compile">
+        <copy file="${src.deploy}/dcm4jboss-movescp-service.xml" 
+            tofile="${target.dir}/movescp/jboss-service.xml">
+            <filterset>
+                <filter token="ARCHIVES" value="dcm4che.jar,dcm4jboss-jdbc.jar"/>
+            </filterset>
+        </copy>  
+        <zip zipfile="${target.deploy}/${movescp.sar}">
+        	<zipfileset dir="${target.classes}">
+        		<include name="**/Move*"/>
+        		<include name="**/FileDataSource*"/>
+        		<include name="**/util/LocalHost.class"/>
+        	</zipfileset>
+        	<zipfileset dir="${target.dir}/movescp" prefix="META-INF">
+        		<include name="jboss-service.xml"/>
+        	</zipfileset>        	
+        </zip>
+    </target>   
    	<!-- =================================================================== -->
    	<!-- deploy sars                                                         -->
    	<!-- =================================================================== -->
@@ -189,6 +212,7 @@
     	<copy file="${target.deploy}/dcm4jboss-dcmsrv.sar" todir="${jboss.conf}/deploy"/>
     	<copy file="${target.deploy}/dcm4jboss-storescp.sar" todir="${jboss.conf}/deploy"/>
     	<copy file="${target.deploy}/dcm4jboss-findscp.sar" todir="${jboss.conf}/deploy"/>
+    	<copy file="${target.deploy}/dcm4jboss-movescp.sar" todir="${jboss.conf}/deploy"/>
    	</target>
 
    	<!-- =================================================================== -->
@@ -199,6 +223,7 @@
     	<delete file="${jboss.conf}/deploy/dcm4jboss-dcmsrv.sar"/>
     	<delete file="${jboss.conf}/deploy/dcm4jboss-storescp.sar"/>
     	<delete file="${jboss.conf}/deploy/dcm4jboss-findscp.sar"/>
+    	<delete file="${jboss.conf}/deploy/dcm4jboss-movescp.sar"/>
    	</target>
 
    	<!-- =================================================================== -->

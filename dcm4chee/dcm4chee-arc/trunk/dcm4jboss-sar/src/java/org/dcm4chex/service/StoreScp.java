@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
@@ -114,13 +113,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 	public void setMountPoint(String mnt) {
 		try {
 			File tmp = new File(new URI("file:" + mnt));
-			if (!tmp.isDirectory() || tmp.canWrite()) {
+			if (!tmp.isDirectory() || !tmp.canWrite()) {
 				throw new IllegalArgumentException(
 					"mnt:" + mnt + " not a writeable directory");
 			}
 			this.archiveDir = tmp;
-			this.mnt = mnt;
-		} catch (URISyntaxException e) {
+			this.mnt = tmp.getCanonicalPath();
+		} catch (Exception e) {
 			throw new IllegalArgumentException("mnt:" + mnt);
 		}
 	}

@@ -20,10 +20,7 @@
 
 package org.dcm4chex.service;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -51,286 +48,322 @@ import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.DataSource;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
+import org.dcm4che.net.PresContext;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.service.util.LocalHost;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$
  * @since 16.09.2003
  */
-class MoveTask implements Runnable, DimseListener {
+class MoveTask implements Runnable {
 
-	private static final String[] NATIVE_TS =
-		{ UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian };
-	private static final List NATIVE_TS_AS_LIST = Arrays.asList(NATIVE_TS);
+    private static final String[] NATIVE_TS =
+        { UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian };
+    private static final List NATIVE_TS_AS_LIST = Arrays.asList(NATIVE_TS);
 
-	private static final AssociationFactory af =
-		AssociationFactory.getInstance();
-	private static final DcmObjectFactory df = DcmObjectFactory.getInstance();
+    private static final AssociationFactory af =
+        AssociationFactory.getInstance();
+    private static final DcmObjectFactory of = DcmObjectFactory.getInstance();
 
-	private final DeviceInfo deviceInfo;
-	private final String moveDest;
-	private final NetworkAEInfo aeInfo;
-	private final int movePcid;
-	private final Command moveRspCmd;
-	private ActiveAssociation moveAssoc;
-	private final LinkedHashMap fileInfo = new LinkedHashMap();
-	private final HashMap pcInfo = new HashMap();
-	private final ArrayList failedIUIDs = new ArrayList();
-	private int warnings = 0;
-	private int completed = 0;
-	private boolean canceled = false;
-	private ActiveAssociation storeAssoc;
+    private static int defaultBufferSize = 2048;
 
-	public MoveTask(
-		ActiveAssociation moveAssoc,
-		int movePcid,
-		Command moveRspCmd,
-		FileInfo[] fileInfo,
-		DeviceInfo deviceInfo,
-		String moveDest)
-		throws DcmServiceException {
-		this.moveAssoc = moveAssoc;
-		this.movePcid = movePcid;
-		this.moveRspCmd = moveRspCmd;
-		this.deviceInfo = deviceInfo;
-		this.moveDest = moveDest;
-		this.aeInfo = deviceInfo.getNetworkAE(moveDest);
-		if (aeInfo == null) {
-			throw new DcmServiceException(Status.ProcessingFailure);
-		}
-		for (int i = 0; i < fileInfo.length; i++) {
-			putFileInfo(fileInfo[i]);
-		}
-		openAssociation();
-		moveAssoc.addCancelListener(
-			moveRspCmd.getMessageIDToBeingRespondedTo(),
-			this);
-	}
+    private final Logger log;
+    private final byte[] buffer = new byte[defaultBufferSize];
+    private final DeviceInfo deviceInfo;
+    private final String moveDest;
+    private final NetworkAEInfo aeInfo;
+    private final int movePcid;
+    private final Command moveRqCmd;
+    private final String moveOriginatorAET;
+    private ActiveAssociation moveAssoc;
+    private final LinkedHashMap fileInfoMap = new LinkedHashMap();
+    private final HashMap pcInfo = new HashMap();
+    private final ArrayList failedIUIDs = new ArrayList();
+    private int warnings = 0;
+    private int completed = 0;
+    private int remaining;
+    private boolean canceled = false;
+    private ActiveAssociation storeAssoc;
 
-	private void openAssociation() throws DcmServiceException {
-		try {
-			Association a = af.newRequestor(createSocket());
-			PDU ac = a.connect(createAAssociateRQ());
-			if (ac instanceof AAssociateAC) {
-				storeAssoc = af.newActiveAssociation(a, null);
-				storeAssoc.start();
-				return;
-			}
-		} catch (IOException e) {
-		}
-		throw new DcmServiceException(
-			Status.UnableToPerformSuboperations,
-			"Connecting " + aeInfo.getAETitle() + " failed!");
+    public MoveTask(
+        Logger log,
+        ActiveAssociation moveAssoc,
+        int movePcid,
+        Command moveRqCmd,
+        FileInfo[] fileInfo,
+        DeviceInfo deviceInfo,
+        String moveDest)
+        throws DcmServiceException {
+        this.log = log;
+        this.moveAssoc = moveAssoc;
+        this.movePcid = movePcid;
+        this.moveRqCmd = moveRqCmd;
+        this.deviceInfo = deviceInfo;
+        this.moveDest = moveDest;
+        this.moveOriginatorAET = moveAssoc.getAssociation().getCalledAET();
+        this.aeInfo = deviceInfo.getNetworkAE(moveDest);
+        if (aeInfo == null) {
+            throw new DcmServiceException(Status.ProcessingFailure);
+        }
+        for (int i = 0; i < fileInfo.length; i++) {
+            putFileInfo(fileInfo[i]);
+        }
+        if (fileInfo.length > 0) {
+            notifyMovePending();
+            openAssociation();
+            moveAssoc
+                .addCancelListener(
+                    moveRqCmd.getMessageID(),
+                    new DimseListener() {
+                public void dimseReceived(Association assoc, Dimse dimse) {
+                    canceled = true;
+                }
+            });
+        }
+    }
 
-	}
+    private void openAssociation() throws DcmServiceException {
+        try {
+            Association a = af.newRequestor(createSocket());
+            PDU ac = a.connect(createAAssociateRQ());
+            if (ac instanceof AAssociateAC) {
+                storeAssoc = af.newActiveAssociation(a, null);
+                storeAssoc.start();
+                return;
+            }
+        } catch (IOException e) {}
+        throw new DcmServiceException(
+            Status.UnableToPerformSuboperations,
+            "Connecting " + aeInfo.getAETitle() + " failed!");
 
-	private AAssociateRQ createAAssociateRQ() {
-		AAssociateRQ rq = af.newAAssociateRQ();
-		rq.setCalledAET(moveDest);
-		rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
-		HashMap fileInfoForCUID;
-		FileInfo fileInfo = null;
-		for (Iterator it = pcInfo.values().iterator(); it.hasNext();) {
-			fileInfoForCUID = (HashMap) it.next();
-			for (Iterator it2 = fileInfoForCUID.values().iterator();
-				it2.hasNext();
-				) {
-				fileInfo = (FileInfo) it2.next();
-				if (!NATIVE_TS_AS_LIST.contains(fileInfo.tsUID)) {
-					rq.addPresContext(
-						af.newPresContext(
-							rq.nextPCID(),
-							fileInfo.sopCUID,
-							new String[] { fileInfo.tsUID }));
-				}
-			}
-			rq.addPresContext(
-				af.newPresContext(rq.nextPCID(), fileInfo.sopCUID, NATIVE_TS));
-		}
-		return rq;
-	}
+    }
 
-	private Socket createSocket()
-		throws UnknownHostException, DcmServiceException, IOException {
-		if (!aeInfo.isInstalled(deviceInfo)) {
-			throw new DcmServiceException(
-				Status.UnableToPerformSuboperations,
-				aeInfo.getAETitle() + " not installed!");
-		}
-		NetworkConnectionInfo[] nc = aeInfo.getNetworkConnection();
-		for (int i = 0; i < nc.length; i++) {
-			if (nc[i].isInstalled(deviceInfo) && nc[i].isListening()) {
-				return createSocket(nc[i]);
-			}
-		}
-		throw new DcmServiceException(
-			Status.UnableToPerformSuboperations,
-			"No server installed at " + aeInfo.getAETitle() + "!");
-	}
+    private AAssociateRQ createAAssociateRQ() {
+        AAssociateRQ rq = af.newAAssociateRQ();
+        rq.setCalledAET(moveDest);
+        rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
+        HashMap fileInfoForCUID;
+        FileInfo fileInfo = null;
+        for (Iterator it = pcInfo.values().iterator(); it.hasNext();) {
+            fileInfoForCUID = (HashMap) it.next();
+            for (Iterator it2 = fileInfoForCUID.values().iterator();
+                it2.hasNext();
+                ) {
+                fileInfo = (FileInfo) it2.next();
+                if (!NATIVE_TS_AS_LIST.contains(fileInfo.tsUID)) {
+                    rq.addPresContext(
+                        af.newPresContext(
+                            rq.nextPCID(),
+                            fileInfo.sopCUID,
+                            new String[] { fileInfo.tsUID }));
+                }
+            }
+            rq.addPresContext(
+                af.newPresContext(rq.nextPCID(), fileInfo.sopCUID, NATIVE_TS));
+        }
+        return rq;
+    }
 
-	private Socket createSocket(NetworkConnectionInfo info)
-		throws DcmServiceException, UnknownHostException, IOException {
-		if (info.isTLS()) {
-			throw new DcmServiceException(
-				Status.UnableToPerformSuboperations,
-				"dicom-tls not yet supported");
-		}
-		return new Socket(info.getHostname(), info.getPort());
-	}
+    private Socket createSocket()
+        throws UnknownHostException, DcmServiceException, IOException {
+        if (!aeInfo.isInstalled(deviceInfo)) {
+            throw new DcmServiceException(
+                Status.UnableToPerformSuboperations,
+                aeInfo.getAETitle() + " not installed!");
+        }
+        NetworkConnectionInfo[] nc = aeInfo.getNetworkConnection();
+        for (int i = 0; i < nc.length; i++) {
+            if (nc[i].isInstalled(deviceInfo) && nc[i].isListening()) {
+                return createSocket(nc[i]);
+            }
+        }
+        throw new DcmServiceException(
+            Status.UnableToPerformSuboperations,
+            "No server installed at " + aeInfo.getAETitle() + "!");
+    }
 
-	private void putFileInfo(FileInfo info) {
-		ArrayList fileInfoForIUID = (ArrayList) fileInfo.get(info.sopIUID);
-		if (fileInfoForIUID == null) {
-			fileInfo.put(info.sopIUID, fileInfoForIUID = new ArrayList());
-		}
-		fileInfoForIUID.add(info);
-		HashMap fileInfoForCUID = (HashMap) pcInfo.get(info.sopCUID);
-		if (fileInfoForCUID == null) {
-			pcInfo.put(info.sopCUID, fileInfoForCUID = new HashMap());
-		}
-		fileInfoForCUID.put(info.tsUID, info);
-	}
+    private Socket createSocket(NetworkConnectionInfo info)
+        throws DcmServiceException, UnknownHostException, IOException {
+        if (info.isTLS()) {
+            throw new DcmServiceException(
+                Status.UnableToPerformSuboperations,
+                "dicom-tls not yet supported");
+        }
+        return new Socket(info.getHostname(), info.getPort());
+    }
 
-	/* Implementation of CancelListener
-	 */
-	public void dimseReceived(Association assoc, Dimse dimse) {
-		canceled = true;
-	}
+    private void putFileInfo(FileInfo info) {
+        ArrayList fileInfoForIUID = (ArrayList) fileInfoMap.get(info.sopIUID);
+        if (fileInfoForIUID == null) {
+            fileInfoMap.put(info.sopIUID, fileInfoForIUID = new ArrayList());
+        }
+        fileInfoForIUID.add(info);
+        HashMap fileInfoForCUID = (HashMap) pcInfo.get(info.sopCUID);
+        if (fileInfoForCUID == null) {
+            pcInfo.put(info.sopCUID, fileInfoForCUID = new HashMap());
+        }
+        fileInfoForCUID.put(info.tsUID, info);
+    }
 
-	public void run() {
-		Iterator it = fileInfo.entrySet().iterator();
-		while (!canceled && it.hasNext()) {
-			if (moveAssoc != null) {
-				notifyMovePending();
-			}
-			Map.Entry entry = (Entry) it.next();
-			String iuid = (String) entry.getKey();
-			try {
-				Object[] fileAndTs =
-					selectFileAndTs((ArrayList) entry.getValue());
-				doMove((FileInfo) fileAndTs[0], (String) fileAndTs[1]);
-			} catch (Exception e) {
-				failedIUIDs.add(iuid);
-			}
-			it.remove();
-		}
-		try {
-			storeAssoc.release(true);
-		} catch (Exception ignore) {
-		}
-		if (moveAssoc != null) {
-			notifyMoveFinished();
-		}
-	}
+    public void run() {
+        Iterator it = fileInfoMap.entrySet().iterator();
+        while (!canceled && it.hasNext()) {
+            Map.Entry entry = (Entry) it.next();
+            final String iuid = (String) entry.getKey();
+            DimseListener storeScpListener = new DimseListener() {
+                public void dimseReceived(Association assoc, Dimse dimse) {
+                    switch (dimse.getCommand().getStatus()) {
+                        case Status.Success :
+                            ++completed;
+                            break;
+                        case Status.CoercionOfDataElements :
+                        case Status.DataSetDoesNotMatchSOPClassWarning :
+                        case Status.ElementsDiscarded :
+                            ++warnings;
+                            break;
+                        default :
+                            failedIUIDs.add(iuid);
+                            break;
+                    }
+                    if (!canceled && remaining() > 0) {
+                        notifyMovePending();
+                    }
+                }
+            };
+            try {
+                Object[] fileAndPresCtx =
+                    selectFileAndPresCtx((ArrayList) entry.getValue());
+                FileInfo info = (FileInfo) fileAndPresCtx[0];
+                PresContext presCtx = (PresContext) fileAndPresCtx[1];
+                storeAssoc.invoke(
+                    makeCStoreRQ(info, presCtx.pcid()),
+                    storeScpListener);
+            } catch (Exception e) {
+                log.error("Failed to move " + iuid, e);
+                failedIUIDs.add(iuid);
+            }
+        }
+        try {
+            storeAssoc.release(true);
+        } catch (Exception ignore) {}
+        notifyMoveFinished();
+    }
 
-	private void notifyMovePending() {
-		prepareMoveRsp(Status.Pending);
-		notifyMoveSCU(null);
-	}
+    private Dimse makeCStoreRQ(FileInfo info, int pcid) {
+        Association assoc = storeAssoc.getAssociation();
+        Command storeRqCmd = of.newCommand();
+        storeRqCmd.initCStoreRQ(
+            assoc.nextMsgID(),
+            info.sopCUID,
+            info.sopIUID,
+            moveRqCmd.getInt(Tags.Priority, Command.MEDIUM));
+        storeRqCmd.putUS(
+            Tags.MoveOriginatorMessageID,
+            moveRqCmd.getMessageID());
+        storeRqCmd.putAE(
+            Tags.MoveOriginatorAET,
+            moveOriginatorAET);
+        DataSource ds = new FileDataSource(info, buffer);
+        return af.newDimse(pcid, storeRqCmd, ds);
+    }
 
-	private void notifyMoveSCU(Dataset ds) {
-		if (moveAssoc != null) {
-			try {
-				moveAssoc.getAssociation().write(
-					af.newDimse(movePcid, moveRspCmd, ds));
-			} catch (IOException e) {
-				moveAssoc = null;
-			}
-		}
-	}
+    private int remaining() {
+        return fileInfoMap.size() - failedIUIDs.size() - warnings - completed;
+    }
 
-	private void prepareMoveRsp(int status) {
-		if (status == Status.Cancel) {
-			moveRspCmd.remove(Tags.NumberOfRemainingSubOperations);
-		} else {
-			moveRspCmd.putUS(
-				Tags.NumberOfRemainingSubOperations,
-				fileInfo.size());
-		}
-		moveRspCmd.putUS(Tags.NumberOfCompletedSubOperations, completed);
-		moveRspCmd.putUS(Tags.NumberOfWarningSubOperations, warnings);
-		moveRspCmd.putUS(Tags.NumberOfFailedSubOperations, failedIUIDs.size());
-		moveRspCmd.putUS(Tags.Status, status);
-	}
+    private void notifyMovePending() {
+        notifyMoveSCU(Status.Pending, null);
+    }
 
-	private void notifyMoveFinished() {
-		prepareMoveRsp(
-			canceled
-				? Status.Cancel
-				: !failedIUIDs.isEmpty()
-				? Status.SubOpsOneOrMoreFailures
-				: Status.Success);
-		Dataset ds = null;
-		if (!failedIUIDs.isEmpty()) {
-			ds = df.newDataset();
-			ds.putUI(
-				Tags.FailedSOPInstanceUIDList,
-				(String[]) failedIUIDs.toArray(new String[failedIUIDs.size()]));
-		}
-		notifyMoveSCU(ds);
-	}
+    private void notifyMoveFinished() {
+        final int status =
+            canceled
+                ? Status.Cancel
+                : !failedIUIDs.isEmpty()
+                ? Status.SubOpsOneOrMoreFailures
+                : Status.Success;
+        Dataset ds = null;
+        if (!failedIUIDs.isEmpty()) {
+            ds = of.newDataset();
+            ds.putUI(
+                Tags.FailedSOPInstanceUIDList,
+                (String[]) failedIUIDs.toArray(new String[failedIUIDs.size()]));
+        }
+        notifyMoveSCU(status, ds);
+    }
 
-	private Object[] selectFileAndTs(ArrayList files) throws IOException {
-		FileInfo file = (FileInfo) files.get(0);
-		// there must be one entry!
-		List acceptedTs =
-			storeAssoc.getAssociation().listAcceptedPresContext(file.sopCUID);
-		if (acceptedTs.isEmpty()) {
-			throw new IOException(
-				"No support of SOP Class "
-					+ file.sopCUID
-					+ " by "
-					+ aeInfo.getAETitle());
-		}
-		// prefer smallest file size
-		Collections.sort(files, new Comparator() {
-			public int compare(Object o1, Object o2) {
-				long diffSize = ((FileInfo) o1).size - ((FileInfo) o2).size;
-				return diffSize < 0 ? -1 : diffSize > 0 ? 1 : 0;
-			}
-		});
-		int tsIndex = -1;
-		for (Iterator it = files.iterator(); it.hasNext();) {
-			file = (FileInfo) it.next();
-			if (!LocalHost.getHostName().equalsIgnoreCase(file.host)) {
-				break;
-			}
-			String[] compatibleTs = compatibleTs(file.tsUID);
-			for (int i = 0; i < compatibleTs.length; i++) {
-				if (acceptedTs.contains(compatibleTs[i])) {
-					return new Object[] { file, compatibleTs[i] };
-				}
-			}
-		}
-		throw new IOException(
-			"No support of appropriate TranferSyntax for SOP Class "
-				+ file.sopCUID
-				+ " by "
-				+ aeInfo.getAETitle());
-	}
+    private void notifyMoveSCU(int status, Dataset ds) {
+        if (moveAssoc != null) {
+            try {
+                moveAssoc.getAssociation().write(
+                    af.newDimse(movePcid, makeMoveRsp(status), ds));
+            } catch (Exception e) {
+                log.info("Failed to send Move RSP to Move Originator:", e);
+                moveAssoc = null;
+            }
+        }
+    }
 
-	private String[] compatibleTs(String ts) {
-		return (NATIVE_TS_AS_LIST.indexOf(ts) == -1) ? new String[] { ts }
-		: NATIVE_TS;
-	}
+    private Command makeMoveRsp(int status) {
+        Command rspCmd = of.newCommand();
+        rspCmd.initCMoveRSP(
+            moveRqCmd.getMessageID(),
+            moveRqCmd.getAffectedSOPClassUID(),
+            status);
+        if (status == Status.Cancel) {
+            rspCmd.remove(Tags.NumberOfRemainingSubOperations);
+        } else {
+            rspCmd.putUS(Tags.NumberOfRemainingSubOperations, remaining());
+        }
+        rspCmd.putUS(Tags.NumberOfCompletedSubOperations, completed);
+        rspCmd.putUS(Tags.NumberOfWarningSubOperations, warnings);
+        rspCmd.putUS(Tags.NumberOfFailedSubOperations, failedIUIDs.size());
+        rspCmd.putUS(Tags.Status, status);
+        return rspCmd;
+    }
 
-	private void doMove(FileInfo info, String ts) throws IOException {
-		InputStream in =
-			new BufferedInputStream(new FileInputStream(info.toFile()));
-		try {
+    private Object[] selectFileAndPresCtx(ArrayList files) throws IOException {
+        // prefer smallest file size
+        Collections.sort(files, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                long diffSize = ((FileInfo) o1).size - ((FileInfo) o2).size;
+                return diffSize < 0 ? -1 : diffSize > 0 ? 1 : 0;
+            }
+        });
+        int tsIndex = -1;
+        FileInfo info = null;
+        Association assoc = storeAssoc.getAssociation();
+        for (Iterator it = files.iterator(); it.hasNext();) {
+            info = (FileInfo) it.next();
+            String[] compatibleTs = compatibleTs(info.tsUID);
+            for (int i = 0; i < compatibleTs.length; i++) {
+                PresContext pc =
+                    assoc.getAcceptedPresContext(info.sopCUID, compatibleTs[i]);
+                if (pc != null) {
+                    //TODO implement forward MoveRQ to AE at other host
+                    if (LocalHost.getHostName().equalsIgnoreCase(info.host)) {
+                        return new Object[] { info, pc };
+                    }
+                }
+            }
+        }
+        throw new IOException(
+            "No appropriate Presentation Context for SOP Class "
+                + info.sopCUID
+                + " accepted by "
+                + aeInfo.getAETitle());
+    }
 
-		} finally {
-			try {
-				in.close();
-			} catch (IOException ignore) {
-			}
-		}
-	}
-
+    private String[] compatibleTs(String ts) {
+        return (NATIVE_TS_AS_LIST.indexOf(ts) == -1) ? new String[] { ts }
+        : NATIVE_TS;
+    }
 }

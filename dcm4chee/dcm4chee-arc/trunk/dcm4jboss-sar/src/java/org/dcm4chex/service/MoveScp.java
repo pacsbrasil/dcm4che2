@@ -21,7 +21,6 @@
 package org.dcm4chex.service;
 
 import java.io.IOException;
-import java.security.cert.CertificateException;
 
 import javax.naming.NamingException;
 
@@ -56,21 +55,20 @@ public class MoveScp extends DcmServiceBase {
         Command rqCmd = rq.getCommand();
         String dest = rqCmd.getString(Tags.MoveDestination);
         Dataset rqData = rq.getDataset();
-        Command rspCmd = objFact.newCommand();
-        rspCmd.initCMoveRSP(
-            rqCmd.getMessageID(),
-            rqCmd.getAffectedSOPClassUID(),
-            PENDING);
         try {
             DeviceInfo deviceInfo = null;
             try {
+                log.info("Query Device Info for " + dest + " from LDAP");
+                scp.getLdapConfig().connect();
                 deviceInfo = scp.getLdapConfig().getDeviceWithAET(dest);
             } catch (NamingException e1) {
                 log.warn("Unkown Move Destination - " + dest);
                 throw new DcmServiceException(Status.MoveDestinationUnknown);
-            } catch (CertificateException e) {
-                log.error("Query Certificate from LDAP failed:", e);
+            } catch (Exception e) {
+                log.error("QueryLDAP failed:", e);
                 throw new DcmServiceException(Status.ProcessingFailure, e);
+            } finally {
+                scp.getLdapConfig().close();
             }
             FileInfo[] fileInfo;
             try {
@@ -78,9 +76,10 @@ public class MoveScp extends DcmServiceBase {
                     RetrieveCmd.create(scp.getDataSource(), rqData);
                 new Thread(
                     new MoveTask(
+                        log,
                         assoc,
                         rq.pcid(),
-                        rspCmd,
+                        rqCmd,
                         retrieveCmd.execute(),
                         deviceInfo,
                         dest))
@@ -90,6 +89,11 @@ public class MoveScp extends DcmServiceBase {
                 throw new DcmServiceException(Status.ProcessingFailure, e);
             }
         } catch (DcmServiceException e) {
+            Command rspCmd = objFact.newCommand();
+            rspCmd.initCMoveRSP(
+                rqCmd.getMessageID(),
+                rqCmd.getAffectedSOPClassUID(),
+                e.getStatus());
             e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
             assoc.getAssociation().write(rsp);

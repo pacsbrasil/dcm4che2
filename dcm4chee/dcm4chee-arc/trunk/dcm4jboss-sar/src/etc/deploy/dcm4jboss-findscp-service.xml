@@ -12,8 +12,8 @@
 
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
-  <mbean code="org.dcm4chex.service.QueryScpService" 
-         name="dcm4chex:service=QueryScp">
+  <mbean code="org.dcm4chex.service.FindScpService" 
+         name="dcm4chex:service=FindScp">
 
     <depends optional-attribute-name="DcmServerName">
         dcm4chex:service=DcmServer,name=DCMSRV

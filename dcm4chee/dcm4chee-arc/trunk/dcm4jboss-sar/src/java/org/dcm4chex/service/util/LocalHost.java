@@ -45,7 +45,8 @@ public class LocalHost {
 			|| tmp.equals(local.getHostAddress())) {
 			throw new UnknownHostException("getHostName->" + tmp);
 		}
-		this.hostName = tmp.substring(tmp.lastIndexOf('.') + 1);
+        int len = tmp.indexOf('.');
+		this.hostName = len == -1 ? tmp : tmp.substring(0, len);
 	}
 
 }

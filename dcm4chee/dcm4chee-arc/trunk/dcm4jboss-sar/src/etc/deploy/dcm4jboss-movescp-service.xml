@@ -12,15 +12,13 @@
 
   <classpath codebase="lib" archives="@ARCHIVES@"/>
 
-  <mbean code="org.dcm4chex.service.QueryScpService" 
-         name="dcm4chex:service=QueryScp">
+  <mbean code="org.dcm4chex.service.MoveScpService" 
+         name="dcm4chex:service=MoveScp">
 
     <depends optional-attribute-name="DcmServerName">
         dcm4chex:service=DcmServer,name=DCMSRV
     </depends>
     
-    <attribute name="MountPoint">/var/local/dcm4che/arch1</attribute>
-
     <attribute name="DsJndiName">java:/PostgresDS</attribute>    
 
     <attribute name="LdapBaseDN">dc=tiani,dc=com</attribute>    
