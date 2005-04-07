@@ -85,8 +85,8 @@ final class UnparsedPDUImpl {
 	long n = 0;
 	while (n < len) {
 	    long count = in.skip(len - n);
-	    if (count < 0)
-		throw new EOFException();
+	    if (count <= 0)
+	    	throw new EOFException();
 	    n += count;
 	}
     }
