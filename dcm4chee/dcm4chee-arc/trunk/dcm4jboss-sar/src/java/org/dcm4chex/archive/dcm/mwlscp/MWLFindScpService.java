@@ -9,8 +9,6 @@
 
 package org.dcm4chex.archive.dcm.mwlscp;
 
-import java.rmi.RemoteException;
-
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -109,7 +107,7 @@ public class MWLFindScpService extends AbstractScpService
                     try {
                         Dataset ds = mgr.removeWorklistItem(spsid);
                         log.info("Removed MWL item - " + spsid);
-                    } catch (RemoteException e) {
+                    } catch (Exception e) {
                         log.error("Failed to remove MWL item - " + spsid, e);
                     }
                 }

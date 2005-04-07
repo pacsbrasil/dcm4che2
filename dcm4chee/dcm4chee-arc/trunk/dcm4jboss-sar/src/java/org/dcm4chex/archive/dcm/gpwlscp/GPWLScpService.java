@@ -12,9 +12,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
-import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -25,6 +23,7 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 public class GPWLScpService extends AbstractScpService {
 
     private GPWLFindScp gpwlFindScp = new GPWLFindScp(this);
+    private GPSPSScp spspsScp = new GPSPSScp(this);
 
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
@@ -44,19 +43,18 @@ public class GPWLScpService extends AbstractScpService {
     
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.GeneralPurposeWorklistInformationModelFIND, gpwlFindScp);
+        services.bind(UIDs.GeneralPurposeScheduledProcedureStepSOPClass, spspsScp);
     }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
         services.unbind(UIDs.GeneralPurposeWorklistInformationModelFIND);
+        services.unbind(UIDs.GeneralPurposeScheduledProcedureStepSOPClass);
     }
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        policy.putPresContext(UIDs.ModalityWorklistInformationModelFIND,
+        policy.putPresContext(UIDs.GeneralPurposeWorklistInformationModelFIND,
                 enable ? getTransferSyntaxUIDs() : null);
-    }
-
-    private GPWLManagerHome getGPWLManagerHome() throws HomeFactoryException {
-        return (GPWLManagerHome) EJBHomeFactory.getFactory().lookup(
-                GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME);
+        policy.putPresContext(UIDs.GeneralPurposeScheduledProcedureStepSOPClass,
+                enable ? getTransferSyntaxUIDs() : null);
     }
 }

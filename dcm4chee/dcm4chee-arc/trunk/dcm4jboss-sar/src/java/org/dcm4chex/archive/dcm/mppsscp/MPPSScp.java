@@ -67,9 +67,11 @@ class MPPSScp extends DcmServiceBase {
             Command rspCmd) throws IOException, DcmServiceException {
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
+        final String cuid = rspCmd.getAffectedSOPClassUID();
         final String iuid = rspCmd.getAffectedSOPInstanceUID();
         service.logDataset("Creating MPPS:\n", mpps);
         checkCreateAttributs(mpps);
+        mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         createMPPS(mpps);
         service.sendMPPSNotification(mpps);
