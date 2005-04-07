@@ -40,6 +40,7 @@ import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -248,7 +249,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         }
     }
     
-    private void init(SSLSocket s) throws IOException, CertificateExpiredException, CertificateNotYetValidException {
+    private void init(SSLSocket s) throws IOException {
         if (hcl != null) {
             for (int i = 0, n = hcl.size(); i < n; ++i) {
                 s.addHandshakeCompletedListener(
@@ -268,6 +269,8 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
                         + cert.getSubjectDN()+" valid from "+cert.getNotBefore()+" to "+cert.getNotAfter());
                 } catch (SSLPeerUnverifiedException e) {
                     log.error("SSL peer not verified:",e);
+                } catch ( CertificateException ce ) {
+                	throw new IOException(ce.getMessage());
                 }
             }
         } catch (IOException e) {

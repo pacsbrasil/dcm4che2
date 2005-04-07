@@ -33,6 +33,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -720,11 +721,14 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
                     try {
                         X509Certificate cert = (X509Certificate)
                                 se.getPeerCertificates()[0];
+                        cert.checkValidity();
                         log.info(s.getInetAddress().toString() +
                                 ": accept " + se.getCipherSuite() + " with "
-                                 + cert.getSubjectDN());
+                                 + cert.getSubjectDN()+" valid from "+cert.getNotBefore()+" to "+cert.getNotAfter());
                     } catch (SSLPeerUnverifiedException e) {
                         log.error("SSL peer not verified:", e);
+                    } catch ( CertificateException ce ) {
+                    	throw new IOException(ce.getMessage());
                     }
                 }
             } catch (IOException e) {
