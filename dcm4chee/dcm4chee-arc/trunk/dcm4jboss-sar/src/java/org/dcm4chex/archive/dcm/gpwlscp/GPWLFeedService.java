@@ -8,6 +8,7 @@
  ******************************************/
 package org.dcm4chex.archive.dcm.gpwlscp;
 
+import java.io.FileNotFoundException;
 import java.util.Date;
 
 import javax.management.Notification;
@@ -139,7 +140,9 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 			String siuid = ssaSq.getItem().getString(Tags.StudyInstanceUID);
 			gpsps.putUI(Tags.StudyInstanceUID, siuid);
 			gpsps.putSH(Tags.SPSID, mpps.getString(Tags.PPSID));
-			gpsps.putDT(Tags.SPSStartDateAndTime, new Date());
+			if (!gpsps.contains(Tags.SPSStartDateAndTime)) {
+				gpsps.putDT(Tags.SPSStartDateAndTime, new Date());
+			}
 			DcmElement ppsSq = gpsps.putSQ(Tags.RefPPSSeq);
 			Dataset refPPS = ppsSq.addNewItem();
 			refPPS.putUI(Tags.RefSOPClassUID,
@@ -166,13 +169,18 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 					inRefSopSq.addItem(refNoImgSopSq.getItem(j));
 				}
 			}
-			DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
-			for (int i = 0, n = ssaSq.vm(); i < n; ++i) {
-				refRqSq.addItem(ssaSq.getItem(i).subSet(REF_REQUEST_TAGS));
+			if (!gpsps.contains(Tags.RefRequestSeq)) {
+				DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
+				for (int i = 0, n = ssaSq.vm(); i < n; ++i) {
+					refRqSq.addItem(ssaSq.getItem(i).subSet(REF_REQUEST_TAGS));
+				}
 			}
-	       	log.debug("create workitem using template " + sb);
+	       	log.info("create workitem using template " + sb);
 	       	log.debug(gpsps);
 			return gpsps;
+		} catch (FileNotFoundException e) {
+			log.info("no workitem configured for procedure");
+			log.info(codeItem);
 		} catch (Exception e) {
 			log.error("Failed to load workitem configuration from " + sb, e);
 		}
