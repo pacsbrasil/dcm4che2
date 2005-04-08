@@ -13,6 +13,9 @@ default-transform-type="xslt">
     <view id="folder" name="folder">
       <transform path="folder.xsl" />
     </view>
+    <view id="echoresult" name="echoresult">
+      <transform path="ae_echo.xsl" />
+    </view>
     <view id="error" name="error">
    	  <transform path="error.xsl" />
     </view>
@@ -157,7 +160,15 @@ default-transform-type="xslt">
 	    <view name="success" type="redirect" path="ae.m"/>
 	    <view ref="error" />
      </command>
-
+     
+    <command name="aeecho">
+    	<controller class="org.dcm4chex.archive.web.maverick.ae.AEEchoCtrl" />    
+    <view id="echoresult" name="echoresult">
+      <transform path="ae_echo.xsl" />
+    </view>
+	    <view ref="error" />
+     </command>
+     
 	<!-- ****** END AE related commands ******-->
  
 	<!-- ****** Media Creation Manager Console (MCMConsole) related commands ******-->

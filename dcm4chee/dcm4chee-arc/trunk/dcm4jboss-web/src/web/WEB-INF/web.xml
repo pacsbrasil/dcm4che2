@@ -88,6 +88,16 @@
 			<param-name>contentEditName</param-name>
 			<param-value>tiani.archive:service=ContentEditService</param-value>
 		</init-param>
+		
+		<!-- 
+			Used by dcm4jboss-web application to find EchoService MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-echo-service.xml.
+		-->
+		<init-param>
+			<param-name>echoServiceName</param-name>
+			<param-value>tiani.archive:service=ECHOService</param-value>
+		</init-param>
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>
