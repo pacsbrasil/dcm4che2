@@ -31,7 +31,13 @@ public class AEEditCtrl extends Errable
 	
 	public AEData getAE() throws Exception
 	{
+		System.out.println("pk:"+pk);
+		try {
 		return lookupAEManager().getAe(pk);
+		} catch ( Exception x ) {
+			System.out.println("CTX: title:"+getCtx().getRequest().getParameter("title"));
+		}
+		return null;
 	}
 
 	protected String perform() throws Exception 

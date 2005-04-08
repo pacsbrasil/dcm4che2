@@ -55,6 +55,12 @@
 					<img src="images/delete.gif" alt="delete" border="0"/>							
 					</a>					
 			</td>
+			<td align="left" valign="top" >
+					<a href="aeecho.m?aet={title}" >
+					<xsl:attribute name="onclick" >return doEchoAET('<xsl:value-of select="title"/>')</xsl:attribute>
+					<img src="images/echo.gif" alt="Check AET({title}) with echo." border="0"/>							
+					</a>					
+			</td>
 		</tr>
 	</xsl:template>
  

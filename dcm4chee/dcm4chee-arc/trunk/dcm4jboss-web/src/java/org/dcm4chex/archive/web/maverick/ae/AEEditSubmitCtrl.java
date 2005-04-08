@@ -10,7 +10,8 @@ package org.dcm4chex.archive.web.maverick.ae;
 
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.web.maverick.*;
+import org.dcm4chex.archive.web.maverick.AuditLoggerDelegate;
+import org.dcm4chex.archive.web.maverick.Errable;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -24,7 +25,20 @@ public class AEEditSubmitCtrl extends Errable
 
 	private String update = null;
 	private String cancel = null;
+	private String echo = null;
+	private String popupMsg = null;
+	
+	private static EchoDelegate delegate = null;
 
+	
+    public EchoDelegate getDelegate() {
+        if ( delegate == null ) {
+        	delegate = new EchoDelegate();
+        	delegate.init( getCtx().getServletConfig() );
+        }
+        return delegate;
+    }
+	
 	/**
 	 * @param chiperSuites The chiperSuites to set.
 	 */
@@ -74,6 +88,10 @@ public class AEEditSubmitCtrl extends Errable
 	{
 		this.cancel = cancel;
 	}
+	public final void setEcho(String echo)
+	{
+		this.echo = echo;
+	}
 	
 	public final void setCipher1(String cipher)
 	{
@@ -88,6 +106,18 @@ public class AEEditSubmitCtrl extends Errable
 		this.cipher3 = cipher;
 	}
 
+	/**
+	 * @return Returns the popupMsg.
+	 */
+	public String getPopupMsg() {
+		return popupMsg;
+	}
+	/**
+	 * @param popupMsg The popupMsg to set.
+	 */
+	public void setPopupMsg(String popupMsg) {
+		this.popupMsg = popupMsg;
+	}
 	private AEData getAE()
 	{
 		if (cipherSuites == null || cipherSuites.length() < 1 ) {
@@ -106,6 +136,7 @@ public class AEEditSubmitCtrl extends Errable
 
 	protected String perform() throws Exception
 	{
+		System.out.println("perform:"+echo);
 		if (update != null)
 		{
 			AEData newAE = getAE();
@@ -123,6 +154,9 @@ public class AEEditSubmitCtrl extends Errable
 				this.backURL = "aeedit.m?pk=" + pk;
 				return ERROR_VIEW;
 			}
+		} else 	if ( echo != null ) {
+			popupMsg = getDelegate().echo( getAE(), 5);
+			return "success";
 		} else
 			return "success";
 	}

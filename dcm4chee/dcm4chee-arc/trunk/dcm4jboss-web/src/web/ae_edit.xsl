@@ -14,15 +14,16 @@
 				<center><table border="0">
 					<tr>
 							<td width="50">AE Title</td>
-			        <td title="AE Title" >
-<input size="25" name="title" type="text" value="{title}"/>
+			        	<td title="AE Title" >
+							<input size="25" name="title" type="text" value="{title}"/>
+							<input size="10" name="pk" type="text" value="{pk}"/>
 						</td>
 					</tr>
 					<tr>
 						<td width="50">Hostname</td>
-				    <td title="Hostname" >
-<input size="25" name="hostName" type="text" value="{hostName}"/>
-				    </td>
+				    	<td title="Hostname" >
+							<input size="25" name="hostName" type="text" value="{hostName}"/>
+				    	</td>
 					</tr>
 					<tr>				        
 						<td width="50">Port</td>														
@@ -58,9 +59,12 @@
 					</tr>
 					<tr>
 						<td colspan="2">
-<center><input type="submit" name="update" value="Apply Changes"/>
-														<input type="submit" name="cancel" value="Cancel" /></center>
-            </td>
+							<center>
+								<input type="submit" name="nix" value="Echo" onclick="return doEcho(this.form)"/>
+								<input type="submit" name="update" value="Apply Changes"/>
+								<input type="submit" name="cancel" value="Cancel" />
+							</center>
+            			</td>
 					</tr>
 				</table></center>
 			</td></tr></table>

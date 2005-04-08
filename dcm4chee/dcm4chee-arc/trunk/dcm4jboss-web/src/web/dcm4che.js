@@ -84,6 +84,13 @@ function checkError( errCode )
 	}
 }
 
+function checkPopup( popupMsg )
+{
+	if ( popupMsg != '' ) {
+		alert( popupMsg );
+	}
+}
+
 function selectCipher()
 {
 	selection = document.ae_edit.cipherSelect.options[document.ae_edit.cipherSelect.selectedIndex ].value;
@@ -91,3 +98,23 @@ function selectCipher()
 		document.ae_edit.cipherSuites.value=document.ae_edit.cipherSelect.options[document.ae_edit.cipherSelect.selectedIndex ].value;
 	}
 }
+
+function doEchoAET(aet)  //open echo window
+{
+	newwindow = window.open('aeecho.m?aet='+aet, 'ECHO', 'toolbar=no,menubar=no, scrollbars=no, width=500,height=200');
+	newwindow.focus();
+	return false;
+}
+
+function doEcho(form)  //open echo window
+{
+	var query = 'title='+form.title.value+'&hostName='+form.hostName.value+'&port='+form.port.value;
+	query = query + '&cipher1='+selectValue(form.cipher1)+'&cipher2='+selectValue(form.cipher2)+'&cipher3='+selectValue(form.cipher3)
+	newwindow = window.open('aeecho.m?'+query, 'ECHO', 'toolbar=no,menubar=no, scrollbars=no, width=500,height=200');
+	newwindow.focus();
+	return false;
+}
+
+function selectValue(sObj) {
+    with (sObj) return options[selectedIndex].value;
+  }

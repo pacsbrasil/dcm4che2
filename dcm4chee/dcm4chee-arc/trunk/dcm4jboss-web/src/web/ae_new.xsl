@@ -57,8 +57,11 @@
 					</tr>
 					<tr>
 						<td colspan="2">
-									<center><input type="submit" name="new" value="Create"/>
-			                  <input type="submit" name="cancel" value="Cancel" /></center>
+							<center>
+								<input type="submit" name="nix" value="Echo" onclick="return doEcho(this.form)"/>
+								<input type="submit" name="new" value="Create"/>
+			                  	<input type="submit" name="cancel" value="Cancel" />
+			                </center>
 			             </td>
 					</tr>
 				</table>
