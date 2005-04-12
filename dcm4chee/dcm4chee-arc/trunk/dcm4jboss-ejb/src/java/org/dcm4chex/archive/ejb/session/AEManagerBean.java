@@ -120,6 +120,28 @@ public abstract class AEManagerBean implements SessionBean
 			throw new EJBException(e);
 		}
 	}
+
+	/**
+	 * @ejb.interface-method
+	 */
+	public AEData getAeByTitle(String aet) throws EJBException
+	{
+		try
+		{
+			AELocal ae = aeHome.findByAET( aet );
+			AEData aeDTO =
+				new AEData(
+						ae.getPk().intValue(),
+						ae.getTitle(),
+						ae.getHostName(),
+						ae.getPort(),
+						ae.getCipherSuites());
+			return aeDTO;
+		} catch (FinderException e)
+		{
+			throw new EJBException(e);
+		}
+	}
 	
 	
 	/**
