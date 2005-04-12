@@ -4,8 +4,8 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>MPPS SCU Service to forward MPPS messages received by
-   the MPPS SCP Service
+   <description>PPS SCU Service to forward GP-PPS messages received by
+   the PPS SCP Service
    </description>
 
    <descriptors>
@@ -13,11 +13,11 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
-   <class>org.dcm4chex.archive.dcm.mppsscu.MPPSScuService</class>
+   <class>org.dcm4chex.archive.dcm.ppsscp.PPSScuService</class>
 
    <constructor>
       <description>The default constructor</description>
-      <name>MPPSScuServic</name>
+      <name>GPPPSScuService</name>
    </constructor>
 
    <!-- Attributes -->
@@ -49,7 +49,7 @@
       getMethod="getRetryIntervalls"
       setMethod="setRetryIntervalls">
       <description>Number and intervalls of retries of failed 
-      MPPS forward requests by a list of comma separated NUMBERxINTERVAL pairs.
+      GP-PPS forward requests by a list of comma separated NUMBERxINTERVAL pairs.
       The intervall can be specified in seconds (##s), minutes (##m),
       hours (##h) or days (##d).
       </description>
@@ -100,18 +100,18 @@
       <name>QueueName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MPPSScu" />
+         <value value="PPSScu" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMppsScpServiceName"
-      setMethod="setMppsScpServiceName">
+      getMethod="getPpsScpServiceName"
+      setMethod="setPpsScpServiceName">
       <description>Used internally - do NOT modify.
       </description>
-      <name>MppsScpServiceName</name>
+      <name>PpsScpServiceName</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="tiani.archive:service=MPPSScp" />
+         <value value="tiani.archive:service=PPSScp" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -129,20 +129,5 @@
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>sendMPPS</name>
-      <parameter>
-        <description>MPPS</description>
-        <name>mpps</name>
-        <type>org.dcm4che.data.Dataset</type>
-      </parameter>
-      <parameter>
-        <description>Destination</description>
-        <name>aet</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>int</return-type>
-   </operation>   
    
 </mbean>

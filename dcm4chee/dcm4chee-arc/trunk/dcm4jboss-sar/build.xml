@@ -170,6 +170,7 @@
    				<include name="bin/*"/>
    				<include name="conf/cacerts.jks"/>
    				<include name="conf/identity.p12"/>
+  				<include name="conf/gpwl/*.xml"/>
   				<include name="conf/xmdesc/*.xml"/>
   				<include name="conf/xsl/**"/>
    				<include name="deploy/*.xml"/>

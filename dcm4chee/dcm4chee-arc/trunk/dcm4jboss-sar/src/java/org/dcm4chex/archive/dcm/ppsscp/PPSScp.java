@@ -34,20 +34,22 @@ class PPSScp extends DcmServiceBase {
     protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         final Command cmd = rq.getCommand();
-        final Dataset mpps = rq.getDataset();
+        final Dataset gppps = rq.getDataset();
         final String iuid = rspCmd.getAffectedSOPInstanceUID();
-        service.logDataset("Creating PPS:\n", mpps);
-        mpps.putUI(Tags.SOPInstanceUID, iuid);
+        service.logDataset("Creating PPS:\n", gppps);
+        gppps.putUI(Tags.SOPInstanceUID, iuid);
+        service.sendPPSNotification(gppps);
         return null;
     }
 
     protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws IOException, DcmServiceException {
         final Command cmd = rq.getCommand();
-        final Dataset mpps = rq.getDataset();
+        final Dataset gppps = rq.getDataset();
         final String iuid = cmd.getRequestedSOPInstanceUID();
-        service.logDataset("Set PPS:\n", mpps);
-        mpps.putUI(Tags.SOPInstanceUID, iuid);
+        service.logDataset("Set PPS:\n", gppps);
+        gppps.putUI(Tags.SOPInstanceUID, iuid);
+        service.sendPPSNotification(gppps);
         return null;
     }
 }

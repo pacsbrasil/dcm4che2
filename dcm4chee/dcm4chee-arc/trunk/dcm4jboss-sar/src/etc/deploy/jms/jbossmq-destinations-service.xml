@@ -25,6 +25,13 @@
   </mbean>  
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
+	 name="tiani.archive:service=Queue,name=PPSScu">
+     <depends optional-attribute-name="DestinationManager">
+     	jboss.mq:service=DestinationManager
+     </depends>
+  </mbean>  
+
+  <mbean code="org.jboss.mq.server.jmx.Queue"
 	 name="tiani.archive:service=Queue,name=MCMScu">
      <depends optional-attribute-name="DestinationManager">
      	jboss.mq:service=DestinationManager

@@ -71,7 +71,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
 
     private static final String[] EMPTY = {};
 
-    private static final int[] IUID = { Tags.SOPInstanceUID};
+    private static final int[] EXCLUDE_TAGS = { Tags.SOPClassUID, Tags.SOPInstanceUID};
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
@@ -276,7 +276,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
 	                    UIDs.ModalityPerformedProcedureStep,
 	                    mpps.getString(Tags.SOPInstanceUID));
             }
-            Dimse dimseRq = af.newDimse(PCID_MPPS, cmdRq, mpps.exclude(IUID));
+            Dimse dimseRq = af.newDimse(PCID_MPPS, cmdRq, mpps.exclude(EXCLUDE_TAGS));
             final Dimse dimseRsp;
             try {
                 dimseRsp = aa.invoke(dimseRq).get();

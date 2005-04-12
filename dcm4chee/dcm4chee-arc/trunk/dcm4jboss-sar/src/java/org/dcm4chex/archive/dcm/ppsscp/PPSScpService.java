@@ -9,6 +9,10 @@
 
 package org.dcm4chex.archive.dcm.ppsscp;
 
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+
+import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -21,6 +25,15 @@ import org.dcm4chex.archive.dcm.AbstractScpService;
  */
 public class PPSScpService extends AbstractScpService {
 
+    public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.ppsscp";
+
+    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return EVENT_TYPE.equals(notif.getType());
+        }
+    };
+    
     private PPSScp mppsScp = new PPSScp(this);
     
     protected void bindDcmServices(DcmServiceRegistry services) {
@@ -36,4 +49,11 @@ public class PPSScpService extends AbstractScpService {
                 enable ? getTransferSyntaxUIDs() : null);
     }
 
+
+    void sendPPSNotification(Dataset ds) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(EVENT_TYPE, this, eventID);
+        notif.setUserData(ds);
+        super.sendNotification(notif);
+    }
 }
