@@ -16,6 +16,9 @@
 	as the MediaComposer EJB!
 	-->
     <depends>jboss.j2ee:jndiName=ejb/MediaComposer,service=EJB</depends>
+    <depends>
+      tiani.archive:service=Sendmail
+    </depends>
   </mbean>
 
 </server>

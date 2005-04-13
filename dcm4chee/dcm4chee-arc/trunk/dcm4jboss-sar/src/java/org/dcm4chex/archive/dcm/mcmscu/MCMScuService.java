@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,7 +27,9 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -46,6 +50,7 @@ import org.dcm4chex.archive.ejb.interfaces.MediaComposerHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.mbean.SendMailService;
 import org.dcm4chex.archive.mbean.TimerSupport;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -64,6 +69,8 @@ import org.dcm4chex.archive.util.JMSDelegate;
  */
 public class MCMScuService extends TimerSupport implements MessageListener {
 	
+    private static final Logger log = Logger.getLogger(MCMScuService.class);
+
     private static final long MIN_MAX_MEDIA_USAGE = 20 * FileUtils.MEGA;
 
 	/** Name of the JMS queue to receive media creation requests from scheduler or WEB interface. */ 
@@ -95,8 +102,14 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     private Integer updateMediaStatusListenerID;
     
     private Integer burnMediaListenerID;
+    
+    private boolean automaticMediaCreation = false;
+    
+    private String notifyBurnMediaEmailTo = "";
+    
+    private String notifyBurnMediaEmailFrom = "";
 
-
+	private static ObjectName sendMailServiceName = null;
     /** Holds the prefix that is used to generate the fileset id. */
 	private String fileSetIdPrefix;
 	
@@ -251,6 +264,55 @@ public class MCMScuService extends TimerSupport implements MessageListener {
         }
     }
     
+	/**
+	 * @return Returns the automaticMediaCreation.
+	 */
+	public boolean isAutomaticMediaCreation() {
+		return automaticMediaCreation;
+	}
+	/**
+	 * @param automaticMediaCreation The automaticMediaCreation to set.
+	 */
+	public void setAutomaticMediaCreation(boolean automaticMediaCreation) {
+		this.automaticMediaCreation = automaticMediaCreation;
+	}
+	/**
+	 * @return Returns the notifyBurnMediaEmailTo.
+	 */
+	public String getNotifyBurnMediaEmailTo() { 
+		return notifyBurnMediaEmailTo;
+	}
+	
+	/**
+	 * @param notifyBurnMediaEmailTo The notifyBurnMediaEmailTo to set.
+	 */
+	public void setNotifyBurnMediaEmailTo(String emails) {
+		this.notifyBurnMediaEmailTo = emails.trim();
+	}
+	
+	/**
+	 * @return Returns the notifyBurnMediaEmailFrom.
+	 */
+	public String getNotifyBurnMediaEmailFrom() {
+		return notifyBurnMediaEmailFrom == null ? "" : notifyBurnMediaEmailFrom;
+	}
+	/**
+	 * @param notifyBurnMediaEmailFrom The notifyBurnMediaEmailFrom to set.
+	 */
+	public void setNotifyBurnMediaEmailFrom(String notifyBurnMediaEmailFrom) {
+		if ( notifyBurnMediaEmailFrom != null && notifyBurnMediaEmailFrom.trim().length() < 1 )
+			notifyBurnMediaEmailFrom = null;
+		this.notifyBurnMediaEmailFrom = notifyBurnMediaEmailFrom;
+	}
+	
+    public final ObjectName getSendmailServiceName() {
+        return sendMailServiceName;
+    }
+
+    public final void setSendmailServiceName(ObjectName svName) {
+        sendMailServiceName = svName;
+    }
+
     public final String getScheduleMediaInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(scheduleMediaInterval);
     }
@@ -513,6 +575,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 		
 		try {
 			int size = mc.collectStudiesReceivedBefore( getSearchDate(), maxMediaUsage, getFileSetIdPrefix() );
+            burnMedia(); //check if one or more media are ready to burn (maxStudyAge) 
 			return size;
 		} catch ( Exception x ) {
 			log.error("Can not collect studies!",x);
@@ -975,18 +1038,23 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     public int burnMedia() {
         log.info("Check for scheduled Media to burn");
         try {
-        	int nrOfMedia = 0;
         	Collection c = lookupMediaComposer().getWithStatus( MediaDTO.OPEN );
         	long maxAgeDate = System.currentTimeMillis() - ( maxStudyAge - minStudyAge );//media is created after minStudyAge -> max media age is maxStudyAge-minStudyAge
+        	List mediaToBurn = new ArrayList();
         	MediaDTO mediaDTO;
         	for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
         		mediaDTO = (MediaDTO) iter.next();
         		if ( mediaDTO.getCreatedTime().getTime() < maxAgeDate ) {
-        			process( mediaDTO );
-        			nrOfMedia++;
+        			if ( this.isAutomaticMediaCreation() ) {
+        				process( mediaDTO );
+        			}
+        			mediaToBurn.add( mediaDTO );
         		}
         	}
-    		return nrOfMedia;
+        	if ( ! this.isAutomaticMediaCreation() ) {
+        		notifyMediaToBurn( mediaToBurn );
+        	}
+    		return mediaToBurn.size();
         } catch (Exception e) {
             log.error("Failed to initiate media creation:", e);
             return -1;
@@ -994,6 +1062,44 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     }
     
     /**
+	 * @param mediaToBurn
+     * @throws JMSException
+	 */
+	private void notifyMediaToBurn(List mediaToBurn) throws JMSException {
+		// TODO Auto-generated method stub
+		log.info("Notify "+this.notifyBurnMediaEmailTo+" that "+mediaToBurn.size()+" media are ready to burn!");
+		HashMap map = new HashMap();
+		map.put( SendMailService.MAIL_BODY, formatBody(mediaToBurn) );
+		if ( notifyBurnMediaEmailFrom != null ) map.put( SendMailService.MAIL_FROM_ADDR, notifyBurnMediaEmailFrom );
+		map.put(SendMailService.MAIL_SUBJECT, "Media Creation Service: media ready to burn!");
+		map.put(SendMailService.MAIL_TO_ADDR, notifyBurnMediaEmailTo);
+		JMSDelegate.queue( SendMailService.QUEUE, map, Message.DEFAULT_PRIORITY, 0L);
+
+		try {
+			Object o = server.invoke(sendMailServiceName, "send",
+					new Object[] { "Media Creation Service: media ready to burn!",
+									notifyBurnMediaEmailFrom,
+									notifyBurnMediaEmailTo,
+									formatBody(mediaToBurn) },
+					new String[] { String.class.getName(), String.class.getName(),String.class.getName(),String.class.getName() });
+		} catch (Exception x) {
+			log.error("Exception occured in notifyMediaToBurn: " + x.getMessage(),
+					x);
+		}
+	
+	}
+	/**
+	 * @param mediaToBurn
+	 * @return
+	 */
+	private String formatBody(List mediaToBurn) {
+		StringBuffer sb = new StringBuffer("Media Creation Notification: Following media are ready to burn:\n");
+		for ( Iterator iter = mediaToBurn.iterator() ; iter.hasNext() ; ) {
+			sb.append( ((MediaDTO)iter.next()).getFilesetId() ).append(",");
+		}
+		return sb.toString();
+	}
+	/**
      * Checks the availability of Media Creation Managment SCP service.
      * <p>
      * Checks if the move destination is available and support SecondaryCaptureImageStorage.<br>

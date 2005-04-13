@@ -163,6 +163,40 @@
          <value value="NEVER" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isAutomaticMediaCreation"
+      setMethod="setAutomaticMediaCreation">
+      <description>Enables/disables automatic media creation.
+      	If automatic media creation is disabled, a notification is send to the email list  
+      	defined in NotifyBurnMediaEmailTo.         
+      </description>
+      <name>AutomaticMediaCreation</name>
+      <type>boolean</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getNotifyBurnMediaEmailTo"
+      setMethod="setNotifyBurnMediaEmailTo">
+      <description>List of email address that should be notified seperated with ','
+      	if one ore more media are ready to burn.          
+      </description>
+      <name>NotifyBurnMediaEmailTo</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getNotifyBurnMediaEmailFrom"
+      setMethod="setNotifyBurnMediaEmailFrom">
+      <description>Email address that is used as from address in the notification mail.          
+      </description>
+      <name>NotifyBurnMediaEmailFrom</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getAcTimeout"
@@ -248,6 +282,19 @@
          <value value="false" />
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getSendmailServiceName"
+      setMethod="setSendmailServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>SendmailServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="tiani.archive:service=Sendmail" />
+      </descriptors>
+   </attribute>
+   
    &defaultAttributes;
 
    <!-- Operations -->
