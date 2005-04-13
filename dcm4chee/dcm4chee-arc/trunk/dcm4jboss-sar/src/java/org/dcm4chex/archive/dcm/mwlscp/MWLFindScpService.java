@@ -9,6 +9,8 @@
 
 package org.dcm4chex.archive.dcm.mwlscp;
 
+import java.util.Arrays;
+
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -21,6 +23,8 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
+import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
+import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -34,10 +38,32 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 public class MWLFindScpService extends AbstractScpService
 	implements NotificationListener {
 
-    private ObjectName mppsScpServiceName;
+    private static final int NO_OP = 0;
+    private static final int UPDATE_STATUS = 1;
+    private static final int REMOVE_ITEM = 2;
+    
+    private String[] ON_MPPS_RECEIVED = {
+    		"NO_OP", "UPDATE_STATUS", "REMOVE_ITEM"
+    };
+    
+	private ObjectName mppsScpServiceName;
+    
+    private int onMPPSReceived = NO_OP;
 
     private MWLFindScp mwlFindScp = new MWLFindScp(this);
 
+	public final String getOnMPPSReceived() {
+		return ON_MPPS_RECEIVED[onMPPSReceived];
+	}
+	
+	public final void setOnMPPSReceived(String onMPPSReceived) {
+		int tmp = Arrays.asList(ON_MPPS_RECEIVED).indexOf(onMPPSReceived);
+		if (tmp == -1) {
+			throw new IllegalArgumentException(onMPPSReceived);
+		}
+		this.onMPPSReceived = tmp;
+	}
+	
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }        
@@ -88,10 +114,42 @@ public class MWLFindScpService extends AbstractScpService
                 MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
     }
 
+	private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
+        return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
+    }
+    
+	private Dataset getMPPS(String iuid) throws Exception {
+		MPPSManager mgr = getMPPSManagerHome().create();
+		try {
+			return mgr.getMPPS(iuid);
+		} finally {
+			try {
+				mgr.remove();
+			} catch (Exception ignore) {
+			}
+		}
+	}
+	
     public void handleNotification(Notification notif, Object handback) {
+    	if (onMPPSReceived == NO_OP) return; 
         Dataset mpps = (Dataset) notif.getUserData();
+		final String iuid = mpps.getString(Tags.SOPInstanceUID);
+		final String status = mpps.getString(Tags.PPSStatus);
         DcmElement sq = mpps.get(Tags.ScheduledStepAttributesSeq);
-        if (sq == null) return;
+        if (sq == null) {
+        	// MPPS N-SET can be ignored for REMOVE_ITEM
+        	// or if status == IN PROGRESS
+        	if (onMPPSReceived == REMOVE_ITEM || "IN PROCESS".equals(status))
+        		return;
+        	try {
+				mpps = getMPPS(iuid);
+				sq = mpps.get(Tags.ScheduledStepAttributesSeq);
+			} catch (Exception e) {
+				log.error("Failed to load MPPS - " + iuid, e);
+				return;
+			}
+        }
         MWLManager mgr;
         try {
             mgr = getMWLManagerHome().create();
@@ -104,12 +162,24 @@ public class MWLFindScpService extends AbstractScpService
                 Dataset item = sq.getItem(i);
                 String spsid = item.getString(Tags.SPSID);
                 if (spsid != null) {
-                    try {
-                        Dataset ds = mgr.removeWorklistItem(spsid);
-                        log.info("Removed MWL item - " + spsid);
-                    } catch (Exception e) {
-                        log.error("Failed to remove MWL item - " + spsid, e);
-                    }
+                	if (onMPPSReceived == REMOVE_ITEM) {
+	                    try {
+	                        mgr.removeWorklistItem(spsid);
+	                        log.info("Removed MWL item[spsid=" + spsid + "]");
+	                    } catch (Exception e) {
+	                        log.error("Failed to remove MWL item[spsid="
+	                        		+ spsid + "]", e);
+	                    }
+                	} else { // onMPPSReceived == UPDATE_STATUS
+	                    try {
+	                        mgr.updateSPSStatus(spsid, status);
+	                        log.info("Update MWL item[spsid=" + spsid
+	                        		+ ", status=" + status + "]");
+	                    } catch (Exception e) {
+	                        log.error("Failed to update MWL item[spsid="
+	                        		+ spsid + "]", e);
+	                    }
+                	}
                 }
             }
         } finally {

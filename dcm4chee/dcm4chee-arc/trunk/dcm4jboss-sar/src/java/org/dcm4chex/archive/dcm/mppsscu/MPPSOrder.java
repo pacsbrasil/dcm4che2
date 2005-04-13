@@ -22,9 +22,12 @@ import org.dcm4che.dict.Tags;
  */
 public class MPPSOrder implements Serializable {
 
-    private static final long serialVersionUID = 3256725091219157049L;
+	/**
+	 * Comment for <code>serialVersionUID</code>
+	 */
+	private static final long serialVersionUID = 3978710575507585336L;
 
-//    public static final String QUEUE = "MPPSScu";
+	private final boolean create;
 
     private final Dataset ds;
 
@@ -37,9 +40,14 @@ public class MPPSOrder implements Serializable {
     public MPPSOrder(Dataset ds, String dest) {
         if (dest == null) throw new NullPointerException();
         if (ds == null) throw new NullPointerException();
+        this.create = ds.contains(Tags.ScheduledStepAttributesSeq);
         this.ds = ds;
         this.dest = dest;
     }
+
+	public final boolean isCreate() {
+		return create;
+	}
 
     public final Dataset getDataset() {
         return ds;
@@ -66,7 +74,7 @@ public class MPPSOrder implements Serializable {
     }
 
     public String toString() {
-        return (ds.contains(Tags.ScheduledStepAttributesSeq)
+        return (create
                 ? "MPPSOrder[N-CREATE, iuid="
                 : "MPPSOrder[N-SET, iuid=")
                 + ds.getString(Tags.SOPInstanceUID)

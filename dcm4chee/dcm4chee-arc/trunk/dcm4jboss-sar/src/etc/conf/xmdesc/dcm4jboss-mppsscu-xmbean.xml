@@ -129,20 +129,5 @@
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>sendMPPS</name>
-      <parameter>
-        <description>MPPS</description>
-        <name>mpps</name>
-        <type>org.dcm4che.data.Dataset</type>
-      </parameter>
-      <parameter>
-        <description>Destination</description>
-        <name>aet</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>int</return-type>
-   </operation>   
    
 </mbean>

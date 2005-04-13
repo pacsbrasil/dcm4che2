@@ -34,8 +34,6 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
-import org.dcm4chex.archive.dcm.mppsscu.MPPSOrder;
 import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;

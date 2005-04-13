@@ -54,6 +54,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getOnMPPSReceived"
+      setMethod="setOnMPPSReceived">
+      <description>Defines behavoir on receive of MPPS messages by the
+      associated MPPS SCP, which references one or several worklist items
+      in its Scheduled Step Attributes Sequence. Possible values: NO_OP,
+      REMOVE_ITEM, UPDATE_STATUS.
+      </description>
+      <name>OnMPPSReceived</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NO_OP" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
       <description>Maximal PDU package length for receiving PDUs.

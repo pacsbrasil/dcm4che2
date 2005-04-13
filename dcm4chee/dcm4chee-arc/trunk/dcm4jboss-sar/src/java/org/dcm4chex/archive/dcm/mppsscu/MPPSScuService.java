@@ -203,7 +203,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         try {
             MPPSOrder order = (MPPSOrder) om.getObject();
             log.info("Start processing " + order);
-            final int status = sendMPPS(order.getDataset(), order.getDestination());
+            final int status = sendMPPS(order.isCreate(), order.getDataset(), order.getDestination());
             if (status == 0) {
                 log.info("Finished processing " + order);
                 return;
@@ -228,7 +228,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         }
     }
 
-    public int sendMPPS(Dataset mpps, String destination) {
+    int sendMPPS(boolean create, Dataset mpps, String destination) {
         AEData aeData = null;
         try {
             aeData = new AECmd(destination).execute();
@@ -267,7 +267,7 @@ public class MPPSScuService extends ServiceMBeanSupport implements
             }
 	        DcmObjectFactory dof = DcmObjectFactory.getInstance();
 	        Command cmdRq = dof.newCommand();
-            if (mpps.contains(Tags.ScheduledStepAttributesSeq)) {
+            if (create) {
 	            cmdRq.initNCreateRQ(a.nextMsgID(),
 	                    UIDs.ModalityPerformedProcedureStep,
 	                    mpps.getString(Tags.SOPInstanceUID));

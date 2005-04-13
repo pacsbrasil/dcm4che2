@@ -17,6 +17,7 @@ import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
@@ -26,6 +27,8 @@ import org.dcm4chex.archive.ejb.interfaces.GPWLManager;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.MWLManager;
+import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -47,15 +50,26 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 		Tags.PatientBirthDate,
 		Tags.PatientSex,
 	};
-	private static final int[] REF_REQUEST_TAGS = {
+	private static final int[] REF_RQ_TAGS_FROM_MPPS_SSA = {
 		Tags.AccessionNumber,
 		Tags.RefStudySeq,
 		Tags.StudyInstanceUID,
 		Tags.RequestedProcedureDescription,
 		Tags.RequestedProcedureID,
 	};
+	
+	private static final int[] REF_RQ_TAGS_FROM_MWL_ITEM = {
+		Tags.RequestedProcedureCodeSeq,
+		Tags.RequestingPhysician,
+	};
 
-    private ObjectName mppsScpServiceName;
+	private static final int[] REF_RQ_TAGS_IN_MPPS_SSA_AND_MWL_ITEM = {
+		Tags.AccessionNumber,
+		Tags.RequestedProcedureDescription,
+		Tags.RequestedProcedureID,
+	};
+
+	private ObjectName mppsScpServiceName;
 	
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
@@ -170,10 +184,7 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 				}
 			}
 			if (!gpsps.contains(Tags.RefRequestSeq)) {
-				DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
-				for (int i = 0, n = ssaSq.vm(); i < n; ++i) {
-					refRqSq.addItem(ssaSq.getItem(i).subSet(REF_REQUEST_TAGS));
-				}
+				initRefRequestSeq(gpsps, ssaSq);
 			}
 	       	log.info("create workitem using template " + sb);
 	       	log.debug(gpsps);
@@ -187,14 +198,58 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 		return null;        
 	}
 
+	private void initRefRequestSeq(Dataset gpsps, DcmElement ssaSq)
+			throws Exception {
+		MWLManager mwlManager = getMWLManagerHome().create();
+		try {
+			DcmObjectFactory dof = DcmObjectFactory.getInstance();
+			DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
+			for (int i = 0, n = ssaSq.vm(); i < n; ++i) {
+				Dataset ssa = ssaSq.getItem(i);
+				String spsid = ssa.getString(Tags.SPSID);
+				if (spsid != null) {
+					Dataset refRq = dof.newDataset();
+					refRq.putAll(ssa.subSet(REF_RQ_TAGS_FROM_MPPS_SSA));
+					try {
+						Dataset mwlItem = mwlManager.getWorklistItem(spsid);
+						if (checkConsistency(mwlItem, ssa)) {
+							refRq.putAll(mwlItem.subSet(REF_RQ_TAGS_FROM_MWL_ITEM));							
+						}
+					} catch (Exception e) {
+						log.warn("Failed to access MWL item[spsid=" + spsid
+								+ "] -> use request info available in MPPS", e);						
+					}
+					refRqSq.addItem(refRq);
+				}
+			}
+		} finally {
+			mwlManager.remove();
+		}
+	}
+
+	private boolean checkConsistency(Dataset mwlItem, Dataset ssa) {
+		boolean ok = true;
+		DcmElement mwlAttr, ssaAttr;
+		int tag;
+		for (int i = 0; i < REF_RQ_TAGS_IN_MPPS_SSA_AND_MWL_ITEM.length; ++i) {
+			tag = REF_RQ_TAGS_IN_MPPS_SSA_AND_MWL_ITEM[i];
+			mwlAttr = mwlItem.get(tag);
+			ssaAttr = ssa.get(tag);
+			if (mwlAttr != null && ssaAttr != null && !mwlAttr.equals(ssaAttr)) {
+				log.warn("MPPS SSA attribute: " + ssaAttr
+						+ " does not match " + mwlAttr + " of referenced MWL Item[spsid="
+						+ ssa.getString(Tags.SPSID));
+				ok = false;
+			}
+		}
+		return ok;
+	}
+
 	private Dataset getMPPS(String iuid) {
 		try {
 			MPPSManager mgr = getMPPSManagerHome().create();
 			try {
-				Dataset ds = mgr.getMPPS(iuid);
-				if (ds == null)
-					log.error("No such MPPS - " + iuid);
-				return ds;
+				return mgr.getMPPS(iuid);
 			} finally {
 				try {
 					mgr.remove();
@@ -210,6 +265,11 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 	private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
         return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
+    }
+
+    private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {
+        return (MWLManagerHome) EJBHomeFactory.getFactory().lookup(
+                MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
     }
 
 	private GPWLManagerHome getGPWLManagerHome() throws HomeFactoryException {
