@@ -228,6 +228,7 @@ CREATE SEQUENCE mwl_item_pk_seq;
 CREATE TABLE mwl_item (
 	pk          	NUMBER PRIMARY KEY,
 	patient_fk      INTEGER,
+	sps_status      INTEGER,
 	sps_id			VARCHAR2(255),
 	start_datetime	TIMESTAMP NOT NULL,
 	station_aet     VARCHAR2(255) NOT NULL,
@@ -239,6 +240,7 @@ CREATE TABLE mwl_item (
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
+CREATE INDEX sps_status ON mwl_item(sps_status);
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id);
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet);

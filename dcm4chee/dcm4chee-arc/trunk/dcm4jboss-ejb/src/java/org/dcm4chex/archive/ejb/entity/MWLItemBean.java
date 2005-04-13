@@ -25,6 +25,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
@@ -230,11 +231,14 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.interface-method
      */
     public void setAttributes(Dataset ds) {
+    	
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
         if (spsItem == null) {
             throw new IllegalArgumentException("Missing Scheduled Procedure Step Sequence (0040,0100) Item");
         }
         setSpsId(spsItem.getString(Tags.SPSID));
+        String s = spsItem.getString(Tags.SPSStatus);
+        setSpsStatus(spsItem.getString(Tags.SPSStatus, "SCHEDULED"));
         setSpsStartDateTime(
             spsItem.getDateTime(Tags.SPSStartDate, Tags.SPSStartTime));
         setScheduledStationAET(spsItem.getString(Tags.ScheduledStationAET));
@@ -255,6 +259,24 @@ public abstract class MWLItemBean implements EntityBean {
     }
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="sps_status"
+     */
+    public abstract int getSpsStatusAsInt();
+    public abstract void setSpsStatusAsInt(int status);
+
+    /**
+     * @ejb.interface-method
+     */
+    public String getSpsStatus() {
+        return SPSStatus.toString(getSpsStatusAsInt());
+    }
+
+    public void setSpsStatus(String status) {
+        setSpsStatusAsInt(SPSStatus.toInt(status));
+    }
+    
+    /**
      * 
      * @ejb.interface-method
      */
@@ -270,6 +292,8 @@ public abstract class MWLItemBean implements EntityBean {
             + getSpsId()
             + ", spsStartDateTime="
             + (spsDT != null ? new SimpleDateFormat(DATE_FORMAT).format(spsDT) : "")
+            + ", spsStatus="
+            + getSpsStatus()
             + ", stationAET="
             + getScheduledStationAET()
             + ", rqProcId="

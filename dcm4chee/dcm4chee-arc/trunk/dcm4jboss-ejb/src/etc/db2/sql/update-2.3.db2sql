@@ -106,6 +106,9 @@ CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
 CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
 CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
 
+ALTER TABLE mwl_item ADD COLUMN sps_status INTEGER;
+CREATE INDEX sps_status ON mwl_item(sps_status);
+
 GRANT ALL PRIVILEGES ON TABLE series_req TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE gpsps TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE rel_gpsps_appcode TO USER tiani;

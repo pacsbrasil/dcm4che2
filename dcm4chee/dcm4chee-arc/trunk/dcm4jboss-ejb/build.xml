@@ -28,6 +28,11 @@
     <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.6.1"/>
     <property name="cactus.lib" value="${cactus.home}/lib"/>
 
+    <!-- Override with your dcm4jboss installation -->
+	<property name="dcm4jboss.home" value="${user.home}/dcm4jboss"/>		
+    <property name="dcm4jboss.lib" value="${dcm4jboss.home}/server/pacs/lib"/>
+    <property name="dcm4jboss.deploy" value="${dcm4jboss.home}/server/pacs/deploy"/>
+	
     <!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-3.2.7"/>		
 	<property name="jboss.client" value="${jboss.home}/client"/>		
@@ -483,10 +488,16 @@
    	<!-- Deploy                                          	                 -->
    	<!-- =================================================================== -->
     <target name="deploy" depends="jar, test-war">
-    	<copy file="${target.psql.deploy}/dcm4jboss-ejb.jar" todir="${jboss.deploy}"/>
+    	<copy file="${target.psql.deploy}/dcm4jboss-ejb-psql.jar" todir="${jboss.deploy}"/>
     	<copy file="${target.psql.deploy}/test.war" todir="${jboss.deploy}"/>
     </target>
-    
+
+    <target name="deploy-psql" depends="jar">
+    	<copy file="${target.psql.deploy}/dcm4jboss-ejb-psql.jar" todir="${dcm4jboss.deploy}"/>
+    	<copy file="${target.psql.lib}/dcm4jboss-jdbc-psql.jar" todir="${dcm4jboss.lib}"/>
+    	<copy file="${target.common.lib}/dcm4jboss-ejb-client.jar" todir="${dcm4jboss.lib}"/>
+    </target>
+	
    	<!-- =================================================================== -->
    	<!-- undeploy                                          	                 -->
    	<!-- =================================================================== -->

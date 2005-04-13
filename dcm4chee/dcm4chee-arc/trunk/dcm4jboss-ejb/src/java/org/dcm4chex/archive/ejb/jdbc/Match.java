@@ -122,6 +122,35 @@ abstract class Match
         }
     }
 
+    static class ListOfInt extends Match
+    {
+        private final int[] ints;
+        public ListOfInt(String alias, String field, boolean type2, int[] ints)
+        {
+            super(alias, field, type2);
+            this.ints = ints != null ? (int[]) ints.clone() : new int[0];
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return ints.length == 0;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            sb.append(column);
+            if (ints.length == 1) {
+                sb.append(" = ").append(ints[0]);
+            } else {
+                sb.append(" IN (").append(ints[0]);
+                for (int i = 1; i < ints.length; i++) {
+                    sb.append(", ").append(ints[i]);
+                }
+                sb.append(")");
+            }
+        }
+    }
+    
     static class AppendLiteral extends Match
     {
         private final String literal;

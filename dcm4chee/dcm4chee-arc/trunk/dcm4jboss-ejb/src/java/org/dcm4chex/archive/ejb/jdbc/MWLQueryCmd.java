@@ -12,9 +12,9 @@ import java.sql.SQLException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.SPSStatus;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -22,6 +22,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
  * @since 10.02.2004
  */
 public class MWLQueryCmd extends BaseCmd {
+
 
     public static int transactionIsolationLevel = 0;
 
@@ -33,7 +34,7 @@ public class MWLQueryCmd extends BaseCmd {
     private static final String[] RELATIONS = { "Patient.pk",
     		"MWLItem.patient_fk"};
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    private static final int[] OPEN_STATI = new int[] { SPSStatus.SCHEDULED, SPSStatus.ARRIVED };
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
@@ -54,7 +55,9 @@ public class MWLQueryCmd extends BaseCmd {
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
         Dataset spsItem = keys.getItem(Tags.SPSSeq);
+        String status = null;
         if (spsItem != null) {
+        	status = spsItem.getString(Tags.SPSStatus);
             sqlBuilder.addSingleValueMatch(null, "MWLItem.spsId",
                     SqlBuilder.TYPE1,
                     spsItem.getString(Tags.SPSID));
@@ -73,6 +76,15 @@ public class MWLQueryCmd extends BaseCmd {
                     spsItem.getString(Tags.PerformingPhysicianName),
                     false);
         }
+    	if (status != null) {
+            sqlBuilder.addIntValueMatch(null, "MWLItem.spsStatusAsInt",
+                    SqlBuilder.TYPE1,
+                    SPSStatus.toInt(status));
+    	} else {
+    		sqlBuilder.addListOfIntMatch(null, "MWLItem.spsStatusAsInt",
+                    SqlBuilder.TYPE1,
+                    OPEN_STATI );
+    	}
         sqlBuilder.addSingleValueMatch(null, "MWLItem.requestedProcedureId",
                 SqlBuilder.TYPE1,
                 keys.getString(Tags.RequestedProcedureID));
@@ -93,9 +105,8 @@ public class MWLQueryCmd extends BaseCmd {
     }
 
     public Dataset getDataset() throws SQLException {
-        Dataset ds = dof.newDataset();
-        DatasetUtils.fromByteArray(rs.getBytes(1),
-                DcmDecodeParam.EVR_LE, ds);
+        Dataset ds = DatasetUtils.fromByteArray(rs.getBytes(1),
+                DcmDecodeParam.EVR_LE, null);
         DatasetUtils.fromByteArray(rs.getBytes(2),
                 DcmDecodeParam.EVR_LE, ds);
         QueryCmd.adjustDataset(ds, keys);

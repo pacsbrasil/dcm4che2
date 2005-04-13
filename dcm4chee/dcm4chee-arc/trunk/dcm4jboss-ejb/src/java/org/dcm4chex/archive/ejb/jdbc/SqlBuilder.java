@@ -119,6 +119,11 @@ class SqlBuilder {
         addMatch(new Match.IntValue(alias, field, type2, value));
     }
 
+    public void addListOfIntMatch(String alias, String field, boolean type2,
+            int[] values) {
+        addMatch(new Match.ListOfInt(alias, field, type2, values));
+    }
+
     public void addSingleValueMatch(String alias, String field, boolean type2,
         String value) {
         addMatch(new Match.SingleValue(alias, field, type2, value));

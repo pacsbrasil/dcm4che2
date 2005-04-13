@@ -14,6 +14,7 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -77,22 +78,37 @@ public abstract class MWLManagerBean implements SessionBean {
 		patHome = null;
 	}
 
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset getWorklistItem(String spsid) throws FinderException {
+		MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
+        final PatientLocal pat = mwlItem.getPatient();
+        Dataset attrs = mwlItem.getAttributes();            
+		attrs.putAll(pat.getAttributes(false));
+		return attrs;
+    }
+    
 	/**
 	 * @ejb.interface-method
 	 */
-	public Dataset removeWorklistItem(String id) {
-		try {
-			MWLItemLocal mwlItem = mwlItemHome.findBySpsId(id);
-			Dataset ds = mwlItem.getAttributes();
-			mwlItem.remove();
-			return ds;
-		} catch (FinderException e) {
-			return null;
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
+	public void removeWorklistItem(String spsid) 
+			throws EJBException, RemoveException, FinderException {
+		MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
+		mwlItem.remove();
 	}
 
+	/**
+	 * @throws FinderException 
+	 * @ejb.interface-method
+	 */
+	public void updateSPSStatus(String spsid, String status) throws FinderException {
+		MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
+		Dataset ds = mwlItem.getAttributes();
+		ds.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, status);
+		mwlItem.setAttributes(ds);
+	}
+	
 	private PatientLocal getPatient(Dataset ds) throws FinderException,
 			CreateException {
 		final String id = ds.getString(Tags.PatientID);

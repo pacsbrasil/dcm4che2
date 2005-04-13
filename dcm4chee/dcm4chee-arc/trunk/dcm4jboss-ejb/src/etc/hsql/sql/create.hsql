@@ -215,6 +215,7 @@ CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(filesystem_fk,study_fk);
 CREATE TABLE mwl_item (
 	pk          	IDENTITY PRIMARY KEY,
 	patient_fk      INTEGER,
+	sps_status      INTEGER,
 	sps_id			VARCHAR(256),
 	start_datetime	TIMESTAMP NOT NULL,
 	station_aet     VARCHAR(256) NOT NULL,
@@ -226,6 +227,7 @@ CREATE TABLE mwl_item (
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
+CREATE INDEX sps_status ON mwl_item(sps_status);
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id);
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet);

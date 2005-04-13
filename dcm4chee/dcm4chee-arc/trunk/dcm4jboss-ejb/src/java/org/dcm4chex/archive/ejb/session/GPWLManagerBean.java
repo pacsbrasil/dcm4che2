@@ -172,7 +172,7 @@ public abstract class GPWLManagerBean implements SessionBean {
 			case GPSPSStatus.IN_PROGRESS:
 				if (statusAsInt == GPSPSStatus.IN_PROGRESS)
 					throw new DcmServiceException(ALREADY_IN_PROGRESS);					
-				else if (tsuid.equals(gpsps.getTransactionUid()))
+				else if (!tsuid.equals(gpsps.getTransactionUid()))
 					throw new DcmServiceException(WRONG_TRANSACTION_UID);
 				break;
 			case GPSPSStatus.COMPLETED:
