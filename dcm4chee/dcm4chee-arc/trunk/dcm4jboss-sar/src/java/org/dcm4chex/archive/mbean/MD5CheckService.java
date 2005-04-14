@@ -148,7 +148,6 @@ public class MD5CheckService extends TimerSupport {
             files = fsMgt.findFilesForMD5Check(fsdirs[j].getDirectoryPath(), before, limit);
         	if ( log.isDebugEnabled() ) log.debug("Check MD5 for " + files.length + " files on filesystem " + fsdirs[j]);
             if (files.length > 0) {
-                if ( log.isDebugEnabled() ) 
                 total += files.length;
                 for (int k = 0; k < files.length; k++) {
                     if ( ! doCheck(fsMgt, files[k]) ) 
