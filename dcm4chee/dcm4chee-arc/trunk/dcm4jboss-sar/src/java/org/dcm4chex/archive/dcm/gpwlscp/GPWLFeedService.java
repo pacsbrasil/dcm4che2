@@ -212,7 +212,10 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 					refRq.putAll(ssa.subSet(REF_RQ_TAGS_FROM_MPPS_SSA));
 					try {
 						Dataset mwlItem = mwlManager.getWorklistItem(spsid);
-						if (checkConsistency(mwlItem, ssa)) {
+						if (mwlItem == null) {
+							log.warn("No such MWL item[spsid=" + spsid
+									+ "] -> use request info available in MPPS");													
+						} else if (checkConsistency(mwlItem, ssa)) {
 							refRq.putAll(mwlItem.subSet(REF_RQ_TAGS_FROM_MWL_ITEM));							
 						}
 					} catch (Exception e) {

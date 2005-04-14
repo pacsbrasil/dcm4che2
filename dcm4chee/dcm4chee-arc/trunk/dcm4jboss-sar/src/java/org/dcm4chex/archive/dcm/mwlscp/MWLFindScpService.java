@@ -164,8 +164,11 @@ public class MWLFindScpService extends AbstractScpService
                 if (spsid != null) {
                 	if (onMPPSReceived == REMOVE_ITEM) {
 	                    try {
-	                        mgr.removeWorklistItem(spsid);
-	                        log.info("Removed MWL item[spsid=" + spsid + "]");
+	                        if (mgr.removeWorklistItem(spsid) != null) {
+	                        	log.info("Removed MWL item[spsid=" + spsid + "]");
+	                        } else {
+	                        	log.warn("No such MWL item[spsid=" + spsid + "]");
+	                        }
 	                    } catch (Exception e) {
 	                        log.error("Failed to remove MWL item[spsid="
 	                        		+ spsid + "]", e);
