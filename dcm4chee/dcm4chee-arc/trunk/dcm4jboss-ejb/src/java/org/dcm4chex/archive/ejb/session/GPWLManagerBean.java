@@ -16,6 +16,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -90,18 +91,38 @@ public abstract class GPWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset removeWorklistItem(String uid) {
-        try {
-            GPSPSLocal gpsps = gpspsHome.findBySopIuid(uid);
-            Dataset ds = gpsps.getAttributes();
-            gpsps.remove();
-            return ds;
-        } catch (FinderException e) {
-            return null;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
+    public Dataset getWorklistItem(String spsid) throws FinderException {
+		try {
+			return getWorklistItem(spsid, false);
+		} catch (RemoveException e) {
+			throw new EJBException(e);
+		}
     }
+    
+	/**
+	 * @ejb.interface-method
+	 */
+	public Dataset removeWorklistItem(String iuid) 
+			throws EJBException, RemoveException, FinderException {
+		return getWorklistItem(iuid, true);
+	}
+	
+	private Dataset getWorklistItem(String iuid, boolean remove) 
+			throws RemoveException, FinderException {
+		GPSPSLocal gpsps;
+		try {
+            gpsps = gpspsHome.findBySopIuid(iuid);
+		} catch (ObjectNotFoundException onf) {
+			return null;
+		}
+        final PatientLocal pat = gpsps.getPatient();
+        Dataset attrs = gpsps.getAttributes();            
+		attrs.putAll(pat.getAttributes(false));
+		if (remove) {
+			gpsps.remove();
+		}
+		return attrs;
+	}
 
     private PatientLocal getPatient(Dataset ds) throws FinderException,
             CreateException {

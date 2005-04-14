@@ -14,6 +14,7 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
@@ -82,20 +83,36 @@ public abstract class MWLManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public Dataset getWorklistItem(String spsid) throws FinderException {
-		MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
-        final PatientLocal pat = mwlItem.getPatient();
-        Dataset attrs = mwlItem.getAttributes();            
-		attrs.putAll(pat.getAttributes(false));
-		return attrs;
+		try {
+			return getWorklistItem(spsid, false);
+		} catch (RemoveException e) {
+			throw new EJBException(e);
+		}
     }
     
 	/**
 	 * @ejb.interface-method
 	 */
-	public void removeWorklistItem(String spsid) 
+	public Dataset removeWorklistItem(String spsid) 
 			throws EJBException, RemoveException, FinderException {
-		MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
-		mwlItem.remove();
+		return getWorklistItem(spsid, true);
+	}
+	
+	private Dataset getWorklistItem(String spsid, boolean remove) 
+			throws RemoveException, FinderException {
+		MWLItemLocal mwlItem;
+		try {
+			mwlItem = mwlItemHome.findBySpsId(spsid);
+		} catch (ObjectNotFoundException onf) {
+			return null;
+		}
+        final PatientLocal pat = mwlItem.getPatient();
+        Dataset attrs = mwlItem.getAttributes();            
+		attrs.putAll(pat.getAttributes(false));
+		if (remove) {
+			mwlItem.remove();
+		}
+		return attrs;
 	}
 
 	/**
