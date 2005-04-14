@@ -65,7 +65,7 @@
       <name>FreeDiskSpaceInterval</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="1m" />
+         <value value="10m" />
       </descriptors>
    </attribute>
 

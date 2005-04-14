@@ -117,9 +117,10 @@ public abstract class AbstractCacheService extends TimerSupport {
     public void setFreeDiskSpaceInterval(String interval) {
         freeDiskSpaceInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler(freeDiskSpaceListenerID, freeDiskSpaceListener);
-            freeDiskSpaceListenerID = startScheduler(freeDiskSpaceInterval,
+            stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
             		freeDiskSpaceListener);
+            freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace",
+            		freeDiskSpaceInterval, freeDiskSpaceListener);
         }
     }
 	
@@ -150,7 +151,8 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 */
     protected void startService() throws Exception {
         super.startService();
-        freeDiskSpaceListenerID = startScheduler(freeDiskSpaceInterval, freeDiskSpaceListener);
+        freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace", 
+        		freeDiskSpaceInterval, freeDiskSpaceListener);
     }
 
 	/**
@@ -158,7 +160,8 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 * 
 	 */
     protected void stopService() throws Exception {
-        stopScheduler(freeDiskSpaceListenerID, freeDiskSpaceListener);
+        stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+        		freeDiskSpaceListener);
         super.stopService();
     }
 	
