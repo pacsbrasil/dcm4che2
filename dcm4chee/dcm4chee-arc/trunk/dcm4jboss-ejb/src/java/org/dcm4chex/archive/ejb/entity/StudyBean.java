@@ -465,15 +465,20 @@ public abstract class StudyBean implements EntityBean {
         return updated;
     }
     
-    private int updateNumberOfInstances(Integer pk) throws FinderException {
+    private boolean updateNumberOfInstances(Integer pk) throws FinderException {
+    	boolean updated = false;
         final int numS = ejbSelectNumberOfStudyRelatedSeries(pk);
-        if (getNumberOfStudyRelatedSeries() != numS)
+        if (getNumberOfStudyRelatedSeries() != numS) {
             setNumberOfStudyRelatedSeries(numS);
+        	updated = true;
+        }
         final int numI = numS > 0 ? ejbSelectNumberOfStudyRelatedInstances(pk)
                 : 0;
-        if (getNumberOfStudyRelatedInstances() != numI)
+        if (getNumberOfStudyRelatedInstances() != numI) {
             setNumberOfStudyRelatedInstances(numI);
-        return numI;
+        	updated = true;
+        }
+        return updated;
     }
     
     private boolean updateFilesetId(Integer pk, int numI) throws FinderException {
@@ -535,8 +540,9 @@ public abstract class StudyBean implements EntityBean {
             throws FinderException {
     	boolean updated = false;
     	final Integer pk = getPk();
-		final int numI = numOfInstances ? updateNumberOfInstances(pk) 
-				: getNumberOfStudyRelatedInstances();
+		if (numOfInstances)
+			if (updateNumberOfInstances(pk)) updated = true;
+    	final int numI = getNumberOfStudyRelatedInstances();
 		if (retrieveAETs)
 			if (updateRetrieveAETs(pk, numI)) updated = true;
 		if (externalRettrieveAETs)

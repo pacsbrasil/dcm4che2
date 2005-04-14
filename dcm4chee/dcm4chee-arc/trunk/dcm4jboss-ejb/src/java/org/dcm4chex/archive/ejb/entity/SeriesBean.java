@@ -465,11 +465,14 @@ public abstract class SeriesBean implements EntityBean {
         return updated;
     }
     
-    private int updateNumberOfInstances(Integer pk) throws FinderException {
+    private boolean updateNumberOfInstances(Integer pk) throws FinderException {
+    	boolean updated = false;
         final int numI = ejbSelectNumberOfSeriesRelatedInstances(pk);
-        if (getNumberOfSeriesRelatedInstances() != numI)
+        if (getNumberOfSeriesRelatedInstances() != numI) {
             setNumberOfSeriesRelatedInstances(numI);
-        return numI;
+            updated = true;
+        }
+        return updated;
     }
     
     private boolean updateFilesetId(Integer pk, int numI) throws FinderException {
@@ -507,8 +510,9 @@ public abstract class SeriesBean implements EntityBean {
             boolean filesetId, boolean availibility) throws FinderException {
     	boolean updated = false;
     	final Integer pk = getPk();
-		final int numI = numOfInstances ? updateNumberOfInstances(pk) 
-				: getNumberOfSeriesRelatedInstances();
+		if (numOfInstances)
+			if (updateNumberOfInstances(pk)) updated = true;
+    	final int numI = getNumberOfSeriesRelatedInstances();
 		if (retrieveAETs)
 			if (updateRetrieveAETs(pk, numI)) updated = true;
 		if (externalRettrieveAETs)
