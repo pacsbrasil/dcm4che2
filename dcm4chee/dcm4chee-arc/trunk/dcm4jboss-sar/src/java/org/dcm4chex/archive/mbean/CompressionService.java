@@ -131,9 +131,9 @@ public class CompressionService extends TimerSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            stopScheduler(listenerID, delayedCompressionListener);
-            listenerID = startScheduler(taskInterval,
-                    delayedCompressionListener);
+            stopScheduler("CheckFilesToCompress", listenerID, delayedCompressionListener);
+            listenerID = startScheduler("CheckFilesToCompress", 
+            		taskInterval, delayedCompressionListener);
         }
     }
 
@@ -331,11 +331,13 @@ public class CompressionService extends TimerSupport {
 
     protected void startService() throws Exception {
         super.startService();
-        listenerID = startScheduler(taskInterval, delayedCompressionListener);
+        listenerID = startScheduler("CheckFilesToCompress", taskInterval,
+        		delayedCompressionListener);
     }
 
     protected void stopService() throws Exception {
-        stopScheduler(listenerID, delayedCompressionListener);
+        stopScheduler("CheckFilesToCompress", listenerID,
+        		delayedCompressionListener);
         super.stopService();
     }
 

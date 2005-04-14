@@ -69,9 +69,10 @@ public class TimerSupport extends ServiceMBeanSupport {
         }
     }
 
-    protected Integer startScheduler(long period, NotificationListener listener) {
+    protected Integer startScheduler(String name, long period, NotificationListener listener) {
         if (period <= 0L) return null;
         try {
+        	log.info("Start Scheduler " + name + " with period of " + period + "ms");
             Date now = new Date(System.currentTimeMillis() + 1000);
             Integer id = (Integer) getServer().invoke(
                     mTimer,
@@ -90,9 +91,10 @@ public class TimerSupport extends ServiceMBeanSupport {
         return null;
     }
 
-    protected void stopScheduler(Integer id, NotificationListener listener) {
+    protected void stopScheduler(String name, Integer id, NotificationListener listener) {
         if (id == null) return;
         try {
+        	log.info("Stop Scheduler " + name);
             getServer().removeNotificationListener(mTimer, listener);
             getServer().invoke(mTimer, "removeNotification",
                     new Object[] { id },

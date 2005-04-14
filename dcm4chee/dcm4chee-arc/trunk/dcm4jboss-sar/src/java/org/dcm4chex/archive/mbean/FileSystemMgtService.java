@@ -324,9 +324,10 @@ public class FileSystemMgtService extends TimerSupport {
     public void setFreeDiskSpaceInterval(String interval) {
         this.freeDiskSpaceInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler(freeDiskSpaceListenerID, freeDiskSpaceListener);
-            freeDiskSpaceListenerID = startScheduler(freeDiskSpaceInterval,
-                    freeDiskSpaceListener);
+            stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+            		freeDiskSpaceListener);
+            freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace",
+            		freeDiskSpaceInterval, freeDiskSpaceListener);
         }
     }
     
@@ -337,8 +338,10 @@ public class FileSystemMgtService extends TimerSupport {
     public void setPurgeFilesInterval(String interval) {
         this.purgeFilesInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler(purgeFilesListenerID, purgeFilesListener);
-            purgeFilesListenerID = startScheduler(purgeFilesInterval, purgeFilesListener);
+            stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
+            		purgeFilesListener);
+            purgeFilesListenerID = startScheduler("CheckFilesToPurge",
+            		purgeFilesInterval, purgeFilesListener);
         }
     }
     
@@ -368,15 +371,18 @@ public class FileSystemMgtService extends TimerSupport {
 
     protected void startService() throws Exception {
          super.startService();
-         freeDiskSpaceListenerID = startScheduler(freeDiskSpaceInterval,
-                 freeDiskSpaceListener);
-         purgeFilesListenerID = startScheduler(purgeFilesInterval, purgeFilesListener);
+         freeDiskSpaceListenerID = startScheduler("CheckFreeDiskSpace",
+         		freeDiskSpaceInterval, freeDiskSpaceListener);
+         purgeFilesListenerID = startScheduler("CheckFilesToPurge",
+         		purgeFilesInterval, purgeFilesListener);
          
     }
     
     protected void stopService() throws Exception {
-        stopScheduler(freeDiskSpaceListenerID, freeDiskSpaceListener);
-        stopScheduler(purgeFilesListenerID, purgeFilesListener);
+        stopScheduler("CheckFreeDiskSpace", freeDiskSpaceListenerID,
+        		freeDiskSpaceListener);
+        stopScheduler("CheckFilesToPurge", purgeFilesListenerID,
+        		purgeFilesListener);
         super.stopService();
     }
     

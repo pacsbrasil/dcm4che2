@@ -97,8 +97,8 @@ public class MD5CheckService extends TimerSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            stopScheduler(listenerID, timerListener);
-            listenerID = startScheduler(taskInterval,
+            stopScheduler("CheckMD5", listenerID, timerListener);
+            listenerID = startScheduler("CheckMD5", taskInterval,
             		timerListener);
         }
     }
@@ -194,11 +194,11 @@ public class MD5CheckService extends TimerSupport {
 
     protected void startService() throws Exception {
         super.startService();
-        listenerID = startScheduler(taskInterval, timerListener);
+        listenerID = startScheduler("CheckMD5", taskInterval, timerListener);
     }
 
     protected void stopService() throws Exception {
-        stopScheduler(listenerID, timerListener);
+        stopScheduler("CheckMD5", listenerID, timerListener);
         super.stopService();
     }
     

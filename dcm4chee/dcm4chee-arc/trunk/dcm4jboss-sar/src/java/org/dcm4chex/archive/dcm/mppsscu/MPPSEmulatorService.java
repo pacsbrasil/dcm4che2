@@ -137,8 +137,9 @@ public class MPPSEmulatorService extends TimerSupport implements
         this.pollInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler(schedulerID, this);
-            schedulerID = startScheduler(pollInterval, this);
+            stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
+            schedulerID = startScheduler("CheckSeriesWithoutMPPS",
+            		pollInterval, this);
         }
     }
 
@@ -269,5 +270,15 @@ public class MPPSEmulatorService extends TimerSupport implements
                     x);
         }
         return null;
+    }
+
+    protected void startService() throws Exception {
+        super.startService();
+        schedulerID = startScheduler("CheckSeriesWithoutMPPS",
+        		pollInterval, this);    }
+
+    protected void stopService() throws Exception {
+        stopScheduler("CheckSeriesWithoutMPPS", schedulerID, this);
+        super.stopService();
     }
 }

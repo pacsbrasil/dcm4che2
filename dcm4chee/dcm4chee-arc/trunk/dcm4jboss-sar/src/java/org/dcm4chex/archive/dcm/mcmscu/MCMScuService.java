@@ -258,9 +258,10 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     public void setBurnMediaInterval(String interval) {
         this.burnMediaInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler(burnMediaListenerID, burnMediaListener);
-            burnMediaListenerID = startScheduler(burnMediaInterval,
-                    burnMediaListener);
+            stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
+            		burnMediaListener);
+            burnMediaListenerID = startScheduler("CheckForMediaToBurn",
+            		burnMediaInterval, burnMediaListener);
         }
     }
     
@@ -320,8 +321,10 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     public void setScheduleMediaInterval(String interval) {
         this.scheduleMediaInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler(scheduleMediaListenerID, scheduleMediaListener);
-            scheduleMediaListenerID = startScheduler(scheduleMediaInterval,
+            stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
+            		scheduleMediaListener);
+            scheduleMediaListenerID = startScheduler(
+            		"CheckForStudiesToSchedule", scheduleMediaInterval,
                     scheduleMediaListener);
         }
     }
@@ -333,8 +336,10 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     public void setUpdateMediaStatusInterval(String interval) {
         this.updateMediaStatusInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            stopScheduler(updateMediaStatusListenerID, updateMediaStatusListener);
-            updateMediaStatusListenerID = startScheduler(updateMediaStatusInterval, updateMediaStatusListener);
+            stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
+            		updateMediaStatusListener);
+            updateMediaStatusListenerID = startScheduler("CheckMediaStatus",
+            		updateMediaStatusInterval, updateMediaStatusListener);
         }
     }
     
@@ -575,7 +580,6 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 		
 		try {
 			int size = mc.collectStudiesReceivedBefore( getSearchDate(), maxMediaUsage, getFileSetIdPrefix() );
-            burnMedia(); //check if one or more media are ready to burn (maxStudyAge) 
 			return size;
 		} catch ( Exception x ) {
 			log.error("Can not collect studies!",x);
@@ -602,9 +606,12 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	 */
     protected void startService() throws Exception {
         super.startService();
-        scheduleMediaListenerID = startScheduler(scheduleMediaInterval, scheduleMediaListener);
-        updateMediaStatusListenerID = startScheduler(updateMediaStatusInterval, updateMediaStatusListener);
-        burnMediaListenerID = startScheduler(burnMediaInterval, burnMediaListener);
+        scheduleMediaListenerID = startScheduler("CheckForStudiesToSchedule", 
+        		scheduleMediaInterval, scheduleMediaListener);
+        updateMediaStatusListenerID = startScheduler("CheckMediaStatus",
+        		updateMediaStatusInterval, updateMediaStatusListener);
+        burnMediaListenerID = startScheduler("CheckForMediaToBurn",
+        		burnMediaInterval, burnMediaListener);
         JMSDelegate.startListening(QUEUE, this);
     }
 
@@ -613,9 +620,12 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	 * 
 	 */
     protected void stopService() throws Exception {
-        stopScheduler(scheduleMediaListenerID, scheduleMediaListener);
-        stopScheduler(updateMediaStatusListenerID, updateMediaStatusListener);
-        stopScheduler(burnMediaListenerID, burnMediaListener);
+        stopScheduler("CheckForStudiesToSchedule", scheduleMediaListenerID,
+        		scheduleMediaListener);
+        stopScheduler("CheckMediaStatus", updateMediaStatusListenerID,
+        		updateMediaStatusListener);
+        stopScheduler("CheckForMediaToBurn", burnMediaListenerID,
+        		burnMediaListener);
         JMSDelegate.stopListening(QUEUE);
         super.stopService();
     }

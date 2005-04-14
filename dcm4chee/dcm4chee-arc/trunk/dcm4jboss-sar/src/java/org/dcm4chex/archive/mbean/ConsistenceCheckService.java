@@ -85,8 +85,9 @@ public class ConsistenceCheckService extends TimerSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            stopScheduler(listenerID, consistentCheckListener);
-            listenerID = startScheduler(taskInterval,
+            stopScheduler("CheckStudyConsistency", listenerID,
+            		consistentCheckListener);
+            listenerID = startScheduler("CheckStudyConsistency", taskInterval,
             		consistentCheckListener);
         }
     }
@@ -194,11 +195,13 @@ public class ConsistenceCheckService extends TimerSupport {
 
     protected void startService() throws Exception {
         super.startService();
-        listenerID = startScheduler(taskInterval, consistentCheckListener);
+        listenerID = startScheduler("CheckStudyConsistency", taskInterval,
+        		consistentCheckListener);
     }
 
     protected void stopService() throws Exception {
-        stopScheduler(listenerID, consistentCheckListener);
+        stopScheduler("CheckStudyConsistency", listenerID,
+        		consistentCheckListener);
         super.stopService();
     }
 
