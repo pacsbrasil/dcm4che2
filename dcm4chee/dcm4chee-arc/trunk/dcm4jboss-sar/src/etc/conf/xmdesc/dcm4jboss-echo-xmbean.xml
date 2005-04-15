@@ -20,6 +20,18 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
+      getMethod="getCallingAET"
+      setMethod="setCallingAET">
+      <description>Calling AET that is used in echo association.
+      </description>
+      <name>CallingAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS_TIANI" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
       <description>Used internally - do NOT modify.
