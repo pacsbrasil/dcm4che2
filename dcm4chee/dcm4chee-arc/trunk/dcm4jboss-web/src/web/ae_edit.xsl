@@ -16,7 +16,6 @@
 							<td width="50">AE Title</td>
 			        	<td title="AE Title" >
 							<input size="25" name="title" type="text" value="{title}"/>
-							<input size="10" name="pk" type="text" value="{pk}"/>
 						</td>
 					</tr>
 					<tr>
