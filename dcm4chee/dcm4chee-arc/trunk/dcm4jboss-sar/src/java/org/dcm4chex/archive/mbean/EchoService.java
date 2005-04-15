@@ -56,12 +56,25 @@ public class EchoService extends ServiceMBeanSupport
         DcmObjectFactory.getInstance();
     
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-    
+ 
+    private String callingAET;
     
 	private static final int PCID_ECHO = 1;
     private static final String[] DEF_TS = { UIDs.ImplicitVRLittleEndian };
     
 
+	/**
+	 * @return Returns the callingAET.
+	 */
+	public String getCallingAET() {
+		return callingAET;
+	}
+	/**
+	 * @param callingAET The callingAET to set.
+	 */
+	public void setCallingAET(String callingAET) {
+		this.callingAET = callingAET;
+	}
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
@@ -125,6 +138,8 @@ public class EchoService extends ServiceMBeanSupport
 	        aFact.newRequestor( tlsConfig.createSocket(aeData) );
 	
 	    AAssociateRQ assocRQ = aFact.newAAssociateRQ();
+	    assocRQ.setCallingAET( this.callingAET );
+	    assocRQ.setCalledAET( aeData.getTitle() );
         assocRQ.addPresContext(
                 aFact.newPresContext(PCID_ECHO, UIDs.Verification, DEF_TS));
 	    PDU assocAC = assoc.connect(assocRQ);
