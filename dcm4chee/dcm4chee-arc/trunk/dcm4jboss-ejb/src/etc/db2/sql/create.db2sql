@@ -331,9 +331,9 @@ CREATE TABLE gpsps_perf (
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
-CREATE INDEX gpsps_perf_sps_fk ON gpsps_human_perf(gpsps_fk);
-CREATE INDEX gpsps_perf_code_fk ON gpsps_human_perf(code_fk);
-CREATE INDEX gpsps_perf_name ON gpsps_human_perf(human_perf_name_up);
+CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
+CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
+CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name_up);
 
 CREATE SEQUENCE gpsps_req_pk_seq;
 CREATE TABLE gpsps_req (
@@ -343,9 +343,9 @@ CREATE TABLE gpsps_req (
 	accession_no	VARCHAR(254),
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
 );
-CREATE INDEX gpsps_req_gpsps_fk ON gpsps_request(gpsps_fk);
-CREATE INDEX gpsps_req_proc_id ON gpsps_request(req_proc_id);
-CREATE INDEX gpsps_req_acc_no ON gpsps_request(accession_no);	
+CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
+CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
+CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
 
 CREATE SEQUENCE device_pk_seq;
 CREATE TABLE device (
@@ -412,11 +412,11 @@ GRANT ALL PRIVILEGES ON TABLE study TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE mpps TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE series TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE series_req TO USER tiani;
+GRANT ALL PRIVILEGES ON TABLE media TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE instance TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE filesystem TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE study_on_fs TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE files TO USER tiani;
-GRANT ALL PRIVILEGES ON TABLE media TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE mwl_item TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE gpsps TO USER tiani;
 GRANT ALL PRIVILEGES ON TABLE rel_gpsps_appcode TO USER tiani;
@@ -438,13 +438,12 @@ GRANT USAGE ON SEQUENCE study_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE mpps_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE series_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE series_req_pk_seq TO USER tiani;
+GRANT USAGE ON SEQUENCE media_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE instance_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE filesystem_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE study_on_fs_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE files_pk_seq TO USER tiani;
-GRANT USAGE ON SEQUENCE media_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE mwl_item_pk_seq TO USER tiani;
-GRANT USAGE ON SEQUENCE ref_request_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE gpsps_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE gpsps_perf_pk_seq TO USER tiani;
 GRANT USAGE ON SEQUENCE gpsps_req_pk_seq TO USER tiani;
