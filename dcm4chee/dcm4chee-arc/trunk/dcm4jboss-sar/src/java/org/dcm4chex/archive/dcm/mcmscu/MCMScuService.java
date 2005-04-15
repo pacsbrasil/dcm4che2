@@ -108,6 +108,8 @@ public class MCMScuService extends TimerSupport implements MessageListener {
     private String notifyBurnMediaEmailTo = "";
     
     private String notifyBurnMediaEmailFrom = "";
+    
+    private int nrOfCopies = 1;
 
 	private static ObjectName sendMailServiceName = null;
     /** Holds the prefix that is used to generate the fileset id. */
@@ -170,6 +172,7 @@ public class MCMScuService extends TimerSupport implements MessageListener {
             public void handleNotification(Notification notif, Object handback) {
                 burnMedia();
             }};
+
             
 	/**
 	 * Returns the prefix for FileSetID creation.
@@ -186,6 +189,21 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 	 */
 	public void setFileSetIdPrefix(String fileSetIdPrefix) {
 		this.fileSetIdPrefix = fileSetIdPrefix.toUpperCase();
+	}
+	/**
+	 * @return Returns the nrOfCopies.
+	 */
+	public int getNrOfCopies() {
+		return nrOfCopies;
+	}
+	/**
+	 * @param nrOfCopies The nrOfCopies to set.
+	 */
+	public void setNrOfCopies(int nrOfCopies) {
+		if ( nrOfCopies < 1 || nrOfCopies > 99 ) {
+			throw new IllegalArgumentException("Wrong number of copies! Please enter a number between 1 and 99 (incl.)");
+		}
+		this.nrOfCopies = nrOfCopies;
 	}
 	/**
 	 * Returns the max media usage for collecting studies.
@@ -822,6 +840,11 @@ public class MCMScuService extends TimerSupport implements MessageListener {
 		Dataset ds = lookupMediaComposer().prepareMediaCreationRequest( mediaDTO.getPk() );
 		ds.putCS(Tags.LabelUsingInformationExtractedFromInstances, this.isUseInstanceInfo() ? "YES" : "NO");
 		ds.putCS(Tags.IncludeNonDICOMObjects, includeNonDICOMObj);
+		ds.putIS( Tags.NumberOfCopies, nrOfCopies );
+		if ( log.isDebugEnabled() ) {
+			log.debug("getMediaCreationReqDS:\n");
+			log.info( ds );
+		}
 		return ds;
 	}
 
