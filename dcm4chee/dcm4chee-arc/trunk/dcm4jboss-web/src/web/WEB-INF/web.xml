@@ -90,6 +90,16 @@
 		</init-param>
 		
 		<!-- 
+			Used by dcm4jboss-web application to find GPWLFeedService MBean.
+			Value must match mbean name in configured in
+			deploy/dcm4jboss-contentedit-service.xml.
+		-->
+		<init-param>
+			<param-name>gpwlFeedServiceName</param-name>
+			<param-value>tiani.archive:service=GPWLFeed</param-value>
+		</init-param>
+		
+		<!-- 
 			Used by dcm4jboss-web application to find EchoService MBean.
 			Value must match mbean name in configured in
 			deploy/dcm4jboss-echo-service.xml.

@@ -121,12 +121,17 @@ public class FolderForm {
     /** Error code for rendering message. */
     private String errorCode = NO_ERROR;
     
+    /** Popup message */
+    private String popupMsg = null;
+    
     /** Base URL for WADO service. Used for image view */
     private String wadoBaseURL;
 
 	private boolean showStudyIUID;
 
 	private boolean showSeriesIUID;
+	
+	private boolean addWorklist = false;
     
 
 	/**
@@ -291,6 +296,18 @@ public class FolderForm {
     	errorCode = err;
     }
 
+	/**
+	 * @return Returns the popupMsg.
+	 */
+	public String getPopupMsg() {
+		return popupMsg;
+	}
+	/**
+	 * @param popupMsg The popupMsg to set.
+	 */
+	public void setPopupMsg(String popupMsg) {
+		this.popupMsg = popupMsg;
+	}
     public void updatePatients(List newPatients) {
         List sticky = patients;
         patients = newPatients;
@@ -515,4 +532,16 @@ public class FolderForm {
 		return showSeriesIUID;
 	}
 
+	/**
+	 * @return Returns the addWorklist.
+	 */
+	public boolean isAddWorklist() {
+		return addWorklist;
+	}
+	/**
+	 * @param addWorklist The addWorklist to set.
+	 */
+	public void setAddWorklist(boolean addWorklist) {
+		this.addWorklist = addWorklist;
+	}
 }

@@ -466,9 +466,19 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
 			<td align="right" bgcolor="ccffcc">
-			<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
-				<img src="images/add.gif" alt="Add Series" border="0" title="Add new series"/>		
-			</a>
+      			<xsl:choose>
+					<xsl:when test="/model/addWorklist='false'">
+						<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
+							<img src="images/add.gif" alt="Add Series" border="0" title="Add new series"/>		
+						</a>
+					</xsl:when>
+					<xsl:otherwise>
+						<a href="addWorklist.m?studyPk={pk}">
+							<img src="images/worklist.gif" alt="Add worklist item" border="0" title="Add worklist item"/>		
+						</a>
+					</xsl:otherwise>
+				</xsl:choose>
+			
 			</td>
 			<td align="right" bgcolor="ccccff">
 				<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">

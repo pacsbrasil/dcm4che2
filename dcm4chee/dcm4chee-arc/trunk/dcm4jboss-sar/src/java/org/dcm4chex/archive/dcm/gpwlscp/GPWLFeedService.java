@@ -9,7 +9,13 @@
 package org.dcm4chex.archive.dcm.gpwlscp;
 
 import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -23,6 +29,8 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManager;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
@@ -32,6 +40,8 @@ import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfig;
+import org.jboss.system.server.ServerConfigLocator;
 import org.xml.sax.InputSource;
 
 /**
@@ -69,8 +79,17 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 		Tags.RequestedProcedureID,
 	};
 
-	private ObjectName mppsScpServiceName;
+    private ObjectName mppsScpServiceName;
+    
+    private Map humanPerformer = null;
+	private Map templates = null;
 	
+	private URL templateURL  = null;
+    
+    private static DcmObjectFactory dof = DcmObjectFactory.getInstance();
+	
+    private static ServerConfig config = ServerConfigLocator.locate();
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }        
@@ -87,6 +106,101 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
         this.mppsScpServiceName = mppsScpServiceName;
     }
 
+	/**
+	 * @return Returns the physicians.
+	 */
+	public String getHumanPerformer() {
+		return codes2String( humanPerformer );
+	}
+	
+	/**
+	 * @param performer The human performer(s) to set.
+	 */
+	public void setHumanPerformer(String performer) {
+		this.humanPerformer = string2Codes( performer, "PACS_TIANI" );
+	}
+
+	public String getTemplates() {
+		return codes2String( templates);
+	}
+	
+	/**
+	 * Set templates as codes.
+	 * <p>
+	 * code value is filename, code meaning is template name, designator is ignored
+	 * @param templates The templates to set.
+	 */
+	public void setTemplates(String templates) {
+		this.templates = string2Codes( templates, null );
+	}
+	
+	/**
+	 * @return Returns the configURL.
+	 */
+	public String getTemplateURL() {
+		String s = templateURL.toString();
+		String base = config.getServerConfigURL().toExternalForm();
+		if ( s.length() > base.length() && s.startsWith( base ) ) {
+			return s.substring( base.length() );
+		} else {
+			return s;
+		}
+	}
+	/**
+	 * @param configURL The configURL to set.
+	 * @throws MalformedURLException
+	 */
+	public void setTemplateURL(String configURL) throws MalformedURLException {
+		try {
+			this.templateURL = new URL( configURL );
+		} catch (MalformedURLException e) { //not an URL -> relative to server config URL
+			if ( configURL.indexOf( ':' ) != -1 ) throw e;//no protocol or drive letter in relative URL allowed!
+			this.templateURL = new URL( config.getServerConfigURL().toExternalForm() + configURL);
+		}
+	}
+	private String codes2String( Map codes ) {
+		if ( codes == null || codes.isEmpty() ) return "";
+		StringBuffer sb = new StringBuffer();
+		Dataset ds;
+		String design;
+		for ( Iterator iter = codes.values().iterator() ; iter.hasNext() ;  ) {
+			ds = (Dataset) iter.next();
+			design = ds.getString( Tags.CodingSchemeDesignator );
+			sb.append( ds.getString( Tags.CodeValue ) ).append("^");
+			if ( design != null ) sb.append( design ).append("^");
+			sb.append( ds.getString( Tags.CodeMeaning ) ).append(",");
+		}
+		
+		return sb.substring(0, sb.length()-1);
+	}
+	
+	private Map string2Codes( String codes, String defaultDesign ) {
+		StringTokenizer st = new StringTokenizer(codes,",");
+		Map map = new HashMap();
+		int nrOfTokens;
+		StringTokenizer stCode;
+		Dataset ds;
+		String codeValue;
+		while ( st.hasMoreTokens() ) {
+			stCode = new StringTokenizer( st.nextToken(), "^" );
+			nrOfTokens = stCode.countTokens();
+			if ( nrOfTokens < 2 ) {
+				throw new IllegalArgumentException("Wrong format of human performer configuration! (<codeValue>[^<designator>]^<meaning>)");
+			}
+			ds = dof.newDataset();
+			codeValue = stCode.nextToken();
+	        ds.putSH(Tags.CodeValue, codeValue );
+	        if ( nrOfTokens > 2 ) {
+	        	ds.putSH(Tags.CodingSchemeDesignator, stCode.nextToken());
+	        } else if ( defaultDesign != null ){
+	        	ds.putSH(Tags.CodingSchemeDesignator, defaultDesign );
+	        }
+	        ds.putLO(Tags.CodeMeaning, stCode.nextToken());
+	        map.put( codeValue, ds );
+		}
+		return map;
+	}
+	
     protected void startService() throws Exception {
         server.addNotificationListener(mppsScpServiceName,
                 this,
@@ -109,6 +223,47 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
         final String mppsiuid = mpps.getString(Tags.SOPInstanceUID);
        	addWorklistItem(makeGPWLItem(getMPPS(mppsiuid)));
     }
+	
+	public void addWorklistItem( Integer studyPk, String templateFile, String humanPerformerCode, Long scheduleDate ) throws Exception {
+		if ( log.isDebugEnabled() ) log.debug( "load template file: "+ (templateURL+"/"+templateFile) );
+		Dataset ds = DatasetUtils.fromXML(new InputSource( templateURL+"/"+templateFile ) );
+		
+		ContentManager cm = getContentManager();
+		//patient 
+		Dataset patDS = cm.getPatientForStudy( studyPk.intValue() );
+		if ( log.isDebugEnabled() ) {
+			log.debug("Patient Dataset:"); log.debug(patDS);
+		}
+		
+		ds.putAll(patDS.subSet(PAT_ATTR_TAGS));
+		//
+		Dataset sopInstRef = cm.getSOPInstanceRefMacro( studyPk.intValue() );
+		String studyIUID = sopInstRef.getString( Tags.StudyInstanceUID );
+		ds.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
+		ds.putUI(Tags.StudyInstanceUID, studyIUID);
+		DcmElement inSq = ds.putSQ(Tags.InputInformationSeq);
+		inSq.addItem( sopInstRef );
+		
+		//Scheduled Human Performer Seq
+		DcmElement schedHPSq = ds.putSQ(Tags.ScheduledHumanPerformersSeq);
+		Dataset item = schedHPSq.addNewItem();
+		DcmElement hpCodeSq = item.putSQ(Tags.HumanPerformerCodeSeq);
+		Dataset dsCode = (Dataset) this.humanPerformer.get( humanPerformerCode );
+		log.info(dsCode);
+		if ( dsCode != null ) {
+			hpCodeSq.addItem( dsCode );
+			item.putPN( Tags.HumanPerformerName, dsCode.getString( Tags.CodeMeaning ) );
+		}
+		
+		//Scheduled Procedure Step Start Date and Time
+		ds.putDT( Tags.SPSStartDateAndTime, new Date( scheduleDate.longValue() ) );
+		
+		if (log.isDebugEnabled() ) {
+			log.debug("GPSPS Dataset:"); log.debug(ds);
+		}
+		
+		addWorklistItem( ds );
+	}
 
 	private void addWorklistItem(Dataset ds) {
 		if (ds == null) return;
@@ -279,4 +434,11 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
         return (GPWLManagerHome) EJBHomeFactory.getFactory().lookup(
                 GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME);
     }
+	
+    private ContentManager getContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
+                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        return home.create();
+    }
+	
 }

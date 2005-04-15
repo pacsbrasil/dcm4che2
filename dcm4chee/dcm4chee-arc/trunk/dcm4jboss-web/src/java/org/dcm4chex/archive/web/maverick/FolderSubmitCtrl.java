@@ -453,6 +453,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		return ret;
     }
     
+    
     /**
      * Move selected studies to a patient.
      * 

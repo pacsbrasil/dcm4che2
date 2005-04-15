@@ -110,7 +110,6 @@ public class MCMConsoleCtrl extends Dcm4JbossFormController {
 				}
            	}
 		} else if ( action.equalsIgnoreCase("delete") ) {
-			System.out.println("delete media:"+request.getParameter("mediaPk"));
 			if ( ! delegate.deleteMedia( Integer.parseInt( request.getParameter("mediaPk"))) ) {
 				model.setErrorCode( MCMModel.ERROR_MEDIA_DELETE );
 			}

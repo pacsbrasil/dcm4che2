@@ -8,9 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
-import java.rmi.RemoteException;
-
-import javax.ejb.CreateException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 

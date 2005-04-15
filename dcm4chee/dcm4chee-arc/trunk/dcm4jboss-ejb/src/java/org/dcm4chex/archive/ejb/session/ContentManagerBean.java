@@ -24,7 +24,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -167,4 +169,51 @@ public abstract class ContentManagerBean implements SessionBean {
         return result;
     }
 
+    /**
+     * @throws FinderException
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getSOPInstanceRefMacro(int studyPk) throws FinderException {
+    	Dataset ds = dof.newDataset();
+    	StudyLocal sl = studyHome.findByPrimaryKey( new Integer( studyPk ) );
+    	ds.putUI( Tags.StudyInstanceUID, sl.getStudyIuid() );
+		DcmElement refSerSq = ds.putSQ(Tags.RefSeriesSeq);
+		Iterator iterSeries = sl.getSeries().iterator();
+		SeriesLocal series;
+		String aet;
+		int pos;
+		while ( iterSeries.hasNext() ) {
+			series = (SeriesLocal) iterSeries.next();
+			Dataset serDS = refSerSq.addNewItem();
+			serDS.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid() );
+			aet = series.getRetrieveAETs();
+			pos = aet.indexOf('\\');
+			if ( pos != -1 ) aet = aet.substring(0,pos);
+			serDS.putAE( Tags.RetrieveAET, aet );
+			serDS.putAE( Tags.StorageMediaFileSetID, series.getFilesetId() );
+			serDS.putAE( Tags.StorageMediaFileSetUID, series.getFilesetIuid() );
+			DcmElement refSopSq = serDS.putSQ(Tags.RefSOPSeq);
+			Iterator iterInstances = series.getInstances().iterator();
+			InstanceLocal instance;
+			while ( iterInstances.hasNext() ) {
+				instance = (InstanceLocal) iterInstances.next();
+				Dataset instDS = refSopSq.addNewItem();
+				instDS.putUI( Tags.RefSOPInstanceUID, instance.getSopIuid() );
+				instDS.putUI( Tags.RefSOPClassUID, instance.getSopCuid() );
+			}
+		} 
+    	return ds;
+    }
+    
+    /**
+     * @throws FinderException
+     *
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getPatientForStudy(int studyPk) throws FinderException {
+    	StudyLocal sl = studyHome.findByPrimaryKey( new Integer( studyPk ) );
+    	return sl.getPatient().getAttributes(false);
+    }    
 }

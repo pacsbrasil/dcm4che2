@@ -28,12 +28,14 @@ default-transform-type="xslt">
     </command>
 
     <command name="foldersubmit">
-      <controller
-      class="org.dcm4chex.archive.web.maverick.FolderSubmitCtrl" />
-      <view ref="folder" />
-    <view id="merge" name="merge">
-      <transform path="patient_merge.xsl" />
-    </view>
+      	<controller	class="org.dcm4chex.archive.web.maverick.FolderSubmitCtrl" />
+      	<view ref="folder" />
+	    <view id="merge" name="merge">
+	      <transform path="patient_merge.xsl" />
+	    </view>
+	    <view id="worklist" name="worklist">
+	      <transform path="addWorklist.xsl" />
+	    </view>
     </command>
 
     <command name="expandPat">
@@ -100,6 +102,16 @@ default-transform-type="xslt">
     	  <transform path="study_edit.xsl" />
 	    </view>
      </command>
+     
+     <command name="addWorklist">
+        <controller class="org.dcm4chex.archive.web.maverick.AddWorklistCtrl" />    
+	    <view name="success">
+    	  <transform path="addWorklist.xsl" />
+	    </view>
+	    <view type="redirect" path="folder.m" name="cancel"/>        
+	    <view type="redirect" path="folder.m?popupMsg=New worklist item added!" name="folder"/>        
+     </command>
+     
 
     <command name="studyUpdate">
         <controller class="org.dcm4chex.archive.web.maverick.StudyUpdateCtrl" />    
