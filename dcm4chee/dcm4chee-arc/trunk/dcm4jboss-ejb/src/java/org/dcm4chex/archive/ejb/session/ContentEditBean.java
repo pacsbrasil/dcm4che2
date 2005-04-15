@@ -136,8 +136,9 @@ public abstract class ContentEditBean implements SessionBean {
 	        PatientLocal dominant = patHome.findByPrimaryKey(new Integer(patPk));
 	        ArrayList list = new ArrayList();
 	        for (int i = 0; i < mergedPks.length; i++) {
+	            if ( patPk == mergedPks[i] ) continue;
 	            PatientLocal priorPat = patHome.findByPrimaryKey(new Integer(mergedPks[i]));
-	            list.addAll(priorPat.getStudies());
+            	list.addAll(priorPat.getStudies());
 	            dominant.getStudies().addAll(priorPat.getStudies());
 	            dominant.getMpps().addAll(priorPat.getMpps());
 	            dominant.getMwlItems().addAll(priorPat.getMwlItems());                
