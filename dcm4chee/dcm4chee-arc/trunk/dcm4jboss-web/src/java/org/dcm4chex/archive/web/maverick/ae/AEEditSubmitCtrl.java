@@ -136,7 +136,6 @@ public class AEEditSubmitCtrl extends Errable
 
 	protected String perform() throws Exception
 	{
-		System.out.println("perform:"+echo);
 		if (update != null)
 		{
 			AEData newAE = getAE();
