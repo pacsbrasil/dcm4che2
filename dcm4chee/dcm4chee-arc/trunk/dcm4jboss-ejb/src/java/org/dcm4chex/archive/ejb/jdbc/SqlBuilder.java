@@ -27,6 +27,9 @@ class SqlBuilder {
     public static final String WHERE = " WHERE ";
     public static final String AND = " AND ";
     public static final String[] SELECT_COUNT = { "count(*)" };
+    private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSS''";
+    private static final String ORA_DATE_FORMAT = 
+    	"'TO_TIMESTAMP('''yyyy-MM-dd HH:mm:ss.SSS'','''YYYY-MM-DD HH24:MI:SS.FF''')";
     private String[] select;
     private String[] from;
     private String[] leftJoin;
@@ -163,7 +166,9 @@ class SqlBuilder {
 
     public void addRangeMatch(String alias, String field, boolean type2,
             Date[] range) {
-        addMatch(new Match.Range(alias, field, type2, range));
+        addMatch(new Match.Range(alias, field, type2, range,
+        		getDatabase() == JdbcProperties.ORACLE ?
+        				ORA_DATE_FORMAT : DATE_FORMAT));
     }
 
     public void addModalitiesInStudyMatch(String alias, String md) {

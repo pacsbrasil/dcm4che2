@@ -20,7 +20,6 @@ import java.util.Date;
 abstract class Match
 {
 
-    private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSS''";
     protected String column;
     protected final boolean type2;
 
@@ -277,10 +276,13 @@ abstract class Match
     static class Range extends Match
     {
         private final Date[] range;
-        public Range(String alias, String field, boolean type2, Date[] range)
+        private final String format;
+        public Range(String alias, String field, boolean type2, Date[] range,
+        		String format)
         {
             super(alias, field, type2);
             this.range = range != null ? (Date[]) range.clone() : null;
+            this.format = format;
         }
 
         public boolean isUniveralMatch()
@@ -290,7 +292,7 @@ abstract class Match
 
         protected void appendBodyTo(StringBuffer sb)
         {
-            SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
+            SimpleDateFormat df = new SimpleDateFormat(format);
             sb.append(column);
             if (range[0] == null)
             {

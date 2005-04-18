@@ -25,7 +25,7 @@ CREATE TABLE patient (
 	pat_id         	VARCHAR2(255),
 	pat_id_issuer  	VARCHAR2(255),
 	pat_name    	VARCHAR2(255),
-	pat_birthdate  	DATE,
+	pat_birthdate  	TIMESTAMP,
 	pat_sex		  	VARCHAR2(255),
 	pat_attrs		LONG RAW,
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
