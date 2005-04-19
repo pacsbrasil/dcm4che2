@@ -7,8 +7,6 @@
 package org.dcm4chex.wado.web;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +36,6 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	private String frameNumber;
 	
 	private List contentTypes = null;
-	private Map paramMap;
-	private Map headerMap;
 
 	/**
 	 * Creates a WADORequestObjectImpl instance configured with http request.
@@ -56,15 +52,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 		rows = request.getParameter( "rows" );
 		columns = request.getParameter( "columns" );
 		frameNumber = request.getParameter("frameNumber");
-		
-		headerMap = new HashMap();
-		Enumeration enum1 = request.getHeaderNames();
-		String key;
-		while ( enum1.hasMoreElements() ) {
-			key = (String) enum1.nextElement();
-			if ( log.isDebugEnabled() ) log.debug("header: "+key+"="+request.getHeader(key) );
-			headerMap.put( key, request.getHeader(key) );
-		}
+		contentTypes = _string2List( contentType, "," );
 	}
 	
 	/**
