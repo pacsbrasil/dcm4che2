@@ -83,14 +83,38 @@ public WADOSupport( MBeanServer mbServer ) {
  * @return The WADO response object.
  */
 public WADOResponseObject getWADOObject( WADORequestObject req ) {
-	List contentTypes = req.getContentTypes();
-	if ( contentTypes == null || contentTypes.contains( CONTENT_TYPE_JPEG ) ) {
+	String contentType = getPrefContentType( req );
+	if ( CONTENT_TYPE_JPEG.equals( contentType ) ) {
 		return this.handleJpg( req );
-	} else if ( contentTypes.contains( CONTENT_TYPE_DICOM ) ) {
+	} else if ( CONTENT_TYPE_DICOM.equals( contentType ) ) {
 		return handleDicom( req );
 	} else {
-		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented!");
+		return new WADOResponseObjectImpl( null, CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_IMPLEMENTED, "This method is not implemented for requested content type(s)!");
 		
+	}
+}
+
+/**
+ * @param contentTypes
+ * @return
+ */
+private String getPrefContentType(WADORequestObject req) {
+	List contentTypes = req.getContentTypes();
+	if ( contentTypes == null ) return CONTENT_TYPE_JPEG;
+
+	int idxJpeg = contentTypes.indexOf( CONTENT_TYPE_JPEG );
+	int idxDicom = contentTypes.indexOf( CONTENT_TYPE_DICOM );
+	log.info("getPrefContentType idxJpeg:"+idxJpeg+"  idxDicom:"+idxDicom);
+	if ( idxJpeg != -1 ) {
+		if ( idxDicom != -1 && idxDicom < idxJpeg ) {
+			return CONTENT_TYPE_DICOM;
+		} else {
+			return CONTENT_TYPE_JPEG;
+		}
+	} else if ( contentTypes.contains( CONTENT_TYPE_DICOM ) ) {
+		return CONTENT_TYPE_DICOM;
+	} else {
+		return null;
 	}
 }
 
