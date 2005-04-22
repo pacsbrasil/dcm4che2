@@ -237,7 +237,7 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 		
 		ds.putAll(patDS.subSet(PAT_ATTR_TAGS));
 		//
-		Dataset sopInstRef = cm.getSOPInstanceRefMacro( studyPk.intValue() );
+		Dataset sopInstRef = cm.getSOPInstanceRefMacro( studyPk.intValue(), false );
 		String studyIUID = sopInstRef.getString( Tags.StudyInstanceUID );
 		ds.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
 		ds.putUI(Tags.StudyInstanceUID, studyIUID);
