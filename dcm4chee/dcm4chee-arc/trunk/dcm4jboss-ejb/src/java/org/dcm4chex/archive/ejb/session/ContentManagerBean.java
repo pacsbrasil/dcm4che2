@@ -174,7 +174,7 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public Dataset getSOPInstanceRefMacro(int studyPk) throws FinderException {
+    public Dataset getSOPInstanceRefMacro( int studyPk, boolean insertModality ) throws FinderException {
     	Dataset ds = dof.newDataset();
     	StudyLocal sl = studyHome.findByPrimaryKey( new Integer( studyPk ) );
     	ds.putUI( Tags.StudyInstanceUID, sl.getStudyIuid() );
@@ -187,12 +187,16 @@ public abstract class ContentManagerBean implements SessionBean {
 			series = (SeriesLocal) iterSeries.next();
 			Dataset serDS = refSerSq.addNewItem();
 			serDS.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid() );
-			aet = series.getRetrieveAETs();
+			aet = series.getRetrieveAETs(); 
 			pos = aet.indexOf('\\');
 			if ( pos != -1 ) aet = aet.substring(0,pos);
 			serDS.putAE( Tags.RetrieveAET, aet );
 			serDS.putAE( Tags.StorageMediaFileSetID, series.getFilesetId() );
 			serDS.putAE( Tags.StorageMediaFileSetUID, series.getFilesetIuid() );
+			if ( insertModality ) {
+				serDS.putCS( Tags.Modality, series.getModality() );
+				serDS.putIS( Tags.SeriesNumber, series.getSeriesNumber() ); //Q&D 
+			}
 			DcmElement refSopSq = serDS.putSQ(Tags.RefSOPSeq);
 			Iterator iterInstances = series.getInstances().iterator();
 			InstanceLocal instance;
