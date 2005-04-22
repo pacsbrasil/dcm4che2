@@ -78,7 +78,11 @@ public class FolderSubmitCtrl extends FolderCtrl {
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
-            HttpServletRequest rq = getCtx().getRequest();
+            HttpServletRequest rq = getCtx().getRequest(); 
+            log.info( "UserPrincipal:"+rq.getUserPrincipal().getName() );
+            log.info( "UserPrincipal is in role admin:"+rq.isUserInRole("admin") );
+            log.info( "UserPrincipal is in role JBossAdmin:"+rq.isUserInRole("JBossAdmin") );
+            log.info( "UserPrincipal is in role WebAdmin:"+rq.isUserInRole("WebAdmin") );
             if (rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }
             if (rq.getParameter("prev") != null

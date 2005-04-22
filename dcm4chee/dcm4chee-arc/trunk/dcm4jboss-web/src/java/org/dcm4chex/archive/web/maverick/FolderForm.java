@@ -118,6 +118,9 @@ public class FolderForm {
 
     private int total;
     
+    
+    private boolean deleteAllowed = false; 
+    
     /** Error code for rendering message. */
     private String errorCode = NO_ERROR;
     

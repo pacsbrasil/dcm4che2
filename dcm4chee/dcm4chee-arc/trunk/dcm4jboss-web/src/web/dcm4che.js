@@ -118,3 +118,11 @@ function doEcho(form)  //open echo window
 function selectValue(sObj) {
     with (sObj) return options[selectedIndex].value;
   }
+  
+function openWin( winName, url ) {
+//alert('open new window '+winName+' with URL:'+url);
+	newwindow = window.open(url, winName, 'toolbar=yes,menubar=yes,scrollbars=yes');
+	newwindow.focus();
+	return false;
+}  
+  

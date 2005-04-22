@@ -416,7 +416,8 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="9%"/>
 			<col width="17%"/>
 			<col width="2%"/>
-			<col width="4%"/>
+			<col width="2%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
@@ -464,6 +465,12 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
       		<td title="Number of Instances" bgcolor="eaeaff">
 				<xsl:value-of select="numberOfInstances"/>
+			</td>
+			<td align="right" bgcolor="ccccff">
+				<a href="studyView.m?patPk={../../pk}&amp;studyPk={pk}" >
+					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../pk" />&amp;studyPk=<xsl:value-of select="pk" />')</xsl:attribute>
+					<img src="images/image.gif" alt="View Study" border="0" title="Viw Study in Webviewer"/>		
+				</a>					
 			</td>
 			<td align="right" bgcolor="ccffcc">
       			<xsl:choose>
