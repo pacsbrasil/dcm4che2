@@ -1,5 +1,5 @@
---- target/meta-inf-hsql/jbosscmp-jdbc.xml	2004-10-18 02:13:56.000000000 +0200
-+++ target/meta-inf-oracle/jbosscmp-jdbc.xml	2004-10-18 02:13:58.000000000 +0200
+--- target/meta-inf-hsql/jbosscmp-jdbc.xml	2005-04-20 00:25:47.493686030 +0200
++++ target/meta-inf-oracle/jbosscmp-jdbc.xml	2005-04-20 00:25:47.860638601 +0200
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -11,7 +11,7 @@
       <create-table>false</create-table>
     </defaults>
  
-@@ -68,7 +68,8 @@
+@@ -67,7 +67,8 @@
  
          </cmp-field>
  

@@ -15,7 +15,7 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your XDoclet bundle dist location -->
-	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.2"/>
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.3"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 	<property name="xdoclet.force" value="off"/>	
 	<property name="xdoclet.verbose" value="off"/>	
