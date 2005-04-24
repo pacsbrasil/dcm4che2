@@ -3,6 +3,7 @@
 <xsl:template match="devices">
 	<dicomfile>
 		<dataset>
+            <attr tag="00080005" vr="CS">ISO_IR 100</attr>
 			<attr tag="00400100" vr="SQ" name="Scheduled Procedure Step Sequence">
 				<xsl:apply-templates select="device"/>
 			</attr>
