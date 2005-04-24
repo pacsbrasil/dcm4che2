@@ -21,11 +21,11 @@
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
     <!-- Override with your XDoclet bundle dist location -->
-	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.2"/>
+	<property name="xdoclet.home" value="${user.home}/xdoclet-1.2.3"/>
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 
     <!-- Override with your Cactus bundle dist location -->
-    <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.6.1"/>
+    <property name="cactus.home" value="${user.home}/jakarta-cactus-13-1.7"/>
     <property name="cactus.lib" value="${cactus.home}/lib"/>
 
     <!-- Override with your dcm4jboss installation -->

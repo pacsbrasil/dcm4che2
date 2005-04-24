@@ -1,5 +1,5 @@
---- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2005-04-13 12:17:59.000000000 +0200
-+++ target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	2005-04-13 12:18:00.000000000 +0200
+--- target/xdoclet/META-INF-hsql/jbosscmp-jdbc.xml	2005-04-16 19:07:24.000000000 +0200
++++ target/xdoclet/META-INF-oracle/jbosscmp-jdbc.xml	2005-04-16 19:07:24.000000000 +0200
 @@ -3,8 +3,8 @@
  
  <jbosscmp-jdbc>
@@ -11,7 +11,7 @@
       <create-table>false</create-table>
     </defaults>
  
-@@ -73,7 +73,8 @@
+@@ -72,7 +72,8 @@
  
          </cmp-field>
  
@@ -21,9 +21,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -133,7 +134,8 @@
+@@ -129,7 +130,8 @@
  			</read-ahead>
- 	     </query>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -31,9 +31,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -184,7 +186,8 @@
+@@ -178,7 +180,8 @@
  			</read-ahead>
- 	     </query>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -41,9 +41,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -386,7 +389,8 @@
- 
- 	     </query>
+@@ -370,7 +373,8 @@
+             <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.series.hidden = FALSE AND i.series.study.pk = ?1]]></jboss-ql>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -51,9 +51,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -562,7 +566,8 @@
- 
- 	     </query>
+@@ -539,7 +543,8 @@
+             <jboss-ql><![CDATA[SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1]]></jboss-ql>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -61,9 +61,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -637,7 +642,8 @@
+@@ -612,7 +617,8 @@
  			</read-ahead>
- 	     </query>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -71,9 +71,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -737,7 +743,8 @@
+@@ -708,7 +714,8 @@
  			</read-ahead>
- 	     </query>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -81,7 +81,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -770,7 +777,8 @@
+@@ -740,7 +747,8 @@
  
          </cmp-field>
  
@@ -91,7 +91,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -828,7 +836,8 @@
+@@ -797,7 +805,8 @@
  
          </cmp-field>
  
@@ -101,7 +101,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -856,7 +865,8 @@
+@@ -824,7 +833,8 @@
  
          </cmp-field>
  
@@ -111,9 +111,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -953,7 +963,8 @@
+@@ -919,7 +929,8 @@
  			</read-ahead>
- 	     </query>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -121,7 +121,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -981,7 +992,8 @@
+@@ -946,7 +957,8 @@
  
          </cmp-field>
  
@@ -131,9 +131,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1043,7 +1055,8 @@
+@@ -1006,7 +1018,8 @@
  			</read-ahead>
- 	     </query>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -141,9 +141,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1078,7 +1091,8 @@
- 
- 	     </query>
+@@ -1039,7 +1052,8 @@
+ 			<dynamic-ql/>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -151,9 +151,9 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1190,7 +1204,8 @@
- 
- 	     </query>
+@@ -1146,7 +1160,8 @@
+ 			<dynamic-ql/>
+          </query>
  
 -	<entity-command name="hsqldb-fetch-key">
 +	<entity-command name="oracle-table-sequence" class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCOracleCreateCommand">
@@ -161,7 +161,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1221,7 +1236,8 @@
+@@ -1176,7 +1191,8 @@
  
          </cmp-field>
  
@@ -171,7 +171,7 @@
  	</entity-command>
  <!-- jboss 3.2 features -->
  <!-- optimistic locking does not express the exclusions needed -->
-@@ -1259,7 +1275,8 @@
+@@ -1213,7 +1229,8 @@
  
          </cmp-field>
  
