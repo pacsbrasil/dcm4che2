@@ -25,10 +25,11 @@
  */
 package org.regenstrief.xhl7;
 
-import java.io.Writer;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -63,7 +64,11 @@ public class HL7XMLWriter implements ContentHandler, HL7XMLLiterate, XMLWriter
       @param outputStream where the serialized HL7 goes.
    */
   public void setOutputStream(OutputStream outputStream) {
-    this._output = new OutputStreamWriter(outputStream);
+    try {
+		this._output = new OutputStreamWriter(outputStream, "ISO-8859-1");
+	} catch (UnsupportedEncodingException e) {
+		throw new RuntimeException(e);
+	}
   }
 
   /** Get the content handler. This HL7XMLWriter is itself a 

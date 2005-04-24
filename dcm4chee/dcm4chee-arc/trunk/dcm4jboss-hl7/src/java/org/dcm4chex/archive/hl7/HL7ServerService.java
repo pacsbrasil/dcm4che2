@@ -218,8 +218,9 @@ public class HL7ServerService extends ServiceMBeanSupport
         while (mllpDriver.hasMoreInput()) {
             try {
                 try {
-                    xmlReader
-                            .parse(new InputSource(mllpDriver.getInputStream()));
+                    InputSource in = new InputSource(mllpDriver.getInputStream());
+					in.setEncoding("ISO-8859-1");
+					xmlReader.parse(in);
                     Document msg = hl7in.getDocument();
                     logMessage(msg);
                     if (fileReceivedHL7AsXML)
