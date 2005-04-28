@@ -1784,7 +1784,7 @@ abstract class DcmObjectImpl implements DcmObject {
      * @return      Description of the Return Value
      */
     public DcmElement putPN(int tag) {
-        return put(StringElement.createSH(tag));
+        return put(StringElement.createPN(tag));
     }
 
     /**
