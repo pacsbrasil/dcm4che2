@@ -72,9 +72,10 @@ public abstract class StoreAuditRecordBean implements SessionBean
     public void store(String content)
     {
         int start = content.indexOf('<');
-        if (start == -1)
+		int end = content.lastIndexOf('>');
+        if (start == -1 || end == -1)
             throw new IllegalArgumentException("No XML content: " + content);
-        String xmldata = content.substring(start);
+        String xmldata = content.substring(start, end+1);
         Timestamp ts = null;
         String type, host, aet, userName, patientName, patientId;
         
