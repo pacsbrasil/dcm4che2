@@ -100,11 +100,12 @@ public class RIDSupport {
 	
 	private Dataset patientDS = null;
 	private WADOSupport wadoSupport;
+	private RIDService service;
 
-	public RIDSupport( MBeanServer mbServer ) {
-		if ( server != null ) {
-			server = mbServer;
-		} else {
+	public RIDSupport( RIDService service ) {
+		this.service = service;
+		this.server = service.getServer();
+		if ( server == null ) {
 			server = MBeanServerLocator.locate();
 		}
 	}
@@ -154,29 +155,34 @@ public class RIDSupport {
 	}
 
 	private static List getCardiologyConceptNameCodes() {
+		//TODO: not only codeValue; configureable
 		if ( cardiologyConceptNameCodes == null ) {
 			cardiologyConceptNameCodes = new ArrayList();
-			cardiologyConceptNameCodes.add( createCodeDS( "18745-0" ) );//Cardiac Catheteization Report
-			cardiologyConceptNameCodes.add( createCodeDS( "11522-0" ) );//Echocardiography Report
+			cardiologyConceptNameCodes.add( createCodeDS( "18745-0", "LN" ) );//Cardiac Catheteization Report
+			cardiologyConceptNameCodes.add( createCodeDS( "11522-0", "LN" ) );//Echocardiography Report
+			cardiologyConceptNameCodes.add( createCodeDS( "10001", "99SUPP97" ) );//Quantitavie Arteriography report //a cardio report?
+			cardiologyConceptNameCodes.add( createCodeDS( "122291", "DCM" ) );//CT/MR Cardiovascular Report
+			cardiologyConceptNameCodes.add( createCodeDS( "122292", "DCM" ) );//Quantitative Ventriculography Report
+			cardiologyConceptNameCodes.add( createCodeDS( "125200", "DCM" ) );//Adult Echocardiography Procedure Report
 		}
 		return cardiologyConceptNameCodes;
 	}
 	private static List getRadiologyConceptNameCodes() {
 		if ( radiologyConceptNameCodes == null ) {
 			radiologyConceptNameCodes = new ArrayList();
-			radiologyConceptNameCodes.add( createCodeDS( "11540-2" ) );//CT Abdomen Report
-			radiologyConceptNameCodes.add( createCodeDS( "11538-6" ) );//CT Chest Report
-			radiologyConceptNameCodes.add( createCodeDS( "11539-4" ) );//CT Head Report
-			radiologyConceptNameCodes.add( createCodeDS( "18747-6" ) );//CT Report
-			radiologyConceptNameCodes.add( createCodeDS( "18748-4" ) );//Diagnostic Imaging Report
-			radiologyConceptNameCodes.add( createCodeDS( "18760-9" ) );//Ultrasound Report
-			radiologyConceptNameCodes.add( createCodeDS( "11541-0" ) );//MRI Head Report
-			radiologyConceptNameCodes.add( createCodeDS( "18755-9" ) );//MRI Report
-			radiologyConceptNameCodes.add( createCodeDS( "18756-7" ) );//MRI Spine Report
-			radiologyConceptNameCodes.add( createCodeDS( "18757-5" ) );//Nuclear Medicine Report
-			radiologyConceptNameCodes.add( createCodeDS( "11525-3" ) );//Ultrasound Obstetric and Gyn Report
-			radiologyConceptNameCodes.add( createCodeDS( "18758-3" ) );//PET Scan Report
-			radiologyConceptNameCodes.add( createCodeDS( "11528-7" ) );//Radiology Report
+			radiologyConceptNameCodes.add( createCodeDS( "11540-2", "LN" ) );//CT Abdomen Report
+			radiologyConceptNameCodes.add( createCodeDS( "11538-6", "LN" ) );//CT Chest Report
+			radiologyConceptNameCodes.add( createCodeDS( "11539-4", "LN" ) );//CT Head Report
+			radiologyConceptNameCodes.add( createCodeDS( "18747-6", "LN" ) );//CT Report
+			radiologyConceptNameCodes.add( createCodeDS( "18748-4", "LN" ) );//Diagnostic Imaging Report
+			radiologyConceptNameCodes.add( createCodeDS( "18760-9", "LN" ) );//Ultrasound Report
+			radiologyConceptNameCodes.add( createCodeDS( "11541-0", "LN" ) );//MRI Head Report
+			radiologyConceptNameCodes.add( createCodeDS( "18755-9", "LN" ) );//MRI Report
+			radiologyConceptNameCodes.add( createCodeDS( "18756-7", "LN" ) );//MRI Spine Report
+			radiologyConceptNameCodes.add( createCodeDS( "18757-5", "LN" ) );//Nuclear Medicine Report
+			radiologyConceptNameCodes.add( createCodeDS( "11525-3", "LN" ) );//Ultrasound Obstetric and Gyn Report
+			radiologyConceptNameCodes.add( createCodeDS( "18758-3", "LN" ) );//PET Scan Report
+			radiologyConceptNameCodes.add( createCodeDS( "11528-7", "LN" ) );//Radiology Report
 		}
 		return radiologyConceptNameCodes;
 	}
@@ -190,10 +196,10 @@ public class RIDSupport {
 		return allConceptNameCodes;
 	}
 	
-	private static Dataset createCodeDS( String value ) {
+	private static Dataset createCodeDS( String value, String design ) {
 		Dataset ds = factory.newDataset();
         ds.putSH(Tags.CodeValue, value);
-        ds.putSH(Tags.CodingSchemeDesignator, "LN");
+        ds.putSH(Tags.CodingSchemeDesignator, design);
         return ds;
 	}
 	/**
@@ -284,6 +290,9 @@ public class RIDSupport {
         	cnSq.addItem( (Dataset) iter.next() );
         	fillDocList( docList, queryDS );
 		}
+		if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
+			addECGSummary( docList, getECGQueryDS( reqObj) );
+		}
 		if ( docList.size() < 1 ) {
 			log.info("No documents found: patientDS:"+patientDS);
 			if ( patientDS != null ) {
@@ -297,6 +306,7 @@ public class RIDSupport {
 				docList.setQueryDS( patientDS );
 			}
 		}
+		
 		if ( ! contentType.equals(CONTENT_TYPE_XML) ) { // transform to (x)html only if client supports (x)html.
 			docList.setXslt( ridSummaryXsl );
 		}
@@ -339,10 +349,15 @@ public class RIDSupport {
 			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
 	    IHEDocumentList docList= new IHEDocumentList();
 	    initDocList( docList, reqObj, queryDS );
-	    queryDS.putUI( Tags.SOPClassUID, (String[]) getECGSopCuids().toArray( new String[0] ) );
-    	fillDocList( docList, queryDS );//TODO Is it ok to put all SOP Class UIDs in one query?
+		addECGSummary( docList, queryDS );
 		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
 		return new RIDTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
+	}
+	
+	private void addECGSummary( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
+	    queryDS.putUI( Tags.SOPClassUID, (String[]) getECGSopCuids().toArray( new String[0] ) );
+    	fillDocList( docList, queryDS );//TODO Is it ok to put all SOP Class UIDs in one query?
+		
 	}
 	
 	private void initDocList( IHEDocumentList docList, RIDRequestObject reqObj, Dataset queryDS ) {
@@ -361,7 +376,7 @@ public class RIDSupport {
 		else if (SUMMARY_CARDIOLOGY.equals( docCode ) )
 			docList.setDocDisplayName( "List of cardiology reports");
 		else if (SUMMARY_CARDIOLOGY_ECG.equals( docCode ) )
-			docList.setDocDisplayName( "List of ECG's");
+			docList.setDocDisplayName( "List of ECG");
 		String mrr = reqObj.getParam("mostRecentResults");
 		docList.setMostRecentResults( Integer.parseInt(mrr));
 		String ldt = reqObj.getParam("lowerDateTime");
@@ -685,6 +700,11 @@ public class RIDSupport {
 		String[] pat = new String[]{null,null};
 		String[] sa = StringUtils.split(patientID, '^');
 		return new String[]{ sa[0], sa.length > 3 ? sa[3] : null };
+	}
+
+	public float getWaveformCorrection() {
+		// TODO Auto-generated method stub
+		return service.getWaveformCorrection();
 	}
 
 	

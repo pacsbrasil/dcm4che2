@@ -65,11 +65,11 @@ public class WaveformInfo {
 	}
 	
 	public String getPatientSize() {
-		return String.valueOf( dataset.getFloat( Tags.PatientSize, 0 ).floatValue()*100 )+" cm";
+		return (dataset.getFloat( Tags.PatientSize, 0f )*100 )+" cm";
 	}
 
 	public String getPatientWeight() {
-		return String.valueOf( dataset.getFloat( Tags.PatientWeight, 0 ) )+" kg";
+		return dataset.getFloat( Tags.PatientWeight, 0f )+" kg";
 	}
 	
 	private String getDateString( Date d ) {

@@ -31,10 +31,17 @@ import org.xml.sax.SAXException;
  */
 public class RIDService extends AbstractCacheService  {
 
-	private RIDSupport support = new RIDSupport( this.server );
+	private RIDSupport support = new RIDSupport( this );
+	private float waveformCorrection = 1f;
 	
 	public RIDService() {
 		cache = WADOCacheImpl.getRIDCache();
+	}
+	public float getWaveformCorrection() {
+		return waveformCorrection;
+	}
+	public void setWaveformCorrection(float waveformCorrection) {
+		this.waveformCorrection = waveformCorrection;
 	}
 	public String getRIDSummaryXsl() {
 		String s = support.getRIDSummaryXsl();

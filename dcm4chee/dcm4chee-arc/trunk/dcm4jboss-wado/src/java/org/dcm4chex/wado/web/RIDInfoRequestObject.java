@@ -105,18 +105,26 @@ public class RIDInfoRequestObject extends BasicRequestObjectImpl implements
 		}
 		
 		if ( this.lowerDateTime != null ) {
-			try {
-				new ISO8601DateFormat().parse( lowerDateTime );			
-			} catch ( Exception x ) {
-				return RIDRequestObject.INVALID_RID_URL;//invalid date/time string
+			if ( lowerDateTime.trim().length() > 0 ) {
+				try {
+					new ISO8601DateFormat().parse( lowerDateTime );			
+				} catch ( Exception x ) {
+					return RIDRequestObject.INVALID_RID_URL;//invalid date/time string
+				}
+			} else {
+				lowerDateTime = null;
 			}
 		}
 
 		if ( this.upperDateTime != null ) {
-			try {
-				new ISO8601DateFormat().parse( upperDateTime );			
-			} catch ( Exception x ) {
-				return RIDRequestObject.INVALID_RID_URL;//invalid date/time string
+			if ( upperDateTime.trim().length() > 0 ) {
+				try {
+					new ISO8601DateFormat().parse( upperDateTime );			
+				} catch ( Exception x ) {
+					return RIDRequestObject.INVALID_RID_URL;//invalid date/time string
+				}
+			} else {
+				upperDateTime = null;
 			}
 		}
 		

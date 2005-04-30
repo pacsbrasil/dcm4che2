@@ -31,12 +31,13 @@ public class WaveFormChannel {
 	private WaveFormBuffer buffer;
 	private Float lowFreq;
 	private Float highFreq;
+	private float sensitivityCorrection;
 	
 	/**
 	 * @param buffer
 	 * @param item
 	 */
-	public WaveFormChannel(Dataset ch, WaveFormBuffer buffer) {
+	public WaveFormChannel(Dataset ch, WaveFormBuffer buffer, float fCorr) {
 		chNr = ch.getInt( Tags.WaveformChannelNumber, -1);
 		chSource = ch.get(Tags.ChannelSourceSeq).getItem().getString( Tags.CodeMeaning);
 		bitsStored = ch.getInt( Tags.WaveformBitsStored, -1 );
@@ -45,7 +46,20 @@ public class WaveFormChannel {
 		label = ch.getString( Tags.ChannelLabel );
 		status = ch.getString( Tags.ChannelStatus );
 		sensitivity = ch.getFloat( Tags.ChannelSensitivity, -1f );
+		sensitivityCorrection = ch.getFloat( Tags.ChannelSensitivityCorrectionFactor, 1f );
 		sensitivityUnit = ch.get(Tags.ChannelSensitivityUnitsSeq).getItem().getString( Tags.CodeValue );
+		if ( "uV".equals( sensitivityUnit) ) {
+			sensitivity *= 0.001f;
+		}
+//		if ( System.getProperty("WFCorrection") != null ) {//TODO only for Connectathon
+//			try {
+//				float fCorr = Float.parseFloat( System.getProperty("WFCorrection"));
+//				System.out.println("WFCorrection:"+fCorr);
+				sensitivity *= fCorr * sensitivityCorrection; 
+//			} catch ( Exception x ) {
+//				x.printStackTrace();
+//			}
+//		}
 		lowFreq = ch.getFloat( Tags.FilterLowFrequency );
 		highFreq = ch.getFloat( Tags.FilterHighFrequency );
 		this.buffer = buffer;

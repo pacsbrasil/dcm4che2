@@ -141,7 +141,8 @@ public class ECGSupport {
 	private RIDResponseObject handleSVG(Dataset ds, File outFile) {
 		try { 
 			DcmElement elem = ds.get( Tags.WaveformSeq);
-			WaveformGroup wfgrp = new WaveformGroup( elem, 0 );//TODO all groups
+			WaveformGroup wfgrp = new WaveformGroup( elem, 0, 
+					ridSupport.getWaveformCorrection() );//TODO all groups
 			log.info( wfgrp );
 			WaveformInfo wfInfo = new WaveformInfo( ds );
 
@@ -170,7 +171,8 @@ public class ECGSupport {
 			int nrOfWFGroups = elem.vm();
 			WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
 			for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
-				wfgrps[i] = new WaveformGroup( elem, i );
+				wfgrps[i] = new WaveformGroup( elem, i,
+						ridSupport.getWaveformCorrection());
 			}
 			WaveformInfo wfInfo = new WaveformInfo( ds );
 

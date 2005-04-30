@@ -33,7 +33,7 @@ public class WaveformGroup {
 	/**
 	 * @param elem
 	 */
-	public WaveformGroup(DcmElement elem, int grpIndex) {
+	public WaveformGroup(DcmElement elem, int grpIndex, float fCorr) {
 		if ( elem == null ) throw new NullPointerException( "WaveFormSequence missing!");
 		Dataset ds = elem.getItem( grpIndex );
 		this.grpIndex = grpIndex;
@@ -44,7 +44,7 @@ public class WaveformGroup {
 		bitsAlloc = ds.getInt( Tags.WaveformBitsAllocated, 0 );
 		sampleInterpretation = ds.getString( Tags.WaveformSampleInterpretation );
 		data = ds.getByteBuffer( Tags.WaveformData );
-		prepareChannels( ds.get( Tags.ChannelDefinitionSeq ) );
+		prepareChannels( ds.get( Tags.ChannelDefinitionSeq ), fCorr );
 	}
 	
 	/**
@@ -86,12 +86,12 @@ public class WaveformGroup {
 	/**
 	 * @param element
 	 */
-	private void prepareChannels( DcmElement chDefs ) {
+	private void prepareChannels( DcmElement chDefs, float fCorr ) {
 		int len = chDefs.vm();
 		channels = new WaveFormChannel[ len ];
 		WaveFormChannel ch;
 		for ( int i = 0 ; i < len ; i++ ) {
-			ch = new WaveFormChannel( chDefs.getItem(i), getWaveFormBuffer(i) );
+			ch = new WaveFormChannel( chDefs.getItem(i), getWaveFormBuffer(i), fCorr );
 			channels[i] = ch;
 		}
 		

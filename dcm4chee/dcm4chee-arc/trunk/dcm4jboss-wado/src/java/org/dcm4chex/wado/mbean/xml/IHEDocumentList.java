@@ -221,7 +221,11 @@ public class IHEDocumentList implements XMLResponseObject{
 	 */
 	public void setXslt(String xslt) throws MalformedURLException {
 		if ( xslt != null ) {
-			this.xslt = new URL( getDocRIDUrl()+"/"+xslt );
+			if ( xslt.startsWith("http:") ) {
+				this.xslt = new URL( xslt );
+			} else {
+				this.xslt = new URL( getDocRIDUrl()+"/"+xslt );
+			}
 		} else {
 			this.xslt = null;
 		}

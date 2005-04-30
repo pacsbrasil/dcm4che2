@@ -30,6 +30,18 @@
       </descriptors>
    </attribute>
  
+   <attribute access="read-write"
+      getMethod="getWaveformCorrection"
+      setMethod="setWaveformCorrection">
+      <description>Waveform Correction factor.
+      </description>
+      <name>WaveformCorrection</name>
+      <type>float</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+ 
     <attribute access="read-write"
       getMethod="getMinFreeSpace"
       setMethod="setMinFreeSpace">
