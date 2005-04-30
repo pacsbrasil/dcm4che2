@@ -466,8 +466,11 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 return aa;
             RoleSelection rs = ac
                     .getRoleSelection(UIDs.StorageCommitmentPushModel);
-            if (rs != null && rs.scp())
-                return aa;
+            if (rs == null || !rs.scp()) {
+				log.warn("SCU Role of Storage Commitment Service rejected by "
+						+ calledAET + " - try to send N_EVENT_REPORT anyway");
+            }
+            return aa;
         }
         try {
             aa.release(false);
