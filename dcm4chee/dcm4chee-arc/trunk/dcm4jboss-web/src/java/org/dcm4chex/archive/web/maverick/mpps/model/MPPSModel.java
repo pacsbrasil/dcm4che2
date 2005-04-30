@@ -190,12 +190,16 @@ public class MPPSModel {
 		}
 		Dataset ds;
 		mppsEntries.clear();
+		int countNull = 0;
 		for ( int i = offset ; i < end ; i++ ){
 			ds = (Dataset) l.get( i );
-			if ( ds != null )
+			if ( ds != null ) {
 				mppsEntries.add( new MPPSEntry( ds ) );
+			} else {
+				countNull++;
+			}
 		}
-		total = mppsEntries.size(); // the real total (without null entries!)
+		total -= countNull; // the real total (without null entries!)
 	}
 
 
