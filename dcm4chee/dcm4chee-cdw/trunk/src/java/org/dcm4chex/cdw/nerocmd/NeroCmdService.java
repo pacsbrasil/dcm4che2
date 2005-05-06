@@ -48,17 +48,17 @@ public class NeroCmdService extends MediaWriterServiceSupport {
     }
 
     public boolean checkDrive() throws MediaCreationException {
-        String[] cmdarray = { executable, "-driveinfo", "--drivename", driveLetter};
+        String[] cmdarray = { executable, "--driveinfo", "--drivename", driveLetter};
         return super.check(cmdarray, "Device");
     }
 
     public boolean checkDisk() throws MediaCreationException {
-        String[] cmdarray = { executable, "-cdinfo", "--drivename", driveLetter};
+        String[] cmdarray = { executable, "--cdinfo", "--drivename", driveLetter};
         return super.check(cmdarray, "writeable");
     }
 
     public boolean hasTOC() throws MediaCreationException {
-        String[] cmdarray = { executable, "-cdinfo", "--drivename", driveLetter};
+        String[] cmdarray = { executable, "--cdinfo", "--drivename", driveLetter};
         return super.check(cmdarray, "not writeable");
     }
 
