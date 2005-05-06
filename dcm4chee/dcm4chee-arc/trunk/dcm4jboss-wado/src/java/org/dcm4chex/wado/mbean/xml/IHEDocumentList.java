@@ -70,7 +70,7 @@ public class IHEDocumentList implements XMLResponseObject{
 	private String xslFile;
 	/** the request URL which is used from client to get this document list (with query string!). */
 	private String reqURL = "";
-	private String docRIDUrl = "http://localhost:8080/dcm4jboss-wado";
+	private String docRIDUrl = "http://localhost:8080/dcm4jboss-wado";//default; overwritten with base url of request!
 	private URL xslt;
 	
 	public IHEDocumentList() {

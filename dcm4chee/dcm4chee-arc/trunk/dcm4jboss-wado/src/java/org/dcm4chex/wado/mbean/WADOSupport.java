@@ -254,6 +254,15 @@ public File getDICOMFile( String studyUID, String seriesUID, String instanceUID 
 	return null;
 }
 
+/**
+ * Returns the WADO URL to remote server which serves the object.
+ * <p>
+ * the remote server have to be a dcm4jboss-wado server on the same port as this WADO server!
+ * 
+ * @param hostname
+ * @param req
+ * @return
+ */
 private URL getRedirectURL( String hostname, WADORequestObject req ) {
 	StringBuffer sb = new StringBuffer();
 	sb.append( "/dcm4jboss-wado/wado?requestType=WADO");
@@ -266,7 +275,8 @@ private URL getRedirectURL( String hostname, WADORequestObject req ) {
 	}
 	URL url = null;
 	try {
-		url = new URL("http",hostname,8080, sb.toString() );
+		int port = new URL( req.getRequestURL() ).getPort();
+		url = new URL("http",hostname,port, sb.toString() );
 	} catch (MalformedURLException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();

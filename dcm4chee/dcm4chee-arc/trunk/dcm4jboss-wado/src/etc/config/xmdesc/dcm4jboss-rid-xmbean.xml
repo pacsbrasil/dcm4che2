@@ -95,6 +95,18 @@
     </attribute>
 
     <attribute access="read-write"
+      getMethod="getWadoURL"
+      setMethod="setWadoURL">
+      <description>URL to WADO service to get images for reports.
+      </description>
+      <name>WadoURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="http://localhost:8080/dcm4jboss-wado/wado" />
+      </descriptors>
+    </attribute>
+
+    <attribute access="read-write"
       getMethod="getRIDSummaryXsl"
       setMethod="setRIDSummaryXsl">
       <description>Path and name of XSL file to render RID Summary request.

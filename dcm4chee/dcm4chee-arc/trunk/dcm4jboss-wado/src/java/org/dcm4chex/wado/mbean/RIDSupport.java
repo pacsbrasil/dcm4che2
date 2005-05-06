@@ -62,6 +62,8 @@ import org.dcm4chex.wado.mbean.xml.IHEDocumentList;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.xml.sax.SAXException;
 
+import com.sun.rsasign.t;
+
 /**
  * @author franz.willer
  *
@@ -94,6 +96,8 @@ public class RIDSupport {
 	private static List cardiologyConceptNameCodes;
 	private static List radiologyConceptNameCodes;
 	private boolean useXSLInstruction;
+	private String wadoURL;
+	
 	private static ObjectName fileSystemMgtName;
 	
 	private ECGSupport ecgSupport = null;
@@ -201,6 +205,18 @@ public class RIDSupport {
         ds.putSH(Tags.CodeValue, value);
         ds.putSH(Tags.CodingSchemeDesignator, design);
         return ds;
+	}
+	/**
+	 * @return Returns the wadoURL.
+	 */
+	public String getWadoURL() {
+		return wadoURL;
+	}
+	/**
+	 * @param wadoURL The wadoURL to set.
+	 */
+	public void setWadoURL(String wadoURL) {
+		this.wadoURL = wadoURL;
 	}
 	/**
 	 * @return Returns the ridSummaryXsl.
@@ -654,6 +670,7 @@ public class RIDSupport {
         Templates template = tf.newTemplates(new StreamSource(FOBSR_XSL_URI));
         
         Transformer t = template.newTransformer();
+        t.setParameter("wadoURL", wadoURL);
         t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
         out.close();
         tmpFile.delete();

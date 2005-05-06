@@ -43,6 +43,14 @@ public class RIDService extends AbstractCacheService  {
 	public void setWaveformCorrection(float waveformCorrection) {
 		this.waveformCorrection = waveformCorrection;
 	}
+	
+	public String getWadoURL() {
+		return support.getWadoURL();
+	}
+	public void setWadoURL( String wadoURL ) {
+		support.setWadoURL( wadoURL );
+	}
+	
 	public String getRIDSummaryXsl() {
 		String s = support.getRIDSummaryXsl();
 		if ( s == null ) s = "";
