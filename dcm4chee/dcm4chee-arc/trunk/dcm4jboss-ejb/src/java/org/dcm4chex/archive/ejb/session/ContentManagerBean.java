@@ -27,7 +27,9 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
@@ -49,6 +51,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
  * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient" 
  * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study" 
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series" 
+ * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance" 
  */
 public abstract class ContentManagerBean implements SessionBean {
 
@@ -56,6 +59,7 @@ public abstract class ContentManagerBean implements SessionBean {
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
     private SeriesLocalHome seriesHome;
+    private InstanceLocalHome instanceHome;
 
     public void setSessionContext(SessionContext arg0)
         throws EJBException, RemoteException {
@@ -68,6 +72,8 @@ public abstract class ContentManagerBean implements SessionBean {
                 (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
             seriesHome =
                 (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+            instanceHome =
+                (InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -169,6 +175,21 @@ public abstract class ContentManagerBean implements SessionBean {
         return result;
     }
 
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List listFilesOfInstance(int instancePk) throws FinderException {
+        Collection c =
+            instanceHome.findByPrimaryKey(new Integer(instancePk)).getFiles();
+        List result = new ArrayList(c.size());
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            FileLocal file = (FileLocal) it.next();
+            result.add(file.getFileDTO());
+        }
+        return result;
+    }
+    
     /**
      * @throws FinderException
      * @ejb.interface-method
