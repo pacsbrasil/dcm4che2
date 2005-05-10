@@ -55,36 +55,38 @@
 							</xsl:if>
 						</input>
 					</td>
-					<td width="40" bgcolor="eeeeee">
-						<a href="patientEdit.m?pk=-1">
-							<img src="images/addpat.gif" alt="Add Patient" border="0" title="Add new Patient"/>		
-						</a>
-					</td>
-					<td width="40" bgcolor="eeeeee">
-						<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0"
-							title="Merge selected Patients" onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
-							<xsl:if test="total &lt;= 0">
-								<xsl:attribute name="disabled">disabled</xsl:attribute>
-							</xsl:if>
-						</input>
-					</td>
-					<td width="40" bgcolor="eeeeee">
-						<input type="image" value="Move" name="move" src="images/move.gif" alt="move" border="0"
-							title="Move selected Entities">
-							<xsl:if test="total &lt;= 0">
-								<xsl:attribute name="disabled">disabled</xsl:attribute>
-							</xsl:if>
-						</input>
-					</td>
-					<td width="40" bgcolor="eeeeee">
-						<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0"
-							title="Delete selected Entities"
-							onclick="return confirm('Delete selected Entities?')">
-							<xsl:if test="total &lt;= 0">
-								<xsl:attribute name="disabled">disabled</xsl:attribute>
-							</xsl:if>
-						</input>
-					</td>
+					<xsl:if test="/model/admin='true'">
+						<td width="40" bgcolor="eeeeee">
+							<a href="patientEdit.m?pk=-1">
+								<img src="images/addpat.gif" alt="Add Patient" border="0" title="Add new Patient"/>		
+							</a>
+						</td>
+						<td width="40" bgcolor="eeeeee">
+							<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0"
+								title="Merge selected Patients" onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+						<td width="40" bgcolor="eeeeee">
+							<input type="image" value="Move" name="move" src="images/move.gif" alt="move" border="0"
+								title="Move selected Entities">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+						<td width="40" bgcolor="eeeeee">
+							<input type="image" value="Del" name="del" src="images/loeschen.gif" alt="delete" border="0"
+								title="Delete selected Entities"
+								onclick="return confirm('Delete selected Entities?')">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
+					</xsl:if>
 					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Send" name="send" src="images/send.gif" alt="send" border="0"
 							title="Send selected Entities to specified Destination"
@@ -379,16 +381,18 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
             <xsl:value-of select="patientSex"/>
 				</strong>
       </td>
-			<td align="right" bgcolor="ccccff">
+		               <xsl:if test="/model/admin='true'">
+        			    <td align="right" bgcolor="ccccff">
 				<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
 					<img src="images/add.gif" alt="Add Study" border="0" title="Add new Study"/>		
 				</a>
-			</td>
-			<td align="right" bgcolor="cccccc">
+			    </td>
+        			    <td align="right" bgcolor="cccccc">
 				<a href="patientEdit.m?pk={pk}">
 					<img src="images/edit.gif" alt="Edit Patient" border="0" title="Edit Patient Attributes"/>		
 				</a>
-			</td>
+			    </td>
+			</xsl:if>
 			<td align="right" bgcolor="cccccc">
 				<input type="checkbox" name="stickyPat" value="{pk}">
 					<xsl:if test="/model/stickyPatients/item = pk">
@@ -414,9 +418,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="10%"/>
 			<col width="26%"/>
 			<col width="9%"/>
-			<col width="17%"/>
-			<col width="2%"/>
-			<col width="2%"/>
+              		              <xsl:if test="/model/admin='true'">    
+			    <col width="17%"/>
+    			    <col width="2%"/>
+			    <col width="2%"/>
+              		              </xsl:if>
+              		              <xsl:if test="/model/admin!='true'">    
+			    <col width="21%"/>
+              		              </xsl:if>
 			<col width="2%"/>
 			<col width="2%"/>
 			<col width="2%"/>
@@ -425,13 +434,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
 						<a title="Show Series" href="expandStudy.m?patPk={../../pk}&amp;studyPk={pk}">
-						<img src="images/plus.gif" border="0" alt="+"/>
-              </a>				
+						    <img src="images/plus.gif" border="0" alt="+"/>
+                                                                                        </a>				
 					</xsl:when>
 					<xsl:otherwise>
 						<a title="Hide Series" href="collapseStudy.m?patPk={../../pk}&amp;studyPk={pk}">							
-						<img src="images/minus.gif" border="0" alt="-"/>
-              </a>				
+						    <img src="images/minus.gif" border="0" alt="-"/>
+                                                                                        </a>				
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
@@ -466,14 +475,20 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
       		<td title="Number of Instances" bgcolor="eaeaff">
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
-			<td align="right" bgcolor="ccccff">
+			<xsl:if test="/model/webViewer='true'">
+    			    <td align="right" bgcolor="ccccff">
 				<a href="studyView.m?patPk={../../pk}&amp;studyPk={pk}" >
 					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../pk" />&amp;studyPk=<xsl:value-of select="pk" />')</xsl:attribute>
-					<img src="images/image.gif" alt="View Study" border="0" title="Viw Study in Webviewer"/>		
-				</a>					
-			</td>
-			<td align="right" bgcolor="ccffcc">
-      			<xsl:choose>
+					<img src="images/webview_study.gif" alt="View Study" border="0" title="View Study in Webviewer"/>		
+				</a>				
+    			    </td>
+			</xsl:if>
+	                             <xsl:if test="/model/webViewer!='true'">
+	                                    <td bgcolor="eaeaff"></td>
+	                             </xsl:if>
+		              <xsl:if test="/model/admin='true'">    
+			    <td align="right" bgcolor="ccffcc">
+      			            <xsl:choose>
 					<xsl:when test="/model/addWorklist='false'">
 						<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
 							<img src="images/add.gif" alt="Add Series" border="0" title="Add new series"/>		
@@ -485,13 +500,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 						</a>
 					</xsl:otherwise>
 				</xsl:choose>
-			
-			</td>
-			<td align="right" bgcolor="ccccff">
-				<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
-					<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
-				</a>
-			</td>
+        			    </td>
+        			    <td align="right" bgcolor="ccccff">
+        				<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
+        					<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
+        				</a>
+        			    </td>
+        		               </xsl:if>
 			<td align="right" bgcolor="ccccff">
 				<input type="checkbox" name="stickyStudy" value="{pk}">
 					<xsl:if test="/model/stickyStudies/item = pk">
@@ -515,8 +530,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="12%"/>
 			<col width="10%"/>
 			<col width="35%"/>
-			<col width="18%"/>
-			<col width="4%"/>
+                                            <xsl:if test="/model/admin='true'">
+    			    <col width="18%"/>
+			    <col width="2%"/>
+                                            </xsl:if>
+                                            <xsl:if test="/model/admin!='true'">
+    			    <col width="20%"/>
+                                            </xsl:if>
+			<col width="2%"/>
 			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
@@ -563,12 +584,37 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<td title="Number of Instances"  bgcolor="e8ffe8">
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
-			<td align="right" bgcolor="ccffcc" >
+                	              <xsl:if test="/model/webViewer='true'">
+              			    <td align="right" bgcolor="ccffcc">
+                                                    <xsl:choose>
+                                                        <xsl:when test="modality != 'SR' and modality != 'PR' and modality != 'KO' and modality != 'AU' ">
+    
+                				<a href="studyView.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}" >
+                					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../../../pk" />&amp;studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
+                					<img src="images/webview_series.gif" alt="View Study" border="0" title="Viw Series in Webviewer"/>		
+                				</a>					
+                                                        </xsl:when>
+                                                        <xsl:when test="modality = 'KO'">
+					<a href="koView.m?studyPk={../../pk}&amp;seriesPk={pk}" >
+						<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
+						<img src="images/webview_series.gif" alt="View Study" border="0" title="Viw Study in Webviewer"/>		
+					</a>
+                                                        </xsl:when>
+                                                    </xsl:choose>
+                		    </td>
+ 		               </xsl:if>
+	                             <xsl:if test="/model/webViewer!='true'">
+	                                    <td bgcolor="e8ffe8"></td>
+	                             </xsl:if>
+
+                                            <xsl:if test="/model/admin='true'">
+                                                <td align="right" bgcolor="ccffcc" >
 				<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
 					<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		
 				</a>
-			</td>
-			<td align="right" bgcolor="ccffcc" >
+                                                </td>
+                                            </xsl:if>
+                                            <td align="right" bgcolor="ccffcc" >
 				<input type="checkbox" name="stickySeries" value="{pk}">
 					<xsl:if test="/model/stickySeries/item = pk">
 						<xsl:attribute name="checked"/>
@@ -596,8 +642,24 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="20%"/>
 			<col width="2%"/>
 		</colgroup>
-		<td bgcolor="ffffcc">
-		</td>
+		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		  <td align="right" bgcolor="ffffcc" rowspan="{$rowspan}">
+		      <xsl:if test="implemented='jo'">
+				<xsl:choose>
+					<xsl:when test="$rowspan=1">
+		  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+							<img src="images/plus.gif" border="0" alt="+"/>
+              			                                            </a>				
+					</xsl:when>
+					<xsl:otherwise>
+		  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+						<img src="images/minus.gif" border="0" alt="-"/>
+                                                                                  </a>				
+					</xsl:otherwise>
+				</xsl:choose>
+		          </xsl:if>
+                                </td>
+
 		<td title="Content Datetime" bgcolor="ffffef">
 			<xsl:value-of select="contentDateTime"/>
 		</td>
@@ -739,9 +801,19 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		<td align="right" bgcolor="ffffcc">
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
-					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="SRview" >
-						<img src="images/sr.gif" alt="View Report" border="0" title="View Report"/>		
-					</a>
+					<xsl:choose>
+						<xsl:when test="/model/webViewer='true' and sopCUID='1.2.840.10008.5.1.4.1.1.88.59'" >
+							<a href="koView.m?studyPk={../../../../pk}&amp;sopIUID={sopIUID}" >
+								<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../../../pk" />&amp;sopIUID=<xsl:value-of select="sopIUID" />')</xsl:attribute>
+								<img src="images/webview.gif" alt="View Study" border="0" title="Viw Study in Webviewer"/>		
+							</a>
+						</xsl:when>
+						<xsl:otherwise>
+							<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="SRview" >
+								<img src="images/sr.gif" alt="View Report" border="0" title="View Report"/>		
+							</a>
+						</xsl:otherwise>
+					</xsl:choose>				
 				</xsl:when>
 				<xsl:otherwise>
 					<img src="images/invalid.gif" alt="Report not online" border="0" title="Report not online"/>		
@@ -815,4 +887,66 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	</tr>
 </xsl:template>
 
+<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.FileDTO']">
+	<tr>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+		<colgroup>
+			<col width="4%"/>
+			<col width="10%"/>
+			<col width="3%"/>
+			<col width="21%"/>
+			<col width="25%"/>
+			<col width="5%"/>
+			<col width="10%"/>
+			<col width="20%"/>
+			<col width="2%"/>
+		</colgroup>
+		<td title="Content Datetime" bgcolor="ffffef">
+			<xsl:value-of select="contentDateTime"/>
+		</td>
+		<td title="Instance Number" bgcolor="ffffef">
+	   		<xsl:value-of select="instanceNumber"/>
+    </td>
+    <td title="ImageType" bgcolor="ffffef">
+			<xsl:value-of select="imageType"/>
+		</td>
+    <td title="Pixel Matrix" bgcolor="ffffef">
+	    	<xsl:value-of select="photometricInterpretation"/>
+				??
+    		<xsl:value-of select="rows"/>x<xsl:value-of select="columns"/>x<xsl:value-of select="numberOfFrames"/>
+				??
+    		<xsl:value-of select="bitsAllocated"/>bits
+    </td>
+		<td title="Number of Files" bgcolor="ffffef">
+			<xsl:value-of select="numberOfFiles"/>
+		</td>
+	  	<td title="Retrieve AETs" bgcolor="ffffef">
+			<xsl:value-of select="retrieveAETs"/>
+    	</td>
+	  	<td title="SopIUID" bgcolor="ffffef">
+			<xsl:value-of select="sopIUID"/>
+    	</td>
+		<td align="right" bgcolor="ffffcc">
+			<xsl:choose>
+				<xsl:when test="availability='ONLINE'" >			
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
+						<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
+					</a>
+				</xsl:when>
+				<xsl:otherwise>
+					<img src="images/invalid.gif" alt="Image not online" border="0" title="Image not online"/>		
+				</xsl:otherwise>
+			</xsl:choose>				
+		</td>
+		<td align="right" bgcolor="ffffcc">
+			<input type="checkbox" name="stickyInst" value="{pk}">
+				<xsl:if test="/model/stickyInstances/item = pk">
+					<xsl:attribute name="checked"/>
+				</xsl:if>
+			</input>
+		</td>
+      </table>
+	</tr>
+</xsl:template>
+    
 </xsl:stylesheet>

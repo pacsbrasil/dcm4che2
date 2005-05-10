@@ -8,8 +8,11 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,11 +39,21 @@ public class FolderForm {
         FolderForm form = (FolderForm) request.getSession()
                 .getAttribute(FOLDER_ATTRNAME);
         if (form == null) {
-            form = new FolderForm();
+            form = new FolderForm(request.isUserInRole("WebAdmin"));
             try {
 				URL wadoURL = new URL( "http", request.getServerName(), 
 						request.getServerPort(), "/dcm4jboss-wado/");
 				form.setWadoBaseURL( wadoURL.toString() );
+				URL url = new URL( "http", request.getServerName(), 
+						request.getServerPort(), "/WebViewer/jvapplet.jar");
+				try {
+					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+					conn.connect();
+					if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK )
+						form.enableWebViewer();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			} catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -51,7 +64,31 @@ public class FolderForm {
         
         return form;
     }
+    
+    /**
+	 * 
+	 */
+	private void enableWebViewer() {
+		this.webViewer = true;
+		
+	}
 
+	private FolderForm( boolean adm ) {
+    	admin = adm;
+    }
+
+	/**
+	 * @return Returns the admin.
+	 */
+	public boolean isAdmin() {
+		return admin;
+	}
+	/**
+	 * @return Returns the webViewer.
+	 */
+	public boolean isWebViewer() {
+		return webViewer;
+	}
     public static final int LIMIT = 10;
     
     public static final String NO_ERROR ="OK";
@@ -117,6 +154,10 @@ public class FolderForm {
     private int offset;
 
     private int total;
+    
+    private final boolean admin;
+    
+    private boolean webViewer;
     
     
     private boolean deleteAllowed = false; 
@@ -464,6 +505,21 @@ public class FolderForm {
         }
         return null;
     }
+    
+    public InstanceModel getInstanceByPk(int patPk, int studyPk, int seriesPk, int instancePk) {
+        return getInstanceByPk(getSeriesByPk(patPk, studyPk, seriesPk), instancePk);
+    }
+
+    public InstanceModel getInstanceByPk(SeriesModel series, int instancePk) {
+        if (series == null) { return null; }
+        List instances = series.getInstances();
+        for (int i = 0, n = instances.size(); i < n; i++) {
+            InstanceModel inst = (InstanceModel) instances.get(i);
+            if (inst.getPk() == instancePk) { return inst; }
+        }
+        return null;
+    }
+    
 
     public void removeStickies() {
         PatientModel patient;

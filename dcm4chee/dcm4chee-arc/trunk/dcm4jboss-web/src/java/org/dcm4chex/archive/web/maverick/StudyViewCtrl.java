@@ -30,6 +30,8 @@ public class StudyViewCtrl extends Dcm4JbossController {
 
     private int studyPk;
     
+    private int seriesPk = -1;
+    
     private PatientModel patient;
     
     private StudyContainer study;
@@ -61,15 +63,30 @@ public class StudyViewCtrl extends Dcm4JbossController {
         this.studyPk = pk;
     }
     
+	/**
+	 * @return Returns the seriesPk.
+	 */
+	public final int getSeriesPk() {
+		return seriesPk;
+	}
+	/**
+	 * @param seriesPk The seriesPk to set.
+	 */
+	public final void setSeriesPk(int seriesPk) {
+		this.seriesPk = seriesPk;
+	}
+	
     public int getSelectedSeries() {
     	return this.selectedSeries;
     }
 
     protected String perform() throws Exception {
     	patient = new PatientModel( lookupContentManager().getPatientForStudy( studyPk ) );
-    	Dataset sopIUIDs = lookupContentManager().getSOPInstanceRefMacro( studyPk, true );
-    	study = new StudyContainer( sopIUIDs );
-        return SUCCESS;
+    	ContentManager cm = lookupContentManager();
+    	Dataset sopIUIDs = cm.getSOPInstanceRefMacro( studyPk, true );
+    	String seriesIUID = seriesPk < 0 ? null:cm.getSeries( this.seriesPk ).getString( Tags.SeriesInstanceUID );
+    	study = new StudyContainer( sopIUIDs, seriesIUID );
+       return SUCCESS;
     }
     
     private ContentManager lookupContentManager() throws Exception {
@@ -84,14 +101,22 @@ public class StudyViewCtrl extends Dcm4JbossController {
     	
     	private List series = new ArrayList();
     	
-    	public StudyContainer( Dataset ds ) {
+    	public StudyContainer( Dataset ds, String seriesIUID ) {
     		studyIUID = ds.getString( Tags.StudyInstanceUID );
     		DcmElement serSeq = ds.get( Tags.RefSeriesSeq );
+    		SeriesContainer ser;
+    		String mod;
     		for ( int i = 0, len = serSeq.vm() ; i < len ; i++ ) {
-    			series.add( new SeriesContainer( serSeq.getItem(i)) );
+    			ser = new SeriesContainer( serSeq.getItem(i));
+    			if ( seriesIUID != null && ! seriesIUID.equals(ser.getSeriesIUID()) ) continue;
+    			mod = ser.getModality();
+				if ( !"SR".equals(mod) && !"PR".equals(mod) && !"KO".equals(mod) && !"AU".equals(mod) ) {
+					series.add( ser );
+				}
     		}
     	}
     	
+
     	public String getStudyIUID() {
     		return studyIUID;
     	}

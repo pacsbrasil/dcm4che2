@@ -74,15 +74,16 @@ public class FolderSubmitCtrl extends FolderCtrl {
         try {
             FolderForm folderForm = (FolderForm) getForm();
     		folderForm.setErrorCode( FolderForm.NO_ERROR );//reset error code
+    		folderForm.setPopupMsg(null);
             setSticky(folderForm.getStickyPatients(), "stickyPat");
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
-            HttpServletRequest rq = getCtx().getRequest(); 
-            log.info( "UserPrincipal:"+rq.getUserPrincipal().getName() );
-            log.info( "UserPrincipal is in role admin:"+rq.isUserInRole("admin") );
-            log.info( "UserPrincipal is in role JBossAdmin:"+rq.isUserInRole("JBossAdmin") );
-            log.info( "UserPrincipal is in role WebAdmin:"+rq.isUserInRole("WebAdmin") );
+            HttpServletRequest rq = getCtx().getRequest();
+            if ( log.isDebugEnabled() ) {
+		        log.debug( "UserPrincipal:"+rq.getUserPrincipal().getName() );
+		        log.debug( "UserPrincipal is in role admin:"+rq.isUserInRole("WebAdmin") );
+            }
             if (rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }
             if (rq.getParameter("prev") != null
@@ -91,12 +92,14 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     || rq.getParameter("next.x") != null) { return query(false); }
             if (rq.getParameter("send") != null
                     || rq.getParameter("send.x") != null) { return send(); }
-            if (rq.getParameter("del") != null
-                    || rq.getParameter("del.x") != null) { return delete(); }
-            if (rq.getParameter("merge") != null
-                    || rq.getParameter("merge.x") != null) { return MERGE; }
-            if (rq.getParameter("move") != null
-                    || rq.getParameter("move.x") != null) { return move(); }
+            if ( folderForm.isAdmin() ) {
+	            if (rq.getParameter("del") != null
+	                    || rq.getParameter("del.x") != null) { return delete(); }
+	            if (rq.getParameter("merge") != null
+	                    || rq.getParameter("merge.x") != null) { return MERGE; }
+	            if (rq.getParameter("move") != null
+	                    || rq.getParameter("move.x") != null) { return move(); }
+            }
             if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) ); 
             if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) ); 
 

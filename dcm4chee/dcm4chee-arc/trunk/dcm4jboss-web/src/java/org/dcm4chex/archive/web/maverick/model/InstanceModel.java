@@ -9,11 +9,15 @@
 package org.dcm4chex.archive.web.maverick.model;
 
 
+import java.sql.SQLException;
+import java.util.List;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -23,6 +27,8 @@ import org.dcm4chex.archive.common.PrivateTags;
  */
 public class InstanceModel extends AbstractModel {
 
+	private List files = null;
+	
     public static Object valueOf(Dataset ds) {
         String cuid = ds.getString(Tags.SOPClassUID);
         if (UIDs.GrayscaleSoftcopyPresentationStateStorage.equals(cuid))
@@ -87,5 +93,18 @@ public class InstanceModel extends AbstractModel {
     public final String getRetrieveAETs() {
         return StringUtils.toString(ds.getStrings(Tags.RetrieveAET), '\\');
     }
+    
+    public List getFiles() {
+    	return files;
+    }
+    
+    public void setFiles( List files ) {
+    	if ( files == null || files.isEmpty() ) {
+    		this.files = null;
+    	} else {
+    		this.files = files;
+    	}
+    }
+    
     
  }

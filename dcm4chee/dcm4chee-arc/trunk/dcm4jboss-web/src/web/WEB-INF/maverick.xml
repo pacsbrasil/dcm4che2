@@ -78,6 +78,13 @@ default-transform-type="xslt">
 	  <view name="success" type="redirect" path="folder.m"/>
     </command>
     
+    <command name="expandInstance">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.ExpandInstanceCtrl" />
+
+	  <view name="success" type="redirect" path="folder.m"/>
+    </command>
+
     <command name="patientEdit">
         <controller class="org.dcm4chex.archive.web.maverick.PatientEditCtrl" />    
 	    <view name="success">
@@ -107,6 +114,13 @@ default-transform-type="xslt">
         <controller class="org.dcm4chex.archive.web.maverick.StudyViewCtrl" />    
 	    <view name="success">
     	  <transform path="study_view.xsl" />
+	    </view>
+     </command>
+
+    <command name="koView">
+        <controller class="org.dcm4chex.archive.web.maverick.KeyObjectViewCtrl" />    
+	    <view name="success">
+    	  <transform path="ko_view.xsl" />
 	    </view>
      </command>
      

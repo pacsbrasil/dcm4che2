@@ -57,11 +57,10 @@
 			        &lt;PARAM NAME ="DB_LAST_NAME" VALUE ="</xsl:text><xsl:call-template name="lastName" /><xsl:text>"/&gt; \
 			        &lt;PARAM NAME ="DB_SEX" VALUE ="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" /&gt; \
-			        &lt;PARAM NAME = "SELECT_SEQUENCE" VALUE="</xsl:text><xsl:value-of select="selectedSeries" /><xsl:text>" /&gt; \
-			        </xsl:text>    <xsl:apply-templates select="studyContainer/series/item"/>
-    		                        <xsl:text>&lt;PARAM NAME = "IMAGE_SERVLET" VALUE ="/WebViewer/servlet/GetImageServlet?IMGUID=" /&gt;  \
-    			        &lt;PARAM NAME="type" VALUE="application/x-java-applet;version=1.4" /&gt; \
-    			        &lt;PARAM NAME="scriptable" VALUE="false" /&gt; \
+			        &lt;PARAM NAME = "KEYNOTE" VALUE="</xsl:text><xsl:value-of select="sopIUID" /><xsl:text>" /&gt; \
+			        &lt;PARAM NAME = "IMAGE_SERVLET" VALUE ="/WebViewer/servlet/GetImageServlet?Q=ORIG&amp;IMGUID=" /&gt;  \
+   			        &lt;PARAM NAME="type" VALUE="application/x-java-applet;version=1.4" /&gt; \
+   			        &lt;PARAM NAME="scriptable" VALUE="false" /&gt; \
 			&lt;/APPLET&gt; \
 			&lt;/noembed&gt; \
 			&lt;/object&gt;');
@@ -75,12 +74,9 @@
     		                        DB_FIRST_NAME="</xsl:text><xsl:call-template name="firstName" /><xsl:text>" \
     		                        DB_LAST_NAME="</xsl:text><xsl:call-template name="lastName" /><xsl:text>" \
     		                        DB_SEX="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" \
-    		                        DB_BIRTH_DATE="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" SELECT_SEQUENCE="</xsl:text><xsl:value-of select="selectedSeries" /><xsl:text>" \
-    		                        </xsl:text>    
-	                                            <xsl:for-each select="studyContainer/series/item[@type='org.dcm4chex.archive.web.maverick.StudyViewCtrl$SeriesContainer']">
-    		                                <xsl:call-template name="ieSeries"/>
-    		                             </xsl:for-each>
-    		                        <xsl:text>IMAGE_SERVLET="/WebViewer/servlet/GetImageServlet?IMGUID="  \
+    		                        DB_BIRTH_DATE="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" \
+    		                        KEYNOTE="</xsl:text><xsl:value-of select="sopIUID" /><xsl:text>" \
+    		                        IMAGE_SERVLET="/WebViewer/servlet/GetImageServlet?Q=ORIG&amp;IMGUID="  \
 	    			scriptable=false \
 	    			pluginspage="http://java.sun.com/products/plugin/index.html#download"&gt;');
 		else
@@ -91,9 +87,8 @@
 			        &lt;PARAM NAME ="DB_LAST_NAME" VALUE ="</xsl:text><xsl:call-template name="lastName" /><xsl:text>"/&gt; \
 			        &lt;PARAM NAME ="DB_SEX" VALUE ="</xsl:text><xsl:value-of select="patient/patientSex" /><xsl:text>" /&gt; \
 			        &lt;PARAM NAME ="DB_BIRTH_DATE" VALUE ="</xsl:text><xsl:value-of select="patient/patientBirthDate" /><xsl:text>" /&gt; \
-			        &lt;PARAM NAME = "SELECT_SEQUENCE" VALUE="</xsl:text><xsl:value-of select="selectedSeries" /><xsl:text>" /&gt; \
-			        </xsl:text>    <xsl:apply-templates select="studyContainer/series/item"/>
-    		                        <xsl:text>&lt;PARAM NAME = "IMAGE_SERVLET" VALUE ="/WebViewer/servlet/GetImageServlet?IMGUID=" /&gt;  \
+			        &lt;PARAM NAME = "KEYNOTE="</xsl:text><xsl:value-of select="sopIUID" /><xsl:text>" /&gt; \
+			        &lt;PARAM NAME = "IMAGE_SERVLET" VALUE ="/WebViewer/servlet/GetImageServlet?Q=ORIG&amp;IMGUID=" /&gt;  \
     			        &lt;PARAM NAME="type" VALUE="application/x-java-applet;version=1.4" /&gt; \
     			        &lt;PARAM NAME="scriptable" VALUE="false" /&gt; \
 			&lt;/APPLET&gt; ');
@@ -130,31 +125,5 @@
     </xsl:choose>
 </xsl:template>
     
-<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.StudyViewCtrl$SeriesContainer']">
-    <xsl:if test="modality != 'SR' and modality != 'KO' ">
-        <PARAM>
-            <xsl:attribute name="NAME"><xsl:text>SEQUENCE</xsl:text><xsl:value-of select="position()"/></xsl:attribute>
-            <xsl:attribute name="VALUE">
-                <xsl:text>Seq. Nr. </xsl:text><xsl:value-of select="seriesNumber"/>
-                <xsl:apply-templates select="instanceUIDs/item"></xsl:apply-templates>
-            </xsl:attribute>
-        </PARAM><xsl:text>\
-                                                                                            </xsl:text>
-        </xsl:if>
-</xsl:template>
-    
-<xsl:template name="ieSeries" >
-     <xsl:if test="modality != 'SR' and modality != 'KO' ">
-            <xsl:text>SEQUENCE</xsl:text><xsl:value-of select="position()"/><xsl:text>="Seq. Nr. </xsl:text><xsl:value-of select="seriesNumber"/>
-                <xsl:apply-templates select="instanceUIDs/item"></xsl:apply-templates>
-        <xsl:text>" \
-                                                                                            </xsl:text>
-        </xsl:if>
-</xsl:template>
-    
-<xsl:template match="item[@type='java.lang.String']">
-	<xsl:text>;</xsl:text><xsl:value-of select="." />
-</xsl:template>
-
 </xsl:stylesheet>
 
