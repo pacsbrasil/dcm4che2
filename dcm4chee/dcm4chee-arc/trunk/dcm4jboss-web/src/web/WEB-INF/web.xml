@@ -135,7 +135,7 @@
        <http-method>POST</http-method>
      </web-resource-collection>
      <auth-constraint>
-       <role-name>WebAdmin</role-name>
+       <role-name>WebUser</role-name>
      </auth-constraint>
    </security-constraint>
 
@@ -144,6 +144,9 @@
       <realm-name>Archive Web Admin</realm-name>
    </login-config>
 
+   <security-role>
+      <role-name>WebUser</role-name>
+   </security-role>
    <security-role>
       <role-name>WebAdmin</role-name>
    </security-role>
