@@ -154,6 +154,24 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setInstanceNumber(String no);
 
     /**
+     * Content Datetime
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="content_datetime"
+     */
+    public abstract java.sql.Timestamp getContentDateTime();
+
+    public abstract void setContentDateTime(java.sql.Timestamp dateTime);
+
+    /**
+     * @ejb.interface-method
+     */
+    public void setContentDateTime(java.util.Date date) {
+		setContentDateTime(date != null ? new java.sql.Timestamp(date.getTime())
+                : null);
+    }
+	
+	/**
      * SR Completion Flag
      *
      * @ejb.persistence column-name="sr_complete"
@@ -441,6 +459,11 @@ public abstract class InstanceBean implements EntityBean {
         setSopIuid(ds.getString(Tags.SOPInstanceUID));
         setSopCuid(ds.getString(Tags.SOPClassUID));
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
+        try {
+            setContentDateTime(ds.getDateTime(Tags.ContentDate, Tags.ContentTime));
+        } catch (IllegalArgumentException e) {
+            log.warn("Illegal Content Date/Time format: " + e.getMessage());
+        }
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
         Dataset tmp = ds.subSet(SUPPL_TAGS, true, true);

@@ -4,12 +4,12 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.3"/>
+	<property name="version" value="2.4"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
     <!--property name="datasource.mapping" value="mySQL"/-->
-    <!--property name="datasource.mapping" value="PostgreSQL 7.2"/-->
+    <!--property name="datasource.mapping" value="PostgreSQL 8.0"/-->
 	<!--property name="datasource.mapping" value="Oracle9i"/-->
     <property name="datasource.name" value="java:/DefaultDS"/>
     <!--property name="datasource.name" value="java:/MySqlDS"/-->

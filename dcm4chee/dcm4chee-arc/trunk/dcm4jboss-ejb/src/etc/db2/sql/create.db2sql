@@ -161,23 +161,24 @@ CREATE INDEX media_status ON media(media_status);
 
 CREATE SEQUENCE instance_pk_seq;
 CREATE TABLE instance (
-	pk             	INTEGER PRIMARY KEY  NOT NULL,
-	series_fk		INTEGER,
-	srcode_fk		INTEGER,
-	media_fk		INTEGER,
-	sop_iuid		VARCHAR(254) NOT NULL,
-	sop_cuid		VARCHAR(254) NOT NULL,
-	inst_no			VARCHAR(254),
-	sr_complete		VARCHAR(254),
-	sr_verified		VARCHAR(254),
-	ext_retr_aet	VARCHAR(254),
-	retrieve_aets	VARCHAR(254),
-	availability	INTEGER,
-	commitment		SMALLINT,
-	inst_attrs		BLOB(64000),
-FOREIGN KEY (series_fk) REFERENCES series(pk),
-FOREIGN KEY (srcode_fk) REFERENCES code(pk),
-FOREIGN KEY (media_fk) REFERENCES media(pk)
+	pk             		INTEGER PRIMARY KEY  NOT NULL,
+	series_fk			INTEGER,
+	srcode_fk			INTEGER,
+	media_fk			INTEGER,
+	sop_iuid			VARCHAR(254) NOT NULL,
+	sop_cuid			VARCHAR(254) NOT NULL,
+	inst_no				VARCHAR(254),
+	content_datetime	TIMESTAMP,
+	sr_complete			VARCHAR(254),
+	sr_verified			VARCHAR(254),
+	ext_retr_aet		VARCHAR(254),
+	retrieve_aets		VARCHAR(254),
+	availability		INTEGER,
+	commitment			SMALLINT,
+	inst_attrs			BLOB(64000),
+FOREIGN KEY (series_fk)	REFERENCES series(pk),
+FOREIGN KEY (srcode_fk)	REFERENCES code(pk),
+FOREIGN KEY (media_fk)	REFERENCES media(pk)
 );
 CREATE INDEX series_fk ON instance(series_fk);
 CREATE INDEX srcode_fk ON instance(srcode_fk);
@@ -185,6 +186,7 @@ CREATE INDEX media_fk ON instance(media_fk);
 CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid);
 CREATE INDEX sop_cuid ON instance(sop_cuid);
 CREATE INDEX inst_no ON instance(inst_no);
+CREATE INDEX content_datetime ON instance(content_datetime);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
@@ -397,10 +399,14 @@ CREATE TABLE roles(
 FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 CREATE INDEX user_id ON roles(user_id);
+
 INSERT INTO users VALUES('admin','admin');
 INSERT INTO roles VALUES('admin','JBossAdmin');
+INSERT INTO roles VALUES('admin','WebUser');
 INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','arr-user');
+INSERT INTO users VALUES('user','user');
+INSERT INTO roles VALUES('user','WebUser');
 
 INSERT INTO ae (pk,aet,hostname,port)
 	VALUES(NEXTVAL FOR ae_pk_seq,'PACS_TIANI','localhost',2350);

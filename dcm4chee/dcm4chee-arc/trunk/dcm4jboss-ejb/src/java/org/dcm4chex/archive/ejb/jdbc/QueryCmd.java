@@ -182,6 +182,8 @@ public abstract class QueryCmd extends BaseCmd {
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.InstanceNumber),
                 false);
+        sqlBuilder.addRangeMatch(null, "Instance.contentDateTime", SqlBuilder.TYPE2,
+                keys.getDateTimeRange(Tags.ContentDate, Tags.ContentTime));
         sqlBuilder.addWildCardMatch(null, "Instance.srCompletionFlag",
                 SqlBuilder.TYPE2,
                 keys.getString(Tags.CompletionFlag),
