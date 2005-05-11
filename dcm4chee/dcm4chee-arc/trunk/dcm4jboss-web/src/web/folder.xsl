@@ -342,8 +342,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="26%"/>
 			<col width="10%"/>
 			<col width="12%"/>
-			<col width="47%"/>
-			<col width="2%"/>
+		               <xsl:if test="/model/admin='true'">
+			    <col width="45%"/>
+			    <col width="2%"/>
+			    <col width="2%"/>
+		               </xsl:if>
+		               <xsl:if test="/model/admin!='true'">
+                    		    <col width="49%"/>
+		               </xsl:if>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
@@ -419,13 +425,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="26%"/>
 			<col width="9%"/>
               		              <xsl:if test="/model/admin='true'">    
-			    <col width="17%"/>
+			    <col width="15%"/>
     			    <col width="2%"/>
 			    <col width="2%"/>
               		              </xsl:if>
               		              <xsl:if test="/model/admin!='true'">    
-			    <col width="21%"/>
+			    <col width="19%"/>
               		              </xsl:if>
+			<col width="2%"/>
 			<col width="2%"/>
 			<col width="2%"/>
 			<col width="2%"/>
@@ -476,11 +483,19 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
 			<xsl:if test="/model/webViewer='true'">
-    			    <td align="right" bgcolor="ccccff">
-				<a href="studyView.m?patPk={../../pk}&amp;studyPk={pk}" >
+    			    <td align="right" bgcolor="eaeaff">
+    			          <xsl:choose>
+    			                  <xsl:when test="modalitiesInStudy='SR'"><!-- no webviewer action for SR! -->
+    			                  </xsl:when>
+    			                  <xsl:when test="modalitiesInStudy='KO'"><!-- no webviewer action if study contains only KO ! -->
+    			                  </xsl:when>
+    			                  <xsl:otherwise>
+    			                      <a href="studyView.m?patPk={../../pk}&amp;studyPk={pk}" >
 					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../pk" />&amp;studyPk=<xsl:value-of select="pk" />')</xsl:attribute>
-					<img src="images/webview_study.gif" alt="View Study" border="0" title="View Study in Webviewer"/>		
-				</a>				
+					<img src="images/webview.gif" alt="View Study" border="0" title="View Study in Webviewer"/>		
+    			                      </a>
+    			                  </xsl:otherwise>
+    			          </xsl:choose>
     			    </td>
 			</xsl:if>
 	                             <xsl:if test="/model/webViewer!='true'">
@@ -585,19 +600,19 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				<xsl:value-of select="numberOfInstances"/>
 			</td>
                 	              <xsl:if test="/model/webViewer='true'">
-              			    <td align="right" bgcolor="ccffcc">
+              			    <td align="right" bgcolor="e8ffe8">
                                                     <xsl:choose>
                                                         <xsl:when test="modality != 'SR' and modality != 'PR' and modality != 'KO' and modality != 'AU' ">
     
                 				<a href="studyView.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}" >
                 					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../../../pk" />&amp;studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
-                					<img src="images/webview_series.gif" alt="View Study" border="0" title="Viw Series in Webviewer"/>		
+                					<img src="images/webview.gif" alt="View Study" border="0" title="View Series in Webviewer"/>		
                 				</a>					
                                                         </xsl:when>
                                                         <xsl:when test="modality = 'KO'">
 					<a href="koView.m?studyPk={../../pk}&amp;seriesPk={pk}" >
 						<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
-						<img src="images/webview_series.gif" alt="View Study" border="0" title="Viw Study in Webviewer"/>		
+						<img src="images/webview_ko.gif" alt="View Study" border="0" title="View Key Object in Webviewer"/>		
 					</a>
                                                         </xsl:when>
                                                     </xsl:choose>
@@ -639,7 +654,8 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="25%"/>
 			<col width="5%"/>
 			<col width="10%"/>
-			<col width="20%"/>
+			<col width="18%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
@@ -685,7 +701,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	  	<td title="SopIUID" bgcolor="ffffef">
 			<xsl:value-of select="sopIUID"/>
     	</td>
-		<td align="right" bgcolor="ffffcc">
+		<td align="right" bgcolor="ffffef">
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
@@ -771,7 +787,8 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="15%"/>
 			<col width="5%"/>
 			<col width="18%"/>
-			<col width="20"/>
+			<col width="18"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
  
@@ -798,14 +815,14 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 	  	<td title="SopIUID" bgcolor="ffffef">
 			<xsl:value-of select="sopIUID"/>
     	</td>
-		<td align="right" bgcolor="ffffcc">
+		<td align="right" bgcolor="ffffef">
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
 					<xsl:choose>
 						<xsl:when test="/model/webViewer='true' and sopCUID='1.2.840.10008.5.1.4.1.1.88.59'" >
 							<a href="koView.m?studyPk={../../../../pk}&amp;sopIUID={sopIUID}" >
 								<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../../../pk" />&amp;sopIUID=<xsl:value-of select="sopIUID" />')</xsl:attribute>
-								<img src="images/webview.gif" alt="View Study" border="0" title="Viw Study in Webviewer"/>		
+								<img src="images/webview_ko.gif" alt="View Study" border="0" title="View Key Object in Webviewer"/>		
 							</a>
 						</xsl:when>
 						<xsl:otherwise>
