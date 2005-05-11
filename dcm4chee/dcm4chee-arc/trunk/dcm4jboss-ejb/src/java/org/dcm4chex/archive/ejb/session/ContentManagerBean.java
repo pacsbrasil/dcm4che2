@@ -12,6 +12,8 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -219,7 +221,10 @@ public abstract class ContentManagerBean implements SessionBean {
 				serDS.putIS( Tags.SeriesNumber, series.getSeriesNumber() ); //Q&D 
 			}
 			DcmElement refSopSq = serDS.putSQ(Tags.RefSOPSeq);
-			Iterator iterInstances = series.getInstances().iterator();
+			Collection col = series.getInstances();
+			List l = ( col instanceof List ) ? (List)col : new ArrayList(col);
+			Collections.sort( l, new InstanceNumberComparator() );
+			Iterator iterInstances = l.iterator();
 			InstanceLocal instance;
 			while ( iterInstances.hasNext() ) {
 				instance = (InstanceLocal) iterInstances.next();
@@ -241,4 +246,34 @@ public abstract class ContentManagerBean implements SessionBean {
     	StudyLocal sl = studyHome.findByPrimaryKey( new Integer( studyPk ) );
     	return sl.getPatient().getAttributes(false);
     }    
+    
+	public class InstanceNumberComparator implements Comparator {
+
+		public InstanceNumberComparator() {
+		}
+
+		/**
+		 * Compares the instance number of two InstanceLocal objects.
+		 * <p>
+		 * Compares its two arguments for order. Returns a negative integer, zero, or a positive integer 
+		 * as the first argument is less than, equal to, or greater than the second.
+		 * <p>
+		 * Throws an Exception if one of the arguments is null or neither a InstanceContainer or InstanceLocal object.<br>
+		 * Also both arguments must be of the same type!
+		 * <p>
+		 * If arguments are of type InstanceLocal, the getInstanceSize Method of InstanceCollector is used to get filesize.
+		 *  
+		 * @param arg0 	First argument
+		 * @param arg1	Second argument
+		 * 
+		 * @return <0 if arg0<arg1, 0 if equal and >0 if arg0>arg1
+		 */
+		public int compare(Object arg0, Object arg1) {
+			InstanceLocal il1 = (InstanceLocal) arg0;
+			InstanceLocal il2 = (InstanceLocal) arg1;
+			return new Integer(il1.getInstanceNumber()).compareTo( new Integer(il2.getInstanceNumber()) );
+		}
+		
+	}// end class
+    
 }
