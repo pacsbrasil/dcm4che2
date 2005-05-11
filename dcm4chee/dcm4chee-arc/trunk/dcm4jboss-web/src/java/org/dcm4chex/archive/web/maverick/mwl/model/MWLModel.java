@@ -54,13 +54,16 @@ public class MWLModel {
 
 	/** Comparator to sort list of SPS datasets. */
 	private Comparator comparator = new SpsDSComparator();
+
+	private boolean admin = false;
 	
 	/**
 	 * Creates the model.
 	 * <p>
 	 * Creates the filter instance for this model.
 	 */
-	private MWLModel() {
+	private MWLModel( boolean admin ) {
+		this.admin  = admin;
 		getFilter();
 	}
 	
@@ -77,12 +80,19 @@ public class MWLModel {
 	public static final MWLModel getModel( HttpServletRequest request ) {
 		MWLModel model = (MWLModel) request.getSession().getAttribute(MWLMODEL_ATTR_NAME);
 		if (model == null) {
-				model = new MWLModel();
+				model = new MWLModel(request.isUserInRole("WebAdmin"));
 				request.getSession().setAttribute(MWLMODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
 		}
 		return model;
+	}
+
+	/**
+	 * @return Returns true if the user have WebAdmin role.
+	 */
+	public boolean isAdmin() {
+		return admin;
 	}
 
 	/**

@@ -53,13 +53,16 @@ public class MPPSModel {
 
 	/** Comparator to sort list of MPPS datasets. */
 	private Comparator comparator = new MppsDSComparator();
+
+	private boolean admin = false;
 	
 	/**
 	 * Creates the model.
 	 * <p>
 	 * Creates the filter instance for this model.
 	 */
-	private MPPSModel() {
+	private MPPSModel( boolean admin ) {
+		this.admin  = admin;
 		getFilter();
 	}
 	
@@ -76,12 +79,19 @@ public class MPPSModel {
 	public static final MPPSModel getModel( HttpServletRequest request ) {
 		MPPSModel model = (MPPSModel) request.getSession().getAttribute(MPPS_MODEL_ATTR_NAME);
 		if (model == null) {
-				model = new MPPSModel();
+				model = new MPPSModel(request.isUserInRole("WebAdmin"));
 				request.getSession().setAttribute(MPPS_MODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
 		}
 		return model;
+	}
+
+	/**
+	 * @return Returns true if the user have WebAdmin role.
+	 */
+	public boolean isAdmin() {
+		return admin;
 	}
 
 	/**

@@ -65,6 +65,7 @@ public class MCMModel {
 	 * if checkMCM request parameter is true.
 	 */
 	private boolean checkAvail = false;
+	private boolean admin = false;
 	
 	/**
 	 * Creates the model.
@@ -74,7 +75,8 @@ public class MCMModel {
 	 * <p>
 	 * performs an initial availability check for MCM_SCP service.
 	 */
-	private MCMModel() {
+	private MCMModel(boolean admin) {
+		this.admin  = admin;
 		getFilter();
 		filterMediaList( true );
 		mcmNotAvail = ! MCMConsoleCtrl.getMcmScuDelegate().checkMcmScpAvail();
@@ -93,11 +95,18 @@ public class MCMModel {
 	public static final MCMModel getModel( HttpServletRequest request ) {
 		MCMModel model = (MCMModel) request.getSession().getAttribute(MCMMODEL_ATTR_NAME);
 		if (model == null) {
-				model = new MCMModel();
+				model = new MCMModel(request.isUserInRole("WebAdmin"));
 				request.getSession().setAttribute(MCMMODEL_ATTR_NAME, model);
 				model.setErrorCode( NO_ERROR ); //reset error code
 		}
 		return model;
+	}
+
+	/**
+	 * @return Returns true if the user have WebAdmin role.
+	 */
+	public boolean isAdmin() {
+		return admin;
 	}
 
 	/**
