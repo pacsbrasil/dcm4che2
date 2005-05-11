@@ -369,22 +369,22 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
       <td title="Patient Name" bgcolor="f8f8f8">
 				<strong>
-            <xsl:value-of select="patientName"/>
+            <xsl:value-of select="patientName"/>&#160;
 				</strong>
       </td>
       <td title="Patient ID" bgcolor="f8f8f8">
 				<strong>
-            <xsl:value-of select="patientID"/>
+            <xsl:value-of select="patientID"/>&#160;
 				</strong>
 			</td>
       <td title="Birth Date" bgcolor="f8f8f8">
 				<strong>
-            <xsl:value-of select="patientBirthDate"/>
+            <xsl:value-of select="patientBirthDate"/>&#160;
 				</strong>
       </td>
       <td title="Patient Sex" bgcolor="f8f8f8">
 				<strong>
-            <xsl:value-of select="patientSex"/>
+            <xsl:value-of select="patientSex"/>&#160;
 				</strong>
       </td>
 		               <xsl:if test="/model/admin='true'">
@@ -452,35 +452,35 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				</xsl:choose>
 			</td>
       		<td title="Study Date" bgcolor="eaeaff">
-				<xsl:value-of select="studyDateTime"/>
+				<xsl:value-of select="studyDateTime"/>&#160;
 			</td>
 			<td title="Study ID" bgcolor="eaeaff" >
-				<xsl:value-of select="studyID"/>
+				<xsl:value-of select="studyID"/>&#160;
 			</td>
 		 	<td title="Modalities" bgcolor="eaeaff">
-				<xsl:value-of select="modalitiesInStudy"/>
+				<xsl:value-of select="modalitiesInStudy"/>&#160;
 			</td>
       		<td title="Study Description" bgcolor="eaeaff">
       			<xsl:choose>
 					<xsl:when test="/model/showStudyIUID='false'">
-						<xsl:value-of select="studyDescription"/>
+						<xsl:value-of select="studyDescription"/>&#160;
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:value-of select="studyIUID"/>
+						<xsl:value-of select="studyIUID"/>&#160;
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
 			<td title="Accession Number" bgcolor="eaeaff">
-				&#160;<xsl:value-of select="accessionNumber"/>
+				&#160;<xsl:value-of select="accessionNumber"/>&#160;
 			</td>
       		<td title="Referring Physican" bgcolor="eaeaff">
-				<xsl:value-of select="referringPhysician"/>
+				<xsl:value-of select="referringPhysician"/>&#160;
 			</td>
       		<td title="Number of Series" bgcolor="eaeaff">
-				<xsl:value-of select="numberOfSeries"/>
+				<xsl:value-of select="numberOfSeries"/>&#160;
 			</td>
       		<td title="Number of Instances" bgcolor="eaeaff">
-				<xsl:value-of select="numberOfInstances"/>
+				<xsl:value-of select="numberOfInstances"/>&#160;
 			</td>
 			<xsl:if test="/model/webViewer='true'">
     			    <td align="right" bgcolor="eaeaff">
@@ -572,13 +572,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				</xsl:choose>
 			</td>
 			<td title="Series Date" bgcolor="e8ffe8" >
-				<xsl:value-of select="seriesDateTime"/>
+				<xsl:value-of select="seriesDateTime"/>&#160;
 			</td>
 			<td title="Series Number" bgcolor="e8ffe8" >
-				<xsl:value-of select="seriesNumber"/>
+				<xsl:value-of select="seriesNumber"/>&#160;
 			</td>
       <td title="Modality" bgcolor="e8ffe8" >
-				<xsl:value-of select="modality"/>
+				<xsl:value-of select="modality"/>&#160;
 			</td>
       <td title="Series Description / Body Part"  bgcolor="e8ffe8">
       			<xsl:choose>
@@ -589,7 +589,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 					<xsl:otherwise>
 						<xsl:value-of select="seriesIUID"/>
 					</xsl:otherwise>
-				</xsl:choose>
+				</xsl:choose>&#160;
     		
       </td>
 			<td title="Modality Vendors / Modelname"  bgcolor="e8ffe8">
@@ -660,46 +660,44 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		  <td align="right" bgcolor="ffffcc" rowspan="{$rowspan}">
-		      <xsl:if test="implemented='jo'">
-				<xsl:choose>
-					<xsl:when test="$rowspan=1">
-		  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
-							<img src="images/plus.gif" border="0" alt="+"/>
-              			                                            </a>				
-					</xsl:when>
-					<xsl:otherwise>
-		  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
-						<img src="images/minus.gif" border="0" alt="-"/>
-                                                                                  </a>				
-					</xsl:otherwise>
-				</xsl:choose>
-		          </xsl:if>
+			<xsl:choose>
+				<xsl:when test="$rowspan=1">
+	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+						<img src="images/plus.gif" border="0" alt="+"/>
+              		                                            </a>				
+				</xsl:when>
+				<xsl:otherwise>
+	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+					<img src="images/minus.gif" border="0" alt="-"/>
+                                                                              </a>				
+				</xsl:otherwise>
+			</xsl:choose>
                                 </td>
 
 		<td title="Content Datetime" bgcolor="ffffef">
-			<xsl:value-of select="contentDateTime"/>
+			<xsl:value-of select="contentDateTime"/>&#160;
 		</td>
 		<td title="Instance Number" bgcolor="ffffef">
-	   		<xsl:value-of select="instanceNumber"/>
+	   		<xsl:value-of select="instanceNumber"/>&#160;
     </td>
     <td title="ImageType" bgcolor="ffffef">
-			<xsl:value-of select="imageType"/>
+			<xsl:value-of select="imageType"/>&#160;
 		</td>
     <td title="Pixel Matrix" bgcolor="ffffef">
 	    	<xsl:value-of select="photometricInterpretation"/>
 				??
     		<xsl:value-of select="rows"/>x<xsl:value-of select="columns"/>x<xsl:value-of select="numberOfFrames"/>
 				??
-    		<xsl:value-of select="bitsAllocated"/>bits
+    		<xsl:value-of select="bitsAllocated"/>bits&#160;
     </td>
 		<td title="Number of Files" bgcolor="ffffef">
-			<xsl:value-of select="numberOfFiles"/>
+			<xsl:value-of select="numberOfFiles"/>&#160;
 		</td>
 	  	<td title="Retrieve AETs" bgcolor="ffffef">
-			<xsl:value-of select="retrieveAETs"/>
+			<xsl:value-of select="retrieveAETs"/>&#160;
     	</td>
 	  	<td title="SopIUID" bgcolor="ffffef">
-			<xsl:value-of select="sopIUID"/>
+			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
 		<td align="right" bgcolor="ffffef">
 			<xsl:choose>
@@ -722,6 +720,9 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		</td>
       </table>
 	</tr>
+		<xsl:apply-templates select="files/item">
+			<xsl:sort data-type="number" order="descending" select="pk"/>
+		</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.PresentationStateModel']">
@@ -739,31 +740,44 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="25%"/>
 			<col width="2%"/>
 		</colgroup>
-		<td bgcolor="ffffcc">
-		</td>
+		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		  <td align="right" bgcolor="ffffcc" rowspan="{$rowspan}">
+			<xsl:choose>
+				<xsl:when test="$rowspan=1">
+	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+						<img src="images/plus.gif" border="0" alt="+"/>
+              		                                            </a>				
+				</xsl:when>
+				<xsl:otherwise>
+	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+					<img src="images/minus.gif" border="0" alt="-"/>
+                                                                              </a>				
+				</xsl:otherwise>
+			</xsl:choose>
+                                </td>
 		<td title="Creation Datetime" bgcolor="ffffef">
-      		<xsl:value-of select="presentationCreationDateTime"/>
+      		<xsl:value-of select="presentationCreationDateTime"/>&#160;
 		</td>
 		<td title="Instance Number" bgcolor="ffffef">
-			<xsl:value-of select="instanceNumber"/>
+			<xsl:value-of select="instanceNumber"/>&#160;
     	</td>
     	<td title="Presentation Description" bgcolor="ffffef">
-      		<xsl:value-of select="presentationDescription"/>
+      		<xsl:value-of select="presentationDescription"/>&#160;
 		</td>
 		<td title="Presentation Label" bgcolor="ffffef">
-    		<xsl:value-of select="presentationLabel"/>
+    		<xsl:value-of select="presentationLabel"/>&#160;
 		</td>
 		<td title="Number of Referenced Images" bgcolor="ffffef">
-      		-&gt;<xsl:value-of select="numberOfReferencedImages"/>
+      		-&gt;<xsl:value-of select="numberOfReferencedImages"/>&#160;
 		</td>
 		<td title="Number of Files" bgcolor="ffffef">
-      		<xsl:value-of select="numberOfFiles"/>
+      		<xsl:value-of select="numberOfFiles"/>&#160;
 		</td>
 		<td title="Retrieve AETs" bgcolor="ffffef">
-      		<xsl:value-of select="retrieveAETs"/>
+      		<xsl:value-of select="retrieveAETs"/>&#160;
     	</td>
 	  	<td title="SopIUID" bgcolor="ffffef">
-			<xsl:value-of select="sopIUID"/>
+			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
 		<td align="right" bgcolor="ffffcc">
 			<input type="checkbox" name="stickyInst" value="{pk}">
@@ -774,6 +788,9 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		</td>
       </table>
 	</tr>
+		<xsl:apply-templates select="files/item">
+			<xsl:sort data-type="number" order="descending" select="pk"/>
+		</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.StructuredReportModel']">
@@ -792,28 +809,41 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="2%"/>
 		</colgroup>
  
-		<td bgcolor="ffffcc">
-		</td>
+		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		  <td align="right" bgcolor="ffffcc" rowspan="{$rowspan}">
+			<xsl:choose>
+				<xsl:when test="$rowspan=1">
+	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+						<img src="images/plus.gif" border="0" alt="+"/>
+              		                                            </a>				
+				</xsl:when>
+				<xsl:otherwise>
+	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+					<img src="images/minus.gif" border="0" alt="-"/>
+                                                                              </a>				
+				</xsl:otherwise>
+			</xsl:choose>
+                                </td>
 		<td title="Content Datetime" bgcolor="ffffef">
-    	<xsl:value-of select="contentDateTime"/>
+    	                    <xsl:value-of select="contentDateTime"/>&#160;
 		</td>
 		<td title="Instance Number" bgcolor="ffffef">
-  		<xsl:value-of select="instanceNumber"/>
+  		    <xsl:value-of select="instanceNumber"/>&#160;
     	</td>
     	<td title="Document Title" bgcolor="ffffef">
-  			<xsl:value-of select="documentTitle"/>
+  			<xsl:value-of select="documentTitle"/>&#160;
 		</td>
 		<td title="Document Status" bgcolor="ffffef">
-      		<xsl:value-of select="completionFlag"/>/<xsl:value-of select="verificationFlag"/>
+      		<xsl:value-of select="completionFlag"/>/<xsl:value-of select="verificationFlag"/>&#160;
     	</td>
 		<td title="Number of Files" bgcolor="ffffef">
-			<xsl:value-of select="numberOfFiles"/>
+			<xsl:value-of select="numberOfFiles"/>&#160;
 		</td>
 	  	<td title="Retrieve AETs" bgcolor="ffffef">
-			<xsl:value-of select="retrieveAETs"/>
+			<xsl:value-of select="retrieveAETs"/>&#160;
     	</td>
 	  	<td title="SopIUID" bgcolor="ffffef">
-			<xsl:value-of select="sopIUID"/>
+			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
 		<td align="right" bgcolor="ffffef">
 			<xsl:choose>
@@ -846,6 +876,9 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		</td>
 </table>
 	</tr>
+		<xsl:apply-templates select="files/item">
+			<xsl:sort data-type="number" order="descending" select="pk"/>
+		</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.WaveformModel']">
@@ -862,24 +895,37 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<col width="20%"/>
 			<col width="2%"/>
 		</colgroup>
-		<td bgcolor="ffffcc">
-		</td>
+		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		  <td align="right" bgcolor="ffffcc" rowspan="{$rowspan}">
+			<xsl:choose>
+				<xsl:when test="$rowspan=1">
+	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+						<img src="images/plus.gif" border="0" alt="+"/>
+              		                                            </a>				
+				</xsl:when>
+				<xsl:otherwise>
+	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+					<img src="images/minus.gif" border="0" alt="-"/>
+                                                                              </a>				
+				</xsl:otherwise>
+			</xsl:choose>
+                                </td>
 		<td title="Content Datetime" bgcolor="ffffef">
-			<xsl:value-of select="contentDateTime"/>
+			<xsl:value-of select="contentDateTime"/>&#160;
 		</td>
 		<td title="Instance Number" bgcolor="ffffef">
-	   		<xsl:value-of select="instanceNumber"/>
+	   		<xsl:value-of select="instanceNumber"/>&#160;
 	    </td>
 	    <td title="WaveformType" bgcolor="ffffef">
-			<xsl:value-of select="waveformType"/>
+			<xsl:value-of select="waveformType"/>&#160;
 		</td>
 	    <td title="dummy" bgcolor="ffffef">&#160;&#160;</td>
 		<td title="dummy" bgcolor="ffffef">&#160;&#160;</td>
  	  	<td title="Retrieve AETs" bgcolor="ffffef">
-			<xsl:value-of select="retrieveAETs"/>
+			<xsl:value-of select="retrieveAETs"/>&#160;
     	</td>
 	  	<td title="SopIUID" bgcolor="ffffef">
-			<xsl:value-of select="sopIUID"/>
+			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
 		<td align="right" bgcolor="ffffcc">
 			<xsl:choose>
@@ -902,66 +948,47 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		</td>
       </table>
 	</tr>
+		<xsl:apply-templates select="files/item">
+			<xsl:sort data-type="number" order="descending" select="pk"/>
+		</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.FileDTO']">
 	<tr>
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 		<colgroup>
-			<col width="4%"/>
-			<col width="10%"/>
-			<col width="3%"/>
-			<col width="21%"/>
-			<col width="25%"/>
 			<col width="5%"/>
 			<col width="10%"/>
+			<col width="10%"/>
+			<col width="10%"/>
+			<col width="10%"/>
+			<col width="35%"/>
 			<col width="20%"/>
-			<col width="2%"/>
 		</colgroup>
-		<td title="Content Datetime" bgcolor="ffffef">
-			<xsl:value-of select="contentDateTime"/>
+                             <td>&#160;</td>
+		<td title="fileTSUID" bgcolor="ffffff">
+			<xsl:value-of select="fileTsuid"/>&#160;
 		</td>
-		<td title="Instance Number" bgcolor="ffffef">
-	   		<xsl:value-of select="instanceNumber"/>
-    </td>
-    <td title="ImageType" bgcolor="ffffef">
-			<xsl:value-of select="imageType"/>
+		<td title="retrieveAET" bgcolor="ffffff">
+	   		<xsl:value-of select="retrieveAET"/>&#160;
+                            </td>
+                            <td title="Status" bgcolor="ffffff">
+                                        <xsl:choose>
+                                            <xsl:when test="fileStatus=0">OK</xsl:when>
+                                            <xsl:when test="fileStatus=-1">compress failed</xsl:when>
+                                            <xsl:when test="fileStatus=-2">verify compress failed</xsl:when>
+                                            <xsl:otherwise>unknown(<xsl:value-of select="fileStatus"/>)</xsl:otherwise>
+                                        </xsl:choose>&#160;
+                            </td>
+                            <td title="Size" bgcolor="ffffff">
+	    	               <xsl:value-of select="fileSize"/> bytes&#160;
+                            </td>
+		<td title="Path" bgcolor="ffffff">
+			<xsl:value-of select="directoryPath"/>/<xsl:value-of select="filePath"/>&#160;
 		</td>
-    <td title="Pixel Matrix" bgcolor="ffffef">
-	    	<xsl:value-of select="photometricInterpretation"/>
-				??
-    		<xsl:value-of select="rows"/>x<xsl:value-of select="columns"/>x<xsl:value-of select="numberOfFrames"/>
-				??
-    		<xsl:value-of select="bitsAllocated"/>bits
-    </td>
-		<td title="Number of Files" bgcolor="ffffef">
-			<xsl:value-of select="numberOfFiles"/>
-		</td>
-	  	<td title="Retrieve AETs" bgcolor="ffffef">
-			<xsl:value-of select="retrieveAETs"/>
-    	</td>
-	  	<td title="SopIUID" bgcolor="ffffef">
-			<xsl:value-of select="sopIUID"/>
-    	</td>
-		<td align="right" bgcolor="ffffcc">
-			<xsl:choose>
-				<xsl:when test="availability='ONLINE'" >			
-					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
-						<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
-					</a>
-				</xsl:when>
-				<xsl:otherwise>
-					<img src="images/invalid.gif" alt="Image not online" border="0" title="Image not online"/>		
-				</xsl:otherwise>
-			</xsl:choose>				
-		</td>
-		<td align="right" bgcolor="ffffcc">
-			<input type="checkbox" name="stickyInst" value="{pk}">
-				<xsl:if test="/model/stickyInstances/item = pk">
-					<xsl:attribute name="checked"/>
-				</xsl:if>
-			</input>
-		</td>
+	  	<td title="MD5" bgcolor="ffffff">
+			<xsl:value-of select="md5String"/>
+    	                </td>
       </table>
 	</tr>
 </xsl:template>
