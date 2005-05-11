@@ -81,6 +81,9 @@ public final class FileDTO implements Serializable {
         this.basedir = baseDir;
     }
 
+    public final String getMd5String() {
+    	return MD5.toString(md5);
+    }
     /**
      * @return Returns the md5.
      */
