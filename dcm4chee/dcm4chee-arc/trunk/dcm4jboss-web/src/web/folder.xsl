@@ -648,13 +648,13 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 		<colgroup>
 			<col width="4%"/>
-			<col width="10%"/>
+			<col width="12%"/>
 			<col width="3%"/>
-			<col width="21%"/>
+			<col width="6%"/>
 			<col width="25%"/>
 			<col width="5%"/>
 			<col width="10%"/>
-			<col width="18%"/>
+			<col width="31%"/>
 			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
