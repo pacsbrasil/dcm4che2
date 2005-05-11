@@ -8,9 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.web.maverick;
 
-import java.util.List;
-
-import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
