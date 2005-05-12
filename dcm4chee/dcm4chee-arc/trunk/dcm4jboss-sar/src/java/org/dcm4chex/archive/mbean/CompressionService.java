@@ -25,6 +25,7 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CodecCmd;
@@ -257,12 +258,14 @@ public class CompressionService extends TimerSupport {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
-        File destFile = incFileName(srcFile);
-        if (log.isDebugEnabled())
-            log.debug("Compress file " + srcFile + " to " + destFile
-                    + " with CODEC:" + info.getCodec() + "("
-                    + info.getTransferSyntax() + ")");
+		File destFile = null;
         try {
+	        destFile = FileUtils.createNewFile(srcFile.getParentFile(),
+					(int) Long.parseLong(srcFile.getName(), 16)+1);
+	        if (log.isDebugEnabled())
+	            log.debug("Compress file " + srcFile + " to " + destFile
+	                    + " with CODEC:" + info.getCodec() + "("
+	                    + info.getTransferSyntax() + ")");
             int[] pxvalVR = new int[1];
             byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
                     .getTransferSyntax(), pxvalVR);
@@ -301,7 +304,7 @@ public class CompressionService extends TimerSupport {
                     .getTransferSyntax(), (int) destFile.length(), md5);
         } catch (Exception x) {
             log.error("Can't compress file:" + srcFile, x);
-            if (destFile.exists())
+            if (destFile != null && destFile.exists())
                 destFile.delete();
             try {
                 fsMgt.setFileStatus(fileDTO.getPk(), FileDTO.COMPRESS_FAILED);
@@ -310,16 +313,6 @@ public class CompressionService extends TimerSupport {
                         + srcFile);
             }
         }
-    }
-
-    private File incFileName(File src) {
-        File path = src.getParentFile();
-        long fnAsInt = Long.parseLong(src.getName(), 16);
-        File f;
-        do {
-            f = new File(path, Long.toHexString(++fnAsInt).toUpperCase());            
-        } while (f.exists());
-        return f;
     }
 
     private boolean isDisabled(int hour) {
