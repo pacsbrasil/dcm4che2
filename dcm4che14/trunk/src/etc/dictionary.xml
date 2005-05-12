@@ -2289,6 +2289,8 @@
   <uid value="1.2.840.10008.5.1.4.1.1.481.5" name="RT Plan Storage" key="RTPlanStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.481.6" name="RT Brachy Treatment Record Storage" key="RTBrachyTreatmentRecordStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.481.7" name="RT Treatment Summary Record Storage" key="RTTreatmentSummaryRecordStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.8" name="RT Ion Plan Storage" key="RTIonPlanStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.9" name="RT Ion Beams Treatment Record Storage" key="RTIonBeamsTreatmentRecordStorage" />
   <uid value="1.2.840.10008.5.1.4.1.2.1.1" name="Patient Root Query/Retrieve Information Model - FIND" key="PatientRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.840.10008.5.1.4.1.2.1.2" name="Patient Root Query/Retrieve Information Model - MOVE" key="PatientRootQueryRetrieveInformationModelMOVE" />
   <uid value="1.2.840.10008.5.1.4.1.2.1.3" name="Patient Root Query/Retrieve Information Model - GET" key="PatientRootQueryRetrieveInformationModelGET" />
