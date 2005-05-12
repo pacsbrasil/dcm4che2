@@ -458,24 +458,26 @@ public class FileSystemMgtService extends TimerSupport {
             FileDTO[] toDelete;
             for (int i = 0, n = dirPathList.size(); i < n; ++i) {
                 try {
-                    File f = (File) dirPathList.get(i);
-                    toDelete = fsMgt.getDereferencedFiles(FileUtils.slashify(f));
+                    File dirPath = (File) dirPathList.get(i);
+                    toDelete = fsMgt.getDereferencedFiles(
+							FileUtils.slashify(dirPath));
                 } catch (Exception e) {
                     log.warn("Failed to query dereferenced files:", e);
                     break;
                 }
                 for (int j = 0; j < toDelete.length; j++) {
                     FileDTO fileDTO = toDelete[j];
-                    if (delete(FileUtils.toFile(fileDTO.getDirectoryPath(),
-                            fileDTO.getFilePath()))) {
-                        try {
-                            fsMgt.deleteFile(fileDTO.getPk());
-                        } catch (Exception e) {
-                            log
-                                    .warn("Failed to remove entry from list of dereferenced files:",
-                                            e);
-                        }
+					File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
+                            fileDTO.getFilePath());
+                    try {
+                        fsMgt.deleteFile(fileDTO.getPk());
+                    } catch (Exception e) {
+                        log.warn("Failed to remove File Record[pk=" 
+								+ fileDTO.getPk() + "] from DB:", e);
+                        log.info("-> Keep dereferenced file: " + file);
+						continue;
                     }
+                    delete(file);
                 }
             }
         } finally {
