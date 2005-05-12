@@ -8,6 +8,8 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.sql.Blob;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -242,7 +244,20 @@ public abstract class QueryCmd extends BaseCmd {
     protected abstract void fillDataset(Dataset ds) throws SQLException;
 
     protected void fillDataset(Dataset ds, int column) throws SQLException {
-        DatasetUtils.fromByteArray(rs.getBytes(column),
+        // Get metadata from resultset
+        // If a database does not fully support this command, it will return null
+        ResultSetMetaData meta = rs.getMetaData();
+        int colType = java.sql.Types.VARCHAR;
+        boolean isBlob = false;
+    	Blob blob1 = null;
+        if( meta != null ) {
+        	if( meta.getColumnType(column) == java.sql.Types.BLOB ) {
+        		// We know for sure this column is a blob
+        		isBlob = true;
+            	blob1 = rs.getBlob(column);
+        	}
+        }
+        DatasetUtils.fromByteArray( isBlob ? blob1.getBytes(1,(int)blob1.length()) : rs.getBytes(column),
                 DcmDecodeParam.EVR_LE,
                 ds);
     }

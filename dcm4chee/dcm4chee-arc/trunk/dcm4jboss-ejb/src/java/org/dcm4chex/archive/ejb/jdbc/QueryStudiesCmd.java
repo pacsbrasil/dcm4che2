@@ -8,6 +8,8 @@
  ******************************************/
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.sql.Blob;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,9 +98,32 @@ public class QueryStudiesCmd extends BaseCmd {
         try {
             execute(sqlBuilder.getSql());
             ArrayList result = new ArrayList();
+            
+            // Get metadata from resultset
+            // If a database does not fully support this command, it will return null
+            ResultSetMetaData meta = rs.getMetaData();
+            int colType = java.sql.Types.VARCHAR;
+            boolean isBlob = false;
+            if( meta != null ) {
+            	if( meta.getColumnType(2) == java.sql.Types.BLOB && 
+            		meta.getColumnType(4) == java.sql.Types.BLOB	) {
+            		// We know for sure these columns are blobs
+            		isBlob = true;
+            	}
+            }
+            
             while (next()) {
-                final byte[] patAttrs = rs.getBytes(2);
-                final byte[] styAttrs = rs.getBytes(4);
+                final byte[] patAttrs;
+                final byte[] styAttrs;
+                if( isBlob ) {
+                	Blob blob2 = rs.getBlob(2);
+                	Blob blob4 = rs.getBlob(4);
+                	patAttrs = blob2.getBytes(1,(int)blob2.length());
+                	styAttrs = blob4.getBytes(1,(int)blob4.length());
+                } else {
+                	patAttrs = rs.getBytes(2);
+                	styAttrs = rs.getBytes(4);
+                }
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putUL(PrivateTags.PatientPk, rs.getInt(1));

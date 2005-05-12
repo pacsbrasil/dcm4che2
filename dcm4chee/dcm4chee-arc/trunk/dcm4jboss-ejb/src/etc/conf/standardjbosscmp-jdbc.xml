@@ -912,11 +912,13 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
          </mapping>
          <mapping>
             <java-type>java.lang.Object</java-type>
+            <!--
             <jdbc-type>VARBINARY</jdbc-type>
             <sql-type>LONG RAW</sql-type>
-            <!--
+            -->
             <jdbc-type>BLOB</jdbc-type>
             <sql-type>BLOB</sql-type>
+            <!--
             | Change this from BLOB to RAW(n) if you know your
             | serialized object will be <= n bytes and n <= 2000
             -->
