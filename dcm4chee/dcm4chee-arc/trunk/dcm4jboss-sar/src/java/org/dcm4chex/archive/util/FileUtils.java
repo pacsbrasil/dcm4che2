@@ -52,7 +52,7 @@ public class FileUtils {
     public static File createNewFile(File dir, int hash) throws IOException {
 		File f;
 		do {
-			f = new File(dir, toHex(hash));
+			f = new File(dir, toHex(hash++));
 		} while (!f.createNewFile());
 		return f;
     }
