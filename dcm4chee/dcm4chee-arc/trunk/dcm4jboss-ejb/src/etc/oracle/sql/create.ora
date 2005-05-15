@@ -27,7 +27,7 @@ CREATE TABLE patient (
 	pat_name    	VARCHAR2(255),
 	pat_birthdate  	TIMESTAMP,
 	pat_sex		  	VARCHAR2(255),
-	pat_attrs		LONG RAW,
+	pat_attrs		BLOB,
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 );
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
@@ -56,7 +56,7 @@ CREATE TABLE study (
 	checked_time	TIMESTAMP,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	study_attrs		LONG RAW,
+	study_attrs		BLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX patient_fk ON study(patient_fk);
@@ -79,7 +79,7 @@ CREATE TABLE mpps (
 	modality	    	VARCHAR2(255),
 	accession_no		VARCHAR2(255),
 	mpps_status			INTEGER NOT NULL,
-	mpps_attrs			LONG RAW,
+	mpps_attrs			BLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (drcode_fk) REFERENCES code(pk)
 );
@@ -110,7 +110,7 @@ CREATE TABLE series (
 	hidden			NUMBER(1) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
-	series_attrs	LONG RAW,
+	series_attrs	BLOB,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
 );
@@ -160,13 +160,14 @@ CREATE TABLE instance (
 	sop_iuid		VARCHAR2(255) NOT NULL,
 	sop_cuid		VARCHAR2(255) NOT NULL,
 	inst_no			VARCHAR2(255),
+	content_datetime TIMESTAMP,
 	sr_complete		VARCHAR2(255),
 	sr_verified		VARCHAR2(255),
 	ext_retr_aet	VARCHAR2(255),
 	retrieve_aets	VARCHAR2(255),
 	availability	INTEGER,
 	commitment		NUMBER(1),
-	inst_attrs		LONG RAW,
+	inst_attrs		BLOB,
 FOREIGN KEY (series_fk) REFERENCES series(pk),
 FOREIGN KEY (srcode_fk) REFERENCES code(pk),
 FOREIGN KEY (media_fk) REFERENCES media(pk)
@@ -177,6 +178,7 @@ CREATE INDEX media_fk ON instance(media_fk);
 CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid);
 CREATE INDEX sop_cuid ON instance(sop_cuid);
 CREATE INDEX inst_no ON instance(inst_no);
+CREATE INDEX content_datetime ON instance(content_datetime);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
@@ -236,7 +238,7 @@ CREATE TABLE mwl_item (
 	perf_physician  VARCHAR2(255),
 	req_proc_id    	VARCHAR2(255) NOT NULL,
 	accession_no	VARCHAR2(255),
-	item_attrs		LONG RAW,
+	item_attrs		BLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk)
 );
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
@@ -261,7 +263,7 @@ CREATE TABLE gpsps (
 	gpsps_status    INTEGER,
 	gpsps_prior     INTEGER,
 	in_availability INTEGER,
-	item_attrs      LONG RAW,
+	item_attrs      BLOB,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (code_fk) REFERENCES code(pk)
 );
