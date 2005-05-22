@@ -40,6 +40,11 @@ import org.jboss.console.twiddle.command.CommandContext;
 import org.jboss.console.twiddle.command.CommandException;
 import org.jboss.console.twiddle.command.NoSuchCommandException;
 
+import org.jboss.security.SecurityAssociation;
+import org.jboss.security.SimplePrincipal;
+
+
+
 /**
  * A command to invoke an operation on an MBean (or MBeans).
  *
@@ -308,12 +313,12 @@ public class Twiddle
                command.displayHelp();
             }
          }
-         System.exit(1);
+		 System.exit(1);
       }
       catch (Exception e)
       {
          log.error("Exec failed", e);
-         System.exit(1);
+		 System.exit(1);
       }
    }
 
@@ -358,6 +363,8 @@ public class Twiddle
       out.println("    --                        Stop processing options");
       out.println("    -s, --server=<url>        The JNDI URL of the remote server");
       out.println("    -a, --adapter=<name>      The JNDI name of the RMI adapter to use");
+      out.println("    -u, --user=<name>         Specify the username for authentication");
+      out.println("    -p, --password=<name>     Specify the password for authentication"); 
       out.println("    -q, --quiet               Be somewhat more quiet");
       out.flush();
    }
@@ -368,7 +375,7 @@ public class Twiddle
       {
          log.debug("args["+a+"]="+args[a]);
       }
-      String sopts = "-:hH:c:D:s:a:q";
+      String sopts = "-:hH:u:p:c:D:s:a:q";
       LongOpt[] lopts =
          {
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
@@ -376,6 +383,8 @@ public class Twiddle
             new LongOpt("server", LongOpt.REQUIRED_ARGUMENT, null, 's'),
             new LongOpt("adapter", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
             new LongOpt("quiet", LongOpt.NO_ARGUMENT, null, 'q'),
+            new LongOpt("user", LongOpt.REQUIRED_ARGUMENT, null, 'u'),
+            new LongOpt("password", LongOpt.REQUIRED_ARGUMENT, null, 'p'),
          };
 
       Getopt getopt = new Getopt(PROGRAM_NAME, args, sopts, lopts);
@@ -490,8 +499,16 @@ public class Twiddle
               case 'a':
                  twiddle.setAdapterName(getopt.getOptarg());
                  break;
+              case 'u':
+                 String username = getopt.getOptarg();
+                 SecurityAssociation.setPrincipal(new SimplePrincipal(username));
+                 break;
+              case 'p':
+                 String password = getopt.getOptarg();
+                 SecurityAssociation.setCredential(password);
+                 break;
 
-                 // Enable quiet operations
+              // Enable quiet operations
               case 'q':
                  twiddle.setQuiet(true);
                  break;

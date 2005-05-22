@@ -2,7 +2,7 @@
 dcm4che.home=../dcm4che14/build
 
 #Override with your JBoss dist location
-jboss.dir=/usr/jboss
+jboss.home=${user.home}/jboss-4.0.2
 
 #Maverik
 maverick.dir=/usr/local/maverick

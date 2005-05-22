@@ -4,12 +4,12 @@
 	--> 
 	<property file="build.properties"/>
 
-	<property name="version" value="2.4"/>
+	<property name="version" value="2.4.2"/>
 	<property name="javac.debug" value="on"/>	
 
     <property name="datasource.mapping" value="Hypersonic SQL"/>
     <!--property name="datasource.mapping" value="mySQL"/-->
-    <!--property name="datasource.mapping" value="PostgreSQL 8.0"/-->
+    <!--property name="datasource.mapping" value="PostgreSQL 7.2"/-->
 	<!--property name="datasource.mapping" value="Oracle9i"/-->
     <property name="datasource.name" value="java:/DefaultDS"/>
     <!--property name="datasource.name" value="java:/MySqlDS"/-->
@@ -34,7 +34,7 @@
     <property name="dcm4jboss.deploy" value="${dcm4jboss.home}/server/pacs/deploy"/>
 	
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-3.2.7"/>		
+	<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>		
 	<property name="jboss.client" value="${jboss.home}/client"/>		
 	<property name="jboss.conf" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.conf}/deploy"/>		

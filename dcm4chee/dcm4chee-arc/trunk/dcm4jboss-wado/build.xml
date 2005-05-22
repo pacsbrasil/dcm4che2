@@ -3,14 +3,14 @@
 	<property file="build.properties"/>
 
 	<!-- Override with your JBoss dist location -->
-	<property name="jboss.dir" value="${user.home}/jboss-3.2.7" />
+	<property name="jboss.dir" value="${user.home}/jboss-4.0.2" />
 	<property name="jboss.lib.dir" value="${jboss.dir}/lib"/>
 	<property name="jboss-jmx.jar" value="${jboss.lib.dir}/jboss-jmx.jar"/>
 	<property name="jboss.server.lib.dir" value="${jboss.dir}/server/default/lib"/>
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
 	<property name="tomcat.dir" value="${jboss.dir}/server/default/deploy/jbossweb-tomcat50.sar"/>
-	<property name="servlet-api.jar" value="${tomcat.dir}/servlet-api.jar"/>
+	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
 	<property name="commons-beanutils.jar" value="${tomcat.dir}/commons-beanutils.jar"/>
 
     <!-- Override with your dcm4che dist location -->

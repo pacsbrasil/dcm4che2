@@ -2,7 +2,7 @@
 dcm4che.home=../dcm4che14/build
 
 #Override with your JBoss dist location
-jboss.dir=/usr/jboss
+jboss.dir=${user.home}/jboss-4.0.2
 
 #Overide with your jboss deployment dir
 deploy.root=C:/Programme/dcm4jboss-standalone-hsql-2.0.1/server/pacs

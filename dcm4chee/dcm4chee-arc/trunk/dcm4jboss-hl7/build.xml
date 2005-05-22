@@ -1,7 +1,7 @@
 <project name="dcm4jboss-hl7" default="jar">
 	<property file="build.properties"/>
 	
-	<property name="version" value="2.1.4"/>
+	<property name="version" value="2.4.1"/>
 	<property name="javac.debug" value="on"/>
 	
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -11,7 +11,7 @@
 	<property name="dcm4jboss-ejb.lib" value="${dcm4jboss-ejb.home}/target/common/lib"/>		
 	<property name="ejb-client.jar" value="dcm4jboss-ejb-client.jar" />
 
-	<property name="jboss.home" value="${user.home}/jboss-3.2.7"/>
+	<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>
 	<property name="jboss.lib" value="${jboss.home}/lib"/>
 	<property name="jboss.server.lib" value="${jboss.home}/server/default/lib"/>
 

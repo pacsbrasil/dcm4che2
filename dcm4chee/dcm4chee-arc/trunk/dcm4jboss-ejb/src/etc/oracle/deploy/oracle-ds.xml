@@ -42,6 +42,10 @@
         <check-valid-connection-sql>some arbitrary sql</check-valid-connection-sql>
         -->
 
+      <!-- corresponding type-mapping in the standardjbosscmp-jdbc.xml (optional) -->
+      <metadata>
+         <type-mapping>Oracle9i</type-mapping>
+      </metadata>
   </local-tx-datasource>
 
 </datasources>

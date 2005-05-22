@@ -14,16 +14,14 @@ $Id$ -->
       <!-- for tcp connection, allowing other processes to use the hsqldb
       database. This requires the org.jboss.jdbc.HypersonicDatabase mbean.
       <connection-url>jdbc:hsqldb:hsql://localhost:1701</connection-url>
-      -->
-
+-->
       <!-- for totally in-memory db, not saved when jboss stops. 
       The org.jboss.jdbc.HypersonicDatabase mbean necessary
       <connection-url>jdbc:hsqldb:.</connection-url>
-      -->
-
+-->
       <!-- for in-process persistent db, saved when jboss stops. The
       org.jboss.jdbc.HypersonicDatabase mbean is necessary for properly db shutdown
-      -->
+-->
       <connection-url>jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB</connection-url>
 
       <!-- The driver class -->
@@ -46,7 +44,9 @@ $Id$ -->
       <max-pool-size>20</max-pool-size>
 
       <!-- The time before an unused connection is destroyed -->
-      <idle-timeout-minutes>5</idle-timeout-minutes>
+      <!-- NOTE: This is the check period. It will be destroyed somewhere between 1x and 2x this timeout after last use -->
+      <!-- TEMPORARY FIX! - Disable idle connection removal, HSQLDB has a problem with not reaping threads on closed connections -->
+      <idle-timeout-minutes>0</idle-timeout-minutes>
 
       <!-- sql to call when connection is created
         <new-connection-sql>some arbitrary sql</new-connection-sql>
@@ -76,8 +76,10 @@ $Id$ -->
         <security-domain-and-application>HsqlDbRealm</security-domain-and-application>
       -->
 
-      <!-- HSQL DB 1.7.2 benefits from prepared statement caching -->
-      <prepared-statement-cache-size>32</prepared-statement-cache-size>
+      <!-- corresponding type-mapping in the standardjbosscmp-jdbc.xml (optional) -->
+      <metadata>
+         <type-mapping>Hypersonic SQL</type-mapping>
+      </metadata>
 
       <!-- This mbean can be used when using in process persistent hypersonic -->
       <depends>jboss:service=Hypersonic,database=localDB</depends>
@@ -93,7 +95,7 @@ $Id$ -->
      <attribute name="Trace">false</attribute>
      <attribute name="No_system_exit">true</attribute>
    </mbean>
-   -->
+ -->
 
    <!-- This mbean can be used when using in process persistent db -->
    <mbean code="org.jboss.jdbc.HypersonicDatabase" 
