@@ -13,7 +13,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URL;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -61,8 +60,6 @@ import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.dcm4chex.wado.mbean.xml.IHEDocumentList;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.xml.sax.SAXException;
-
-import com.sun.rsasign.t;
 
 /**
  * @author franz.willer
