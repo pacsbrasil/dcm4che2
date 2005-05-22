@@ -3,14 +3,14 @@
     <!-- Allow override from local properties file -->
     <property file="build.properties" />
 
-    <property name="version" value="1.0.3"/>
+    <property name="version" value="2.4.2"/>
     <property name="dist.jboss.conf" value="dcmcdw"/>
     <property name="dist.name" value="dcmcdw-${version}"/>
     <property name="dist.src" value="dcmcdw-src-${version}"/>
     <property name="dist.standalone" value="dcmcdw-standalone-${version}"/>
 
     <!-- Override with your JBoss server bundle dist location -->
-    <property name="jboss.home" value="${user.home}/jboss-3.2.7"/>
+    <property name="jboss.home" value="${user.home}/jboss-4.0.2"/>
 
     <!-- Override with your FOP dist location -->
     <property name="fop.home" value="${user.home}/fop-0.20.5"/>
@@ -188,32 +188,39 @@
 			<zipfileset dir="${src.etc}" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="deploy/jmx-console.war/**"/>
 			</zipfileset>
+			<zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone}/server/dcmcdw">
+				<include name="conf/jbossmq-state.xml"/>
+			</zipfileset>
 			<zipfileset dir="${jboss.home}/server/default" prefix="${dist.standalone}/server/dcmcdw">
 				<include name="deploy/hsqldb-ds.xml"/>
 				<include name="deploy/jboss-jca.sar"/>
 				<include name="deploy/jboss-local-jdbc.rar"/>
-				<include name="deploy/jbossweb-tomcat50.sar/**"/>
+				<include name="deploy/jbossweb-tomcat55.sar/**"/>
 				<include name="deploy/jms/hsqldb-jdbc2-service.xml"/>
 				<include name="deploy/jms/jvm-il-service.xml"/>
         		<include name="deploy/jmx-invoker-adaptor-server.sar/**"/>
 				<include name="deploy/jmx-console.war/**"/>
-				<exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
-				<exclude name="deploy/jmx-console.war/WEB-INF/web.xml"/>
-				<exclude name="deploy/jmx-console.war/WEB-INF/jboss-web.xml"/>
-				<include name="deploy/transaction-service.xml"/>
+				<exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/>
+				<include name="deploy/jbossjca-service.xml"/>
+				<include name="deploy/jboss-local-jdbc.rar"/>
+				<include name="deploy/jmx-invoker-service.xml"/>
+				<include name="conf/props/*"/>
+				<include name="conf/xmdesc/*"/>
 				<include name="conf/jbossmq-state.xml"/>
 				<include name="conf/jndi.properties"/>
 				<include name="conf/login-config.xml"/>
 				<include name="conf/server.policy"/>
-				<include name="conf/xmdesc/*"/>
+				<include name="conf/standardjbosscmp-jdbc.xml"/>
 				<include name="lib/autonumber-plugin.jar"/>
 				<include name="lib/bcel.jar"/>
+				<include name="lib/commons-logging.jar"/>
 				<include name="lib/hsqldb.jar"/>
 				<include name="lib/hsqldb-plugin.jar"/>
 				<include name="lib/javax.servlet.jar"/>
+				<include name="lib/javax.servlet.jsp.jar"/>
 				<include name="lib/jboss-common-jdbc-wrapper.jar"/>
 				<include name="lib/jboss-j2ee.jar"/>
-				<include name="lib/jboss-jaas.jar"/>
+				<include name="lib/jboss-jca.jar"/>
 				<include name="lib/jboss.jar"/>
 				<include name="lib/jboss-management.jar"/>
 				<include name="lib/jbossmq.jar"/>
@@ -223,7 +230,6 @@
 				<include name="lib/jnpserver.jar"/>
 				<include name="lib/jpl-pattern.jar"/>
 				<include name="lib/jpl-util.jar"/>
-				<include name="lib/jts.jar"/>
 				<include name="lib/log4j.jar"/>
 				<include name="lib/scheduler-plugin.jar"/>				
 			</zipfileset>
