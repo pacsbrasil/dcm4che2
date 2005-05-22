@@ -5,4 +5,4 @@ dcm4che.home=../dcm4che14/build
 xdoclet.home=${user.home}/xdoclet-1.2.3
 
 #Override with your JBoss dist location
-jboss.home=${user.home}/jboss-3.2.7
+jboss.home=${user.home}/jboss-4.0.2
