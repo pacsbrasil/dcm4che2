@@ -102,8 +102,7 @@
 			</fileset>
 			
 			<classes dir="${classes.dir}">
-				<include name="org/**/*.class" />
-	     		<exclude name="**/mbean/**" />
+				<include name="org/dcm4chex/wado/web/*.class" />
 			</classes>
 		</war>
 	</target>
