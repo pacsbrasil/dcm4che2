@@ -253,7 +253,7 @@
 				<exclude name="bin/run.log"/>
 				<exclude name="bin/run.conf"/>
 				<exclude name="bin/twiddle.jar"/>
-				<include name="lib/*"/>
+				<include name="lib/**"/>
 				<include name="client/getopt.jar"/>
 				<include name="client/jbossall-client.jar"/>
 				<include name="client/log4j.jar"/>
