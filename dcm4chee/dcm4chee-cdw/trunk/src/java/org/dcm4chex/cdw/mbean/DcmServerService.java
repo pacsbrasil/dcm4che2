@@ -167,7 +167,7 @@ public class DcmServerService extends ServiceMBeanSupport {
         handler.setSoCloseDelay(soCloseDelay);
     }
 
-    public final DcmHandler getDcmHandler() {
+    public final DcmHandler dcmHandler() {
         return handler;
     }
 

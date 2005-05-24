@@ -124,7 +124,7 @@
    &defaultOperations;
    <operation impact="INFO">
       <description>Used internally</description>
-      <name>getDcmHandler</name>
+      <name>dcmHandler</name>
       <return-type>org.dcm4che.server.DcmHandler</return-type>
    </operation>
    <operation impact="INFO">

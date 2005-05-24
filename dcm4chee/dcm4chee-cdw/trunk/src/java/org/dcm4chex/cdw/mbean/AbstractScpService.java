@@ -33,7 +33,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected static final DcmParserFactory pf = DcmParserFactory.getInstance();
     
-    private static final String GET_DCM_HANDLER = "getDcmHandler";
+    private static final String GET_DCM_HANDLER = "dcmHandler";
 
     protected static final String[] ONLY_DEFAULT_TS = { UIDs.ImplicitVRLittleEndian,};
 
