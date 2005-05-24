@@ -178,7 +178,7 @@
 				<include name="client/getopt.jar"/>
 				<include name="client/jbossall-client.jar"/>
 				<include name="client/log4j.jar"/>
-				<include name="lib/*"/>
+				<include name="lib/**"/>
 			</zipfileset>
 			<zipfileset dir="${jboss.home}" prefix="${dist.standalone}" filemode="755">
 				<include name="bin/run.sh"/>
