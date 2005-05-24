@@ -164,6 +164,6 @@ public interface IconCache {
 	 * 
 	 * @return Current free diskspace in bytes
 	 */
-	long getFreeSpace();
+	long showFreeSpace();
 	
 }

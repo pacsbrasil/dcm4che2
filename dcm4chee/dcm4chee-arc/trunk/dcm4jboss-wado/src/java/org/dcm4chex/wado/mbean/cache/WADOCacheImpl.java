@@ -335,14 +335,14 @@ public class WADOCacheImpl implements WADOCache {
 	 * This method can be called to run on the same thread ( e.g. if started via JMX console) or 
 	 * in a seperate thread (if clean is handled automatically by WADOCache).
 	 * <DL>
-	 * <DD> 1) check if clean is necessary: <code>getFreeSpace &lt; getMinFreeSpace </code></DD>
-	 * <DD> 2) delete the oldest files until <code>getFreeSpace &gt; getPreferredFreeSpace</code></DD>
+	 * <DD> 1) check if clean is necessary: <code>showFreeSpace &lt; getMinFreeSpace </code></DD>
+	 * <DD> 2) delete the oldest files until <code>showFreeSpace &gt; getPreferredFreeSpace</code></DD>
 	 * </DL>
 	 * 
 	 * @param	background	If true, clean runs in a seperate thread.
 	 */
 	public void freeDiskSpace( boolean background ) {
-		long currFree = getFreeSpace();
+		long currFree = showFreeSpace();
 		if ( log.isDebugEnabled() ) log.debug("WADOCache.cleancache: free:"+currFree+" minFreeSpace:"+getMinFreeSpace() );
 		if ( currFree < getMinFreeSpace() ) {
 			final long sizeToDel = getPreferredFreeSpace() - currFree;
@@ -448,7 +448,7 @@ public class WADOCacheImpl implements WADOCache {
 	 * 
 	 * @return disk space available on the drive where this cache is stored.
 	 */
-	public long getFreeSpace() {
+	public long showFreeSpace() {
 		se.mog.io.File file = new se.mog.io.File( getAbsCacheRoot() );
 		log.info("getFreeDiskSpace from :"+getAbsCacheRoot()+" free:"+file.getDiskSpaceAvailable() );
 		return file.getDiskSpaceAvailable();

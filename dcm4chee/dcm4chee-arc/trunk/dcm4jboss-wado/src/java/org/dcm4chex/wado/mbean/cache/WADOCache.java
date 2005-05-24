@@ -216,7 +216,7 @@ public interface WADOCache {
 	 * 
 	 * @return Current free diskspace in bytes
 	 */
-	long getFreeSpace();
+	long showFreeSpace();
 	
 	/**
 	 * Returns true if a client redirect should be used if requewsted DICOM object is not local.

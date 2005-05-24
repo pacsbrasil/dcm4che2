@@ -146,7 +146,7 @@
    &defaultOperations;
    <operation impact="INFO">
       <description>Show free disk space</description>
-      <name>getFreeSpace</name>
+      <name>showFreeSpace</name>
       <return-type>java.lang.String</return-type>
    </operation>
    

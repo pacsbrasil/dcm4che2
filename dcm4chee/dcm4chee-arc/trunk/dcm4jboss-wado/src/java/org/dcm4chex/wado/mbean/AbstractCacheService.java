@@ -73,13 +73,13 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 *
 	 */
 	public String clearCache() {
-		long before = cache.getFreeSpace();
+		long before = cache.showFreeSpace();
 		cache.clearCache();
 		return getDeleteResult( before );
 	}
 	
 	private String getDeleteResult( long before ) {
-		long after = cache.getFreeSpace();
+		long after = cache.showFreeSpace();
 		long delta = after - before;
 		StringBuffer sb = new StringBuffer();
 		log.info("getDeleteResult: before:"+before+" , after:"+after+" , delta:"+delta);
@@ -129,7 +129,7 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 *
 	 */
 	public String freeDiskSpace() {
-		long before = cache.getFreeSpace();
+		long before = cache.showFreeSpace();
 		cache.freeDiskSpace( false ); //cleans the cache and wait until clean process is done. (not in background)
 		return getDeleteResult( before );
 	}
@@ -140,8 +140,8 @@ public abstract class AbstractCacheService extends TimerSupport {
 	 * 
 	 * @return
 	 */
-	public String getFreeSpace() {
-		return FileUtils.formatSize( cache.getFreeSpace() );
+	public String showFreeSpace() {
+		return FileUtils.formatSize( cache.showFreeSpace() );
 	}
 	
 	/**
