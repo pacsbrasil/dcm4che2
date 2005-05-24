@@ -216,10 +216,20 @@
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="INFO">
+   <operation impact="ACTION">
       <description>Used internally</description>
-      <name>getAuditLogger</name>
-      <return-type>org.dcm4che.auditlog.AuditLogger</return-type>
+      <name>logUserAuthenticated</name>
+      <parameter>
+        <description>User Name</description>
+        <name>userName</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Action</description>
+        <name>action</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Used internally</description>

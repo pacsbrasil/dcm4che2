@@ -202,13 +202,13 @@ public class MD5CheckService extends TimerSupport {
         super.stopService();
     }
     
-    private String[] getFileSystemDirPaths() {
+    private String[] fileSystemDirPaths() {
         try {
             return (String[]) server.invoke(fileSystemMgtName,
-                    "getFileSystemDirPaths", null, null);
+                    "fileSystemDirPaths", null, null);
         } catch (JMException e) {
             throw new RuntimeException(
-                    "Failed to invoke getFileSystemDirPaths", e);
+                    "Failed to invoke fileSystemDirPaths", e);
         }
     }
     

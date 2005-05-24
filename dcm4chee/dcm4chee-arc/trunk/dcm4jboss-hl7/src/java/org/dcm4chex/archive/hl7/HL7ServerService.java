@@ -170,8 +170,8 @@ public class HL7ServerService extends ServiceMBeanSupport
 
     protected void startService() throws Exception {
         logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
-        hl7srv.addHandshakeFailedListener(tlsConfig.getHandshakeFailedListener());
-        hl7srv.setServerSocketFactory(tlsConfig.getServerSocketFactory(protocol
+        hl7srv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
+        hl7srv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
         hl7srv.start();
     }

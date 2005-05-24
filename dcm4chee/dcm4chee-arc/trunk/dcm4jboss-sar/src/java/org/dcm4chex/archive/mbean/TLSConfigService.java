@@ -85,11 +85,11 @@ public class TLSConfigService extends ServiceMBeanSupport
         trustStore = null;
     }
     
-    public final HandshakeFailedListener getHandshakeFailedListener() {
+    public final HandshakeFailedListener handshakeFailedListener() {
         return this;
     }
 
-    public ServerSocketFactory getServerSocketFactory(String[] cipherSuites) {
+    public ServerSocketFactory serverSocketFactory(String[] cipherSuites) {
         if (cipherSuites == null || cipherSuites.length == 0) { return ServerSocketFactory
                 .getDefault(); }
         try {
@@ -102,7 +102,7 @@ public class TLSConfigService extends ServiceMBeanSupport
         }
     }
 
-    public SocketFactory getSocketFactory(String[] cipherSuites) {
+    public SocketFactory socketFactory(String[] cipherSuites) {
         if (cipherSuites == null || cipherSuites.length == 0) { return SocketFactory
                 .getDefault(); }
         try {

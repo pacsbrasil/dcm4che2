@@ -82,12 +82,12 @@
    &defaultOperations;
    <operation impact="INFO">
       <description>Used internally</description>
-      <name>getHandshakeFailedListener</name>
+      <name>handshakeFailedListener</name>
       <return-type>org.dcm4che.util.HandshakeFailedListener</return-type>
    </operation>
    <operation impact="INFO">
       <description>Used internally</description>
-      <name>getServerSocketFactory</name>
+      <name>serverSocketFactory</name>
       <parameter>
         <name>cipherSuites</name>
         <type>[Ljava.lang.String;</type>
@@ -96,7 +96,7 @@
    </operation>
    <operation impact="INFO">
       <description>Used internally</description>
-      <name>getSocketFactory</name>
+      <name>socketFactory</name>
       <parameter>
         <name>cipherSuites</name>
         <type>[Ljava.lang.String;</type>

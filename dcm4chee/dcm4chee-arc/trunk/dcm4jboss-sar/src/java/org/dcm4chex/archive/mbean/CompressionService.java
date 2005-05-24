@@ -216,7 +216,7 @@ public class CompressionService extends TimerSupport {
         CompressionRule info;
         FileDTO[] files;
         int limit = limitNumberOfFilesPerTask;
-        String[] fsdirs = getFileSystemDirPaths();
+        String[] fsdirs = fileSystemDirPaths();
         FileSystemMgt fsMgt = newFileSystemMgt();
         try {
             for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
@@ -243,13 +243,13 @@ public class CompressionService extends TimerSupport {
         }
     }
 
-    private String[] getFileSystemDirPaths() {
+    private String[] fileSystemDirPaths() {
         try {
             return (String[]) server.invoke(fileSystemMgtName,
-                    "getFileSystemDirPaths", null, null);
+                    "fileSystemDirPaths", null, null);
         } catch (JMException e) {
             throw new RuntimeException(
-                    "Failed to invoke getFileSystemDirPaths", e);
+                    "Failed to invoke fileSystemDirPaths", e);
         }
     }
 

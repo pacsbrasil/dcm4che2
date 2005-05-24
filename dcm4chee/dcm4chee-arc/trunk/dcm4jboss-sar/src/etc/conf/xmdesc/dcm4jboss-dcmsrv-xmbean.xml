@@ -161,7 +161,7 @@
    &defaultOperations;
    <operation impact="INFO">
       <description>Get DICOM Handler</description>
-      <name>getDcmHandler</name>
+      <name>dcmHandler</name>
       <return-type>org.dcm4che.server.DcmHandler</return-type>
    </operation>
 </mbean>

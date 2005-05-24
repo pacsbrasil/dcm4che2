@@ -78,7 +78,7 @@ public class DcmServerService extends ServiceMBeanSupport {
         this.protocol = DcmProtocol.valueOf(protocolName);
     }
 
-    public DcmHandler getDcmHandler() {
+    public DcmHandler dcmHandler() {
         return handler;
     }
 
@@ -164,8 +164,8 @@ public class DcmServerService extends ServiceMBeanSupport {
 
     
     protected void startService() throws Exception {
-        dcmsrv.addHandshakeFailedListener(tlsConfig.getHandshakeFailedListener());
-        dcmsrv.setServerSocketFactory(tlsConfig.getServerSocketFactory(protocol
+        dcmsrv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
+        dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
         dcmsrv.start();
     }

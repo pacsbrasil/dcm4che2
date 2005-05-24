@@ -46,10 +46,10 @@ public final class TLSConfigDelegate {
         this.tlsConfigName = tlsConfigName;
     }
     
-    public HandshakeFailedListener getHandshakeFailedListener() {
+    public HandshakeFailedListener handshakeFailedListener() {
         try {
 	        return (HandshakeFailedListener) service.getServer().invoke(
-	                tlsConfigName, "getHandshakeFailedListener", null, null);
+	                tlsConfigName, "handshakeFailedListener", null, null);
 	    } catch (InstanceNotFoundException e) {
 	        throw new ConfigurationException(e);
 	    } catch (MBeanException e) {
@@ -59,10 +59,10 @@ public final class TLSConfigDelegate {
 	    }
     }
 
-    public ServerSocketFactory getServerSocketFactory(String[] cipherSuites) {
+    public ServerSocketFactory serverSocketFactory(String[] cipherSuites) {
         try {
             return (ServerSocketFactory) service.getServer().invoke(
-                    tlsConfigName, "getServerSocketFactory",
+                    tlsConfigName, "serverSocketFactory",
                     new Object[] { cipherSuites},
                     new String[] { String[].class.getName(),});
         } catch (InstanceNotFoundException e) {
@@ -74,10 +74,10 @@ public final class TLSConfigDelegate {
         }
     }
 
-    public SocketFactory getSocketFactory(String[] cipherSuites) {
+    public SocketFactory socketFactory(String[] cipherSuites) {
         try {
             return (SocketFactory) service.getServer().invoke(tlsConfigName,
-                    "getSocketFactory", new Object[] { cipherSuites},
+                    "socketFactory", new Object[] { cipherSuites},
                     new String[] { String[].class.getName(),});
         } catch (InstanceNotFoundException e) {
             throw new ConfigurationException(e);
@@ -93,7 +93,7 @@ public final class TLSConfigDelegate {
         if (cipherSuites == null || cipherSuites.length == 0) {
             return new Socket(aeData.getHostName(), aeData.getPort());
         } else {
-            return getSocketFactory(cipherSuites).createSocket(
+            return socketFactory(cipherSuites).createSocket(
                     aeData.getHostName(), aeData.getPort());
         }
     }

@@ -34,7 +34,6 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.auditlog.AuditLogger;
 
 /**
  * <description>
@@ -48,8 +47,6 @@ import org.dcm4che.auditlog.AuditLogger;
 public class AuditLoginModule implements LoginModule
 {
 
-    private static final String GET_AUDIT_LOGGER = "getAuditLogger";
-
     static final Logger log = Logger.getLogger(AuditLoginModule.class);
 
     private CallbackHandler cbh;
@@ -57,8 +54,6 @@ public class AuditLoginModule implements LoginModule
     private ObjectName auditLoggerName;
 
     private MBeanServer server;
-
-    private AuditLogger auditLogger;
 
     public void initialize(Subject subject, CallbackHandler cbh,
             Map sharedState, Map options) {
@@ -88,17 +83,17 @@ public class AuditLoginModule implements LoginModule
     }
 
     public boolean abort() throws LoginException {
-        getAuditLogger().logUserAuthenticated(getUserName(), "Failure");
+        logUserAuthenticated("Failure");
         return true;
     }
 
     public boolean commit() throws LoginException {
-        getAuditLogger().logUserAuthenticated(getUserName(), "Login");
+		logUserAuthenticated("Login");
         return true;
     }
 
     public boolean logout() throws LoginException {
-        getAuditLogger().logUserAuthenticated(getUserName(), "Logout");
+		logUserAuthenticated("Logout");
         return true;
     }
 
@@ -113,21 +108,13 @@ public class AuditLoginModule implements LoginModule
         return null;
     }
 
-    private AuditLogger getAuditLogger() {
-        if (auditLogger == null) {
-            try {
-                auditLogger = (AuditLogger) server.invoke(auditLoggerName,
-                        GET_AUDIT_LOGGER, null, null);
-            } catch (Exception e) {
-                log
-                        .error("The AuditLogger mbean: "
-                                + auditLoggerName
-                                + " specified in a AuditLoginModule could not be found.");
-                throw new IllegalArgumentException(
-                        "AuditLogger mbean not found: " + auditLoggerName);
-            }
+    private void logUserAuthenticated(String action) {
+        try {
+            server.invoke(auditLoggerName, "logUserAuthenticated",
+                new Object[] { getUserName(), action },
+                new String[] { String.class.getName(), String.class.getName()});
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
         }
-
-        return auditLogger;
-    }
+    }	
 }

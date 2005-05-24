@@ -82,7 +82,7 @@ public class FileSystemMgtService extends TimerSupport {
 
     private Integer freeDiskSpaceListenerID;
     
-	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and isFreeDiskSpaceNecessary ). */
+	/** holds available disk space over all file systems. this value is set in getAvailableDiskspace ( and checkFreeDiskSpaceNecessary ). */
 	private long availableDiskSpace = 0L;
     
     private final NotificationListener purgeFilesListener = 
@@ -365,7 +365,7 @@ public class FileSystemMgtService extends TimerSupport {
         return fsPathSet.contains(fsdir) || rofsPathSet.contains(fsdir);
     }
     
-    public final String[] getFileSystemDirPaths() {
+    public final String[] fileSystemDirPaths() {
         return (String[]) fsPathSet.toArray(new String[fsPathSet.size()]);
     }    
 
@@ -536,7 +536,7 @@ public class FileSystemMgtService extends TimerSupport {
     public long freeDiskSpace() {
         log.info("Check available Disk Space");
         try {
-            if (isFreeDiskSpaceNecessary()) {
+            if (checkFreeDiskSpaceNecessary()) {
                 long maxSizeToDel = (long) ((float) this.minFreeDiskSpace * freeDiskSpaceUpperThreshold)
                     * dirPathList.size() - availableDiskSpace;
                 FileSystemMgt fsMgt = newFileSystemMgt();
@@ -579,7 +579,7 @@ public class FileSystemMgtService extends TimerSupport {
      * @return True if clean is necessary ( currAvail < minAvail )
      * @throws IOException
      */
-    public boolean isFreeDiskSpaceNecessary() throws IOException {
+    public boolean checkFreeDiskSpaceNecessary() throws IOException {
     	long minAvail = (long) ( (float) this.minFreeDiskSpace * freeDiskSpaceLowerThreshold ) * dirPathList.size();
     	long currAvail = getAvailableDiskSpace();
     	if ( log.isDebugEnabled() ) log.debug( "currAvail:"+currAvail+" < minAvail:"+minAvail);

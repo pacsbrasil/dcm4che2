@@ -240,7 +240,7 @@
    </operation>
    <operation impact="INFO">
       <description>Used internally</description>
-      <name>getFileSystemDirPaths</name>
+      <name>fileSystemDirPaths</name>
       <return-type>[Ljava.lang.String;</return-type>
    </operation>
    <operation impact="INFO">
@@ -274,7 +274,7 @@
    <operation impact="INFO">
       <description>Check if it is necessary to free disk space.
       </description>
-      <name>isFreeDiskSpaceNecessary</name>
+      <name>checkFreeDiskSpaceNecessary</name>
       <return-type>boolean</return-type>
    </operation>   
    <operation impact="ACTION">

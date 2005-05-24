@@ -144,7 +144,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
     
     protected void startService() throws Exception {
-        dcmHandler = (DcmHandler) server.invoke(dcmServerName, "getDcmHandler",
+        dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
         enableService();

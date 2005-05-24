@@ -67,7 +67,7 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
         }
     }
 
-    public AuditLogger getAuditLogger() {
+    public AuditLogger auditLogger() {
         return logger;
     }
 
@@ -270,6 +270,12 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
         logger.setLogExport(enable);
     }
 
+    public void logUserAuthenticated(String localUserName, String action) {
+        if (getState() == STARTED) {
+            logger.logUserAuthenticated(localUserName, action);
+        }
+    }
+	
     public void logActorConfig(String actorName, String propName,
             Object oldVal, Object newVal, String type) {
         if (!newVal.equals(oldVal)) {
