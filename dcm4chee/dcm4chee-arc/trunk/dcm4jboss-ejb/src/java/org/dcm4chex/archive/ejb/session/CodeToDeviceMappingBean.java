@@ -17,6 +17,7 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
@@ -149,46 +150,69 @@ public abstract class CodeToDeviceMappingBean implements SessionBean {
 
 	
 	/**
-     * @throws FinderException
+	 * @throws FinderException
 	 * @throws CreateException
 	 * @ejb.interface-method
-     */
-    public Dataset addScheduledStationInfo( Dataset ds ) throws FinderException {
-    	DcmElement spsSeq = ds.get( Tags.SPSSeq );
-    	DcmElement codeSeq;
-    	int len = spsSeq.vm();
-    	int lenCS;
-    	Dataset ds1, dsCode;
-    	for ( int i = 0 ; i < len ; i++ ) {
-    		ds1 = spsSeq.getItem( i );
-    		codeSeq = ds1.get( Tags.ScheduledProtocolCodeSeq );
-   			dsCode = codeSeq.getItem();
-    		Collection col = codeHome.findByValueAndDesignator( dsCode.getString( Tags.CodeValue ),
-    															dsCode.getString( Tags.CodingSchemeDesignator ) );
-    		if ( ! col.isEmpty() ) {
-    			Collection col1 = devHome.findByProtocolCode( (CodeLocal) col.iterator().next() );
-    			if ( ! col1.isEmpty() ) {
-    				DeviceLocal dl = (DeviceLocal) col1.iterator().next();
-    				ds1.putAE( Tags.ScheduledStationAET, dl.getStationAET() );
-    				ds1.putSH( Tags.ScheduledStationName, dl.getStationName() );
-    				String reqModality = ds1.getString( Tags.Modality );
-    				if ( reqModality == null ) {
-    					ds1.putCS( Tags.Modality, dl.getModality() );
-    				} else if ( ! reqModality.equalsIgnoreCase( dl.getModality() ) ) {
-    					log.warn( "Different Modality ("+reqModality+") in request and device ("+dl.getModality()+") !!!");
-    				}
-    			}
-    		}
-     	}
-    	return ds;
-    }
+	 */
+	public Dataset addScheduledStationInfo(Dataset ds) throws FinderException {
+		DcmElement spsSeq = ds.get(Tags.SPSSeq);
+		DcmElement codeSeq;
+		int len = spsSeq.vm();
+		Dataset sps;
+		for (int i = 0; i < len; i++) {
+			sps = spsSeq.getItem(i);
+			DeviceLocal device = lookupDevice(sps);
+			if (device != null) {
+				sps.putAE(Tags.ScheduledStationAET, device.getStationAET());
+				sps.putSH(Tags.ScheduledStationName, device.getStationName());
+				String reqModality = sps.getString(Tags.Modality);
+				if (reqModality == null) {
+					sps.putCS(Tags.Modality, device.getModality());
+				} else if (!reqModality.equals(device.getModality())) {
+					log.warn("Different Modality (" + reqModality
+							+ ") in request and device (" + device.getModality()
+							+ ") !!!");
+				}
+			}
+		}
+		return ds;
+	}
     
+	private DeviceLocal lookupDevice(Dataset sps) throws FinderException {
+		String name = sps.getString(Tags.ScheduledStationName);
+		if (name != null) {
+			try {
+				return devHome.findByStationName(name);
+			} catch (ObjectNotFoundException ignore) {
+				log.warn("Failed to find device with name: " + name);
+			}
+		}
+		Dataset protocol = sps.getItem(Tags.ScheduledProtocolCodeSeq);
+		String codeValue = protocol.getString(Tags.CodeValue);
+		String codingScheme = protocol.getString(Tags.CodingSchemeDesignator);
+		Collection col = codeHome.findByValueAndDesignator(codeValue,
+				codingScheme);
+		if (col.isEmpty()) {
+			log.warn("Failed to find device for unkown Protocol Code: "
+					+ codeValue + '^' + codingScheme);
+			return null;
+		}
+		Collection col1 = devHome.findByProtocolCode((CodeLocal) col.iterator()
+				.next());
+		if (col1.isEmpty()) {
+			log.warn("Failed to find device for Protocol Code: " + codeValue
+					+ '^' + codingScheme);
+			return null;
+		}
+		return (DeviceLocal) col1.iterator().next();
+	}
+
 	/**
-     * @throws FinderException
+	 * @throws FinderException
 	 * @throws EJBException
 	 * @throws RemoveException
 	 * @ejb.interface-method
-     */
+	 */
     public boolean deleteDevice( String stationName ) throws FinderException, EJBException, RemoveException {
     	DeviceLocal dl = devHome.findByStationName( stationName );
     	if ( dl == null ) return false;
