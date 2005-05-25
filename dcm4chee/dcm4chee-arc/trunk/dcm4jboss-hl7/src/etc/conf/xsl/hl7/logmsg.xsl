@@ -11,8 +11,7 @@
     </xsl:template>
     <xsl:template match="field">
         <xsl:param name="seg"/>
-        <xsl:variable name="val" select="text()"></xsl:variable>
-        <xsl:if test="$val">
+        <xsl:if test="node()">
         <xsl:text>
    </xsl:text>
         <xsl:value-of select="$seg"/>
@@ -26,18 +25,18 @@
             </xsl:otherwise>
         </xsl:choose>
         <xsl:text>:</xsl:text>
-        <xsl:value-of select="$val"/>
+        <xsl:value-of select="normalize-space(text())"/>
         <xsl:apply-templates select="subcomponent"/>
         <xsl:apply-templates select="component"/>
             </xsl:if>
     </xsl:template>
     <xsl:template match="component">
         <xsl:text>^</xsl:text>
-        <xsl:value-of select="text()"/>
+        <xsl:value-of select="normalize-space(text())"/>
         <xsl:apply-templates select="subcomponent"/>
     </xsl:template>
     <xsl:template match="subcomponent">
         <xsl:text>&amp;</xsl:text>
-        <xsl:value-of select="text()"/>
+        <xsl:value-of select="normalize-space(text())"/>
     </xsl:template>
 </xsl:stylesheet>
