@@ -8,9 +8,11 @@ package org.dcm4chex.wado.mbean.ecg;
 
 import java.nio.ByteBuffer;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.wado.mbean.ecg.xml.SVGCreator;
 
 /**
  * @author franz.willer
@@ -29,7 +31,9 @@ public class WaveformGroup {
 	private String sampleInterpretation;
 	private WaveFormChannel[] channels = null;
 	private ByteBuffer data = null;
-	
+
+	private static Logger log = Logger.getLogger( SVGCreator.class.getName() );
+		
 	/**
 	 * @param elem
 	 */
@@ -44,6 +48,16 @@ public class WaveformGroup {
 		bitsAlloc = ds.getInt( Tags.WaveformBitsAllocated, 0 );
 		sampleInterpretation = ds.getString( Tags.WaveformSampleInterpretation );
 		data = ds.getByteBuffer( Tags.WaveformData );
+		if ( nrOfSamples < 1 ) { //nrOfSamples is not correct?!!
+			int nrOfSamples_recalc = data.limit() / nrOfChannels;
+			if ( bitsAlloc > 8 ) {
+				nrOfSamples_recalc /= bitsAlloc / 8;
+			}
+			log.warn("NumberOfWaveformSamples ("+nrOfSamples+") not valid! Recalc with WaveformData:"+nrOfSamples_recalc);
+			nrOfSamples = nrOfSamples_recalc;
+			if ( log.isDebugEnabled() ) log.debug("Recalculated NumberOfWaveformSamples is "+nrOfSamples+
+					"! ( WaveformData.size:"+data.limit()+" nrOfChannels:"+nrOfChannels+" bitsAlloc:"+bitsAlloc+" )" );
+		}
 		prepareChannels( ds.get( Tags.ChannelDefinitionSeq ), fCorr );
 	}
 	
