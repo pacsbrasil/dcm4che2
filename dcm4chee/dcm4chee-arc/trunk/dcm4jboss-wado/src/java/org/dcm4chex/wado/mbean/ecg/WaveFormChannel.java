@@ -7,6 +7,7 @@
 package org.dcm4chex.wado.mbean.ecg;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 
 /**
@@ -41,30 +42,37 @@ public class WaveFormChannel {
 		chNr = ch.getInt( Tags.WaveformChannelNumber, -1);
 		chSource = ch.get(Tags.ChannelSourceSeq).getItem().getString( Tags.CodeMeaning);
 		bitsStored = ch.getInt( Tags.WaveformBitsStored, -1 );
-		minValue = ch.getInteger( Tags.ChannelMinimumValue, -1 );
-		maxValue = ch.getInteger( Tags.ChannelMaximumValue, -1 );
+		minValue = ch.getInteger( Tags.ChannelMinimumValue, 0 );
+		maxValue = ch.getInteger( Tags.ChannelMaximumValue, (1 << bitsStored)-1 );
 		label = ch.getString( Tags.ChannelLabel );
 		status = ch.getString( Tags.ChannelStatus );
-		sensitivity = ch.getFloat( Tags.ChannelSensitivity, -1f );
+		sensitivity = ch.getFloat( Tags.ChannelSensitivity, 1f );
 		sensitivityCorrection = ch.getFloat( Tags.ChannelSensitivityCorrectionFactor, 1f );
-		sensitivityUnit = ch.get(Tags.ChannelSensitivityUnitsSeq).getItem().getString( Tags.CodeValue );
+		sensitivityUnit = getSensitivityUnit( ch, "" );
 		if ( "uV".equals( sensitivityUnit) ) {
 			sensitivity *= 0.001f;
 		}
-//		if ( System.getProperty("WFCorrection") != null ) {//TODO only for Connectathon
-//			try {
-//				float fCorr = Float.parseFloat( System.getProperty("WFCorrection"));
-//				System.out.println("WFCorrection:"+fCorr);
-				sensitivity *= fCorr * sensitivityCorrection; 
-//			} catch ( Exception x ) {
-//				x.printStackTrace();
-//			}
-//		}
+		if ( fCorr != 1f )
+			sensitivity *= fCorr * sensitivityCorrection; 
 		lowFreq = ch.getFloat( Tags.FilterLowFrequency );
 		highFreq = ch.getFloat( Tags.FilterHighFrequency );
 		this.buffer = buffer;
 	}
 	
+	/**
+	 * @param ch
+	 * @return
+	 */
+	private String getSensitivityUnit(Dataset ch, String def) {
+		DcmElement sensSeq = ch.get(Tags.ChannelSensitivityUnitsSeq);
+		if ( sensSeq != null) {
+			Dataset ds = sensSeq.getItem();
+			if ( ds != null)
+				return ds.getString( Tags.CodeValue );
+		}
+		return def;
+	}
+
 	/**
 	 * @return Returns the chSource.
 	 */
