@@ -129,10 +129,10 @@
         </item>
     </xsl:template>
     <xsl:template match="OBR" mode="sps">
-        <!-- Modality -->
+         <!-- Use ORB-24 as Scheduled Station Name -->
         <xsl:call-template name="dcmAttr">
-            <xsl:with-param name="tag" select="'00080060'"/>
-            <xsl:with-param name="vr" select="'CS'"/>
+            <xsl:with-param name="tag" select="'00400010'"/>
+            <xsl:with-param name="vr" select="'SH'"/>
             <xsl:with-param name="val" select="field[24]/text()"/>
         </xsl:call-template>
         <!-- Scheduled Performing Physican Name -->
