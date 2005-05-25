@@ -197,6 +197,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLimitNumberOfFilesPerTask"
+      setMethod="setLimitNumberOfFilesPerTask">
+      <description>Limit number of unreferenced Files that are purged from the
+      filesystem in one purge task.
+      </description>
+      <name>PurgeFilesLimit</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000" />
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
       getMethod="getFreeDiskSpaceInterval"
       setMethod="setFreeDiskSpaceInterval">
       <description>Interval in which available disk space is checked for

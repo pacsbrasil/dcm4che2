@@ -75,6 +75,8 @@ public class FileSystemMgtService extends TimerSupport {
 	private long studyCacheTimeout = 0L;
     
     private long purgeFilesInterval = 0L;
+
+	private int limitNumberOfFilesPerTask = 1000;
     
     private long freeDiskSpaceInterval = 0L;
     
@@ -345,6 +347,14 @@ public class FileSystemMgtService extends TimerSupport {
         }
     }
     
+    public final int getLimitNumberOfFilesPerTask() {
+    	return limitNumberOfFilesPerTask;
+    }
+    
+    public void setLimitNumberOfFilesPerTask( int limit ) {
+    	limitNumberOfFilesPerTask = limit;
+    }
+    
 	public final boolean isMakeStorageDirectory() {
         return makeStorageDirectory;
     }
@@ -460,7 +470,7 @@ public class FileSystemMgtService extends TimerSupport {
                 try {
                     File dirPath = (File) dirPathList.get(i);
                     toDelete = fsMgt.getDereferencedFiles(
-							FileUtils.slashify(dirPath));
+							FileUtils.slashify(dirPath), getLimitNumberOfFilesPerTask() );
                 } catch (Exception e) {
                     log.warn("Failed to query dereferenced files:", e);
                     break;

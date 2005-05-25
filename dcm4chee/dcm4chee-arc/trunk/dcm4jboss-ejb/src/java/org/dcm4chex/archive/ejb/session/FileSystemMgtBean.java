@@ -117,10 +117,10 @@ public abstract class FileSystemMgtBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
 	 */
-	public FileDTO[] getDereferencedFiles(String dirPath)
+	public FileDTO[] getDereferencedFiles(String dirPath, int limit)
 			throws FinderException {
 		log.debug("Querying for dereferenced files in " + dirPath);
-		Collection c = fileHome.findDereferencedInFileSystem(dirPath);
+		Collection c = fileHome.findDereferencedInFileSystem(dirPath, limit);
 		log.debug("Found " + c.size() + " dereferenced files in " + dirPath);
 		return toFileDTOs(c);
 	}
