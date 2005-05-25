@@ -139,6 +139,7 @@ public class ECGSupport {
 	 * @return
 	 */
 	private RIDResponseObject handleSVG(Dataset ds, File outFile) {
+		OutputStream out = null;
 		try { 
 			DcmElement elem = ds.get( Tags.WaveformSeq);
 			WaveformGroup wfgrp = new WaveformGroup( elem, 0, 
@@ -148,38 +149,47 @@ public class ECGSupport {
 
 			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, new Float( 27.6f ), new Float(20.3f) );
 //			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, null, new Float(40.0f) );
-			OutputStream  out= new FileOutputStream( outFile );
+			out= new FileOutputStream( outFile );
 			svgCreator.toXML( out );
 			out.close();
 			return new RIDStreamResponseObjectImpl( new FileInputStream( outFile), CONTENT_TYPE_SVGXML, HttpServletResponse.SC_OK, null);
 		} catch ( Throwable t ) {
-			t.printStackTrace();
+			if ( out != null )
+				try {
+					out.close();
+				} catch (IOException e) {}
+			if ( outFile.exists() ) outFile.delete();
+			log.error("Cant create SVG for Waveform!", t);
+			log.error("Waveform Dataset:");log.error(ds);
+			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform SVG! Reason:"+t.getMessage());
 		}
-		return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_IMPLEMENTED, "ECG support not implemented yet!");
 	}
 	
 	private RIDResponseObject handlePDF(Dataset ds, File outFile) {
+		OutputStream out = null;
+		OutputStream tmpOut = null;
+		File tmpFile = null;
 		try { 
-	        OutputStream out = new FileOutputStream( outFile );
+	        out = new FileOutputStream( outFile );
 	        outFile.getParentFile().mkdirs();
-	        File tmpFile = new File( outFile.toString()+".fop");
-	     if ( ! tmpFile.exists() ) {
-	        tmpFile.deleteOnExit();
-	        OutputStream tmpOut = new FileOutputStream( tmpFile);
-	        
-			DcmElement elem = ds.get( Tags.WaveformSeq);
-			int nrOfWFGroups = elem.vm();
-			WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
-			for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
-				wfgrps[i] = new WaveformGroup( elem, i,
-						ridSupport.getWaveformCorrection());
-			}
-			WaveformInfo wfInfo = new WaveformInfo( ds );
-
-			FOPCreator fopCreator = new FOPCreator( wfgrps, wfInfo, new Float( 28.6f ), new Float(20.3f) );
-			fopCreator.toXML( tmpOut );
-	        tmpOut.close();
-	     }
+	        tmpFile = new File( outFile.toString()+".fop");
+		     if ( ! tmpFile.exists() ) {
+		        tmpFile.deleteOnExit();
+		        tmpOut = new FileOutputStream( tmpFile);
+		        
+				DcmElement elem = ds.get( Tags.WaveformSeq);
+				int nrOfWFGroups = elem.vm();
+				WaveformGroup[] wfgrps = new WaveformGroup[ nrOfWFGroups ];
+				for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
+					wfgrps[i] = new WaveformGroup( elem, i,
+							ridSupport.getWaveformCorrection());
+				}
+				WaveformInfo wfInfo = new WaveformInfo( ds );
+	
+				FOPCreator fopCreator = new FOPCreator( wfgrps, wfInfo, new Float( 28.6f ), new Float(20.3f) );
+				fopCreator.toXML( tmpOut );
+		        tmpOut.close();
+		     }
 	        fop.setRenderer(Driver.RENDER_PDF);
 	        fop.setOutputStream( out );
 			SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -189,9 +199,16 @@ public class ECGSupport {
 			//TODO tmpFile.delete();
 			return new RIDStreamResponseObjectImpl(new FileInputStream( outFile ), RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
 		} catch ( Throwable t ) {
-			t.printStackTrace();
+			try {
+				if ( out != null ) out.close();
+				if ( tmpOut != null ) tmpOut.close();
+			} catch (IOException e) {}
+			if ( outFile.exists() ) outFile.delete();
+ 			if ( tmpFile.exists() ) tmpFile.delete();
+			log.error("Cant create PDF for Waveform!", t);
+			log.error("Waveform Dataset:");log.error(ds);
+			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform PDF! Reason:"+t.getMessage());
 		}
-		return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_IMPLEMENTED, "ECG support not implemented yet!");
 	}
 	
 	
