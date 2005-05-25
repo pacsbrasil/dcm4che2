@@ -91,7 +91,7 @@ public class SVGCreator implements XMLResponseObject{
 			float prefWidth = PIX_PER_SEC / wfgrp.getSampleFreq() * (float) wfgrp.getNrOfSamples();
 			prefWidth *= 2;//two columns!
 			prefWidth += 110;//space for calPulse
-			log.info("calculated width:"+prefWidth );
+			if ( log.isDebugEnabled() ) log.debug("calculated width:"+prefWidth );
 			if ( prefWidth > this.viewBoxWidth ) { //if prefWidth < default -> dont change default width!
 				setPageWidth( prefWidth / 100 );//in cm
 			}
@@ -194,7 +194,7 @@ public class SVGCreator implements XMLResponseObject{
 	public void embedXML( TransformerHandler th ) throws TransformerConfigurationException, SAXException {
 		this.th = th;
 		nameSpace = "svg";
-		log.info("embedXML called!");
+		if ( log.isDebugEnabled() ) log.debug("embedXML called!");
 		toXML();
 	}
 	
@@ -203,7 +203,7 @@ public class SVGCreator implements XMLResponseObject{
 	}
 	
     private void toXML() throws SAXException {
-		log.info("toXML called!");
+		if ( log.isDebugEnabled() ) log.debug("toXML called!");
         util = new XMLUtil( th, nameSpace );
         addSVGStart();
         	addTitleAndDesc();
@@ -221,9 +221,9 @@ public class SVGCreator implements XMLResponseObject{
         	addG("scaling", "translate("+this.graphicXOffset*scaling+","+(this.graphicYOffset+100)*scaling+"), scale("+scaling +")",null,null,null);
         	addDefs();
         	addGrid( graphicWidthCm, graphicHeightCm );
-    		log.info("grid added!");
+    		if ( log.isDebugEnabled() ) log.debug("grid added!");
     		addGraphic( graphicWidthCm, graphicHeightCm );
-    		log.info("graph added!");
+    		if ( log.isDebugEnabled() ) log.debug("graph added!");
         	util.endElement("g");
         util.endElement( "svg" );
 				
@@ -386,7 +386,7 @@ public class SVGCreator implements XMLResponseObject{
 	
 	private void addWaveform(int lead, float xOffset, float topPos, float height, float width) throws SAXException {
 		float baseLineY = topPos + height/2f;
-		log.info("topPos:"+topPos);
+		if ( log.isDebugEnabled() ) log.debug("topPos:"+topPos);
 		addG( "lead"+lead, "translate("+(graphicXOffset+xOffset)+","+baseLineY+")",null, null, null );
 			addText( "0", "-100", "30", "green", null, waveForms.getChannel( lead ).getChSource());
 			addPath( "lead"+lead, "fill:none;stroke:black", "5", getWaveFormString( waveForms.getChannel( lead ), width ));
@@ -402,6 +402,7 @@ public class SVGCreator implements XMLResponseObject{
 		StringBuffer sb = new StringBuffer();
 		float xDelta = PIX_PER_SEC / waveForms.getSampleFreq();
 		int len = waveForms.getNrOfSamples();
+		if ( log.isDebugEnabled() ) log.debug("NrOfSamples:"+len);
 		if ( len * xDelta > width ) {
 			log.info("correction: (len*xdelta):"+(len*xDelta)+">"+width);
 			len = new Float( width / xDelta).intValue();
