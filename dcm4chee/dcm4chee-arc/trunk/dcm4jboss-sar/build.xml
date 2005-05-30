@@ -232,6 +232,7 @@
    		<zip destfile="${target.dir}/${dist.standalone}.zip">
 			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}/server/pacs">
 				<exclude name="bin/**"/>
+				<exclude name="lib/jboss-common.jar"/>
 				<exclude name="test/**"/>
 			</zipfileset>
 			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}/server/pacs">
@@ -239,6 +240,7 @@
 			</zipfileset>
 			<zipfileset dir="${dist.dir}/common" prefix="${dist.standalone}">
 				<include name="bin/**"/>
+				<include name="lib/jboss-common.jar"/>
 				<include name="test/**"/>
 			</zipfileset>
 			<zipfileset dir="${dist.dir}/${db.name}" prefix="${dist.standalone}">
@@ -254,6 +256,7 @@
 				<exclude name="bin/run.conf"/>
 				<exclude name="bin/twiddle.jar"/>
 				<include name="lib/**"/>
+				<exclude name="lib/jboss-common.jar"/>
 				<include name="client/getopt.jar"/>
 				<include name="client/jbossall-client.jar"/>
 				<include name="client/log4j.jar"/>
