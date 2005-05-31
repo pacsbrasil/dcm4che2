@@ -89,6 +89,7 @@
 		</tr>
 <%
    boolean hasWriteable = false;
+   String sep = System.getProperty("line.separator", "\n");
    for(int a = 0; a < attributeInfo.length; a ++)
    {
       MBeanAttributeInfo attrInfo = attributeInfo[a];
@@ -128,10 +129,24 @@
          }
          else if( attrInfo.isReadable() )
          {  // Text fields for read-write string values
+     		if (attrValue == null)
+     		{
 %>
-          <input type="text" name="<%= attrName %>" value="<%= (attrValue != null ? attrValue : "") %>" <%= readonly %>>
-
+            <input type="text" name="<%= attrName %>" value="" <%= readonly %>>
 <%
+     		}
+            else if (String.valueOf(attrValue).indexOf(sep) == -1)
+            {
+%>
+            <input type="text" name="<%= attrName %>" value="<%= attrValue %>" <%= readonly %>>
+<%
+            }
+            else
+            {
+%>
+            <textarea cols="40" rows="5" nowrap='nowrap' type="text" name="<%= attrName %>" <%= readonly %>><%= attrValue %></textarea>
+<%
+            }
          }
          else
          {  // Empty text fields for write-only
