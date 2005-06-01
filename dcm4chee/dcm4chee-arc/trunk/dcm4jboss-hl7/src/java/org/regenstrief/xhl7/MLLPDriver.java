@@ -197,7 +197,7 @@ public class MLLPDriver {
     throws IOException
   {
     this._proxyOutputStream.flush();
-    if(!this._sending)
+    if(this._sending)
       endSending();
   }
 
