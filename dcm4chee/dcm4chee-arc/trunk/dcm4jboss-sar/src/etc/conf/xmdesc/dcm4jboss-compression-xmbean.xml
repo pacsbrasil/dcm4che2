@@ -74,7 +74,7 @@
       <name>CompressionRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ComputedRadiographyImageStorage:JLSL:5d,DigitalXRayImageStorageForPresentation:JLSL:5d,DigitalXRayImageStorageForProcessing:JLSL:5d,DigitalMammographyXRayImageStorageForPresentation:JLSL:5d,DigitalMammographyXRayImageStorageForProcessing:JLSL:5d,CTImageStorage:JLSL:5d,MRImageStorage:JLSL:5d,UltrasoundImageStorage:JLSL:5d,UltrasoundMultiframeImageStorage:JLSL:5d,SecondaryCaptureImageStorage:JLSL:5d,XRayAngiographicImageStorage:JLSL:5d,XRayRadiofluoroscopicImageStorage:JLSL:5d,NuclearMedicineImageStorage:JLSL:5d" />
+         <value value="ComputedRadiographyImageStorage:JLSL:5d,DigitalXRayImageStorageForPresentation:JLSL:5d,DigitalXRayImageStorageForProcessing:JLSL:5d,DigitalMammographyXRayImageStorageForPresentation:JLSL:5d,DigitalMammographyXRayImageStorageForProcessing:JLSL:5d,CTImageStorage:JLSL:5d,MRImageStorage:JLSL:5d,UltrasoundImageStorage:JLSL:5d,UltrasoundMultiframeImageStorage:JLSL:5d,UltrasoundImageStorageRetired:JLSL:5d,UltrasoundMultiframeImageStorageRetired:JLSL:5d,SecondaryCaptureImageStorage:JLSL:5d,XRayAngiographicImageStorage:JLSL:5d,XRayRadiofluoroscopicImageStorage:JLSL:5d,NuclearMedicineImageStorage:JLSL:5d" />
       </descriptors>
    </attribute>
 
