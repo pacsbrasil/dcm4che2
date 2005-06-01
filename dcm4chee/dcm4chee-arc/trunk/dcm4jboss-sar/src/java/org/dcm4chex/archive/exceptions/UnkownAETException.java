@@ -26,7 +26,9 @@ package org.dcm4chex.archive.exceptions;
  */
 public class UnkownAETException extends Exception {    
 
-    public UnkownAETException() {
+	private static final long serialVersionUID = 3257007665707431219L;
+
+	public UnkownAETException() {
         super();
     }
 

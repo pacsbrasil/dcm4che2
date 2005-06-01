@@ -29,7 +29,9 @@ public class PPSScpService extends AbstractScpService {
 
     public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
 
-        public boolean isNotificationEnabled(Notification notif) {
+		private static final long serialVersionUID = 3256720663225120565L;
+
+		public boolean isNotificationEnabled(Notification notif) {
             return EVENT_TYPE.equals(notif.getType());
         }
     };

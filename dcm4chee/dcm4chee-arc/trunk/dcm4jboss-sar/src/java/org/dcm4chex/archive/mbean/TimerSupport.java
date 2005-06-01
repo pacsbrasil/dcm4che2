@@ -31,7 +31,9 @@ public class TimerSupport extends ServiceMBeanSupport {
     private static class NotificationFilter implements
             javax.management.NotificationFilter {
 
-        private Integer mId;
+		private static final long serialVersionUID = 3257853160218178097L;
+
+		private Integer mId;
 
         /**
          * Create a Filter.

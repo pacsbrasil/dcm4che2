@@ -28,7 +28,9 @@ package org.dcm4chex.archive.exceptions;
 public class ConfigurationException extends RuntimeException
 {
 
-    /**
+	private static final long serialVersionUID = 3256442525337270578L;
+
+	/**
      * 
      */
     public ConfigurationException()

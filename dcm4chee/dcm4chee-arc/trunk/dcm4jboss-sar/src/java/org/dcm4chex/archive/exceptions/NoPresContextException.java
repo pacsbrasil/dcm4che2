@@ -26,7 +26,9 @@ package org.dcm4chex.archive.exceptions;
  */
 public class NoPresContextException extends Exception {
 
-    /**
+	private static final long serialVersionUID = 3545240219440724020L;
+
+	/**
      * 
      */
     public NoPresContextException() {
