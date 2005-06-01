@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.dcm4che.net.Association;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -102,8 +101,7 @@ private static final long MS_PER_HOUR = 3600000L;
         return 0L;
     }
     
-    public String[] getForwardDestinationsFor(Association assoc) {
-        Map param = Condition.toParam(assoc, null);
+    public String[] getForwardDestinationsFor(Map param) {
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
             if (e.condition.isTrueFor(param)) return e.forwardAETs;

@@ -15,10 +15,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
-import org.dcm4che.net.Association;
-
 /**
  * @author gunter.zeilinter@tiani.com
  * @version $Revision$ $Date$
@@ -27,17 +23,7 @@ import org.dcm4che.net.Association;
  */
 public class Condition {
 
-    public static final String CALLING = "calling";
-
-    public static final String CALLED = "called";
-
-    public static final String CUID = "cuid";
-
-    public static final String PMI = "pmi";
-
-    public static final String IMGTYPE = "imgtype";
-    
-    private static final int EXPECT_KEY = 0;
+	private static final int EXPECT_KEY = 0;
 
     private static final int EXPECT_EQUAL = 1;
 
@@ -51,23 +37,7 @@ public class Condition {
         return s.length() == 1 && DELIM.indexOf(s.charAt(0)) != -1;
     }
 
-    public static Map toParam(Association assoc, Dataset ds) {
-        Map retval = new HashMap();
-        putInto(retval, CALLING, new String[]{assoc.getCallingAET()});
-        putInto(retval, CALLED, new String[]{assoc.getCalledAET()});
-        if (ds != null) {
-	        putInto(retval, CUID, ds.getStrings(Tags.SOPClassUID));
-	        putInto(retval, PMI, ds.getStrings(Tags.PhotometricInterpretation));
-	        putInto(retval, IMGTYPE, ds.getStrings(Tags.ImageType));
-        }
-        return retval;
-    }
-
-    private static void putInto(Map retval, String key, String[] val) {
-        if (val != null && val.length != 0) retval.put(key, val);
-    }
-
-    private HashMap map = new HashMap();
+	private HashMap map = new HashMap();
 
     public Condition(String spec) {
         if (!spec.startsWith("[") || !spec.endsWith("]") || spec.length() == 2)

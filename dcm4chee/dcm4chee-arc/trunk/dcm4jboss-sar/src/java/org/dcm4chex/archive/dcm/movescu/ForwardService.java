@@ -129,8 +129,11 @@ public class ForwardService extends ServiceMBeanSupport implements
         Map ians = (Map) assoc
                 .getProperty(StoreScpService.IANS_KEY);
         if (ians != null) {
+	        Map param = new HashMap();
+			param.put("calling", new String[]{assoc.getCallingAET()});
+			param.put("called", new String[]{assoc.getCalledAET()});
             String[] destAETs = forwardingRules
-                    .getForwardDestinationsFor(assoc);
+                    .getForwardDestinationsFor(param);
             if (destAETs.length != 0) forward(destAETs, ians);
         }
     }

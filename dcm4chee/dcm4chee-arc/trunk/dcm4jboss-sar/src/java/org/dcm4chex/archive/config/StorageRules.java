@@ -9,6 +9,7 @@
 package org.dcm4chex.archive.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -58,7 +59,9 @@ public class StorageRules {
     }
 
     public String getStorageLocationFor(Association assoc) {
-        Map param = Condition.toParam(assoc, null);
+        Map param = new HashMap();
+		param.put("calling", new String[]{assoc.getCallingAET()});
+		param.put("called", new String[]{assoc.getCalledAET()});
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
             if (e.condition.isTrueFor(param)) return e.location;

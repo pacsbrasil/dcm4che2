@@ -10,11 +10,13 @@ package org.dcm4chex.archive.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.Association;
 
@@ -71,7 +73,14 @@ public class CompressionRules {
     }
 
     public String getTransferSyntaxFor(Association assoc, Dataset ds) {
-        Map param = Condition.toParam(assoc, ds);
+        Map param = new HashMap();
+        param.put("calling", new String[]{assoc.getCallingAET()});
+		param.put("called", new String[]{assoc.getCalledAET()});
+        if (ds != null) {
+			putIntoIfNotNull(param, "cuid", ds, Tags.SOPClassUID);
+			putIntoIfNotNull(param, "pmi", ds, Tags.PhotometricInterpretation);
+			putIntoIfNotNull(param, "imgtype", ds, Tags.ImageType);
+        }
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
             if (e.condition.isTrueFor(param)) return TSUIDS[e.compression];
@@ -79,7 +88,14 @@ public class CompressionRules {
         return null;
     }
 
-    public String toString() {
+    private void putIntoIfNotNull(Map param, String key, Dataset ds, int tag) {
+		String[] val = ds.getStrings(tag);
+		if (val != null && val.length != 0) {
+			param.put(key, val);
+		}
+	}
+
+	public String toString() {
         if (list.isEmpty()) return "";
         StringBuffer sb = new StringBuffer();
         for (Iterator it = list.iterator(); it.hasNext();) {
