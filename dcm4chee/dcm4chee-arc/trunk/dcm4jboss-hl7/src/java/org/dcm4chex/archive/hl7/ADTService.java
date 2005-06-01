@@ -68,7 +68,7 @@ public class ADTService extends AbstractHL7Service {
 	            }
             }
         } catch (Exception e) {
-            throw new HL7Exception.AE(e.getMessage(), e);
+            throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
     }

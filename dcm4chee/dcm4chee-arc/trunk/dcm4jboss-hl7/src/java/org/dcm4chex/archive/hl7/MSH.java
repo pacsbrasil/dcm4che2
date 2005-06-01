@@ -29,6 +29,8 @@ public class MSH {
 
     public final String triggerEvent;
 
+	public final String messageControlID;
+
     public final String processingID;
 
     public final String versionID;
@@ -48,6 +50,7 @@ public class MSH {
         this.messageType = toString(el);
         this.triggerEvent = toString(el != null ? el
                 .element(HL7XMLLiterate.TAG_COMPONENT) : null);
+        this.messageControlID = toString(fields.get(7));
         this.processingID = toString(fields.get(8));
         this.versionID = toString(fields.get(9));
         this.characterSet = fields.size() > 15 ? toString(fields.get(15)) : null;

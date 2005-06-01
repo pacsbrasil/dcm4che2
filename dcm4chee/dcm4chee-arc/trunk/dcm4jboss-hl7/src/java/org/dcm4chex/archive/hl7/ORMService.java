@@ -138,7 +138,7 @@ public class ORMService extends AbstractHL7Service {
 				mwlManager.remove();
 			}
 		} catch (Exception e) {
-			throw new HL7Exception.AE(e.getMessage(), e);
+			throw new HL7Exception("AE", e.getMessage(), e);
 		}
 		return true;
 	}
@@ -157,12 +157,12 @@ public class ORMService extends AbstractHL7Service {
 				MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
 	}
 
-	private int checkMessage(Document msg) throws HL7Exception.AR {
+	private int checkMessage(Document msg) throws HL7Exception {
 		// TODO check message, throw HL7Exception.AR if check failed
 		String orc1 = msg.getRootElement().element("ORC").elementText("field");
 		int msgType = CONTROL_CODES_LIST.indexOf(orc1);
 		if (msgType == -1)
-			throw new HL7Exception.AR("Illegal Order Control Code ORC-1:"
+			throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
 					+ orc1);
 		return msgType;
 	}

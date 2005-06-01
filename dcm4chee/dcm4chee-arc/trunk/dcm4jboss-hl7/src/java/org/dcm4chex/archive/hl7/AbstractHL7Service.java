@@ -8,7 +8,6 @@
  ******************************************/
 package org.dcm4chex.archive.hl7;
 
-import java.io.StringWriter;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;

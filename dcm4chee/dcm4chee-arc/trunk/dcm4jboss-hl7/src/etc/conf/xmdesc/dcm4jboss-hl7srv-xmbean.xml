@@ -43,6 +43,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getSoTimeout"
+      setMethod="setSoTimeout">
+      <description>Socket timeout in ms. 0 = no timeout.
+      </description>
+      <name>SoTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="600000" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getNoopMessageTypes"
       setMethod="setNoopMessageTypes">
       <description>Comma separated list of Message Types which are accepted
@@ -55,10 +66,34 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSendNotification"
+      setMethod="setSendNotification">
+      <description>Activates notification of registered listeners about received
+      HL7 messages. Required for message forwarding by HL7 Send service.
+      </description>
+      <name>SendNotification</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isFileReceivedHL7"
+      setMethod="setFileReceivedHL7">
+      <description>Activates writing received HL7 messages into
+          file (format: hl7-######.hl7) in log directory.
+      </description>
+      <name>FileReceivedHL7</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isFileReceivedHL7AsXML"
       setMethod="setFileReceivedHL7AsXML">
       <description>Activates writing received and XMLized HL7 messages into
-          file (format: inhl7.timestamp.xml) in log directory.
+          file (format: hl7-######.xml) in log directory.
       </description>
       <name>FileReceivedHL7AsXML</name>
       <type>boolean</type>
@@ -101,6 +136,13 @@
       <description>Current number of idle threads.
       </description>
       <name>NumIdleThread</name>
+      <type>int</type>
+   </attribute>
+   <attribute access="read-only"
+      getMethod="getNumberOfReceivedMessages">
+      <description>Number of received HL7 messages.
+      </description>
+      <name>umberOfReceivedMessages</name>
       <type>int</type>
    </attribute>
    <attribute access="read-write"

@@ -1,15 +1,14 @@
 <project name="dcm4jboss-hl7" default="jar">
 	<property file="build.properties"/>
 	
-	<property name="version" value="2.4.1"/>
+	<property name="version" value="2.4.3"/>
 	<property name="javac.debug" value="on"/>
 	
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
 	<property name="dcm4jboss-ejb.home" value="../dcm4jboss-ejb"/>		
-	<property name="dcm4jboss-ejb.lib" value="${dcm4jboss-ejb.home}/target/common/lib"/>		
-	<property name="ejb-client.jar" value="dcm4jboss-ejb-client.jar" />
+	<property name="dcm4jboss-ejb.target" value="${dcm4jboss-ejb.home}/target"/>		
 
 	<property name="jboss.home" value="${user.home}/jboss-4.0.2"/>
 	<property name="jboss.lib" value="${jboss.home}/lib"/>
@@ -29,7 +28,8 @@
 		<pathelement location="${dcm4che.jar}"/>
 		<pathelement location="${dcm4jboss.jar}"/>
 		<pathelement location="${xhl7.jar}"/>
-		<pathelement location="${dcm4jboss-ejb.lib}/${ejb-client.jar}"/>
+		<pathelement location="${dcm4jboss-ejb.target}/common/lib/dcm4jboss-ejb-client.jar"/>
+		<pathelement location="${dcm4jboss-ejb.target}/hsql/lib/dcm4jboss-jdbc-hsql.jar"/>
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
 		</fileset>

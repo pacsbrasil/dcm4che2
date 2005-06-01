@@ -15,48 +15,22 @@ package org.dcm4chex.archive.hl7;
  * @since 27.10.2004
  *
  */
-public abstract class HL7Exception extends Exception {
+public class HL7Exception extends Exception {
+	
+	private static final long serialVersionUID = 3256446906287995185L;
+	
+	private final String ackCode;
 
-
-    public HL7Exception(String message) {
-        super(message);
+    public HL7Exception(String ackCode, String message) {
+        this(ackCode, message, null);
     }
 
-    public HL7Exception(String message, Throwable cause) {
+    public HL7Exception(String ackCode, String message, Throwable cause) {
         super(message, cause);
+		this.ackCode = ackCode;
     }
     
-    public abstract String getAcknowledgementCode();
-
-    public static class AE extends HL7Exception {
-
-        public AE(String message) {
-            super(message);
-        }
-
-        public AE(String message, Throwable cause) {
-            super(message, cause);
-        }
-
-        public String getAcknowledgementCode() {
-            return "AE";
-        }
+    public String getAcknowledgementCode() {
+		return ackCode;
     }
-
-    public static class AR extends HL7Exception {
-
-        public AR(String message) {
-            super(message);
-        }
-
-        public AR(String message, Throwable cause) {
-            super(message, cause);
-        }
-
-        public String getAcknowledgementCode() {
-            return "AR";
-        }
-
-    }
-
 }
