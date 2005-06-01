@@ -2,6 +2,14 @@
 <!-- $Id$ -->
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
+
+  <mbean code="org.jboss.mq.server.jmx.Queue"
+	 name="tiani.archive:service=Queue,name=PPSScu">
+     <depends optional-attribute-name="DestinationManager">
+     	jboss.mq:service=DestinationManager
+     </depends>
+  </mbean>  
+
   <mbean code="org.dcm4chex.archive.dcm.ppsscp.PPSScuService" 
 	     name="tiani.archive:service=PPSScu"
 	     xmbean-dd="xmdesc/dcm4jboss-ppsscu-xmbean.xml">

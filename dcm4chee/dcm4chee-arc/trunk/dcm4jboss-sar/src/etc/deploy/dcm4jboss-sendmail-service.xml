@@ -2,6 +2,14 @@
 <!-- $Id$ -->
 <server>
   <classpath codebase="lib" archives="dcm4jboss.jar"/>
+
+  <mbean code="org.jboss.mq.server.jmx.Queue"
+	 name="tiani.archive:service=Queue,name=Sendmail">
+     <depends optional-attribute-name="DestinationManager">
+     	jboss.mq:service=DestinationManager
+     </depends>
+  </mbean>
+
   <mbean code="org.dcm4chex.archive.mbean.SendMailService" 
 	     name="tiani.archive:service=Sendmail"
 	     xmbean-dd="xmdesc/dcm4jboss-sendmail-xmbean.xml">
