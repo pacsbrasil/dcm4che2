@@ -128,5 +128,30 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="INFO">
+      <description>Forward HL7 message according configured Forwarding Rules</description>
+      <name>forward</name>
+      <parameter>
+        <description>HL7 message as byte array</description>
+        <name>hl7msg</name>
+        <type>[B</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Send HL7 message to specified destination</description>
+      <name>sendTo</name>
+      <parameter>
+        <description>HL7 message as byte array</description>
+        <name>hl7msg</name>
+        <type>[B</type>
+      </parameter>
+      <parameter>
+        <description>Destination. Format: ReceivingApplication^ReceivingFacility</description>
+        <name>receiving</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
 </mbean>
     
