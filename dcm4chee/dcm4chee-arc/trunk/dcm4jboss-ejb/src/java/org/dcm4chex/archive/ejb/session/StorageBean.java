@@ -9,7 +9,9 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.nio.charset.Charset;
+import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -34,8 +36,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeCoercions;
+import org.dcm4chex.archive.ejb.conf.AttributeCreatePatCfg;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
@@ -70,6 +72,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *                value="resource:dcm4jboss-attribute-filter.xml"
  * @ejb.env-entry name="AttributeCoercionConfigURL" type="java.lang.String"
  *                value="resource:dcm4jboss-attribute-coercion.xml"
+ * @ejb.env-entry name="AttributeCreatePatCfgURL" type="java.lang.String"
+ *                value="resource:dcm4jboss-cfg-create-pat.xml"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  * @version $Revision$ $Date$
@@ -101,6 +105,8 @@ public abstract class StorageBean implements SessionBean {
 
     private SessionContext sessionCtx;
 
+	private AttributeCreatePatCfg patCfg;
+    
     public void setSessionContext(SessionContext ctx) {
         sessionCtx = ctx;
         Context jndiCtx = null;
@@ -121,6 +127,12 @@ public abstract class StorageBean implements SessionBean {
                     .lookup("java:comp/env/AttributeFilterConfigURL"));
             attrCoercions = new AttributeCoercions((String) jndiCtx
                     .lookup("java:comp/env/AttributeCoercionConfigURL"));
+            try {
+            patCfg = new AttributeCreatePatCfg((String) jndiCtx
+                    .lookup("java:comp/env/AttributeCreatePatCfgURL"));
+            } catch ( Throwable t ) {
+            	t.printStackTrace();
+            }
         } catch (NamingException e) {
             throw new EJBException(e);
         } catch (ConfigurationException e) {
@@ -238,23 +250,59 @@ public abstract class StorageBean implements SessionBean {
     private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
             throws CreateException, FinderException, DcmServiceException {
         final String id = ds.getString(Tags.PatientID);
-        Collection c = patHome.findByPatientId(id);
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            PatientLocal patient = (PatientLocal) it.next();
-            if (equals(patient, ds)) {
-                PatientLocal mergedWith = patient.getMergedWith();
-                if (mergedWith != null) {
-                    patient = mergedWith;
-                }
-                coercePatientIdentity(patient, ds, coercedElements);
-                return patient;
-            }
+        if ( id != null ) {
+	        Collection c = patHome.findByPatientId(id);
+	        for (Iterator it = c.iterator(); it.hasNext();) {
+	            PatientLocal patient = (PatientLocal) it.next();
+	            if (equals(patient, ds)) {
+	                PatientLocal mergedWith = patient.getMergedWith();
+	                if (mergedWith != null) {
+	                    patient = mergedWith;
+	                }
+	                coercePatientIdentity(patient, ds, coercedElements);
+	                return patient;
+	            }
+	        }
+	        final int[] filter = attrFilter.getPatientFilter();
+	        return patHome.create(ds.subSet(filter));
         }
+    	if ( log.isDebugEnabled() ) log.debug("Patient id is null");
+        PatientLocal patient;
         final int[] filter = attrFilter.getPatientFilter();
-        PatientLocal patient = patHome.create(ds.subSet(filter));
+        if ( patCfg.isDoubletPreventionEnabled()) {
+        	if ( log.isDebugEnabled() ) log.debug("DoubletPrevention is enabled!");
+        	String patName = ds.getString( Tags.PatientName);
+        	Date d = ds.getDate( Tags.PatientBirthDate);
+        	Collection col = null;
+        	if ( d != null ) {
+	        	Timestamp birthDate = new Timestamp(d.getTime());
+	        	col = patHome.findByNameAndBirthdate( patName, birthDate);
+	        	if ( col.size() == 1 ) {
+	        		patient = (PatientLocal) col.iterator().next();
+	                log.info(patName+" has no patID! Use patient with same name/birthdate from DB (patID:"+ patient.getPatientId()+
+	                		"; issuer:"+patient.getIssuerOfPatientId()+") !" );
+	            	patient.setAttributes( patient.getAttributes(false).subSet(filter));
+	            	coercePatientIdentity(patient, ds.subSet(filter), coercedElements);
+	            	return patient;
+	        	} else if ( col.size() > 1) {
+	        		if ( log.isDebugEnabled() ) log.debug("DoubletPrevention: Patient "+patName+" ("+birthDate+") is ambigious! Create new patient entry!");
+	        	}
+        	}
+        	if ( log.isDebugEnabled() ) log.debug("DoubletPrevention: Missing birthdate for Patient "+patName+" -> Cant search for doublet!");
+        } else {
+        	if ( log.isDebugEnabled() ) log.debug("DoubletPrevention is disabled!");
+        }
+        patient = patHome.create(ds.subSet(filter));
+    	if ( patCfg.isCreatePatIDEnabled() ) {
+        	ds.putLO( Tags.PatientID, patCfg.getPattern()+patient.getPk() );
+        	ds.putLO( Tags.IssuerOfPatientID, patCfg.getIssuer() );
+        	patient.setAttributes(ds);
+            log.info(patient.getPatientName()+" has no patID! Created new Patient ID:"+ patient.getPatientId()+
+            		"; issuer:"+patient.getIssuerOfPatientId() );
+    	}
         return patient;
     }
-
+    
     private boolean equals(PatientLocal patient, Dataset ds) {
         // TODO Auto-generated method stub
         return true;
