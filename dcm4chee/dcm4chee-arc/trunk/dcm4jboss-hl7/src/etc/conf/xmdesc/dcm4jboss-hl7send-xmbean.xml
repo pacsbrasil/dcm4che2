@@ -128,7 +128,7 @@
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="INFO">
+   <operation impact="ACTION">
       <description>Forward HL7 message according configured Forwarding Rules</description>
       <name>forward</name>
       <parameter>
@@ -138,7 +138,7 @@
       </parameter>
       <return-type>int</return-type>
    </operation>
-   <operation impact="INFO">
+   <operation impact="ACTION">
       <description>Send HL7 message to specified destination</description>
       <name>sendTo</name>
       <parameter>
