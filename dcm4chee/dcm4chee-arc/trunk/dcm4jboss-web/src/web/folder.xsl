@@ -132,14 +132,15 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				      		</td>
 						</xsl:when>
 						<xsl:otherwise>
-							<td bgcolor="eeeeee" class="label">Study ID:</td>
+							<td bgcolor="eeeeee" class="label">Study ID (@Media):</td>
 				      		<td bgcolor="eeeeee">
 				        		<input size="10" name="studyID" type="text" value="{studyID}"/>
 				      		</td>
 							<td bgcolor="eeeeee" class="label">Study Date:
 							</td>
 				      		<td bgcolor="eeeeee"> 
-				        		<input size="10" name="studyDateRange" type="text" value="{studyDateRange}"/>
+				        		    <input size="10" name="studyDateRange" type="text" value="{studyDateRange}"/>
+				      		    <input name="studyUID" type="hidden" value=""/>
 				      		</td>
 						</xsl:otherwise>
 					</xsl:choose>
@@ -234,7 +235,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					Study ID:</font>
+					Study ID (@Media):</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -454,8 +455,10 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
       		<td title="Study Date" bgcolor="eaeaff">
 				<xsl:value-of select="studyDateTime"/>&#160;
 			</td>
-			<td title="Study ID" bgcolor="eaeaff" >
-				<xsl:value-of select="studyID"/>&#160;
+			<td title="Study ID (@Media)" bgcolor="eaeaff" >
+				<xsl:value-of select="studyID"/>
+				<xsl:if test="filesetId != '_NA_'"> @<xsl:value-of select="filesetId"/> </xsl:if>
+				&#160;
 			</td>
 		 	<td title="Modalities" bgcolor="eaeaff">
 				<xsl:value-of select="modalitiesInStudy"/>&#160;

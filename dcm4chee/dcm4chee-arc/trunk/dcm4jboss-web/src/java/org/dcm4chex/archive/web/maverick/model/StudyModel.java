@@ -141,6 +141,12 @@ public class StudyModel extends AbstractModel {
         return StringUtils.toString(ds.getStrings(Tags.RetrieveAET), '\\');
     }
 
+    public final String getFilesetId() {
+        String s = ds.getString(Tags.StorageMediaFileSetID);
+        if ( s == null || s.trim().length() < 1 ) s = "_NA_";
+        return s;
+    }
+    
     /**
      * Returns the list of Series.
      * <p>
