@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -18,11 +19,7 @@ import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXSource;
 
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
@@ -35,10 +32,7 @@ import org.dom4j.Document;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
 import org.regenstrief.xhl7.HL7XMLReader;
-import org.regenstrief.xhl7.HL7XMLWriter;
 import org.regenstrief.xhl7.MLLPDriver;
-import org.regenstrief.xhl7.XMLWriter;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -47,8 +41,6 @@ public class HL7SendService
 		extends ServiceMBeanSupport 
 		implements NotificationListener, MessageListener {
 	
-	private static final String SND_XSL_URL = "resource:xsl/hl7/sndmsg.xsl";
-
 	private String queueName;
 	
 	private String sendingApplication;
@@ -242,12 +234,12 @@ public class HL7SendService
 		Socket s = tlsConfig.createSocket(aeData);
 		MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
 				.getOutputStream(), true);
-		send(message, receiving, mllpDriver.getOutputStream());
+		writeMessage(message, receiving, mllpDriver.getOutputStream());
 		mllpDriver.turn();
 		if (acTimeout > 0) {
 			s.setSoTimeout(acTimeout);
 		}
-		Document rsp = receive(mllpDriver.getInputStream());
+		Document rsp = readMessage(mllpDriver.getInputStream());
 		MSH msh = new MSH(rsp);
 		if ("ACK".equals(msh.messageType)) {
 			ACK ack = new ACK(rsp);
@@ -266,7 +258,7 @@ public class HL7SendService
 		s.close();
 	}
 
-	private Document receive(InputStream mllpIn)
+	private Document readMessage(InputStream mllpIn)
 			throws IOException, SAXException {
 		InputSource in = new InputSource(mllpIn);
 		in.setEncoding("ISO-8859-1");
@@ -277,37 +269,35 @@ public class HL7SendService
 		Document msg = hl7in.getDocument();
 		return msg;
 	}
-
-	private void send(byte[] message, String receiving, OutputStream out) 
-			throws TransformerException {
-		Transformer t = getTemplates(SND_XSL_URL).newTransformer();
-		t.setParameter("SendingApplication", sendingApplication);
-		t.setParameter("SendingFacility", sendingFacility);
+	
+	private void writeMessage(byte[] message, String receiving, OutputStream out)
+			throws UnsupportedEncodingException, IOException {
+		out.write("MSH|^~\\&|".getBytes("ISO-8859-1"));
+		out.write(sendingApplication.getBytes("ISO-8859-1"));
+		out.write('|');
+		out.write(sendingApplication.getBytes("ISO-8859-1"));
+		out.write('|');
 		final int delim = receiving.indexOf('^');
-		t.setParameter("ReceivingApplication", receiving.substring(0, delim));
-		t.setParameter("ReceivingFacility", receiving.substring(delim + 1));
+		out.write(receiving.substring(0, delim).getBytes("ISO-8859-1"));
+		out.write('|');
+		out.write(receiving.substring(delim + 1).getBytes("ISO-8859-1"));
+		out.write('|');
 		final SimpleDateFormat tsFormat = 
 			new SimpleDateFormat("yyyyMMddHHmmss.SSS");
-		t.setParameter("DateTimeOfMessage", tsFormat.format(new Date()));
-		t.setParameter("MessageControlID", String.valueOf(++messageControlID));
-		InputSource in = new InputSource(new ByteArrayInputStream(message));
-		in.setEncoding("ISO-8859-1");
-		XMLReader xmlReader = new HL7XMLReader();
-		XMLWriter xmlWriter = new HL7XMLWriter();
-		xmlWriter.setOutputStream(out);
-		ContentHandler hl7out = xmlWriter.getContentHandler();
-		t.transform(new SAXSource(xmlReader, in), new SAXResult(hl7out));
+		out.write(tsFormat.format(new Date()).getBytes("ISO-8859-1"));
+		// skip MSH:1-7
+		int left = 0;
+		for (int i = 0; i < 7; ++i)
+			while (message[left++] != '|');
+		// write MSH:8-9  
+		int right = left;
+		while (message[right++] != '|');
+		while (message[right++] != '|');
+		out.write(message, left-1, right - left + 1);
+		out.write(String.valueOf(++messageControlID).getBytes("ISO-8859-1"));
+		// skip MSH:10
+		while (message[right++] != '|');
+		// write remaining message
+		out.write(message, right - 1, message.length - right + 1);
 	}
-
-    protected Templates getTemplates(String uri) {
-        try {
-            return (Templates) server.invoke(hl7ServerName, "getTemplates",
-                    new Object[] { uri },
-                    new String[] { String.class.getName() });
-        } catch (Exception e) {
-            String prompt = "Failed to load XSL " + uri;
-            log.error(prompt, e);
-            throw new RuntimeException(prompt, e);
-        }
-    }
 }
