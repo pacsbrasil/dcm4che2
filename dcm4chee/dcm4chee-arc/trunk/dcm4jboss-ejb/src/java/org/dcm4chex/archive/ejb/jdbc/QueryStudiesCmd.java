@@ -39,7 +39,7 @@ public class QueryStudiesCmd extends BaseCmd {
             "Patient.encodedAttributes", "Study.pk", "Study.encodedAttributes",
             "Study.modalitiesInStudy", "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
-            "Study.availability"};
+            "Study.availability", "Study.filesetId"};
 
     private static final String[] ENTITY = { "Patient"};
 
@@ -141,6 +141,7 @@ public class QueryStudiesCmd extends BaseCmd {
                             .getString(8), '\\'));
                     ds.putCS(Tags.InstanceAvailability, Availability
                             .toString(rs.getInt(9)));
+                    ds.putSH(Tags.StorageMediaFileSetID, rs.getString(10));
                 }
                 result.add(ds);
             }
