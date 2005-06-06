@@ -267,11 +267,10 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setCommitment(boolean commitment);
 
     /**
-     * @ejb.relation name="series-instance"
-     *               role-name="instance-of-series"
+     * @ejb.interface-method 
+     * @ejb.relation name="series-instance" role-name="instance-of-series"
      *               cascade-delete="yes"
-     * @jboss.relation fk-column="series_fk"
-     *                 related-pk-field="pk"
+     * @jboss.relation fk-column="series_fk" related-pk-field="pk"
      * @jboss.load-group name="most"
      * 
      * @param series series of this instance

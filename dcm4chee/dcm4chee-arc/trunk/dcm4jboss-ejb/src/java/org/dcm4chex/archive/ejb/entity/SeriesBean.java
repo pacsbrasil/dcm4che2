@@ -321,6 +321,10 @@ public abstract class SeriesBean implements EntityBean {
      * @jboss.relation fk-column="study_fk" related-pk-field="pk"
      */
     public abstract StudyLocal getStudy();
+	
+    /**
+     * @ejb.interface-method 
+     */
     public abstract void setStudy(StudyLocal study);
 
     /**
