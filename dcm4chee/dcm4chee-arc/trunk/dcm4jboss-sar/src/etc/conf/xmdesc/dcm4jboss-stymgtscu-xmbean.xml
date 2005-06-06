@@ -27,7 +27,7 @@
       <description>List of forwarding rules.
       Format:=['['CONDITION[,..]']'](AET[,..]|NONE)
       CONDITION:=('calling'|'called'|'command')[!]=VALUE['|'...]
-      command-VALUE:=('N_CREATE_RQ'|'N_SET_RQ'|'N_DELETE_RQ'|'N_ACTION_RQ('TYPE')')      
+      command-VALUE:=('N_CREATE_RQ'|'N_SET_RQ'|'N_DELETE_RQ'|'N_ACTION_RQ(1)'|'N_ACTION_RQ(2)')      
       </description>
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
