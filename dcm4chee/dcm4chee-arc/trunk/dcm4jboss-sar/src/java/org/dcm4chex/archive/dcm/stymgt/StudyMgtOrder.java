@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 
-public class PrivateStudyMgtOrder implements Serializable {
+public class StudyMgtOrder implements Serializable {
 	
 	private static final long serialVersionUID = 3258417226779603505L;
 
@@ -15,7 +15,7 @@ public class PrivateStudyMgtOrder implements Serializable {
 	
 	private final int cmdField;
 	
-	private final int actionID;
+	private final int actionTypeID;
 
 	private final String iuid;
 
@@ -23,14 +23,14 @@ public class PrivateStudyMgtOrder implements Serializable {
 
 	private int failureCount;
 
-	private int failureStatus;
+	private Exception exception;
 
-	public PrivateStudyMgtOrder(String callingAET, String calledAET,
+	public StudyMgtOrder(String callingAET, String calledAET,
 			int cmdField, int actionID, String iuid, Dataset dataset){
 		this.callingAET = callingAET;
 		this.calledAET = calledAET;
 		this.cmdField = cmdField;
-		this.actionID = actionID;
+		this.actionTypeID = actionID;
 		this.iuid = iuid;
 		this.ds = dataset;
 	}
@@ -43,8 +43,8 @@ public class PrivateStudyMgtOrder implements Serializable {
 		return callingAET;
 	}
 	
-	public final int getActionID() {
-		return actionID;
+	public final int getActionTypeID() {
+		return actionTypeID;
 	}
 
 	public final int getCommandField() {
@@ -67,31 +67,34 @@ public class PrivateStudyMgtOrder implements Serializable {
         this.failureCount = failureCount;
     }
 
-    public final int getFailureStatus() {
-        return failureStatus;
-    }
+	public Exception getException() {
+		return exception;
+	}
 
-    public final void setFailureStatus(int failureStatus) {
-        this.failureStatus = failureStatus;
-    }
+	public void setException(Exception exception) {
+		this.exception = exception;
+	}
 
     public String toString() {
 		StringBuffer sb = new StringBuffer("StudyMgtOrder[");
 		
         return "StudyMgtOrder[" + cmdFieldAsString()
-                + ", actionID=" + actionID
         		+ ", iuid=" + iuid
-                + ", failureStatus="
-                + Integer.toHexString(failureStatus).toUpperCase()
-                + "H, failureCount=" + failureCount + "]";
+        		+ ", failureCount=" + failureCount 
+                + ", exception=" + exception
+                + "]";
     }
 
 	private String cmdFieldAsString() {
+		return commandAsString(cmdField, actionTypeID);		
+	}
+	
+	public static String commandAsString(int cmdField, int actionTypeID) {
 	      switch (cmdField) {
 	         case Command.N_SET_RQ:
 	            return "N_SET_RQ";
 	         case Command.N_ACTION_RQ:
-	            return "N_ACTION_RQ";
+	            return "N_ACTION_RQ(" + actionTypeID + ")";
 	         case Command.N_CREATE_RQ:
 	            return "N_CREATE_RQ";
 	         case Command.N_DELETE_RQ:

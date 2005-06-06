@@ -10,11 +10,11 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 
-class PrivateStudyMgtScp extends DcmServiceBase {
+class StudyMgtScp extends DcmServiceBase {
 
-	final PrivateStudyMgtScpService service;
+	final StudyMgtScpService service;
 
-	public PrivateStudyMgtScp(PrivateStudyMgtScpService service) {
+	public StudyMgtScp(StudyMgtScpService service) {
 		this.service = service;
 	}
 

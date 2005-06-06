@@ -11,7 +11,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 
-public class PrivateStudyMgtScpService extends AbstractScpService {
+public class StudyMgtScpService extends AbstractScpService {
 
     public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.stymgt";
 
@@ -24,7 +24,7 @@ public class PrivateStudyMgtScpService extends AbstractScpService {
         }
     };
 
-    private PrivateStudyMgtScp stymgtScp = new PrivateStudyMgtScp(this);
+    private StudyMgtScp stymgtScp = new StudyMgtScp(this);
 	
 	protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.TianiStudyManagement, stymgtScp);
@@ -35,7 +35,7 @@ public class PrivateStudyMgtScpService extends AbstractScpService {
 	}
 
 	protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        policy.putPresContext(UIDs.GeneralPurposePerformedProcedureStepSOPClass,
+        policy.putPresContext(UIDs.TianiStudyManagement,
                 enable ? getTransferSyntaxUIDs() : null);
     }
 
@@ -44,7 +44,7 @@ public class PrivateStudyMgtScpService extends AbstractScpService {
 		Association a = assoc.getAssociation();
 		long eventID = super.getNextNotificationSequenceNumber();
 		Notification notif = new Notification(EVENT_TYPE, this, eventID);
-		notif.setUserData(new PrivateStudyMgtOrder(a.getCallingAET(), a
+		notif.setUserData(new StudyMgtOrder(a.getCallingAET(), a
 				.getCalledAET(), cmdField, actionTypeID, iuid, ds));
 		super.sendNotification(notif);
 	}
