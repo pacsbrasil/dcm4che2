@@ -299,7 +299,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					Series No:</font>
+					Series No (@media):</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -577,8 +577,10 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			<td title="Series Date" bgcolor="e8ffe8" >
 				<xsl:value-of select="seriesDateTime"/>&#160;
 			</td>
-			<td title="Series Number" bgcolor="e8ffe8" >
-				<xsl:value-of select="seriesNumber"/>&#160;
+			<td title="Series Number (@media)" bgcolor="e8ffe8" >
+				<xsl:value-of select="seriesNumber"/>
+				<xsl:if test="filesetId != '_NA_'"> @<xsl:value-of select="filesetId"/> </xsl:if>
+				&#160;
 			</td>
       <td title="Modality" bgcolor="e8ffe8" >
 				<xsl:value-of select="modality"/>&#160;
