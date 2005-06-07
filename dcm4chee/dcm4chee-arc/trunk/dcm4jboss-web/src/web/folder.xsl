@@ -132,7 +132,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 				      		</td>
 						</xsl:when>
 						<xsl:otherwise>
-							<td bgcolor="eeeeee" class="label">Study ID (@Media):</td>
+							<td bgcolor="eeeeee" class="label">Study ID:</td>
 				      		<td bgcolor="eeeeee">
 				        		<input size="10" name="studyID" type="text" value="{studyID}"/>
 				      		</td>
@@ -257,11 +257,11 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					Acc.Nr.:</font>
+					Acc.No.:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
-					Ref. Physican:</font>
+					Ref. Physician:</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
@@ -291,7 +291,7 @@ document.myForm.destination.options[document.myForm.destination.selectedIndex ].
 		<tr bgcolor="eeeeee">
 			<td bgcolor="ccffcc">
 				<font size="1">
-					Serie</font>
+					Series</font>
 			</td>
 			<td>
 				<font size="1" color="ff0000">
