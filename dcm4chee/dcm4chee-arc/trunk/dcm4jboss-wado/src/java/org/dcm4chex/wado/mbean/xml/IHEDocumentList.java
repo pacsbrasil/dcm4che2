@@ -371,7 +371,7 @@ public class IHEDocumentList implements XMLResponseObject{
 	private void addPatientPatient( Dataset ds ) throws SAXException {
         String familyName = "";
         String givenName = "";
-        String genderCode = "121103"; // Code Value for Patient’s Sex 'O' (Undetermined sex)
+        String genderCode = "121103"; // Code Value for Patient's Sex 'O' (Undetermined sex)
         String birthDate = "";
         try {
         	PersonName pn = ds.getPersonName(Tags.PatientName );
