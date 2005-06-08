@@ -23,25 +23,31 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getDcmServerName"
-      setMethod="setDcmServerName">
-      <description>Used internally - do NOT modify.
+      getMethod="getGeneratePatientID"
+      setMethod="setGeneratePatientID">
+      <description>Generate Patient ID from hash of Patient Name and
+          Birth Date, if there is no Patient ID in the received object.
+          If there is also no value for Patient Name, the hash of the
+          Study Instance UID is used to generate different Patient IDs for
+          different studies in that case.
+          &lt;br&gt;Use ### as placeholder for decimal hash value.
+          &lt;br&gt;NONE = do not generate Patient IDs -> Media Creation will fail.
       </description>
-      <name>DcmServerName</name>
-      <type>javax.management.ObjectName</type>      
+      <name>GeneratePatientID</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="tiani.dcmcdw:service=DcmServer" />
+         <value value="DCMCDW-##########" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getSpoolDirName"
-      setMethod="setSpoolDirName">
-      <description>Used internally - do NOT modify.
+      getMethod="getIssuerOfPatientID"
+      setMethod="setIssuerOfPatientID">
+      <description>Add Issuer Of PatientID if the Patient ID is generated.
       </description>
-      <name>SpoolDirName</name>
-      <type>javax.management.ObjectName</type>      
+      <name>IssuerOfPatientID</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="tiani.dcmcdw:service=SpoolDir" />
+         <value value="DCMCDW" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -167,6 +173,28 @@
          <value value="512" />
       </descriptors>
    </attribute>   
+   <attribute access="read-write"
+      getMethod="getDcmServerName"
+      setMethod="setDcmServerName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>DcmServerName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="tiani.dcmcdw:service=DcmServer" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSpoolDirName"
+      setMethod="setSpoolDirName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>SpoolDirName</name>
+      <type>javax.management.ObjectName</type>      
+      <descriptors>
+         <value value="tiani.dcmcdw:service=SpoolDir" />
+      </descriptors>
+   </attribute>
    &defaultAttributes;
    
    <!-- Operations -->

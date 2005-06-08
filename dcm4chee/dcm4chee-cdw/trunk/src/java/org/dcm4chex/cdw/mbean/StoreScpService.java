@@ -45,7 +45,9 @@ import org.dcm4che.util.MD5Utils;
  */
 public class StoreScpService extends AbstractScpService {
 
-    private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
+    private static final String NONE = "NONE";
+
+	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
             Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID,};
 
     private static final String[] IMAGE_CUIDS = {
@@ -107,6 +109,10 @@ public class StoreScpService extends AbstractScpService {
     private boolean acceptJPEG2000Lossy = false;
 
     private boolean acceptRLELossless = false;
+	
+	private String generatePatientID = "DCMCDW-##########";
+	
+	private String issuerOfPatientID = "DCMCDW";
 
     private int bufferSize = 512;
 
@@ -119,7 +125,23 @@ public class StoreScpService extends AbstractScpService {
 
     };
 
-    public final boolean isAcceptJPEG2000Lossless() {
+    public final String getGeneratePatientID() {
+		return generatePatientID != null  ? generatePatientID : NONE;
+	}
+
+	public final void setGeneratePatientID(String pattern) {
+		this.generatePatientID = pattern.equalsIgnoreCase(NONE) ? null : pattern;
+	}
+
+	public final String getIssuerOfPatientID() {
+		return issuerOfPatientID;
+	}
+
+	public final void setIssuerOfPatientID(String issuerOfPatientID) {
+		this.issuerOfPatientID = issuerOfPatientID;
+	}
+
+	public final boolean isAcceptJPEG2000Lossless() {
         return acceptJPEG2000Lossless;
     }
 
@@ -395,9 +417,45 @@ public class StoreScpService extends AbstractScpService {
                     +"]xFrames[" + frames + "]xSamples[" + samples
                     +"]xBytes[" + (alloc/8) + "]");            
         }
+		if (ds.vm(Tags.PatientID) <= 0) {
+			final String pname = ds.getString(Tags.PatientName);
+			if (generatePatientID == null) {
+				log.warn("Receive object without Patient ID with Patient Name - "
+						+ pname 
+						+ " -> Creation of Media containing this object will fail!");
+			} else {
+				String pid = generatePatientID(ds);
+				ds.putLO(Tags.PatientID, pid);
+				ds.putLO(Tags.IssuerOfPatientID, issuerOfPatientID);
+				log.info("Receive object without Patient ID with Patient Name - "
+						+ pname + " -> add generated Patient ID - " + pid);
+			}
+		}
     }
 
-    private void copy(InputStream in, OutputStream out, int totLen,
+    private String generatePatientID(Dataset ds) {
+		int left = generatePatientID.indexOf('#');
+		if (left == -1) {
+			return generatePatientID;
+		}
+		StringBuffer sb = new StringBuffer(generatePatientID.substring(0,left));
+		// generate different Patient IDs for different studies
+		// if no Patient Name
+		String num = String.valueOf(37
+				* ds.getString(Tags.PatientName,
+						ds.getString(Tags.StudyInstanceUID)).hashCode()
+				+ ds.getString(Tags.PatientBirthDate, "").hashCode());
+		left += num.length();
+		final int right = generatePatientID.lastIndexOf('#') + 1;
+		while (left++ < right) {
+			sb.append('0');
+		}
+		sb.append(num);
+		sb.append(generatePatientID.substring(right));
+		return null;
+	}
+
+	private void copy(InputStream in, OutputStream out, int totLen,
             byte[] buffer) throws IOException {
         for (int len, toRead = totLen; toRead > 0; toRead -= len) {
             len = in.read(buffer, 0, Math.min(toRead, buffer.length));
