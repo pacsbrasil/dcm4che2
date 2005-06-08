@@ -117,7 +117,23 @@ public class StoreScpService extends AbstractScpService {
 
     private StoreScp scp = new StoreScp(this);
 
-    public final ObjectName getTLSConfigName() {
+    public final String getGeneratePatientID() {
+		return scp.getGeneratePatientID();
+	}
+
+	public final void setGeneratePatientID(String pattern) {
+		scp.setGeneratePatientID(pattern);
+	}
+
+	public final String getIssuerOfPatientIDRules() {
+		return scp.getIssuerOfPatientIDRules();
+	}
+
+	public final void setIssuerOfPatientIDRules(String rules) {
+		scp.setIssuerOfPatientIDRules(rules);
+	}
+
+	public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
 

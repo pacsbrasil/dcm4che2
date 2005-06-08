@@ -52,6 +52,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.config.CompressionRules;
+import org.dcm4chex.archive.config.IssuerOfPatientIDRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
@@ -80,6 +81,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private int bufferSize = 512;
 
+	private String generatePatientID = "PACS-##########";
+	
+	private IssuerOfPatientIDRules issuerOfPatientIDRules = 
+			new IssuerOfPatientIDRules("PACS-:TIANI");
+
     private int updateDatabaseMaxRetries = 2;
 
     private int maxCountUpdateDatabaseRetries = 0;
@@ -96,7 +102,24 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private long outOfResourcesThreshold = 30000000L;
 
-    public StoreScp(StoreScpService service) {
+    public final String getGeneratePatientID() {
+		return generatePatientID != null  ? generatePatientID : "NONE";
+	}
+
+	public final void setGeneratePatientID(String pattern) {
+		this.generatePatientID = pattern.equalsIgnoreCase("NONE") ? null
+				: pattern;
+	}
+
+	public final String getIssuerOfPatientIDRules() {
+		return issuerOfPatientIDRules.toString();
+	}
+
+	public final void setIssuerOfPatientIDRules(String rules) {
+		this.issuerOfPatientIDRules = new IssuerOfPatientIDRules(rules);
+	}
+
+	public StoreScp(StoreScpService service) {
         this.service = service;
         this.log = service.getLog();
     }
@@ -459,8 +482,52 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     Status.DataSetDoesNotMatchSOPClassError,
                     "SOP Class UID in Dataset differs from Affected SOP Class UID");
         }
+		String pid = ds.getString(Tags.PatientID);
+		String pname = ds.getString(Tags.PatientName);
+		if (pid == null && generatePatientID != null) {
+			if (generatePatientID != null) {
+				pid = generatePatientID(ds);
+				ds.putLO(Tags.PatientID, pid);
+				log.info("Add generated Patient ID " + pid 
+						+ " for Patient Name " + pname);
+			}
+		}
+		if (pid != null) {
+			String issuer = ds.getString(Tags.IssuerOfPatientID);
+			if (issuer == null) {
+				issuer = issuerOfPatientIDRules.issuerOf(pid);
+				if (issuer != null) {
+					ds.putLO(Tags.IssuerOfPatientID, issuer);
+					log.info("Add missing Issuer Of Patient ID " + issuer
+							+ " for Patient ID " + pid 
+							+ " and Patient Name " + pname);					
+				}
+			}
+		}		
     }
 
+    private String generatePatientID(Dataset ds) {
+		int left = generatePatientID.indexOf('#');
+		if (left == -1) {
+			return generatePatientID;
+		}
+		StringBuffer sb = new StringBuffer(generatePatientID.substring(0,left));
+		// generate different Patient IDs for different studies
+		// if no Patient Name
+		String num = String.valueOf(0xffffffffL & (37
+				* ds.getString(Tags.PatientName,
+						ds.getString(Tags.StudyInstanceUID)).hashCode()
+				+ ds.getString(Tags.PatientBirthDate, "").hashCode()));
+		left += num.length();
+		final int right = generatePatientID.lastIndexOf('#') + 1;
+		while (left++ < right) {
+			sb.append('0');
+		}
+		sb.append(num);
+		sb.append(generatePatientID.substring(right));
+		return sb.toString();
+	}
+	
     private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 

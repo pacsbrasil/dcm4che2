@@ -57,6 +57,38 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getGeneratePatientID"
+      setMethod="setGeneratePatientID">
+      <description>Generate Patient ID from hash of Patient Name and
+          Birth Date, if there is no Patient ID in the received object.
+          If there is also no value for Patient Name, the hash of the
+          Study Instance UID is used to generate different Patient IDs for
+          different studies in that case.
+          &lt;br&gt;Use ### as placeholder for decimal hash value.
+          &lt;br&gt;NONE = do not generate Patient IDs -> Media Creation will fail.
+      </description>
+      <name>GeneratePatientID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS-##########" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getIssuerOfPatientIDRules"
+      setMethod="setIssuerOfPatientIDRules">
+      <description>List of rules to add Issuer Of PatientID if not contained
+      in the received object and if the Patient ID matches the specified regular
+      expression. Multiple rules are separated by new lines.
+      Format: [REGEX:]ISSUER . If no regular expression is specified,
+      the issuer is added for any Patient ID.
+      </description>
+      <name>IssuerOfPatientIDRules</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="^PACS-\d*:PACS_TIANI" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isStoreDuplicateIfDiffMD5"
       setMethod="setStoreDuplicateIfDiffMD5">
       <description>Store duplicate objects, if MD5 sum of new object differs
