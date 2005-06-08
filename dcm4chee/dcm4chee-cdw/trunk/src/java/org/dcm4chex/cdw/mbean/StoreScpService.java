@@ -441,10 +441,10 @@ public class StoreScpService extends AbstractScpService {
 		StringBuffer sb = new StringBuffer(generatePatientID.substring(0,left));
 		// generate different Patient IDs for different studies
 		// if no Patient Name
-		String num = String.valueOf(37
+		String num = String.valueOf(0xffffffffL & (37
 				* ds.getString(Tags.PatientName,
 						ds.getString(Tags.StudyInstanceUID)).hashCode()
-				+ ds.getString(Tags.PatientBirthDate, "").hashCode());
+				+ ds.getString(Tags.PatientBirthDate, "").hashCode()));
 		left += num.length();
 		final int right = generatePatientID.lastIndexOf('#') + 1;
 		while (left++ < right) {
