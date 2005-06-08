@@ -142,8 +142,30 @@
       getMethod="getNumberOfReceivedMessages">
       <description>Number of received HL7 messages.
       </description>
-      <name>umberOfReceivedMessages</name>
+      <name>NumberOfReceivedMessages</name>
       <type>int</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAckStylesheetURL"
+      setMethod="setAckStylesheetURL">
+      <description>Stylesheet for generated ACK messages.
+      </description>
+      <name>AckStylesheetURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/hl7/msh2ack.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getLogStylesheetURL"
+      setMethod="setLogStylesheetURL">
+      <description>Stylesheet for logging of received HL7 messages.
+      </description>
+      <name>LogStylesheetURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/hl7/logmsg.xsl" />
+      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getTLSConfigName"

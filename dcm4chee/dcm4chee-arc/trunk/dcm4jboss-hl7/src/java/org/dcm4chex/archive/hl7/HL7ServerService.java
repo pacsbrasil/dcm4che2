@@ -71,9 +71,9 @@ public class HL7ServerService extends ServiceMBeanSupport
         }
     };
 	
-    private static final String ACK_XSL_URL = "resource:xsl/hl7/msh2ack.xsl";
+    private String ackStylesheetURL = "resource:xsl/hl7/msh2ack.xsl";
     
-    private static final String LOG_MSG_XSL_URL = "resource:xsl/hl7/logmsg.xsl";
+    private String logStylesheetURL = "resource:xsl/hl7/logmsg.xsl";
 
     private File logDir;
 
@@ -101,7 +101,25 @@ public class HL7ServerService extends ServiceMBeanSupport
     
     private String[] noopMessageTypes = {};
 
-    public ObjectName getAuditLoggerName() {
+    public final String getAckStylesheetURL() {
+		return ackStylesheetURL;
+	}
+
+	public final void setAckStylesheetURL(String ackStylesheetURL) {
+		this.ackStylesheetURL = ackStylesheetURL;
+		reloadStylesheets();
+	}
+
+	public final String getLogStylesheetURL() {
+		return logStylesheetURL;
+	}
+
+	public final void setLogStylesheetURL(String logStylesheetURL) {
+		this.logStylesheetURL = logStylesheetURL;
+		reloadStylesheets();
+	}
+
+	public ObjectName getAuditLoggerName() {
         return auditLogName;
     }
 
@@ -237,7 +255,7 @@ public class HL7ServerService extends ServiceMBeanSupport
 
     public void ack(Document document, ContentHandler hl7out, HL7Exception hl7ex) {
         try {
-            Transformer t = getTemplates(ACK_XSL_URL).newTransformer();
+            Transformer t = getTemplates(ackStylesheetURL).newTransformer();
             if (hl7ex != null) {
                 t.setParameter("AcknowledgementCode", hl7ex
                         .getAcknowledgementCode());
@@ -351,7 +369,7 @@ public class HL7ServerService extends ServiceMBeanSupport
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write("Received HL7 message:".getBytes());
-            Transformer t = getTemplates(LOG_MSG_XSL_URL).newTransformer();
+            Transformer t = getTemplates(logStylesheetURL).newTransformer();
             t.transform(new DocumentSource(document), new StreamResult(out));
             log.info(out.toString());
         } catch (Exception e) {

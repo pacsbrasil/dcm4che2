@@ -37,8 +37,6 @@ import org.xml.sax.ContentHandler;
 
 public class ORMService extends AbstractHL7Service {
 
-	private static final String ORM2DCM_XSL_URL = "resource:xsl/hl7/orm2dcm.xsl";
-
 	private static final String[] CONTROL_CODES = { "NW", "XA", "CA", "DC" };
 
 	private static final List CONTROL_CODES_LIST = Arrays.asList(CONTROL_CODES);
@@ -53,11 +51,22 @@ public class ORMService extends AbstractHL7Service {
 	
     private ObjectName deviceServiceName;
 
+	private String stylesheetURL = "resource:xsl/hl7/orm2dcm.xsl";
+
 	private String defaultStationAET = "UNKOWN";
 
 	private String defaultStationName = "UNKOWN";
 
 	private String defaultModality = "OT";
+
+	public String getStylesheetURL() {
+		return stylesheetURL;
+	}
+
+	public void setStylesheetURL(String stylesheetURL) {
+		this.stylesheetURL = stylesheetURL;
+		reloadStylesheets();
+	}
 
 	public final ObjectName getDeviceServiceName() {
 		return deviceServiceName;
@@ -96,7 +105,7 @@ public class ORMService extends AbstractHL7Service {
 		int msgType = checkMessage(msg);
 		try {
 			Dataset ds = dof.newDataset();
-			Transformer t = getTemplates(ORM2DCM_XSL_URL).newTransformer();
+			Transformer t = getTemplates(stylesheetURL).newTransformer();
 			t.transform(new DocumentSource(msg), new SAXResult(ds
 					.getSAXHandler2(null)));
 			mergeProtocolCodes(ds);

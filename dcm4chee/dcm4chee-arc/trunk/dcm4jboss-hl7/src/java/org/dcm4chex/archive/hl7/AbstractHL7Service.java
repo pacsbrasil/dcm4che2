@@ -78,8 +78,20 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
         }
     }
     
-    protected void startService() throws Exception {
+    protected void reloadStylesheets() {
+		if (getState() != STARTED) return;
+        try {
+            server.invoke(hl7ServerName, "reloadStylesheets",
+                    null, null);
+        } catch (Exception e) {
+            log.error("JMX error:", e);
+            throw new RuntimeException("JMX error:", e);
+        }
+    }    
+
+	protected void startService() throws Exception {
         registerService(this);
+		reloadStylesheets();
     }
 
     protected void stopService() throws Exception {

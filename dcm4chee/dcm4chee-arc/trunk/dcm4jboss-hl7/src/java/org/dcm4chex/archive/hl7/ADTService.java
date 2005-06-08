@@ -29,15 +29,33 @@ import org.xml.sax.ContentHandler;
 
 public class ADTService extends AbstractHL7Service {
 
-    private static final String PID2DCM_XSL_URL = "resource:xsl/hl7/pid2dcm.xsl";
+    private String pidStylesheetURL = "resource:xsl/hl7/pid2dcm.xsl";
 
-    private static final String MRG2DCM_XSL_URL = "resource:xsl/hl7/mrg2dcm.xsl";
+    private String mrgStylesheetURL = "resource:xsl/hl7/mrg2dcm.xsl";
 
-    public boolean process(MSH msh, Document msg, ContentHandler hl7out)
+    public final String getMrgStylesheetURL() {
+		return mrgStylesheetURL;
+	}
+
+	public final void setMrgStylesheetURL(String mrgStylesheetURL) {
+		this.mrgStylesheetURL = mrgStylesheetURL;
+		reloadStylesheets();
+	}
+
+	public final String getPidStylesheetURL() {
+		return pidStylesheetURL;
+	}
+
+	public final void setPidStylesheetURL(String pidStylesheetURL) {
+		reloadStylesheets();
+		this.pidStylesheetURL = pidStylesheetURL;
+	}
+
+	public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
         Dataset pat = dof.newDataset();
         try {
-            Transformer t = getTemplates(PID2DCM_XSL_URL).newTransformer();
+            Transformer t = getTemplates(pidStylesheetURL).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(pat
                     .getSAXHandler2(null)));
             PatientUpdate update = getPatientUpdateHome().create();
@@ -50,7 +68,7 @@ public class ADTService extends AbstractHL7Service {
 
                 } else if (isMerge(msh)) {
                     Dataset mrg = dof.newDataset();
-                    Transformer t2 = getTemplates(MRG2DCM_XSL_URL)
+                    Transformer t2 = getTemplates(mrgStylesheetURL)
                             .newTransformer();
                     t2.transform(new DocumentSource(msg), new SAXResult(mrg
                             .getSAXHandler2(null)));

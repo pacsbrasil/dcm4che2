@@ -31,6 +31,28 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getPidStylesheetURL"
+      setMethod="setPidStylesheetURL">
+      <description>Stylesheet for HL7 PID to DICOM Patient Module mapping.
+      </description>
+      <name>PidStylesheetURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/hl7/pid2dcm.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMrgStylesheetURL"
+      setMethod="setMrgStylesheetURL">
+      <description>Stylesheet for HL7 MRG to DICOM Patient Module mapping.
+      </description>
+      <name>MrgStylesheetURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/hl7/mrg2dcm.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getHL7ServerName"
       setMethod="setHL7ServerName">
       <description>Used internally - do NOT modify.

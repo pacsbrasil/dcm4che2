@@ -68,6 +68,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getStylesheetURL"
+      setMethod="setStylesheetURL">
+      <description>Stylesheet for HL7 ORM^O01 to DICOM MWL mapping.
+      </description>
+      <name>StylesheetURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/hl7/orm2dcm.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDeviceServiceName"
       setMethod="setDeviceServiceName">
       <description>Used internally - do NOT modify.
