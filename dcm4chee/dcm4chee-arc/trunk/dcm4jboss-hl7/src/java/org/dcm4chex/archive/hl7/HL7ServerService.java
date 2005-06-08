@@ -217,6 +217,10 @@ public class HL7ServerService extends ServiceMBeanSupport
         }
         return tpl;
     }
+	
+	public void reloadStylesheets() {
+		templates.clear();
+	}
 
     protected void startService() throws Exception {
         logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");

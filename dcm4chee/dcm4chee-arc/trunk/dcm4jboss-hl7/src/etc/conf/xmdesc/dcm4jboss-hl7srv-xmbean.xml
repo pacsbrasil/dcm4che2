@@ -171,6 +171,11 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Reload Stylesheets</description>
+      <name>reloadStylesheets</name>
+      <return-type>void</return-type>
+   </operation>
    <operation impact="INFO">
       <description>Get precompiled stylesheet</description>
       <name>getTemplates</name>

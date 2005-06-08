@@ -199,6 +199,16 @@ public class ORMService extends AbstractHL7Service {
 		Dataset sps = ds.getItem(Tags.SPSSeq);
 		String val;
 		Dataset code;
+		if ((val = sps.getString(Tags.RequestingPhysician)) != null) {
+			log.info("Detect Requesting Physician on SPS Level");
+			ds.putPN(Tags.RequestingPhysician, val);
+			sps.remove(Tags.RequestingPhysician);
+		}
+		if ((val = sps.getString(Tags.RequestingService)) != null) {
+			log.info("Detect Requesting Service on SPS Level");
+			ds.putLO(Tags.RequestingService, val);
+			sps.remove(Tags.RequestingService);
+		}
 		if ((val = sps.getString(Tags.StudyInstanceUID)) != null) {
 			log.info("Detect Study Instance UID on SPS Level");
 			ds.putUI(Tags.StudyInstanceUID, val);
