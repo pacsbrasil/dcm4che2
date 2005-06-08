@@ -452,7 +452,7 @@ public class StoreScpService extends AbstractScpService {
 		}
 		sb.append(num);
 		sb.append(generatePatientID.substring(right));
-		return null;
+		return sb.toString();
 	}
 
 	private void copy(InputStream in, OutputStream out, int totLen,
