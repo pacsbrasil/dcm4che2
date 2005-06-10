@@ -275,7 +275,7 @@ public class HL7SendService
 		out.write("MSH|^~\\&|".getBytes("ISO-8859-1"));
 		out.write(sendingApplication.getBytes("ISO-8859-1"));
 		out.write('|');
-		out.write(sendingApplication.getBytes("ISO-8859-1"));
+		out.write(sendingFacility.getBytes("ISO-8859-1"));
 		out.write('|');
 		final int delim = receiving.indexOf('^');
 		out.write(receiving.substring(0, delim).getBytes("ISO-8859-1"));
