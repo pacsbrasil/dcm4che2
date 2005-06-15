@@ -28,8 +28,10 @@
  */
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -82,6 +84,15 @@ public abstract class BaseCmd {
             throw e;
         }
     }
+	
+	public byte[] getBytes(int column) throws SQLException {
+	    ResultSetMetaData meta = rs.getMetaData();
+		if (meta != null && meta.getColumnType(column) == java.sql.Types.BLOB) {
+			Blob blob = rs.getBlob(column);
+			return blob != null ? blob.getBytes(1,(int)blob.length()) : null;
+		}
+		return rs.getBytes(column);
+	}
 
     public void execute(String sql) throws SQLException {
         if (rs != null) {
