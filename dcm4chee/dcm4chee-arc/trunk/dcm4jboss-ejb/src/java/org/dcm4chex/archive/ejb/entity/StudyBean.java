@@ -491,7 +491,7 @@ public abstract class StudyBean implements EntityBean {
 	            if (c.size() == 1) {
 	                MediaLocal media = (MediaLocal) c.iterator().next();
 	                fileSetId = media.getFilesetId();
-	                fileSetIuid = getFilesetIuid();
+	                fileSetIuid = media.getFilesetIuid();
 	            }
 	        }
         }
