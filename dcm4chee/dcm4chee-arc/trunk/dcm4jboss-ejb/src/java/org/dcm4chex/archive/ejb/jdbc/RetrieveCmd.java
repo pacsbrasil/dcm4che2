@@ -49,68 +49,30 @@ public class RetrieveCmd extends BaseCmd {
             "Study.patient_fk", "Study.pk", "Series.study_fk", "Series.pk",
             "Instance.series_fk"};
     
-    private static SqlBuilder newSqlBuilder() {
-        SqlBuilder sqlBuilder = new SqlBuilder();
-        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
-        sqlBuilder.setFrom(ENTITY);
-        sqlBuilder.setLeftJoin(LEFT_JOIN);
-        sqlBuilder.setRelations(RELATIONS);
-        return sqlBuilder;
-    }
-    
-
     public static RetrieveCmd create(Dataset keys)
             throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if (qrLevel == null || qrLevel.length() == 0)
             throw new IllegalArgumentException("Missing QueryRetrieveLevel");
-        SqlBuilder sqlBuilder = newSqlBuilder();
-        if ("PATIENT".equals(qrLevel)) {
-            String pid = keys.getString(Tags.PatientID);
-            if (pid == null)
-                    throw new IllegalArgumentException("Missing PatientID");
-
-            sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-                    SqlBuilder.TYPE2, pid, false); 
-        } else if ("STUDY".equals(qrLevel)) {
-            String[] uid = keys.getStrings(Tags.StudyInstanceUID);
-            if (uid == null || uid.length == 0)
-                throw new IllegalArgumentException("Missing StudyInstanceUID");
-
-            sqlBuilder.addListOfUidMatch(null, "Study.studyIuid",
-                    SqlBuilder.TYPE1, uid);
-        } else if ("SERIES".equals(qrLevel)) {
-            String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
-            if (uid == null || uid.length == 0)
-                throw new IllegalArgumentException("Missing SeriesInstanceUID");
-
-            sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
-                    SqlBuilder.TYPE1, uid);
-        } else if ("IMAGE".equals(qrLevel)) {
-            String[] uids = keys.getStrings(Tags.SOPInstanceUID);
-            if (uids == null || uids.length == 0)
-                throw new IllegalArgumentException("Missing SOPInstanceUID");
-
-            sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid",
-                    SqlBuilder.TYPE1, uids);
-            return new ImageRetrieveCmd(sqlBuilder.getSql(), uids);
-        } else {
-            throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
+		if ("IMAGE".equals(qrLevel)) {
+            return new ImageRetrieveCmd(new ImageSql(keys).getSql(), 
+					keys.getStrings(Tags.SOPInstanceUID));
         }
-        return new RetrieveCmd(sqlBuilder.getSql());
-    }
+		if ("SERIES".equals(qrLevel)) {
+			return new RetrieveCmd(new SeriesSql(keys, true).getSql());
+        }
+		if ("STUDY".equals(qrLevel)) {
+			return new RetrieveCmd(new StudySql(keys, true).getSql());
+        }
+        if ("PATIENT".equals(qrLevel)) {			
+			return new RetrieveCmd(new PatientSql(keys, true).getSql());
+        }
+        throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
+     }
 
     public static RetrieveCmd create(DcmElement refSOPSeq)
             throws SQLException {
-        SqlBuilder sqlBuilder = newSqlBuilder();
-        String[] uid = new String[refSOPSeq.vm()];
-        for (int i = 0; i < uid.length; i++) {
-            uid[i] = refSOPSeq.getItem(i).getString(Tags.RefSOPInstanceUID);
-        }
-
-        sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid", SqlBuilder.TYPE1,
-                uid);
-        return new RetrieveCmd(sqlBuilder.getSql());
+        return new RetrieveCmd(new RefSOPSql(refSOPSeq).getSql());
     }
 
     private final String sql;
@@ -193,9 +155,83 @@ public class RetrieveCmd extends BaseCmd {
                 }
             }
             if (!result.isEmpty()) {
-                throw new RuntimeException("Result Set contains " + result.size() + " non-matching entries!");
+                throw new RuntimeException("Result Set contains " 
+						+ result.size() + " non-matching entries!");
             }
             return array;
         }
     }
+
+	private static class Sql {
+		final SqlBuilder sqlBuilder = new SqlBuilder();
+		Sql() {
+	        sqlBuilder.setSelect(SELECT_ATTRIBUTE);
+	        sqlBuilder.setFrom(ENTITY);
+	        sqlBuilder.setLeftJoin(LEFT_JOIN);
+	        sqlBuilder.setRelations(RELATIONS);
+		}
+		public final String getSql() {
+			return sqlBuilder.getSql();
+		}
+	}
+	
+	private static class PatientSql extends Sql {
+		PatientSql(Dataset keys, boolean patientRetrieve) {
+            String pid = keys.getString(Tags.PatientID);
+            if (pid != null)
+	            sqlBuilder.addWildCardMatch(null, "Patient.patientId",
+	                    SqlBuilder.TYPE2, pid, false);
+            else if (patientRetrieve)
+                throw new IllegalArgumentException("Missing PatientID");
+		}
+	}
+
+	private static class StudySql extends PatientSql {
+		StudySql(Dataset keys, boolean studyRetrieve) {
+			super(keys, false);
+            String[] uid = keys.getStrings(Tags.StudyInstanceUID);
+            if (uid != null && uid.length != 0)
+	            sqlBuilder.addListOfUidMatch(null, "Study.studyIuid",
+	                    SqlBuilder.TYPE1, uid);
+            else if (studyRetrieve)
+                throw new IllegalArgumentException("Missing StudyInstanceUID");
+		}
+	}
+	
+	private static class SeriesSql extends StudySql {
+		SeriesSql(Dataset keys, boolean seriesRetrieve) {
+			super(keys, false);
+            String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
+            if (uid != null && uid.length != 0)
+	            sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
+	                    SqlBuilder.TYPE1, uid);
+            else if (seriesRetrieve)
+                throw new IllegalArgumentException("Missing SeriesInstanceUID");
+		}
+	}
+	
+	private static class ImageSql extends SeriesSql {
+		ImageSql(Dataset keys) {
+			super(keys, false);
+            String[] uid = keys.getStrings(Tags.SOPInstanceUID);
+            if (uid != null && uid.length != 0)
+	            sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid",
+	                    SqlBuilder.TYPE1, uid);
+            else 
+				throw new IllegalArgumentException("Missing SOPInstanceUID");
+		}
+	}
+
+	private static class RefSOPSql extends Sql {
+		RefSOPSql(DcmElement refSOPSeq) {
+	        String[] uid = new String[refSOPSeq.vm()];
+	        for (int i = 0; i < uid.length; i++) {
+	            uid[i] = refSOPSeq.getItem(i).getString(Tags.RefSOPInstanceUID);
+	        }
+
+	        sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid", SqlBuilder.TYPE1,
+	                uid);
+		}
+	}
+	
 }
