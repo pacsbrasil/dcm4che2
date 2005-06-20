@@ -278,8 +278,8 @@ public class CompressionService extends TimerSupport {
                 byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
                         decFile, fileDTO.getFileTsuid(), pxvalVR[0]);
                 if (!Arrays.equals(dec_md5, fileDTO.getFileMd5())) {
-                    log.info("File MD5 check failed for src file " + srcFile
-                            + "! Check pixel matrix now.");
+                    log.info("MD5 sum after compression+decompression of " + srcFile
+                            + " differs - compare pixel matrix");
                     if (!FileUtils.equalsPixelData(srcFile, decFile)) {
                         log.warn("Pixel matrix after decompression differs from original file "
                                         + srcFile
