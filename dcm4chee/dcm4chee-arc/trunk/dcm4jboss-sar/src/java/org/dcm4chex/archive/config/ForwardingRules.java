@@ -9,6 +9,7 @@
 package org.dcm4chex.archive.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
@@ -102,11 +103,15 @@ private static final long MS_PER_HOUR = 3600000L;
     }
     
     public String[] getForwardDestinationsFor(Map param) {
+    	ArrayList l = new ArrayList(); 
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
-            if (e.condition.isTrueFor(param)) return e.forwardAETs;
+            if (e.condition.isTrueFor(param) && e.forwardAETs.length > 0 ) l.addAll( Arrays.asList( e.forwardAETs ) );
         }
-        return EMPTY;
+        if ( l.isEmpty() )
+        	return EMPTY;
+        else
+        	return (String[]) l.toArray( new String[l.size()]);
     }
     
     public String toString() {
