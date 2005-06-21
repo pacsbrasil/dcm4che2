@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Jun 6, 2005 12:02:21 AM                                                        
+
+     project    
+     description
+                   
+     gunter                                                                
+     ====================================================================== -->
+<project xmlns:artifact="antlib:org.apache.maven.artifact.ant"
+	name="project" default="dictionary">
+	<description>
+            description
+    </description>
+	
+	<!-- Allow user to adjust build properties 
+	     without modifying this build script. --> 
+	<property file="build.properties"/>
+	<property name="office.dtd"
+		value="/usr/lib/openoffice/share/dtd/officedocument/1_0/office.dtd"/>
+	<property name="package" value="org.dcm4che.data"/>
+	<property name="folder" value="org/dcm4che/data"/>
+	<property name="class" value="Tags"/>
+
+
+	
+	<!-- ================================= 
+          target: dictionary              
+         ================================= -->
+	<target name="dictionary" depends="grepElements" description="--> description">
+		<xslt in="src/main/xml/elements.xml" out="target/xml/dictionary.xml" 
+			style="src/main/xsl/Dictionary.xsl">
+		</xslt>
+		<xslt in="target/xml/dictionary.xml" out="target/java/${folder}/${class}.java" 
+			style="src/main/xsl/Tag.xsl">
+			<param name="package" expression="${package}" />
+			<param name="class" expression="${class}" />
+		</xslt>
+		<mkdir dir="target/classes"/>
+		<javac srcdir="target/java" destdir="target/classes"/>
+		<mkdir dir="target/lib"/>
+		<jar basedir="target/classes" destfile="target/lib/tag.jar"/>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: grepElements                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="grepElements">
+		<antcall target="grep">
+			<param name="fname" value="04_07_09"/>
+			<param name="style" value="Command"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="04_06_14"/>
+			<param name="style" value="Data"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup60_ft"/>
+			<param name="style" value="Data"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="sup104_ft"/>
+			<param name="style" value="Data"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp465_ft2"/>
+			<param name="style" value="Data"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp483_ft"/>
+			<param name="style" value="Data"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp486_ft"/>
+			<param name="style" value="Data"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp487_ft"/>
+			<param name="style" value="Data"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp491_ft"/>
+			<param name="style" value="Data"/>
+		</antcall>
+		<antcall target="grep">
+			<param name="fname" value="cp507_ft"/>
+			<param name="style" value="Data"/>
+		</antcall>
+	</target>
+	
+	<target name="grep">
+		<unzip src="src/main/sxw/${fname}.sxw" dest="target/xml/${fname}">
+			<patternset includes="content.xml"/>
+		</unzip>
+		<xslt in="target/xml/${fname}/content.xml" out="target/xml/${fname}.xml" 
+			style="src/main/xsl/${style}.xsl">
+			<xmlcatalog>
+				<dtd publicId="-//OpenOffice.org//DTD OfficeDocument 1.0//EN" 
+					location="${office.dtd}" />
+			</xmlcatalog>
+		</xslt>
+	</target>
+	
+	<target name="clean">
+		<delete dir="target"/>
+	</target>
+
+</project>
+
+

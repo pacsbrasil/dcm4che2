@@ -1,0 +1,10 @@
+<model>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dcm4che</groupId>
+  <artifactId>dcm4che</artifactId>
+  <packaging>pom</packaging>
+  <version>2.0-SNAPSHOT</version>
+  <modules>
+    <module>dcm4che2-core</module>
+  </modules>
+</model>
