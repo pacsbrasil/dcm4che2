@@ -173,7 +173,7 @@ public abstract class UserManagerBean
      */
 	public void addRoleToUser(String user, String role) {
 		try {
-			AddRoleToUserCmd cmd = new AddRoleToUserCmd("DB_JNDI_NAME");
+			AddRoleToUserCmd cmd = new AddRoleToUserCmd(DB_JNDI_NAME);
 			try {
 				cmd.setUser(user);
 				cmd.setRole(role);
@@ -191,7 +191,7 @@ public abstract class UserManagerBean
      */
 	public boolean removeRoleFromUser(String user, String role) {
 		try {
-			RemoveRoleFromUserCmd cmd = new RemoveRoleFromUserCmd("DB_JNDI_NAME");
+			RemoveRoleFromUserCmd cmd = new RemoveRoleFromUserCmd(DB_JNDI_NAME);
 			try {
 				cmd.setUser(user);
 				cmd.setRole(role);
