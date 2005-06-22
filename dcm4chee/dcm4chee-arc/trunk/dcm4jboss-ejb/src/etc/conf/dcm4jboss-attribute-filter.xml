@@ -20,6 +20,8 @@
         <attr tag="00081032"/> <!-- Procedure Code Seq -->
         <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
         <attr tag="00200010"/> <!-- Study ID -->
+        <attr tag="00402016"/> <!-- Placer Order Number -->
+        <attr tag="00402017"/> <!-- Filler Order Number -->
     </filter>
     <filter level="SERIES">
         <attr tag="00080005"/> <!-- Specific Character Set -->
